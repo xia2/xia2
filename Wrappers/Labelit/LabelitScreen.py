@@ -1,0 +1,186 @@
+#!/usr/bin/env python
+# LabelitScreen.py
+# Maintained by G.Winter
+# 2nd June 2006
+# 
+# A wrapper for labelit.screen - this will provide functionality to:
+#
+# Decide the beam centre.
+# Index the lattce.
+# 
+
+import os
+import sys
+
+if not os.environ.has_key('XIA2CORE_ROOT'):
+    raise RuntimeError, 'XIA2CORE_ROOT not defined'
+
+sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
+                             'Python'))
+
+from Driver.DriverFactory import DriverFactory
+
+def LabelitScreen(DriverType = None):
+    '''Factory for LabelitScreen wrapper classes, with the specified
+    Driver type.'''
+
+    DriverInstance = DriverFactory.Driver(DriverType)
+
+    class LabelitScreenWrapper(DriverInstance.__class__):
+        '''A wrapper for the program labelit.screen - which will provide
+        functionality for deciding the beam centre and indexing the
+        diffraction pattern.'''
+
+        def __init__(self):
+
+            DriverInstance.__class__.__init__(self)
+
+            self.setExecutable('labelit.screen')
+
+            self._images = []
+            self._beam = (0.0, 0.0)
+            self._distance = 0.0
+            self._wavelength = 0.0
+
+            self._solutions = { }
+            self._refined_beam = (0.0, 0.0)
+            self._refined_distance = 0.0
+
+        def addImage(self, image):
+            '''Add an image for indexing.'''
+
+            if not image in self._images:
+                self._images.append(image)
+
+            return
+
+        def setBeam(self, beam_x, beam_y):
+            self._beam = beam_x, beam_y
+
+            return
+
+        def setWavelength(self, wavelength):
+            self._wavelength = wavelength
+
+            return
+        
+        def setDistance(self, distance):
+            self._distance = distance
+
+            return
+
+        def index(self):
+            '''Actually index the diffraction pattern. Note well that
+            this is not going to compute the matrix...'''
+
+            self._images.sort()
+
+            if len(self._images) > 2:
+                raise RuntimeError, 'cannot use more than 2 images'
+
+            self.addCommand_line('--index_only')
+
+            for i in self._images:
+                self.addCommand_line(i)
+
+            self.start()
+            self.close()
+
+            while True:
+
+                line = self.output()
+
+                if not line:
+                    break
+
+            # ok now we're done, let's look through for some useful stuff
+
+            output = self.get_all_output()
+
+            counter = 0
+
+            for o in output:
+                l = o.split()
+
+                if l[:3] == ['Beam', 'center', 'x']:
+                    x = float(l[3].replace('mm,', ''))
+                    y = float(l[5].replace('mm,', ''))
+                    
+                    self._refined_beam = (x, y)
+                    self._refined_distance = float(l[7].replace('mm', ''))
+
+                if l[:3] == ['Solution', 'Metric', 'fit']:
+                    break
+
+                counter += 1
+
+            # if we've just broken out (counter < len(output)) then
+            # we need to gather the output
+
+            if counter >= len(output):
+                raise RuntimeError, 'error in indexing'
+
+            for i in range(counter + 1, len(output)):
+                o = output[i][3:]
+                l = o.split()
+                if l:
+                    self._solutions[int(l[0])] = {'rmsd':float(l[3]),
+                                                  'nspots':int(l[4]),
+                                                  'lattice':l[6],
+                                                  'cell':map(float, l[7:13])}
+
+            return 'ok'
+
+        # things to get results from the indexing
+
+        def getSolutions(self):
+            '''Get the solutions from indexing.'''
+
+            return self._solutions
+
+        def getBeam(self):
+            return self._refined_beam
+
+        def getDistance(self):
+            return self._refined_distance
+
+    return LabelitScreenWrapper()
+
+if __name__ == '__main__':
+
+    # run a demo test
+
+    if not os.environ.has_key('DPA_ROOT'):
+        raise RuntimeError, 'DPA_ROOT not defined'
+
+    l = LabelitScreen()
+
+    directory = os.path.join(os.environ['DPA_ROOT'],
+                             'Data', 'Test', 'Images')
+
+    l.addImage(os.path.join(directory, '12287_1_E1_001.img'))
+    l.addImage(os.path.join(directory, '12287_1_E1_090.img'))
+
+    l.index()
+
+    print 'Refined beam is: %6.2f %6.2f' % l.getBeam()
+    print 'Distance:        %6.2f' % l.getDistance()
+
+    solutions = l.getSolutions()
+
+    keys = solutions.keys()
+
+    keys.sort()
+    keys.reverse()
+
+    for k in keys:
+        print 'Lattice: %s Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+              (solutions[k]['lattice'], \
+               solutions[k]['cell'][0], \
+               solutions[k]['cell'][1], \
+               solutions[k]['cell'][2], \
+               solutions[k]['cell'][3], \
+               solutions[k]['cell'][4], \
+               solutions[k]['cell'][5])
+              
+    
