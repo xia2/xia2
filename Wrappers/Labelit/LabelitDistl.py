@@ -1,0 +1,144 @@
+#!/usr/bin/env python
+# LabelitDistl.py
+# Maintained by G.Winter
+# 2nd June 2006
+# 
+# A wrapper for labelit.distl - this will provide functionality to:
+#
+# Looking for ice rings.
+# Screening the images.
+# 
+# The output looks like:
+#
+#                     File : 12287_1_E1_001.img
+#               Spot Total :   1568
+#      In-Resolution Total :   1421
+#    Good Bragg Candidates :   1135
+#                Ice Rings :      2
+#      Method 1 Resolution :   1.78
+#      Method 2 Resolution :   1.90
+#        Maximum unit cell :  242.8
+#%Saturation, Top 50 Peaks :  14.35
+
+import os
+import sys
+
+if not os.environ.has_key('XIA2CORE_ROOT'):
+    raise RuntimeError, 'XIA2CORE_ROOT not defined'
+
+sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
+                             'Python'))
+
+from Driver.DriverFactory import DriverFactory
+
+def LabelitDistl(DriverType = None):
+    '''Factory for LabelitDistl wrapper classes, with the specified
+    Driver type.'''
+
+    DriverInstance = DriverFactory.Driver(DriverType)
+
+    class LabelitDistlWrapper(DriverInstance.__class__):
+        '''A wrapper for the program labelit.distl - which will provide
+        functionality for looking for ice rings and screening diffraction
+        images.'''
+
+        def __init__(self):
+
+            DriverInstance.__class__.__init__(self)
+
+            self.setExecutable('labelit.distl')
+
+            self._images = []
+
+            self._statistics = { } 
+
+        def addImage(self, image):
+            '''Add an image for indexing.'''
+
+            if not image in self._images:
+                self._images.append(image)
+
+            return
+
+        def distl(self):
+            '''Actually analyse the images.'''
+
+            self._images.sort()
+
+            for i in self._images:
+                self.addCommand_line(i)
+
+            self.start()
+            self.close()
+
+            while True:
+
+                line = self.output()
+
+                if not line:
+                    break
+
+            # ok now we're done, let's look through for some useful stuff
+
+            output = self.get_all_output()
+
+            current_image = None
+
+            for o in output:
+                l = o.split()
+
+                if l[:1] == ['File']:
+                    current_image = l[2]
+                    self._statistics[current_image] = { }
+
+                if l[:2] == ['Spot', 'Total']:
+                    self._statistics[current_image]['spots_total'] = int(l[-1])
+                if l[:2] == ['In-Resolution', 'Total']:
+                    self._statistics[current_image]['spots'] = int(l[-1])
+                if l[:3] == ['Good', 'Bragg', 'Candidates']:
+                    self._statistics[current_image]['spots_good'] = int(l[-1])
+                if l[:2] == ['Ice', 'Rings']:
+                    self._statistics[current_image]['ice_rings'] = int(l[-1])
+                if l[:3] == ['Method', '1', 'Resolution']:
+                    self._statistics[current_image]['resol_one'] = float(l[-1])
+                if l[:3] == ['Method', '2', 'Resolution']:
+                    self._statistics[current_image]['resol_two'] = float(l[-1])
+                
+                                                                   
+
+            return 'ok'
+
+        # things to get results from the indexing
+
+        def getStatistics(self, image):
+            '''Get the screening statistics from image as dictionary.
+            The keys are spots_total, spots, spots_good, ice_rings,
+            resol_one, resol_two.'''
+
+            return self._statistics[os.path.split(image)[-1]]
+
+    return LabelitDistlWrapper()
+
+if __name__ == '__main__':
+
+    # run a demo test
+
+    if not os.environ.has_key('DPA_ROOT'):
+        raise RuntimeError, 'DPA_ROOT not defined'
+
+    l = LabelitDistl()
+
+    directory = os.path.join(os.environ['DPA_ROOT'],
+                             'Data', 'Test', 'Images')
+
+    l.addImage(os.path.join(directory, '12287_1_E1_001.img'))
+
+    l.distl()
+
+    stats = l.getStatistics('12287_1_E1_001.img')
+
+    print 'Fraction of good spots: %4.2f' % (float(stats['spots_good']) /
+                                             float(stats['spots']))
+    print 'Ice rings:              %d' % stats['ice_rings']
+    print 'Resolutions:            %f  %f' % \
+          (stats['resol_one'], stats['resol_two'])
