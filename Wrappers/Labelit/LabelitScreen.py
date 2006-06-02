@@ -8,6 +8,13 @@
 # Decide the beam centre.
 # Index the lattce.
 # 
+# To do:
+# 
+# (1) Implement setting of beam, wavelength, distance via labelit parameter
+#     .py file. [dataset_preferences.py] autoindex_override_beam = (x, y)
+#     distance wavelength etc.
+# (2) Implement profile bumpiness handling if the detector is an image plate.
+#     (this goes in the same file...) this is distl_profile_bumpiness = 5
 
 import os
 import sys
