@@ -85,20 +85,23 @@ def LabelitScreen(DriverType = None):
             if len(self._images) > 2:
                 raise RuntimeError, 'cannot use more than 2 images'
 
+            task = 'Autoindex from images:'
+
+            for i in self._images:
+                task += ' %s' % i
+
+            self.setTask(task)
+
             self.addCommand_line('--index_only')
 
             for i in self._images:
                 self.addCommand_line(i)
 
             self.start()
-            self.close()
+            self.close_wait()
 
-            while True:
-
-                line = self.output()
-
-                if not line:
-                    break
+            # check for errors
+            self.check_for_errors()
 
             # ok now we're done, let's look through for some useful stuff
 

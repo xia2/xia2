@@ -68,15 +68,18 @@ def LabelitDistl(DriverType = None):
             for i in self._images:
                 self.addCommand_line(i)
 
+            task = 'Screen images:'
+
+            for i in self._images:
+                task += ' %s' % i
+
+            self.setTask(task)
+
             self.start()
-            self.close()
+            self.close_wait()
 
-            while True:
-
-                line = self.output()
-
-                if not line:
-                    break
+            # check for errors
+            self.check_for_errors()
 
             # ok now we're done, let's look through for some useful stuff
 
