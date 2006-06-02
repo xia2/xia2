@@ -70,7 +70,7 @@ sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
 
-class Pointless(DriverType = None):
+def Pointless(DriverType = None):
     '''A factory for PointlessWrapper classes.'''
 
     DriverInstance = DriverFactory.Driver(DriverType)
@@ -85,7 +85,7 @@ class Pointless(DriverType = None):
             self.setExecutable('pointless-1.0.5')
 
             self._pointgroup = None
-            self._reindexing_matrix = None
+            self._reindex_matrix = None
 
         def decide_pointgroup(self):
             '''Decide on the correct pointgroup for hklin.'''
@@ -113,12 +113,51 @@ class Pointless(DriverType = None):
             # parse the XML file for the information I need...
             # FIXME this needs documenting - I am using xml.dom.minidom.
 
+            # FIXME 2: This needs extracting to a self.parse_pointless_xml()
+            # or something.
+
             xml_file = os.path.join(self.getWorking_directory(),
                                     'pointless.xml')
 
             dom = xml.dom.minidom.parse(xml_file)
 
-            print dom
+            best = dom.getElementsByTagName('BestSolution')[0]
+            self._pointgroup = best.getElementsByTagName(
+                'GroupName')[0].childNodes[0].data
+            self._reindex_matrix = map(float, best.getElementsByTagName(
+                'ReindexMatrix')[0].childNodes[0].data.split())
 
-            return ok
+            return 'ok'
+
+        def getReindex_matrix(self):
+            return self._reindex_matrix
+
+        def getPointgroup(self):
+            return self._pointgroup
             
+    return PointlessWrapper()
+
+if __name__ == '__main__':
+
+    # then run some sort of test
+
+    import os
+
+    if not os.environ.has_key('XIA2CORE_ROOT'):
+        raise RuntimeError, 'XIA2CORE_ROOT not defined'
+
+    xia2core = os.environ['XIA2CORE_ROOT']
+
+    hklin = os.path.join(xia2core,
+                         'Data', 'Test', 'Mtz', '12287_1_E1.mtz')
+
+    p = Pointless()
+
+    p.setHklin(hklin)
+
+    p.decide_pointgroup()
+
+    print 'Correct pointgroup: %s' % p.getPointgroup()
+    print 'Reindexing matrix: ' + \
+          '%4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f' % \
+          tuple(p.getReindex_matrix())
