@@ -13,11 +13,9 @@ import os, sys
 if not os.environ.has_key('DPA_ROOT'):
     raise RuntimeError, 'DPA_ROOT not defined'
 
-sys.path.append(os.path.join(os.environ['DPA_ROOT'],
-                             'Wrappers',
-                             'Labelit'))
+sys.path.append(os.path.join(os.environ['DPA_ROOT']))
 
-from LabelitScreen import LabelitScreen
+from Wrappers.Labelit.LabelitScreen import LabelitScreen
 import unittest
 
 # this should be placed in a gwmath module or something...
