@@ -128,6 +128,10 @@ def Mtzdump(DriverType = None):
             result['spacegroup'] = self._header['spacegroup']
             return result
 
+        def getSpacegroup(self):
+            '''Get the spacegroup recorded for this reflection file.'''
+            return self._header['spacegroup']
+
     return MtzdumpWrapper()
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# TestPointless.py
+# TestSortmtz.py
 # Maintained by G.Winter
 # 6th June 2006
 # 
