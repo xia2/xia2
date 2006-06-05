@@ -25,7 +25,7 @@ class TestSortmtz(unittest.TestCase):
     def setUp(self):
         pass
 
-    def testtetragonal(self):
+    def testdefault(self):
         '''Test sortmtz with the data from XIA core unit tests.'''
         xia2core = os.environ['XIA2CORE_ROOT']
         
@@ -44,8 +44,48 @@ class TestSortmtz(unittest.TestCase):
 
         self.assertEqual(status, 'Normal termination')
         
+    def testmultiple(self):
+        '''Test sortmtz with the data from XIA/DPA core unit tests.'''
+        dpa = os.environ['DPA_ROOT']
+        
+        hklin1 = os.path.join(dpa,
+                              'Data', 'Test', 'Mtz', '12287_1_E1_1_10.mtz')
+        hklin2 = os.path.join(dpa,
+                              'Data', 'Test', 'Mtz', '12287_1_E1_11_20.mtz')
+        
+        s = Sortmtz()
+        
+        s.addHklin(hklin1)
+        s.addHklin(hklin2)
+
+        # write this to scratch 
+        s.setHklout(os.path.join(os.environ['CCP4_SCR'],
+                                 'temp-test-sortmtz.mtz'))
+        
+        status = s.sort()
+
+        self.assertEqual(status, 'Normal termination')
+        
+    def testmultiplebadbatches(self):
+        '''Test sortmtz with the data from XIA/DPA core unit tests.'''
+        dpa = os.environ['DPA_ROOT']
+        
+        hklin1 = os.path.join(dpa,
+                              'Data', 'Test', 'Mtz', '12287_1_E1_1_10.mtz')
+        
+        s = Sortmtz()
+        
+        s.addHklin(hklin1)
+        s.addHklin(hklin1)
+
+        # write this to scratch 
+        s.setHklout(os.path.join(os.environ['CCP4_SCR'],
+                                 'temp-test-sortmtz.mtz'))
+        
+        self.assertRaises(RuntimeError, s.sort)
+        
     def testnotmtzfile(self):
-        '''Test sortmtz with the data from XIA core unit tests.'''
+        '''Test sortmtz with an input file in the wrong format.'''
         dpa = os.environ['DPA_ROOT']
         
         hklin = os.path.join(dpa,
@@ -60,7 +100,7 @@ class TestSortmtz(unittest.TestCase):
         self.assertRaises(RuntimeError, s.sort)
 
     def testnofile(self):
-        '''Test sortmtz with the data from XIA core unit tests.'''
+        '''Test sortmtz with a missing input file.'''
         dpa = os.environ['DPA_ROOT']
         
         hklin = os.path.join(dpa,

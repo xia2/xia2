@@ -39,16 +39,59 @@ def Sortmtz(DriverType = None):
 
             self._sort_order = 'H K L M/ISYM BATCH'
 
+            self._hklin_files = []
+
+            return
+
+        def addHklin(self, hklin):
+            '''Add a reflection file to the list to be sorted together.'''
+            self._hklin_files.append(hklin)
+            return
+
+        def check_sortmtz_errors(self):
+            '''Check the output for "standard" errors.'''
+
+            lwbat_warning = ''
+
+            for l in self.get_all_output():
+
+                if 'From ccp4_lwbat: warning:' in l:
+                    lwbat_warning = l.split('warning:')[1].strip()
+                
+                if 'error in ccp4_lwbat' in l:
+                    raise RuntimeError, lwbat_warning
+
+
         def sort(self):
-            self.checkHklin()
+            '''Actually sort the reflections.'''
+            
+            # if we have not specified > 1 hklin file via the add method,
+            # check that the setHklin method has been used.
+            if not self._hklin_files:
+                self.checkHklin()
+            
             self.checkHklout()
 
-            self.setTask('Sorting reflections %s -> %s' % \
-                         (os.path.split(self.getHklin())[-1],
-                          os.path.split(self.getHklout())[-1]))
-
+            if self._hklin_files:
+                task = ''
+                for hklin in self._hklin_files:
+                    task += ' %s' % hklin
+                self.setTask('Sorting reflections%s => %s' % \
+                             (task,
+                              os.path.split(self.getHklout())[-1]))
+            else:
+                self.setTask('Sorting reflections %s => %s' % \
+                             (os.path.split(self.getHklin())[-1],
+                              os.path.split(self.getHklout())[-1]))
+                
             self.start()
             self.input(self._sort_order)
+
+            # multiple mtz files get passed in on the command line...
+
+            if self._hklin_files:
+                for m in self._hklin_files:
+                    self.input(m)
 
             self.close_wait()
 
@@ -57,6 +100,9 @@ def Sortmtz(DriverType = None):
 
             # ccp4 specific errors
             self.check_ccp4_errors()
+
+            # sortmtz specific errors
+            self.check_sortmtz_errors()
 
             return self.get_ccp4_status()
 
@@ -70,29 +116,16 @@ if __name__ == '__main__':
     if not os.environ.has_key('XIA2CORE_ROOT'):
         raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
-    xia2core = os.environ['XIA2CORE_ROOT']
-
-    hklin = os.path.join(xia2core,
-                         'Data', 'Test', 'Mtz', '12287_1_E1.mtz')
-
-    s = Sortmtz()
-    s.setHklin(hklin)
-    s.setHklout('null.mtz')
-
-    try:
-        print s.sort()
-    except RuntimeError, e:
-        print 'Error => %s' % e
-    
-    if not os.environ.has_key('DPA_ROOT'):
-        raise RuntimeError, 'DPA_ROOT not defined'
-
     dpa = os.environ['DPA_ROOT']
 
-    hklin = os.path.join(dpa, 'Wrappers', 'CCP4', 'not-mtz.txt')
+    hklin1 = os.path.join(dpa,
+                          'Data', 'Test', 'Mtz', '12287_1_E1_1_10.mtz')
+    hklin2 = os.path.join(dpa,
+                          'Data', 'Test', 'Mtz', '12287_1_E1_11_20.mtz')
 
     s = Sortmtz()
-    s.setHklin(hklin)
+    s.addHklin(hklin1)
+    s.addHklin(hklin2)
     s.setHklout('null.mtz')
 
     try:
@@ -100,9 +133,9 @@ if __name__ == '__main__':
     except RuntimeError, e:
         print 'Error => %s' % e
 
-    
     s = Sortmtz()
-    s.setHklin('idontexist.mtz')
+    s.addHklin(hklin1)
+    s.addHklin(hklin1)
     s.setHklout('null.mtz')
 
     try:
@@ -110,5 +143,4 @@ if __name__ == '__main__':
     except RuntimeError, e:
         print 'Error => %s' % e
 
-    
     
