@@ -139,6 +139,7 @@ if __name__ == '__main__':
     # do a quick test
 
     import os
+    import sys
 
     if not os.environ.has_key('XIA2CORE_ROOT'):
         raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -148,6 +149,8 @@ if __name__ == '__main__':
     hklin = os.path.join(dpa,
                          'Data', 'Test', 'Mtz', '12287_1_E1_1_10.mtz')
 
+    if len(sys.argv) > 1:
+        hklin = sys.argv[1]
 
     m = Mtzdump()
     m.setHklin(hklin)

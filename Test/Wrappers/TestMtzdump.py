@@ -44,6 +44,28 @@ class TestMtzdump(unittest.TestCase):
         # and has spacegroup P43212
         self.assertEqual(m.getSpacegroup(), 'P43212')
 
+    def testnotmtzfile(self):
+        '''Test mtzdump with an input file in the wrong format.'''
+        dpa = os.environ['DPA_ROOT']
+        
+        hklin = os.path.join(dpa,
+                             'Data', 'Test', 'Mtz', 'not-mtz.txt')
+        
+        m = Mtzdump()
+        m.setHklin(hklin)
+        self.assertRaises(RuntimeError, m.dump)
+
+    def testnofile(self):
+        '''Test mtzdump with a missing input file.'''
+        dpa = os.environ['DPA_ROOT']
+        
+        hklin = os.path.join(dpa,
+                             'Data', 'Test', 'Mtz', 'nosuchfile.mtz')
+        
+        m = Mtzdump()
+        m.setHklin(hklin)
+        self.assertRaises(RuntimeError, m.dump)
+
 if __name__ == '__main__':
     unittest.main()
 
