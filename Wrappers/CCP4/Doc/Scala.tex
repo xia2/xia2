@@ -21,7 +21,11 @@ the following operations:
 \item{Apply a scaling model.}
 \item{Apply an error model.}
 \item{Add project, crystal, dataset information.}
+\item{Raise an error sensibly if the input data are not sorted; are
+not MTZ format; do not exist...}
 \end{itemize}
+
+Use case test data exists for this in the XIA core test data repository.
 
 \subsection{Simple 2: Just Merge}
 
@@ -34,6 +38,12 @@ the following operations:
 \item{Apply a resolution limit.}
 \item{Add project, crystal, dataset information.}
 \end{itemize}
+
+Tools to transform the input data from whatever the originating format is
+would be provided externally, and must be used.
+
+FIXME/to-do: Test data for this will need to be added. Make it so or generate
+the test data during the implementation of the XDS/XSCALE wrappers.
 
 \subsection{More Complex 1: Merging Data, 2 Passes}
 
@@ -64,6 +74,67 @@ merged together in the file, with sensible project/crystal/dataset information
 in advance of the processing.
 
 FIXME this needs to be specified.
+
+Test data for this exist within the XIA core source tree.
+
+\section{Implementation}
+
+\subsection{Notes}
+
+To achieve a decent structure to this I may be better off implementing a 
+system based around data sets rather than files. This will be OK because 
+any data coming from outside (XDS, SCALEPACK) will have to have been passed
+through COMBAT first and will hence have the appropriate information in.
+
+So, for instance
+
+{
+\tiny
+\begin{verbatim}
+addDataset(reflection_file,
+           batches = (start, end),     # inclusive
+           project = x,                # these should be set to
+           crystal = y,                # sensible values to help
+           dataset = z,                # the wrapper decide what
+           id = 'low_res_pass')        # is what
+
+=> run 1 (say)
+
+addError_model(id = 'low_res_pass',
+               sd_partial = {'Fac':1.0,
+                             'Add':0.02,
+                             'B':15},
+               sd_full = {'Fac':1.0,
+                          'Add':0.02,
+                          'B':15})
+\end{verbatim}
+}
+\noindent
+may be a sensible way to make this work. The calling program can then assign
+id's appropriately as well as the standard error correction parameters.
+
+In MAD scaling it's probably the case that all wavelengths should have the 
+same standard error parameters, so this is a fairly efficient way of 
+recycling this information.
+
+I'm not sure how likely it is that someone will want to scale multiple
+wavelengths and multiple sweeps per wavelength, but in this case I guess
+that anything is possible (there are JCSG examples like this - identify 
+them.)
+
+From the project/crystal/dataset information assumptions WILL be made about
+what should be done. If two datasets have the same project/crystal/dataset
+hierarchy then they should be merged together; if they have different 
+wavelengths recorded in the reflection files then an exception will need
+to be raised.
+
+Note further that it is not possible to input more than one reflection
+file into scala - in all cases above the data set reflection file
+should be the same - anything else will raise an exception. Perhaps this 
+aspect of the input should be relegated to the default setHklin() method.
+
+However this kind of input would be very helpful for CAD, where this kind
+of thing wants to happen (though this could be at a higher level.)
 
 \end{document}
 
