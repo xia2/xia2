@@ -1,0 +1,136 @@
+\documentclass[a4paper, 11pt]{article}
+\begin{document}
+\section{Introduction}
+
+Mtzdump is a CCP4 ``jiffy'' program for extracting MTZ header information
+into a human readable form. This class is designed to provide this 
+functionality at the Python interface level.
+
+\section{Use Cases}
+
+\subsection{Simple: Display the Contents}
+
+This will need to be able to:
+
+\begin{itemize}
+\item{Display the contents of an MTZ file.}
+\item{Raise appropriate errors if the input file is not MTZ.}
+\item{Ascertain the ``kind'' of mtz file.}
+\end{itemize}
+
+Mtzdump has output like:
+
+{
+\tiny
+\begin{verbatim}
+ * Title:
+
+ .
+
+ * Base dataset:
+
+        0 HKL_base
+          HKL_base
+          HKL_base
+
+ * Number of Datasets = 1
+
+ * Dataset ID, project/crystal/dataset names, cell dimensions, wavelength:
+
+        1 Unspecified
+          12287_1_E1
+          Unspecified
+             51.6515   51.6515  157.6742   90.0000   90.0000   90.0000
+             0.97966
+
+ * Number of Columns = 18
+
+ * Number of Reflections = 6199
+
+ * Missing value set to NaN in input mtz file
+
+ * Number of Batches = 10
+
+ * HISTORY for current MTZ file :
+
+ From MOSFLM run on  5/ 6/06 
+
+ * Column Labels :
+
+ H K L M/ISYM BATCH I SIGI IPR SIGIPR FRACTIONCALC XDET YDET ROT WIDTH LP MPART FLAG BGPKRATIOS
+
+ * Column Types :
+
+ H H H Y B J Q J Q R R R R R R I I R
+
+ * Associated datasets :
+
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+ * Cell Dimensions : (obsolete - refer to dataset cell dimensions above)
+
+   51.6515   51.6515  157.6742   90.0000   90.0000   90.0000 
+
+ *  Resolution Range :
+
+    0.00036    0.11111     (     52.559 -      3.000 A )
+
+ * Sort Order :
+
+      0     0     0     0     0
+
+ * Space group = 'P43212' (number     96)
+
+ 
+ 
+ 
+ Batch number: 
+      1         
+ Batch number: 
+      2                                                                        
+
+ .... etc ....
+
+
+\end{verbatim}
+}
+
+\noindent
+then a small amount of ``overall'' information from the whole of the 
+reflection file. This is run as ``mtzdump hklin foo.mtz''.
+
+\section{API}
+
+\subsection{Output Dictionary}
+
+The output dictionary will contain:
+
+\begin{itemize}
+\item{column\_labels - the column labels.}
+\item{column\_types - the (single character) column types.}
+\item{spacegroup - the spacegroup.}
+\item{datasets - a list of pname/xname/dname tokens.}
+\item{dataset\_info - a dictionary of unit cell and wavelengths associated
+with different datasets.}
+\end{itemize}
+
+So far the output dictionary looks like:
+
+{
+\tiny
+\begin{verbatim}
+{'dataset_info': {'Unspecified/12287_1_E1/Unspecified': 
+{'cell': [51.651499999999999, 51.651499999999999, 157.67420000000001, 
+          90.0, 90.0, 90.0], 
+ 'wavelength': 0.97965999999999998}}, 
+'column_labels': ['H', 'K', 'L', 'M/ISYM', 'BATCH', 'I', 'SIGI', 'IPR', 
+                  'SIGIPR', 'FRACTIONCALC', 'XDET', 'YDET', 'ROT', 'WIDTH', 
+                  'LP', 'MPART', 'FLAG', 'BGPKRATIOS'], 
+'datasets': ['Unspecified/12287_1_E1/Unspecified'], 
+'column_types': ['H', 'H', 'H', 'Y', 'B', 'J', 'Q', 'J', 
+                 'Q', 'R', 'R', 'R', 'R', 'R', 'R', 'I', 'I', 'R'], 
+'spacegroup': 'P43212'}
+\end{verbatim}
+}
+
+\end{document}
