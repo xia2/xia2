@@ -1,0 +1,28 @@
+\documentclass[a4paper, 11pt]{article}
+\begin{document}
+
+\section{Introduction}
+
+This describes a Python program wrapper for the CCP4 Program Scala
+(Evans, P ``Data Reduction'' in Proceedings of 1993 CCP4 Study Weekend.)
+This wrapper provides most of the commonly used functionality implemented
+in Scala.
+
+\section{Use Cases}
+
+\subsection{Simple: Scale and Merge Data}
+
+The simplest implementation of the Scala wrapper is to simply take data 
+from Mosflm and merge to a ``standard'' mtz file. This will need to perform
+the following operations:
+
+\begin{itemize}
+\item{Apply a resolution limit.}
+\item{Apply a scaling model.}
+\item{Apply an error model.}
+\item{Add project, crystal, dataset information.}
+\end{itemize}
+
+
+\end{document}
+
