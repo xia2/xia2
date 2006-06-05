@@ -95,15 +95,25 @@ def Sortmtz(DriverType = None):
 
             self.close_wait()
 
-            # general errors - SEGV and the like
-            self.check_for_errors()
+            try:
 
-            # ccp4 specific errors
-            self.check_ccp4_errors()
+                # general errors - SEGV and the like
+                self.check_for_errors()
+                
+                # ccp4 specific errors
+                self.check_ccp4_errors()
+                
+                # sortmtz specific errors
+                self.check_sortmtz_errors()
 
-            # sortmtz specific errors
-            self.check_sortmtz_errors()
-
+            except RuntimeError, e:
+                # something went wrong; remove the output file
+                try:
+                    os.remove(self.getHklin())
+                except:
+                    pass
+                raise e
+                
             return self.get_ccp4_status()
 
     return SortmtzWrapper()
