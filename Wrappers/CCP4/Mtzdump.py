@@ -13,6 +13,7 @@
 
 import os
 import sys
+import copy
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -102,12 +103,30 @@ def Mtzdump(DriverType = None):
                     self._header['dataset_info'][dataset_id
                                                  ]['cell'] = cell
                     
-
-            print self._header
-                    
             # status token has a spare "of mtzdump" to get rid of
             return self.get_ccp4_status().replace('of mtzdump', '').strip()
+
+        def getColumns(self):
+            '''Get a list of the columns and their types as tuples
+            (label, type) in a list.'''
+
+            results = []
+            for i in range(len(self._header['column_labels'])):
+                results.append((self._header['column_labels'][i],
+                                self._header['column_types'][i]))
+            return results
                 
+        def getDatasets(self):
+            '''Return a list of available datasets.'''
+            return self._header['datasets']
+
+        def getDataset_info(self, dataset):
+            '''Get the cell, spacegroup & wavelength associated with
+            a dataset. The dataset is specified by pname/xname/dname.'''
+            
+            result = copy.deepcopy(self._header['dataset_info'][dataset])
+            result['spacegroup'] = self._header['spacegroup']
+            return result
 
     return MtzdumpWrapper()
 
@@ -130,4 +149,19 @@ if __name__ == '__main__':
     m.setHklin(hklin)
     print m.dump()
 
+    columns = m.getColumns()
+
+    for c in columns:
+        print '%s (%s)' % c
+
+    datasets = m.getDatasets()
     
+    for d in datasets:
+        print '%s' % d
+        info = m.getDataset_info(d)
+        print '%s (%6.4fA) %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+              (info['spacegroup'], info['wavelength'],
+               info['cell'][0], info['cell'][1], info['cell'][2],
+               info['cell'][1], info['cell'][4], info['cell'][5])
+
+
