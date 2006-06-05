@@ -10,7 +10,7 @@ in Scala.
 
 \section{Use Cases}
 
-\subsection{Simple: Scale and Merge Data}
+\subsection{Simple 1: Scale and Merge Data}
 
 The simplest implementation of the Scala wrapper is to simply take data 
 from Mosflm and merge to a ``standard'' mtz file. This will need to perform
@@ -23,6 +23,47 @@ the following operations:
 \item{Add project, crystal, dataset information.}
 \end{itemize}
 
+\subsection{Simple 2: Just Merge}
+
+This implementation would take data previously scaled by an outside program
+(for instance XSCALE; SCALEPACK) and merge the reflections to provide
+scaling statistics and a merged reflection file. This will need to provide
+the following operations:
+
+\begin{itemize}
+\item{Apply a resolution limit.}
+\item{Add project, crystal, dataset information.}
+\end{itemize}
+
+\subsection{More Complex 1: Merging Data, 2 Passes}
+
+Two datasets processed with Mosflm, appropriately REBATCHED and SORTED. The
+resulting MTZ file will need to be scaled and merged appropriately to give
+reasonable merging statistics from the two or more runs. This will require:
+
+\begin{itemize}
+\item{Apply resolution limits.}
+\item{Apply a scaling model.}
+\item{Apply error models per run.}
+\item{Add project, crystal, dataset information.}
+\end{itemize}
+
+The error models are best decided by scaling the data separately then 
+recycling the parameters.
+
+\subsection{More Complex 2: Scaling MAD Data}
+
+More than one data sets collected from the same crystal but at different 
+wavelengths. The data will need to be scaled separately but used together
+for building the absorption model etc. This is much more complex.
+
+This will produce a number of output reflection files.
+
+This will further need the reflections to be appropriately sorted and 
+merged together in the file, with sensible project/crystal/dataset information
+in advance of the processing.
+
+FIXME this needs to be specified.
 
 \end{document}
 
