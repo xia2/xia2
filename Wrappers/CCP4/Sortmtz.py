@@ -109,7 +109,7 @@ def Sortmtz(DriverType = None):
             except RuntimeError, e:
                 # something went wrong; remove the output file
                 try:
-                    os.remove(self.getHklin())
+                    os.remove(self.getHklout())
                 except:
                     pass
                 raise e
