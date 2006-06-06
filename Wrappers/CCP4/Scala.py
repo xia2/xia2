@@ -11,6 +11,16 @@
 # Merging of unmerged reflection data.
 # Characterisazion of data from scaling statistics.
 # 
+# Versions:
+# 
+# Since this will be a complex interface, the first stage is to satisfy the
+# most simple scaling requirements, which is to say taking exactly one
+# dataset from Mosflm via Sortmtz and scaling this. This will produce
+# the appropriate statistics. This corresponds to Simple 1 in the use case
+# documentation.
+# 
+# 
+# 
 
 import os
 import sys
