@@ -77,6 +77,5 @@ def Scala(DriverType = None):
             self._sd_parameters = { } 
             self._project_crystal_dataset = { }
             self._runs = []
-            
 
     return ScalaWrapper()

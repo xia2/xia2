@@ -45,7 +45,8 @@ would be provided externally, and must be used.
 FIXME/to-do: Test data for this will need to be added. Make it so or generate
 the test data during the implementation of the XDS/XSCALE wrappers.
 
-\subsection{More Complex 1: Merging Data, 2 Passes}
+\subsection{More Complex 1: Merging Data, 
+2 Passes}
 
 Two datasets processed with Mosflm, appropriately REBATCHED and SORTED. The
 resulting MTZ file will need to be scaled and merged appropriately to give
@@ -91,7 +92,8 @@ So, for instance
 {
 \tiny
 \begin{verbatim}
-addDataset(reflection_file,
+addDataset(reflection_file,            # perhaps this should be part of
+                                       # the setHklin() method?
            batches = (start, end),     # inclusive
            project = x,                # these should be set to
            crystal = y,                # sensible values to help
@@ -121,6 +123,8 @@ I'm not sure how likely it is that someone will want to scale multiple
 wavelengths and multiple sweeps per wavelength, but in this case I guess
 that anything is possible (there are JCSG examples like this - identify 
 them.)
+
+To-do: ID some interesting JCSG examples for this.
 
 From the project/crystal/dataset information assumptions WILL be made about
 what should be done. If two datasets have the same project/crystal/dataset
