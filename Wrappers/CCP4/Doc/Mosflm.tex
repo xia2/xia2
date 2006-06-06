@@ -4,5 +4,28 @@
 \section{Introduction}
 
 This document describes the use cases and API's for the program Mosflm.
+Mosflm is an unusual case, because there are number of significant 
+functions it performs - each of these will have to be a well identified 
+use case.
+
+\subsection{Functionality}
+
+The program mosflm has the following key pieces of functionality which need 
+to be exposed \emph{via} the API:
+
+\begin{itemize}
+\item{Autoindexing of diffraction patterns.}
+\item{Estimation of mosaic spread.}
+\item{Refinement of unit cell.}
+\item{Integration of diffraction patterns.}
+\item{Calculation of data collection strategies (deprecated.)}
+\end{itemize}
+
+\subsection{Input}
+
+Each of these tasks requires a certain amount of common input - it can only 
+make sense to standardise on the API for this. Of particular importance
+are the content of the image header and the frames to use in processing.
+
 
 \end{document}
