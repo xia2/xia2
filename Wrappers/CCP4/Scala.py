@@ -426,6 +426,32 @@ def Scala(DriverType = None):
             return self.get_ccp4_status()
             
 
+        def get_summary(self):
+            '''Get a summary of the data.'''
+
+            # FIXME this will probably have to be improved following
+            # the updates beyond UC1.
+
+            output = self.get_all_output()
+            length = len(output)
+
+            summary = { } 
+
+            for i in range(length - 100, length):
+                line = output[i]
+                if 'Summary data for' in line:
+                    i += 1
+                    line = output[i]
+                    while not '=====' in line:
+                        if len(line) > 40:
+                            key = line[:40].strip()
+                            if key:
+                                summary[key] = line[40:].split()
+                        i += 1
+                        line = output[i]
+
+            return summary
+
     return ScalaWrapper()
 
 if __name__ == '__main__':
@@ -435,14 +461,12 @@ if __name__ == '__main__':
 
     s = Scala()
     
-    hklin_unsorted = os.path.join(os.environ['DPA_ROOT'],
-                                  'Data', 'Test', 'Mtz', '12287_1_E1_1_10.mtz')
     hklin = os.path.join(os.environ['XIA2CORE_ROOT'],
                          'Python', 'UnitTest', '12287_1_E1_sorted.mtz')
 
     hklout = '12287_1_E1_scaled.mtz'
 
-    s.setHklin(hklin_unsorted)
+    s.setHklin(hklin)
     s.setHklout(hklout)
 
     s.setResolution(1.65)
@@ -462,4 +486,13 @@ if __name__ == '__main__':
 
     s.write_log_file('scala.log')
     
+    results = s.parse_ccp4_loggraph()
 
+    print 'The following loggraphs were found'
+    for k in results.keys():
+        print k
+
+    summary = s.get_summary()
+
+    for k in summary.keys():
+        print k, summary[k]
