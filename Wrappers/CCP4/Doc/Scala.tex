@@ -27,6 +27,27 @@ not MTZ format; do not exist...}
 
 Use case test data exists for this in the XIA core test data repository.
 
+This simple version will do something like:
+
+{
+\tiny
+\begin{verbatim}
+#!/bin/bash
+scala DNA scala.stf \
+HKLIN 12287_1_E1_scaled_sorted.mtz \
+HKLOUT 12287_1_E1_scaled.mtz << eof
+USECWD
+NAME PROJECT default CRYSTAL default DATASET default
+run 1 all
+sdcorrection full 2.000000 0.095000 partial 2.000000 0.085000
+resolution high 1.53937314091
+anomalous on
+cycles 20
+scales rotation spacing 5.0 secondary 6.0 bfactor on tails
+eof
+\end{verbatim}
+}
+
 \subsection{Simple 2: Just Merge}
 
 This implementation would take data previously scaled by an outside program
@@ -44,6 +65,40 @@ would be provided externally, and must be used.
 
 FIXME/to-do: Test data for this will need to be added. Make it so or generate
 the test data during the implementation of the XDS/XSCALE wrappers.
+
+This will do something like:
+
+{
+\tiny
+\begin{verbatim}
+#!/bin/bash
+combat hklin SCALED.HKL hklout SCALED.HKL.tmp1 << eof
+scale 0.02
+input XDSASCII
+pname default
+dname xds
+eof
+
+#!/bin/bash
+sortmtz hklin SCALED.HKL.tmp1 \
+hklout 12287_1_E1_scaled_scala.mtz.tmp2 << eof
+H K L M/ISYM BATCH
+eof
+
+#!/bin/bash
+scala hklin 12287_1_E1_scaled_scala.mtz.tmp2 \
+hklout 12287_1_E1_scaled_scala.mtz \
+dnaout xds_scala.stf << eof
+run 1 all
+scales constant
+initial unity
+anomalous on
+eof
+\end{verbatim}
+}
+
+This is probably best implemented as a separate method - e.g. s.merge() in 
+place of s.scale().
 
 \subsection{More Complex 1: Merging Data, 
 2 Passes}
