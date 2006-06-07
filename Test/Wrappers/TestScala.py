@@ -1,0 +1,155 @@
+#!/usr/bin/env python
+# TestScala.py
+# Maintained by G.Winter
+# 6th June 2006
+# 
+# Unit tests to ensure that the Scala wrapper is behaving
+# properly.
+# 
+# 
+
+import os, sys
+
+if not os.environ.has_key('DPA_ROOT'):
+    raise RuntimeError, 'DPA_ROOT not defined'
+if not os.environ.has_key('XIA2CORE_ROOT'):
+    raise RuntimeError, 'XIA2CORE_ROOT not defined'
+
+sys.path.append(os.path.join(os.environ['DPA_ROOT']))
+
+from Wrappers.CCP4.Scala import Scala
+import unittest
+
+class TestScala(unittest.TestCase):
+
+    def setUp(self):
+        pass
+
+    def testdefault(self):
+        '''Test scala with the data from XIA core unit tests.'''
+        
+        hklin = os.path.join(os.environ['XIA2CORE_ROOT'],
+                             'Python', 'UnitTest', '12287_1_E1_sorted.mtz')
+        
+        s = Scala()
+        
+        s.setHklin(hklin)
+
+        # write this to scratch 
+        s.setHklout(os.path.join(os.environ['CCP4_SCR'],
+                                 'temp-test-scala.mtz'))
+
+        s.setResolution(1.65)
+        
+        # switch on all of the options I want
+        s.setAnomalous()
+        s.setTails()
+        s.setBfactor()
+        
+        s.setScaling_parameters('rotation')
+        
+        # this is in the order fac, add, B
+        s.addSd_correction('full', 1.0, 0.02, 15.0)
+        s.addSd_correction('partial', 1.0, 0.00, 15.0)
+        
+        status = s.scale()
+
+        self.assertEqual(status, 'Normal termination')
+        
+        return
+
+    def testnohklin(self):
+        '''Test scala with the data from XIA core unit tests.'''
+        
+        hklin = 'nosuchfile'
+        
+        s = Scala()
+        
+        s.setHklin(hklin)
+
+        # write this to scratch 
+        s.setHklout(os.path.join(os.environ['CCP4_SCR'],
+                                 'temp-test-scala.mtz'))
+
+        s.setResolution(1.65)
+        
+        # switch on all of the options I want
+        s.setAnomalous()
+        s.setTails()
+        s.setBfactor()
+        
+        s.setScaling_parameters('rotation')
+        
+        # this is in the order fac, add, B
+        s.addSd_correction('full', 1.0, 0.02, 15.0)
+        s.addSd_correction('partial', 1.0, 0.00, 15.0)
+
+        self.assertRaises(RuntimeError, s.scale)
+
+        return
+
+    def testnotmtzfile(self):
+        '''Test scala with the data from XIA core unit tests.'''
+        
+        hklin = os.path.join(os.environ['DPA_ROOT'],
+                             'Data', 'Test', 'Mtz', 'not-mtz.txt')
+        
+        s = Scala()
+        
+        s.setHklin(hklin)
+
+        # write this to scratch 
+        s.setHklout(os.path.join(os.environ['CCP4_SCR'],
+                                 'temp-test-scala.mtz'))
+
+        s.setResolution(1.65)
+        
+        # switch on all of the options I want
+        s.setAnomalous()
+        s.setTails()
+        s.setBfactor()
+        
+        s.setScaling_parameters('rotation')
+        
+        # this is in the order fac, add, B
+        s.addSd_correction('full', 1.0, 0.02, 15.0)
+        s.addSd_correction('partial', 1.0, 0.00, 15.0)
+
+        self.assertRaises(RuntimeError, s.scale)
+
+        return
+
+    def testnotsorted(self):
+        '''Test scala with the data from XIA core unit tests.'''
+        
+        hklin = os.path.join(os.environ['XIA2CORE_ROOT'],
+                             'Data', 'Test', 'Mtz', '12287_1_E1.mtz')
+        
+        s = Scala()
+        
+        s.setHklin(hklin)
+
+        # write this to scratch 
+        s.setHklout(os.path.join(os.environ['CCP4_SCR'],
+                                 'temp-test-scala.mtz'))
+
+        s.setResolution(1.65)
+        
+        # switch on all of the options I want
+        s.setAnomalous()
+        s.setTails()
+        s.setBfactor()
+        
+        s.setScaling_parameters('rotation')
+        
+        # this is in the order fac, add, B
+        s.addSd_correction('full', 1.0, 0.02, 15.0)
+        s.addSd_correction('partial', 1.0, 0.00, 15.0)
+
+        self.assertRaises(RuntimeError, s.scale)
+
+        return
+
+if __name__ == '__main__':
+    unittest.main()
+

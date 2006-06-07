@@ -220,6 +220,12 @@ def Scala(DriverType = None):
             '''Check for Scala specific errors. Raise RuntimeError if
             error is found.'''
 
+            output = self.get_all_output()
+
+            for line in output:
+                if 'File must be sorted' in line:
+                    raise RuntimeError, 'hklin not sorted'
+
             return
 
         def merge(self):
@@ -428,13 +434,15 @@ if __name__ == '__main__':
     # XIACore having been run...
 
     s = Scala()
-
+    
+    hklin_unsorted = os.path.join(os.environ['DPA_ROOT'],
+                                  'Data', 'Test', 'Mtz', '12287_1_E1_1_10.mtz')
     hklin = os.path.join(os.environ['XIA2CORE_ROOT'],
                          'Python', 'UnitTest', '12287_1_E1_sorted.mtz')
 
     hklout = '12287_1_E1_scaled.mtz'
 
-    s.setHklin(hklin)
+    s.setHklin(hklin_unsorted)
     s.setHklout(hklout)
 
     s.setResolution(1.65)
@@ -454,3 +462,4 @@ if __name__ == '__main__':
 
     s.write_log_file('scala.log')
     
+
