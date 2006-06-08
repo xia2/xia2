@@ -1,0 +1,57 @@
+\documentclass[a4paper, 11pt]{article}
+\begin{document}
+\section{Introduction}
+
+This document describes what is needed to make a wrapper for the CCP4 
+program reindex. This is used to map reflection indices from one spacegroup,
+most useful when an integrated data set is found to be indexed in the wrong
+pointgroup or setting.
+
+\subsection{Background}
+
+The most likely case where this would be used is in response to a run 
+of pointless. The possible cases for this are:
+
+\begin{itemize}
+\item{Solitary data set - indexing to the correct pointgroup.}
+\item{Matching a moving data set to a reference set.}
+\item{Correctly assigning the spacegroup in the file header.}
+\end{itemize}
+
+Combinations of these are also likely. An example of a reindex command script
+is:
+
+{
+\tiny
+\begin{verbatim}
+#!/bin/bash
+reindex HKLIN 12287_1_E1_.mtz HKLOUT 12287_1_E1_scaled_reindex.mtz << eof
+SYMMETRY 'P 4 2 2'
+REINDEX h, k, l
+eof
+\end{verbatim}
+}
+
+The correct symmetry and reindexing operator will come from pointles, though
+by specifying a HKLOUT file it is possible to simply use pointless for this.
+However, this may be useful when a user has provided the ``correct'' spacegroup
+or something.
+
+\section{Use Cases}
+
+\subsection{Use Case 1: Reindexing to a provided spacegroup}
+
+This presumes that you simply want to change the spacegroup label in the 
+reflection file but not change the reflection indices. This is correct for
+changing from tetragonal spacegroup P4 to say P422. The JCSG dataset 1VPJ
+illustrates this well.
+
+\subsection{Use Case 2: Reindexing with a provided reindexing operator}
+
+If you have a spacegroup like P23 where alternative indexings are possible,
+it may be necessary to perform the reindexing to ensure that the resulting
+reflections match up correctly. One of Ed Mitchell's data sets illustrates 
+this well - whichever one is cubic.
+
+
+\end{document}
