@@ -79,13 +79,11 @@ pname default
 dname xds
 eof
 
-#!/bin/bash
 sortmtz hklin SCALED.HKL.tmp1 \
 hklout 12287_1_E1_scaled_scala.mtz.tmp2 << eof
 H K L M/ISYM BATCH
 eof
 
-#!/bin/bash
 scala hklin 12287_1_E1_scaled_scala.mtz.tmp2 \
 hklout 12287_1_E1_scaled_scala.mtz \
 dnaout xds_scala.stf << eof

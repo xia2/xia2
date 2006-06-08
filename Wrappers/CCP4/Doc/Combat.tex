@@ -1,0 +1,28 @@
+\documentclass[a4paper, 11pt]{article}
+\begin{document}
+\section{Introduction}
+
+This document describes what will be needed of a wrapper for the CCP4
+program combat.
+
+This is a simple example of how to use combat to take scaled data from 
+XSCALE and pass it to Scala to merge.
+
+
+{
+\tiny
+\begin{verbatim}
+#!/bin/bash
+combat hklin SCALED.HKL hklout SCALED.HKL.tmp1 << eof
+
+# this prevents large negative reflections which will break
+# sortmtz
+scales 0.02
+input XDSASCII
+pname default
+dname xds
+eof
+\end{verbatim}
+}
+
+\end{document}

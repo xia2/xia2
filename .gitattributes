@@ -1,5 +1,6 @@
 * text=auto !eol
 Modules/Doc/Indexer.pdf -text
+Wrappers/CCP4/Doc/Combat.pdf -text
 Wrappers/CCP4/Doc/General.pdf -text
 Wrappers/CCP4/Doc/Mosflm.pdf -text
 Wrappers/CCP4/Doc/Mtzdump.pdf -text
