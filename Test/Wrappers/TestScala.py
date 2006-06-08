@@ -26,7 +26,8 @@ class TestScala(unittest.TestCase):
         pass
 
     def testdefault(self):
-        '''Test scala with the data from XIA core unit tests.'''
+        '''Test scala with the data from XIA core unit tests. This version
+        tests that simple things to work.'''
         
         hklin = os.path.join(os.environ['XIA2CORE_ROOT'],
                              'Python', 'UnitTest', '12287_1_E1_sorted.mtz')
@@ -59,7 +60,8 @@ class TestScala(unittest.TestCase):
         return
 
     def testnohklin(self):
-        '''Test scala with the data from XIA core unit tests.'''
+        '''Test scala with the data from XIA core unit tests. This example
+        checks that the system fails when passed a false input file.'''
         
         hklin = 'nosuchfile'
         
@@ -89,7 +91,8 @@ class TestScala(unittest.TestCase):
         return
 
     def testnotmtzfile(self):
-        '''Test scala with the data from XIA core unit tests.'''
+        '''Test scala with the data from XIA core unit tests. This example
+        tests what happens when the input file is not mtz format.'''
         
         hklin = os.path.join(os.environ['DPA_ROOT'],
                              'Data', 'Test', 'Mtz', 'not-mtz.txt')
@@ -120,7 +123,8 @@ class TestScala(unittest.TestCase):
         return
 
     def testnotsorted(self):
-        '''Test scala with the data from XIA core unit tests.'''
+        '''Test scala with the data from XIA core unit tests. This example
+        tests what happens when the input file is not sorted.'''
         
         hklin = os.path.join(os.environ['XIA2CORE_ROOT'],
                              'Data', 'Test', 'Mtz', '12287_1_E1.mtz')
