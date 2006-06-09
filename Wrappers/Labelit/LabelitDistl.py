@@ -107,8 +107,6 @@ def LabelitDistl(DriverType = None):
                 if l[:3] == ['Method', '2', 'Resolution']:
                     self._statistics[current_image]['resol_two'] = float(l[-1])
                 
-                                                                   
-
             return 'ok'
 
         # things to get results from the indexing
