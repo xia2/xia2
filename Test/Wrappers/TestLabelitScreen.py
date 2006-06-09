@@ -61,6 +61,24 @@ class TestLabelitScreen(unittest.TestCase):
 
         return
 
+    def testsetfalsebeam(self):
+        '''A test to see if the indexing works when it should.'''
+
+        ls = LabelitScreen()
+
+        directory = os.path.join(os.environ['DPA_ROOT'],
+                                 'Data', 'Test', 'Images')
+
+        ls.addImage(os.path.join(directory, '12287_1_E1_001.img'))
+        ls.addImage(os.path.join(directory, '12287_1_E1_090.img'))
+
+        # set the beam to something totally false
+        ls.setBeam(90.0, 90.0)
+
+        self.assertRaises(RuntimeError, ls.index)
+
+        return
+
 
 if __name__ == '__main__':
     unittest.main()

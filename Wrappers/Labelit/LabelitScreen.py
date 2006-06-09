@@ -49,6 +49,10 @@ def LabelitScreen(DriverType = None):
             self._distance = 0.0
             self._wavelength = 0.0
 
+            # control over the behaviour
+
+            self._refine_beam = True
+
             self._solutions = { }
             self._refined_beam = (0.0, 0.0)
             self._refined_distance = 0.0
@@ -76,6 +80,46 @@ def LabelitScreen(DriverType = None):
 
             return
 
+        def setRefine_beam(self, refine_beam):
+            self._refine_beam = refine_beam
+            
+            return
+
+        def write_dataset_preferences(self):
+            '''Write the dataset_preferences.py file in the working
+            directory - this will include the beam centres etc.'''
+
+            out = open(os.path.join(self.getWorking_directory(),
+                                    'dataset_preferences.py'), 'w')
+
+            if self._distance > 0.0:
+                out.write('autoindex_override_distance = %f\n' %
+                          self._distance)
+            if self._wavelength > 0.0:
+                out.write('autoindex_override_wavelength = %f\n' %
+                          self._wavelength)
+            if self._beam[0] > 0.0 and self._beam[1] > 0.0:
+                out.write('autoindex_override_beam = (%f, %f)\n' % \
+                          self._beam)
+            if self._refine_beam is False:
+                out.write('beam_search_scope = 0.0\n')
+
+            out.close()
+
+            return
+
+        def check_labelit_errors(self):
+            '''Check through the standard output for error reports.'''
+
+            output = self.get_all_output()
+
+            for o in output:
+                if 'No_Indexing_Solution' in o:
+                    raise RuntimeError, 'indexing failed: %s' % \
+                          o.split(':')
+
+            return
+
         def index(self):
             '''Actually index the diffraction pattern. Note well that
             this is not going to compute the matrix...'''
@@ -97,11 +141,16 @@ def LabelitScreen(DriverType = None):
             for i in self._images:
                 self.addCommand_line(i)
 
+            self.write_dataset_preferences()
+
             self.start()
             self.close_wait()
 
             # check for errors
             self.check_for_errors()
+
+            # check for labelit errors
+            self.check_labelit_errors()
 
             # ok now we're done, let's look through for some useful stuff
 
