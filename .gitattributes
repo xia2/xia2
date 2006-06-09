@@ -1,5 +1,6 @@
 * text=auto !eol
 Applications/Doc/xia2scan.pdf -text
+Experts/Doc/FindImages.pdf -text
 Modules/Doc/Indexer.pdf -text
 Wrappers/CCP4/Doc/Combat.pdf -text
 Wrappers/CCP4/Doc/General.pdf -text

@@ -5,7 +5,8 @@
 
 The application \verb|xia2scan| is designed to scan through a list of 
 provided images and print information about the ``quality'' of the 
-diffraction on the images.
+diffraction on the images. This will end up as an executable
+\verb|xia2-scan(=> .sh/.bat)| and a python program xia2scan.py.
 
 \subsection{Appication}
 
@@ -23,10 +24,29 @@ by printing information about the strength of diffraction in each image.
 
 This uses the wrappers for labelit.screen and labelit.stats\_distl.
 
+\section{Dependencies}
+
+This application will depend on having access to a user provided beam centre
+(by implication then an input argument / command line handler) and also 
+diffraction image name parsing to allow searching of a directory for
+matching images.
+
 \section{Use Cases}
 
 \subsection{UC 1: Humidifier}
 
+Requires:
+
+\begin{itemize}
+\item{The correct beam position (for indexing from single images.)}
+\item{The images.}
+\end{itemize}
+
+Provides:
+
+\begin{itemize}
+\item{The statistics for each image in the list.}
+\end{itemize}
 
 \subsection{UC 2: Indexing Image Selection}
 
