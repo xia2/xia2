@@ -1,4 +1,5 @@
 * text=auto !eol
+Applications/Doc/xia2scan.pdf -text
 Modules/Doc/Indexer.pdf -text
 Wrappers/CCP4/Doc/Combat.pdf -text
 Wrappers/CCP4/Doc/General.pdf -text
@@ -9,3 +10,4 @@ Wrappers/CCP4/Doc/Scala.pdf -text
 Wrappers/CCP4/Doc/Sortmtz.pdf -text
 Wrappers/Labelit/Doc/LabelitDistl.pdf -text
 Wrappers/Labelit/Doc/LabelitScreen.pdf -text
+Wrappers/Labelit/Doc/LabelitStats_distl.pdf -text
