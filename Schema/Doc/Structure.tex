@@ -91,6 +91,61 @@ Cool. It also means that the schema for the objects is
 of relatively little interest, though it would be handy to have some 
 lightweight objects for handling this kind of information.
 
+\subsection{Hierarchy}
 
+This principle really works when ideas of hierarchy are included. For instance,
+the first pass at processing the first data set (by definition the reference)
+will result in one unit cell. This will then be set as the ``globally 
+correct'' one until more information is available. When another set at this
+wavelength is processed, a weighted value for the unit cell may be derived
+from both sets. When combining all of the data, an overall unit cell may be 
+computed from all of the available data sets. 
+
+This means, by implication, that each data processing ``run'' will have
+an associated local instance of a global data store. When it comes to 
+merging or combining data sets, a further data store will be necessary.
+Does this mean that each stage is considered as it's own project, resulting
+in an idea that the global project data repository, referred to above, is
+some kind of weighted average of all of the local data repositories. Think
+of this like a tree-code.
+
+\section{Items of Interest}
+
+\subsection{User Input}
+
+At the beginning, all that is known is what the user has passed in on the 
+command line. From this a small number of simple things can be derived. 
+In the example above, an example is the relationship between datasets and
+f values - e.g. wavelength for an image is read from the header. This is
+then used to associate different sweeps collected at the same wavelength 
+and so on...
+
+So - an object is needed to hold the information passed in by the user.
+Frameworks are then needed to communicate this information to the constructors
+as described above, perhaps as part of a dictionary which the constructor
+can interrogate as necessary.
+
+The following items will be minimally necessary to make this work:
+
+\begin{itemize}
+\item{Frames to use, defined by a frame from the set.}
+\item{?Correct beam centre.}
+\item{?Wavelength, f', f'' values if available.}
+\end{itemize}
+
+\subsection{Learning Things}
+
+From the basic information derived from the command line, some extra 
+information can be learned. For example:
+
+\begin{itemize}
+\item{Lattice, unit cell.}
+\item{Spacegroup?}
+\item{Resolution.}
+\end{itemize}
+
+At any stage any derived information is a hypothesis. There will be degrees
+of reliability associated with each of these, and when asked for the most 
+recent (by definition most reliable) instance should be returned.
 
 \end{document}
