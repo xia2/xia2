@@ -91,6 +91,9 @@ Cool. It also means that the schema for the objects is
 of relatively little interest, though it would be handy to have some 
 lightweight objects for handling this kind of information.
 
+Basic idea here is everything works by lazy evaluation - only compute the
+result when asked for it, not when you're asked to compute it.
+
 \subsection{Hierarchy}
 
 This principle really works when ideas of hierarchy are included. For instance,
@@ -147,5 +150,16 @@ information can be learned. For example:
 At any stage any derived information is a hypothesis. There will be degrees
 of reliability associated with each of these, and when asked for the most 
 recent (by definition most reliable) instance should be returned.
+
+\section{Defined Objects}
+
+\subsection{Object}
+
+The class Object defines some really basic stuff, and should be inherited 
+from by all objects. In particular it defines an identity which will enable
+sorting by creation epoch. Since all data will be defined at construction 
+time, and identities are immutable, this \emph{should} be safe!
+
+
 
 \end{document}
