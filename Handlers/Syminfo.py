@@ -108,26 +108,33 @@ class _Syminfo(Object):
         '''Return the syminfo for spacegroup number.'''
         return copy.deepcopy(self._symop[spacegroup_number])
 
-    def getLattice(self, spacegroup_name):
+    def getLattice(self, name):
         '''Get the lattice for a named spacegroup.'''
+
+        # check that this isn't already a lattice name
+        if name in ['aP', 'mP', 'mC', 'oP', 'oC', 'oI',
+                    'oF', 'tP', 'tI', 'hR', 'hP', 'cP',
+                    'cI', 'cF']:
+            return name
+
 
         # introspect on the input to figure out what to return
 
-        if type(spacegroup_name) == type(1):
-            return self.getSyminfo(spacegroup_name)['lattice']
+        if type(name) == type(1):
+            return self.getSyminfo(name)['lattice']
 
         # check that this isn't a string of an integer - if it is
         # repeat above...
 
-        if self._int_re.match(spacegroup_name):
-            spacegroup_name = int(spacegroup_name)
-            return self.getSyminfo(spacegroup_name)['lattice']
+        if self._int_re.match(name):
+            name = int(name)
+            return self.getSyminfo(name)['lattice']
 
         # ok this should be a "pure" spacegroup string
         
-        if self._spacegroup_long_to_short.has_key(spacegroup_name):
-            spacegroup_name = self._spacegroup_long_to_short[spacegroup_name]
-        return self._spacegroup_name_to_lattice[spacegroup_name]
+        if self._spacegroup_long_to_short.has_key(name):
+            name = self._spacegroup_long_to_short[name]
+        return self._spacegroup_name_to_lattice[name]
 
     def getSpacegroup_numbers(self):
         '''Get a list of all spacegroup numbers.'''

@@ -33,8 +33,9 @@ class Indexer:
         raise RuntimeError, 'this method must be overloaded'
 
     def _setLattice_info(self, lattice_info):
-        if lattice_info.__class__ != 'LatticeInfo':
+        if lattice_info.__class__.__name__ != 'LatticeInfo':
             raise RuntimeError, 'result not LatticeInfo'
+                  
         self._lattice_info = lattice_info
         return
         
@@ -44,13 +45,13 @@ class Indexer:
         # something.
 
         if self._lattice_info and self._lattice_info > self._dataset:
-            if self._lattice_info.__class__ != 'LatticeInfo':
+            if self._lattice_info.__class__.__name__ != 'LatticeInfo':
                 raise RuntimeError, 'result not LatticeInfo'
             return self._lattice_info
 
         else:
             self._index()
-            if self._lattice_info.__class__ != 'LatticeInfo':
+            if self._lattice_info.__class__.__name__ != 'LatticeInfo':
                 raise RuntimeError, 'result not LatticeInfo'
             return self._lattice_info
 
@@ -58,5 +59,4 @@ class Indexer:
 
 if __name__ == '__main__':
     # then do something interesting...
-
-    
+    pass

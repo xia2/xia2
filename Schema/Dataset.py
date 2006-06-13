@@ -71,6 +71,9 @@ class Dataset(Object):
             
         else:
             # initialise from the first image in the set
+
+            self._beam = (0.0, 0.0)
+            
             pass
 
         if fp_fpp:
