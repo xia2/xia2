@@ -52,6 +52,11 @@ class Object:
         # allow locking - this will be useful if threading is enabled.
         self._lock = thread.allocate_lock()
 
+        # and implement a list to handle all of the "thoughts" that this
+        # object has...
+
+        self._stdout = []
+
         return
 
     def __str__(self):
@@ -114,6 +119,12 @@ class Object:
 
         return self._lock.locked()
 
+    def write(self, string):
+        '''Record a thought.'''
+
+        self._stdout.append(string)
+        return
+
 if __name__ == '__main__':
 
     o1 = Object()
@@ -123,3 +134,5 @@ if __name__ == '__main__':
         raise RuntimeError, 'these should not be the same'
 
     ObjectTracker.list()
+
+    

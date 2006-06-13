@@ -66,6 +66,8 @@ class Dataset(Object):
                 raise RuntimeError, 'beam should be a 2-tuple'
             
             self._beam = (beam[0], beam[1])
+
+            self.write('Set beam to (%f, %f) from input' % self._beam)
             
         else:
             # initialise from the first image in the set
