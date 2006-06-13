@@ -23,6 +23,7 @@
 
 import os
 import sys
+import copy
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -31,6 +32,8 @@ sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                              'Python'))
 
 from Driver.DriverFactory import DriverFactory
+
+from Handlers.Syminfo import Syminfo
 
 def LabelitScreen(DriverType = None):
     '''Factory for LabelitScreen wrapper classes, with the specified
@@ -63,6 +66,9 @@ def LabelitScreen(DriverType = None):
             self._refined_distance = 0.0
             self._mosaic = 0.0
 
+            self._lattice = None
+
+            return
 
         def addImage(self, image):
             '''Add an image for indexing.'''
@@ -90,6 +96,10 @@ def LabelitScreen(DriverType = None):
         def setRefine_beam(self, refine_beam):
             self._refine_beam = refine_beam
             
+            return
+
+        def setLattice(self, lattice):
+            self._lattice = lattice
             return
 
         def write_dataset_preferences(self):
@@ -205,8 +215,20 @@ def LabelitScreen(DriverType = None):
 
         def getSolutions(self):
             '''Get the solutions from indexing.'''
-
             return self._solutions
+
+        def getSolution(self):
+            '''Get the best solution from autoindexing.'''
+            if self._lattice is None:
+                return copy.deepcopy(
+                    self._solutions[max(self._solutions.keys())])
+            else:
+                # look through for a solution for this lattice
+                for s in self._solutions.keys():
+                    if self._solutions[s]['lattice'] == self._lattice:
+                        return copy.deepcopy(self._solutions[s])
+
+            raise RuntimeError, 'no solution for lattice %s' % self._lattice
 
         def getBeam(self):
             return self._refined_beam

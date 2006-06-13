@@ -8,7 +8,8 @@
 # can consist of one or more other data sets and a sweep. In the first 
 # iteration this will simply point at a sweep.
 # 
-# 
+# This also includes prior information provided from "outside" either
+# downstream or from the user.
 
 import os
 import sys
@@ -26,7 +27,11 @@ sys.path.append(os.path.join(os.environ['DPA_ROOT']))
 from Experts.FindImages import image2template, find_matching_images, \
      template_directory_number2image, image2template_directory
 
+# base class of all xia2dpa objects
 from Schema.Object import Object
+
+# delegation of lazy-evaluation calculations
+from Modules.IndexerFactory import Indexer
 
 class Dataset(Object):
     '''A class to represent a data set. In this implementation this is a
@@ -35,7 +40,8 @@ class Dataset(Object):
     def __init__(self,
                  image,
                  beam = None,
-                 fp_fpp = None):
+                 fp_fpp = None,
+                 lattice = None):
         '''Initialise the object with all of the required information.
         Image is required - as a pointer to an image. The rest (beam,
         fp_fpp) are optional. These should both be passsed in a 2-ples.'''
@@ -46,7 +52,7 @@ class Dataset(Object):
         # directory and image range - see Object.py
 
         self._identity_attributes = ['_template', '_directory',
-                                     '_image_range']
+                                     '_image_range', '_lattice']
         
         self._template, self._directory = \
                         image2template_directory(image)
@@ -55,6 +61,11 @@ class Dataset(Object):
                                             self._directory)
 
         self._image_range = (min(self._images), max(self._images))
+
+        if lattice:
+            self._lattice = lattice
+        else:
+            self._lattice = None
 
         if beam:
 
@@ -94,6 +105,17 @@ class Dataset(Object):
 
         return
 
+    # setters - very few of these and they really change the whole
+    # system...
+
+    def setLattice(self, lattice):
+        self._lattice = lattice
+        self.reset()
+        return
+
+    def getLattice(self):
+        return self._lattice
+
     def getTemplate(self):
         return self._template
 
@@ -109,6 +131,28 @@ class Dataset(Object):
     def getFp_fpp(self):
         return self._fp_fpp
 
+    # next a set of interesting methods - these imply "real" work and
+    # also delegation via some interesting factories....
+
+    def getLattice_info(self):
+        '''Get the lattice information for this data set. If not already
+        available, then generate it!. A full history of this is kept in
+        this object.'''
+
+        if not hasattr(self, '_lattice_info'):
+            self._lattice_info = []
+
+        self._lattice_info.sort()
+            
+        if len(self._lattice_info) == 0 or \
+           (self._lattice_info[-1] < self):
+            # then I need to do something - calculate a new solution
+            indexer = Indexer(self)
+            self._lattice_info.append(indexer.getLattice_info())
+
+        # ok, can now return the latest version of this answer
+        return self._lattice_info[-1]
+
 if __name__ == '__main__':
     d = Dataset(os.path.join(os.environ['DPA_ROOT'],
                              'Data', 'Test', 'Images', '12287_1_E1_001.img'))
@@ -119,5 +163,21 @@ if __name__ == '__main__':
     if d != e:
         raise RuntimeError, 'these should be identical'
 
-    print d
+    li = d.getLattice_info()
 
+    cell = li.getCell()
+
+    print '%s %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+          (li.getLattice(), cell[0], cell[1], cell[2],
+           cell[3], cell[4], cell[5])
+    
+    d.setLattice('oP')
+
+    li = d.getLattice_info()
+
+    cell = li.getCell()
+
+    print '%s %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+          (li.getLattice(), cell[0], cell[1], cell[2],
+           cell[3], cell[4], cell[5])
+    

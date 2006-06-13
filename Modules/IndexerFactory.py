@@ -19,7 +19,6 @@ if not os.environ.has_key('XIA2CORE_ROOT'):
 
 sys.path.append(os.path.join(os.environ['DPA_ROOT']))
 
-from Schema.Dataset import Dataset
 from LabelitIndexer import LabelitIndexer
 
 def Indexer(dataset,
@@ -31,6 +30,7 @@ def Indexer(dataset,
 
 if __name__ == '__main__':
     
+    from Schema.Dataset import Dataset
     d = Dataset(os.path.join(os.environ['DPA_ROOT'],
                              'Data', 'Test', 'Images', '12287_1_E1_001.img'))
 

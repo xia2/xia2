@@ -166,4 +166,25 @@ Also - add a list of output to each object, to allow recording what each
 object actually does. When overall output is wanted, each object could print
 it's stuff.
 
+\section{Delegation}
+
+Objects like dataset may have well defined methods for performing tasks.
+However, something which could be fun would be to delegate this via
+\verb|__getattr__| and a module registry to allow any arbitrary object to
+have a punt at performing an operation. Would this be safe?
+
+Or is it a better idea to just have:
+
+{
+\tiny
+\begin{verbatim}
+d = Dataset(...)
+d.getLatticeInfo() -> delegate via IndexerFactory to get an implementation,
+                      then return the result...
+\end{verbatim}
+}
+
+
+
+
 \end{document}

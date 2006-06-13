@@ -24,6 +24,14 @@ class _Decision:
 
         return
 
+    def __del__(self):
+        '''Print all of the decisions which were made.'''
+
+        for d in self._decisions:
+            print '[%10.2f] %s' % d
+
+        return
+
     def record(self, decision):
         '''Record a decision for future reference.'''
 
@@ -45,7 +53,5 @@ if __name__ == '__main__':
     time.sleep(1)
     Decision.record("That was wrong")
 
-    for d in Decision.get():
-        print '%10.2f %s' % d
 
     

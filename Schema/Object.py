@@ -104,6 +104,13 @@ class Object:
 
         return 0
 
+    def reset(self):
+        '''Reset the timestamp on this object to indicate that it
+        has changed.'''
+
+        self._timestamp = time.time() + 0.01 * random.random()
+        return
+
     def lock(self):
         '''Lock this object so only one thread can use it.'''
 

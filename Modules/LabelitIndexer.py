@@ -20,7 +20,6 @@ if not os.environ.has_key('XIA2CORE_ROOT'):
 sys.path.append(os.path.join(os.environ['DPA_ROOT']))
 
 from Schema.LatticeInfo import LatticeInfo
-from Schema.Dataset import Dataset
 from Wrappers.Labelit.LabelitScreen import LabelitScreen
 from Modules.Prototype.Indexer import Indexer
 from Experts.FindImages import template_directory_number2image
@@ -74,14 +73,14 @@ class LabelitIndexer(Indexer):
                        self.getDataset().getBeam()[1])
 
 
+        if self.getDataset().getLattice():
+            ls.setLattice(self.getDataset().getLattice())
+
         ls.write_log_file('labelit.log')
         ls.index()
                 
-        results = ls.getSolutions()
-        beam = ls.getBeam()
-        
-        solution = results[max(results.keys())]
-        
+        solution = ls.getSolution()
+        beam = ls.getBeam()        
         self._setLattice_info(LatticeInfo(solution['lattice'],
                                           solution['cell'],
                                           mosaic = solution['mosaic'],
@@ -92,7 +91,7 @@ class LabelitIndexer(Indexer):
 
 if __name__ == '__main__':
     # run a light test
-
+    from Schema.Dataset import Dataset
     d = Dataset(os.path.join(os.environ['DPA_ROOT'],
                              'Data', 'Test', 'Images', '12287_1_E1_001.img'))
 
