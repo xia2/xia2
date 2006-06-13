@@ -10,6 +10,7 @@
 
 import time
 import random
+import thread
 
 class _ObjectTracker:
     
@@ -47,6 +48,9 @@ class Object:
 
         # record this object in the tracker
         ObjectTracker.add(self)
+
+        # allow locking - this will be useful if threading is enabled.
+        self._lock = thread.allocate_lock()
 
         return
 
@@ -94,6 +98,21 @@ class Object:
                 return 1
 
         return 0
+
+    def lock(self):
+        '''Lock this object so only one thread can use it.'''
+
+        return self._lock.acquire()
+
+    def unlock(self):
+        '''Unlock this object to allow multiple threads to use it.'''
+
+        return self._lock.release()
+
+    def locked(self):
+        '''See if this object is locked.'''
+
+        return self._lock.locked()
 
 if __name__ == '__main__':
 

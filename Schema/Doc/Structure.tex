@@ -160,6 +160,10 @@ from by all objects. In particular it defines an identity which will enable
 sorting by creation epoch. Since all data will be defined at construction 
 time, and identities are immutable, this \emph{should} be safe!
 
+Also - added a mutex to this to allow bottom-up implementations of threading.
 
+Also - add a list of output to each object, to allow recording what each
+object actually does. When overall output is wanted, each object could print
+it's stuff.
 
 \end{document}

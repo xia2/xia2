@@ -2,6 +2,7 @@
 Applications/Doc/xia2scan.pdf -text
 Experts/Doc/FindImages.pdf -text
 Handlers/Doc/CommandLine.pdf -text
+Handlers/Doc/Decision.pdf -text
 Modules/Doc/Indexer.pdf -text
 Schema/Doc/Structure.pdf -text
 Wrappers/CCP4/Doc/Combat.pdf -text
