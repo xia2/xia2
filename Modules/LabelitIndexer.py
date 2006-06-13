@@ -67,10 +67,9 @@ class LabelitIndexer(Indexer):
         
         solution = results[max(results.keys())]
         
-        # FIXME I need to get the mosaic spread out...
-        
         self._setLattice_info(LatticeInfo(solution['lattice'],
                                           solution['cell'],
+                                          mosaic = solution['mosaic'],
                                           beam = beam))
         
         

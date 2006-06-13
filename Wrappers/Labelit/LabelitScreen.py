@@ -15,6 +15,11 @@
 #     distance wavelength etc.
 # (2) Implement profile bumpiness handling if the detector is an image plate.
 #     (this goes in the same file...) this is distl_profile_bumpiness = 5
+#
+# Modifications:
+# 
+# 13/JUN/06: Added mosaic spread getting
+# 
 
 import os
 import sys
@@ -56,6 +61,8 @@ def LabelitScreen(DriverType = None):
             self._solutions = { }
             self._refined_beam = (0.0, 0.0)
             self._refined_distance = 0.0
+            self._mosaic = 0.0
+
 
         def addImage(self, image):
             '''Add an image for indexing.'''
@@ -168,6 +175,9 @@ def LabelitScreen(DriverType = None):
                     self._refined_beam = (x, y)
                     self._refined_distance = float(l[7].replace('mm', ''))
 
+                    self._mosaic = float(l[10].replace('mosaicity=', ''))
+
+
                 if l[:3] == ['Solution', 'Metric', 'fit']:
                     break
 
@@ -183,7 +193,8 @@ def LabelitScreen(DriverType = None):
                 o = output[i][3:]
                 l = o.split()
                 if l:
-                    self._solutions[int(l[0])] = {'rmsd':float(l[3]),
+                    self._solutions[int(l[0])] = {'mosaic':self._mosaic,
+                                                  'rmsd':float(l[3]),
                                                   'nspots':int(l[4]),
                                                   'lattice':l[6],
                                                   'cell':map(float, l[7:13])}
