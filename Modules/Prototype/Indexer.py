@@ -26,8 +26,17 @@ class Indexer:
 
         return
 
+    def getDataset(self):
+        return self._dataset
+
     def _index(self):
         raise RuntimeError, 'this method must be overloaded'
+
+    def _setLattice_info(self, lattice_info):
+        if lattice_info.__class__ != 'LatticeInfo':
+            raise RuntimeError, 'result not LatticeInfo'
+        self._lattice_info = lattice_info
+        return
         
     def getLattice_info(self):
         # get the results of the autoindexing, possibly performing
@@ -35,10 +44,14 @@ class Indexer:
         # something.
 
         if self._lattice_info and self._lattice_info > self._dataset:
+            if self._lattice_info.__class__ != 'LatticeInfo':
+                raise RuntimeError, 'result not LatticeInfo'
             return self._lattice_info
 
         else:
             self._index()
+            if self._lattice_info.__class__ != 'LatticeInfo':
+                raise RuntimeError, 'result not LatticeInfo'
             return self._lattice_info
 
         return
