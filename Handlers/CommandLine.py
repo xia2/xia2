@@ -18,9 +18,9 @@ if not os.environ.has_key('DPA_ROOT'):
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
-sys.path.append(os.path.join(os.environ['DPA_ROOT'], 'Schema'))
+sys.path.append(os.path.join(os.environ['DPA_ROOT']))
 
-from Object import Object
+from Schema.Object import Object
 
 class _CommandLine(Object):
     '''A class to represent the command line input.'''
@@ -47,9 +47,10 @@ class _CommandLine(Object):
             # the token is not on the command line
             self.write('No beam passed in on the command line')
             self._beam = (0.0, 0.0)
+            return
 
         if index < 0:
-            raise RuntimeError, 'nagative index'
+            raise RuntimeError, 'negative index'
 
         try:
             beam = sys.argv[index + 1].split(',')
@@ -71,12 +72,12 @@ class _CommandLine(Object):
 
         return '-beam x,y'
 
-    def get_beam(self):
+    def getBeam(self):
         return self._beam
 
 CommandLine = _CommandLine()
 
 if __name__ == '__main__':
-    print CommandLine.get_beam()
+    print CommandLine.getBeam()
 
     

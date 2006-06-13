@@ -12,3 +12,17 @@
 # The correct beam centre.
 # 
 # 
+
+import sys
+import os
+
+if not os.environ.has_key('DPA_ROOT'):
+    raise RuntimeError, 'DPA_ROOT not defined'
+if not os.environ.has_key('XIA2CORE_ROOT'):
+    raise RuntimeError, 'XIA2CORE_ROOT not defined'
+
+sys.path.append(os.path.join(os.environ['DPA_ROOT']))
+
+from Handlers.CommandLine import CommandLine
+
+

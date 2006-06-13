@@ -21,23 +21,29 @@ class Indexer:
 
         self._dataset = dataset
 
-        # make a place to store the results somewhere...
+        # make a place to store the results
+        self._lattice_info = None
 
-        
+        return
 
     def _index(self):
         raise RuntimeError, 'this method must be overloaded'
         
-    def getLatticeEtc(self):
-        '''This really needs to be improved.'''
+    def getLattice_info(self):
+        # get the results of the autoindexing, possibly performing
+        # the calculation if the results are out-of-date or
+        # something.
 
-        # since results are not datasets can compare epochs like this...
-
-        if self._results and self._results > self._dataset:
-            return self._results
+        if self._lattice_info and self._lattice_info > self._dataset:
+            return self._lattice_info
 
         else:
             self._index()
-            return self._results
+            return self._lattice_info
 
-        
+        return
+
+if __name__ == '__main__':
+    # then do something interesting...
+
+    

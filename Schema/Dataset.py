@@ -26,7 +26,7 @@ sys.path.append(os.path.join(os.environ['DPA_ROOT']))
 from Experts.FindImages import image2template, find_matching_images, \
      template_directory_number2image, image2template_directory
 
-from Object import Object
+from Schema.Object import Object
 
 class Dataset(Object):
     '''A class to represent a data set. In this implementation this is a
@@ -118,5 +118,3 @@ if __name__ == '__main__':
 
     print d
 
-        
-    

@@ -1,0 +1,29 @@
+\documentclass[a4paper, 11pt]{article}
+\begin{document}
+\section{API}
+
+The Syminfo handler class represents the data encapsulated in the CCP4 
+symmetry library, found in ``CLIBD''. This has the following methods:
+
+{
+\tiny
+\begin{verbatim}
+getSyminfo(int spacegroup_num) - get the syminfo in a dictionary:
+
+     {'index':index,
+      'lattice_type':lattice_type,
+      'lattice':lattice,
+      'name':shortname,
+      'longname':longname,
+      'symops':0}
+
+getLattice(spacegroup_name) - get the lattice symbol from some id of the
+                              spacegroup
+
+
+getSpacegroup_numbers() - get a list of spacegroup numbers
+
+\end{verbatim}
+}
+
+\end{document}
