@@ -148,7 +148,7 @@ def Printheader(DriverType = None):
                     self._header['distance'] = float(
                         l[1].replace('mm', '').strip())
 
-                if 'Beam centre' in o:
+                if 'Beam cent' in o:
                     beam = l[1].replace('(', '').replace(')', '').split(',')
                     self._header['beam'] = map(float, beam)
 
