@@ -118,6 +118,13 @@ def Printheader(DriverType = None):
             # really be fixed in the program printheader...
 
             detector = None
+            
+            fudge = {'adsc':{'wavelength':1.0,
+                             'pixel':1.0},
+                     'marccd':{'wavelength':10.0,
+                               'pixel':0.001}}
+            
+            
 
             for o in output:
                 l = o.split(':')
@@ -134,7 +141,8 @@ def Printheader(DriverType = None):
                     self._header['exposure_time'] = float(l[1])
 
                 if 'Wavelength' in o:
-                    self._header['wavelength'] = float(l[1])
+                    self._header['wavelength'] = float(l[1]) * \
+                                                 fudge[detector]['wavelength']
 
                 if 'Distance' in o:
                     self._header['distance'] = float(
@@ -151,8 +159,10 @@ def Printheader(DriverType = None):
                 
                 if 'Pixel size' in o:
                     image = l[1].replace('mm', '')
-                    image = image.replace('(', '').replace(')', '').split(',')
-                    self._header['pixel'] = map(float, image)
+                    x, y = image.replace('(', '').replace(')', '').split(',')
+                    self._header['pixel'] = \
+                                          (float(x) * fudge[detector]['pixel'],
+                                           float(y) * fudge[detector]['pixel'])
                 
                 if 'Angle range' in o:
                     phi = map(float, l[1].split('->'))
@@ -170,9 +180,17 @@ if __name__ == '__main__':
     directory = os.path.join(os.environ['DPA_ROOT'],
                              'Data', 'Test', 'Images')
 
-    p.setImage(os.path.join(directory, '12287_1_E1_001.img'))
+    if len(sys.argv) == 1:
+        p.setImage(os.path.join(directory, '12287_1_E1_001.img'))
+    else:
+        for image in sys.argv[1:]:
+            p.setImage(image)
 
-    header = p.readheader()
-
-    print 'Frame collected at: %s' % header['date']
-    print 'Phi:  %6.2f %6.2f' % (header['phi_start'], header['phi_end'])
+            header = p.readheader()
+            
+            print 'Frame %s collected at: %s' % \
+                  (os.path.split(image)[-1], header['date'])
+            print 'Phi:  %6.2f %6.2f' % \
+                  (header['phi_start'], header['phi_end'])
+            print 'Wavelength: %6.4f    Distance:   %6.2f' % \
+                  (header['wavelength'], header['distance'])
