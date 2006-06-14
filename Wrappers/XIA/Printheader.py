@@ -182,6 +182,8 @@ if __name__ == '__main__':
 
     if len(sys.argv) == 1:
         p.setImage(os.path.join(directory, '12287_1_E1_001.img'))
+        print p.readheader()
+
     else:
         for image in sys.argv[1:]:
             p.setImage(image)
