@@ -16,6 +16,8 @@
 #     code to handle HKLREF.
 #
 # FIXME this is hard-coded to use pointless-1.0.5 as the executable name...
+#
+# Update 14/JUN/06 to 1.0.6 - now available for windows mac linux
 # 
 # This will use the results written to an XMLOUT file. This file looks like:
 # 
@@ -82,7 +84,7 @@ def Pointless(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            self.setExecutable('pointless-1.0.5')
+            self.setExecutable('pointless-1.0.6')
 
             self._pointgroup = None
             self._reindex_matrix = None
