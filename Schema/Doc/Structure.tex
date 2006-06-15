@@ -183,6 +183,25 @@ functioality so that we can be sure that the contents of the object
 are correct - also simplifies the interface and ensures that delegation
 is correct.
 
+Sweeps should really come from a sweep factory, which should be accessed
+from the Dataset object - the Dataset can then decide what is appropriate to
+do with the sweeps.
+
+=> define a SweepFactory in the Sweep object which will return a list of 
+sweeps. However, there is one niggle - I want sweeps to be able to update
+themselves just in case more frames have appeared since they were last
+used. This means that there needs to be a higher level of sweep owner
+to manage all of this - OR - a sweep has to contain subsweeps or something, 
+with those being arranged by collection date. Could ``identify'' sweeps by
+the first image (since I will assume image numbers always increment during 
+collection.) That way the identity will not change, and so they can be picked 
+out.
+
+And it also means that a SweepFactory is possible... Finally, assume that 
+image headers do not change! They can therefore be cached in the Printheader
+class, which is useful because it will really speed things up when there are
+multiple reads
+
 \subsection{Dataset}
 
 \section{Delegation}

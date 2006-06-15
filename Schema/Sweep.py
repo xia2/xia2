@@ -22,12 +22,38 @@ if not os.environ['DPA_ROOT'] in sys.path:
 
 from Experts.FindImages import image2template, find_matching_images, \
      template_directory_number2image, image2template_directory, \
-     headers2sweeps
+     headers2sweeps, headers2sweep_ids
 
 from Schema.Object import Object
 
 # image header reading functionality
 from Wrappers.XIA.Printheader import Printheader
+
+def SweepFactory(template, directory, beam = None):
+    '''A factory which will return a list of sweep objects which match
+    the input template and directory.'''
+
+    sweeps = []
+
+    images = find_matching_images(template, directory)
+
+    headers = { }
+
+    for i in images:
+        image = template_directory_number2image(template,
+                                                directory,
+                                                i)
+        ph = Printheader()
+        ph.setImage(image)
+        headers[i] = ph.readheader()
+
+    sweep_ids = headers2sweep_ids(headers)
+
+    for s in sweep_ids:
+        sweeps.append(Sweep(template, directory,
+                            id_image = s, beam = beam))
+
+    return sweeps
 
 class Sweep(Object):
     '''A class to represent a single sweep of frames.'''
@@ -35,14 +61,22 @@ class Sweep(Object):
     def __init__(self,
                  template,
                  directory,
+                 id_image = None,
                  beam = None):
 
-        '''Initialise the sweep by inspecting the images.'''
+        '''Initialise the sweep by inspecting the images. id_image
+        defines the first image in this sweep, and hence the identity of
+        the sweep of more than one are found which match.'''
 
         Object.__init__(self)
 
         self._identity_attributes = ['_collect_start', '_collect_end',
-                                     '_template']
+                                     '_template', '_id_image']
+
+        if not id_image is None:
+            self._id_image = id_image
+        else:
+            self._id_image = -1
 
         # populate the attributes of this object
 
@@ -131,15 +165,28 @@ class Sweep(Object):
             # in, though some way of manually defining this
             # will be useful FIXME.
 
-            max_images = 0
-
             sweep = None
 
-            for s in sweeps:
-                if len(s['images']) > max_images:
-                    sweep = s
-                    max_images = len(s['images'])
+            # select which sweep to represent - default to the largest
+            # earliest one
 
+            if self._id_image == -1:
+
+                max_images = 0
+                
+                for s in sweeps:
+                    if len(s['images']) > max_images:
+                        sweep = s
+                        max_images = len(s['images'])
+
+            else:
+                for s in sweeps:
+                    if self._id_image in s['images']:
+                        sweep = s
+
+                if sweep is None:
+                    raise RuntimeError, 'no matching sweep found'
+                
             self._images = sweep['images']
             self._collect_start = sweep['collect_start']
             self._collect_end = sweep['collect_end']
@@ -165,11 +212,14 @@ if __name__ == '__main__':
         
     template, directory = image2template_directory(image)
     
-    s = Sweep(template, directory)
+    sl = SweepFactory(template, directory)
 
-    t = s.getCollect()
-    print 'Data collection took %s seconds' % (t[1] - t[0])
-    print 'For a total of %s seconds of exposure' % (s.getExposure_time() * \
-                                                     len(s.getImages()))
+    for s in sl:
+
+        t = s.getCollect()
+        print 'Data collection took %s seconds' % (t[1] - t[0])
+        print 'For a total of %s seconds of exposure' % \
+              (s.getExposure_time() * \
+               len(s.getImages()))
     
                                                      

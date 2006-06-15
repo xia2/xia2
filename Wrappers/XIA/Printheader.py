@@ -35,6 +35,23 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
 
 from Driver.DriverFactory import DriverFactory
 
+class _HeaderCache:
+    '''A cache for image headers.'''
+
+    def __init__(self):
+        self._headers = { }
+
+    def put(self, image, header):
+        self._headers[image] = copy.deepcopy(header)
+
+    def get(self, image):
+        return self._headers[image]
+
+    def check(self, image):
+        return self._headers.has_key(image)
+
+HeaderCache = _HeaderCache()
+
 def Printheader(DriverType = None):
     '''A factory for wrappers for the printheader.'''
 
@@ -97,6 +114,10 @@ def Printheader(DriverType = None):
             # if we have the results already then don't bother
             # with the program
             if self._header:
+                return copy.deepcopy(self._header)
+
+            if HeaderCache.check(self._image):
+                self._header = HeaderCache.get(self._image)
                 return copy.deepcopy(self._header)
 
             self.addCommand_line(self._image)
@@ -162,6 +183,8 @@ def Printheader(DriverType = None):
                     self._header['phi_start'] = phi[0]
                     self._header['phi_end'] = phi[1]
                     self._header['phi_width'] = phi[1] - phi[0]
+
+            HeaderCache.put(self._image, self._header)
 
             return copy.deepcopy(self._header)
 

@@ -113,6 +113,18 @@ def template_directory_number2image(template, directory, number):
 
     return image
 
+def headers2sweep_ids(header_dict):
+    '''Get a list of sweep ids (first images) from the header list.'''
+
+    sweeps = headers2sweeps(header_dict)
+
+    ids = []
+
+    for s in sweeps:
+        ids.append(min(s['images']))
+
+    return ids
+
 def headers2sweeps(header_dict):
     '''Parse a dictionary of headers to produce a list of summaries.'''
 
