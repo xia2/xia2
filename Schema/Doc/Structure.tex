@@ -166,6 +166,25 @@ Also - add a list of output to each object, to allow recording what each
 object actually does. When overall output is wanted, each object could print
 it's stuff.
 
+\subsection{Sweep}
+
+A sweep object defines a set of continuous frames. This can therefore be
+characterized by phi start and end values, oscillation width, exposure
+time, distance, wavelength, template and exposure epoch range. The if the epoch
+is NULL then the template will be used for sorting, otherwise start epochs
+will be most important.
+
+FIXME the frame identification etc. defined in Dataset should probably be
+delegated to Sweep, and then contained in Dataset. All of the ``expertise'' 
+should then be obtained through this interface.
+
+In fact the constructor for this should include the header reading 
+functioality so that we can be sure that the contents of the object
+are correct - also simplifies the interface and ensures that delegation
+is correct.
+
+\subsection{Dataset}
+
 \section{Delegation}
 
 Objects like dataset may have well defined methods for performing tasks.

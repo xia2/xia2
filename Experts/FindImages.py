@@ -6,8 +6,11 @@
 # A set of routines for finding images and the like based on file names.
 # This includes all of the appropriate handling for templates, directories
 # and the like.
+#
+# 15/JUN/06 
 # 
-# 
+# Also routines for grouping sets of images together into sweeps based on 
+# the file names and the information in image headers.
 # 
 
 import os
@@ -109,6 +112,49 @@ def template_directory_number2image(template, directory, number):
                                           format % number))
 
     return image
+
+def headers2sweeps(header_dict):
+    '''Parse a dictionary of headers to produce a list of summaries.'''
+
+    images = header_dict.keys()
+    images.sort()
+
+    if len(images) == 0:
+        return []
+
+    sweeps = []
+
+    current_sweep = header_dict[images[0]]
+    
+    current_sweep['images'] = [images[0]]
+    current_sweep['collect_start'] = current_sweep['epoch']
+    current_sweep['collect_end'] = current_sweep['epoch']
+
+    for i in images[1:]:
+        header = header_dict[i]
+
+        # if wavelength the same and distance the same and this image
+        # follows in phi from the previous chappie then this is the
+        # next frame in the sweep. otherwise it is the first frame in
+        # a new sweep.
+
+        if header['wavelength'] == current_sweep['wavelength'] and \
+           header['distance'] == current_sweep['distance'] and \
+           header['phi_start'] == current_sweep['phi_end']:
+            # this is another image in the sweep
+            current_sweep['images'].append(i)
+            current_sweep['phi_end'] = header['phi_end']
+            current_sweep['collect_end'] = header['epoch']
+        else:
+            sweeps.append(current_sweep)
+            current_sweep = header_dict[i]
+            current_sweep['images'] = [i]
+            current_sweep['collect_start'] = current_sweep['epoch']
+            current_sweep['collect_end'] = current_sweep['epoch']
+
+    sweeps.append(current_sweep)
+
+    return sweeps
     
 if __name__ == '__main__':
     # run some tests...

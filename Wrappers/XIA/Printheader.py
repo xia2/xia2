@@ -60,10 +60,6 @@ def Printheader(DriverType = None):
             self._header = { }
             return
 
-        def check_for_errors(self):
-            '''Look for common problems.'''
-            pass
-
         def _get_time(self, datestring):
             '''Unpack a date string to a structure.'''
 
@@ -108,7 +104,7 @@ def Printheader(DriverType = None):
             self.start()
             self.close_wait()
 
-            self.check_for_errors()
+            self.check_for_errors()            
 
             # results were ok, so get all of the output out
             output = self.get_all_output()
@@ -168,6 +164,7 @@ def Printheader(DriverType = None):
                     phi = map(float, l[1].split('->'))
                     self._header['phi_start'] = phi[0]
                     self._header['phi_end'] = phi[1]
+                    self._header['phi_width'] = phi[1] - phi[0]
 
             return copy.deepcopy(self._header)
 

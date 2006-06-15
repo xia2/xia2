@@ -16,6 +16,11 @@ be replaced with a sequence of three-digit numbers.}
 \item{Directory - the location of these files.}
 \item{Prefix, Extension - - strings representing the two halfs of the 
 template around \verb|###.| e.g. foo\_bar\_1 and img above.}
+\item{Sweep - a continuous set of frames, where the phi end of one
+image is the same as the phi start of the next. All images will have 
+the same wavelength, distance and beam centre.}
+\item{Reference image - a single frame or set of isolated frames collected 
+for the purposes of characterizing a crystal.}
 \end{itemize}
 
 \section{Use Cases}
@@ -41,6 +46,32 @@ When provided with a template, directory and image, construct the full path
 to the image.
 
 Function: template\_directory\_number2image(template, directory, number)
+
+\subsection{UC 4: Define Sweeps}
+
+Provided with a set of image headers from a single template, directory
+combination, identify any sweeps and reference images therein. This will
+make use of a dictionary of headers including the image numbers, and populate
+``Sweep'' objects. FIXME: not sure how to handle reference images yet.
+
+Function: headers2sweeps(template, directory, images, header_dict)
+
+Note. The template, directory and images are in there to allow storage of
+this information in a sweep object - it is not needed to implement the 
+sweep identification.
+
+Note further. This makes no sense - it is far better that this functionality
+is called from the Sweep constructor. This means that this method will
+simply digest the headers into a summary, which is to be a list of
+dictionaries containing the sweep information. This can then be used to
+indentify the ``sweeps'' from the puff in the Sweep constructor (e.g. setting
+the correct frame ranges.)
+
+Ok, this now works by initializing the first sweep as the first image. The
+next frame in sequence (e.g. by image number) either belongs to this sweep
+or is the first image in a new sweep. Belonging is defined as having the 
+same wavelength and distance, and having the phi start the same as the 
+current phi end of the sweep.
 
 \section{Implementation}
 
