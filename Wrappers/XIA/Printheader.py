@@ -55,7 +55,6 @@ def Printheader(DriverType = None):
 
         def setImage(self, image):
             '''Set an image to read the header of.'''
-
             self._image = image
             self._header = { }
             return
@@ -118,9 +117,7 @@ def Printheader(DriverType = None):
             fudge = {'adsc':{'wavelength':1.0,
                              'pixel':1.0},
                      'marccd':{'wavelength':10.0,
-                               'pixel':0.001}}
-            
-            
+                               'pixel':0.001}}            
 
             for o in output:
                 l = o.split(':')

@@ -97,13 +97,12 @@ class Sweep(Object):
         t = time.time()
 
         for i in self._images:
+            ph = Printheader()            
             image = template_directory_number2image(self._template,
                                                     self._directory,
                                                     i)
-            ph = Printheader()
             ph.setImage(image)
             header = ph.readheader()
-
             self._headers[i] = header
 
         self.write('reading %d headers took %s s' % (len(self._images),
