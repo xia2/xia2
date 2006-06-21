@@ -10,5 +10,6 @@ elif [ "$platform" = "Linux" ]; then
   export PATH=${PATH}:${DPA_ROOT}/binaries/linux_386
 fi
 
+export PATH=${PATH}:${DPA_ROOT}/Aplications
 
 
