@@ -19,6 +19,8 @@
 # Modifications:
 # 
 # 13/JUN/06: Added mosaic spread getting
+# 21/JUN/06: Added unit cell volume getting
+#
 # 
 
 import os
@@ -207,7 +209,8 @@ def LabelitScreen(DriverType = None):
                                                   'rmsd':float(l[3]),
                                                   'nspots':int(l[4]),
                                                   'lattice':l[6],
-                                                  'cell':map(float, l[7:13])}
+                                                  'cell':map(float, l[7:13]),
+                                                  'volume':int(l[-1])}
 
             return 'ok'
 
