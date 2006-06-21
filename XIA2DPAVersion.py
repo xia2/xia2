@@ -17,7 +17,7 @@
 # 
 
 
-VersionNumber = "0.0.2"
+VersionNumber = "0.0.2a"
 Version = "XIA2DPA %s" % VersionNumber
 CVSTag = "xia2dpa-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2dpa-%s" % VersionNumber
