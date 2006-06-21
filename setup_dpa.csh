@@ -8,3 +8,5 @@ if ( "$platform" == "Linux" ) then
 else
   setenv PATH ${PATH}:${DPA_ROOT}/binaries/mac_386
 endif
+
+setenv PATH ${PATH}:${DPA_ROOT}/Applications
