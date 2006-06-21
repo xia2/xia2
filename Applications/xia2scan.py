@@ -83,7 +83,7 @@ def xia2scan():
     images = summary_info.keys()
     images.sort()
     for i in images:
-        print '%3d %6d %6d %5.2f %5.2f %4.2f %9d' % \
+        print '%3d %6d %6d %6.2f %6.2f %6.2f %9d' % \
               (i, summary_info[i]['spots_total'],
                summary_info[i]['spots_good'],
                summary_info[i]['resol_one'],

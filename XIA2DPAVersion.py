@@ -11,13 +11,13 @@
 #         things but wanted to get the ball rolling on the version
 #         numbering.
 # 
-# 
-# 
-# 
+# 0.0.2 - 21/JUN/06 added first application xia2scan for analysing 
+#         humidifier images, added many useful types in Schema, 
+#         handlers in Handler etc and Wrappers.                                                                
 # 
 
 
-VersionNumber = "0.0.1"
+VersionNumber = "0.0.2"
 Version = "XIA2DPA %s" % VersionNumber
 CVSTag = "xia2dpa-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2dpa-%s" % VersionNumber
