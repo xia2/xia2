@@ -130,8 +130,8 @@ class Sweep(Object):
         '''Compute an image name from an image number.'''
 
         return template_directory_number2image(self._template,
-                                                self._directory,
-                                                number)
+                                               self._directory,
+                                               number)
 
     def _read_headers(self):
         '''Get the image headers for all of the images - this is not designed
@@ -143,9 +143,7 @@ class Sweep(Object):
 
         for i in self._images:
             ph = Printheader()            
-            image = template_directory_number2image(self._template,
-                                                    self._directory,
-                                                    i)
+            image = self.imagename(i)
             ph.setImage(image)
             header = ph.readheader()
             self._headers[i] = header
