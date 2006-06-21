@@ -5,6 +5,10 @@
 # 
 # A class to represent a sweep of frames collected under the same conditions.
 # This pertains to the dataset object in the early phases of processing.
+#
+# Update history:
+#
+# 21/JUN/06 added imagename(i) method.
 # 
 
 import os
@@ -89,7 +93,7 @@ class Sweep(Object):
 
         # if the beam has been specified, then use this
         if beam:
-            self._beam = beam()
+            self._beam = beam
 
         return
 
@@ -121,6 +125,13 @@ class Sweep(Object):
 
     def getBeam(self):
         return self._beam
+
+    def imagename(self, number):
+        '''Compute an image name from an image number.'''
+
+        return template_directory_number2image(self._template,
+                                                self._directory,
+                                                number)
 
     def _read_headers(self):
         '''Get the image headers for all of the images - this is not designed
