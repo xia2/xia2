@@ -50,6 +50,42 @@ Provides:
 
 \subsection{UC 2: Indexing Image Selection}
 
+This will scan through all of the images in a sweep and select, based on the
+spot separation and so on, the best pair for autoindexing.
 
+\section{Implementation}
+
+\subsection{UC 1: Humidifier}
+
+This will use the following classes:
+
+\begin{itemize}
+\item{Schema.Sweep.SweepFactory - to generate a list of sweeps from the 
+images provided.}
+\item{Handlers.CommandLine - to hold the beam centre information from a
+previous indexing run.} 
+\end{itemize}
+
+To achieve reasonable speed, the labelit run will not optimise the beam
+centre (this is unreliable from a single image anyway) and also will 
+run the labelit before distl, and use labelit.stats\_distl to get the results
+afterwards.
+
+This should do all of the running, then collate the results and print a
+summary. The following arc should be followed:
+
+\begin{itemize}
+\item{[determine accurate beam centre]}
+\item{Digest matching frames to list of sweeps.}
+\item{For each sweep, run labelit, get an idea of the unit cell volume,
+run labelit.stats\_distl to get the intensity summary, save.}
+\item{Print summary by image number.}
+\end{itemize}
+
+\subsubsection{Test Data}
+
+Rajan provided me with a couple of test data sets - use these. Oh bugger - the 
+images are stills... Add a special case in the sweep factory to return these 
+as separate frames? Or just plough ahead??
 
 \end{document}
