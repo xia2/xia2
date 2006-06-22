@@ -9,7 +9,7 @@
 # Update history:
 #
 # 21/JUN/06 added imagename(i) method.
-# 
+# 22/JUN/06 added storage of user provided details
 
 import os
 import sys
@@ -90,12 +90,9 @@ class Sweep(Object):
         # populate the rest of the structure
         self._images = []
 
-        # if the beam has been specified, then use this
-        if beam:
-            self._beam = beam
-            self._keep_beam = beam
-        else:
-            self._keep_beam = None
+        # if the beam has been specified, then this will
+        # override the headers
+        self._beam = beam
 
         self.update()
 
@@ -209,10 +206,11 @@ class Sweep(Object):
             self._exposure_time = sweep['exposure_time']
             self._distance = sweep['distance']
             self._wavelength = sweep['wavelength']
-            if not self._keep_beam:
+
+            # only update this once, and if it isn't known - we want
+            # to use the user value if provided
+            if not self._beam:
                 self._beam = sweep['beam']
-            else:
-                self._beam = self._keep_beam
 
             self.reset()
 
