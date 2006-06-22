@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 # Sweep.py
-# Maintained by G.Winter
+#   Copyright (C) 2006 CCLRC, Graeme Winter
+#
+#   This code is distributed under the terms and conditions of the
+#   CCP4 Program Suite Licence Agreement as a CCP4 Library.
+#   A copy of the CCP4 licence can be obtained by writing to the
+#   CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
+#
 # 15th June 2006
 # 
 # A class to represent a sweep of frames collected under the same conditions.

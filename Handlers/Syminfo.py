@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 # Syminfo.py
-# Maintained by G.Winter
+#   Copyright (C) 2006 CCLRC, Graeme Winter
+#
+#   This code is distributed under the terms and conditions of the
+#   CCP4 Program Suite Licence Agreement as a CCP4 Library.
+#   A copy of the CCP4 licence can be obtained by writing to the
+#   CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
+#
 # 13th June 2006
 # 
 # A handler singleton for the information in the CCP4 symmetry library
