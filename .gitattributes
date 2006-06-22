@@ -1,5 +1,6 @@
 * text=auto !eol
 Applications/Doc/xia2scan.pdf -text
+/CCP4_Academic_Licence.pdf -text svneol=unset#application/octet-stream
 Experts/Doc/FindImages.pdf -text
 Handlers/Doc/CommandLine.pdf -text
 Handlers/Doc/Decision.pdf -text
