@@ -26,8 +26,9 @@
 # 
 # 13/JUN/06: Added mosaic spread getting
 # 21/JUN/06: Added unit cell volume getting
-#
-# 
+# 23/JUN/06: FIXME should the images to index be specified by number or
+#            by name? No implementation change, Q needs answering.
+#            c/f Mosflm wrapper.
 
 import os
 import sys
