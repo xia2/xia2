@@ -1,0 +1,27 @@
+Thoughts about the Mosflm Wrapper
+---------------------------------
+
+[autoindex input]
+
+beam 108.93 105.04
+directory $directory
+template 12287_1_E1_###.img
+autoindex dps image 1   ! can optionally refine "dps refine image"
+autoindex dps image 60  ! can optionally refine "dps refine image"
+mosaic estimate
+go
+
+[autoindex output]
+
+
+[cell refine input]
+
+
+[cell refine output]
+
+
+[integrate input]
+
+
+[integrate output]
+
