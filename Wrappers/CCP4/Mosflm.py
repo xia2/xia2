@@ -164,8 +164,11 @@ def Mosflm(DriverType = None):
         def addImage(self, image):
             # should image here be an integer or a file name?
             # FIXME Q: What will happen in the future when working
-            # with NEXUS files?
+            # with NEXUS files? Ignore for the moment!
             self._indexing_images.append(image)
+            return
+
+        
 
         
         

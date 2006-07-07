@@ -226,6 +226,57 @@ d.getLatticeInfo() -> delegate via IndexerFactory to get an implementation,
 }
 
 
+\section{Interfaces}
+
+\subsection{Thoughts}
+
+Since some programs present more than one interface, is it appropriate to
+inherit from base classes which represent these interfaces as well as 
+the ``Driver''? That would ensure that when you say class X implements 
+indexer you would be certain that it does, because the indexer interface
+would be the only way to get to the functionality.
+
+Yes, this is probably a good idea. The only problem is then to ensure that
+there are no name clashes between interfaces which might me multiply 
+represented, e.g. indexer and integrater for Mosflm \& XDS.
+
+For information, multiple inheritance does work in Python.
+
+An interesting question is how to handle the directory, template information - 
+since almost all (or all?) data processing interfaces will need this
+information is it also better to inherit from (or decorate?) a Driver to
+handle this information ``invisibly''? Probably. Then all programs which 
+require diffraction images should use this information as the sole way of
+getting to the images. Since this is hidden invisibly by the CommandLine
+singleton there shouldn't be any big problems.
+
+\subsection{Frame Processor}
+
+This is an interface which includes all of the information which may be needed
+by something which handles diffraction images. This includes:
+
+\begin{itemize}
+\item{Beam position.}
+\item{Wavelength.}
+\item{Distance.}
+\item{Template.}
+\item{Directory.}
+\item{Header information e.g. width, pixel size.}
+\end{itemize}
+
+This should be defined as a basic decorator in the same way that the 
+CCP4 decorator works. This will give a little extra work for a lot of 
+extra benefit. This will further mean that this goes into the xia2core
+definition, which makes it more simply available to the DC module.
+
+[FIXME this section is now to go into xia2core documentation]
+
+These would well suit a decorator if it didn't mean that the other
+decorators wouldn't work - looks like we're better off simply working by
+multiple inheritance and ducking when things go strange.
+
+\subsection{Indexer}
+
 
 
 \end{document}

@@ -29,6 +29,7 @@
 # 23/JUN/06: FIXME should the images to index be specified by number or
 #            by name? No implementation change, Q needs answering.
 #            c/f Mosflm wrapper.
+# 07/JUL/06: write_ds_preferences now "protected".
 
 import os
 import sys
@@ -111,7 +112,7 @@ def LabelitScreen(DriverType = None):
             self._lattice = lattice
             return
 
-        def write_dataset_preferences(self):
+        def _write_dataset_preferences(self):
             '''Write the dataset_preferences.py file in the working
             directory - this will include the beam centres etc.'''
 
@@ -167,7 +168,7 @@ def LabelitScreen(DriverType = None):
             for i in self._images:
                 self.addCommand_line(i)
 
-            self.write_dataset_preferences()
+            self._write_dataset_preferences()
 
             self.start()
             self.close_wait()
