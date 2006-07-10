@@ -172,12 +172,12 @@ def Printheader(DriverType = None):
                     beam = l[1].replace('(', '').replace(')', '').split(',')
                     self._header['beam'] = map(float, beam)
 
-                if 'Image size' in o:
+                if 'Image Size' in o:
                     image = l[1].replace('px', '')
                     image = image.replace('(', '').replace(')', '').split(',')
                     self._header['size'] = map(float, image)
                 
-                if 'Pixel size' in o:
+                if 'Pixel Size' in o:
                     image = l[1].replace('mm', '')
                     x, y = image.replace('(', '').replace(')', '').split(',')
                     self._header['pixel'] = \
