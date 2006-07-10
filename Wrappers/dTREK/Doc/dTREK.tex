@@ -1,0 +1,311 @@
+\documentclass[a4paper, 11pt]{article}
+\begin{document}
+
+Running d*TREK from the command line...
+
+{
+\small
+\begin{verbatim}
+[prepare header]
+dtextractheader image start.head
+[update beam ctr] this is in pixels in start.head
+
+dtfind start.head -seq 1 1 -sigma 3 -min 50 -filter 6 -out find.head
+dtindex find.head dtfind.ref -maxresid 3.0 -sigma 5.0 -dps -nodiffs
+
+... gives ...
+
+FIND
+
+dtfind:  Copyright (c) 1996 Molecular Structure Corporation
+d*TREK version 9.5L -- Oct  4 2005
+Command line:
+ dtfind start.head -seq 1 1 -sigma 3 -min 50 -filter 6 -out find.head
+
+     Header of file start.head successfully read.
+A4_NONUNF_TYPE: >>Simple_mask<<
+INFO in Cnonunf: using
+     ../12287/12287_1_E1_001.img
+     as the simple mask/nonunf file, was FirstScanImage.
+
+     File ../12287/12287_1_E1_001.img successfully opened.
+Min raw image pixel OK value in mask/nonunf/image file: 1
+
+
+Command line string: >>-seq<<
+Command line string: >>-sigma<<
+Command line string: >>-min<<
+Command line string: >>-filter<<
+Command line string: >>-out<<
+
+Resolution limits of an image are 979.65 to 1.37426
+Resolution limits of peak search are 979.65 to 1.37426
+
+
+dtfind: 2D method  used
+...reading image ../12287/12287_1_E1_001.img...
+
+     File ../12287/12287_1_E1_001.img successfully opened.
+Find object listing:
+     Sigma: 3
+Resolution: 979.65 to 1.37426
+   Minimum: 50
+Circle lim: 1024, 1024, 0, 1448
+  Rect lim: 20, 20, 2028, 2028
+Spot wind.: 0, 0
+Peak filt.: 6
+Back. tile: 128, 128
+ Seq. num.: 1, 1
+Image dim.: 2048, 2048
+   3D dump: 0
+1339 preliminary spots found in 2D search with rotation angle 290.5 degs.
+
+dtfind: There were 1074 spots found.
+There were 1074 preliminary spots of which 4 were marked as saturated,
+ or  0.37% of them.
+Number of reflections written in 'dtfind.ref': 1074
+dtfind: Spots written to dtfind.ref
+dtfind - Wrote header file find.head
+
+INDEX
+
+
+dtindex:  Copyright (c) 1998, 1996 Molecular Structure Corporation
+d*TREK version 9.5L -- Oct  4 2005
+Command line:
+ dtindex find.head dtfind.ref -maxresid 3.0 -sigma 5 -dps -nodiffs
+
+     Header of file find.head successfully read.
+Reflection list: dtfind.ref
+Creflnlist::nRead with filename: dtfind.ref
+INFO in Creflnlist::nRead, EOF after 1074 reflections read in
+                                    (1074 total now in list).
+Command line string: >>-maxresid<<
+Command line string: >>-sigma<<
+Command line string: >>-dps<<
+Command line string: >>-nodiffs<<
+INFO: deleted 0 reflns outside of resolution bounds.
+      This leaves 1074 reflns for indexing.
+
+INFO: 418 reflns deleted out of 1074 that might be in ice rings.
+Max cell length allowed for reciprocal lattice vectors: 256.219
+
+
+Method:     1D FFT with DPS algorithm
+Out header: dtindex.head
+Max cell:   256.219
+Num vecs:   1000
+Spacegroup: 0
+Verbose:    1
+
+Performing 1D FFT indexing (not cell reduction) with the DPS algorithm...see
+  Steller, Bolotovsky, & Rossmann (1997) J. Appl. Cryst. 30, 1036-1040.
+
+Max cell is:         256.219
+Number of reflections/vectors used: 588
+.....................................
+...refining best 30 directions and lengths...
+..............................  done.
+Number of vectors used for integer residual calculation: 588
+
+     a      b      c  alpha   beta  gamma   Volume  Remarks #Indexed %Residual
+==============================================================================
+196.09  52.05  51.42  90.02 122.45 104.58   422661     Okay      435     0.265
+ 51.42 196.09  52.05 104.58  90.02 122.45   422661     Okay      435     0.265
+ 52.05  51.42 196.09 122.45 104.58  90.02   422661     Okay      435     0.265
+ 51.49 187.73  52.08 122.68  90.13  90.69   423682     Okay      432     0.268
+187.73  52.08  51.49  90.13  90.69 122.68   423682     Okay      432     0.268
+ 52.08  51.49 187.73  90.69 122.68  90.13   423682     Okay      432     0.268
+ 51.42 196.09  73.15 123.80  45.36 122.45   422658     Okay      435     0.265
+196.09  73.15  51.42  45.36 122.45 123.80   422661     Okay      435     0.265
+ 73.15  51.42 196.09 122.45 123.80  45.36   422661     Okay      435     0.265
+196.09  52.05  73.15  44.66 123.80 104.58   422661     Okay      435     0.265
+ 52.05  73.15 196.09 123.80 104.58  44.66   422661     Okay      435     0.265
+ 73.15 196.09  52.05 104.58  44.66 123.80   422661     Okay      435     0.265
+ 73.15  51.50 187.74  90.69 113.13  45.40   423887     Okay      428     0.264
+187.74  73.15  51.50  45.40  90.69 113.13   423887     Okay      428     0.264
+ 51.50 187.74  73.15 113.13  45.40  90.69   423887     Okay      428     0.264
+187.73 196.09  51.43 122.45  90.70  34.89   422913     Okay      437     0.274
+ 73.15 187.71  52.06 122.67  44.67 113.16   422954     Okay      433     0.265
+187.71  52.06  73.15  44.67 113.16 122.67   422954     Okay      433     0.265
+ 52.06  73.15 187.71 113.16 122.67  44.67   422954     Okay      433     0.265
+
+
+Executing beam refinement with
+beam search radius, acceptable shift radius: 10 9 ...
+A4_NONUNF_TYPE: >>Simple_mask<<
+INFO in Cnonunf: using
+     ../12287/12287_1_E1_001.img
+     as the simple mask/nonunf file, was FirstScanImage.
+
+     File ../12287/12287_1_E1_001.img successfully opened.
+Min raw image pixel OK value in mask/nonunf/image file: 1
+Original (input header) beam center: [1030.0 1066.0]
+
+First Pass.  Search dim0 in [1020 1040] dim1 in [1056 1076]
+.............................................
+Second Pass.  Search dim0 in [1036 1038] dim1 in [1061 1063]
+Calculated pre-reduced cell solution is in agreement with detector beam center!
+Original (input header) beam center: [1030.0 1066.0]
+New      (calculated)   beam center: [1036.5 1061.4]
+Header updated to reflect beam center change.
+
+WARNING!: Beam position moved more than 5 pixels!
+=======
+INFO: Restart with adjusted beam center.
+Max cell length allowed for reciprocal lattice vectors: 256.219
+
+
+Method:     1D FFT with DPS algorithm
+Out header: dtindex.head
+Max cell:   256.219
+Num vecs:   1000
+Spacegroup: 0
+Verbose:    1
+
+Performing 1D FFT indexing (not cell reduction) with the DPS algorithm...see
+  Steller, Bolotovsky, & Rossmann (1997) J. Appl. Cryst. 30, 1036-1040.
+
+Max cell is:         256.219
+Number of reflections/vectors used: 588
+.....................................
+...refining best 30 directions and lengths...
+..............................  done.
+Number of vectors used for integer residual calculation: 588
+
+     a      b      c  alpha   beta  gamma   Volume  Remarks #Indexed %Residual
+==============================================================================
+174.05 166.20 157.98  18.20  24.83  17.27   423646     Okay      394     0.060
+166.20 157.98 174.05  24.83  17.27  18.20   423646     Okay      394     0.060
+157.99 166.21 174.09  39.69  24.82  18.19   423539     Okay      392     0.060
+158.00 166.21  73.10 102.74  89.98  18.19   423234     Okay      388     0.059
+157.98 195.63  73.09  55.96  89.99  36.17   423560     Okay      395     0.061
+157.98 166.21  51.67  90.00  90.09  18.20   423833     Okay      389     0.059
+166.21  51.67 157.98  90.09  18.20  90.00   423834     Okay      389     0.059
+ 51.67 157.98 166.21  18.20  90.00  90.09   423834     Okay      389     0.059
+ 51.64 195.60 157.98  36.17  90.09  58.27   423209     Okay      385     0.059
+157.98  51.64 195.60  58.27  36.17  90.09   423209     Okay      385     0.059
+195.60 157.98  51.64  90.09  58.27  36.17   423209     Okay      385     0.059
+ 51.66 157.99 174.06  24.83 107.28  90.08   423467     Okay      396     0.061
+174.06  51.66 157.99  90.08  24.83 107.28   423468     Okay      396     0.061
+157.99 174.06  51.66 107.28  90.08  24.83   423472     Okay      396     0.061
+158.00  51.64 174.09  72.86  24.83  90.07   423231     Okay      383     0.059
+174.09 158.00  51.64  90.07  72.86  24.83   423232     Okay      383     0.059
+ 51.64 174.09 158.00  24.83  90.07  72.86   423231     Okay      383     0.059
+ 73.09 157.99  51.66  90.08  45.23  89.99   423468     Okay      396     0.061
+157.99  51.66  73.09  45.23  89.99  90.08   423468     Okay      396     0.061
+ 51.66  73.09 157.99  89.99  90.08  45.23   423468     Okay      396     0.061
+174.06 166.20  73.09 102.75 114.82  17.26   423434     Okay      396     0.061
+174.10 166.21  73.09 102.75  65.16  39.69   423362     Okay      393     0.060
+ 73.10 166.20  51.64  90.03  45.22 102.75   423344     Okay      393     0.060
+166.20  51.64  73.10  45.22 102.75  90.03   423344     Okay      393     0.060
+ 51.64  73.10 166.20 102.75  90.03  45.22   423345     Okay      393     0.060
+ 51.66  73.09 195.63  55.96  58.26  45.23   423468     Okay      396     0.061
+ 73.09 195.63  51.66  58.26  45.23  55.96   423468     Okay      396     0.061
+195.63  51.66  73.09  45.23  55.96  58.26   423468     Okay      396     0.061
+174.06  51.66  73.09  45.23 114.82 107.28   423468     Okay      396     0.061
+ 73.09 174.06  51.66 107.28  45.23 114.82   423468     Okay      396     0.061
+ 51.66  73.09 174.06 114.82 107.28  45.23   423468     Okay      396     0.061
+ 73.09 174.09  51.65  72.88  45.23  65.16   423432     Okay      396     0.061
+ 51.65  73.09 174.09  65.16  72.88  45.23   423432     Okay      396     0.061
+174.09  51.65  73.09  45.23  65.16  72.88   423432     Okay      396     0.061
+
+
+Least square fit to lattice characters...see
+  Andrews & Bernstein (1988) Acta Cryst. A44, 1009-1018 and
+  Paciorek & Bonin (1992) J. Appl. Cryst. 25, 632-637.
+............................................................
+............................................................
+done.
+
+Least-squares fit of reduced primitive cell to 44 lattice characters
+sorted on decreasing (highest to lowest) symmetry.
+Only solutions with residuals <=   3.0 are listed.
+=======================================================================
+ Soln  LeastSq Spgrp Cent    Bravais type         a         b         c
+  num residual  num* type     Cell volume     alpha      beta     gamma
+=======================================================================
+   7     0.190    75    P      tetragonal    51.796    51.796   157.982
+                                   423844    90.000    90.000    90.000
+
+   9     0.166    21    C    orthorhombic    73.093    73.409   157.982
+                                   847680    90.000    90.000    90.000
+
+  11     0.175    16    P    orthorhombic    51.669    51.923   157.982
+                                   423839    90.000    90.000    90.000
+
+  12     0.064     5    C      monoclinic    73.691    73.168   157.982
+                                   851816    90.000    90.141    90.000
+
+  12b    0.075     5    C      monoclinic    73.409    73.093   157.982
+                                   847678    90.000    90.131    90.000
+
+  13     0.092     3    P      monoclinic    51.923    51.669   157.982
+                                   423838    90.000    90.100    90.000
+
+  14     0.000     1    P       triclinic    51.669    51.923   157.982
+                                   423834    89.900    89.915    89.753
+
+=======================================================================
+*Suggested spacegroup number until systematic absences are examined.
+...determining orientation angles...
+.
+
+Unit cell parameters and orientation angles
+======================================================================
+      Integer         a         b         c
+Num  residual     alpha      beta     gamma     Rot1     Rot2     Rot3
+======================================================================
+  1     0.001    51.796    51.796   157.982  -75.915   20.479  -78.321
+                 90.000    90.000    90.000
+
+  2     0.001    51.796    51.796   157.982   75.915  -20.479  101.679
+                 90.000    90.000    90.000
+
+  3     0.001    51.796    51.796   157.982  104.085   20.479  -78.321
+                 90.000    90.000    90.000
+
+  4     0.001    51.796    51.796   157.982 -104.085  -20.479  101.679
+                 90.000    90.000    90.000
+
+  5     0.001    51.796    51.796   157.982   56.911   65.317   66.033
+                 90.000    90.000    90.000
+
+  6     0.001    51.796    51.796   157.982  -56.911  -65.317 -113.967
+                 90.000    90.000    90.000
+
+  7     0.001    51.796    51.796   157.982 -123.089   65.317   66.033
+                 90.000    90.000    90.000
+
+  8     0.001    51.796    51.796   157.982  123.089  -65.317 -113.967
+                 90.000    90.000    90.000
+
+======================================================================
+The above table shows symmetry EQUIVALENT crystal orientation angles
+for the indexing orientation.  All the solutions are equivalent for
+the selected Bravais lattice.  The default selection usually has the
+values closest to crystal orientation found in the input .head file or
+the one where (|Rot1| + |Rot2| + |Rot3|) is a minimum.
+Orientation angles choice 1 selected.
+
+Crystal listing:
+
+ Unit cell lengths:   51.7964   51.7964  157.9819
+ Unit cell  angles:   90.0000   90.0000   90.0000
+ Unit cell  volume: 423843.915
+Orientation angles:  -75.9149   20.4794  -78.3208
+         Mosaicity:     0.300
+       Description: unknown
+
+Spacegroup number: 75
+             name: P4
+Num. equiv. posns: 4
+dtindex - Wrote header file dtindex.head
+
+
+
+\end{verbatim}
+}
+
+\end{document}
+
