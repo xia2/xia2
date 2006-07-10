@@ -1,6 +1,35 @@
 \documentclass[a4paper, 11pt]{article}
 \begin{document}
 
+\section{Introduction}
+
+Running d*TREK from the command line is, I think, relatively simple. The 
+commands which are issued by the GUI's dtdisplay \& dtprocess seem to be
+fairly simple, so I will record these and use as my baseline.
+
+It looks like ``indexing'' will include 3 steps - spot finding by dtfind,
+indexing by dtindex and refinement (against the spots found in step no 1)
+in dtrefine. This gives a reasonably accurate orientation matrix, though I 
+am not sure that it is completely accurate because some reflections are
+midding on the display!
+
+In d*TREK it looks like most of the important information is kept in the 
+d*TREK header file, which looks a lot like the ADSC SMV format header. This
+has all sorts of goniometry information in (boring) as well as some more
+useful stuff for instance the beam centre.
+
+The initial header file can be created from the images with dtextractheader.
+This just reads in the image file and writes out an inital d*TREK header - 
+this can then be used for the initial stages of the above processes.
+
+\section{Indexing}
+
+Spot picking for the indexing \& refinement can be done off a number of 
+images - and this gives a much better result.
+
+
+\section{Notes}
+
 Running d*TREK from the command line...
 
 {
