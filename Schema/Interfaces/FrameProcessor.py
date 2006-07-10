@@ -30,7 +30,8 @@ if not os.environ.has_key('DPA_ROOT'):
 if not os.environ['DPA_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['DPA_ROOT']))
 
-from Experts.FindImages import image2template_directory
+from Experts.FindImages import image2template_directory, \
+     template_directory_number2image, image2image
 from Wrappers.XIA.Printheader import Printheader
 
 class FrameProcessor:
@@ -100,6 +101,31 @@ class FrameProcessor:
 
     def getHeader_item(self, item):
         return self._fp_header[item]
+
+    # utility functions
+    def getImage_name(self, number):
+        '''Convert an image number into a name.'''
+
+        return template_directory_number2image(self.getTemplate(),
+                                               self.getDirectory(),
+                                               number)
+
+    def getImage_number(self, image):
+        '''Convert an image name to a number.'''
+
+        if type(image) == type(1):
+            return image
+
+        # FIXME HACK - if this is the first run, presume that this
+        # can be used to configure the template &c.
+        # FIXME DOC this means that a FrameProcessor must deal only ever
+        # with one sweep.
+        
+        if not self._fp_template and not self._fp_directory:
+            self._setup_from_image(image)
+
+        return image2image(image)
+                                               
 
     # private methods
 

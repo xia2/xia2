@@ -30,6 +30,12 @@
 #            by name? No implementation change, Q needs answering.
 #            c/f Mosflm wrapper.
 # 07/JUL/06: write_ds_preferences now "protected".
+# 10/JUL/06: Modified to inherit from FrameProcessor interface to provide
+#            all of the guff to handle the images etc. Though this handles
+#            only the template &c., not the image selections for indexing.
+# 
+# 
+# 
 
 import os
 import sys
@@ -37,13 +43,23 @@ import copy
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
+if not os.environ.has_key('DPA_ROOT'):
+    raise RuntimeError, 'DPA_ROOT not defined'
 
-sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                             'Python'))
+if not os.path.join(os.environ['XIA2CORE_ROOT'],
+                    'Python') in sys.path:
+    sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
+                                 'Python'))
+    
+if not os.environ['DPA_ROOT'] in sys.path:
+    sys.path.append(os.environ['DPA_ROOT'])
 
 from Driver.DriverFactory import DriverFactory
 
 from Handlers.Syminfo import Syminfo
+
+# interfaces that this inherits from ...
+from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 def LabelitScreen(DriverType = None):
     '''Factory for LabelitScreen wrapper classes, with the specified
@@ -51,7 +67,8 @@ def LabelitScreen(DriverType = None):
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
-    class LabelitScreenWrapper(DriverInstance.__class__):
+    class LabelitScreenWrapper(DriverInstance.__class__,
+                               FrameProcessor):
         '''A wrapper for the program labelit.screen - which will provide
         functionality for deciding the beam centre and indexing the
         diffraction pattern.'''
@@ -59,13 +76,13 @@ def LabelitScreen(DriverType = None):
         def __init__(self):
 
             DriverInstance.__class__.__init__(self)
+            
+            # interface constructor calls
+            FrameProcessor.__init__(self)
 
             self.setExecutable('labelit.screen')
 
             self._images = []
-            self._beam = (0.0, 0.0)
-            self._distance = 0.0
-            self._wavelength = 0.0
 
             # control over the behaviour
 
@@ -83,23 +100,10 @@ def LabelitScreen(DriverType = None):
         def addImage(self, image):
             '''Add an image for indexing.'''
 
-            if not image in self._images:
-                self._images.append(image)
+            i = self.getImage_number(image)
 
-            return
-
-        def setBeam(self, beam_x, beam_y):
-            self._beam = beam_x, beam_y
-
-            return
-
-        def setWavelength(self, wavelength):
-            self._wavelength = wavelength
-
-            return
-        
-        def setDistance(self, distance):
-            self._distance = distance
+            if not i in self._images:
+                self._images.append(i)
 
             return
 
@@ -119,15 +123,16 @@ def LabelitScreen(DriverType = None):
             out = open(os.path.join(self.getWorking_directory(),
                                     'dataset_preferences.py'), 'w')
 
-            if self._distance > 0.0:
+            if self.getDistance() > 0.0:
                 out.write('autoindex_override_distance = %f\n' %
-                          self._distance)
-            if self._wavelength > 0.0:
+                          self.getDistance())
+            if self.getWavelength() > 0.0:
                 out.write('autoindex_override_wavelength = %f\n' %
-                          self._wavelength)
-            if self._beam[0] > 0.0 and self._beam[1] > 0.0:
-                out.write('autoindex_override_beam = (%f, %f)\n' % \
-                          self._beam)
+                          self.getWavelength())
+            if self.getBeam():
+                if self.getBeam()[0] > 0.0 and self.getBeam()[1] > 0.0:
+                    out.write('autoindex_override_beam = (%f, %f)\n' % \
+                              self.getBeam())
             if self._refine_beam is False:
                 out.write('beam_search_scope = 0.0\n')
 
@@ -159,14 +164,14 @@ def LabelitScreen(DriverType = None):
             task = 'Autoindex from images:'
 
             for i in self._images:
-                task += ' %s' % i
+                task += ' %s' % self.getImage_name(i)
 
             self.setTask(task)
 
             self.addCommand_line('--index_only')
 
             for i in self._images:
-                self.addCommand_line(i)
+                self.addCommand_line(self.getImage_name(i))
 
             self._write_dataset_preferences()
 
@@ -208,6 +213,9 @@ def LabelitScreen(DriverType = None):
 
             if counter >= len(output):
                 raise RuntimeError, 'error in indexing'
+
+            # FIXME this needs to check the smilie status e.g.
+            # ":)" or ";(" or "  ".
 
             for i in range(counter + 1, len(output)):
                 o = output[i][3:]

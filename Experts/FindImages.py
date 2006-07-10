@@ -63,6 +63,42 @@ def image2template(filename):
     raise RuntimeError, 'filename %s not understood as a template' % \
           filename
 
+def image2image(filename):
+    '''Return an integer for the template to match this filename.'''
+
+    # check that the file name doesn't contain anything mysterious
+    if filename.count('#'):
+        raise RuntimeError, '# characters in filename'
+
+    # the patterns in the order I want to test them
+
+    pattern_keys = [r'(.*)_([0-9]*)\.(.*)',
+                    r'([^\.]*)\.([0-9]+)',
+                    r'(.*?)([0-9]*)\.(.*)']
+
+    # patterns is a dictionary of possible regular expressions with
+    # the format strings to put the file name back together
+
+    patterns = {r'(.*)_([0-9]*)\.(.*)':'%s_%s.%s',
+                r'([^\.]*)\.([0-9]+)':'%s.%s%s',
+                r'(.*?)([0-9]*)\.(.*)':'%s%s.%s'}
+
+    for pattern in pattern_keys:
+        match = re.compile(pattern).match(filename)
+
+        if match:
+            prefix = match.group(1)
+            number = match.group(2)
+            try:
+                exten = match.group(3)
+            except:
+                exten = ''
+
+            return int(number)
+
+    raise RuntimeError, 'filename %s not understood as a template' % \
+          filename
+
 def image2template_directory(filename):
     '''Separate out the template and directory from an image name.'''
 
