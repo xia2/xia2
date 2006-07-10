@@ -21,11 +21,23 @@
 # image header information [general c/f printheader output]
 # 
 
+import os
+import sys
+
+if not os.environ.has_key('DPA_ROOT'):
+    raise RuntimeError, 'DPA_ROOT not defined'
+
+if not os.environ['DPA_ROOT'] in sys.path:
+    sys.path.append(os.path.join(os.environ['DPA_ROOT']))
+
+from Experts.FindImages import image2template_directory
+from Wrappers.XIA.Printheader import Printheader
+
 class FrameProcessor:
     '''A class to handle the information needed to process X-Ray
     diffraction frames.'''
 
-    def __init__(self):
+    def __init__(self, image = None):
 
         self._fp_template = None
         self._fp_directory = None
@@ -35,6 +47,14 @@ class FrameProcessor:
         self._fp_beam = None
 
         self._fp_header = { }
+
+        # if image has been specified, construct much of this information
+        # from the image
+
+        if image:
+            self._setup_from_image(image)
+
+        return
 
     def setTemplate(self, template):
         self._fp_template = template
@@ -81,8 +101,40 @@ class FrameProcessor:
     def getHeader_item(self, item):
         return self._fp_header[item]
 
+    # private methods
+
+    def _setup_from_image(self, image):
+        '''Configure myself from an image name.'''
+        template, directory = image2template_directory(image)
+        self._fp_template = template
+        self._fp_directory = directory
+
+        # read the image header
+        ph = Printheader()
+        ph.setImage(image)
+        self._fp_header = ph.readheader()
+
+        # populate wavelength, beam etc from this
+        self._fp_wavelength = self._fp_header['wavelength']
+        self._fp_distance = self._fp_header['distance']
+        self._fp_beam = self._fp_header['beam']
+
+        return
+
     # end of class
 
+if __name__ == '__main__':
+    # run a quick test
 
+
+    fp = FrameProcessor(os.path.join(os.environ['DPA_ROOT'],
+                                     'Data', 'Test', 'Images',
+                                     '12287_1_E1_001.img'))
+
+    print fp.getBeam()
+    print fp.getWavelength()
+    print fp.getHeader()
+    
+    
 
     
