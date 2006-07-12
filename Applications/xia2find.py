@@ -35,7 +35,7 @@ def is_image_name(file):
     global known_image_extensions
     
     if os.path.isfile(file):
-        if os.path.split(file)[-1].split('.')[-1] in known_image_extensions:
+        if file.split('.')[-1] in known_image_extensions:
             return True
 
     return False
