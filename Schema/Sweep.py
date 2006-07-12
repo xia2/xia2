@@ -216,7 +216,7 @@ class Sweep(Object):
             # only update this once, and if it isn't known - we want
             # to use the user value if provided
             if not self._beam:
-                self._beam = sweep['beam']
+                self._beam = map(float, sweep['beam'])
 
             self.reset()
 
@@ -241,5 +241,7 @@ if __name__ == '__main__':
         print 'For a total of %s seconds of exposure' % \
               (s.getExposure_time() * \
                len(s.getImages()))
-    
+        print 'Images: %d to %d' % (min(s.getImages()), max(s.getImages()))
+        print 'Template: %s' % s.getTemplate()
+        print ''
                                                      
