@@ -154,8 +154,12 @@ def Printheader(DriverType = None):
 
                 if 'Exposure epoch' in o:
                     d = o[o.index(':') + 1:]
-                    self._header['epoch'] = self._epoch(d.strip())
-                    self._header['date'] = self._date(d.strip())
+                    if d.strip():
+                        self._header['epoch'] = self._epoch(d.strip())
+                        self._header['date'] = self._date(d.strip())
+                    else:
+                        self._header['epoch'] = 0.0
+                        self._header['date'] = ''
 
                 if 'Exposure time' in o:
                     self._header['exposure_time'] = float(l[1])
