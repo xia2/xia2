@@ -52,10 +52,7 @@ def get_sweep(file):
         key = (directory, template)
         if not known_sweeps.has_key(key):
             sweeplist = SweepFactory(template, directory)
-            for sweep in sweeplist:
-                key = (sweep.getDirectory(), sweep.getTemplate())
-                if not known_sweeps.has_key(key):
-                    known_sweeps[key] = sweep
+            known_sweeps[key] = sweeplist
 
     except:
         pass
@@ -66,24 +63,26 @@ def visit(root, directory, files):
     for f in files:
         get_sweep(os.path.join(directory, f))
         
-
 def print_sweeps():
 
     global known_sweeps
     
-    sweeps = known_sweeps.keys()
-    sweeps.sort()
+    sweeplists = known_sweeps.keys()
+    sweeplists.sort()
     
-    for sweep in sweeps:
-        s = known_sweeps[sweep]
-        print 'Sweep: %s' % os.path.join(s.getDirectory(), s.getTemplate())
-        print 'Images: %d to %d' % (min(s.getImages()), max(s.getImages()))
-        print 'Collected from/to: %f %f' % s.getCollect()
-        print 'Wavelength: %f' % s.getWavelength()
-        print 'Distance: %f' % s.getDistance()
-        print 'Beam: %f %f' % tuple(s.getBeam())
-        print 'Oscillations: %f to %f (%f)' % tuple(s.getPhi())
-        print ''
+    for sweep in sweeplists:
+        sweeps = known_sweeps[sweep]
+        # this should sort on exposure epoch ...?
+        sweeps.sort()
+        for s in sweeps:
+            print 'Sweep: %s' % os.path.join(s.getDirectory(), s.getTemplate())
+            print 'Images: %d to %d' % (min(s.getImages()), max(s.getImages()))
+            print 'Collected from/to: %f %f' % s.getCollect()
+            print 'Wavelength: %f' % s.getWavelength()
+            print 'Distance: %f' % s.getDistance()
+            print 'Beam: %f %f' % tuple(s.getBeam())
+            print 'Oscillations: %f to %f (%f)' % tuple(s.getPhi())
+            print ''
 
 if __name__ == '__main__':
 
