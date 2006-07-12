@@ -294,4 +294,25 @@ be returned.
 
 Inputs should be the lattice (optionally), unit cell (optionally).
 
+Ok, more thoughts, based on XDS, Mosflm, Labelit \& d*TREK. This is what we
+need to be able to take as input:
+
+\begin{itemize}
+\item{Frame processor information above. n.b. that this includes the distance,
+wavelength \&c.}
+\item{Lattice; unit cell}
+\item{Input images to use - as a list of wedges\footnote{This allows for
+all cases - if the wedges are written as a single number, use that, else
+use min(list) to max(list).}}
+\end{itemize}
+
+Now for the outputs. The output in all cases should be the lattice, cell, 
+mosaic and so on. Need to implement some way to ``hide'' extra information,
+for example the mosflm orientation matrix. In particular it would be useful
+to be able to share this kind of information in pipelines where we want to 
+use e.g. only XDS. Maybe pass an ``indexing information'' bucket, where the
+information may or may not be - if it's not there then the \emph{next}
+application will need to know how to regenerate the missing from the available
+information e.g. the unit cell.
+
 \end{document}
