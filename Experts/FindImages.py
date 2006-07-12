@@ -23,6 +23,7 @@ import os
 import re
 import string
 import math
+import copy
 
 def image2template(filename):
     '''Return a template to match this filename.'''
@@ -178,7 +179,7 @@ def headers2sweeps(header_dict):
 
     sweeps = []
 
-    current_sweep = header_dict[images[0]]
+    current_sweep = copy.deepcopy(header_dict[images[0]])
     
     current_sweep['images'] = [images[0]]
     current_sweep['collect_start'] = current_sweep['epoch']
@@ -192,8 +193,10 @@ def headers2sweeps(header_dict):
         # next frame in the sweep. otherwise it is the first frame in
         # a new sweep.
 
-        if header['wavelength'] == current_sweep['wavelength'] and \
-           header['distance'] == current_sweep['distance'] and \
+        if math.fabs(header['wavelength'] -
+                     current_sweep['wavelength']) < 0.0001 and \
+           math.fabs(header['distance'] -
+                     current_sweep['distance']) < 0.01 and \
            ((header['phi_start'] - current_sweep['phi_end']) % 360.0) < 0.01:
             # this is another image in the sweep
             current_sweep['images'].append(i)
