@@ -194,7 +194,7 @@ def headers2sweeps(header_dict):
 
         if header['wavelength'] == current_sweep['wavelength'] and \
            header['distance'] == current_sweep['distance'] and \
-           header['phi_start'] == current_sweep['phi_end']:
+           ((header['phi_start'] - current_sweep['phi_end']) % 360.0) < 0.01:
             # this is another image in the sweep
             current_sweep['images'].append(i)
             current_sweep['phi_end'] = header['phi_end']
