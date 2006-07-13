@@ -32,6 +32,7 @@ import sys
 import copy
 import time
 import datetime
+import math
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -57,6 +58,15 @@ class _HeaderCache:
         return self._headers.has_key(image)
 
 HeaderCache = _HeaderCache()
+
+# FIXME this does not include MAR, RAXIS detectors
+
+detector_class = {('adsc', 2304, 816):'adsc q4',
+                  ('adsc', 1502, 1632):'adsc q4 2x2 binned',
+                  ('adsc', 4096, 512):'adsc q210',
+                  ('adsc', 2048, 1024):'adsc q210 2x2 binned',
+                  ('adsc', 6144, 512):'adsc q315',
+                  ('adsc', 3072, 1024):'adsc q315 2x2 binned'}
 
 def Printheader(DriverType = None):
     '''A factory for wrappers for the printheader.'''
@@ -116,6 +126,8 @@ def Printheader(DriverType = None):
 
         def readheader(self):
             '''Read the image header.'''
+
+            global detector_class
             
             # if we have the results already then don't bother
             # with the program
@@ -193,6 +205,24 @@ def Printheader(DriverType = None):
                     self._header['phi_start'] = phi[0]
                     self._header['phi_end'] = phi[1]
                     self._header['phi_width'] = phi[1] - phi[0]
+
+            if self._header.has_key('detector') and \
+               self._header.has_key('pixel') and \
+               self._header.has_key('size'):
+                # compute the detector class
+                detector = self._header['detector']
+                width = int(self._header['size'][0])
+                pixel = int(10000 * self._header['pixel'][0])
+
+                key = (detector, width, pixel)
+
+                try:
+                    self._header['detector_class'] = detector_class[key]
+                except:
+                    print 'unknown key: ', key
+
+            else:
+                self._header['detector_class'] = 'unknown'
 
             HeaderCache.put(self._image, self._header)
 
