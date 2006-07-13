@@ -12,7 +12,10 @@
 # A small program to find diffraction data sets as "sweeps" and print 
 # out the results.
 # 
-#
+# 13/JUL/06 Change: Is it better to compile a list of files first, then
+# sort this into templates &c; then compile this into sweeps? Could then
+# also decide how much time to devote to the accurate identification of 
+# sweeps... FIXME this needs to be thought about/implemented.
 
 import sys
 import os
