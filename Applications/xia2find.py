@@ -16,6 +16,7 @@
 
 import sys
 import os
+import exceptions
 
 if not os.environ.has_key('DPA_ROOT'):
     raise RuntimeError, 'DPA_ROOT not defined'
@@ -54,8 +55,8 @@ def get_sweep(file):
             sweeplist = SweepFactory(template, directory)
             known_sweeps[key] = sweeplist
 
-    except:
-        pass
+    except exceptions.Exception, e:
+        print 'Exception: %s' % str(e)
 
     return
 
@@ -77,6 +78,7 @@ def print_sweeps():
         for s in sweeps:
             print 'Sweep: %s' % os.path.join(s.getDirectory(), s.getTemplate())
             print 'Images: %d to %d' % (min(s.getImages()), max(s.getImages()))
+            print 'Detector class: %s' % s.getDetector_class()
             print 'Collected from/to: %f %f' % s.getCollect()
             print 'Wavelength: %f' % s.getWavelength()
             print 'Distance: %f' % s.getDistance()

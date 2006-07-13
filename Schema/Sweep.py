@@ -43,6 +43,9 @@ def SweepFactory(template, directory, beam = None):
     '''A factory which will return a list of sweep objects which match
     the input template and directory.'''
 
+    # FIXME this needs to be optimised to not read every single image header
+    # since that's too slow...
+
     sweeps = []
 
     images = find_matching_images(template, directory)
@@ -109,6 +112,9 @@ class Sweep(Object):
 
     def getDirectory(self):
         return self._directory
+
+    def getDetector_class(self):
+        return self._detector_class
 
     def getImages(self):
         # check if any more images have appeared
@@ -212,6 +218,8 @@ class Sweep(Object):
             self._exposure_time = sweep['exposure_time']
             self._distance = sweep['distance']
             self._wavelength = sweep['wavelength']
+
+            self._detector_class = sweep['detector_class']
 
             # only update this once, and if it isn't known - we want
             # to use the user value if provided
