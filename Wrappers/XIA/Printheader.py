@@ -61,12 +61,12 @@ HeaderCache = _HeaderCache()
 
 # FIXME this does not include MAR, RAXIS detectors
 
-detector_class = {('adsc', 2304, 816):'adsc q4',
-                  ('adsc', 1502, 1632):'adsc q4 2x2 binned',
-                  ('adsc', 4096, 512):'adsc q210',
-                  ('adsc', 2048, 1024):'adsc q210 2x2 binned',
-                  ('adsc', 6144, 512):'adsc q315',
-                  ('adsc', 3072, 1024):'adsc q315 2x2 binned'}
+detector_class = {('adsc', 2304, 81):'adsc q4',
+                  ('adsc', 1502, 163):'adsc q4 2x2 binned',
+                  ('adsc', 4096, 51):'adsc q210',
+                  ('adsc', 2048, 102):'adsc q210 2x2 binned',
+                  ('adsc', 6144, 51):'adsc q315',
+                  ('adsc', 3072, 102):'adsc q315 2x2 binned'}
 
 def Printheader(DriverType = None):
     '''A factory for wrappers for the printheader.'''
@@ -212,7 +212,7 @@ def Printheader(DriverType = None):
                 # compute the detector class
                 detector = self._header['detector']
                 width = int(self._header['size'][0])
-                pixel = int(10000 * self._header['pixel'][0])
+                pixel = int(1000 * self._header['pixel'][0])
 
                 key = (detector, width, pixel)
 
