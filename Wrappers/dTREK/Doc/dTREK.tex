@@ -331,7 +331,105 @@ Spacegroup number: 75
 Num. equiv. posns: 4
 dtindex - Wrote header file dtindex.head
 
+This works
+----------
 
+#!/bin/bash
+export DTREK_PREFIX=infl
+dtfind process.head -seq 1 2 -seq 59 60 -sigma 3 -min 50 -filter 6 \
+-window 0 0 -out infldtfind.head 
+
+dtindex infldtfind.head infldtfind.ref -spacegroup 96 \
+-maxresid 3.0 -sigma 5  
+
+dtrefine infldtindex.head infldtfind.ref -rej 1 1 2 -sigma 1 \
++CrysAll +DetAll -verbose 0 -go -verbose 1  -go 
+
+dtintegrate infldtrefine.head -window 0 0 -pad 1 \
+-mosaicitymodel  1.000 0.000 -profit 50 7 -batch 1 4 -prerefine 2 -seq 1 60 
+
+dtscaleaverage infldtintegrate.head infldtprofit.ref \
+-reject sigma 5.0 -reso 40 1.65 -scaleanom -errormodel  \
+-reject fraction .0075 -batchscale -reqab spherical 4 3 infldtscale.ref 
+
+For the 1VPJ/12287 data set - phases ok. Have the following process.head
+file:
+
+{
+HEADER_BYTES= 2560;
+A4_DETECTOR_DESCRIPTION=A4_ conversion;
+A4_DETECTOR_DIMENSIONS=2048 2048;
+A4_DETECTOR_SIZE= 209.72  209.72;
+A4_DETECTOR_VECTORS=1 0 0 0 1 0;
+A4_GONIO_NAMES=RotZ RotX/Swing RotY TransX TransY TransZ/Dist;
+A4_GONIO_NUM_VALUES=6;
+A4_GONIO_UNITS=deg deg deg mm mm mm;
+A4_GONIO_VALUES=0.000 -0.002 0.000 0.000 0.000  170.000;
+A4_GONIO_VECTORS=0 0 1 -1 0 0 0 1 0 1 0 0 0 1 0 0 0 -1;
+A4_NONUNF_INFO=$(FirstScanImage);
+A4_NONUNF_TYPE=Simple_mask;
+A4_OSC_RANGE= 1.0000;
+A4_OSC_START= 290.0000;
+A4_SPATIAL_BEAM_POSITION=1026.0 1065.0; 
+A4_SPATIAL_DISTORTION_INFO=1026.0 1065.0 0.10240 0.10240;
+A4_SPATIAL_DISTORTION_TYPE=Simple_spatial;
+A4_SPATIAL_DISTORTION_VECTORS=1 0 0 -1;
+ADC=slow;
+AXIS=phi;
+BEAM_CENTER_X=105.10;
+BEAM_CENTER_Y=101.05;
+BIN=none;
+BYTE_ORDER=little_endian;
+CCD_IMAGE_SATURATION=65535;
+CRYSTAL_GONIO_DESCRIPTION=Eulerian 3-circle;
+CRYSTAL_GONIO_NAMES=Omega Chi Phi;
+CRYSTAL_GONIO_NUM_VALUES=3;
+CRYSTAL_GONIO_UNITS=deg deg deg;
+CRYSTAL_GONIO_VALUES=0.000 0.000 0.000;
+CRYSTAL_GONIO_VECTORS=1 0 0 0 1 0 1 0 0;
+DATE=Sun Sep 26 14:01:35 2004;
+DENZO_XBEAM=108.95;
+DENZO_YBEAM=105.10;
+DETECTOR_NAMES=A4_;
+DETECTOR_NUMBER=1;
+DETECTOR_SN=445;
+DIM=2;
+DISTANCE=170.0;
+DTDISPLAY_ORIENTATION=-X+Y;
+DTREK_DATE_TIME=11-Jul-2006 07:54:56;
+DTREK_MODULE=unknown;
+DTREK_VERSION=d*TREK version 9.5L -- Oct  4 2005;
+PHI=290.000;
+PIXEL_SIZE=0.102400;
+ROTATION= 290.0000  291.0000  1.0000  5.0000  1.0000 0.0000 0.0000 0.0000 0.0000 0.0000;
+ROTATION_AXIS_NAME=Omega;
+ROTATION_FIELDS=RotStart RotEnd RotInc RotTime;
+ROTATION_VECTOR=1 0 0;
+SATURATED_VALUE=65535;
+SCAN_FIELDS=RotStart RotEnd RotInc RotTime;
+SCAN_ROTATION= 290.0000  291.0000  1.0000  5.0000  1.0000 0.0000 0.0000 0.0000 0.0000 0.0000;
+SCAN_ROTATION_AXIS_NAME=Omega;
+SCAN_ROTATION_VECTOR=1 0 0;
+SCAN_SEQ_INFO=1 1 0;
+SCAN_TEMPLATE=../12287/12287_1_E1_???.img;
+SIZE1=0;
+SIZE2=0;
+SOURCE_CROSSFIRE=0.0002 0.0002 0.0 0.0;
+SOURCE_INTENSITY=1.0;
+SOURCE_POLARZ=0.95 0 1 0;
+SOURCE_SIZE=0.0 0.0 0.0 0.0;
+SOURCE_SPECTRAL_DISPERSION=0.0002 0.0002;
+SOURCE_VALUES=0 0;
+SOURCE_VECTORS=0 0 1 0 1 0 1 0 0;
+SOURCE_WAVELENGTH= 1.00000 0.97966;
+TIME=5.0;
+TWOTHETA=-0.002;
+TYPE=unsigned_short;
+UNIF_PED=1500;
+WAVELENGTH=0.97966;
+}
+
+Only thing I changed was the beam centre (based on Labelit).
 
 \end{verbatim}
 }
