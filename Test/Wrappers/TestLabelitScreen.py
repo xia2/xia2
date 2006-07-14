@@ -79,7 +79,7 @@ class TestLabelitScreen(unittest.TestCase):
         ls.addImage(os.path.join(directory, '12287_1_E1_090.img'))
 
         # set the beam to something totally false
-        ls.setBeam(90.0, 90.0)
+        ls.setBeam((90.0, 90.0))
 
         self.assertRaises(RuntimeError, ls.index)
 
