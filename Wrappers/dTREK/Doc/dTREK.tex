@@ -366,7 +366,7 @@ A4_GONIO_NUM_VALUES=6;
 A4_GONIO_UNITS=deg deg deg mm mm mm;
 A4_GONIO_VALUES=0.000 -0.002 0.000 0.000 0.000  170.000;
 A4_GONIO_VECTORS=0 0 1 -1 0 0 0 1 0 1 0 0 0 1 0 0 0 -1;
-A4_NONUNF_INFO=$(FirstScanImage);
+A4_NONUNF_INFO=\$(FirstScanImage);
 A4_NONUNF_TYPE=Simple_mask;
 A4_OSC_RANGE= 1.0000;
 A4_OSC_START= 290.0000;
@@ -433,6 +433,71 @@ Only thing I changed was the beam centre (based on Labelit).
 
 \end{verbatim}
 }
+
+\section{Plans}
+
+The best way to ``wrap'' d*TREK is probably through the header files, for 
+instance having the ``index'' method write the initial header as input, then 
+read the final header containing the indexing results. The actual text of the
+header could then be the ``payload'' of the result (in the same way as the 
+mosflm matrix file etc.)
+
+The results of the indexing are in a ``cell'' record in the header file - 
+there is also the mosaic spread estimate in there. 
+
+In terms of processing, dtintegrate produces a header file - it may be 
+worth recycling this later on to refine the parameters used in integration.
+
+\subsection{Initial Work}
+
+Looks like the input \& output of all of the d*TREK processes will be 
+the header files; a standard mechanism for reading, writing the header
+files could represent some standard functionality I want in a d*TREK
+Decorator - therefore define this.
+
+\subsection{Functionality}
+
+\begin{itemize}
+\item{[index] - if just a couple of images are available; use just 
+dtfind, dtindex. if more frames are available define this to include
+a dtrefine step.}
+\item{[integrate] - if we have already refined then this is just integration,
+else it will include refinement.}
+\item{[scale] - scaling \emph{via} scala or dtscaleaverage - need to find
+out how to do the former.}
+\end{itemize}
+
+\subsection{Wrappers}
+
+The following programs need wrappers:
+
+\begin{itemize}
+\item{dtfind}
+\item{dtindex}
+\item{dtrefine}
+\item{dtintegrate}
+\item{dtscaleaverage}
+\end{itemize}
+
+\subsubsection{dtfind}
+
+\subsubsection{dtindex}
+
+
+Input: -cell a b c alpha beta gamma -spacegroup 75
+
+Output: get the cell etc. from header file.
+
+\section{Caveats}
+
+I am not sure that the statistics produced by dtscaleaverage are comparable
+to those from scala - the $I/\sigma$ overall for 1vpj datasets (60 degree)
+was about 7, when the scala output gave the overall value of something like
+12. Need to check this...
+
+... however, the map calculated from the dataset looked ok; have not yet 
+build into the data to get the final refinement statistics.
+
 
 \end{document}
 

@@ -315,4 +315,10 @@ information may or may not be - if it's not there then the \emph{next}
 application will need to know how to regenerate the missing from the available
 information e.g. the unit cell.
 
+Thought/FIXME: Shouldn't it be down to the indexer implementation to decide
+what images it wants to use for indexing - for instance d*TREK can make
+use of a couple of small wedges of data... - this is also missing the point
+of delegation. However, all indexers will need to be able to select from a 
+list of images, so a sweep definition will need to be included in the input.
+
 \end{document}
