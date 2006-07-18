@@ -27,7 +27,9 @@
 # Methods:
 # 
 # index() -> delegated to implementation._index()
-# 
+#
+# FIXME: getter methods should, if the results are NULL, initiate the index
+#        process to allow pure constructor based (functional?) programming.
 
 import os
 import sys

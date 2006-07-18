@@ -323,4 +323,16 @@ list of images, so a sweep definition will need to be included in the input.
 
 If list == NULL then decide; else use user defined list.
 
+\subsection{Architecture}
+
+Thought: An integrater takes as input an indexer, or it makes it's own.
+Can that fly? E.g. passes in the indexer because that contains all of the
+stuff that the integrater needs to work, which could in turn be passed
+to a scaler to do it's funky stuff.
+
+Interesting idea, no idea if it'll fly! Esp. because this could be a little
+recursive with things like Mosflm which implements indexer and integrater.
+Hmm....
+
+
 \end{document}
