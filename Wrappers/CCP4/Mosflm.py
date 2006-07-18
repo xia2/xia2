@@ -137,6 +137,7 @@ def Mosflm(DriverType = None):
 
             self.input('template %s' % self.getTemplate())
             self.input('directory %s' % self.getDirectory())
+            self.input('newmat xiaindex.mat')
 
             if self.getBeam_prov() == 'user':
                 self.input('beam %f %f' % self.getBeam())
@@ -173,6 +174,9 @@ def Mosflm(DriverType = None):
                     self._indxr_refined_distance = float(o.split(
                         )[5].replace('mm', ''))
 
+            self._indxr_payload['mosflm_orientation_matrix'] = open(
+                'xiaindex.mat', 'r').readlines()
+    
     return MosflmWrapper()
 
 
