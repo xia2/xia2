@@ -31,7 +31,7 @@ if not os.environ['DPA_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['DPA_ROOT']))
 
 from Experts.FindImages import image2template_directory, \
-     template_directory_number2image, image2image
+     template_directory_number2image, image2image, find_matching_images
 from Wrappers.XIA.Printheader import Printheader
 
 class FrameProcessor:
@@ -42,6 +42,8 @@ class FrameProcessor:
 
         self._fp_template = None
         self._fp_directory = None
+
+        self._fp_matching_images = []
 
         self._fp_wavelength = None
         self._fp_distance = None
@@ -74,6 +76,9 @@ class FrameProcessor:
 
     def getDirectory(self):
         return self._fp_directory
+
+    def getMatching_images(self):
+        return self._fp_matching_images
 
     def setWavelength(self, wavelength):
         self._fp_wavelength = wavelength
@@ -136,14 +141,19 @@ class FrameProcessor:
         # can be used to configure the template &c.
         # FIXME DOC this means that a FrameProcessor must deal only ever
         # with one sweep.
-        
-        if not self._fp_template and not self._fp_directory:
-            self._setup_from_image(image)
+
+        # FIXED - now removed, because setup_from_image is public and
+        # the preferred way of accessing this functionality.
+        # if not self._fp_template and not self._fp_directory:
+        # self._setup_from_image(image)
 
         return image2image(image)
                                                
     # FIXME should this be public??
     def setup_from_image(self, image):
+        if self._template and self._directory:
+            raise RuntimeError, 'FrameProcessor implementation already set up'
+        
         self._setup_from_image(image)
 
     # private methods
@@ -153,6 +163,8 @@ class FrameProcessor:
         template, directory = image2template_directory(image)
         self._fp_template = template
         self._fp_directory = directory
+
+        self._fp_matching_images = find_matching_images(template, directory)
 
         # read the image header
         ph = Printheader()
@@ -185,6 +197,7 @@ if __name__ == '__main__':
     print fp.getBeam()
     print fp.getWavelength()
     print fp.getHeader()
+    print fp.getMatching_images()
     
     
 

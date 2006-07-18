@@ -30,6 +30,12 @@
 #
 # FIXME: getter methods should, if the results are NULL, initiate the index
 #        process to allow pure constructor based (functional?) programming.
+#
+# Notes:
+# 
+# All properties of this class are prefixed with either indxr for protected
+# things or Indexer for public things.
+
 
 import os
 import sys
@@ -67,7 +73,9 @@ class Indexer:
         return
 
     def _index_select_images(self):
-        '''This is something the implementation needs to implement.'''
+        '''This is something the implementation needs to implement.
+        For instance, Labelit & Mosflm work well with 2 frames 90
+        degrees separated, d*TREK & XDS with a couple of wedges.'''
 
         raise RuntimeError, 'overload me'
 
