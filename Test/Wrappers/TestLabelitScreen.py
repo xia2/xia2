@@ -45,22 +45,15 @@ class TestLabelitScreen(unittest.TestCase):
         directory = os.path.join(os.environ['DPA_ROOT'],
                                  'Data', 'Test', 'Images')
 
-        ls.addImage(os.path.join(directory, '12287_1_E1_001.img'))
-        ls.addImage(os.path.join(directory, '12287_1_E1_090.img'))
-        
+        ls.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
+        ls.addIndexer_image_wedge(1)
+        ls.addIndexer_image_wedge(90)
         ls.index()
 
-        # check the number of solutions
-        solutions = ls.getSolutions()
-        keys = solutions.keys()
-
-        self.assertEqual(max(keys), 9)
-        self.assertEqual(min(keys), 1)
-
         # test the refined parameters
-        self.assertEqual(nint(ls.getDistance()), 170)
+        self.assertEqual(nint(ls.getIndexer_distance()), 170)
 
-        beam = ls.getBeam()
+        beam = ls.getIndexer_beam()
         
         self.assertEqual(nint(beam[0]), 109)
         self.assertEqual(nint(beam[1]), 105)
@@ -75,8 +68,9 @@ class TestLabelitScreen(unittest.TestCase):
         directory = os.path.join(os.environ['DPA_ROOT'],
                                  'Data', 'Test', 'Images')
 
-        ls.addImage(os.path.join(directory, '12287_1_E1_001.img'))
-        ls.addImage(os.path.join(directory, '12287_1_E1_090.img'))
+        ls.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
+        ls.addIndexer_image_wedge(1)
+        ls.addIndexer_image_wedge(90)
 
         # set the beam to something totally false
         ls.setBeam((90.0, 90.0))
