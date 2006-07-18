@@ -60,6 +60,7 @@ from Handlers.Syminfo import Syminfo
 
 # interfaces that this inherits from ...
 from Schema.Interfaces.FrameProcessor import FrameProcessor
+from Schema.Interfaces.Indexer import Indexer
 
 def LabelitScreen(DriverType = None):
     '''Factory for LabelitScreen wrapper classes, with the specified
@@ -68,7 +69,8 @@ def LabelitScreen(DriverType = None):
     DriverInstance = DriverFactory.Driver(DriverType)
 
     class LabelitScreenWrapper(DriverInstance.__class__,
-                               FrameProcessor):
+                               FrameProcessor,
+                               Indexer):
         '''A wrapper for the program labelit.screen - which will provide
         functionality for deciding the beam centre and indexing the
         diffraction pattern.'''
@@ -79,6 +81,7 @@ def LabelitScreen(DriverType = None):
             
             # interface constructor calls
             FrameProcessor.__init__(self)
+            Indexer.__init__(self)
 
             self.setExecutable('labelit.screen')
 
@@ -89,31 +92,16 @@ def LabelitScreen(DriverType = None):
             self._refine_beam = True
 
             self._solutions = { }
-            self._refined_beam = (0.0, 0.0)
-            self._refined_distance = 0.0
-            self._mosaic = 0.0
 
-            self._lattice = None
+            self._solution = None
 
             return
 
-        def addImage(self, image):
-            '''Add an image for indexing.'''
-
-            i = self.getImage_number(image)
-
-            if not i in self._images:
-                self._images.append(i)
-
-            return
+        # this is not defined in the Indexer interface :o(
+        # FIXME should it be???
 
         def setRefine_beam(self, refine_beam):
             self._refine_beam = refine_beam
-            
-            return
-
-        def setLattice(self, lattice):
-            self._lattice = lattice
             return
 
         def _write_dataset_preferences(self):
@@ -123,16 +111,18 @@ def LabelitScreen(DriverType = None):
             out = open(os.path.join(self.getWorking_directory(),
                                     'dataset_preferences.py'), 'w')
 
-            if self.getDistance() > 0.0:
+            # only write things out if they have been overridden
+            # from what is in the header...
+
+            if self.getDistance_prov() == 'user':
                 out.write('autoindex_override_distance = %f\n' %
                           self.getDistance())
-            if self.getWavelength() > 0.0:
+            if self.getWavelength_prov() == 'user':
                 out.write('autoindex_override_wavelength = %f\n' %
                           self.getWavelength())
-            if self.getBeam():
-                if self.getBeam()[0] > 0.0 and self.getBeam()[1] > 0.0:
-                    out.write('autoindex_override_beam = (%f, %f)\n' % \
-                              self.getBeam())
+            if self.getBeam_prov() == 'user':
+                out.write('autoindex_override_beam = (%f, %f)\n' % \
+                          self.getBeam())
             if self._refine_beam is False:
                 out.write('beam_search_scope = 0.0\n')
 
@@ -152,25 +142,31 @@ def LabelitScreen(DriverType = None):
 
             return
 
-        def index(self):
+        def _index(self):
             '''Actually index the diffraction pattern. Note well that
             this is not going to compute the matrix...'''
 
-            self._images.sort()
+            _images = []
+            for i in self._indxr_images:
+                for j in i:
+                    if not j in _images:
+                        _images.append(j)
+                    
+            _images.sort()
 
-            if len(self._images) > 2:
+            if len(_images) > 2:
                 raise RuntimeError, 'cannot use more than 2 images'
 
             task = 'Autoindex from images:'
 
-            for i in self._images:
+            for i in _images:
                 task += ' %s' % self.getImage_name(i)
 
             self.setTask(task)
 
             self.addCommand_line('--index_only')
 
-            for i in self._images:
+            for i in _images:
                 self.addCommand_line(self.getImage_name(i))
 
             self._write_dataset_preferences()
@@ -197,8 +193,8 @@ def LabelitScreen(DriverType = None):
                     x = float(l[3].replace('mm,', ''))
                     y = float(l[5].replace('mm,', ''))
                     
-                    self._refined_beam = (x, y)
-                    self._refined_distance = float(l[7].replace('mm', ''))
+                    self._indxr_refined_beam = (x, y)
+                    self._indxr_refined_distance = float(l[7].replace('mm', ''))
 
                     self._mosaic = float(l[10].replace('mosaicity=', ''))
 
@@ -219,6 +215,7 @@ def LabelitScreen(DriverType = None):
 
             for i in range(counter + 1, len(output)):
                 o = output[i][3:]
+                smiley = output[i][:3]
                 l = o.split()
                 if l:
                     self._solutions[int(l[0])] = {'mosaic':self._mosaic,
@@ -226,34 +223,35 @@ def LabelitScreen(DriverType = None):
                                                   'nspots':int(l[4]),
                                                   'lattice':l[6],
                                                   'cell':map(float, l[7:13]),
-                                                  'volume':int(l[-1])}
+                                                  'volume':int(l[-1]),
+                                                  'smiley':smiley}
+
+            # configure the "right" solution
+            self._solution = self.getSolution()
+
+            self._indxr_lattice = self._solution['lattice']
+            self._indxr_cell = tuple(self._solution['cell'])
+            self._indxr_mosaic = self._solution['mosaic']
 
             return 'ok'
 
         # things to get results from the indexing
 
-        def getSolutions(self):
-            '''Get the solutions from indexing.'''
-            return self._solutions
-
         def getSolution(self):
             '''Get the best solution from autoindexing.'''
-            if self._lattice is None:
+            if self._indxr_lattice is None:
+                # FIXME in here I need to check that there is a
+                # "good" smiley
                 return copy.deepcopy(
                     self._solutions[max(self._solutions.keys())])
             else:
                 # look through for a solution for this lattice
                 for s in self._solutions.keys():
-                    if self._solutions[s]['lattice'] == self._lattice:
+                    if self._solutions[s]['lattice'] == self._indxr_lattice:
                         return copy.deepcopy(self._solutions[s])
 
-            raise RuntimeError, 'no solution for lattice %s' % self._lattice
-
-        def getBeam(self):
-            return self._refined_beam
-
-        def getDistance(self):
-            return self._refined_distance
+            raise RuntimeError, 'no solution for lattice %s' % \
+                  self._indxr_lattice
 
     return LabelitScreenWrapper()
 
@@ -269,29 +267,19 @@ if __name__ == '__main__':
     directory = os.path.join(os.environ['DPA_ROOT'],
                              'Data', 'Test', 'Images')
 
-    l.addImage(os.path.join(directory, '12287_1_E1_001.img'))
-    l.addImage(os.path.join(directory, '12287_1_E1_090.img'))
+    l.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
+
+    l.addIndexer_image_wedge(1)
+    l.addIndexer_image_wedge(90)
 
     l.index()
 
-    print 'Refined beam is: %6.2f %6.2f' % l.getBeam()
-    print 'Distance:        %6.2f' % l.getDistance()
+    print 'Refined beam is: %6.2f %6.2f' % l.getIndexer_beam()
+    print 'Distance:        %6.2f' % l.getIndexer_distance()
+    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % l.getIndexer_cell()
+    print 'Lattice: %s' % l.getIndexer_lattice()
+    print 'Mosaic: %6.2f' % l.getIndexer_mosaic()
 
-    solutions = l.getSolutions()
-
-    keys = solutions.keys()
-
-    keys.sort()
-    keys.reverse()
-
-    for k in keys:
-        print 'Lattice: %s Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-              (solutions[k]['lattice'], \
-               solutions[k]['cell'][0], \
-               solutions[k]['cell'][1], \
-               solutions[k]['cell'][2], \
-               solutions[k]['cell'][3], \
-               solutions[k]['cell'][4], \
-               solutions[k]['cell'][5])
+    
               
     
