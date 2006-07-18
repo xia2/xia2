@@ -60,7 +60,7 @@ class Indexer:
 
         # extra indexing guff - a dictionary which the implementation
         # can store things in
-        self._indxr_payload = None
+        self._indxr_payload = { }
 
         return
 
@@ -69,6 +69,11 @@ class Indexer:
 
         raise RuntimeError, 'overload me'
 
+    def index_select_images(self):
+        '''Call the local implementation...'''
+        
+        return self._index_select_images()
+
     def _index(self):
         '''This is what the implementation needs to implement.'''
 
@@ -76,7 +81,7 @@ class Indexer:
 
     def index(self):
         if self._indxr_images is []:
-            self._index_select_images()
+            self.index_select_images()
 
         return self._index()
 
@@ -139,5 +144,9 @@ class Indexer:
         '''Get the refined distance.'''
 
         return self._indxr_refined_beam
+
+    def getIndexer_payload(self, this):
+        '''Attempt to get something from the indexer payload.'''
+        return self._indxr_payload.get(this, None)
 
     # end of interface
