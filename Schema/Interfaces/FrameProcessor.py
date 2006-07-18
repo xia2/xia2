@@ -47,6 +47,10 @@ class FrameProcessor:
         self._fp_distance = None
         self._fp_beam = None
 
+        self._fp_wavelength_prov = None
+        self._fp_distance_prov = None
+        self._fp_beam_prov = None
+
         self._fp_header = { }
 
         # if image has been specified, construct much of this information
@@ -73,24 +77,36 @@ class FrameProcessor:
 
     def setWavelength(self, wavelength):
         self._fp_wavelength = wavelength
+        self._fp_wavelength_prov = 'user'
         return
 
     def getWavelength(self):
         return self._fp_wavelength
 
+    def getWavelength_prov(self):
+        return self._fp_wavelength_prov
+
     def setDistance(self, distance):
         self._fp_distance = distance
+        self._fp_distance_prov = 'user'
         return
 
     def getDistance(self):
         return self._fp_distance
 
+    def getDistance_prov(self):
+        return self._fp_distance_prov
+
     def setBeam(self, beam):
         self._fp_beam = beam
+        self._fp_beam_prov = 'user'
         return
 
     def getBeam(self):
         return self._fp_beam
+
+    def getBeam_prov(self):
+        return self._fp_beam_prov
 
     def setHeader(self, header):
         self._fp_header = header
@@ -126,6 +142,9 @@ class FrameProcessor:
 
         return image2image(image)
                                                
+    # FIXME should this be public??
+    def setup_from_image(self, image):
+        self._setup_from_image(image)
 
     # private methods
 
@@ -141,9 +160,15 @@ class FrameProcessor:
         self._fp_header = ph.readheader()
 
         # populate wavelength, beam etc from this
-        self._fp_wavelength = self._fp_header['wavelength']
-        self._fp_distance = self._fp_header['distance']
-        self._fp_beam = self._fp_header['beam']
+        if self._fp_wavelength_prov is None:
+            self._fp_wavelength = self._fp_header['wavelength']
+            self._fp_wavelength_prov = 'header'
+        if self._fp_distance_prov is None:
+            self._fp_distance = self._fp_header['distance']
+            self._fp_distance_prov = 'header'
+        if self._fp_beam_prov is None:
+            self._fp_beam = tuple(map(float, self._fp_header['beam']))
+            self._fp_beam_prov = 'header'
 
         return
 
