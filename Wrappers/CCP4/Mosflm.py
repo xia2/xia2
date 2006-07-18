@@ -80,13 +80,21 @@ import sys
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
+if not os.environ.has_key('DPA_ROOT'):
+    raise RuntimeError, 'DPA_ROOT not defined'
 
 if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
+if not os.environ['DPA_ROOT'] in sys.path:
+    sys.path.append(os.environ['DPA_ROOT'])
 
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
+
+# interfaces that this will present
+from Schema.Interfaces.FrameProcessor import FrameProcessor
+from Schema.Interfaces.Indexer import Indexer
 
 def Mosflm(DriverType = None):
     '''A factory for MosflmWrapper classes.'''
@@ -94,7 +102,9 @@ def Mosflm(DriverType = None):
     DriverInstance = DriverFactory.Driver(DriverType)
     CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, 'ccp4')
 
-    class MosflmWrapper(CCP4DriverInstance.__class__):
+    class MosflmWrapper(CCP4DriverInstance.__class__,
+                        FrameProcessor,
+                        Indexer):
         '''A wrapper for Mosflm, using the CCP4-ified Driver.'''
 
         def __init__(self):
@@ -102,74 +112,97 @@ def Mosflm(DriverType = None):
             CCP4DriverInstance.__class__.__init__(self)
             self.setExecutable('ipmosflm')
 
-            # file information
-            self._template = None
-            self._directory = None
+            FrameProcessor.__init__(self)
+            Indexer.__init__(self)
 
-            # processing information
-            self._beam = None
-            self._wavelength = None
-            self._distance = None
+        def _index(self):
+            '''Implement the indexer interface.'''
 
-            # indexing information
-            self._cell = None
-            self._indexing_images = []
+            _images = []
+            for i in self._indxr_images:
+                for j in i:
+                    if not j in _images:
+                        _images.append(j)
+                    
+            _images.sort()
 
-            # matrix files - store these as strings to make
-            # life easier...
-            self._autoindex_matrix = []
+            task = 'Autoindex from images:'
 
-            # integration information
+            for i in _images:
+                task += ' %s' % self.getImage_name(i)
 
-            self._matrix = None
-            self._mosaic = None
-
-            # this is in place of a lattice assignment
-            self._spacegroup = None
+            self.setTask(task)
             
-            self._cell_refine_images = []
-            self._integration_start = None
-            self._integration_end = None
+            self.start()
 
-            # detailed parameters
-            self._gain = None
-            self._resolution = 0.0
-            
-            return
+            self.input('template %s' % self.getTemplate())
+            self.input('directory %s' % self.getDirectory())
 
-        def setTemplate(self, template):
-            self._template = template
+            if self.getBeam_prov() == 'user':
+                self.input('beam %f %f' % self.getBeam())
 
-        def getTemplate(self):
-            return self._template
+            if self.getWavelength_prov() == 'user':
+                self.input('wavelength %f %f' % self.getWavelength())
 
-        def setDirectory(self, directory):
-            self._directory = directory
+            if self.getDistance_prov() == 'user':
+                self.input('distance %f' % self.getDistance())
 
-        def getDirectory(self):
-            return self._directory
+            for i in _images:
+                self.input('autoindex dps refine image %d' % i)
 
-        def setBeam(self, beam_x, beam_y):
-            self._beam = beam_x, beam_y
-            return
+            self.input('mosaic estimate')
+            self.input('go')
 
-        def setWavelength(self, wavelength):
-            self._wavelength = wavelength
-            return
-        
-        def setDistance(self, distance):
-            self._distance = distance
-            return
+            self.close_wait()
 
-        def addImage(self, image):
-            # should image here be an integer or a file name?
-            # FIXME Q: What will happen in the future when working
-            # with NEXUS files? Ignore for the moment!
-            self._indexing_images.append(image)
-            return
+            output = self.get_all_output()
 
-        
+            for o in output:
+                if 'Final cell (after refinement)' in o:
+                    self._indxr_cell = tuple(map(float, o.split()[-6:]))
+                if 'Beam coordinates of' in o:
+                    self._indxr_refined_beam = tuple(map(float, o.split(
+                        )[-2:]))
+                if 'Symmetry:' in o:
+                    self._indxr_lattice = o.split(':')[1].split()[0]
+                if 'The mosaicity has been estimated' in o:
+                    self._indxr_mosaic = float(o.split('>')[1].split()[0])
 
-        
-        
+                # mosflm doesn't refine this...
+                if 'Crystal to detector distance' in o:
+                    self._indxr_refined_distance = float(o.split(
+                        )[5].replace('mm', ''))
+
+    return MosflmWrapper()
+
+
+if __name__ == '__main__':
+
+    # run a demo test
+
+    if not os.environ.has_key('DPA_ROOT'):
+        raise RuntimeError, 'DPA_ROOT not defined'
+
+    m = Mosflm()
+
+    directory = os.path.join(os.environ['DPA_ROOT'],
+                             'Data', 'Test', 'Images')
+
+    # from Labelit
+    m.setBeam((108.9, 105.0))
+
+    m.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
+
+    m.addIndexer_image_wedge(1)
+    m.addIndexer_image_wedge(90)
+
+    m.index()
+
+    print 'Refined beam is: %6.2f %6.2f' % m.getIndexer_beam()
+    print 'Distance:        %6.2f' % m.getIndexer_distance()
+    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % m.getIndexer_cell()
+    print 'Lattice: %s' % m.getIndexer_lattice()
+    print 'Mosaic: %6.2f' % m.getIndexer_mosaic()
+
+
         
