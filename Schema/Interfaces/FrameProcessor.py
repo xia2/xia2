@@ -151,7 +151,7 @@ class FrameProcessor:
                                                
     # FIXME should this be public??
     def setup_from_image(self, image):
-        if self._template and self._directory:
+        if self._fp_template and self._fp_directory:
             raise RuntimeError, 'FrameProcessor implementation already set up'
         
         self._setup_from_image(image)
