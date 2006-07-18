@@ -321,7 +321,11 @@ use of a couple of small wedges of data... - this is also missing the point
 of delegation. However, all indexers will need to be able to select from a 
 list of images, so a sweep definition will need to be included in the input.
 
-If list == NULL then decide; else use user defined list.
+If list == NULL then decide; else use user defined list. This is best because
+it allows delegation of the selection to someone who knows \& cares. 
+To enable this, I have added a list of images to the FrameProcessor
+interface. This helps, because it means that you can look at the header of
+the first image and the other images to make your selection.
 
 \subsection{Architecture}
 
@@ -332,7 +336,22 @@ to a scaler to do it's funky stuff.
 
 Interesting idea, no idea if it'll fly! Esp. because this could be a little
 recursive with things like Mosflm which implements indexer and integrater.
-Hmm....
+Hmm.... This should be doable, but may be more than a little mysterious!
 
+\subsection{Integrater}
+
+The integrater interface will:
+
+\begin{itemize}
+\item{[optionally] reindex if indexing solution for this program not part
+of indexer payload.}
+\item{[optionally] perform local cell refinement if the program uses this, 
+and if the user has not asked us to be \emph{fast}.}
+\item{Actually perform the integration, to a defined resolution limit 
+[optional] and over a defined range of frames [optional: default to all.]}
+\item{[optionally] refine the integration parameters c/f mosflm gain 
+and repeat the integration. Note that this is appropriate for Mosflm,
+XDS \& d*TREK in their own ways.}
+\end{itemize}
 
 \end{document}
