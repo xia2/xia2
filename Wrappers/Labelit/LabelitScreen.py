@@ -85,8 +85,6 @@ def LabelitScreen(DriverType = None):
 
             self.setExecutable('labelit.screen')
 
-            self._images = []
-
             # control over the behaviour
 
             self._refine_beam = True
@@ -141,6 +139,11 @@ def LabelitScreen(DriverType = None):
                           o.split(':')
 
             return
+
+        def _index_select_images(self):
+            '''FIXME this needs to be implemented.'''
+
+            raise RuntimeError, 'I need implementing'
 
         def _index(self):
             '''Actually index the diffraction pattern. Note well that
