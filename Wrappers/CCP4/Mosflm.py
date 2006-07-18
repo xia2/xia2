@@ -208,5 +208,9 @@ if __name__ == '__main__':
     print 'Lattice: %s' % m.getIndexer_lattice()
     print 'Mosaic: %6.2f' % m.getIndexer_mosaic()
 
+    print 'Matrix:'
+    for l in m.getIndexer_payload('mosflm_orientation_matrix'):
+        print l[:-1]
+
 
         

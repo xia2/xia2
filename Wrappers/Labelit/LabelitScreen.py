@@ -62,6 +62,9 @@ from Handlers.Syminfo import Syminfo
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 from Schema.Interfaces.Indexer import Indexer
 
+# other labelit things that this uses
+from Wrappers.Labelit.LabelitMosflmScript import LabelitMosflmScript
+
 def LabelitScreen(DriverType = None):
     '''Factory for LabelitScreen wrapper classes, with the specified
     Driver type.'''
@@ -221,7 +224,8 @@ def LabelitScreen(DriverType = None):
                 smiley = output[i][:3]
                 l = o.split()
                 if l:
-                    self._solutions[int(l[0])] = {'mosaic':self._mosaic,
+                    self._solutions[int(l[0])] = {'number':int(l[0]),
+                                                  'mosaic':self._mosaic,
                                                   'rmsd':float(l[3]),
                                                   'nspots':int(l[4]),
                                                   'lattice':l[6],
@@ -235,6 +239,10 @@ def LabelitScreen(DriverType = None):
             self._indxr_lattice = self._solution['lattice']
             self._indxr_cell = tuple(self._solution['cell'])
             self._indxr_mosaic = self._solution['mosaic']
+
+            lms = LabelitMosflmScript()
+            lms.setSolution(self._solution['number'])
+            self._indxr_payload['mosflm_orientation_matrix'] = lms.calculate()
 
             return 'ok'
 
@@ -283,6 +291,6 @@ if __name__ == '__main__':
     print 'Lattice: %s' % l.getIndexer_lattice()
     print 'Mosaic: %6.2f' % l.getIndexer_mosaic()
 
-    
-              
-    
+    print 'Matrix:'
+    for m in l.getIndexer_payload('mosflm_orientation_matrix'):
+        print m[:-1]
