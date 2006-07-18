@@ -498,6 +498,400 @@ was about 7, when the scala output gave the overall value of something like
 ... however, the map calculated from the dataset looked ok; have not yet 
 build into the data to get the final refinement statistics.
 
+{
+\small
+\begin{verbatim}
+                     DTREK2SCALA (CCP4: Supported Program)
 
+NAME
+
+   dtrek2scala  - for conversion of integrated intensity and header files
+   from D*TREK into multi-record mtz files
+
+SYNOPSIS
+
+   dtrek2scala hklout foo_out.mtz [Keyworded input]
+
+DESCRIPTION
+
+   The  program  DTREK2SCALA is used for converting reflection data files
+   created   by   the  program  D*TREK.  It  uses  the  full  goniometric
+   description  of  the  experiment  (encoded  in D*TREK header files) to
+   generate  a MTZ orientation blocks in the 'Cambridge' reference frame.
+   The  output  is  a multi-record MTZ file containing orientation blocks
+   with  the crystal and goniostat information: this file is suitable for
+   input to SCALA for scaling
+   and is essentially equivalent to the output MTZ of MOSFLM.
+
+   The  input  files  must  be  integrated  or  profile  fitted intensity
+   reflection  files  created by dtintegrate/dtprofit (e.g. dtprofit.ref)
+   and  the  corresponding  d*trek  header file created by these programs
+   (e.g. dtintegrate.head)
+
+KEY WORDED INPUT
+
+   The  various  data control lines are identified by keywords with those
+   available being:
+
+  ACCEPT , BATCH , BTITLE , CRYSTAL , FILE , HFILE , UGCB , LIMITS , SYMMETRY ,
+  REJECT , REINDEX , SCALE , SPLIT , TITLE , TOOFAR , NAME , PROCESS
+
+  ACCEPT n1 n2 n3 . . . (N.B. NOT WORKING!!!)
+
+   Set  flags  to  accept reflections labelled with error flags n1,n2 etc
+   (cf  REJECT command below). MADNES sets a bit flag for each reflection
+   for  error  conditions:  this  command (and REJECT) allow selection of
+   which classes of reflection to accept. The flags are as follows:-
+
+   Flag   Default        Error
+  Number  Setting       Condition
+
+     1    accept      Not found (ie weak)
+     2    accept      On YMS edge
+     3    accept      On ZMS edge
+     4    accept      On Phi edge
+     5    reject      Too far from YMS
+     6    reject      Too far from ZMS
+     7    reject      Too far from Phi
+     8    reject      Too big in YMS
+     9    reject      Too big in ZMS
+    10    reject      Too big in Phi
+    11    reject      Background bad
+    12    reject      Background sd bad
+    13    reject      Negative sd
+    14    accept      Fobs <= 0.0
+    15    reject      Bad pixels
+    16    reject      Overflow
+
+  BATCH <batch number> [ <maximum batch number> ]
+
+   Set  BATCH  number  for output file. If the SPLIT option is used (qv),
+   this  will be the first batch number. Remember that batch numbers must
+   be  unique for all batches in an MTZ file. When reading multiple DTREK
+   data  reflection  files  a  separate BATCH command must be used before
+   each  PROCESS  keyword otherwise the program will not give the correct
+   performance.  Watch  out  if  using  the  SPLIT  option as well; batch
+   numbers  must be unique, and no check is made of this, so the starting
+   batch  number  for each group must be sufficiently well separated. The
+   optional  maximum  batch  number  may  be used to avoid having a final
+   batch with very few reflections in it.
+
+  BTITLE <title>
+
+   Set batch title for output MTZ file (defaults = file title TITLE)
+
+  CRYSTAL <crystal_number>
+
+   Set  crystal  number,  a number defining a crystal which may contain a
+   number  of  batches.  This number is not currently used, but may be in
+   future. The crystal number defaults to the first batch number.
+
+  FILE <filename>
+
+   Filename for d*trek reflection file. (default = dtprofit.ref).
+
+  HFILE <filename>
+
+   Filename  for  the  d*trek  header  file after the integration/profile
+   fitting stage. (default = dtintegrate.head) (see example).
+
+  LIMITS <Ymin> <Ymax> <Zmin> <Zmax>
+
+   Set limits on detector position Y,Z for reflection to be accepted This
+   may  be  used to exclude reflections near the edge of the detector The
+   default is not to check detector position.
+
+  REINDEX <reindexing_rule>
+
+   Reindex  data,  according  to  a  matrix specified in a similar way to
+   symmetry operations
+e.g. reindex   k, h, -l
+     reindex   h, -k, -h/2-l/2
+
+   Cell  dimensions  will  be  recalculated  for  the  redefined cell. Be
+   careful  that the index transformation preserves the hand of the axes,
+   ie  that  the  matrix has a positive determinant. The program will not
+   allow  you  to  invert  the  hand  (eg  k,h,l  is forbidden, k,h,-l is
+   allowed).  If  the transformation leads to fractional indices for some
+   cases  (as  in  the  2nd  example  above),  these  reflections will be
+   rejected.  If the reindexing operations include translations, then the
+   orientation  data  in  the  output  file will not be strictly correct.
+   Translations  (eg  h,k,l+1)  can be useful if you have misindexed your
+   crystal  by  eg  1  lattice  point  (usually  along the spindle axis).
+   However, in this case, you OUGHT to reprocess the data.
+
+  REJECT n1 n2 n3 . . .
+
+   Set  flags  to  reject reflections labelled with error flags n1,n2 etc
+   (cf ACCEPT command above).
+
+  SCALE <scale_factor>
+
+   Set  output scale factor (default = 1.0). This can be adjusted to give
+   intensities in a suitable range.
+
+  SPLIT <psi_range>
+
+   By default the actual oscillation range per image read from the header
+   file  is  used to split the reflection into BATCHes. If <psi-range> is
+   set  then BATCHing is performed accordingly based on the requested psi
+   range.
+
+  SYMMETRY <space-group name | space-group number | symmetry>
+
+   (compulsory)
+
+   Read  the symmetry operations, specified as the name (eg P212121), the
+   International  Tables  number,  or  as  a  series of SYMMETRY commands
+   giving the symmetry operations (eg SYMMETRY X,Y,Z * -X,Y+1/2,-Z)
+
+   This  last  option  is not recommended. The symmetry matrices are read
+   from  a  standard file (logical name SYMOP), are printed, and are used
+   to  reduce the reflections to an asymmetric unit. The column M/ISYM in
+   the  output file contains the number of the symmetry operation used to
+   do   this,   odd   numbers   correspond   to  +hkl,  even  numbers  to
+   Bijvoet-related  reflections  -hkl.  The  asymmetric  unit is selected
+   according to the rule printed out with the symmetry
+
+  TITLE <Title>
+
+   Set file title for output MTZ file.
+
+  TOOFAR <Yshift> <Zshift> <Phishift>
+
+   Sets values for the maximum difference between calculated and observed
+   position  for  a  reflection  to be accepted. Yshift and Zshift are in
+   pixels, Phishift is in degrees. The default is not to do any checks on
+   positional differences.
+
+  NAME PROJECT <pname> CRYSTAL <xname> DATASET <dname>
+
+   [Note that the keywords PNAME <pname>, XNAME <xname> and DNAME <dname>
+   are also available, but the NAME keyword is preferred.]
+
+   Specify  the  project,  crystal  and  dataset names for the output MTZ
+   file.  It  is  strongly  recommended  that  this information is given.
+   Otherwise,   the  default  project,  crystal  and  dataset  names  are
+   "unknown",   "unknown"   and   "unknown<ddmmyy>"  respectively  (where
+   <ddmmyy> is the date, with no spaces).
+
+   The  project-name  specifies  a particular structure solution project,
+   the  crystal  name  specifies  a physical crystal contributing to that
+   project,  and the dataset-name specifies a particular dataset obtained
+   from that crystal. All three should be given.
+
+  UGCB
+
+   If this keyword is present the D*TREK Goniostat matrix formed from the
+   DATUM values given in the header keyword CRYSTAL_ORIENT_VALUES will be
+   included  into  the  UMAT written in to the mtz file batch header. The
+   Goniostat  datum  values  are  consequently  set  to zero. The default
+   behaviour  is  for  the  Goniostat orientation to be excluded from the
+   UMAT.  Scala  versions  before  scala-3.1.4-beta  (22 April 2002) will
+   expect  mtz  files  generated  from  DTREK2SCALA using the UGCB option
+   because they make no use of the Datum values.
+
+  PROCESS
+
+   (compulsory)
+
+   Process the currently-defined input file (from FILE command or logical
+   name MADHKL).
+
+INPUT_FILES
+
+  D*TREK
+
+   D*TREK ASCII reflection file
+   A  d*trek  reflection file created by dtintegrate or dtprofit (usually
+   called  dtintegrate.ref  or  dtprofit.ref) must be specified using the
+   FILE  command  (see  example).  If  D*TREK  is  set  to produce binary
+   reflection  files then you must first convert the binary file to ASCII
+   using the D*TREK command
+
+   dtreflnmerge <input-file> <output-file> -text
+
+   The reflection file header provides a description of all the fields of
+   the  reflection  file. The header should something like this otherwise
+   the program may fail to convert correctly.
+4 20 1
+nH                  ; miller index
+nK                  ; miller index
+nL                  ; miller index
+nBadFlag
+fIntensity          ; profile fitted intensity
+fSigmaI             ; sigma of profile fitted intensity
+fOtherInt           ; integrated intensity
+fOtherSig           ; sigma of integrated intensity
+fObs_pixel0         ; vertical detector coordinate of reflection (Y)
+fObs_pixel1         ; horizontal detector coordinate of reflection (Z)
+fObs_rot_mid        ; observed reflection centroid
+fObs_rot_width
+fCalc_pixel0
+fCalc_pixel1
+fCalc_rot_mid
+fResolution
+fLPfactor           ; Lorentz and polarization correction factor
+fCorrelation
+sBatch              ; Batch number from integration
+
+   The  relevant  fields  used  by  MADNES  are  described  briefly.  The
+   reflections are listed sequentially in free format.
+
+   D*TREK header file
+   The  d*trek  header  file  contains  a  whole lot of information which
+   allows  you  to  find  out  just  about anything about your experiment
+   (assuming  of  course that you and the beamline software remembered to
+   write  the  correct  values to the image headers. In principle though,
+   the important information about the experiment should be correct as it
+   is  necessary  to  correctly analyse your data and should therefore be
+   available  for  reading by DTREK2SCALA. The following is a list of the
+   d*trek header items used by DTREK2SCALA. If you encounter difficulties
+   in converting your data then checking your d*trek header file may be a
+   place to start. The d*trek header file can also be specified using the
+   HFILE  command.  The file is named dtintegrate.head by default in both
+   d*trek and in DTREK2SCALA.
+CRYSTAL_GONIO_VALUES        Datum position on MGONAX
+                            goniostat axes (degrees)
+CRYSTAL_UNIT_CELL           Cell dimensions (A & degrees)
+CRYSTAL_SPACEGROUP          space group number
+CRYSTAL_ORIENT_VECTORS      Axis permutation from d*trek.
+CRYSTAL_ORIENT_ANGLES       "missetting" angles (degrees)
+APS1_GONIO_VALUES(6)        Crystal to detector distance (mm)
+APS1_GONIO_VALUES(1,2,3)    detector tilts: DTAU(2) = theta
+                            detector swing angle (degrees)
+SOURCE_ORIENT_ANGLES        beam tilt angles (degrees)
+CRYSTAL_MOSAICITY           reflection width (degrees)
+SCAN_WAVELENGTH             wavelength (A)
+SOURCE_SPECTRAL_DISPERSION  dispersion (delta lambda/lambda)
+SOURCE_CROSSFIRE            synchrotron beam parameters:
+                            gammaH, gammaV, Delcor, ?syn4?
+                            scan axis number (1 -> MGONAX)
+SCAN_ROTATION(1,2)          start and stop values of psi
+                            (D*trek scan axes - usually Omega)  (degrees)
+SCAN_ROTATION(3)            rotation width of each image (degrees)
+SCAN_ROTATION(4)            time for each image (seconds)
+CRYSTAL_GONIO_NUM_VALUES    number of crystal goniostat axes
+CRYSTAL_GONIO_VECTORS       vectors defining the directions
+                            of the MGONAX goniostat axes,
+                            in the d*trek laboratory frame.
+                            GONVEC(I,J),I=1,3 applies to the J'th axis
+SOURCE_VECTORS(1,2,3)       idealized main beam vector
+                            (anti-parallel to beam!), in d*trek
+                            laboratory frame (excluding the
+                            tilts parameterized by MU)
+SOURCE_VECTORS(1,2,3)       main beam vector (anti-parallel
+                            to beam!), in d*trek laboratory frame
+                            (including the tilts parameterized by MU)
+APS1_DETECTOR_DIMENSIONS    detector limits minimum, maximum Yms, Zms
+APS1_GONIO_VECTORS          vectors defining detector rotations
+APS1_DETECTOR_VECTORS       vectors defining detector translations
+DTREFINE_RMS_MM             rms positional errors from last refinement
+DTREFINE_RMS_DEG            rms rotational errors from last refinement
+APS1_GONIO_VALUES(4,5)      detector offsets ccx, ccy
+DTP_DTINTEGRATE_OPTIONS(11) number of images per batch used in dtintegrate
+
+     New common block for d*trek specific things
+
+SCAXIS                      scan axis
+GONAX(3)                    names of the MGONAX goniostat axes
+DETAX(3)                    names of the detector rotation angles
+COMMENT                     crystal description
+
+   N.B.  The  d*trek laboratory frame has X along the omega axis (towards
+   base  plate  of  goniometer),  Z  antiparallel to the X-ray beam and Y
+   completing a right-handed system. All rotations are right-handed. This
+   information is encoded in GONVEC & S0, so these are used to define the
+   frame.
+
+OUTPUT_FILES
+
+   HKLOUT  --  Multi-record MTZ file. Each batch has an orientation block
+   as  defined  in  mtzlib.doc  for  area detectors. The columns for each
+   reflection are
+H K L       indices
+M/ISYM      symmetry number, ie number of the Laue-group matrix used to reduce
+this reflection to the asymmetric unit
+BATCH batch number
+I, SIGI intensity and standard deviation
+IPR, SIGIPR intensity and standard deviation (in this case same as I, SIGI)
+IERROR error flag from D*TREK
+XDET,YDET detector coordinates of reflection (pixels)
+XDET = Yms, YDET = Zms (ie Mosflm convention)
+ROT rotation angle (degrees)
+LP Lorentz and polarisation correction (d*trek only) LP
+
+   This  file  must  be sorted on H K L M/ISYM BATCH before processing by
+   SCALA. Several files may be sorted together by SORTMTZ.
+
+EXAMPLES
+
+   1. An example which runs on d*trek profile fitted reflection data
+############## START EXAMPLE 1 ##################
+dtrek2scala    hklout   junk.mtz    plot absplot  << eof
+TITLE  Data processed with d*trek to 1.8A
+SYMMETRY   20
+CRYSTAL 1
+BATCH 1
+BTITLE  Crystal 1, run 1  # this title is for this batch only
+FILE dtprofit_1.8A.ref
+HFILE dtintegrate.head
+PROCESS
+eof
+#
+sortmtz HKLIN junk.mtz HKLOUT dtrek-data.mtz << EOF-sortmtz
+#
+# Sort keys since default keys are H K L
+#
+H K L M/ISYM
+EOF-sortmtz
+############## END EXAMPLE 1 ##################
+
+   2. An example which reads two reflection files dataset1.ref and
+   dataset2.ref with there own header files.
+############## START EXAMPLE 2 ##################
+#!/bin/csh -f
+#
+set ident      = mydata
+set title      = 'A crystal soaked in lots of alcohol'
+set lowres     = 30
+set highres    = 1.8
+set resol      = "${lowres} ${highres}"
+set residues   = 203
+set spacegroup = P43212
+set symmetry   = 96
+set scr        = $HOME/tmp
+#
+#
+dtrek2scala hklout ${ident}.mtz > ${ident}.dtrek2scala.log << EOF
+TITLE $title
+SYMMETRY $symmetry
+CRYSTAL 1
+BATCH 1
+FILE dataset1.ref
+HFILE dataset1.head
+BTITLE CHI=0, PHI=0
+PROCESS
+BATCH 300
+FILE dataset2.ref
+HFILE dataset2.head
+BTITLE CHI=30, PHI=0
+PROCESS
+EOF
+#
+sortmtz hklout ${ident}_sort.mtz > ${ident}_sort.log << EOF-sortmtz
+H K L M/ISYM BATCH
+${ident}.mtz
+EOF-sortmtz
+############## END EXAMPLE 2 ##################
+
+AUTHOR
+
+   Based  on  the CCP4 program ABSURD. MTZ version May 1991 by Phil Evans
+   and revised for use with D*TREK by Gwyndaf Evans.
+   DTREK2SCALA by Gwyndaf Evans (1998-2003).
+\end{verbatim}
+}
 \end{document}
+
 
