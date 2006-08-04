@@ -30,9 +30,10 @@
 # 
 # index() -> delegated to implementation._index()
 #
-# FIXME: getter methods should, if the results are NULL, initiate the index
+# FIXED: getter methods should, if the results are NULL, initiate the index
 #        process to allow pure constructor based (functional?) programming.
-#
+#        4/AUG/06 this is done.
+# 
 # Notes:
 # 
 # All properties of this class are prefixed with either indxr for protected
@@ -40,6 +41,12 @@
 #
 # Error Conditions:
 # 
+# A couple of conditions will give indexing errors -
+# (1) if no solution matching the input was found
+# (2) if the images were blank
+# (3) if the indexing just failed (bad beam, etc.)
+# 
+# These need to be handled properly with helpful error messages.
 
 import os
 import sys
@@ -72,6 +79,9 @@ class Indexer:
         self._indxr_mosaic = None
         self._indxr_refined_beam = None
         self._indxr_refined_distance = None
+
+        # error information
+        self._indxr_error = None
 
         # extra indexing guff - a dictionary which the implementation
         # can store things in
