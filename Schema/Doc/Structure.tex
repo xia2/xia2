@@ -327,6 +327,11 @@ To enable this, I have added a list of images to the FrameProcessor
 interface. This helps, because it means that you can look at the header of
 the first image and the other images to make your selection.
 
+Update 4/AUG/06: Just changed the interface to use get\_this set\_that
+rather than the camelCase version - this is more tidy, but it may get 
+confusing because many of the other objects still use camel case. I think
+there is some logic here, but I can't put it into words.
+
 \subsection{Architecture}
 
 Thought: An integrater takes as input an indexer, or it makes it's own.
