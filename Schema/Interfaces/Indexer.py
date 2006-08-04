@@ -62,6 +62,9 @@ class Indexer:
         self._indxr_images = []
         self._indxr_input_lattice = None
         self._indxr_input_cell = None
+
+        # job management parameters
+        self._indxr_run = False
         
         # output items
         self._indxr_lattice = None
@@ -86,7 +89,13 @@ class Indexer:
     def index_select_images(self):
         '''Call the local implementation...'''
         
-        return self._index_select_images()
+        result = self._index_select_images()
+
+        # reset the indexer - we need to rerun to get updated
+        # results
+        self._indxr_run = False
+
+        return result
 
     def _index(self):
         '''This is what the implementation needs to implement.'''
@@ -97,7 +106,9 @@ class Indexer:
         if self._indxr_images is []:
             self.index_select_images()
 
-        return self._index()
+        result = self._index()
+        self._indxr_run = True
+        return result
 
     # setter methods for the input
 
@@ -110,12 +121,22 @@ class Indexer:
         if type(image) == type(1):
             self._indxr_images.append((image, image))
 
+        # reset the indexer - we need to rerun to get updated
+        # results
+        self._indxr_run = False
+        
+        return
+
     def setIndexer_input_lattice(self, lattice):
         '''Set the input lattice for this indexing job. Exactly how this
         is handled depends on the implementation. FIXME decide on the
         format for the lattice.'''
 
         self._indxr_lattice = lattice
+
+        # reset the indexer - we need to rerun to get updated
+        # results
+        self._indxr_run = False
 
         return
 
@@ -130,37 +151,65 @@ class Indexer:
 
         self._indxr_input_cell = tuple(map(float, cell))
 
+        # reset the indexer - we need to rerun to get updated
+        # results
+        self._indxr_run = False
+
         return
 
     # getter methods for the output
-
     def getIndexer_cell(self):
         '''Get the selected unit cell.'''
+
+        # if not already run, run
+        if not self._indxr_run:
+            self.index()
 
         return self._indxr_cell
 
     def getIndexer_lattice(self):
         '''Get the selected lattice as tP form.'''
 
+        # if not already run, run
+        if not self._indxr_run:
+            self.index()
+
         return self._indxr_lattice
 
     def getIndexer_mosaic(self):
         '''Get the estimated mosaic spread in degrees.'''
+
+        # if not already run, run
+        if not self._indxr_run:
+            self.index()
 
         return self._indxr_mosaic
 
     def getIndexer_distance(self):
         '''Get the refined distance.'''
 
+        # if not already run, run
+        if not self._indxr_run:
+            self.index()
+
         return self._indxr_refined_distance
 
     def getIndexer_beam(self):
         '''Get the refined distance.'''
 
+        # if not already run, run
+        if not self._indxr_run:
+            self.index()
+
         return self._indxr_refined_beam
 
     def getIndexer_payload(self, this):
         '''Attempt to get something from the indexer payload.'''
+
+        # if not already run, run
+        if not self._indxr_run:
+            self.index()
+
         return self._indxr_payload.get(this, None)
 
     # end of interface
