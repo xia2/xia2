@@ -46,14 +46,14 @@ class TestLabelitScreen(unittest.TestCase):
                                  'Data', 'Test', 'Images')
 
         ls.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
-        ls.addIndexer_image_wedge(1)
-        ls.addIndexer_image_wedge(90)
+        ls.add_indexer_image_wedge(1)
+        ls.add_indexer_image_wedge(90)
         ls.index()
 
         # test the refined parameters
-        self.assertEqual(nint(ls.getIndexer_distance()), 170)
+        self.assertEqual(nint(ls.get_indexer_distance()), 170)
 
-        beam = ls.getIndexer_beam()
+        beam = ls.get_indexer_beam()
         
         self.assertEqual(nint(beam[0]), 109)
         self.assertEqual(nint(beam[1]), 105)
@@ -69,8 +69,8 @@ class TestLabelitScreen(unittest.TestCase):
                                  'Data', 'Test', 'Images')
 
         ls.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
-        ls.addIndexer_image_wedge(1)
-        ls.addIndexer_image_wedge(90)
+        ls.add_indexer_image_wedge(1)
+        ls.add_indexer_image_wedge(90)
 
         # set the beam to something totally false
         ls.setBeam((90.0, 90.0))

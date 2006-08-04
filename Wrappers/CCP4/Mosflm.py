@@ -205,7 +205,7 @@ def Mosflm(DriverType = None):
 
             indxr = self.integrate_get_indexer()
 
-            if not indxr.getIndexer_payload('mosflm_orientation_matrix'):
+            if not indxr.get_indexer_payload('mosflm_orientation_matrix'):
                 # we will have to do  some indexing ourselves - the
                 # existing indexing job doesn't provide an orientation
                 # matrix
@@ -215,10 +215,10 @@ def Mosflm(DriverType = None):
 
                 pass
 
-            lattice = indxr.getIndexer_lattice()
-            mosaic = indxr.getIndexer_mosaic()
-            cell = indxr.getIndexer_cell()
-            matrix = indxr.getIndexer_payload('mosflm_orientation_matrix')
+            lattice = indxr.get_indexer_lattice()
+            mosaic = indxr.get_indexer_mosaic()
+            cell = indxr.get_indexer_cell()
+            matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
 
             
             
@@ -244,17 +244,17 @@ if __name__ == '__main__':
 
     m.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 
-    m.addIndexer_image_wedge(1)
-    m.addIndexer_image_wedge(90)
+    m.add_indexer_image_wedge(1)
+    m.add_indexer_image_wedge(90)
 
-    print 'Refined beam is: %6.2f %6.2f' % m.getIndexer_beam()
-    print 'Distance:        %6.2f' % m.getIndexer_distance()
-    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % m.getIndexer_cell()
-    print 'Lattice: %s' % m.getIndexer_lattice()
-    print 'Mosaic: %6.2f' % m.getIndexer_mosaic()
+    print 'Refined beam is: %6.2f %6.2f' % m.get_indexer_beam()
+    print 'Distance:        %6.2f' % m.get_indexer_distance()
+    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % m.get_indexer_cell()
+    print 'Lattice: %s' % m.get_indexer_lattice()
+    print 'Mosaic: %6.2f' % m.get_indexer_mosaic()
 
     print 'Matrix:'
-    for l in m.getIndexer_payload('mosflm_orientation_matrix'):
+    for l in m.get_indexer_payload('mosflm_orientation_matrix'):
         print l[:-1]
 
 

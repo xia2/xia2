@@ -112,7 +112,7 @@ class Indexer:
 
     # setter methods for the input
 
-    def addIndexer_image_wedge(self, image):
+    def add_indexer_image_wedge(self, image):
         '''Add some images for autoindexing (optional,) input is a 2-tuple
         or an integer.'''
 
@@ -127,7 +127,7 @@ class Indexer:
         
         return
 
-    def setIndexer_input_lattice(self, lattice):
+    def set_indexer_input_lattice(self, lattice):
         '''Set the input lattice for this indexing job. Exactly how this
         is handled depends on the implementation. FIXME decide on the
         format for the lattice.'''
@@ -140,7 +140,7 @@ class Indexer:
 
         return
 
-    def setIndexer_input_cell(self, cell):
+    def set_indexer_input_cell(self, cell):
         '''Set the input unit cell (optional.)'''
 
         if not type(cell) == type(()):
@@ -158,7 +158,7 @@ class Indexer:
         return
 
     # getter methods for the output
-    def getIndexer_cell(self):
+    def get_indexer_cell(self):
         '''Get the selected unit cell.'''
 
         # if not already run, run
@@ -167,7 +167,7 @@ class Indexer:
 
         return self._indxr_cell
 
-    def getIndexer_lattice(self):
+    def get_indexer_lattice(self):
         '''Get the selected lattice as tP form.'''
 
         # if not already run, run
@@ -176,7 +176,7 @@ class Indexer:
 
         return self._indxr_lattice
 
-    def getIndexer_mosaic(self):
+    def get_indexer_mosaic(self):
         '''Get the estimated mosaic spread in degrees.'''
 
         # if not already run, run
@@ -185,7 +185,7 @@ class Indexer:
 
         return self._indxr_mosaic
 
-    def getIndexer_distance(self):
+    def get_indexer_distance(self):
         '''Get the refined distance.'''
 
         # if not already run, run
@@ -194,7 +194,7 @@ class Indexer:
 
         return self._indxr_refined_distance
 
-    def getIndexer_beam(self):
+    def get_indexer_beam(self):
         '''Get the refined distance.'''
 
         # if not already run, run
@@ -203,7 +203,7 @@ class Indexer:
 
         return self._indxr_refined_beam
 
-    def getIndexer_payload(self, this):
+    def get_indexer_payload(self, this):
         '''Attempt to get something from the indexer payload.'''
 
         # if not already run, run

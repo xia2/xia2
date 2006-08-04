@@ -280,17 +280,17 @@ if __name__ == '__main__':
 
     l.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 
-    l.addIndexer_image_wedge(1)
-    l.addIndexer_image_wedge(90)
+    l.add_indexer_image_wedge(1)
+    l.add_indexer_image_wedge(90)
 
     l.index()
 
-    print 'Refined beam is: %6.2f %6.2f' % l.getIndexer_beam()
-    print 'Distance:        %6.2f' % l.getIndexer_distance()
-    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % l.getIndexer_cell()
-    print 'Lattice: %s' % l.getIndexer_lattice()
-    print 'Mosaic: %6.2f' % l.getIndexer_mosaic()
+    print 'Refined beam is: %6.2f %6.2f' % l.get_indexer_beam()
+    print 'Distance:        %6.2f' % l.get_indexer_distance()
+    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % l.get_indexer_cell()
+    print 'Lattice: %s' % l.get_indexer_lattice()
+    print 'Mosaic: %6.2f' % l.get_indexer_mosaic()
 
     print 'Matrix:'
-    for m in l.getIndexer_payload('mosflm_orientation_matrix'):
+    for m in l.get_indexer_payload('mosflm_orientation_matrix'):
         print m[:-1]
