@@ -81,6 +81,9 @@ class Integrater:
         self._intgr_reso_high = 0.0
         self._intgr_reso_low = 0.0
 
+        # required parameters
+        self._intgr_wedge = None
+        
         return
 
     def integrate_set_indexer(self, indexer):

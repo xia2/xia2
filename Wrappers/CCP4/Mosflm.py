@@ -12,7 +12,7 @@
 # A wrapper for the data processing program Mosflm, with the following
 # methods to provide functionality:
 # 
-# index: autoindexing functionality (not implemented)
+# index: autoindexing functionality (implemented)
 # integrate: process a frame or a dataset (not implemented)
 #
 # Internally this will also require cell refinement and so on, but this
@@ -115,6 +115,10 @@ def Mosflm(DriverType = None):
             FrameProcessor.__init__(self)
             Indexer.__init__(self)
 
+            # local parameters used in integration
+            self._mosflm_gain = 0.0
+            self._mosflm_refined_orientation = None
+
         def _index(self):
             '''Implement the indexer interface.'''
 
@@ -176,6 +180,49 @@ def Mosflm(DriverType = None):
 
             self._indxr_payload['mosflm_orientation_matrix'] = open(
                 'xiaindex.mat', 'r').readlines()
+
+            return
+
+        def _integrate(self):
+            '''Implement the integrater interface.'''
+
+            self._mosflm_refine_cell()
+            self._mosflm_integrate()
+
+        def _mosflm_refine_cell():
+            '''Perform the refinement of the unit cell. This will populate
+            all of the information needed to perform the integration.'''
+
+            if not self.integrate_get_indexer():
+                # this wrapper can present the indexer interface
+                # if needed, so do so. if this set command has
+                # been called already this should not be used...
+                self.integrate_set_indexer(self)
+
+            # get the things we need from the indexer - beware that if
+            # the indexer has not yet been run this may spawn other
+            # jobs...
+
+            indxr = self.integrate_get_indexer()
+
+            if not indxr.getIndexer_payload('mosflm_orientation_matrix'):
+                # we will have to do  some indexing ourselves - the
+                # existing indexing job doesn't provide an orientation
+                # matrix
+
+                # FIXME this needs implementing - copy information
+                # from this indexer to myself, then reset my indexer too me
+
+                pass
+
+            lattice = indxr.getIndexer_lattice()
+            mosaic = indxr.getIndexer_mosaic()
+            cell = indxr.getIndexer_cell()
+            matrix = indxr.getIndexer_payload('mosflm_orientation_matrix')
+
+            
+            
+            
     
     return MosflmWrapper()
 
@@ -199,8 +246,6 @@ if __name__ == '__main__':
 
     m.addIndexer_image_wedge(1)
     m.addIndexer_image_wedge(90)
-
-    m.index()
 
     print 'Refined beam is: %6.2f %6.2f' % m.getIndexer_beam()
     print 'Distance:        %6.2f' % m.getIndexer_distance()
