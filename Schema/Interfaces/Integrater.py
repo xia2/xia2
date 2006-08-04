@@ -25,7 +25,7 @@
 # 
 # (1) Integration includes any cell and orientation refinement.
 # (2) If there is no indexer implementation provided as input,
-#     it's ok to go make one.
+#     it's ok to go make one, or raise an exception (maybe.)
 # 
 # This means...
 # 
@@ -48,3 +48,55 @@
 # 
 
 
+import os
+import sys
+
+if not os.environ.has_key('XIA2CORE_ROOT'):
+    raise RuntimeError, 'XIA2CORE_ROOT not defined'
+
+if not os.environ['XIA2CORE_ROOT'] in sys.path:
+    sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT_ROOT'],
+                                 'Decorators'))
+
+# this should go in a proper library someplace
+from DecoratorHelper import inherits_from
+
+if not os.environ.has_key('DPA_ROOT'):
+    raise RuntimeError, 'DPA_ROOT not defined'
+
+if not os.environ['DPA_ROOT'] in sys.path:
+    sys.path.append(os.path.join(os.environ['DPA_ROOT']))
+
+class Integrater:
+    '''An interface to present integration functionality in a similar
+    way to the indexer interface.'''
+
+    def __init__(self):
+
+        # a pointer to an implementation of the indexer class from which
+        # to get orientation (maybe) and unit cell, lattice (definately)
+        self._intgr_indexer = None
+
+        # optional parameters
+        self._intgr_reso_high = 0.0
+        self._intgr_reso_low = 0.0
+
+        return
+
+    def integrate_set_indexer(self, indexer):
+        '''Set the indexer implementation to use for this integration.'''
+
+        # check that this indexer implements the Indexer interface
+        if not inherits_from(indexer, 'Indexer'):
+            raise RuntimeError, 'input %s is not an Indexer implementation' % \
+                  indexer.__name__
+
+        self._intgr_indexer = indexer
+
+        return
+
+    def integrate_get_indexeer(self):
+        return self._intgr_indexer
+
+    
+            
