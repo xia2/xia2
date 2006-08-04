@@ -11,8 +11,9 @@
 # 
 # An implementation of Indexer using labelit.screen wrapper.
 # 
-# 
-#
+# FIXME this needs to be removed now that there is a proper interface
+# for Indexer which is implemented by LabelitScreen.py - this should
+# be accessed directly by the IndexerFacory.
 
 import os
 import sys
