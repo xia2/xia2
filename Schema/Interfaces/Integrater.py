@@ -21,4 +21,30 @@
 #
 # This is a complex problem to solve...
 # 
+# Assumptions & Assertions:
+# 
+# (1) Integration includes any cell and orientation refinement.
+# (2) If there is no indexer implementation provided as input,
+#     it's ok to go make one.
+# 
+# This means...
+# 
+# (1) That this needs to have the posibility of specifying images for
+#     use in both cell refinement (as a list of wedges, similar to 
+#     the indexer interface) and as a SINGLE WEDGE for use in integration.
+# (2) This may default to a local implementation using the same program,
+#     e.g. XDS or Mosflm - will not necessarily select the best one.
+#     This is left to the implementation to sort out.
+#
+# Useful standard options:
+# 
+# Resolution limits (low, high)
+# ?Gain? - can this be determined automatically
+# ?Areas to exclude? - this may be a local problem e.g. for mosflm just exclude
+#                      appropriate areas by detector class
+#
+# Error Conditions:
+# 
+# 
+
 

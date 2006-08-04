@@ -19,11 +19,13 @@
 # Refined distance
 # Mosaic spread
 # 
-# Input: Selected lattice
+# Input: ?Selected lattice?
+# Input: ?Cell?
 # Output: Selected lattice
 # Output: Unit cell
-# Output: Aux information - may include matrix files &c.
-#
+# Output: Aux information - may include matrix files &c. This is going to
+#         be in the "payload" and will be program specific.
+# 
 # Methods:
 # 
 # index() -> delegated to implementation._index()
@@ -35,7 +37,9 @@
 # 
 # All properties of this class are prefixed with either indxr for protected
 # things or Indexer for public things.
-
+#
+# Error Conditions:
+# 
 
 import os
 import sys
