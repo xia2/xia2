@@ -205,7 +205,7 @@ def Mosflm(DriverType = None):
 
             return
 
-        def _integrate(self):
+        def _integrate(self, fast = False):
             '''Implement the integrater interface.'''
 
             # FIXME in here I want to be able to work "fast" or "slow"
@@ -225,16 +225,20 @@ def Mosflm(DriverType = None):
             #
             # or is that an outside responsibility? yes.
 
-            self._mosflm_refine_cell()
-            self.write_log_file('cell_refinement.log')
-            self._mosflm_integrate()
+            if not fast:
+                self._mosflm_refine_cell()
+                self.write_log_file('cell_refinement.log')
+                
+            hklout = self._mosflm_integrate()
             self.write_log_file('integration.log')
 
-            if self._mosflm_rerun_integration:
+            if self._mosflm_rerun_integration and not fast:
                 # FIXME this needs to be passed to the admin stream
                 # print 'Rerunning integration...'
-                self._mosflm_integrate()
+                hklout = self._mosflm_integrate()
                 self.write_log_file('reintegration.log')
+
+            return hklout
 
         def _mosflm_refine_cell(self):
             '''Perform the refinement of the unit cell. This will populate
@@ -564,8 +568,12 @@ def Mosflm(DriverType = None):
             # set up the integration
             self.input('postref fix all')
             self.input('separation close')
-            self.input('process %d %d' % (min(images),
-                                          max(images)))
+            if not self._intgr_wedge:
+                self.input('process %d %d' % (min(images),
+                                              max(images)))
+            else:
+                self.input('process %d %d' % self._intgr_wedge)
+                
             self.input('go')
 
             # that should be everything 
@@ -579,8 +587,6 @@ def Mosflm(DriverType = None):
             # value for the gain (if present,) any warnings, errors,
             # or just interesting facts.
 
-            updated_parameters = { }
-            
             for i in range(len(output)):
                 o = output[i]
 
@@ -589,7 +595,6 @@ def Mosflm(DriverType = None):
                     for j in range(i, i + 10):
                         if output[j].split()[:2] == ['set', 'to']:
                             gain = float(output[j].split()[-1][:-1])
-                            updated_parameters['gain'] = gain
                             self.integrate_set_parameter('mosflm',
                                                          'gain',
                                                          gain)
@@ -599,8 +604,10 @@ def Mosflm(DriverType = None):
                             # this is worth rerunning
                             self._mosflm_rerun_integration = True
 
+                if 'WRITTEN OUTPUT MTZ FILE' in o:
+                    self._mosflm_hklout = output[i + 1].split()[-1]
 
-            return 
+            return self._mosflm_hklout
 
     
     return MosflmWrapper()
