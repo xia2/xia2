@@ -204,6 +204,12 @@ class Indexer:
 
         return self._indxr_refined_distance
 
+    def set_indexer_beam(self, beam):
+        '''Set the beam centre.'''
+
+        self._indxr_refined_beam = beam
+        
+
     def get_indexer_beam(self):
         '''Get the refined beam.'''
 
@@ -221,5 +227,12 @@ class Indexer:
             self.index()
 
         return self._indxr_payload.get(this, None)
+
+    def set_indexer_payload(self, this, value):
+        '''Set something in the payload.'''
+        
+        self._indxr_payload[this] = value
+        
+        return
 
     # end of interface
