@@ -95,6 +95,7 @@ from Decorators.DecoratorFactory import DecoratorFactory
 # interfaces that this will present
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 from Schema.Interfaces.Indexer import Indexer
+from Schema.Interfaces.Integrater import Integrater
 
 def Mosflm(DriverType = None):
     '''A factory for MosflmWrapper classes.'''
@@ -104,7 +105,8 @@ def Mosflm(DriverType = None):
 
     class MosflmWrapper(CCP4DriverInstance.__class__,
                         FrameProcessor,
-                        Indexer):
+                        Indexer,
+                        Integrater):
         '''A wrapper for Mosflm, using the CCP4-ified Driver.'''
 
         def __init__(self):
@@ -114,6 +116,7 @@ def Mosflm(DriverType = None):
 
             FrameProcessor.__init__(self)
             Indexer.__init__(self)
+            Integrater.__init__(self)
 
             # local parameters used in integration
             self._mosflm_gain = 0.0
@@ -186,10 +189,27 @@ def Mosflm(DriverType = None):
         def _integrate(self):
             '''Implement the integrater interface.'''
 
-            self._mosflm_refine_cell()
-            self._mosflm_integrate()
+            # FIXME in here I want to be able to work "fast" or "slow"
+            # if fast, ignore cell refinement (i.e. to get the pointless
+            # output quickly.)
 
-        def _mosflm_refine_cell():
+            # this means that the integration must be able to know
+            # what "state" it is being run from... this is perhaps best
+            # achieved by repopulating the indexing results with the output
+            # of the cell refinement, which have the same prototype.
+
+            # fixme should this have
+            # 
+            # self._determine_pointgroup()
+            # 
+            # first???
+            #
+            # or is that an outside responsibility? yes.
+
+            self._mosflm_refine_cell()
+            # self._mosflm_integrate()
+
+        def _mosflm_refine_cell(self):
             '''Perform the refinement of the unit cell. This will populate
             all of the information needed to perform the integration.'''
 
@@ -218,16 +238,174 @@ def Mosflm(DriverType = None):
             lattice = indxr.get_indexer_lattice()
             mosaic = indxr.get_indexer_mosaic()
             cell = indxr.get_indexer_cell()
+            beam = indxr.get_indexer_beam()
             matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
 
+            # first select the images to use for cell refinement
+            # if spacegroup >= 75 use one wedge of 2-3 * mosaic spread, min
+            # 3 images, else use two wedges of this size as near as possible
+            # to 90 degrees separated. However, is this reliable enough?
+            # FIXME this needs to be established, in particular in the case
+            # where the lattice is wrongly assigned
+
+            # WARNING this will fail if phi width was 0 - should
+            # never happen though
+
+            phi_width = self.getHeader_item('phi_width')
+            min_images = max(3, int(2 * mosaic / phi_width))
+
+            # here need to check the LATTICE - which will be
+            # something like tP etc. FIXME how to cope when the
+            # spacegroup has been explicitly stated?
+
+            lattice_to_spacegroup = {'aP':1,
+                                     'mP':3,
+                                     'mC':5,
+                                     'oP':16,
+                                     'oC':20,
+                                     'oF':22,
+                                     'oI':23,
+                                     'tP':75,
+                                     'tI':79,
+                                     'hP':143,
+                                     'cP':195,
+                                     'cF':196,
+                                     'cI':197}
+                                     
+            spacegroup_number = lattice_to_spacegroup[lattice]
+
+            if spacegroup_number >= 75:
+                num_wedges = 1
+            else:
+                num_wedges = 2
+
+            # next select what we need from the list...
+
+            images = self.getMatching_images()
+
+            if len(images) < num_wedges * min_images:
+                raise RuntimeError, 'not enough images to refine unit cell'
+
+            cell_ref_images = []
+            cell_ref_images.append((images[0], images[min_images]))
+
+            if num_wedges == 2:
+                ideal_last = int(90.0 / phi_width) + min_images
+                if ideal_last in images:
+                    cell_ref_images.append((images[ideal_last - min_images],
+                                            images[ideal_last]))
+                else:
+                    # there aren't 90 degrees of images
+                    cell_ref_images.append((images[-min_images],
+                                            images[-1]))
+
+            # write the matrix file in xiaindex.mat
+
+            f = open('xiaindex.mat', 'w')
+            for m in matrix:
+                f.write(m)
+            f.close()
+
+            # then start the cell refinement
+
+            task = 'Refine cell from %d wedges' % len(cell_ref_images)
+
+            self.setTask(task)
+
+            self.start()
+
+            self.input('template %s' % self.getTemplate())
+            self.input('directory %s' % self.getDirectory())
+
+            self.input('matrix xiaindex.mat')
+            self.input('newmat xiarefine.mat')
+
+            self.input('beam %f %f' % beam)
+
+            # FIXME is this the correct form?
+            self.input('symmetry %s' % spacegroup_number)
+            self.input('mosaic %f' % mosaic)
+
+            # note well that the beam centre is coming from indexing so
+            # should be already properly handled
+            if self.getWavelength_prov() == 'user':
+                self.input('wavelength %f %f' % self.getWavelength())
+
+            if self.getDistance_prov() == 'user':
+                self.input('distance %f' % self.getDistance())
             
-            
-            
+            # set up the cell refinement
+            self.input('postref multi segments %d' % len(cell_ref_images))
+            for cri in cell_ref_images:
+                self.input('process %d %d' % cri)
+                self.input('go')
+
+            # that should be everything 
+            self.close_wait()
+
+            # get the log file
+            output = self.get_all_output()
+
+            # then look to see if the cell refinement worked ok - if it
+            # didn't then this may indicate that the lattice was wrongly
+            # selected.
+
+            cell_refinement_ok = False
+
+            for o in output:
+                if 'Cell refinement is complete' in o:
+                    cell_refinement_ok = True
+
+            # how best to handle this, I don't know... could
+            #
+            # (1) raise an exception
+            # (2) try to figure out the solution myself
+            #
+            # probably (1) is better, because this will allow the higher
+            # level of intelligence to sort it out. don't worry too hard
+            # about this in the initial version, since labelit indexing
+            # is pretty damn robust.
+
+            if not cell_refinement_ok:
+                # FIXME this should do something useful
+                pass
+
+            # if it succeeded then populate the indexer output (myself)
+            # with the new information - this can then be used
+            # transparently in the integration.
+
+            # here I need to get the refined distance, mosaic spread, unit
+            # cell and matrix - should also look the yscale and so on, as
+            # well as the final rms deviation in phi and distance
+
+            for i in range(len(output)):
+                o = output[i]
+                if 'Refined cell' in o:
+                    self._indxr_cell = tuple(map(float, o.split()[-6:]))
+                if 'Detector distance as a' in o:
+                    # look through the "cycles" to get the final refined
+                    # distance
+                    j = i + 1
+                    while output[j].strip() != '':
+                        j += 1
+                    distances = map(float, output[j - 1].split()[2:])
+                    distance = 0.0
+                    for d in distances:
+                        distance += d
+                    distance /= len(distances)
+                    self._indxr_refined_distance = distance
+                if 'Refined mosaic spread' in o:
+                    self._indxr_mosaic = float(o.split()[-1])
+
+            self._indxr_payload['mosflm_orientation_matrix'] = open(
+                'xiarefine.mat', 'r').readlines()
+
+            return 
     
     return MosflmWrapper()
 
 
-if __name__ == '__main__':
+if __name__ == '__main_old__':
 
     # run a demo test
 
@@ -257,5 +435,44 @@ if __name__ == '__main__':
     for l in m.get_indexer_payload('mosflm_orientation_matrix'):
         print l[:-1]
 
+if __name__ == '__main__':
 
-        
+    # run a demo test
+
+    if not os.environ.has_key('DPA_ROOT'):
+        raise RuntimeError, 'DPA_ROOT not defined'
+
+    m = Mosflm()
+
+    directory = os.path.normpath(os.path.join('/', 'data', 'graeme', '12287'))
+
+    # from Labelit
+    m.setBeam((108.9, 105.0))
+
+    m.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
+
+    m.add_indexer_image_wedge(1)
+    m.add_indexer_image_wedge(60)
+
+    print 'Refined beam is: %6.2f %6.2f' % m.get_indexer_beam()
+    print 'Distance:        %6.2f' % m.get_indexer_distance()
+    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % m.get_indexer_cell()
+    print 'Lattice: %s' % m.get_indexer_lattice()
+    print 'Mosaic: %6.2f' % m.get_indexer_mosaic()
+
+    print 'Matrix:'
+    for l in m.get_indexer_payload('mosflm_orientation_matrix'):
+        print l[:-1]
+
+    m.integrate()
+
+    print 'Refined beam is: %6.2f %6.2f' % m.get_indexer_beam()
+    print 'Distance:        %6.2f' % m.get_indexer_distance()
+    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % m.get_indexer_cell()
+    print 'Lattice: %s' % m.get_indexer_lattice()
+    print 'Mosaic: %6.2f' % m.get_indexer_mosaic()
+
+    print 'Matrix:'
+    for l in m.get_indexer_payload('mosflm_orientation_matrix'):
+        print l[:-1]
+

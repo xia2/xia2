@@ -205,7 +205,7 @@ class Indexer:
         return self._indxr_refined_distance
 
     def get_indexer_beam(self):
-        '''Get the refined distance.'''
+        '''Get the refined beam.'''
 
         # if not already run, run
         if not self._indxr_run:

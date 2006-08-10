@@ -55,8 +55,8 @@ if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
 if not os.environ['XIA2CORE_ROOT'] in sys.path:
-    sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT_ROOT'],
-                                 'Decorators'))
+    sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
+                                 'Python', 'Decorators'))
 
 # this should go in a proper library someplace
 from DecoratorHelper import inherits_from
@@ -90,7 +90,7 @@ class Integrater:
         '''Set the indexer implementation to use for this integration.'''
 
         # check that this indexer implements the Indexer interface
-        if not inherits_from(indexer, 'Indexer'):
+        if not inherits_from(indexer.__class__, 'Indexer'):
             raise RuntimeError, 'input %s is not an Indexer implementation' % \
                   indexer.__name__
 
@@ -98,8 +98,9 @@ class Integrater:
 
         return
 
-    def integrate_get_indexeer(self):
+    def integrate_get_indexer(self):
         return self._intgr_indexer
 
-    
+    def integrate(self):
+        return self._integrate()
             
