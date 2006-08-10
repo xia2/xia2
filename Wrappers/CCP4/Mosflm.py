@@ -119,11 +119,12 @@ def Mosflm(DriverType = None):
             Integrater.__init__(self)
 
             # local parameters used in integration
-            self._mosflm_gain = 0.0
-            self._mosflm_refined_orientation = None
-
+            self._mosflm_rerun_integration = False
+                            
         def _index(self):
             '''Implement the indexer interface.'''
+
+            self.reset()
 
             _images = []
             for i in self._indxr_images:
@@ -139,7 +140,7 @@ def Mosflm(DriverType = None):
                 task += ' %s' % self.getImage_name(i)
 
             self.setTask(task)
-            
+
             self.start()
 
             self.input('template %s' % self.getTemplate())
@@ -177,7 +178,7 @@ def Mosflm(DriverType = None):
                     self._indxr_mosaic = float(o.split('>')[1].split()[0])
 
                 # mosflm doesn't refine this...
-                if 'Crystal to detector distance' in o:
+                if 'Crystal to detector distance of' in o:
                     self._indxr_refined_distance = float(o.split(
                         )[5].replace('mm', ''))
 
@@ -207,11 +208,21 @@ def Mosflm(DriverType = None):
             # or is that an outside responsibility? yes.
 
             self._mosflm_refine_cell()
-            # self._mosflm_integrate()
+            self.write_log_file('cell_refinement.log')
+            self._mosflm_integrate()
+            self.write_log_file('integration.log')
+
+            if self._mosflm_rerun_integration:
+                # FIXME this needs to be passed to the admin stream
+                # print 'Rerunning integration...'
+                self._mosflm_integrate()
+                self.write_log_file('reintegration.log')
 
         def _mosflm_refine_cell(self):
             '''Perform the refinement of the unit cell. This will populate
             all of the information needed to perform the integration.'''
+
+            self.reset()
 
             if not self.integrate_get_indexer():
                 # this wrapper can present the indexer interface
@@ -239,7 +250,16 @@ def Mosflm(DriverType = None):
             mosaic = indxr.get_indexer_mosaic()
             cell = indxr.get_indexer_cell()
             beam = indxr.get_indexer_beam()
+            distance = indxr.get_indexer_distance()
             matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
+
+            # copy these into myself for later reference, if indexer
+            # is not myself - everything else is copied via the
+            # cell refinement process...
+
+            if indxr != self:
+                self.set_indexer_input_lattice(lattice)
+                self.set_indexer_beam(beam)
 
             # first select the images to use for cell refinement
             # if spacegroup >= 75 use one wedge of 2-3 * mosaic spread, min
@@ -321,8 +341,9 @@ def Mosflm(DriverType = None):
             self.input('newmat xiarefine.mat')
 
             self.input('beam %f %f' % beam)
+            self.input('distance %f' % distance)
 
-            # FIXME is this the correct form?
+            # FIXED is this the correct form? - it is now.
             self.input('symmetry %s' % spacegroup_number)
             self.input('mosaic %f' % mosaic)
 
@@ -331,9 +352,6 @@ def Mosflm(DriverType = None):
             if self.getWavelength_prov() == 'user':
                 self.input('wavelength %f %f' % self.getWavelength())
 
-            if self.getDistance_prov() == 'user':
-                self.input('distance %f' % self.getDistance())
-            
             # set up the cell refinement
             self.input('postref multi segments %d' % len(cell_ref_images))
             for cri in cell_ref_images:
@@ -394,13 +412,178 @@ def Mosflm(DriverType = None):
                         distance += d
                     distance /= len(distances)
                     self._indxr_refined_distance = distance
+                if 'YSCALE as a function' in o:
+                    # look through the "cycles" to get the final refined
+                    # yscale value
+                    j = i + 1
+                    while output[j].strip() != '':
+                        j += 1
+                    yscales = map(float, output[j - 1].split()[2:])
+                    yscale = 0.0
+                    for y in yscales:
+                        yscale += y
+                    yscale /= len(yscales)
+
+                    self.integrate_set_parameter('mosflm',
+                                                 'distortion yscale',
+                                                 yscale)
+
                 if 'Refined mosaic spread' in o:
                     self._indxr_mosaic = float(o.split()[-1])
 
-            self._indxr_payload['mosflm_orientation_matrix'] = open(
-                'xiarefine.mat', 'r').readlines()
+            # hack... FIXME (maybe?)
+            self._indxr_run = True
+            self.set_indexer_payload('mosflm_orientation_matrix', open(
+                'xiarefine.mat', 'r').readlines())
+            indxr.set_indexer_payload('mosflm_orientation_matrix', open(
+                'xiarefine.mat', 'r').readlines())
 
             return 
+
+        def _mosflm_integrate(self):
+            '''Perform the actual integration, based on the results of the
+            cell refinement or indexing (they have the equivalent form.)'''
+
+            self.reset()
+
+            # the only way to get here is through the cell refinement,
+            # unless we're trying to go fast - which means that we may
+            # have to create an indexer if fast - if we're going slow
+            # then this should have been done by the cel refinement
+            # stage...
+
+            # FIXME add "am I going fast" check here
+
+            if not self.integrate_get_indexer():
+                # this wrapper can present the indexer interface
+                # if needed, so do so. if this set command has
+                # been called already this should not be used...
+                self.integrate_set_indexer(self)
+
+            # get the things we need from the indexer - beware that if
+            # the indexer has not yet been run this may spawn other
+            # jobs...
+
+            indxr = self.integrate_get_indexer()
+
+            if not indxr.get_indexer_payload('mosflm_orientation_matrix'):
+                # we will have to do  some indexing ourselves - the
+                # existing indexing job doesn't provide an orientation
+                # matrix
+
+                # FIXME this needs implementing - copy information
+                # from this indexer to myself, then reset my indexer too me
+
+                pass
+
+            lattice = indxr.get_indexer_lattice()
+            mosaic = indxr.get_indexer_mosaic()
+            cell = indxr.get_indexer_cell()
+            beam = indxr.get_indexer_beam()
+            distance = indxr.get_indexer_distance()
+            matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
+
+            # here need to check the LATTICE - which will be
+            # something like tP etc. FIXME how to cope when the
+            # spacegroup has been explicitly stated?
+
+            lattice_to_spacegroup = {'aP':1,
+                                     'mP':3,
+                                     'mC':5,
+                                     'oP':16,
+                                     'oC':20,
+                                     'oF':22,
+                                     'oI':23,
+                                     'tP':75,
+                                     'tI':79,
+                                     'hP':143,
+                                     'cP':195,
+                                     'cF':196,
+                                     'cI':197}
+                                     
+            spacegroup_number = lattice_to_spacegroup[lattice]
+
+            images = self.getMatching_images()
+
+            f = open('xiaintegrate.mat', 'w')
+            for m in matrix:
+                f.write(m)
+            f.close()
+
+            # then start the integration
+
+            task = 'Integrate frames %d to %d' % (min(images),
+                                                  max(images))
+
+            self.setTask(task)
+
+            self.start()
+
+            self.input('template %s' % self.getTemplate())
+            self.input('directory %s' % self.getDirectory())
+
+            self.input('matrix xiaintegrate.mat')
+
+            self.input('beam %f %f' % beam)
+            self.input('distance %f' % distance)
+            self.input('symmetry %s' % spacegroup_number)
+            self.input('mosaic %f' % mosaic)
+
+            # note well that the beam centre is coming from indexing so
+            # should be already properly handled - likewise the distance
+            if self.getWavelength_prov() == 'user':
+                self.input('wavelength %f %f' % self.getWavelength())
+
+            # get all of the stored parameter values
+            parameters = self.integrate_get_parameters('mosflm')
+            for p in parameters.keys():
+                self.input('%s %s' % (p, str(parameters[p])))
+
+            # check for resolution limits
+            if self._intgr_reso_high > 0.0:
+                self.input('resolution %f' % self._intgr_reso_high)
+
+            # set up the integration
+            self.input('postref fix all')
+            self.input('separation close')
+            self.input('process %d %d' % (min(images),
+                                          max(images)))
+            self.input('go')
+
+            # that should be everything 
+            self.close_wait()
+
+            # get the log file
+            output = self.get_all_output()
+
+            # look for things that we want to know...
+            # that is, the output reflection file name, the updated
+            # value for the gain (if present,) any warnings, errors,
+            # or just interesting facts.
+
+            updated_parameters = { }
+            
+            for i in range(len(output)):
+                o = output[i]
+
+                if 'ERROR IN DETECTOR GAIN' in o:
+                    # look for the correct gain
+                    for j in range(i, i + 10):
+                        if output[j].split()[:2] == ['set', 'to']:
+                            gain = float(output[j].split()[-1][:-1])
+                            updated_parameters['gain'] = gain
+                            self.integrate_set_parameter('mosflm',
+                                                         'gain',
+                                                         gain)
+                            # FIXME this needs to be written to the
+                            # "science stream"
+                            # print 'Correct gain: %f' % gain
+                            # this is worth rerunning
+                            self._mosflm_rerun_integration = True
+
+
+            return 
+
     
     return MosflmWrapper()
 
@@ -464,15 +647,19 @@ if __name__ == '__main__':
     for l in m.get_indexer_payload('mosflm_orientation_matrix'):
         print l[:-1]
 
-    m.integrate()
+    n = Mosflm()
+    n.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
+    n.integrate_set_indexer(m)
 
-    print 'Refined beam is: %6.2f %6.2f' % m.get_indexer_beam()
-    print 'Distance:        %6.2f' % m.get_indexer_distance()
-    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % m.get_indexer_cell()
-    print 'Lattice: %s' % m.get_indexer_lattice()
-    print 'Mosaic: %6.2f' % m.get_indexer_mosaic()
+    n.integrate()
+
+    print 'Refined beam is: %6.2f %6.2f' % n.get_indexer_beam()
+    print 'Distance:        %6.2f' % n.get_indexer_distance()
+    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % n.get_indexer_cell()
+    print 'Lattice: %s' % n.get_indexer_lattice()
+    print 'Mosaic: %6.2f' % n.get_indexer_mosaic()
 
     print 'Matrix:'
-    for l in m.get_indexer_payload('mosflm_orientation_matrix'):
+    for l in n.get_indexer_payload('mosflm_orientation_matrix'):
         print l[:-1]
 
