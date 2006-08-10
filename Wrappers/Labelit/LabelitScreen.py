@@ -283,6 +283,8 @@ if __name__ == '__main__':
     l.add_indexer_image_wedge(1)
     l.add_indexer_image_wedge(90)
 
+    l.set_indexer_input_lattice('aP')
+
     l.index()
 
     print 'Refined beam is: %6.2f %6.2f' % l.get_indexer_beam()

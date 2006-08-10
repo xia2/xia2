@@ -156,6 +156,24 @@ def Mosflm(DriverType = None):
             if self.getDistance_prov() == 'user':
                 self.input('distance %f' % self.getDistance())
 
+            if self._indxr_lattice != None:
+                lattice_to_spacegroup = {'aP':1,
+                                         'mP':3,
+                                         'mC':5,
+                                         'oP':16,
+                                         'oC':20,
+                                         'oF':22,
+                                         'oI':23,
+                                         'tP':75,
+                                         'tI':79,
+                                         'hP':143,
+                                         'cP':195,
+                                         'cF':196,
+                                         'cI':197}
+                                     
+                spacegroup_number = lattice_to_spacegroup[self._indxr_lattice]
+                self.input('symmetry %d' % spacegroup_number)
+
             for i in _images:
                 self.input('autoindex dps refine image %d' % i)
 
@@ -608,6 +626,8 @@ if __name__ == '__main_old__':
     m.add_indexer_image_wedge(1)
     m.add_indexer_image_wedge(90)
 
+    m.set_indexer_input_lattice('aP')
+
     print 'Refined beam is: %6.2f %6.2f' % m.get_indexer_beam()
     print 'Distance:        %6.2f' % m.get_indexer_distance()
     print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % m.get_indexer_cell()
@@ -636,6 +656,7 @@ if __name__ == '__main__':
 
     m.add_indexer_image_wedge(1)
     m.add_indexer_image_wedge(60)
+    m.set_indexer_input_lattice('aP')
 
     print 'Refined beam is: %6.2f %6.2f' % m.get_indexer_beam()
     print 'Distance:        %6.2f' % m.get_indexer_distance()

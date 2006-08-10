@@ -139,8 +139,8 @@ class Indexer:
 
     def set_indexer_input_lattice(self, lattice):
         '''Set the input lattice for this indexing job. Exactly how this
-        is handled depends on the implementation. FIXME decide on the
-        format for the lattice.'''
+        is handled depends on the implementation. FIXED decide on the
+        format for the lattice. This will be say tP.'''
 
         self._indxr_lattice = lattice
 
