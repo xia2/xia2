@@ -159,6 +159,9 @@ if __name__ == '__main__':
     hklin = os.path.join(xia2core,
                          'Data', 'Test', 'Mtz', '12287_1_E1.mtz')
 
+    if len(sys.argv) > 1:
+        hklin = sys.argv[1]
+
     p = Pointless()
 
     p.setHklin(hklin)
