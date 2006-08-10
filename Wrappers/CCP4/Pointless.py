@@ -94,6 +94,7 @@ def Pointless(DriverType = None):
 
             self._pointgroup = None
             self._reindex_matrix = None
+            self._confidence = 0.0
 
         def decide_pointgroup(self):
             '''Decide on the correct pointgroup for hklin.'''
@@ -132,6 +133,8 @@ def Pointless(DriverType = None):
             best = dom.getElementsByTagName('BestSolution')[0]
             self._pointgroup = best.getElementsByTagName(
                 'GroupName')[0].childNodes[0].data
+            self._confidence = float(best.getElementsByTagName(
+                'Confidence')[0].childNodes[0].data)
             self._reindex_matrix = map(float, best.getElementsByTagName(
                 'ReindexMatrix')[0].childNodes[0].data.split())
 
@@ -142,6 +145,9 @@ def Pointless(DriverType = None):
 
         def getPointgroup(self):
             return self._pointgroup
+
+        def getConfidence(self):
+            return self._confidence
             
     return PointlessWrapper()
 
@@ -172,3 +178,4 @@ if __name__ == '__main__':
     print 'Reindexing matrix: ' + \
           '%4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f' % \
           tuple(p.getReindex_matrix())
+    print 'Confidence: %f' % p.getConfidence()
