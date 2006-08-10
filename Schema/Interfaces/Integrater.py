@@ -90,6 +90,13 @@ class Integrater:
         
         return
 
+    def integrate_set_wedge(self, start, end):
+        '''Set the wedge of images to process.'''
+        
+        self._intgr_wedge = (start, end)
+        
+        return
+
     def integrate_set_resolution(self, dmin, dmax):
         '''Set both resolution limits.'''
 
@@ -149,6 +156,6 @@ class Integrater:
     def integrate_get_indexer(self):
         return self._intgr_indexer
 
-    def integrate(self):
-        return self._integrate()
+    def integrate(self, fast = False):
+        return self._integrate(fast)
             
