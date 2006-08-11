@@ -63,6 +63,15 @@
 # </BestSolution>
 # </POINTLESS>
 #
+#
+# 11/AUG/06 changed from 1.0.6 to 1.0.8 pointless version (looks like the
+# reindexing operators have changed in the latest version... was that a bug?)
+# 
+# FIXED 11/AUG/06 for I222 (example set: 13140) the GroupName comes out
+# as P 2 2 2 not I 2 2 2 - this needs to be coded for somehow - is this
+# correct? Check with Phil E. The pointgroup probably is correct, but I
+# will need to know the correct centring to get the reflections correctly
+# organized. :o( Just figure it out in the code here... Done.
 
 import os
 import sys
@@ -90,9 +99,10 @@ def Pointless(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            self.setExecutable('pointless-1.0.6')
+            self.setExecutable('pointless-1.0.8')
 
             self._pointgroup = None
+            self._spacegroup = None
             self._reindex_matrix = None
             self._confidence = 0.0
 
@@ -135,8 +145,33 @@ def Pointless(DriverType = None):
                 'GroupName')[0].childNodes[0].data
             self._confidence = float(best.getElementsByTagName(
                 'Confidence')[0].childNodes[0].data)
+            self._totalprob = float(best.getElementsByTagName(
+                'TotalProb')[0].childNodes[0].data)
             self._reindex_matrix = map(float, best.getElementsByTagName(
                 'ReindexMatrix')[0].childNodes[0].data.split())
+            self._reindex_operator = best.getElementsByTagName(
+                'ReindexOperator')[0].childNodes[0].data.strip()
+
+            # this bit is to figure out the correct spacegroup to
+            # reindex into (see FIXME above for 11/AUG/06)
+
+            spacegroups = []
+
+            spags = dom.getElementsByTagName('SpacegroupList')[0]
+            
+            # work through these to compute the probable solution
+
+            for s in spags.getElementsByTagName('Spacegroup'):
+                name = s.getElementsByTagName(
+                    'SpacegroupName')[0].childNodes[0].data.strip()
+                reindex_op = s.getElementsByTagName(
+                    'ReindexOperator')[0].childNodes[0].data.strip()
+
+                if reindex_op == self._reindex_operator:
+                    break
+
+            self._spacegroup = name
+
 
             return 'ok'
 
@@ -144,7 +179,7 @@ def Pointless(DriverType = None):
             return self._reindex_matrix
 
         def getPointgroup(self):
-            return self._pointgroup
+            return self._spacegroup
 
         def getConfidence(self):
             return self._confidence
