@@ -72,6 +72,13 @@
 # correct? Check with Phil E. The pointgroup probably is correct, but I
 # will need to know the correct centring to get the reflections correctly
 # organized. :o( Just figure it out in the code here... Done.
+# 
+# FIXME perhaps 11/AUG/06 beware - this looks like pointless will now 
+# also perform axis reindexing if the spacegroup looks like something
+# like P 2 21 21 - it will reindex l,h,k - beware of this because that
+# will change all of the unit cell parameters and may not be a desirable
+# thing to have. Can this be switched off? Have emailed pre - for the
+# moment just be aware of this!
 
 import os
 import sys
