@@ -72,6 +72,11 @@
 # correct? Check with Phil E. The pointgroup probably is correct, but I
 # will need to know the correct centring to get the reflections correctly
 # organized. :o( Just figure it out in the code here... Done.
+#
+# This is still a FIXME there is actually a bug in pointless! The reflection
+# file is written out in P222. Contacted pre@mrc-lmb.ac.uk about this, will
+# be interesting to see what the result is. Upshot is that the code below
+# to get the correct spacegroup out isn't needed.
 # 
 # FIXME perhaps 11/AUG/06 beware - this looks like pointless will now 
 # also perform axis reindexing if the spacegroup looks like something
