@@ -76,7 +76,10 @@
 # This is still a FIXME there is actually a bug in pointless! The reflection
 # file is written out in P222. Contacted pre@mrc-lmb.ac.uk about this, will
 # be interesting to see what the result is. Upshot is that the code below
-# to get the correct spacegroup out isn't needed.
+# to get the correct spacegroup out isn't needed. Theory states that this
+# should be fixed in pointless-1.0.9. This is indeed fixed, need to therefore
+# update the version herein and also remove the guesswork code I added
+# as a workaround.
 # 
 # FIXME perhaps 11/AUG/06 beware - this looks like pointless will now 
 # also perform axis reindexing if the spacegroup looks like something
@@ -84,6 +87,12 @@
 # will change all of the unit cell parameters and may not be a desirable
 # thing to have. Can this be switched off? Have emailed pre - for the
 # moment just be aware of this!
+# 
+# FIXME 15/AUG/06 - pointless is a little over keen with respect to the 
+# pointgroup for the 1VR9 native data. It is therefore worth adding an
+# option to try scaling in all of the "legal" spacegroups (with +ve Z
+# score) to check that the assertions pointless makes about the symmetry
+# are correct.
 
 import os
 import sys
