@@ -476,6 +476,40 @@ def Mosflm(DriverType = None):
                                                  'distortion yscale',
                                                  yscale)
 
+                # next look for the distortion & raster parameters
+                # see FIXME at the top of this file from 16/AUG/06
+
+                if 'Final optimised raster parameters:' in o:
+                    self.integrate_set_parameter('mosflm',
+                                                 'raster',
+                                                 o.split(':')[1].strip())
+
+                if 'Separation parameters updated to' in o:
+                    tokens = o.replace('mm', ' ').split()
+                    self.integrate_set_parameter('mosflm',
+                                                 'separation',
+                                                 '%s %s' % \
+                                                 (tokens[4], tokens[8]))
+                    
+                if 'XCEN    YCEN  XTOFRA' in o:
+                    numbers = output[i + 1].split()
+
+                    # this should probably be done via the FrameProcessor
+                    # interface...
+                    self.integrate_set_parameter('mosflm',
+                                                 'beam',
+                                                 '%s %s' % \
+                                                 (numbers[0], numbers[1]))
+                    self.integrate_set_parameter('mosflm',
+                                                 'distance',
+                                                 numbers[3])
+                    self.integrate_set_parameter('mosflm',
+                                                 'distortion tilt',
+                                                 numbers[5])
+                    self.integrate_set_parameter('mosflm',
+                                                 'distortion twist',
+                                                 numbers[6])
+                    
                 if 'Refined mosaic spread' in o:
                     self._indxr_mosaic = float(o.split()[-1])
 
@@ -656,10 +690,13 @@ if __name__ == '__main_old__':
 
     m.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 
+    # FIXME 16/AUG/06 this should be set automatically - there is no
+    # reason to manually specify the images
+
     m.add_indexer_image_wedge(1)
     m.add_indexer_image_wedge(90)
 
-    m.set_indexer_input_lattice('aP')
+    # m.set_indexer_input_lattice('aP')
 
     print 'Refined beam is: %6.2f %6.2f' % m.get_indexer_beam()
     print 'Distance:        %6.2f' % m.get_indexer_distance()
@@ -687,9 +724,12 @@ if __name__ == '__main__':
 
     m.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 
+    # FIXME 16/AUG/06 this should be set automatically - there is no
+    # reason to manually specify the images
+
     m.add_indexer_image_wedge(1)
     m.add_indexer_image_wedge(60)
-    m.set_indexer_input_lattice('aP')
+    # m.set_indexer_input_lattice('aP')
 
     print 'Refined beam is: %6.2f %6.2f' % m.get_indexer_beam()
     print 'Distance:        %6.2f' % m.get_indexer_distance()
