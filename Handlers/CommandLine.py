@@ -22,6 +22,11 @@
 #             well - I need to think more carefully about this in the
 #             future, though this solution may scale...
 # 
+# 16/AUG/06 - FIXME - need to be able to handle a resolution limit in here 
+#             as well as any other information our user may wish to pass
+#             in on the comand line, for example a lattice or a spacegroup.
+# 
+# 
 
 import sys
 import os
