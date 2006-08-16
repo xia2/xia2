@@ -89,5 +89,116 @@ wrapper. However, there seem to be some issues with the implementation
 when running with scripts, or Labelit as the indexer implementation, 
 which I will need to fix.
 
+This is reasonably effective... below are some results illustrating the 
+changes for the 1VPJ/12287 dataset. Note that this is not quite a fair
+comparison, because the original set had the bad areas of the detector
+masked out. Still, it's interesting. The order is INFL orig, INFL new,
+LREM orig, LREM new.
+
+{
+\small
+\begin{verbatim}
+
+Summary data for Project: demo Crystal: 12287 Dataset: infl
+
+                                           Overall  InnerShell OuterShell
+
+  Low resolution limit                       52.56     52.56      1.74
+  High resolution limit                       1.65      5.22      1.65
+
+  Rmerge                                     0.056     0.034     0.348
+  Rmeas (within I+/I-)                       0.073     0.044     0.465
+  Rmeas (all I+ & I-)                        0.096     0.074     0.522
+  Rpim (within I+/I-)                        0.045     0.027     0.305
+  Rpim (all I+ & I-)                         0.045     0.036     0.283
+  Fractional partial bias                   -0.010    -0.032     0.008
+  Total number of observations              110206      3541      9776
+  Total number unique                        26070       970      3281
+  Mean((I)/sd(I))                             12.8      24.9       2.4
+  Completeness                                97.9      99.1      87.8
+  Multiplicity                                 4.2       3.7       3.0
+
+  Anomalous completeness                      96.8      81.2
+  Anomalous multiplicity                       2.3       1.7
+  DelAnom correlation between half-sets      0.583     0.122
+  Mid-Slope of Anom Normal Probability       1.573
+
+Summary data for Project: demo Crystal: 12287 Dataset: infl
+
+                                           Overall  InnerShell OuterShell
+
+  Low resolution limit                       52.56     52.56      1.74
+  High resolution limit                       1.65      5.22      1.65
+
+  Rmerge                                     0.055     0.032     0.347
+  Rmeas (within I+/I-)                       0.071     0.041     0.463
+  Rmeas (all I+ & I-)                        0.094     0.072     0.519
+  Rpim (within I+/I-)                        0.044     0.026     0.304
+  Rpim (all I+ & I-)                         0.044     0.035     0.281
+  Fractional partial bias                   -0.010    -0.030    -0.038
+  Total number of observations              111491      3732      9910
+  Total number unique                        26064       979      3304
+  Mean((I)/sd(I))                             13.2      26.5       2.5
+  Completeness                                97.9      99.3      88.1
+  Multiplicity                                 4.3       3.8       3.0
+
+  Anomalous completeness                      96.9      81.5
+  Anomalous multiplicity                       2.3       1.7
+  DelAnom correlation between half-sets      0.597     0.166
+  Mid-Slope of Anom Normal Probability       1.611
+
+Summary data for Project: demo Crystal: 12287 Dataset: lrem
+
+                                           Overall  InnerShell OuterShell
+
+  Low resolution limit                       52.56     52.56      1.74
+  High resolution limit                       1.65      5.22      1.65
+
+  Rmerge                                     0.052     0.031     0.313
+  Rmeas (within I+/I-)                       0.067     0.040     0.422
+  Rmeas (all I+ & I-)                        0.065     0.038     0.457
+  Rpim (within I+/I-)                        0.042     0.025     0.281
+  Rpim (all I+ & I-)                         0.031     0.020     0.258
+  Fractional partial bias                   -0.006    -0.017    -0.071
+  Total number of observations              106594      3567      8233
+  Total number unique                        25692       975      2969
+  Mean((I)/sd(I))                             13.3      25.9       2.5
+  Completeness                                96.4      99.1      79.4
+  Multiplicity                                 4.1       3.7       2.8
+
+  Anomalous completeness                      95.1      74.3
+  Anomalous multiplicity                       2.3       1.5
+  DelAnom correlation between half-sets     -0.192    -0.033
+  Mid-Slope of Anom Normal Probability       0.868
+
+Summary data for Project: demo Crystal: 12287 Dataset: lrem
+
+                                           Overall  InnerShell OuterShell
+
+  Low resolution limit                       52.56     52.56      1.74
+  High resolution limit                       1.65      5.22      1.65
+
+  Rmerge                                     0.052     0.031     0.313
+  Rmeas (within I+/I-)                       0.067     0.040     0.422
+  Rmeas (all I+ & I-)                        0.065     0.039     0.458
+  Rpim (within I+/I-)                        0.042     0.025     0.281
+  Rpim (all I+ & I-)                         0.031     0.020     0.259
+  Fractional partial bias                   -0.007    -0.020    -0.068
+  Total number of observations              107779      3737      8294
+  Total number unique                        25678       982      2976
+  Mean((I)/sd(I))                             13.6      27.1       2.6
+  Completeness                                96.4      99.4      79.6
+  Multiplicity                                 4.2       3.8       2.8
+
+  Anomalous completeness                      95.1      74.5
+  Anomalous multiplicity                       2.3       1.5
+  DelAnom correlation between half-sets     -0.215    -0.020
+  Mid-Slope of Anom Normal Probability       0.862
+
+
+\end{verbatim}
+}
+
+Note the very slight improvements in $R$, $I/\sigma$ etc.
 
 \end{document}
