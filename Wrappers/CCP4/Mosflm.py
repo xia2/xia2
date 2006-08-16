@@ -145,6 +145,7 @@ def Mosflm(DriverType = None):
             '''Implement the indexer interface.'''
 
             self.reset()
+            self.write_log_file('index.log')
 
             _images = []
             for i in self._indxr_images:
@@ -253,7 +254,7 @@ def Mosflm(DriverType = None):
 
             if not fast:
                 self._mosflm_refine_cell()
-                self.write_log_file('cell_refinement.log')
+                self.write_log_file('cellrefinement.log')
                 
             hklout = self._mosflm_integrate()
             self.write_log_file('integration.log')
