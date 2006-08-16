@@ -21,9 +21,12 @@
 #         humidifier images, added many useful types in Schema, 
 #         handlers in Handler etc and Wrappers.                                                                
 # 
+# 0.0.3 - 16/AUG/06 getting something usefil in eventually, which 
+#         will integrate data using only mosflm - xia2process.
+# 
+# 
 
-
-VersionNumber = "0.0.2a"
+VersionNumber = "0.0.3"
 Version = "XIA2DPA %s" % VersionNumber
 CVSTag = "xia2dpa-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2dpa-%s" % VersionNumber
