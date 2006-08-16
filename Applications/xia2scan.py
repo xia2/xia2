@@ -65,24 +65,35 @@ def xia2scan():
 
             beam = s.getBeam()
 
-            ls = LabelitScreen()
-            ls.addImage(s.imagename(i))
-            ls.setBeam(beam[0], beam[1])
-            ls.setRefine_beam(False)
-            ls.index()
+            try:
 
-            solution = ls.getSolutions()[1]
-            # P1 cell is always solution #1
-            lsd = LabelitStats_distl()
-            lsd.stats_distl()
-            stats = lsd.getStatistics(s.imagename(i))
-            summary_info[i] = { }
-            summary_info[i]['volume'] = solution['volume']
-            summary_info[i]['mosaic'] = solution['mosaic']
-            summary_info[i]['spots_good'] = stats['spots_good']
-            summary_info[i]['spots_total'] = stats['spots_total']
-            summary_info[i]['resol_one'] = stats['resol_one']
-            summary_info[i]['resol_two'] = stats['resol_two']
+                ls = LabelitScreen()
+                ls.addImage(s.imagename(i))
+                ls.setBeam(beam[0], beam[1])
+                ls.setRefine_beam(False)
+                ls.index()
+
+                solution = ls.getSolutions()[1]
+                # P1 cell is always solution #1
+                lsd = LabelitStats_distl()
+                lsd.stats_distl()
+                stats = lsd.getStatistics(s.imagename(i))
+                summary_info[i] = { }
+                summary_info[i]['volume'] = solution['volume']
+                summary_info[i]['mosaic'] = solution['mosaic']
+                summary_info[i]['spots_good'] = stats['spots_good']
+                summary_info[i]['spots_total'] = stats['spots_total']
+                summary_info[i]['resol_one'] = stats['resol_one']
+                summary_info[i]['resol_two'] = stats['resol_two']
+
+            except:
+                summary_info[i] = { }
+                summary_info[i]['volume'] = 0.0
+                summary_info[i]['mosaic'] = 0.0
+                summary_info[i]['spots_good'] = 0.0
+                summary_info[i]['spots_total'] = 0.0
+                summary_info[i]['resol_one'] = 0.0
+                summary_info[i]['resol_two'] = 0.0
 
     sys.stdout.write('\n')
 
