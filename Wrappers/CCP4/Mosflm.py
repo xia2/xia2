@@ -75,7 +75,7 @@
 # go
 # eof
 # 
-# FIXME 16/AUG/06 the distortion & raster parameters decided on in the 
+# FIXED 16/AUG/06 the distortion & raster parameters decided on in the 
 # cell refinement stages need to be recycled to use in integration. This is
 # demonstrated by running an interactive (through the GUI) mosflm autoindex
 # and refine job, then dumping the runit script. The important information is
