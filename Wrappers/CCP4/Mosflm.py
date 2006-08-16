@@ -74,6 +74,26 @@
 # process 1 60
 # go
 # eof
+# 
+# FIXME 16/AUG/06 the distortion & raster parameters decided on in the 
+# cell refinement stages need to be recycled to use in integration. This is
+# demonstrated by running an interactive (through the GUI) mosflm autoindex
+# and refine job, then dumping the runit script. The important information is
+# in the following records:
+#
+#  Final optimised raster parameters:   15   17   12    5    6
+#    => RASTER keyword
+#  Separation parameters updated to   0.71mm in X and  0.71mm in Y
+#    => SEPARATION keyword
+#    XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+#  108.97  105.31  0.9980  149.71  0.9984   -13   -46
+#    => BEAM, DISTANCE, DISTORTION keywords (note that the numbers
+#       are on the next line here)
+#
+# This should make the resulting integration more effective. The idea
+# for this implementation is that the numbers end up in the "integrate
+# set parameter" dictionary and are therefore recycled, in the same way
+# that the GAIN currently works.
 
 import os
 import sys
@@ -192,6 +212,12 @@ def Mosflm(DriverType = None):
                         )[-2:]))
                 if 'Symmetry:' in o:
                     self._indxr_lattice = o.split(':')[1].split()[0]
+                    
+                # in here I need to check if the mosaic spread estimation
+                # has failed. If it has it is likely that the selected
+                # lattice has too high symmetry, and the "next one down"
+                # is needed
+
                 if 'The mosaicity has been estimated' in o:
                     self._indxr_mosaic = float(o.split('>')[1].split()[0])
 
