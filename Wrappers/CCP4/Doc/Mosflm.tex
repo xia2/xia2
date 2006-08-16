@@ -55,7 +55,39 @@ should be interpreted as a pointer that the lattice has too high a symmetry.
 Asserting a spacegroup of C2 corrects this, so clearly this is something
 important to build into the wrapper.
 
+\section{Making Sure Nothing is Lost}
 
+FIXED 16/AUG/06 the distortion \& raster parameters decided on in the 
+cell refinement stages need to be recycled to use in integration. This is
+demonstrated by running an interactive (through the GUI) mosflm autoindex
+and refine job, then dumping the runit script. The important information is
+in the following records:
+
+{
+\small
+\begin{verbatim}
+ Final optimised raster parameters:   15   17   12    5    6
+   => RASTER keyword
+ Separation parameters updated to   0.71mm in X and  0.71mm in Y
+   => SEPARATION keyword
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.97  105.31  0.9980  149.71  0.9984   -13   -46
+   => BEAM, DISTANCE, DISTORTION keywords (note that the numbers
+      are on the next line here)
+\end{verbatim}
+}
+
+This should make the resulting integration more effective. The idea
+for this implementation is that the numbers end up in the "integrate
+set parameter" dictionary and are therefore recycled, in the same way
+that the GAIN currently works. Note well - some of this conflits with the 
+definition of the FrameProcessor, in which case the relevant information
+should be passed back to that interface.
+
+Have implemented an application xia2process, which should test out this 
+wrapper. However, there seem to be some issues with the implementation 
+when running with scripts, or Labelit as the indexer implementation, 
+which I will need to fix.
 
 
 \end{document}
