@@ -164,8 +164,8 @@ def Mosflm(DriverType = None):
 
             self.start()
 
-            self.input('template %s' % self.getTemplate())
-            self.input('directory %s' % self.getDirectory())
+            self.input('template "%s"' % self.getTemplate())
+            self.input('directory "%s"' % self.getDirectory())
             self.input('newmat xiaindex.mat')
 
             if self.getBeam_prov() == 'user':
@@ -383,8 +383,8 @@ def Mosflm(DriverType = None):
 
             self.start()
 
-            self.input('template %s' % self.getTemplate())
-            self.input('directory %s' % self.getDirectory())
+            self.input('template "%s"' % self.getTemplate())
+            self.input('directory "%s"' % self.getDirectory())
 
             self.input('matrix xiaindex.mat')
             self.input('newmat xiarefine.mat')
@@ -602,8 +602,8 @@ def Mosflm(DriverType = None):
 
             self.start()
 
-            self.input('template %s' % self.getTemplate())
-            self.input('directory %s' % self.getDirectory())
+            self.input('template "%s"' % self.getTemplate())
+            self.input('directory "%s"' % self.getDirectory())
 
             self.input('matrix xiaintegrate.mat')
 
