@@ -184,23 +184,25 @@ def Pointless(DriverType = None):
 
             # this bit is to figure out the correct spacegroup to
             # reindex into (see FIXME above for 11/AUG/06)
+            # see FIXME for 22/AUG this should no longer be needed
+            # since the systematic absence stuff is now switched off...
 
-            spacegroups = []
+            # spacegroups = []
 
-            spags = dom.getElementsByTagName('SpacegroupList')[0]
+            # spags = dom.getElementsByTagName('SpacegroupList')[0]
             
             # work through these to compute the probable solution
 
-            for s in spags.getElementsByTagName('Spacegroup'):
-                name = s.getElementsByTagName(
-                    'SpacegroupName')[0].childNodes[0].data.strip()
-                reindex_op = s.getElementsByTagName(
-                    'ReindexOperator')[0].childNodes[0].data.strip()
+            # for s in spags.getElementsByTagName('Spacegroup'):
+            # name = s.getElementsByTagName(
+            # 'SpacegroupName')[0].childNodes[0].data.strip()
+            # reindex_op = s.getElementsByTagName(
+            # 'ReindexOperator')[0].childNodes[0].data.strip()
 
-                if reindex_op == self._reindex_operator:
-                    break
+            # if reindex_op == self._reindex_operator:
+            # break
 
-            self._spacegroup = name
+            # self._spacegroup = name
 
 
             return 'ok'
@@ -209,7 +211,8 @@ def Pointless(DriverType = None):
             return self._reindex_matrix
 
         def getPointgroup(self):
-            return self._spacegroup
+            # FIXED on 22/AUG/06 this was spacegroup
+            return self._pointgroup
 
         def getConfidence(self):
             return self._confidence
