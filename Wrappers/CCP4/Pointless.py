@@ -93,6 +93,10 @@
 # option to try scaling in all of the "legal" spacegroups (with +ve Z
 # score) to check that the assertions pointless makes about the symmetry
 # are correct.
+# 
+# FIXME 22/AUG/06 - update to the latest version of pointless which needs
+# to read command line input. "systematicabsences off".
+# 
 
 import os
 import sys
@@ -120,7 +124,7 @@ def Pointless(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            self.setExecutable('pointless-1.0.8')
+            self.setExecutable('pointless-1.1.0.1')
 
             self._pointgroup = None
             self._spacegroup = None
@@ -141,6 +145,11 @@ def Pointless(DriverType = None):
             self.addCommand_line('pointless.xml')
 
             self.start()
+
+            # change 22/AUG/06 add this command to switch off systematic
+            # absence analysis of the spacegroups.
+            
+            self.input('systematicabsences off')
 
             self.close_wait()
 
