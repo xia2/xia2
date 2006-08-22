@@ -123,10 +123,23 @@ class _CommandLine(Object):
             self.write('No image passed in on the command line')
             return
 
-        template, directory = image2template_directory(sys.argv[index + 1])
+        image = sys.argv[index + 1]
+
+        # check if there is a space in the image name - this happens and it
+        # looks like the python input parser will split it even if the
+        # space is escaped or it is quoted
+
+        if image[-1] == '\\':
+            try:
+                image = '%s %s' % (sys.argv[index + 1][:-1],
+                                   sys.argv[index + 2])
+            except:
+                raise RuntimeError, 'image name ends in \\'
+
+        template, directory = image2template_directory(image)
         self._default_template = template
         self._default_directory = directory
-        self._default_image = sys.argv[index + 1]
+        self._default_image = image
         return
 
     def getTemplate(self):
