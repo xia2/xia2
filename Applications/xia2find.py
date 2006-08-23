@@ -16,10 +16,18 @@
 # sort this into templates &c; then compile this into sweeps? Could then
 # also decide how much time to devote to the accurate identification of 
 # sweeps... FIXME this needs to be thought about/implemented.
+# 
+# 23/AUG/06 FIXME (1) need to print out the exposure time
+#                 (2) need to print out the exposure epoch in a human 
+#                     readable way - this is done with time.ctime()
+# 
+# 
+# 
 
 import sys
 import os
 import exceptions
+import time
 
 if not os.environ.has_key('DPA_ROOT'):
     raise RuntimeError, 'DPA_ROOT not defined'
@@ -82,9 +90,14 @@ def print_sweeps():
             print 'Sweep: %s' % os.path.join(s.getDirectory(), s.getTemplate())
             print 'Images: %d to %d' % (min(s.getImages()), max(s.getImages()))
             print 'Detector class: %s' % s.getDetector_class()
-            print 'Collected from/to: %f %f' % s.getCollect()
+            print 'Epoch from/to: %d %d' % tuple(map(int,
+                                                     s.getCollect()))
+            collect_time = map(time.ctime, s.getCollect())
+            print 'Collected from: %s' % collect_time[0]
+            print '            to: %s' % collect_time[1]
             print 'Wavelength: %f' % s.getWavelength()
             print 'Distance: %f' % s.getDistance()
+            print 'Exposure time: %f' % s.getExposure_time()
             print 'Beam: %f %f' % tuple(s.getBeam())
             print 'Oscillations: %f to %f (%f)' % tuple(s.getPhi())
             print ''
