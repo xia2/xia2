@@ -47,6 +47,9 @@ def xia2process():
 
     m.setup_from_image(CommandLine.getImage())
 
+    if CommandLine.getLattice():
+        m.set_indexer_input_lattice(CommandLine.getLattice())
+
     phi_width = m.getHeader_item('phi_width')
     images = m.getMatching_images()
 

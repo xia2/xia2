@@ -26,7 +26,8 @@
 #             as well as any other information our user may wish to pass
 #             in on the comand line, for example a lattice or a spacegroup.
 # 
-# 
+# 23/AUG/06 - FIXME - need to add handling of the lattice input in particular,
+#             since this is directly supported by Mosflm.py...
 
 import sys
 import os
@@ -61,6 +62,12 @@ class _CommandLine(Object):
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
                   (self._help_image(), str(e))
+
+        try:
+            self._read_lattice_spacegroup()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_lattice_spacegroup(), str(e))
 
         return
 
@@ -142,6 +149,38 @@ class _CommandLine(Object):
         self._default_image = image
         return
 
+    def _read_lattice_spacegroup(self):
+        '''Check for -lattice or -spacegroup tokens on the command
+        line.'''
+
+        # have to enforce not making both selections...
+
+        index_lattice = -1
+        index_spacegroup = -1
+
+        try:
+            index_lattice = sys.argv.index('-lattice')
+
+            # FIXME need to check that this token exists on the
+            # command line and that the value is a meaningful
+            # crystallographic lattice...
+            
+            self._default_lattice = sys.argv[index_lattice + 1]
+
+        except ValueError, e:
+            # this token is not on the command line
+            self._default_lattice = None
+
+        # FIXME need to check for the spacegroup and do something
+        # sensible with it... but this will require implementing
+        # this for all of the interfaces, which is not yet done...
+
+        return
+
+    def _help_lattice_spacegroup(self):
+        '''Help for the lattice/spacegroup options.'''
+        return '(-lattice mP|-spacegroup p2)'
+
     def getTemplate(self):
         return self._default_template
 
@@ -150,6 +189,12 @@ class _CommandLine(Object):
 
     def getImage(self):
         return self._default_image
+
+    def getLattice(self):
+        return self._default_lattice
+
+    def getSpacegroup(self):
+        raise RuntimeError, 'this needs to be implemented'
 
 CommandLine = _CommandLine()
 
