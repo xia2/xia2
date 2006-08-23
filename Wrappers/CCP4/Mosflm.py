@@ -94,6 +94,17 @@
 # for this implementation is that the numbers end up in the "integrate
 # set parameter" dictionary and are therefore recycled, in the same way
 # that the GAIN currently works.
+#
+# FIXME 23/AUG/06 If the mosaic spread is refined to a negative number
+#                 during the cell refinement, raise an exception asserting  
+#                 that the lattice is wrong. This should eliminate that 
+#                 lattice and all possibilities above it in symmetry from
+#                 the list of possible lattices, and the next one down
+#                 should be selected. This will require the "list of allowed
+#                 lattices" stuff to be implemented, which is another
+#                 FIXME all of it's own...
+
+
 
 import os
 import sys
@@ -447,8 +458,13 @@ def Mosflm(DriverType = None):
 
             for i in range(len(output)):
                 o = output[i]
+
+                # FIXME will these get lost if the indexer in question is
+                # not this program...? Find out...
                 if 'Refined cell' in o:
-                    self._indxr_cell = tuple(map(float, o.split()[-6:]))
+                    indxr._indxr_cell = tuple(map(float, o.split()[-6:]))
+                # FIXME do I need this? I think that the refined distance
+                # is passed in as an integration parameter (see below)
                 if 'Detector distance as a' in o:
                     # look through the "cycles" to get the final refined
                     # distance
@@ -510,12 +526,17 @@ def Mosflm(DriverType = None):
                     self.integrate_set_parameter('mosflm',
                                                  'distortion twist',
                                                  numbers[6])
-                    
+
+                # FIXME does this work if this mosflm is not
+                # the one being used as an indexer? - probably not -
+                # I will need a getIndexer.setMosaic() or something...
                 if 'Refined mosaic spread' in o:
-                    self._indxr_mosaic = float(o.split()[-1])
+                    indxr._indxr_mosaic = float(o.split()[-1])
 
             # hack... FIXME (maybe?)
             self._indxr_run = True
+            
+            # shouldn't need this.. remember that Python deals in pointers!
             self.set_indexer_payload('mosflm_orientation_matrix', open(
                 'xiarefine.mat', 'r').readlines())
             indxr.set_indexer_payload('mosflm_orientation_matrix', open(
