@@ -103,8 +103,27 @@
 #                 should be selected. This will require the "list of allowed
 #                 lattices" stuff to be implemented, which is another
 #                 FIXME all of it's own...
-
-
+#
+# FIXME 23/AUG/06 Another one - the raster parameters decided in indexing
+#                 should be used in the cell refinement if the indexer was
+#                 a mosflm and so is the refiner/integrater - which means
+#                 that the indexer needs to be able to store integration
+#                 parameters in the same way that the integrater does...
+#                 Aha - this can go in the payload as something like
+#                 "mosflm integration parameters" - excellent! Here are the
+#                 complaints I am trying to correct:
+#
+# **** Information ****
+# No RASTER keyword has been given.
+# (Gives the starting parameters for the measurement box).
+# Suitable parameters will be determined automatically.
+#
+#
+# **** Information ****
+# No SEPARATION keyword has been given.
+# (Gives minimum spot separation before spots are flagged as overlapping.
+# Suitable parameters will be determined automatically.
+# 
 
 import os
 import sys
@@ -216,6 +235,8 @@ def Mosflm(DriverType = None):
 
             output = self.get_all_output()
 
+            intgr_params = { }
+
             for o in output:
                 if 'Final cell (after refinement)' in o:
                     self._indxr_cell = tuple(map(float, o.split()[-6:]))
@@ -233,11 +254,30 @@ def Mosflm(DriverType = None):
                 if 'The mosaicity has been estimated' in o:
                     self._indxr_mosaic = float(o.split('>')[1].split()[0])
 
-                # mosflm doesn't refine this...
+                # mosflm doesn't refine this in autoindexing...
                 if 'Crystal to detector distance of' in o:
                     self._indxr_refined_distance = float(o.split(
                         )[5].replace('mm', ''))
 
+                # record raster parameters and so on, useful for the
+                # cell refinement etc - this will be added to a
+                # payload dictionary of mosflm integration keywords
+                # look for "measurement box parameters"
+
+                if 'parameters have been set to' in o:
+                    intgr_params['raster'] = map(
+                        int, o.split()[-5:])
+
+                if '(currently SEPARATION' in o:
+                    intgr_params['separation'] = map(
+                        float, o.replace(')', '').split()[-2:])
+
+            # FIXME this needs to be picked up by the integrater
+            # interface which uses this Indexer, if it's a mosflm
+            # implementation
+            
+            self._indxr_payload['mosflm_integration_parameters'] = intgr_params
+                                                                 
             self._indxr_payload['mosflm_orientation_matrix'] = open(
                 'xiaindex.mat', 'r').readlines()
 
@@ -312,6 +352,29 @@ def Mosflm(DriverType = None):
             beam = indxr.get_indexer_beam()
             distance = indxr.get_indexer_distance()
             matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
+
+            # check to see if there are parameters which I should be using for
+            # cell refinement etc in here - if there are, use them - this
+            # will also appear in integrate, for cases where that will
+            # be called without cell refinemnt
+
+            integration_params = indxr.get_indexer_payload(
+                'mosflm_integration_parameters')
+
+            if integration_params:
+                # copy them somewhere useful... into the dictionary?
+                # yes - that way they can be recycled...
+                # after that, zap them because they will be obsolete!
+                if integration_params.has_key('separation'):
+                    self.integrate_set_parameter(
+                        'mosflm', 'separation',
+                        '%f %f' % tuple(integration_params['separation']))
+                if integration_params.has_key('raster'):
+                    self.integrate_set_parameter(
+                        'mosflm', 'raster',
+                        '%d %d %d %d %d' % tuple(integration_params['raster']))
+                    
+            indxr.set_indexer_payload('mosflm_integration_params', None)
 
             # copy these into myself for later reference, if indexer
             # is not myself - everything else is copied via the
@@ -412,6 +475,12 @@ def Mosflm(DriverType = None):
             if self.getWavelength_prov() == 'user':
                 self.input('wavelength %f %f' % self.getWavelength())
 
+            # get all of the stored parameter values
+            parameters = self.integrate_get_parameters('mosflm')
+            self.input('!parameters from autoindex run')
+            for p in parameters.keys():
+                self.input('%s %s' % (p, str(parameters[p])))
+
             # set up the cell refinement
             self.input('postref multi segments %d' % len(cell_ref_images))
             for cri in cell_ref_images:
@@ -463,6 +532,7 @@ def Mosflm(DriverType = None):
                 # not this program...? Find out...
                 if 'Refined cell' in o:
                     indxr._indxr_cell = tuple(map(float, o.split()[-6:]))
+                    
                 # FIXME do I need this? I think that the refined distance
                 # is passed in as an integration parameter (see below)
                 if 'Detector distance as a' in o:
@@ -476,7 +546,7 @@ def Mosflm(DriverType = None):
                     for d in distances:
                         distance += d
                     distance /= len(distances)
-                    self._indxr_refined_distance = distance
+                    indxr._indxr_refined_distance = distance
                 if 'YSCALE as a function' in o:
                     # look through the "cycles" to get the final refined
                     # yscale value
@@ -517,9 +587,14 @@ def Mosflm(DriverType = None):
                                                  'beam',
                                                  '%s %s' % \
                                                  (numbers[0], numbers[1]))
+
+                    # FIXME should this go through the FP interface?
+                    # this conflicts with the calculation above
+                    # of the average distance as well...
                     self.integrate_set_parameter('mosflm',
                                                  'distance',
                                                  numbers[3])
+                    
                     self.integrate_set_parameter('mosflm',
                                                  'distortion tilt',
                                                  numbers[5])
@@ -586,6 +661,29 @@ def Mosflm(DriverType = None):
             beam = indxr.get_indexer_beam()
             distance = indxr.get_indexer_distance()
             matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
+
+            # check to see if there are parameters which I should be using for
+            # integration etc in here - if there are, use them - this will
+            # only happen when the integration is "fast" and they haven't
+            # been eaten by the cell refinemnt process
+
+            integration_params = indxr.get_indexer_payload(
+                'mosflm_integration_parameters')
+
+            if integration_params:
+                # copy them somewhere useful... into the dictionary?
+                # yes - that way they can be recycled...
+                # after that, zap them because they will be obsolete!
+                if integration_params.has_key('separation'):
+                    self.integrate_set_parameter(
+                        'mosflm', 'separation',
+                        '%f %f' % tuple(integration_params['separation']))
+                if integration_params.has_key('raster'):
+                    self.integrate_set_parameter(
+                        'mosflm', 'raster',
+                        '%d %d %d %d %d' % tuple(integration_params['raster']))
+                    
+            indxr.set_indexer_payload('mosflm_integration_params', None)
 
             # here need to check the LATTICE - which will be
             # something like tP etc. FIXME how to cope when the
