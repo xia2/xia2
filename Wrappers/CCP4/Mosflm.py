@@ -104,7 +104,7 @@
 #                 lattices" stuff to be implemented, which is another
 #                 FIXME all of it's own...
 #
-# FIXME 23/AUG/06 Another one - the raster parameters decided in indexing
+# FIXED 23/AUG/06 Another one - the raster parameters decided in indexing
 #                 should be used in the cell refinement if the indexer was
 #                 a mosflm and so is the refiner/integrater - which means
 #                 that the indexer needs to be able to store integration
@@ -124,6 +124,10 @@
 # (Gives minimum spot separation before spots are flagged as overlapping.
 # Suitable parameters will be determined automatically.
 # 
+# FIXME 23/AUG/06 Yet another one, though this may apply more to a higher
+#                 level application than this module - there should be an
+#                 "estimate resolution" during the integration, so that
+#                 the final set contains good measurements, good profiles.
 
 import os
 import sys
