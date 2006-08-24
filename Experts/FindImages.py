@@ -18,6 +18,9 @@
 # Also routines for grouping sets of images together into sweeps based on 
 # the file names and the information in image headers.
 # 
+# FIXME 24/AUG/06 this needs to renamed to something a little more obvious
+#                 than FindImages - perhaps ImageExpert?
+# 
 
 import os
 import re
