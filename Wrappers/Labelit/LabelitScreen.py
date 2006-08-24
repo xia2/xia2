@@ -34,8 +34,12 @@
 #            all of the guff to handle the images etc. Though this handles
 #            only the template &c., not the image selections for indexing.
 # 
-# 
-# 
+# FIXME 24/AUG/06 Need to be able to get the raster & separation parameters
+#                 from the integrationNN.sh script, so that I can reproduce
+#                 the interface now provided by the Mosflm implementation
+#                 (this adds a dictionary with a few extra parameters - dead
+#                 useful under some circumstances) - Oh, I can't do this
+#                 because Labelit doesn't produce these parameters!
 
 import os
 import sys
