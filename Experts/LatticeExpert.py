@@ -51,9 +51,8 @@ allowed_lattices = ['aP', 'mP', 'mC', 'oP', 'oC', 'oI',
 #     give a proper tree structure
 # (2) representing the final tree structure in a manner which is actually
 #     useful
+# 
+# Unsurprisingly this doesn't work, because the lattices have different
+# settings, and these settings affect the symmetry operators. Ho hum!
+# Probably easier to hard-code it based on the IUCR tables volume A..
 
-
-
-
-
-    
