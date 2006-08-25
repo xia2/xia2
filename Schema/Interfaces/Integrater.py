@@ -45,8 +45,14 @@
 #
 # Error Conditions:
 # 
+# FIXME 25/AUG/06 need a way to get the output reflection file from this
+#                 interface, so that it can be passed in to a scaler
+#                 implementation for ... scaling.
 # 
-
+# 
+# 
+# 
+# 
 
 import os
 import sys

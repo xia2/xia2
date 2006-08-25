@@ -359,4 +359,35 @@ and repeat the integration. Note that this is appropriate for Mosflm,
 XDS \& d*TREK in their own ways.}
 \end{itemize}
 
+\subsection{Scaler}
+
+This is where things start to get complicated... The scaling tends to have
+a lot of program specific options in it, which presents this situation:
+
+\begin{itemize}
+\item{We do not have a ``standard'' scaler interface, - or -}
+\item{We do have a standard scaler interface, but \emph{hide} all of the
+options and encode expertise therein to cope with this.}
+\end{itemize}
+
+\noindent
+Clearly the latter suggestion is sound. However, is there a good reason why
+a scaling program wrapper could not do both? That is, present an interface
+as a scaler BUT ALSO the program specific interface options? An interesting
+idea...
+
+What is needed for a general Scaler interface? Input, output files (which 
+will map onto HKLIN, HKLOUT for Scala) [sorting should be implicit, if not 
+already sorted]. Must be also able to cope with
+
+\begin{itemize}
+\item{Multiple sweeps for one wavelength which need to be merged.}
+\item{Multiple wavelength data which need to be scaled together to
+get the best signal out.}
+\end{itemize}
+
+Initially I want to be able to work this with XDS/XSCALE, Mosflm/Scala with
+(maybe) the d*TREK package... think about adding denzo/scalepack at some
+point in the future...
+
 \end{document}
