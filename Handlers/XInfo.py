@@ -23,6 +23,15 @@
 # FIXME 25/AUG/06 I need to implement a "wizard" for generating the .xinfo
 #                 file because it's not particularly helpful or friendly
 #                 in the amount of information it contains.
+# 
+# FIXME 25/AUG/06 Need to implement a system to ensure that the datasets 
+#                 point at different sweeps, not two of them pointing 
+#                 a the same sweep. Will allow two very similar looking
+#                 wavelength definitions (i.e. with the same lambda) for
+#                 one crystal because these could pertain to RIP, and may
+#                 correspond to different f', f'' values (although, will
+#                 these change as a function of radiation damage? unlikely)
+#                 FIXME I need to find this out to get a proper structure!
 
 class XInfo:
     '''A class to represent all of the input to the xia2dpa system, with
@@ -42,6 +51,8 @@ class XInfo:
 
         self._parse_project(xinfo_file)
 
+        self._validate()
+
         return
 
     def __repr__(self):
@@ -55,6 +66,13 @@ class XInfo:
         # remove a trailing newline...
         
         return repr[:-1]
+
+    def _validate(self):
+        '''Validate the structure of this object, ensuring that
+        everything looks right... raise exception if I find something
+        wrong.'''
+
+        return True
 
     def _parse_project(self, xinfo_file):
         '''Parse & validate the contents of the .xinfo file. This parses the
