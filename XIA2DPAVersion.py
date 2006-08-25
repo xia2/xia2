@@ -24,9 +24,10 @@
 # 0.0.3 - 16/AUG/06 getting something usefil in eventually, which 
 #         will integrate data using only mosflm - xia2process.
 # 
-# 
+# 0.0.4 - 25/AUG/06 beginning work on a scaling module, will allow
+#         reasonably complete processing from start to end
 
-VersionNumber = "0.0.3"
+VersionNumber = "0.0.4"
 Version = "XIA2DPA %s" % VersionNumber
 CVSTag = "xia2dpa-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2dpa-%s" % VersionNumber
