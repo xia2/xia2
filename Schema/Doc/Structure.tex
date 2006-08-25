@@ -390,4 +390,254 @@ Initially I want to be able to work this with XDS/XSCALE, Mosflm/Scala with
 (maybe) the d*TREK package... think about adding denzo/scalepack at some
 point in the future...
 
+\section{Input \& Output Description}
+
+At the moment I can identify the following as needing to come in the 
+inputs:
+
+\begin{itemize}
+\item{A list of existing data sets, and which crystals they have come from,
+and if the header is not populated with the collection date, that information.}
+\item{The appropriate f', f'' values for each crystal \& wavelength.}
+\item{Corrections to header information, in particular the beam centre.}
+\item{The information about the sample, is it SeMet, what heavy atoms
+do we expect, what is the sequence?}
+\end{itemize}
+
+\noindent
+The first three of these can be collected during data collection, so this is
+not a huge problem (FIXME: this must be implemented as part of DC.) The
+third document will be needed to implement the data collection really, so
+that is also ok.
+
+For the moment this is probably best described as a human readable document,
+something structured enough to get some information out, but not so fussy
+that people will get pissed off with it - in particular avoid XML!
+
+Something like:
+
+\begin{verbatim}
+BEGIN PROJECT TS00
+BEGIN CRYSTAL 12287
+
+BEGIN AA_SEQUENCE
+GIIYPGCFUIYGCUVGRVUTGRFTYUGFVETYFVYFDRYFDUUYFVYFRFVR
+END AA_SEQUENCE
+
+BEGIN HA_INFO
+ATOM SE
+NUMBER_PER_MONOMER 9
+ - or -
+NUMBER_TOTAL 9
+END HA_INFO
+
+BEGIN WAVELENGTH INFL   (*1)
+WAVELENGTH 0.97950
+F' -11.0
+F'' 6.0
+END WAVELENGTH INFL
+
+BEGIN DATASET INFL_DEF  (*2)
+WAVELENGTH INFL
+BEAM 109.0 105.0
+IMAGE 12287_1_E1_001.img
+DIRECTORY /Volumes/Arthur/JCSG Data/1vpj/data/blah/.../12287
+END DATASET INFL DEF
+
+... etc ...
+
+END CRYSTAL 12287
+END PROJECT TS00
+\end{verbatim}
+
+\noindent
+The records marked with \verb|(*1)| and \verb|(*2)| are user definable handles
+to make the linkup work. These will end up in the project/crystal/dataset
+hierarchy for MTZ files, or the equivalent therof in other data processing
+programs. They can also be used for defining file names and directories.
+
+FIXME, need to add some use of directory structures to this system,
+so that the files are kept a little more organised. Would be a good 
+exercise to put these files together for all of the TS data sets -
+that way I can make sure that they seem to make sense. Best to do it 
+for all of the TS0X development examples as a dummy run.
+
+Finally, there also needs to be scope in the file for comments. Any record
+beginning in ``!'' or ``\#'' will be treated as such...
+
+\subsection{Derivation of Interesting Things}
+
+\subsubsection{HA INFO}
+
+If there is a HA INFO element in there, then this suggests that this is 
+a MAD data set and should be treated accordingly. If this is not present
+it is assumed that this will be a native data set, although the anomalous
+pairs will still be separated. This means:
+
+\begin{itemize}
+\item{If there is no HA INFO, but F' etc. are present, an exception 
+should be raised.}
+\item{If there is no HA INFO but multi wavelength data, likewise.}
+\item{If there is a HA INFO, but no F' etc., then use something like
+crosssec to generate them. This should be avoided near absorption edges.}
+\end{itemize}
+
+If there is no sequence then it is assumed that the number of HA should be
+expressed as the total. If there is a sequence, then the number should be
+expressed per monomer or total - this can help when you have things like
+atoms on special positions, soaks etc. The number per monomer is 
+likely if you have SeMet data.
+
+If the ATOM record is specified, and it is SE, but the number per monomer
+is not defined and the AA SEQUENCE is, then just ``count the M's'' to 
+get this number.
+
+The F' numbers etc. should also be checked against the ATOM and WAVELENGTHS
+using crosssec, to see that the numbers are reasonable.
+
+\subsubsection{AA SEQUENCE}
+
+As described above, this will be used for deriving the number of HA if 
+suitable circumstances occur. Otherwise, this will also be used for 
+estimating the number of molecules in the ASU, the solvent content
+and obviously sequence docking.
+
+\subsection{Example: TS01}
+
+{
+\small
+\begin{verbatim}
+! F:\JCSG Data\1vr9>xia2find
+! Sweep: F:\JCSG Data\1vr9\data\jcsg\als1\8.2.1\20050121\collection\TM0892\12847\12847_4_###.img
+! Images: 1 to 180
+! Detector class: adsc q210 2x2 binned
+! Epoch from/to: 1106329906 1106332673
+! Collected from: Fri Jan 21 17:51:46 2005
+!             to: Fri Jan 21 18:37:53 2005
+! Wavelength: 0.991870
+! Distance: 150.000000
+! Exposure time: 12.000000
+! Beam: 105.099998 100.599998
+! Oscillations: 161.000000 to 251.000000 (0.500000)
+! 
+! Sweep: F:\JCSG Data\1vr9\data\jcsg\als1\8.2.1\20050121\collection\TM0892\12847\12847_5_###.img
+! Images: 1 to 90
+! Detector class: adsc q210 2x2 binned
+! Epoch from/to: 1106332719 1106333435
+! Collected from: Fri Jan 21 18:38:39 2005
+!             to: Fri Jan 21 18:50:35 2005
+! Wavelength: 0.991870
+! Distance: 250.000000
+! Exposure time: 5.000000
+! Beam: 105.099998 100.599998
+! Oscillations: 160.500000 to 250.500000 (1.000000)
+! 
+! Sweep: F:\JCSG Data\1vr9\data\jcsg\als1\8.3.1\20050105\collect\TM0892\13140\13140_1_E1_###.img
+! Images: 1 to 180
+! Detector class: adsc q210 2x2 binned
+! Epoch from/to: 1104976482 1104979591
+! Collected from: Thu Jan 06 01:54:42 2005
+!             to: Thu Jan 06 02:46:31 2005
+! Wavelength: 0.979741
+! Distance: 180.009995
+! Exposure time: 3.001523
+! Beam: 101.940002 101.050003
+! Oscillations: 140.000000 to 230.000000 (0.500000)
+! 
+! Sweep: F:\JCSG Data\1vr9\data\jcsg\als1\8.3.1\20050105\collect\TM0892\13140\13140_1_E2_###.img
+! Images: 1 to 180
+! Detector class: adsc q210 2x2 binned
+! Epoch from/to: 1104976498 1104979607
+! Collected from: Thu Jan 06 01:54:58 2005
+!             to: Thu Jan 06 02:46:47 2005
+! Wavelength: 1.019859
+! Distance: 180.009995
+! Exposure time: 3.005157
+! Beam: 101.940002 101.050003
+! Oscillations: 140.000000 to 230.000000 (0.500000)
+
+BEGIN PROJECT TS01
+BEGIN CRYSTAL 12847
+
+BEGIN AA_SEQUENCE
+
+MKVKKWVTQDFPMVEESATVRECLHRMRQYQTNECIVKDREGHFRGVVNKEDLLDLDLDSSVFNKVSLPD
+FFVHEEDNITHALLLFLEHQEPYLPVVDEEMRLKGAVSLHDFLEALIEALAMDVPGIRFSVLLEDKPGEL
+RKVVDALALSNINILSVITTRSGDGKREVLIKVDAVDEGTLIKLFESLGIKIESIEKEEGF
+
+END AA_SEQUENCE
+
+BEGIN WAVELENGTH NATIVE
+WAVELENGTH 0.99187
+END WAVELENGTH NATIVE
+
+! high resolution native pass
+
+BEGIN DATASET NATIVE_HR
+WAVELENGTH NATIVE
+BEAM 109.0 105.0
+IMAGE 12847_4_001.img
+DIRECTORY F:\JCSG Data\1vr9\data\jcsg\als1\8.2.1\20050121\collection\TM0892\12847\
+END DATASET NATIVE_HR
+
+! low resolution native pass
+
+BEGIN DATASET NATIVE_LR
+WAVELENGTH NATIVE
+BEAM 109.0 105.0
+IMAGE 12847_5_001.img
+DIRECTORY F:\JCSG Data\1vr9\data\jcsg\als1\8.2.1\20050121\collection\TM0892\12847\
+END DATASET NATIVE_LR
+
+END CRYSTAL 12847
+
+BEGIN CRYSTAL 13140
+
+BEGIN AA_SEQUENCE
+
+MKVKKWVTQDFPMVEESATVRECLHRMRQYQTNECIVKDREGHFRGVVNKEDLLDLDLDSSVFNKVSLPD
+FFVHEEDNITHALLLFLEHQEPYLPVVDEEMRLKGAVSLHDFLEALIEALAMDVPGIRFSVLLEDKPGEL
+RKVVDALALSNINILSVITTRSGDGKREVLIKVDAVDEGTLIKLFESLGIKIESIEKEEGF
+
+END AA_SEQUENCE
+
+BEGIN HA_INFO
+ATOM SE
+NUMBER_PER_MONOMER 5
+END HA_INFO
+
+BEGIN WAVELENGTH INFL
+WAVELENGTH 0.979741
+F' -10.0
+F'' 3.2
+END WAVELENGTH INFL
+
+BEGIN WAVELENGTH LREM
+WAVELENGTH 1.019859
+F' -2.6
+F'' 0.55
+END WAVELENGTH LREM
+
+BEGIN DATASET INFL
+WAVELENGTH INFL
+BEAM 108.7 102.0
+IMAGE 13140_1_E1_001.img
+DIRECTORY F:\JCSG Data\1vr9\data\jcsg\als1\8.3.1\20050105\collect\TM0892\13140\
+END DATASET
+
+BEGIN DATASET LREM
+WAVELENGTH LREM
+BEAM 108.7 102.0
+IMAGE 13140_1_E2_001.img
+DIRECTORY F:\JCSG Data\1vr9\data\jcsg\als1\8.3.1\20050105\collect\TM0892\13140\
+END DATASET
+
+END CRYSTAL 13140
+
+END PROJECT TS01
+
+
+\end{verbatim}
+}
+
 \end{document}
