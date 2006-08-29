@@ -2,5 +2,6 @@ xia2ss - the XiA for Structure Solution
 ---------------------------------------
 
 This goes along with xia2dc, xia2dpa to provide a complete suite of 
-"expert" crystallography programs.
+"expert" crystallography programs. Should all work through the .xinfo
+file.
 
