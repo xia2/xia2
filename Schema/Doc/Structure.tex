@@ -390,7 +390,7 @@ Initially I want to be able to work this with XDS/XSCALE, Mosflm/Scala with
 (maybe) the d*TREK package... think about adding denzo/scalepack at some
 point in the future...
 
-\section{Input \& Output Description}
+\section{Input \& Output Description: The .xinfo Files}
 
 At the moment I can identify the following as needing to come in the 
 inputs:
@@ -639,5 +639,18 @@ END PROJECT TS01
 
 \end{verbatim}
 }
+
+\subsection{Passing Things On}
+
+Once the data reduction has finished, the information about the relationship
+between data collection time and data set is lost. In particular, the
+\emph{order} in which the data was collected is lost forever. To counteract
+this, the information should be added to the .xinfo file, so that later
+stages in the structure solution process will be able to make use of this 
+information.
+
+Much of the rest of the information can be represented by the MTZ file.
+However, a similar scheme will be needed when the data are output in 
+something like scalepack unmerged format, shelx format \&c.
 
 \end{document}
