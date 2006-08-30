@@ -32,6 +32,16 @@
 #                 correspond to different f', f'' values (although, will
 #                 these change as a function of radiation damage? unlikely)
 #                 FIXME I need to find this out to get a proper structure!
+# 
+# FIXME 30/AUG/06 Probably should redefine DATASET as SWEEP to get a more
+#                 accurate mapping to the MTZ hierarchy. For the interim
+#                 I could allow either. So, for the moment, we have:
+#
+#                 WAVELENGTH -> MTZ dataset
+#                 PROJECT -> MTZ project
+#                 CRYSTAL -> MTZ dataset
+# 
+#                 Fix this... later!
 
 class XInfo:
     '''A class to represent all of the input to the xia2dpa system, with
