@@ -4,6 +4,8 @@
 
 platform=`uname`
 
+# FIXME this needs to account for Darwin on 386 & ppc.
+
 if [ "$platform" = "Darwin" ]; then
   export PATH=${PATH}:${DPA_ROOT}/binaries/mac_386
 elif [ "$platform" = "Linux" ]; then

@@ -2,6 +2,8 @@
 
 # add the test programs to the path
 
+# FIXME this needs to account for mac_ppc
+
 set platform `uname`
 if ( "$platform" == "Linux" ) then
   setenv PATH ${PATH}:${DPA_ROOT}/binaries/linux_386
