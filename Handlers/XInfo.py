@@ -227,7 +227,9 @@ class XInfo:
                     record = crystal_records[i]
                 
             # next look for datasets, checking that the wavelength
-            # definitions match up...
+            # definitions match up... note well, that the record
+            # dataset is a synonym for sweep - thus there are
+            # two copies of this loop...
 
             if 'BEGIN DATASET' in record:
                 dataset = record.replace('BEGIN DATASET', '').strip()
@@ -247,6 +249,49 @@ class XInfo:
 
                 # populate this with interesting things                
                 while not 'END DATASET' in record:                
+                    if 'WAVELENGTH' == record.split()[0]:
+                        wavelength = record.replace('WAVELENGTH', '').strip()
+                        if not wavelength in self._crystals[crystal][
+                            'wavelengths'].keys():
+                            raise RuntimeError, \
+                                  'wavelength %s unknown for crystal %s' % \
+                                  (wavelength, crystal)
+
+                        self._crystals[crystal]['datasets'][dataset][
+                            'wavelength'] = wavelength
+
+                    elif 'BEAM' == record.split()[0]:
+                        beam = map(float, record.split()[1:])
+                        self._crystals[crystal]['datasets'][dataset][
+                            'beam'] = beam
+
+                    else:
+                        key = record.split()[0]
+                        value = record.replace(key, '').strip()
+                        self._crystals[crystal]['datasets'][dataset][
+                            key] = value
+
+                    i += 1
+                    record = crystal_records[i]
+
+            if 'BEGIN SWEEP' in record:
+                dataset = record.replace('BEGIN SWEEP', '').strip()
+                
+                if self._crystals[crystal]['datasets'].has_key(dataset):
+                    raise RuntimeError, \
+                          'dataset %s already exists for crystal %s' % \
+                          (dataset, crystal)
+
+                self._crystals[crystal]['datasets'][dataset] = { }
+
+                # in here I expect to find IMAGE, DIRECTORY, WAVELENGTH
+                # and optionally BEAM
+
+                i += 1
+                record = crystal_records[i]
+
+                # populate this with interesting things                
+                while not 'END SWEEP' in record:                
                     if 'WAVELENGTH' == record.split()[0]:
                         wavelength = record.replace('WAVELENGTH', '').strip()
                         if not wavelength in self._crystals[crystal][
