@@ -28,7 +28,14 @@ class _Stream:
     def __init__(self, streamname, prefix):
         '''Create a new stream.'''
 
-        self._file = sys.stdout
+        # FIXME would rather this goes to a file...
+        # unless this is impossible
+
+        try:
+            self._file = open('%s.txt' % streamname, 'w')
+        except:
+            self._file = sys.stdout
+            
         self._streamname = streamname
         self._prefix = prefix
 

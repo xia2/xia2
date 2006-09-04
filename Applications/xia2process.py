@@ -13,7 +13,10 @@
 # a reasonably thorough integration of the data with the intention of 
 # growing into a full data reduction application.
 # 
-# 
+# 04/SEP/06 FIXME this should go to the factories to get the implementations,
+#           not code in static implementations.
+# 04/SEP/06 FIXME need to start passing information into the output streams,
+#           too...
 
 import sys
 import os
@@ -31,27 +34,32 @@ from Schema.Sweep import SweepFactory
 # program wrappers we will use
 from Wrappers.CCP4.Mosflm import Mosflm
 
+# want to move over more like this...
+from Modules.IndexerFactory import Indexer
+
 def xia2process():
     '''Do it!'''
 
-    m = Mosflm()
+    # m = Mosflm()
+
+    i = Indexer()
 
     # check to see if a beam has been specified
 
     beam = CommandLine.getBeam()
 
     if beam[0] * beam[1] > 0.0:
-        m.setBeam(beam)
+        i.setBeam(beam)
 
     # this will result in a run of printheader
 
-    m.setup_from_image(CommandLine.getImage())
+    i.setup_from_image(CommandLine.getImage())
 
     if CommandLine.getLattice():
-        m.set_indexer_input_lattice(CommandLine.getLattice())
+        i.set_indexer_input_lattice(CommandLine.getLattice())
 
-    phi_width = m.getHeader_item('phi_width')
-    images = m.getMatching_images()
+    # phi_width = m.getHeader_item('phi_width')
+    # images = m.getMatching_images()
 
     # FIXME this should be done automatically through the
     # indexer interface... now done!
@@ -63,10 +71,18 @@ def xia2process():
     # m.add_indexer_image_wedge(images[-1])
 
     # create a new mosflm here just to show that you can
+    # FIXME this should really work as
+    # 
+    # n = Integrater(i)
+    # 
+    # which will delegate it to an IntegraterFactory, and through
+    # to an appropriate constructor.
+    # FIXME 2 - the setup_from_image should be inherited through
+    # passing in an Indexer implementation.
 
     n = Mosflm()
     n.setup_from_image(CommandLine.getImage())
-    n.integrate_set_indexer(m)
+    n.integrate_set_indexer(i)
 
     # check for resolution limit
     if CommandLine.getResolution_limit() > 0.0:
@@ -76,11 +92,11 @@ def xia2process():
 
     # print out a little information about the lattice
 
-    print 'Refined beam is: %6.2f %6.2f' % m.get_indexer_beam()
-    print 'Distance:        %6.2f' % m.get_indexer_distance()
-    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % m.get_indexer_cell()
-    print 'Lattice: %s' % m.get_indexer_lattice()
-    print 'Mosaic: %6.2f' % m.get_indexer_mosaic()
+    print 'Refined beam is: %6.2f %6.2f' % i.get_indexer_beam()
+    print 'Distance:        %6.2f' % i.get_indexer_distance()
+    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % i.get_indexer_cell()
+    print 'Lattice: %s' % i.get_indexer_lattice()
+    print 'Mosaic: %6.2f' % i.get_indexer_mosaic()
     print 'Hklout: %s' % hklout
 
 if __name__ == '__main__':
