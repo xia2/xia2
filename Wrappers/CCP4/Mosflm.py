@@ -128,6 +128,11 @@
 #                 level application than this module - there should be an
 #                 "estimate resolution" during the integration, so that
 #                 the final set contains good measurements, good profiles.
+# 
+# FIXME  4/SEP/06 Make sure that the SUMMARY files & friends are written
+#                 to named files, to make sure they don't get overwritten.
+#                 Also more careful naming of integrate.log &c. needed.
+# 
 
 import os
 import sys

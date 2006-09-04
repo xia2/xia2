@@ -22,14 +22,15 @@
 #             well - I need to think more carefully about this in the
 #             future, though this solution may scale...
 # 
-# 16/AUG/06 - FIXME - need to be able to handle a resolution limit in here 
+# 16/AUG/06 - FIXED - need to be able to handle a resolution limit in here 
 #             as well as any other information our user may wish to pass
 #             in on the comand line, for example a lattice or a spacegroup.
+#             See 04/SEP/06 below.
 # 
 # 23/AUG/06 - FIXME - need to add handling of the lattice input in particular,
 #             since this is directly supported by Mosflm.py...
 #
-# 04/SEP/06 - FIXME - need to be able to pass in a resolution limit to
+# 04/SEP/06 - FIXED - need to be able to pass in a resolution limit to
 #             work to, for development purposes (this should become
 #             automatic in the future.)
 
