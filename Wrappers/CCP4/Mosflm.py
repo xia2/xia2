@@ -179,6 +179,25 @@ def Mosflm(DriverType = None):
 
             # local parameters used in integration
             self._mosflm_rerun_integration = False
+
+            return
+
+        def _index_select_images(self):
+            '''Select correct images based on image headers.'''
+
+            # FIXME perhaps this should be somewhere central, because
+            # LabelitScreen will share the same implementation
+
+            phi_width = self.getHeader_item('phi_width')
+            images = self.getMatching_images()
+
+            self.add_indexer_image_wedge(images[0])
+            if int(90.0 / phi_width) in images:
+                self.add_indexer_image_wedge(int(90.0 / phi_width))
+            else:
+                self.add_indexer_image_wedge(images[-1])
+
+            return
                             
         def _index(self):
             '''Implement the indexer interface.'''

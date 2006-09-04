@@ -148,9 +148,21 @@ def LabelitScreen(DriverType = None):
             return
 
         def _index_select_images(self):
-            '''FIXME this needs to be implemented.'''
+            '''Select correct images based on image headers.'''
 
-            raise RuntimeError, 'I need implementing'
+            # FIXME perhaps this should be somewhere central, because
+            # Mosflm will share the same implementation
+
+            phi_width = self.getHeader_item('phi_width')
+            images = self.getMatching_images()
+
+            self.add_indexer_image_wedge(images[0])
+            if int(90.0 / phi_width) in images:
+                self.add_indexer_image_wedge(int(90.0 / phi_width))
+            else:
+                self.add_indexer_image_wedge(images[-1])
+
+            return
 
         def _index(self):
             '''Actually index the diffraction pattern. Note well that

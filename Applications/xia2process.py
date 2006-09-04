@@ -54,13 +54,13 @@ def xia2process():
     images = m.getMatching_images()
 
     # FIXME this should be done automatically through the
-    # indexer interface...
+    # indexer interface... now done!
 
-    m.add_indexer_image_wedge(images[0])
-    if int(90 / phi_width) in images:
-        m.add_indexer_image_wedge(int(90/ phi_width))
-    else:
-        m.add_indexer_image_wedge(images[-1])
+    # m.add_indexer_image_wedge(images[0])
+    # if int(90 / phi_width) in images:
+    # m.add_indexer_image_wedge(int(90/ phi_width))
+    # else:
+    # m.add_indexer_image_wedge(images[-1])
 
     # create a new mosflm here just to show that you can
 

@@ -13,11 +13,15 @@
 # 
 # FIXME this needs to be removed now that there is a proper interface
 # for Indexer which is implemented by LabelitScreen.py - this should
-# be accessed directly by the IndexerFacory.
+# be accessed directly by the IndexerFacory. This module will now raise
+# an exception if used.
 
 import os
 import sys
 import copy
+
+raise RuntimeError, 'This module is obsolete: use Wrappers/Labelit/' + \
+      'LabelitScreen.py'
 
 if not os.environ.has_key('DPA_ROOT'):
     raise RuntimeError, 'DPA_ROOT not defined'

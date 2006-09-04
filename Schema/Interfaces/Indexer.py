@@ -99,13 +99,14 @@ class Indexer:
     def index_select_images(self):
         '''Call the local implementation...'''
         
-        result = self._index_select_images()
+        self._index_select_images()
 
         # reset the indexer - we need to rerun to get updated
-        # results
+        # results - not sure if this helps, since this will only
+        # be called when the images aren't set...
         self._indxr_run = False
 
-        return result
+        return 
 
     def _index(self):
         '''This is what the implementation needs to implement.'''
@@ -113,7 +114,7 @@ class Indexer:
         raise RuntimeError, 'overload me'
 
     def index(self):
-        if self._indxr_images is []:
+        if self._indxr_images == []:
             self.index_select_images()
 
         result = self._index()
