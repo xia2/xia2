@@ -28,6 +28,10 @@
 # 
 # 23/AUG/06 - FIXME - need to add handling of the lattice input in particular,
 #             since this is directly supported by Mosflm.py...
+#
+# 04/SEP/06 - FIXME - need to be able to pass in a resolution limit to
+#             work to, for development purposes (this should become
+#             automatic in the future.)
 
 import sys
 import os
@@ -68,6 +72,12 @@ class _CommandLine(Object):
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
                   (self._help_lattice_spacegroup(), str(e))
+
+        try:
+            self._read_resolution_limit()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_resolution_limit(), str(e))
 
         return
 
@@ -181,6 +191,24 @@ class _CommandLine(Object):
         '''Help for the lattice/spacegroup options.'''
         return '(-lattice mP|-spacegroup p2)'
 
+    def _read_resolution_limit(self):
+        '''Search for resolution limit on the command line - at the
+        moment just the high resolution limit.'''
+
+        try:
+            index = sys.argv.index('-resolution')
+
+        except ValueError, e:
+            self._default_resolution_limit = 0.0
+            return
+
+        self._default_resolution_limit = float(sys.argv[index + 1])
+        
+        return
+
+    def _help_resolution_limit(self):
+        return '-resolution 1.6'
+    
     def getTemplate(self):
         return self._default_template
 
@@ -196,9 +224,12 @@ class _CommandLine(Object):
     def getSpacegroup(self):
         raise RuntimeError, 'this needs to be implemented'
 
+    def getResolution_limit(self):
+        return self._default_resolution_limit
+
 CommandLine = _CommandLine()
 
 if __name__ == '__main__':
     print CommandLine.getBeam()
-
+    print CommandLine.getResolution_limit()
 
