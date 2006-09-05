@@ -33,7 +33,7 @@
 #                 these change as a function of radiation damage? unlikely)
 #                 FIXME I need to find this out to get a proper structure!
 # 
-# FIXME 30/AUG/06 Probably should redefine DATASET as SWEEP to get a more
+# FIXED 30/AUG/06 Probably should redefine DATASET as SWEEP to get a more
 #                 accurate mapping to the MTZ hierarchy. For the interim
 #                 I could allow either. So, for the moment, we have:
 #
@@ -43,10 +43,29 @@
 # 
 #                 Fix this... later!
 # 
-# FIXME 05/SEP/06 Need to kill current definition of DATASET so I can use
+# FIXED 05/SEP/06 Need to kill current definition of DATASET so I can use
 #                 it when going to xia2ss as a dataset. => sed /dataset/sweep/
-#                 for xia2dpa.
+#                 for xia2dpa. Done, and documentation, examples are
+#                 updated.
 # 
+# FIXME 05/SEP/06 Need to produce an object hierarchy based on Schema/Object
+#                 to give object versioning which will represent the contents
+#                 of the .xinfo+ file, that is, the representation of this 
+#                 information during the data reduction process, to make the
+#                 join from the input-to-dpa .xinfo file and the xia2ss
+#                 .xinfo input file. This will be:
+# 
+#                 XProject
+#                 XCrystal
+#                 XWavelength
+#                 XSweep
+#                 XDataset
+# 
+#                 A slightly poor naming convention, but it will do the 
+#                 job. So - the properties of these are defined in
+#                 /Schema. Note well that these have subproperties
+#                 (e.g. sweep resolution) which will also have to be
+#                 defined as classes...
 
 class XInfo:
     '''A class to represent all of the input to the xia2dpa system, with
