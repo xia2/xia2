@@ -13,6 +13,25 @@
 # will be used to ensure that all objects have timestamps (which define
 # their validity) and can be properly sorted.
 # 
+# FIXME 05/SEP/06 Two new features needed - one is a handle, so that you 
+#                 can give an object a human readable name. The other
+#                 if the ability to create read-only objects, that is 
+#                 ones which cannot be changed once they have been set,
+#                 where changes will result in an exception - e.g. 
+#                 the user has said that the lattice is mC - the DPA
+#                 thinks otherwise (that is, it is explicitly unhappy
+#                 about the choice) the only option is then to exception.
+# 
+#                 Modelling this is going to require some care - for instance
+#                 it will always be important to start at "the top" lattice-
+#                 wise and work downwards, so that you can have something in
+#                 the lattice management which will only raise an exception if
+#                 the asserted lattice is lower or something.
+# 
+#                 Therefore add "_o_readonly" and "_o_handle" properties
+#                 to the object, accessible through the constructor for
+#                 the former and constructor or setter for the latter.
+#                 No - set them only through the constructor.
 
 import time
 import random
@@ -42,11 +61,16 @@ ObjectTracker = _ObjectTracker()
 class Object:
     '''The DPA root object.'''
 
-    def __init__(self):
+    def __init__(self, o_handle = None, o_readonly = False):
         '''Initialise the objects timestamp - adding a small random
-        amount to prevent two objects having exactly the same timestamp.'''
+        amount to prevent two objects having exactly the same timestamp.
+        For definitions of o_readonly, o_handle, see above in the
+        FIXME for 05/SEP/06.'''
 
         self._timestamp = time.time() + 0.01 * random.random()
+
+        self._o_handle = o_handle
+        self._o_readonly = o_readonly
 
         # default to timestamp as the only real identity
         self._identity_attributes = ['_timestamp']
@@ -70,7 +94,11 @@ class Object:
 
     def __repr__(self):
         '''Generate a string representation based on the class ID and
-        the identity list.'''
+        the identity list. Note that this can now also use the handle -
+        FIXME this needs to be added to the representation.'''
+
+        if self._o_handle:
+            return self._o_handle
 
         id = '"%s" id:' % self.__class__.__name__
         for attribute in self._identity_attributes:
@@ -112,7 +140,10 @@ class Object:
 
     def reset(self):
         '''Reset the timestamp on this object to indicate that it
-        has changed.'''
+        has changed. If this is a readonly object, raise an exception.'''
+
+        if self._o_readonly:
+            raise RuntimeError, 'readonly object has been reset'
 
         self._timestamp = time.time() + 0.01 * random.random()
         return
@@ -137,6 +168,12 @@ class Object:
 
         self._stdout.append(string)
         return
+
+    def readonly(self):
+        return self._o_readonly
+
+    def handle(self):
+        return self._o_handle
 
 if __name__ == '__main__':
 
