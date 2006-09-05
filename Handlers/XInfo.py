@@ -42,6 +42,11 @@
 #                 CRYSTAL -> MTZ dataset
 # 
 #                 Fix this... later!
+# 
+# FIXME 05/SEP/06 Need to kill current definition of DATASET so I can use
+#                 it when going to xia2ss as a dataset. => sed /dataset/sweep/
+#                 for xia2dpa.
+# 
 
 class XInfo:
     '''A class to represent all of the input to the xia2dpa system, with
@@ -155,15 +160,15 @@ class XInfo:
                 # sequence - exactly one, a long string
                 # wavelengths - a dictionary of data structures keyed by the
                 #               wavelength id
-                # datasets - a dictionary of data structures keyed by the
-                #            dataset id
+                # sweeps - a dictionary of data structures keyed by the
+                #          sweep id
                 # ha_info - exactly one dictionary containing the heavy atom
                 #           information
 
                 self._crystals[crystal] = {
                     'sequence':'',
                     'wavelengths':{},
-                    'datasets':{},
+                    'sweeps':{},
                     'ha_info':{}
                     }
 
@@ -226,63 +231,18 @@ class XInfo:
                     i += 1
                     record = crystal_records[i]
                 
-            # next look for datasets, checking that the wavelength
-            # definitions match up... note well, that the record
-            # dataset is a synonym for sweep - thus there are
-            # two copies of this loop...
-
-            if 'BEGIN DATASET' in record:
-                dataset = record.replace('BEGIN DATASET', '').strip()
-                
-                if self._crystals[crystal]['datasets'].has_key(dataset):
-                    raise RuntimeError, \
-                          'dataset %s already exists for crystal %s' % \
-                          (dataset, crystal)
-
-                self._crystals[crystal]['datasets'][dataset] = { }
-
-                # in here I expect to find IMAGE, DIRECTORY, WAVELENGTH
-                # and optionally BEAM
-
-                i += 1
-                record = crystal_records[i]
-
-                # populate this with interesting things                
-                while not 'END DATASET' in record:                
-                    if 'WAVELENGTH' == record.split()[0]:
-                        wavelength = record.replace('WAVELENGTH', '').strip()
-                        if not wavelength in self._crystals[crystal][
-                            'wavelengths'].keys():
-                            raise RuntimeError, \
-                                  'wavelength %s unknown for crystal %s' % \
-                                  (wavelength, crystal)
-
-                        self._crystals[crystal]['datasets'][dataset][
-                            'wavelength'] = wavelength
-
-                    elif 'BEAM' == record.split()[0]:
-                        beam = map(float, record.split()[1:])
-                        self._crystals[crystal]['datasets'][dataset][
-                            'beam'] = beam
-
-                    else:
-                        key = record.split()[0]
-                        value = record.replace(key, '').strip()
-                        self._crystals[crystal]['datasets'][dataset][
-                            key] = value
-
-                    i += 1
-                    record = crystal_records[i]
+            # next look for sweeps, checking that the wavelength
+            # definitions match up... 
 
             if 'BEGIN SWEEP' in record:
-                dataset = record.replace('BEGIN SWEEP', '').strip()
+                sweep = record.replace('BEGIN SWEEP', '').strip()
                 
-                if self._crystals[crystal]['datasets'].has_key(dataset):
+                if self._crystals[crystal]['sweeps'].has_key(sweep):
                     raise RuntimeError, \
-                          'dataset %s already exists for crystal %s' % \
-                          (dataset, crystal)
+                          'sweep %s already exists for crystal %s' % \
+                          (sweep, crystal)
 
-                self._crystals[crystal]['datasets'][dataset] = { }
+                self._crystals[crystal]['sweeps'][sweep] = { }
 
                 # in here I expect to find IMAGE, DIRECTORY, WAVELENGTH
                 # and optionally BEAM
@@ -300,18 +260,18 @@ class XInfo:
                                   'wavelength %s unknown for crystal %s' % \
                                   (wavelength, crystal)
 
-                        self._crystals[crystal]['datasets'][dataset][
+                        self._crystals[crystal]['sweeps'][sweep][
                             'wavelength'] = wavelength
 
                     elif 'BEAM' == record.split()[0]:
                         beam = map(float, record.split()[1:])
-                        self._crystals[crystal]['datasets'][dataset][
+                        self._crystals[crystal]['sweeps'][sweep][
                             'beam'] = beam
 
                     else:
                         key = record.split()[0]
                         value = record.replace(key, '').strip()
-                        self._crystals[crystal]['datasets'][dataset][
+                        self._crystals[crystal]['sweeps'][sweep][
                             key] = value
 
                     i += 1
