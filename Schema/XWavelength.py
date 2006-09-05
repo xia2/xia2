@@ -21,6 +21,15 @@
 # However, these objects are not versioned, since they do not (in the current
 # implementation) impact on the data reduction process. These are mostly
 # passed through.
+#
+# FIXME 05/SEP/06 this also needs to be able to handle the information
+#                 pertaining to the lattice, because it is critcial that
+#                 all of the sweeps for a wavelength share the same
+#                 lattice.
+# 
+# FIXME 05/SEP/06 also don't forget about ordering the sweeps in collection
+#                 order for the data reduction, to make sure that we 
+#                 reduce the least damaged data first.
 
 class XWavelength(Object):
     '''An object representation of a wavelength, which will after data

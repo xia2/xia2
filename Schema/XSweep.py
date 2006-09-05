@@ -19,7 +19,7 @@
 # The following properties defined elsewhere impact in the definition
 # of the sweep:
 #
-# lattice
+# lattice - contained in XCrystal, to levels above XSweep.
 #
 # FIXME this needs to be defined!
 #
@@ -48,6 +48,19 @@
 # 
 # (*1) This assumes, of course, that the kappa information or whatever
 #      is properly handled.
+#
+# Bugger - slight complication! Want to make sure that multiple sweeps
+# in the same wavelength have "identical" unit cells (since the error
+# on the wavelength should be small) which means that the XWavelength
+# level also needs to be able to handle this kind of information. Note
+# well - this is an old thought, since the overall crystal unit cell
+# is a kind of average from the wavelengths, which is in turn a kind
+# of average from all of the sweeps. Don't miss out the wavelength
+# level.
+# 
+# This means that the lattice information will have to cascade up and
+# down the tree, to make sure that everything is kept up-to-date. This
+# should be no more difficult, just a little more complicated.
 
 import sys
 import os
