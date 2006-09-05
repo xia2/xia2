@@ -15,7 +15,12 @@
 # the above, all of the above.
 # 
 # The idea of this is to separate the "administrative", "status" and 
-# "scientific" output of the program.
+# "scientific" output of the program. Finally I also decided (5/SEP/06)
+# to add a stream for "chatter", that is the odds and ends which are 
+# going on inside the program which tells you it's doing things.
+#
+# FIXME 05/SEP/06 wouldn't it be nice to split the output to fit well on 
+#                 an 80 character terminal display?
 # 
 # 
 
@@ -32,6 +37,8 @@ class _Stream:
         # unless this is impossible
 
         try:
+            if streamname == None:
+                raise RuntimeError, 'want this to go to stdout'
             self._file = open('%s.txt' % streamname, 'w')
         except:
             self._file = sys.stdout
@@ -47,8 +54,10 @@ class _Stream:
 Science = _Stream('xia-science', 'SCI-')
 Admin = _Stream('xia-admin', 'ADMN')
 Status = _Stream('xia-status', 'STAT')
+Chatter = _Stream(None, 'XIA2')
 
 if __name__ == '__main__':
     Science.write('Hello from Science')
     Admin.write('Hello from Admin')
     Status.write('All finished now...')
+    Chatter.write('nothing much, really')
