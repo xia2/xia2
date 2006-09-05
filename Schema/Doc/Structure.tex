@@ -653,4 +653,20 @@ Much of the rest of the information can be represented by the MTZ file.
 However, a similar scheme will be needed when the data are output in 
 something like scalepack unmerged format, shelx format \&c.
 
+\subsection{Escalation}
+
+Now that I have a description of the input structure, the obvious thing
+to do is to map this into a set of classes in Python - XType classes
+(see next section.) This has the interesting outcome that this can practically
+\emph{replace} my existing data structures, and can also provide a 
+framework from which to hang all of the methods - an interesting turn of
+events.
+
+\section{XInfo, XType Classes}
+
+Once the .xinfo file was defined, for each stage in the xia2 pipeline
+(dc, dpa, ss) it becomes inevitable that this will begin to dominate the
+overall structure of the program, at least from the perspective of the 
+data. 
+
 \end{document}

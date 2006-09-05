@@ -128,6 +128,9 @@ from Experts.FindImages import image2template, find_matching_images, \
 # image header reading functionality
 from Wrappers.XIA.Printheader import Printheader
 
+# access to factory classes
+import Modules.IndexerFactory
+
 class XSweep(Object):
     '''An object representation of the sweep.'''
 
@@ -186,10 +189,15 @@ class XSweep(Object):
         #   XCrystal. FIXME should I be using a LatticeInfo object
         #   in here? See what the Indexer interface produces. ALT:
         #   just provide an Indexer implementation "hook".
-        #   See Headnote 001 above.
+        #   See Headnote 001 above. See also _get_indexer,
+        #   _get_integrater below.
 
-        self._lattice = None
-        self._crystal_lattice = None
+        self._indexer = None
+        self._integrater = None
+
+        # I don't need this - it is equivalent to self.getWavelength(
+        # ).getCrystal().getLattice()
+        # self._crystal_lattice = None
 
         #   this means that this module will have to present largely the
         #   same interface as Indexer and Integrater so that the calls
@@ -217,10 +225,30 @@ class XSweep(Object):
 
         return
 
-    # real "action" methods - note though that these should never be
+    # Real "action" methods - note though that these should never be
     # run directly, only implicitly...
 
-    
+    # These methods will be delegated down to Indexer and Integrater
+    # implementations, through the defined method names. This should
+    # make life interesting!
+
+    # Note well - to get this to do things, ask for the
+    # integrate_get_reflection() - this will kickstart everything.
+
+    def _get_indexer(self):
+        '''Get my indexer, if set, else create a new one from the
+        factory.'''
+
+        if self._indexer = None:
+            # FIXME the indexer factory should probably be able to
+            # take self [this object] as input, to help with deciding
+            # the most appropriate indexer to use... this will certainly
+            # be the case for the integrater. Maintaining this link
+            # will also help the system cope with updates (which
+            # was going to be one of the big problems...)
+            self._indexer = IndexerFactory.Indexer()
+            
+        return self._indexer
 
 if __name__ == '__main__':
 
