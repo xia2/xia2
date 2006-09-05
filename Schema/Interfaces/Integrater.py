@@ -49,10 +49,10 @@
 #                 interface, so that it can be passed in to a scaler
 #                 implementation for ... scaling.
 # 
-# 
-# 
-# 
-# 
+# FIXME 05/SEP/06 also need to make this more like the indexer interface,
+#                 providing access to everything only through getters and
+#                 setters - no action methods. the tracking & calculations
+#                 must be performed explicitly...
 
 import os
 import sys
@@ -162,6 +162,9 @@ class Integrater:
     def integrate_get_indexer(self):
         return self._intgr_indexer
 
-    def integrate(self, fast = False):
+    def integrate_get_reflections(self, fast = False):
+        # in here check if integration has already been performed, if
+        # it has and everything is happy, just return the reflections,
+        # else repeat the calculations.
         return self._integrate(fast)
             

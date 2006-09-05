@@ -88,7 +88,7 @@ def xia2process():
     if CommandLine.getResolution_limit() > 0.0:
         n.integrate_set_high_resolution(CommandLine.getResolution_limit())
 
-    hklout = n.integrate()
+    hklout = n.integrate_get_reflections()
 
     # print out a little information about the lattice
 
