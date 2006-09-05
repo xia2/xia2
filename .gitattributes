@@ -8,7 +8,6 @@ Handlers/Doc/Syminfo.pdf -text
 Handlers/Doc/Xinfo.pdf -text
 Modules/Doc/Indexer.pdf -text
 Modules/Doc/IndexerFactory.pdf -text
-Modules/Prototype/Doc/Indexer.pdf -text
 Schema/Doc/Structure.pdf -text
 Wrappers/CCP4/Doc/Chooch.pdf -text
 Wrappers/CCP4/Doc/Combat.pdf -text
