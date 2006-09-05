@@ -54,17 +54,28 @@ def Indexer():
 
     # FIXME need to check that these implement indexer
 
-    try:
-        return LabelitScreen.LabelitScreen()
-    except RuntimeError, e:
-        Admin.write('Indexer LabelitScreen not available')
+    indexer = None
 
-    try:
-        return Mosflm.Mosflm()
-    except RuntimeError, e:
-                Admin.write('Indexer Mosflm not available')
+    if not indexer:
+        try:
+            indexer = LabelitScreen.LabelitScreen()
+            Admin.write('Using LabelitScreen Indexer')
+        except RuntimeError, e:
+            Admin.write('Indexer LabelitScreen not available')
 
-    raise RuntimeError, 'no indexer implementations found'
+    if not indexer:
+        try:
+            indexer = Mosflm.Mosflm()
+            Admin.write('Using Mosflm Indexer')
+        except RuntimeError, e:
+            Admin.write('Indexer Mosflm not available')
+
+    if not indexer:
+        raise RuntimeError, 'no indexer implementations found'
+
+    # configure indexer implementation here
+
+    return indexer
 
 if __name__ == '__main__':
     
