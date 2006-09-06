@@ -46,13 +46,40 @@ from Wrappers.CCP4 import Mosflm
 
 from Handlers.Streams import Admin
 
+def _IndexerXSweep(xsweep):
+    '''Provide an indexer to work with XSweep instance xsweep.'''
+
+    # check what is going on
+
+    if xsweep == None:
+        raise RuntimeError, 'XSweep instance needed'
+
+    if not xsweep.__class__.__name__ == 'XSweep':
+        raise RuntimeError, 'XSweep instance needed'
+
+    # if the xsweep has a crystal lattice defined, use mosflm which
+    # FIXME needs to be modified to take a crystal cell as input.
+
+    crystal_lattice = xsweep.get_crystal_lattice()
+
+    if crystal_lattice:
+        pass
+
+    
 
 # FIXME need to provide framework for input passing
 
-def Indexer():
+def Indexer(xsweep = None):
     '''Create an instance of Indexer for use with this dataset.'''
 
     # FIXME need to check that these implement indexer
+    # FIXME need also to make the decision based on the input
+    # XSweep if provided...
+
+    if xsweep:
+        # forward to a factory for indexers when an xsweep
+        # is passed in... [delegate]
+        return _IndexerXSweep(xsweep)
 
     indexer = None
 
@@ -73,7 +100,8 @@ def Indexer():
     if not indexer:
         raise RuntimeError, 'no indexer implementations found'
 
-    # configure indexer implementation here
+    # configure indexer implementation here, e.g. pass in the
+    # xsweep definition if available
 
     return indexer
 
