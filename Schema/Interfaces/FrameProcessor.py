@@ -20,6 +20,10 @@
 # Distance (mm), wavelength (ang), beam centre (mm, mm),
 # image header information [general c/f printheader output]
 # 
+# FIXME 06/SEP/06 need to be able to interface to the XSweep
+#                 object in here, to allow all of this information
+#                 to be pulled automatically...
+# 
 
 import os
 import sys
@@ -54,6 +58,9 @@ class FrameProcessor:
         self._fp_beam_prov = None
 
         self._fp_header = { }
+
+        # see FIXME for 06/SEP/06
+        self._fp_xsweep = None
 
         # if image has been specified, construct much of this information
         # from the image
