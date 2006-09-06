@@ -102,7 +102,7 @@ def LabelitStats_distl(DriverType = None):
 
         # things to get results from the indexing
 
-        def getStatistics(self, image):
+        def get_statistics(self, image):
             '''Get the screening statistics from image as dictionary.
             The keys are spots_total, spots, spots_good, ice_rings,
             resol_one, resol_two.'''
@@ -121,7 +121,7 @@ if __name__ == '__main__':
     l = LabelitStats_distl()
     l.stats_distl()
 
-    stats = l.getStatistics('12287_1_E1_001.img')
+    stats = l.get_statistics('12287_1_E1_001.img')
 
     print 'Fraction of good spots: %4.2f' % (float(stats['spots_good']) /
                                              float(stats['spots']))

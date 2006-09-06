@@ -64,12 +64,12 @@ def Othercell(DriverType = None):
 
             return
 
-        def setCell(self, cell):
+        def set_cell(self, cell):
             self._initial_cell = cell
 
             return
 
-        def setLattice(self, lattice):
+        def set_lattice(self, lattice):
             self._initial_lattice_type = lattice
 
             return
@@ -130,8 +130,8 @@ if __name__ == '__main__':
 
     o = Othercell()
 
-    o.setCell([43.62, 52.27, 116.4, 103, 100.7, 90.03])
-    o.setLattice('p')
+    o.set_cell([43.62, 52.27, 116.4, 103, 100.7, 90.03])
+    o.set_lattice('p')
 
     o.generate()
 

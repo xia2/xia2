@@ -57,7 +57,7 @@ def SweepFactory(template, directory, beam = None):
                                                 directory,
                                                 i)
         ph = Printheader()
-        ph.setImage(image)
+        ph.set_image(image)
         headers[i] = ph.readheader()
 
     sweep_ids = headers2sweep_ids(headers)
@@ -107,36 +107,36 @@ class Sweep(Object):
 
         return
 
-    def getTemplate(self):
+    def get_template(self):
         return self._template
 
-    def getDirectory(self):
+    def get_directory(self):
         return self._directory
 
-    def getDetector_class(self):
+    def get_detector_class(self):
         return self._detector_class
 
-    def getImages(self):
+    def get_images(self):
         # check if any more images have appeared
         self.update()
         return self._images
 
-    def getCollect(self):
+    def get_collect(self):
         return self._collect_start, self._collect_end
 
-    def getPhi(self):
+    def get_phi(self):
         return self._phi
 
-    def getExposure_time(self):
+    def get_exposure_time(self):
         return self._exposure_time
 
-    def getDistance(self):
+    def get_distance(self):
         return self._distance
 
-    def getWavelength(self):
+    def get_wavelength(self):
         return self._wavelength
 
-    def getBeam(self):
+    def get_beam(self):
         return self._beam
 
     def imagename(self, number):
@@ -250,12 +250,12 @@ if __name__ == '__main__':
 
     for s in sl:
 
-        t = s.getCollect()
+        t = s.get_collect()
         print 'Data collection took %s seconds' % (t[1] - t[0])
         print 'For a total of %s seconds of exposure' % \
-              (s.getExposure_time() * \
-               len(s.getImages()))
-        print 'Images: %d to %d' % (min(s.getImages()), max(s.getImages()))
-        print 'Template: %s' % s.getTemplate()
+              (s.get_exposure_time() * \
+               len(s.get_images()))
+        print 'Images: %d to %d' % (min(s.get_images()), max(s.get_images()))
+        print 'Template: %s' % s.get_template()
         print ''
                                                      

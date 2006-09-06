@@ -61,8 +61,8 @@ class TestSortmtz(unittest.TestCase):
         
         s = Sortmtz()
         
-        s.addHklin(hklin1)
-        s.addHklin(hklin2)
+        s.add_hklin(hklin1)
+        s.add_hklin(hklin2)
 
         # write this to scratch 
         s.set_hklout(os.path.join(os.environ['CCP4_SCR'],
@@ -81,8 +81,8 @@ class TestSortmtz(unittest.TestCase):
         
         s = Sortmtz()
         
-        s.addHklin(hklin1)
-        s.addHklin(hklin1)
+        s.add_hklin(hklin1)
+        s.add_hklin(hklin1)
 
         # write this to scratch 
         s.set_hklout(os.path.join(os.environ['CCP4_SCR'],

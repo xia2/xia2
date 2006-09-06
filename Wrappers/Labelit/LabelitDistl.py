@@ -58,7 +58,7 @@ def LabelitDistl(DriverType = None):
 
             self._statistics = { } 
 
-        def addImage(self, image):
+        def add_image(self, image):
             '''Add an image for indexing.'''
 
             if not image in self._images:
@@ -117,7 +117,7 @@ def LabelitDistl(DriverType = None):
 
         # things to get results from the indexing
 
-        def getStatistics(self, image):
+        def get_statistics(self, image):
             '''Get the screening statistics from image as dictionary.
             The keys are spots_total, spots, spots_good, ice_rings,
             resol_one, resol_two.'''
@@ -138,11 +138,11 @@ if __name__ == '__main__':
     directory = os.path.join(os.environ['DPA_ROOT'],
                              'Data', 'Test', 'Images')
 
-    l.addImage(os.path.join(directory, '12287_1_E1_001.img'))
+    l.add_image(os.path.join(directory, '12287_1_E1_001.img'))
 
     l.distl()
 
-    stats = l.getStatistics('12287_1_E1_001.img')
+    stats = l.get_statistics('12287_1_E1_001.img')
 
     print 'Fraction of good spots: %4.2f' % (float(stats['spots_good']) /
                                              float(stats['spots']))

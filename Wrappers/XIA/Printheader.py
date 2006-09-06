@@ -86,7 +86,7 @@ def Printheader(DriverType = None):
 
             return
 
-        def setImage(self, image):
+        def set_image(self, image):
             '''Set an image to read the header of.'''
             self._image = image
             self._header = { }
@@ -238,12 +238,12 @@ if __name__ == '__main__':
                              'Data', 'Test', 'Images')
 
     if len(sys.argv) == 1:
-        p.setImage(os.path.join(directory, '12287_1_E1_001.img'))
+        p.set_image(os.path.join(directory, '12287_1_E1_001.img'))
         print p.readheader()
 
     else:
         for image in sys.argv[1:]:
-            p.setImage(image)
+            p.set_image(image)
 
             header = p.readheader()
             

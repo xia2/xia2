@@ -70,75 +70,75 @@ class FrameProcessor:
 
         return
 
-    def setTemplate(self, template):
+    def set_template(self, template):
         self._fp_template = template
         return
 
-    def getTemplate(self):
+    def get_template(self):
         return self._fp_template
 
-    def setDirectory(self, directory):
+    def set_directory(self, directory):
         self._fp_directory = directory
         return
 
-    def getDirectory(self):
+    def get_directory(self):
         return self._fp_directory
 
-    def getMatching_images(self):
+    def get_matching_images(self):
         return self._fp_matching_images
 
-    def setWavelength(self, wavelength):
+    def set_wavelength(self, wavelength):
         self._fp_wavelength = wavelength
         self._fp_wavelength_prov = 'user'
         return
 
-    def getWavelength(self):
+    def get_wavelength(self):
         return self._fp_wavelength
 
-    def getWavelength_prov(self):
+    def get_wavelength_prov(self):
         return self._fp_wavelength_prov
 
-    def setDistance(self, distance):
+    def set_distance(self, distance):
         self._fp_distance = distance
         self._fp_distance_prov = 'user'
         return
 
-    def getDistance(self):
+    def get_distance(self):
         return self._fp_distance
 
-    def getDistance_prov(self):
+    def get_distance_prov(self):
         return self._fp_distance_prov
 
-    def setBeam(self, beam):
+    def set_beam(self, beam):
         self._fp_beam = beam
         self._fp_beam_prov = 'user'
         return
 
-    def getBeam(self):
+    def get_beam(self):
         return self._fp_beam
 
-    def getBeam_prov(self):
+    def get_beam_prov(self):
         return self._fp_beam_prov
 
-    def setHeader(self, header):
+    def set_header(self, header):
         self._fp_header = header
         return
 
-    def getHeader(self):
+    def get_header(self):
         return self._fp_header
 
-    def getHeader_item(self, item):
+    def get_header_item(self, item):
         return self._fp_header[item]
 
     # utility functions
-    def getImage_name(self, number):
+    def get_image_name(self, number):
         '''Convert an image number into a name.'''
 
-        return template_directory_number2image(self.getTemplate(),
-                                               self.getDirectory(),
+        return template_directory_number2image(self.get_template(),
+                                               self.get_directory(),
                                                number)
 
-    def getImage_number(self, image):
+    def get_image_number(self, image):
         '''Convert an image name to a number.'''
 
         if type(image) == type(1):
@@ -175,7 +175,7 @@ class FrameProcessor:
 
         # read the image header
         ph = Printheader()
-        ph.setImage(image)
+        ph.set_image(image)
         self._fp_header = ph.readheader()
 
         # populate wavelength, beam etc from this
@@ -201,10 +201,10 @@ if __name__ == '__main__':
                                      'Data', 'Test', 'Images',
                                      '12287_1_E1_001.img'))
 
-    print fp.getBeam()
-    print fp.getWavelength()
-    print fp.getHeader()
-    print fp.getMatching_images()
+    print fp.get_beam()
+    print fp.get_wavelength()
+    print fp.get_header()
+    print fp.get_matching_images()
     
     
 

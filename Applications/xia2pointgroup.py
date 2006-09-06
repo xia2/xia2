@@ -43,6 +43,7 @@ def xia2pointgroup():
     phi_width = l.getHeader_item('phi_width')
     images = l.getMatching_images()
 
+    # shouldn't need this any more
     l.add_indexer_image_wedge(images[0])
     if int(90 / phi_width) in images:
         l.add_indexer_image_wedge(int(90/ phi_width))
@@ -65,7 +66,7 @@ def xia2pointgroup():
             p.set_hklin(hklout)
             p.decide_pointgroup()
 
-            print '%f %s %f' % (width, p.getPointgroup(), p.getConfidence())
+            print '%f %s %f' % (width, p.get_pointgroup(), p.get_confidence())
 
 if __name__ == '__main__':
     xia2pointgroup()

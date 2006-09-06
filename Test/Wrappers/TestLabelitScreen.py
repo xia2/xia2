@@ -73,7 +73,7 @@ class TestLabelitScreen(unittest.TestCase):
         ls.add_indexer_image_wedge(90)
 
         # set the beam to something totally false
-        ls.setBeam((90.0, 90.0))
+        ls.set_beam((90.0, 90.0))
 
         self.assertRaises(RuntimeError, ls.index)
 

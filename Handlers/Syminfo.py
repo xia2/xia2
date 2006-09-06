@@ -110,11 +110,11 @@ class _Syminfo(Object):
 
         return
 
-    def getSyminfo(self, spacegroup_number):
+    def get_syminfo(self, spacegroup_number):
         '''Return the syminfo for spacegroup number.'''
         return copy.deepcopy(self._symop[spacegroup_number])
 
-    def getLattice(self, name):
+    def get_lattice(self, name):
         '''Get the lattice for a named spacegroup.'''
 
         # check that this isn't already a lattice name
@@ -142,7 +142,7 @@ class _Syminfo(Object):
             name = self._spacegroup_long_to_short[name]
         return self._spacegroup_name_to_lattice[name]
 
-    def getSpacegroup_numbers(self):
+    def get_spacegroup_numbers(self):
         '''Get a list of all spacegroup numbers.'''
 
         numbers = self._symop.keys()
@@ -155,10 +155,10 @@ Syminfo = _Syminfo()
 if __name__ == '__main__':
     # run a couple of tests.
 
-    for number in Syminfo.getSpacegroup_numbers():
-        info = Syminfo.getSyminfo(number)
+    for number in Syminfo.get_spacegroup_numbers():
+        info = Syminfo.get_syminfo(number)
 
         print '%4d %8s %2s [%2s]' % \
               (number, info['name'], info['lattice'],
-               Syminfo.getLattice(info['name']))
+               Syminfo.get_lattice(info['name']))
     

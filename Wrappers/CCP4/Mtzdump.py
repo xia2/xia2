@@ -112,7 +112,7 @@ def Mtzdump(DriverType = None):
             # status token has a spare "of mtzdump" to get rid of
             return self.get_ccp4_status().replace('of mtzdump', '').strip()
 
-        def getColumns(self):
+        def get_columns(self):
             '''Get a list of the columns and their types as tuples
             (label, type) in a list.'''
 
@@ -122,11 +122,11 @@ def Mtzdump(DriverType = None):
                                 self._header['column_types'][i]))
             return results
                 
-        def getDatasets(self):
+        def get_datasets(self):
             '''Return a list of available datasets.'''
             return self._header['datasets']
 
-        def getDataset_info(self, dataset):
+        def get_dataset_info(self, dataset):
             '''Get the cell, spacegroup & wavelength associated with
             a dataset. The dataset is specified by pname/xname/dname.'''
             
@@ -134,7 +134,7 @@ def Mtzdump(DriverType = None):
             result['spacegroup'] = self._header['spacegroup']
             return result
 
-        def getSpacegroup(self):
+        def get_spacegroup(self):
             '''Get the spacegroup recorded for this reflection file.'''
             return self._header['spacegroup']
 
@@ -162,16 +162,16 @@ if __name__ == '__main__':
     m.set_hklin(hklin)
     print m.dump()
 
-    columns = m.getColumns()
+    columns = m.get_columns()
 
     for c in columns:
         print '%s (%s)' % c
 
-    datasets = m.getDatasets()
+    datasets = m.get_datasets()
     
     for d in datasets:
         print '%s' % d
-        info = m.getDataset_info(d)
+        info = m.get_dataset_info(d)
         print '%s (%6.4fA) %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
               (info['spacegroup'], info['wavelength'],
                info['cell'][0], info['cell'][1], info['cell'][2],

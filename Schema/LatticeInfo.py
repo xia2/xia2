@@ -94,20 +94,20 @@ class LatticeInfo(Object):
 
         return
 
-    def getLattice(self):
+    def get_lattice(self):
         return self._lattice
 
-    def getCell(self):
+    def get_cell(self):
         return self._cell
 
-    def getMosaic(self):
+    def get_mosaic(self):
         return self._mosaic
 
-    def getBeam(self):
+    def get_beam(self):
         return self._beam
 
 if __name__ == '__main__':
     li = LatticeInfo('P422', (10, 20, 30, 90, 90, 90),
                      mosaic = 0.2, beam = (90.2, 90.8))
 
-    print li.getLattice()
+    print li.get_lattice()

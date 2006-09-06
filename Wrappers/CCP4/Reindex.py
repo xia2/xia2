@@ -48,13 +48,13 @@ def Reindex(DriverType = None):
             # this should be of the form e.g. k, l, h
             self._operator = None
 
-        def setSpacegroup(self, spacegroup):
+        def set_spacegroup(self, spacegroup):
             '''Set the spacegroup to reindex the reflections to.'''
 
             self._spacegroup = spacegroup
             return
 
-        def setOperator(self, operator):
+        def set_operator(self, operator):
             '''Set the reindexing operator for mapping from in to out.'''
 
             self._operator = operator
@@ -122,8 +122,8 @@ if __name__ == '__main__':
     r.set_hklin(hklin)
     r.set_hklout('null.mtz')
 
-    r.setOperator('h,k,l')
-    r.setSpacegroup('P 4 2 2')
+    r.set_operator('h,k,l')
+    r.set_spacegroup('P 4 2 2')
 
     print r.reindex()
 

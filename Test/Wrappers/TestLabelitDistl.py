@@ -46,11 +46,11 @@ class TestLabelitDistl(unittest.TestCase):
         directory = os.path.join(os.environ['DPA_ROOT'],
                                  'Data', 'Test', 'Images')
 
-        ld.addImage(os.path.join(directory, '12287_1_E1_001.img'))
+        ld.add_image(os.path.join(directory, '12287_1_E1_001.img'))
         
         ld.distl()
 
-        stats = ld.getStatistics('12287_1_E1_001.img')
+        stats = ld.get_statistics('12287_1_E1_001.img')
 
         # most of the spots are good
         self.assertEqual(nint(float(stats['spots_good']) /
@@ -70,14 +70,14 @@ class TestLabelitDistl(unittest.TestCase):
         directory = os.path.join(os.environ['DPA_ROOT'],
                                  'Data', 'Test', 'Images')
 
-        ld.addImage(os.path.join(directory, '12287_1_E1_001.img'))
+        ld.add_image(os.path.join(directory, '12287_1_E1_001.img'))
         ld.distl()
-        stats = ld.getStatistics('12287_1_E1_001.img')
+        stats = ld.get_statistics('12287_1_E1_001.img')
 
         lsd = LabelitStats_distl()
         lsd.stats_distl()
 
-        copy = lsd.getStatistics('12287_1_E1_001.img')
+        copy = lsd.get_statistics('12287_1_E1_001.img')
 
         self.assertEqual(stats, copy)
 

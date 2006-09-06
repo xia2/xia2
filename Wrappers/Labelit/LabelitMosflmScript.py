@@ -55,7 +55,7 @@ def LabelitMosflmScript(DriverType = None):
 
             return
 
-        def setSolution(self, solution):
+        def set_solution(self, solution):
             self._solution = solution
 
             return
@@ -83,7 +83,7 @@ def LabelitMosflmScript(DriverType = None):
 if __name__ == '__main__':
 
     lms = LabelitMosflmScript()
-    lms.setSolution(9)
+    lms.set_solution(9)
     for m in lms.calculate():
         print m[:-1]
 

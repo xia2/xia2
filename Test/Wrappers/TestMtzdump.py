@@ -45,10 +45,10 @@ class TestMtzdump(unittest.TestCase):
         self.assertEqual(status, 'Normal termination')
 
         # this file has but one dataset
-        self.assertEqual(len(m.getDatasets()), 1)
+        self.assertEqual(len(m.get_datasets()), 1)
 
         # and has spacegroup P43212
-        self.assertEqual(m.getSpacegroup(), 'P43212')
+        self.assertEqual(m.get_spacegroup(), 'P43212')
 
     def testnotmtzfile(self):
         '''Test mtzdump with an input file in the wrong format.'''

@@ -46,18 +46,18 @@ class TestScala(unittest.TestCase):
         s.set_hklout(os.path.join(os.environ['CCP4_SCR'],
                                  'temp-test-scala.mtz'))
 
-        s.setResolution(1.65)
+        s.set_resolution(1.65)
         
         # switch on all of the options I want
-        s.setAnomalous()
-        s.setTails()
-        s.setBfactor()
+        s.set_anomalous()
+        s.set_tails()
+        s.set_bfactor()
         
-        s.setScaling_parameters('rotation')
+        s.set_scaling_parameters('rotation')
         
         # this is in the order fac, add, B
-        s.addSd_correction('full', 1.0, 0.02, 15.0)
-        s.addSd_correction('partial', 1.0, 0.00, 15.0)
+        s.add_sd_correction('full', 1.0, 0.02, 15.0)
+        s.add_sd_correction('partial', 1.0, 0.00, 15.0)
         
         status = s.scale()
 
@@ -79,18 +79,18 @@ class TestScala(unittest.TestCase):
         s.set_hklout(os.path.join(os.environ['CCP4_SCR'],
                                  'temp-test-scala.mtz'))
 
-        s.setResolution(1.65)
+        s.set_resolution(1.65)
         
         # switch on all of the options I want
-        s.setAnomalous()
-        s.setTails()
-        s.setBfactor()
+        s.set_anomalous()
+        s.set_tails()
+        s.set_bfactor()
         
-        s.setScaling_parameters('rotation')
+        s.set_scaling_parameters('rotation')
         
         # this is in the order fac, add, B
-        s.addSd_correction('full', 1.0, 0.02, 15.0)
-        s.addSd_correction('partial', 1.0, 0.00, 15.0)
+        s.add_sd_correction('full', 1.0, 0.02, 15.0)
+        s.add_sd_correction('partial', 1.0, 0.00, 15.0)
 
         self.assertRaises(RuntimeError, s.scale)
 
@@ -111,18 +111,18 @@ class TestScala(unittest.TestCase):
         s.set_hklout(os.path.join(os.environ['CCP4_SCR'],
                                  'temp-test-scala.mtz'))
 
-        s.setResolution(1.65)
+        s.set_resolution(1.65)
         
         # switch on all of the options I want
-        s.setAnomalous()
-        s.setTails()
-        s.setBfactor()
+        s.set_anomalous()
+        s.set_tails()
+        s.set_bfactor()
         
-        s.setScaling_parameters('rotation')
+        s.set_scaling_parameters('rotation')
         
         # this is in the order fac, add, B
-        s.addSd_correction('full', 1.0, 0.02, 15.0)
-        s.addSd_correction('partial', 1.0, 0.00, 15.0)
+        s.add_sd_correction('full', 1.0, 0.02, 15.0)
+        s.add_sd_correction('partial', 1.0, 0.00, 15.0)
 
         self.assertRaises(RuntimeError, s.scale)
 
@@ -143,18 +143,18 @@ class TestScala(unittest.TestCase):
         s.set_hklout(os.path.join(os.environ['CCP4_SCR'],
                                  'temp-test-scala.mtz'))
 
-        s.setResolution(1.65)
+        s.set_resolution(1.65)
         
         # switch on all of the options I want
-        s.setAnomalous()
-        s.setTails()
-        s.setBfactor()
+        s.set_anomalous()
+        s.set_tails()
+        s.set_bfactor()
         
-        s.setScaling_parameters('rotation')
+        s.set_scaling_parameters('rotation')
         
         # this is in the order fac, add, B
-        s.addSd_correction('full', 1.0, 0.02, 15.0)
-        s.addSd_correction('partial', 1.0, 0.00, 15.0)
+        s.add_sd_correction('full', 1.0, 0.02, 15.0)
+        s.add_sd_correction('partial', 1.0, 0.00, 15.0)
 
         self.assertRaises(RuntimeError, s.scale)
 

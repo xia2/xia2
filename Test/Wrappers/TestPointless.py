@@ -44,7 +44,7 @@ class TestPointless(unittest.TestCase):
         
         p.decide_pointgroup()
         
-        self.assertEqual(p.getPointgroup(), 'P 4 2 2')
+        self.assertEqual(p.get_pointgroup(), 'P 4 2 2')
 
 if __name__ == '__main__':
     unittest.main()

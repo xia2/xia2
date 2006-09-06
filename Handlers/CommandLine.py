@@ -119,7 +119,7 @@ class _CommandLine(Object):
         '''Return a help string for the read beam method.'''
         return '-beam x,y'
 
-    def getBeam(self):
+    def get_beam(self):
         return self._beam
 
     def _help_image(self):
@@ -210,27 +210,27 @@ class _CommandLine(Object):
     def _help_resolution_limit(self):
         return '-resolution 1.6'
     
-    def getTemplate(self):
+    def get_template(self):
         return self._default_template
 
-    def getDirectory(self):
+    def get_directory(self):
         return self._default_directory
 
-    def getImage(self):
+    def get_image(self):
         return self._default_image
 
-    def getLattice(self):
+    def get_lattice(self):
         return self._default_lattice
 
-    def getSpacegroup(self):
+    def get_spacegroup(self):
         raise RuntimeError, 'this needs to be implemented'
 
-    def getResolution_limit(self):
+    def get_resolution_limit(self):
         return self._default_resolution_limit
 
 CommandLine = _CommandLine()
 
 if __name__ == '__main__':
-    print CommandLine.getBeam()
-    print CommandLine.getResolution_limit()
+    print CommandLine.get_beam()
+    print CommandLine.get_resolution_limit()
 

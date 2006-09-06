@@ -119,7 +119,7 @@ def Scala(DriverType = None):
 
         # getter and setter methods
 
-        def addSd_correction(self, set, sdfac, sdadd, sdb = 0.0):
+        def add_sd_correction(self, set, sdfac, sdadd, sdb = 0.0):
             '''Add a set of SD correction parameters for a given
             set of reflections (initially set = full or partial.)'''
 
@@ -129,21 +129,21 @@ def Scala(DriverType = None):
             self._sd_parameters[set] = (sdfac, sdadd, sdb)
             return
 
-        def setScalepack(self, scalepack):
+        def set_scalepack(self, scalepack):
             '''Set the output mode to POLISH UNMERGED to this
             file.'''
 
             self._scalepack = scalepack
             return
 
-        def setResolution(self, resolution):
+        def set_resolution(self, resolution):
             '''Set the resolution limit for the scaling -
             default is to include all reflections.'''
 
             self._resolution = resolution
             return
 
-        def setScales_file(self, scales_file):
+        def set_scales_file(self, scales_file):
             '''Set the file containing all of the scales required for
             this run. Used when fiddling the error parameters or
             obtaining stats to different resolutions. See also
@@ -152,21 +152,21 @@ def Scala(DriverType = None):
             self._scales_file = scales_file
             return
 
-        def setNew_scales_file(self, new_scales_file):
+        def set_new_scales_file(self, new_scales_file):
             '''Set the file to which the scales will be written. This
             will allow reusing through the above interface.'''
 
             self._new_scales_file = new_scales_file
             return
 
-        def setOnlymerge(self, onlymerge = True):
+        def set_onlymerge(self, onlymerge = True):
             '''Switch on merging only - this will presume that the
             input reflections are scaled already.'''
 
             self._onlymerge = onlymerge
             return
 
-        def setBfactor(self, bfactor = True, brotation = None):
+        def set_bfactor(self, bfactor = True, brotation = None):
             '''Switch on/off bfactor refinement, optionally with the
             spacing for the bfactor refinement (in degrees.)'''
 
@@ -177,19 +177,19 @@ def Scala(DriverType = None):
                 
             return
 
-        def setAnomalous(self, anomalous = True):
+        def set_anomalous(self, anomalous = True):
             '''Switch on/off separating of anomalous pairs.'''
 
             self._anomalous = anomalous
             return
 
-        def setTails(self, tails = True):
+        def set_tails(self, tails = True):
             '''Switch on/off tails correction.'''
 
             self._tails = tails
             return
 
-        def setScaling_parameters(self, mode,
+        def set_scaling_parameters(self, mode,
                                   spacing = None, secondary = None):
             '''Set up the scaling: mode is either rotation or batch.
             Spacing indicates the width of smoothing for scales with
@@ -215,7 +215,7 @@ def Scala(DriverType = None):
 
             return
 
-        def setCycles(self, cycles):
+        def set_cycles(self, cycles):
             '''Set the maximum number of cycles allowed for the scaling -
             this assumes the default convergence parameters.'''
 
@@ -476,18 +476,18 @@ if __name__ == '__main__':
     s.set_hklin(hklin)
     s.set_hklout(hklout)
 
-    s.setResolution(1.65)
+    s.set_resolution(1.65)
 
     # switch on all of the options I want
-    s.setAnomalous()
-    s.setTails()
-    s.setBfactor()
+    s.set_anomalous()
+    s.set_tails()
+    s.set_bfactor()
 
     s.setScaling_parameters('rotation')
 
     # this is in the order fac, add, B
-    s.addSd_correction('full', 1.0, 0.02, 15.0)
-    s.addSd_correction('partial', 1.0, 0.00, 15.0)
+    s.add_sd_correction('full', 1.0, 0.02, 15.0)
+    s.add_sd_correction('partial', 1.0, 0.00, 15.0)
 
     print s.scale()
 

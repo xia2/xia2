@@ -188,8 +188,8 @@ def Mosflm(DriverType = None):
             # FIXME perhaps this should be somewhere central, because
             # LabelitScreen will share the same implementation
 
-            phi_width = self.getHeader_item('phi_width')
-            images = self.getMatching_images()
+            phi_width = self.get_header_item('phi_width')
+            images = self.get_matching_images()
 
             self.add_indexer_image_wedge(images[0])
             if int(90.0 / phi_width) in images:
@@ -216,24 +216,24 @@ def Mosflm(DriverType = None):
             task = 'Autoindex from images:'
 
             for i in _images:
-                task += ' %s' % self.getImage_name(i)
+                task += ' %s' % self.get_image_name(i)
 
             self.set_task(task)
 
             self.start()
 
-            self.input('template "%s"' % self.getTemplate())
-            self.input('directory "%s"' % self.getDirectory())
+            self.input('template "%s"' % self.get_template())
+            self.input('directory "%s"' % self.get_directory())
             self.input('newmat xiaindex.mat')
 
-            if self.getBeam_prov() == 'user':
-                self.input('beam %f %f' % self.getBeam())
+            if self.get_beam_prov() == 'user':
+                self.input('beam %f %f' % self.get_beam())
 
-            if self.getWavelength_prov() == 'user':
-                self.input('wavelength %f %f' % self.getWavelength())
+            if self.get_wavelength_prov() == 'user':
+                self.input('wavelength %f %f' % self.get_wavelength())
 
-            if self.getDistance_prov() == 'user':
-                self.input('distance %f' % self.getDistance())
+            if self.get_distance_prov() == 'user':
+                self.input('distance %f' % self.get_distance())
 
             # FIXME need to be able to handle an input
             # unit cell here - should also be able to
@@ -432,7 +432,7 @@ def Mosflm(DriverType = None):
             # WARNING this will fail if phi width was 0 - should
             # never happen though
 
-            phi_width = self.getHeader_item('phi_width')
+            phi_width = self.get_header_item('phi_width')
             min_images = max(3, int(2 * mosaic / phi_width))
 
             # here need to check the LATTICE - which will be
@@ -462,7 +462,7 @@ def Mosflm(DriverType = None):
 
             # next select what we need from the list...
 
-            images = self.getMatching_images()
+            images = self.get_matching_images()
 
             if len(images) < num_wedges * min_images:
                 raise RuntimeError, 'not enough images to refine unit cell'
@@ -495,8 +495,8 @@ def Mosflm(DriverType = None):
 
             self.start()
 
-            self.input('template "%s"' % self.getTemplate())
-            self.input('directory "%s"' % self.getDirectory())
+            self.input('template "%s"' % self.get_template())
+            self.input('directory "%s"' % self.get_directory())
 
             self.input('matrix xiaindex.mat')
             self.input('newmat xiarefine.mat')
@@ -510,8 +510,8 @@ def Mosflm(DriverType = None):
 
             # note well that the beam centre is coming from indexing so
             # should be already properly handled
-            if self.getWavelength_prov() == 'user':
-                self.input('wavelength %f %f' % self.getWavelength())
+            if self.get_wavelength_prov() == 'user':
+                self.input('wavelength %f %f' % self.get_wavelength())
 
             # get all of the stored parameter values
             parameters = self.integrate_get_parameters('mosflm')
@@ -759,8 +759,8 @@ def Mosflm(DriverType = None):
 
             self.start()
 
-            self.input('template "%s"' % self.getTemplate())
-            self.input('directory "%s"' % self.getDirectory())
+            self.input('template "%s"' % self.get_template())
+            self.input('directory "%s"' % self.get_directory())
 
             self.input('matrix xiaintegrate.mat')
 
@@ -771,8 +771,8 @@ def Mosflm(DriverType = None):
 
             # note well that the beam centre is coming from indexing so
             # should be already properly handled - likewise the distance
-            if self.getWavelength_prov() == 'user':
-                self.input('wavelength %f %f' % self.getWavelength())
+            if self.get_wavelength_prov() == 'user':
+                self.input('wavelength %f %f' % self.get_wavelength())
 
             # get all of the stored parameter values
             parameters = self.integrate_get_parameters('mosflm')
@@ -844,7 +844,7 @@ if __name__ == '__main_old__':
                              'Data', 'Test', 'Images')
 
     # from Labelit
-    m.setBeam((108.9, 105.0))
+    m.set_beam((108.9, 105.0))
 
     m.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 
@@ -878,7 +878,7 @@ if __name__ == '__main__':
     directory = os.path.normpath(os.path.join('/', 'data', 'graeme', '12287'))
 
     # from Labelit
-    m.setBeam((108.9, 105.0))
+    m.set_beam((108.9, 105.0))
 
     m.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 

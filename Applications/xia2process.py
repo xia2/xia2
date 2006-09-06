@@ -50,14 +50,14 @@ def xia2process():
     beam = CommandLine.getBeam()
 
     if beam[0] * beam[1] > 0.0:
-        i.setBeam(beam)
+        i.set_beam(beam)
 
     # this will result in a run of printheader
 
-    i.setup_from_image(CommandLine.getImage())
+    i.setup_from_image(CommandLine.get_image())
 
-    if CommandLine.getLattice():
-        i.set_indexer_input_lattice(CommandLine.getLattice())
+    if CommandLine.get_lattice():
+        i.set_indexer_input_lattice(CommandLine.get_lattice())
 
     # phi_width = m.getHeader_item('phi_width')
     # images = m.getMatching_images()
@@ -86,12 +86,12 @@ def xia2process():
     # n.integrate_set_indexer(i)
 
     n = Integrater()
-    n.setup_from_image(CommandLine.getImage())
+    n.setup_from_image(CommandLine.get_image())
     n.integrate_set_indexer(i)
 
     # check for resolution limit
-    if CommandLine.getResolution_limit() > 0.0:
-        n.integrate_set_high_resolution(CommandLine.getResolution_limit())
+    if CommandLine.get_resolution_limit() > 0.0:
+        n.integrate_set_high_resolution(CommandLine.get_resolution_limit())
 
     hklout = n.integrate_get_reflections()
 

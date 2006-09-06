@@ -207,14 +207,14 @@ def Pointless(DriverType = None):
 
             return 'ok'
 
-        def getReindex_matrix(self):
+        def get_reindex_matrix(self):
             return self._reindex_matrix
 
-        def getPointgroup(self):
+        def get_pointgroup(self):
             # FIXED on 22/AUG/06 this was spacegroup
             return self._pointgroup
 
-        def getConfidence(self):
+        def get_confidence(self):
             return self._confidence
             
     return PointlessWrapper()
@@ -242,8 +242,8 @@ if __name__ == '__main__':
 
     p.decide_pointgroup()
 
-    print 'Correct pointgroup: %s' % p.getPointgroup()
+    print 'Correct pointgroup: %s' % p.get_pointgroup()
     print 'Reindexing matrix: ' + \
           '%4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f' % \
-          tuple(p.getReindex_matrix())
-    print 'Confidence: %f' % p.getConfidence()
+          tuple(p.get_reindex_matrix())
+    print 'Confidence: %f' % p.get_confidence()
