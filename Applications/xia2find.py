@@ -87,19 +87,21 @@ def print_sweeps():
         # this should sort on exposure epoch ...?
         sweeps.sort()
         for s in sweeps:
-            print 'Sweep: %s' % os.path.join(s.getDirectory(), s.getTemplate())
-            print 'Images: %d to %d' % (min(s.getImages()), max(s.getImages()))
-            print 'Detector class: %s' % s.getDetector_class()
+            print 'Sweep: %s' % os.path.join(s.get_directory(),
+                                             s.get_template())
+            print 'Images: %d to %d' % (min(s.get_images()),
+                                        max(s.get_images()))
+            print 'Detector class: %s' % s.get_detector_class()
             print 'Epoch from/to: %d %d' % tuple(map(int,
-                                                     s.getCollect()))
-            collect_time = map(time.ctime, s.getCollect())
+                                                     s.get_collect()))
+            collect_time = map(time.ctime, s.get_collect())
             print 'Collected from: %s' % collect_time[0]
             print '            to: %s' % collect_time[1]
-            print 'Wavelength: %f' % s.getWavelength()
-            print 'Distance: %f' % s.getDistance()
-            print 'Exposure time: %f' % s.getExposure_time()
-            print 'Beam: %f %f' % tuple(s.getBeam())
-            print 'Oscillations: %f to %f (%f)' % tuple(s.getPhi())
+            print 'Wavelength: %f' % s.get_wavelength()
+            print 'Distance: %f' % s.get_distance()
+            print 'Exposure time: %f' % s.get_exposure_time()
+            print 'Beam: %f %f' % tuple(s.get_beam())
+            print 'Oscillations: %f to %f (%f)' % tuple(s.get_phi())
             print ''
 
 if __name__ == '__main__':

@@ -163,7 +163,7 @@ class Sweep(Object):
         for i in self._images:
             ph = Printheader()            
             image = self.imagename(i)
-            ph.setImage(image)
+            ph.set_image(image)
             header = ph.readheader()
             self._headers[i] = header
 
