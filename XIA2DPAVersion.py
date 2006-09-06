@@ -26,8 +26,12 @@
 # 
 # 0.0.4 - 25/AUG/06 beginning work on a scaling module, will allow
 #         reasonably complete processing from start to end
+#
+# 0.0.5 - 06/SEP/06 moved all text in programs from camelCase to tidy_style
+#         and also implemented connection between XSweep and Integrater
+#         factory
 
-VersionNumber = "0.0.4"
+VersionNumber = "0.0.5"
 Version = "XIA2DPA %s" % VersionNumber
 CVSTag = "xia2dpa-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2dpa-%s" % VersionNumber

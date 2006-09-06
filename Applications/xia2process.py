@@ -83,17 +83,17 @@ def xia2process():
 
     # n = Mosflm()
     # n.setup_from_image(CommandLine.getImage())
-    # n.integrate_set_indexer(i)
+    # n.set_integrater_indexer(i)
 
     n = Integrater()
     n.setup_from_image(CommandLine.get_image())
-    n.integrate_set_indexer(i)
+    n.set_integrater_indexer(i)
 
     # check for resolution limit
     if CommandLine.get_resolution_limit() > 0.0:
-        n.integrate_set_high_resolution(CommandLine.get_resolution_limit())
+        n.set_integrater_high_resolution(CommandLine.get_resolution_limit())
 
-    hklout = n.integrate_get_reflections()
+    hklout = n.get_integrater_reflections()
 
     # print out a little information about the lattice
 

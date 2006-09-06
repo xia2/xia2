@@ -31,6 +31,8 @@
 #                 order for the data reduction, to make sure that we 
 #                 reduce the least damaged data first.
 
+from XSweep import XSweep
+
 class XWavelength(Object):
     '''An object representation of a wavelength, which will after data
     reduction correspond to an MTZ hierarchy dataset.'''
@@ -59,5 +61,33 @@ class XWavelength(Object):
         self._sweeps = []
 
         return
+
+    def get_wavelength(self):
+        return self._wavelength
+
+    def get_fpr(self):
+        return self._fpr
+
+    def get_fprpr(self):
+        return self._fprpr
+
+    def get_crystal(self):
+        return self._crystal
+
+    def get_name(self):
+        return self._name
+
+    def add_sweep(self, name, directory, image,
+                  beam = None, resolution = None):
+        '''Add a sweep to this wavelength.'''
+
+        self._sweeps.append(XSweep(name, self, directory, image,
+                                   beam = beam,
+                                   resolution = resolution))
+
+        return
+
+    def get_sweeps(self):
+        return self._sweeps
 
     

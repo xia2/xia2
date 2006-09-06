@@ -362,17 +362,17 @@ def Mosflm(DriverType = None):
 
             self.reset()
 
-            if not self.integrate_get_indexer():
+            if not self.get_integrater_indexer():
                 # this wrapper can present the indexer interface
                 # if needed, so do so. if this set command has
                 # been called already this should not be used...
-                self.integrate_set_indexer(self)
+                self.set_integrater_indexer(self)
 
             # get the things we need from the indexer - beware that if
             # the indexer has not yet been run this may spawn other
             # jobs...
 
-            indxr = self.integrate_get_indexer()
+            indxr = self.get_integrater_indexer()
 
             if not indxr.get_indexer_payload('mosflm_orientation_matrix'):
                 # we will have to do  some indexing ourselves - the
@@ -404,11 +404,11 @@ def Mosflm(DriverType = None):
                 # yes - that way they can be recycled...
                 # after that, zap them because they will be obsolete!
                 if integration_params.has_key('separation'):
-                    self.integrate_set_parameter(
+                    self.set_integrater_parameter(
                         'mosflm', 'separation',
                         '%f %f' % tuple(integration_params['separation']))
                 if integration_params.has_key('raster'):
-                    self.integrate_set_parameter(
+                    self.set_integrater_parameter(
                         'mosflm', 'raster',
                         '%d %d %d %d %d' % tuple(integration_params['raster']))
                     
@@ -514,7 +514,7 @@ def Mosflm(DriverType = None):
                 self.input('wavelength %f %f' % self.get_wavelength())
 
             # get all of the stored parameter values
-            parameters = self.integrate_get_parameters('mosflm')
+            parameters = self.get_integrater_parameters('mosflm')
             self.input('!parameters from autoindex run')
             for p in parameters.keys():
                 self.input('%s %s' % (p, str(parameters[p])))
@@ -597,48 +597,48 @@ def Mosflm(DriverType = None):
                         yscale += y
                     yscale /= len(yscales)
 
-                    self.integrate_set_parameter('mosflm',
-                                                 'distortion yscale',
-                                                 yscale)
+                    self.set_integrater_parameter('mosflm',
+                                                  'distortion yscale',
+                                                  yscale)
 
                 # next look for the distortion & raster parameters
                 # see FIXME at the top of this file from 16/AUG/06
 
                 if 'Final optimised raster parameters:' in o:
-                    self.integrate_set_parameter('mosflm',
-                                                 'raster',
-                                                 o.split(':')[1].strip())
+                    self.set_integrater_parameter('mosflm',
+                                                  'raster',
+                                                  o.split(':')[1].strip())
 
                 if 'Separation parameters updated to' in o:
                     tokens = o.replace('mm', ' ').split()
-                    self.integrate_set_parameter('mosflm',
-                                                 'separation',
-                                                 '%s %s' % \
-                                                 (tokens[4], tokens[8]))
+                    self.set_integrater_parameter('mosflm',
+                                                  'separation',
+                                                  '%s %s' % \
+                                                  (tokens[4], tokens[8]))
                     
                 if 'XCEN    YCEN  XTOFRA' in o:
                     numbers = output[i + 1].split()
 
                     # this should probably be done via the FrameProcessor
                     # interface...
-                    self.integrate_set_parameter('mosflm',
-                                                 'beam',
-                                                 '%s %s' % \
-                                                 (numbers[0], numbers[1]))
+                    self.set_integrater_parameter('mosflm',
+                                                  'beam',
+                                                  '%s %s' % \
+                                                  (numbers[0], numbers[1]))
 
                     # FIXME should this go through the FP interface?
                     # this conflicts with the calculation above
                     # of the average distance as well...
-                    self.integrate_set_parameter('mosflm',
-                                                 'distance',
-                                                 numbers[3])
+                    self.set_integrater_parameter('mosflm',
+                                                  'distance',
+                                                  numbers[3])
                     
-                    self.integrate_set_parameter('mosflm',
-                                                 'distortion tilt',
-                                                 numbers[5])
-                    self.integrate_set_parameter('mosflm',
-                                                 'distortion twist',
-                                                 numbers[6])
+                    self.set_integrater_parameter('mosflm',
+                                                  'distortion tilt',
+                                                  numbers[5])
+                    self.set_integrater_parameter('mosflm',
+                                                  'distortion twist',
+                                                  numbers[6])
 
                 # FIXME does this work if this mosflm is not
                 # the one being used as an indexer? - probably not -
@@ -671,17 +671,17 @@ def Mosflm(DriverType = None):
 
             # FIXME add "am I going fast" check here
 
-            if not self.integrate_get_indexer():
+            if not self.get_integrater_indexer():
                 # this wrapper can present the indexer interface
                 # if needed, so do so. if this set command has
                 # been called already this should not be used...
-                self.integrate_set_indexer(self)
+                self.set_integrater_indexer(self)
 
             # get the things we need from the indexer - beware that if
             # the indexer has not yet been run this may spawn other
             # jobs...
 
-            indxr = self.integrate_get_indexer()
+            indxr = self.get_integrater_indexer()
 
             if not indxr.get_indexer_payload('mosflm_orientation_matrix'):
                 # we will have to do  some indexing ourselves - the
@@ -707,17 +707,17 @@ def Mosflm(DriverType = None):
 
             integration_params = indxr.get_indexer_payload(
                 'mosflm_integration_parameters')
-
+            
             if integration_params:
                 # copy them somewhere useful... into the dictionary?
                 # yes - that way they can be recycled...
                 # after that, zap them because they will be obsolete!
                 if integration_params.has_key('separation'):
-                    self.integrate_set_parameter(
+                    self.set_integrater_parameter(
                         'mosflm', 'separation',
                         '%f %f' % tuple(integration_params['separation']))
                 if integration_params.has_key('raster'):
-                    self.integrate_set_parameter(
+                    self.set_integrater_parameter(
                         'mosflm', 'raster',
                         '%d %d %d %d %d' % tuple(integration_params['raster']))
                     
@@ -775,7 +775,7 @@ def Mosflm(DriverType = None):
                 self.input('wavelength %f %f' % self.get_wavelength())
 
             # get all of the stored parameter values
-            parameters = self.integrate_get_parameters('mosflm')
+            parameters = self.get_integrater_parameters('mosflm')
             for p in parameters.keys():
                 self.input('%s %s' % (p, str(parameters[p])))
 
@@ -813,7 +813,7 @@ def Mosflm(DriverType = None):
                     for j in range(i, i + 10):
                         if output[j].split()[:2] == ['set', 'to']:
                             gain = float(output[j].split()[-1][:-1])
-                            self.integrate_set_parameter('mosflm',
+                            self.set_integrater_parameter('mosflm',
                                                          'gain',
                                                          gain)
                             # FIXME this needs to be written to the
@@ -901,7 +901,7 @@ if __name__ == '__main__':
 
     n = Mosflm()
     n.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
-    n.integrate_set_indexer(m)
+    n.set_integrater_indexer(m)
 
     n.integrate()
 

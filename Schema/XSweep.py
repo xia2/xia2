@@ -168,7 +168,7 @@ class XSweep(Object):
         #   sure that the plumbing is all sound.
 
         ph = Printheader()
-        ph.setImage(os.path.join(directory, image))
+        ph.set_image(os.path.join(directory, image))
         header = ph.readheader()
 
         # check that they match by closer than 0.0001A, if wavelength
@@ -176,7 +176,7 @@ class XSweep(Object):
 
         if not wavelength == None:
             if math.fabs(header['wavelength'] -
-                         wavelength.getWavelength()) > 0.0001:
+                         wavelength.get_wavelength()) > 0.0001:
                 raise RuntimeError, 'wavelength for sweep %s does not ' + \
                       'match wavelength %s' % (name, wavelength.getName())
             
@@ -215,6 +215,22 @@ class XSweep(Object):
 
         self._beam = beam
         return
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        if self.get_wavelength():
+            repr = 'SWEEP %s [WAVELENGTH %s]\n' % \
+                   (self._name, self.get_wavelength().get_name())
+        else:
+            repr = 'SWEEP %s [WAVELENGTH UNDEFINED]\n' % self._name
+            
+        repr += 'TEMPLATE %s\n' % self._template
+        repr += 'DIRECTORY %s\n' % self._directory
+        repr += 'IMAGES %d to %d' % (min(self._images), max(self._images))
+
+        return repr
 
     def get_resolution(self):
         return self._resolution.get()
@@ -267,11 +283,11 @@ class XSweep(Object):
     def _get_integrater(self):
         '''Get my integrater, and if it is not set, create one.'''
 
-        if self._integrater = None:
+        if self._integrater == None:
             self._integrater = IntegraterFactory.IntegraterForXSweep(self)
 
             # configure the integrater with the indexer
-            self._integrater.integrate_set_indexer(self.getIndexer())
+            self._integrater.set_integrate_indexer(self.getIndexer())
 
         return self._integrater
 
@@ -280,6 +296,21 @@ class XSweep(Object):
 
     def get_indexer_cell(self):
         return self._get_indexer().get_indexer_cell()
+
+    def get_indexer_distance(self):
+        return self._get_indexer().get_indexer_distance()
+
+    def get_indexer_mosaic(self):
+        return self._get_indexer().get_indexer_mosaic()
+
+    def get_indexer_beam(self):
+        return self._get_indexer().get_indexer_beam()
+
+    def get_wavelength(self):
+        return self._wavelength
+
+    def get_integrater_reflections(self):
+        return self._get_integrater().get_integrater_reflections()
 
     def get_crystal_lattice(self):
         '''Get the parent crystal lattice pointer.'''
@@ -299,7 +330,15 @@ if __name__ == '__main__':
 
     xs = XSweep('DEMO', None, directory, image)
 
+    print xs
+
     print xs.get_indexer_lattice()
     print xs.get_indexer_cell()
 
+    print 'Refined beam is: %6.2f %6.2f' % xs.get_indexer_beam()
+    print 'Distance:        %6.2f' % xs.get_indexer_distance()
+    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % xs.get_indexer_cell()
+    print 'Lattice: %s' % xs.get_indexer_lattice()
+    print 'Mosaic: %6.2f' % xs.get_indexer_mosaic()
+    print 'Hklout: %s' % xs.get_integrater_reflections()
     

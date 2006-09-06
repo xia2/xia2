@@ -55,6 +55,9 @@
 #                 must be performed explicitly... FIXED - access through
 #                 integrate_get_reflections, though tracking is not yet
 #                 implemented FIXME.
+# 
+# FIXED 06/SEP/06 need to replace integrate_set with set_integrater as per
+#                 the indexer interface, likewise getters.
 
 import os
 import sys
@@ -98,29 +101,27 @@ class Integrater:
         
         return
 
-    def integrate_set_wedge(self, start, end):
+    def set_integrater_wedge(self, start, end):
         '''Set the wedge of images to process.'''
         
         self._intgr_wedge = (start, end)
         
         return
 
-    def integrate_set_resolution(self, dmin, dmax):
+    def set_integrater_resolution(self, dmin, dmax):
         '''Set both resolution limits.'''
 
         self._intgr_reso_high = min(dmin, dmax)
         self._intgr_reso_low = max(dmin, dmax)
-
         return
 
-    def integrate_set_high_resolution(self, dmin):
+    def set_integrater_high_resolution(self, dmin):
         '''Set high resolution limit.'''
 
         self._intgr_reso_high = dmin
-
         return
 
-    def integrate_set_parameter(self, program, parameter, value):
+    def set_integrater_parameter(self, program, parameter, value):
         '''Set an arbitrary parameter for the program specified to
         use in integration, e.g. the YSCALE or GAIN values in Mosflm.'''
 
@@ -130,17 +131,15 @@ class Integrater:
         self._intgr_program_parameters[program][parameter] = value
         return
 
-
-    def integrate_get_parameter(self, program, parameter):
+    def get_integrater_parameter(self, program, parameter):
         '''Get a parameter value.'''
 
         try:
             return self._intgr_program_parameters[program][parameter]
         except:
             return None
-
         
-    def integrate_get_parameters(self, program):
+    def get_integrater_parameters(self, program):
         '''Get all parameters and values.'''
 
         try:
@@ -148,8 +147,7 @@ class Integrater:
         except:
             return { }
 
-
-    def integrate_set_indexer(self, indexer):
+    def set_integrater_indexer(self, indexer):
         '''Set the indexer implementation to use for this integration.'''
 
         # check that this indexer implements the Indexer interface
@@ -161,10 +159,10 @@ class Integrater:
 
         return
 
-    def integrate_get_indexer(self):
+    def get_integrater_indexer(self):
         return self._intgr_indexer
 
-    def integrate_get_reflections(self, fast = False):
+    def get_integrater_reflections(self, fast = False):
         # in here check if integration has already been performed, if
         # it has and everything is happy, just return the reflections,
         # else repeat the calculations.
