@@ -61,6 +61,13 @@
 # This means that the lattice information will have to cascade up and
 # down the tree, to make sure that everything is kept up-to-date. This
 # should be no more difficult, just a little more complicated.
+#
+# FIXME 06/SEP/06 need to add in hooks here to handle collection time,
+#                 e.g. the epoch information from xia2find. This will
+#                 need to be used for sorting sweeps in a wavelength - 
+#                 so must be defined in the property list, as per
+#                 the old Sweep defition. Sort on START of collection.
+#                 Though the end is also important...? Discuss!
 
 import sys
 import os
@@ -130,6 +137,7 @@ from Wrappers.XIA.Printheader import Printheader
 
 # access to factory classes
 import Modules.IndexerFactory as IndexerFactory
+import Modules.IntegraterFactory as IntegraterFactory
 
 class XSweep(Object):
     '''An object representation of the sweep.'''
@@ -287,7 +295,7 @@ class XSweep(Object):
             self._integrater = IntegraterFactory.IntegraterForXSweep(self)
 
             # configure the integrater with the indexer
-            self._integrater.set_integrate_indexer(self.getIndexer())
+            self._integrater.set_integrater_indexer(self._get_indexer())
 
         return self._integrater
 
@@ -324,16 +332,16 @@ class XSweep(Object):
 
 if __name__ == '__main__':
 
-    directory = os.path.join(os.environ['DPA_ROOT'],
-                             'Data', 'Test', 'Images')    
+    # directory = os.path.join(os.environ['DPA_ROOT'],
+    # 'Data', 'Test', 'Images')
+
+    directory = os.path.join('z:', 'data', '12287')
+    
     image = '12287_1_E1_001.img'
 
     xs = XSweep('DEMO', None, directory, image)
 
     print xs
-
-    print xs.get_indexer_lattice()
-    print xs.get_indexer_cell()
 
     print 'Refined beam is: %6.2f %6.2f' % xs.get_indexer_beam()
     print 'Distance:        %6.2f' % xs.get_indexer_distance()
