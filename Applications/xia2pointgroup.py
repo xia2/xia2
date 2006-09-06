@@ -40,8 +40,8 @@ def xia2pointgroup():
 
     l.setup_from_image(CommandLine.getImage())
 
-    phi_width = l.getHeader_item('phi_width')
-    images = l.getMatching_images()
+    phi_width = l.get_header_item('phi_width')
+    images = l.get_matching_images()
 
     # shouldn't need this any more
     l.add_indexer_image_wedge(images[0])

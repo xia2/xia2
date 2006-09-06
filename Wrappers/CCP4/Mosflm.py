@@ -743,7 +743,7 @@ def Mosflm(DriverType = None):
                                      
             spacegroup_number = lattice_to_spacegroup[lattice]
 
-            images = self.getMatching_images()
+            images = self.get_matching_images()
 
             f = open('xiaintegrate.mat', 'w')
             for m in matrix:

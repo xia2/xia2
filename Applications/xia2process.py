@@ -47,7 +47,7 @@ def xia2process():
 
     # check to see if a beam has been specified
 
-    beam = CommandLine.getBeam()
+    beam = CommandLine.get_beam()
 
     if beam[0] * beam[1] > 0.0:
         i.set_beam(beam)
