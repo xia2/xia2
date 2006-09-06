@@ -49,10 +49,12 @@
 #                 interface, so that it can be passed in to a scaler
 #                 implementation for ... scaling.
 # 
-# FIXME 05/SEP/06 also need to make this more like the indexer interface,
+# FIXED 05/SEP/06 also need to make this more like the indexer interface,
 #                 providing access to everything only through getters and
 #                 setters - no action methods. the tracking & calculations
-#                 must be performed explicitly...
+#                 must be performed explicitly... FIXED - access through
+#                 integrate_get_reflections, though tracking is not yet
+#                 implemented FIXME.
 
 import os
 import sys

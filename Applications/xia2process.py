@@ -36,6 +36,7 @@ from Wrappers.CCP4.Mosflm import Mosflm
 
 # want to move over more like this...
 from Modules.IndexerFactory import Indexer
+from Modules.IntegraterFactory import Integrater
 
 def xia2process():
     '''Do it!'''
@@ -80,7 +81,11 @@ def xia2process():
     # FIXME 2 - the setup_from_image should be inherited through
     # passing in an Indexer implementation.
 
-    n = Mosflm()
+    # n = Mosflm()
+    # n.setup_from_image(CommandLine.getImage())
+    # n.integrate_set_indexer(i)
+
+    n = Integrater()
     n.setup_from_image(CommandLine.getImage())
     n.integrate_set_indexer(i)
 
