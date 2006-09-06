@@ -39,7 +39,7 @@ class TestMtzdump(unittest.TestCase):
                              'Data', 'Test', 'Mtz', '12287_1_E1.mtz')
         
         m = Mtzdump()
-        m.setHklin(hklin)
+        m.set_hklin(hklin)
         status = m.dump()
 
         self.assertEqual(status, 'Normal termination')
@@ -58,7 +58,7 @@ class TestMtzdump(unittest.TestCase):
                              'Data', 'Test', 'Mtz', 'not-mtz.txt')
         
         m = Mtzdump()
-        m.setHklin(hklin)
+        m.set_hklin(hklin)
         self.assertRaises(RuntimeError, m.dump)
 
     def testnofile(self):
@@ -69,7 +69,7 @@ class TestMtzdump(unittest.TestCase):
                              'Data', 'Test', 'Mtz', 'nosuchfile.mtz')
         
         m = Mtzdump()
-        m.setHklin(hklin)
+        m.set_hklin(hklin)
         self.assertRaises(RuntimeError, m.dump)
 
 if __name__ == '__main__':

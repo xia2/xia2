@@ -98,7 +98,7 @@ def LabelitScreen(DriverType = None):
             FrameProcessor.__init__(self)
             Indexer.__init__(self)
 
-            self.setExecutable('labelit.screen')
+            self.set_executable('labelit.screen')
 
             # control over the behaviour
 
@@ -192,12 +192,12 @@ def LabelitScreen(DriverType = None):
             for i in _images:
                 task += ' %s' % self.getImage_name(i)
 
-            self.setTask(task)
+            self.set_task(task)
 
-            self.addCommand_line('--index_only')
+            self.add_command_line('--index_only')
 
             for i in _images:
-                self.addCommand_line(self.getImage_name(i))
+                self.add_command_line(self.getImage_name(i))
 
             self._write_dataset_preferences()
 

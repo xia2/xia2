@@ -46,7 +46,7 @@ def Othercell(DriverType = None):
         def __init__(self):
             DriverInstance.__class__.__init__(self)
 
-            self.setExecutable('othercell')
+            self.set_executable('othercell')
 
             self._initial_cell = []
             self._initial_lattice_type = None

@@ -79,7 +79,7 @@ def Printheader(DriverType = None):
         def __init__(self):
             DriverInstance.__class__.__init__(self)
 
-            self.setExecutable('printheader')
+            self.set_executable('printheader')
             
             self._image = None
             self._header = { }
@@ -138,7 +138,7 @@ def Printheader(DriverType = None):
                 self._header = HeaderCache.get(self._image)
                 return copy.deepcopy(self._header)
 
-            self.addCommand_line(self._image)
+            self.add_command_line(self._image)
             self.start()
             self.close_wait()
 

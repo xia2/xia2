@@ -49,7 +49,7 @@ def LabelitMosflmScript(DriverType = None):
         def __init__(self):
 
             DriverInstance.__class__.__init__(self)
-            self.setExecutable('labelit.mosflm_script')
+            self.set_executable('labelit.mosflm_script')
 
             self._solution = None
 
@@ -68,7 +68,7 @@ def LabelitMosflmScript(DriverType = None):
 
             task = 'Compute matrix for solution %02d' % self._solution
 
-            self.addCommand_line('%d' % self._solution)
+            self.add_command_line('%d' % self._solution)
 
             self.start()
             self.close_wait()

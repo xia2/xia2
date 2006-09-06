@@ -57,14 +57,14 @@ def LabelitStats_distl(DriverType = None):
 
             DriverInstance.__class__.__init__(self)
 
-            self.setExecutable('labelit.stats_distl')
+            self.set_executable('labelit.stats_distl')
 
             self._statistics = { } 
 
         def stats_distl(self):
             '''Return the image statistics.'''
 
-            self.setTask('Return statistics from last distl run')
+            self.set_task('Return statistics from last distl run')
 
             self.start()
             self.close_wait()

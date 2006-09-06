@@ -62,7 +62,7 @@ def xia2pointgroup():
             
             p = Pointless()
             hklout = m.integrate(fast = True)
-            p.setHklin(hklout)
+            p.set_hklin(hklout)
             p.decide_pointgroup()
 
             print '%f %s %f' % (width, p.getPointgroup(), p.getConfidence())

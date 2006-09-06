@@ -171,7 +171,7 @@ def Mosflm(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            self.setExecutable('ipmosflm')
+            self.set_executable('ipmosflm')
 
             FrameProcessor.__init__(self)
             Indexer.__init__(self)
@@ -218,7 +218,7 @@ def Mosflm(DriverType = None):
             for i in _images:
                 task += ' %s' % self.getImage_name(i)
 
-            self.setTask(task)
+            self.set_task(task)
 
             self.start()
 
@@ -491,7 +491,7 @@ def Mosflm(DriverType = None):
 
             task = 'Refine cell from %d wedges' % len(cell_ref_images)
 
-            self.setTask(task)
+            self.set_task(task)
 
             self.start()
 
@@ -755,7 +755,7 @@ def Mosflm(DriverType = None):
             task = 'Integrate frames %d to %d' % (min(images),
                                                   max(images))
 
-            self.setTask(task)
+            self.set_task(task)
 
             self.start()
 

@@ -40,7 +40,7 @@ def Reindex(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            self.setExecutable('reindex')
+            self.set_executable('reindex')
 
             # reindex specific things
             self._spacegroup = None
@@ -68,8 +68,8 @@ def Reindex(DriverType = None):
         def reindex(self):
             '''Actually perform the reindexing.'''
 
-            self.checkHklin()
-            self.checkHklout()
+            self.check_hklin()
+            self.check_hklout()
 
             if not self._spacegroup and not self._operator:
                 raise RuntimeError, 'reindex requires spacegroup or operator'
@@ -95,7 +95,7 @@ def Reindex(DriverType = None):
 
             except RuntimeError, e:
                 try:
-                    os.remove(self.getHklout())
+                    os.remove(self.get_hklout())
                 except:
                     pass
 
@@ -119,8 +119,8 @@ if __name__ == '__main__':
                          'Data', 'Test', 'Mtz', '12287_1_E1_1_10.mtz')
 
     r = Reindex()
-    r.setHklin(hklin)
-    r.setHklout('null.mtz')
+    r.set_hklin(hklin)
+    r.set_hklout('null.mtz')
 
     r.setOperator('h,k,l')
     r.setSpacegroup('P 4 2 2')

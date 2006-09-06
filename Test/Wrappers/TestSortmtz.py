@@ -40,10 +40,10 @@ class TestSortmtz(unittest.TestCase):
         
         s = Sortmtz()
         
-        s.setHklin(hklin)
+        s.set_hklin(hklin)
 
         # write this to scratch 
-        s.setHklout(os.path.join(os.environ['CCP4_SCR'],
+        s.set_hklout(os.path.join(os.environ['CCP4_SCR'],
                                  'temp-test-sortmtz.mtz'))
         
         status = s.sort()
@@ -65,7 +65,7 @@ class TestSortmtz(unittest.TestCase):
         s.addHklin(hklin2)
 
         # write this to scratch 
-        s.setHklout(os.path.join(os.environ['CCP4_SCR'],
+        s.set_hklout(os.path.join(os.environ['CCP4_SCR'],
                                  'temp-test-sortmtz.mtz'))
         
         status = s.sort()
@@ -85,7 +85,7 @@ class TestSortmtz(unittest.TestCase):
         s.addHklin(hklin1)
 
         # write this to scratch 
-        s.setHklout(os.path.join(os.environ['CCP4_SCR'],
+        s.set_hklout(os.path.join(os.environ['CCP4_SCR'],
                                  'temp-test-sortmtz.mtz'))
         
         self.assertRaises(RuntimeError, s.sort)
@@ -99,8 +99,8 @@ class TestSortmtz(unittest.TestCase):
         
         s = Sortmtz()
         
-        s.setHklin(hklin)
-        s.setHklout(os.path.join(os.environ['CCP4_SCR'],
+        s.set_hklin(hklin)
+        s.set_hklout(os.path.join(os.environ['CCP4_SCR'],
                                  'temp-test-sortmtz.mtz'))
 
         self.assertRaises(RuntimeError, s.sort)
@@ -114,8 +114,8 @@ class TestSortmtz(unittest.TestCase):
         
         s = Sortmtz()
         
-        s.setHklin(hklin)
-        s.setHklout(os.path.join(os.environ['CCP4_SCR'],
+        s.set_hklin(hklin)
+        s.set_hklout(os.path.join(os.environ['CCP4_SCR'],
                                  'temp-test-sortmtz.mtz'))
 
         self.assertRaises(RuntimeError, s.sort)

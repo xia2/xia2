@@ -40,7 +40,7 @@ class TestPointless(unittest.TestCase):
         
         p = Pointless()
         
-        p.setHklin(hklin)
+        p.set_hklin(hklin)
         
         p.decide_pointgroup()
         

@@ -53,7 +53,7 @@ def Scala(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            self.setExecutable('scala')
+            self.set_executable('scala')
 
             # input and output files
             self._scalepack = None
@@ -238,23 +238,23 @@ def Scala(DriverType = None):
         def merge(self):
             '''Actually merge the already scaled reflections.'''
 
-            self.checkHklin()
-            self.checkHklout()
+            self.check_hklin()
+            self.check_hklout()
 
             if not self._onlymerge:
                 raise RuntimeError, 'for scaling use scale()'
 
             if not self._scalepack:
-                self.setTask('Merging scaled reflections from %s => %s' % \
-                             (os.path.split(self.getHklin())[-1],
-                              os.path.split(self.getHklout())[-1]))
+                self.set_task('Merging scaled reflections from %s => %s' % \
+                             (os.path.split(self.get_hklin())[-1],
+                              os.path.split(self.get_hklout())[-1]))
             else:
-                self.setTask('Merging reflections from %s => scalepack %s' % \
-                             (os.path.split(self.getHklin())[-1],
+                self.set_task('Merging reflections from %s => scalepack %s' % \
+                             (os.path.split(self.get_hklin())[-1],
                               os.path.split(self._scalepack)[-1]))
 
-                self.addCommand_line('scalepack')
-                self.addCommand_line(self._scalepack)
+                self.add_command_line('scalepack')
+                self.add_command_line(self._scalepack)
 
             self.start()
             # for the harvesting information
@@ -282,7 +282,7 @@ def Scala(DriverType = None):
 
             except RuntimeError, e:
                 try:
-                    os.remove(self.getHklout())
+                    os.remove(self.get_hklout())
                 except:
                     pass
 
@@ -299,7 +299,7 @@ def Scala(DriverType = None):
 
             if self._scalepack:
                 try:
-                    os.remove(self.getHklout())
+                    os.remove(self.get_hklout())
                 except:
                     pass
 
@@ -308,27 +308,27 @@ def Scala(DriverType = None):
         def scale(self):
             '''Actually perform the scaling.'''
 
-            self.checkHklin()
-            self.checkHklout()
+            self.check_hklin()
+            self.check_hklout()
 
             if self._new_scales_file:
-                self.addCommand_line('SCALES')
-                self.addCommand_line(self._new_scales_file)
+                self.add_command_line('SCALES')
+                self.add_command_line(self._new_scales_file)
 
             if self._onlymerge:
                 raise RuntimeError, 'use merge() method'
 
             if not self._scalepack:
-                self.setTask('Scaling reflections from %s => %s' % \
-                             (os.path.split(self.getHklin())[-1],
-                              os.path.split(self.getHklout())[-1]))
+                self.set_task('Scaling reflections from %s => %s' % \
+                             (os.path.split(self.get_hklin())[-1],
+                              os.path.split(self.get_hklout())[-1]))
             else:
-                self.setTask('Scaling reflections from %s => scalepack %s' % \
-                             (os.path.split(self.getHklin())[-1],
+                self.set_task('Scaling reflections from %s => scalepack %s' % \
+                             (os.path.split(self.get_hklin())[-1],
                               os.path.split(self._scalepack)[-1]))
                              
-                self.addCommand_line('scalepack')
-                self.addCommand_line(self._scalepack)
+                self.add_command_line('scalepack')
+                self.add_command_line(self._scalepack)
 
             self.start()
             # for the harvesting information
@@ -409,7 +409,7 @@ def Scala(DriverType = None):
 
             except RuntimeError, e:
                 try:
-                    os.remove(self.getHklout())
+                    os.remove(self.get_hklout())
                 except:
                     pass
 
@@ -426,7 +426,7 @@ def Scala(DriverType = None):
 
             if self._scalepack:
                 try:
-                    os.remove(self.getHklout())
+                    os.remove(self.get_hklout())
                 except:
                     pass
 
@@ -473,8 +473,8 @@ if __name__ == '__main__':
 
     hklout = '12287_1_E1_scaled.mtz'
 
-    s.setHklin(hklin)
-    s.setHklout(hklout)
+    s.set_hklin(hklin)
+    s.set_hklout(hklout)
 
     s.setResolution(1.65)
 

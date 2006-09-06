@@ -41,7 +41,7 @@ def Sortmtz(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            self.setExecutable('sortmtz')
+            self.set_executable('sortmtz')
 
             self._sort_order = 'H K L M/ISYM BATCH'
 
@@ -49,7 +49,7 @@ def Sortmtz(DriverType = None):
 
             return
 
-        def addHklin(self, hklin):
+        def add_hklin(self, hklin):
             '''Add a reflection file to the list to be sorted together.'''
             self._hklin_files.append(hklin)
             return
@@ -72,23 +72,23 @@ def Sortmtz(DriverType = None):
             '''Actually sort the reflections.'''
             
             # if we have not specified > 1 hklin file via the add method,
-            # check that the setHklin method has been used.
+            # check that the set_hklin method has been used.
             if not self._hklin_files:
-                self.checkHklin()
+                self.check_hklin()
             
-            self.checkHklout()
+            self.check_hklout()
 
             if self._hklin_files:
                 task = ''
                 for hklin in self._hklin_files:
                     task += ' %s' % hklin
-                self.setTask('Sorting reflections%s => %s' % \
+                self.set_task('Sorting reflections%s => %s' % \
                              (task,
-                              os.path.split(self.getHklout())[-1]))
+                              os.path.split(self.get_hklout())[-1]))
             else:
-                self.setTask('Sorting reflections %s => %s' % \
-                             (os.path.split(self.getHklin())[-1],
-                              os.path.split(self.getHklout())[-1]))
+                self.set_task('Sorting reflections %s => %s' % \
+                             (os.path.split(self.get_hklin())[-1],
+                              os.path.split(self.get_hklout())[-1]))
                 
             self.start()
             self.input(self._sort_order)
@@ -115,7 +115,7 @@ def Sortmtz(DriverType = None):
             except RuntimeError, e:
                 # something went wrong; remove the output file
                 try:
-                    os.remove(self.getHklout())
+                    os.remove(self.get_hklout())
                 except:
                     pass
                 raise e
@@ -140,9 +140,9 @@ if __name__ == '__main__':
                           'Data', 'Test', 'Mtz', '12287_1_E1_11_20.mtz')
 
     s = Sortmtz()
-    s.addHklin(hklin1)
-    s.addHklin(hklin2)
-    s.setHklout('null.mtz')
+    s.add_hklin(hklin1)
+    s.add_hklin(hklin2)
+    s.set_hklout('null.mtz')
 
     try:
         print s.sort()
@@ -150,9 +150,9 @@ if __name__ == '__main__':
         print 'Error => %s' % e
 
     s = Sortmtz()
-    s.addHklin(hklin1)
-    s.addHklin(hklin1)
-    s.setHklout('null.mtz')
+    s.add_hklin(hklin1)
+    s.add_hklin(hklin1)
+    s.set_hklout('null.mtz')
 
     try:
         print s.sort()

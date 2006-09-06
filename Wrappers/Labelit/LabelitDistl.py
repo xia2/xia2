@@ -52,7 +52,7 @@ def LabelitDistl(DriverType = None):
 
             DriverInstance.__class__.__init__(self)
 
-            self.setExecutable('labelit.distl')
+            self.set_executable('labelit.distl')
 
             self._images = []
 
@@ -72,14 +72,14 @@ def LabelitDistl(DriverType = None):
             self._images.sort()
 
             for i in self._images:
-                self.addCommand_line(i)
+                self.add_command_line(i)
 
             task = 'Screen images:'
 
             for i in self._images:
                 task += ' %s' % i
 
-            self.setTask(task)
+            self.set_task(task)
 
             self.start()
             self.close_wait()

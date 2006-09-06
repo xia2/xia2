@@ -42,7 +42,7 @@ def Mtzdump(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            self.setExecutable('mtzdump')
+            self.set_executable('mtzdump')
 
             self._header = { }
             self._header['datasets'] = []
@@ -51,7 +51,7 @@ def Mtzdump(DriverType = None):
         def dump(self):
             '''Actually print the contents of the mtz file header.'''
 
-            self.checkHklin()
+            self.check_hklin()
 
             self.start()
             self.close_wait()
@@ -159,7 +159,7 @@ if __name__ == '__main__':
         hklin = sys.argv[1]
 
     m = Mtzdump()
-    m.setHklin(hklin)
+    m.set_hklin(hklin)
     print m.dump()
 
     columns = m.getColumns()

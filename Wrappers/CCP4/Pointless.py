@@ -124,7 +124,7 @@ def Pointless(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            self.setExecutable('pointless-1.1.0.1')
+            self.set_executable('pointless-1.1.0.1')
 
             self._pointgroup = None
             self._spacegroup = None
@@ -134,15 +134,15 @@ def Pointless(DriverType = None):
         def decide_pointgroup(self):
             '''Decide on the correct pointgroup for hklin.'''
 
-            self.checkHklin()
+            self.check_hklin()
 
-            self.setTask('Computing the correct pointgroup for %s' % \
-                         self.getHklin())
+            self.set_task('Computing the correct pointgroup for %s' % \
+                         self.get_hklin())
 
             # FIXME this should probably be a standard CCP4 keyword
 
-            self.addCommand_line('xmlout')
-            self.addCommand_line('pointless.xml')
+            self.add_command_line('xmlout')
+            self.add_command_line('pointless.xml')
 
             self.start()
 
@@ -238,7 +238,7 @@ if __name__ == '__main__':
 
     p = Pointless()
 
-    p.setHklin(hklin)
+    p.set_hklin(hklin)
 
     p.decide_pointgroup()
 

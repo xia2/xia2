@@ -41,7 +41,7 @@ def Empty(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            self.setExecutable('empty')
+            self.set_executable('empty')
 
 
     return EmptyWrapper()

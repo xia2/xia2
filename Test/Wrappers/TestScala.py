@@ -40,10 +40,10 @@ class TestScala(unittest.TestCase):
         
         s = Scala()
         
-        s.setHklin(hklin)
+        s.set_hklin(hklin)
 
         # write this to scratch 
-        s.setHklout(os.path.join(os.environ['CCP4_SCR'],
+        s.set_hklout(os.path.join(os.environ['CCP4_SCR'],
                                  'temp-test-scala.mtz'))
 
         s.setResolution(1.65)
@@ -73,10 +73,10 @@ class TestScala(unittest.TestCase):
         
         s = Scala()
         
-        s.setHklin(hklin)
+        s.set_hklin(hklin)
 
         # write this to scratch 
-        s.setHklout(os.path.join(os.environ['CCP4_SCR'],
+        s.set_hklout(os.path.join(os.environ['CCP4_SCR'],
                                  'temp-test-scala.mtz'))
 
         s.setResolution(1.65)
@@ -105,10 +105,10 @@ class TestScala(unittest.TestCase):
         
         s = Scala()
         
-        s.setHklin(hklin)
+        s.set_hklin(hklin)
 
         # write this to scratch 
-        s.setHklout(os.path.join(os.environ['CCP4_SCR'],
+        s.set_hklout(os.path.join(os.environ['CCP4_SCR'],
                                  'temp-test-scala.mtz'))
 
         s.setResolution(1.65)
@@ -137,10 +137,10 @@ class TestScala(unittest.TestCase):
         
         s = Scala()
         
-        s.setHklin(hklin)
+        s.set_hklin(hklin)
 
         # write this to scratch 
-        s.setHklout(os.path.join(os.environ['CCP4_SCR'],
+        s.set_hklout(os.path.join(os.environ['CCP4_SCR'],
                                  'temp-test-scala.mtz'))
 
         s.setResolution(1.65)
