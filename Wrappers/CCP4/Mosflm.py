@@ -235,6 +235,16 @@ def Mosflm(DriverType = None):
             if self.getDistance_prov() == 'user':
                 self.input('distance %f' % self.getDistance())
 
+            # FIXME need to be able to handle an input
+            # unit cell here - should also be able to
+            # handle writing in the crystal orientation (which
+            # would be useful) but I may save that one for
+            # later... c/f TS02/1VK8
+
+            if self._indxr_input_cell:
+                self.input('cell %f %f %f %f %f %f' % \
+                           self._indxr_input_cell)
+
             if self._indxr_lattice != None:
                 lattice_to_spacegroup = {'aP':1,
                                          'mP':3,

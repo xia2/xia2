@@ -40,6 +40,14 @@
 #                 (this adds a dictionary with a few extra parameters - dead
 #                 useful under some circumstances) - Oh, I can't do this
 #                 because Labelit doesn't produce these parameters!
+# 
+# FIXME 06/SEP/06 Need to update interface to handle unit cell input as
+#                 described in an email from Nick:
+#
+#                 known_symmetry=P4 known_cell=a,b,c,alpha,beta,gamma
+#
+#                 Though this will depend on installing the latest CVS
+#                 version (funfunfun)
 
 import os
 import sys
