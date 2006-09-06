@@ -39,8 +39,27 @@ from Handlers.Streams import Admin
 # FIXME 06/SEP/06 also need interface which will work with xsweep
 #                 objects.
 
+def IntegraterForXSweep(xsweep):
+    '''Create an Integrater implementation to work with the provided
+    XSweep.'''
+
+    # FIXME this needs properly implementing...
+    if xsweep == None:
+        raise RuntimeError, 'XSweep instance needed'
+
+    if not xsweep.__class__.__name__ == 'XSweep':
+        raise RuntimeError, 'XSweep instance needed'
+
+    integrater = Integrater()
+    integrater.setup_from_image(os.path.join(xsweep.get_directory(),
+                                             xsweep.get_image()))
+
+    return integrater
+
 def Integrater():
     '''Return an  Integrater implementation.'''
+
+    # FIXME this should take an indexer as an argument...
 
     integrater = None
 
