@@ -113,6 +113,10 @@ class Object:
         comparison on the defined elements. If they are different,
         base the results on the timestamps.'''
 
+        # to allow comparison against None
+        if other == None:
+            return -1
+
         if self.__class__.__name__ != other.__class__.__name__:
             # then base the comparison entirely on the timestamps
             # raise RuntimeError, 'objects of different classes: %s vs. %s' % \

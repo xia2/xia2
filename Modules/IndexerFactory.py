@@ -46,7 +46,7 @@ from Wrappers.CCP4 import Mosflm
 
 from Handlers.Streams import Admin
 
-def _IndexerXSweep(xsweep):
+def IndexerForXSweep(xsweep):
     '''Provide an indexer to work with XSweep instance xsweep.'''
 
     # check what is going on
@@ -65,21 +65,36 @@ def _IndexerXSweep(xsweep):
     if crystal_lattice:
         pass
 
+    # FIXME need to code something in here to make a "good" decision
+    # about the correct Indexer to return...
+
+    indexer = Indexer()
+
+    # configure the indexer
+    indexer.setup_from_image(os.path.join(xsweep.get_directory(),
+                                          xsweep.get_image()))
+
+    # FIXME - it is assumed that all programs which implement the Indexer
+    # interface will also implement FrameProcessor, which this uses.
+    # verify this, or assert it in some way...
+
+    # BIG FIXME - need to standardize on getBeam or get_beam - I prefer the
+    # latter.
+    if xsweep.get_beam():
+        indexer.setBeam(xsweep.get_beam())
+
+    # FIXME more - need to check if we should be indexing in a specific
+    # lattice - check xsweep.get_crystal_lattice()
+    
+    return indexer
     
 
 # FIXME need to provide framework for input passing
 
-def Indexer(xsweep = None):
-    '''Create an instance of Indexer for use with this dataset.'''
+def Indexer():
+    '''Create an instance of Indexer for use with a dataset.'''
 
     # FIXME need to check that these implement indexer
-    # FIXME need also to make the decision based on the input
-    # XSweep if provided...
-
-    if xsweep:
-        # forward to a factory for indexers when an xsweep
-        # is passed in... [delegate]
-        return _IndexerXSweep(xsweep)
 
     indexer = None
 

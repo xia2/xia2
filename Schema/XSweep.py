@@ -129,7 +129,7 @@ from Experts.FindImages import image2template, find_matching_images, \
 from Wrappers.XIA.Printheader import Printheader
 
 # access to factory classes
-import Modules.IndexerFactory
+import Modules.IndexerFactory as IndexerFactory
 
 class XSweep(Object):
     '''An object representation of the sweep.'''
@@ -142,6 +142,8 @@ class XSweep(Object):
 
         # + check the wavelength is an XWavelength object
         #   raise an exception if not...
+
+        Object.__init__(self)
 
         if not wavelength.__class__.__name__ == 'XWavelength':
             pass
@@ -225,6 +227,15 @@ class XSweep(Object):
 
         return
 
+    def get_directory(self):
+        return self._directory
+
+    def get_image(self):
+        return self._image
+
+    def get_beam(self):
+        return self._beam
+
     # Real "action" methods - note though that these should never be
     # run directly, only implicitly...
 
@@ -239,16 +250,25 @@ class XSweep(Object):
         '''Get my indexer, if set, else create a new one from the
         factory.'''
 
-        if self._indexer = None:
+        if self._indexer == None:
             # FIXME the indexer factory should probably be able to
             # take self [this object] as input, to help with deciding
             # the most appropriate indexer to use... this will certainly
             # be the case for the integrater. Maintaining this link
             # will also help the system cope with updates (which
             # was going to be one of the big problems...)
-            self._indexer = IndexerFactory.Indexer()
+            # 06/SEP/06 no keep these interfaces separate - want to
+            # keep "pure" interfaces to the programs for reuse, then
+            # wrap in XStyle.
+            self._indexer = IndexerFactory.IndexerForXSweep(self)
             
         return self._indexer
+
+    def get_indexer_lattice(self):
+        return self._get_indexer().get_indexer_lattice()
+
+    def get_indexer_cell(self):
+        return self._get_indexer().get_indexer_cell()
 
     def get_crystal_lattice(self):
         '''Get the parent crystal lattice pointer.'''
@@ -268,6 +288,7 @@ if __name__ == '__main__':
 
     xs = XSweep('DEMO', None, directory, image)
 
-    xs.set_resolution(1.6)
+    print xs.get_indexer_lattice()
+    print xs.get_indexer_cell()
 
         

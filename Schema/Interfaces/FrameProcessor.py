@@ -20,10 +20,10 @@
 # Distance (mm), wavelength (ang), beam centre (mm, mm),
 # image header information [general c/f printheader output]
 # 
-# FIXME 06/SEP/06 need to be able to interface to the XSweep
+# FIXME 06/SEP/06 Need to be able to interface to the XSweep
 #                 object in here, to allow all of this information
 #                 to be pulled automatically...
-# 
+#                 No, don't do this, it will overcomplicate things.
 
 import os
 import sys
