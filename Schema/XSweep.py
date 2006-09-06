@@ -264,6 +264,17 @@ class XSweep(Object):
             
         return self._indexer
 
+    def _get_integrater(self):
+        '''Get my integrater, and if it is not set, create one.'''
+
+        if self._integrater = None:
+            self._integrater = IntegraterFactory.IntegraterForXSweep(self)
+
+            # configure the integrater with the indexer
+            self._integrater.integrate_set_indexer(self.getIndexer())
+
+        return self._integrater
+
     def get_indexer_lattice(self):
         return self._get_indexer().get_indexer_lattice()
 
@@ -291,4 +302,4 @@ if __name__ == '__main__':
     print xs.get_indexer_lattice()
     print xs.get_indexer_cell()
 
-        
+    
