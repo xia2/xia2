@@ -214,14 +214,14 @@ class XSweep(Object):
         self._beam = beam
         return
 
-    def getResolution(self):
+    def get_resolution(self):
         return self._resolution.get()
 
-    def setResolution(self, resolution):
+    def set_resolution(self, resolution):
         if not self._resolution.get():
             self._resolution.set(resolution)
-        else:
-            Chatter.write('%s already set' % self._resolution.handle())
+        # else:
+        # Chatter.write('%s already set' % self._resolution.handle())
 
         return
 
@@ -250,6 +250,16 @@ class XSweep(Object):
             
         return self._indexer
 
+    def get_crystal_lattice(self):
+        '''Get the parent crystal lattice pointer.'''
+        try:
+            latitce = self.get_wavelength().get_crystal().get_lattice()
+        except:
+            lattice = None
+
+        return lattice
+    
+
 if __name__ == '__main__':
 
     directory = os.path.join(os.environ['DPA_ROOT'],
@@ -258,6 +268,6 @@ if __name__ == '__main__':
 
     xs = XSweep('DEMO', None, directory, image)
 
-    xs.setResolution(1.6)
+    xs.set_resolution(1.6)
 
         
