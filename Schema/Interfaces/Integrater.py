@@ -58,6 +58,15 @@
 # 
 # FIXED 06/SEP/06 need to replace integrate_set with set_integrater as per
 #                 the indexer interface, likewise getters.
+# 
+# FIXME 08/SEP/06 need to record the number of batches in each run, so that
+#                 rebatch may be used to reassign batch numbers in multi-
+#                 sweep scaling.
+# 
+#                 Also - need to be able to assign the range of images
+#                 to integrate, in particular single images if I intend to
+#                 bolt this into DNA. Also for people who record three
+#                 wavelengths with the same image prefix, for instance.
 
 import os
 import sys

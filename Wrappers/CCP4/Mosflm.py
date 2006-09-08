@@ -132,7 +132,11 @@
 # FIXME  4/SEP/06 Make sure that the SUMMARY files & friends are written
 #                 to named files, to make sure they don't get overwritten.
 #                 Also more careful naming of integrate.log &c. needed.
-# 
+#  
+# FIXME 08/SEP/06 Look at the DELX, DELY of profiles in the output, since 
+#                 this can be an indicator of funky things going on in
+#                 the integration. I seem to recall that TS00 complains
+#                 about this, with the allegation of crystal slippage.
 
 import os
 import sys
