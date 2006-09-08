@@ -12,10 +12,24 @@
 # given a unit cell and lattice type (pcif)
 # 
 # FIXME 24/AUG/06 this needs to be tied into the indexing possibilities...
+# 
 # FIXME 08/SEP/06 this also needs to parse the xml coming from othercell.
 #                 - after some tinkering ot does, and also needed to mod
 #                   the xml output from othercell - hence the -gw suffix.
 #                 Done - but I need to decide what I want from this next.
+# 
+# FIXME 08/SEP/06 would be nice to also apply the latice constraints on
+#                 the output unit cells, based on the standard numbers
+#                 in IUCR Tables A. For instance, if tP set alpha = 
+#                 beta = gamma = 90.0 degrees.
+#
+#                 This will be spacegroup -> lattice: new_cell =
+#                 apply_lattice('tP', old_cell) [say] return new_cell.
+# 
+# FIXME 08/SEP/06 want to feed the unit cell from autoindexing into this,
+#                 then write out the possibles with penalties to the
+#                 "chatter" stream. This should go into Indexer interface,
+#                 perhaps?
 
 import os
 import sys
@@ -92,6 +106,12 @@ def Othercell(DriverType = None):
 
             self.input('%f %f %f %f %f %f' % tuple(self._initial_cell))
             self.input('%s' % self._initial_lattice_type)
+
+            # don't have a target cell at the moment, but I may want
+            # to support this at some stage in the future, e.g. if
+            # I want to map I222 data to C2, as in the TS01 example
+            # (I think...) FIXME
+            
             self.input('')
 
             self.close_wait()
@@ -109,6 +129,9 @@ def Othercell(DriverType = None):
 
             possible = dom.getElementsByTagName('LaueGroupList')[0]
             lgposs = possible.getElementsByTagName('LaueGroupPossibility')
+
+            # FIXME in here want to also get the spacegroup
+            # number, by which to sort.
 
             for lg in lgposs:
                 name = lg.getElementsByTagName(
