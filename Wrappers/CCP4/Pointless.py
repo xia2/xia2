@@ -124,7 +124,10 @@ def Pointless(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            self.set_executable('pointless-1.1.0.1')
+            
+            # FIXME 08/SEP/06 this needs updating to
+            # version 1.1.0.4 - done
+            self.set_executable('pointless-1.1.0.4')
 
             self._pointgroup = None
             self._spacegroup = None

@@ -12,11 +12,16 @@
 # given a unit cell and lattice type (pcif)
 # 
 # FIXME 24/AUG/06 this needs to be tied into the indexing possibilities...
-# 
+# FIXME 08/SEP/06 this also needs to parse the xml coming from othercell.
+#                 - after some tinkering ot does, and also needed to mod
+#                   the xml output from othercell - hence the -gw suffix.
+#                 Done - but I need to decide what I want from this next.
 
 import os
 import sys
 import copy
+
+import xml.dom.minidom
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -46,7 +51,7 @@ def Othercell(DriverType = None):
         def __init__(self):
             DriverInstance.__class__.__init__(self)
 
-            self.set_executable('othercell')
+            self.set_executable('othercell-1.1.0.4-gw')
 
             self._initial_cell = []
             self._initial_lattice_type = None
@@ -80,6 +85,9 @@ def Othercell(DriverType = None):
             if not self._initial_lattice_type:
                 raise RuntimeError, 'must set the lattice'
 
+            self.add_command_line('xmlout')
+            self.add_command_line('othercell.xml')            
+
             self.start()
 
             self.input('%f %f %f %f %f %f' % tuple(self._initial_cell))
@@ -87,6 +95,47 @@ def Othercell(DriverType = None):
             self.input('')
 
             self.close_wait()
+
+            # attempt to parse the xml output...
+
+            xml_file = os.path.join(self.getWorking_directory(),
+                                    'othercell.xml')
+
+            dom = xml.dom.minidom.parse(xml_file)            
+
+            # now get some useful stuff out... note that othercell
+            # does not apply the lattice constraints - an interesting
+            # problem...
+
+            possible = dom.getElementsByTagName('LaueGroupList')[0]
+            lgposs = possible.getElementsByTagName('LaueGroupPossibility')
+
+            for lg in lgposs:
+                name = lg.getElementsByTagName(
+                    'LaueGroupName')[0].childNodes[0].data
+                cell = lg.getElementsByTagName('cell')[0]
+                a = float(cell.getElementsByTagName(
+                    'a')[0].childNodes[0].data)
+                b = float(cell.getElementsByTagName(
+                    'b')[0].childNodes[0].data)
+                c = float(cell.getElementsByTagName(
+                    'c')[0].childNodes[0].data)
+                alpha = float(cell.getElementsByTagName(
+                    'alpha')[0].childNodes[0].data)
+                beta = float(cell.getElementsByTagName(
+                    'beta')[0].childNodes[0].data)
+                gamma = float(cell.getElementsByTagName(
+                    'gamma')[0].childNodes[0].data)
+
+                delta = float(lg.getElementsByTagName(
+                    'CellDelta')[0].childNodes[0].data)
+
+                reindex_op = lg.getElementsByTagName(
+                    'ReindexOperator')[0].childNodes[0].data
+
+                spags = lg.getElementsByTagName('PossibleSpacegroups')[0]
+                spag0 = spags.getElementsByTagName(
+                    'SpaceGroup')[0].childNodes[0].data
 
             output = self.get_all_output()
 
