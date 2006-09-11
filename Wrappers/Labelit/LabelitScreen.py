@@ -47,10 +47,15 @@
 #                 known_symmetry=P4 known_cell=a,b,c,alpha,beta,gamma
 #
 #                 Though this will depend on installing the latest CVS
-#                 version (funfunfun)
+#                 version (funfunfun) [or the 1.0.0a3 source tarball, easier!]
+# 
+#                 Ok, doing this will simply assign the smiley correctly - 
+#                 the other solutions are also displayed. I guess that this
+#                 will be useful for indexing multiple sets though.
 #
 # FIXME 06/SEP/06 This needs to have an indentity change to LabelitIndex
-# 
+#                 Combine this with the renaming of LabelitStats_distl to
+#                 fit in with LabelitMosflmScript.
 
 import os
 import sys
@@ -202,6 +207,29 @@ def LabelitScreen(DriverType = None):
 
             for i in _images:
                 self.add_command_line(self.get_image_name(i))
+
+            if self._indxr_lattice:
+                lattice_to_spacegroup = {'aP':1,
+                                         'mP':3,
+                                         'mC':5,
+                                         'oP':16,
+                                         'oC':20,
+                                         'oF':22,
+                                         'oI':23,
+                                         'tP':75,
+                                         'tI':79,
+                                         'hP':143,
+                                         'cP':195,
+                                         'cF':196,
+                                         'cI':197}
+                
+                self.add_command_line(
+                    'known_symmetry=%d' % \
+                    lattice_to_spacegroup(self._indxr_lattice))
+
+            if self._indxr_input_cell:
+                self.add_command_line('known_cell=%f,%f,%f,%f,%f,%f' % \
+                                      self._indxr_input_cell)
 
             self._write_dataset_preferences()
 

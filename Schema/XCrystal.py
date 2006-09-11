@@ -97,6 +97,7 @@ class _lattice_manager(Object):
     def kill_lattice(self):
         # remove the top one from the list
         self._allowed_lattice_order = self._allowed_lattice_order[1:]
+        self.reset()
 
 def _print_lattice(lattice):
     print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % lattice['cell']
