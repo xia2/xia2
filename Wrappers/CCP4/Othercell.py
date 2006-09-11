@@ -80,6 +80,8 @@ def Othercell(DriverType = None):
             self._lpg_rdx_op = None
             self._lpg_rdx_cell = None
 
+            self._lattices = { }
+
             # possible spacegroups
 
             self._possible_spacegroups = []
@@ -136,6 +138,21 @@ def Othercell(DriverType = None):
             # FIXME in here want to also get the spacegroup
             # number, by which to sort.
 
+            self._lattices = { }
+            lattice_to_spacegroup = {'aP':1,
+                                     'mP':3,
+                                     'mC':5,
+                                     'oP':16,
+                                     'oC':20,
+                                     'oF':22,
+                                     'oI':23,
+                                     'tP':75,
+                                     'tI':79,
+                                     'hP':143,
+                                     'cP':195,
+                                     'cF':196,
+                                     'cI':197}
+
             for lg in lgposs:
                 name = lg.getElementsByTagName(
                     'LaueGroupName')[0].childNodes[0].data
@@ -168,6 +185,21 @@ def Othercell(DriverType = None):
                 cell_init = (a, b, c, alpha, beta, gamma)
                 lattice = Syminfo.get_lattice(spag0)
                 cell_refined, distortion = ApplyLattice(lattice, cell_init)
+
+                number = lattice_to_spacegroup[lattice]
+
+                if self._lattices.has_key(lattice):
+                    if self._lattices[lattice]['delta'] < delta:
+                        # replace with this version
+                        self._lattices[lattice] = {'delta':delta,
+                                                   'cell':cell_refined,
+                                                   'distortion':distortion,
+                                                   'number':number}
+                else:
+                    self._lattices[lattice] = {'delta':delta,
+                                               'cell':cell_refined,
+                                               'distortion':distortion,
+                                               'number':number}
 
                 Chatter.write('%3s' % lattice + 
                               ' %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
@@ -210,6 +242,9 @@ def Othercell(DriverType = None):
 
         def get_lattices(self):
             return self._possible_spacegroups
+
+        def get_possible_lattices(self):
+            return self._lattices
 
     return OthercellWrapper()
 

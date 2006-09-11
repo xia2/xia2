@@ -138,7 +138,7 @@ class Indexer:
     # setter methods for the input
 
     def add_indexer_image_wedge(self, image):
-        '''Add some images for autoindexing (optional,) input is a 2-tuple
+        '''Add some images for autoindexing (optional) input is a 2-tuple
         or an integer.'''
 
         if type(image) == type(()):
