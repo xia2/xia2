@@ -49,7 +49,9 @@ class _Stream:
         return
 
     def write(self, record):
-        return self._file.write('[%s]  %s\n' % (self._prefix, record.strip()))
+        result = self._file.write('[%s]  %s\n' % (self._prefix, record.strip()))
+        self._file.flush()
+        return result
 
 Science = _Stream('xia-science', 'SCI-')
 Admin = _Stream('xia-admin', 'ADMN')
