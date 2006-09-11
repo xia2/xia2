@@ -183,3 +183,5 @@ class Integrater:
         # else repeat the calculations.
         return self._integrate(fast)
             
+    def get_integrater_batches(self):
+        return self._intgr_batches_out

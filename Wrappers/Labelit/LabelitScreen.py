@@ -79,6 +79,7 @@ from Schema.Interfaces.Indexer import Indexer
 
 # other labelit things that this uses
 from Wrappers.Labelit.LabelitMosflmScript import LabelitMosflmScript
+from Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
 
 def LabelitScreen(DriverType = None):
     '''Factory for LabelitScreen wrapper classes, with the specified
@@ -274,10 +275,11 @@ def LabelitScreen(DriverType = None):
             # labelit.stats_distl output... FIXME the name is wrong!
 
             lsd = LabelitStats_distl()
+            lsd.stats_distl()
 
             resolution = 1.0e6
             for i in _images:
-                stats = lsd.get_statistics(i)
+                stats = lsd.get_statistics(self.get_image_name(i))
                 if stats['resol_one'] < resolution:
                     resolution = stats['resol_one']
                 if stats['resol_two'] < resolution:
