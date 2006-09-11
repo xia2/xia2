@@ -51,6 +51,9 @@ if not os.environ['DPA_ROOT'] in sys.path:
     sys.path.append(os.environ['DPA_ROOT'])
 
 from Driver.DriverFactory import DriverFactory
+from Experts.LatticeExpert import ApplyLattice
+from Handlers.Syminfo import Syminfo
+from Handlers.Streams import Chatter
 
 def Othercell(DriverType = None):
     '''Factory for Othercell wrapper classes, with the specified
@@ -159,6 +162,17 @@ def Othercell(DriverType = None):
                 spags = lg.getElementsByTagName('PossibleSpacegroups')[0]
                 spag0 = spags.getElementsByTagName(
                     'SpaceGroup')[0].childNodes[0].data
+
+                # apply constraints, etc
+
+                cell_init = (a, b, c, alpha, beta, gamma)
+                lattice = Syminfo.get_lattice(spag0)
+                cell_refined, distortion = ApplyLattice(lattice, cell_init)
+
+                Chatter.write('%3s' % lattice + 
+                              ' %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+                              cell_refined \
+                              + '%5.2f %5.2f' % (distortion, delta))
 
             # FIXME can now remove all of this...
             output = self.get_all_output()

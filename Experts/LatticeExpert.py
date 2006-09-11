@@ -55,4 +55,67 @@ allowed_lattices = ['aP', 'mP', 'mC', 'oP', 'oC', 'oI',
 # Unsurprisingly this doesn't work, because the lattices have different
 # settings, and these settings affect the symmetry operators. Ho hum!
 # Probably easier to hard-code it based on the IUCR tables volume A..
+# Which I will do - see ApplyLattice(lattice, cell) below.
+# 
 
+import math
+
+def ApplyLattice(lattice, cell):
+    '''Apply lattice constraints for a given lattice to a given input cell.
+    This will return a new cell and also compute the distortion required
+    to make the match. This assumes that the input cell is in the appropriate
+    setting.'''
+
+    lattice_class = lattice[0]
+
+    cell2 = ConstrainLattice(lattice_class, cell)
+
+    distortion = ComputeBDistortion(cell, cell2)
+
+    return cell2, distortion
+
+def ComputeBDistortion(cell1, cell2):
+    '''Compute the distortion required to get from cell1 to cell2.'''
+
+    # FIXME this should be done via a B matrix calculation...
+    # 
+    # B = \ 
+    # (a*,    b* cos(al*),          c* cos(be*)      )
+    # (0,     b* sin(al*),   - c* sin(be*) cos(alpha))
+    # (0,     0,             - c* sin(be*) sin(alpha))
+    # 
+    # so I need to invert the unit cell and check this
+    # (Busing & Levy, 1967)
+
+    d = 0.0
+
+    for j in range(6):
+        d += math.fabs(cell2[j] - cell1[j])
+
+    return d
+
+def ConstrainLattice(lattice_class, cell):
+    '''Constrain cell to fit lattice class x.'''
+
+    a, b, c, alpha, beta, gamma = cell
+
+    if lattice_class == 'a':
+        return (a, b, c, alpha, beta, gamma)
+    elif lattice_class == 'm':
+        return (a, b, c, 90.0, beta, 90.0)
+    elif lattice_class == 'o':
+        return (a, b, c, 90.0, 90.0, 90.0)
+    elif lattice_class == 't':
+        e = (a + b) / 2.0
+        return (e, e, c, 90.0, 90.0, 90.0)
+    elif lattice_class == 'h':
+        e = (a + b) / 2.0
+        return (e, e, c, 90.0, 90.0, 120.0)
+    elif latitce_class == 'c':
+        e = (a + b + c) / 3.0
+        return (e, e, e, 90.0, 90.0, 90.0)
+
+if __name__ == '__main__':
+    cell, dist = ApplyLattice('oP', (23.0, 24.0, 25.0, 88.9, 90.0, 90.1))
+
+    print cell, dist
