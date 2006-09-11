@@ -466,6 +466,11 @@ def Mosflm(DriverType = None):
                                      
             spacegroup_number = lattice_to_spacegroup[lattice]
 
+	    # FIXME 11/SEP/06 have an example set of data which will
+            #                 make cell refinement "fail" - that is
+            #                 not work very well - 9485/3. Therefore
+	    #                 allow for more image wedges, read output.
+
             if spacegroup_number >= 75:
                 num_wedges = 1
             else:
