@@ -38,6 +38,8 @@ from Wrappers.CCP4.Mosflm import Mosflm
 from Modules.IndexerFactory import Indexer
 from Modules.IntegraterFactory import Integrater
 
+from Handlers.Streams import Chatter
+
 def xia2process():
     '''Do it!'''
 
@@ -85,6 +87,15 @@ def xia2process():
     # n.setup_from_image(CommandLine.getImage())
     # n.set_integrater_indexer(i)
 
+    Chatter.write('Refined beam is: %6.2f %6.2f' % i.get_indexer_beam())
+    Chatter.write('Distance:        %6.2f' % i.get_indexer_distance())
+    Chatter.write('Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+                  i.get_indexer_cell())
+    Chatter.write('Lattice: %s' % i.get_indexer_lattice())
+    Chatter.write('Mosaic: %6.2f' % i.get_indexer_mosaic())
+    Chatter.write('Index resolution estimate: %5.2f' % \
+                  i.get_indexer_resolution())
+
     n = Integrater()
     n.setup_from_image(CommandLine.get_image())
     n.set_integrater_indexer(i)
@@ -97,12 +108,17 @@ def xia2process():
 
     # print out a little information about the lattice
 
-    print 'Refined beam is: %6.2f %6.2f' % i.get_indexer_beam()
-    print 'Distance:        %6.2f' % i.get_indexer_distance()
-    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % i.get_indexer_cell()
-    print 'Lattice: %s' % i.get_indexer_lattice()
-    print 'Mosaic: %6.2f' % i.get_indexer_mosaic()
-    print 'Hklout: %s' % hklout
+    Chatter.write('After processing...')
+
+    Chatter.write('Refined beam is: %6.2f %6.2f' % i.get_indexer_beam())
+    Chatter.write('Distance:        %6.2f' % i.get_indexer_distance())
+    Chatter.write('Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' %
+                   i.get_indexer_cell())
+    Chatter.write('Lattice: %s' % i.get_indexer_lattice())
+    Chatter.write('Mosaic: %6.2f' % i.get_indexer_mosaic())
+    Chatter.write('Index resolution estimate: %5.2f' %
+                   i.get_indexer_resolution())
+    Chatter.write('Hklout: %s' % hklout)
 
 if __name__ == '__main__':
     xia2process()
