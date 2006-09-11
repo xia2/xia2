@@ -137,6 +137,10 @@
 #                 this can be an indicator of funky things going on in
 #                 the integration. I seem to recall that TS00 complains
 #                 about this, with the allegation of crystal slippage.
+# 
+# FIXME 11/SEP/06 Need to mask "dead" areas of the detector. E.g. a static
+#                 mask from the detector class, plus some kind of mask 
+#                 computed from the image [the latter is research!]
 
 import os
 import sys

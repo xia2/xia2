@@ -160,6 +160,7 @@ def Othercell(DriverType = None):
                 spag0 = spags.getElementsByTagName(
                     'SpaceGroup')[0].childNodes[0].data
 
+            # FIXME can now remove all of this...
             output = self.get_all_output()
 
             for i in range(len(output)):
