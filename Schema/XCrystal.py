@@ -30,6 +30,27 @@
 #                 treating the unit cells as a separate problem? Maintaining
 #                 the actual unit cell during processing may be complex -
 #                 perhaps I am better off doing this after the event?
+# 
+# FIXME 11/SEP/06 This needs to represent:
+#
+#  BEGIN CRYSTAL 12847
+#  
+#  BEGIN AA_SEQUENCE
+#  
+#  MKVKKWVTQDFPMVEESATVRECLHRMRQYQTNECIVKDREGHFRGVVNKEDLLDLDLDSSVFNKVSLPD
+#  FFVHEEDNITHALLLFLEHQEPYLPVVDEEMRLKGAVSLHDFLEALIEALAMDVPGIRFSVLLEDKPGEL
+#  RKVVDALALSNINILSVITTRSGDGKREVLIKVDAVDEGTLIKLFESLGIKIESIEKEEGF
+#  
+#  END AA_SEQUENCE
+#  
+#  BEGIN WAVELENGTH NATIVE
+#  WAVELENGTH 0.99187
+#  END WAVELENGTH NATIVE
+#  
+#  BEGIN SWEEP NATIVE_HR
+#  WAVELENGTH NATIVE
+#
+#  ... &c. ...
 
 import os, sys
 
@@ -102,6 +123,31 @@ class _lattice_manager(Object):
 def _print_lattice(lattice):
     print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % lattice['cell']
     print 'Number: %s' % lattice['number']
+
+class XCrystal(Object):
+    '''An object to maintain all of the information about a crystal. This
+    will contain the experimental information in XWavelength objects,
+    and also amino acid sequence, heavy atom information.'''
+
+    def __init__(self, name):
+        self._name = name
+
+        # FIXME need an aa_sequence "object"
+        self._aa_sequence = ''
+        
+        # FIXME need a HA info "object"
+        self._ha_info = { }
+
+        self._wavelengths = { }
+        self._lattice_manager = None
+
+        return
+
+    def set_lattice(self, lattice, cell):
+        '''Configure the cell - if it is already set, then manage this
+        carefully...'''
+
+        raise RuntimeError, 'I need implementing'
 
 if __name__ == '__main__':
     lm = _lattice_manager('aP', (43.62, 52.27, 116.4, 103, 100.7, 90.03))
