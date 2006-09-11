@@ -113,6 +113,10 @@ class Integrater:
         # note well that this may have to be implemented via mtzdump?
         # or just record the images which were integrated...
         self._intgr_batches_out = [0, 0]
+
+        self._intgr_done = False
+        self._intgr_fast = False
+        self._intgr_hklout = None
         
         return
 
@@ -120,6 +124,7 @@ class Integrater:
         '''Set the wedge of images to process.'''
         
         self._intgr_wedge = (start, end)
+        self._intgr_done = False
         
         return
 
@@ -128,12 +133,15 @@ class Integrater:
 
         self._intgr_reso_high = min(dmin, dmax)
         self._intgr_reso_low = max(dmin, dmax)
+        self._intgr_done = False
+
         return
 
     def set_integrater_high_resolution(self, dmin):
         '''Set high resolution limit.'''
 
         self._intgr_reso_high = dmin
+        self._intgr_done = False
         return
 
     def set_integrater_parameter(self, program, parameter, value):
@@ -172,7 +180,13 @@ class Integrater:
 
         self._intgr_indexer = indexer
 
+        self._intgr_done = False
         return
+
+    def integrate(self):
+        self._intgr_hklout = self._integrate(fast = self._intgr_fast)
+        self._intgr_done = True
+        return self._intgr_hklout
 
     def get_integrater_indexer(self):
         return self._intgr_indexer
@@ -181,7 +195,13 @@ class Integrater:
         # in here check if integration has already been performed, if
         # it has and everything is happy, just return the reflections,
         # else repeat the calculations.
-        return self._integrate(fast)
+
+        if not self._intgr_done:
+            self._intgr_fast = fast
+            self.integrate()
+        return self._intgr_hklout
             
     def get_integrater_batches(self):
+        if not self._intgr_done:
+            self.integrate()
         return self._intgr_batches_out

@@ -116,8 +116,6 @@ def xia2process():
                    i.get_indexer_cell())
     Chatter.write('Lattice: %s' % i.get_indexer_lattice())
     Chatter.write('Mosaic: %6.2f' % i.get_indexer_mosaic())
-    Chatter.write('Index resolution estimate: %5.2f' %
-                   i.get_indexer_resolution())
     Chatter.write('Hklout: %s' % hklout)
 
 if __name__ == '__main__':

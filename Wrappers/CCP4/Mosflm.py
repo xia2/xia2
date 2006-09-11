@@ -636,6 +636,15 @@ def Mosflm(DriverType = None):
                     Science.write(
                         'Integration will be aborted because of this.')
 
+                    Chatter.write(
+                        'In cell refinement, the following cell parameters')
+                    Chatter.write(
+                        'have refined poorly:')
+                    for p in parameters:
+                        Chatter.write('... %s' % p)
+                    Chatter.write(
+                        'Integration will be aborted because of this.')
+
 		    raise RuntimeError, 'cell refinement failed: ' + \
                           'inaccurate cell parameters'
 
@@ -900,6 +909,7 @@ def Mosflm(DriverType = None):
                                                           'gain',
                                                           gain)
                             Science.write('GAIN found to be %f' % gain)
+                            Chatter.write('GAIN found to be %f' % gain)
 
                             self._mosflm_rerun_integration = True
 
@@ -910,6 +920,11 @@ def Mosflm(DriverType = None):
                                   self._mosflm_hklout)
 
                 if 'MOSFLM HAS TERMINATED EARLY' in o:
+                    Chatter.write('Mosflm has failed in integration')
+                    message = 'The input was:\n\n'
+                    for input in self.get_all_input():
+                        message += '  %s' % input
+                    Chatter.write(message)
                     raise RuntimeError, \
                           'integration failed: reason unknown'
 
