@@ -164,6 +164,10 @@ from Schema.Interfaces.FrameProcessor import FrameProcessor
 from Schema.Interfaces.Indexer import Indexer
 from Schema.Interfaces.Integrater import Integrater
 
+# output streams
+
+from Handlers.Streams import Admin, Science, Status, Chatter
+
 def Mosflm(DriverType = None):
     '''A factory for MosflmWrapper classes.'''
 
@@ -468,8 +472,18 @@ def Mosflm(DriverType = None):
 
 	    # FIXME 11/SEP/06 have an example set of data which will
             #                 make cell refinement "fail" - that is
-            #                 not work very well - 9485/3. Therefore
+            #                 not work very well - 9485/3[1VPX]. Therefore
 	    #                 allow for more image wedges, read output.
+            # 
+            # What we are looking for in the output is:
+            # 
+            # INACCURATE CELL PARAMETERS
+            #
+            # followed by the dodgy cell parameters, along with the 
+            # associated standard errors. Based on these need to decide 
+            # what extra data would be helpful. Will also want to record
+            # these standard deviations to decide if the next run of 
+            # cell refinement makes things better...
 
             if spacegroup_number >= 75:
                 num_wedges = 1
@@ -581,6 +595,21 @@ def Mosflm(DriverType = None):
 
             for i in range(len(output)):
                 o = output[i]
+
+                # look for "error" type problems
+                if 'INACCURATE CELL PARAMETERS' in o:
+                    # get the inaccurate cell parameters in question
+                    parameters = output[i + 2].lower().split()
+
+                    # and warn about them
+                    Science.write(
+                        'In cell refinement, the following cell parameters')
+                    Science.write(
+                        'are poorly refined:')
+                    for p in parameters:
+                        Science.write('%s' % p)
+                    Science.write(
+                        'Integration may fail because of this...')
 
                 # FIXME will these get lost if the indexer in question is
                 # not this program...? Find out...
