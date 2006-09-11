@@ -47,6 +47,17 @@
 # (3) if the indexing just failed (bad beam, etc.)
 # 
 # These need to be handled properly with helpful error messages.
+# 
+# FIXME 11/SEP/06 Also want to check that the resolution of the data is
+#                 better than (say) 3.5A, because below that Mosflm has 
+#                 trouble refining the cell etc. Could add a resolution 
+#                 estimate to the output of Indexer, which could either
+#                 invoke labelit.stats_distl or grep the results from 
+#                 the Mosflm output...
+#
+#                 Look for record "99% have resolution less than"...
+#                 or the resolution numbers in labelit.stats_distl.
+#                 use best numbers of all images used in indexing.
 
 import os
 import sys
@@ -86,6 +97,9 @@ class Indexer:
         # extra indexing guff - a dictionary which the implementation
         # can store things in
         self._indxr_payload = { }
+
+        # an idea of the resolution of the data
+        self._indxr_resolution_estimate = 0.0
 
         return
 
@@ -228,6 +242,15 @@ class Indexer:
             self.index()
 
         return self._indxr_payload.get(this, None)
+
+    def get_indexer_resolution(self):
+        '''Get an estimate of the diffracting resolution.'''
+
+        # if not already run, run
+        if not self._indxr_run:
+            self.index()
+
+        return self._indxr_resolution_estimate       
 
     def set_indexer_payload(self, this, value):
         '''Set something in the payload.'''

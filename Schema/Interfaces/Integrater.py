@@ -101,12 +101,18 @@ class Integrater:
         self._intgr_reso_high = 0.0
         self._intgr_reso_low = 0.0
 
-        # required parameters
+        # required parameters 
         self._intgr_wedge = None
 
         # implementation dependent parameters - these should be keyed by
         # say 'mosflm':{'yscale':0.9999} etc.
         self._intgr_program_parameters = { }
+
+        # batches to integrate, batches which were integrated - this is
+        # to allow programs like rebatch to work c/f self._intgr_wedge
+        # note well that this may have to be implemented via mtzdump?
+        # or just record the images which were integrated...
+        self._intgr_batches_out = [0, 0]
         
         return
 

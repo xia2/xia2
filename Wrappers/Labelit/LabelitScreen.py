@@ -270,8 +270,23 @@ def LabelitScreen(DriverType = None):
             lms.set_solution(self._solution['number'])
             self._indxr_payload['mosflm_orientation_matrix'] = lms.calculate()
 
-            return 'ok'
+            # also get an estimate of the resolution limit from the
+            # labelit.stats_distl output... FIXME the name is wrong!
 
+            lsd = LabelitStats_distl()
+
+            resolution = 1.0e6
+            for i in _images:
+                stats = lsd.get_statistics(i)
+                if stats['resol_one'] < resolution:
+                    resolution = stats['resol_one']
+                if stats['resol_two'] < resolution:
+                    resolution = stats['resol_two']
+                    
+            self._indxr_resolution_estimate = resolution
+                    
+            return 'ok'
+        
         # things to get results from the indexing
 
         def get_solution(self):

@@ -141,6 +141,15 @@
 # FIXME 11/SEP/06 Need to mask "dead" areas of the detector. E.g. a static
 #                 mask from the detector class, plus some kind of mask 
 #                 computed from the image [the latter is research!]
+# 
+# FIXME 11/SEP/06 Also want to check that the resolution of the data is
+#                 better than (say) 3.5A, because below that Mosflm has 
+#                 trouble refining the cell etc. Could add a resolution 
+#                 estimate to the output of Indexer, which could either
+#                 invoke labelit.stats_distl or grep the results from 
+#                 the Mosflm output...
+#
+#                 Look for record "99% have resolution less than"...
 
 import os
 import sys
@@ -191,6 +200,7 @@ def Mosflm(DriverType = None):
 
             # local parameters used in integration
             self._mosflm_rerun_integration = False
+            self._mosflm_hklout = ''
 
             return
 
@@ -321,6 +331,14 @@ def Mosflm(DriverType = None):
                 if '(currently SEPARATION' in o:
                     intgr_params['separation'] = map(
                         float, o.replace(')', '').split()[-2:])
+
+                # get the resolution estimate out...
+                if '99% have resolution' in o:
+                    self._indxr_resolution_estimate = float(
+                        o.split()[-2])
+                    Science.write('Resolution estimated to be %5.2f A' % \
+                                  self._indxr_resolution_estimate)
+
 
             # FIXME this needs to be picked up by the integrater
             # interface which uses this Indexer, if it's a mosflm
@@ -483,7 +501,9 @@ def Mosflm(DriverType = None):
             # associated standard errors. Based on these need to decide 
             # what extra data would be helpful. Will also want to record
             # these standard deviations to decide if the next run of 
-            # cell refinement makes things better...
+            # cell refinement makes things better... Turns out that this
+            # example is very low resolution, so don't worry too hard
+            # about it!
 
             if spacegroup_number >= 75:
                 num_wedges = 1
@@ -607,15 +627,17 @@ def Mosflm(DriverType = None):
                     Science.write(
                         'have refined poorly:')
                     for p in parameters:
-                        Science.write('    %s' % p)
+                        Science.write('... %s' % p)
 
-                    # decide what to do about this...		    
+                    # decide what to do about this...
                     # if this is all cell parameters, abort, else
 		    # consider using more data...
+
                     Science.write(
                         'Integration will be aborted because of this.')
 
-		    raise RuntimeError, 'cell refinement failed'
+		    raise RuntimeError, 'cell refinement failed: ' + \
+                          'inaccurate cell parameters'
 
                 # FIXME will these get lost if the indexer in question is
                 # not this program...? Find out...
@@ -856,8 +878,18 @@ def Mosflm(DriverType = None):
             # value for the gain (if present,) any warnings, errors,
             # or just interesting facts.
 
+            integrated_images_first = 1.0e6
+            integrated_images_last = -1.0e6
+
             for i in range(len(output)):
                 o = output[i]
+
+                if 'Integrating Image' in o:
+                    batch = int(o.split()[2])
+                    if batch < integrated_images_first:
+                        integrated_images_first = batch
+                    if batch > integrated_images_last:
+                        integrated_images_last = batch
 
                 if 'ERROR IN DETECTOR GAIN' in o:
                     # look for the correct gain
@@ -865,19 +897,26 @@ def Mosflm(DriverType = None):
                         if output[j].split()[:2] == ['set', 'to']:
                             gain = float(output[j].split()[-1][:-1])
                             self.set_integrater_parameter('mosflm',
-                                                         'gain',
-                                                         gain)
-                            # FIXME this needs to be written to the
-                            # "science stream"
-                            # print 'Correct gain: %f' % gain
-                            # this is worth rerunning
+                                                          'gain',
+                                                          gain)
+                            Science.write('GAIN found to be %f' % gain)
+
                             self._mosflm_rerun_integration = True
 
                 if 'WRITTEN OUTPUT MTZ FILE' in o:
                     self._mosflm_hklout = output[i + 1].split()[-1]
 
-            return self._mosflm_hklout
+                    Science.write('Integration output: %s' % \
+                                  self._mosflm_hklout)
 
+                if 'MOSFLM HAS TERMINATED EARLY' in o:
+                    raise RuntimeError, \
+                          'integration failed: reason unknown'
+
+            self._intgr_batches_out = (integrated_images_first,
+                                       integrated_images_last)
+
+            return self._mosflm_hklout
     
     return MosflmWrapper()
 
