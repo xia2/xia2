@@ -214,7 +214,6 @@ def LabelitScreen(DriverType = None):
             self.check_labelit_errors()
 
             # ok now we're done, let's look through for some useful stuff
-
             output = self.get_all_output()
 
             counter = 0

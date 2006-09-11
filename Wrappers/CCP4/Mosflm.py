@@ -13,7 +13,7 @@
 # methods to provide functionality:
 # 
 # index: autoindexing functionality (implemented)
-# integrate: process a frame or a dataset (not implemented)
+# integrate: process a frame or a dataset (implemented)
 #
 # Internally this will also require cell refinement and so on, but this
 # will be implicit - the cell refinement is a local requirement for
@@ -207,7 +207,7 @@ def Mosflm(DriverType = None):
             '''Implement the indexer interface.'''
 
             self.reset()
-            self.write_log_file('index.log')
+            self.write_log_file('mosflm-index.log')
 
             _images = []
             for i in self._indxr_images:
@@ -346,17 +346,20 @@ def Mosflm(DriverType = None):
             # or is that an outside responsibility? yes.
 
             if not fast:
+                self.reset()
+                self.write_log_file('mosflm-cellrefinement.log')
                 self._mosflm_refine_cell()
-                self.write_log_file('cellrefinement.log')
                 
+            self.reset()
+            self.write_log_file('mosflm-integration.log')
             hklout = self._mosflm_integrate()
-            self.write_log_file('integration.log')
 
             if self._mosflm_rerun_integration and not fast:
                 # FIXME this needs to be passed to the admin stream
                 # print 'Rerunning integration...'
+	        self.reset()
+                self.write_log_file('mosflm-reintegration.log')
                 hklout = self._mosflm_integrate()
-                self.write_log_file('reintegration.log')
 
             return hklout
 
@@ -364,7 +367,7 @@ def Mosflm(DriverType = None):
             '''Perform the refinement of the unit cell. This will populate
             all of the information needed to perform the integration.'''
 
-            self.reset()
+            # self.reset()
 
             if not self.get_integrater_indexer():
                 # this wrapper can present the indexer interface
@@ -665,7 +668,7 @@ def Mosflm(DriverType = None):
             '''Perform the actual integration, based on the results of the
             cell refinement or indexing (they have the equivalent form.)'''
 
-            self.reset()
+            # self.reset()
 
             # the only way to get here is through the cell refinement,
             # unless we're trying to go fast - which means that we may
