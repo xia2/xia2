@@ -599,17 +599,23 @@ def Mosflm(DriverType = None):
                 # look for "error" type problems
                 if 'INACCURATE CELL PARAMETERS' in o:
                     # get the inaccurate cell parameters in question
-                    parameters = output[i + 2].lower().split()
+                    parameters = output[i + 3].lower().split()
 
                     # and warn about them
                     Science.write(
                         'In cell refinement, the following cell parameters')
                     Science.write(
-                        'are poorly refined:')
+                        'have refined poorly:')
                     for p in parameters:
-                        Science.write('%s' % p)
+                        Science.write('    %s' % p)
+
+                    # decide what to do about this...		    
+                    # if this is all cell parameters, abort, else
+		    # consider using more data...
                     Science.write(
-                        'Integration may fail because of this...')
+                        'Integration will be aborted because of this.')
+
+		    raise RuntimeError, 'cell refinement failed'
 
                 # FIXME will these get lost if the indexer in question is
                 # not this program...? Find out...
