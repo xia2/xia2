@@ -52,7 +52,9 @@
 #
 #  ... &c. ...
 
-import os, sys
+import os
+import sys
+import math
 
 if not os.environ.has_key('DPA_ROOT'):
     raise RuntimeError, 'DPA_ROOT not defined'
@@ -117,12 +119,65 @@ class _lattice_manager(Object):
 
     def kill_lattice(self):
         # remove the top one from the list
+
+        if len(self._allowed_lattice_order) == 1:
+            raise RuntimeError, 'out of lattices'
+
         self._allowed_lattice_order = self._allowed_lattice_order[1:]
         self.reset()
 
+class _aa_sequence(Object):
+    '''A versioned object to represent the amino acid sequence.'''
+
+    def __init__(self, sequence):
+        self._sequence = sequence
+        return
+
+    def set_sequence(self, sequence):
+        self._sequence = sequence
+        self.reset()
+        return
+
+    def get_sequence(self):
+        return self._sequence
+
+class _ha_info(Object):
+    '''A versioned class to represent the heavy atom information.'''
+
+    # FIXME in theory we could have > 1 of these to represent e.g. different
+    # metal ions naturally present in the molecule, but for the moment
+    # just think in terms of a single one (though couldn't hurt to
+    # keep them in a list.)
+
+    def __init__(self, atom, number_per_monomer = 0, number_total = 0):
+        self._atom = atom
+        self._number_per_monomer = number_per_monomer
+        self._number_total = number_total
+        return
+
+    def set_number_per_monomer(self, number_per_monomer):
+        self._number_per_monomer = number_per_monomer
+        self.reset()
+        return
+
+    def set_number_total(self, number_total):
+        self._number_total = number_total
+        self.reset()
+        return
+
+    def get_atom(self):
+        return self._atom
+
+    def get_number_per_monomer(self):
+        return self._number_per_monomer
+
+    def get_number_total(self):
+        return self._number_total
+
 def _print_lattice(lattice):
     print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % lattice['cell']
-    print 'Number: %s' % lattice['number']
+    print 'Number: %s     Lattice: %s' % (lattice['number'], 
+                                          lattice['lattice'])
 
 class XCrystal(Object):
     '''An object to maintain all of the information about a crystal. This
@@ -132,11 +187,11 @@ class XCrystal(Object):
     def __init__(self, name):
         self._name = name
 
-        # FIXME need an aa_sequence "object"
-        self._aa_sequence = ''
-        
-        # FIXME need a HA info "object"
-        self._ha_info = { }
+        # these should be populated with the objects defined above
+        self._aa_sequence = None
+
+        # note that I am making allowances for > 1 heavy atom class...
+        self._ha_info = []
 
         self._wavelengths = { }
         self._lattice_manager = None
@@ -147,14 +202,77 @@ class XCrystal(Object):
         '''Configure the cell - if it is already set, then manage this
         carefully...'''
 
-        raise RuntimeError, 'I need implementing'
+        # FIXME this should also verify that the cell for the provided
+        # lattice exactly matches the limitations provided in IUCR
+        # tables A.
+
+        if self._lattice_manager:
+            self._update_lattice(lattice, cell)
+        else:
+            self._lattice_manager = _lattice_manager(lattice, cell)
+
+        return
+
+    def _update_lattice(self, lattice, cell):
+        '''Inspect the available lattices and see if this matches
+        one of them...'''
+
+        # FIXME need to think in here in terms of the lattice
+        # being higher than the current one...
+        # though that shouldn't happen, because if this is the
+        # next processing, this should have taken the top
+        # lattice supplied earler as input...
+
+        while lattice != self._lattice_manager.get_lattice()['lattice']:
+            self._lattice_manager.kill_lattice()
+
+        # this should now point to the correct lattice class...
+        # check that the unit cell matches reasonably well...
+
+        cell_orig = self._lattice_manager.get_lattice()['cell']
+
+        dist = 0.0
+
+        for j in range(6):
+            dist += math.fabs(cell_orig[j] - cell[j])
+
+        # allow average of 1 degree, 1 angstrom
+        if dist > 6.0:
+            raise RuntimeError, 'new lattice incompatible: %s vs. %s' % \
+                  ('[%6.2f, %6.2f, %6.2f, %6.2f, %6.2f, %6.2f]' % \
+                   tuple(cell),
+                   '[%6.2f, %6.2f, %6.2f, %6.2f, %6.2f, %6.2f]' % \
+                   tuple(cell_orig))
+
+        # if we reach here we're satisfied that the new lattice matches...
+        # FIXME write out some messages here to Chatter.
+
+        return
+
+    def get_lattice(self):
+        if self._lattice_manager:
+            return self._lattice_manager.get_lattice()
+
+        return None
 
 if __name__ == '__main__':
-    lm = _lattice_manager('aP', (43.62, 52.27, 116.4, 103, 100.7, 90.03))
+    # lm = _lattice_manager('aP', (43.62, 52.27, 116.4, 103, 100.7, 90.03))
+    # _print_lattice(lm.get_lattice())
+    # lm.kill_lattice()
+    # _print_lattice(lm.get_lattice())
 
-    _print_lattice(lm.get_lattice())
-    lm.kill_lattice()
-    _print_lattice(lm.get_lattice())
+    xc = XCrystal('DEMO')
 
-    
-        
+    # this should configure with all possible lattices, though
+    # I think going through an explicit "init lattices" would help...
+    xc.set_lattice('aP', (43.62, 52.27, 116.4, 103, 100.7, 90.03))
+    _print_lattice(xc.get_lattice())
+
+    # this should "drop" the lattice by one - the idea here is
+    # that this is the output from e.g. pointless updating the lattice
+    # used for processing
+    xc.set_lattice('mC', (228.70, 43.62, 52.27, 90.00, 103.20, 90.00))
+    _print_lattice(xc.get_lattice())
+
+    # this should raise an exception - the unit cell is not compatible
+    xc.set_lattice('mC', (221.0, 44.0, 57.0, 90.0, 106.0, 90.0))

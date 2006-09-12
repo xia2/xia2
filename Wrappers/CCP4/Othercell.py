@@ -194,17 +194,19 @@ def Othercell(DriverType = None):
                         self._lattices[lattice] = {'delta':delta,
                                                    'cell':cell_refined,
                                                    'distortion':distortion,
-                                                   'number':number}
+                                                   'number':number,
+                                                   'lattice':lattice}
                 else:
                     self._lattices[lattice] = {'delta':delta,
                                                'cell':cell_refined,
                                                'distortion':distortion,
-                                               'number':number}
-
-                Chatter.write('%3s' % lattice + 
-                              ' %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-                              cell_refined \
-                              + '%5.2f %5.2f' % (distortion, delta))
+                                               'number':number,
+                                               'lattice':lattice}
+                
+                # Chatter.write('%3s' % lattice + 
+                # ' %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+                # cell_refined \
+                # + '%5.2f %5.2f' % (distortion, delta))
 
             # FIXME can now remove all of this...
             output = self.get_all_output()

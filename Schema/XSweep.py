@@ -285,6 +285,13 @@ class XSweep(Object):
             # keep "pure" interfaces to the programs for reuse, then
             # wrap in XStyle.
             self._indexer = IndexerFactory.IndexerForXSweep(self)
+
+
+        # FIXME in here I should probably check that the indexer
+        # is up-to-date with respect to the crystal &c. if this has
+        # changed the indexer will need to be updated...
+        #
+        # I need to think very hard about how this will work...
             
         return self._indexer
 
