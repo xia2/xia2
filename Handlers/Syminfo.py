@@ -140,7 +140,10 @@ class _Syminfo(Object):
         
         if self._spacegroup_long_to_short.has_key(name):
             name = self._spacegroup_long_to_short[name]
-        return self._spacegroup_name_to_lattice[name]
+
+	# The short name should not have a space in, sometimes this may
+	# be foxed by someone passing in P 21 - this should fix it...
+        return self._spacegroup_name_to_lattice[name.replace(' ', '')]
 
     def get_spacegroup_numbers(self):
         '''Get a list of all spacegroup numbers.'''

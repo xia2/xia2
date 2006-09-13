@@ -111,7 +111,7 @@ def ConstrainLattice(lattice_class, cell):
     elif lattice_class == 'h':
         e = (a + b) / 2.0
         return (e, e, c, 90.0, 90.0, 120.0)
-    elif latitce_class == 'c':
+    elif lattice_class == 'c':
         e = (a + b + c) / 3.0
         return (e, e, e, 90.0, 90.0, 90.0)
 
