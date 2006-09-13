@@ -41,9 +41,9 @@ def parse_cryst1(cryst1_line):
     cell = map(float, record[1:7])
     symm = ''
     for c in record[7: -1]:
-        symm += c
+        symm += '%s ' % c
 
-    return cell, symm
+    return cell, symm.strip()
 
 def parse_pdb(pdb_file_name):
     pdb_entry = open(pdb_file_name, 'r').readline().split()[-1]
