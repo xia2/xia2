@@ -61,6 +61,10 @@ def print_lattice(lattice):
 def do_funky(pdb_file_name):
     pdb, cell, symm = parse_pdb(pdb_file_name)
 
+    if cell[0] * cell[1] * cell[2] < 100.0:
+        # this is an unlikely unit cell...
+        return
+
     print '----------- Analysing %s ----------' % pdb
 
     o = Othercell()
@@ -92,6 +96,8 @@ def do_funky(pdb_file_name):
             print_lattice(lattices[lattice])
 
     print '-------------------------------------'
+
+    sys.stdout.flush()
 
     return
 
