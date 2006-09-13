@@ -30,6 +30,11 @@
 #                 then write out the possibles with penalties to the
 #                 "chatter" stream. This should go into Indexer interface,
 #                 perhaps?
+# 
+# FIXME 12/SEP/06 perhaps I should clean up, that is, delete the othercell.xml
+#                 file. Perhaps further, I should call it something random not
+#                 othercell.xml, in case I have two jobs running in one
+#                 directory.
 
 import os
 import sys
