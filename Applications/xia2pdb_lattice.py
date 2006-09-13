@@ -70,8 +70,9 @@ def do_funky(pdb_file_name):
     # check that the symmetry is legal, not something whacky! 
     try:
         original_lattice = Syminfo.get_lattice(symm)
+        original = lattice_to_spacegroup[original_lattice]
     except:
-        print 'SYMM not understood: %s' % symm
+        print 'Symmetry not understood: %s' % symm
         print '-------------------------------------'
         return
 
@@ -90,8 +91,6 @@ def do_funky(pdb_file_name):
                              'oC':20, 'oF':22, 'oI':23, 'tP':75,
                              'tI':79, 'hP':143, 'hR':143,
                              'cP':195, 'cF':196,  'cI':197}
-
-    original = lattice_to_spacegroup[original_lattice]
 
     for lattice in lattices.keys():
         if lattices[lattice]['number'] > original:
