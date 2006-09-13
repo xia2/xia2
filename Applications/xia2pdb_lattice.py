@@ -67,6 +67,14 @@ def do_funky(pdb_file_name):
 
     print '----------- Analysing %s ----------' % pdb
 
+    # check that the symmetry is legal, not something whacky! 
+    try:
+        original_lattice = Syminfo.get_lattice(symm)
+    except:
+        print 'SYMM not understood: %s' % symm
+        print '-------------------------------------'
+        return
+
     o = Othercell()
 
     o.set_cell(cell)
@@ -76,9 +84,6 @@ def do_funky(pdb_file_name):
     lattices = o.get_possible_lattices()
 
     # next need to work through some calculations
-
-    original_lattice = Syminfo.get_lattice(symm)
-
     # this really needs to go info Syminfo handler
 
     lattice_to_spacegroup = {'aP':1,  'mP':3, 'mC':5, 'oP':16,
