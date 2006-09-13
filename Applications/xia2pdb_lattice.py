@@ -94,7 +94,10 @@ def do_funky(pdb_file_name):
             print_lattice(lattices[lattice])
         elif lattices[lattice]['number'] == original:
             print '-- Original --'
-            print_lattice(lattices[lattice])
+	    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % tuple(cell)
+    	    print 'Number: %s     Lattice: %s' % (original, 
+                                                  original_lattice)
+            print 'Distortions (PRE, GW):   %5.2f %5.2f' % (0.0, 0.0)
 
     print '-------------------------------------'
 
