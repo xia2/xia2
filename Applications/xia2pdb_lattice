@@ -1,0 +1,3 @@
+#!/bin/bash
+
+python ${DPA_ROOT}/Applications/xia2pdb_lattice.py $@
