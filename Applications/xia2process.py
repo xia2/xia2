@@ -54,6 +54,11 @@ def xia2process():
     if beam[0] * beam[1] > 0.0:
         i.set_beam(beam)
 
+    # check that an image has been specified
+
+    if CommandLine.get_image() is None:
+        raise RuntimeError, 'must specify an image via -image'
+
     # this will result in a run of printheader
 
     i.setup_from_image(CommandLine.get_image())
