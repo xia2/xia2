@@ -274,6 +274,9 @@ def LabelitScreen(DriverType = None):
             # FIXME this needs to check the smilie status e.g.
             # ":)" or ";(" or "  ".
 
+            # FIXME need to check the value of the RMSD and raise an
+            # exception if the P1 solution has an RMSD > 1.0...
+
             for i in range(counter + 1, len(output)):
                 o = output[i][3:]
                 smiley = output[i][:3]
@@ -287,6 +290,10 @@ def LabelitScreen(DriverType = None):
                                                   'cell':map(float, l[7:13]),
                                                   'volume':int(l[-1]),
                                                   'smiley':smiley}
+
+            # check the RMSD from the triclinic unit cell
+            if self._solutions[1]['rmsd'] > 1.0:
+                raise RuntimeError, 'high RMSD for triclinic solution'
 
             # configure the "right" solution
             self._solution = self.get_solution()

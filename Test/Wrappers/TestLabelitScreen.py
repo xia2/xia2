@@ -63,12 +63,24 @@ class TestLabelitScreen(unittest.TestCase):
     def testsetfalsebeam(self):
         '''A test to see if the indexing works when it should.'''
 
+        # FIXME this no longer fails! :o(
+        # LABELIT Indexing results:
+        # Beam center x   92.94mm, y   87.49mm, distance  169.69mm ; \
+        # 60%(POOR) mosaicity=1.50 deg.
+        # Solution  Metric fit  rmsd  #spots  crystal_system   unit_cell
+        # :)   2     0.3440 dg 4.354    119    monoclinic mC  \
+        # 100.66   7.57  50.30  90.00 95.46  90.00    38145
+        # :)   1     0.0000 dg 4.365    152     triclinic aP    \
+        # 7.56  49.82  50.39  95.39 90.02  94.01    18856
+
         ls = LabelitScreen()
 
         directory = os.path.join(os.environ['DPA_ROOT'],
                                  'Data', 'Test', 'Images')
 
         ls.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
+
+        # this is not needed
         ls.add_indexer_image_wedge(1)
         ls.add_indexer_image_wedge(90)
 
