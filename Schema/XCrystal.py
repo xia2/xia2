@@ -130,6 +130,7 @@ class _aa_sequence(Object):
     '''A versioned object to represent the amino acid sequence.'''
 
     def __init__(self, sequence):
+        Object.__init__(self)
         self._sequence = sequence
         return
 
@@ -150,6 +151,7 @@ class _ha_info(Object):
     # keep them in a list.)
 
     def __init__(self, atom, number_per_monomer = 0, number_total = 0):
+        Object.__init__(self)
         self._atom = atom
         self._number_per_monomer = number_per_monomer
         self._number_total = number_total
@@ -191,13 +193,68 @@ class XCrystal(Object):
         self._aa_sequence = None
 
         # note that I am making allowances for > 1 heavy atom class...
-        self._ha_info = []
-
+        # FIXME 18/SEP/06 these should be in a dictionary which is keyed
+        # by the element name...
+        self._ha_info = { }
         self._wavelengths = { }
         self._lattice_manager = None
 
         return
 
+    def get_aa_sequence(self):
+        return self._aa_sequence
+
+    def set_aa_sequence(self, aa_sequence):
+        if not self._aa_sequence:
+            self._aa_sequence = _aa_sequence(aa_sequence)
+        else:
+            self._aa_sequence.set_sequence(aa_sequence)
+
+        return
+
+    def get_ha_info(self):
+        return self._ha_info
+
+    def set_ha_info(self, ha_info_dict):
+        # FIXED I need to decide how to implement this...
+        # do so from the dictionary...
+
+        atom = ha_info_dict['atom']
+
+        if self._ha_info.has_key(atom):
+            # update this description
+            if ha_info_dict.has_key('number_per_monomer'):
+                self._ha_info[atom].set_number_per_monomer(
+                    ha_info_dict['number_per_monomer'])
+            if ha_info_dict.has_key('number_total'):
+                self._ha_info[atom].set_number_total(
+                    ha_info_dict['number_total'])
+                
+        else:
+            # implant a new atom
+            self._ha_info[atom] = _ha_info(atom)
+            if ha_info_dict.has_key('number_per_monomer'):
+                self._ha_info[atom].set_number_per_monomer(
+                    ha_info_dict['number_per_monomer'])
+            if ha_info_dict.has_key('number_total'):
+                self._ha_info[atom].set_number_total(
+                    ha_info_dict['number_total'])
+        
+        return
+
+    def add_wavelength(self, xwavelength):
+
+        if xwavelength.__class__.__name__ != 'XWavelength':
+            raise RuntimeError, 'input should be an XWavelength object'
+
+        if xwavelength.get_name() in self._wavelengths.keys():
+            raise RuntimeError, 'XWavelength with name %s already exists' % \
+                  xwavelength.get_name()
+
+        self._wavelengths[xwavelength.get_name()] = xwavelength
+
+        return
+        
     def set_lattice(self, lattice, cell):
         '''Configure the cell - if it is already set, then manage this
         carefully...'''

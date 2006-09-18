@@ -33,6 +33,8 @@
 
 from XSweep import XSweep
 
+from Object import Object
+
 class XWavelength(Object):
     '''An object representation of a wavelength, which will after data
     reduction correspond to an MTZ hierarchy dataset.'''
@@ -41,6 +43,8 @@ class XWavelength(Object):
                  f_pr = 0.0, f_prpr = 0.0):
         '''Create a new wavelength named name, belonging to XCrystal object
         crystal, with wavelength and optionally f_pr, f_prpr assigned.'''
+
+        Object.__init__(self)
 
         # check that the crystal is an XCrystal
 

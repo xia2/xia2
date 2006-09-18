@@ -101,6 +101,12 @@ class XInfo:
         
         return repr[:-1]
 
+    def get_project(self):
+        return self._project
+
+    def get_crystals(self):
+        return self._crystals
+
     def _validate(self):
         '''Validate the structure of this object, ensuring that
         everything looks right... raise exception if I find something
