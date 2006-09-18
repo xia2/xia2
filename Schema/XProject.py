@@ -42,13 +42,22 @@ class XProject(Object):
     def __init__(self, xinfo_file = None):
         Object.__init__(self)
 
+        self._crystals = { }
         if xinfo_file:
             self.setup_from_xinfo_file(xinfo_file)
         else:
-            self._crystals = { }
             self._name = None
 
         return
+
+    def __repr__(self):
+        result = 'Project: %s\n' % self._name
+        for crystal in self._crystals.keys():
+            result += str(self._crystals[crystal])
+        return result[:-1]
+        
+    def __str__(self):
+        return self.__repr__()
 
     def get_name(self):
         return self._name
@@ -63,7 +72,7 @@ class XProject(Object):
             raise RuntimeError, 'XCrystal with name %s already exists' % \
                   xcrystal.get_name()
 
-        self._crystals[xscrystal.get_name()] = xcrystal
+        self._crystals[xcrystal.get_name()] = xcrystal
 
         return
 
@@ -110,7 +119,7 @@ class XProject(Object):
 if __name__ == '__main__':
     import os
 
-    xi_file = os.path.join(os.environ['DPA_ROOT'], 'Data', 'Test', 'Xinfo', '1vr9.xinfo')
+    xi_file = os.path.join(os.environ['DPA_ROOT'], 'Data', 'Test', 'Xinfo', '1vpj.xinfo')
     
     xp = XProject(xi_file)
 

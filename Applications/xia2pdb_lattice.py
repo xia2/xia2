@@ -15,6 +15,9 @@
 # 
 # This is likely to be messy.
 # 
+# FIXME 18/SEP/06 need to make sure that the structure is from an experimental
+#                 source, not a computational one.
+# 
 
 import sys
 import os
@@ -45,9 +48,21 @@ def parse_cryst1(cryst1_line):
 
     return cell, symm.strip()
 
+def parse_expdta(pdb_file_name):
+    for line in open(pdb_file_name, 'r').readlines():
+        if line[:6] == 'EXPDTA':
+            return line[6:].strip()
+
+    raise RuntimeError, 'EXPDTA not found'
+
 def parse_pdb(pdb_file_name):
     pdb_entry = open(pdb_file_name, 'r').readline().split()[-1]
     cell, symm = parse_cryst1(get_cryst1(pdb_file_name))
+
+    model_class = parse_expdta(pdb_file_name)
+
+    if model_class != 'X-RAY DIFFRACTION':
+        cell = (1.0, 1.0, 1.0, 90.0, 90.0, 90.0)
 
     return pdb_entry, cell, symm
 
@@ -66,6 +81,8 @@ def do_funky(pdb_file_name):
         return
 
     print '----------- Analysing %s ----------' % pdb
+
+    sys.stdout.flush()
 
     # check that the symmetry is legal, not something whacky! 
     try:

@@ -187,6 +187,8 @@ class XCrystal(Object):
     and also amino acid sequence, heavy atom information.'''
 
     def __init__(self, name):
+        Object.__init__(self)
+
         self._name = name
 
         # these should be populated with the objects defined above
@@ -200,6 +202,16 @@ class XCrystal(Object):
         self._lattice_manager = None
 
         return
+
+    def __repr__(self):
+        result = 'Crystal: %s\n' % self._name
+        return result
+
+    def __str__(self):
+        return self.__repr__()
+
+    def get_name(self):
+        return self._name
 
     def get_aa_sequence(self):
         return self._aa_sequence
