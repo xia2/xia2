@@ -86,6 +86,7 @@ if not os.environ['DPA_ROOT'] in sys.path:
     sys.path.append(os.environ['DPA_ROOT'])
 
 from Handlers.Streams import Chatter
+from Handlers.Environment import Environment
 
 # helper class definitions
 # in _resolution, need to think about how a user defined resolution
@@ -286,6 +287,25 @@ class XSweep(Object):
             # wrap in XStyle.
             self._indexer = IndexerFactory.IndexerForXSweep(self)
 
+            # set the working directory for this, based on the hierarchy
+            # defined herein...
+
+            # that would be CRYSTAL_ID/WAVELENGTH/SWEEP/index &c.
+
+            if not self.get_wavelength():
+                wavelength_id = "default"
+                crystal_id = "default"
+
+            else:
+                wavelength_id = self.get_wavelength().get_name()
+                crystal_id = self.get_wavelength().get_crystal().get_name()
+
+            self._indexer.set_working_directory(
+                Environment.generate_directory([crystal_id,
+                                                wavelength_id,
+                                                self.get_name(),
+                                                'index']))
+
 
         # FIXME in here I should probably check that the indexer
         # is up-to-date with respect to the crystal &c. if this has
@@ -303,6 +323,24 @@ class XSweep(Object):
 
             # configure the integrater with the indexer
             self._integrater.set_integrater_indexer(self._get_indexer())
+            # set the working directory for this, based on the hierarchy
+            # defined herein...
+
+            # that would be CRYSTAL_ID/WAVELENGTH/SWEEP/index &c.
+
+            if not self.get_wavelength():
+                wavelength_id = "default"
+                crystal_id = "default"
+
+            else:
+                wavelength_id = self.get_wavelength().get_name()
+                crystal_id = self.get_wavelength().get_crystal().get_name()
+
+            self._integrater.set_working_directory(
+                Environment.generate_directory([crystal_id,
+                                                wavelength_id,
+                                                self.get_name(),
+                                                'index']))
 
         return self._integrater
 
