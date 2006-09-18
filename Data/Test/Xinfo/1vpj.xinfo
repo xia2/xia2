@@ -1,3 +1,10 @@
+! GW comments
+! -----------
+! 
+! In here I have ignored the peak dataset - the integration &c. should 
+! also stop at the images around #60, but that will be down to the 
+! implementation. 18/SEP/06.
+
 BEGIN PROJECT TS03
 BEGIN CRYSTAL 12287
 
