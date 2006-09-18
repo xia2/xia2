@@ -389,12 +389,19 @@ if __name__ == '__main__':
 
     xs = XSweep('DEMO', None, directory, image)
 
-    print xs
+    xs_descr = str(xs)
 
-    print 'Refined beam is: %6.2f %6.2f' % xs.get_indexer_beam()
-    print 'Distance:        %6.2f' % xs.get_indexer_distance()
-    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % xs.get_indexer_cell()
-    print 'Lattice: %s' % xs.get_indexer_lattice()
-    print 'Mosaic: %6.2f' % xs.get_indexer_mosaic()
-    print 'Hklout: %s' % xs.get_integrater_reflections()
+    Chatter.write('.')
+    for record in xs_descr.split('\n'):
+        Chatter.write(record.strip())
+
+    Chatter.write('.')
+
+    Chatter.write('Refined beam is: %6.2f %6.2f' % xs.get_indexer_beam())
+    Chatter.write('Distance:        %6.2f' % xs.get_indexer_distance())
+    Chatter.write('Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+                  xs.get_indexer_cell())
+    Chatter.write('Lattice: %s' % xs.get_indexer_lattice())
+    Chatter.write('Mosaic: %6.2f' % xs.get_indexer_mosaic())
+    Chatter.write('Hklout: %s' % xs.get_integrater_reflections())
     
