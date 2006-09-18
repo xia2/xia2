@@ -347,7 +347,8 @@ def Mosflm(DriverType = None):
             self._indxr_payload['mosflm_integration_parameters'] = intgr_params
                                                                  
             self._indxr_payload['mosflm_orientation_matrix'] = open(
-                'xiaindex.mat', 'r').readlines()
+                os.path.join(self.get_working_directory(),
+                             'xiaindex.mat'), 'r').readlines()
 
             return
 
@@ -371,20 +372,25 @@ def Mosflm(DriverType = None):
             #
             # or is that an outside responsibility? yes.
 
+            wd = self.get_working_directory()
+
             if not fast:
                 self.reset()
-                self.write_log_file('mosflm-cellrefinement.log')
+                self.write_log_file(os.path.join(
+                    wd, 'mosflm-cellrefinement.log'))
                 self._mosflm_refine_cell()
                 
             self.reset()
-            self.write_log_file('mosflm-integration.log')
+            self.write_log_file(os.path.join(
+                    wd, 'mosflm-integration.log'))
             hklout = self._mosflm_integrate()
 
             if self._mosflm_rerun_integration and not fast:
                 # FIXME this needs to be passed to the admin stream
                 # print 'Rerunning integration...'
 	        self.reset()
-                self.write_log_file('mosflm-reintegration.log')
+                self.write_log_file(os.path.join(
+                    wd, 'mosflm-reintegration.log'))
                 hklout = self._mosflm_integrate()
 
             return hklout
@@ -532,7 +538,8 @@ def Mosflm(DriverType = None):
 
             # write the matrix file in xiaindex.mat
 
-            f = open('xiaindex.mat', 'w')
+            f = open(os.path.join(self.get_working_directory(),
+                                  'xiaindex.mat'), 'w')
             for m in matrix:
                 f.write(m)
             f.close()
@@ -733,9 +740,11 @@ def Mosflm(DriverType = None):
             
             # shouldn't need this.. remember that Python deals in pointers!
             self.set_indexer_payload('mosflm_orientation_matrix', open(
-                'xiarefine.mat', 'r').readlines())
+                os.path.join(self.get_working_directory(),
+                             'xiarefine.mat'), 'r').readlines())
             indxr.set_indexer_payload('mosflm_orientation_matrix', open(
-                'xiarefine.mat', 'r').readlines())
+                os.path.join(self.get_working_directory(),
+                             'xiarefine.mat'), 'r').readlines())
 
             return 
 
@@ -827,7 +836,8 @@ def Mosflm(DriverType = None):
 
             images = self.get_matching_images()
 
-            f = open('xiaintegrate.mat', 'w')
+            f = open(os.path.join(self.get_working_directory(),
+                                  'xiaintegrate.mat'), 'w')
             for m in matrix:
                 f.write(m)
             f.close()
@@ -914,7 +924,9 @@ def Mosflm(DriverType = None):
                             self._mosflm_rerun_integration = True
 
                 if 'WRITTEN OUTPUT MTZ FILE' in o:
-                    self._mosflm_hklout = output[i + 1].split()[-1]
+                    self._mosflm_hklout = os.path.join(
+                        self.get_working_directory(),
+                        output[i + 1].split()[-1])
 
                     Science.write('Integration output: %s' % \
                                   self._mosflm_hklout)

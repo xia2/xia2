@@ -68,9 +68,12 @@ def Integrater():
             integrater = Mosflm.Mosflm()
             Admin.write('Using Mosflm Integrater')
         except RuntimeError, e:
-            Admin.write('Integrater Mosflm not available')
+            Admin.write('Integrater Mosflm not available: %s' % str(e))
             
     if not integrater:
         raise RuntimeError, 'no integrater implementations found'
 
     return integrater
+
+if __name__ == '__main__':
+    integrater = Integrater()

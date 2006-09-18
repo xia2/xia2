@@ -56,6 +56,9 @@
 # FIXME 06/SEP/06 This needs to have an indentity change to LabelitIndex
 #                 Combine this with the renaming of LabelitStats_distl to
 #                 fit in with LabelitMosflmScript.
+#
+# FIXME 18/SEP/06 pass on the working directory to sub processes...
+# 
 
 import os
 import sys
@@ -303,6 +306,7 @@ def LabelitScreen(DriverType = None):
             self._indxr_mosaic = self._solution['mosaic']
 
             lms = LabelitMosflmScript()
+            lms.set_working_directory(self.get_working_directory())
             lms.set_solution(self._solution['number'])
             self._indxr_payload['mosflm_orientation_matrix'] = lms.calculate()
 
@@ -310,6 +314,7 @@ def LabelitScreen(DriverType = None):
             # labelit.stats_distl output... FIXME the name is wrong!
 
             lsd = LabelitStats_distl()
+            lsd.set_working_directory(self.get_working_directory())
             lsd.stats_distl()
 
             resolution = 1.0e6

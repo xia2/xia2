@@ -103,14 +103,14 @@ def Indexer():
             indexer = LabelitScreen.LabelitScreen()
             Admin.write('Using LabelitScreen Indexer')
         except RuntimeError, e:
-            Admin.write('Indexer LabelitScreen not available')
+            Admin.write('Indexer LabelitScreen not available: %s' % str(e))
 
     if not indexer:
         try:
             indexer = Mosflm.Mosflm()
             Admin.write('Using Mosflm Indexer')
         except RuntimeError, e:
-            Admin.write('Indexer Mosflm not available')
+            Admin.write('Indexer Mosflm not available: %s' % str(e))
 
     if not indexer:
         raise RuntimeError, 'no indexer implementations found'

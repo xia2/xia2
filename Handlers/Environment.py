@@ -19,6 +19,11 @@
 import os
 import sys
 
+if not os.environ.has_key('DPA_ROOT'):
+    raise RuntimeError, 'DPA_ROOT not defined'
+
+from Handlers.Streams import Chatter
+
 class _Environment:
     '''A class to store environmental considerations.'''
 
@@ -38,7 +43,12 @@ class _Environment:
         for p in path_tuple:
             path = os.path.join(path, p)
 
-        os.makedirs(path)
+        if not os.path.exists(path):
+            Chatter.write('Making directory: %s' % path)
+            os.makedirs(path)
+        else:
+            Chatter.write('Directory exists: %s' % path)
+    
 
         return path
 

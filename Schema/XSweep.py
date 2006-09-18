@@ -261,6 +261,9 @@ class XSweep(Object):
     def get_beam(self):
         return self._beam
 
+    def get_name(self):
+        return self._name
+
     # Real "action" methods - note though that these should never be
     # run directly, only implicitly...
 
@@ -340,7 +343,7 @@ class XSweep(Object):
                 Environment.generate_directory([crystal_id,
                                                 wavelength_id,
                                                 self.get_name(),
-                                                'index']))
+                                                'integrate']))
 
         return self._integrater
 
