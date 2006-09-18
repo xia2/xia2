@@ -73,7 +73,9 @@ def LabelitMosflmScript(DriverType = None):
             self.start()
             self.close_wait()
 
-            output = open('integration%02d.csh' % self._solution).readlines()
+            output = open(os.path.join(self.get_working_directory(),
+                                       'integration%02d.csh' % self._solution)
+                         ).readlines()
             matrix = output[2:11]
 
             return matrix
