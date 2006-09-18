@@ -35,6 +35,10 @@ from Schema.XSweep import XSweep
 
 from Handlers.XInfo import XInfo
 
+# output stream
+
+from Handlers.Streams import Chatter
+
 class XProject(Object):
     '''A versioning object representation of a complete project. This
     will contain a dictionary of crystals.'''
@@ -97,7 +101,7 @@ class XProject(Object):
 
             for wavelength in crystals[crystal]['wavelengths'].keys():
                 wave_info = crystals[crystal]['wavelengths'][wavelength]
-                xw = XWavelength(wavelength, crystal,
+                xw = XWavelength(wavelength, xc,
                                  wave_info['wavelength'],
                                  wave_info.get('f\'', 0.0),
                                  wave_info.get('f\'\'', 0.0))
@@ -123,7 +127,7 @@ if __name__ == '__main__':
     
     xp = XProject(xi_file)
 
-    print xp
+    Chatter.write(str(xp))
 
     
     

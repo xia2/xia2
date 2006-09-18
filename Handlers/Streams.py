@@ -49,7 +49,8 @@ class _Stream:
         return
 
     def write(self, record):
-        result = self._file.write('[%s]  %s\n' % (self._prefix, record.strip()))
+        for r in record.split('\n'):
+            result = self._file.write('[%s]  %s\n' % (self._prefix, r.strip()))
         self._file.flush()
         return result
 

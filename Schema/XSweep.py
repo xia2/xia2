@@ -237,7 +237,11 @@ class XSweep(Object):
             
         repr += 'TEMPLATE %s\n' % self._template
         repr += 'DIRECTORY %s\n' % self._directory
-        repr += 'IMAGES %d to %d' % (min(self._images), max(self._images))
+        repr += 'IMAGES %d to %d\n' % (min(self._images), max(self._images))
+
+        # add some stuff to implement the actual processing implicitly
+
+        repr += 'MTZ file: %s' % self.get_integrater_reflections()
 
         return repr
 
@@ -371,7 +375,7 @@ class XSweep(Object):
     def get_crystal_lattice(self):
         '''Get the parent crystal lattice pointer.'''
         try:
-            latitce = self.get_wavelength().get_crystal().get_lattice()
+            lattice = self.get_wavelength().get_crystal().get_lattice()
         except:
             lattice = None
 

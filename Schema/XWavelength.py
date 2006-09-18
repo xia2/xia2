@@ -67,7 +67,7 @@ class XWavelength(Object):
         return
 
     def __repr__(self):
-        result = 'Wavelength name: %s\n' & self._name
+        result = 'Wavelength name: %s\n' % self._name
         result += 'Wavelength %7.5f\n' % self._wavelength
         if self._f_pr != 0.0 and self._f_prpr != 0.0:
             result += 'F\', F\'\' = (%5.2f, %5.2f)\n' % (self._f_pr,
@@ -75,7 +75,7 @@ class XWavelength(Object):
 
         result += 'Sweeps:\n'
         for s in self._sweeps:
-            result += str(s)
+            result += '%s\n' % str(s)
 
         return result[:-1]
 

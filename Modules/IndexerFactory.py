@@ -81,7 +81,7 @@ def IndexerForXSweep(xsweep):
     # BIG FIXME - need to standardize on getBeam or get_beam - I prefer the
     # latter.
     if xsweep.get_beam():
-        indexer.setBeam(xsweep.get_beam())
+        indexer.set_beam(xsweep.get_beam())
 
     # FIXME more - need to check if we should be indexing in a specific
     # lattice - check xsweep.get_crystal_lattice()
