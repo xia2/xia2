@@ -41,7 +41,7 @@
 #                 useful under some circumstances) - Oh, I can't do this
 #                 because Labelit doesn't produce these parameters!
 # 
-# FIXME 06/SEP/06 Need to update interface to handle unit cell input as
+# FIXED 06/SEP/06 Need to update interface to handle unit cell input as
 #                 described in an email from Nick:
 #
 #                 known_symmetry=P4 known_cell=a,b,c,alpha,beta,gamma
@@ -57,7 +57,12 @@
 #                 Combine this with the renaming of LabelitStats_distl to
 #                 fit in with LabelitMosflmScript.
 #
-# FIXME 18/SEP/06 pass on the working directory to sub processes...
+# FIXED 18/SEP/06 pass on the working directory to sub processes...
+#
+# FIXME 19/SEP/06 need to inspect the metric fit parameters - for 1vr9/native
+#                 labelit now happily indexes in I222 not correctly in C2 -
+#                 this is shown by a poor metric penalty. Also need to
+#                 implement lattice reduction.
 # 
 
 import os
