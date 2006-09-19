@@ -115,7 +115,7 @@ class FrameProcessor:
         return
 
     def get_beam(self):
-        return self._fp_beam
+        return tuple(self._fp_beam)
 
     def get_beam_prov(self):
         return self._fp_beam_prov

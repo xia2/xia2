@@ -97,7 +97,8 @@ class XProject(Object):
             if crystals[crystal].has_key('sequence'):
                 xc.set_aa_sequence(crystals[crystal]['sequence'])
             if crystals[crystal].has_key('ha_info'):
-                xc.set_ha_info(crystals[crystal]['ha_info'])
+                if crystals[crystal]['ha_info'] != { }:
+                    xc.set_ha_info(crystals[crystal]['ha_info'])
 
             for wavelength in crystals[crystal]['wavelengths'].keys():
                 wave_info = crystals[crystal]['wavelengths'][wavelength]

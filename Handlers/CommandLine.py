@@ -49,6 +49,8 @@ if not os.environ['DPA_ROOT'] in sys.path:
 from Schema.Object import Object
 from Experts.FindImages import image2template_directory
 
+from Schema.XProject import XProject
+
 class _CommandLine(Object):
     '''A class to represent the command line input.'''
 
@@ -79,6 +81,12 @@ class _CommandLine(Object):
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
                   (self._help_resolution_limit(), str(e))
+
+        try:
+            self._read_xinfo()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_xinfo(), str(e))
 
         return
 
@@ -209,6 +217,27 @@ class _CommandLine(Object):
 
     def _help_resolution_limit(self):
         return '-resolution 1.6'
+
+    def _read_xinfo(self):
+        try:
+            index = sys.argv.index('-xinfo')
+        except ValueError, e:
+            self.write('No .xinfo passed in on command line')
+            self._xinfo = None
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        self._xinfo = XProject(sys.argv[index + 1])
+        return
+
+    def _help_xinfo(self):
+        return '-xinfo example.xinfo'
+
+    def get_xinfo(self):
+        '''Return the XProject.'''
+        return self._xinfo
     
     def get_template(self):
         return self._default_template
@@ -233,4 +262,4 @@ CommandLine = _CommandLine()
 if __name__ == '__main__':
     print CommandLine.get_beam()
     print CommandLine.get_resolution_limit()
-
+    print CommandLine.get_xinfo()
