@@ -66,6 +66,12 @@
 #                 /Schema. Note well that these have subproperties
 #                 (e.g. sweep resolution) which will also have to be
 #                 defined as classes...
+# 
+# FIXME 19/SEP/06 also allow the DISTANCE to be provided in the .xinfo
+#                 file in the same way as the beam - unfortunately this
+#                 is sometimes wrong and very hard to find right ;o(.
+#                 See NaI/Lysozyme data collected on 14.1 in /data1/graeme.
+# 
 
 class XInfo:
     '''A class to represent all of the input to the xia2dpa system, with
