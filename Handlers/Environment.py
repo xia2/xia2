@@ -33,6 +33,12 @@ class _Environment:
         harvest_directory = self.generate_directory('Harvest')
         self.setenv('HARVESTHOME', harvest_directory)
 
+        # create a USER environment variable, to allow harvesting
+	# in Mosflm to work (hacky, I know, but it really doesn't
+	# matter too much...
+        if not os.environ.has_key('USER'):
+	    os.environ['USER'] = 'xia2'
+
     def generate_directory(self, path_tuple):
         '''Used for generating working directories.'''
         path = self._cwd
