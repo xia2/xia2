@@ -860,8 +860,10 @@ def Mosflm(DriverType = None):
             pname, xname, dname = self.get_integrater_project_information()
 
             if pname != None and xname != None and dname != None:
-                Chatter.write('Switching harvesting on:')
-                Chatter.write('%s/%s/%s' % (pname, xname, dname))
+                Chatter.write('Harvesting: %s/%s/%s' % (pname, xname, dname))
+
+                # harvest file name will be %s.mosflm_run_start_end % dname
+            
                 self.input('harvest on')
                 self.input('pname %s' % pname)
                 self.input('xname %s' % xname)
