@@ -304,6 +304,11 @@ class XInfo:
                         self._crystals[crystal]['sweeps'][sweep][
                             'distance'] = distance
 
+                    elif 'START_END' == record.split()[0]:
+                        start_end = map(int, record.split()[1:])
+                        self._crystals[crystal]['sweeps'][sweep][
+                            'start_end'] = start_end
+                        
                     else:
                         key = record.split()[0]
                         value = record.replace(key, '').strip()

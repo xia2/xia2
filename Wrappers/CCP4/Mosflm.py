@@ -862,11 +862,11 @@ def Mosflm(DriverType = None):
             if pname != None and xname != None and dname != None:
                 Chatter.write('Switching harvesting on:')
                 Chatter.write('%s/%s/%s' % (pname, xname, dname))
+                self.input('harvest on')
                 self.input('pname %s' % pname)
                 self.input('xname %s' % xname)
                 self.input('dname %s' % dname)
                 self.input('ucwd')
-                self.input('harvest on')
 
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())

@@ -144,7 +144,8 @@ class XSweep(Object):
     '''An object representation of the sweep.'''
 
     def __init__(self, name, wavelength, directory, image, beam = None,
-                 distance = None, resolution = None):
+                 distance = None, resolution = None,
+                 frames_to_process = None):
         '''Create a new sweep named name, belonging to XWavelength object
         wavelength, representing the images in directory starting with image,
         with beam centre optionally defined.'''
@@ -161,6 +162,10 @@ class XSweep(Object):
         self._wavelength = wavelength
         self._directory = directory
         self._image = image
+
+        # to allow first, last image for processing to be
+        # set... c/f integrater interface
+        self._frames_to_process = frames_to_process
 
         # + derive template, list of images
 
@@ -239,7 +244,13 @@ class XSweep(Object):
             
         repr += 'TEMPLATE %s\n' % self._template
         repr += 'DIRECTORY %s\n' % self._directory
-        repr += 'IMAGES %d to %d\n' % (min(self._images), max(self._images))
+        if self._frames_to_process:
+            frames = self._frames_to_process
+            repr += 'IMAGES (USER) %d to %d' % (frames[0],
+                                                frames[1])
+        else:
+            repr += 'IMAGES %d to %d\n' % (min(self._images),
+                                           max(self._images))
 
         # add some stuff to implement the actual processing implicitly
 
@@ -360,6 +371,13 @@ class XSweep(Object):
             self._integrater.set_integrater_project_information(project_id,
                                                                 crystal_id,
                                                                 wavelength_id)
+
+            # frames to process...
+
+            if self._frames_to_process:
+                frames = self._frames_to_process
+                self._integrater.set_integrater_wedge(frames[0],
+                                                      frames[1])
 
         return self._integrater
 

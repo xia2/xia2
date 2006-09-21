@@ -110,11 +110,13 @@ class XProject(Object):
                 for sweep in crystals[crystal]['sweeps'].keys():
                     sweep_info = crystals[crystal]['sweeps'][sweep]
                     if sweep_info['wavelength'] == wavelength:
-                        xw.add_sweep(sweep,
-                                     sweep_info['DIRECTORY'],
-                                     sweep_info['IMAGE'],
-                                     beam = sweep_info.get('beam'),
-                                     distance = sweep_info.get('distance'))
+                        xw.add_sweep(
+                            sweep,
+                            sweep_info['DIRECTORY'],
+                            sweep_info['IMAGE'],
+                            beam = sweep_info.get('beam'),
+                            distance = sweep_info.get('distance'),
+                            frames_to_process = sweep_info.get('start_end'))
                 
                 xc.add_wavelength(xw)
 
