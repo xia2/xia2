@@ -26,6 +26,27 @@ def inherits_from(this_class,
 
     return False
 
+def is_mtz_file(filename):
+    '''Check if a file is MTZ format - at least according to the
+    magic number.'''
+
+    magic = open(filename, 'r').read(4)
+
+    if magic == 'MTZ ':
+        return True
+
+    return False
+
+def nifty_power_of_ten(num):
+    '''Return 10^n: 10^n > num; 10^(n-1) <= num.'''
+
+    result = 10
+
+    while result <= num:
+        result *= 10
+
+    return result
+    
 if __name__ == '__main__':
     # run a test
 

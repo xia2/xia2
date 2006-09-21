@@ -127,7 +127,7 @@
 #     Could alternatively just keep them as separate reflection files, just
 #     record the fact in the .xinfo output.
 # 
-# From a scala example (documented in Chapter 4/Ph.D.)
+# From a scala example (documented in Ph.D./Chapter 4)
 # 
 # run 1 batch N to M
 # name run 1 project foo crystal bar dataset peak
@@ -138,6 +138,15 @@
 # in, along with the sweeps (reflection files) and the epochs of data
 # collection for the radiation damage analysis. Latter may be NULL, in which 
 # case process the reflection files in alphabetical order.
+# 
+# Implementation
+# --------------
+# 
+# Ok, in terms of the implementation this could be more complicated. This
+# is not going to be particularly easy to implement by a single program
+# wrapper, so perhaps I will have to actually implement CCP4Scaler, 
+# XDSScaler &c., which will be a composite class which performs the operation,
+# using wrapper classes for the different programs...
 # 
 
 import os
@@ -159,6 +168,8 @@ class Scaler:
         # set up a framework for storing all of the input information...
         # this should really only consist of integraters...
 
+        # key this by the epoch, if available, else will need to
+        # do something different.
         self._scalr_integraters = { }
 
         # integraters have the following methods for pulling interesting
@@ -167,9 +178,58 @@ class Scaler:
         # get_integrater_project_information() - pname, xname, dname
         # get_integrater_epoch() - measurement of first frame
 
+        self._scalr_scaling_done = False
+
+        # places to hold the output
+
+        self._scalr_reflection_files = None
+        self._scalr_statistics = None
+
         return
 
     def add_scaler_integrater(self, integrater):
         '''Add an integrater to this scaler, to provide the input.'''
 
+        # check that this integrater inherits from the Integrater
+        # interface, and also that all integraters come from the
+        # same source, e.g. the same implementation of Integrater.
+
+        # check that the lattice &c. matches any existing integraters
+        # already in the system.
+
+        # add this to the list.
+
+        # reset the scaler.
+        self._scalr_scaling_done = False
+
+        return
+
+    def scale(self):
+        '''Actually perform the scaling - this is delegated to the
+        implementation.'''
+        
+        if self._scalr_integraters == { }:
+            raise RuntimeErrors, \
+                  'no Integrater implementations assigned for scaling'
+
+        result = self._scale()
+        self._scalr_scaling_done = True
+
+        return result
+
+    def get_scaler_reflection_files(self):
+        '''Return the reflection files and so on.'''
+
+        if not self._scalr_scaling_done:
+            self.scale()
+
+        return self._scalr_reflection_files
+
+    def get_scaler_statistics(self):
+        '''Return the overall scaling statistics.'''
+
+        if not self._scalr_scaling_done:
+            self.scale()
+
+        return self._scalr_statistics
         
