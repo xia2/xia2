@@ -66,6 +66,7 @@ from Object import Object
 
 from Wrappers.CCP4.Othercell import Othercell
 from Handlers.Environment import Environment
+from Modules.ScalerFactory import Scaler
 
 def sort_o_dict(dict, metric):
     '''A generic sorter for dictionaries - will return the keys in

@@ -32,7 +32,8 @@ from Schema.Interfaces.Scaler import Scaler
 from Wrappers.CCP4.Scala import Scala
 from Wrappers.CCP4.Sortmtz import Sortmtz
 from Wrappers.CCP4.Mtzdump import Mtzdump
-from Wrappers.CCP4.Truncate import Truncate
+# FIXME this needs implementing!
+# from Wrappers.CCP4.Truncate import Truncate
 from Wrappers.CCP4.Rebatch import Rebatch
 
 

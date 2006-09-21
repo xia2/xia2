@@ -194,10 +194,17 @@ class Scaler:
         # interface, and also that all integraters come from the
         # same source, e.g. the same implementation of Integrater.
 
+        # FIXME this needs doing
+
         # check that the lattice &c. matches any existing integraters
         # already in the system.
 
+        # FIXME this needs doing
+
         # add this to the list.
+
+        self._scalr_integraters[
+            integrater.get_integrater_epoch()] = integrater
 
         # reset the scaler.
         self._scalr_scaling_done = False
@@ -209,7 +216,7 @@ class Scaler:
         implementation.'''
         
         if self._scalr_integraters == { }:
-            raise RuntimeErrors, \
+            raise RuntimeError, \
                   'no Integrater implementations assigned for scaling'
 
         result = self._scale()
