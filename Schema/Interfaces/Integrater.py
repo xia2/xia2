@@ -71,21 +71,17 @@
 import os
 import sys
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-    raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ['XIA2CORE_ROOT'] in sys.path:
-    sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                                 'Python', 'Decorators'))
-
-# this should go in a proper library someplace
-from DecoratorHelper import inherits_from
-
 if not os.environ.has_key('DPA_ROOT'):
     raise RuntimeError, 'DPA_ROOT not defined'
 
 if not os.environ['DPA_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['DPA_ROOT']))
+
+from lib.Guff import inherits_from
+from Handlers.Streams import Chatter
+
+# image header reading functionality
+from Wrappers.XIA.Printheader import Printheader
 
 class Integrater:
     '''An interface to present integration functionality in a similar
@@ -149,6 +145,9 @@ class Integrater:
     def get_integrater_project_information(self):
         return self._intgr_pname, self._intgr_xname, self._intgr_dname
 
+    def get_integrater_epoch(self):
+        return self._intgr_epoch
+
     def set_integrater_wedge(self, start, end):
         '''Set the wedge of images to process.'''
         
@@ -159,6 +158,15 @@ class Integrater:
         # this will involve - get full file name from start, get header
         # from full file name, parse & pull out start date. this may be
         # NULL, in which case too bad!
+
+        first_image_in_wedge = self.get_image_name(start)
+        ph = Printheader()
+        ph.set_image(first_image_in_wedge)
+        header = ph.readheader()
+
+        self._intgr_epoch = int(header['epoch'])
+
+        Chatter.write('Sweep epoch: %d' % self._intgr_epoch)
         
         self._intgr_done = False
         

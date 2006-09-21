@@ -246,8 +246,8 @@ class XSweep(Object):
         repr += 'DIRECTORY %s\n' % self._directory
         if self._frames_to_process:
             frames = self._frames_to_process
-            repr += 'IMAGES (USER) %d to %d' % (frames[0],
-                                                frames[1])
+            repr += 'IMAGES (USER) %d to %d\n' % (frames[0],
+                                                  frames[1])
         else:
             repr += 'IMAGES %d to %d\n' % (min(self._images),
                                            max(self._images))

@@ -143,21 +143,13 @@
 import os
 import sys
 
-if not os.environ.has_key('XIA2CORE_ROOT'):
-    raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ['XIA2CORE_ROOT'] in sys.path:
-    sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                                 'Python', 'Decorators'))
-
-# this should go in a proper library someplace
-from DecoratorHelper import inherits_from
-
 if not os.environ.has_key('DPA_ROOT'):
     raise RuntimeError, 'DPA_ROOT not defined'
 
 if not os.environ['DPA_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['DPA_ROOT']))
+
+from lib.Guff import inherits_from
 
 class Scaler:
     '''An interface to present scaling functionality in a similar way to the
@@ -169,5 +161,15 @@ class Scaler:
 
         self._scalr_integraters = { }
 
-        
+        # integraters have the following methods for pulling interesting
+        # information out:
+        #
+        # get_integrater_project_information() - pname, xname, dname
+        # get_integrater_epoch() - measurement of first frame
 
+        return
+
+    def add_scaler_integrater(self, integrater):
+        '''Add an integrater to this scaler, to provide the input.'''
+
+        
