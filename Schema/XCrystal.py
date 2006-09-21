@@ -65,6 +65,7 @@ if not os.environ['DPA_ROOT'] in sys.path:
 from Object import Object
 
 from Wrappers.CCP4.Othercell import Othercell
+from Handlers.Environment import Environment
 
 def sort_o_dict(dict, metric):
     '''A generic sorter for dictionaries - will return the keys in
@@ -364,6 +365,11 @@ class XCrystal(Object):
     def _get_scaler(self):
         if self._scaler is None:
             self._scaler = Scaler()
+
+            # set up a sensible working directory
+            self._scaler.set_working_directory(
+                Environment.generate_directory([self._name,
+                                                'scale']))
 
             # gather up all of the integraters we can find...
 
