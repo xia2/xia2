@@ -119,6 +119,13 @@ def Scala(DriverType = None):
 
         # getter and setter methods
 
+        def add_run(self, start, end,
+                    pname = None, xname = None, dname = None):
+            '''Add another run to the run table.'''
+
+            self._runs.append((start, end, pname, xname, dname))
+            return
+
         def add_sd_correction(self, set, sdfac, sdadd, sdb = 0.0):
             '''Add a set of SD correction parameters for a given
             set of reflections (initially set = full or partial.)'''
@@ -190,7 +197,7 @@ def Scala(DriverType = None):
             return
 
         def set_scaling_parameters(self, mode,
-                                  spacing = None, secondary = None):
+                                   spacing = None, secondary = None):
             '''Set up the scaling: mode is either rotation or batch.
             Spacing indicates the width of smoothing for scales with
             rotation mode scaling, secondary defines the number

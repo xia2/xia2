@@ -204,6 +204,10 @@ class XCrystal(Object):
         self._wavelengths = { }
         self._lattice_manager = None
 
+        # hooks to dangle command interfaces from
+
+        self._scaler = None
+
         return
 
     def __repr__(self):
@@ -212,6 +216,10 @@ class XCrystal(Object):
             result += 'Sequence: %s' % self._aa_sequence.get_sequence()
         for wavelength in self._wavelengths.keys():
             result += str(self._wavelengths[wavelength])
+
+        result += 'Scaled & merged reflections: %s\n' % \
+                  self.get_scaled_merged_reflections()
+            
         return result
 
     def __str__(self):
@@ -276,6 +284,15 @@ class XCrystal(Object):
         self._wavelengths[xwavelength.get_name()] = xwavelength
 
         return
+
+    def _get_integraters(self):
+        integraters = []
+
+        for wave in self._wavelengths.keys():
+            for i in self._wavelengths[wave]._get_integraters():
+                integraters.append(i)
+
+        return integraters
         
     def set_lattice(self, lattice, cell):
         '''Configure the cell - if it is already set, then manage this
@@ -333,6 +350,31 @@ class XCrystal(Object):
             return self._lattice_manager.get_lattice()
 
         return None
+
+    # "power" methods - now where these actually perform some real calculations
+    # to get some real information out - beware, this will actually run
+    # programs...
+
+    def get_scaled_merged_reflections(self):
+        '''Return a reflection file (or files) containing all of the
+        merged reflections for this XCrystal.'''
+
+        return self._get_scaler().get_scaled_merged_reflections()
+
+    def _get_scaler(self):
+        if self._scaler is None:
+            self._scaler = Scaler()
+
+            # gather up all of the integraters we can find...
+
+            integraters = self._get_integraters()
+
+            # then feed them to the scaler
+
+            for i in integraters:
+                self._scaler.add_scaler_integrater(i)
+
+        return self._scaler
 
 if __name__ == '__main__':
     # lm = _lattice_manager('aP', (43.62, 52.27, 116.4, 103, 100.7, 90.03))

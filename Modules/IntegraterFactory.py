@@ -10,13 +10,6 @@
 # A factory for Integrater implementations. At the moment this will 
 # support only Mosflm.
 # 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
 
 import os
 import sys

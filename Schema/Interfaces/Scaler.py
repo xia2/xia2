@@ -182,7 +182,7 @@ class Scaler:
 
         # places to hold the output
 
-        self._scalr_reflection_files = None
+        self._scalr_scaled_reflection_files = None
         self._scalr_statistics = None
 
         return
@@ -217,13 +217,13 @@ class Scaler:
 
         return result
 
-    def get_scaler_reflection_files(self):
+    def get_scaled_merged_reflections(self):
         '''Return the reflection files and so on.'''
 
         if not self._scalr_scaling_done:
             self.scale()
 
-        return self._scalr_reflection_files
+        return self._scalr_scaled_reflection_files
 
     def get_scaler_statistics(self):
         '''Return the overall scaling statistics.'''

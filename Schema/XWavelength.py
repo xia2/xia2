@@ -113,4 +113,10 @@ class XWavelength(Object):
     def get_sweeps(self):
         return self._sweeps
 
+    def _get_integraters(self):
+        integraters = []
+        for s in self._sweeps:
+            integraters.append(s._get_integrater())
+
+        return integraters
     

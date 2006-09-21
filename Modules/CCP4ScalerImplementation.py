@@ -33,6 +33,8 @@ from Wrappers.CCP4.Scala import Scala
 from Wrappers.CCP4.Sortmtz import Sortmtz
 from Wrappers.CCP4.Mtzdump import Mtzdump
 from Wrappers.CCP4.Truncate import Truncate
+from Wrappers.CCP4.Rebatch import Rebatch
+
 
 # jiffys
 from lib.Guff import is_mtz_file, nifty_power_of_ten
@@ -101,9 +103,13 @@ class CCP4Scaler(Scaler):
             hklin = input_information[key]['hklin']
 
             md = Mtzdump()
+            md.set_working_directory(self.get_working_directory())
             md.set_hklin(hklin)
             md.dump()
             dataset_info = md.get_dataset_info()
+
+            # FIXME should also confirm the batch numbers from this
+            # reflection file...
 
             # now make the comparison - FIXME this needs to be implemented
             # FIXME also - if the pname, xname, dname is not defined by
@@ -128,8 +134,12 @@ class CCP4Scaler(Scaler):
         common_xname = input_information[keys[0]]['xname']
         common_dname = input_information[keys[0]]['dname']
 
+        # FIXME the checks in here need to be moved to an earlier
+        # stage in the processing
+
         for key in keys:
             rb = Rebatch()
+            rb.set_working_directory(self.get_working_directory())
 
             hklin = input_information[key]['hklin']
 
@@ -167,6 +177,7 @@ class CCP4Scaler(Scaler):
         # reflection file looks right.
 
         s = Sortmtz()
+        s.set_working_directory(self.get_working_directory())
 
         s.set_hklout(os.path.join(self.get_working_directory(),
                                   '%s_%s_sorted.mtz' % \
@@ -180,12 +191,43 @@ class CCP4Scaler(Scaler):
         # then perform some scaling - including any parameter fiddling
         # which is required.
 
+        # FIXME in here I need to implement "proper" scaling...
+
+        sc = Scala()
+        sc.set_working_directory(self.get_working_directory())
+
+        sc.set_hklin(s.get_hklout())
+
         # this will require first sorting out the batches/runs, then
         # deciding what the "standard" wavelength/dataset is, then
         # combining everything appropriately...
 
+        for key in keys:
+            input = input_information[key]
+            start, end = (min(input['batches']), max(input['batches']))
+            sc.add_run(start, end, pname = input['pname'],
+                       xname = input['xname'],
+                       dname = input['dname'])
+
+        sc.set_hklout(os.path.join(self.get_working_directory(),
+                                   '%s_%s_scaled.mtz' % \
+                                   (common_pname, common_xname)))
+        
+        sc.set_anomalous()
+        sc.set_tails()
+
+        sc.scale()
+
         # then gather up all of the resulting reflection files
         # and convert them into the required formats (.sca, .mtz.)
 
-        # finally return with the refined statistics.
+        data = sc.get_summary()
+
+        # finally put all of the results "somewhere useful"
         
+        self._scalr_statistics = data
+        self._scalr_scaled_reflection_fikles = sc.get_hklout()
+
+        return
+
+    
