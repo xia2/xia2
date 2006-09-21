@@ -106,12 +106,68 @@
 # crystal_dataset.sca.
 # 
 # Refinement data will be merged native.
+# 
+# Organisation 21/SEP/06
+# 
+# Ok, this is reasonably complicated, because I don't want to tie this 
+# directly into the .xinfo hierarchy, so I will need to be able to express
+# the input structure of the integraters in some relatively clever way.
+# 
+# In here, think in terms of XDS/XSCALE & Mosflm->Scala. For Mosflm->Scala
+# this will need to:
+# 
+# (1) check that the unit cells are compatible.
+# (2) sort the reflection files together.
+# (3) organise the batches, runs - these need to be put in as 
+#     information about the project/crystal/dataset which correspond
+#     to each run.
+# (4) actually perform the scaling.
+# (5) after scaling will have multiple reflection files - these need to have
+#     the unit cells "standardised" and then be merged again via CAD.
+#     Could alternatively just keep them as separate reflection files, just
+#     record the fact in the .xinfo output.
+# 
+# From a scala example (documented in Chapter 4/Ph.D.)
+# 
+# run 1 batch N to M
+# name run 1 project foo crystal bar dataset peak
+# base dataset [define remote here] # defines what the dispersive differences
+#                                   # are relative to in the analysis
+#
+# This means that the project, crystal, dataset information needs to come
+# in, along with the sweeps (reflection files) and the epochs of data
+# collection for the radiation damage analysis. Latter may be NULL, in which 
+# case process the reflection files in alphabetical order.
+# 
 
+import os
+import sys
 
+if not os.environ.has_key('XIA2CORE_ROOT'):
+    raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
+if not os.environ['XIA2CORE_ROOT'] in sys.path:
+    sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
+                                 'Python', 'Decorators'))
 
+# this should go in a proper library someplace
+from DecoratorHelper import inherits_from
 
+if not os.environ.has_key('DPA_ROOT'):
+    raise RuntimeError, 'DPA_ROOT not defined'
 
+if not os.environ['DPA_ROOT'] in sys.path:
+    sys.path.append(os.path.join(os.environ['DPA_ROOT']))
 
+class Scaler:
+    '''An interface to present scaling functionality in a similar way to the
+    integrater interface.'''
 
+    def __init__(self):
+        # set up a framework for storing all of the input information...
+        # this should really only consist of integraters...
+
+        self._scalr_integraters = { }
+
+        
 

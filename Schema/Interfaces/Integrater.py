@@ -117,13 +117,49 @@ class Integrater:
         self._intgr_done = False
         self._intgr_fast = False
         self._intgr_hklout = None
+
+        # a place to store the project, crystal, wavelength, sweep information
+        # to interface with the scaling...
+        self._intgr_pname = None
+        self._intgr_xname = None
+        self._intgr_dname = None
+        self._intgr_epoch = 0
         
         return
+
+    def set_integrater_project_information(self,
+                                           project_name,
+                                           crystal_name,
+                                           dataset_name):
+        '''Set the metadata information, to allow passing on of information
+        both into the reflection files (if possible) or to the scaling stages
+        for dataset administration.'''
+
+        # for mosflm, pname & dname can be used as part of the harvesting
+        # interface, and should therefore end up in the mtz file?
+        # add this as harvest pname [pname] dname [dname] and three separate
+        # keywords...
+        
+        self._intgr_pname = project_name
+        self._intgr_xname = crystal_name
+        self._intgr_dname = dataset_name
+        
+        return
+
+    def get_integrater_project_information(self):
+        return self._intgr_pname, self._intgr_xname, self._intgr_dname
 
     def set_integrater_wedge(self, start, end):
         '''Set the wedge of images to process.'''
         
         self._intgr_wedge = (start, end)
+
+        # FIXME update the epoch of the start of data collection
+        # in here...
+        # this will involve - get full file name from start, get header
+        # from full file name, parse & pull out start date. this may be
+        # NULL, in which case too bad!
+        
         self._intgr_done = False
         
         return

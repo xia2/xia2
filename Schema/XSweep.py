@@ -243,7 +243,7 @@ class XSweep(Object):
 
         # add some stuff to implement the actual processing implicitly
 
-        repr += 'MTZ file: %s' % self.get_integrater_reflections()
+        repr += 'MTZ file: %s\n' % self.get_integrater_reflections()
 
         return repr
 
@@ -343,16 +343,23 @@ class XSweep(Object):
             if not self.get_wavelength():
                 wavelength_id = "default"
                 crystal_id = "default"
+                project_id = "default"
 
             else:
                 wavelength_id = self.get_wavelength().get_name()
                 crystal_id = self.get_wavelength().get_crystal().get_name()
+                project_id = self.get_wavelength().get_crystal(
+                    ).get_project().get_name()
 
             self._integrater.set_working_directory(
                 Environment.generate_directory([crystal_id,
                                                 wavelength_id,
                                                 self.get_name(),
                                                 'integrate']))
+
+            self._integrater.set_integrater_project_information(project_id,
+                                                                crystal_id,
+                                                                wavelength_id)
 
         return self._integrater
 

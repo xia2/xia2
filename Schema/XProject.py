@@ -93,7 +93,7 @@ class XProject(Object):
         crystals = xinfo.get_crystals()
 
         for crystal in crystals.keys():
-            xc = XCrystal(crystal)
+            xc = XCrystal(crystal, self)
             if crystals[crystal].has_key('sequence'):
                 xc.set_aa_sequence(crystals[crystal]['sequence'])
             if crystals[crystal].has_key('ha_info'):

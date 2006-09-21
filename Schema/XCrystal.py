@@ -186,10 +186,13 @@ class XCrystal(Object):
     will contain the experimental information in XWavelength objects,
     and also amino acid sequence, heavy atom information.'''
 
-    def __init__(self, name):
+    def __init__(self, name, project):
         Object.__init__(self)
 
         self._name = name
+
+        # FIXME check that project is an XProject
+        self._project = project
 
         # these should be populated with the objects defined above
         self._aa_sequence = None
@@ -213,6 +216,9 @@ class XCrystal(Object):
 
     def __str__(self):
         return self.__repr__()
+
+    def get_project(self):
+        return self._project
 
     def get_name(self):
         return self._name

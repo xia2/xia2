@@ -851,6 +851,23 @@ def Mosflm(DriverType = None):
 
             self.start()
 
+            # if the integrater interface has the project, crystal, dataset
+            # information available, pass this in to mosflm and also switch
+            # on the harvesrng output. warning! if the harvesting is switched
+            # on then this means that the files will all go to the same
+            # place - for the moment move this to cwd.
+
+            pname, xname, dname = self.get_integrater_project_information()
+
+            if pname != None and xname != None and dname != None:
+                Chatter.write('Switching harvesting on:')
+                Chatter.write('%s/%s/%s' % (pname, xname, dname))
+                self.input('pname %s' % pname)
+                self.input('xname %s' % xname)
+                self.input('dname %s' % dname)
+                self.input('ucwd')
+                self.input('harvest on')
+
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())
 
