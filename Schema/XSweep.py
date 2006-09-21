@@ -144,7 +144,7 @@ class XSweep(Object):
     '''An object representation of the sweep.'''
 
     def __init__(self, name, wavelength, directory, image, beam = None,
-                 resolution = None):
+                 distance = None, resolution = None):
         '''Create a new sweep named name, belonging to XWavelength object
         wavelength, representing the images in directory starting with image,
         with beam centre optionally defined.'''
@@ -223,6 +223,8 @@ class XSweep(Object):
         # finally configure the beam if set
 
         self._beam = beam
+        self._distance = distance
+        
         return
 
     def __str__(self):
@@ -264,6 +266,9 @@ class XSweep(Object):
 
     def get_beam(self):
         return self._beam
+
+    def get_distance(self):
+        return self._distance
 
     def get_name(self):
         return self._name

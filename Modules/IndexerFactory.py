@@ -78,10 +78,16 @@ def IndexerForXSweep(xsweep):
     # interface will also implement FrameProcessor, which this uses.
     # verify this, or assert it in some way...
 
-    # BIG FIXME - need to standardize on getBeam or get_beam - I prefer the
+    # BIG FIXED - need to standardize on getBeam or get_beam - I prefer the
     # latter.
     if xsweep.get_beam():
         indexer.set_beam(xsweep.get_beam())
+
+    # N.B. This does not need to be done for the integrater, since
+    # that gets it's numbers from the indexer it uses.
+
+    if xsweep.get_distance():
+        indexer.set_distance(xsweep.get_distance())
 
     # FIXME more - need to check if we should be indexing in a specific
     # lattice - check xsweep.get_crystal_lattice()

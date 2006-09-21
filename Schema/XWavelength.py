@@ -98,11 +98,12 @@ class XWavelength(Object):
         return self._name
 
     def add_sweep(self, name, directory, image,
-                  beam = None, resolution = None):
+                  beam = None, distance = None, resolution = None):
         '''Add a sweep to this wavelength.'''
 
         self._sweeps.append(XSweep(name, self, directory, image,
                                    beam = beam,
+                                   distance = distance,
                                    resolution = resolution))
 
         return

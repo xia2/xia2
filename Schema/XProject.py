@@ -113,7 +113,8 @@ class XProject(Object):
                         xw.add_sweep(sweep,
                                      sweep_info['DIRECTORY'],
                                      sweep_info['IMAGE'],
-                                     sweep_info.get('beam'))
+                                     beam = sweep_info.get('beam'),
+                                     distance = sweep_info.get('distance'))
                 
                 xc.add_wavelength(xw)
 
