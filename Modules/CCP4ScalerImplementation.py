@@ -11,10 +11,13 @@
 # 
 # An implementation of the Scaler interface using CCP4 programs.
 # 
-# FIXME 21/SEP/06 this needs to have a working directory property
+# FIXED 21/SEP/06 this needs to have a working directory property
 #                 so we can specify where it is being run... 
 #                 This should also be inherited by the "child" jobs...
 # 
+# FIXME 25/SEP/06 need to include pointgroup determination in the pipeline
+#                 though this will begin to impact on the lattice management
+#                 stuf in XCrystal.
 
 import os
 import sys
@@ -35,6 +38,8 @@ from Wrappers.CCP4.Mtzdump import Mtzdump
 # FIXME this needs implementing!
 # from Wrappers.CCP4.Truncate import Truncate
 from Wrappers.CCP4.Rebatch import Rebatch
+from Wrappers.CCP4.Reindex import Reindex
+from Wrappers.CCP4.Pointless import Pointless
 
 from Handlers.Streams import Chatter
 
@@ -91,6 +96,50 @@ class CCP4Scaler(Scaler):
         # then check that the unit cells &c. in these reflection files
         # correspond to those rescribed in the indexers belonging to the
         # parent integraters.
+
+        # at this stage (see FIXME from 25/SEP/06) I need to run pointless
+        # to assess the likely pointgroup. This, unfortunately, will need to
+        # tie into the .xinfo hierarchy, as the crystal lattice management
+        # takes place in there...
+        # also need to make sure that the results from each sweep match
+        # up...
+
+        for key in input_information.keys():
+            pl = Pointless()
+            hklin = input_information[key]['hklin']
+            hklout = os.path.join(
+                self.get_working_directory(),
+                os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
+            pl.set_working_directory(self.get_working_directory())
+            pl.set_hklin(hklin)
+            pl.decide_pointgroup()
+
+            Chatter.write('Pointless analysis of %s' % hklin)
+
+            # FIXME here - do I need to contemplate reindexing
+            # the reflections? if not, don't bother - could be an
+            # expensive waste of time for large reflection files
+            # (think Ed Mitchell data...)
+
+            # get the correct pointgroup
+            poingroup = pl.get_pointgroup()
+
+            # and reindexing operation
+            reindex_op = pl.get_reindexing_operation()
+
+            Chatter.write('Pointgroup: %s (%s)' % (poingroup, reindex_op))
+
+            # perform a reindexing operation
+            ri = Reindex()
+            ri.set_hklin(hklin)
+            ri.set_hklout(hklout)
+            ri.set_spacegroup(pointgroup)
+            ri.set_operator(reindex_op)
+            ri.reindex()
+
+            # record the change in reflection file...
+            input_information[key]['hklin'] = hklout
+            
 
         max_batches = 0
         
@@ -202,6 +251,7 @@ class CCP4Scaler(Scaler):
             s.add_hklin(input_information[key]['hklin'])
 
         s.sort()
+
 
         # then perform some scaling - including any parameter fiddling
         # which is required.
