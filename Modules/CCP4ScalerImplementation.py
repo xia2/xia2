@@ -36,6 +36,7 @@ from Wrappers.CCP4.Mtzdump import Mtzdump
 # from Wrappers.CCP4.Truncate import Truncate
 from Wrappers.CCP4.Rebatch import Rebatch
 
+from Handlers.Streams import Chatter
 
 # jiffys
 from lib.Guff import is_mtz_file, nifty_power_of_ten
@@ -51,6 +52,7 @@ class CCP4Scaler(Scaler):
         return
 
     def set_working_directory(self, working_directory):
+        self._working_directory = working_directory
         return
 
     def get_working_directory(self):
@@ -107,7 +109,17 @@ class CCP4Scaler(Scaler):
             md.set_working_directory(self.get_working_directory())
             md.set_hklin(hklin)
             md.dump()
-            dataset_info = md.get_dataset_info()
+
+            # FIXME assert that there will only be one dataset in this
+            # reflection file
+
+            datasets = md.get_datasets()
+
+            Chatter.write('In reflection file %s found:' % hklin)
+            for d in datasets:
+                Chatter.write('... %s' % d)
+            
+            dataset_info = md.get_dataset_info(datasets[0])
 
             # FIXME should also confirm the batch numbers from this
             # reflection file...
@@ -157,8 +169,8 @@ class CCP4Scaler(Scaler):
 
             hklout = os.path.join(self.get_working_directory(),
                                   '%s_%s_%s_%d.mtz' % \
-                                  (pname, xname, name, counter))
-            
+                                  (pname, xname, dname, counter))
+
             rb.set_hklin(hklin)
             rb.set_first_batch(counter * max_batches + 1)
             rb.set_hklout(hklout)
