@@ -140,7 +140,7 @@ def Pointless(DriverType = None):
             self.check_hklin()
 
             self.set_task('Computing the correct pointgroup for %s' % \
-                         self.get_hklin())
+                          self.get_hklin())
 
             # FIXME this should probably be a standard CCP4 keyword
 
@@ -212,6 +212,9 @@ def Pointless(DriverType = None):
 
         def get_reindex_matrix(self):
             return self._reindex_matrix
+
+        def get_reindex_operator(self):
+            return self._reindex_operator
 
         def get_pointgroup(self):
             # FIXED on 22/AUG/06 this was spacegroup
