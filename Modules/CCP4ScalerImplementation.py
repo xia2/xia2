@@ -190,6 +190,8 @@ class CCP4Scaler(Scaler):
         # reflection file looks right.
 
         s = Sortmtz()
+        s.write_log_file(os.path.join(self.get_working_directory(),
+                                      'sortmtz.log'))
         s.set_working_directory(self.get_working_directory())
 
         s.set_hklout(os.path.join(self.get_working_directory(),
@@ -208,6 +210,9 @@ class CCP4Scaler(Scaler):
 
         sc = Scala()
         sc.set_working_directory(self.get_working_directory())
+
+        sc.write_log_file(os.path.join(self.get_working_directory(),
+                                       'scala.log'))
 
         sc.set_hklin(s.get_hklout())
 
