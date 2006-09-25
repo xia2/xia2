@@ -122,7 +122,7 @@ class CCP4Scaler(Scaler):
             # (think Ed Mitchell data...)
 
             # get the correct pointgroup
-            poingroup = pl.get_pointgroup()
+            pointgroup = pl.get_pointgroup()
 
             # and reindexing operation
             reindex_op = pl.get_reindex_operator()
