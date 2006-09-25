@@ -21,8 +21,8 @@
 #                 (2) need to print out the exposure epoch in a human 
 #                     readable way - this is done with time.ctime()
 # 
-# 
-# 
+# 25/SEP/06 FIXME also need to be able to handle images like blah_foo.0001
+#                 since this is a reasonably common way of collecting frames.
 
 import sys
 import os
@@ -49,6 +49,14 @@ def is_image_name(file):
     if os.path.isfile(file):
         if file.split('.')[-1] in known_image_extensions:
             return True
+
+        # check for files like foo_bar.0001 - c/f FIXME for 25/SEP/06
+        end = file.split('.')[-1]
+        try:
+            j = int(end)
+            return True
+        except:
+            pass
 
     return False
 

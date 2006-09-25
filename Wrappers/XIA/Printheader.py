@@ -66,7 +66,8 @@ detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('adsc', 4096, 51):'adsc q210',
                   ('adsc', 2048, 102):'adsc q210 2x2 binned',
                   ('adsc', 6144, 51):'adsc q315',
-                  ('adsc', 3072, 102):'adsc q315 2x2 binned'}
+                  ('adsc', 3072, 102):'adsc q315 2x2 binned',
+                  ('marccd', 4096, 73):'mar 300'}
 
 def Printheader(DriverType = None):
     '''A factory for wrappers for the printheader.'''
@@ -206,6 +207,21 @@ def Printheader(DriverType = None):
                     self._header['phi_end'] = phi[1]
                     self._header['phi_width'] = phi[1] - phi[0]
 
+            # check to see if the beam centre needs to be converted
+            # from pixels to mm - e.g. MAR 300 images from APS ID 23
+
+            if self._header.has_key('beam') and \
+               self._header.has_key('pixel') and \
+               self._header.has_key('size'):
+		# look to see if the current beam is somewhere in the middle
+ 		# pixel count wise...
+		beam = self._header['beam']
+		size = self._header['size']
+                pixel = self._header['pixel']
+                if math.fabs((beam[0] - 0.5 * size[0]) / size[0]) < 0.25:
+                    new_beam = (beam[0] * pixel[0], beam[1] * pixel[1])
+                    self._header['beam'] = new_beam
+            
             if self._header.has_key('detector') and \
                self._header.has_key('pixel') and \
                self._header.has_key('size'):
