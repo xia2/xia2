@@ -94,6 +94,8 @@ from Schema.Interfaces.Indexer import Indexer
 from Wrappers.Labelit.LabelitMosflmScript import LabelitMosflmScript
 from Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
 
+from lib.Guff import auto_logfiler
+
 def LabelitScreen(DriverType = None):
     '''Factory for LabelitScreen wrapper classes, with the specified
     Driver type.'''
@@ -203,6 +205,8 @@ def LabelitScreen(DriverType = None):
 
             if len(_images) > 2:
                 raise RuntimeError, 'cannot use more than 2 images'
+
+            auto_logfiler(self)
 
             task = 'Autoindex from images:'
 

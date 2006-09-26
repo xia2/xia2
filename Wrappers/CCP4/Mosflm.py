@@ -177,6 +177,8 @@ from Schema.Interfaces.Integrater import Integrater
 
 from Handlers.Streams import Admin, Science, Status, Chatter
 
+from lib.Guff import auto_logfiler
+
 def Mosflm(DriverType = None):
     '''A factory for MosflmWrapper classes.'''
 
@@ -225,7 +227,6 @@ def Mosflm(DriverType = None):
             '''Implement the indexer interface.'''
 
             self.reset()
-            self.write_log_file('mosflm-index.log')
 
             _images = []
             for i in self._indxr_images:
@@ -242,6 +243,7 @@ def Mosflm(DriverType = None):
 
             self.set_task(task)
 
+            auto_logfiler(self)
             self.start()
 
             self.input('template "%s"' % self.get_template())
@@ -376,21 +378,18 @@ def Mosflm(DriverType = None):
 
             if not fast:
                 self.reset()
-                self.write_log_file(os.path.join(
-                    wd, 'mosflm-cellrefinement.log'))
+                auto_logfiler(self)
                 self._mosflm_refine_cell()
                 
             self.reset()
-            self.write_log_file(os.path.join(
-                    wd, 'mosflm-integration.log'))
+            auto_logfiler(self)
             hklout = self._mosflm_integrate()
 
             if self._mosflm_rerun_integration and not fast:
                 # FIXME this needs to be passed to the admin stream
                 # print 'Rerunning integration...'
 	        self.reset()
-                self.write_log_file(os.path.join(
-                    wd, 'mosflm-reintegration.log'))
+                auto_logfiler(self)
                 hklout = self._mosflm_integrate()
 
             return hklout

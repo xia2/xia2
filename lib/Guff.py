@@ -12,6 +12,19 @@
 # Python routines which don't really belong anywhere else.
 # 
 
+import os
+import sys
+
+if not os.environ.has_key('DPA_ROOT'):
+    raise RuntimeError, 'DPA_ROOT not defined'
+if not os.environ.has_key('XIA2CORE_ROOT'):
+    raise RuntimeError, 'XIA2CORE_ROOT not defined'
+
+if not os.environ['DPA_ROOT'] in sys.path:
+    sys.path.append(os.path.join(os.environ['DPA_ROOT']))
+
+from Handlers.Streams import Chatter
+
 def inherits_from(this_class,
                   base_class_name):
     '''Return True if base_class_name contributes to the this_class class.'''
@@ -46,6 +59,40 @@ def nifty_power_of_ten(num):
         result *= 10
 
     return result
+
+##### START MESSY CODE #####
+
+_run_number = 0
+
+def _get_number():
+    global _run_number
+    _run_number += 1
+    return _run_number
+
+###### END MESSY CODE ######
+
+def auto_logfiler(DriverInstance):
+    '''Create a "sensible" log file for this program wrapper & connect it.'''
+
+    working_directory = DriverInstance.get_working_directory()
+    executable = os.path.split(DriverInstance.get_executable())[-1]
+    number = _get_number()
+
+    if executable[-4:] == '.bat':
+        executable = executable[:-4]
+        
+    if executable[-4:] == '.exe':
+        executable = executable[:-4]
+
+    logfile = os.path.join(working_directory,
+                           '%d_%s.log' % (number, executable))
+
+    Chatter.write('Logfile: %s -> %s' % (executable,
+                                         logfile))
+
+    DriverInstance.write_log_file(logfile)
+
+    return logfile
     
 if __name__ == '__main__':
     # run a test

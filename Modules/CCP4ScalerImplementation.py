@@ -44,7 +44,7 @@ from Wrappers.CCP4.Pointless import Pointless
 from Handlers.Streams import Chatter
 
 # jiffys
-from lib.Guff import is_mtz_file, nifty_power_of_ten
+from lib.Guff import is_mtz_file, nifty_power_of_ten, auto_logfiler
 
 class CCP4Scaler(Scaler):
     '''An implementation of the Scaler interface using CCP4 programs.'''
@@ -112,6 +112,9 @@ class CCP4Scaler(Scaler):
                 os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
             pl.set_working_directory(self.get_working_directory())
             pl.set_hklin(hklin)
+
+            # write a pointless log file...
+            auto_logfiler(pl)
             pl.decide_pointgroup()
 
             Chatter.write('Pointless analysis of %s' % hklin)
@@ -135,6 +138,7 @@ class CCP4Scaler(Scaler):
             ri.set_hklout(hklout)
             ri.set_spacegroup(pointgroup)
             ri.set_operator(reindex_op)
+            auto_logfiler(ri)
             ri.reindex()
 
             # record the change in reflection file...
@@ -157,6 +161,7 @@ class CCP4Scaler(Scaler):
             md = Mtzdump()
             md.set_working_directory(self.get_working_directory())
             md.set_hklin(hklin)
+            auto_logfiler(md)
             md.dump()
 
             # FIXME assert that there will only be one dataset in this
@@ -224,6 +229,7 @@ class CCP4Scaler(Scaler):
             rb.set_first_batch(counter * max_batches + 1)
             rb.set_hklout(hklout)
 
+            auto_logfiler(rb)
             new_batches = rb.rebatch()
 
             # update the "input information"
@@ -239,8 +245,6 @@ class CCP4Scaler(Scaler):
         # reflection file looks right.
 
         s = Sortmtz()
-        s.write_log_file(os.path.join(self.get_working_directory(),
-                                      'sortmtz.log'))
         s.set_working_directory(self.get_working_directory())
 
         s.set_hklout(os.path.join(self.get_working_directory(),
@@ -250,6 +254,7 @@ class CCP4Scaler(Scaler):
         for key in keys:
             s.add_hklin(input_information[key]['hklin'])
 
+        auto_logfiler(s)
         s.sort()
 
 
@@ -260,10 +265,6 @@ class CCP4Scaler(Scaler):
 
         sc = Scala()
         sc.set_working_directory(self.get_working_directory())
-
-        sc.write_log_file(os.path.join(self.get_working_directory(),
-                                       'scala.log'))
-
         sc.set_hklin(s.get_hklout())
 
         # this will require first sorting out the batches/runs, then
@@ -284,6 +285,7 @@ class CCP4Scaler(Scaler):
         sc.set_anomalous()
         sc.set_tails()
 
+        auto_logfiler(sc)
         sc.scale()
 
         # then gather up all of the resulting reflection files
