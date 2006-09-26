@@ -127,7 +127,7 @@ class CCP4Scaler(Scaler):
             # and reindexing operation
             reindex_op = pl.get_reindex_operator()
 
-            Chatter.write('Pointgroup: %s (%s)' % (poingroup, reindex_op))
+            Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
             # perform a reindexing operation
             ri = Reindex()
