@@ -134,6 +134,7 @@ class CCP4Scaler(Scaler):
 
             # perform a reindexing operation
             ri = Reindex()
+	    ri.set_working_directory(self.get_working_directory())
             ri.set_hklin(hklin)
             ri.set_hklout(hklout)
             ri.set_spacegroup(pointgroup)
@@ -144,7 +145,6 @@ class CCP4Scaler(Scaler):
             # record the change in reflection file...
             input_information[key]['hklin'] = hklout
             
-
         max_batches = 0
         
         for key in input_information.keys():

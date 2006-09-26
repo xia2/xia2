@@ -887,11 +887,12 @@ def Mosflm(DriverType = None):
             # set up the integration
             self.input('postref fix all')
             self.input('separation close')
+
             if not self._intgr_wedge:
-                self.input('process %d %d' % (min(images),
-                                              max(images)))
-            else:
-                self.input('process %d %d' % self._intgr_wedge)
+                self.set_integrater_wedge(min(images),
+                                          max(images))
+
+            self.input('process %d %d' % self._intgr_wedge)
                 
             self.input('go')
 
