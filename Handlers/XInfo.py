@@ -48,7 +48,7 @@
 #                 for xia2dpa. Done, and documentation, examples are
 #                 updated.
 # 
-# FIXME 05/SEP/06 Need to produce an object hierarchy based on Schema/Object
+# FIXED 05/SEP/06 Need to produce an object hierarchy based on Schema/Object
 #                 to give object versioning which will represent the contents
 #                 of the .xinfo+ file, that is, the representation of this 
 #                 information during the data reduction process, to make the
@@ -71,7 +71,12 @@
 #                 file in the same way as the beam - unfortunately this
 #                 is sometimes wrong and very hard to find right ;o(.
 #                 See NaI/Lysozyme data collected on 14.1 in /data1/graeme.
-# 
+#  
+# FIXME 26/SEP/06 allow for INTEGRATED_REFLECTIONS in sweep record in place
+#                 of or in addition to the DIRECTORY, TEMPLATE to allow for
+#                 development of the scaling independently of the scaling 
+#                 &c. The same could be applied to the scaled reflections
+#                 belonging to a wavelength etc.
 
 class XInfo:
     '''A class to represent all of the input to the xia2dpa system, with
