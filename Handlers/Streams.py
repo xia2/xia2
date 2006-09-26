@@ -46,18 +46,33 @@ class _Stream:
         self._streamname = streamname
         self._prefix = prefix
 
+        self._otherstream = None
+
         return
 
     def write(self, record):
         for r in record.split('\n'):
             result = self._file.write('[%s]  %s\n' % (self._prefix, r.strip()))
         self._file.flush()
+
+        if self._otherstream:
+            self._otherstream.write(record)
+        
         return result
+
+    def join(self, otherstream):
+        '''Join another stream so that all output from this stream goes also
+        to that one.'''
+
+        self._otherstream = otherstream
 
 Science = _Stream('xia-science', 'SCI-')
 Admin = _Stream('xia-admin', 'ADMN')
 Status = _Stream('xia-status', 'STAT')
 Chatter = _Stream(None, 'XIA2')
+Science.join(Chatter)
+Admin.join(Chatter)
+Status.join(Chatter)
 
 if __name__ == '__main__':
     Science.write('Hello from Science')
