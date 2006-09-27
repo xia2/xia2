@@ -962,6 +962,9 @@ def Mosflm(DriverType = None):
             self._intgr_batches_out = (integrated_images_first,
                                        integrated_images_last)
 
+            Chatter.write('Processed batches %d to %d' % \
+                          self._intgr_batches_out)
+
             return self._mosflm_hklout
     
     return MosflmWrapper()

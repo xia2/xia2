@@ -68,6 +68,8 @@ def Sortmtz(DriverType = None):
                 if 'error in ccp4_lwbat' in l:
                     raise RuntimeError, lwbat_warning
 
+                if 'Sorting failed' in l:
+                    raise RuntimeError, 'sorting failed'
 
         def sort(self):
             '''Actually sort the reflections.'''

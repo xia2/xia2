@@ -183,6 +183,7 @@ class CCP4Scaler(Scaler):
             # this time, make a note of this so that it can be included
             # at a later stage.
 
+        Chatter.write('Biggest sweep has %d batches' % max_batches)
         max_batches = nifty_power_of_ten(max_batches)
     
         # then rebatch the files, to make sure that the batch numbers are
