@@ -18,6 +18,16 @@
 # FIXME 25/SEP/06 need to include pointgroup determination in the pipeline
 #                 though this will begin to impact on the lattice management
 #                 stuf in XCrystal.
+# 
+# FIXME 27/SEP/06 need to define a reference wavelength for the anomalous
+#                 dispersive differences. This is best assigned at this 
+#                 level as the wavelength with the smallest |f'| + |f''|
+#                 or something:
+# 
+#                 BASE keyword to scala - BASE [crystal xname] dataset dname
+# 
+#                 This defaults to the data set with the shortest wavelength.
+# 
 
 import os
 import sys
