@@ -30,8 +30,11 @@
 # 0.0.5 - 06/SEP/06 moved all text in programs from camelCase to tidy_style
 #         and also implemented connection between XSweep and Integrater
 #         factory
+#
+# 0.1.0 - 27/SEP/06 can successfully integrate & scale multiwavelength
+#         data though this is not yet perfected!
 
-VersionNumber = "0.0.5"
+VersionNumber = "0.1.0"
 Version = "XIA2DPA %s" % VersionNumber
 CVSTag = "xia2dpa-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2dpa-%s" % VersionNumber
