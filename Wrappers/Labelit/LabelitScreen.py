@@ -237,7 +237,7 @@ def LabelitScreen(DriverType = None):
                 
                 self.add_command_line(
                     'known_symmetry=%d' % \
-                    lattice_to_spacegroup(self._indxr_lattice))
+                    lattice_to_spacegroup[self._indxr_lattice])
 
             if self._indxr_input_cell:
                 self.add_command_line('known_cell=%f,%f,%f,%f,%f,%f' % \
