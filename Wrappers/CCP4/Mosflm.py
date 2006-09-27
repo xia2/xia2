@@ -150,6 +150,13 @@
 #                 the Mosflm output...
 #
 #                 Look for record "99% have resolution less than"...
+# 
+# FIXME 27/SEP/06 GAIN & detectors - all data processed for one crystal on
+#                 one detector should have the same value for the GAIN - 
+#                 this will mean that this has to be recycled. Add a framework
+#                 to integrater to allow parameters to be exported, in
+#                 the same way as they can be recycled via the integrater
+#                 parameter framework.
 
 import os
 import sys
@@ -928,6 +935,9 @@ def Mosflm(DriverType = None):
                             self.set_integrater_parameter('mosflm',
                                                           'gain',
                                                           gain)
+                            self.set_integrater_export_parameter('mosflm',
+                                                                 'gain',
+                                                                 gain)
                             Science.write('GAIN found to be %f' % gain)
 
                             self._mosflm_rerun_integration = True

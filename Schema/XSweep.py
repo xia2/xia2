@@ -72,6 +72,7 @@
 import sys
 import os
 import math
+import exceptions
 
 # we all inherit from Object
 from Object import Object
@@ -114,6 +115,27 @@ class _resolution(Object):
         Chatter.write('%s set to %5.2f' % (self.handle(), resolution))
         self.reset()
         return
+
+# See FIXME Integrater interface definition, 27/SEP/06
+
+class _global_integration_parameters:
+    '''A global class to record the integration parameters which are exported
+    for each crystal. This is a dictionary keyed by the crystal id.'''
+
+    # FIXME this is a threat to parallelism!
+
+    def __init__(self):
+        self._parameter_dict = { }
+
+    def set_parameters(self, crystal, parameters):
+        self._parameter_dict[crystal] = parameters
+
+        return
+
+    def get_parameters(self, crystal):
+        return self._parameter_dict.get(crystal, { })
+
+global_integration_parameters = _global_integration_parameters()
 
 # Notes on XSweep
 # 
@@ -372,6 +394,15 @@ class XSweep(Object):
                                                                 crystal_id,
                                                                 wavelength_id)
 
+            # look to see if there are any global integration parameters
+            # we can set...
+
+            if global_integration_parameters.get_parameters(crystal_id):
+                Chatter.write('Using integration parameters for crystal %s' \
+                              % crystal_id)
+                self._integrater.set_integrater_parameters(
+                    global_integration_parameters.get_parameters(crystal_id))
+
             # frames to process...
 
             if self._frames_to_process:
@@ -400,7 +431,25 @@ class XSweep(Object):
         return self._wavelength
 
     def get_integrater_reflections(self):
-        return self._get_integrater().get_integrater_reflections()
+        reflections = self._get_integrater().get_integrater_reflections()
+        
+        # look to see if there are any global integration parameters
+        # we can store...
+
+        try:
+            crystal_id = self.get_wavelength().get_crystal().get_name()
+            global_integration_parameters.set_parameters(
+                crystal_id,
+                self._integrater.get_integrater_export_parameters())
+            Chatter.write('Stored integration parameters for crystal %s' % \
+                          crystal_id)
+        except exceptions.Exception, e:
+            # Chatter.write('Error storing parameters for crystal %s' % \
+            # crystal_id)
+            # Chatter.write('%s' % str(e))
+            pass
+        
+        return reflections
 
     def get_crystal_lattice(self):
         '''Get the parent crystal lattice pointer.'''

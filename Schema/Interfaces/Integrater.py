@@ -45,7 +45,7 @@
 #
 # Error Conditions:
 # 
-# FIXME 25/AUG/06 need a way to get the output reflection file from this
+# FIXED 25/AUG/06 need a way to get the output reflection file from this
 #                 interface, so that it can be passed in to a scaler
 #                 implementation for ... scaling.
 # 
@@ -54,12 +54,12 @@
 #                 setters - no action methods. the tracking & calculations
 #                 must be performed explicitly... FIXED - access through
 #                 integrate_get_reflections, though tracking is not yet
-#                 implemented FIXME.
+#                 implemented FIXED - it is now..
 # 
 # FIXED 06/SEP/06 need to replace integrate_set with set_integrater as per
-#                 the indexer interface, likewise getters.
+#                 the indexer interface, likewise getters. Done.
 # 
-# FIXME 08/SEP/06 need to record the number of batches in each run, so that
+# FIXED 08/SEP/06 need to record the number of batches in each run, so that
 #                 rebatch may be used to reassign batch numbers in multi-
 #                 sweep scaling.
 # 
@@ -67,6 +67,19 @@
 #                 to integrate, in particular single images if I intend to
 #                 bolt this into DNA. Also for people who record three
 #                 wavelengths with the same image prefix, for instance.
+#                 Done done done....
+#
+# FIXME 27/SEP/06 need to be able to pass integration parameters, e.g. GAIN,
+#                 from one instance of Integrater to another - e.g. via some
+#                 kind of export parameters/import parameters framework.
+#                 Note well that this will be complicated by the need to
+#                 make sure that those parameters are relevent.
+# 
+#                 This is complicated - I need to figure out how to get the 
+#                 exported parameters to all of the other integrater instances
+#                 which will make life rather complicated. Aha - need to key it
+#                 in some global dictionary someplace by the current crystal
+#                 identity, and switch it off if this is not available.
 
 import os
 import sys
@@ -103,6 +116,9 @@ class Integrater:
         # implementation dependent parameters - these should be keyed by
         # say 'mosflm':{'yscale':0.9999} etc.
         self._intgr_program_parameters = { }
+
+        # the same, but for export to other instances of this interface
+        self._intgr_export_program_parameters = { }
 
         # batches to integrate, batches which were integrated - this is
         # to allow programs like rebatch to work c/f self._intgr_wedge
@@ -211,6 +227,40 @@ class Integrater:
 
         try:
             return self._intgr_program_parameters[program]
+        except:
+            return { }
+
+    def set_integrater_parameters(self, parameters):
+        '''Set all parameters and values.'''
+
+        self._intgr_program_parameters = parameters
+        self._intgr_done = False
+
+        return
+
+    def set_integrater_export_parameter(self, program, parameter, value):
+        '''Set an arbitrary parameter for the program specified to
+        use in integration, e.g. the YSCALE or GAIN values in Mosflm.'''
+
+        if not self._intgr_export_program_parameters.has_key(program):
+            self._intgr_export_program_parameters[program] = { }
+
+        self._intgr_export_program_parameters[program][parameter] = value
+        return
+
+    def get_integrater_export_parameter(self, program, parameter):
+        '''Get a parameter value.'''
+
+        try:
+            return self._intgr_export_program_parameters[program][parameter]
+        except:
+            return None
+        
+    def get_integrater_export_parameters(self):
+        '''Get all parameters and values.'''
+
+        try:
+            return self._intgr_export_program_parameters
         except:
             return { }
 
