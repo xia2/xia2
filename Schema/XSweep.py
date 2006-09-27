@@ -73,6 +73,7 @@ import sys
 import os
 import math
 import exceptions
+import copy
 
 # we all inherit from Object
 from Object import Object
@@ -123,17 +124,17 @@ class _global_integration_parameters:
     for each crystal. This is a dictionary keyed by the crystal id.'''
 
     # FIXME this is a threat to parallelism!
+    # FIXME added copy.deepcopy to help prevent mashing of parameters...
 
     def __init__(self):
         self._parameter_dict = { }
 
     def set_parameters(self, crystal, parameters):
-        self._parameter_dict[crystal] = parameters
-
+        self._parameter_dict[crystal] = copy.deepcopy(parameters)
         return
 
     def get_parameters(self, crystal):
-        return self._parameter_dict.get(crystal, { })
+        return copy.deepcopy(self._parameter_dict.get(crystal, { }))
 
 global_integration_parameters = _global_integration_parameters()
 
@@ -444,6 +445,7 @@ class XSweep(Object):
                     self._integrater.get_integrater_export_parameters())
                 Chatter.write('Stored integration parameters' + \
                               ' for crystal %s' % crystal_id)
+
         except exceptions.Exception, e:
             # Chatter.write('Error storing parameters for crystal %s' % \
             # crystal_id)
