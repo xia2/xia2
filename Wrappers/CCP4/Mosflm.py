@@ -578,6 +578,12 @@ def Mosflm(DriverType = None):
 
             # get all of the stored parameter values
             parameters = self.get_integrater_parameters('mosflm')
+
+            # FIXME 27/SEP/06:
+            # have to make sure that these are correctly applied -
+            # that is, be sure that these come actually from autoindexing
+            # not somehow from a previous instance of data integration...
+            
             self.input('!parameters from autoindex run')
             for p in parameters.keys():
                 self.input('%s %s' % (p, str(parameters[p])))
