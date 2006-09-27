@@ -438,11 +438,12 @@ class XSweep(Object):
 
         try:
             crystal_id = self.get_wavelength().get_crystal().get_name()
-            global_integration_parameters.set_parameters(
-                crystal_id,
-                self._integrater.get_integrater_export_parameters())
-            Chatter.write('Stored integration parameters for crystal %s' % \
-                          crystal_id)
+            if self._integrater.get_integrater_export_parameters():
+                global_integration_parameters.set_parameters(
+                    crystal_id,
+                    self._integrater.get_integrater_export_parameters())
+                Chatter.write('Stored integration parameters' + \
+                              ' for crystal %s' % crystal_id)
         except exceptions.Exception, e:
             # Chatter.write('Error storing parameters for crystal %s' % \
             # crystal_id)
