@@ -439,6 +439,7 @@ def Scala(DriverType = None):
 
             return self.get_ccp4_status()
             
+        
 
         def get_summary(self):
             '''Get a summary of the data.'''
@@ -449,11 +450,14 @@ def Scala(DriverType = None):
             output = self.get_all_output()
             length = len(output)
 
-            summary = { } 
+            total_summary = { }
 
-            for i in range(length - 100, length):
+            for i in range(length):
                 line = output[i]
                 if 'Summary data for' in line:
+                    list = line.split()
+                    pname, xname, dname = list[4], list[6], list[8]
+                    summary = { }
                     i += 1
                     line = output[i]
                     while not '=====' in line:
@@ -463,10 +467,34 @@ def Scala(DriverType = None):
                                 summary[key] = line[40:].split()
                         i += 1
                         line = output[i]
+                    total_summary[(pname, xname, dname)] = summary
 
-            return summary
+            return total_summary
 
     return ScalaWrapper()
+
+if __name__ == '__output_main__':
+    # test parsing the output
+
+    logfile = os.path.join(os.environ['DPA_ROOT'],
+                           'Doc', 'Logfiles', 'scala.log')
+
+    s = Scala()
+    s.load_all_output(logfile)
+
+    results = s.parse_ccp4_loggraph()
+
+    print 'The following loggraphs were found'
+    for k in results.keys():
+        print k
+    
+
+    summary = s.get_summary()
+
+    for k in summary.keys():
+        dataset = summary[k]
+        for property in dataset.keys():
+            print k, property, dataset[property]
 
 if __name__ == '__main__':
 
@@ -490,7 +518,7 @@ if __name__ == '__main__':
     s.set_tails()
     s.set_bfactor()
 
-    s.setScaling_parameters('rotation')
+    s.set_scaling_parameters('rotation')
 
     # this is in the order fac, add, B
     s.add_sd_correction('full', 1.0, 0.02, 15.0)
