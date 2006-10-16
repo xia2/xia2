@@ -62,8 +62,14 @@
 # FIXME 19/SEP/06 need to inspect the metric fit parameters - for 1vr9/native
 #                 labelit now happily indexes in I222 not correctly in C2 -
 #                 this is shown by a poor metric penalty. Also need to
-#                 implement lattice reduction.
+#                 implement lattice reduction. Follow up 16/OCT/06 discussed
+#                 with Nick S about this and not sure what parameters have
+#                 changed but is still interested in making this work properly.
 # 
+# FIXME 16/OCT/06 if more than two images are passed in for indexing can cope,
+#                 just need to assign wedge_limit = N where N is the number
+#                 of images in dataset_preferences.py... apparently this is 
+#                 there for "historical reasons"...
 
 import os
 import sys
