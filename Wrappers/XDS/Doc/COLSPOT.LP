@@ -51,5 +51,5 @@
  WEAK SPOTS OMITTED                                   1900
  NUMBER OF DIFFRACTION SPOTS ACCEPTED                11703
  
- cpu time used                 23.0 sec
- elapsed wall-clock time       23.1 sec
+ cpu time used                 23.5 sec
+ elapsed wall-clock time       23.6 sec

@@ -83,5 +83,5 @@
  MINIMUM BACKGROUND VALUE IN TABLE                      22
  MAXIMUM BACKGROUND VALUE IN TABLE                     382
 
- cpu time used                 18.7 sec
- elapsed wall-clock time       18.8 sec
+ cpu time used                 19.1 sec
+ elapsed wall-clock time       20.0 sec

@@ -324,5 +324,5 @@ BRAVAIS-            POSSIBLE SPACE-GROUPS FOR PROTEIN CRYSTALS
   cI      [197,I23] [199,I2(1)3] [211,I432] [214,I4(1)32]
 
 
- cpu time used                  6.8 sec
- elapsed wall-clock time        6.9 sec
+ cpu time used                  6.4 sec
+ elapsed wall-clock time        6.5 sec
