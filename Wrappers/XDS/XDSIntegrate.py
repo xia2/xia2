@@ -49,7 +49,14 @@ def _parse_integrate_lp(filename):
     per_image_stats = { }
     pro_block_stats = []
 
+    block_start_finish = (0, 0)
+
     for i in range(len(file_contents)):
+        if 'PROCESSING OF IMAGES' in file_contents[i]:
+            list = file_contents[i].split()
+            block_start_finish = (int(list[3]), int(list[5]))
+
+        # look for explicitly per-image information
         if 'IMAGE IER  SCALE' in file_contents[i]:
             j = i + 1
             while len(file_contents[j].strip()):
@@ -66,6 +73,41 @@ def _parse_integrate_lp(filename):
 
                 j += 1
 
+        # then look for per-block information - this will be mapped onto
+        # individual images using the block_start_finish information
+
+        if 'CRYSTAL MOSAICITY (DEGREES)' in file_contents[i]:
+            mosaic = float(file_contents[i].split()[3])
+            for image in range(block_start_finish[0],
+                               block_start_finish[1] + 1):
+                per_image_stats[image]['mosaic'] = mosaic
+
+        if 'OF SPOT    POSITION (PIXELS)' in file_contents[i]:
+            rmsd_pixel = float(file_contents[i].split()[-1])
+            for image in range(block_start_finish[0],
+                               block_start_finish[1] + 1):
+                per_image_stats[image]['rmsd_pixel'] = rmsd_pixel
+
+        if 'OF SPINDLE POSITION (DEGREES)' in file_contents[i]:
+            rmsd_phi = float(file_contents[i].split()[-1])
+            for image in range(block_start_finish[0],
+                               block_start_finish[1] + 1):
+                per_image_stats[image]['rmsd_phi'] = rmsd_phi
+
+        # want to convert this to mm in some standard setting!
+        if 'DETECTOR COORDINATES (PIXELS) OF DIRECT BEAM' in file_contents[i]:
+            beam = map(float, file_contents[i].split()[-2:])
+            for image in range(block_start_finish[0],
+                               block_start_finish[1] + 1):
+                per_image_stats[image]['beam'] = beam
+            
+        if 'CRYSTAL TO DETECTOR DISTANCE (mm)' in file_contents[i]:
+            distance = float(file_contents[i].split()[-1])
+            for image in range(block_start_finish[0],
+                               block_start_finish[1] + 1):
+                per_image_stats[image]['distance'] = distance
+            
+
     return per_image_stats
 
 def _print_integrate_lp(integrate_lp_stats):
@@ -76,8 +118,10 @@ def _print_integrate_lp(integrate_lp_stats):
 
     for i in images:
         data = integrate_lp_stats[i]
-        print '%4d %5.3f %5d %5d %5d' % (i, data['scale'], data['strong'],
-                                        data['overloads'], data['rejected'])
+        print '%4d %5.3f %5d %5d %5d %4.2f %6.2f' % \
+              (i, data['scale'], data['strong'],
+               data['overloads'], data['rejected'],
+               data['mosaic'], data['distance'])
 
 if __name__ == '__main__':
     integrate_lp = os.path.join(os.environ['DPA_ROOT'], 'Wrappers', 'XDS',
