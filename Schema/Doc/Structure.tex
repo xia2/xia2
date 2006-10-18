@@ -359,6 +359,22 @@ and repeat the integration. Note that this is appropriate for Mosflm,
 XDS \& d*TREK in their own ways.}
 \end{itemize}
 
+\subsubsection{Thoughts on the Output}
+
+Now looking at implementing an Integrater based on XDS, and it is therefore
+time to think about
+
+\begin{itemize}
+\item{What information we want.}
+\item{How we want it displayed (pixels, mm?)}
+\item{What the coordinate frame should be for printing this stuff.}
+\end{itemize}
+
+These are three interesting problems. Clearly knowing what we want first is
+critical, though this should be available in some form from all of the 
+integration packages which will be considered (Mosflm, XDS, d*TREK, denzo,
+XGEN perhaps?)
+
 \subsection{Scaler}
 
 This is where things start to get complicated... The scaling tends to have
