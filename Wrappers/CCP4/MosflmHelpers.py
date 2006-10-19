@@ -88,6 +88,8 @@ def _parse_mosflm_integration_output(integration_output_list):
             bad = int(record.split()[-1])
             # FIXME also with the name...
             per_image_stats[current_image]['rejected'] = bad
+
+    per_image_stats.pop(0, None)
             
     return per_image_stats
 
@@ -97,15 +99,34 @@ def _print_integrate_lp(integrate_lp_stats):
     images = integrate_lp_stats.keys()
     images.sort()
 
-    if images[0] == 0:
-        images = images[1:]
-
     for i in images:
         data = integrate_lp_stats[i]
         print '%4d %5.3f %5d %5d %5d %4.2f %6.2f' % \
               (i, data['scale'], data['strong'],
                data['overloads'], data['rejected'],
                data.get('mosaic', 0.0), data['distance'])
+
+def _happy_integrate_lp(integrate_lp_stats):
+    '''Return a string which explains how happy we are with the integration.'''
+
+    images = integrate_lp_stats.keys()
+    images.sort()
+
+    results = ''
+
+    for i in images:
+        data = integrate_lp_stats[i]
+
+        if data['rmsd_pixel'] > 1.0:
+            status = '*'
+
+        else:
+
+            status = '.'
+
+        results += status
+
+    return results
 
 if __name__ == '__main__':
     integrate_lp = os.path.join(os.environ['DPA_ROOT'], 'Wrappers', 'CCP4',
@@ -114,3 +135,4 @@ if __name__ == '__main__':
         open(integrate_lp, 'r').readlines())
     _print_integrate_lp(stats)
     
+    print _happy_integrate_lp(stats)
