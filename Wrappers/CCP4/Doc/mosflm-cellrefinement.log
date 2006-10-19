@@ -1,0 +1,2781 @@
+<B><FONT COLOR="#FF0000"><!--SUMMARY_BEGIN-->
+<html> <!-- CCP4 HTML LOGFILE -->
+<hr>
+<!--SUMMARY_END--></FONT></B>
+
+
+ ************ Version 6.2.6 for Image plate and CCD data 4th May 2006  ***********
+ A.G.W. Leslie, MRC Laboratory Of Molecular Biology, HILLS ROAD, CAMBRIDGE CB2 2QH, UK
+ E-mail andrew@mrc-lmb.cam.ac.uk
+ New auto-indexing using DPS due to Ingo Steller Robert Bolotovsky and Michael Rossmann
+ (1998) J. Appl. Cryst. 30, 1036-1040
+ Original auto-indexing using REFIX due to Wolfgang Kabsch (Kabsch,W. (1993),
+J.Appl.Cryst. 24,795-800.)
+ X-windows interface using xdl_view due to John Campbell (Daresbury Laboratory, UK.)
+ (Campbell,J.W. (1995) J. Appl. Cryst. 28, 236-242.
+
+
+ ===> template "12287_1_E1_###.img"
+ ===> directory "/Volumes/Arthur/JCSG Data/1vpj/data/jcsg/als1/8.2.1/20040926/collection/TB0541B/12287"
+ ===> matrix xiaindex.mat
+
+FORMATTED      OLD     file opened on unit   3
+<B><FONT COLOR="#FF0000"><!--SUMMARY_BEGIN-->
+Logical name: xiaindex.mat, Filename: xiaindex.mat
+<!--SUMMARY_END--></FONT></B>
+
+ ===> newmat xiarefine.mat
+ ===> beam 108.950000 105.040000
+ ===> distance 169.980000
+ ===> symmetry 75
+
+ Spacegroup information obtained from library file: 
+ Logical Name: SYMINFO   Filename: /Users/graeme/XTAL/coot-0.1.0-intel/share/coot/syminfo.lib
+
+ ===> mosaic 0.100000
+ ===> !parameters from autoindex run
+ ===> postref multi segments 1
+ ===> process 1 4
+ ===> go
+
+ **** Information ****
+ No RASTER keyword has been given.
+ (Gives the starting parameters for the measurement box).
+ Suitable parameters will be determined automatically.
+
+
+ **** Information ****
+ No SEPARATION keyword has been given.
+ (Gives minimum spot separation before spots are flagged as overlapping.
+ Suitable parameters will be determined automatically.
+
+ **** Information ****
+ No MTZ filename given, so filename has been set to: 12287_1_E1_001.mtz                                                              
+
+ From information in the image file, the detector has been 
+ recognized as: ADSC
+ If this is incorrect you must supply a DETECTOR keyword
+
+
+ Wavelength of 0.97966A taken from image header
+
+ Pixel size of 0.1024mm taken from image header.
+ **** WARNING ****
+ Because input wavelength ( 0.9797) is not CuKa (1.5418) or Mo (0.7107),
+ source is assumed to be a synchrotron and synchrotron defaults for polarisation and beam divergence
+ will be used if these have not been defined explicitly (SYNCH POLAR and DIVH/DIVV keywords.
+
+
+
+ Title for MTZ and GENERATE Files (TITLE):
+ .
+ Crystal identifier (IDENT): 12287_1_E1
+
+ Warning: No PROTEIN NAME given by KeyWord PNAME
+ It has been set to "Unspecified"
+
+ Warning: No CRYSTAL NAME given by KeyWord XNAME
+ It has been set to "12287_1_E1"
+
+
+ Warning: No DATASET NAME given by KeyWord DNAME
+ It has been set to "Unspecified"
+
+
+
+ Beam Parameters
+ ===============
+ Wavelength 0.9797
+ Beam divergence:  Horizontal (DIVH) 0.100   Vertical (DIVV) 0.020
+ Wavelength dispersion (DISP) 0.00150 Correlated Del-Lambda (DELCOR) 0.00000
+ The X-ray beam is assumed to have a degree of polarisation of 0.950
+
+ Crystal Parameters
+ ===================
+ Crystal identifier (used as template for image file names (IDENT): 12287_1_E1
+ Space group (SYMMETRY)   75 (P4)
+ Real cell parameters (CELL):
+     51.821    51.821   158.103    90.000    90.000    90.000
+ Reciprocal cell parameters :
+   0.018905  0.018905  0.006196     90.00     90.00     90.00
+
+ Mosaic spread (MOSAIC) 0.100 degrees
+ Rotation matrix U defining standard setting :
+             -0.34866 -0.90838 -0.23084
+              0.91921 -0.37951  0.10503
+             -0.18301 -0.17557  0.96731
+
+ Orientation Matrix [A], Components of A*,B*,C*
+    Along X  -0.006591 -0.017173 -0.001430
+    Along Y   0.017377 -0.007174  0.000651
+    Along Z  -0.003460 -0.003319  0.005994
+           Misorientation Angles
+         0.000    0.000    0.000
+
+ Detector parameters
+ ===================
+ Pixel size in the "slow" (X) direction in the image (PIXEL)  0.102 mm
+ Physical limits of detector (LIMITS) relative to direct beam position
+ Minimum and maximum X coordinate (XMIN,XMAX)   0.00 109.09 mm
+ Minimum and maximum Y coordinate (YMIN,YMAX)   0.00 105.18 mm
+ Minimum and maximum radial coordinates (RMIN,RMAX)   3.00 151.54 mm
+ Detector limits relative to the physical  centre of the detector:
+ in X (XSCAN)  105.00 mm, in Y (YSCAN)  105.00mm
+
+
+ Detector translations: XOFF  -4.09 mm   YOFF  -0.18 mm
+ These are the distances between the direct beam position and the centre of
+ the image.
+
+ Crystal to detector distance (DIST) 169.98 mm
+ Detector swing angle (TWOTHETA)   0.00 degrees
+ Maximum resolution (RESOLUTION or RMAX) 1.376A
+ Low resolution cutoff (RESOL or RMIN and RCENTRE)    55.51A
+
+ Minimum spot separation before spots will be classified as overlapping:
+ (SEPARATION) In scanner X,Y directions  0.00  0.00mm
+ When rejecting background pixels due to overlap of adjacent spots
+ the peak size of the neighbouring spots will be reduced by 0 pixels
+ in both directions (TRIM).
+ In addition, there must be at least 1 adjacent spots overlapping
+ any given pixel before it is rejected (NOVERLAP).
+
+ Detector gain (GAIN) 0.25
+ Scanner adc offset (ADCOFFSET)  0
+ Pixels outside active area have values of   0 (NULLPIX)
+ Non-linearity correction (quadratic correction)0.000E+00 (NONLINEARITY)
+ Nominal detector thickness (controls expansion of measurement box) 0.20 mm
+ Direct beam coordinates (BEAM) set to   108.950   105.040 mm
+ Note that these coordinates are wrt an origin at the first pixel
+ in the image, with X the slowly changing direction and Y the
+ fast direction in the image.
+
+ Images will be read from the following  1 directories
+ (DIRECTORY...up to 10 can be given):
+ /Volumes/Arthur/JCSG Data/1vpj/data/jcsg/als1/8.2.1/20040926/collection/TB0541B/12287/
+ The filename extension (EXTENSION) is:img     
+
+ Scanner instrument error factor set to  0.070
+ This value will override that calculated by the program
+ Direct beam search box size (FIDUCIAL BEAM)(mm) 0.0
+ Threshold for locating direct beam (FIDUCIAL THRESHOLD      0
+ Image consists of  2048 stripes each of  2048 pixels (SIZE)
+ Header information is contained in the first 1 records of the file
+
+ Distortion parameters (DISTORTION):
+ Crystal to detector distance scalar (XTOFRA) 1.0000
+ Dividing factor relating pixel size in fast scan direction
+ to that in slow direction ( YSCAL) 1.0000
+ Detector Tilt (TILT)    0   Twist (TWIST)    0
+ Radial offset (mm) (ROFF)  0.00  Tangential offset (mm) (TOFF)   0.00
+ Radially dependent ROFF (RDROFF)  0.00mm,Radially dependent TOFF (RDTOFF)  0.00mm
+ Camera constants (mm and degrees): CCX   0.00  CCY   0.00  CCOM   0.000
+
+ The oscillation axis is parallel to the fast axis in the image (scanner Y)
+
+ Parameters affecting refinement (REFINE keyword)
+ ================================================
+ Initial refinement uses 20 (NREF) reflections up to  45.0mm (LIMIT) from
+ the image centre with an rms variation in pixel values more than 20 times 
+ that expected for a uniform background (NSIG)
+ PARTIALS and OVERLOADS will be rejected for positional refinement
+ (Use INCLUDE PARTIALS or INCLUDE OVERLOADS to use these spots)
+ The measurement box will be used in the initial determination of the centre
+ of gravity of spots in the central region (USEBOX)
+
+ Following   2 cycles of refinement (CYCLES) if the weighted residual
+ exceeds  5.0 (RESID) then processing will be abandoned.
+ For the outer regions of the image, spots with I/(sigma(I)) > CUTOFF will be
+ selected where CUTOFF is  40 for the outermost bins and is incremented by
+  10 for each bin working towards centre of image (IMIN)
+ For spots selected for refinement, the maximum  allowed value for
+ (background gradient)/(average background is 0.030 (GRADIENT) and the
+ maximum allowed fraction of rejected background pixels is 0.50 (BGREJECT)
+ Reflections will be weighted by the estimated error in the position
+ of their centre of gravity (WEIGHT)
+
+ POST REFINEMENT (POSTREF)
+ ===============
+ Post refinement will be used to refine cell parameters and missetting angles.
+ Use POSTREF OFF to prevent post refinement.
+ Refinement will only be carried out if there are more than   20 reflections
+ selected for the refinement (NREF).
+ The following cell parameters will be refined 
+ (Use FIX keyword to fix individual parameters or FIX ALL to fix
+ all of them):
+ A,C                                               
+ Data from   3 (ADD) images in  1 (SEGMENT) different segments will be combined
+ for use in post-refinement. Each segment must be specified on a separate PROCESS
+ keyword followed by a RUN keyword.
+ The images will NOT be integrated
+ The final orientation matrix and cell will be written to file:
+ xiarefine.mat
+
+ The mosaic spread will be refined.
+ The refined value will be smoothed over 10 images (MOSSMOOTH).
+ A "safety" factor equal to 0.05 times the current value will be added (MOSADD).
+ To stop smoothing, set MOSSMOOTH to one.
+ The refined mosaic spread will be used  during integration.
+ (Use POSTREF FIX MOSAIC to use the input mosaic spread instead of the refined one.)
+ Use POSTREF BEAM 0 to turn off beam parameter refinement
+ Reflections with I .GT. 3.0 sigma will be used in refinement (SDFAC)
+ If the refinement residual is greater than 0.16 processing will be abandoned.
+ (Controlled by MAXRESID, limit is MAXRESID*(EPS+MEAN(DIVH,DIVV)).)
+   2891 Reflections generated:
+   1638 Fully recorded
+   1253 Partials
+      0 Overlapped reflections
+      1 Too wide in phi
+ Number of partials extending over  2 to   8 images
+   1186    46    13     4     2     0     0
+  THERE ARE         4710  REFLECTIONS.
+ "MEDIAN" "   " "      "      ":            2     "  
+   NADD is currently.............           3
+   NIVB is now...................           2
+
+
+ *** Post-refinement will use partials extending over several images ***
+ This is equivalent to including a POSTREF MULTI keyword.
+ (To prevent this, include keywords POSTREF NOMULTI.)
+ Reflections from up to  3 images will be used in the refinement of missetting angles.
+
+
+ image FILENAME: /Volumes/Arthur/JCSG Data/1vpj/data/jcsg/als1/8.2.1/20040926/collection/TB0541B/12287/12287_1_E1_001.img
+
+ ************************************************
+ Processing Image    1  Phi  290.00 to  291.00
+ ************************************************
+
+ Determining average spot size for spots in centre of image.
+ ==========================================================
+ Determining best threshold for spot finding.
+ Default parameters may be reset with SPOTS keyword.
+ Minimum radius   3.0mm, maximum radius 34.46mm, minimum number of spots 10
+
+ Background strip overlaps gap between detector tiles, so YOFFSET changed to   5.2mm
+ Threshold set to    5.0
+ Threshold set to    5.0
+
+ Based on a median spot size of  5 by  6 pixels in X and Y, the measurement box 
+ parameters have been set to  17  19  10   5   6
+ The overall size of the box has been fixed.
+ To prevent this use keywords PROFILE NOFIXBOX.
+
+ Based on a median spot size of  5 by  6 pixels in X and Y, the spot separation 
+ parameters (in X and Y) have been set to  0.71  0.81mm.
+ Closest possible spot separation is  1.05mm.
+   2895 Reflections generated:
+   1638 Fully recorded
+   1257 Partials
+      4 Overlapped reflections
+      4 Too wide in phi
+ Number of partials extending over  2 to   4 images
+   1186    46    13
+  THERE ARE         4792  REFLECTIONS.
+ "MEDIAN" "   " "      "      ":            2     "  
+   NADD is currently.............           3
+   NIVB is now...................           2
+ Partial reflections spanning more than  5 images will NOT be integrated.
+ (use MAXWIDTH to change but maximum width is 10 images).
+
+ Refinement cycle  1
+   211 Fulls to be measured
+
+
+   6 reflections have been rejected because the  measurement box contains
+ pixels with values less or equal to    0 (assumed to be outside the scanned area).
+ See warning at end of logfile or in summary file.
+
+
+   1 reflections rejected because more than a fraction 0.50 of the background pixels were rejected
+ Final rms residual:   0.026mm; Weighted residual    1.1
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.29  1.0016  170.25  0.9987   -24   -21
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.11  CCOM:   -0.0311
+
+ Refinement cycle  2
+
+ Repeating refinement using the same list of 60 reflections
+    60 Spots to be measured
+ Final rms residual:   0.027mm; Weighted residual    1.2
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.29  1.0014  170.22  0.9989   -36   -21
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.12  CCOM:   -0.0423
+    60 Fulls to be measured
+
+   60 Reflections included in AVERAGE SPOT PROFILE
+ Average spot profile for central region.
+ Rejected background pixels flagged by "*", true background by "-"
+ Final optimised raster parameters:   17   19   13    6    6
+ This gives  31 pixels in the peak and  44 in background after rejecting outliers.
+ Note that the number of background pixels rejected on any individual spot
+ may be much smaller than the number rejected here.
+
+ Separation parameters updated to   0.51mm in X and  0.71mm in Y
+ C. of G. SHIFTS =  0.003 -0.017mm  Background residual=  0.2 (peak scaled to 255)
+                    *0*0*0*0*0*0-0*0*1*3*B*G*6*1*1*0*0                                                  
+                    *0*0*0*0*0*0-0*0*1*2*6*7*3*1*0-0*0                                                  
+                    *0*0*0*0*0*0-0*0*0*1*2*2*1*1*0-0*0                                                  
+                    *0*0*0*0*0-0-0*0*0*0*1*1*0*0*0-0*0                                                  
+                    *0*0*0*0*0-0*0*0*0*0*0*0*0-0-0*0*0                                                  
+                    *0*0*0*0-0*0*0*1*1*1*1*0*0-0*0*0*0                                                  
+                    *0*0*0-0*0*0*1 2 2 2*1*1*0-0*0*0*0                                                  
+                    *0*0*0-0*0*1 2 5 B 8 2*1*0-0*0*0*0                                                  
+                    *0*0-0*0*0*1 3 D R H 4*1*1*0-0*0*0                                                  
+                    *0*0-0*0*1*1 4 H Z L 5*1*1*0-0*0*0                                                  
+                    *0*0-0*0*0*1 4 I W H 4*1*1*0*0*0*0                                                  
+                    *0*0-0*0*0*1 3 C H 8 2*1*0-0*0*0*0                                                  
+                    *0*0*0*0*0*1*2 4 5 2*1*1*0-0*0*0*0                                                  
+                    *0*0*0*0*0*0*1*1*1*1*1*0-0*0*0*0*0                                                  
+                    *0*0-0*0*0*0*0*0*0*0*0-0-0*0*0*0*0                                                  
+                    *0*0-0*0*0*0*0*0*0*0-0-0-0*0*0*0*0                                                  
+                    *0-0-0*0*1*1*1*1*0*0-0-0*0*0*0*0*0                                                  
+                    -0-0*0*1*2*4*4*1*1*0-0*0*0*0*0*0*0                                                  
+                    -0-0*0*1*3*B*E*4*1*0-0-0*0*0*0*0*0                                                  
+
+ If the peak region is too large, supply two values on the PROFILE TOLERANCE keyword.
+ The first value is used for the centre of the image, and the second for the
+ outermost profiles. See the helpfile for details.
+
+         43 Reflections outside scanned limits on X.
+
+          8 Reflections outside scanned limits on Y.
+
+
+ Refinement using reflections over entire image
+
+ ONLY     0 spots found in bin   1
+ ONLY     4 spots found in bin   2
+ ONLY     4 spots found in bin   6
+ ONLY     0 spots found in bin   7
+ ONLY     0 spots found in bin   8
+
+ Only 43 reflections found (including those from central region
+ Reducing I/sigma(I) threshold from 40 to 30 and increment from 10 to  8
+ These reduced values will be used on all subsequent images
+ These parameters can be set using subkeyword IMIN on REFINEMENT keyword
+ ONLY     2 spots found in bin   1
+ ONLY     0 spots found in bin   7
+ ONLY     0 spots found in bin   8
+
+ Only 47 reflections found (including those from central region
+ Reducing I/sigma(I) threshold from 30 to 23 and increment from  8 to  6
+ These reduced values will be used on all subsequent images
+ These parameters can be set using subkeyword IMIN on REFINEMENT keyword
+ ONLY     1 spots found in bin   7
+ ONLY     0 spots found in bin   8
+ Final rms residual:   0.036mm; Weighted residual    1.4
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.94  105.33  1.0026  170.42  0.9987   -25   -24
+ Refined Fiducial constants (mm and degrees)
+  CCX:    -0.01   CCY:     0.15  CCOM:   -0.0341
+
+ Repeat refinement because initial or final residual is greater than   2.0
+    51 Spots to be measured
+ Final rms residual:   0.037mm; Weighted residual    1.7
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.94  105.37  1.0028  170.45  0.9984   -20   -28
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.16  CCOM:   -0.0304
+
+         70 Reflections outside scanned limits on X.
+
+         27 Reflections outside scanned limits on Y.
+
+
+  MAX. No. of Active Reflections=    50
+  2790 Reflections written to scratch file for integration
+ image FILENAME: /Volumes/Arthur/JCSG Data/1vpj/data/jcsg/als1/8.2.1/20040926/collection/TB0541B/12287/12287_1_E1_002.img
+
+ ************************************************
+ Processing Image    2  Phi  291.00 to  292.00
+ ************************************************
+   2830 Reflections generated:
+   1625 Fully recorded
+   1205 Partials
+      2 Overlapped reflections
+      4 Too wide in phi
+ Number of partials extending over  2 to   4 images
+   1136    45    13
+  THERE ARE         4872  REFLECTIONS.
+ "MEDIAN" "   " "      "      ":            2     "  
+   NADD is currently.............           3
+   NIVB is now...................           2
+ Partial reflections spanning more than  5 images will NOT be integrated.
+ (use MAXWIDTH to change but maximum width is 10 images).
+
+ Refinement cycle  1
+   182 Fulls to be measured
+
+
+   3 reflections have been rejected because the  measurement box contains
+ pixels with values less or equal to    0 (assumed to be outside the scanned area).
+ See warning at end of logfile or in summary file.
+
+
+   7 reflections rejected because more than a fraction 0.50 of the background pixels were rejected
+ Final rms residual:   0.025mm; Weighted residual    1.5
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.29  1.0013  170.19  0.9989   -43   -20
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.13  CCOM:   -0.0424
+
+ Refinement cycle  2
+
+ Repeating refinement using the same list of 60 reflections
+    60 Spots to be measured
+ Final rms residual:   0.026mm; Weighted residual    1.3
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.27  1.0010  170.16  0.9990   -45   -18
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.12  CCOM:   -0.0470
+    60 Fulls to be measured
+
+   60 Reflections included in AVERAGE SPOT PROFILE
+ Average spot profile for central region.
+ Rejected background pixels flagged by "*", true background by "-"
+ C. of G. SHIFTS = -0.002 -0.011mm  Background residual=  0.2 (peak scaled to 255)
+                    *0*0*0*0*0*0-0*0*1*2*9*D*5*1*1*0-0                                                  
+                    *0*0*0*0*0*0-0*0*0*1*4*5*2*1*0*0-0                                                  
+                    *0*0*0*0-0-0-0*0*0*1*1*1*1*0*0*0-0                                                  
+                    *0*0*0-0-0-0-0*0*0*0*0*0*0*0-0-0*0                                                  
+                    *0*0*0-0-0*0*0*0*0*0*0*0*0-0-0*0*0                                                  
+                    *0*0*0-0*0*0*1*1*1*1*0*0-0-0*0*0*0                                                  
+                    *0*0*0-0*0*1*1 2 3 2*1*0*0-0*0*0*0                                                  
+                    *0*0-0-0*0*1 2 7 D 6 2*1*0-0-0*0*0                                                  
+                    *0*0-0*0*0*1 3 D R E 3*1*0*0-0*0*0                                                  
+                    *0*0-0-0*0*1 3 G Z H 3*1*0*0-0*0*0                                                  
+                    *0*0-0-0*0*1 3 G W E 3*1*1*0-0*0*0                                                  
+                    *0*0*0-0*0*1 2 A I 7 2*1*0-0-0*0*0                                                  
+                    *0*0-0-0*0*1*1 3 4 2*1*1*0-0-0*0*0                                                  
+                    *0*0-0-0*0*0*1*1*1*1*1*0*0-0*0*0*0                                                  
+                    -0-0-0-0*0*0*0*0*0*0*0*0-0-0*0*0*0                                                  
+                    -0-0-0*0*0*0*0*0*0*0-0-0*0*0*0*0*0                                                  
+                    *0-0*0*0*1*1*1*1*0-0-0-0*0*0*0*0*0                                                  
+                    *0-0*0*1*2*4*3*1*0*0-0-0*0*0*0*0*0                                                  
+                    *0-0*0*1*4*A*8*2*1*0-0-0*0*0*0*0*0                                                  
+
+         16 Reflections outside scanned limits on X.
+
+          9 Reflections outside scanned limits on Y.
+
+
+ Refinement using reflections over entire image
+
+ ONLY     0 spots found in bin   7
+ ONLY     0 spots found in bin   8
+ Final rms residual:   0.039mm; Weighted residual    1.3
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.94  105.33  1.0023  170.36  0.9987   -29   -23
+ Refined Fiducial constants (mm and degrees)
+  CCX:    -0.01   CCY:     0.14  CCOM:   -0.0385
+
+ Repeat refinement because initial or final residual is greater than   2.0
+    50 Spots to be measured
+ Final rms residual:   0.036mm; Weighted residual    1.8
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.33  1.0025  170.40  0.9987   -22   -27
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.15  CCOM:   -0.0348
+
+         36 Reflections outside scanned limits on X.
+
+         25 Reflections outside scanned limits on Y.
+
+
+  MAX. No. of Active Reflections=    50
+  2763 Reflections written to scratch file for integration
+
+ Post refinement
+  No. of refined cell parameters     0
+  No. of refined cell angles         0
+
+  Synchrotron source geometry 
+  Mosaic spread (DEG)              0.100000
+  Horizontal beam diverg (DEG)     0.100000
+  Vertical beam diverg  (DEG)      0.020000
+  Conventional spectral dispersion 0.001500
+  Correlated spectral dispersion   0.000000
+
+ Initial orientation angles (DEG):      0.00      0.00      0.00
+ Reciprocal cell dimensions:
+  0.018905 0.018905 0.006196   90.00   90.00   90.00
+
+  Total number of reflections =  310
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+          PARAMETER REFINEMENT PASS  2
+
+ Reflections rejected if angular error >  0.10 deg.
+
+ Number of reflections rejected:     0
+ Sum of (RO-RC)/D*)**2 =   0.00009594 Rms Resid =    0.032 degrees
+
+           PSIX      PSIY      PSIZ    Refined reciprocal cell parameters
+   Old     -0.035    -0.005     0.014
+ Shifts               0.000     0.000
+   New     -0.035    -0.005     0.014
+  S.D.                0.003     0.003
+
+         Mosaic spread
+   Old    0.196
+ Shifts   0.000
+   New    0.196
+  S.D.    0.014
+
+            Refined Orientation Angles
+          PHIX       PHIY       PHIZ
+           -0.008    -0.034     0.014
+
+         Mosaic spread
+   New    0.196
+  S.D.    0.014
+
+          Reciprocal cell parameters
+       0.018905  0.018905  0.006196    90.000    90.000    90.000
+
+          Real cell parameters
+         51.821    51.821   158.103    90.000    90.000    90.000
+
+
+     Orientation Matrix [A] or [UB]               Matrix [U]
+      -0.006591 -0.017173 -0.001430      -0.348662 -0.908377 -0.230838
+       0.017377 -0.007174  0.000651       0.919208 -0.379509  0.105025
+      -0.003460 -0.003319  0.005994      -0.183008 -0.175570  0.967307
+
+ Smoothed value for refined mosaic spread (including safety factor):   0.21
+
+ image FILENAME: /Volumes/Arthur/JCSG Data/1vpj/data/jcsg/als1/8.2.1/20040926/collection/TB0541B/12287/12287_1_E1_003.img
+
+ ************************************************
+ Processing Image    3  Phi  292.00 to  293.00
+ ************************************************
+   3207 Reflections generated:
+   1320 Fully recorded
+   1887 Partials
+      2 Overlapped reflections
+     18 Too wide in phi
+ Number of partials extending over  2 to   4 images
+   1721   100    31
+  THERE ARE         5410  REFLECTIONS.
+ "MEDIAN" "   " "      "      ":            2     "  
+   NADD is currently.............           3
+   NIVB is now...................           2
+ Partial reflections spanning more than  5 images will NOT be integrated.
+ (use MAXWIDTH to change but maximum width is 10 images).
+
+ Refinement cycle  1
+   182 Fulls to be measured
+
+
+   9 reflections have been rejected because the  measurement box contains
+ pixels with values less or equal to    0 (assumed to be outside the scanned area).
+ See warning at end of logfile or in summary file.
+ Final rms residual:   0.024mm; Weighted residual    1.2
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.31  1.0013  170.20  0.9987   -42   -17
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.13  CCOM:   -0.0147
+
+ Refinement cycle  2
+
+ Repeating refinement using the same list of 60 reflections
+    60 Spots to be measured
+ Final rms residual:   0.025mm; Weighted residual    1.3
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.94  105.29  1.0014  170.22  0.9988   -40   -23
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.13  CCOM:   -0.0197
+
+ Repeat refinement because INITIAL RESIDUAL is greater than   2.0
+
+ Refinement cycle  1
+   182 Fulls to be measured
+
+
+   9 reflections have been rejected because the  measurement box contains
+ pixels with values less or equal to    0 (assumed to be outside the scanned area).
+ See warning at end of logfile or in summary file.
+
+
+   1 reflections rejected because more than a fraction 0.50 of the background pixels were rejected
+ Final rms residual:   0.025mm; Weighted residual    1.3
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.94  105.31  1.0013  170.19  0.9987   -44   -18
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.13  CCOM:   -0.0171
+
+ Refinement cycle  2
+
+ Repeating refinement using the same list of 60 reflections
+    60 Spots to be measured
+ Final rms residual:   0.025mm; Weighted residual    1.4
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.29  1.0015  170.23  0.9989   -37   -25
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.12  CCOM:   -0.0207
+    60 Fulls to be measured
+
+   60 Reflections included in AVERAGE SPOT PROFILE
+ Average spot profile for central region.
+ Rejected background pixels flagged by "*", true background by "-"
+ C. of G. SHIFTS = -0.009  0.001mm  Background residual=  0.3 (peak scaled to 255)
+                    *0*0*0*0*0*0-0*0*1*4*D*D*5*1*1*0-0                                                  
+                    *0*0*0*0*0*0-0*0*1*2*5*4*2*1*0*0*0                                                  
+                    *0*0*0*0*0-0-0*0*0*1*1*1*1*1*0-0*0                                                  
+                    *0*0*0*0*0-0-0*0*0*0*1*0*0*0-0-0*0                                                  
+                    *0*0*0*0-0-0*0*1*1*1*0*0*0-0-0*0*0                                                  
+                    *0*0*0-0-0*0*1*1*1*1*1*0-0-0-0*0*0                                                  
+                    *0*0*0-0*0*1*1 2 3 2*1*1*0-0-0*0*0                                                  
+                    *0*0*0-0*1*1 2 A F 7 2*1*0-0*0*0*0                                                  
+                    *0*0-0-0*1*1 4 H U F 3*1*0-0*0*0*0                                                  
+                    *0*0-0-0*1*1 4 K Z H 4*1*1-0-0*0*0                                                  
+                    *0*0-0*0*1*1 4 K U D 3*1*1-0-0*0*0                                                  
+                    *0*0*0-0*1*1 3 B E 6 2*1*0-0*0*0*0                                                  
+                    *0*0*0-0*0*1*1 2 3 2*1*1*0-0*0*0*0                                                  
+                    *0*0*0-0*0*1*1*1*1*1*1*0-0*0*0*0*0                                                  
+                    *0*0-0-0*0*0*1*1*1*0*0-0-0*0*0*0*0                                                  
+                    *0-0-0*0*1*1*1*1*0*0-0-0*0*0*0*0*0                                                  
+                    -0-0*0*1*1*2*1*1*1*0-0-0*0*0*0*0*0                                                  
+                    -0*0*1*1*3*7*5*2*1*0-0-0*0*0*0*0*0                                                  
+                    -0*0*1*2*8*I*D*3*1*1*0-0*0*0*0*0*0                                                  
+
+         28 Reflections outside scanned limits on X.
+
+          5 Reflections outside scanned limits on Y.
+
+
+ Refinement using reflections over entire image
+
+ ONLY     4 spots found in bin   1
+ ONLY     0 spots found in bin   7
+ ONLY     0 spots found in bin   8
+
+ Only 49 reflections found (including those from central region
+ Reducing I/sigma(I) threshold from 23 to 17 and increment from  6 to  5
+ These reduced values will be used on all subsequent images
+ These parameters can be set using subkeyword IMIN on REFINEMENT keyword
+ ONLY     2 spots found in bin   7
+ ONLY     0 spots found in bin   8
+ Final rms residual:   0.056mm; Weighted residual    1.5
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.93  105.30  1.0022  170.36  0.9990   -31   -21
+ Refined Fiducial constants (mm and degrees)
+  CCX:    -0.01   CCY:     0.15  CCOM:   -0.0111
+
+ Repeat refinement because initial or final residual is greater than   2.0
+    52 Spots to be measured
+ Final rms residual:   0.053mm; Weighted residual    1.8
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.96  105.33  1.0023  170.38  0.9986   -21   -28
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.14  CCOM:   -0.0057
+
+         53 Reflections outside scanned limits on X.
+
+         25 Reflections outside scanned limits on Y.
+
+
+  MAX. No. of Active Reflections=    50
+  3108 Reflections written to scratch file for integration
+
+ Post refinement
+  No. of refined cell parameters     0
+  No. of refined cell angles         0
+
+  Synchrotron source geometry 
+  Mosaic spread (DEG)              0.205781
+  Horizontal beam diverg (DEG)     0.100000
+  Vertical beam diverg  (DEG)      0.020000
+  Conventional spectral dispersion 0.001500
+  Correlated spectral dispersion   0.000000
+
+ Initial orientation angles (DEG):     -0.01     -0.03      0.01
+ Reciprocal cell dimensions:
+  0.018905 0.018905 0.006196   90.00   90.00   90.00
+
+  Total number of reflections =  627
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+          PARAMETER REFINEMENT PASS  2
+
+ Reflections rejected if angular error >  0.10 deg.
+
+ Number of reflections rejected:     0
+ Sum of (RO-RC)/D*)**2 =   0.00020506 Rms Resid =    0.033 degrees
+
+           PSIX      PSIY      PSIZ    Refined reciprocal cell parameters
+   Old     -0.006     0.005    -0.004
+ Shifts               0.000     0.000
+   New     -0.006     0.005    -0.004
+  S.D.                0.003     0.003
+
+         Mosaic spread
+   Old    0.195
+ Shifts   0.000
+   New    0.195
+  S.D.    0.010
+
+            Refined Orientation Angles
+          PHIX       PHIY       PHIZ
+           -0.015    -0.037     0.010
+
+         Mosaic spread
+   New    0.195
+  S.D.    0.010
+
+          Reciprocal cell parameters
+       0.018905  0.018905  0.006196    90.000    90.000    90.000
+
+          Real cell parameters
+         51.821    51.821   158.103    90.000    90.000    90.000
+
+
+     Orientation Matrix [A] or [UB]               Matrix [U]
+      -0.006591 -0.017173 -0.001430      -0.348662 -0.908377 -0.230838
+       0.017377 -0.007174  0.000651       0.919208 -0.379509  0.105025
+      -0.003460 -0.003319  0.005994      -0.183008 -0.175570  0.967307
+
+ Smoothed value for refined mosaic spread (including safety factor):   0.21
+
+ image FILENAME: /Volumes/Arthur/JCSG Data/1vpj/data/jcsg/als1/8.2.1/20040926/collection/TB0541B/12287/12287_1_E1_004.img
+
+ ************************************************
+ Processing Image    4  Phi  293.00 to  294.00
+ ************************************************
+   3171 Reflections generated:
+   1296 Fully recorded
+   1875 Partials
+      2 Overlapped reflections
+     17 Too wide in phi
+ Number of partials extending over  2 to   4 images
+   1718    90    30
+  THERE ARE         5457  REFLECTIONS.
+ "MEDIAN" "   " "      "      ":            2     "  
+   NADD is currently.............           3
+   NIVB is now...................           2
+ Partial reflections spanning more than  5 images will NOT be integrated.
+ (use MAXWIDTH to change but maximum width is 10 images).
+
+ Refinement cycle  1
+   125 Fulls to be measured
+
+
+   2 reflections have been rejected because the  measurement box contains
+ pixels with values less or equal to    0 (assumed to be outside the scanned area).
+ See warning at end of logfile or in summary file.
+ Final rms residual:   0.021mm; Weighted residual    1.3
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.30  1.0016  170.25  0.9987   -31   -22
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.12  CCOM:   -0.0032
+
+ Refinement cycle  2
+
+ Repeating refinement using the same list of 60 reflections
+    60 Spots to be measured
+ Final rms residual:   0.024mm; Weighted residual    1.3
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.31  1.0016  170.25  0.9987   -30   -27
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.12  CCOM:   -0.0005
+    60 Fulls to be measured
+
+   60 Reflections included in AVERAGE SPOT PROFILE
+ Average spot profile for central region.
+ Rejected background pixels flagged by "*", true background by "-"
+ C. of G. SHIFTS = -0.006 -0.007mm  Background residual=  0.3 (peak scaled to 255)
+                    *0*0*0*0*0-0-0*1*1*5*H*K*7*2*1*0-0                                                  
+                    *0*0*0*0*0-0-0*0*1*2*7*7*3*1*1*0-0                                                  
+                    *0*0*0*0*0-0-0*0*1*1*2*2*1*1*0-0*0                                                  
+                    *0*0*0*0*0-0-0*0*0*1*1*1*1*0-0-0*0                                                  
+                    *0*0*0*0-0-0*0*0*1*1*1*0*0*0-0*0*0                                                  
+                    *0*0*0*0-0*0*1*1*1*1*1*0*0-0-0*0*0                                                  
+                    *0*0*0-0*0*1*1 2 3 2*1*1*0-0-0*0*0                                                  
+                    *0*0*0-0*0*1 2 8 E 7 2*1*0-0*0*0*0                                                  
+                    *0*0*0-0*0*1 3 F T E 3*1*0-0-0*0*0                                                  
+                    *0*0-0-0*1*1 4 I Z I 4*1*0-0-0*0*0                                                  
+                    *0*0-0-0*0*1 4 I V E 3*1*0-0-0*0*0                                                  
+                    *0*0-0-0*0*1 3 B G 7 2*1*0-0*0*0*0                                                  
+                    *0*0-0-0*0*1*1 2 4 2*1*1*0-0*0*0*0                                                  
+                    *0*0-0-0*0*0*1*1*1*1*1*0-0*0*0*0*0                                                  
+                    *0*0-0-0*0*0*0*0*0*0*0*0-0*0*0*0*0                                                  
+                    *0-0-0*0*0*1*1*1*0*0-0-0*0*0*0*0*0                                                  
+                    *0-0*0*1*1*2*1*1*0*0-0-0*0*0*0*0*0                                                  
+                    *0-0*0*1*3*7*5*2*1*0-0*0*0*0*0*0*0                                                  
+                    *0*0*1*1*6*H*C*3*1*0-0*0*0*0*0*0*0                                                  
+
+         27 Reflections outside scanned limits on X.
+
+          8 Reflections outside scanned limits on Y.
+
+
+ Refinement using reflections over entire image
+
+ ONLY     4 spots found in bin   1
+ ONLY     0 spots found in bin   8
+ Final rms residual:   0.041mm; Weighted residual    1.2
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.93  105.33  1.0025  170.41  0.9986   -25   -25
+ Refined Fiducial constants (mm and degrees)
+  CCX:    -0.01   CCY:     0.15  CCOM:    0.0023
+
+ Repeat refinement because initial or final residual is greater than   2.0
+    54 Spots to be measured
+ Final rms residual:   0.041mm; Weighted residual    1.6
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.32  1.0027  170.43  0.9988   -19   -26
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.15  CCOM:    0.0028
+
+         50 Reflections outside scanned limits on X.
+
+         34 Reflections outside scanned limits on Y.
+
+
+  MAX. No. of Active Reflections=    50
+  3068 Reflections written to scratch file for integration
+
+ Post refinement
+  No. of refined cell parameters     2
+  No. of refined cell angles         0
+
+  Synchrotron source geometry 
+  Mosaic spread (DEG)              0.205076
+  Horizontal beam diverg (DEG)     0.100000
+  Vertical beam diverg  (DEG)      0.020000
+  Conventional spectral dispersion 0.001500
+  Correlated spectral dispersion   0.000000
+
+ Initial orientation angles (DEG):     -0.02     -0.04      0.01
+ Reciprocal cell dimensions:
+  0.018905 0.018905 0.006196   90.00   90.00   90.00
+
+  Total number of reflections = 1062
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+          PARAMETER REFINEMENT PASS  2
+
+ Reflections rejected if angular error >  0.09 deg.
+
+ Number of reflections rejected:    12
+ Sum of (RO-RC)/D*)**2 =   0.00029736 Rms Resid =    0.030 degrees
+
+           PSIX      PSIY      PSIZ    Refined reciprocal cell parameters
+   Old      0.003    -0.004    -0.001  0.018945  0.006209
+ Shifts               0.000     0.000  0.000000  0.000000
+   New      0.003    -0.004    -0.001  0.018945  0.006209
+  S.D.                0.002     0.002  0.000003  0.000001
+
+         Mosaic spread
+   Old    0.301
+ Shifts   0.000
+   New    0.301
+  S.D.    0.007
+
+            Refined Orientation Angles
+          PHIX       PHIY       PHIZ
+           -0.011    -0.036     0.009
+
+         Mosaic spread
+   New    0.301
+  S.D.    0.007
+
+          Reciprocal cell parameters
+       0.018945  0.018945  0.006209    90.000    90.000    90.000
+
+          Real cell parameters
+         51.711    51.711   157.787    90.000    90.000    90.000
+
+
+     Orientation Matrix [A] or [UB]               Matrix [U]
+      -0.006605 -0.017209 -0.001433      -0.348662 -0.908377 -0.230838
+       0.017414 -0.007190  0.000652       0.919208 -0.379509  0.105025
+      -0.003467 -0.003326  0.006006      -0.183008 -0.175570  0.967307
+
+ Smoothed value for refined mosaic spread (including safety factor):   0.24
+
+
+
+ ***** Cell parameter shift ( 24.3 sds) exceeds limit of  2.5 sds *****
+ Repeating the entire run, using the refined cell parameters as given above
+
+ New orientation matrix written to (keyword NEWMAT): xiarefine.mat
+ The missetting angles in this file are the refined missets for the FIRST image
+ in the post-refinement.
+
+FORMATTED      UNKNOWN file opened on unit  12
+<B><FONT COLOR="#FF0000"><!--SUMMARY_BEGIN-->
+Logical name: xiarefine.mat, Filename: xiarefine.mat
+<!--SUMMARY_END--></FONT></B>
+
+
+ Only  0 of the 54 reflections used in CENTRS refinement located in new
+ generate file
+   0 of these are fully recorded
+   3338 Reflections generated:
+   1227 Fully recorded
+   2111 Partials
+      2 Overlapped reflections
+     28 Too wide in phi
+ Number of partials extending over  2 to   4 images
+   1904   125    33
+  THERE ARE         5588  REFLECTIONS.
+ "MEDIAN" "   " "      "      ":            2     "  
+   NADD is currently.............           3
+   NIVB is now...................           2
+
+
+ *** Post-refinement will use partials extending over several images ***
+ This is equivalent to including a POSTREF MULTI keyword.
+ (To prevent this, include keywords POSTREF NOMULTI.)
+ Reflections from up to  3 images will be used in the refinement of missetting angles.
+
+
+ image FILENAME: /Volumes/Arthur/JCSG Data/1vpj/data/jcsg/als1/8.2.1/20040926/collection/TB0541B/12287/12287_1_E1_001.img
+
+ ************************************************
+ Processing Image    1  Phi  290.00 to  291.00
+ ************************************************
+   3335 Reflections generated:
+   1233 Fully recorded
+   2102 Partials
+      2 Overlapped reflections
+     26 Too wide in phi
+ Number of partials extending over  2 to   4 images
+   1900   121    33
+  THERE ARE         5587  REFLECTIONS.
+ "MEDIAN" "   " "      "      ":            2     "  
+   NADD is currently.............           3
+   NIVB is now...................           2
+ Partial reflections spanning more than  5 images will NOT be integrated.
+ (use MAXWIDTH to change but maximum width is 10 images).
+
+ Refinement cycle  1
+   156 Fulls to be measured
+
+
+   2 reflections have been rejected because the  measurement box contains
+ pixels with values less or equal to    0 (assumed to be outside the scanned area).
+ See warning at end of logfile or in summary file.
+
+
+   2 reflections rejected because more than a fraction 0.50 of the background pixels were rejected
+ Final rms residual:   0.021mm; Weighted residual    1.4
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.31  1.0002  170.01  0.9987   -24   -16
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.13  CCOM:   -0.0105
+
+ Refinement cycle  2
+
+ Repeating refinement using the same list of 60 reflections
+    60 Spots to be measured
+ Final rms residual:   0.021mm; Weighted residual    1.1
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.29  0.9998  169.94  0.9988   -24   -17
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.12  CCOM:   -0.0133
+    60 Fulls to be measured
+
+   60 Reflections included in AVERAGE SPOT PROFILE
+ Average spot profile for central region.
+ Rejected background pixels flagged by "*", true background by "-"
+ Final optimised raster parameters:   17   19   13    6    6
+ This gives  31 pixels in the peak and  43 in background after rejecting outliers.
+ Note that the number of background pixels rejected on any individual spot
+ may be much smaller than the number rejected here.
+
+ Separation parameters updated to   0.51mm in X and  0.71mm in Y
+ C. of G. SHIFTS = -0.008 -0.022mm  Background residual=  0.2 (peak scaled to 255)
+                    *0*0*0*0*0*0-0*0*1*4*H*J*6*1*1*0-0                                                  
+                    *0*0*0*0*0*0-0*0*1*3*8*7*2*1*0-0*0                                                  
+                    *0*0*0*0*0*0-0*0*1*1*2*2*1*1*0-0*0                                                  
+                    *0*0*0*0*0-0-0*0*0*1*1*1*1*0*0-0*0                                                  
+                    *0*0*0*0*0-0*0*0*0*0*0*0*0*0-0*0*0                                                  
+                    *0*0*0-0-0*0*0*1*1*1*1*0*0-0-0*0*0                                                  
+                    *0*0*0-0*0*1*1 2 2 2*1*1*0-0*0*0*0                                                  
+                    *0*0*0-0*0*1 2 6 A 6 2*1*0-0*0*0*0                                                  
+                    *0*0*0*0*0*1 3 G R E 3*1*0*0-0*0*0                                                  
+                    *0*0*0*0*1*1 4 K Z I 4*1*1*0-0*0*0                                                  
+                    *0*0-0*0*1*1 5 L W F 3*1*0-0*0*0*0                                                  
+                    *0*0-0-0*0*1 3 D H 7 2*1*0-0*0*0*0                                                  
+                    *0*0*0-0*0*1*2 4 5 2*1*1*0-0*0*0*0                                                  
+                    *0*0-0*0*0*1*1*1*1*1*1*0-0-0*0*0*0                                                  
+                    *0*0-0*0*0*0*1*1*1*0*0-0-0*0*0*0*0                                                  
+                    *0*0-0*0*0*1*1*1*0*0-0-0*0*0*0*0*0                                                  
+                    *0-0*0*1*1*1*1*1*1*0-0*0*0*0*0*0*0                                                  
+                    *0-0*0*1*3*7*6*2*1*0-0*0*0*0*0*0*0                                                  
+                    -0*0*1*1*6*I*F*4*1*0-0*0*0*0*0*0*0                                                  
+
+ If the peak region is too large, supply two values on the PROFILE TOLERANCE keyword.
+ The first value is used for the centre of the image, and the second for the
+ outermost profiles. See the helpfile for details.
+
+         26 Reflections outside scanned limits on X.
+
+          3 Reflections outside scanned limits on Y.
+
+
+ Refinement using reflections over entire image
+
+ ONLY     4 spots found in bin   7
+ ONLY     0 spots found in bin   8
+ Final rms residual:   0.038mm; Weighted residual    1.3
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.94  105.34  1.0003  170.03  0.9987   -21   -26
+ Refined Fiducial constants (mm and degrees)
+  CCX:    -0.01   CCY:     0.15  CCOM:   -0.0001
+
+ Repeat refinement because initial or final residual is greater than   2.0
+    54 Spots to be measured
+ Final rms residual:   0.041mm; Weighted residual    1.2
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.94  105.36  1.0004  170.06  0.9986   -20   -29
+ Refined Fiducial constants (mm and degrees)
+  CCX:    -0.01   CCY:     0.17  CCOM:    0.0064
+
+         52 Reflections outside scanned limits on X.
+
+         21 Reflections outside scanned limits on Y.
+
+
+  MAX. No. of Active Reflections=    50
+  3234 Reflections written to scratch file for integration
+ image FILENAME: /Volumes/Arthur/JCSG Data/1vpj/data/jcsg/als1/8.2.1/20040926/collection/TB0541B/12287/12287_1_E1_002.img
+
+ ************************************************
+ Processing Image    2  Phi  291.00 to  292.00
+ ************************************************
+   3285 Reflections generated:
+   1204 Fully recorded
+   2081 Partials
+      2 Overlapped reflections
+     22 Too wide in phi
+ Number of partials extending over  2 to   4 images
+   1882   118    35
+  THERE ARE         5659  REFLECTIONS.
+ "MEDIAN" "   " "      "      ":            2     "  
+   NADD is currently.............           3
+   NIVB is now...................           2
+ Partial reflections spanning more than  5 images will NOT be integrated.
+ (use MAXWIDTH to change but maximum width is 10 images).
+
+ Refinement cycle  1
+   137 Fulls to be measured
+
+
+   2 reflections have been rejected because the  measurement box contains
+ pixels with values less or equal to    0 (assumed to be outside the scanned area).
+ See warning at end of logfile or in summary file.
+
+
+   7 reflections rejected because more than a fraction 0.50 of the background pixels were rejected
+ Final rms residual:   0.024mm; Weighted residual    1.1
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.94  105.32  0.9993  169.87  0.9986   -37   -19
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.13  CCOM:   -0.0037
+
+ Refinement cycle  2
+
+ Repeating refinement using the same list of 60 reflections
+    60 Spots to be measured
+ Final rms residual:   0.028mm; Weighted residual    1.3
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.94  105.30  0.9994  169.87  0.9988   -34   -24
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.12  CCOM:   -0.0020
+    60 Fulls to be measured
+
+   60 Reflections included in AVERAGE SPOT PROFILE
+ Average spot profile for central region.
+ Rejected background pixels flagged by "*", true background by "-"
+ C. of G. SHIFTS =  0.002  0.000mm  Background residual=  0.4 (peak scaled to 255)
+                    *0*0*0*0*0-0-0*1*1*5*I*J*8*2*1*0-0                                                  
+                    *0*0*0*0*0-0-0*1*1*2*7*7*3*1*1*0-0                                                  
+                    *0*0*0*0-0-0-0*0*1*1*2*2*1*1*1-0-0                                                  
+                    *0*0*0-0-0-0-0*0*1*1*1*1*1*1-0-0*0                                                  
+                    *0*0*0-0-0-0*0*1*1*1*1*1*1*0-0*0*0                                                  
+                    *0*0*0-0*0*1*1*1*1*1*1*1*0-0-0*0*0                                                  
+                    *0*0*0-0*0*1*1 2 3 2*1*1*0-0-0*0*0                                                  
+                    *0*0*0-0*1*1 2 9 G 9 2*1*1-0-0*0*0                                                  
+                    *0*0*0-0*1*1 3 F U H 4*1*1-0-0*0*0                                                  
+                    *0*0-0-0*1*1 4 I Z K 5*1*1*0-0*0*0                                                  
+                    *0*0*0-0*1*1 4 H U G 4*1*1-0-0*0*0                                                  
+                    *0*0*0-0*0*1 2 9 F 8 2*1*1-0*0*0*0                                                  
+                    *0*0*0-0*0*1*1 2 4 2*1*1*0-0*0*0*0                                                  
+                    *0*0*0-0*0*1*1*1*1*1*1*0-0-0*0*0*0                                                  
+                    -0-0-0-0*0*1*1*1*1*1*0-0-0*0*0*0*0                                                  
+                    -0-0-0*0*1*1*1*1*1*0-0-0*0*0*0*0*0                                                  
+                    -0-0*0*1*1*2*1*1*1*0-0*0*0*0*0*0*0                                                  
+                    -0-0*1*1*4*8*6*2*1*1-0-0*0*0*0*0*0                                                  
+                    -0-0*1*2*8*K*G*4*1*1-0-0*0*0*0*0*0                                                  
+
+         15 Reflections outside scanned limits on X.
+
+          6 Reflections outside scanned limits on Y.
+
+
+ Refinement using reflections over entire image
+
+ ONLY     4 spots found in bin   7
+ ONLY     1 spots found in bin   8
+ Final rms residual:   0.039mm; Weighted residual    1.1
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.33  1.0003  170.02  0.9987   -22   -26
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.15  CCOM:   -0.0023
+
+ Repeat refinement because initial or final residual is greater than   2.0
+    55 Spots to be measured
+ Final rms residual:   0.039mm; Weighted residual    1.3
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.34  1.0004  170.04  0.9986   -19   -26
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.15  CCOM:    0.0014
+
+         41 Reflections outside scanned limits on X.
+
+         31 Reflections outside scanned limits on Y.
+
+
+  MAX. No. of Active Reflections=    50
+  3189 Reflections written to scratch file for integration
+
+ Post refinement
+  No. of refined cell parameters     0
+  No. of refined cell angles         0
+
+  Synchrotron source geometry 
+  Mosaic spread (DEG)              0.241971
+  Horizontal beam diverg (DEG)     0.100000
+  Vertical beam diverg  (DEG)      0.020000
+  Conventional spectral dispersion 0.001500
+  Correlated spectral dispersion   0.000000
+
+ Initial orientation angles (DEG):     -0.01     -0.03      0.02
+ Reciprocal cell dimensions:
+  0.018945 0.018945 0.006209   90.00   90.00   90.00
+
+  Total number of reflections =  464
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+          PARAMETER REFINEMENT PASS  2
+
+ Reflections rejected if angular error >  0.11 deg.
+
+ Number of reflections rejected:     4
+ Sum of (RO-RC)/D*)**2 =   0.00017428 Rms Resid =    0.035 degrees
+
+           PSIX      PSIY      PSIZ    Refined reciprocal cell parameters
+   Old      0.001     0.004     0.006
+ Shifts               0.001    -0.001
+   New      0.001     0.004     0.005
+  S.D.                0.002     0.002
+
+         Mosaic spread
+   Old    0.374
+ Shifts   0.000
+   New    0.374
+  S.D.    0.010
+
+            Refined Orientation Angles
+          PHIX       PHIY       PHIZ
+           -0.010    -0.032     0.024
+
+         Mosaic spread
+   New    0.374
+  S.D.    0.010
+
+          Reciprocal cell parameters
+       0.018945  0.018945  0.006209    90.000    90.000    90.000
+
+          Real cell parameters
+         51.711    51.711   157.787    90.000    90.000    90.000
+
+
+     Orientation Matrix [A] or [UB]               Matrix [U]
+      -0.006605 -0.017209 -0.001433      -0.348662 -0.908377 -0.230838
+       0.017414 -0.007190  0.000652       0.919208 -0.379509  0.105025
+      -0.003467 -0.003326  0.006006      -0.183008 -0.175570  0.967307
+
+ Smoothed value for refined mosaic spread (including safety factor):   0.39
+
+ image FILENAME: /Volumes/Arthur/JCSG Data/1vpj/data/jcsg/als1/8.2.1/20040926/collection/TB0541B/12287/12287_1_E1_003.img
+
+ ************************************************
+ Processing Image    3  Phi  292.00 to  293.00
+ ************************************************
+   3817 Reflections generated:
+    824 Fully recorded
+   2993 Partials
+      6 Overlapped reflections
+     72 Too wide in phi
+ Number of partials extending over  2 to   4 images
+   2563   238    81
+  THERE ARE         6462  REFLECTIONS.
+ "MEDIAN" "   " "      "      ":            2     "  
+   NADD is currently.............           3
+   NIVB is now...................           2
+ Partial reflections spanning more than  5 images will NOT be integrated.
+ (use MAXWIDTH to change but maximum width is 10 images).
+
+ Refinement cycle  1
+   125 Fulls to be measured
+
+
+   9 reflections have been rejected because the  measurement box contains
+ pixels with values less or equal to    0 (assumed to be outside the scanned area).
+ See warning at end of logfile or in summary file.
+ Final rms residual:   0.020mm; Weighted residual    1.5
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.30  0.9996  169.92  0.9988   -29   -26
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.13  CCOM:   -0.0029
+
+ Refinement cycle  2
+
+ Repeating refinement using the same list of 60 reflections
+    60 Spots to be measured
+ Final rms residual:   0.022mm; Weighted residual    1.3
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.31  0.9996  169.92  0.9987   -27   -33
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.13  CCOM:   -0.0039
+    60 Fulls to be measured
+
+   60 Reflections included in AVERAGE SPOT PROFILE
+ Average spot profile for central region.
+ Rejected background pixels flagged by "*", true background by "-"
+ C. of G. SHIFTS =  0.003 -0.001mm  Background residual=  0.2 (peak scaled to 255)
+                    *0*0*0*0*0*0-0*0*1*3*C*G*6*1*1*0-0                                                  
+                    *0*0*0*0*0*0-0*0*1*2*6*6*2*1*0-0*0                                                  
+                    *0*0*0*0*0*0-0*0*0*1*1*1*1*1*0-0*0                                                  
+                    *0*0*0*0*0-0-0*0*0*0*1*1*0*0-0-0*0                                                  
+                    *0*0*0*0-0*0*0*0*0*0*0*0*0-0-0*0*0                                                  
+                    *0*0*0*0-0*0*1*1*1*1*1*0*0-0-0*0*0                                                  
+                    *0*0*0-0*0*1*1 2 3 2*1*1*0-0*0*0*0                                                  
+                    *0*0*0-0*0*1 2 8 F 8 2*1*0-0*0*0*0                                                  
+                    *0*0*0-0*0*1 3 E U G 4*1*1*0-0*0*0                                                  
+                    *0*0*0*0*1*1 3 H Z K 5*1*1*0-0*0*0                                                  
+                    *0*0*0-0*0*1 3 H U G 4*1*1*0-0*0*0                                                  
+                    *0*0*0-0*0*1 2 9 E 7 2*1*0-0*0*0*0                                                  
+                    *0*0*0-0*0*1*1 2 3 2*1*1*0-0*0*0*0                                                  
+                    *0*0*0-0*0*0*1*1*1*1*1*0-0-0*0*0*0                                                  
+                    *0*0*0-0*0*0*1*1*1*0*0*0-0*0*0*0*0                                                  
+                    *0*0-0*0*0*1*1*1*0*0*0-0*0*0*0*0*0                                                  
+                    -0-0*0*1*1*2*2*1*1*0-0-0*0*0*0*0*0                                                  
+                    -0-0*0*1*2*7*6*2*1*0-0*0*0*0*0*0*0                                                  
+                    -0*0*1*1*5*H*G*5*1*0*0-0*0*0*0*0*0                                                  
+
+         25 Reflections outside scanned limits on X.
+
+          2 Reflections outside scanned limits on Y.
+
+
+ Refinement using reflections over entire image
+
+ ONLY     2 spots found in bin   1
+ ONLY     1 spots found in bin   7
+ ONLY     0 spots found in bin   8
+
+ Only 48 reflections found (including those from central region
+ Reducing I/sigma(I) threshold from 17 to 13 and increment from  5 to  4
+ These reduced values will be used on all subsequent images
+ These parameters can be set using subkeyword IMIN on REFINEMENT keyword
+ ONLY     4 spots found in bin   1
+ ONLY     3 spots found in bin   7
+ ONLY     0 spots found in bin   8
+ Final rms residual:   0.059mm; Weighted residual    1.2
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.29  0.9999  169.97  0.9990   -25   -23
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.14  CCOM:   -0.0011
+
+         68 Reflections outside scanned limits on X.
+
+         40 Reflections outside scanned limits on Y.
+
+
+  MAX. No. of Active Reflections=    50
+  3631 Reflections written to scratch file for integration
+
+ Post refinement
+  No. of refined cell parameters     0
+  No. of refined cell angles         0
+
+  Synchrotron source geometry 
+  Mosaic spread (DEG)              0.392688
+  Horizontal beam diverg (DEG)     0.100000
+  Vertical beam diverg  (DEG)      0.020000
+  Conventional spectral dispersion 0.001500
+  Correlated spectral dispersion   0.000000
+
+ Initial orientation angles (DEG):     -0.01     -0.04      0.01
+ Reciprocal cell dimensions:
+  0.018945 0.018945 0.006209   90.00   90.00   90.00
+
+  Total number of reflections =  915
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+          PARAMETER REFINEMENT PASS  2
+
+ Reflections rejected if angular error >  0.10 deg.
+
+ Number of reflections rejected:    10
+ Sum of (RO-RC)/D*)**2 =   0.00031522 Rms Resid =    0.034 degrees
+
+           PSIX      PSIY      PSIZ    Refined reciprocal cell parameters
+   Old     -0.001    -0.001    -0.001
+ Shifts               0.000     0.000
+   New     -0.001    -0.001    -0.001
+  S.D.                0.002     0.002
+
+         Mosaic spread
+   Old    0.370
+ Shifts   0.000
+   New    0.369
+  S.D.    0.007
+
+            Refined Orientation Angles
+          PHIX       PHIY       PHIZ
+           -0.014    -0.039     0.012
+
+         Mosaic spread
+   New    0.369
+  S.D.    0.007
+
+          Reciprocal cell parameters
+       0.018945  0.018945  0.006209    90.000    90.000    90.000
+
+          Real cell parameters
+         51.711    51.711   157.787    90.000    90.000    90.000
+
+
+     Orientation Matrix [A] or [UB]               Matrix [U]
+      -0.006605 -0.017209 -0.001433      -0.348662 -0.908377 -0.230838
+       0.017414 -0.007190  0.000652       0.919208 -0.379509  0.105025
+      -0.003467 -0.003326  0.006006      -0.183008 -0.175570  0.967307
+
+ Smoothed value for refined mosaic spread (including safety factor):   0.39
+
+ image FILENAME: /Volumes/Arthur/JCSG Data/1vpj/data/jcsg/als1/8.2.1/20040926/collection/TB0541B/12287/12287_1_E1_004.img
+
+ ************************************************
+ Processing Image    4  Phi  293.00 to  294.00
+ ************************************************
+   3796 Reflections generated:
+    790 Fully recorded
+   3006 Partials
+      4 Overlapped reflections
+     73 Too wide in phi
+ Number of partials extending over  2 to   4 images
+   2587   230    83
+  THERE ARE         6491  REFLECTIONS.
+ "MEDIAN" "   " "      "      ":            2     "  
+   NADD is currently.............           3
+   NIVB is now...................           2
+ Partial reflections spanning more than  5 images will NOT be integrated.
+ (use MAXWIDTH to change but maximum width is 10 images).
+
+ Refinement cycle  1
+    76 Fulls to be measured
+
+
+   1 reflections have been rejected because the  measurement box contains
+ pixels with values less or equal to    0 (assumed to be outside the scanned area).
+ See warning at end of logfile or in summary file.
+ Final rms residual:   0.019mm; Weighted residual    1.1
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.96  105.35  0.9996  169.91  0.9982   -14   -38
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.12  CCOM:    0.0130
+
+ Refinement cycle  2
+
+ Repeating refinement using the same list of 53 reflections
+    53 Spots to be measured
+ Final rms residual:   0.019mm; Weighted residual    1.0
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.96  105.35  0.9994  169.89  0.9983   -12   -39
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.12  CCOM:    0.0113
+    53 Fulls to be measured
+
+   53 Reflections included in AVERAGE SPOT PROFILE
+ Average spot profile for central region.
+ Rejected background pixels flagged by "*", true background by "-"
+ C. of G. SHIFTS = -0.008  0.004mm  Background residual=  0.2 (peak scaled to 255)
+                    *0*0*0*0*0*0*0*1*1*5*H*J*6*2*1*0-0                                                  
+                    *0*0*0*0*0*0-0*0*1*2*6*6*2*1*1*0-0                                                  
+                    *0*0*0*0*0*0-0*0*1*1*1*1*1*1*0-0*0                                                  
+                    *0*0*0*0*0-0-0*0*0*1*1*1*1*0-0*0*0                                                  
+                    *0*0*0*0-0-0*0*1*1*1*1*0*0-0-0*0*0                                                  
+                    *0-0-0-0-0*0*1*1*1*1*1*0*0-0-0*0*0                                                  
+                    *0-0-0-0*0*1*1 3 5 3*1*1*0-0*0*0*0                                                  
+                    *0*0*0-0*0*1 2 9 G 7 2*1*0-0*0*0*0                                                  
+                    *0*0*0-0*1*1 3 F U E 3*1*0-0*0*0*0                                                  
+                    *0*0*0-0*1*1 4 I Z G 3*1*0-0-0*0*0                                                  
+                    *0*0*0-0*0*1 4 H T C 2*1*0-0-0*0*0                                                  
+                    *0*0*0-0*0*1 2 9 E 6 2*1*0-0*0*0*0                                                  
+                    *0*0*0-0*0*1*1 2 3 2*1*0*0-0*0*0*0                                                  
+                    *0*0*0-0*0*0*1*1*1*1*1*0-0*0*0*0*0                                                  
+                    *0*0-0-0*0*0*0*0*0*0*0-0-0*0*0*0*0                                                  
+                    *0*0-0*0*1*1*1*1*0*0-0-0*0*0*0*0*0                                                  
+                    *0-0*0*1*1*2*2*1*0*0-0-0*0*0*0*0*0                                                  
+                    *0*0*1*1*4*9*5*2*1*0-0*0*0*0*0*0*0                                                  
+                    -0*0*1*2*8*K*C*3*1*0-0-0*0*0*0*0*0                                                  
+
+         13 Reflections outside scanned limits on X.
+
+          1 Reflections outside scanned limits on Y.
+
+
+ Refinement using reflections over entire image
+
+ ONLY     4 spots found in bin   8
+ Final rms residual:   0.036mm; Weighted residual    1.0
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.94  105.36  1.0002  170.02  0.9984   -17   -32
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.15  CCOM:    0.0077
+
+ Repeat refinement because initial or final residual is greater than   2.0
+    59 Spots to be measured
+ Final rms residual:   0.040mm; Weighted residual    1.2
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.35  1.0003  170.04  0.9986   -16   -31
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.15  CCOM:    0.0040
+
+         59 Reflections outside scanned limits on X.
+
+         37 Reflections outside scanned limits on Y.
+
+
+  MAX. No. of Active Reflections=    50
+  3623 Reflections written to scratch file for integration
+
+ Post refinement
+  No. of refined cell parameters     2
+  No. of refined cell angles         0
+
+  Synchrotron source geometry 
+  Mosaic spread (DEG)              0.390162
+  Horizontal beam diverg (DEG)     0.100000
+  Vertical beam diverg  (DEG)      0.020000
+  Conventional spectral dispersion 0.001500
+  Correlated spectral dispersion   0.000000
+
+ Initial orientation angles (DEG):     -0.01     -0.04      0.01
+ Reciprocal cell dimensions:
+  0.018945 0.018945 0.006209   90.00   90.00   90.00
+
+  Total number of reflections = 1493
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+          PARAMETER REFINEMENT PASS  2
+
+ Reflections rejected if angular error >  0.11 deg.
+
+ Number of reflections rejected:    30
+ Sum of (RO-RC)/D*)**2 =   0.00056581 Rms Resid =    0.036 degrees
+
+           PSIX      PSIY      PSIZ    Refined reciprocal cell parameters
+   Old      0.004     0.004    -0.008  0.018975  0.006215
+ Shifts               0.000     0.000  0.000000  0.000000
+   New      0.004     0.004    -0.008  0.018975  0.006215
+  S.D.                0.003     0.002  0.000003  0.000000
+
+         Mosaic spread
+   Old    0.405
+ Shifts   0.001
+   New    0.406
+  S.D.    0.006
+
+            Refined Orientation Angles
+          PHIX       PHIY       PHIZ
+           -0.013    -0.031     0.001
+
+         Mosaic spread
+   New    0.406
+  S.D.    0.006
+
+          Reciprocal cell parameters
+       0.018975  0.018975  0.006215    90.000    90.000    90.000
+
+          Real cell parameters
+         51.630    51.630   157.637    90.000    90.000    90.000
+
+
+     Orientation Matrix [A] or [UB]               Matrix [U]
+      -0.006616 -0.017236 -0.001435      -0.348662 -0.908377 -0.230837
+       0.017442 -0.007201  0.000653       0.919208 -0.379509  0.105025
+      -0.003473 -0.003331  0.006011      -0.183008 -0.175570  0.967307
+
+ Smoothed value for refined mosaic spread (including safety factor):   0.40
+
+
+
+ ***** Cell parameter shift ( 12.0 sds) exceeds limit of  2.5 sds *****
+ Repeating the entire run, using the refined cell parameters as given above
+
+ New orientation matrix written to (keyword NEWMAT): xiarefine.mat
+ The missetting angles in this file are the refined missets for the FIRST image
+ in the post-refinement.
+
+FORMATTED      UNKNOWN file opened on unit  12
+<B><FONT COLOR="#FF0000"><!--SUMMARY_BEGIN-->
+Logical name: xiarefine.mat, Filename: xiarefine.mat
+<!--SUMMARY_END--></FONT></B>
+
+
+ Only  0 of the 59 reflections used in CENTRS refinement located in new
+ generate file
+   0 of these are fully recorded
+   3896 Reflections generated:
+    804 Fully recorded
+   3092 Partials
+      8 Overlapped reflections
+     78 Too wide in phi
+ Number of partials extending over  2 to   4 images
+   2644   245    84
+  THERE ARE         6537  REFLECTIONS.
+ "MEDIAN" "   " "      "      ":            2     "  
+   NADD is currently.............           3
+   NIVB is now...................           2
+
+
+ *** Post-refinement will use partials extending over several images ***
+ This is equivalent to including a POSTREF MULTI keyword.
+ (To prevent this, include keywords POSTREF NOMULTI.)
+ Reflections from up to  3 images will be used in the refinement of missetting angles.
+
+
+ image FILENAME: /Volumes/Arthur/JCSG Data/1vpj/data/jcsg/als1/8.2.1/20040926/collection/TB0541B/12287/12287_1_E1_001.img
+
+ ************************************************
+ Processing Image    1  Phi  290.00 to  291.00
+ ************************************************
+   3876 Reflections generated:
+    798 Fully recorded
+   3078 Partials
+      8 Overlapped reflections
+     76 Too wide in phi
+ Number of partials extending over  2 to   4 images
+   2633   244    83
+  THERE ARE         6532  REFLECTIONS.
+ "MEDIAN" "   " "      "      ":            2     "  
+   NADD is currently.............           3
+   NIVB is now...................           2
+
+
+ ***** WARNING *****
+ ***** WARNING *****
+ ***** WARNING *****
+ Because the fraction of fully recorded reflections is less than 0.33, partials
+  will be included in the positional refinement.
+ This fraction can be reset with keywords REFINE FULLFRAC eg:
+ "REFINE FULLFRAC 0.5" will change it to 0.5
+ Partial reflections spanning more than  5 images will NOT be integrated.
+ (use MAXWIDTH to change but maximum width is 10 images).
+
+ Refinement cycle  1
+   280 Fulls and partials to be measured
+
+
+   7 reflections have been rejected because the  measurement box contains
+ pixels with values less or equal to    0 (assumed to be outside the scanned area).
+ See warning at end of logfile or in summary file.
+
+
+   3 reflections rejected because more than a fraction 0.50 of the background pixels were rejected
+ ***** WARNING *****
+ ***** WARNING *****
+ ***** WARNING *****
+ Because there are very few fully recorded reflections in the central region
+ of the image, partials will be used in forming the standard
+ profiles. This is equivalent to including keywords: PROFILE PARTIALS
+ If you do NOT want to include partials in forming profiles, use keywords:  PROFILE FULLS
+ Final rms residual:   0.023mm; Weighted residual    0.8
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.25  0.9982  169.67  0.9993   -30   -25
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.13  CCOM:   -0.0086
+
+ Refinement cycle  2
+
+ Repeating refinement using the same list of 60 reflections
+    60 Spots to be measured
+ Final rms residual:   0.024mm; Weighted residual    0.7
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.24  0.9978  169.61  0.9993   -35   -24
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.12  CCOM:   -0.0128
+    17 Fulls to be measured
+
+   17 Reflections included in AVERAGE SPOT PROFILE
+ Average spot profile for central region.
+ Rejected background pixels flagged by "*", true background by "-"
+ Final optimised raster parameters:   17   19   13    6    6
+ This gives  31 pixels in the peak and  77 in background after rejecting outliers.
+ Note that the number of background pixels rejected on any individual spot
+ may be much smaller than the number rejected here.
+
+ Separation parameters updated to   0.51mm in X and  0.71mm in Y
+ C. of G. SHIFTS = -0.013 -0.034mm  Background residual=  0.4 (peak scaled to 255)
+                    *0*0*0*0*0-0-0*1*1*5*I*M*8*2*1*0-0                                                  
+                    *0*0*0*0*0-0-0*0*1*3*A*B*3*1*1-0-0                                                  
+                    *0*0*0*0-0-0-0*0*1*1*3*3*1*1*0-0-0                                                  
+                    *0*0*0*0*0-0-0*0*0*1*1*1*1*0*0-0-0                                                  
+                    *0*0*0-0-0-0*0*0*1*1*1*1*0-0-0-0*0                                                  
+                    *0*0*0-0-0*0*1*1*1*1*1*0*0-0-0*0*0                                                  
+                    *0*0*0-0-0*1*1 1 2 1*1*1*0-0-0*0*0                                                  
+                    *0*0*0-0*0*1 2 5 7 4 2*1*0-0-0*0*0                                                  
+                    *0*0-0-0*0*1 3 G P B 3*1*0-0*0*0*0                                                  
+                    *0-0-0-0*1*1 4 L Z F 3*1*1-0-0*0*0                                                  
+                    *0*0-0*0*1*1 4 M X D 3*1*1-0*0*0*0                                                  
+                    *0*0-0-0*0*1 3 F I 7 2*1*0-0-0*0*0                                                  
+                    *0*0-0-0*0*1*2 5 5 2*1*1*0-0*0*0*0                                                  
+                    *0*0-0-0*0*1*1*1*1*1*1*0-0-0*0*0*0                                                  
+                    *0*0-0-0*0*0*1*1*1*1*0-0-0-0*0*0*0                                                  
+                    *0-0-0-0*0*1*1*0*0*0-0-0-0*0*0*0*0                                                  
+                    *0-0-0*0*1*1*1*1*0*0-0-0*0*0*0*0*0                                                  
+                    -0-0*0*1*2*4*3*1*1*0-0-0*0*0*0*0*0                                                  
+                    -0-0*1*1*5*E*9*2*1*0-0-0*0*0*0*0*0                                                  
+
+ If the peak region is too large, supply two values on the PROFILE TOLERANCE keyword.
+ The first value is used for the centre of the image, and the second for the
+ outermost profiles. See the helpfile for details.
+
+         41 Reflections outside scanned limits on X.
+
+         12 Reflections outside scanned limits on Y.
+
+
+ Refinement using reflections over entire image
+
+ ONLY     0 spots found in bin   8
+ Final rms residual:   0.037mm; Weighted residual    0.8
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.29  0.9987  169.75  0.9992   -22   -28
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.16  CCOM:    0.0066
+
+ Repeat refinement because initial or final residual is greater than   2.0
+    55 Spots to be measured
+ Final rms residual:   0.040mm; Weighted residual    0.8
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.29  0.9988  169.78  0.9992   -20   -28
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.17  CCOM:    0.0065
+
+         62 Reflections outside scanned limits on X.
+
+         26 Reflections outside scanned limits on Y.
+
+
+  MAX. No. of Active Reflections=    50
+  3704 Reflections written to scratch file for integration
+ image FILENAME: /Volumes/Arthur/JCSG Data/1vpj/data/jcsg/als1/8.2.1/20040926/collection/TB0541B/12287/12287_1_E1_002.img
+
+ ************************************************
+ Processing Image    2  Phi  291.00 to  292.00
+ ************************************************
+   3817 Reflections generated:
+    796 Fully recorded
+   3021 Partials
+     10 Overlapped reflections
+     76 Too wide in phi
+ Number of partials extending over  2 to   4 images
+   2570   245    89
+  THERE ARE         6533  REFLECTIONS.
+ "MEDIAN" "   " "      "      ":            2     "  
+   NADD is currently.............           3
+   NIVB is now...................           2
+ Partial reflections spanning more than  5 images will NOT be integrated.
+ (use MAXWIDTH to change but maximum width is 10 images).
+
+ Refinement cycle  1
+   240 Fulls and partials to be measured
+
+
+   3 reflections have been rejected because the  measurement box contains
+ pixels with values less or equal to    0 (assumed to be outside the scanned area).
+ See warning at end of logfile or in summary file.
+
+
+   7 reflections rejected because more than a fraction 0.50 of the background pixels were rejected
+ Final rms residual:   0.026mm; Weighted residual    0.6
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.23  0.9978  169.61  0.9994   -36   -26
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.13  CCOM:   -0.0079
+
+ Refinement cycle  2
+
+ Repeating refinement using the same list of 60 reflections
+    60 Spots to be measured
+ Final rms residual:   0.027mm; Weighted residual    0.5
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.22  0.9977  169.58  0.9995   -38   -26
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.12  CCOM:   -0.0112
+    13 Fulls to be measured
+
+   13 Reflections included in AVERAGE SPOT PROFILE
+ Average spot profile for central region.
+ Rejected background pixels flagged by "*", true background by "-"
+ C. of G. SHIFTS =  0.002  0.016mm  Background residual=  0.8 (peak scaled to 255)
+                    *0*0*0*0*0-0-0*1*2*7*M*V*C*3*1*1-0                                                  
+                    *0*0*0-0-0-0-1*1*1*3*8*A*4*2*1*1-0                                                  
+                    *0*0*0-1-1-0-1-1*1*1*2*2*2*1*1-1-0                                                  
+                    *0*0-0*1*1-1-1-1*1*1*1*1*1*1*1-1-0                                                  
+                    *0*0-0*1*1-1*1*1-1*1*1*1-1-1-1-0-0                                                  
+                    *0*0*0*1*1*1*1*1*1*1*1*1-1-1-0*0*0                                                  
+                    *0*0*0-1-1*1*2 3 4 3*1*1-1-0-0*0*0                                                  
+                    *0*0-0-0-1*1 3 A J B 3*1-1-1-0*0*0                                                  
+                    *0*0-0-0*1*1 4 G W K 5*2*1-0-0*0*0                                                  
+                    *0*0-0-0*1*1 5 J Z M 5*2*1-0-0*0*0                                                  
+                    *0-0-0-0-1*1 5 G R G 4*1*1-1-0-0-0                                                  
+                    -0-0-0-0-1*1 3 8 C 7 2*1*1-0-0-0-0                                                  
+                    -1-1-0-0-0*1*1 2 3 2*1*1-0-0-0*0*0                                                  
+                    -1-1-0-0-0-1*1*1*1*1*1-1-0-0*0*0*0                                                  
+                    *1*1-0-0-1-1*1*1-1*1-1-1-0-0-0-0*0                                                  
+                    -1-1-1-1-1*1*1*1-1-1-1-0-0-0-0-0*0                                                  
+                    -0-1-1*1*1*2*2*1*1-1-1-0*0*0*0-0-0                                                  
+                    -0-0*1*1*4*8*5*2*1-1-0-0-0*0*0*0*0                                                  
+                    -0-1*1*2*9*L*E*3*1*1-0-0-0*0*0*0*0                                                  
+
+         24 Reflections outside scanned limits on X.
+
+         14 Reflections outside scanned limits on Y.
+
+
+ Refinement using reflections over entire image
+
+ ONLY     3 spots found in bin   1
+ ONLY     1 spots found in bin   8
+ Final rms residual:   0.070mm; Weighted residual    0.9
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.97  105.23  0.9981  169.65  0.9992   -26   -23
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.01   CCY:     0.11  CCOM:   -0.0184
+
+         42 Reflections outside scanned limits on X.
+
+         30 Reflections outside scanned limits on Y.
+
+
+  MAX. No. of Active Reflections=    50
+  3659 Reflections written to scratch file for integration
+
+ Post refinement
+  No. of refined cell parameters     0
+  No. of refined cell angles         0
+
+  Synchrotron source geometry 
+  Mosaic spread (DEG)              0.402166
+  Horizontal beam diverg (DEG)     0.100000
+  Vertical beam diverg  (DEG)      0.020000
+  Conventional spectral dispersion 0.001500
+  Correlated spectral dispersion   0.000000
+
+ Initial orientation angles (DEG):     -0.01     -0.03      0.02
+ Reciprocal cell dimensions:
+  0.018975 0.018975 0.006215   90.00   90.00   90.00
+
+  Total number of reflections =  534
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+          PARAMETER REFINEMENT PASS  2
+
+ Reflections rejected if angular error >  0.12 deg.
+
+ Number of reflections rejected:     6
+ Sum of (RO-RC)/D*)**2 =   0.00027254 Rms Resid =    0.041 degrees
+
+           PSIX      PSIY      PSIZ    Refined reciprocal cell parameters
+   Old     -0.018     0.002    -0.006
+ Shifts               0.000     0.000
+   New     -0.018     0.002    -0.005
+  S.D.                0.003     0.002
+
+         Mosaic spread
+   Old    0.470
+ Shifts   0.000
+   New    0.470
+  S.D.    0.010
+
+            Refined Orientation Angles
+          PHIX       PHIY       PHIZ
+           -0.020    -0.048     0.018
+
+         Mosaic spread
+   New    0.470
+  S.D.    0.010
+
+          Reciprocal cell parameters
+       0.018975  0.018975  0.006215    90.000    90.000    90.000
+
+          Real cell parameters
+         51.630    51.630   157.637    90.000    90.000    90.000
+
+
+     Orientation Matrix [A] or [UB]               Matrix [U]
+      -0.006616 -0.017236 -0.001435      -0.348662 -0.908377 -0.230837
+       0.017442 -0.007201  0.000653       0.919208 -0.379509  0.105025
+      -0.003473 -0.003331  0.006011      -0.183008 -0.175570  0.967308
+
+ Smoothed value for refined mosaic spread (including safety factor):   0.49
+
+ image FILENAME: /Volumes/Arthur/JCSG Data/1vpj/data/jcsg/als1/8.2.1/20040926/collection/TB0541B/12287/12287_1_E1_003.img
+
+ ************************************************
+ Processing Image    3  Phi  292.00 to  293.00
+ ************************************************
+   4165 Reflections generated:
+    587 Fully recorded
+   3578 Partials
+     12 Overlapped reflections
+    107 Too wide in phi
+ Number of partials extending over  2 to   4 images
+   2904   397   103
+  THERE ARE         7023  REFLECTIONS.
+ "MEDIAN" "   " "      "      ":            2     "  
+   NADD is currently.............           3
+   NIVB is now...................           2
+ Partial reflections spanning more than  5 images will NOT be integrated.
+ (use MAXWIDTH to change but maximum width is 10 images).
+
+ Refinement cycle  1
+   263 Fulls and partials to be measured
+
+
+   6 reflections have been rejected because the  measurement box contains
+ pixels with values less or equal to    0 (assumed to be outside the scanned area).
+ See warning at end of logfile or in summary file.
+
+
+   1 reflections rejected because more than a fraction 0.50 of the background pixels were rejected
+ Final rms residual:   0.025mm; Weighted residual    0.7
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.23  0.9980  169.64  0.9994   -30   -22
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.13  CCOM:   -0.0095
+
+ Refinement cycle  2
+
+ Repeating refinement using the same list of 60 reflections
+    60 Spots to be measured
+ Final rms residual:   0.026mm; Weighted residual    0.6
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.94  105.23  0.9979  169.63  0.9994   -34   -23
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.12  CCOM:   -0.0151
+    21 Fulls to be measured
+
+   21 Reflections included in AVERAGE SPOT PROFILE
+ Average spot profile for central region.
+ Rejected background pixels flagged by "*", true background by "-"
+ C. of G. SHIFTS =  0.002  0.002mm  Background residual=  0.5 (peak scaled to 255)
+                    *0*0*0*0*0-0-0*1*1*4*F*H*8*2*1*0-0                                                  
+                    *0*0*0*0-0-0-0*1*1*2*6*5*2*1*1-0-0                                                  
+                    *0*0*0*0*0-0-0-0*1*1*2*2*1*1*0-0-0                                                  
+                    *0*0*0*0-0-0-0*1*1*1*1*1*1*1-0-0*0                                                  
+                    *0*0*0*0-0-1*1*1*1*1*1*1*1-0-0-0*0                                                  
+                    *0*0*0-0-1*1*1*1*1*1*1*1-0-0-0*0*0                                                  
+                    *0*0-0-0*1*1*1 3 4 2*1*1*0-0-0*0*0                                                  
+                    *0-0-0-0*1*1 2 8 F 9 3*1*1-0-0*0*0                                                  
+                    *0*0-0-0*1*1 3 F U I 5*1*1-0-0*0*0                                                  
+                    *0*0-0-1*1*1 4 I Z L 5*1*1-0-0*0*0                                                  
+                    *0*0-0-1*1*1 4 I U G 4*1*1-0-0*0*0                                                  
+                    *0*0-0-0*1*1 3 B D 6 2*1*1-0-0*0*0                                                  
+                    *0*0-0-0-1*1*1 3 3 2*1*1-0-0-0*0*0                                                  
+                    *0*0-0-0-0*1*1*1*1*1*1*1-0-0*0*0*0                                                  
+                    *0*0-0-0-1*1*1*1*1*1*1-0-0-0*0*0*0                                                  
+                    -0-0-0*1*1*1*1*1*1-0-0-0-0*0*0*0*0                                                  
+                    -0-0-1*1*1*2*2*1*1-0-0-0*0*0*0*0*0                                                  
+                    -1-0*1*1*3*6*5*2*1-0-0-0*0*0*0*0*0                                                  
+                    -1-1*1*1*6*E*B*3*1-0-0-0*0*0*0*0*0                                                  
+
+         42 Reflections outside scanned limits on X.
+
+         18 Reflections outside scanned limits on Y.
+
+
+ Refinement using reflections over entire image
+
+ ONLY     4 spots found in bin   7
+ ONLY     0 spots found in bin   8
+ Final rms residual:   0.042mm; Weighted residual    0.7
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.24  0.9985  169.73  0.9994   -21   -26
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.14  CCOM:    0.0077
+
+         77 Reflections outside scanned limits on X.
+
+         42 Reflections outside scanned limits on Y.
+
+
+  MAX. No. of Active Reflections=    50
+  3927 Reflections written to scratch file for integration
+
+ Post refinement
+  No. of refined cell parameters     0
+  No. of refined cell angles         0
+
+  Synchrotron source geometry 
+  Mosaic spread (DEG)              0.493354
+  Horizontal beam diverg (DEG)     0.100000
+  Vertical beam diverg  (DEG)      0.020000
+  Conventional spectral dispersion 0.001500
+  Correlated spectral dispersion   0.000000
+
+ Initial orientation angles (DEG):     -0.02     -0.04      0.01
+ Reciprocal cell dimensions:
+  0.018975 0.018975 0.006215   90.00   90.00   90.00
+
+  Total number of reflections = 1056
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+          PARAMETER REFINEMENT PASS  2
+
+ Reflections rejected if angular error >  0.12 deg.
+
+ Number of reflections rejected:    14
+ Sum of (RO-RC)/D*)**2 =   0.00052435 Rms Resid =    0.041 degrees
+
+           PSIX      PSIY      PSIZ    Refined reciprocal cell parameters
+   Old      0.008    -0.003    -0.014
+ Shifts               0.000     0.000
+   New      0.008    -0.003    -0.014
+  S.D.                0.003     0.002
+
+         Mosaic spread
+   Old    0.456
+ Shifts   0.000
+   New    0.455
+  S.D.    0.007
+
+            Refined Orientation Angles
+          PHIX       PHIY       PHIZ
+           -0.011    -0.032    -0.001
+
+         Mosaic spread
+   New    0.455
+  S.D.    0.007
+
+          Reciprocal cell parameters
+       0.018975  0.018975  0.006215    90.000    90.000    90.000
+
+          Real cell parameters
+         51.630    51.630   157.637    90.000    90.000    90.000
+
+
+     Orientation Matrix [A] or [UB]               Matrix [U]
+      -0.006616 -0.017236 -0.001435      -0.348662 -0.908377 -0.230837
+       0.017442 -0.007201  0.000653       0.919208 -0.379509  0.105025
+      -0.003473 -0.003331  0.006011      -0.183008 -0.175570  0.967308
+
+ Smoothed value for refined mosaic spread (including safety factor):   0.49
+
+ image FILENAME: /Volumes/Arthur/JCSG Data/1vpj/data/jcsg/als1/8.2.1/20040926/collection/TB0541B/12287/12287_1_E1_004.img
+
+ ************************************************
+ Processing Image    4  Phi  293.00 to  294.00
+ ************************************************
+   4126 Reflections generated:
+    583 Fully recorded
+   3543 Partials
+     14 Overlapped reflections
+    102 Too wide in phi
+ Number of partials extending over  2 to   4 images
+   2888   380   104
+  THERE ARE         7007  REFLECTIONS.
+ "MEDIAN" "   " "      "      ":            2     "  
+   NADD is currently.............           3
+   NIVB is now...................           2
+ Partial reflections spanning more than  5 images will NOT be integrated.
+ (use MAXWIDTH to change but maximum width is 10 images).
+
+ Refinement cycle  1
+   233 Fulls and partials to be measured
+
+
+   4 reflections have been rejected because the  measurement box contains
+ pixels with values less or equal to    0 (assumed to be outside the scanned area).
+ See warning at end of logfile or in summary file.
+ Final rms residual:   0.025mm; Weighted residual    0.7
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.24  0.9980  169.64  0.9993   -26   -27
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.13  CCOM:   -0.0135
+
+ Refinement cycle  2
+
+ Repeating refinement using the same list of 60 reflections
+    60 Spots to be measured
+ Final rms residual:   0.027mm; Weighted residual    0.6
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.24  0.9980  169.64  0.9993   -28   -28
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.12  CCOM:   -0.0152
+    15 Fulls to be measured
+
+   15 Reflections included in AVERAGE SPOT PROFILE
+ Average spot profile for central region.
+ Rejected background pixels flagged by "*", true background by "-"
+ C. of G. SHIFTS =  0.002  0.004mm  Background residual=  0.3 (peak scaled to 255)
+                    *0*0*0*0*0*0-0*0*1*4*C*D*6*1*1-0*0                                                  
+                    *0*0*0*0*0-0-0*0*1*2*5*4*2*1*0-0-0                                                  
+                    *0*0*0*0*0*0-0*0*0*1*1*1*1*0-0-0*0                                                  
+                    *0*0*0*0-0-0-0*0*0*0*1*1*0-0-0-0*0                                                  
+                    *0*0*0*0-0-0*0*1*1*1*1*0*0-0-0*0*0                                                  
+                    *0*0*0-0-0*0*1*1*1*1*1*1*0-0-0*0*0                                                  
+                    *0*0*0-0*0*1*1 2 4 3*1*1*0-0-0*0*0                                                  
+                    *0*0-0-0*0*1 2 8 G 9 2*1*0-0-0*0*0                                                  
+                    *0*0-0-0*1*1 3 D U I 4*1*1*0-0*0*0                                                  
+                    *0*0-0-0*1*1 3 G Z K 5*1*1*0-0*0*0                                                  
+                    *0*0-0-0*0*1 3 G V F 3*1*1*0-0*0*0                                                  
+                    *0*0-0-0*0*1 3 A E 6 2*1*0-0-0*0*0                                                  
+                    *0-0-0-0*0*1*1 2 3 2*1*1*0-0*0*0*0                                                  
+                    *0-0-0-0*0*0*1*1*1*1*1*0-0-0*0*0*0                                                  
+                    *0-0-0-0*0*0*0*0*0*0*0-0-0-0*0*0*0                                                  
+                    *0-0-0*0*0*1*0*0*0*0-0-0*0*0*0*0*0                                                  
+                    *0-0-0*0*1*1*1*1*0-0-0-0*0*0*0*0*0                                                  
+                    *0-0*0*1*2*5*4*1*1*0-0-0*0*0*0*0*0                                                  
+                    -0-0*1*1*5*D*B*2*1*0-0-0*0*0*0*0*0                                                  
+
+         38 Reflections outside scanned limits on X.
+
+         21 Reflections outside scanned limits on Y.
+
+
+ Refinement using reflections over entire image
+
+ ONLY     4 spots found in bin   1
+ ONLY     1 spots found in bin   8
+ Final rms residual:   0.045mm; Weighted residual    0.9
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.97  105.31  0.9986  169.74  0.9987   -17   -28
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.01   CCY:     0.13  CCOM:    0.0006
+
+         63 Reflections outside scanned limits on X.
+
+         37 Reflections outside scanned limits on Y.
+
+
+  MAX. No. of Active Reflections=    50
+  3910 Reflections written to scratch file for integration
+
+ Post refinement
+  No. of refined cell parameters     2
+  No. of refined cell angles         0
+
+  Synchrotron source geometry 
+  Mosaic spread (DEG)              0.485745
+  Horizontal beam diverg (DEG)     0.100000
+  Vertical beam diverg  (DEG)      0.020000
+  Conventional spectral dispersion 0.001500
+  Correlated spectral dispersion   0.000000
+
+ Initial orientation angles (DEG):     -0.01     -0.03      0.00
+ Reciprocal cell dimensions:
+  0.018975 0.018975 0.006215   90.00   90.00   90.00
+
+  Total number of reflections = 1679
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+          PARAMETER REFINEMENT PASS  2
+
+ Reflections rejected if angular error >  0.13 deg.
+
+ Number of reflections rejected:    38
+ Sum of (RO-RC)/D*)**2 =   0.00088430 Rms Resid =    0.042 degrees
+
+           PSIX      PSIY      PSIZ    Refined reciprocal cell parameters
+   Old      0.001     0.000     0.000  0.018984  0.006216
+ Shifts               0.000     0.000  0.000000  0.000000
+   New      0.001     0.000     0.000  0.018984  0.006216
+  S.D.                0.003     0.002  0.000003  0.000001
+
+         Mosaic spread
+   Old    0.461
+ Shifts   0.000
+   New    0.461
+  S.D.    0.006
+
+            Refined Orientation Angles
+          PHIX       PHIY       PHIZ
+           -0.013    -0.030     0.001
+
+         Mosaic spread
+   New    0.461
+  S.D.    0.006
+
+          Reciprocal cell parameters
+       0.018984  0.018984  0.006216    90.000    90.000    90.000
+
+          Real cell parameters
+         51.606    51.606   157.600    90.000    90.000    90.000
+
+
+     Orientation Matrix [A] or [UB]               Matrix [U]
+      -0.006619 -0.017244 -0.001435      -0.348662 -0.908377 -0.230837
+       0.017450 -0.007204  0.000653       0.919208 -0.379509  0.105025
+      -0.003474 -0.003333  0.006013      -0.183008 -0.175570  0.967308
+
+ Smoothed value for refined mosaic spread (including safety factor):   0.49
+
+
+
+ ***** Cell parameter shift (  3.0 sds) exceeds limit of  2.5 sds *****
+ Repeating the entire run, using the refined cell parameters as given above
+
+ New orientation matrix written to (keyword NEWMAT): xiarefine.mat
+ The missetting angles in this file are the refined missets for the FIRST image
+ in the post-refinement.
+
+FORMATTED      UNKNOWN file opened on unit  12
+<B><FONT COLOR="#FF0000"><!--SUMMARY_BEGIN-->
+Logical name: xiarefine.mat, Filename: xiarefine.mat
+<!--SUMMARY_END--></FONT></B>
+
+
+ Only  0 of the 55 reflections used in CENTRS refinement located in new
+ generate file
+   0 of these are fully recorded
+   4186 Reflections generated:
+    611 Fully recorded
+   3575 Partials
+      8 Overlapped reflections
+    106 Too wide in phi
+ Number of partials extending over  2 to   4 images
+   2934   373   107
+  THERE ARE         7032  REFLECTIONS.
+ "MEDIAN" "   " "      "      ":            2     "  
+   NADD is currently.............           3
+   NIVB is now...................           2
+
+
+ *** Post-refinement will use partials extending over several images ***
+ This is equivalent to including a POSTREF MULTI keyword.
+ (To prevent this, include keywords POSTREF NOMULTI.)
+ Reflections from up to  3 images will be used in the refinement of missetting angles.
+
+
+ image FILENAME: /Volumes/Arthur/JCSG Data/1vpj/data/jcsg/als1/8.2.1/20040926/collection/TB0541B/12287/12287_1_E1_001.img
+
+ ************************************************
+ Processing Image    1  Phi  290.00 to  291.00
+ ************************************************
+   4167 Reflections generated:
+    593 Fully recorded
+   3574 Partials
+      8 Overlapped reflections
+    105 Too wide in phi
+ Number of partials extending over  2 to   4 images
+   2942   365   107
+  THERE ARE         7020  REFLECTIONS.
+ "MEDIAN" "   " "      "      ":            2     "  
+   NADD is currently.............           3
+   NIVB is now...................           2
+
+
+ ***** WARNING *****
+ ***** WARNING *****
+ ***** WARNING *****
+ Because the fraction of fully recorded reflections is less than 0.33, partials
+  will be included in the positional refinement.
+ This fraction can be reset with keywords REFINE FULLFRAC eg:
+ "REFINE FULLFRAC 0.5" will change it to 0.5
+ Partial reflections spanning more than  5 images will NOT be integrated.
+ (use MAXWIDTH to change but maximum width is 10 images).
+
+ Refinement cycle  1
+   276 Fulls and partials to be measured
+
+
+   7 reflections have been rejected because the  measurement box contains
+ pixels with values less or equal to    0 (assumed to be outside the scanned area).
+ See warning at end of logfile or in summary file.
+
+
+   2 reflections rejected because more than a fraction 0.50 of the background pixels were rejected
+ Final rms residual:   0.023mm; Weighted residual    0.7
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.23  0.9977  169.59  0.9995   -29   -23
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.13  CCOM:    0.0042
+
+ Refinement cycle  2
+
+ Repeating refinement using the same list of 60 reflections
+    60 Spots to be measured
+ Final rms residual:   0.023mm; Weighted residual    0.5
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.20  0.9976  169.56  0.9996   -33   -24
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.12  CCOM:    0.0016
+    12 Fulls to be measured
+
+   12 Reflections included in AVERAGE SPOT PROFILE
+ Average spot profile for central region.
+ Rejected background pixels flagged by "*", true background by "-"
+ Final optimised raster parameters:   17   19   13    6    6
+ This gives  31 pixels in the peak and  86 in background after rejecting outliers.
+ Note that the number of background pixels rejected on any individual spot
+ may be much smaller than the number rejected here.
+
+ Separation parameters updated to   0.51mm in X and  0.71mm in Y
+ C. of G. SHIFTS = -0.008 -0.020mm  Background residual=  0.4 (peak scaled to 255)
+                    *0*0*0*0*0*0-0*1*1*4*H*M*7*2*1*0-0                                                  
+                    *0*0*0*0*0-0-0*0*1*3*9*9*3*1*1-0-0                                                  
+                    *0*0*0*0-0-0-0*0*1*1*2*2*1*1*0-0-0                                                  
+                    *0*0*0*0-0-0-0*0*1*1*1*1*1*0-0-0*0                                                  
+                    *0*0*0-0-0-0*0*0*1*1*1*1*0-0-0-0*0                                                  
+                    *0*0*0*0-0-0*1*1*1*1*1*0-0-0-0*0*0                                                  
+                    *0*0*0-0-0*0*1 2 2 2*1*1-0-0-0*0*0                                                  
+                    *0*0*0-0*0*1 2 5 A 6 2*1*0-0-0*0*0                                                  
+                    *0*0-0-0*0*1 3 D Q D 3*1*0-0-0-0*0                                                  
+                    *0-0-0-0*1*1 4 H Z F 3*1*1-0-0-0*0                                                  
+                    *0-0-0-0*0*1 4 I V B 3*1*0-0-0*0*0                                                  
+                    *0-0-0-0*0*1 3 C H 5 2*1*0-0-0*0*0                                                  
+                    *0-0-0-0*0*1*2 4 5 2*1*1-0-0*0*0*0                                                  
+                    *0*0-0-0*0*0*1*1*1*1*1*0-0-0*0*0*0                                                  
+                    *0*0-0-0*0*0*1*1*1*0-0-0-0-0*0*0*0                                                  
+                    *0-0-0*0*0*1*1*1*0*0-0-0*0*0*0*0*0                                                  
+                    *0-0-0*1*1*1*1*1*1*0-0-0*0*0*0*0*0                                                  
+                    -0-0*0*1*2*5*4*1*1*0-0*0*0*0*0*0*0                                                  
+                    -0-0*1*1*6*H*B*3*1*0-0-0*0*0*0*0*0                                                  
+
+ If the peak region is too large, supply two values on the PROFILE TOLERANCE keyword.
+ The first value is used for the centre of the image, and the second for the
+ outermost profiles. See the helpfile for details.
+
+         47 Reflections outside scanned limits on X.
+
+         11 Reflections outside scanned limits on Y.
+
+
+ Refinement using reflections over entire image
+
+ ONLY     0 spots found in bin   8
+ Final rms residual:   0.038mm; Weighted residual    0.7
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.96  105.27  0.9981  169.66  0.9992   -21   -28
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.14  CCOM:    0.0187
+
+         73 Reflections outside scanned limits on X.
+
+         34 Reflections outside scanned limits on Y.
+
+
+  MAX. No. of Active Reflections=    50
+  3947 Reflections written to scratch file for integration
+ image FILENAME: /Volumes/Arthur/JCSG Data/1vpj/data/jcsg/als1/8.2.1/20040926/collection/TB0541B/12287/12287_1_E1_002.img
+
+ ************************************************
+ Processing Image    2  Phi  291.00 to  292.00
+ ************************************************
+   4134 Reflections generated:
+    602 Fully recorded
+   3532 Partials
+      8 Overlapped reflections
+    108 Too wide in phi
+ Number of partials extending over  2 to   4 images
+   2881   375   109
+  THERE ARE         7027  REFLECTIONS.
+ "MEDIAN" "   " "      "      ":            2     "  
+   NADD is currently.............           3
+   NIVB is now...................           2
+ Partial reflections spanning more than  5 images will NOT be integrated.
+ (use MAXWIDTH to change but maximum width is 10 images).
+
+ Refinement cycle  1
+   240 Fulls and partials to be measured
+
+
+   3 reflections have been rejected because the  measurement box contains
+ pixels with values less or equal to    0 (assumed to be outside the scanned area).
+ See warning at end of logfile or in summary file.
+
+
+   7 reflections rejected because more than a fraction 0.50 of the background pixels were rejected
+ Final rms residual:   0.025mm; Weighted residual    0.5
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.21  0.9973  169.53  0.9996   -35   -24
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.12  CCOM:    0.0067
+
+ Refinement cycle  2
+
+ Repeating refinement using the same list of 60 reflections
+    60 Spots to be measured
+ Final rms residual:   0.026mm; Weighted residual    0.4
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.19  0.9972  169.50  0.9997   -36   -23
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.12  CCOM:    0.0064
+     8 Fulls to be measured
+
+    8 Reflections included in AVERAGE SPOT PROFILE
+ Average spot profile for central region.
+ Rejected background pixels flagged by "*", true background by "-"
+ C. of G. SHIFTS = -0.024  0.021mm  Background residual=  0.8 (peak scaled to 255)
+                    *0*0*0*0-0-0-0*1*2*8*P*N*7*2*1-0-0                                                  
+                    *0*0*0-0-0-0-0*1*1*3*8*7*3*1*1-0-0                                                  
+                    *0*0*0-1-1-0-0*1*1*1*2*2*1*1-1-0-0                                                  
+                    *0*0-0*1*1-1-1-1*1*1*1*1*1-1-0-0-0                                                  
+                    *0*0-0*1*1*1*1*1*1*1*1*1-1-0-0-0-0                                                  
+                    *0*0-0*1*1*1*1*1*1*1*1*1-0-0-0-0-0                                                  
+                    *0*0-0-1*1*1*2 3 4 2*1*1-0-0-0-0*0                                                  
+                    *0*0-0-0*1*1 4 D L 7 2*1-0-0-0*0*0                                                  
+                    *0*0-0-0*1*2 5 K W C 2*1*1-0-0*0*0                                                  
+                    *0-0-0-0*1*2 6 N Z D 3*1-1-0-0*0*0                                                  
+                    *0-0-0-0*1*1 5 K O 9 2*1-1-0-0-0*0                                                  
+                    -0-0-0-0-1*1 3 A 9 4 2*1-1-0-0-0-0                                                  
+                    -1-1-0-0-0*1*1 2 2 1*1*1-0-0-0-0-0                                                  
+                    *1-1-0-0-0-1*1*1*1*1*1-0-0-0-0-0*0                                                  
+                    *1*1-0-0-0-0-1-1-1-1-0-0-0-0-0-0*0                                                  
+                    *1-1-0-0-0-1-1-0-1-0-0-0-0-0-0-0-0                                                  
+                    -0-0-0-1*1*1*1*1-1-0-0-0*0*0-0-0-0                                                  
+                    *0-0-1*1*2*3*2*1*1-0-0-0-0-0-0-0-0                                                  
+                    -0-0*1*2*5*A*7*2*1-0-0-0-0*0*0-0-0                                                  
+
+         24 Reflections outside scanned limits on X.
+
+         16 Reflections outside scanned limits on Y.
+
+
+ Refinement using reflections over entire image
+
+ ONLY     0 spots found in bin   8
+ Final rms residual:   0.044mm; Weighted residual    0.5
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.22  0.9978  169.61  0.9995   -25   -22
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.13  CCOM:    0.0103
+
+         51 Reflections outside scanned limits on X.
+
+         37 Reflections outside scanned limits on Y.
+
+
+  MAX. No. of Active Reflections=    50
+  3929 Reflections written to scratch file for integration
+
+ Post refinement
+  No. of refined cell parameters     0
+  No. of refined cell angles         0
+
+  Synchrotron source geometry 
+  Mosaic spread (DEG)              0.485325
+  Horizontal beam diverg (DEG)     0.100000
+  Vertical beam diverg  (DEG)      0.020000
+  Conventional spectral dispersion 0.001500
+  Correlated spectral dispersion   0.000000
+
+ Initial orientation angles (DEG):     -0.02     -0.05      0.02
+ Reciprocal cell dimensions:
+  0.018984 0.018984 0.006216   90.00   90.00   90.00
+
+  Total number of reflections =  546
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+          PARAMETER REFINEMENT PASS  2
+
+ Reflections rejected if angular error >  0.13 deg.
+
+ Number of reflections rejected:     9
+ Sum of (RO-RC)/D*)**2 =   0.00028468 Rms Resid =    0.042 degrees
+
+           PSIX      PSIY      PSIZ    Refined reciprocal cell parameters
+   Old      0.010     0.003    -0.002
+ Shifts               0.000     0.000
+   New      0.010     0.003    -0.002
+  S.D.                0.003     0.002
+
+         Mosaic spread
+   Old    0.494
+ Shifts   0.000
+   New    0.494
+  S.D.    0.010
+
+            Refined Orientation Angles
+          PHIX       PHIY       PHIZ
+           -0.019    -0.037     0.014
+
+         Mosaic spread
+   New    0.494
+  S.D.    0.010
+
+          Reciprocal cell parameters
+       0.018984  0.018984  0.006216    90.000    90.000    90.000
+
+          Real cell parameters
+         51.606    51.606   157.600    90.000    90.000    90.000
+
+
+     Orientation Matrix [A] or [UB]               Matrix [U]
+      -0.006619 -0.017244 -0.001435      -0.348662 -0.908377 -0.230837
+       0.017450 -0.007204  0.000653       0.919208 -0.379509  0.105025
+      -0.003474 -0.003333  0.006013      -0.183008 -0.175570  0.967308
+
+ Smoothed value for refined mosaic spread (including safety factor):   0.52
+
+ image FILENAME: /Volumes/Arthur/JCSG Data/1vpj/data/jcsg/als1/8.2.1/20040926/collection/TB0541B/12287/12287_1_E1_003.img
+
+ ************************************************
+ Processing Image    3  Phi  292.00 to  293.00
+ ************************************************
+   4245 Reflections generated:
+    538 Fully recorded
+   3707 Partials
+     12 Overlapped reflections
+    116 Too wide in phi
+ Number of partials extending over  2 to   4 images
+   2968   432   115
+  THERE ARE         7165  REFLECTIONS.
+ "MEDIAN" "   " "      "      ":            2     "  
+   NADD is currently.............           3
+   NIVB is now...................           2
+ Partial reflections spanning more than  5 images will NOT be integrated.
+ (use MAXWIDTH to change but maximum width is 10 images).
+
+ Refinement cycle  1
+   265 Fulls and partials to be measured
+
+
+   6 reflections have been rejected because the  measurement box contains
+ pixels with values less or equal to    0 (assumed to be outside the scanned area).
+ See warning at end of logfile or in summary file.
+
+
+   1 reflections rejected because more than a fraction 0.50 of the background pixels were rejected
+ Final rms residual:   0.023mm; Weighted residual    0.6
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.21  0.9976  169.57  0.9996   -28   -25
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.12  CCOM:   -0.0216
+
+ Refinement cycle  2
+
+ Repeating refinement using the same list of 60 reflections
+    60 Spots to be measured
+ Final rms residual:   0.025mm; Weighted residual    0.5
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.20  0.9976  169.57  0.9996   -30   -27
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.12  CCOM:   -0.0272
+    23 Fulls to be measured
+
+   23 Reflections included in AVERAGE SPOT PROFILE
+ Average spot profile for central region.
+ Rejected background pixels flagged by "*", true background by "-"
+ C. of G. SHIFTS =  0.002 -0.010mm  Background residual=  0.5 (peak scaled to 255)
+                    *0*0*0*0*0-0-0*1*1*4*F*H*9*2*1*0-0                                                  
+                    *0*0*0*0*0-0-0*1*1*2*7*6*3*1*1-0*0                                                  
+                    *0*0*0*0*0-0-0-1*1*1*2*2*1*1*0-0-0                                                  
+                    *0*0*0*0-0-0-1*1*1*1*1*1*1*1-0-0*0                                                  
+                    *0*0*0*0-0-0*1*1*1*1*1*1*1-0-0-0*0                                                  
+                    *0*0*0-0-1*1*1*1*1*1*1*1-0-0-0*0*0                                                  
+                    *0*0*0-0*1*1*1 2 3 2*1*1-0-0-0*0*0                                                  
+                    *0-0-0-0*1*1 2 8 D 8 2*1*1-0-0*0*0                                                  
+                    *0*0-0-1*1*1 3 F T H 4*1*1-0-0*0*0                                                  
+                    *0*0-0-1*1*1 4 I Z L 5*1*1-0-0*0*0                                                  
+                    *0-0-0-1*1*1 4 J V H 5*1*1-0-0*0*0                                                  
+                    -0-0-0-0*1*1 3 C G 8 2*1*1-0-0*0*0                                                  
+                    *0*0-0-0*1*1*2 3 4 2*1*1-0-0-0*0*0                                                  
+                    *0*0*0-0-1*1*1*1*1*1*1*1-0-0*0*0*0                                                  
+                    -0-0-0-0*1*1*1*1*1*1*1-0-0-0*0*0*0                                                  
+                    -0-0-0*1*1*1*1*1*1*1-0-0-0*0*0*0*0                                                  
+                    -1-1*1*1*1*2*2*1*1*0-0-0-0*0*0*0*0                                                  
+                    -1-1*1*1*3*6*5*2*1*1-0-0*0*0*0*0*0                                                  
+                    -1-1*1*2*7*H*E*4*1*1-0-0*0*0*0*0*0                                                  
+
+         41 Reflections outside scanned limits on X.
+
+         16 Reflections outside scanned limits on Y.
+
+
+ Refinement using reflections over entire image
+
+ ONLY     0 spots found in bin   8
+ Final rms residual:   0.042mm; Weighted residual    0.9
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.96  105.22  0.9980  169.64  0.9996   -19   -26
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.13  CCOM:   -0.0015
+
+         75 Reflections outside scanned limits on X.
+
+         43 Reflections outside scanned limits on Y.
+
+
+  MAX. No. of Active Reflections=    50
+  3999 Reflections written to scratch file for integration
+
+ Post refinement
+  No. of refined cell parameters     0
+  No. of refined cell angles         0
+
+  Synchrotron source geometry 
+  Mosaic spread (DEG)              0.518197
+  Horizontal beam diverg (DEG)     0.100000
+  Vertical beam diverg  (DEG)      0.020000
+  Conventional spectral dispersion 0.001500
+  Correlated spectral dispersion   0.000000
+
+ Initial orientation angles (DEG):     -0.01     -0.03      0.00
+ Reciprocal cell dimensions:
+  0.018984 0.018984 0.006216   90.00   90.00   90.00
+
+  Total number of reflections = 1132
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+          PARAMETER REFINEMENT PASS  2
+
+ Reflections rejected if angular error >  0.13 deg.
+
+ Number of reflections rejected:    17
+ Sum of (RO-RC)/D*)**2 =   0.00066652 Rms Resid =    0.044 degrees
+
+           PSIX      PSIY      PSIZ    Refined reciprocal cell parameters
+   Old     -0.001    -0.003    -0.002
+ Shifts               0.000     0.000
+   New     -0.001    -0.003    -0.002
+  S.D.                0.003     0.003
+
+         Mosaic spread
+   Old    0.482
+ Shifts   0.000
+   New    0.482
+  S.D.    0.007
+
+            Refined Orientation Angles
+          PHIX       PHIY       PHIZ
+           -0.011    -0.033    -0.002
+
+         Mosaic spread
+   New    0.482
+  S.D.    0.007
+
+          Reciprocal cell parameters
+       0.018984  0.018984  0.006216    90.000    90.000    90.000
+
+          Real cell parameters
+         51.606    51.606   157.600    90.000    90.000    90.000
+
+
+     Orientation Matrix [A] or [UB]               Matrix [U]
+      -0.006619 -0.017244 -0.001435      -0.348662 -0.908377 -0.230837
+       0.017450 -0.007204  0.000653       0.919208 -0.379509  0.105025
+      -0.003474 -0.003333  0.006013      -0.183008 -0.175570  0.967307
+
+ Smoothed value for refined mosaic spread (including safety factor):   0.51
+
+ image FILENAME: /Volumes/Arthur/JCSG Data/1vpj/data/jcsg/als1/8.2.1/20040926/collection/TB0541B/12287/12287_1_E1_004.img
+
+ ************************************************
+ Processing Image    4  Phi  293.00 to  294.00
+ ************************************************
+   4218 Reflections generated:
+    528 Fully recorded
+   3690 Partials
+     12 Overlapped reflections
+    112 Too wide in phi
+ Number of partials extending over  2 to   4 images
+   2962   427   116
+  THERE ARE         7157  REFLECTIONS.
+ "MEDIAN" "   " "      "      ":            2     "  
+   NADD is currently.............           3
+   NIVB is now...................           2
+ Partial reflections spanning more than  5 images will NOT be integrated.
+ (use MAXWIDTH to change but maximum width is 10 images).
+
+ Refinement cycle  1
+   233 Fulls and partials to be measured
+
+
+   4 reflections have been rejected because the  measurement box contains
+ pixels with values less or equal to    0 (assumed to be outside the scanned area).
+ See warning at end of logfile or in summary file.
+ Final rms residual:   0.025mm; Weighted residual    0.5
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.20  0.9975  169.55  0.9997   -28   -24
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.12  CCOM:   -0.0179
+
+ Refinement cycle  2
+
+ Repeating refinement using the same list of 60 reflections
+    60 Spots to be measured
+ Final rms residual:   0.028mm; Weighted residual    0.4
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.95  105.20  0.9973  169.52  0.9997   -32   -26
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.00   CCY:     0.12  CCOM:   -0.0204
+    10 Fulls to be measured
+
+   10 Reflections included in AVERAGE SPOT PROFILE
+ Average spot profile for central region.
+ Rejected background pixels flagged by "*", true background by "-"
+ C. of G. SHIFTS =  0.006  0.008mm  Background residual=  0.5 (peak scaled to 255)
+                    *0*0*0*0*0-0-0*1*1*6*I*J*8*2*1*0-0                                                  
+                    *0*0*0*0-0-0-0*1*1*4*7*6*3*1*1-0-0                                                  
+                    *0*0*0*0-0-0-0*1*1*1*2*2*1*1-0-0-0                                                  
+                    *0*0*0*0-0-0-0*1*1*1*1*1*1-0-0-0*0                                                  
+                    *0*0*0*0-0-0*0*1*1*1*1*1*0-0-0*0*0                                                  
+                    *0*0*0-0-0*0*1*1*1*1*1*1*0-0-0-0*0                                                  
+                    *0*0-0-0-0*1*1 3 5 3*1*1*1-0-0*0*0                                                  
+                    *0*0*0-0*1*1 2 8 G B 3*1*1-0-0*0*0                                                  
+                    *0*0-0-0*1*1 3 F V M 5*1*1-0-0*0*0                                                  
+                    *0*0-0-0*1*1 4 I Z P 5*1*1-0-0*0*0                                                  
+                    *0*0-0-0*0*1 4 I V I 4*1*1-0-0*0*0                                                  
+                    *0*0-0-0*0*1 3 A D 7 2*1*1-0-0*0*0                                                  
+                    *0-0-0-0*0*1*1 2 3 2*1*1*0-0*0*0*0                                                  
+                    *0-0-0-0-0*1*1*1*1*1*1*0-0-0-0*0*0                                                  
+                    *0-0-0-0*0*1*1*1*1*1*0-0-0-0*0*0*0                                                  
+                    -0-0-0*0*1*1*1*1*1*0-0-0*0*0*0*0*0                                                  
+                    -0-0*0*1*1*2*1*1*1-0-0-0*0*0*0*0*0                                                  
+                    -0-0*1*1*4*8*7*2*1*0-0-0*0*0*0*0*0                                                  
+                    -0-0*1*2*8*J*H*3*1*0-0-0*0*0*0*0*0                                                  
+
+         40 Reflections outside scanned limits on X.
+
+         20 Reflections outside scanned limits on Y.
+
+
+ Refinement using reflections over entire image
+
+ ONLY     1 spots found in bin   8
+ Final rms residual:   0.043mm; Weighted residual    0.8
+   XCEN    YCEN  XTOFRA   XTOFD  YSCALE  TILT TWIST
+ 108.97  105.30  0.9981  169.65  0.9988   -18   -27
+ Refined Fiducial constants (mm and degrees)
+  CCX:     0.01   CCY:     0.14  CCOM:    0.0060
+
+         68 Reflections outside scanned limits on X.
+
+         38 Reflections outside scanned limits on Y.
+
+
+  MAX. No. of Active Reflections=    50
+  3988 Reflections written to scratch file for integration
+
+ Post refinement
+  No. of refined cell parameters     2
+  No. of refined cell angles         0
+
+  Synchrotron source geometry 
+  Mosaic spread (DEG)              0.512042
+  Horizontal beam diverg (DEG)     0.100000
+  Vertical beam diverg  (DEG)      0.020000
+  Conventional spectral dispersion 0.001500
+  Correlated spectral dispersion   0.000000
+
+ Initial orientation angles (DEG):     -0.01     -0.03      0.00
+ Reciprocal cell dimensions:
+  0.018984 0.018984 0.006216   90.00   90.00   90.00
+
+  Total number of reflections = 1773
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+          PARAMETER REFINEMENT PASS  2
+
+ Reflections rejected if angular error >  0.13 deg.
+
+ Number of reflections rejected:    44
+ Sum of (RO-RC)/D*)**2 =   0.00105082 Rms Resid =    0.045 degrees
+
+           PSIX      PSIY      PSIZ    Refined reciprocal cell parameters
+   Old      0.006    -0.001     0.001  0.018981  0.006216
+ Shifts               0.000     0.000 -0.000001  0.000000
+   New      0.006    -0.001     0.001  0.018980  0.006216
+  S.D.                0.003     0.002  0.000003  0.000001
+
+         Mosaic spread
+   Old    0.483
+ Shifts   0.000
+   New    0.483
+  S.D.    0.006
+
+            Refined Orientation Angles
+          PHIX       PHIY       PHIZ
+           -0.009    -0.025     0.002
+
+         Mosaic spread
+   New    0.483
+  S.D.    0.006
+
+          Reciprocal cell parameters
+       0.018980  0.018980  0.006216    90.000    90.000    90.000
+
+          Real cell parameters
+         51.616    51.616   157.605    90.000    90.000    90.000
+
+
+     Orientation Matrix [A] or [UB]               Matrix [U]
+      -0.006618 -0.017241 -0.001435      -0.348662 -0.908377 -0.230837
+       0.017446 -0.007203  0.000653       0.919208 -0.379509  0.105025
+      -0.003473 -0.003332  0.006013      -0.183008 -0.175570  0.967308
+
+ Smoothed value for refined mosaic spread (including safety factor):   0.51
+
+
+ New orientation matrix written to (keyword NEWMAT): xiarefine.mat
+ The missetting angles in this file are the refined missets for the FIRST image
+ in the post-refinement.
+
+FORMATTED      UNKNOWN file opened on unit  12
+<B><FONT COLOR="#FF0000"><!--SUMMARY_BEGIN-->
+Logical name: xiarefine.mat, Filename: xiarefine.mat
+<!--SUMMARY_END--></FONT></B>
+
+
+
+ Cell refinement is complete
+ Starting cell   51.821   51.821  158.103   90.000   90.000   90.000
+ Refined cell    51.616   51.616  157.605   90.000   90.000   90.000
+ Error            0.008    0.008    0.015    0.000    0.000    0.000
+
+ Rms positional error (mm) as a function of cycle for each image.
+      Image   1     2     3     4
+ Cycle 1    0.037 0.036 0.053 0.041
+ Cycle 2    0.041 0.039 0.059 0.040
+ Cycle 3    0.040 0.070 0.042 0.045
+ Cycle 4    0.038 0.044 0.042 0.043
+
+
+ YSCALE as a function of cycle for each image:
+      Image   1     2     3     4
+ Cycle 1    0.998 0.999 0.999 0.999
+ Cycle 2    0.999 0.999 0.999 0.999
+ Cycle 3    0.999 0.999 0.999 0.999
+ Cycle 4    0.999 1.000 1.000 0.999
+
+
+ Detector distance as a function of cycle for each image:
+      Image   1     2     3     4
+ Cycle 1    170.4 170.4 170.4 170.4
+ Cycle 2    170.1 170.0 170.0 170.0
+ Cycle 3    169.8 169.6 169.7 169.7
+ Cycle 4    169.7 169.6 169.6 169.6
+
+ Refined mosaic spread (excluding safety factor):   0.49
+
+
+ Missets for first image (   1) -0.02 -0.05  0.02
+ Missets for last image  (   4) -0.01 -0.03  0.00
+
+
+
+ *********** END OF PROCESSING *****************
