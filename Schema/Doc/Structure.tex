@@ -375,6 +375,19 @@ critical, though this should be available in some form from all of the
 integration packages which will be considered (Mosflm, XDS, d*TREK, denzo,
 XGEN perhaps?)
 
+In terms of providing an abstract interface which has enough information, there
+is a problem in that some of the programs have very different output to others.
+However, from a user perspective I guess all that is important is the final
+refined unit cell and the knowledge that xia was hapy, or not, with the 
+integration of each image. Perhaps simply printing up ``.'' for images it is
+happy with and ``*'' for those that it is unhappy with would be enough, along
+with perhaps some diagnostic information. This could more easily be written for
+a variety of different data reduction programs, and gets a long way from the 
+very picky log file approach. Though I need to be very careful in integration
+that the verbatim log files are available for those who want them.
+
+This is an interesting way to go.
+
 \subsection{Scaler}
 
 This is where things start to get complicated... The scaling tends to have
