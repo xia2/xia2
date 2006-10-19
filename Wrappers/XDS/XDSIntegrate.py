@@ -51,7 +51,16 @@ def _parse_integrate_lp(filename):
 
     block_start_finish = (0, 0)
 
+    oscillation_range = 0.0
+
     for i in range(len(file_contents)):
+
+        # check for the header contents - this is basically a duplicate
+        # of the input data....
+
+        if 'OSCILLATION_RANGE=' in file_contents[i]:
+            oscillation_range = float(file_contents[i].split()[1])
+
         if 'PROCESSING OF IMAGES' in file_contents[i]:
             list = file_contents[i].split()
             block_start_finish = (int(list[3]), int(list[5]))
@@ -92,7 +101,8 @@ def _parse_integrate_lp(filename):
             rmsd_phi = float(file_contents[i].split()[-1])
             for image in range(block_start_finish[0],
                                block_start_finish[1] + 1):
-                per_image_stats[image]['rmsd_phi'] = rmsd_phi
+                per_image_stats[image]['rmsd_phi'] = \
+                                                   rmsd_phi / oscillation_range
 
         # want to convert this to mm in some standard setting!
         if 'DETECTOR COORDINATES (PIXELS) OF DIRECT BEAM' in file_contents[i]:
@@ -123,7 +133,34 @@ def _print_integrate_lp(integrate_lp_stats):
                data['overloads'], data['rejected'],
                data['mosaic'], data['distance'])
 
+def _happy_integrate_lp(integrate_lp_stats):
+    '''Return a string which explains how happy we are with the integration.'''
+
+    images = integrate_lp_stats.keys()
+    images.sort()
+
+    results = ''
+
+    for i in images:
+        data = integrate_lp_stats[i]
+    
+        if data['rmsd_phi'] > 1.0 or data['rmsd_pixel'] > 1.0:
+            status = '*'
+
+        else:
+
+            status = '.'
+
+        results += status
+
+    return results
+
+
 if __name__ == '__main__':
     integrate_lp = os.path.join(os.environ['DPA_ROOT'], 'Wrappers', 'XDS',
                                 'Doc', 'INTEGRATE.LP')
-    _print_integrate_lp(_parse_integrate_lp(integrate_lp))
+    stats = _parse_integrate_lp(integrate_lp)
+    _print_integrate_lp(stats)
+    print _happy_integrate_lp(stats)
+
+    print 
