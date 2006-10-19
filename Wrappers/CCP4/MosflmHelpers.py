@@ -22,6 +22,41 @@
 
 import os
 
+def _resolution_estimate(ordered_pair_list, cutoff):
+    '''Come up with a linearly interpolated estimate of resolution at
+    cutoff cutoff from input data [(resolution, i_sigma)].'''
+
+    x = []
+    y = []
+
+    for o in ordered_pair_list:
+        x.append(o[0])
+        y.append(o[1])
+
+    if max(y) < cutoff:
+        # there is no point where this exceeds the resolution
+        # cutoff
+        return -1.0
+
+    # this means that there is a place where the resolution cutof
+    # can be reached - get there by working backwards
+
+    x.reverse()
+    y.reverse()
+
+    if y[0] >= cutoff:
+        # this exceeds the resolution limit requested
+        return x[0]
+
+    j = 0
+    while y[j] < cutoff:
+        j += 1
+
+    resolution = x[j] + (cutoff - y[j]) * (x[j - 1] - x[j]) / \
+                 (y[j - 1] - y[j])
+
+    return resolution
+
 def _parse_mosflm_integration_output(integration_output_list):
     '''Parse mosflm output from integration, passed in as a list of
     strings.'''
@@ -36,8 +71,7 @@ def _parse_mosflm_integration_output(integration_output_list):
 
     for i in range(length):
         record = integration_output_list[i]
-
-
+        
         if 'Pixel size of' in record:
             pixel_size = float(record.replace('mm', ' ').split()[3])
         
@@ -89,6 +123,45 @@ def _parse_mosflm_integration_output(integration_output_list):
             # FIXME also with the name...
             per_image_stats[current_image]['rejected'] = bad
 
+        if 'Analysis as a function of resolution.' in record and \
+           'Maximum Intensity' in integration_output_list[i - 3]:
+            # then get out the resolution information, spot counts and
+            # so on, and generate some kind of resolution estimate
+            # from this...
+            # 
+            # (1) compute I/sigma vs. resolution curve
+            # (2) analyse to find where I/sigma gets to 1.0
+            #
+            # report this as a sensible resolution limit for that image
+            # these will be collated in some mysterious way to give an
+            # appropriate resolution limit to integrate the data set to.
+
+            resolution = map(float,
+                             integration_output_list[i + 1].split()[2:-1])
+            number_full = map(int,
+                              integration_output_list[i + 3].split()[1:-1])
+            sigma_full = map(float,
+                             integration_output_list[i + 6].split()[1:-1])
+            number_partial = map(int,
+                                 integration_output_list[i + 8].split()[1:-1])
+            sigma_partial = map(float,
+                                integration_output_list[i + 11].split()[1:-1])
+
+            resolution_list = []
+
+            for j in range(len(resolution)):
+                if (number_full[j] + number_partial[j]):
+                    sigma = (number_full[j] * sigma_full[j] +
+                             number_partial[j] * sigma_partial[j]) / \
+                             (number_full[j] + number_partial[j])
+                else:
+                    sigma = 0.0
+                resolution_list.append((resolution[j], sigma))
+
+            resolution = _resolution_estimate(resolution_list, 1.0)
+            
+            per_image_stats[current_image]['resolution'] = resolution
+            
     per_image_stats.pop(0, None)
             
     return per_image_stats
@@ -101,10 +174,11 @@ def _print_integrate_lp(integrate_lp_stats):
 
     for i in images:
         data = integrate_lp_stats[i]
-        print '%4d %5.3f %5d %5d %5d %4.2f %6.2f' % \
+        print '%4d %5.3f %5d %5d %5d %4.2f %6.2f %5.2f' % \
               (i, data['scale'], data['strong'],
                data['overloads'], data['rejected'],
-               data.get('mosaic', 0.0), data['distance'])
+               data.get('mosaic', 0.0), data['distance'],
+               data['resolution'])
 
 def _happy_integrate_lp(integrate_lp_stats):
     '''Return a string which explains how happy we are with the integration.'''
@@ -128,6 +202,21 @@ def _happy_integrate_lp(integrate_lp_stats):
 
     return results
 
+def decide_integration_resolution_limit(mosflm_integration_output):
+    '''Define the resolution limit for integration, where I/sigma
+    for individual reflections is about 1.0.'''
+
+    stats = _parse_mosflm_integration_output(mosflm_integration_output)
+
+    resolutions = []
+
+    for k in stats.keys():
+        resol = stats[k].get('resolution', -1.0)
+        if resol > 0.0:
+            resolutions.append(resol)
+
+    return min(resolutions)
+
 if __name__ == '__main__':
     integrate_lp = os.path.join(os.environ['DPA_ROOT'], 'Wrappers', 'CCP4',
                                 'Doc', 'mosflm-reintegration.log')
@@ -136,3 +225,7 @@ if __name__ == '__main__':
     _print_integrate_lp(stats)
     
     print _happy_integrate_lp(stats)
+
+    print 'Integration resolution limit: %5.2fA' % \
+          decide_integration_resolution_limit(
+        open(integrate_lp, 'r').readlines())        
