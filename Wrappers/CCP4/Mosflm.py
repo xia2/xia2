@@ -157,6 +157,11 @@
 #                 to integrater to allow parameters to be exported, in
 #                 the same way as they can be recycled via the integrater
 #                 parameter framework.
+# 
+# FIXME 19/OCT/06 it may be more reliable to do the indexing first then run a
+#                 separate job to estimate the mosaic spread. Also important
+#                 if this is to be used in DNA... this will need the matrix,
+#                 resolution, raster parameters, refined beam.
 
 import os
 import sys
