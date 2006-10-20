@@ -278,8 +278,24 @@ class Integrater:
         return
 
     def integrate(self):
-        self._intgr_hklout = self._integrate(fast = self._intgr_fast)
-        self._intgr_done = True
+        '''Actually perform integration until we think we are done...'''
+
+        # FIXME 20/OCT/06 need to be sure that this will work correctly...
+        # FIXME could the repeated integration needed in Mosflm be entirely
+        # handled from here??? 
+        
+        while not self._intgr_done:
+            Chatter.write('Doing some integration...')
+            
+            # assert that it is indeed done
+            self._intgr_done = True
+            
+            # but it may not be - if the integrate itself decides something
+            # needs redoing
+            self._intgr_hklout = self._integrate(fast = self._intgr_fast)
+
+        # ok, we are indeed "done"...
+        
         return self._intgr_hklout
 
     def get_integrater_indexer(self):
