@@ -189,6 +189,10 @@ from Schema.Interfaces.Integrater import Integrater
 
 from Handlers.Streams import Admin, Science, Status, Chatter
 
+# helpers
+
+from MosflmHelpers import _happy_integrate_lp
+
 from lib.Guff import auto_logfiler
 
 def Mosflm(DriverType = None):
@@ -975,6 +979,20 @@ def Mosflm(DriverType = None):
 
             Chatter.write('Processed batches %d to %d' % \
                           self._intgr_batches_out)
+
+            # write the report for each image as .*-#$ to Chatter -
+            # detailed report will be written automagically to science...
+
+            spot_status = _happy_integrate_lp(output)
+
+            Chatter.write('Integration status per image (60/record):')
+            for chunk in [spot_status[i:i + 60] \
+                          for i in range(0, len(spot_status), 60)]:
+                Chatter.write(chunk)
+            Chatter.write(
+                '"." => ok          "*" => rmsd      "-" => blank')
+            Chatter.write(
+                '"#" => overloaded  "$" => many bad')
 
             return self._mosflm_hklout
     

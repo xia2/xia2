@@ -24,6 +24,10 @@ sys.path.append(os.path.join(os.environ['DPA_ROOT']))
 from Wrappers.Labelit.LabelitScreen import LabelitScreen
 import unittest
 
+from Handlers.Streams import streams_off
+
+streams_off()
+
 # this should be placed in a gwmath module or something...
 
 def nint(a):

@@ -25,6 +25,9 @@
 # FIXED 20/OCT/06 would nice to be able to prevent content being echo'd
 #                 to the chatter, if possible. Esp. for verbose output
 #                 going to say science.
+# 
+# FIXME 20/OCT/06 need to be able to switch these of to allow nothing to
+#                 be printed when running unit tests...
 
 import sys
 
@@ -49,6 +52,7 @@ class _Stream:
         self._prefix = prefix
 
         self._otherstream = None
+        self._off = False
 
         return
 
@@ -56,6 +60,10 @@ class _Stream:
     # prevent this happening...
     
     def write(self, record, forward = True):
+
+        if self._off:
+            return None
+        
         for r in record.split('\n'):
             result = self._file.write('[%s]  %s\n' % (self._prefix, r.strip()))
         self._file.flush()
@@ -71,6 +79,13 @@ class _Stream:
 
         self._otherstream = otherstream
 
+    def off(self):
+        '''Switch the stream writing off...'''
+
+        self._off = True
+
+        return
+
 Science = _Stream('xia-science', 'SCI-')
 Admin = _Stream('xia-admin', 'ADMN')
 Status = _Stream('xia-status', 'STAT')
@@ -78,6 +93,14 @@ Chatter = _Stream(None, 'XIA2')
 Science.join(Chatter)
 Admin.join(Chatter)
 Status.join(Chatter)
+
+def streams_off():
+    '''Switch off the chatter output - designed for unit tests...'''
+    Chatter.off()
+    Science.off()
+    Admin.off()
+    Status.off()
+    return
 
 if __name__ == '__main__':
     Science.write('Hello from Science')
