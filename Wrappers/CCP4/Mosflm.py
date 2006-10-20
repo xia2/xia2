@@ -411,6 +411,10 @@ def Mosflm(DriverType = None):
             #                 important (in a nutshell, this will handle
             #                 all of the necessary rerunning in a while-loop.)
 
+            # by default we don't want to rerun, or we could be here forever
+            # (and that did happen! :o( )
+            self._mosflm_rerun_integration = False
+
             wd = self.get_working_directory()
 
             # if not fast:
@@ -426,6 +430,7 @@ def Mosflm(DriverType = None):
 
             if self._mosflm_rerun_integration:
                 # make sure that this is run again...
+                Chatter.write('Need to rerun the integration...')
                 self._intgr_done = False
 
             # if self._mosflm_rerun_integration and not fast:

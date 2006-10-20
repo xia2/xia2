@@ -214,6 +214,9 @@ class Integrater:
         '''Set high resolution limit.'''
 
         self._intgr_reso_high = dmin
+
+        # Chatter.write('Setting high resolution limit')
+        
         self._intgr_done = False
         return
 
@@ -247,6 +250,9 @@ class Integrater:
         '''Set all parameters and values.'''
 
         self._intgr_program_parameters = parameters
+
+        # Chatter.write('Setting integration parameters: %s' % str(parameters))
+        
         self._intgr_done = False
 
         return
@@ -287,6 +293,7 @@ class Integrater:
 
         self._intgr_indexer = indexer
 
+        # Chatter.write('Resetting integration flags')
         self._intgr_done = False
         self._intgr_prepare_done = False
         return
