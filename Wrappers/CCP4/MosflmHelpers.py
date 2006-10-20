@@ -21,6 +21,17 @@
 #                 reflections have an I/sigma ~ 1)
 
 import os
+import sys
+
+if not os.environ.has_key('DPA_ROOT'):
+    raise RuntimeError, 'DPA_ROOT not defined'
+
+if not os.environ['DPA_ROOT'] in sys.path:
+    sys.path.append(os.environ['DPA_ROOT'])
+
+# output streams
+
+from Handlers.Streams import Admin, Science, Status, Chatter
 
 def _resolution_estimate(ordered_pair_list, cutoff):
     '''Come up with a linearly interpolated estimate of resolution at
@@ -188,15 +199,19 @@ def _happy_integrate_lp(integrate_lp_stats):
 
     results = ''
 
+    Science.write('Report on images %d to %d' % (min(images), max(images)),
+                  forward = False)
+
     for i in images:
         data = integrate_lp_stats[i]
 
         if data['rmsd_pixel'] > 1.0:
             status = '*'
-
+            Science.write('Image %4d ... high rmsd (%f)' % \
+                          (i, data['rmsd_pixel']), forward = False)
         else:
-
             status = '.'
+            Science.write('Image %4d ... ok' % i, forward = False)
 
         results += status
 

@@ -35,6 +35,10 @@ if not os.environ['DPA_ROOT'] in sys.path:
 
 from Driver.DriverFactory import DriverFactory
 
+# output streams
+
+from Handlers.Streams import Admin, Science, Status, Chatter
+
 # helper methods/functions - these can be used externally for the purposes
 # of testing...
 
@@ -141,15 +145,23 @@ def _happy_integrate_lp(integrate_lp_stats):
 
     results = ''
 
+    Science.write('Report on images %d to %d' % (min(images), max(images)),
+                  forward = False)
+
     for i in images:
         data = integrate_lp_stats[i]
     
         if data['rmsd_phi'] > 1.0 or data['rmsd_pixel'] > 1.0:
             status = '*'
+            Science.write('Image %4d ... high rmsd (%f, %f)' % \
+                          (i, data['rmsd_pixel'], data['rmsd_phi']),
+                          forward = False)
 
         else:
 
             status = '.'
+            Science.write('Image %4d ... ok' % i, forward = False)
+
 
         results += status
 

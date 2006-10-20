@@ -26,3 +26,7 @@ xgen scalem
 This will be another case of having different wrappers for each program, 
 with a unified wrapper for the whole to provide the Indexer and Integrater
 interfaces...
+
+From calibrate.txt... look up the description of the beam centre in xcen, ycen.
+
+
