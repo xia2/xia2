@@ -22,7 +22,9 @@
 # FIXME 05/SEP/06 wouldn't it be nice to split the output to fit well on 
 #                 an 80 character terminal display?
 # 
-# 
+# FIXED 20/OCT/06 would nice to be able to prevent content being echo'd
+#                 to the chatter, if possible. Esp. for verbose output
+#                 going to say science.
 
 import sys
 
@@ -50,12 +52,15 @@ class _Stream:
 
         return
 
-    def write(self, record):
+    # FIXED 20/OCT/06 added forward option, specify as false to
+    # prevent this happening...
+    
+    def write(self, record, forward = True):
         for r in record.split('\n'):
             result = self._file.write('[%s]  %s\n' % (self._prefix, r.strip()))
         self._file.flush()
 
-        if self._otherstream:
+        if self._otherstream and forward:
             self._otherstream.write(record)
         
         return result
