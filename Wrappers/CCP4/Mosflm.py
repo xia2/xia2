@@ -371,6 +371,17 @@ def Mosflm(DriverType = None):
 
             return
 
+        def _integrate_prepare(self):
+            '''Prepare for integration - note that if there is a reason
+            why this is needed to be run again, set self._intgr_prepare_done
+            as False.'''
+
+            self.reset()
+            auto_logfiler(self)
+            self._mosflm_refine_cell()
+
+            return
+
         def _integrate(self, fast = False):
             '''Implement the integrater interface.'''
 
@@ -391,23 +402,38 @@ def Mosflm(DriverType = None):
             #
             # or is that an outside responsibility? yes.
 
+            # FIXME 20/OCT/06 this needs to be able to check if (1) the
+            #                 cell refinement has already been performed
+            #                 for the correct lattice and (2) if there
+            #                 if a good reason for rerunning the integration.
+            #                 See changes to Integrater.py in Schema /
+            #                 Interfaces as to why this is suddenly
+            #                 important (in a nutshell, this will handle
+            #                 all of the necessary rerunning in a while-loop.)
+
             wd = self.get_working_directory()
 
-            if not fast:
-                self.reset()
-                auto_logfiler(self)
-                self._mosflm_refine_cell()
+            # if not fast:
+            # self.reset()
+            # auto_logfiler(self)
+            # self._mosflm_refine_cell()
                 
             self.reset()
             auto_logfiler(self)
             hklout = self._mosflm_integrate()
 
-            if self._mosflm_rerun_integration and not fast:
-                # FIXME this needs to be passed to the admin stream
-                # print 'Rerunning integration...'
-	        self.reset()
-                auto_logfiler(self)
-                hklout = self._mosflm_integrate()
+            # FIXME now ignoring the "fast" directive...
+
+            if self._mosflm_rerun_integration:
+                # make sure that this is run again...
+                self._intgr_done = False
+
+            # if self._mosflm_rerun_integration and not fast:
+            # FIXME this needs to be passed to the admin stream
+            # print 'Rerunning integration...'
+            # self.reset()
+            # auto_logfiler(self)
+            # hklout = self._mosflm_integrate()
 
             return hklout
 
