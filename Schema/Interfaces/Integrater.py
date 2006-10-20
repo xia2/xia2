@@ -69,7 +69,7 @@
 #                 wavelengths with the same image prefix, for instance.
 #                 Done done done....
 #
-# FIXME 27/SEP/06 need to be able to pass integration parameters, e.g. GAIN,
+# FIXED 27/SEP/06 need to be able to pass integration parameters, e.g. GAIN,
 #                 from one instance of Integrater to another - e.g. via some
 #                 kind of export parameters/import parameters framework.
 #                 Note well that this will be complicated by the need to
@@ -80,6 +80,18 @@
 #                 which will make life rather complicated. Aha - need to key it
 #                 in some global dictionary someplace by the current crystal
 #                 identity, and switch it off if this is not available.
+# 
+# FIXME 20/OCT/06 need to be able to rerun integration as much as we like
+#                 until everyone is happy with the results (e.g. a good
+#                 resolution limit, sensible GAIN, etc. has been set.)
+#                 This will mean that the cell refinement implementation
+#                 for some programs may need to be separated off, so perhaps
+#                 there should be a prepare_to_integrate method, which needs
+#                 to be run once, followed by a "proper" integrate method,
+#                 which will be run repeatedly...
+#
+#                 Implement this change - call prepare_to_integrate followed
+#                 by integrate...
 
 import os
 import sys
@@ -127,6 +139,7 @@ class Integrater:
         self._intgr_batches_out = [0, 0]
 
         self._intgr_done = False
+        self._intgr_prepare_done = False
         self._intgr_fast = False
         self._intgr_hklout = None
 
@@ -275,6 +288,7 @@ class Integrater:
         self._intgr_indexer = indexer
 
         self._intgr_done = False
+        self._intgr_prepare_done = False
         return
 
     def integrate(self):
@@ -283,7 +297,12 @@ class Integrater:
         # FIXME 20/OCT/06 need to be sure that this will work correctly...
         # FIXME could the repeated integration needed in Mosflm be entirely
         # handled from here??? 
-        
+
+        while not self._intgr_prepare_done:
+            Chatter.write('Preparing to do some integration...')
+            self._intgr_prepare_done = True
+            self._integrate_prepare()
+
         while not self._intgr_done:
             Chatter.write('Doing some integration...')
             
