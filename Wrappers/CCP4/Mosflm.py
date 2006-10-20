@@ -191,7 +191,8 @@ from Handlers.Streams import Admin, Science, Status, Chatter
 
 # helpers
 
-from MosflmHelpers import _happy_integrate_lp
+from MosflmHelpers import _happy_integrate_lp, \
+     _parse_mosflm_integration_output, decide_integration_resolution_limit
 
 from lib.Guff import auto_logfiler
 
@@ -983,8 +984,18 @@ def Mosflm(DriverType = None):
             # write the report for each image as .*-#$ to Chatter -
             # detailed report will be written automagically to science...
 
-            spot_status = _happy_integrate_lp(output)
+            spot_status = _happy_integrate_lp(
+                _parse_mosflm_integration_output(output))
 
+            # if we have not processed to a given resolution, fix
+            # the limit for future reference
+
+
+            if not self._intgr_reso_high:
+                resolution = decide_integration_resolution_limit(output)
+                self.set_integrater_high_resolution(resolution)
+                Chatter.write('Set resolution limit: %5.2f' % resolution)
+                
             Chatter.write('Integration status per image (60/record):')
             for chunk in [spot_status[i:i + 60] \
                           for i in range(0, len(spot_status), 60)]:
