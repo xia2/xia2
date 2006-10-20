@@ -51,7 +51,6 @@ def _parse_integrate_lp(filename):
     file_contents = open(filename, 'r').readlines()
 
     per_image_stats = { }
-    pro_block_stats = []
 
     block_start_finish = (0, 0)
 
@@ -175,4 +174,3 @@ if __name__ == '__main__':
     _print_integrate_lp(stats)
     print _happy_integrate_lp(stats)
 
-    print 

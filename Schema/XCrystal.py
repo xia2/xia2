@@ -389,7 +389,7 @@ if __name__ == '__main__':
     # lm.kill_lattice()
     # _print_lattice(lm.get_lattice())
 
-    xc = XCrystal('DEMO')
+    xc = XCrystal('DEMO', None)
 
     # this should configure with all possible lattices, though
     # I think going through an explicit "init lattices" would help...
