@@ -97,20 +97,37 @@
 # FIXME 22/AUG/06 - update to the latest version of pointless which needs
 # to read command line input. "systematicabsences off".
 # 
+# FIXME 23/OCT/06 with TS03/PEAK data (1vpj) the "most likely" solution comes
+#                 out as C222, but the solution with the highest NetZc is the
+#                 correct one of P 4/mmm. Need therefore to be able to get 
+#                 this information from the output file. Perhaps need to 
+#                 balance likelihood against NetZc? Perhaps it is simply
+#                 a problem with this version of pointless? This is not
+#                 fixed in version 1.1.0.5! :o(
 
 import os
 import sys
+import math
 
 import xml.dom.minidom
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
+if not os.environ.has_key('DPA_ROOT'):
+    raise RuntimeError, 'DPA_ROOT not defined'
 
-sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                             'Python'))
+if not os.path.join(os.environ['XIA2CORE_ROOT'],
+                    'Python') in sys.path:
+    sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
+                                 'Python'))
+    
+if not os.environ['DPA_ROOT'] in sys.path:
+    sys.path.append(os.environ['DPA_ROOT'])
 
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
+
+from Handlers.Streams import Chatter, Science
 
 def Pointless(DriverType = None):
     '''A factory for PointlessWrapper classes.'''
@@ -128,6 +145,8 @@ def Pointless(DriverType = None):
             # FIXME 08/SEP/06 this needs updating to
             # version 1.1.0.4 - done
             self.set_executable('pointless-1.1.0.4')
+
+            self._input_laue_group = None
 
             self._pointgroup = None
             self._spacegroup = None
@@ -153,6 +172,10 @@ def Pointless(DriverType = None):
             # absence analysis of the spacegroups.
             
             self.input('systematicabsences off')
+
+            # change 23/OCT/06 if there is an input laue group, use this
+            if self._input_laue_group:
+                self.input('lauegroup %s' % self._input_laue_group)
 
             self.close_wait()
 
@@ -184,6 +207,91 @@ def Pointless(DriverType = None):
                 'ReindexMatrix')[0].childNodes[0].data.split())
             self._reindex_operator = best.getElementsByTagName(
                 'ReindexOperator')[0].childNodes[0].data.strip()
+
+            # while we're here also inspect the NetZc information (see
+            # FIXME for 23/OCT/06) to make sure that pointless has made
+            # a sensible decision.
+
+            # if it looks like it has not, then the best thing to do
+            # is to select the "correct" Laue group (by my estimation)
+            # and then feed this into pointless through the e.g.
+            # "lauegroup P4/mmm" input record. Have also reported this
+            # to Phil Evans as a bug.
+
+            best_netzc = 0.0
+            best_likelihood = 0.0
+            best_laue = ''
+            
+            if not self._input_laue_group:
+
+                scorelist = dom.getElementsByTagName('LaueGroupScoreList')[0]
+                scores = scorelist.getElementsByTagName('LaueGroupScore')
+
+                lauegroups = { }
+                netzcs = { }
+                likelihoods = { }
+                
+                correct_netzc = 0.0
+                correct_laue = ''
+                
+
+                for s in scores:
+                    number = int(s.getElementsByTagName(
+                        'number')[0].childNodes[0].data)
+                    lauegroup = s.getElementsByTagName(
+                        'LaueGroupName')[0].childNodes[0].data
+                    reindex = s.getElementsByTagName(
+                        'ReindexOperator')[0].childNodes[0].data
+                    netzc = float(s.getElementsByTagName(
+                        'NetZCC')[0].childNodes[0].data)
+                    likelihood = float(s.getElementsByTagName(
+                        'Likelihood')[0].childNodes[0].data)
+                    
+                    # check to see if this is the "correct" answer - if it
+                    # is (and it should be the first!) then record the NetZc
+                    
+                    if number == 1:
+                        if math.fabs(likelihood -
+                                     self._totalprob) < 0.001 and \
+                                     reindex == self._reindex_operator:
+
+                            correct_netzc = netzc
+                            correct_laue = lauegroup
+
+                        else:
+                            raise RuntimeError, 'something horribly wrong'
+
+                    else:
+                        # otherwise, have a look at the likelihood - if it is 
+                        # within 0.1 of the "correct" answer, have a look at
+                        # the NetZc and if it is much better then consider
+                        # that the other solution may indeed be correct.
+                    
+                        if math.fabs(likelihood - self._totalprob) < 0.1:
+                            if netzc - correct_netzc > 1.0:
+                                # this is perhaps more likely?
+                                if netzc > best_netzc:
+                                    best_netzc = netzc
+                                    best_laue = lauegroup
+                                    best_likelihood = likelihood
+
+            if best_laue:
+                # the solution pointless gave is probably wrong!
+                Science.write(
+                    'I disagree with pointless over the correct solution')
+                Science.write(
+                    '%s [%4.2f] vs. %s [%4.2f]' % \
+                    (correct_laue, self._totalprob,
+                     best_laue, best_likelihood))
+                Science.write('NetZc: %5.2f vs. %5.2f' % \
+                              (correct_netzc, best_netzc))
+
+                # remember this!
+                self._input_laue_group = best_laue
+
+                Science.write(
+                    'Re-running with the correct pointgroup asserted')
+                return self.decide_pointgroup()
 
             # this bit is to figure out the correct spacegroup to
             # reindex into (see FIXME above for 11/AUG/06)
