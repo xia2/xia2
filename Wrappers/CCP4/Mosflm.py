@@ -297,7 +297,7 @@ def Mosflm(DriverType = None):
                 ideal_middle = int(45.0 / phi_width) + min_images
                 if ideal_middle in images:
                     cell_ref_images.append((images[ideal_middle - min_images],
-                                            images[ideal_middle]))
+                                            images[ideal_middle - 1]))
                 else:
                     # there aren't 45 degrees of images
                     raise RuntimeError, \
