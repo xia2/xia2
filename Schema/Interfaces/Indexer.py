@@ -58,6 +58,11 @@
 #                 Look for record "99% have resolution less than"...
 #                 or the resolution numbers in labelit.stats_distl.
 #                 use best numbers of all images used in indexing.
+#
+# FIXME 23/OCT/06 interesting new feature - want to be able to handle
+#                 storing all of the other solutions from indexing as
+#                 well as the chosen one, and also want to be able to
+#                 select the "best" solution in a more sensible manner...
 
 import os
 import sys
@@ -67,6 +72,8 @@ if not os.environ.has_key('DPA_ROOT'):
 
 if not os.environ['DPA_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['DPA_ROOT']))
+
+from Handlers.Streams import Science
 
 class Indexer:
     '''A class interface to present autoindexing functionality in a standard
@@ -87,6 +94,11 @@ class Indexer:
         # output items
         self._indxr_lattice = None
         self._indxr_cell = None
+
+        # other possible indexing solutions - see 23/OCT/06 FIXME
+        # has keys for each entry of cell, goodness for goodness of fit.
+        self._indxr_other_lattice_cell = { }
+
         self._indxr_mosaic = None
         self._indxr_refined_beam = None
         self._indxr_refined_distance = None
@@ -133,6 +145,46 @@ class Indexer:
 
         result = self._index()
         self._indxr_run = True
+
+        # write about this
+
+        Science.write('Indexing solution:')
+        Science.write('%s  %s' % (self._indxr_lattice,
+                                  '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+                                  self._indxr_cell))
+
+        # want to write these out in symmetry order, highest first!
+        lattice_to_spacegroup = {'aP':1,
+                                 'mP':3,
+                                 'mC':5,
+                                 'oP':16,
+                                 'oC':20,
+                                 'oF':22,
+                                 'oI':23,
+                                 'tP':75,
+                                 'tI':79,
+                                 'hP':143,
+                                 'cP':195,
+                                 'cF':196,
+                                 'cI':197}
+
+        spacegroup_to_lattice = { }
+        for k in lattice_to_spacegroup.keys():
+            spacegroup_to_lattice[lattice_to_spacegroup[k]] = k
+
+        Science.write('All possible indexing solutions:')
+        lattices = self._indxr_other_lattice_cell.keys()
+        spacegroups = [lattice_to_spacegroup[l] for l in lattices]
+
+        spacegroups.sort()
+        spacegroups.reverse()
+        lattices = [spacegroup_to_lattice[s] for s in spacegroups]
+
+        for l in lattices:
+            cell = tuple(self._indxr_other_lattice_cell[l]['cell'])
+            Science.write('%s  %s' % \
+                          (l, '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % cell))
+        
         return result
 
     # setter methods for the input
