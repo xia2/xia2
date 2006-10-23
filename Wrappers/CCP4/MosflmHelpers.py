@@ -232,6 +232,74 @@ def decide_integration_resolution_limit(mosflm_integration_output):
 
     return min(resolutions)
 
+def _parse_mosflm_index_output(index_output_list):
+    '''Parse the output text from autoindexing to build up a picture
+    of the solutions.'''
+
+    collect_solutions = False
+
+    solutions = { }
+
+    correct_number = 0
+
+    for i in range(len(index_output_list)):
+        output = index_output_list[i]
+
+        if 'No PENALTY SDCELL' in output:
+            collect_solutions = not collect_solutions
+
+        if collect_solutions:
+            try:
+                number = int(output.split()[0])
+                solutions[number] = output[:-1]
+            except:
+                pass
+
+        if 'Suggested Solution' in output:
+            correct_number = int(output.split()[-2])
+
+    keys = solutions.keys()
+    keys.sort()
+
+    solutions_by_lattice = { }
+    
+    for k in keys:
+        if not 'unrefined' in solutions[k]:
+            list = solutions[k].split()
+            number = int(list[0])
+            rms = float(list[2])
+            latt = list[4]
+            frc = float(list[3])
+            cell = map(float, list[5:11])
+            if solutions_by_lattice.has_key(latt):
+                if solutions_by_lattice[latt]['rms'] < rms:
+                    continue
+            solutions_by_lattice[latt] = {'rms':rms,
+                                          'cell':cell,
+                                          'frc':frc,
+                                          'number':number}
+
+    # find what we think is an acceptable solution...
+
+    acceptable_rms = 0.0
+
+    for k in solutions_by_lattice.keys():
+        if solutions_by_lattice[k]['number'] == correct_number:
+            acceptable_rms = 1.1 * solutions_by_lattice[k]['rms']
+
+    # then print those which should be ok...
+
+    results = { }
+
+    for k in solutions_by_lattice.keys():
+        if solutions_by_lattice[k]['rms'] < acceptable_rms:
+            cell = solutions_by_lattice[k]['cell']
+            print '%s %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+                  (k, cell[0], cell[1], cell[2], cell[3], cell[4], cell[5])
+            results[k] = cell
+    
+    return results
+
 if __name__ == '__main__':
     integrate_lp = os.path.join(os.environ['DPA_ROOT'], 'Wrappers', 'CCP4',
                                 'Doc', 'mosflm-reintegration.log')
@@ -244,3 +312,8 @@ if __name__ == '__main__':
     print 'Integration resolution limit: %5.2fA' % \
           decide_integration_resolution_limit(
         open(integrate_lp, 'r').readlines())        
+
+    index_lp = os.path.join(os.environ['DPA_ROOT'], 'Wrappers', 'CCP4',
+                            'Doc', 'mosflm-autoindex.lp')
+    _parse_mosflm_index_output(open(index_lp, 'r').readlines())
+
