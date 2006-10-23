@@ -571,7 +571,7 @@ def Mosflm(DriverType = None):
                 raise RuntimeError, 'not enough images to refine unit cell'
 
             cell_ref_images = []
-            cell_ref_images.append((images[0], images[min_images]))
+            cell_ref_images.append((images[0], images[min_images - 1]))
 
             if num_wedges == 2:
                 ideal_last = int(90.0 / phi_width) + min_images
