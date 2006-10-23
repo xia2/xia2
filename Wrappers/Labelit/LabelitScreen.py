@@ -302,6 +302,7 @@ def LabelitScreen(DriverType = None):
                 if l:
                     self._solutions[int(l[0])] = {'number':int(l[0]),
                                                   'mosaic':self._mosaic,
+                                                  'metric':float(l[1]),
                                                   'rmsd':float(l[3]),
                                                   'nspots':int(l[4]),
                                                   'lattice':l[6],
@@ -315,6 +316,20 @@ def LabelitScreen(DriverType = None):
 
             # configure the "right" solution
             self._solution = self.get_solution()
+
+            # now store also all of the other solutions... keyed by the
+            # lattice
+
+            for solution in self._solutions.keys():
+                lattice = self._solutions[solution]['lattice']
+                if self._indxr_other_lattice_cell.has_key(lattice):
+                    if self._indxr_other_lattice_cell[lattice]['goodness'] < \
+                       self._solutions[solution]['metric']:
+                        continue
+
+                self._indxr_other_lattice_cell[lattice] = {
+                    'goodness':self._solutions[solution]['metric'],
+                    'cell':self._solutions[solution]['cell']}
 
             self._indxr_lattice = self._solution['lattice']
             self._indxr_cell = tuple(self._solution['cell'])
