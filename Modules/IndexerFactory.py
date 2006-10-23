@@ -59,16 +59,20 @@ def IndexerForXSweep(xsweep):
 
     # if the xsweep has a crystal lattice defined, use mosflm which
     # FIXME needs to be modified to take a crystal cell as input.
+    # Ignore this - both mosflm and labelit can take this as
+    # input and it is implemented for both via the Indexer interface.
 
     crystal_lattice = xsweep.get_crystal_lattice()
-
-    if crystal_lattice:
-        pass
 
     # FIXME need to code something in here to make a "good" decision
     # about the correct Indexer to return...
 
     indexer = Indexer()
+
+    if crystal_lattice:
+        # this is e.g. ('aP', (1.0, 2.0, 3.0, 90.0, 98.0, 88.0))
+        indexer.set_indexer_input_lattice(crystal_lattice[0])
+        indexer.set_indexer_input_cell(crystal_lattice[1])
 
     # configure the indexer
     indexer.setup_from_image(os.path.join(xsweep.get_directory(),
