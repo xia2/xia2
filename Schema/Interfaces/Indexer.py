@@ -172,6 +172,19 @@ class Indexer:
         for k in lattice_to_spacegroup.keys():
             spacegroup_to_lattice[lattice_to_spacegroup[k]] = k
 
+        # FIXME 23/OCT/06 at this stage I need to look at the list of
+        # reasonable solutions and try to figure out if the indexing
+        # program has picked the highest - if not, then constrain the
+        # unit cell (need to implement this somewhere, sure it's
+        # around!) then rerun the autoindexing (perhaps?) with this
+        # new target - this means that we are always working from the
+        # top downwards with these things. Once we decide somewhere
+        # else (e.g. in cell refinement) that this cell is not appropriate
+        # then we can eliminate it from the list, select the next
+        # lower symmetry solution and continue. This solution is a
+        # general one, so may be implemented in the general indexer
+        # interface rather than in specific code...
+
         Science.write('All possible indexing solutions:')
         lattices = self._indxr_other_lattice_cell.keys()
         spacegroups = [lattice_to_spacegroup[l] for l in lattices]
