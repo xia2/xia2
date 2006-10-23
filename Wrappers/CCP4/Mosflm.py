@@ -162,6 +162,12 @@
 #                 separate job to estimate the mosaic spread. Also important
 #                 if this is to be used in DNA... this will need the matrix,
 #                 resolution, raster parameters, refined beam.
+# 
+# FIXME 23/OCT/06 need to be able to do something useful when the cell
+#                 refinement gives a "large" error in something... in
+#                 particular be able to use more images for cell refinement
+#                 and have another go!
+
 
 import os
 import sys
@@ -217,6 +223,9 @@ def Mosflm(DriverType = None):
             Indexer.__init__(self)
             Integrater.__init__(self)
 
+            # local parameters used in cell refinement
+            self._mosflm_cell_ref_images = None
+
             # local parameters used in integration
             self._mosflm_rerun_integration = False
             self._mosflm_hklout = ''
@@ -239,6 +248,73 @@ def Mosflm(DriverType = None):
                 self.add_indexer_image_wedge(images[-1])
 
             return
+
+        def _refine_select_images(self, num_wedges, mosaic):
+            '''Select images for cell refinement based on image headers.'''
+
+            # first select the images to use for cell refinement
+            # if spacegroup >= 75 use one wedge of 2-3 * mosaic spread, min
+            # 3 images, else use two wedges of this size as near as possible
+            # to 90 degrees separated. However, is this reliable enough?
+            # FIXME this needs to be established, in particular in the case
+            # where the lattice is wrongly assigned
+
+            # WARNING this will fail if phi width was 0 - should
+            # never happen though
+
+            if num_wedges > 3:
+                raise RuntimeError, 'cannot cope with more than 3 wedges'
+
+            phi_width = self.get_header_item('phi_width')
+            min_images = max(3, int(2 * mosaic / phi_width))
+            
+            # next select what we need from the list...
+
+            images = self.get_matching_images()
+
+            if len(images) < num_wedges * min_images:
+                raise RuntimeError, 'not enough images to refine unit cell'
+
+            cell_ref_images = []
+            cell_ref_images.append((images[0], images[min_images - 1]))
+
+            # FIXME 23/OCT/06 need to be able to cope with more than two
+            # wedges - in this case have the spread evenly between 0 and
+            # 90 degrees as that measures all of the required unit cell
+            # vectors..
+
+            if num_wedges == 2:
+                ideal_last = int(90.0 / phi_width) + min_images
+                if ideal_last in images:
+                    cell_ref_images.append((images[ideal_last - min_images],
+                                            images[ideal_last]))
+                else:
+                    # there aren't 90 degrees of images
+                    cell_ref_images.append((images[-min_images],
+                                            images[-1]))
+
+            elif num_wedges == 3:
+                ideal_middle = int(45.0 / phi_width) + min_images
+                if ideal_middle in images:
+                    cell_ref_images.append((images[ideal_middle - min_images],
+                                            images[ideal_middle]))
+                else:
+                    # there aren't 45 degrees of images
+                    raise RuntimeError, \
+                          'not enough data to do 3 wedge cell refinement'
+
+                ideal_last = int(90.0 / phi_width) + min_images
+
+                if ideal_last in images:
+                    cell_ref_images.append((images[ideal_last - min_images],
+                                            images[ideal_last]))
+                else:
+                    # there aren't 90 degrees of images
+                    cell_ref_images.append((images[-min_images],
+                                            images[-1]))
+                
+
+            return cell_ref_images
                             
         def _index(self):
             '''Implement the indexer interface.'''
@@ -508,18 +584,6 @@ def Mosflm(DriverType = None):
                 self.set_indexer_input_lattice(lattice)
                 self.set_indexer_beam(beam)
 
-            # first select the images to use for cell refinement
-            # if spacegroup >= 75 use one wedge of 2-3 * mosaic spread, min
-            # 3 images, else use two wedges of this size as near as possible
-            # to 90 degrees separated. However, is this reliable enough?
-            # FIXME this needs to be established, in particular in the case
-            # where the lattice is wrongly assigned
-
-            # WARNING this will fail if phi width was 0 - should
-            # never happen though
-
-            phi_width = self.get_header_item('phi_width')
-            min_images = max(3, int(2 * mosaic / phi_width))
 
             # here need to check the LATTICE - which will be
             # something like tP etc. FIXME how to cope when the
@@ -563,25 +627,16 @@ def Mosflm(DriverType = None):
             else:
                 num_wedges = 2
 
-            # next select what we need from the list...
+            # FIXME 23/OCT/06 should only do this if the images are not
+            # already assigned - for instance, in the case where the cell
+            # refinement fails and more images are added after that failure
+            # need to be able to cope with not changing them at this stage...
 
-            images = self.get_matching_images()
+            # self._mosflm_cell_ref_images = None
 
-            if len(images) < num_wedges * min_images:
-                raise RuntimeError, 'not enough images to refine unit cell'
-
-            cell_ref_images = []
-            cell_ref_images.append((images[0], images[min_images - 1]))
-
-            if num_wedges == 2:
-                ideal_last = int(90.0 / phi_width) + min_images
-                if ideal_last in images:
-                    cell_ref_images.append((images[ideal_last - min_images],
-                                            images[ideal_last]))
-                else:
-                    # there aren't 90 degrees of images
-                    cell_ref_images.append((images[-min_images],
-                                            images[-1]))
+            if not self._mosflm_cell_ref_images:
+                self._mosflm_cell_ref_images = self._refine_select_images(
+                    num_wedges, mosaic)
 
             # write the matrix file in xiaindex.mat
 
@@ -593,7 +648,8 @@ def Mosflm(DriverType = None):
 
             # then start the cell refinement
 
-            task = 'Refine cell from %d wedges' % len(cell_ref_images)
+            task = 'Refine cell from %d wedges' % \
+                   len(self._mosflm_cell_ref_images)
 
             self.set_task(task)
 
@@ -630,8 +686,9 @@ def Mosflm(DriverType = None):
                 self.input('%s %s' % (p, str(parameters[p])))
 
             # set up the cell refinement
-            self.input('postref multi segments %d' % len(cell_ref_images))
-            for cri in cell_ref_images:
+            self.input('postref multi segments %d' % \
+                       len(self._mosflm_cell_ref_images))
+            for cri in self._mosflm_cell_ref_images:
                 self.input('process %d %d' % cri)
                 self.input('go')
 
@@ -693,11 +750,38 @@ def Mosflm(DriverType = None):
                     # if this is all cell parameters, abort, else
 		    # consider using more data...
 
-                    Science.write(
-                        'Integration will be aborted because of this.')
+                    # see how many wedges we are using - if it's 3 already
+                    # then there is probably something more important
+                    # wrong. If it is fewer than this then try again!
 
-		    raise RuntimeError, 'cell refinement failed: ' + \
-                          'inaccurate cell parameters'
+                    if len(self._mosflm_cell_ref_images) <= 3:
+                        # set this up to be more images
+                        new_cell_ref_images = self._refine_select_images(
+                            len(self._mosflm_cell_ref_images) + 1,
+                            mosaic)
+                        self._mosflm_cell_ref_images = new_cell_ref_images
+
+                        # set a flag to say cell refinement needs rerunning
+                        # c/f Integrator.py
+                        self._intgr_prepare_done = False
+
+                        # tell the user what is going on
+
+                        Science.write(
+                            'Repeating cell refinement with more data.')
+
+                        # don't update the indexer - the results could be
+                        # wrong!
+
+                        return
+
+                    else:
+
+                        Science.write(
+                            'Integration will be aborted because of this.')
+                        
+                        raise RuntimeError, 'cell refinement failed: ' + \
+                              'inaccurate cell parameters'
 
                 # FIXME will these get lost if the indexer in question is
                 # not this program...? Find out...
