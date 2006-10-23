@@ -290,13 +290,29 @@ def _parse_mosflm_index_output(index_output_list):
     # then print those which should be ok...
 
     results = { }
-
+    
+    lattice_to_spacegroup = {'aP':1,
+                             'mP':3,
+                             'mC':5,
+                             'oP':16,
+                             'oC':20,
+                             'oF':22,
+                             'oI':23,
+                             'tP':75,
+                             'tI':79,
+                             'hP':143,
+                             'cP':195,
+                             'cF':196,
+                             'cI':197}
+                
     for k in solutions_by_lattice.keys():
         if solutions_by_lattice[k]['rms'] < acceptable_rms:
             cell = solutions_by_lattice[k]['cell']
-            print '%s %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-                  (k, cell[0], cell[1], cell[2], cell[3], cell[4], cell[5])
-            results[k] = cell
+
+            # record this only if it is a standard setting!
+            if k in lattice_to_spacegroup.keys():
+                results[k] = {'cell':cell,
+                              'goodness':solutions_by_lattice[k]['rms']}
     
     return results
 

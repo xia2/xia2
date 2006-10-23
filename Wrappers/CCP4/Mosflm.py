@@ -198,7 +198,8 @@ from Handlers.Streams import Admin, Science, Status, Chatter
 # helpers
 
 from MosflmHelpers import _happy_integrate_lp, \
-     _parse_mosflm_integration_output, decide_integration_resolution_limit
+     _parse_mosflm_integration_output, decide_integration_resolution_limit, \
+     _parse_mosflm_index_output
 
 from lib.Guff import auto_logfiler
 
@@ -434,6 +435,12 @@ def Mosflm(DriverType = None):
                     Science.write('Resolution estimated to be %5.2f A' % \
                                   self._indxr_resolution_estimate)
 
+
+            # look up other possible indexing solutions (not well - in
+            # standard settings only!)
+
+            self._indxr_other_lattice_cell = _parse_mosflm_index_output(
+                output)
 
             # FIXME this needs to be picked up by the integrater
             # interface which uses this Indexer, if it's a mosflm
