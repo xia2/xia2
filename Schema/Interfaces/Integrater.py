@@ -95,6 +95,7 @@
 
 import os
 import sys
+import exceptions
 
 if not os.environ.has_key('DPA_ROOT'):
     raise RuntimeError, 'DPA_ROOT not defined'
@@ -104,6 +105,7 @@ if not os.environ['DPA_ROOT'] in sys.path:
 
 from lib.Guff import inherits_from
 from Handlers.Streams import Chatter
+from Handlers.Exception import DPAException
 
 # image header reading functionality
 from Wrappers.XIA.Printheader import Printheader
@@ -316,8 +318,9 @@ class Integrater:
 
             try:
                 self._integrate_prepare()
-            except:
+            except DPAException, e:
                 # fixme I should trap the correct exception here
+                Chatter.write('Uh oh! %s' % str(e))
                 self._intgr_indexer.eliminate()
                 self._intgr_prepare_done = False                
 

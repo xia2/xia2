@@ -201,6 +201,8 @@ def LabelitScreen(DriverType = None):
             '''Actually index the diffraction pattern. Note well that
             this is not going to compute the matrix...'''
 
+            self.reset()
+
             _images = []
             for i in self._indxr_images:
                 for j in i:

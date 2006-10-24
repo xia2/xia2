@@ -251,7 +251,7 @@ class Indexer:
                 Science.write('Rerunning indexing with target lattice %s' \
                               % solution[0])
                 self._indxr_input_lattice = solution[0]
-                self._indxr_input_cell[1] = solution[1]
+                self._indxr_input_cell = solution[1]
                 result = self._index()
 
         else:
@@ -259,7 +259,7 @@ class Indexer:
             
             solution = self._indxr_helper.get()
             self._indxr_input_lattice = solution[0]
-            self._indxr_input_cell[1] = solution[1]
+            self._indxr_input_cell = solution[1]
             result = self._index()
             
         self._indxr_run = True

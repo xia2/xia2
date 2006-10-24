@@ -191,9 +191,10 @@ from Schema.Interfaces.FrameProcessor import FrameProcessor
 from Schema.Interfaces.Indexer import Indexer
 from Schema.Interfaces.Integrater import Integrater
 
-# output streams
+# output streams &c.
 
 from Handlers.Streams import Admin, Science, Status, Chatter
+from Handlers.Exception import DPAException
 
 # helpers
 
@@ -267,7 +268,7 @@ def Mosflm(DriverType = None):
                 # allow a rerun later on, perhaps? c/f integrating TS01
                 # where this failure is an indication that lattice != oI
                 self._mosflm_cell_ref_images = None
-                raise RuntimeError, 'cannot cope with more than 3 wedges'
+                raise DPAException, 'cannot cope with more than 3 wedges'
 
             phi_width = self.get_header_item('phi_width')
             min_images = max(3, int(2 * mosaic / phi_width))
