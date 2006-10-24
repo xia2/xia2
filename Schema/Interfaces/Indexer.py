@@ -135,7 +135,7 @@ class _IndexerHelper:
         if len(self._sorted_list) <= 1:
             raise RuntimeError, 'not enough lattices'
 
-        Science.write('Eliminating indexing solution %s' % self.repr[0])
+        Science.write('Eliminating indexing solution %s' % self.repr()[0])
 
         self._sorted_list = self._sorted_list[1:]
 
