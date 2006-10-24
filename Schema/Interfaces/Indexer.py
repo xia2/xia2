@@ -63,6 +63,20 @@
 #                 storing all of the other solutions from indexing as
 #                 well as the chosen one, and also want to be able to
 #                 select the "best" solution in a more sensible manner...
+#
+#                 This means that the indexing should work as follows:
+#
+#                 - autoindex the diffraction pattern, allow the wrapper
+#                   or the program to assert a correct solution
+#                 - compare this correct solution against the highest symmetry
+#                   acceptable solution, and if it is not (e.g. because
+#                   something made a duff decision) then assert that the
+#                   cell, lattice is the higher symmetry and repeat
+#                 - record all possible indexing solutions somewhere
+#                 - provide a mechanism to say "this indexing solution
+#                   sucks" and repeat indexing with the next solution down
+#
+#                 Not trivial, but appropriate behaviour for an expert system!
 
 import os
 import sys
@@ -154,20 +168,13 @@ class Indexer:
                                   self._indxr_cell))
 
         # want to write these out in symmetry order, highest first!
-        lattice_to_spacegroup = {'aP':1,
-                                 'mP':3,
-                                 'mC':5,
-                                 'oP':16,
-                                 'oC':20,
-                                 'oF':22,
-                                 'oI':23,
-                                 'tP':75,
-                                 'tI':79,
-                                 'hP':143,
-                                 'cP':195,
-                                 'cF':196,
-                                 'cI':197}
 
+        lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5,
+                                 'oP':16, 'oC':20, 'oF':22,
+                                 'oI':23, 'tP':75, 'tI':79,
+                                 'hP':143, 'cP':195, 'cF':196,
+                                 'cI':197}
+        
         spacegroup_to_lattice = { }
         for k in lattice_to_spacegroup.keys():
             spacegroup_to_lattice[lattice_to_spacegroup[k]] = k
