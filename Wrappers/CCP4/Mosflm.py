@@ -264,6 +264,9 @@ def Mosflm(DriverType = None):
             # never happen though
 
             if num_wedges > 3:
+                # allow a rerun later on, perhaps? c/f integrating TS01
+                # where this failure is an indication that lattice != oI
+                self._mosflm_cell_ref_images = None
                 raise RuntimeError, 'cannot cope with more than 3 wedges'
 
             phi_width = self.get_header_item('phi_width')

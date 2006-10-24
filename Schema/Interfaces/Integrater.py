@@ -303,7 +303,7 @@ class Integrater:
 
         # FIXME 20/OCT/06 need to be sure that this will work correctly...
         # FIXME could the repeated integration needed in Mosflm be entirely
-        # handled from here??? 
+        # handled from here??? Apparently yes!
 
         while not self._intgr_prepare_done:
             Chatter.write('Preparing to do some integration...')
