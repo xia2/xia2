@@ -115,6 +115,42 @@ def ConstrainLattice(lattice_class, cell):
         e = (a + b + c) / 3.0
         return (e, e, e, 90.0, 90.0, 90.0)
 
+def SortLattices(lattice_list):
+    '''Sort a list of lattices into decreasing order of symmetry. One entry
+    in the lattice_list should consist of (lattice, (a, b, c, alpha, beta,
+    gamma)). It is assumed in this that there will be at most one instance
+    of each lattice type. This will also apply the symmetry constraints...'''
+
+    lattices = []
+    cells = { }
+
+    for l in lattice_list:
+        lattices.append(l[0])
+        cells[l[0]] = l[1]
+
+    lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5,
+                             'oP':16, 'oC':20, 'oF':22,
+                             'oI':23, 'tP':75, 'tI':79,
+                             'hP':143, 'cP':195, 'cF':196,
+                             'cI':197}
+
+    spacegroup_to_lattice = { }
+    for k in lattice_to_spacegroup.keys():
+        spacegroup_to_lattice[lattice_to_spacegroup[k]] = k
+    
+    spacegroups = [lattice_to_spacegroup[l] for l in lattices]
+
+    spacegroups.sort()
+    spacegroups.reverse()
+    lattices = [spacegroup_to_lattice[s] for s in spacegroups]
+    
+    result = []
+
+    for l in lattices:
+        result.append((l, ConstrainLattice(l[0], cells[l])))
+
+    return result
+
 if __name__ == '__main__':
     cell, dist = ApplyLattice('oP', (23.0, 24.0, 25.0, 88.9, 90.0, 90.1))
 
