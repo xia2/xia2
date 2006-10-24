@@ -137,7 +137,7 @@ if __name__ == '__main__':
 
     i = Indexer()
 
-    i.setBeam((108.9, 105.0))
+    i.set_beam((108.9, 105.0))
     i.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 
     print 'Refined beam is: %6.2f %6.2f' % i.get_indexer_beam()

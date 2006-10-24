@@ -226,7 +226,7 @@ def LabelitScreen(DriverType = None):
             for i in _images:
                 self.add_command_line(self.get_image_name(i))
 
-            if self._indxr_lattice:
+            if self._indxr_input_lattice:
                 lattice_to_spacegroup = {'aP':1,
                                          'mP':3,
                                          'mC':5,
@@ -243,7 +243,7 @@ def LabelitScreen(DriverType = None):
                 
                 self.add_command_line(
                     'known_symmetry=%d' % \
-                    lattice_to_spacegroup[self._indxr_lattice])
+                    lattice_to_spacegroup[self._indxr_input_lattice])
 
             if self._indxr_input_cell:
                 self.add_command_line('known_cell=%f,%f,%f,%f,%f,%f' % \
@@ -318,7 +318,8 @@ def LabelitScreen(DriverType = None):
             self._solution = self.get_solution()
 
             # now store also all of the other solutions... keyed by the
-            # lattice
+            # lattice - however these should only be added if they
+            # have a smiley in the appropriate record, perhaps?
 
             for solution in self._solutions.keys():
                 lattice = self._solutions[solution]['lattice']
@@ -363,7 +364,7 @@ def LabelitScreen(DriverType = None):
 
         def get_solution(self):
             '''Get the best solution from autoindexing.'''
-            if self._indxr_lattice is None:
+            if self._indxr_input_lattice is None:
                 # FIXME in here I need to check that there is a
                 # "good" smiley
                 return copy.deepcopy(
@@ -371,11 +372,12 @@ def LabelitScreen(DriverType = None):
             else:
                 # look through for a solution for this lattice
                 for s in self._solutions.keys():
-                    if self._solutions[s]['lattice'] == self._indxr_lattice:
+                    if self._solutions[s]['lattice'] == \
+                       self._indxr_input_lattice:
                         return copy.deepcopy(self._solutions[s])
 
             raise RuntimeError, 'no solution for lattice %s' % \
-                  self._indxr_lattice
+                  self._indxr_input_lattice
 
     return LabelitScreenWrapper()
 

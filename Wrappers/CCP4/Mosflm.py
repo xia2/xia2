@@ -363,7 +363,7 @@ def Mosflm(DriverType = None):
                 self.input('cell %f %f %f %f %f %f' % \
                            self._indxr_input_cell)
 
-            if self._indxr_lattice != None:
+            if self._indxr_input_lattice != None:
                 lattice_to_spacegroup = {'aP':1,
                                          'mP':3,
                                          'mC':5,
@@ -378,7 +378,8 @@ def Mosflm(DriverType = None):
                                          'cF':196,
                                          'cI':197}
                                      
-                spacegroup_number = lattice_to_spacegroup[self._indxr_lattice]
+                spacegroup_number = lattice_to_spacegroup[
+                    self._indxr_input_lattice]
                 self.input('symmetry %d' % spacegroup_number)
 
             for i in _images:

@@ -77,6 +77,9 @@
 #                   sucks" and repeat indexing with the next solution down
 #
 #                 Not trivial, but appropriate behaviour for an expert system!
+#                 This will require an _IndexerHelper class or some such,
+#                 to take over management of the list of possible lattices,
+#                 solution selection & elimination of "duff" choices.
 
 import os
 import sys
@@ -88,6 +91,55 @@ if not os.environ['DPA_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['DPA_ROOT']))
 
 from Handlers.Streams import Science
+
+from Experts.LatticeExpert import SortLattices
+
+class _IndexerHelper:
+    '''A class to manage autoindexing results in a useful way, to ensure
+    that the indexing solutions are properly managed, c/f TS01:1VR9.'''
+
+    def __init__(self, lattice_cell_dict):
+        '''Initialise myself from a dictionary keyed by crystal lattice
+        classes (e.g. tP) containing unit cells for these lattices.'''
+
+        # transform them into a list
+
+        list = [(k, lattice_cell_dict[k]) for k in lattice_cell_dict.keys()]
+
+        # sort them on the symmetry, highest first
+
+        self._sorted_list = SortLattices(list)
+
+        return
+
+    def get(self):
+        '''Get the highest currently allowed lattice.'''
+
+        return self._sorted_list[0]
+
+    def repr(self):
+        '''Return a string representation.'''
+
+        result = []
+
+        for l in self._sorted_list:
+            result.append('%s %s' % (l[0],
+                                     '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+                                     l[1]))
+
+        return result
+
+    def eliminate(self):
+        '''Eliminate the highest currently allowed lattice.'''
+
+        if len(self._sorted_list) <= 1:
+            raise RuntimeError, 'not enough lattices'
+
+        Science.write('Eliminating indexing solution %s' % self.repr[0])
+
+        self._sorted_list = self._sorted_list[1:]
+
+        return
 
 class Indexer:
     '''A class interface to present autoindexing functionality in a standard
@@ -112,6 +164,8 @@ class Indexer:
         # other possible indexing solutions - see 23/OCT/06 FIXME
         # has keys for each entry of cell, goodness for goodness of fit.
         self._indxr_other_lattice_cell = { }
+
+        self._indxr_helper = None
 
         self._indxr_mosaic = None
         self._indxr_refined_beam = None
@@ -157,27 +211,49 @@ class Indexer:
         if self._indxr_images == []:
             self.index_select_images()
 
-        result = self._index()
+        # if there is already a list of "known" spacegroups, select the
+        # highest and try to index with this...
+
+        # FIXME this needs to check the indexer helper...
+        # if the index helper does not exist, then it should be created
+        # and populated here, perhaps? then the highest solution picked
+        # and if different to the selected one then this should be
+        # reimposed and rerun.
+
+        if not self._indxr_helper:
+            result = self._index()
+
+            solutions = { }
+            for k in self._indxr_other_lattice_cell.keys():
+                solutions[k] = self._indxr_other_lattice_cell[k]['cell']
+
+            self._indxr_helper = _IndexerHelper(solutions)
+
+            solution = self._indxr_helper.get()
+        
+            # compare these against the final solution, if different then
+            # rerun indexing
+
+            if self._indxr_lattice != solution[0]:
+                Science.write('Rerunning indexing with target lattice %s' \
+                              % solution[0])
+                self._indxr_input_lattice = solution[0]
+                self._indxr_input_cell[1] = solution[1]
+                result = self._index()
+
+        else:
+            # rerun autoindexing with the best known current solution
+            
+            solution = self._indxr_helper.get()
+            self._indxr_input_lattice = solution[0]
+            self._indxr_input_cell[1] = solution[1]
+            result = self._index()
+            
         self._indxr_run = True
 
-        # write about this
-
-        Science.write('Indexing solution:')
-        Science.write('%s  %s' % (self._indxr_lattice,
-                                  '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-                                  self._indxr_cell))
-
-        # want to write these out in symmetry order, highest first!
-
-        lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5,
-                                 'oP':16, 'oC':20, 'oF':22,
-                                 'oI':23, 'tP':75, 'tI':79,
-                                 'hP':143, 'cP':195, 'cF':196,
-                                 'cI':197}
-        
-        spacegroup_to_lattice = { }
-        for k in lattice_to_spacegroup.keys():
-            spacegroup_to_lattice[lattice_to_spacegroup[k]] = k
+        Science.write('All possible indexing solutions:')
+        for l in self._indxr_helper.repr():
+            Science.write(l)
 
         # FIXME 23/OCT/06 at this stage I need to look at the list of
         # reasonable solutions and try to figure out if the indexing
@@ -192,18 +268,12 @@ class Indexer:
         # general one, so may be implemented in the general indexer
         # interface rather than in specific code...
 
-        Science.write('All possible indexing solutions:')
-        lattices = self._indxr_other_lattice_cell.keys()
-        spacegroups = [lattice_to_spacegroup[l] for l in lattices]
+        # write about this
 
-        spacegroups.sort()
-        spacegroups.reverse()
-        lattices = [spacegroup_to_lattice[s] for s in spacegroups]
-
-        for l in lattices:
-            cell = tuple(self._indxr_other_lattice_cell[l]['cell'])
-            Science.write('%s  %s' % \
-                          (l, '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % cell))
+        Science.write('Indexing solution:')
+        Science.write('%s  %s' % (self._indxr_lattice,
+                                  '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+                                  self._indxr_cell))
         
         return result
 
@@ -229,7 +299,7 @@ class Indexer:
         is handled depends on the implementation. FIXED decide on the
         format for the lattice. This will be say tP.'''
 
-        self._indxr_lattice = lattice
+        self._indxr_input_lattice = lattice
 
         # reset the indexer - we need to rerun to get updated
         # results
