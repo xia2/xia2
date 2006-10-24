@@ -731,8 +731,7 @@ def Mosflm(DriverType = None):
             # is pretty damn robust.
 
             if not cell_refinement_ok:
-                # FIXME this should do something useful
-                pass
+                raise DPAException, 'cell refinement failed'
 
             # if it succeeded then populate the indexer output (myself)
             # with the new information - this can then be used
@@ -794,6 +793,14 @@ def Mosflm(DriverType = None):
                         
                         raise RuntimeError, 'cell refinement failed: ' + \
                               'inaccurate cell parameters'
+
+                # other possible problems in the cell refinement - a
+                # negative mosaic spread, for instance
+
+                if 'Refined mosaic spread (excluding)' in o:
+                    mosaic = float(o.split()[-1])
+                    if mosaic < 0.0:
+                        raise DPAException, 'negative refined mosaic spread'
 
                 # FIXME will these get lost if the indexer in question is
                 # not this program...? Find out...
