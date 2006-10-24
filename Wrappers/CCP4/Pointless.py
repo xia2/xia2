@@ -88,22 +88,28 @@
 # thing to have. Can this be switched off? Have emailed pre - for the
 # moment just be aware of this!
 # 
-# FIXME 15/AUG/06 - pointless is a little over keen with respect to the 
-# pointgroup for the 1VR9 native data. It is therefore worth adding an
-# option to try scaling in all of the "legal" spacegroups (with +ve Z
-# score) to check that the assertions pointless makes about the symmetry
-# are correct.
+# FIXME 15/AUG/06 pointless is a little over keen with respect to the 
+#                 pointgroup for the 1VR9 native data. It is therefore
+#                 worth adding an option to try scaling in all of the
+#                 "legal" spacegroups (with +ve score) to check that the
+#                 assertions pointless makes about the symmetry
+#                 are correct.
 # 
-# FIXME 22/AUG/06 - update to the latest version of pointless which needs
-# to read command line input. "systematicabsences off".
+# FIXED 22/AUG/06 update to the latest version of pointless which needs
+#                 to read command line input. "systematicabsences off".
 # 
-# FIXME 23/OCT/06 with TS03/PEAK data (1vpj) the "most likely" solution comes
+# FIXED 23/OCT/06 with TS03/PEAK data (1vpj) the "most likely" solution comes
 #                 out as C222, but the solution with the highest NetZc is the
 #                 correct one of P 4/mmm. Need therefore to be able to get 
 #                 this information from the output file. Perhaps need to 
 #                 balance likelihood against NetZc? Perhaps it is simply
 #                 a problem with this version of pointless? This is not
 #                 fixed in version 1.1.0.5! :o(
+#
+# FIXME 24/OCT/06 need to plumb this into the indexer solution management
+#                 system so that in the case of 1VR9/TS01 the "correct"
+#                 pointgroup of I222 is not specified, as it has already
+#                 been eliminated at the processing stage.
 
 import os
 import sys
