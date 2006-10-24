@@ -308,7 +308,18 @@ class Integrater:
         while not self._intgr_prepare_done:
             Chatter.write('Preparing to do some integration...')
             self._intgr_prepare_done = True
-            self._integrate_prepare()
+
+            # if this raises an exception, then perhaps the autoindexing
+            # solution has too high symmetry. if this the case, then
+            # perform a self._intgr_indexer.eliminate() - this should
+            # reset the indexing system
+
+            try:
+                self._integrate_prepare()
+            except:
+                # fixme I should trap the correct exception here
+                self._intgr_indexer.eliminate()
+                self._intgr_prepare_done = False                
 
         while not self._intgr_done:
             Chatter.write('Doing some integration...')

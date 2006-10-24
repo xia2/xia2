@@ -202,6 +202,19 @@ class Indexer:
 
         return 
 
+    def eliminate(self):
+        '''Eliminate the current solution for autoindexing.'''
+
+        if not self._indxr_helper:
+            raise RuntimeError, 'no indexing done yet'
+
+        # remove the top indexing solution and reset the "done" flag - this
+        # will mean that the next "get" will cause the indexing to be rerun.
+        self._indxr_helper.eliminate()
+        self._indxr_run = False
+
+        return
+
     def _index(self):
         '''This is what the implementation needs to implement.'''
 
