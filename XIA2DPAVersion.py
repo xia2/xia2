@@ -35,9 +35,9 @@
 #         data though this is not yet perfected!
 #         25/OCT/06 can now run with JUST ccp4-6.0.1 through all 4 TS
 #         examples from the .xinfo files, so this is version 0.1.0.
-#         Tagging...
+#         Tagging... - oh that's 0.1.1 then.
 
-VersionNumber = "0.1.0"
+VersionNumber = "0.1.1"
 Version = "XIA2DPA %s" % VersionNumber
 CVSTag = "xia2dpa-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2dpa-%s" % VersionNumber
