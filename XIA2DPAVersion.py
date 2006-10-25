@@ -33,6 +33,9 @@
 #
 # 0.1.0 - 27/SEP/06 can successfully integrate & scale multiwavelength
 #         data though this is not yet perfected!
+#         25/OCT/06 can now run with JUST ccp4-6.0.1 through all 4 TS
+#         examples from the .xinfo files, so this is version 0.1.0.
+#         Tagging...
 
 VersionNumber = "0.1.0"
 Version = "XIA2DPA %s" % VersionNumber
