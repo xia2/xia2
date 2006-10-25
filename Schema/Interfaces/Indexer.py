@@ -284,9 +284,9 @@ class Indexer:
         # write about this
 
         Science.write('Indexing solution:')
-        Science.write('%s  %s' % (self._indxr_lattice,
-                                  '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-                                  self._indxr_cell))
+        Science.write('%s %s' % (self._indxr_lattice,
+                                 '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+                                 self._indxr_cell))
         
         return result
 
