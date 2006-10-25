@@ -386,8 +386,11 @@ def Mosflm(DriverType = None):
                     self._indxr_input_lattice]
                 self.input('symmetry %d' % spacegroup_number)
 
+	    # FIXME 25/OCT/06 have found that a threshold of 10 works
+            # better for TS01/LREM - need to make sure that this is 
+            # generally applicable...
             for i in _images:
-                self.input('autoindex dps refine image %d' % i)
+                self.input('autoindex dps refine image %d thresh 10' % i)
 
             self.input('mosaic estimate')
             self.input('go')

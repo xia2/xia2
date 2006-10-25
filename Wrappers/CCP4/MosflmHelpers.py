@@ -265,6 +265,7 @@ def _parse_mosflm_index_output(index_output_list):
     
     for k in keys:
         if not 'unrefined' in solutions[k]:
+            print solutions[k]
             list = solutions[k].split()
             number = int(list[0])
             rms = float(list[2])
@@ -272,7 +273,7 @@ def _parse_mosflm_index_output(index_output_list):
             frc = float(list[3])
             cell = map(float, list[5:11])
             if solutions_by_lattice.has_key(latt):
-                if solutions_by_lattice[latt]['rms'] < rms:
+                if solutions_by_lattice[latt]['rms'] <= rms:
                     continue
             solutions_by_lattice[latt] = {'rms':rms,
                                           'cell':cell,
@@ -286,6 +287,9 @@ def _parse_mosflm_index_output(index_output_list):
     for k in solutions_by_lattice.keys():
         if solutions_by_lattice[k]['number'] == correct_number:
             acceptable_rms = 1.1 * solutions_by_lattice[k]['rms']
+
+    if acceptable_rms == 0.0:
+        raise RuntimeError, 'something horribly bad has happened in indexing'
 
     # then print those which should be ok...
 
@@ -313,7 +317,7 @@ def _parse_mosflm_index_output(index_output_list):
             if k in lattice_to_spacegroup.keys():
                 results[k] = {'cell':cell,
                               'goodness':solutions_by_lattice[k]['rms']}
-    
+
     return results
 
 if __name__ == '__main__':
