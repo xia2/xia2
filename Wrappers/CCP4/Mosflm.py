@@ -797,7 +797,7 @@ def Mosflm(DriverType = None):
                 # other possible problems in the cell refinement - a
                 # negative mosaic spread, for instance
 
-                if 'Refined mosaic spread (excluding)' in o:
+                if 'Refined mosaic spread (excluding safety factor)' in o:
                     mosaic = float(o.split()[-1])
                     if mosaic < 0.0:
                         raise DPAException, 'negative refined mosaic spread'
