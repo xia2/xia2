@@ -407,8 +407,25 @@ def Mosflm(DriverType = None):
                 if 'Beam coordinates of' in o:
                     self._indxr_refined_beam = tuple(map(float, o.split(
                         )[-2:]))
+
+                # FIXME this may not be there if this is a repeat indexing!
                 if 'Symmetry:' in o:
                     self._indxr_lattice = o.split(':')[1].split()[0]
+
+                # so we have to resort to this instead...
+                if 'Refining solution #' in o:
+                    spagnum = int(o.split(')')[0].split()[-1])
+                    lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5,
+                                             'oP':16, 'oC':20, 'oF':22,
+                                             'oI':23, 'tP':75, 'tI':79,
+                                             'hP':143, 'cP':195, 'cF':196,
+                                             'cI':197}
+
+                    spacegroup_to_lattice = { }
+                    for k in lattice_to_spacegroup.keys():
+                        spacegroup_to_lattice[lattice_to_spacegroup[k]] = k
+                    self._indxr_lattice = spacegroup_to_lattice[spagnum]
+
                     
                 # in here I need to check if the mosaic spread estimation
                 # has failed. If it has it is likely that the selected

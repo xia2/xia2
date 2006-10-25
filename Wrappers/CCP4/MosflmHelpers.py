@@ -255,19 +255,33 @@ def _parse_mosflm_index_output(index_output_list):
             except:
                 pass
 
+        # this will not be in the file if Mosflm doesn't think you have
+        # the right answer (and often it doesn't have a clue...)
         if 'Suggested Solution' in output:
             correct_number = int(output.split()[-2])
+
+        # this will at least be there!
+        if 'Mosflm has chosen solution' in output:
+            correct_number = int(output.split()[4])
+
+    if correct_number == 0:
+        # cannot find what Mosflm considers the correct answer
+        raise RuntimeError, 'cannot determine correct answer'
 
     keys = solutions.keys()
     keys.sort()
 
     solutions_by_lattice = { }
     
+    # FIXME 25/OCT/06 also need to take the penalty into account slightly
+    # because this goes very wrong for TS02/PEAK - add this to the rms
+    # times a small magic number (0.5% at the moment)   
     for k in keys:
         if not 'unrefined' in solutions[k]:
             list = solutions[k].split()
+            penalty = float(list[1])
             number = int(list[0])
-            rms = float(list[2])
+            rms = float(list[2]) + 0.005 * penalty
             latt = list[4]
             frc = float(list[3])
             cell = map(float, list[5:11])
