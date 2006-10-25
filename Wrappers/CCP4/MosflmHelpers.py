@@ -265,7 +265,6 @@ def _parse_mosflm_index_output(index_output_list):
     
     for k in keys:
         if not 'unrefined' in solutions[k]:
-            print solutions[k]
             list = solutions[k].split()
             number = int(list[0])
             rms = float(list[2])
