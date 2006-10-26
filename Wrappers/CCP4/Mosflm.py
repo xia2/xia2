@@ -435,6 +435,14 @@ def Mosflm(DriverType = None):
                 if 'The mosaicity has been estimated' in o:
                     self._indxr_mosaic = float(o.split('>')[1].split()[0])
 
+                # alternatively this could have failed - which happens
+                # sometimes...
+
+                if 'The mosaicity estimation has not worked for some' in o:
+                    # this is a problem... in particular with the
+                    # mosflm built on linux in CCP4 6.0.1...
+                    raise DPAException, 'mosaicity estimation failed'
+
                 # mosflm doesn't refine this in autoindexing...
                 if 'Crystal to detector distance of' in o:
                     self._indxr_refined_distance = float(o.split(
