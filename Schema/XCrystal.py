@@ -215,12 +215,19 @@ class XCrystal(Object):
     def __repr__(self):
         result = 'Crystal: %s\n' % self._name
         if self._aa_sequence:
-            result += 'Sequence: %s' % self._aa_sequence.get_sequence()
+            result += 'Sequence: %s\n' % self._aa_sequence.get_sequence()
         for wavelength in self._wavelengths.keys():
             result += str(self._wavelengths[wavelength])
 
-        result += 'Scaled & merged reflections: %s\n' % \
-                  self.get_scaled_merged_reflections()
+        reflections = self.get_scaled_merged_reflections()
+
+        if type(reflections) == type('string'):
+            result += 'Scaled & merged reflections: %s\n' % \
+                      reflections
+        elif type(reflections) == type([]):
+            for reflection_file in reflections:
+            result += 'Scaled & merged reflections: %s\n' % \
+                      reflection_file                
             
         return result
 
