@@ -437,9 +437,25 @@ def Scala(DriverType = None):
                 except:
                     pass
 
+            # here get a list of all output files...
+            output = self.get_all_output()
+
+            hklout_files = []
+
+            for i in range(len(output)):
+                record = output[i]
+                if 'WRITTEN OUTPUT MTZ FILE' in record:
+                    hklout_files.append(output[i + 1].split(':')[-1].strip())
+            
+            self._scalr_scaled_reflection_files = hklout_files
+
             return self.get_ccp4_status()
             
-        
+        def get_scaled_reflection_files(self):
+            '''Get the names of the actual scaled reflection files - note
+            that this is not the same as HKLOUT because Scala splits them
+            up...'''
+            return self._scalr_scaled_reflection_files
 
         def get_summary(self):
             '''Get a summary of the data.'''

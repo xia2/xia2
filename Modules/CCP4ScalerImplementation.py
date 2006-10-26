@@ -307,7 +307,10 @@ class CCP4Scaler(Scaler):
         # finally put all of the results "somewhere useful"
         
         self._scalr_statistics = data
-        self._scalr_scaled_reflection_fikles = sc.get_hklout()
+
+        # FIXME this is not correct for multi-wavelength data...
+
+        self._scalr_scaled_reflection_files = sc.get_scaled_reflection_files()
 
         return
 
