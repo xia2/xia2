@@ -206,12 +206,14 @@ def _happy_integrate_lp(integrate_lp_stats):
         data = integrate_lp_stats[i]
 
         if data['rmsd_pixel'] > 1.0:
-            status = '*'
+            status = '%'
             Science.write('Image %4d ... high rmsd (%f)' % \
                           (i, data['rmsd_pixel']), forward = False)
         else:
-            status = '.'
+            status = 'o'
             Science.write('Image %4d ... ok' % i, forward = False)
+
+        # also - # bad O overloaded . blank ! problem ? other
 
         results += status
 
