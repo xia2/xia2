@@ -257,8 +257,9 @@ def _parse_mosflm_index_output(index_output_list):
 
         # this will not be in the file if Mosflm doesn't think you have
         # the right answer (and often it doesn't have a clue...)
+        # FIXME this sometimes has "transformed from" following...        
         if 'Suggested Solution' in output:
-            correct_number = int(output.split()[-2])
+            correct_number = int(output.split()[2])
 
         # this will at least be there!
         if 'Mosflm has chosen solution' in output:
