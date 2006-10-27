@@ -392,7 +392,7 @@ class CCP4Scaler(Scaler):
         auto_logfiler(c)
         for key in scaled_reflection_files.keys():
             file = scaled_reflection_files[key]
-            c.add_hklin_file(file)
+            c.add_hklin(file)
         
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s_merged.mtz' % (common_pname,

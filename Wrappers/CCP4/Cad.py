@@ -114,6 +114,8 @@ def Cad(DriverType = None):
 
                 for c in columns:
                     name = c[0]
+                    if name in ['H', 'K', 'L']:
+                        continue
                     if name in column_names:
                         raise RuntimeError, 'duplicate column names'
                     column_names.append(name)
@@ -141,9 +143,9 @@ def Cad(DriverType = None):
                     column_counter += 1
                     labin_command += ' E%d=%s' % (column_counter, column)
 
-                self._input(labin_command)
+                self.input(labin_command)
 
-            self._close_wait()
+            self.close_wait()
 
             try:
                 self.check_for_errors()
@@ -185,6 +187,9 @@ def Cad(DriverType = None):
 
             for c in columns:
                 name = c[0]
+                if name in ['H', 'K', 'L']:
+                    continue
+                                          
                 column_names_by_file[hklin].append(name)
 
             self.add_command_line('hklin1')
@@ -197,14 +202,14 @@ def Cad(DriverType = None):
                 column_counter += 1
                 labin_command += ' E%d=%s' % (column_counter, column)
 
-            self._input(labin_command)            
+            self.input(labin_command)            
 
             pname, xname, dname = dataset_names_by_file[hklin][0].split('/')
 
             if self._new_cell_parameters:
                 a, b, c, alpha, beta, gamma = self._new_cell_parameters
-                self._input('dcell file_number 1 %s %s %f %f %f %f %f %f' % \
-                            (xname, dname, a, b, c, alpha, beta, gamma))
+                self.input('dcell file_number 1 %s %s %f %f %f %f %f %f' % \
+                           (xname, dname, a, b, c, alpha, beta, gamma))
 
             if self._new_column_suffix:
                 suffix = self._new_column_suffix
@@ -215,7 +220,7 @@ def Cad(DriverType = None):
                     labin_command += ' E%d=%s_%s' % \
                                      (column_counter, column, suffix)
 
-                self._input(labout_command)
+                self.input(labout_command)
                 
             self.close_wait()
 
