@@ -207,6 +207,11 @@ class Scaler:
 
         # add this to the list.
 
+        # FIXME 27/OCT/06 sometimes the epoch for all frames will be
+        # zero - you have been warned!! perhaps in here there should be
+        # something derived from the image name - this would mean that
+        # then it is in alphabetical order, instead...
+
         self._scalr_integraters[
             integrater.get_integrater_epoch()] = integrater
 
