@@ -123,13 +123,13 @@ def Cad(DriverType = None):
 
             # create the command line
 
-            command_line = ' '
             hklin_counter = 0
             for hklin in self._hklin_files:
                 hklin_counter += 1
-                command_line += 'hklin%d %s' % (hklin_counter, hklin)
+                self.add_command_line('hklin%d' % hklin_counter)
+                self.add_command_line(hklin)
 
-            self.start(command_line)
+            self.start()
 
             hklin_counter = 0
 
@@ -187,7 +187,9 @@ def Cad(DriverType = None):
                 name = c[0]
                 column_names_by_file[hklin].append(name)
 
-            self.start('hklin1 %s' % hklin)
+            self.add_command_line('hklin1')
+            self.add_command_line(hklin)
+            self.start()
             
             column_counter = 0
             labin_command = 'labin file_number 1 ' % hklin_counter
