@@ -454,20 +454,36 @@ def Scala(DriverType = None):
             # here get a list of all output files...
             output = self.get_all_output()
 
-            hklout_files = []
-
             # want to put these into a dictionary at dome stage, keyed
             # by the data set id. how this is implemented will depend
             # on the number of datasets...
+
+            # FIXME file names on windows separate out path from
+            # drive with ":"... fixed! split on "Filename:"
+
+            # get a list of dataset names...
+
+            datasets = []
+            for run in self._runs:
+                datasets.append(run[4])
+
+            hklout_files = []
+            hklout_dict = { }
             
             for i in range(len(output)):
                 record = output[i]
                 if 'WRITTEN OUTPUT MTZ FILE' in record:
-                    hklout = output[i + 1].split(':')[-1].strip()
-                    dname = hklout.split('_')[-1].replace('.mtz', '')
-                    hklout_files.append(output[i + 1].split(':')[-1].strip())
+                    hklout = output[i + 1].split('Filename:')[-1].strip()
+                    if len(datasets) > 1:
+                        dname = hklout.split('_')[-1].replace('.mtz', '')
+                        if not dname in datasets:
+                            raise RuntimeError, 'unknown dataset %s' % dname
+                        hklout_dict[dname] = hklout
+                    else:
+                        hklout_dict[datasets[0]] = hklout
+                    hklout_files.append(hklout)
             
-            self._scalr_scaled_reflection_files = hklout_files
+            self._scalr_scaled_reflection_files = hklout_dict
 
             return self.get_ccp4_status()
             
