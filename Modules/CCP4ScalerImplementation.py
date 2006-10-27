@@ -27,6 +27,11 @@
 #                 BASE keyword to scala - BASE [crystal xname] dataset dname
 # 
 #                 This defaults to the data set with the shortest wavelength.
+#  
+# FIXME 27/OCT/06 need to make sure that the pointless run in here does not
+#                 select a symmetry for the crystal which has been eliminated
+#                 already...
+# 
 # 
 
 import os

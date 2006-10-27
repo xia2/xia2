@@ -182,7 +182,11 @@ class Scaler:
 
         # places to hold the output
 
+        # this should be a dictionary keyed by datset / format, or
+        # format / dataset
         self._scalr_scaled_reflection_files = None
+
+        # this needs to be a dictionary keyed by dataset
         self._scalr_statistics = None
 
         return

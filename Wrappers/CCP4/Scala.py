@@ -342,8 +342,22 @@ def Scala(DriverType = None):
             self.input('usecwd')
                 
             # fixme this works ok for UC1 but won't handle anything
-            # more sophisticated
-            self.input('run 1 all')
+            # more sophisticated FIXME FIXME 27/OCT/06 how is this
+            # still in here???
+            # self.input('run 1 all')
+
+            run_number = 0
+            for run in self._runs:
+                run_number += 1
+                self.input('run %d batch %d to %d' % (run_number,
+                                                      run[0], run[1]))
+            
+            # put in the pname, xname, dname stuff
+            run_number = 0
+            for run in self._runs:
+                run_number += 1
+                self.input('name run %d project %s crystal %s dataset %s' % \
+                           (run_number, runs[2], runs[3], runs[4]))
 
             # assemble the scales command
             if self._mode == 'rotation':
@@ -442,9 +456,15 @@ def Scala(DriverType = None):
 
             hklout_files = []
 
+            # want to put these into a dictionary at dome stage, keyed
+            # by the data set id. how this is implemented will depend
+            # on the number of datasets...
+            
             for i in range(len(output)):
                 record = output[i]
                 if 'WRITTEN OUTPUT MTZ FILE' in record:
+                    hklout = output[i + 1].split(':')[-1].strip()
+                    dname = hklout.split('_')[-1].replace('.mtz', '')
                     hklout_files.append(output[i + 1].split(':')[-1].strip())
             
             self._scalr_scaled_reflection_files = hklout_files
