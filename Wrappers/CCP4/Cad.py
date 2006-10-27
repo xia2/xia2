@@ -136,10 +136,10 @@ def Cad(DriverType = None):
             for hklin in self._hklin_files:
                 column_counter = 0
                 hklin_counter += 1
-                labin_command = 'labin file_number %d ' % hklin_counter
+                labin_command = 'labin file_number %d' % hklin_counter
                 for column in column_names_by_file[hklin]:
                     column_counter += 1
-                    labin_command += 'E%d=%s' % (column_counter, column)
+                    labin_command += ' E%d=%s' % (column_counter, column)
 
                 self._input(labin_command)
 
@@ -192,14 +192,14 @@ def Cad(DriverType = None):
             self.start()
             
             column_counter = 0
-            labin_command = 'labin file_number 1 ' % hklin_counter
+            labin_command = 'labin file_number 1' 
             for column in column_names_by_file[hklin]:
                 column_counter += 1
-                labin_command += 'E%d=%s' % (column_counter, column)
+                labin_command += ' E%d=%s' % (column_counter, column)
 
             self._input(labin_command)            
 
-            pname, xname, dname = dataset_names_by_file[hklin][0]
+            pname, xname, dname = dataset_names_by_file[hklin][0].split('/')
 
             if self._new_cell_parameters:
                 a, b, c, alpha, beta, gamma = self._new_cell_parameters
@@ -209,10 +209,10 @@ def Cad(DriverType = None):
             if self._new_column_suffix:
                 suffix = self._new_column_suffix
                 column_counter = 0
-                labout_command = 'labout file_number 1 ' % hklin_counter
+                labout_command = 'labout file_number 1' 
                 for column in column_names_by_file[hklin]:
                     column_counter += 1
-                    labin_command += 'E%d=%s_%s' % \
+                    labin_command += ' E%d=%s_%s' % \
                                      (column_counter, column, suffix)
 
                 self._input(labout_command)

@@ -376,6 +376,7 @@ class CCP4Scaler(Scaler):
         for key in scaled_reflection_files.keys():
             file = scaled_reflection_files[key]
             c = Cad()
+            c.set_working_directory(self.get_working_directory())
             auto_logfiler(c)
             c.add_hklin(file)
             c.set_new_suffix(key)
@@ -387,6 +388,7 @@ class CCP4Scaler(Scaler):
         # merge all columns into a single uber-reflection-file
 
         c = Cad()
+        c.set_working_directory(self.get_working_directory())
         auto_logfiler(c)
         for key in scaled_reflection_files.keys():
             file = scaled_reflection_files[key]

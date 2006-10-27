@@ -19,6 +19,8 @@
 #                 need to be populated by that program based on 
 #                 flourescence scans and so on. xia2dc will, however,
 #                 require a minimally populated .xinfo file for input.
+#                 Comment 27/OCT/06 something like this will also be
+#                 needed for the xia2ss phase as well...
 # 
 # FIXME 25/AUG/06 I need to implement a "wizard" for generating the .xinfo
 #                 file because it's not particularly helpful or friendly
@@ -77,6 +79,10 @@
 #                 development of the scaling independently of the scaling 
 #                 &c. The same could be applied to the scaled reflections
 #                 belonging to a wavelength etc.
+# 
+# FIXME 27/OCT/06 need to be able to override or provide the epoch
+#                 information in the .xinfo file to cope with cases
+#                 where this information is not in the image headers.
 
 class XInfo:
     '''A class to represent all of the input to the xia2dpa system, with

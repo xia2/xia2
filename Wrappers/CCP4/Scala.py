@@ -25,7 +25,8 @@
 # the appropriate statistics. This corresponds to Simple 1 in the use case
 # documentation.
 # 
-# 
+# FIXME 27/OCT/06 need to update the use case documentation - where is this?
+#                 in Wrappers/CCP4/Doc I presume...
 # 
 
 import os
