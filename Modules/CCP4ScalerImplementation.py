@@ -268,7 +268,6 @@ class CCP4Scaler(Scaler):
         auto_logfiler(s)
         s.sort()
 
-
         # then perform some scaling - including any parameter fiddling
         # which is required.
 
@@ -309,8 +308,20 @@ class CCP4Scaler(Scaler):
         self._scalr_statistics = data
 
         # FIXME this is not correct for multi-wavelength data...
+        # it should be now!
 
         self._scalr_scaled_reflection_files = sc.get_scaled_reflection_files()
+
+        # convert reflection files to .sca format - use mtz2various for this
+
+        # convert I's to F's in Truncate
+
+        # standardise the unit cells
+
+        # relabel each of the columns in each reflection file appending
+        # the DNAME to the column name
+
+        # merge all columns into a single uber-reflection-file
 
         return
 

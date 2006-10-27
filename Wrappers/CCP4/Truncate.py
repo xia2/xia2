@@ -58,7 +58,7 @@ def Truncate(DriverType = None):
             try:
                 self.check_for_errors()
                 self.check_ccp4_errors()
-                self.check_scala_errors()
+
             except RuntimeError, e:
                 try:
                     os.remove(self.get_hklout())
@@ -69,4 +69,4 @@ def Truncate(DriverType = None):
 
             return
 
-            
+    return TruncateWrapper()
