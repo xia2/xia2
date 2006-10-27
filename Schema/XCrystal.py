@@ -219,16 +219,21 @@ class XCrystal(Object):
         for wavelength in self._wavelengths.keys():
             result += str(self._wavelengths[wavelength])
 
-        reflections = self.get_scaled_merged_reflections()
+        reflections_all = self.get_scaled_merged_reflections()
 
-        if type(reflections) == type('string'):
-            result += 'Scaled & merged reflections: %s\n' % \
-                      reflections
-        elif type(reflections) == type([]):
-            for reflection_file in reflections:
-                result += 'Scaled & merged reflections: %s\n' % \
-                          reflection_file                
-            
+        if type(reflections_all) == type({}):
+            for format in reflections_all.keys():
+                result += '%s format:\n' % format
+                reflections = reflections_all[format]
+
+                if type(reflections) == type({}):
+                    for wavelength in reflections.keys():
+                        result += 'Scaled & merged reflections (%s): %s\n' % \
+                                  (wavelength, reflections[wavelength])
+                else:
+                    result += 'Scaled & merged reflections: %s\n' % \
+                              str(reflections)
+
         return result
 
     def __str__(self):
