@@ -99,6 +99,7 @@ def Cad(DriverType = None):
 
             for hklin in self._hklin_files:
                 md = Mtzdump()
+                md.set_hklin(hklin)
                 md.dump()
                 columns = md.get_columns()
                 spag = md.get_spacegroup()
@@ -175,6 +176,7 @@ def Cad(DriverType = None):
             dataset_names_by_file = { }
 
             md = Mtzdump()
+            md.set_hklin(hklin)
             md.dump()
             columns = md.get_columns()
             
