@@ -53,6 +53,7 @@ from Wrappers.CCP4.Mtzdump import Mtzdump
 from Wrappers.CCP4.Truncate import Truncate
 from Wrappers.CCP4.Rebatch import Rebatch
 from Wrappers.CCP4.Reindex import Reindex
+from Wrappers.CCP4.Mtz2various import Mtz2various
 from Wrappers.CCP4.Cad import Cad
 from Wrappers.CCP4.Pointless import Pointless
 
@@ -315,22 +316,84 @@ class CCP4Scaler(Scaler):
         # FIXME this is not correct for multi-wavelength data...
         # it should be now!
 
-        self._scalr_scaled_reflection_files = sc.get_scaled_reflection_files()
-
-        # compute a "standard unit cell"
+        scaled_reflection_files = sc.get_scaled_reflection_files()
+        self._scalr_scaled_reflection_files = { }
+        
+        # compute a "standard unit cell" - FIXME perhaps - looks like
+        # sortmtz will already assign somehow a standard unit cell -
+        # interesting!
 
         # convert reflection files to .sca format - use mtz2various for this
 
+        self._scalr_scaled_reflection_files['sca'] = { }
+        for key in scaled_reflection_files:
+            file = scaled_reflection_files[key]
+            m2v = Mtz2various()
+            m2v.set_working_directory(self.get_working_directory())
+            auto_logfiler(m2v)
+            m2v.set_hklin(file)
+            m2v.set_hklout('%s.sca' % file[:-4])
+            m2v.convert()
+
+            self._scalr_scaled_reflection_files['sca'][
+                key] = '%s.sca' % file[:-4]
+
         # convert I's to F's in Truncate
+
+        self._scalr_scaled_reflection_files['mtz'] = { }
+        for key in scaled_reflection_files.keys():
+            file = scaled_reflection_files[key]
+            t = Truncate()
+            t.set_working_directory(self.get_working_directory())
+            auto_logfiler(t)
+            t.set_hklin(file)
+            # this is tricksy - need to really just replace the last
+            # instance of this string FIXME 27/OCT/06
+
+            hklout = ''
+            for path in os.path.split(file)[:-1]:
+                hklout = os.path.join(hklout, path)
+            hklout = os.path.join(hklout, os.path.split(file)[-1].replace(
+                '_scaled', '_truncated'))
+            t.set_hklout(hklout)
+            t.truncate()
+
+            # replace old with the new version which has F's in it 
+            scaled_reflection_files[key] = hklout
+
+            # record the separated reflection file too
+            self._scalr_scaled_reflection_files['mtz'][key] = hklout
 
         # standardise the unit cells and relabel each of the columns in
         # each reflection file appending the DNAME to the column name
 
-        # cad = Cad()
+        for key in scaled_reflection_files.keys():
+            file = scaled_reflection_files[key]
+            c = Cad()
+            auto_logfiler(c)
+            c.add_hklin(file)
+            c.set_new_suffix(key)
+            hklout = '%s_cad.mtz' % file[:-4]
+            c.set_hklout(hklout)
+            c.update()
+            scaled_reflection_files[key] = hklout
 
         # merge all columns into a single uber-reflection-file
 
-        # cad = Cad()
+        c = Cad()
+        auto_logfiler(c)
+        for key in scaled_reflection_files.keys():
+            file = scaled_reflection_files[key]
+            c.add_hklin_file(file)
+        
+        hklout = os.path.join(self.get_working_directory(),
+                              '%s_%s_merged.mtz' % (common_pname,
+                                                    common_xname))
+
+        c.set_hklout(hklout)
+        c.merge()
+            
+        self._scalr_scaled_reflection_files['mtz_merged'] = hklout
 
         return
 
