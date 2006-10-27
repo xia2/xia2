@@ -226,8 +226,8 @@ class XCrystal(Object):
                       reflections
         elif type(reflections) == type([]):
             for reflection_file in reflections:
-            result += 'Scaled & merged reflections: %s\n' % \
-                      reflection_file                
+                result += 'Scaled & merged reflections: %s\n' % \
+                          reflection_file                
             
         return result
 
