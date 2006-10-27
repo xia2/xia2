@@ -364,6 +364,9 @@ def LabelitScreen(DriverType = None):
         
         # things to get results from the indexing
 
+        def get_solutions(self):
+            return self._solutions
+
         def get_solution(self):
             '''Get the best solution from autoindexing.'''
             if self._indxr_input_lattice is None:
