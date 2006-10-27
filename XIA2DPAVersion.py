@@ -19,7 +19,7 @@
 # 
 # 0.0.2 - 21/JUN/06 added first application xia2scan for analysing 
 #         humidifier images, added many useful types in Schema, 
-#         handlers in Handler etc and Wrappers.                                                                
+#         handlers in Handler etc and Wrappers.                          
 # 
 # 0.0.3 - 16/AUG/06 getting something usefil in eventually, which 
 #         will integrate data using only mosflm - xia2process.
@@ -36,8 +36,10 @@
 #         25/OCT/06 can now run with JUST ccp4-6.0.1 through all 4 TS
 #         examples from the .xinfo files, so this is version 0.1.0.
 #         Tagging... - oh that's 0.1.1 then.
+#
+# 0.1.1.1 27/OCT/06 added new functionality to xia2scan.
 
-VersionNumber = "0.1.1"
+VersionNumber = "0.1.1.1"
 Version = "XIA2DPA %s" % VersionNumber
 CVSTag = "xia2dpa-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2dpa-%s" % VersionNumber
