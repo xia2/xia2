@@ -62,7 +62,12 @@ class _CommandLine(Object):
         try:
             self._read_beam()
         except:
-            raise RuntimeError, self._help_image()
+            raise RuntimeError, self._help_beam()
+
+        try:
+            self._read_first_last()
+        except:
+            raise RuntimeError, self._help_first_last()
 
         try:
             self._read_image()
@@ -129,6 +134,39 @@ class _CommandLine(Object):
 
     def get_beam(self):
         return self._beam
+
+    def _read_first_last(self):
+        '''Read first, last images from the command line.'''
+
+        index = -1
+
+        try:
+            index = sys.argv.index('-first_last')
+        except ValueError, e:
+            self.write('No first_last passed in on command line')
+            self._first_last = (-1, -1)
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        try:
+            first, last = tuple(map(int, sys.argv[index + 1].split(',')))
+        except IndexError, e:
+            raise RuntimeError, '-first_last first,last'
+
+        self._first_last = first, last
+
+        self.write('first_last passed in on command line as %d, %d' % \
+                   self._first_last)
+
+        return
+
+    def help_first_last(self):
+        return '-first_last first,last'
+
+    def get_first_last(self):
+        return self._first_last
 
     def _help_image(self):
         '''Return a string for explaining the -image method.'''
