@@ -50,10 +50,10 @@ from Schema.Interfaces.Scaler import Scaler
 from Wrappers.CCP4.Scala import Scala
 from Wrappers.CCP4.Sortmtz import Sortmtz
 from Wrappers.CCP4.Mtzdump import Mtzdump
-# FIXME this needs implementing!
-# from Wrappers.CCP4.Truncate import Truncate
+from Wrappers.CCP4.Truncate import Truncate
 from Wrappers.CCP4.Rebatch import Rebatch
 from Wrappers.CCP4.Reindex import Reindex
+from Wrappers.CCP4.Cad import Cad
 from Wrappers.CCP4.Pointless import Pointless
 
 from Handlers.Streams import Chatter
@@ -317,16 +317,20 @@ class CCP4Scaler(Scaler):
 
         self._scalr_scaled_reflection_files = sc.get_scaled_reflection_files()
 
+        # compute a "standard unit cell"
+
         # convert reflection files to .sca format - use mtz2various for this
 
         # convert I's to F's in Truncate
 
-        # standardise the unit cells
+        # standardise the unit cells and relabel each of the columns in
+        # each reflection file appending the DNAME to the column name
 
-        # relabel each of the columns in each reflection file appending
-        # the DNAME to the column name
+        # cad = Cad()
 
         # merge all columns into a single uber-reflection-file
+
+        # cad = Cad()
 
         return
 

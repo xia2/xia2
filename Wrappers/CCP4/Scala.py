@@ -357,7 +357,7 @@ def Scala(DriverType = None):
             for run in self._runs:
                 run_number += 1
                 self.input('name run %d project %s crystal %s dataset %s' % \
-                           (run_number, runs[2], runs[3], runs[4]))
+                           (run_number, run[2], run[3], run[4]))
 
             # assemble the scales command
             if self._mode == 'rotation':
