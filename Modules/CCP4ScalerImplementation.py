@@ -120,6 +120,12 @@ class CCP4Scaler(Scaler):
         # also need to make sure that the results from each sweep match
         # up...
 
+        # FIXME 27/OCT/06 need a hook in here to the integrater->indexer
+        # to inspect the lattices which have ben contemplated (read tested)
+        # because it is quite possible that pointless will come up with
+        # a solution which has already been eliminated in the data reduction
+        # (e.g. TS01 native being reindexed to I222.)
+        
         for key in input_information.keys():
             pl = Pointless()
             hklin = input_information[key]['hklin']
