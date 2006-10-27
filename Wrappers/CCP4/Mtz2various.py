@@ -64,9 +64,6 @@ def Mtz2various(DriverType = None):
 
             output = self.get_all_output()
 
-            for o in output:
-                print o[:-1]
-
             try:
                 self.check_for_errors()
                 self.check_ccp4_errors()
