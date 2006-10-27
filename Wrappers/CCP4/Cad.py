@@ -217,7 +217,7 @@ def Cad(DriverType = None):
                 labout_command = 'labout file_number 1' 
                 for column in column_names_by_file[hklin]:
                     column_counter += 1
-                    labin_command += ' E%d=%s_%s' % \
+                    labout_command += ' E%d=%s_%s' % \
                                      (column_counter, column, suffix)
 
                 self.input(labout_command)
