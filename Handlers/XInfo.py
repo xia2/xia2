@@ -319,6 +319,11 @@ class XInfo:
                         self._crystals[crystal]['sweeps'][sweep][
                             'distance'] = distance
 
+                    elif 'EPOCH' == record.split()[0]:
+                        epoch = int(record.split()[1])
+                        self._crystals[crystal]['sweeps'][sweep][
+                            'epoch'] = epoch
+
                     elif 'START_END' == record.split()[0]:
                         start_end = map(int, record.split()[1:])
                         self._crystals[crystal]['sweeps'][sweep][
