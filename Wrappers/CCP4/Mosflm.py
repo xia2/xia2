@@ -151,22 +151,22 @@
 #
 #                 Look for record "99% have resolution less than"...
 # 
-# FIXME 27/SEP/06 GAIN & detectors - all data processed for one crystal on
+# FIXED 27/SEP/06 GAIN & detectors - all data processed for one crystal on
 #                 one detector should have the same value for the GAIN - 
 #                 this will mean that this has to be recycled. Add a framework
 #                 to integrater to allow parameters to be exported, in
 #                 the same way as they can be recycled via the integrater
-#                 parameter framework.
+#                 parameter framework. This is done - look at Integrater.
 # 
 # FIXME 19/OCT/06 it may be more reliable to do the indexing first then run a
 #                 separate job to estimate the mosaic spread. Also important
 #                 if this is to be used in DNA... this will need the matrix,
 #                 resolution, raster parameters, refined beam.
 # 
-# FIXME 23/OCT/06 need to be able to do something useful when the cell
+# FIXED 23/OCT/06 need to be able to do something useful when the cell
 #                 refinement gives a "large" error in something... in
 #                 particular be able to use more images for cell refinement
-#                 and have another go!
+#                 and have another go! Done.
 
 
 import os
