@@ -38,9 +38,6 @@ class NullIntegrater(Integrater):
         # FIXME - this is also generally true... need to add
         # this to the .xinfo file...
 
-        # set up little things like the number of batches in this
-        # "wedge"...
-
         return
 
     # things that this interface needs to present...
