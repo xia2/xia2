@@ -498,12 +498,13 @@ def Mosflm(DriverType = None):
 
             return
 
-        def _integrate(self, fast = False):
+        def _integrate(self):
             '''Implement the integrater interface.'''
 
             # FIXME in here I want to be able to work "fast" or "slow"
             # if fast, ignore cell refinement (i.e. to get the pointless
-            # output quickly.)
+            # output quickly.) 30/OCT/06 decide that this is is not
+            # appropriate for xia2.
 
             # this means that the integration must be able to know
             # what "state" it is being run from... this is perhaps best

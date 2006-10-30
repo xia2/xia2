@@ -142,7 +142,6 @@ class Integrater:
 
         self._intgr_done = False
         self._intgr_prepare_done = False
-        self._intgr_fast = False
         self._intgr_hklout = None
 
         # a place to store the project, crystal, wavelength, sweep information
@@ -332,7 +331,7 @@ class Integrater:
             
             # but it may not be - if the integrate itself decides something
             # needs redoing
-            self._intgr_hklout = self._integrate(fast = self._intgr_fast)
+            self._intgr_hklout = self._integrate()
 
         # ok, we are indeed "done"...
         
@@ -341,13 +340,12 @@ class Integrater:
     def get_integrater_indexer(self):
         return self._intgr_indexer
 
-    def get_integrater_reflections(self, fast = False):
+    def get_integrater_reflections(self):
         # in here check if integration has already been performed, if
         # it has and everything is happy, just return the reflections,
         # else repeat the calculations.
 
         if not self._intgr_done:
-            self._intgr_fast = fast
             self.integrate()
         return self._intgr_hklout
             
