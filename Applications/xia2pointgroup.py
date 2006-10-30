@@ -62,7 +62,7 @@ def xia2pointgroup():
                                   images[0] + int(width / phi_width))
             
             p = Pointless()
-            hklout = m.integrate(fast = True)
+            hklout = m.integrate()
             p.set_hklin(hklout)
             p.decide_pointgroup()
 
