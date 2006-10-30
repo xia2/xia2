@@ -25,6 +25,8 @@ sys.path.append(os.path.join(os.environ['DPA_ROOT']))
 from Wrappers.CCP4 import Mosflm
 from Handlers.Streams import Admin
 
+from NullIntegraterImplementation import NullIntegrater
+
 # FIXME 06/SEP/06 this should take an implementation of indexer to 
 #                 help with the decision about which integrater to
 #                 use, and also to enable invisible configuration.
@@ -43,9 +45,22 @@ def IntegraterForXSweep(xsweep):
     if not xsweep.__class__.__name__ == 'XSweep':
         raise RuntimeError, 'XSweep instance needed'
 
+    # if we're working from preprocessed data, return a null
+    # Integrater pointing at that
+    
+    if xsweep._integrated_reflection_file:
+        return NullIntegrater(xsweep._integrated_reflection_file)
+
+    # else return a real integrater
+    
     integrater = Integrater()
     integrater.setup_from_image(os.path.join(xsweep.get_directory(),
                                              xsweep.get_image()))
+
+    # check the epoch and perhaps pass this in for future reference
+    # (in the scaling)
+    if xsweep._epoch > 0:
+        integrater.set_integrater_epoch(epoch)
 
     return integrater
 
