@@ -466,7 +466,9 @@ def Scala(DriverType = None):
 
             datasets = []
             for run in self._runs:
-                datasets.append(run[4])
+                # cope with case where two runs make one dataset...
+                if not run[4] in datasets:
+                    datasets.append(run[4])
 
             hklout_files = []
             hklout_dict = { }
@@ -477,8 +479,6 @@ def Scala(DriverType = None):
                     hklout = output[i + 1].split('Filename:')[-1].strip()
                     if len(datasets) > 1:
                         dname = hklout.split('_')[-1].replace('.mtz', '')
-                        # FIXME this fails if there are two sweeps for one
-                        # dataset!
                         if not dname in datasets:
                             raise RuntimeError, 'unknown dataset %s' % dname
                         hklout_dict[dname] = hklout
