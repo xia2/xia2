@@ -40,6 +40,15 @@ class NullIntegrater(Integrater):
 
         return
 
+    # things that this interface needs to present...
+
+    # bodges - from Driver &c.
+
+    def set_working_directory(self, directory):
+        pass
+
+    # "real" methods
+
     def _integrate_prepare(self):
         '''Do nothing!'''
         pass

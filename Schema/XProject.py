@@ -112,8 +112,10 @@ class XProject(Object):
                     if sweep_info['wavelength'] == wavelength:
                         xw.add_sweep(
                             sweep_name,
-                            directory = sweep_info['DIRECTORY'],
-                            image = sweep_info['IMAGE'],
+                            directory = sweep_info.get('DIRECTORY'),
+                            image = sweep_info.get('IMAGE'),
+                            integrated_reflection_file = \
+                            sweep_info.get('INTEGRATED_REFLECTION_FILE'),
                             beam = sweep_info.get('beam'),
                             distance = sweep_info.get('distance'),
                             frames_to_process = sweep_info.get('start_end'),

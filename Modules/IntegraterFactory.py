@@ -49,13 +49,13 @@ def IntegraterForXSweep(xsweep):
     # Integrater pointing at that
     
     if xsweep._integrated_reflection_file:
-        return NullIntegrater(xsweep._integrated_reflection_file)
+        integrater = NullIntegrater(xsweep._integrated_reflection_file)
 
-    # else return a real integrater
-    
-    integrater = Integrater()
-    integrater.setup_from_image(os.path.join(xsweep.get_directory(),
-                                             xsweep.get_image()))
+    else:
+        # return a real integrater
+        integrater = Integrater()
+        integrater.setup_from_image(os.path.join(xsweep.get_directory(),
+                                                 xsweep.get_image()))
 
     # check the epoch and perhaps pass this in for future reference
     # (in the scaling)

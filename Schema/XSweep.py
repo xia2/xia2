@@ -232,9 +232,15 @@ class XSweep(Object):
             # check that they match by closer than 0.0001A, if wavelength
             # is not None
 
+            if not wavelength == None:
+                if math.fabs(header['wavelength'] -
+                             wavelength.get_wavelength()) > 0.0001:
+                    raise RuntimeError, 'wavelength for sweep %s does not ' + \
+                          'match wavelength %s' % (name, wavelength.getName())
+            
         else:
 
-            if not integrated_intensities:
+            if not self._integrated_reflection_file:
                 raise RuntimeError, \
                       'integrated intensities or directory + ' + \
                       'image needed to create XSweep'
@@ -244,13 +250,8 @@ class XSweep(Object):
 
             header = { }
             self._images = None
+            self._template = None
 
-        if not wavelength == None:
-            if math.fabs(header['wavelength'] -
-                         wavelength.get_wavelength()) > 0.0001:
-                raise RuntimeError, 'wavelength for sweep %s does not ' + \
-                      'match wavelength %s' % (name, wavelength.getName())
-            
         self._header = header
 
         # + get the lattice - can this be a pointer, so that when
@@ -410,8 +411,12 @@ class XSweep(Object):
         if self._integrater == None:
             self._integrater = IntegraterFactory.IntegraterForXSweep(self)
 
-            # configure the integrater with the indexer
-            self._integrater.set_integrater_indexer(self._get_indexer())
+            # configure the integrater with the indexer - unless
+            # we don't want to...
+
+            if not self._integrated_reflection_file:
+                self._integrater.set_integrater_indexer(self._get_indexer())
+
             # set the working directory for this, based on the hierarchy
             # defined herein...
 
