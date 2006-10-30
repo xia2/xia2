@@ -107,13 +107,13 @@ class XProject(Object):
                                  wave_info.get('f\'', 0.0),
                                  wave_info.get('f\'\'', 0.0))
 
-                for sweep in crystals[crystal]['sweeps'].keys():
-                    sweep_info = crystals[crystal]['sweeps'][sweep]
+                for sweep_name in crystals[crystal]['sweeps'].keys():
+                    sweep_info = crystals[crystal]['sweeps'][sweep_name]
                     if sweep_info['wavelength'] == wavelength:
                         xw.add_sweep(
-                            sweep,
-                            sweep_info['DIRECTORY'],
-                            sweep_info['IMAGE'],
+                            sweep_name,
+                            directory = sweep_info['DIRECTORY'],
+                            image = sweep_info['IMAGE'],
                             beam = sweep_info.get('beam'),
                             distance = sweep_info.get('distance'),
                             frames_to_process = sweep_info.get('start_end'))

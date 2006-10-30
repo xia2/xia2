@@ -77,7 +77,8 @@
 # 
 # FIXME 30/OCT/06 need to be able to pass in already integrated data for
 #                 instance so that this will perform just the scaling & 
-#                 merging.
+#                 merging. This will come from the .xinfo file in an
+#                 INTEGRATED_REFLECTION_FILE record.
 
 import sys
 import os
@@ -176,8 +177,14 @@ import Modules.IntegraterFactory as IntegraterFactory
 class XSweep(Object):
     '''An object representation of the sweep.'''
 
-    def __init__(self, name, wavelength, directory, image, beam = None,
-                 distance = None, resolution = None,
+    def __init__(self, name,
+                 wavelength,
+                 directory = None,
+                 image = None,
+                 integrated_reflection_file = None,
+                 beam = None,
+                 distance = None,
+                 resolution = None,
                  frames_to_process = None):
         '''Create a new sweep named name, belonging to XWavelength object
         wavelength, representing the images in directory starting with image,
@@ -195,6 +202,7 @@ class XSweep(Object):
         self._wavelength = wavelength
         self._directory = directory
         self._image = image
+        self._integrated_reflection_file = integrated_reflection_file
 
         # to allow first, last image for processing to be
         # set... c/f integrater interface
@@ -202,24 +210,37 @@ class XSweep(Object):
 
         # + derive template, list of images
 
-        self._template, self._directory = \
-                        image2template_directory(os.path.join(directory,
-                                                              image))
+        if directory and image:
+            self._template, self._directory = \
+                            image2template_directory(os.path.join(directory,
+                                                                  image))
 
-        self._images = find_matching_images(self._template,
-                                            self._directory)
+            self._images = find_matching_images(self._template,
+                                                self._directory)
 
-        # + read the image header information into here?
-        #   or don't I need it? it would be useful for checking
-        #   against wavelength.getWavelength() I guess to make
-        #   sure that the plumbing is all sound.
+            # + read the image header information into here?
+            #   or don't I need it? it would be useful for checking
+            #   against wavelength.getWavelength() I guess to make
+            #   sure that the plumbing is all sound.
 
-        ph = Printheader()
-        ph.set_image(os.path.join(directory, image))
-        header = ph.readheader()
+            ph = Printheader()
+            ph.set_image(os.path.join(directory, image))
+            header = ph.readheader()
 
-        # check that they match by closer than 0.0001A, if wavelength
-        # is not None
+            # check that they match by closer than 0.0001A, if wavelength
+            # is not None
+
+        else:
+
+            if not integrated_intensities:
+                raise RuntimeError, \
+                      'integrated intensities or directory + ' + \
+                      'image needed to create XSweep'
+            
+            # parse the reflection file header here to get the wavelength
+            # out - put this in the header record...
+
+            header = { }
 
         if not wavelength == None:
             if math.fabs(header['wavelength'] -
@@ -274,9 +295,15 @@ class XSweep(Object):
                    (self._name, self.get_wavelength().get_name())
         else:
             repr = 'SWEEP %s [WAVELENGTH UNDEFINED]\n' % self._name
+
+        if self._template:
+            repr += 'TEMPLATE %s\n' % self._template
+        if self._directory:
+            repr += 'DIRECTORY %s\n' % self._directory
+        if self._integrated_reflection_file:
+            repr += 'INTEGRATED REFLECTION FILE %s\n' % \
+                    self._integrated_reflection_file
             
-        repr += 'TEMPLATE %s\n' % self._template
-        repr += 'DIRECTORY %s\n' % self._directory
         if self._frames_to_process:
             frames = self._frames_to_process
             repr += 'IMAGES (USER) %d to %d\n' % (frames[0],

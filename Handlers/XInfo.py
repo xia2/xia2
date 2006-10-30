@@ -74,7 +74,7 @@
 #                 is sometimes wrong and very hard to find right ;o(.
 #                 See NaI/Lysozyme data collected on 14.1 in /data1/graeme.
 #  
-# FIXME 26/SEP/06 allow for INTEGRATED_REFLECTIONS in sweep record in place
+# FIXME 26/SEP/06 allow for INTEGRATED_REFLECTION_FILE in sweep record in place
 #                 of or in addition to the DIRECTORY, TEMPLATE to allow for
 #                 development of the scaling independently of the scaling 
 #                 &c. The same could be applied to the scaled reflections
@@ -290,7 +290,7 @@ class XInfo:
                 # and optionally BEAM
 
                 # FIXME 30/OCT/06 this may not be the case, for instance
-                # if an INTEGRATED_REFLECTIONS record is in there...
+                # if an INTEGRATED_REFLECTION_FILE record is in there...
                 # c/f XProject.py, XSweep.py
 
                 i += 1
