@@ -477,6 +477,8 @@ def Scala(DriverType = None):
                     hklout = output[i + 1].split('Filename:')[-1].strip()
                     if len(datasets) > 1:
                         dname = hklout.split('_')[-1].replace('.mtz', '')
+                        # FIXME this fails if there are two sweeps for one
+                        # dataset!
                         if not dname in datasets:
                             raise RuntimeError, 'unknown dataset %s' % dname
                         hklout_dict[dname] = hklout
