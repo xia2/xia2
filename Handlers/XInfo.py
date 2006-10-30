@@ -289,6 +289,10 @@ class XInfo:
                 # in here I expect to find IMAGE, DIRECTORY, WAVELENGTH
                 # and optionally BEAM
 
+                # FIXME 30/OCT/06 this may not be the case, for instance
+                # if an INTEGRATED_REFLECTIONS record is in there...
+                # c/f XProject.py, XSweep.py
+
                 i += 1
                 record = crystal_records[i]
 
