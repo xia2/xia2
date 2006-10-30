@@ -178,6 +178,10 @@ class Integrater:
     def get_integrater_epoch(self):
         return self._intgr_epoch
 
+    def set_integrater_epoch(self, epoch):
+        self._intgr_epoch = epoch
+        return
+
     def set_integrater_wedge(self, start, end):
         '''Set the wedge of images to process.'''
         
@@ -194,7 +198,10 @@ class Integrater:
         ph.set_image(first_image_in_wedge)
         header = ph.readheader()
 
-        self._intgr_epoch = int(header['epoch'])
+        # only update the epoch if we (1) have a new value
+        # and (2) do not have a user supplied value...
+        if header['epoch'] > 0 and self._intgr_epoch == 0:
+            self._intgr_epoch = int(header['epoch'])
 
         Chatter.write('Sweep epoch: %d' % self._intgr_epoch)
         
