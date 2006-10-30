@@ -116,7 +116,8 @@ class XProject(Object):
                             image = sweep_info['IMAGE'],
                             beam = sweep_info.get('beam'),
                             distance = sweep_info.get('distance'),
-                            frames_to_process = sweep_info.get('start_end'))
+                            frames_to_process = sweep_info.get('start_end'),
+                            epoch = sweep_info.get('epoch', 0))
                 
                 xc.add_wavelength(xw)
 
