@@ -48,6 +48,8 @@ def Mtzdump(DriverType = None):
             self._header['datasets'] = []
             self._header['dataset_info'] = { } 
 
+            self._batches = None
+
         def dump(self):
             '''Actually print the contents of the mtz file header.'''
 
@@ -69,6 +71,8 @@ def Mtzdump(DriverType = None):
 
             length = len(output)
 
+            batches = []
+
             for i in range(length):
                 # looking for column labels, cell, spacegroup,
                 # pname xname dname - some of this is per dataset
@@ -76,6 +80,11 @@ def Mtzdump(DriverType = None):
                 # c.f. the MTZ hierarchy project/crystal/dataset
 
                 line = output[i][:-1]
+
+                if 'Batch number:' in line:
+                    batch = int(output[i + 1])
+                    if not batch in batches:
+                        batches.append(batch)
                 
                 if 'Column Labels' in line:
                     # then the column labels are in two lines time...
@@ -108,6 +117,8 @@ def Mtzdump(DriverType = None):
                                                  ]['wavelength'] = wavelength
                     self._header['dataset_info'][dataset_id
                                                  ]['cell'] = cell
+
+            self._batches = batches
                     
             # status token has a spare "of mtzdump" to get rid of
             return self.get_ccp4_status().replace('of mtzdump', '').strip()
@@ -137,6 +148,10 @@ def Mtzdump(DriverType = None):
         def get_spacegroup(self):
             '''Get the spacegroup recorded for this reflection file.'''
             return self._header['spacegroup']
+
+        def get_batches(self):
+            '''Get a list of batches found in this reflection file.'''
+            return self._batches
 
     return MtzdumpWrapper()
 

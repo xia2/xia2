@@ -88,6 +88,10 @@ class CCP4Scaler(Scaler):
         # format. N.B. this will also require adding the project,
         # crystal, dataset name from the parent integrater.
 
+        # FIXME 30/OCT/06 in here need to check that the input batches
+        # are not 0,0 - because if they are I will need to do some
+        # MTZ dumping... see a little further down!
+
         input_information = { }
 
         for key in self._scalr_integraters.keys():
@@ -99,7 +103,7 @@ class CCP4Scaler(Scaler):
                 'xname':xname,
                 'dname':dname,
                 'batches':intgr.get_integrater_batches()}
-
+            
         # next check through the reflection files that they are all MTZ
         # format - if not raise an exception.
         # FIXME this should include the conversion to MTZ.
@@ -174,10 +178,6 @@ class CCP4Scaler(Scaler):
             # keep a count of the maximum number of batches in a block -
             # this will be used to make rebatch work below.
 
-            batches = input_information[key]['batches']
-            if 1 + max(batches) - min(batches) > max_batches:
-                max_batches = max(batches) - min(batches) + 1
-            
             hklin = input_information[key]['hklin']
 
             md = Mtzdump()
@@ -186,6 +186,20 @@ class CCP4Scaler(Scaler):
             auto_logfiler(md)
             md.dump()
 
+            if input_information[key]['batches'] == [0, 0]:
+                # get them from the mtz dump output
+                
+                Chatter.write('Getting batches from %s' % hklin)
+                batches = md.get_batches()
+                input_information[key]['batches'] = [min(batches),
+                                                     max(batches)]
+                Chatter.write('=> %d to %d' % (min(batches),
+                                               max(batches)))
+
+            batches = input_information[key]['batches']
+            if 1 + max(batches) - min(batches) > max_batches:
+                max_batches = max(batches) - min(batches) + 1
+            
             # FIXME assert that there will only be one dataset in this
             # reflection file
 
