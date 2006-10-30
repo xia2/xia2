@@ -60,7 +60,7 @@ def IntegraterForXSweep(xsweep):
     # check the epoch and perhaps pass this in for future reference
     # (in the scaling)
     if xsweep._epoch > 0:
-        integrater.set_integrater_epoch(epoch)
+        integrater.set_integrater_epoch(xsweep._epoch)
 
     return integrater
 

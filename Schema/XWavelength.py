@@ -97,16 +97,22 @@ class XWavelength(Object):
     def get_name(self):
         return self._name
 
-    def add_sweep(self, name, directory, image,
+    def add_sweep(self, name, directory = None, image = None,
+                  integrated_reflection_file = None,
                   beam = None, distance = None, resolution = None,
-                  frames_to_process = None):
+                  frames_to_process = None, epoch = 0):
         '''Add a sweep to this wavelength.'''
 
-        self._sweeps.append(XSweep(name, self, directory, image,
+        self._sweeps.append(XSweep(name, self,
+                                   directory = directory,
+                                   image = image,
+                                   integrated_reflection_file = \
+                                   integrated_reflection_file,
                                    beam = beam,
                                    distance = distance,
                                    resolution = resolution,
-                                   frames_to_process = frames_to_process))
+                                   frames_to_process = frames_to_process,
+                                   epoch = epoch))
 
         return
 
