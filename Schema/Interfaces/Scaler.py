@@ -212,8 +212,16 @@ class Scaler:
         # something derived from the image name - this would mean that
         # then it is in alphabetical order, instead...
 
-        self._scalr_integraters[
-            integrater.get_integrater_epoch()] = integrater
+        epoch = integrater.get_integrater_epoch()
+
+        if epoch == 0:
+            raise RuntimeError, 'integrater has epoch 0'
+
+        if epoch in self._scalr_integraters.keys():
+            raise RuntimeError, 'integrater with epoch %d already exists' % \
+                  epoch
+
+        self._scalr_integraters[epoch] = integrater
 
         # reset the scaler.
         self._scalr_scaling_done = False
