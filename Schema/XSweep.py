@@ -185,7 +185,8 @@ class XSweep(Object):
                  beam = None,
                  distance = None,
                  resolution = None,
-                 frames_to_process = None):
+                 frames_to_process = None,
+                 epoch = 0):
         '''Create a new sweep named name, belonging to XWavelength object
         wavelength, representing the images in directory starting with image,
         with beam centre optionally defined.'''
@@ -203,6 +204,7 @@ class XSweep(Object):
         self._directory = directory
         self._image = image
         self._integrated_reflection_file = integrated_reflection_file
+        self._epoch = epoch
 
         # to allow first, last image for processing to be
         # set... c/f integrater interface
@@ -241,6 +243,7 @@ class XSweep(Object):
             # out - put this in the header record...
 
             header = { }
+            self._images = None
 
         if not wavelength == None:
             if math.fabs(header['wavelength'] -
@@ -308,9 +311,12 @@ class XSweep(Object):
             frames = self._frames_to_process
             repr += 'IMAGES (USER) %d to %d\n' % (frames[0],
                                                   frames[1])
+        elif self._images:
+                repr += 'IMAGES %d to %d\n' % (min(self._images),
+                                               max(self._images))
+
         else:
-            repr += 'IMAGES %d to %d\n' % (min(self._images),
-                                           max(self._images))
+            repr += 'IMAGES UNKNOWN\n'
 
         # add some stuff to implement the actual processing implicitly
 
