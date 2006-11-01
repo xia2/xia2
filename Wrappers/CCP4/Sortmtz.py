@@ -71,6 +71,9 @@ def Sortmtz(DriverType = None):
                 if 'Sorting failed' in l:
                     raise RuntimeError, 'sorting failed'
 
+                if 'Inconsistent operator orders in input file' in l:
+                    raise RuntimeError, 'different sort orders'
+
         def sort(self):
             '''Actually sort the reflections.'''
             
