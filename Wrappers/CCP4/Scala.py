@@ -240,6 +240,9 @@ def Scala(DriverType = None):
             for line in output:
                 if 'File must be sorted' in line:
                     raise RuntimeError, 'hklin not sorted'
+                if 'Negative scales' in line:
+                    raise RuntimeError, 'negative scales'
+
 
             return
 
