@@ -313,24 +313,36 @@ class Integrater:
         # FIXME could the repeated integration needed in Mosflm be entirely
         # handled from here??? Apparently yes!
 
-        while not self._intgr_prepare_done:
-            Chatter.write('Preparing to do some integration...')
-            self._intgr_prepare_done = True
-
-            # if this raises an exception, then perhaps the autoindexing
-            # solution has too high symmetry. if this the case, then
-            # perform a self._intgr_indexer.eliminate() - this should
-            # reset the indexing system
-
-            try:
-                self._integrate_prepare()
-            except DPAException, e:
-                # fixme I should trap the correct exception here
-                Chatter.write('Uh oh! %s' % str(e))
-                self._intgr_indexer.eliminate()
-                self._intgr_prepare_done = False                
-
         while not self._intgr_done:
+
+            while not self._intgr_prepare_done:
+                Chatter.write('Preparing to do some integration...')
+                self._intgr_prepare_done = True
+
+                # if this raises an exception, then perhaps the autoindexing
+                # solution has too high symmetry. if this the case, then
+                # perform a self._intgr_indexer.eliminate() - this should
+                # reset the indexing system
+
+                try:
+                    self._integrate_prepare()
+                except DPAException, e:
+                    # fixme I should trap the correct exception here
+                    Chatter.write('Uh oh! %s' % str(e))
+                    self._intgr_indexer.eliminate()
+                    self._intgr_prepare_done = False
+                    
+            # FIXED 01/NOV/06 what happens if the integration decides
+            # that the lattice is wrong - this would mean that the indexing
+            # would be reperformed, which would in turn mean that the
+            # preparation may need to be repeated...
+
+            # aha - move the preparation "loop" inside the integration loop,
+            # so that this can be implemented (this case could then reset the
+            # intgr_prepare_done flag to False. DONE!
+
+            # assert: this needs to behave exactly as it did before.
+
             Chatter.write('Doing some integration...')
             
             # assert that it is indeed done
@@ -338,7 +350,11 @@ class Integrater:
             
             # but it may not be - if the integrate itself decides something
             # needs redoing
+
             self._intgr_hklout = self._integrate()
+
+            # to repeat the integration this should reset the 
+            # self._intgr_prepare_done = False flag
 
         # ok, we are indeed "done"...
         
