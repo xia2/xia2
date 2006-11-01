@@ -296,10 +296,11 @@ def Pointless(DriverType = None):
                         # the Rmerge - for instance (TS01 NATIVE) it may be
                         # the case that the R merge is a factor of two
                         # better for a pretty likely solution
-                        # use sqrt(3.0) as a "magic factor" ;o)
+                        # use sqrt(3.0) as a "magic factor" ;o) - oh
+			# this doesn't work very well - use 1.5!
 
                         if math.fabs(likelihood - self._totalprob) < 0.1:
-                            if correct_r / r_merge > math.sqrt(3.0):
+                            if correct_r / r_merge > 1.5:
                                 if netzc > 0.0:
                                     # this is perhaps more likely?
                                     Science.write(
