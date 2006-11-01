@@ -1217,9 +1217,9 @@ def Mosflm(DriverType = None):
                           for i in range(0, len(spot_status), 60)]:
                 Chatter.write(chunk)
             Chatter.write(
-                '"o" => ok          "%" => rmsd      "." => blank')
+                '"o" => ok          "%" => iffy rmsd "!" => bad rmsd')
             Chatter.write(
-                '"O" => overloaded  "#" => many bad')
+                '"O" => overloaded  "#" => many bad  "." => blank') 
 
             return self._mosflm_hklout
     

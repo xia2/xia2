@@ -205,7 +205,13 @@ def _happy_integrate_lp(integrate_lp_stats):
     for i in images:
         data = integrate_lp_stats[i]
 
-        if data['rmsd_pixel'] > 1.0:
+        # FIXME need to look for "blank" "many bad spots" "overloaded"
+
+        if data['rmsd_pixel'] > 2.5:
+            status = '!'
+            Science.write('Image %4d ... very high rmsd (%f)' % \
+                          (i, data['rmsd_pixel']), forward = False)
+        elif data['rmsd_pixel'] > 1.0:
             status = '%'
             Science.write('Image %4d ... high rmsd (%f)' % \
                           (i, data['rmsd_pixel']), forward = False)

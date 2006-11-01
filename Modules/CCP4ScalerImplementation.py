@@ -419,6 +419,7 @@ class CCP4Scaler(Scaler):
             t.set_working_directory(self.get_working_directory())
             auto_logfiler(t)
             t.set_hklin(file)
+
             # this is tricksy - need to really just replace the last
             # instance of this string FIXME 27/OCT/06
 
@@ -439,16 +440,24 @@ class CCP4Scaler(Scaler):
         # standardise the unit cells and relabel each of the columns in
         # each reflection file appending the DNAME to the column name
 
+        # compute a standard unit cell here - this should be equal to
+        # an average of the unit cells in each of the reflection files,
+        # weighted according to (1) the number of reflections and
+        # perhaps (2) the epoch order of that data set...
+
         for key in scaled_reflection_files.keys():
             file = scaled_reflection_files[key]
+            
             c = Cad()
             c.set_working_directory(self.get_working_directory())
             auto_logfiler(c)
             c.add_hklin(file)
             c.set_new_suffix(key)
+            # c.set_new_cell((6-tuple))
             hklout = '%s_cad.mtz' % file[:-4]
             c.set_hklout(hklout)
             c.update()
+            
             scaled_reflection_files[key] = hklout
 
         # merge all columns into a single uber-reflection-file
