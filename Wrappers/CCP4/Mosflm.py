@@ -770,13 +770,47 @@ def Mosflm(DriverType = None):
             # cell and matrix - should also look the yscale and so on, as
             # well as the final rms deviation in phi and distance
 
+            # FIRST look for errors
+
             for i in range(len(output)):
                 o = output[i]
 
+                # FIXME 01/NOV/06 dump this stuff from the top (error trapping)
+                # into a trap_cell_refinement_errors method which is called
+                # before the rest of the output is parsed...
+
+                # look for overall cell refinement failure
+                if 'Processing will be aborted' in o:
+                    raise RuntimeError, 'cell refinement failed'
+                
+
                 # look for "error" type problems
                 if 'INACCURATE CELL PARAMETERS' in o:
+                    
                     # get the inaccurate cell parameters in question
                     parameters = output[i + 3].lower().split()
+
+                    # and the standard deviations - so we can decide
+                    # if it really has failed
+
+                    sd_record = output[i + 5].replace(
+                        'A', ' ').replace(',', ' ').split()
+                    sds = map(float, [sd_record[j] for j in range(1, 12, 2)])
+
+                    Science.write('Standard deviations:')
+                    Science.write('A     %4.2f  B     %4.2f  C     %4.2f' % \
+                                  (tuple(sds[:3])))
+                    Science.write('Alpha %4.2f  Beta  %4.2f  Gamma %4.2f' % \
+                                  (tuple(sds[3:6])))
+                                  
+                    # FIXME 01/NOV/06 this needs to be toned down a little -
+                    # perhaps looking at the relative error in the cell
+                    # parameter, or a weighted "error" of the two combined,
+                    # because this may give rise to an error: TS01 NATIVE LR
+                    # failed in integration with this, because the error
+                    # in a was > 0.1A in 228. Assert perhaps that the error
+                    # should be less than 1.0e-3 * cell axis and less than
+                    # 0.15A?
 
                     # and warn about them
                     Science.write(
@@ -831,8 +865,21 @@ def Mosflm(DriverType = None):
                     if mosaic < 0.0:
                         raise DPAException, 'negative refined mosaic spread'
 
+            # AFTER that, read the refined parameters
+            
+            for i in range(len(output)):
+                o = output[i]
+
+                # FIXME for all of these which follow - the refined values
+                # for these parameters should only be stored if the cell
+                # refinement were 100% successful - therefore gather
+                # them up here and store them at the very end (e.g. once
+                # success has been confirmed.) 01/NOV/06
+
                 # FIXME will these get lost if the indexer in question is
-                # not this program...? Find out...
+                # not this program...? Find out... would be nice to write
+                # this to Chatter too...
+                
                 if 'Refined cell' in o:
                     indxr._indxr_cell = tuple(map(float, o.split()[-6:]))
                     
@@ -850,6 +897,7 @@ def Mosflm(DriverType = None):
                         distance += d
                     distance /= len(distances)
                     indxr._indxr_refined_distance = distance
+
                 if 'YSCALE as a function' in o:
                     # look through the "cycles" to get the final refined
                     # yscale value
@@ -1120,6 +1168,11 @@ def Mosflm(DriverType = None):
                             Science.write('GAIN found to be %f' % gain)
 
                             self._mosflm_rerun_integration = True
+
+                if 'Smoothed value for refined mosaic spread' in o:
+                    mosaic = float(o.split()[-1])
+                    if mosaic < 0.0:
+                        raise RuntimeError, 'nagative mosaic spread'
 
                 if 'WRITTEN OUTPUT MTZ FILE' in o:
                     self._mosflm_hklout = os.path.join(
