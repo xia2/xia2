@@ -164,6 +164,11 @@ def LabelitScreen(DriverType = None):
             if self._refine_beam is False:
                 out.write('beam_search_scope = 0.0\n')
 
+            # new feature - index on the spot centre of mass, not the
+            # highest pixel (should improve the RMS deviation reports.)
+
+            out.write('distl_spotfinder_algorithm = "centre_of_mass"\n')
+
             out.close()
 
             return
