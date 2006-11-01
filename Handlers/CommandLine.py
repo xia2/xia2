@@ -162,7 +162,7 @@ class _CommandLine(Object):
 
         return
 
-    def help_first_last(self):
+    def _help_first_last(self):
         return '-first_last first,last'
 
     def get_first_last(self):
