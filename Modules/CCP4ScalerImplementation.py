@@ -15,9 +15,11 @@
 #                 so we can specify where it is being run... 
 #                 This should also be inherited by the "child" jobs...
 # 
-# FIXME 25/SEP/06 need to include pointgroup determination in the pipeline
+# FIXED 25/SEP/06 need to include pointgroup determination in the pipeline
 #                 though this will begin to impact on the lattice management
-#                 stuf in XCrystal.
+#                 stuff in XCrystal. This has now been in for a while,
+#                 but needs to be connected to the Indexer to ensure that
+#                 an eliminated pointgroup is not selected.
 # 
 # FIXME 27/SEP/06 need to define a reference wavelength for the anomalous
 #                 dispersive differences. This is best assigned at this 
@@ -32,7 +34,13 @@
 #                 select a symmetry for the crystal which has been eliminated
 #                 already...
 # 
-# 
+# FIXME 31/OCT/06 need to make the scaling do the following:
+#                 (1) assert a sensible resolution limit.
+#                 (2) twiddle the sd parameters to get the flattest
+#                     error curve possible.
+#                 (3) limit by batch in radiation damage terms.
+#                 (4) eliminate badly radiation damaged data in different
+#                     sweeps.
 
 import os
 import sys
@@ -61,6 +69,7 @@ from Handlers.Streams import Chatter
 
 # jiffys
 from lib.Guff import is_mtz_file, nifty_power_of_ten, auto_logfiler
+from lib.Guff import transpose_loggraph
 
 class CCP4Scaler(Scaler):
     '''An implementation of the Scaler interface using CCP4 programs.'''
@@ -328,6 +337,49 @@ class CCP4Scaler(Scaler):
         # and convert them into the required formats (.sca, .mtz.)
 
         data = sc.get_summary()
+
+        loggraph = sc.parse_ccp4_loggraph()
+
+        # parse the statistics from Scala - these are printed in the
+        # loggraph output, and therefore need some transformation &
+        # massaging to be useful.
+
+        # look for the standard deviation graphs - see FIXME 31/OCT/06
+
+        standard_deviation_info = { }
+
+        for key in loggraph.keys():
+            if 'standard deviation v. Intensity' in key:
+                dataset = key.split(',')[-1].strip()
+                standard_deviation_info[dataset] = transpose_loggraph(
+                    loggraph[key])
+
+        # look also for a sensible resolution limit for this data set -
+        # that is, the place where I/sigma is about two for the highest
+        # resolution data set - this should be a multiple of 0.05 A just
+        # to keep the output tidy...
+
+        resolution_info = { }
+
+        for key in loggraph.keys():
+            if 'Analysis against resolution' in key:
+                dataset = key.split(',')[-1].strip()
+                resolution_info[dataset] = transpose_loggraph(
+                    loggraph[key])
+
+        # and also radiation damage stuff...
+
+        batch_info = { }
+        
+        for key in loggraph.keys():
+            if 'Analysis against Batch' in key:
+                dataset = key.split(',')[-1].strip()
+                batch_info[dataset] = transpose_loggraph(
+                    loggraph[key])
+
+        # perform some analysis of these results
+
+        
 
         # finally put all of the results "somewhere useful"
         

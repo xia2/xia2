@@ -21,4 +21,30 @@ of pointgroup, implicit combination and separation of reflection files.
 
 This document describes how this module works and what is going on.
 
+\section{Detecting Radiation Damage A: Within A Sweep}
+
+
+
+\section{Detecting Radiation Damage B: Between Sweeps}
+
+
+
+\section{Deciding Resolution Limits}
+
+
+
+\section{Setting Error Parameters}
+
+In integration the errors are usually underestimated (Evans, sometime.) 
+Scala includes standard deviation inflation parameters SdAdd, SdFac and SdB
+for full and partial reflections for each run - there are therefore, in 
+principle, 6 parameters for each run to be adjusted. However, the SdFac
+(an overall scaling) is automatically determined by Scala, leaving the 
+other four. SdB, which corrects the overall curvature, is usually a number
+around 10, while the SdAdd of typically 0.02 (the default) affects the 
+overall shape and gradient of the curve.
+
+In the summary the standard deviations for each integration bin should 
+be $\sim 1$.
+
 \end{document}
