@@ -169,6 +169,12 @@ def LabelitScreen(DriverType = None):
 
             out.write('distl_spotfinder_algorithm = "maximum_pixel"\n')
 
+            # FIXME latest version of labelit has messed up the beam
+            # centre finding :o( so add this for the moment until that
+            # is fixed
+            
+            out.write('beam_search_scope = 0.0\n')
+            
             out.close()
 
             return
