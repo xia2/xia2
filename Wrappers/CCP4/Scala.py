@@ -131,6 +131,9 @@ def Scala(DriverType = None):
             '''Add a set of SD correction parameters for a given
             set of reflections (initially set = full or partial.)'''
 
+            # FIXME 01/NOV/06 need also to be able to specify the
+            # run where this is needed - e.g. run 1, run 2...
+
             if not set in ['full', 'partial', 'both']:
                 raise RuntimeError, 'set not known "%s"' % set
 

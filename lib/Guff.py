@@ -103,14 +103,23 @@ def transpose_loggraph(loggraph_dict):
 
     results = { }
 
-    for c in columns:
-        results[c] = []
+    # FIXME column labels are not always unique - so prepend the column
+    # number - that'll make it unique! PS counting from 1 - 01/NOV/06
 
-    nc = len(columns)
+    new_columns = []
+
+    j = 0
+    for c in columns:
+        j += 1
+        col = '%d_%s' % (j, c)
+        new_columns.append(col)
+        results[col] = []
+
+    nc = len(new_columns)
 
     for record in data:
         for j in range(nc):
-            results[columns[j]].append(record[j])
+            results[new_columns[j]].append(record[j])
 
     return results                            
     

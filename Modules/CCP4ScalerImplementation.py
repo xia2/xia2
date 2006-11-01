@@ -41,6 +41,11 @@
 #                 (3) limit by batch in radiation damage terms.
 #                 (4) eliminate badly radiation damaged data in different
 #                     sweeps.
+#
+# FIXME 01/NOV/06 should probably sort together all data for a particular
+#                 wavelength before running pointless - this will probably
+#                 give better statistics from that program.
+# 
 
 import os
 import sys
@@ -353,6 +358,29 @@ class CCP4Scaler(Scaler):
                 dataset = key.split(',')[-1].strip()
                 standard_deviation_info[dataset] = transpose_loggraph(
                     loggraph[key])
+
+        # write this in an interesting way...
+
+        for dataset in standard_deviation_info.keys():
+            info = standard_deviation_info[dataset]
+            Chatter.write('Standard deviations (%s):' % dataset)
+            for j in range(len(info['1_Range'])):
+                n_full = int(info['5_Number'][j])
+                I_full = float(info['4_Irms'][j])
+                s_full = float(info['7_SigmaFull'][j])
+
+                n_part = int(info['9_Number'][j])
+                I_part = float(info['8_Irms'][j])
+                s_part = float(info['11_SigmaPartial'][j])
+                
+                n_tot = n_full + n_part
+
+                i_tot = ((n_full * I_full) + (n_part * I_part)) / n_tot
+                s_tot = ((n_full * s_full) + (n_part * s_part)) / n_tot
+
+                Chatter.write('%2d %7d %4.2f %4.2f %4.2f' % \
+                              (j, int(i_tot),
+                               s_full, s_part, s_tot))
 
         # look also for a sensible resolution limit for this data set -
         # that is, the place where I/sigma is about two for the highest
