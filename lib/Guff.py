@@ -93,6 +93,26 @@ def auto_logfiler(DriverInstance):
     DriverInstance.write_log_file(logfile)
 
     return logfile
+
+def transpose_loggraph(loggraph_dict):
+    '''Transpose the information in the CCP4-parsed-loggraph dictionary
+    into a more useful structure.'''
+
+    columns = loggraph_dict['columns']
+    data = loggraph_dict['data']
+
+    results = { }
+
+    for c in columns:
+        results[c] = []
+
+    nc = len(columns)
+
+    for record in data:
+        for j in range(nc):
+            results[columns[j]].append(record[j])
+
+    return results                            
     
 if __name__ == '__main__':
     # run a test
