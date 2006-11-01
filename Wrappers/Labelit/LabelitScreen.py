@@ -167,7 +167,7 @@ def LabelitScreen(DriverType = None):
             # new feature - index on the spot centre of mass, not the
             # highest pixel (should improve the RMS deviation reports.)
 
-            out.write('distl_spotfinder_algorithm = "centre_of_mass"\n')
+            out.write('distl_spotfinder_algorithm = "maximum_pixel"\n')
 
             out.close()
 
