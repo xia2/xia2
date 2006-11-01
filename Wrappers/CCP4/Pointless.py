@@ -227,6 +227,7 @@ def Pointless(DriverType = None):
             best_netzc = 0.0
             best_likelihood = 0.0
             best_laue = ''
+            best_r = 0.0
             
             if not self._input_laue_group:
 
@@ -239,7 +240,7 @@ def Pointless(DriverType = None):
                 
                 correct_netzc = 0.0
                 correct_laue = ''
-                
+                correct_r = 0.0
 
                 for s in scores:
                     number = int(s.getElementsByTagName(
@@ -252,6 +253,10 @@ def Pointless(DriverType = None):
                         'NetZCC')[0].childNodes[0].data)
                     likelihood = float(s.getElementsByTagName(
                         'Likelihood')[0].childNodes[0].data)
+                    r_merge = float(s.getElementsByTagName(
+                        'R')[0].childNodes[0].data)
+                    delta = float(s.getElementsByTagName(
+                        'CellDelta')[0].childNodes[0].data)
                     
                     # check to see if this is the "correct" answer - if it
                     # is (and it should be the first!) then record the NetZc
@@ -263,6 +268,7 @@ def Pointless(DriverType = None):
 
                             correct_netzc = netzc
                             correct_laue = lauegroup
+                            correct_r = r_merge
 
                         else:
                             raise RuntimeError, 'something horribly wrong'
@@ -277,9 +283,34 @@ def Pointless(DriverType = None):
                             if netzc - correct_netzc > 1.0:
                                 # this is perhaps more likely?
                                 if netzc > best_netzc:
+                                    Science.write(
+                                        'Found likely solution with ' + \
+                                        'better Z score')
+                                      
                                     best_netzc = netzc
                                     best_laue = lauegroup
                                     best_likelihood = likelihood
+                                    best_r = r_merge
+
+                        # also contemplate different solutions based on
+                        # the Rmerge - for instance (TS01 NATIVE) it may be
+                        # the case that the R merge is a factor of two
+                        # better for a pretty likely solution
+                        # use sqrt(3.0) as a "magic factor" ;o)
+
+                        if math.fabs(likelihood - self._totalprob) < 0.1:
+                            if correct_r / r_merge > math.sqrt(3.0):
+                                if netzc > 0.0:
+                                    # this is perhaps more likely?
+                                    Science.write(
+                                        'Found likely solution with ' + \
+                                        'better Rmerge: %4.2f vs. %4.2f' % \
+                                        (r_merge, correct_r))
+                                    
+                                    best_netzc = netzc
+                                    best_laue = lauegroup
+                                    best_likelihood = likelihood
+                                    best_r = r_merge
 
             if best_laue:
                 # the solution pointless gave is probably wrong!
