@@ -24,6 +24,7 @@
 # Assumptions & Assertions:
 # 
 # (1) Integration includes any cell and orientation refinement.
+#     This should be handled under the prepare phase.
 # (2) If there is no indexer implementation provided as input,
 #     it's ok to go make one, or raise an exception (maybe.)
 # 
@@ -92,6 +93,9 @@
 #
 #                 Implement this change - call prepare_to_integrate followed
 #                 by integrate...
+#
+# FIXME 02/NUV/06 want to hide the "done" flags inside getter/setter methods.
+# 
 
 import os
 import sys
@@ -152,6 +156,20 @@ class Integrater:
         self._intgr_epoch = 0
         
         return
+
+    def set_integrater_prepare_done(self, done = True):
+        self._intgr_prepare_done = done
+        return
+        
+    def set_integrater_done(self, done = True):
+        self._intgr_done = done
+        return
+
+    def get_integrater_prepare_done(self):
+        return self._intgr_prepare_done
+
+    def get_integrater_done(self):
+        return self._intgr_done
 
     def set_integrater_project_information(self,
                                            project_name,

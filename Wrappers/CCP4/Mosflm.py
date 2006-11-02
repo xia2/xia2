@@ -548,7 +548,7 @@ def Mosflm(DriverType = None):
             if self._mosflm_rerun_integration:
                 # make sure that this is run again...
                 Chatter.write('Need to rerun the integration...')
-                self._intgr_done = False
+                self.set_integrater_done(False)
 
             # if self._mosflm_rerun_integration and not fast:
             # FIXME this needs to be passed to the admin stream
@@ -837,7 +837,7 @@ def Mosflm(DriverType = None):
 
                         # set a flag to say cell refinement needs rerunning
                         # c/f Integrator.py
-                        self._intgr_prepare_done = False
+                        self.set_integrater_prepare_done(False)
 
                         # tell the user what is going on
 
@@ -981,7 +981,7 @@ def Mosflm(DriverType = None):
             # the only way to get here is through the cell refinement,
             # unless we're trying to go fast - which means that we may
             # have to create an indexer if fast - if we're going slow
-            # then this should have been done by the cel refinement
+            # then this should have been done by the cell refinement
             # stage...
 
             # FIXME add "am I going fast" check here
