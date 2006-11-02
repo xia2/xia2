@@ -148,7 +148,7 @@
 # XDSScaler &c., which will be a composite class which performs the operation,
 # using wrapper classes for the different programs...
 # 
-# 02/NOV/06 FIXME need to move this over to the same framework as in 
+# FIXME 02/NOV/06 need to move this over to the same framework as in 
 #                 Integrater - that is, prepare_scale, do_scale both until
 #                 happiness has arrived - this could be complicated but 
 #                 is really the only way to structure it...
@@ -186,7 +186,8 @@ class Scaler:
         # get_integrater_project_information() - pname, xname, dname
         # get_integrater_epoch() - measurement of first frame
 
-        self._scalr_scaling_done = False
+        self._scalr_done = False
+        self._scalr_prepare_done = False
 
         # places to hold the output
 
@@ -198,6 +199,20 @@ class Scaler:
         self._scalr_statistics = None
 
         return
+
+    def set_scaler_prepare_done(self, done = True):
+        self._scalr_prepare_done = done
+        return
+        
+    def set_scaler_done(self, done = True):
+        self._scalr_done = done
+        return
+
+    def get_scaler_prepare_done(self):
+        return self._scalr_prepare_done
+
+    def get_scaler_done(self):
+        return self._scalr_done
 
     def add_scaler_integrater(self, integrater):
         '''Add an integrater to this scaler, to provide the input.'''
@@ -232,7 +247,7 @@ class Scaler:
         self._scalr_integraters[epoch] = integrater
 
         # reset the scaler.
-        self._scalr_scaling_done = False
+        self._scalr_done = False
 
         return
 
@@ -244,15 +259,36 @@ class Scaler:
             raise RuntimeError, \
                   'no Integrater implementations assigned for scaling'
 
-        result = self._scale()
-        self._scalr_scaling_done = True
+        # FIXME 02/NOV/06 move this into a "while" loop controlled by the
+        # done flags, and also add a prepare step into the system as well,
+        # to enable things like sorting and friends to be considered
+        # separately to the actual scaling...
+
+        self._scalr_done = False
+        self._scalr_prepare_done = False
+
+        while not self._scalr_done:
+            while not self._scalr_prepare_done:
+                # assert that it will be done correctly
+                self._scalr_prepare_done = True
+
+                # this method may tell us otherwise
+                self._scale_prepare()
+
+            # assert that the scaling will be done correctly
+            self._scalr_done = True
+
+            # this method may correct us on this matter
+            result = self._scale()
+
+        # FIXME this result payload probably shouldn't exist...
 
         return result
 
     def get_scaled_merged_reflections(self):
         '''Return the reflection files and so on.'''
 
-        if not self._scalr_scaling_done:
+        if not self._scalr_done:
             self.scale()
 
         return self._scalr_scaled_reflection_files
@@ -260,7 +296,7 @@ class Scaler:
     def get_scaler_statistics(self):
         '''Return the overall scaling statistics.'''
 
-        if not self._scalr_scaling_done:
+        if not self._scalr_done:
             self.scale()
 
         return self._scalr_statistics

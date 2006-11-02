@@ -93,6 +93,14 @@ class CCP4Scaler(Scaler):
     def get_working_directory(self):
         return self._working_directory 
 
+    def _scale_prepare(self):
+        '''Prepare the scaling.'''
+
+        # FIXME quite a lot of the _scale() method below should be moved in
+        # here
+        
+        return
+
     def _scale(self):
         '''Perform all of the operations required to deliver the scaled
         data.'''
