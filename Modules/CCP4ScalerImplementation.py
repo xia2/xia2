@@ -84,6 +84,17 @@ class CCP4Scaler(Scaler):
 
         self._working_directory = os.getcwd()
 
+        self._input_information = { }
+
+        # hacky... this is to pass information from prepare to scale
+        # and could probably be handled better (they used to be
+        # all in just the scale() method)
+        
+        self._sorted_reflections = None
+        self._common_pname = None
+        self._common_xname = None
+        self._common_dname = None
+
         return
 
     def set_working_directory(self, working_directory):
@@ -103,8 +114,8 @@ class CCP4Scaler(Scaler):
         
         return
 
-    def _scale(self):
-        '''Perform all of the operations required to deliver the scaled
+    def _scale_prepare(self):
+        '''Perform all of the preparation required to deliver the scaled
         data.'''
 
         # first gather reflection files - seeing as we go along if any
@@ -116,12 +127,12 @@ class CCP4Scaler(Scaler):
         # are not 0,0 - because if they are I will need to do some
         # MTZ dumping... see a little further down!
 
-        input_information = { }
+        self._input_information = { }
 
         for key in self._scalr_integraters.keys():
             intgr = self._scalr_integraters[key]
             pname, xname, dname = intgr.get_integrater_project_information()
-            input_information[key] = {
+            self._input_information[key] = {
                 'hklin':intgr.get_integrater_reflections(),
                 'pname':pname,
                 'xname':xname,
@@ -131,11 +142,11 @@ class CCP4Scaler(Scaler):
         # next check through the reflection files that they are all MTZ
         # format - if not raise an exception.
         # FIXME this should include the conversion to MTZ.
-        for key in input_information.keys():
-            if not is_mtz_file(input_information[key]['hklin']):
+        for key in self._input_information.keys():
+            if not is_mtz_file(self._input_information[key]['hklin']):
                 raise RuntimeError, \
                       'input file %s not MTZ format' % \
-                      input_information[key]['hklin']
+                      self._input_information[key]['hklin']
 
         # then check that the unit cells &c. in these reflection files
         # correspond to those rescribed in the indexers belonging to the
@@ -154,9 +165,9 @@ class CCP4Scaler(Scaler):
         # a solution which has already been eliminated in the data reduction
         # (e.g. TS01 native being reindexed to I222.)
         
-        for key in input_information.keys():
+        for key in self._input_information.keys():
             pl = Pointless()
-            hklin = input_information[key]['hklin']
+            hklin = self._input_information[key]['hklin']
             hklout = os.path.join(
                 self.get_working_directory(),
                 os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
@@ -193,16 +204,16 @@ class CCP4Scaler(Scaler):
             ri.reindex()
 
             # record the change in reflection file...
-            input_information[key]['hklin'] = hklout
+            self._input_information[key]['hklin'] = hklout
             
         max_batches = 0
         
-        for key in input_information.keys():
+        for key in self._input_information.keys():
 
             # keep a count of the maximum number of batches in a block -
             # this will be used to make rebatch work below.
 
-            hklin = input_information[key]['hklin']
+            hklin = self._input_information[key]['hklin']
 
             md = Mtzdump()
             md.set_working_directory(self.get_working_directory())
@@ -210,17 +221,17 @@ class CCP4Scaler(Scaler):
             auto_logfiler(md)
             md.dump()
 
-            if input_information[key]['batches'] == [0, 0]:
+            if self._input_information[key]['batches'] == [0, 0]:
                 # get them from the mtz dump output
                 
                 Chatter.write('Getting batches from %s' % hklin)
                 batches = md.get_batches()
-                input_information[key]['batches'] = [min(batches),
-                                                     max(batches)]
+                self._input_information[key]['batches'] = [min(batches),
+                                                           max(batches)]
                 Chatter.write('=> %d to %d' % (min(batches),
                                                max(batches)))
 
-            batches = input_information[key]['batches']
+            batches = self._input_information[key]['batches']
             if 1 + max(batches) - min(batches) > max_batches:
                 max_batches = max(batches) - min(batches) + 1
             
@@ -249,7 +260,7 @@ class CCP4Scaler(Scaler):
         # then rebatch the files, to make sure that the batch numbers are
         # in the same order as the epochs of data collection.
 
-        keys = input_information.keys()
+        keys = self._input_information.keys()
         keys.sort()
 
         # need to check that the batches are all sensible numbers
@@ -258,9 +269,9 @@ class CCP4Scaler(Scaler):
 
         counter = 0
 
-        common_pname = input_information[keys[0]]['pname']
-        common_xname = input_information[keys[0]]['xname']
-        common_dname = input_information[keys[0]]['dname']
+        self._common_pname = self._input_information[keys[0]]['pname']
+        self._common_xname = self._input_information[keys[0]]['xname']
+        self._common_dname = self._input_information[keys[0]]['dname']
 
         # FIXME the checks in here need to be moved to an earlier
         # stage in the processing
@@ -269,18 +280,18 @@ class CCP4Scaler(Scaler):
             rb = Rebatch()
             rb.set_working_directory(self.get_working_directory())
 
-            hklin = input_information[key]['hklin']
+            hklin = self._input_information[key]['hklin']
 
-            pname = input_information[key]['pname']
-            if common_pname != pname:
+            pname = self._input_information[key]['pname']
+            if self._common_pname != pname:
                 raise RuntimeError, 'all data must have a common project name'
-            xname = input_information[key]['xname']
-            if common_xname != xname:
+            xname = self._input_information[key]['xname']
+            if self._common_xname != xname:
                 raise RuntimeError, \
                       'all data for scaling must come from one crystal'
-            dname = input_information[key]['dname']
-            if common_dname != dname:
-                common_dname = None
+            dname = self._input_information[key]['dname']
+            if self._common_dname != dname:
+                self._common_dname = None
 
             hklout = os.path.join(self.get_working_directory(),
                                   '%s_%s_%s_%d.mtz' % \
@@ -295,8 +306,8 @@ class CCP4Scaler(Scaler):
 
             # update the "input information"
 
-            input_information[key]['hklin'] = hklout
-            input_information[key]['batches'] = new_batches
+            self._input_information[key]['hklin'] = hklout
+            self._input_information[key]['batches'] = new_batches
 
             # update the counter & recycle
 
@@ -310,35 +321,42 @@ class CCP4Scaler(Scaler):
 
         s.set_hklout(os.path.join(self.get_working_directory(),
                                   '%s_%s_sorted.mtz' % \
-                                  (common_pname, common_xname)))
+                                  (self._common_pname, self._common_xname)))
 
         for key in keys:
-            s.add_hklin(input_information[key]['hklin'])
+            s.add_hklin(self._input_information[key]['hklin'])
 
         auto_logfiler(s)
         s.sort()
 
-        # up to here should be in the prepare method... this means that
-        # everything which has been calculated in here needs to be
-        # stored in here for reference in the _scale() method.
+        # done preparing!
 
-        ################################################################
+        self._sorted_reflections = s.get_hklout()
+
+        return
+
+    def _scale(self):
+        '''Perform all of the operations required to deliver the scaled
+        data.'''
 
         # then perform some scaling - including any parameter fiddling
         # which is required.
+        
+        keys = self._input_information.keys()
+        keys.sort()
 
         # FIXME in here I need to implement "proper" scaling...
 
         sc = Scala()
         sc.set_working_directory(self.get_working_directory())
-        sc.set_hklin(s.get_hklout())
+        sc.set_hklin(self._sorted_reflections)
 
         # this will require first sorting out the batches/runs, then
         # deciding what the "standard" wavelength/dataset is, then
         # combining everything appropriately...
 
         for key in keys:
-            input = input_information[key]
+            input = self._input_information[key]
             start, end = (min(input['batches']), max(input['batches']))
             sc.add_run(start, end, pname = input['pname'],
                        xname = input['xname'],
@@ -346,7 +364,7 @@ class CCP4Scaler(Scaler):
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled.mtz' % \
-                                   (common_pname, common_xname)))
+                                   (self._common_pname, self._common_xname)))
         
         sc.set_anomalous()
         sc.set_tails()
@@ -379,7 +397,10 @@ class CCP4Scaler(Scaler):
 
         for dataset in standard_deviation_info.keys():
             info = standard_deviation_info[dataset]
-            Chatter.write('Standard deviations (%s):' % dataset)
+
+            # need to consider partials separately to fulls in assigning
+            # the error correction parameters
+            
             for j in range(len(info['1_Range'])):
                 n_full = int(info['5_Number'][j])
                 I_full = float(info['4_Irms'][j])
@@ -393,10 +414,6 @@ class CCP4Scaler(Scaler):
 
                 i_tot = ((n_full * I_full) + (n_part * I_part)) / n_tot
                 s_tot = ((n_full * s_full) + (n_part * s_part)) / n_tot
-
-                Chatter.write('%2d %7d %4.2f %4.2f %4.2f' % \
-                              (j, int(i_tot),
-                               s_full, s_part, s_tot))
 
         # look also for a sensible resolution limit for this data set -
         # that is, the place where I/sigma is about two for the highest
@@ -505,22 +522,37 @@ class CCP4Scaler(Scaler):
             scaled_reflection_files[key] = hklout
 
         # merge all columns into a single uber-reflection-file
+        # FIXME this is only worth doing if there are more
+        # than one scaled reflection file...
 
-        c = Cad()
-        c.set_working_directory(self.get_working_directory())
-        auto_logfiler(c)
-        for key in scaled_reflection_files.keys():
-            file = scaled_reflection_files[key]
-            c.add_hklin(file)
+        if len(scaled_reflection_files.keys()) > 1:
+
+            c = Cad()
+            c.set_working_directory(self.get_working_directory())
+            auto_logfiler(c)
+            for key in scaled_reflection_files.keys():
+                file = scaled_reflection_files[key]
+                c.add_hklin(file)
         
-        hklout = os.path.join(self.get_working_directory(),
-                              '%s_%s_merged.mtz' % (common_pname,
-                                                    common_xname))
+            hklout = os.path.join(self.get_working_directory(),
+                                  '%s_%s_merged.mtz' % (self._common_pname,
+                                                        self._common_xname))
 
-        c.set_hklout(hklout)
-        c.merge()
+            Chatter.write('Merging all data sets to %s' % hklout)
+
+            c.set_hklout(hklout)
+            c.merge()
             
-        self._scalr_scaled_reflection_files['mtz_merged'] = hklout
+            self._scalr_scaled_reflection_files['mtz_merged'] = hklout
+
+        else:
+
+            # we don't need to explicitly merge it, since that's just
+            # silly ;o)
+            
+            self._scalr_scaled_reflection_files[
+                'mtz_merged'] = scaled_reflection_files[
+                scaled_reflection_files.keys()[0]]
 
         return
 
