@@ -168,6 +168,8 @@ if not os.environ['DPA_ROOT'] in sys.path:
 
 from lib.Guff import inherits_from
 
+from Handlers.Streams import Chatter
+
 class Scaler:
     '''An interface to present scaling functionality in a similar way to the
     integrater interface.'''
@@ -269,12 +271,17 @@ class Scaler:
 
         while not self._scalr_done:
             while not self._scalr_prepare_done:
+
+                Chatter.write('Preparing to do some scaling...')
+                 
                 # assert that it will be done correctly
                 self._scalr_prepare_done = True
 
                 # this method may tell us otherwise
                 self._scale_prepare()
 
+            Chatter.write('Doing some scaling...')
+            
             # assert that the scaling will be done correctly
             self._scalr_done = True
 
