@@ -27,6 +27,9 @@
 # Angle range : 290.000000 -> 291.000000
 # Two Theta value: N/A
 
+# FIXME this should probably be replaced with a module which uses the
+# swig-python bindings of the DiffractionImage library directly.
+
 import os
 import sys
 import copy
@@ -59,8 +62,7 @@ class _HeaderCache:
 
 HeaderCache = _HeaderCache()
 
-# FIXME this does not include MAR, RAXIS detectors
-# FIXME check the 4096, 73 record for marccd??!
+# FIXME this does not include all MAR, RAXIS detectors
 
 detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('adsc', 1502, 163):'adsc q4 2x2 binned',
@@ -69,7 +71,7 @@ detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('adsc', 6144, 51):'adsc q315',
                   ('adsc', 3072, 102):'adsc q315 2x2 binned',
                   ('marccd', 4096, 73):'mar 300',
-                  ('marccd', 3072, 73):'mar 300'}
+                  ('marccd', 3072, 73):'mar 225'}
 
 def Printheader(DriverType = None):
     '''A factory for wrappers for the printheader.'''
