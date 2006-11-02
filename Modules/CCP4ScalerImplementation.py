@@ -94,7 +94,9 @@ class CCP4Scaler(Scaler):
         return self._working_directory 
 
     def _scale_prepare(self):
-        '''Prepare the scaling.'''
+        '''Prepare the scaling. This should sort together the reflection
+        files, ensure that they are correctly indexed (via pointless) and
+        generally tidy things up.'''
 
         # FIXME quite a lot of the _scale() method below should be moved in
         # here
@@ -315,6 +317,12 @@ class CCP4Scaler(Scaler):
 
         auto_logfiler(s)
         s.sort()
+
+        # up to here should be in the prepare method... this means that
+        # everything which has been calculated in here needs to be
+        # stored in here for reference in the _scale() method.
+
+        ################################################################
 
         # then perform some scaling - including any parameter fiddling
         # which is required.
