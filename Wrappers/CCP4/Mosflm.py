@@ -378,6 +378,7 @@ def Mosflm(DriverType = None):
                                          'tP':75,
                                          'tI':79,
                                          'hP':143,
+                                         'hR':146,
                                          'cP':195,
                                          'cF':196,
                                          'cI':197}
@@ -418,7 +419,8 @@ def Mosflm(DriverType = None):
                     lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5,
                                              'oP':16, 'oC':20, 'oF':22,
                                              'oI':23, 'tP':75, 'tI':79,
-                                             'hP':143, 'cP':195, 'cF':196,
+                                             'hP':143, 'hR':146,
+                                             'cP':195, 'cF':196,
                                              'cI':197}
 
                     spacegroup_to_lattice = { }

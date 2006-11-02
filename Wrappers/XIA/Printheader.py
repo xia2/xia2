@@ -60,6 +60,7 @@ class _HeaderCache:
 HeaderCache = _HeaderCache()
 
 # FIXME this does not include MAR, RAXIS detectors
+# FIXME check the 4096, 73 record for marccd??!
 
 detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('adsc', 1502, 163):'adsc q4 2x2 binned',
@@ -67,7 +68,8 @@ detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('adsc', 2048, 102):'adsc q210 2x2 binned',
                   ('adsc', 6144, 51):'adsc q315',
                   ('adsc', 3072, 102):'adsc q315 2x2 binned',
-                  ('marccd', 4096, 73):'mar 300'}
+                  ('marccd', 4096, 73):'mar 300',
+                  ('marccd', 3072, 73):'mar 300'}
 
 def Printheader(DriverType = None):
     '''A factory for wrappers for the printheader.'''
