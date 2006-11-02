@@ -148,6 +148,14 @@
 # XDSScaler &c., which will be a composite class which performs the operation,
 # using wrapper classes for the different programs...
 # 
+# 02/NOV/06 FIXME need to move this over to the same framework as in 
+#                 Integrater - that is, prepare_scale, do_scale both until
+#                 happiness has arrived - this could be complicated but 
+#                 is really the only way to structure it...
+# 
+#                 Will also allow for a certain amount of iteration, but 
+#                 not repetition of e.g. sorting, reindexing (unless
+#                 necessary.)
 
 import os
 import sys
