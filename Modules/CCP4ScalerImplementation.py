@@ -45,7 +45,15 @@
 # FIXME 01/NOV/06 should probably sort together all data for a particular
 #                 wavelength before running pointless - this will probably
 #                 give better statistics from that program.
-# 
+#  
+# FIXME 03/NOV/06 need to merge the first sweep in whatever pointgroup we 
+#                 think is correct, and then reindex the rest of this data
+#                 using the first one as a reference, and then perform the 
+#                 scaling based on this. TS02 breaks on the unit cell check
+#                 at the CAD phase below.
+#
+# FIXME 03/NOV/06 should check that the reflection files have consistent
+#                 unit cell parameters going in to scaling. c/f FIXME above.
 
 import os
 import sys
