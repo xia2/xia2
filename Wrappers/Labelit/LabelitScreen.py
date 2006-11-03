@@ -197,6 +197,13 @@ def LabelitScreen(DriverType = None):
 
             return
 
+        def _index_prepare(self):
+            # prepare to do some autoindexing
+            
+            if self._indxr_images == []:
+                self._index_select_images()
+            return
+
         def _index_select_images(self):
             '''Select correct images based on image headers.'''
 
@@ -354,6 +361,13 @@ def LabelitScreen(DriverType = None):
                         # structure set up, this should reset the
                         # indexing done flag, set the search range to
                         # 0, correct beam and then return...
+
+                        # should also allow for the possibility that
+                        # labelit has selected the best solution - so this
+                        # will need to remember the stats for this solution,
+                        # then compare them against the stats (one day) from
+                        # running with the other solution - eventually the
+                        # correct solution will result...
                     
             for o in output:
                 l = o.split()

@@ -60,7 +60,7 @@
 #                 or the resolution numbers in labelit.stats_distl.
 #                 use best numbers of all images used in indexing.
 #
-# FIXME 23/OCT/06 interesting new feature - want to be able to handle
+# FIXED 23/OCT/06 interesting new feature - want to be able to handle
 #                 storing all of the other solutions from indexing as
 #                 well as the chosen one, and also want to be able to
 #                 select the "best" solution in a more sensible manner...
@@ -81,6 +81,15 @@
 #                 This will require an _IndexerHelper class or some such,
 #                 to take over management of the list of possible lattices,
 #                 solution selection & elimination of "duff" choices.
+#
+#                 This is now done and appears to work pretty well...
+#
+# FIXME 03/NOV/06 need to add the standard "interface" loop structure to
+#                 the Indexer interface - move all of the image picking
+#                 stuff to a prepare method and everything else to an
+#                 index loop which will need to keep track of flags. This
+#                 has been pushed by the new improved Labelit which screws 
+#                 up on the beam centre selection...
 
 import os
 import sys
@@ -159,7 +168,6 @@ class Indexer:
         self._indxr_done = False
         self._indxr_prepare_done = False
         
-        
         # output items
         self._indxr_lattice = None
         self._indxr_cell = None
@@ -207,7 +215,7 @@ class Indexer:
     def get_indexer_done(self):
         return self._indxr_done
     
-    def index_select_images(self):
+    def no_longer_index_select_images(self):
         '''Call the local implementation...'''
 
         # FIXME 03/NOV/06 this should be replaced with a call to something
@@ -231,6 +239,7 @@ class Indexer:
 
         # remove the top indexing solution and reset the "done" flag - this
         # will mean that the next "get" will cause the indexing to be rerun.
+
         self._indxr_helper.eliminate()
         self._indxr_done = False
 
@@ -247,48 +256,54 @@ class Indexer:
         # flags for self._indxr_done, self._indxr_prepare_done
         # should be used, and this should be while loop-ified...
 
-        if self._indxr_images == []:
-            self.index_select_images()
+        while not self._indxr_done:
+            while not self._indxr_prepare_done:
+                self._indxr_prepare_done = True
+                self._index_prepare()
+                
+            # if there is already a list of "known" spacegroups, select the
+            # highest and try to index with this...
 
-        # if there is already a list of "known" spacegroups, select the
-        # highest and try to index with this...
+            # FIXME this needs to check the indexer helper...
+            # if the index helper does not exist, then it should be created
+            # and populated here, perhaps? then the highest solution picked
+            # and if different to the selected one then this should be
+            # reimposed and rerun.
 
-        # FIXME this needs to check the indexer helper...
-        # if the index helper does not exist, then it should be created
-        # and populated here, perhaps? then the highest solution picked
-        # and if different to the selected one then this should be
-        # reimposed and rerun.
+            self._indxr_done = True
+            
+            if not self._indxr_helper:
+                result = self._index()
 
-        if not self._indxr_helper:
-            result = self._index()
+                solutions = { }
+                for k in self._indxr_other_lattice_cell.keys():
+                    solutions[k] = self._indxr_other_lattice_cell[k]['cell']
 
-            solutions = { }
-            for k in self._indxr_other_lattice_cell.keys():
-                solutions[k] = self._indxr_other_lattice_cell[k]['cell']
+                self._indxr_helper = _IndexerHelper(solutions)
 
-            self._indxr_helper = _IndexerHelper(solutions)
-
-            solution = self._indxr_helper.get()
+                solution = self._indxr_helper.get()
         
-            # compare these against the final solution, if different then
-            # rerun indexing
+                # compare these against the final solution, if different then
+                # rerun indexing - oh - no longer need to do this explicitly
+                # since I can just set the indxr_done flag to False...
 
-            if self._indxr_lattice != solution[0]:
-                Science.write('Rerunning indexing with target lattice %s' \
-                              % solution[0])
+                if self._indxr_lattice != solution[0]:
+                    Science.write('Rerunning indexing with target lattice %s' \
+                                  % solution[0])
+                    # self._indxr_input_lattice = solution[0]
+                    # self._indxr_input_cell = solution[1]
+                    # result = self._index()
+                    self._indxr_done = False
+
+            else:
+                # rerun autoindexing with the best known current solution
+            
+                solution = self._indxr_helper.get()
                 self._indxr_input_lattice = solution[0]
                 self._indxr_input_cell = solution[1]
                 result = self._index()
-
-        else:
-            # rerun autoindexing with the best known current solution
             
-            solution = self._indxr_helper.get()
-            self._indxr_input_lattice = solution[0]
-            self._indxr_input_cell = solution[1]
-            result = self._index()
-            
-        self._indxr_done = True
+                # self._indxr_done = True
 
         Science.write('All possible indexing solutions:')
         for l in self._indxr_helper.repr():

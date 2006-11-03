@@ -234,6 +234,13 @@ def Mosflm(DriverType = None):
 
             return
 
+        def _index_prepare(self):
+            # prepare to do some autoindexing
+            
+            if self._indxr_images == []:
+                self._index_select_images()
+            return
+
         def _index_select_images(self):
             '''Select correct images based on image headers.'''
 
