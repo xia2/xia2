@@ -111,6 +111,9 @@ class _IndexerHelper:
 
         self._sorted_list = SortLattices(list)
 
+        self._indxr_done = False
+        self._indxr_prepare_done = False
+        
         return
 
     def get(self):
@@ -193,7 +196,7 @@ class Indexer:
 
     def index_select_images(self):
         '''Call the local implementation...'''
-        
+
         self._index_select_images()
 
         # reset the indexer - we need to rerun to get updated
@@ -222,6 +225,11 @@ class Indexer:
         raise RuntimeError, 'overload me'
 
     def index(self):
+
+        # FIXME this should be moved to _index_prepare - and also the
+        # flags for self._indxr_done, self._indxr_prepare_done
+        # should be used, and this should be while loop-ified...
+
         if self._indxr_images == []:
             self.index_select_images()
 
