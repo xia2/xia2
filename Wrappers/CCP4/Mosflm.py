@@ -962,7 +962,7 @@ def Mosflm(DriverType = None):
                     indxr._indxr_mosaic = float(o.split()[-1])
 
             # hack... FIXME (maybe?)
-            self._indxr_run = True
+            self._indxr_done = True
             
             # shouldn't need this.. remember that Python deals in pointers!
             self.set_indexer_payload('mosflm_orientation_matrix', open(

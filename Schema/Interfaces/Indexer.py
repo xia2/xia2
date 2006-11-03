@@ -111,9 +111,6 @@ class _IndexerHelper:
 
         self._sorted_list = SortLattices(list)
 
-        self._indxr_done = False
-        self._indxr_prepare_done = False
-        
         return
 
     def get(self):
@@ -159,7 +156,9 @@ class Indexer:
         self._indxr_input_cell = None
 
         # job management parameters
-        self._indxr_run = False
+        self._indxr_done = False
+        self._indxr_prepare_done = False
+        
         
         # output items
         self._indxr_lattice = None
@@ -194,15 +193,33 @@ class Indexer:
 
         raise RuntimeError, 'overload me'
 
+    def set_indexer_prepare_done(self, done = True):
+        self._indxr_prepare_done = done
+        return
+        
+    def set_indexer_done(self, done = True):
+        self._indxr_done = done
+        return
+
+    def get_indexer_prepare_done(self):
+        return self._indxr_prepare_done
+
+    def get_indexer_done(self):
+        return self._indxr_done
+    
     def index_select_images(self):
         '''Call the local implementation...'''
+
+        # FIXME 03/NOV/06 this should be replaced with a call to something
+        # like _index_prepare in a similar way to _integrate_prepare...
 
         self._index_select_images()
 
         # reset the indexer - we need to rerun to get updated
         # results - not sure if this helps, since this will only
         # be called when the images aren't set...
-        self._indxr_run = False
+        
+        self._indxr_done = False
 
         return 
 
@@ -215,7 +232,7 @@ class Indexer:
         # remove the top indexing solution and reset the "done" flag - this
         # will mean that the next "get" will cause the indexing to be rerun.
         self._indxr_helper.eliminate()
-        self._indxr_run = False
+        self._indxr_done = False
 
         return
 
@@ -271,7 +288,7 @@ class Indexer:
             self._indxr_input_cell = solution[1]
             result = self._index()
             
-        self._indxr_run = True
+        self._indxr_done = True
 
         Science.write('All possible indexing solutions:')
         for l in self._indxr_helper.repr():
@@ -312,7 +329,7 @@ class Indexer:
 
         # reset the indexer - we need to rerun to get updated
         # results
-        self._indxr_run = False
+        self._indxr_done = False
         
         return
 
@@ -325,7 +342,7 @@ class Indexer:
 
         # reset the indexer - we need to rerun to get updated
         # results
-        self._indxr_run = False
+        self._indxr_done = False
 
         return
 
@@ -342,7 +359,7 @@ class Indexer:
 
         # reset the indexer - we need to rerun to get updated
         # results
-        self._indxr_run = False
+        self._indxr_done = False
 
         return
 
@@ -351,7 +368,7 @@ class Indexer:
         '''Get the selected unit cell.'''
 
         # if not already run, run
-        if not self._indxr_run:
+        if not self._indxr_done:
             self.index()
 
         return self._indxr_cell
@@ -360,7 +377,7 @@ class Indexer:
         '''Get the selected lattice as tP form.'''
 
         # if not already run, run
-        if not self._indxr_run:
+        if not self._indxr_done:
             self.index()
 
         return self._indxr_lattice
@@ -369,7 +386,7 @@ class Indexer:
         '''Get the estimated mosaic spread in degrees.'''
 
         # if not already run, run
-        if not self._indxr_run:
+        if not self._indxr_done:
             self.index()
 
         return self._indxr_mosaic
@@ -378,7 +395,7 @@ class Indexer:
         '''Get the refined distance.'''
 
         # if not already run, run
-        if not self._indxr_run:
+        if not self._indxr_done:
             self.index()
 
         return self._indxr_refined_distance
@@ -393,7 +410,7 @@ class Indexer:
         '''Get the refined beam.'''
 
         # if not already run, run
-        if not self._indxr_run:
+        if not self._indxr_done:
             self.index()
 
         return self._indxr_refined_beam
@@ -402,7 +419,7 @@ class Indexer:
         '''Attempt to get something from the indexer payload.'''
 
         # if not already run, run
-        if not self._indxr_run:
+        if not self._indxr_done:
             self.index()
 
         return self._indxr_payload.get(this, None)
@@ -411,7 +428,7 @@ class Indexer:
         '''Get an estimate of the diffracting resolution.'''
 
         # if not already run, run
-        if not self._indxr_run:
+        if not self._indxr_done:
             self.index()
 
         return self._indxr_resolution_estimate       
