@@ -74,6 +74,7 @@
 import os
 import sys
 import copy
+import math
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -101,6 +102,7 @@ from Wrappers.Labelit.LabelitMosflmScript import LabelitMosflmScript
 from Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
 
 from lib.Guff import auto_logfiler
+from Handlers.Streams import Chatter
 
 def LabelitScreen(DriverType = None):
     '''Factory for LabelitScreen wrapper classes, with the specified
@@ -172,10 +174,12 @@ def LabelitScreen(DriverType = None):
             # FIXME latest version of labelit has messed up the beam
             # centre finding :o( so add this for the moment until that
             # is fixed
-            # out.write('beam_search_scope = 0.0\n')
+
+            out.write('beam_search_scope = 0.0\n')
 
             # 03/NOV/06 looks like this can be "fixed" by the following:
-            out.write('percent_overlap_forcing_detail = 1\n')
+            # out.write('percent_overlap_forcing_detail = 1\n')
+            # nope!
             
             out.close()
 
@@ -281,6 +285,76 @@ def LabelitScreen(DriverType = None):
 
             counter = 0
 
+            # FIXME 03/NOV/06 something to do with the new centre search...
+
+            # example output:
+
+            # Beam center is not immediately clear; rigorously retesting \
+            #                                             2 solutions
+            # Beam x 109.0 y 105.1, initial score 538; refined rmsd: 0.1969
+            # Beam x 108.8 y 106.1, initial score 354; refined rmsd: 0.1792
+            
+            # in here want to parse the beam centre search if it was done,
+            # and check that the highest scoring solution was declared
+            # the "best" - though should also have a check on the
+            # R.M.S. deviation of that solution...
+
+            # do this first!
+
+            for j in range(len(output)):
+                o = output[j]
+                if 'Beam centre is not immediately clear' in o:
+                    # read the solutions that it has found and parse the
+                    # information
+
+                    centres = []
+                    scores = []
+                    rmsds = []
+
+                    num_solutions = int(o.split()[-2])
+
+                    for n in range(num_solutions):
+                        record = output[j + n + 1].replace(',', ' ').replace(
+                            ';', ' ').split()
+                        x, y = float(record[2]), \
+                               float(record[4])
+
+                        centres.append((x, y))
+                        scores.append(int(record[7]))
+                        rmsds.append(float(record[-1]))
+
+                    # next perform some analysis and perhaps assert the
+                    # correct solution - for the moment just raise a warning
+                    # if it looks like wrong solution may have been picked
+
+                    best_beam_score = (0.0, 0.0, 0)
+                    best_beam_rms = (0.0, 0.0, 1.0e8)
+
+                    for n in range(num_solutions):
+                        beam = centres[n]
+                        score = scores[n]
+                        rmsd = rmsds[n]
+
+                        if score > best_beam_score[2]:
+                            best_beam_score = (beam[0], beam[1], score)
+
+                        if rmsd < best_beam_rmsd[2]:
+                            best_beam_rmsd = (beam[0], beam[1], rmsd)
+
+                    # allow a difference of 0.1mm in either direction...
+                    if math.fabs(
+                        best_beam_score[0] -
+                        best_beam_rmsd[0]) > 0.1 or \
+                        math.fabs(best_beam_score[1] -
+                                  best_beam_rmsd[1]) > 0.1:
+                        Chatter.write(
+                            'Labelit may have picked the wrong beam centre')
+
+                        # FIXME as soon as I get the indexing loop
+                        # structure set up, this should reset the
+                        # indexing done flag, set the search range to
+                        # 0, correct beam and then return...
+                    
             for o in output:
                 l = o.split()
 
