@@ -49,6 +49,7 @@ def Mtzdump(DriverType = None):
             self._header['dataset_info'] = { } 
 
             self._batches = None
+            self._reflections = 0
 
         def dump(self):
             '''Actually print the contents of the mtz file header.'''
@@ -118,6 +119,9 @@ def Mtzdump(DriverType = None):
                     self._header['dataset_info'][dataset_id
                                                  ]['cell'] = cell
 
+                if 'No. of reflections used in FILE STATISTICS' in line:
+                    self._reflections = int(line.split()[-1])
+
             self._batches = batches
                     
             # status token has a spare "of mtzdump" to get rid of
@@ -152,6 +156,12 @@ def Mtzdump(DriverType = None):
         def get_batches(self):
             '''Get a list of batches found in this reflection file.'''
             return self._batches
+
+        def get_reflections(self):
+            '''Return the number of reflections found in the reflection
+            file.'''
+
+            return self._reflections
 
     return MtzdumpWrapper()
 
