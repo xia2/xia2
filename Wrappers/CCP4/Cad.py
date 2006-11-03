@@ -187,7 +187,7 @@ def Cad(DriverType = None):
 
             # get a dataset ID - see FIXME 03/NOV/06 below...
 
-            dataset_ids = [md.get_dataset_info[d]['id'] for \
+            dataset_ids = [md.get_dataset_info(d)['id'] for \
                            d in md.get_datasets()]
 
             for c in columns:

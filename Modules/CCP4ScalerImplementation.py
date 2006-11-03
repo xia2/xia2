@@ -49,6 +49,7 @@
 
 import os
 import sys
+import math
 
 if not os.environ.has_key('DPA_ROOT'):
     raise RuntimeError, 'DPA_ROOT not defined'
@@ -230,6 +231,9 @@ class CCP4Scaler(Scaler):
                                                            max(batches)]
                 Chatter.write('=> %d to %d' % (min(batches),
                                                max(batches)))
+
+            # FIXME here check that this matches up with the input,
+            # if we have both sources of batch information
 
             batches = self._input_information[key]['batches']
             if 1 + max(batches) - min(batches) > max_batches:
@@ -506,6 +510,103 @@ class CCP4Scaler(Scaler):
         # weighted according to (1) the number of reflections and
         # perhaps (2) the epoch order of that data set...
 
+        super_cell_a = 0.0
+        super_cell_b = 0.0
+        super_cell_c = 0.0
+        super_cell_alpha = 0.0
+        super_cell_beta = 0.0
+        super_cell_gamma = 0.0
+
+        super_cell_nref = 0
+
+        for key in scaled_reflection_files.keys():
+            hklin = scaled_reflection_files[key]
+            md = Mtzdump()
+            md.set_working_directory(self.get_working_directory())
+            md.set_hklin(hklin)
+            auto_logfiler(md)
+            md.dump()
+            datasets = md.get_datasets()
+            reflections = md.get_reflections()
+
+            # ASSERT at this stage there should be exactly one dataset
+            # in each reflection file - however we won't make that
+            # assumption here as that could get us into trouble later on
+
+            if super_cell_nref == 0:
+                # this is the first data set - take these as read
+                for d in datasets:
+                    info = md.get_dataset_info(d)
+                    cell = info['cell']
+
+                    Chatter.write('%d reflections in dataset %s' % \
+                                  (reflections, d))
+                    
+                    super_cell_nref += reflections
+                    super_cell_a += cell[0] * reflections
+                    super_cell_b += cell[1] * reflections
+                    super_cell_c += cell[2] * reflections
+                    super_cell_alpha += cell[3] * reflections
+                    super_cell_beta += cell[4] * reflections
+                    super_cell_gamma += cell[5] * reflections
+
+            else:
+                # as above, but also check that the unit cell parameters
+                # are reasonably compatible with the current running average
+                for d in datasets:
+                    info = md.get_dataset_info(d)
+                    cell = info['cell']
+
+                    # check the cell - allow 0.5A, 0.5 degrees - this
+                    # is shockingly wide!
+
+                    Chatter.write('%d reflections in dataset %s' % \
+                                  (reflections, d))
+
+                    if math.fabs(cell[0] -
+                                 (super_cell_a / super_cell_nref)) > 0.5:
+                        raise RuntimeError, \
+                              'incompatible unit cell for set %s' % d
+                    if math.fabs(cell[1] -
+                                 (super_cell_b / super_cell_nref)) > 0.5:
+                        raise RuntimeError, \
+                              'incompatible unit cell for set %s' % d
+                    if math.fabs(cell[2] -
+                                 (super_cell_c / super_cell_nref)) > 0.5:
+                        raise RuntimeError, \
+                              'incompatible unit cell for set %s' % d
+                    if math.fabs(cell[3] -
+                                 (super_cell_alpha / super_cell_nref)) > 0.5:
+                        raise RuntimeError, \
+                              'incompatible unit cell for set %s' % d
+                    if math.fabs(cell[4] -
+                                 (super_cell_beta / super_cell_nref)) > 0.5:
+                        raise RuntimeError, \
+                              'incompatible unit cell for set %s' % d
+                    if math.fabs(cell[5] -
+                                 (super_cell_gamma / super_cell_nref)) > 0.5:
+                        raise RuntimeError, \
+                              'incompatible unit cell for set %s' % d
+
+                    super_cell_nref += reflections
+                    super_cell_a += cell[0] * reflections
+                    super_cell_b += cell[1] * reflections
+                    super_cell_c += cell[2] * reflections
+                    super_cell_alpha += cell[3] * reflections
+                    super_cell_beta += cell[4] * reflections
+                    super_cell_gamma += cell[5] * reflections
+
+        average_unit_cell = (super_cell_a / super_cell_nref,
+                             super_cell_b / super_cell_nref,
+                             super_cell_c / super_cell_nref,
+                             super_cell_alpha / super_cell_nref,
+                             super_cell_beta / super_cell_nref,
+                             super_cell_gamma / super_cell_nref)
+
+        Chatter.write('Computed average unit cell (will use in all files)')
+        Chatter.write('%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+                      average_unit_cell)
+
         for key in scaled_reflection_files.keys():
             file = scaled_reflection_files[key]
             
@@ -514,7 +615,7 @@ class CCP4Scaler(Scaler):
             auto_logfiler(c)
             c.add_hklin(file)
             c.set_new_suffix(key)
-            # c.set_new_cell((6-tuple))
+            c.set_new_cell(average_unit_cell)
             hklout = '%s_cad.mtz' % file[:-4]
             c.set_hklout(hklout)
             c.update()

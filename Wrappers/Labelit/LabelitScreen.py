@@ -172,8 +172,10 @@ def LabelitScreen(DriverType = None):
             # FIXME latest version of labelit has messed up the beam
             # centre finding :o( so add this for the moment until that
             # is fixed
-            
-            out.write('beam_search_scope = 0.0\n')
+            # out.write('beam_search_scope = 0.0\n')
+
+            # 03/NOV/06 looks like this can be "fixed" by the following:
+            out.write('percent_overlap_forcing_detail = 1\n')
             
             out.close()
 
