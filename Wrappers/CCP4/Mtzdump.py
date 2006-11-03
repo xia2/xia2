@@ -103,6 +103,7 @@ def Mtzdump(DriverType = None):
                 if 'Dataset ID, ' in line:
                     # then the project/crystal/dataset hierarchy
                     # follows with some cell/wavelength information
+                    dataset_number = int(output[i + 2].split()[0])
                     project = output[i + 2][10:].strip()
                     crystal = output[i + 3][10:].strip()
                     dataset = output[i + 4][10:].strip()
@@ -118,6 +119,8 @@ def Mtzdump(DriverType = None):
                                                  ]['wavelength'] = wavelength
                     self._header['dataset_info'][dataset_id
                                                  ]['cell'] = cell
+                    self._header['dataset_info'][dataset_id
+                                                 ]['id'] = dataset_number
 
                 if 'No. of reflections used in FILE STATISTICS' in line:
                     self._reflections = int(line.split()[-1])
