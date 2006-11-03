@@ -185,6 +185,11 @@ def Cad(DriverType = None):
             column_names_by_file[hklin] = []
             dataset_names_by_file[hklin] = md.get_datasets()
 
+            # get a dataset ID - see FIXME 03/NOV/06 below...
+
+            dataset_ids = [md.get_dataset_info[d]['id'] for \
+                           d in md.get_datasets()]
+
             for c in columns:
                 name = c[0]
                 if name in ['H', 'K', 'L']:
@@ -204,12 +209,20 @@ def Cad(DriverType = None):
 
             self.input(labin_command)            
 
+            # FIXME perhaps - ASSERT that we want only the information from
+            # the first dataset here...
+
             pname, xname, dname = dataset_names_by_file[hklin][0].split('/')
+            dataset_id = dataset_ids[0]
+
+            # FIXME 03/NOV/06 this needs to id the dataset by it's number
+            # not by pname/xname/dname, as the latter get's confused if the
+            # xname is a number...
 
             if self._new_cell_parameters:
                 a, b, c, alpha, beta, gamma = self._new_cell_parameters
-                self.input('dcell file_number 1 %s %s %f %f %f %f %f %f' % \
-                           (xname, dname, a, b, c, alpha, beta, gamma))
+                self.input('dcell file_number 1 %d %f %f %f %f %f %f' % \
+                           (dataset_id, a, b, c, alpha, beta, gamma))
 
             if self._new_column_suffix:
                 suffix = self._new_column_suffix
