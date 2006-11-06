@@ -55,14 +55,19 @@
 # FIXME 03/NOV/06 should check that the reflection files have consistent
 #                 unit cell parameters going in to scaling. c/f FIXME above.
 # 
-# FIXME 06/NOV/06 this is more compliicated than I at first thought, since
+# FIXED 06/NOV/06 this is more complicated than I at first thought, since
 #                 pointless will not reindex into the correct symmetry a 
 #                 set which is indexed in a different pointgroup - this
 #                 means for TS03 that the system barfs. The only way to
 #                 fix this I can see is to move the reindexing step a little
 #                 later, so that this works against post-pointlessed (thus,
 #                 indexed in the "correct" pointgroup) data which can then
-#                 be correctly re-set...
+#                 be correctly re-set... shockingly this seems to work fine!
+# 
+# FIXME 06/NOV/06 need also to investigate the systematic absences and reset
+#                 to a standard setting (pointless does this) if appropriate.
+#                 If it's P43212 or P41212 then I need to decide what is 
+#                 best to do...
 
 import os
 import sys
