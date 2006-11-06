@@ -114,18 +114,10 @@ class CCP4Scaler(Scaler):
         return self._working_directory 
 
     def _scale_prepare(self):
-        '''Prepare the scaling. This should sort together the reflection
-        files, ensure that they are correctly indexed (via pointless) and
-        generally tidy things up.'''
-
-        # FIXME quite a lot of the _scale() method below should be moved in
-        # here
-        
-        return
-
-    def _scale_prepare(self):
         '''Perform all of the preparation required to deliver the scaled
-        data.'''
+        data. This should sort together the reflection files, ensure that
+        they are correctly indexed (via pointless) and generally tidy
+        things up.'''
 
         # first gather reflection files - seeing as we go along if any
         # of them need transforming to MTZ format, e.g. from d*TREK
