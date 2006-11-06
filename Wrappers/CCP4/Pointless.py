@@ -206,10 +206,12 @@ def Pointless(DriverType = None):
             # check for errors
             self.check_for_errors()
 
-            # look for pointless messages
+            
+            # check the CCP4 status - oh, there isn't one!
+            # FIXME I manually need to check for errors here....
 
             hklin_spacegroup = ''
-            
+
             for o in self.get_all_output():
 
                 if 'Spacegroup from HKLIN file' in o:
@@ -228,8 +230,12 @@ def Pointless(DriverType = None):
 
                     return 'ok'
 
-            # check the CCP4 status - oh, there isn't one!
-            # FIXME I manually need to check for errors here....
+                if '**** Incompatible symmetries ****' in o:
+                    # then there is an important error in here I need
+                    # to trap...
+                    raise RuntimeError, \
+                          'reindexing against a reference with ' + \
+                          'different symmetry'
 
             # parse the XML file for the information I need...
             # FIXME this needs documenting - I am using xml.dom.minidom.
