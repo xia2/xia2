@@ -158,6 +158,20 @@ def Pointless(DriverType = None):
             self._spacegroup = None
             self._reindex_matrix = None
             self._confidence = 0.0
+            self._hklref = None
+
+        def set_hklref(self, hklref):
+            self._hklref = hklref
+            return
+
+        def get_hklref(self):
+            return self._hklref
+
+        def check_hklref(self):
+            if self._hklref is None:
+                raise RuntimeError, 'hklref not defined'
+            if not os.path.exists(self._hklref):
+                raise RuntimeError, 'hklref %s does not exist' % self._hklref
 
         def decide_pointgroup(self):
             '''Decide on the correct pointgroup for hklin.'''
@@ -171,6 +185,10 @@ def Pointless(DriverType = None):
 
             self.add_command_line('xmlout')
             self.add_command_line('pointless.xml')
+
+            if self._hklref:
+                self.add_command_line('hklref')
+                self.add_command_line(self._hklref)
 
             self.start()
 
@@ -188,6 +206,28 @@ def Pointless(DriverType = None):
             # check for errors
             self.check_for_errors()
 
+            # look for pointless messages
+
+            hklin_spacegroup = ''
+            
+            for o in self.get_all_output():
+
+                if 'Spacegroup from HKLIN file' in o:
+                    hklin_spacegroup = o.split(':')[-1].strip()
+
+                if 'No alternative indexing possible' in o:
+                    # then the XML file will be broken - no worries...
+
+                    self._pointgroup = hklin_spacegroup
+                    self._confidence = 1.0
+                    self._totalprob = 1.0
+                    self._reindex_matrix = [1.0, 0.0, 0.0,
+                                            0.0, 1.0, 0.0,
+                                            0.0, 0.0, 1.0]
+                    self._reindex_operator = 'h,k,l'
+
+                    return 'ok'
+
             # check the CCP4 status - oh, there isn't one!
             # FIXME I manually need to check for errors here....
 
@@ -197,22 +237,63 @@ def Pointless(DriverType = None):
             # FIXME 2: This needs extracting to a self.parse_pointless_xml()
             # or something.
 
-            xml_file = os.path.join(self.getWorking_directory(),
+            xml_file = os.path.join(self.get_working_directory(),
                                     'pointless.xml')
 
-            dom = xml.dom.minidom.parse(xml_file)
+            if not self._hklref:
 
-            best = dom.getElementsByTagName('BestSolution')[0]
-            self._pointgroup = best.getElementsByTagName(
-                'GroupName')[0].childNodes[0].data
-            self._confidence = float(best.getElementsByTagName(
-                'Confidence')[0].childNodes[0].data)
-            self._totalprob = float(best.getElementsByTagName(
-                'TotalProb')[0].childNodes[0].data)
-            self._reindex_matrix = map(float, best.getElementsByTagName(
-                'ReindexMatrix')[0].childNodes[0].data.split())
-            self._reindex_operator = best.getElementsByTagName(
-                'ReindexOperator')[0].childNodes[0].data.strip()
+                dom = xml.dom.minidom.parse(xml_file)
+                
+                best = dom.getElementsByTagName('BestSolution')[0]
+                self._pointgroup = best.getElementsByTagName(
+                    'GroupName')[0].childNodes[0].data
+                self._confidence = float(best.getElementsByTagName(
+                    'Confidence')[0].childNodes[0].data)
+                self._totalprob = float(best.getElementsByTagName(
+                    'TotalProb')[0].childNodes[0].data)
+                self._reindex_matrix = map(float, best.getElementsByTagName(
+                    'ReindexMatrix')[0].childNodes[0].data.split())
+                self._reindex_operator = best.getElementsByTagName(
+                    'ReindexOperator')[0].childNodes[0].data.strip()
+
+            else:
+
+                # if we have provided a HKLREF input then the xml output
+                # is changed...
+    
+                dom = xml.dom.minidom.parse(xml_file)
+                
+                best = dom.getElementsByTagName('IndexScores')[0]
+
+                hklref_pointgroup = ''
+
+                # FIXME need to get this from the reflection file HKLREF
+                reflection_file_elements = dom.getElementsByTagName(
+                    'ReflectionFile')
+                
+                for rf in reflection_file_elements:
+                    stream = rf.getAttribute('stream')
+                    if stream == 'HKLREF':
+                        hklref_pointgroup = rf.getElementsByTagName(
+                            'SpacegroupName')[0].childNodes[0].data.strip()
+                        Chatter.write('HKLREF pointgroup is %s' % \
+                                      hklref_pointgroup)
+
+                if hklref_pointgroup == '':
+                    # should raise an exception here
+                    pass
+
+                self._pointgroup = hklref_pointgroup
+
+                self._confidence = 1.0
+                self._totalprob = 1.0
+                
+                index = best.getElementsByTagName('Index')[0]
+
+                self._reindex_matrix = map(float, index.getElementsByTagName(
+                    'ReindexMatrix')[0].childNodes[0].data.split())
+                self._reindex_operator = index.getElementsByTagName(
+                    'ReindexOperator')[0].childNodes[0].data.strip()
 
             # while we're here also inspect the NetZc information (see
             # FIXME for 23/OCT/06) to make sure that pointless has made
@@ -228,8 +309,12 @@ def Pointless(DriverType = None):
             best_likelihood = 0.0
             best_laue = ''
             best_r = 0.0
+
+            # do not want to do this is we have specified the correct
+            # pointgroup either through the command inpit or implicitly
+            # through providing a reference set..
             
-            if not self._input_laue_group:
+            if not self._input_laue_group and not self._hklref:
 
                 scorelist = dom.getElementsByTagName('LaueGroupScoreList')[0]
                 scores = scorelist.getElementsByTagName('LaueGroupScore')
