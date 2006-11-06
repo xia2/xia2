@@ -149,6 +149,96 @@ class CCP4Scaler(Scaler):
                       'input file %s not MTZ format' % \
                       self._input_information[key]['hklin']
 
+        # FIXME 06/NOV/06 and before, need to merge the first reflection
+        # file in the "correct" pointgroup, so that the others can be
+        # reindexed against this - this will ensure consistent indexing
+        # in the TS02 case where the unit cell parameters are a bit fiddly.
+
+        # get the "first" sweep (in epoch terms)
+
+        # pointless it, sort it, quick scale it
+
+        # record this as the reference set, feed this to all subsequent
+        # pointless runs through HKLREF (FIXED this needs to be added to the
+        # pointless interface - set_hklref()!) 
+
+        keys = self._input_information.keys()
+        keys.sort()
+        first = keys[0]
+        
+        pl = Pointless()
+        hklin = self._input_information[first]['hklin']
+        hklout = os.path.join(
+            self.get_working_directory(),
+            os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
+        pl.set_working_directory(self.get_working_directory())
+        pl.set_hklin(hklin)
+
+        # write a pointless log file...
+        auto_logfiler(pl)
+        pl.decide_pointgroup()
+        
+        Chatter.write('Pointless analysis of %s' % hklin)
+
+        # FIXME here - do I need to contemplate reindexing
+        # the reflections? if not, don't bother - could be an
+        # expensive waste of time for large reflection files
+        # (think Ed Mitchell data...)
+        
+        # get the correct pointgroup
+        pointgroup = pl.get_pointgroup()
+        
+        # and reindexing operation
+        reindex_op = pl.get_reindex_operator()
+        
+        Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+
+        # perform a reindexing operation
+        ri = Reindex()
+        ri.set_working_directory(self.get_working_directory())
+        ri.set_hklin(hklin)
+        ri.set_hklout(hklout)
+        ri.set_spacegroup(pointgroup)
+        ri.set_operator(reindex_op)
+        auto_logfiler(ri)
+        ri.reindex()
+        
+        # next sort this reflection file
+            
+        hklin = hklout
+        hklout = os.path.join(
+            self.get_working_directory(),
+            os.path.split(hklin)[-1].replace('_rdx.mtz', '_ref_srt.mtz'))
+
+        s = Sortmtz()
+        s.set_working_directory(self.get_working_directory())
+        s.set_hklout(hklout)
+        s.add_hklin(hklin)
+        auto_logfiler(s)
+        s.sort()
+        
+        # now quickly merge the reflections
+
+        hklin = hklout
+        reference = os.path.join(
+            self.get_working_directory(),
+            os.path.split(hklin)[-1].replace('_ref_srt.mtz', '_ref.mtz'))
+
+        # need to remember this hklout - it will be the reference reflection
+        # file for all of the reindexing below...
+
+        Chatter.write('Quickly scaling reference data set: %s' % \
+                      os.path.split(hklin)[-1])
+
+        qsc = Scala()
+        qsc.set_working_directory(self.get_working_directory())
+        qsc.set_hklin(hklin)
+        qsc.set_hklout(reference)
+        auto_logfiler(qsc)
+        qsc.quick_scale()
+
+        # for the moment ignore all of the scaling statistics and whatnot!
+
         # then check that the unit cells &c. in these reflection files
         # correspond to those rescribed in the indexers belonging to the
         # parent integraters.
@@ -174,6 +264,10 @@ class CCP4Scaler(Scaler):
                 os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
             pl.set_working_directory(self.get_working_directory())
             pl.set_hklin(hklin)
+
+            # now set the initial reflection set as a reference...
+            
+            pl.set_hklref(reference)
 
             # write a pointless log file...
             auto_logfiler(pl)
