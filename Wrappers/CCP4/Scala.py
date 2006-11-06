@@ -28,6 +28,13 @@
 # FIXME 27/OCT/06 need to update the use case documentation - where is this?
 #                 in Wrappers/CCP4/Doc I presume...
 # 
+# FIXME 06/NOV/06 need to update the interface to also allow a quick scaling
+#                 option, to use in the case (well illustrated by TS02) where
+#                 pointless needs to reindex data sets to a standard defined
+#                 by the first reflection file...
+# 
+#                 Recipe is "cycles 6" "run 1 all"
+#                 "scales rotation spacing 10" 
 
 import os
 import sys
@@ -425,6 +432,106 @@ def Scala(DriverType = None):
 
             if self._scalepack:
                 self.input('output polish unmerged')
+
+            self.close_wait()
+
+            # check for errors
+
+            try:
+                self.check_for_errors()
+                self.check_ccp4_errors()
+                self.check_scala_errors()
+
+            except RuntimeError, e:
+                try:
+                    os.remove(self.get_hklout())
+                except:
+                    pass
+
+                if self._scalepack:
+                    try:
+                        os.remove(self._scalepack)
+                    except:
+                        pass
+
+                raise e
+
+            # if we scaled to a scalepack file, delete the
+            # mtz file we created
+
+            if self._scalepack:
+                try:
+                    os.remove(self.get_hklout())
+                except:
+                    pass
+
+            # here get a list of all output files...
+            output = self.get_all_output()
+
+            # want to put these into a dictionary at dome stage, keyed
+            # by the data set id. how this is implemented will depend
+            # on the number of datasets...
+
+            # FIXME file names on windows separate out path from
+            # drive with ":"... fixed! split on "Filename:"
+
+            # get a list of dataset names...
+
+            datasets = []
+            for run in self._runs:
+                # cope with case where two runs make one dataset...
+                if not run[4] in datasets:
+                    datasets.append(run[4])
+
+            hklout_files = []
+            hklout_dict = { }
+            
+            for i in range(len(output)):
+                record = output[i]
+                if 'WRITTEN OUTPUT MTZ FILE' in record:
+                    hklout = output[i + 1].split('Filename:')[-1].strip()
+                    if len(datasets) > 1:
+                        dname = hklout.split('_')[-1].replace('.mtz', '')
+                        if not dname in datasets:
+                            raise RuntimeError, 'unknown dataset %s' % dname
+                        hklout_dict[dname] = hklout
+                    else:
+                        hklout_dict[datasets[0]] = hklout
+                    hklout_files.append(hklout)
+            
+            self._scalr_scaled_reflection_files = hklout_dict
+
+            return self.get_ccp4_status()
+
+        def quick_scale(self):
+            '''Perform a quick scaling - to assess data quality & merging.'''
+
+            self.check_hklin()
+            self.check_hklout()
+
+            self.set_task('Quickly scaling reflections from %s => %s' % \
+                          (os.path.split(self.get_hklin())[-1],
+                           os.path.split(self._scalepack)[-1]))
+            
+            self.start()
+            # for the harvesting information
+            self.input('usecwd')
+
+            # assert here that there is only one dataset in the input...
+
+            self.input('run 1 all')
+            self.input('cycles 6')
+            self.input('scales rotation spacing 10')
+                
+            # next any 'generic' parameters
+
+            if self._resolution:
+                self.input('resolution %f' % self._resolution)
+
+            if self._anomalous:
+                self.input('anomalous on')
+            else:
+                self.input('anomalous off')
 
             self.close_wait()
 
