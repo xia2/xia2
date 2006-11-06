@@ -282,8 +282,8 @@ def Pointless(DriverType = None):
                     if stream == 'HKLREF':
                         hklref_pointgroup = rf.getElementsByTagName(
                             'SpacegroupName')[0].childNodes[0].data.strip()
-                        Chatter.write('HKLREF pointgroup is %s' % \
-                                      hklref_pointgroup)
+                        # Chatter.write('HKLREF pointgroup is %s' % \
+                        # hklref_pointgroup)
 
                 if hklref_pointgroup == '':
                     # should raise an exception here
