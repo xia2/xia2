@@ -468,7 +468,7 @@ def Scala(DriverType = None):
             # here get a list of all output files...
             output = self.get_all_output()
 
-            # want to put these into a dictionary at dome stage, keyed
+            # want to put these into a dictionary at some stage, keyed
             # by the data set id. how this is implemented will depend
             # on the number of datasets...
 
@@ -511,7 +511,7 @@ def Scala(DriverType = None):
 
             self.set_task('Quickly scaling reflections from %s => %s' % \
                           (os.path.split(self.get_hklin())[-1],
-                           os.path.split(self._scalepack)[-1]))
+                           os.path.split(self.get_hklout())[-1]))
             
             self.start()
             # for the harvesting information
@@ -556,50 +556,7 @@ def Scala(DriverType = None):
 
                 raise e
 
-            # if we scaled to a scalepack file, delete the
-            # mtz file we created
-
-            if self._scalepack:
-                try:
-                    os.remove(self.get_hklout())
-                except:
-                    pass
-
-            # here get a list of all output files...
             output = self.get_all_output()
-
-            # want to put these into a dictionary at dome stage, keyed
-            # by the data set id. how this is implemented will depend
-            # on the number of datasets...
-
-            # FIXME file names on windows separate out path from
-            # drive with ":"... fixed! split on "Filename:"
-
-            # get a list of dataset names...
-
-            datasets = []
-            for run in self._runs:
-                # cope with case where two runs make one dataset...
-                if not run[4] in datasets:
-                    datasets.append(run[4])
-
-            hklout_files = []
-            hklout_dict = { }
-            
-            for i in range(len(output)):
-                record = output[i]
-                if 'WRITTEN OUTPUT MTZ FILE' in record:
-                    hklout = output[i + 1].split('Filename:')[-1].strip()
-                    if len(datasets) > 1:
-                        dname = hklout.split('_')[-1].replace('.mtz', '')
-                        if not dname in datasets:
-                            raise RuntimeError, 'unknown dataset %s' % dname
-                        hklout_dict[dname] = hklout
-                    else:
-                        hklout_dict[datasets[0]] = hklout
-                    hklout_files.append(hklout)
-            
-            self._scalr_scaled_reflection_files = hklout_dict
 
             return self.get_ccp4_status()
             
