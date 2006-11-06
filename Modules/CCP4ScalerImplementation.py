@@ -54,6 +54,15 @@
 #
 # FIXME 03/NOV/06 should check that the reflection files have consistent
 #                 unit cell parameters going in to scaling. c/f FIXME above.
+# 
+# FIXME 06/NOV/06 this is more compliicated than I at first thought, since
+#                 pointless will not reindex into the correct symmetry a 
+#                 set which is indexed in a different pointgroup - this
+#                 means for TS03 that the system barfs. The only way to
+#                 fix this I can see is to move the reindexing step a little
+#                 later, so that this works against post-pointlessed (thus,
+#                 indexed in the "correct" pointgroup) data which can then
+#                 be correctly re-set...
 
 import os
 import sys
@@ -255,6 +264,9 @@ class CCP4Scaler(Scaler):
         # because it is quite possible that pointless will come up with
         # a solution which has already been eliminated in the data reduction
         # (e.g. TS01 native being reindexed to I222.)
+
+        # FIXME 06/NOV/06 first run through this with the reference ignored
+        # to get the reflections reindexed into the correct pointgroup
         
         for key in self._input_information.keys():
             pl = Pointless()
@@ -262,6 +274,50 @@ class CCP4Scaler(Scaler):
             hklout = os.path.join(
                 self.get_working_directory(),
                 os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
+            pl.set_working_directory(self.get_working_directory())
+            pl.set_hklin(hklin)
+
+            # write a pointless log file...
+            auto_logfiler(pl)
+            pl.decide_pointgroup()
+
+            Chatter.write('Pointless analysis of %s' % hklin)
+
+            # FIXME here - do I need to contemplate reindexing
+            # the reflections? if not, don't bother - could be an
+            # expensive waste of time for large reflection files
+            # (think Ed Mitchell data...)
+
+            # get the correct pointgroup
+            pointgroup = pl.get_pointgroup()
+
+            # and reindexing operation
+            reindex_op = pl.get_reindex_operator()
+
+            Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+
+            # perform a reindexing operation
+            ri = Reindex()
+	    ri.set_working_directory(self.get_working_directory())
+            ri.set_hklin(hklin)
+            ri.set_hklout(hklout)
+            ri.set_spacegroup(pointgroup)
+            ri.set_operator(reindex_op)
+            auto_logfiler(ri)
+            ri.reindex()
+
+            # record the change in reflection file...
+            self._input_information[key]['hklin'] = hklout
+
+        # FIXME 06/NOV/06 need to run this again - this time with the
+        # reference file... messy but perhaps effective?
+
+        for key in self._input_information.keys():
+            pl = Pointless()
+            hklin = self._input_information[key]['hklin']
+            hklout = os.path.join(
+                self.get_working_directory(),
+                os.path.split(hklin)[-1].replace('_rdx.mtz', '_rdx2.mtz'))
             pl.set_working_directory(self.get_working_directory())
             pl.set_hklin(hklin)
 
