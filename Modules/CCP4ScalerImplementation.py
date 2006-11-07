@@ -622,9 +622,9 @@ class CCP4Scaler(Scaler):
                 I_full = float(info['4_Irms'][j])
                 s_full = float(info['7_SigmaFull'][j])
 
-                n_part = int(info['9_Number'][j])
-                I_part = float(info['8_Irms'][j])
-                s_part = float(info['11_SigmaPartial'][j])
+                n_partial = int(info['9_Number'][j])
+                I_partial = float(info['8_Irms'][j])
+                s_partial = float(info['11_SigmaPartial'][j])
                 
                 n_tot = n_full + n_part
 
@@ -672,13 +672,14 @@ class CCP4Scaler(Scaler):
         # compute sd_add first...
 
         while sdadd_full < max_sdadd_full:
-
-            Chatter.write('Testing SdAdd: %4.2f' % sdadd_full)
             
             sdadd_partial = sdadd_full
 
             rms_full, rms_partial = self._refine_sd_parameters_remerge(
                 scales_file, sdadd_full, sdb_full, sdadd_partial, sdb_partial)
+
+            Chatter.write('Testing SdAdd %4.2f: %4.2f %4.2f' % \
+                          (sdadd_full, rms_full, rms_partial))
 
             if rms_full < best_rms_full:
                 best_sdadd_full = sdadd_full
@@ -701,11 +702,14 @@ class CCP4Scaler(Scaler):
         # then compute sdb ...
 
         while sdb_full < max_sdb_full:
-            Chatter.write('Testing SdB: %4.1f' % sdb_full)
+
             sdb_partial = sdb_full
 
             rms_full, rms_partial = self._refine_sd_parameters_remerge(
                 scales_file, sdadd_full, sdb_full, sdadd_partial, sdb_partial)
+
+            Chatter.write('Testing SdB %4.1f: %4.2f %4.2f' % \
+                          (sdb_full, rms_full, rms_partial))
 
             if rms_full < best_rms_full:
                 best_sdb_full = sdb_full
@@ -855,6 +859,8 @@ class CCP4Scaler(Scaler):
 
         # first "fix" the sd add parameters to match up the sd curve from
         # the fulls and partials, and minimise RMS[N (scatter / sigma - 1)]
+
+        Chatter.write('Optimising error parameters')
 
         sdadd_full, sdb_full, sdadd_partial, sdb_partial = \
                     self._refine_sd_parameters(scales_file)
