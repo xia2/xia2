@@ -165,7 +165,7 @@ def Scala(DriverType = None):
             '''Set the file containing all of the scales required for
             this run. Used when fiddling the error parameters or
             obtaining stats to different resolutions. See also
-            setNew_scales_file(). This will switch on ONLYMERGE RESTORE.'''
+            set_new_scales_file(). This will switch on ONLYMERGE RESTORE.'''
 
             self._scales_file = scales_file
             return
@@ -432,6 +432,12 @@ def Scala(DriverType = None):
 
             if self._scalepack:
                 self.input('output polish unmerged')
+
+            # run using previously determined scales
+
+            if self._scales_file:
+                self.input('onlymerge')
+                self.input('restore %s' % self._scales_file)
 
             self.close_wait()
 
