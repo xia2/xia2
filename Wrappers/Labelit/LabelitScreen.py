@@ -70,6 +70,16 @@
 #                 just need to assign wedge_limit = N where N is the number
 #                 of images in dataset_preferences.py... apparently this is 
 #                 there for "historical reasons"...
+#
+# FIXME 07/NOV/06 new error message encountered trying to index 1VP4 LREM LR 
+#                 in oC lattice:
+#
+#                 No_Lattice_Selection: In this case 3 of 12 lattice \
+#                 solutions have the oC Bravais type and nearly
+#                 the same cell.  Run labelit again without the \
+#                 known_symmetry and known_cell keywords.
+# 
+#                 Need to be able to handle this...
 
 import os
 import sys
