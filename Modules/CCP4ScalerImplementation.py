@@ -114,7 +114,7 @@ class CCP4Scaler(Scaler):
         # and could probably be handled better (they used to be
         # all in just the scale() method)
         
-        self._sorted_reflections = None
+        self._prepared_reflections = None
         self._common_pname = None
         self._common_xname = None
         self._common_dname = None
@@ -208,12 +208,14 @@ class CCP4Scaler(Scaler):
         they are correctly indexed (via pointless) and generally tidy
         things up.'''
 
+        # ---------- GATHER ----------
+
         # first gather reflection files - seeing as we go along if any
         # of them need transforming to MTZ format, e.g. from d*TREK
         # format. N.B. this will also require adding the project,
         # crystal, dataset name from the parent integrater.
 
-        # FIXME 30/OCT/06 in here need to check that the input batches
+        # FIXED 30/OCT/06 in here need to check that the input batches
         # are not 0,0 - because if they are I will need to do some
         # MTZ dumping... see a little further down!
 
@@ -268,6 +270,8 @@ class CCP4Scaler(Scaler):
         # in the TS02 case where the unit cell parameters are a bit fiddly.
 
         # get the "first" sweep (in epoch terms)
+
+        # ---------- GENERATE REFERENCE SET ----------
 
         # pointless it, sort it, quick scale it
 
@@ -363,6 +367,8 @@ class CCP4Scaler(Scaler):
 
         # FIXME 06/NOV/06 first run through this with the reference ignored
         # to get the reflections reindexed into the correct pointgroup
+
+        # ---------- REINDEX TO CORRECT POINTGROUP ----------
         
         for epoch in self._sweep_information.keys():
             pl = self.Pointless()
@@ -404,6 +410,8 @@ class CCP4Scaler(Scaler):
         # FIXME 06/NOV/06 need to run this again - this time with the
         # reference file... messy but perhaps effective?
 
+        # ---------- REINDEX TO CORRECT SETTING ---------- 
+
         for epoch in self._sweep_information.keys():
             pl = self.Pointless()
             hklin = self._sweep_information[epoch]['hklin']
@@ -444,6 +452,8 @@ class CCP4Scaler(Scaler):
 
             # record the change in reflection file...
             self._sweep_information[epoch]['hklin'] = hklout
+
+        # ---------- SORT TOGETHER DATA ----------
             
         max_batches = 0
         
@@ -552,7 +562,7 @@ class CCP4Scaler(Scaler):
 
         # done preparing!
 
-        self._sorted_reflections = s.get_hklout()
+        self._prepared_reflections = s.get_hklout()
 
         return
 
@@ -577,7 +587,7 @@ class CCP4Scaler(Scaler):
         # ---------- INITIAL SCALING ----------
 
         sc = self.Scala()
-        sc.set_hklin(self._sorted_reflections)
+        sc.set_hklin(self._prepared_reflections)
 
         # generate a name for the "scales" file - this will be used for
         # recycling the scaling parameters to compute appropriate
@@ -754,14 +764,14 @@ class CCP4Scaler(Scaler):
         # weighted according to (1) the number of reflections and
         # perhaps (2) the epoch order of that data set...
 
-        super_cell_a = 0.0
-        super_cell_b = 0.0
-        super_cell_c = 0.0
-        super_cell_alpha = 0.0
-        super_cell_beta = 0.0
-        super_cell_gamma = 0.0
+        average_cell_a = 0.0
+        average_cell_b = 0.0
+        average_cell_c = 0.0
+        average_cell_alpha = 0.0
+        average_cell_beta = 0.0
+        average_cell_gamma = 0.0
 
-        super_cell_nref = 0
+        average_cell_nref = 0
 
         for key in scaled_reflection_files.keys():
             hklin = scaled_reflection_files[key]
@@ -775,7 +785,7 @@ class CCP4Scaler(Scaler):
             # in each reflection file - however we won't make that
             # assumption here as that could get us into trouble later on
 
-            if super_cell_nref == 0:
+            if average_cell_nref == 0:
                 # this is the first data set - take these as read
                 for d in datasets:
                     info = md.get_dataset_info(d)
@@ -784,13 +794,13 @@ class CCP4Scaler(Scaler):
                     Chatter.write('%d reflections in dataset %s' % \
                                   (reflections, d))
                     
-                    super_cell_nref += reflections
-                    super_cell_a += cell[0] * reflections
-                    super_cell_b += cell[1] * reflections
-                    super_cell_c += cell[2] * reflections
-                    super_cell_alpha += cell[3] * reflections
-                    super_cell_beta += cell[4] * reflections
-                    super_cell_gamma += cell[5] * reflections
+                    average_cell_nref += reflections
+                    average_cell_a += cell[0] * reflections
+                    average_cell_b += cell[1] * reflections
+                    average_cell_c += cell[2] * reflections
+                    average_cell_alpha += cell[3] * reflections
+                    average_cell_beta += cell[4] * reflections
+                    average_cell_gamma += cell[5] * reflections
 
             else:
                 # as above, but also check that the unit cell parameters
@@ -806,44 +816,47 @@ class CCP4Scaler(Scaler):
                                   (reflections, d))
 
                     if math.fabs(cell[0] -
-                                 (super_cell_a / super_cell_nref)) > 0.5:
+                                 (average_cell_a / average_cell_nref)) > 0.5:
                         raise RuntimeError, \
                               'incompatible unit cell for set %s' % d
                     if math.fabs(cell[1] -
-                                 (super_cell_b / super_cell_nref)) > 0.5:
+                                 (average_cell_b / average_cell_nref)) > 0.5:
                         raise RuntimeError, \
                               'incompatible unit cell for set %s' % d
                     if math.fabs(cell[2] -
-                                 (super_cell_c / super_cell_nref)) > 0.5:
+                                 (average_cell_c / average_cell_nref)) > 0.5:
                         raise RuntimeError, \
                               'incompatible unit cell for set %s' % d
                     if math.fabs(cell[3] -
-                                 (super_cell_alpha / super_cell_nref)) > 0.5:
+                                 (average_cell_alpha /
+                                  average_cell_nref)) > 0.5:
                         raise RuntimeError, \
                               'incompatible unit cell for set %s' % d
                     if math.fabs(cell[4] -
-                                 (super_cell_beta / super_cell_nref)) > 0.5:
+                                 (average_cell_beta /
+                                  average_cell_nref)) > 0.5:
                         raise RuntimeError, \
                               'incompatible unit cell for set %s' % d
                     if math.fabs(cell[5] -
-                                 (super_cell_gamma / super_cell_nref)) > 0.5:
+                                 (average_cell_gamma /
+                                  average_cell_nref)) > 0.5:
                         raise RuntimeError, \
                               'incompatible unit cell for set %s' % d
 
-                    super_cell_nref += reflections
-                    super_cell_a += cell[0] * reflections
-                    super_cell_b += cell[1] * reflections
-                    super_cell_c += cell[2] * reflections
-                    super_cell_alpha += cell[3] * reflections
-                    super_cell_beta += cell[4] * reflections
-                    super_cell_gamma += cell[5] * reflections
+                    average_cell_nref += reflections
+                    average_cell_a += cell[0] * reflections
+                    average_cell_b += cell[1] * reflections
+                    average_cell_c += cell[2] * reflections
+                    average_cell_alpha += cell[3] * reflections
+                    average_cell_beta += cell[4] * reflections
+                    average_cell_gamma += cell[5] * reflections
 
-        average_unit_cell = (super_cell_a / super_cell_nref,
-                             super_cell_b / super_cell_nref,
-                             super_cell_c / super_cell_nref,
-                             super_cell_alpha / super_cell_nref,
-                             super_cell_beta / super_cell_nref,
-                             super_cell_gamma / super_cell_nref)
+        average_unit_cell = (average_cell_a / average_cell_nref,
+                             average_cell_b / average_cell_nref,
+                             average_cell_c / average_cell_nref,
+                             average_cell_alpha / average_cell_nref,
+                             average_cell_beta / average_cell_nref,
+                             average_cell_gamma / average_cell_nref)
 
         Chatter.write('Computed average unit cell (will use in all files)')
         Chatter.write('%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
