@@ -284,11 +284,9 @@ class CCP4Scaler(Scaler):
         hklout = os.path.join(
             self.get_working_directory(),
             os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
-        # pl.set_working_directory(self.get_working_directory())
         pl.set_hklin(hklin)
 
         # write a pointless log file...
-        # auto_logfiler(pl)
         pl.decide_pointgroup()
         
         Chatter.write('Pointless analysis of %s' % hklin)
@@ -308,12 +306,10 @@ class CCP4Scaler(Scaler):
 
         # perform a reindexing operation
         ri = self.Reindex()
-        # ri.set_working_directory(self.get_working_directory())
         ri.set_hklin(hklin)
         ri.set_hklout(hklout)
         ri.set_spacegroup(pointgroup)
         ri.set_operator(reindex_op)
-        # auto_logfiler(ri)
         ri.reindex()
         
         # next sort this reflection file
@@ -324,10 +320,8 @@ class CCP4Scaler(Scaler):
             os.path.split(hklin)[-1].replace('_rdx.mtz', '_ref_srt.mtz'))
 
         s = self.Sortmtz()
-        # s.set_working_directory(self.get_working_directory())
         s.set_hklout(hklout)
         s.add_hklin(hklin)
-        # auto_logfiler(s)
         s.sort()
         
         # now quickly merge the reflections
@@ -344,10 +338,8 @@ class CCP4Scaler(Scaler):
                       os.path.split(hklin)[-1])
 
         qsc = self.Scala()
-        # qsc.set_working_directory(self.get_working_directory())
         qsc.set_hklin(hklin)
         qsc.set_hklout(reference)
-        # auto_logfiler(qsc)
         qsc.quick_scale()
 
         # for the moment ignore all of the scaling statistics and whatnot!
@@ -378,11 +370,9 @@ class CCP4Scaler(Scaler):
             hklout = os.path.join(
                 self.get_working_directory(),
                 os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
-            # pl.set_working_directory(self.get_working_directory())
             pl.set_hklin(hklin)
 
             # write a pointless log file...
-            # auto_logfiler(pl)
             pl.decide_pointgroup()
 
             Chatter.write('Pointless analysis of %s' % hklin)
@@ -402,12 +392,10 @@ class CCP4Scaler(Scaler):
 
             # perform a reindexing operation
             ri = self.Reindex()
-	    # ri.set_working_directory(self.get_working_directory())
             ri.set_hklin(hklin)
             ri.set_hklout(hklout)
             ri.set_spacegroup(pointgroup)
             ri.set_operator(reindex_op)
-            # auto_logfiler(ri)
             ri.reindex()
 
             # record the change in reflection file...
@@ -422,7 +410,6 @@ class CCP4Scaler(Scaler):
             hklout = os.path.join(
                 self.get_working_directory(),
                 os.path.split(hklin)[-1].replace('_rdx.mtz', '_rdx2.mtz'))
-            # pl.set_working_directory(self.get_working_directory())
             pl.set_hklin(hklin)
 
             # now set the initial reflection set as a reference...
@@ -430,7 +417,6 @@ class CCP4Scaler(Scaler):
             pl.set_hklref(reference)
 
             # write a pointless log file...
-            # auto_logfiler(pl)
             pl.decide_pointgroup()
 
             Chatter.write('Pointless analysis of %s' % hklin)
@@ -450,12 +436,10 @@ class CCP4Scaler(Scaler):
 
             # perform a reindexing operation
             ri = self.Reindex()
-	    # ri.set_working_directory(self.get_working_directory())
             ri.set_hklin(hklin)
             ri.set_hklout(hklout)
             ri.set_spacegroup(pointgroup)
             ri.set_operator(reindex_op)
-            # auto_logfiler(ri)
             ri.reindex()
 
             # record the change in reflection file...
@@ -471,9 +455,7 @@ class CCP4Scaler(Scaler):
             hklin = self._sweep_information[epoch]['hklin']
 
             md = self.Mtzdump()
-            # md.set_working_directory(self.get_working_directory())
             md.set_hklin(hklin)
-            # auto_logfiler(md)
             md.dump()
 
             if self._sweep_information[epoch]['batches'] == [0, 0]:
@@ -529,7 +511,6 @@ class CCP4Scaler(Scaler):
 
         for epoch in epochs:
             rb = self.Rebatch()
-            # rb.set_working_directory(self.get_working_directory())
 
             hklin = self._sweep_information[epoch]['hklin']
 
@@ -545,7 +526,6 @@ class CCP4Scaler(Scaler):
             rb.set_first_batch(counter * max_batches + 1)
             rb.set_hklout(hklout)
 
-            # auto_logfiler(rb)
             new_batches = rb.rebatch()
 
             # update the "input information"
@@ -561,8 +541,6 @@ class CCP4Scaler(Scaler):
         # reflection file looks right.
 
         s = self.Sortmtz()
-        # s.set_working_directory(self.get_working_directory())
-
         s.set_hklout(os.path.join(self.get_working_directory(),
                                   '%s_%s_sorted.mtz' % \
                                   (self._common_pname, self._common_xname)))
@@ -570,7 +548,6 @@ class CCP4Scaler(Scaler):
         for epoch in epochs:
             s.add_hklin(self._sweep_information[epoch]['hklin'])
 
-        # auto_logfiler(s)
         s.sort()
 
         # done preparing!
@@ -600,7 +577,6 @@ class CCP4Scaler(Scaler):
         # ---------- INITIAL SCALING ----------
 
         sc = self.Scala()
-        # sc.set_working_directory(self.get_working_directory())
         sc.set_hklin(self._sorted_reflections)
 
         # generate a name for the "scales" file - this will be used for
@@ -630,7 +606,6 @@ class CCP4Scaler(Scaler):
         sc.set_anomalous()
         sc.set_tails()
 
-        # auto_logfiler(sc)
         sc.scale()
 
         # then gather up all of the resulting reflection files
@@ -739,8 +714,6 @@ class CCP4Scaler(Scaler):
         for key in scaled_reflection_files:
             file = scaled_reflection_files[key]
             m2v = self.Mtz2various()
-            # m2v.set_working_directory(self.get_working_directory())
-            # auto_logfiler(m2v)
             m2v.set_hklin(file)
             m2v.set_hklout('%s.sca' % file[:-4])
             m2v.convert()
@@ -754,8 +727,6 @@ class CCP4Scaler(Scaler):
         for key in scaled_reflection_files.keys():
             file = scaled_reflection_files[key]
             t = self.Truncate()
-            # t.set_working_directory(self.get_working_directory())
-            # auto_logfiler(t)
             t.set_hklin(file)
 
             # this is tricksy - need to really just replace the last
@@ -795,9 +766,7 @@ class CCP4Scaler(Scaler):
         for key in scaled_reflection_files.keys():
             hklin = scaled_reflection_files[key]
             md = self.Mtzdump()
-            # md.set_working_directory(self.get_working_directory())
             md.set_hklin(hklin)
-            # auto_logfiler(md)
             md.dump()
             datasets = md.get_datasets()
             reflections = md.get_reflections()
@@ -884,8 +853,6 @@ class CCP4Scaler(Scaler):
             file = scaled_reflection_files[key]
             
             c = self.Cad()
-            # c.set_working_directory(self.get_working_directory())
-            # auto_logfiler(c)
             c.add_hklin(file)
             c.set_new_suffix(key)
             c.set_new_cell(average_unit_cell)
@@ -902,8 +869,6 @@ class CCP4Scaler(Scaler):
         if len(scaled_reflection_files.keys()) > 1:
 
             c = self.Cad()
-            # c.set_working_directory(self.get_working_directory())
-            # auto_logfiler(c)
             for key in scaled_reflection_files.keys():
                 file = scaled_reflection_files[key]
                 c.add_hklin(file)
