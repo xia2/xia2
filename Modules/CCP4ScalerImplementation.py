@@ -637,6 +637,12 @@ class CCP4Scaler(Scaler):
 
                 # TEST! Solve the structures and work out what is better...
 
+                # bugger! trying to minimise difference between this and
+                # 1.0!
+                
+                s_full -= 1.0
+                s_partial -= 1.0
+
                 score_full += s_full * s_full * n_full
                 ref_count_full += n_full
 
