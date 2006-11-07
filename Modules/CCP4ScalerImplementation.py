@@ -107,7 +107,7 @@ class CCP4Scaler(Scaler):
 
         self._working_directory = os.getcwd()
 
-        self._input_information = { }
+        self._sweep_information = { }
 
         # hacky... this is to pass information from prepare to scale
         # and could probably be handled better (they used to be
@@ -142,12 +142,12 @@ class CCP4Scaler(Scaler):
         # are not 0,0 - because if they are I will need to do some
         # MTZ dumping... see a little further down!
 
-        self._input_information = { }
+        self._sweep_information = { }
 
-        for key in self._scalr_integraters.keys():
-            intgr = self._scalr_integraters[key]
+        for epoch in self._scalr_integraters.keys():
+            intgr = self._scalr_integraters[epoch]
             pname, xname, dname = intgr.get_integrater_project_information()
-            self._input_information[key] = {
+            self._sweep_information[epoch] = {
                 'hklin':intgr.get_integrater_reflections(),
                 'pname':pname,
                 'xname':xname,
@@ -157,11 +157,35 @@ class CCP4Scaler(Scaler):
         # next check through the reflection files that they are all MTZ
         # format - if not raise an exception.
         # FIXME this should include the conversion to MTZ.
-        for key in self._input_information.keys():
-            if not is_mtz_file(self._input_information[key]['hklin']):
+        
+        epochs = self._sweep_information.keys()
+
+        for epoch in epochs:
+            if not is_mtz_file(self._sweep_information[epoch]['hklin']):
                 raise RuntimeError, \
                       'input file %s not MTZ format' % \
-                      self._input_information[key]['hklin']
+                      self._sweep_information[epoch]['hklin']
+
+        self._common_pname = self._sweep_information[epochs[0]]['pname']
+        self._common_xname = self._sweep_information[epochs[0]]['xname']
+        self._common_dname = self._sweep_information[epochs[0]]['dname']
+
+        # FIXME the checks in here need to be moved to an earlier
+        # stage in the processing
+
+        for epoch in epochs:
+            pname = self._sweep_information[epoch]['pname']
+            if self._common_pname != pname:
+                raise RuntimeError, 'all data must have a common project name'
+            xname = self._sweep_information[epoch]['xname']
+            if self._common_xname != xname:
+                raise RuntimeError, \
+                      'all data for scaling must come from one crystal'
+            dname = self._sweep_information[epoch]['dname']
+            if self._common_dname != dname:
+                self._common_dname = None
+
+
 
         # FIXME 06/NOV/06 and before, need to merge the first reflection
         # file in the "correct" pointgroup, so that the others can be
@@ -176,12 +200,12 @@ class CCP4Scaler(Scaler):
         # pointless runs through HKLREF (FIXED this needs to be added to the
         # pointless interface - set_hklref()!) 
 
-        keys = self._input_information.keys()
-        keys.sort()
-        first = keys[0]
+        epochs = self._sweep_information.keys()
+        epochs.sort()
+        first = epochs[0]
         
         pl = Pointless()
-        hklin = self._input_information[first]['hklin']
+        hklin = self._sweep_information[first]['hklin']
         hklout = os.path.join(
             self.get_working_directory(),
             os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
@@ -273,9 +297,9 @@ class CCP4Scaler(Scaler):
         # FIXME 06/NOV/06 first run through this with the reference ignored
         # to get the reflections reindexed into the correct pointgroup
         
-        for key in self._input_information.keys():
+        for epoch in self._sweep_information.keys():
             pl = Pointless()
-            hklin = self._input_information[key]['hklin']
+            hklin = self._sweep_information[epoch]['hklin']
             hklout = os.path.join(
                 self.get_working_directory(),
                 os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
@@ -312,14 +336,14 @@ class CCP4Scaler(Scaler):
             ri.reindex()
 
             # record the change in reflection file...
-            self._input_information[key]['hklin'] = hklout
+            self._sweep_information[epoch]['hklin'] = hklout
 
         # FIXME 06/NOV/06 need to run this again - this time with the
         # reference file... messy but perhaps effective?
 
-        for key in self._input_information.keys():
+        for epoch in self._sweep_information.keys():
             pl = Pointless()
-            hklin = self._input_information[key]['hklin']
+            hklin = self._sweep_information[epoch]['hklin']
             hklout = os.path.join(
                 self.get_working_directory(),
                 os.path.split(hklin)[-1].replace('_rdx.mtz', '_rdx2.mtz'))
@@ -360,16 +384,16 @@ class CCP4Scaler(Scaler):
             ri.reindex()
 
             # record the change in reflection file...
-            self._input_information[key]['hklin'] = hklout
+            self._sweep_information[epoch]['hklin'] = hklout
             
         max_batches = 0
         
-        for key in self._input_information.keys():
+        for epoch in self._sweep_information.keys():
 
             # keep a count of the maximum number of batches in a block -
             # this will be used to make rebatch work below.
 
-            hklin = self._input_information[key]['hklin']
+            hklin = self._sweep_information[epoch]['hklin']
 
             md = Mtzdump()
             md.set_working_directory(self.get_working_directory())
@@ -377,20 +401,20 @@ class CCP4Scaler(Scaler):
             auto_logfiler(md)
             md.dump()
 
-            if self._input_information[key]['batches'] == [0, 0]:
+            if self._sweep_information[epoch]['batches'] == [0, 0]:
                 # get them from the mtz dump output
                 
                 Chatter.write('Getting batches from %s' % hklin)
                 batches = md.get_batches()
-                self._input_information[key]['batches'] = [min(batches),
-                                                           max(batches)]
+                self._sweep_information[epoch]['batches'] = [min(batches),
+                                                             max(batches)]
                 Chatter.write('=> %d to %d' % (min(batches),
                                                max(batches)))
 
             # FIXME here check that this matches up with the input,
             # if we have both sources of batch information
 
-            batches = self._input_information[key]['batches']
+            batches = self._sweep_information[epoch]['batches']
             if 1 + max(batches) - min(batches) > max_batches:
                 max_batches = max(batches) - min(batches) + 1
             
@@ -419,8 +443,8 @@ class CCP4Scaler(Scaler):
         # then rebatch the files, to make sure that the batch numbers are
         # in the same order as the epochs of data collection.
 
-        keys = self._input_information.keys()
-        keys.sort()
+        epochs = self._sweep_information.keys()
+        epochs.sort()
 
         # need to check that the batches are all sensible numbers
         # so run rebatch on them! note here that we will need new
@@ -428,29 +452,15 @@ class CCP4Scaler(Scaler):
 
         counter = 0
 
-        self._common_pname = self._input_information[keys[0]]['pname']
-        self._common_xname = self._input_information[keys[0]]['xname']
-        self._common_dname = self._input_information[keys[0]]['dname']
-
-        # FIXME the checks in here need to be moved to an earlier
-        # stage in the processing
-
-        for key in keys:
+        for epoch in epochs:
             rb = Rebatch()
             rb.set_working_directory(self.get_working_directory())
 
-            hklin = self._input_information[key]['hklin']
+            hklin = self._sweep_information[epoch]['hklin']
 
-            pname = self._input_information[key]['pname']
-            if self._common_pname != pname:
-                raise RuntimeError, 'all data must have a common project name'
-            xname = self._input_information[key]['xname']
-            if self._common_xname != xname:
-                raise RuntimeError, \
-                      'all data for scaling must come from one crystal'
-            dname = self._input_information[key]['dname']
-            if self._common_dname != dname:
-                self._common_dname = None
+            pname = self._sweep_information[epoch]['pname']
+            xname = self._sweep_information[epoch]['xname']
+            dname = self._sweep_information[epoch]['dname']
 
             hklout = os.path.join(self.get_working_directory(),
                                   '%s_%s_%s_%d.mtz' % \
@@ -465,8 +475,8 @@ class CCP4Scaler(Scaler):
 
             # update the "input information"
 
-            self._input_information[key]['hklin'] = hklout
-            self._input_information[key]['batches'] = new_batches
+            self._sweep_information[epoch]['hklin'] = hklout
+            self._sweep_information[epoch]['batches'] = new_batches
 
             # update the counter & recycle
 
@@ -482,8 +492,8 @@ class CCP4Scaler(Scaler):
                                   '%s_%s_sorted.mtz' % \
                                   (self._common_pname, self._common_xname)))
 
-        for key in keys:
-            s.add_hklin(self._input_information[key]['hklin'])
+        for epoch in epochs:
+            s.add_hklin(self._sweep_information[epoch]['hklin'])
 
         auto_logfiler(s)
         s.sort()
@@ -501,8 +511,8 @@ class CCP4Scaler(Scaler):
         # then perform some scaling - including any parameter fiddling
         # which is required.
         
-        keys = self._input_information.keys()
-        keys.sort()
+        epochs = self._sweep_information.keys()
+        epochs.sort()
 
         # FIXME in here I need to implement "proper" scaling...
         # this will need to do things like imposing a sensible
@@ -531,8 +541,8 @@ class CCP4Scaler(Scaler):
         # deciding what the "standard" wavelength/dataset is, then
         # combining everything appropriately...
 
-        for key in keys:
-            input = self._input_information[key]
+        for epoch in epochs:
+            input = self._sweep_information[epoch]
             start, end = (min(input['batches']), max(input['batches']))
             sc.add_run(start, end, pname = input['pname'],
                        xname = input['xname'],
