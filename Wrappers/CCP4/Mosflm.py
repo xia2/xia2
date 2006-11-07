@@ -866,6 +866,35 @@ def Mosflm(DriverType = None):
                         raise RuntimeError, 'cell refinement failed: ' + \
                               'inaccurate cell parameters'
 
+		if 'One or more cell parameters has changed by more' in o:
+                    # this is a more severe example of the above problem...
+                    Science.write(
+                        'Cell refinement is unstable...')
+
+                    # so decide what to do about it...
+
+                    if len(self._mosflm_cell_ref_images) <= 3:
+                        # set this up to be more images
+                        new_cell_ref_images = self._refine_select_images(
+                            len(self._mosflm_cell_ref_images) + 1,
+                            mosaic)
+                        self._mosflm_cell_ref_images = new_cell_ref_images
+
+                        self.set_integrater_prepare_done(False)
+
+                        Science.write(
+                            'Repeating cell refinement with more data.')
+
+                        return
+
+                    else:
+
+                        Science.write(
+                            'Integration will be aborted because of this.')
+                        
+                        raise RuntimeError, 'cell refinement failed: ' + \
+                              'unstable cell refinement'
+
                 # other possible problems in the cell refinement - a
                 # negative mosaic spread, for instance
 
