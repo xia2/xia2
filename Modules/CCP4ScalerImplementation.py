@@ -566,6 +566,171 @@ class CCP4Scaler(Scaler):
 
         return
 
+    def _refine_sd_parameters_remerge(self, scales_file,
+                                      sdadd_f, sdb_f,
+                                      sdadd_p, sdb_p):
+        '''Actually compute the RMS deviation from scatter / sigma = 1.0
+        from the scales.'''
+        
+        epochs = self._sweep_information.keys()
+        epochs.sort()
+
+        sc = self.Scala()
+        sc.set_hklin(self._prepared_reflections)
+        sc.set_scales_file(scales_file)
+
+        sc.add_sd_correction('full', 1.0, sdadd_f, sdb_f)
+        sc.add_sd_correction('partial', 1.0, sdadd_p, sdb_p)
+        
+        for epoch in epochs:
+            input = self._sweep_information[epoch]
+            start, end = (min(input['batches']), max(input['batches']))
+            sc.add_run(start, end, pname = input['pname'],
+                       xname = input['xname'],
+                       dname = input['dname'])
+
+        sc.set_hklout(os.path.join(self.get_working_directory(), 'temp.mtz'))
+        sc.set_anomalous()
+        sc.set_tails()
+        sc.scale()
+        loggraph = sc.parse_ccp4_loggraph()
+
+        standard_deviation_info = { }
+
+        for key in loggraph.keys():
+            if 'standard deviation v. Intensity' in key:
+                dataset = key.split(',')[-1].strip()
+                standard_deviation_info[dataset] = transpose_loggraph(
+                    loggraph[key])
+
+        # compute an RMS sigma...
+
+        score_full = 0.0
+        ref_count_full = 0
+
+        score_partial = 0.0
+        ref_count_partial = 0
+
+        for dataset in standard_deviation_info.keys():
+            info = standard_deviation_info[dataset]
+
+            # need to consider partials separately to fulls in assigning
+            # the error correction parameters
+            
+            for j in range(len(info['1_Range'])):
+                n_full = int(info['5_Number'][j])
+                I_full = float(info['4_Irms'][j])
+                s_full = float(info['7_SigmaFull'][j])
+
+                n_part = int(info['9_Number'][j])
+                I_part = float(info['8_Irms'][j])
+                s_part = float(info['11_SigmaPartial'][j])
+                
+                n_tot = n_full + n_part
+
+                i_tot = ((n_full * I_full) + (n_part * I_part)) / n_tot
+                s_tot = ((n_full * s_full) + (n_part * s_part)) / n_tot
+
+                score_full += s_full * s_full * n_full
+                ref_count_full += n_full
+
+                score_partial += s_partial * s_partial * n_partial
+                ref_count_partial += n_partial
+
+        return math.sqrt(score_full / ref_count_full), \
+               math.sqrt(score_partial / ref_count_partial)
+
+    def _refine_sd_parameters(self, scales_file):
+        '''To some repeated merging (it is assumed that the data have
+        already ben scaled) to determine appropriate values of
+        sd_add, sd_fac, sd_b for fulls, partials. FIXME at some point
+        this should probably be for each run as well...'''
+
+        best_sdadd_full = 0.0
+        best_sdadd_partial = 0.0
+        best_sdb_full = 0.0
+        best_sdb_partial = 0.0
+
+        max_sdadd_full = 0.1
+        max_sdadd_partial = 0.1
+        max_sdb_full = 20.0
+        max_sdb_partial = 20.0
+
+        step_sdadd_full = 0.01
+        step_sdadd_partial = 0.01
+        step_sdb_full = 2.0
+        step_sdb_partial = 2.0
+
+        sdadd_full = 0.0
+        sdadd_partial = 0.0
+        sdb_full = 0.0
+        sdb_partial = 0.0
+
+        best_rms_full = 1.0e9
+        best_rms_partial = 1.0e9
+
+        # compute sd_add first...
+
+        while sdadd_full < max_sdadd_full:
+
+            Chatter.write('Testing SdAdd: %4.2f' % sdadd_full)
+            
+            sdadd_partial = sdadd_full
+
+            rms_full, rms_partial = self._refine_sd_parameters_remerge(
+                scales_file, sdadd_full, sdb_full, sdadd_partial, sdb_partial)
+
+            if rms_full < best_rms_full:
+                best_sdadd_full = sdadd_full
+                best_rms_full = rms_full
+
+            if rms_partial < best_rms_partial:
+                best_sdadd_partial = sdadd_partial
+                best_rms_partial = rms_partial
+
+            # check to see if we're going uphill again...
+
+            if rms_full > best_rms_full and rms_partial > best_rms_partial:
+                break
+
+            sdadd_full += step_sdadd_full
+
+        best_rms_full = 1.0e9
+        best_rms_partial = 1.0e9
+
+        # then compute sdb ...
+
+        while sdb_full < max_sdb_full:
+            Chatter.write('Testing SdB: %4.1f' % sdb_full)
+            sdb_partial = sdb_full
+
+            rms_full, rms_partial = self._refine_sd_parameters_remerge(
+                scales_file, sdadd_full, sdb_full, sdadd_partial, sdb_partial)
+
+            if rms_full < best_rms_full:
+                best_sdb_full = sdb_full
+                best_rms_full = rms_full
+
+            if rms_partial < best_rms_partial:
+                best_sdb_partial = sdb_partial
+                best_rms_partial = rms_partial
+
+            # check to see if we're going uphill again...
+
+            if rms_full > best_rms_full and rms_partial > best_rms_partial:
+                break
+
+            sdb_full += step_sdb_full
+
+        Chatter.write('Optimised SD corrections (A, B) found to be:')
+        Chatter.write('Full:       %4.2f   %4.1f' %
+                      (best_sdadd_full, best_sdb_full))
+        Chatter.write('Partial:    %4.2f   %4.1f' %
+                      (best_sdadd_partial, best_sdb_partial))
+
+        return best_sdadd_full, best_sdb_full, \
+               best_sdadd_partial, best_sdb_partial
+
     def _scale(self):
         '''Perform all of the operations required to deliver the scaled
         data.'''
@@ -691,6 +856,9 @@ class CCP4Scaler(Scaler):
         # first "fix" the sd add parameters to match up the sd curve from
         # the fulls and partials, and minimise RMS[N (scatter / sigma - 1)]
 
+        sdadd_full, sdb_full, sdadd_partial, sdb_partial = \
+                    self._refine_sd_parameters(scales_file)
+
         # then try tweaking the sdB parameter in a range say 0-20
         # starting at 0 and working until the RMS stops going down
 
@@ -703,6 +871,107 @@ class CCP4Scaler(Scaler):
         # tight loop - initially just rerun the scaling with all of the
         # "right" parameters...
         
+        sc = self.Scala()
+        sc.set_hklin(self._prepared_reflections)
+
+        # generate a name for the "scales" file - this will be used for
+        # recycling the scaling parameters to compute appropriate
+        # sd correction parameters
+
+        sc.add_sd_correction('full', 1.0, sdadd_full, sdb_full)
+        sc.add_sd_correction('partial', 1.0, sdadd_partial, sdb_partial)
+        
+        scales_file = os.path.join(self.get_working_directory(),
+                                   '%s.scales' % self._common_xname)
+
+        sc.set_new_scales_file(scales_file)
+
+        # this will require first sorting out the batches/runs, then
+        # deciding what the "standard" wavelength/dataset is, then
+        # combining everything appropriately...
+
+        for epoch in epochs:
+            input = self._sweep_information[epoch]
+            start, end = (min(input['batches']), max(input['batches']))
+            sc.add_run(start, end, pname = input['pname'],
+                       xname = input['xname'],
+                       dname = input['dname'])
+
+        sc.set_hklout(os.path.join(self.get_working_directory(),
+                                   '%s_%s_scaled.mtz' % \
+                                   (self._common_pname, self._common_xname)))
+        
+        sc.set_anomalous()
+        sc.set_tails()
+
+        sc.scale()
+
+        # then gather up all of the resulting reflection files
+        # and convert them into the required formats (.sca, .mtz.)
+
+        data = sc.get_summary()
+
+        loggraph = sc.parse_ccp4_loggraph()
+
+        # parse the statistics from Scala - these are printed in the
+        # loggraph output, and therefore need some transformation &
+        # massaging to be useful.
+
+        # look for the standard deviation graphs - see FIXME 31/OCT/06
+
+        standard_deviation_info = { }
+
+        for key in loggraph.keys():
+            if 'standard deviation v. Intensity' in key:
+                dataset = key.split(',')[-1].strip()
+                standard_deviation_info[dataset] = transpose_loggraph(
+                    loggraph[key])
+
+        # write this in an interesting way...
+
+        for dataset in standard_deviation_info.keys():
+            info = standard_deviation_info[dataset]
+
+            # need to consider partials separately to fulls in assigning
+            # the error correction parameters
+            
+            for j in range(len(info['1_Range'])):
+                n_full = int(info['5_Number'][j])
+                I_full = float(info['4_Irms'][j])
+                s_full = float(info['7_SigmaFull'][j])
+
+                n_part = int(info['9_Number'][j])
+                I_part = float(info['8_Irms'][j])
+                s_part = float(info['11_SigmaPartial'][j])
+                
+                n_tot = n_full + n_part
+
+                i_tot = ((n_full * I_full) + (n_part * I_part)) / n_tot
+                s_tot = ((n_full * s_full) + (n_part * s_part)) / n_tot
+
+        # look also for a sensible resolution limit for this data set -
+        # that is, the place where I/sigma is about two for the highest
+        # resolution data set - this should be a multiple of 0.05 A just
+        # to keep the output tidy...
+
+        resolution_info = { }
+
+        for key in loggraph.keys():
+            if 'Analysis against resolution' in key:
+                dataset = key.split(',')[-1].strip()
+                resolution_info[dataset] = transpose_loggraph(
+                    loggraph[key])
+
+        # and also radiation damage stuff...
+
+        batch_info = { }
+        
+        for key in loggraph.keys():
+            if 'Analysis against Batch' in key:
+                dataset = key.split(',')[-1].strip()
+                batch_info[dataset] = transpose_loggraph(
+                    loggraph[key])
+
 
         # finally put all of the results "somewhere useful"
         
