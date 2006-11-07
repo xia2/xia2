@@ -505,10 +505,27 @@ class CCP4Scaler(Scaler):
         keys.sort()
 
         # FIXME in here I need to implement "proper" scaling...
+        # this will need to do things like imposing a sensible
+        # resolution limit on the data, deciding on the appropriate
+        # scaling parameters. The former is best done by analysing
+        # the "by resolution" output for each run, and then passing
+        # this information back somewhere. The latter can be achieved
+        # by a search using "onlymerge restore" type commands.
+
+        # ---------- INITIAL SCALING ----------
 
         sc = Scala()
         sc.set_working_directory(self.get_working_directory())
         sc.set_hklin(self._sorted_reflections)
+
+        # generate a name for the "scales" file - this will be used for
+        # recycling the scaling parameters to compute appropriate
+        # sd correction parameters
+
+        scales_file = os.path.join(self.get_working_directory(),
+                                   '%s.scales' % self._common_xname)
+
+        sc.set_new_scales_file(scales_file)
 
         # this will require first sorting out the batches/runs, then
         # deciding what the "standard" wavelength/dataset is, then
@@ -599,6 +616,22 @@ class CCP4Scaler(Scaler):
 
         # perform some analysis of these results
 
+        # ---------- SD CORRECTION PARAMETER LOOP ----------
+
+        # first "fix" the sd add parameters to match up the sd curve from
+        # the fulls and partials, and minimise RMS[N (scatter / sigma - 1)]
+
+        # then try tweaking the sdB parameter in a range say 0-20
+        # starting at 0 and working until the RMS stops going down
+
+        # ---------- FINAL SCALING ----------
+
+        # assert the resolution limits in the integraters - beware, this
+        # means that the reflection files will probably have to be
+        # regenerated (integration restarted!) and so we will have to
+        # build in some "fudge factor" to ensure we don't get stuck in a
+        # tight loop - initially just rerun the scaling with all of the
+        # "right" parameters...
         
 
         # finally put all of the results "somewhere useful"
