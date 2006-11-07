@@ -718,7 +718,8 @@ class CCP4Scaler(Scaler):
             sdb_partial = sdb_full
 
             rms_full, rms_partial = self._refine_sd_parameters_remerge(
-                scales_file, sdadd_full, sdb_full, sdadd_partial, sdb_partial)
+                scales_file, best_sdadd_full, sdb_full,
+                best_sdadd_partial, sdb_partial)
 
             Chatter.write('Tested SdB %4.1f: %4.2f %4.2f' % \
                           (sdb_full, rms_full, rms_partial))
