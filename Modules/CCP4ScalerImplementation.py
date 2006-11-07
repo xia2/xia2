@@ -631,6 +631,12 @@ class CCP4Scaler(Scaler):
                 i_tot = ((n_full * I_full) + (n_partial * I_partial)) / n_tot
                 s_tot = ((n_full * s_full) + (n_partial * s_partial)) / n_tot
 
+                # FIXME should this really measure the errors in terms
+                # of total numbers of reflections, or just flatten the
+                # graph???
+
+                # TEST! Solve the structures and work out what is better...
+
                 score_full += s_full * s_full * n_full
                 ref_count_full += n_full
 
@@ -678,7 +684,7 @@ class CCP4Scaler(Scaler):
             rms_full, rms_partial = self._refine_sd_parameters_remerge(
                 scales_file, sdadd_full, sdb_full, sdadd_partial, sdb_partial)
 
-            Chatter.write('Testing SdAdd %4.2f: %4.2f %4.2f' % \
+            Chatter.write('Tested SdAdd %4.2f: %4.2f %4.2f' % \
                           (sdadd_full, rms_full, rms_partial))
 
             if rms_full < best_rms_full:
@@ -708,7 +714,7 @@ class CCP4Scaler(Scaler):
             rms_full, rms_partial = self._refine_sd_parameters_remerge(
                 scales_file, sdadd_full, sdb_full, sdadd_partial, sdb_partial)
 
-            Chatter.write('Testing SdB %4.1f: %4.2f %4.2f' % \
+            Chatter.write('Tested SdB %4.1f: %4.2f %4.2f' % \
                           (sdb_full, rms_full, rms_partial))
 
             if rms_full < best_rms_full:
