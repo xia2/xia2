@@ -43,7 +43,7 @@ def is_mtz_file(filename):
     '''Check if a file is MTZ format - at least according to the
     magic number.'''
 
-    magic = open(filename, 'r').read(4)
+    magic = open(filename, 'rb').read(4)
 
     if magic == 'MTZ ':
         return True
