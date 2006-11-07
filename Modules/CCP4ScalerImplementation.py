@@ -82,16 +82,17 @@ if not os.environ['DPA_ROOT'] in sys.path:
 # the interface definition that this will conform to 
 from Schema.Interfaces.Scaler import Scaler
 
-# the wrappers that this will use
-from Wrappers.CCP4.Scala import Scala
-from Wrappers.CCP4.Sortmtz import Sortmtz
-from Wrappers.CCP4.Mtzdump import Mtzdump
-from Wrappers.CCP4.Truncate import Truncate
-from Wrappers.CCP4.Rebatch import Rebatch
-from Wrappers.CCP4.Reindex import Reindex
-from Wrappers.CCP4.Mtz2various import Mtz2various
-from Wrappers.CCP4.Cad import Cad
-from Wrappers.CCP4.Pointless import Pointless
+# the wrappers that this will use - these are renamed so that the internal
+# factory version can be used...
+from Wrappers.CCP4.Scala import Scala as _Scala
+from Wrappers.CCP4.Sortmtz import Sortmtz as _Sortmtz
+from Wrappers.CCP4.Mtzdump import Mtzdump as _Mtzdump
+from Wrappers.CCP4.Truncate import Truncate as _Truncate
+from Wrappers.CCP4.Rebatch import Rebatch as _Rebatch
+from Wrappers.CCP4.Reindex import Reindex as _Reindex
+from Wrappers.CCP4.Mtz2various import Mtz2various as _Mtz2various
+from Wrappers.CCP4.Cad import Cad as _Cad
+from Wrappers.CCP4.Pointless import Pointless as _Pointless
 
 from Handlers.Streams import Chatter
 
@@ -119,6 +120,80 @@ class CCP4Scaler(Scaler):
         self._common_dname = None
 
         return
+
+    # factory methods...
+
+    def Scala(self):
+        '''Create a Scala wrapper from _Scala - set the working directory
+        and log file stuff as a part of this...'''
+        scala = _Scala()
+        scala.set_working_directory(self.get_working_directory())
+        auto_logfiler(scala)
+        return scala
+
+    def Sortmtz(self):
+        '''Create a Sortmtz wrapper from _Sortmtz - set the working directory
+        and log file stuff as a part of this...'''
+        sortmtz = _Sortmtz()
+        sortmtz.set_working_directory(self.get_working_directory())
+        auto_logfiler(sortmtz)
+        return sortmtz
+
+    def Mtzdump(self):
+        '''Create a Mtzdump wrapper from _Mtzdump - set the working directory
+        and log file stuff as a part of this...'''
+        mtzdump = _Mtzdump()
+        mtzdump.set_working_directory(self.get_working_directory())
+        auto_logfiler(mtzdump)
+        return mtzdump
+
+    def Truncate(self):
+        '''Create a Truncate wrapper from _Truncate - set the working directory
+        and log file stuff as a part of this...'''
+        truncate = _Truncate()
+        truncate.set_working_directory(self.get_working_directory())
+        auto_logfiler(truncate)
+        return truncate
+
+    def Rebatch(self):
+        '''Create a Rebatch wrapper from _Rebatch - set the working directory
+        and log file stuff as a part of this...'''
+        rebatch = _Rebatch()
+        rebatch.set_working_directory(self.get_working_directory())
+        auto_logfiler(rebatch)
+        return rebatch
+
+    def Reindex(self):
+        '''Create a Reindex wrapper from _Reindex - set the working directory
+        and log file stuff as a part of this...'''
+        reindex = _Reindex()
+        reindex.set_working_directory(self.get_working_directory())
+        auto_logfiler(reindex)
+        return reindex
+
+    def Mtz2various(self):
+        '''Create a Mtz2various wrapper from _Mtz2various - set the working
+        directory and log file stuff as a part of this...'''
+        mtz2various = _Mtz2various()
+        mtz2various.set_working_directory(self.get_working_directory())
+        auto_logfiler(mtz2various)
+        return mtz2various
+
+    def Cad(self):
+        '''Create a Cad wrapper from _Cad - set the working directory
+        and log file stuff as a part of this...'''
+        cad = _Cad()
+        cad.set_working_directory(self.get_working_directory())
+        auto_logfiler(cad)
+        return cad
+
+    def Pointless(self):
+        '''Create a Pointless wrapper from _Pointless - set the working directory
+        and log file stuff as a part of this...'''
+        pointless = _Pointless()
+        pointless.set_working_directory(self.get_working_directory())
+        auto_logfiler(pointless)
+        return pointless
 
     def set_working_directory(self, working_directory):
         self._working_directory = working_directory
@@ -204,16 +279,16 @@ class CCP4Scaler(Scaler):
         epochs.sort()
         first = epochs[0]
         
-        pl = Pointless()
+        pl = self.Pointless()
         hklin = self._sweep_information[first]['hklin']
         hklout = os.path.join(
             self.get_working_directory(),
             os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
-        pl.set_working_directory(self.get_working_directory())
+        # pl.set_working_directory(self.get_working_directory())
         pl.set_hklin(hklin)
 
         # write a pointless log file...
-        auto_logfiler(pl)
+        # auto_logfiler(pl)
         pl.decide_pointgroup()
         
         Chatter.write('Pointless analysis of %s' % hklin)
@@ -232,13 +307,13 @@ class CCP4Scaler(Scaler):
         Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
         # perform a reindexing operation
-        ri = Reindex()
-        ri.set_working_directory(self.get_working_directory())
+        ri = self.Reindex()
+        # ri.set_working_directory(self.get_working_directory())
         ri.set_hklin(hklin)
         ri.set_hklout(hklout)
         ri.set_spacegroup(pointgroup)
         ri.set_operator(reindex_op)
-        auto_logfiler(ri)
+        # auto_logfiler(ri)
         ri.reindex()
         
         # next sort this reflection file
@@ -248,11 +323,11 @@ class CCP4Scaler(Scaler):
             self.get_working_directory(),
             os.path.split(hklin)[-1].replace('_rdx.mtz', '_ref_srt.mtz'))
 
-        s = Sortmtz()
-        s.set_working_directory(self.get_working_directory())
+        s = self.Sortmtz()
+        # s.set_working_directory(self.get_working_directory())
         s.set_hklout(hklout)
         s.add_hklin(hklin)
-        auto_logfiler(s)
+        # auto_logfiler(s)
         s.sort()
         
         # now quickly merge the reflections
@@ -268,11 +343,11 @@ class CCP4Scaler(Scaler):
         Chatter.write('Quickly scaling reference data set: %s' % \
                       os.path.split(hklin)[-1])
 
-        qsc = Scala()
-        qsc.set_working_directory(self.get_working_directory())
+        qsc = self.Scala()
+        # qsc.set_working_directory(self.get_working_directory())
         qsc.set_hklin(hklin)
         qsc.set_hklout(reference)
-        auto_logfiler(qsc)
+        # auto_logfiler(qsc)
         qsc.quick_scale()
 
         # for the moment ignore all of the scaling statistics and whatnot!
@@ -298,16 +373,16 @@ class CCP4Scaler(Scaler):
         # to get the reflections reindexed into the correct pointgroup
         
         for epoch in self._sweep_information.keys():
-            pl = Pointless()
+            pl = self.Pointless()
             hklin = self._sweep_information[epoch]['hklin']
             hklout = os.path.join(
                 self.get_working_directory(),
                 os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
-            pl.set_working_directory(self.get_working_directory())
+            # pl.set_working_directory(self.get_working_directory())
             pl.set_hklin(hklin)
 
             # write a pointless log file...
-            auto_logfiler(pl)
+            # auto_logfiler(pl)
             pl.decide_pointgroup()
 
             Chatter.write('Pointless analysis of %s' % hklin)
@@ -326,13 +401,13 @@ class CCP4Scaler(Scaler):
             Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
             # perform a reindexing operation
-            ri = Reindex()
-	    ri.set_working_directory(self.get_working_directory())
+            ri = self.Reindex()
+	    # ri.set_working_directory(self.get_working_directory())
             ri.set_hklin(hklin)
             ri.set_hklout(hklout)
             ri.set_spacegroup(pointgroup)
             ri.set_operator(reindex_op)
-            auto_logfiler(ri)
+            # auto_logfiler(ri)
             ri.reindex()
 
             # record the change in reflection file...
@@ -342,12 +417,12 @@ class CCP4Scaler(Scaler):
         # reference file... messy but perhaps effective?
 
         for epoch in self._sweep_information.keys():
-            pl = Pointless()
+            pl = self.Pointless()
             hklin = self._sweep_information[epoch]['hklin']
             hklout = os.path.join(
                 self.get_working_directory(),
                 os.path.split(hklin)[-1].replace('_rdx.mtz', '_rdx2.mtz'))
-            pl.set_working_directory(self.get_working_directory())
+            # pl.set_working_directory(self.get_working_directory())
             pl.set_hklin(hklin)
 
             # now set the initial reflection set as a reference...
@@ -355,7 +430,7 @@ class CCP4Scaler(Scaler):
             pl.set_hklref(reference)
 
             # write a pointless log file...
-            auto_logfiler(pl)
+            # auto_logfiler(pl)
             pl.decide_pointgroup()
 
             Chatter.write('Pointless analysis of %s' % hklin)
@@ -374,13 +449,13 @@ class CCP4Scaler(Scaler):
             Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
             # perform a reindexing operation
-            ri = Reindex()
-	    ri.set_working_directory(self.get_working_directory())
+            ri = self.Reindex()
+	    # ri.set_working_directory(self.get_working_directory())
             ri.set_hklin(hklin)
             ri.set_hklout(hklout)
             ri.set_spacegroup(pointgroup)
             ri.set_operator(reindex_op)
-            auto_logfiler(ri)
+            # auto_logfiler(ri)
             ri.reindex()
 
             # record the change in reflection file...
@@ -395,10 +470,10 @@ class CCP4Scaler(Scaler):
 
             hklin = self._sweep_information[epoch]['hklin']
 
-            md = Mtzdump()
-            md.set_working_directory(self.get_working_directory())
+            md = self.Mtzdump()
+            # md.set_working_directory(self.get_working_directory())
             md.set_hklin(hklin)
-            auto_logfiler(md)
+            # auto_logfiler(md)
             md.dump()
 
             if self._sweep_information[epoch]['batches'] == [0, 0]:
@@ -453,8 +528,8 @@ class CCP4Scaler(Scaler):
         counter = 0
 
         for epoch in epochs:
-            rb = Rebatch()
-            rb.set_working_directory(self.get_working_directory())
+            rb = self.Rebatch()
+            # rb.set_working_directory(self.get_working_directory())
 
             hklin = self._sweep_information[epoch]['hklin']
 
@@ -470,7 +545,7 @@ class CCP4Scaler(Scaler):
             rb.set_first_batch(counter * max_batches + 1)
             rb.set_hklout(hklout)
 
-            auto_logfiler(rb)
+            # auto_logfiler(rb)
             new_batches = rb.rebatch()
 
             # update the "input information"
@@ -485,8 +560,8 @@ class CCP4Scaler(Scaler):
         # then sort the files together, making sure that the resulting
         # reflection file looks right.
 
-        s = Sortmtz()
-        s.set_working_directory(self.get_working_directory())
+        s = self.Sortmtz()
+        # s.set_working_directory(self.get_working_directory())
 
         s.set_hklout(os.path.join(self.get_working_directory(),
                                   '%s_%s_sorted.mtz' % \
@@ -495,7 +570,7 @@ class CCP4Scaler(Scaler):
         for epoch in epochs:
             s.add_hklin(self._sweep_information[epoch]['hklin'])
 
-        auto_logfiler(s)
+        # auto_logfiler(s)
         s.sort()
 
         # done preparing!
@@ -524,8 +599,8 @@ class CCP4Scaler(Scaler):
 
         # ---------- INITIAL SCALING ----------
 
-        sc = Scala()
-        sc.set_working_directory(self.get_working_directory())
+        sc = self.Scala()
+        # sc.set_working_directory(self.get_working_directory())
         sc.set_hklin(self._sorted_reflections)
 
         # generate a name for the "scales" file - this will be used for
@@ -555,7 +630,7 @@ class CCP4Scaler(Scaler):
         sc.set_anomalous()
         sc.set_tails()
 
-        auto_logfiler(sc)
+        # auto_logfiler(sc)
         sc.scale()
 
         # then gather up all of the resulting reflection files
@@ -663,9 +738,9 @@ class CCP4Scaler(Scaler):
         self._scalr_scaled_reflection_files['sca'] = { }
         for key in scaled_reflection_files:
             file = scaled_reflection_files[key]
-            m2v = Mtz2various()
-            m2v.set_working_directory(self.get_working_directory())
-            auto_logfiler(m2v)
+            m2v = self.Mtz2various()
+            # m2v.set_working_directory(self.get_working_directory())
+            # auto_logfiler(m2v)
             m2v.set_hklin(file)
             m2v.set_hklout('%s.sca' % file[:-4])
             m2v.convert()
@@ -678,9 +753,9 @@ class CCP4Scaler(Scaler):
         self._scalr_scaled_reflection_files['mtz'] = { }
         for key in scaled_reflection_files.keys():
             file = scaled_reflection_files[key]
-            t = Truncate()
-            t.set_working_directory(self.get_working_directory())
-            auto_logfiler(t)
+            t = self.Truncate()
+            # t.set_working_directory(self.get_working_directory())
+            # auto_logfiler(t)
             t.set_hklin(file)
 
             # this is tricksy - need to really just replace the last
@@ -719,10 +794,10 @@ class CCP4Scaler(Scaler):
 
         for key in scaled_reflection_files.keys():
             hklin = scaled_reflection_files[key]
-            md = Mtzdump()
-            md.set_working_directory(self.get_working_directory())
+            md = self.Mtzdump()
+            # md.set_working_directory(self.get_working_directory())
             md.set_hklin(hklin)
-            auto_logfiler(md)
+            # auto_logfiler(md)
             md.dump()
             datasets = md.get_datasets()
             reflections = md.get_reflections()
@@ -808,9 +883,9 @@ class CCP4Scaler(Scaler):
         for key in scaled_reflection_files.keys():
             file = scaled_reflection_files[key]
             
-            c = Cad()
-            c.set_working_directory(self.get_working_directory())
-            auto_logfiler(c)
+            c = self.Cad()
+            # c.set_working_directory(self.get_working_directory())
+            # auto_logfiler(c)
             c.add_hklin(file)
             c.set_new_suffix(key)
             c.set_new_cell(average_unit_cell)
@@ -826,9 +901,9 @@ class CCP4Scaler(Scaler):
 
         if len(scaled_reflection_files.keys()) > 1:
 
-            c = Cad()
-            c.set_working_directory(self.get_working_directory())
-            auto_logfiler(c)
+            c = self.Cad()
+            # c.set_working_directory(self.get_working_directory())
+            # auto_logfiler(c)
             for key in scaled_reflection_files.keys():
                 file = scaled_reflection_files[key]
                 c.add_hklin(file)
