@@ -626,10 +626,10 @@ class CCP4Scaler(Scaler):
                 I_partial = float(info['8_Irms'][j])
                 s_partial = float(info['11_SigmaPartial'][j])
                 
-                n_tot = n_full + n_part
+                n_tot = n_full + n_partial
 
-                i_tot = ((n_full * I_full) + (n_part * I_part)) / n_tot
-                s_tot = ((n_full * s_full) + (n_part * s_part)) / n_tot
+                i_tot = ((n_full * I_full) + (n_partial * I_partial)) / n_tot
+                s_tot = ((n_full * s_full) + (n_partial * s_partial)) / n_tot
 
                 score_full += s_full * s_full * n_full
                 ref_count_full += n_full
@@ -821,14 +821,14 @@ class CCP4Scaler(Scaler):
                 I_full = float(info['4_Irms'][j])
                 s_full = float(info['7_SigmaFull'][j])
 
-                n_part = int(info['9_Number'][j])
-                I_part = float(info['8_Irms'][j])
-                s_part = float(info['11_SigmaPartial'][j])
+                n_partial = int(info['9_Number'][j])
+                I_partial = float(info['8_Irms'][j])
+                s_partial = float(info['11_SigmaPartial'][j])
                 
-                n_tot = n_full + n_part
+                n_tot = n_full + n_partial
 
-                i_tot = ((n_full * I_full) + (n_part * I_part)) / n_tot
-                s_tot = ((n_full * s_full) + (n_part * s_part)) / n_tot
+                i_tot = ((n_full * I_full) + (n_partial * I_partial)) / n_tot
+                s_tot = ((n_full * s_full) + (n_partial * s_partial)) / n_tot
 
         # look also for a sensible resolution limit for this data set -
         # that is, the place where I/sigma is about two for the highest
