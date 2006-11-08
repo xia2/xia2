@@ -98,7 +98,7 @@ from Handlers.Streams import Chatter
 
 # jiffys
 from lib.Guff import is_mtz_file, nifty_power_of_ten, auto_logfiler
-from lib.Guff import transpose_loggraph
+from lib.Guff import transpose_loggraph, nint
 
 from CCP4ScalerImplementationHelpers import _resolution_estimate
 
@@ -897,14 +897,13 @@ class CCP4Scaler(Scaler):
                 i_sigma = float(mn_i_sigma_values[i])
                 resolution_points.append((dmin, i_sigma))
 
-            resolution_limits[dataset] = _resolution_estimate(
+            resolution = _resolution_estimate(
                 resolution_points, 2.0)
 
-        # next compute "useful" versions of these resolution limits
+            # next compute "useful" versions of these resolution limits
+            # want 0.05A steps
 
-        for dataset in resolution_limits.keys():
-            # want rounded-up to to 0.05A steps
-            resolution = 0.05 * int(20 * resolution_limits[dataset] + 1)
+            resolution = 0.05 * nint(20.0 * resolution)
             resolution_limits[dataset] = resolution
 
             Chatter.write('Resolution limit for %s: %5.2f' % \
