@@ -887,6 +887,8 @@ class CCP4Scaler(Scaler):
 
         resolution_limits = { }
 
+        highest_resolution = 100.0
+
         for dataset in resolution_info.keys():
             # transform this to a useful form... [(resol, i/sigma), (resol..)]
             resolution_points = []
@@ -901,10 +903,19 @@ class CCP4Scaler(Scaler):
                 resolution_points, 2.0)
 
             # next compute "useful" versions of these resolution limits
-            # want 0.05A steps
+            # want 0.05A steps - in here it would also be useful to
+            # gather up an "average" best resolution and perhaps use this
+            # where it seems appropriate e.g. TS03 INFL, LREM.
 
             resolution = 0.05 * nint(20.0 * resolution)
             resolution_limits[dataset] = resolution
+
+            if resolution < highest_resolution:
+                resolution = highest_resolution
+
+            if resolution - highest_resolution < 0.051:
+                # why not use this, to be tidy?
+                resolution_limits[dataset] = highest_resolution
 
             Chatter.write('Resolution limit for %s: %5.2f' % \
                           (dataset, resolution_limits[dataset]))
@@ -934,8 +945,11 @@ class CCP4Scaler(Scaler):
                 # this may trigger reintegration as well...
                 self._scalr_done = False
                 self._scalr_prepare_done = False
-                
-            elif dmin > resolution_limits[dname] - 0.1:
+
+            # note well that this spacing (0.075A) is designed to ensure that
+            # integration shouldn't be repeated once it has been repeated
+            # once...
+            elif dmin > resolution_limits[dname] - 0.075:
                 # no need to reprocess the data - this is near enough...
                 # this should save us from the "infinate loop"
                 pass
