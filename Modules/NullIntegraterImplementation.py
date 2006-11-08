@@ -25,6 +25,7 @@ if not os.environ['DPA_ROOT'] in sys.path:
 
 from Schema.Interfaces.Integrater import Integrater
 from Wrappers.CCP4.Mtzutils import Mtzutils
+from Handlers.Streams import Chatter
 
 class NullIntegrater(Integrater):
     '''A null class to present the integrater interface.'''
@@ -49,7 +50,7 @@ class NullIntegrater(Integrater):
         self._working_directory = working_directory
         pass
 
-    def set_working_directory(self):
+    def get_working_directory(self):
         return self._working_directory
 
     # "real" methods
@@ -83,8 +84,13 @@ class NullIntegrater(Integrater):
 
             mtzutils = Mtzutils()
 
+            Chatter.write('NULL integrater resolution limited to %5.2f' %
+                          self._intgr_reso_high)
+            Chatter.write('=> %s' % hklout)
+
             mtzutils.set_hklin(self._intgr_hklout_orig)
             mtzutils.set_hklout(hklout)
+            mtzutils.set_resolution(self._intgr_reso_high)
 
             mtzutils.edit()
 
