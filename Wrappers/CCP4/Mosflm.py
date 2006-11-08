@@ -1245,7 +1245,6 @@ def Mosflm(DriverType = None):
             # if we have not processed to a given resolution, fix
             # the limit for future reference
 
-
             if not self._intgr_reso_high:
                 resolution = decide_integration_resolution_limit(output)
                 self.set_integrater_high_resolution(resolution)
