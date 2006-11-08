@@ -38,8 +38,12 @@
 #         Tagging... - oh that's 0.1.1 then.
 #
 # 0.1.1.1 27/OCT/06 added new functionality to xia2scan.
+#
+# 0.2.0 - 08/NOV/06 this is it - it will now refine the resolution, refine
+#         standard deviation parameters, feed back from scaling to integration
+#         and all that jazz...
 
-VersionNumber = "0.1.1.1"
+VersionNumber = "0.2.0"
 Version = "XIA2DPA %s" % VersionNumber
 CVSTag = "xia2dpa-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2dpa-%s" % VersionNumber
