@@ -628,8 +628,18 @@ class CCP4Scaler(Scaler):
                 
                 n_tot = n_full + n_partial
 
-                i_tot = ((n_full * I_full) + (n_partial * I_partial)) / n_tot
-                s_tot = ((n_full * s_full) + (n_partial * s_partial)) / n_tot
+                # trap case where we have no reflections in a higher
+                # intensity bin (one may ask why they are being printed
+                # by Scala, then?)
+
+                if n_tot:
+                    i_tot = ((n_full * I_full) +
+                             (n_partial * I_partial)) / n_tot
+                    s_tot = ((n_full * s_full) +
+                             (n_partial * s_partial)) / n_tot
+                else:
+                    i_tot = 0.0
+                    s_tot = 1.0
 
                 # FIXME should this really measure the errors in terms
                 # of total numbers of reflections, or just flatten the
@@ -840,8 +850,14 @@ class CCP4Scaler(Scaler):
                 
                 n_tot = n_full + n_partial
 
-                i_tot = ((n_full * I_full) + (n_partial * I_partial)) / n_tot
-                s_tot = ((n_full * s_full) + (n_partial * s_partial)) / n_tot
+                if n_tot:
+                    i_tot = ((n_full * I_full) +
+                             (n_partial * I_partial)) / n_tot
+                    s_tot = ((n_full * s_full) +
+                             (n_partial * s_partial)) / n_tot
+                else:
+                    i_tot = 0.0
+                    s_tot = 1.0
 
         # look also for a sensible resolution limit for this data set -
         # that is, the place where I/sigma is about two for the highest
