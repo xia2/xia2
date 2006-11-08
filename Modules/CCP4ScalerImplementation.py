@@ -100,6 +100,8 @@ from Handlers.Streams import Chatter
 from lib.Guff import is_mtz_file, nifty_power_of_ten, auto_logfiler
 from lib.Guff import transpose_loggraph
 
+from CCP4ScalerImplementationHelpers import _resolution_estimate
+
 class CCP4Scaler(Scaler):
     '''An implementation of the Scaler interface using CCP4 programs.'''
 
@@ -880,6 +882,51 @@ class CCP4Scaler(Scaler):
                 dataset = key.split(',')[-1].strip()
                 resolution_info[dataset] = transpose_loggraph(
                     loggraph[key])
+
+        # next compute resolution limits for each dataset.
+
+        resolution_limits = { }
+
+        for dataset in resolution_info.keys():
+            # transform this to a useful form... [(resol, i/sigma), (resol..)]
+            resolution_points = []
+            resol_ranges = resolution_info[dataset]['3_Dmin(A)']
+            mn_i_sigma_values = resolution_info[dataset]['13_Mn(I/sd)']
+            for i in range(len(resol_ranges)):
+                dmin = float(resol_ranges[i])
+                i_sigma = float(mn_i_sigma_values[i])
+                resolution_points.append((dmin, i_sigma))
+
+            resolution_limits[dataset] = _resolution_estimate(
+                resolution_points, 2.0)
+
+            Chatter.write('Resolution limit for %s: %5.2f' % \
+                          (dataset, resolution_limits[dataset]))
+
+        # ok now we have the resolution limit stuff, need to work through
+        # all of the integraters which belong to this set and if the
+        # resolution defined for a given dataset is found to be lower
+        # than the high resolution limit of the integrater, then reset
+        # that limit, assert that the scaling and preparation is needed and
+        # at the end return.
+
+        for epoch in self._scalr_integraters.keys():
+            intgr = self._scalr_integraters[epoch]
+            pname, xname, dname = intgr.get_integrater_project_information()
+
+            # check the resolution limit for this integrater
+            dmin = intgr.get_integrater_high_resolution()
+
+            # compare this against the resolution limit computed above
+            if dmin == 0.0:
+                # we will always assert the new limit
+                pass
+
+            # do something sensible, resetting the "done" flags if necessary
+
+        # if we need to redo the scaling, return to allow this to happen
+            
+
 
         # and also radiation damage stuff...
 
