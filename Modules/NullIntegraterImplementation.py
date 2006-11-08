@@ -89,6 +89,8 @@ class NullIntegrater(Integrater):
 
             mu = Mtzutils()
 
+            mu.set_working_directory(self.get_working_directory())
+
             auto_logfiler(mu)
 
             Chatter.write('NULL integrater resolution limited to %5.2f' %
