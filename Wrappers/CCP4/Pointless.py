@@ -390,8 +390,15 @@ def Pointless(DriverType = None):
                         # use sqrt(3.0) as a "magic factor" ;o) - oh
 			# this doesn't work very well - use 1.5!
 
+                        # FIXME 08/NOV/06 will have to do better at this
+                        # - the R merge kills the correct solution (and it
+                        # is needed for TS01 NATIVE...) - have to look at
+                        # the cell delta as well - for TS03 LREM this is 0.0,
+                        # for TS01 NATIVE this is around 0.5... require delta
+                        # also measurable (e.g. not exactly 0.0)
+
                         if math.fabs(likelihood - self._totalprob) < 0.1:
-                            if correct_r / r_merge > 1.5:
+                            if correct_r / r_merge > 1.5 and delta > 0.1:
                                 if netzc > 0.0:
                                     # this is perhaps more likely?
                                     Science.write(
