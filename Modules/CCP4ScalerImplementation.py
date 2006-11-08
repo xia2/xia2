@@ -742,6 +742,9 @@ class CCP4Scaler(Scaler):
                 best_rms_partial = rms_partial
 
             # check to see if we're going uphill again...
+            # FIXME in here I have to allow for the scores being
+            # exactly zero as an alternative - i.e. there are
+            # no reflections which are full, for instance.
 
             if rms_full > best_rms_full and rms_partial > best_rms_partial:
                 break
