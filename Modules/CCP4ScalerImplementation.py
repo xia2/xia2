@@ -657,14 +657,14 @@ class CCP4Scaler(Scaler):
                 s_full -= 1.0
                 s_partial -= 1.0
 
-                # try uniform weighting...
+                # don't try uniform weighting...
 
-                if n_full > 0:
-                    n_full = 1
-                if n_partial > 0:
-                    n_partial = 1
+                # if n_full > 0:
+                # n_full = 1
+                # if n_partial > 0:
+                # n_partial = 1
 
-                # end try uniform weighting...
+                # end don't try uniform weighting...
 
                 score_full += s_full * s_full * n_full
                 ref_count_full += n_full
@@ -717,6 +717,11 @@ class CCP4Scaler(Scaler):
         # FIXME I need to assess whether this route is appropriate, or
         # whether I would be better off following some kind of mimisation
         # procedure...
+
+        # perhaps the following would be more use:
+        # 
+        # refine SdB based on "flatness" of the curve - flatten it out
+        # refine SdAdd afterwards to work on the gradient
 
         while sdadd_full < max_sdadd_full:
             
