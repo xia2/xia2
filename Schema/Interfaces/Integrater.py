@@ -82,7 +82,7 @@
 #                 in some global dictionary someplace by the current crystal
 #                 identity, and switch it off if this is not available.
 # 
-# FIXME 20/OCT/06 need to be able to rerun integration as much as we like
+# FIXED 20/OCT/06 need to be able to rerun integration as much as we like
 #                 until everyone is happy with the results (e.g. a good
 #                 resolution limit, sensible GAIN, etc. has been set.)
 #                 This will mean that the cell refinement implementation
@@ -94,7 +94,7 @@
 #                 Implement this change - call prepare_to_integrate followed
 #                 by integrate...
 #
-# FIXME 02/NUV/06 want to hide the "done" flags inside getter/setter methods.
+# FIXED 02/NOV/06 want to hide the "done" flags inside getter/setter methods.
 # 
 
 import os
@@ -226,6 +226,13 @@ class Integrater:
         self._intgr_done = False
         
         return
+
+    def get_integrater_resolution(self):
+        '''Get both resolution limits, high then low.'''
+        return self._intgr_reso_high, self._intgr_reso_low
+
+    def get_integrater_high_resolution(self):
+        return self._intgr_reso_high
 
     def set_integrater_resolution(self, dmin, dmax):
         '''Set both resolution limits.'''

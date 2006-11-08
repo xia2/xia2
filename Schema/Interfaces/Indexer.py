@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 # Indexer.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
