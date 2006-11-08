@@ -24,6 +24,7 @@ if not os.environ['DPA_ROOT'] in sys.path:
     sys.path.append(os.environ['DPA_ROOT'])
 
 from Schema.Interfaces.Integrater import Integrater
+from Wrappers.CCP4.Mtzutils import Mtzutils
 
 class NullIntegrater(Integrater):
     '''A null class to present the integrater interface.'''
@@ -32,7 +33,11 @@ class NullIntegrater(Integrater):
         '''Create a null integrater pointing at this reflection file.'''
 
         Integrater.__init__(self)
-        self._intgr_hklout = integrated_reflection_file
+
+        self._intgr_hklout_orig = integrated_reflection_file
+        self._intgr_hklout = None
+
+        self._working_directory = os.getcwd()
 
         # also need to be able to set the epoch of myself
         # FIXME - this is also generally true... need to add
@@ -40,12 +45,12 @@ class NullIntegrater(Integrater):
 
         return
 
-    # things that this interface needs to present...
-
-    # bodges - from Driver &c.
-
-    def set_working_directory(self, directory):
+    def set_working_directory(self, working_directory):
+        self._working_directory = working_directory
         pass
+
+    def set_working_directory(self):
+        return self._working_directory
 
     # "real" methods
 
@@ -55,6 +60,35 @@ class NullIntegrater(Integrater):
 
     def _integrate(self):
         '''Do nothing - except return a pointer to the reflections...'''
+
+        # FIXME 08/NUV/06 this should probably return a reflection file
+        # which has been resolution limited appropriately...
+
+        # run Mtzutils if we have defined a resolution limit, else just
+        # return a pointer to the original reflection file...
+
+        if not self._intgr_reso_high:
+            self._intgr_hklout = self._intgr_hklout_orig
+            
+        else:
+            # construct a name for hklout...
+            hklout = os.path.join(self.get_working_directory(),
+                                  os.path.split(self._intgr_hklout_orig)[-1])
+
+            if hklout == self._intgr_hklout_orig:
+                raise RuntimeError, 'cannot have input reflections in ' + \
+                      'working directory'
+            
+            # run mtzutils
+
+            mtzutils = Mtzutils()
+
+            mtzutils.set_hklin(self._intgr_hklout_orig)
+            mtzutils.set_hklout(hklout)
+
+            mtzutils.edit()
+
+            self._intgr_hklout = hklout
 
         return self._intgr_hklout
 

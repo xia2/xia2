@@ -900,15 +900,24 @@ class CCP4Scaler(Scaler):
             resolution_limits[dataset] = _resolution_estimate(
                 resolution_points, 2.0)
 
+        # next compute "useful" versions of these resolution limits
+
+        for dataset in resolution_limits.keys():
+            # want rounded-up to to 0.05A steps
+            resolution = 0.05 * int(20 * resolution_limits[dataset] + 1)
+            resolution_limits[dataset] = resolution
+
             Chatter.write('Resolution limit for %s: %5.2f' % \
                           (dataset, resolution_limits[dataset]))
 
-        # ok now we have the resolution limit stuff, need to work through
+        # Ok, now we have the resolution limit stuff, need to work through
         # all of the integraters which belong to this set and if the
         # resolution defined for a given dataset is found to be lower
         # than the high resolution limit of the integrater, then reset
         # that limit, assert that the scaling and preparation is needed and
         # at the end return.
+
+        best_resolution = 100.0
 
         for epoch in self._scalr_integraters.keys():
             intgr = self._scalr_integraters[epoch]
@@ -919,14 +928,36 @@ class CCP4Scaler(Scaler):
 
             # compare this against the resolution limit computed above
             if dmin == 0.0:
-                # we will always assert the new limit
+                intgr.set_integrater_high_resolution(
+                    resolution_limits[dname])
+
+                # we need to rerun both the scaling and the preparation -
+                # this may trigger reintegration as well...
+                self._scalr_done = False
+                self._scalr_prepare_done = False
+                
+            elif dmin > resolution_limits[dname] - 0.1:
+                # no need to reprocess the data - this is near enough...
+                # this should save us from the "infinate loop"
                 pass
 
-            # do something sensible, resetting the "done" flags if necessary
+            else:
+                # ok it is worth rereducing the data
+                intgr.set_integrater_high_resolution(
+                    resolution_limits[dname])
+
+                # we need to rerun both the scaling and the preparation -
+                # this may trigger reintegration as well...
+                self._scalr_done = False
+                self._scalr_prepare_done = False
+
+            if resolution_limits[dname] < best_resolution:
+                best_resolution = resolution_limits[dname]
 
         # if we need to redo the scaling, return to allow this to happen
-            
 
+        if not self._scalr_done:
+            return
 
         # and also radiation damage stuff...
 
@@ -969,6 +1000,9 @@ class CCP4Scaler(Scaler):
         # "right" parameters...
         
         sc = self.Scala()
+
+        sc.set_resolution(best_resolution)
+
         sc.set_hklin(self._prepared_reflections)
 
         sc.add_sd_correction('full', 1.0, sdadd_full, sdb_full)
