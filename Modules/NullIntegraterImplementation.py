@@ -12,6 +12,9 @@
 # An empty integrater - this presents the Integrater interface but does 
 # nothing, making it ideal for when you have the integrated intensities
 # passed in already. This will simply return the intensities.
+#
+# FIXME 08/NOV/06 need to be able to limit in both batches and in resolution.
+#                 Therefore need to also include the Rebatch wrapper...
 # 
 
 import os
