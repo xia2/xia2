@@ -590,6 +590,10 @@ class CCP4Scaler(Scaler):
                        dname = input['dname'])
 
         sc.set_hklout(os.path.join(self.get_working_directory(), 'temp.mtz'))
+
+        # FIXME this needs to be set only is we have f', f'' values
+        # for the wavelength
+        
         sc.set_anomalous()
         sc.set_tails()
         sc.scale()
@@ -653,6 +657,15 @@ class CCP4Scaler(Scaler):
                 s_full -= 1.0
                 s_partial -= 1.0
 
+                # try uniform weighting...
+
+                if n_full > 0:
+                    n_full = 1
+                if n_partial > 0:
+                    n_partial = 1
+
+                # end try uniform weighting...
+
                 score_full += s_full * s_full * n_full
                 ref_count_full += n_full
 
@@ -692,6 +705,10 @@ class CCP4Scaler(Scaler):
         best_rms_partial = 1.0e9
 
         # compute sd_add first...
+
+        # FIXME I need to assess whether this route is appropriate, or
+        # whether I would be better off following some kind of mimisation
+        # procedure...
 
         while sdadd_full < max_sdadd_full:
             
@@ -805,6 +822,9 @@ class CCP4Scaler(Scaler):
                                    '%s_%s_scaled.mtz' % \
                                    (self._common_pname, self._common_xname)))
         
+        # FIXME this needs to be set only is we have f', f'' values
+        # for the wavelength
+        
         sc.set_anomalous()
         sc.set_tails()
 
@@ -821,48 +841,21 @@ class CCP4Scaler(Scaler):
         # loggraph output, and therefore need some transformation &
         # massaging to be useful.
 
-        # look for the standard deviation graphs - see FIXME 31/OCT/06
-
-        standard_deviation_info = { }
-
-        for key in loggraph.keys():
-            if 'standard deviation v. Intensity' in key:
-                dataset = key.split(',')[-1].strip()
-                standard_deviation_info[dataset] = transpose_loggraph(
-                    loggraph[key])
-
-        # write this in an interesting way...
-
-        for dataset in standard_deviation_info.keys():
-            info = standard_deviation_info[dataset]
-
-            # need to consider partials separately to fulls in assigning
-            # the error correction parameters
-            
-            for j in range(len(info['1_Range'])):
-                n_full = int(info['5_Number'][j])
-                I_full = float(info['4_Irms'][j])
-                s_full = float(info['7_SigmaFull'][j])
-
-                n_partial = int(info['9_Number'][j])
-                I_partial = float(info['8_Irms'][j])
-                s_partial = float(info['11_SigmaPartial'][j])
-                
-                n_tot = n_full + n_partial
-
-                if n_tot:
-                    i_tot = ((n_full * I_full) +
-                             (n_partial * I_partial)) / n_tot
-                    s_tot = ((n_full * s_full) +
-                             (n_partial * s_partial)) / n_tot
-                else:
-                    i_tot = 0.0
-                    s_tot = 1.0
-
         # look also for a sensible resolution limit for this data set -
         # that is, the place where I/sigma is about two for the highest
         # resolution data set - this should be a multiple of 0.05 A just
         # to keep the output tidy...
+
+        # FIXME 08/NOV/06 asserting a resolution limit here will cause
+        # the integration to be repeated. I want to assert a resolution
+        # limit for each wavelength, rather than each sweep, since this
+        # will get around the complication of merging multiple sweeps
+        # together (I hope...)
+
+        # FIXME further - if this process has already happened once the new
+        # resolution limit should be within 0.1A of the current resolution
+        # limit of the data - therefore ensure that if this is the case
+        # the resolution limit is not reasserted.
 
         resolution_info = { }
 
@@ -873,6 +866,12 @@ class CCP4Scaler(Scaler):
                     loggraph[key])
 
         # and also radiation damage stuff...
+
+        # FIXME 08/NOV/06 this needs to be fed back into the Integraters
+        # as to the batches that they should integrate - and possibly even
+        # have integraters eliminated from the input based on this
+        # information (this will be a later development, see also the
+        # scaling of multiple datasets below after CAD.)
 
         batch_info = { }
         
@@ -909,15 +908,8 @@ class CCP4Scaler(Scaler):
         sc = self.Scala()
         sc.set_hklin(self._prepared_reflections)
 
-        # generate a name for the "scales" file - this will be used for
-        # recycling the scaling parameters to compute appropriate
-        # sd correction parameters
-
         sc.add_sd_correction('full', 1.0, sdadd_full, sdb_full)
         sc.add_sd_correction('partial', 1.0, sdadd_partial, sdb_partial)
-        
-        scales_file = os.path.join(self.get_working_directory(),
-                                   '%s.scales' % self._common_xname)
 
         sc.set_new_scales_file(scales_file)
 
@@ -935,6 +927,9 @@ class CCP4Scaler(Scaler):
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled.mtz' % \
                                    (self._common_pname, self._common_xname)))
+        
+        # FIXME this needs to be set only is we have f', f'' values
+        # for the wavelength
         
         sc.set_anomalous()
         sc.set_tails()
