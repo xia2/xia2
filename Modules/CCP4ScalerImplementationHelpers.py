@@ -26,7 +26,7 @@ def _resolution_estimate(ordered_pair_list, cutoff):
         y.append(o[1])
 
     if max(y) < cutoff:
-        # there is no point where this exceeds the resolution
+        # there is no resolution where this exceeds the I/sigma
         # cutoff
         return -1.0
 
