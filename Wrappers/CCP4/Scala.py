@@ -245,6 +245,8 @@ def Scala(DriverType = None):
             '''Check for Scala specific errors. Raise RuntimeError if
             error is found.'''
 
+            # FIXME in here I need to add a test for convergence
+
             output = self.get_all_output()
 
             for line in output:
