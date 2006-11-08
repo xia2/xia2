@@ -672,8 +672,16 @@ class CCP4Scaler(Scaler):
                 score_partial += s_partial * s_partial * n_partial
                 ref_count_partial += n_partial
 
-        return math.sqrt(score_full / ref_count_full), \
-               math.sqrt(score_partial / ref_count_partial)
+            # compute the scores...
+
+            if ref_count_full > 0:
+                score_full /= ref_count_full
+
+            if ref_count_partial > 0:
+                score_partial /= ref_count_partial
+
+        return math.sqrt(score_full), \
+               math.sqrt(score_partial)
 
     def _refine_sd_parameters(self, scales_file):
         '''To some repeated merging (it is assumed that the data have
