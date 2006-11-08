@@ -351,9 +351,18 @@ class Integrater:
 
                 try:
                     self._integrate_prepare()
+
+                # FIXME 08/NOV/06 in here I need to have standard exceptions -
+                # sometimes I use runtime errors, others dpa exceptions...
+                
                 except DPAException, e:
                     # fixme I should trap the correct exception here
                     Chatter.write('Uh oh! %s' % str(e))
+                    self._intgr_indexer.eliminate()
+                    self._intgr_prepare_done = False
+
+                except RuntimeError, e:
+                    Chatter.write('Doh! %s' % str(e))
                     self._intgr_indexer.eliminate()
                     self._intgr_prepare_done = False
                     
