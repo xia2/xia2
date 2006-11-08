@@ -122,6 +122,15 @@ def transpose_loggraph(loggraph_dict):
             results[new_columns[j]].append(record[j])
 
     return results                            
+
+def nint(a):
+    '''return the nearest integer to a.'''
+
+    i = int(a)
+    if (a - i) > 0.5:
+        i += 1
+
+    return i
     
 if __name__ == '__main__':
     # run a test
