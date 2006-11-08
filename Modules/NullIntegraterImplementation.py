@@ -30,6 +30,8 @@ from Schema.Interfaces.Integrater import Integrater
 from Wrappers.CCP4.Mtzutils import Mtzutils
 from Handlers.Streams import Chatter
 
+from lib.Guff import auto_logfiler
+
 class NullIntegrater(Integrater):
     '''A null class to present the integrater interface.'''
 
@@ -85,17 +87,19 @@ class NullIntegrater(Integrater):
             
             # run mtzutils
 
-            mtzutils = Mtzutils()
+            mu = Mtzutils()
+
+            auto_logfiler(mu)
 
             Chatter.write('NULL integrater resolution limited to %5.2f' %
                           self._intgr_reso_high)
             Chatter.write('=> %s' % hklout)
 
-            mtzutils.set_hklin(self._intgr_hklout_orig)
-            mtzutils.set_hklout(hklout)
-            mtzutils.set_resolution(self._intgr_reso_high)
+            mu.set_hklin(self._intgr_hklout_orig)
+            mu.set_hklout(hklout)
+            mu.set_resolution(self._intgr_reso_high)
 
-            mtzutils.edit()
+            mu.edit()
 
             self._intgr_hklout = hklout
 
