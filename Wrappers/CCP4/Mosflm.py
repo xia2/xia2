@@ -769,8 +769,7 @@ def Mosflm(DriverType = None):
             # is pretty damn robust.
 
             if not cell_refinement_ok:
-                # raise DPAException, 'cell refinement failed'
-                Chatter.write('Uh no! Cell refinement failed...')
+                raise DPAException, 'Cell refinement failed'
 
             # if it succeeded then populate the indexer output (myself)
             # with the new information - this can then be used
