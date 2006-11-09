@@ -911,7 +911,7 @@ class CCP4Scaler(Scaler):
             resolution_limits[dataset] = resolution
 
             if resolution < highest_resolution:
-                resolution = highest_resolution
+                highest_resolution = resolution
 
             if resolution - highest_resolution < 0.051:
                 # why not use this, to be tidy?
