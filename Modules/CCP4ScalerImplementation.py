@@ -887,6 +887,11 @@ class CCP4Scaler(Scaler):
 
         resolution_limits = { }
 
+        # FIXME 10/NOV/06 after talking to Steve Prince I suspect I should
+        # not be "massaging" the resolution information... remove this!
+
+        massage_resolution = False
+
         highest_resolution = 100.0
 
         for dataset in resolution_info.keys():
@@ -907,13 +912,15 @@ class CCP4Scaler(Scaler):
             # gather up an "average" best resolution and perhaps use this
             # where it seems appropriate e.g. TS03 INFL, LREM.
 
-            resolution = 0.05 * nint(20.0 * resolution)
+            if massage_resolution:
+                resolution = 0.05 * nint(20.0 * resolution)
+                
             resolution_limits[dataset] = resolution
 
             if resolution < highest_resolution:
                 highest_resolution = resolution
 
-            if resolution - highest_resolution < 0.051:
+            if resolution - highest_resolution < 0.051 and massage_resolution:
                 # why not use this, to be tidy?
                 resolution_limits[dataset] = highest_resolution
 
