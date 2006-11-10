@@ -36,7 +36,7 @@ class TestScala(unittest.TestCase):
         tests that simple things to work.'''
         
         hklin = os.path.join(os.environ['XIA2CORE_ROOT'],
-                             'Python', 'UnitTest', '12287_1_E1_sorted.mtz')
+             	             'Python', '12287_1_E1_sorted.mtz')
         
         s = Scala()
         
