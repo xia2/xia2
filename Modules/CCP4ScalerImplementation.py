@@ -691,6 +691,10 @@ class CCP4Scaler(Scaler):
         sd_add, sd_fac, sd_b for fulls, partials. FIXME at some point
         this should probably be for each run as well...'''
 
+        # FIXME 10/NOV/06 in here should I also be recording the
+        # SdFac that Scala computes and recycling it? It may help
+        # the parameter refinement some...
+
         best_sdadd_full = 0.0
         best_sdadd_partial = 0.0
         best_sdb_full = 0.0
@@ -784,11 +788,48 @@ class CCP4Scaler(Scaler):
 
             sdb_full += step_sdb_full
 
+        # now we have good parameters for the SdB try rerefining the
+        # SdAdd...
+
+        sdadd_full = 0.0
+        best_rms_full = 1.0e9
+        best_rms_partial = 1.0e9
+        
+        while sdadd_full < max_sdadd_full:
+            
+            sdadd_partial = sdadd_full
+
+            rms_full, rms_partial = self._refine_sd_parameters_remerge(
+                scales_file, sdadd_full, best_sdb_full,
+                sdadd_partial, best_sdb_partial)
+
+            Chatter.write('Tested SdAdd %4.2f: %4.2f %4.2f' % \
+                          (sdadd_full, rms_full, rms_partial))
+
+            if rms_full < best_rms_full:
+                best_sdadd_full = sdadd_full
+                best_rms_full = rms_full
+
+            if rms_partial < best_rms_partial:
+                best_sdadd_partial = sdadd_partial
+                best_rms_partial = rms_partial
+
+            # check to see if we're going uphill again...
+            # FIXME in here I have to allow for the scores being
+            # exactly zero as an alternative - i.e. there are
+            # no reflections which are full, for instance.
+
+            if rms_full > best_rms_full and rms_partial > best_rms_partial:
+                break
+
+            sdadd_full += step_sdadd_full
+
         Chatter.write('Optimised SD corrections (A, B) found to be:')
         Chatter.write('Full:       %4.2f   %4.1f' %
                       (best_sdadd_full, best_sdb_full))
         Chatter.write('Partial:    %4.2f   %4.1f' %
                       (best_sdadd_partial, best_sdb_partial))
+
 
         return best_sdadd_full, best_sdb_full, \
                best_sdadd_partial, best_sdb_partial
