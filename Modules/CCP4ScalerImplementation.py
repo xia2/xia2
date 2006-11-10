@@ -695,6 +695,11 @@ class CCP4Scaler(Scaler):
         # SdFac that Scala computes and recycling it? It may help
         # the parameter refinement some...
 
+        # FIXME need an option somewhere to configure this...
+        
+        if False:
+            return (0.0, 0.0, 0.0, 0.0)
+
         best_sdadd_full = 0.0
         best_sdadd_partial = 0.0
         best_sdb_full = 0.0
