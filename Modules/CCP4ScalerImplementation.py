@@ -190,8 +190,8 @@ class CCP4Scaler(Scaler):
         return cad
 
     def Pointless(self):
-        '''Create a Pointless wrapper from _Pointless - set the working directory
-        and log file stuff as a part of this...'''
+        '''Create a Pointless wrapper from _Pointless - set the
+        working directory and log file stuff as a part of this...'''
         pointless = _Pointless()
         pointless.set_working_directory(self.get_working_directory())
         auto_logfiler(pointless)
