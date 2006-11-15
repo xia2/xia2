@@ -1,0 +1,17 @@
+# prepare the fa data...
+
+shelxc TS03 << eof
+INFL TS03_12287_scaled_INFL.sca
+LREM TS03_12287_scaled_LREM.sca
+SPAG P43212
+CELL 51.690000 51.680000 157.800000 90.000000 90.000000 90.000000
+FIND 9
+NTRY 20
+MIND -3.5
+eof
+
+# then run hyss - alternatively just the peak data could be used...
+
+phenix.hyss TS03_fa.hkl=hklf3 9 Se --space_group=p43212 \
+--unit_cell=51.690000,51.680000,157.800000,90.000000,90.000000,90.000000
+
