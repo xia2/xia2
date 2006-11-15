@@ -42,8 +42,12 @@
 # 0.2.0 - 08/NOV/06 this is it - it will now refine the resolution, refine
 #         standard deviation parameters, feed back from scaling to integration
 #         and all that jazz...
+# 
+# 0.2.1 - 15/NOV/06 release candidate to go with CCP4 6.0.2.
+# 
 
-VersionNumber = "0.2.0"
+
+VersionNumber = "0.2.1"
 Version = "XIA2DPA %s" % VersionNumber
 CVSTag = "xia2dpa-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2dpa-%s" % VersionNumber
