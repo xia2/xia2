@@ -47,4 +47,17 @@ form se FP=-3.3 FPP=0.5
 phase
 eof
 
+# for running dm after this...
+# note that a free R column is needed...
 
+dm hklin TS03_phased_free.mtz hklout TS03_phased_improved_dm.mtz << eof
+solc 0.526
+mode solv hist mult
+ncyc auto
+scheme all
+labin FP=FPHASED SIGFP=SIGFPHASED FOMO=FOM HLA=HLA HLB=HLB HLC=HLC HLD=HLD
+labout PHIDM=PHIDM FOMDM=FOMDM
+eof
+
+
+ 
