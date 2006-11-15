@@ -74,15 +74,21 @@
 #                 is sometimes wrong and very hard to find right ;o(.
 #                 See NaI/Lysozyme data collected on 14.1 in /data1/graeme.
 #  
-# FIXME 26/SEP/06 allow for INTEGRATED_REFLECTION_FILE in sweep record in place
+# FIXED 26/SEP/06 allow for INTEGRATED_REFLECTION_FILE in sweep record in place
 #                 of or in addition to the DIRECTORY, TEMPLATE to allow for
 #                 development of the scaling independently of the scaling 
 #                 &c. The same could be applied to the scaled reflections
 #                 belonging to a wavelength etc.
 # 
-# FIXME 27/OCT/06 need to be able to override or provide the epoch
+# FIXED 27/OCT/06 need to be able to override or provide the epoch
 #                 information in the .xinfo file to cope with cases
 #                 where this information is not in the image headers.
+# 
+# FIXME 15/NOV/06 allow for a role for wavelengths, for example in shelxc/d/e
+#                 it would help matters to define peak, inflection, low and
+#                 high remote. This should be done automatically in a perfect
+#                 world.
+# 
 
 class XInfo:
     '''A class to represent all of the input to the xia2dpa system, with
