@@ -68,6 +68,12 @@
 #                 to a standard setting (pointless does this) if appropriate.
 #                 If it's P43212 or P41212 then I need to decide what is 
 #                 best to do...
+# 
+# FIXME 15/NOV/06 need to add a FreeR column to the reflection file.
+#
+# FIXME 15/NOV/06 also need to run pointless on the final data sets to
+#                 have a stab at the correct spacegroup, e.g. P212121.
+# 
 
 import os
 import sys
