@@ -59,5 +59,26 @@ labin FP=FPHASED SIGFP=SIGFPHASED FOMO=FOM HLA=HLA HLB=HLB HLC=HLC HLD=HLD
 labout PHIDM=PHIDM FOMDM=FOMDM
 eof
 
-
+# according to the documentation this is how we prepare data for shelxd
  
+revise hklin TS03_12287.mtz hklout TS03_12287_prepare.mtz << eof
+labin -
+FPH1=F_INFL SIGFPH1=SIGF_INFL DPH1=DANO_INFL SIGDPH1=SIGDANO_INFL -
+FPH2=F_LREM SIGFPH2=SIGF_LREM DPH2=DANO_LREM SIGDPH2=SIGDANO_LREM 
+labout -
+FPH1=F_INFL_mod SIGFPH1=SIGF_INFL_mod -
+DPH1=DANO_INFL_mod SIGDPH1=SIGDANO_INFL_mod -
+FPH1=F_LREM_mod SIGFPH1=SIGF_LREM_mod -
+DPH1=DANO_LREM_mod SIGDPH1=SIGDANO_LREM_mod -
+FM=FM SIGFM=SIGFM
+wave 1 lam 0.97966 fpr -9.9 fdp 3.9
+wave 2 lam 1.00000 fpr -3.3 fdp 0.5
+end
+eof
+
+mtz2various hklin TS03_12287_prepare.mtz hklout TS03_12287.hkl << eof
+output shelxd
+labin FP=FM SIGFP=SIGFM
+end
+
+# hyss isn't happy with it though...
