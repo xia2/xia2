@@ -82,3 +82,7 @@ labin FP=FM SIGFP=SIGFM
 end
 
 # hyss isn't happy with it though...
+# however it will work with the original data...
+
+phenix.hyss TS03_12287.mtz 9 se
+
