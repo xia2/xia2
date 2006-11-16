@@ -57,6 +57,8 @@ class SubstructureFinder:
     def find(self):
         '''Actually initiate the finding process...'''
 
+        # fixme need to add the checks in here
+
         while not self._ssfnd_done:
             self._ssfnd_done = True
 
@@ -96,4 +98,9 @@ class SubstructureFinder:
         return
 
     def substructure_find_get_sites(self):
+        '''Actually get out the sites.'''
+
+        # this will only run if needed
+        self.find()
+        
         return self._ssfnd_sites
