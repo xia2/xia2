@@ -22,7 +22,12 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
 if not os.environ['DPA_ROOT'] in sys.path:
     sys.path.append(os.environ['DPA_ROOT'])
 
+if not os.environ['SS_ROOT'] in sys.path:
+    sys.path.append(os.environ['SS_ROOT'])
+
 from Driver.DriverFactory import DriverFactory
+
+from Schema.Interfaces.SubstructureFinder import SubstructureFinder
 
 def Hyss(DriverType = None):
     '''Factory for Hyss wrapper classes, with the specified
@@ -30,7 +35,8 @@ def Hyss(DriverType = None):
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
-    class HyssWrapper(DriverInstance.__class__):
+    class HyssWrapper(DriverInstance.__class__,
+                      SubstructureFinder):
         '''A wrapper for the program phenix.hyss, for locating the heavy
         atom substructure from an anomalous data set.'''
 
