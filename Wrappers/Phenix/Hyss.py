@@ -51,6 +51,38 @@ def Hyss(DriverType = None):
             # happens to be hklf3, the type of heavy atoms and the
             # spacegroup...
 
+        def _substructure_find_prepare(self):
+            '''Prepare data for hyss to work with.'''
+
+            # get the data from the scaler
+
+            # decide what to do with it based on the input format
+
+            # perhaps run something (e.g. shelxc) to prepare the data
+
+            # record the prepared reflection file
+
+            # set the spacegroup if it is not already set
+
+            return
+
+        def _substructure_find(self):
+            '''Actually run hyss to find the sites.'''
+
+            # get the prepared reflection file
+
+            # start hyss
+
+            # check that hys has worked ok - if not either
+            # (i) change something so it will work fine next time - or -
+            # (ii) raise an exception so we get out of teh stuck loop
+
+            # get the output heavy atom pdb file
+
+            # transmogrify it into the standard format
+
+            # return
+
 
     return HyssWrapper()
 
