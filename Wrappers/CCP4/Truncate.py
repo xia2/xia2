@@ -15,6 +15,9 @@
 # FIXME 26/OCT/06 this needs to be able to take into account the solvent
 #                 content of the crystal (at the moment it will be assumed
 #                 to be 50%.)
+# 
+# FIXME 16/NOV/06 need to be able to get the estimates B factor from the
+#                 Wilson plot and also second moment stuff, perhaps?
 
 import os
 import sys
