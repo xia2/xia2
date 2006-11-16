@@ -86,3 +86,58 @@ end
 
 phenix.hyss TS03_12287.mtz 9 se
 
+# here is a script which works very nicely for the TS03 data and gives
+# a nice map (e.g. this actually works from start to finish...)
+
+# find the sites
+phenix.hyss TS03_12287.mtz 9 se --space_group=p43212
+
+# begin composing the bp3 input file - note well that the 
+# input crystal id must be a string!
+echo 'xtal X12287' > bp3.in
+
+# transmogrify the coordinates from hyss to a form helpful for bp3
+python ~/CVR/SS/lib/Jiffy.py TS03*consensus*.pdb >> bp3.in
+
+# add in the correct BISO values - see output from above 
+cat bp3.in | sed 's/BISO/20.0/' > bp3.tmp
+mv bp3.tmp bp3.in
+
+# fill in the column and f', f'' information
+cat >> bp3.in << eof
+
+dname INFL
+column F+=F(+)_INFL SF+=SIGF(+)_INFL F-=F(-)_INFL SF-=SIGF(-)_INFL 
+form se FP=-9.9 FPP=3.9
+dname LREM
+column F+=F(+)_LREM SF+=SIGF(+)_LREM F-=F(-)_LREM SF-=SIGF(-)_LREM 
+form se FP=-3.3 FPP=0.5
+phase
+
+eof
+
+# run bp3 with the sites and phasing information
+bp3 hklin TS03_12287.mtz hklout TS03_12287_phased.mtz < bp3.in
+
+# add in the original columns from the reduced data - this will
+# give the FreeR_flag and F, SIGF's
+cad hklin1 TS03_12287.mtz hklin2 TS03_12287_phased.mtz \
+hklout TS03_12287_phased_all.mtz << eof
+labin file 1 all
+labin file 2 all
+eof
+
+# run some density modification to make the very nice map - note using
+# F, SIGF output from bp3 - since I am still working on those phases
+dm hklin TS03_12287_phased_all.mtz hklout TS03_12287_improved.mtz << eof
+solc 0.526
+mode solv hist mult
+ncyc auto
+scheme all
+labin FP=FPHASED SIGFPHASED=SIGFP FOMO=FOM FREE=FreeR_flag -
+HLA=HLA HLB=HLB HLC=HLC HLD=HLD
+labout PHIDM=PHIDM FOMDM=FOMDM
+eof
+
+# next I could run arp/warp, in which case I would give the F, SIGF from 
+# the low remote...
