@@ -503,8 +503,10 @@ def Scala(DriverType = None):
                         if not dname in datasets:
                             raise RuntimeError, 'unknown dataset %s' % dname
                         hklout_dict[dname] = hklout
-                    else:
+                    elif len(datasets) > 0:
                         hklout_dict[datasets[0]] = hklout
+                    else:
+                        hklout_dict['only'] = hklout
                     hklout_files.append(hklout)
             
             self._scalr_scaled_reflection_files = hklout_dict
