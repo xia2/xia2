@@ -110,6 +110,11 @@
 #                 system so that in the case of 1VR9/TS01 the "correct"
 #                 pointgroup of I222 is not specified, as it has already
 #                 been eliminated at the processing stage.
+# 
+# FIXME 16/NOV/05 also want to run this in a manner which will give a correct
+#                 spacegroup from the systematic absences once the pointgroup
+#                 is correctly set...
+#
 
 import os
 import sys
