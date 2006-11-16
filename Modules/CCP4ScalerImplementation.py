@@ -71,7 +71,7 @@
 # 
 # FIXME 15/NOV/06 need to add a FreeR column to the reflection file.
 #
-# FIXME 15/NOV/06 also need to run pointless on the final data sets to
+# FIXME 16/NOV/06 also need to run pointless on the final data sets to
 #                 have a stab at the correct spacegroup, e.g. P212121.
 # 
 
@@ -567,6 +567,15 @@ class CCP4Scaler(Scaler):
             s.add_hklin(self._sweep_information[epoch]['hklin'])
 
         s.sort()
+
+        # FIXME 16/NOV/06 perhaps in here I should consider running
+        # pointless again, this time to decide the correct spacegroup
+        # and setting - this should then reset to the correct indexing
+        # and reassign the spacegroup (or it's enantiomorph.)
+
+        # then run reindex to set the correct spacegroup
+
+        # then resort the reflections (one last time!)
 
         # done preparing!
 
@@ -1373,6 +1382,9 @@ class CCP4Scaler(Scaler):
             self._scalr_scaled_reflection_files[
                 'mtz_merged'] = scaled_reflection_files[
                 scaled_reflection_files.keys()[0]]
+
+        # finally add a FreeR column, and record the new merged reflection
+        # file with the free column added.
 
         return
 
