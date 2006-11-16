@@ -1,0 +1,18 @@
+REMARK phenix.hyss consensus model
+REMARK Number of scatterers: 9
+REMARK At special positions: 0
+REMARK Cartesian coordinates
+CRYST1   51.685   51.685  157.800  90.00  90.00  90.00 P 43 21 2
+SCALE1      0.019348 -0.000000 -0.000000        0.00000
+SCALE2      0.000000  0.019348  0.000000        0.00000
+SCALE3      0.000000  0.000000  0.006337        0.00000
+ATOM      1 SE   SUB     1       2.753  20.267  74.745  1.00  0.00          SE
+ATOM      2 SE   SUB     2       1.799  29.996  62.242  0.95  0.00          SE
+ATOM      3 SE   SUB     3       5.569  33.405  31.615  0.89  0.00          SE
+ATOM      4 SE   SUB     4      10.849  11.265 107.891  0.65  0.00          SE
+ATOM      5 SE   SUB     5       4.643  37.245  24.522  0.62  0.00          SE
+ATOM      6 SE   SUB     6      -0.164  22.729  67.963  0.62  0.00          SE
+ATOM      7 SE   SUB     7       4.510  44.533  75.364  0.44  0.00          SE
+ATOM      8 SE   SUB     8       1.951  47.449  22.786  0.30  0.00          SE
+ATOM      9 SE   SUB     9       4.050  47.442  19.881  0.28  0.00          SE
+END
