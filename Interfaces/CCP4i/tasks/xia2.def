@@ -1,0 +1,36 @@
+#
+#     Copyright (C) 1999-2006  Graeme Winter, Peter Briggs
+#
+#     This code is distributed under the terms and conditions of the
+#     CCP4 Program Suite Licence Agreement as a CCP4 Library.
+#     A copy of the CCP4 licence can be obtained by writing to the
+#     CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
+#
+#CCP4i_cvs_Id $Id: xia2.def,v 1.1 2006/11/16 15:01:35 gwin Exp $
+#CCP4I VERSION CCP4Interface 1.4.4
+#CCP4I SCRIPT DEF xia2
+#CCP4I DATE  01/07/97 16:05:30
+#CCP4I USER pjx
+
+TITLE			_title_text		""
+
+INPUT_FILES		_list_of_text		""
+OUTPUT_FILES		_list_of_text		""
+
+PROJECT_NAME		_text			""
+XTAL_NAME		_text			""
+
+# Defining wavelengths
+N_WAVELENGTHS		_positiveint		0
+WAVELENGTH_NAME,0	_text			""
+WAVELENGTH_LAMBDA,0	_positivereal		""
+
+# Variable menu with wavelength names
+WAVELENGTH_MENU		_list                   ""
+WAVELENGTH_ALIAS	_list                   ""
+
+# Defining sweeps
+N_SWEEPS		_positiveint		0
+SWEEP_WAVELENGTH,0	_xia2_wavelengths	""
+SWEEP_IMAGE,0		_text			""
+SWEEP_DIR,0		_text			""
