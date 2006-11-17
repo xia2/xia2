@@ -599,7 +599,7 @@ class CCP4Scaler(Scaler):
         ri = self.Reindex()
         ri.set_hklin(hklin)
         ri.set_hklout(hklout)
-        ri.set_spacegroup(pointgroup)
+        ri.set_spacegroup(spacegroup)
         ri.set_operator(reindex_operator)
         ri.reindex()
         
