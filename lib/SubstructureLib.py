@@ -164,7 +164,7 @@ def write_pdb_sites_file(sites_info, out = sys.stdout):
                symm))
 
     for j in range(3):
-        out.write('SCALE%d      %8.6f %8.6f %8.6f        0.00000\n' % \
+        out.write('SCALE%d     %9.6f %9.6f %9.6f        0.00000\n' % \
                   (j + 1, scales[j][0], scales[j][1], scales[j][2]))
 
     # atom sites
@@ -172,11 +172,12 @@ def write_pdb_sites_file(sites_info, out = sys.stdout):
     j = 0
     for atom in sites_info['sites']:
         j += 1
-        out.write(
-            'ATOM    %2d %s   SUB   %2d    %7.3f %7.3f %7.3f %5.2f  0.00\n' % \
-            (j, atom['atom'].upper(), j,
-             atom['cartesian'][0], atom['cartesian'][1],
-             atom['cartesian'][2], atom['occupancy']))
+        format = 'ATOM    %3d %s   SUB   %3d     ' + \
+                 '%7.3f %7.3f %7.3f %5.2f  0.00\n'
+        out.write(format % \
+                  (j, atom['atom'].upper(), j,
+                   atom['cartesian'][0], atom['cartesian'][1],
+                   atom['cartesian'][2], atom['occupancy']))
         
     out.write('END\n')
     
@@ -257,7 +258,7 @@ def invert_hand(sites_info):
 
     # check first for special cases...
 
-    if sites['spacegroup'] == 'I 41':
+    if sites_info['spacegroup'] == 'I 41':
         for site in old_sites:
             fractional = site['fractional']
             new_fractional = (1 - fractional[0],
@@ -271,7 +272,7 @@ def invert_hand(sites_info):
                               'cartesian':new_cartesian,
                               'fractional':new_fractional})
         
-    elif sites['spacegroup'] == 'I 41 2 2':
+    elif sites_info['spacegroup'] == 'I 41 2 2':
         for site in old_sites:
             fractional = site['fractional']
             new_fractional = (1 - fractional[0],
@@ -286,7 +287,7 @@ def invert_hand(sites_info):
                               'cartesian':new_cartesian,
                               'fractional':new_fractional})
         
-    elif sites['spacegroup'] == 'F 41 3 2':
+    elif sites_info['spacegroup'] == 'F 41 3 2':
         for site in old_sites:
             fractional = site['fractional']
             new_fractional = (0.25 - fractional[0],

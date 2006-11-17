@@ -18,20 +18,22 @@ import os
 if not os.environ['SS_ROOT'] in sys.path:
     sys.path.append(os.environ['SS_ROOT'])
 
-import lib.SubstructureLib
+from lib import SubstructureLib
 
 def run():
     if len(sys.argv) < 2:
         raise RuntimeError, '%s pdb.in [pdb.out]'
 
-    sites = SubstructireLib.parse_pdb_sites_file(sys.argv[1])
+    sites = SubstructureLib.parse_pdb_sites_file(sys.argv[1])
 
     if len(sys.argv) == 3:
         out = open(sys.argv[2], 'w')
-        write_pdb_sites_file(invert_hand(sites))
+        SubstructureLib.write_pdb_sites_file(
+            SubstructureLib.invert_hand(sites), out)
         out.close()
     else:
-        write_pdb_sites_file(invert_hand(sites))
+        SubstructureLib.write_pdb_sites_file(
+            SubstructureLib.invert_hand(sites))
 
 if __name__ == '__main__':
     run()
