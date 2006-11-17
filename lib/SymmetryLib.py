@@ -11,6 +11,15 @@
 # 
 # A library of things to help with simple symmetry operation stuff.
 # 
+# FIXME 17/NOV/06 add a method in here to give a list of likely, and then
+#                 less likely, spacegroups based on an input spacegroup.
+#                 For instance, if the input spacegroup is P 41 21 2 then
+#                 another likely spacegroup is P 43 21 2 and less likely
+#                 spacegroups are all those in the same pointgroup with
+#                 different screw axes - e.g. P 41 2 2 (thinking of an Ed
+#                 Mitchell example.) This should also allow in the likely
+#                 case for body centred spacegroups where the screw axes
+#                 are hidden, for example I 2 2 2/I 21 21 21 and I 2 3/I 21 3.
 # 
 
 import os
