@@ -24,7 +24,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
 if not os.environ['DPA_ROOT'] in sys.path:
     sys.path.append(os.environ['DPA_ROOT'])
 
-from SymmetryLib import spacegroup_name_short_to_long
+from SymmetryLib import spacegroup_name_short_to_long, compute_enantiomorph
 
 def _dot(a, b):
     '''Compute a.b. For converting with the aid of a SCALEN record in a
@@ -152,10 +152,12 @@ def invert_hand(sites_info):
                               'fractional':new_fractional})
 
         # perhaps invert the spacegroup to it's enantiomorph
-        
+        new_sites_info['spacegroup'] = compute_enantiomorph(
+            sites_info['spacegroup'])
 
     new_sites_info['sites'] = new_sites
 
+    return new_sites_info
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
@@ -164,6 +166,7 @@ if __name__ == '__main__':
     else:
         pdb = sys.argv[1]
 
-    print parse_pdb_sites_file(pdb)
-
+    sites = parse_pdb_sites_file(pdb)
+    print sites
+    print invert_hand(sites)
     
