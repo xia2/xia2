@@ -33,8 +33,8 @@ def run():
     else:
         write_pdb_sites_file(invert_hand(sites))
 
- if __name__ == '__main__':
-     run()
+if __name__ == '__main__':
+    run()
 
  
 
