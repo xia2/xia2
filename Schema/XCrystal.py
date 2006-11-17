@@ -220,6 +220,25 @@ class XCrystal(Object):
             result += str(self._wavelengths[wavelength])
 
         reflections_all = self.get_scaled_merged_reflections()
+        statistics_all = self._get_scaler().get_scaler_statistics()
+
+        # print some of these statistics, perhaps?
+
+        for key in statistics_all.keys():
+            pname, xname, dname = key
+
+            result += 'For %s/%s/%s\n' % key
+            stats = statistics_all[key].keys()
+            stats.sort()
+            for s in stats:
+                if type(statistics_all[key][s]) == type(0.0):
+                    result += '%s: %f\n' % (s, statistics_all[key][s])
+                elif type(statistics_all[key][s]) == type([]):
+                    result += '%s: ' % s
+                    for value in statistics_all[key][s]:
+                        result += ' %f' % value
+                    result += '\n'
+            result += '\n'
 
         if type(reflections_all) == type({}):
             for format in reflections_all.keys():
