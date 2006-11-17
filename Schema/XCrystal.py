@@ -232,11 +232,11 @@ class XCrystal(Object):
             stats.sort()
             for s in stats:
                 if type(statistics_all[key][s]) == type(0.0):
-                    result += '%s: %f\n' % (s, statistics_all[key][s])
+                    result += '%40s: %f\n' % (s, statistics_all[key][s])
                 elif type(statistics_all[key][s]) == type(""):
-                    result += '%s: %f\n' % (s, statistics_all[key][s])
+                    result += '%40s: %f\n' % (s, statistics_all[key][s])
                 elif type(statistics_all[key][s]) == type([]):
-                    result += '%s: ' % s
+                    result += '%40s: ' % s
                     for value in statistics_all[key][s]:
                         result += ' %s' % value
                     result += '\n'
