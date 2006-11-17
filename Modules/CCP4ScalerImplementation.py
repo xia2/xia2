@@ -1266,6 +1266,14 @@ class CCP4Scaler(Scaler):
             t.set_hklout(hklout)
             t.truncate()
 
+            b_factor = t.get_b_factor()
+
+            # record the b factor somewhere (hopefully) useful...
+
+            self._scalr_statistics[
+                (self._common_pname, self._common_xname, key)
+                ]['Truncate B factor'] = [b_factor]
+
             # replace old with the new version which has F's in it 
             scaled_reflection_files[key] = hklout
 
