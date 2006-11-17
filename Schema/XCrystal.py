@@ -238,9 +238,9 @@ class XCrystal(Object):
                     result += '%s: %f\n' % (s.ljust(40),
                                             statistics_all[key][s])
                 elif type(statistics_all[key][s]) == type([]):
-                    result += '%s: ' % s.ljust(40)
+                    result += '%s ' % s.ljust(40)
                     for value in statistics_all[key][s]:
-                        result += ' %s' % value
+                        result += '\t%s' % value
                     result += '\n'
             result += '\n'
 
