@@ -111,7 +111,7 @@
 #                 pointgroup of I222 is not specified, as it has already
 #                 been eliminated at the processing stage.
 # 
-# FIXME 16/NOV/05 also want to run this in a manner which will give a correct
+# FIXED 16/NOV/05 also want to run this in a manner which will give a correct
 #                 spacegroup from the systematic absences once the pointgroup
 #                 is correctly set...
 #
@@ -459,6 +459,45 @@ def Pointless(DriverType = None):
 
             return 'ok'
 
+        def decide_spacegroup(self):
+            '''Given data indexed in the correct pointgroup, have a
+            guess at the spacegroup.'''
+
+            self.check_hklin()
+
+            self.set_task('Computing the correct spacegroup for %s' % \
+                          self.get_hklin())
+
+            # FIXME this should probably be a standard CCP4 keyword
+
+            self.add_command_line('xmlout')
+            self.add_command_line('pointless.xml')
+
+            self.start()
+
+            self.input('lauegroup hklin')
+
+            self.close_wait()
+
+            # check for errors
+            self.check_for_errors()
+
+            hklin_spacegroup = ''
+
+            xml_file = os.path.join(self.get_working_directory(),
+                                    'pointless.xml')
+
+            dom = xml.dom.minidom.parse(xml_file)
+            
+            sg_list = dom.getElementsByTagName('SpacegroupList')[0]
+            sg_node = dom.getElementsByTagName('Spacegroup')[0]
+            self._spacegroup = sg_node.getElementsbyTagName(
+                'SpacegroupName')[0].childNodes[0].data.strip()
+            self._spacegroup_reindex_operator = sg_node.getElementsByTagName(
+                'ReindexOperator')[0].childNodes[0].data.strip()
+
+            return 'ok'
+
         def get_reindex_matrix(self):
             return self._reindex_matrix
 
@@ -468,6 +507,12 @@ def Pointless(DriverType = None):
         def get_pointgroup(self):
             # FIXED on 22/AUG/06 this was spacegroup
             return self._pointgroup
+
+        def get_spacegroup(self):
+            return self._spacegroup
+
+        def get_spacegroup_reindex_operator(self):
+            return self._spacegroup_reindex_operator
 
         def get_confidence(self):
             return self._confidence
@@ -495,10 +540,19 @@ if __name__ == '__main__':
 
     p.set_hklin(hklin)
 
-    p.decide_pointgroup()
+    pointgroup = False
 
-    print 'Correct pointgroup: %s' % p.get_pointgroup()
-    print 'Reindexing matrix: ' + \
-          '%4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f' % \
-          tuple(p.get_reindex_matrix())
-    print 'Confidence: %f' % p.get_confidence()
+    if pointgroup:
+        p.decide_pointgroup()
+        
+        print 'Correct pointgroup: %s' % p.get_pointgroup()
+        print 'Reindexing matrix: ' + \
+              '%4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f' % \
+              tuple(p.get_reindex_matrix())
+        print 'Confidence: %f' % p.get_confidence()
+
+    else:
+        p.decide_spacegroup()
+        
+        print 'Correct spacegroup: %s' % p.get_spacegroup()
+        print 'Reindex operator: %s' % p.get_spacegroup_reindex_operator()
