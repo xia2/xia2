@@ -233,10 +233,12 @@ class XCrystal(Object):
             for s in stats:
                 if type(statistics_all[key][s]) == type(0.0):
                     result += '%s: %f\n' % (s, statistics_all[key][s])
+                elif type(statistics_all[key][s]) == type(""):
+                    result += '%s: %f\n' % (s, statistics_all[key][s])
                 elif type(statistics_all[key][s]) == type([]):
                     result += '%s: ' % s
                     for value in statistics_all[key][s]:
-                        result += ' %f' % value
+                        result += ' %s' % value
                     result += '\n'
             result += '\n'
 
