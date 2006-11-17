@@ -22,7 +22,32 @@ if not os.environ.has_key('SS_ROOT'):
 symop = os.path.join(os.environ['SS_ROOT'],
                      'Data', 'Symmetry', 'symop.lib')
 
+def get_all_spacegroups_short():
+    '''Get a list of all short spacegroup names.'''
+
+    result = []
+    
+    for record in open(symop, 'r').readlines():
+        if record[0] != ' ':
+            shortname = record.split()[3]
+            result.append(shortname)
+
+    return result
+
+def get_all_spacegroups_long():
+    '''Get a list of all long spacegroup names.'''
+
+    result = []
+    
+    for record in open(symop, 'r').readlines():
+        if record[0] != ' ':
+            longname = record.split('\'')[1]
+            result.append(longname)
+
+    return result
+    
 def spacegroup_name_short_to_long(name):
+    '''Get the full spacegroup name from the short version.'''
     for record in open(symop, 'r').readlines():
         if record[0] != ' ':
             shortname = record.split()[3]
@@ -30,3 +55,53 @@ def spacegroup_name_short_to_long(name):
             if shortname.lower() == name.lower():
                 return longname
 
+    # uh oh this doesn't exist!
+
+def compute_enantiomorph(spacegroup):
+    '''Compute the spacegroup enantiomorph name. There are 11 pairs where
+    this is needed.'''
+
+    # should check that this is the long name form here
+
+    elements = spacegroup.split()
+
+    if elements[0] == 'P' and elements[1] == '41':
+        new = '43'
+    elif elements[0] == 'P' and elements[1] == '43':
+        new = '41'
+
+    elif elements[0] == 'P' and elements[1] == '31':
+        new = '32'
+    elif elements[0] == 'P' and elements[1] == '32':
+        new = '31'
+        
+    elif elements[0] == 'P' and elements[1] == '61':
+        new = '65'
+    elif elements[0] == 'P' and elements[1] == '65':
+        new = '61'
+
+    elif elements[0] == 'P' and elements[1] == '62':
+        new = '64'
+    elif elements[0] == 'P' and elements[1] == '64':
+        new = '62'
+
+    else:
+        new = elements[1]
+
+    # construct the new spacegroup
+
+    result = '%s %s' % (elements[0], new)
+    for element in elements[2:]:
+        result += ' %s' % element
+
+    # check that this is a legal spacegroup
+
+    return result
+
+if __name__ == '__main__':
+
+    for spacegroup in get_all_spacegroups_long():
+        enantiomorph = compute_enantiomorph(spacegroup)
+
+        if enantiomorph != spacegroup:
+            print '%s -> %s' % (spacegroup, enantiomorph)
