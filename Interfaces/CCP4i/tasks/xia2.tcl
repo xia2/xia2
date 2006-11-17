@@ -6,7 +6,7 @@
 #     A copy of the CCP4 licence can be obtained by writing to the
 #     CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
 #
-#CCP4i_cvs_Id $Id: xia2.tcl,v 1.2 2006/11/16 15:13:06 gwin Exp $
+#CCP4i_cvs_Id $Id: xia2.tcl,v 1.3 2006/11/17 09:59:10 gwin Exp $
 # ======================================================================
 # xia2.tcl --
 #
@@ -196,11 +196,14 @@ proc xia2_browse { arrayname counter } {
     # former case
     if { [file isdirectory $filename] } {
       set dirname $filename
+      set array(SWEEP_DIR,$counter) $dirname
     } else {
-      set dirname [file dirname $filename]
+	set dirname [file dirname $filename]
+      set image [file tail $filename]
+      set array(SWEEP_DIR,$counter) $dirname
+      set array(SWEEP_IMAGE,$counter) $image
     }
     # Update the parameters in the window
-    set array(SWEEP_DIR,$counter) $dirname
   }
   return
 }
