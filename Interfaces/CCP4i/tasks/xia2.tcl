@@ -6,7 +6,7 @@
 #     A copy of the CCP4 licence can be obtained by writing to the
 #     CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
 #
-#CCP4i_cvs_Id $Id: xia2.tcl,v 1.3 2006/11/17 09:59:10 gwin Exp $
+#CCP4i_cvs_Id $Id: xia2.tcl,v 1.4 2006/11/17 10:03:00 gwin Exp $
 # ======================================================================
 # xia2.tcl --
 #
@@ -26,6 +26,12 @@ proc xia2_setup { typedefVar arrayname } {
   # Variable menu for wavelength names defined by the user
   set typedef(_xia2_wavelengths) [list varmenu \
 				      WAVELENGTH_MENU WAVELENGTH_ALIAS 10]
+
+  # Static menu for wavelength names
+
+  DefineMenu _xia2_wavelengthname [list "Native" "Inflection" "Peak" \
+				       "Low Remote" "High Remote"] \
+      [list NATIVE INFL PEAK LREM HREM]
 
   # procedure must return sucess code (1)
   # for drawing task window to continue
