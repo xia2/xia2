@@ -147,6 +147,41 @@ def _is_identity_3x3_matrix(m):
                 if math.fabs(m[i][j]) > 1.0e-7:
                     raise RuntimeError, 'non identity'
 
+def write_pdb_sites_file(sites_info, out = sys.stdout):
+    '''Write a PDB format output containing the sites information.'''
+
+    # gather the information
+
+    cell = sites_info['cell']
+    symm = sites_info['spacegroup']
+    scales = sites_info['scale']
+
+    # header guff
+    
+    out.write('REMARK PDB FILE WRITTEN BY XIA2\n')
+    out.write('CRYST1 %8.3f %8.3f %8.3f %6.2f %6.2f %6.2f %s\n' % \
+              (cell[0], cell[1], cell[2], cell[3], cell[4], cell[5],
+               symm))
+
+    for j in range(3):
+        out.write('SCALE%d      %8.6f %8.6f %8.6f        0.00000\n' % \
+                  (j + 1, scales[j][0], scales[j][1], scales[j][2]))
+
+    # atom sites
+
+    j = 0
+    for atom in sites_info['sites']:
+        j += 1
+        out.write(
+            'ATOM    %2d %s   SUB   %2d    %7.3f %7.3f %7.3f %5.2f  0.00\n' % \
+            (j, atom['atom'].upper(), j,
+             atom['cartesian'][0], atom['cartesian'][1],
+             atom['cartesian'][2], atom['occupancy']))
+        
+    out.write('END\n')
+    
+    return
+
 def parse_pdb_sites_file(pdb_file):
     '''Parse a pdb file full of heavy atoms and transmogrify this into
     a form suitable for input to e.g. bp3 (with fractional coordinates
@@ -228,8 +263,12 @@ def invert_hand(sites_info):
             new_fractional = (1 - fractional[0],
                               0.5 - fractional[1],
                               1 - fractional[2])
+            new_cartesian = tuple([_dot(sites_info['scale_inverse'][j],
+                                        new_fractional) for j in range(3)])
+                
             new_sites.append({'atom':site['atom'],
                               'occupancy':site['occupancy'],
+                              'cartesian':new_cartesian,
                               'fractional':new_fractional})
         
     elif sites['spacegroup'] == 'I 41 2 2':
@@ -238,8 +277,13 @@ def invert_hand(sites_info):
             new_fractional = (1 - fractional[0],
                               0.5 - fractional[1],
                               0.25 - fractional[2])
+
+            new_cartesian = tuple([_dot(sites_info['scale_inverse'][j],
+                                        new_fractional) for j in range(3)])
+                
             new_sites.append({'atom':site['atom'],
                               'occupancy':site['occupancy'],
+                              'cartesian':new_cartesian,
                               'fractional':new_fractional})
         
     elif sites['spacegroup'] == 'F 41 3 2':
@@ -248,8 +292,13 @@ def invert_hand(sites_info):
             new_fractional = (0.25 - fractional[0],
                               0.25 - fractional[1],
                               0.25 - fractional[2])
+
+            new_cartesian = tuple([_dot(sites_info['scale_inverse'][j],
+                                        new_fractional) for j in range(3)])
+                
             new_sites.append({'atom':site['atom'],
                               'occupancy':site['occupancy'],
+                              'cartesian':new_cartesian,
                               'fractional':new_fractional})
         
     else:
@@ -259,8 +308,13 @@ def invert_hand(sites_info):
             new_fractional = (1.0 - fractional[0],
                               1.0 - fractional[1],
                               1.0 - fractional[2])
+
+            new_cartesian = tuple([_dot(sites_info['scale_inverse'][j],
+                                        new_fractional) for j in range(3)])
+                
             new_sites.append({'atom':site['atom'],
                               'occupancy':site['occupancy'],
+                              'cartesian':new_cartesian,
                               'fractional':new_fractional})
 
         # perhaps invert the spacegroup to it's enantiomorph
@@ -279,6 +333,6 @@ if __name__ == '__main__':
         pdb = sys.argv[1]
 
     sites = parse_pdb_sites_file(pdb)
-    print sites
-    print invert_hand(sites)
+    write_pdb_sites_file(sites)
+    write_pdb_sites_file(invert_hand(sites))
     
