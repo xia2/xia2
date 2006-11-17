@@ -46,12 +46,20 @@ def parse_pdb_sites_file(pdb_file):
 
     scales = { }
 
-    results = []
+    sites = []
+    cell = ()
+    symm = ''
 
     for d in data:
         if 'SCALE' in d[:5]:
             scale = map(float, d.split()[1:4])
             scales[int(d.split()[0].replace('SCALE', '')) - 1] = scale
+
+        # need to store this to handle the inversion...
+        
+        if 'CRYST1' in d[:6]:
+            cell = tuple(map(float, d.split()[1:7]))
+            symm = d[55:].strip()
 
     if not scales.has_key(0):
         raise RuntimeError, 'SCALE1 record missing'
@@ -70,17 +78,31 @@ def parse_pdb_sites_file(pdb_file):
 
             fractional = [_dot(scales[i], cartesian) for i in range(3)]
 
-            results.append({'atom':atom,
-                            'occupancy':occ,
-                            'cartesian':cartesian,
-                            'fractional':fractional})
+            sites.append({'atom':atom,
+                          'occupancy':occ,
+                          'cartesian':cartesian,
+                          'fractional':fractional})
 
+    results = { }
+    results['sites'] = sites
+    results['cell'] = cell
+    results['spacegroup'] = symm
+    results['scale'] = scales
+    
     return results
+
+def invert_hand(sites):
+    '''Invert the hand (and perhaps the spacegroup) of substructure sites.'''
+
+    
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        raise RuntimeError, '%s pdb_file' % sys.argv[0]
+        pdb = os.path.join(os.environ['SS_ROOT'],
+                           'Data', 'Test', 'Sites', 'hyss-sites.pdb')
+    else:
+        pdb = sys.argv[1]
 
-    print parse_pdb_sites_file(sys.argv[1])
+    print parse_pdb_sites_file(pdb)
 
     
