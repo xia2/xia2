@@ -46,6 +46,8 @@ def Truncate(DriverType = None):
             CCP4DriverInstance.__class__.__init__(self)
             self.set_executable('truncate')
 
+            self._b_factor = 0.0
+
             return
 
         def truncate(self):
@@ -70,6 +72,14 @@ def Truncate(DriverType = None):
 
             # FIXME need to parse the output for interesting things here!
 
+            for line in self.get_all_output():
+                if 'Least squares straight line gives' in line:
+                    list = line.split()
+                    self._b_factor = float(list[7])
+
             return
+
+        def get_b_factor(self):
+            return self._b_factor
 
     return TruncateWrapper()
