@@ -235,8 +235,10 @@ class XSweep(Object):
             if not wavelength == None:
                 if math.fabs(header['wavelength'] -
                              wavelength.get_wavelength()) > 0.0001:
-                    raise RuntimeError, 'wavelength for sweep %s does not ' + \
-                          'match wavelength %s' % (name, wavelength.getName())
+                    format = 'wavelength for sweep %s does not ' + \
+                             'match wavelength %s'
+                    raise RuntimeError, format  % (name, wavelength.get_name())
+
             
         else:
 
