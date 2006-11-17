@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# FileName.py
+# SubstructureLib.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
 #   This code is distributed under the terms and conditions of the
@@ -8,7 +8,11 @@
 #   CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
 #
 # 16th November 2006
+#
+# A library of things pertaining to substructure manipulation:
 # 
+# .pdb file -> fractional coordinates
+# invert hand
 
 import sys
 import os
