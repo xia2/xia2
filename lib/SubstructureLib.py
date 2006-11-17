@@ -17,6 +17,8 @@
 import sys
 import os
 import copy
+import math
+import random
 
 if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
@@ -39,6 +41,111 @@ def _dot(a, b):
         result += a[i] * b[i]
 
     return result
+
+def _determinant_3x3_matrix(m):
+    '''Compute the determinant of 3x3 matrix m.'''
+
+    determinant = m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) + \
+                  m[0][1] * (m[1][2] * m[2][0] - m[1][0] * m[2][2]) + \
+                  m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0])
+
+    return determinant
+
+def _invert_3x3_matrix(m):
+    '''Invert a 3x3 matrix m, based on the determinant formula.'''
+
+    determinant = _determinant_3x3_matrix(m)
+
+    if determinant == 0.0:
+        raise RuntimeError, 'zero determinant'
+
+    # prepare storage
+
+    inverse_m = { }
+    for i in range(3):
+        inverse_m[i] = [0.0, 0.0, 0.0]
+
+    # perform calculation
+    inverse_m[0][0] = (m[1][1] * m[2][2] - m[1][2] * m[2][1]) / determinant
+    inverse_m[0][1] = (m[0][2] * m[2][1] - m[0][1] * m[2][2]) / determinant
+    inverse_m[0][2] = (m[0][1] * m[1][2] - m[0][2] * m[1][1]) / determinant
+    
+    inverse_m[1][0] = (m[1][2] * m[2][0] - m[1][0] * m[2][2]) / determinant
+    inverse_m[1][1] = (m[0][0] * m[2][2] - m[0][2] * m[2][0]) / determinant
+    inverse_m[1][2] = (m[0][2] * m[1][0] - m[0][0] * m[1][2]) / determinant
+
+    inverse_m[2][0] = (m[1][0] * m[2][1] - m[1][1] * m[2][0]) / determinant
+    inverse_m[2][1] = (m[0][1] * m[2][0] - m[0][0] * m[2][1]) / determinant
+    inverse_m[2][2] = (m[0][0] * m[1][1] - m[0][1] * m[1][0]) / determinant
+
+    # return inverse
+
+    return inverse_m
+
+def _transpose_3x3_matrix(m):
+    '''Transpose 3x3 matrix m.'''
+
+    transpose_m = {}
+    for i in range(3):
+        transpose_m[i] = [0.0, 0.0, 0.0]
+
+    for i in range(3):
+        for j in range(3):
+            transpose_m[j][i] = m[i][j]
+
+    return transpose_m
+
+def _multiply_3x3_matrix(m, n):
+    '''Multiply together 3x3 matrices m, n.'''
+
+    transpose_n = _transpose_3x3_matrix(n)
+
+    multiply_m = {}
+    for i in range(3):
+        multiply_m[i] = [0.0, 0.0, 0.0]
+
+    for i in range(3):
+        for j in range(3):
+            multiply_m[i][j] = _dot(m[i], transpose_n[j])
+
+    return multiply_m
+
+def _generate_3x3_matrix():
+    '''Generate a random 3x3 matrix.'''
+
+    random_m = {}
+    for i in range(3):
+        random_m[i] = [0.0, 0.0, 0.0]
+
+    for i in range(3):
+        for j in range(3):
+            random_m[i][j] = random.random()
+
+
+    return random_m
+
+def _test_3x3_matrix_inverse():
+    '''Generate 100 random matrices, invert them, multiply them and
+    check that the result looks like an identity to a "high resolution".'''
+    
+    for k in range(100):
+        r = _generate_3x3_matrix()
+        ri = _invert_3x3_matrix(r)
+        i = _multiply_3x3_matrix(r, ri)
+
+        _is_identity_3x3_matrix(i)
+
+def _is_identity_3x3_matrix(m):
+    '''Check if this looks like an identity matrix.'''
+
+    for i in range(3):
+        for j in range(3):
+            if i == j:
+                if math.fabs(m[i][j] - 1) > 1.0e-7:
+                    raise RuntimeError, 'non identity'
+            else:
+                if math.fabs(m[i][j]) > 1.0e-7:
+                    raise RuntimeError, 'non identity'
 
 def parse_pdb_sites_file(pdb_file):
     '''Parse a pdb file full of heavy atoms and transmogrify this into
@@ -77,6 +184,11 @@ def parse_pdb_sites_file(pdb_file):
     if not scales.has_key(2):
         raise RuntimeError, 'SCALE3 record missing'
 
+    # for future reference, compute the inverse of the scales to convert
+    # from fractional to cartesian coordinates
+
+    scales_inverse = _invert_3x3_matrix(scales)
+
     for d in data:
         if 'ATOM' in d[:4]:
             cartesian = map(float, d.split()[5:8])
@@ -85,11 +197,10 @@ def parse_pdb_sites_file(pdb_file):
 
             fractional = tuple([_dot(scales[i], cartesian) for i in range(3)])
 
-            # no longer record cartesian coordinates
-            # 'cartesian':cartesian,
 
             sites.append({'atom':atom,
                           'occupancy':occ,
+                          'cartesian':cartesian,
                           'fractional':fractional})
 
     results = { }
@@ -97,6 +208,7 @@ def parse_pdb_sites_file(pdb_file):
     results['cell'] = cell
     results['spacegroup'] = symm
     results['scale'] = scales
+    results['scale_inverse'] = scales_inverse
     
     return results
 
