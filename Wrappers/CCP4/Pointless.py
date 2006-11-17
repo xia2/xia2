@@ -491,7 +491,7 @@ def Pointless(DriverType = None):
             
             sg_list = dom.getElementsByTagName('SpacegroupList')[0]
             sg_node = dom.getElementsByTagName('Spacegroup')[0]
-            self._spacegroup = sg_node.getElementsbyTagName(
+            self._spacegroup = sg_node.getElementsByTagName(
                 'SpacegroupName')[0].childNodes[0].data.strip()
             self._spacegroup_reindex_operator = sg_node.getElementsByTagName(
                 'ReindexOperator')[0].childNodes[0].data.strip()
