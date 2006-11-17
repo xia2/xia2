@@ -559,9 +559,13 @@ class CCP4Scaler(Scaler):
         # reflection file looks right.
 
         s = self.Sortmtz()
-        s.set_hklout(os.path.join(self.get_working_directory(),
-                                  '%s_%s_sorted.mtz' % \
-                                  (self._common_pname, self._common_xname)))
+
+        hklout = os.path.join(self.get_working_directory(),
+                              '%s_%s_sorted.mtz' % \
+                              (self._common_pname, self._common_xname))
+
+        
+        s.set_hklout(hklout)
 
         for epoch in epochs:
             s.add_hklin(self._sweep_information[epoch]['hklin'])
@@ -573,9 +577,44 @@ class CCP4Scaler(Scaler):
         # and setting - this should then reset to the correct indexing
         # and reassign the spacegroup (or it's enantiomorph.)
 
-        # then run reindex to set the correct spacegroup
+        # note well that this is going to use the current pointgroup so
+        # any reindexing is to get into the standard setting for the
+        # spacegroup
 
+        hklin = hklout
+        hklout = hklin.replace('sorted.mtz', 'temp.mtz')
+
+        p = self.Pointless()
+        p.set_hklin(hklin)
+        p.decide_spacegroup()
+
+        spacegroup = p.get_spacegroup()
+        reindex_operator = p.get_spacegroup_reindex_operator()
+
+        Chatter.write('Reindexing to correct spacegroup setting: %s (%s)' % \
+                      (spacegroup, reindex_operator))
+
+        # then run reindex to set the correct spacegroup
+        
+        ri = self.Reindex()
+        ri.set_hklin(hklin)
+        ri.set_hklout(hklout)
+        ri.set_spacegroup(pointgroup)
+        ri.set_operator(reindex_operator)
+        ri.reindex()
+        
         # then resort the reflections (one last time!)
+
+        s = self.Sortmtz()
+
+        temp = hklin
+        hklin = hklout
+        hklout = temp
+
+        s.add_hklin(hklin)
+        s.set_hklout(hklout)
+
+        s.sort()
 
         # done preparing!
 
