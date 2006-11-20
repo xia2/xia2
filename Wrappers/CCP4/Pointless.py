@@ -320,6 +320,7 @@ def Pointless(DriverType = None):
             best_likelihood = 0.0
             best_laue = ''
             best_r = 0.0
+            best_delta = 0.0
 
             # do not want to do this is we have specified the correct
             # pointgroup either through the command inpit or implicitly
@@ -337,6 +338,7 @@ def Pointless(DriverType = None):
                 correct_netzc = 0.0
                 correct_laue = ''
                 correct_r = 0.0
+                correct_delta = 0.0
 
                 for s in scores:
                     number = int(s.getElementsByTagName(
@@ -365,6 +367,7 @@ def Pointless(DriverType = None):
                             correct_netzc = netzc
                             correct_laue = lauegroup
                             correct_r = r_merge
+                            correct_delta = delta
 
                         else:
                             raise RuntimeError, 'something horribly wrong'
@@ -403,18 +406,23 @@ def Pointless(DriverType = None):
                         # also measurable (e.g. not exactly 0.0)
 
                         if math.fabs(likelihood - self._totalprob) < 0.1:
-                            if correct_r / r_merge > 1.5 and delta > 0.1:
+                            if correct_r / r_merge > 1.5 and \
+                                   correct_delta > 0.1:
                                 if netzc > 0.0:
                                     # this is perhaps more likely?
                                     Science.write(
                                         'Found likely solution with ' + \
                                         'better Rmerge: %4.2f vs. %4.2f' % \
                                         (r_merge, correct_r))
+                                    Science.write(
+                                        'and cell delta: %4.2f vs. %4.2f' % \
+                                        (delta, correct_delta))
                                     
                                     best_netzc = netzc
                                     best_laue = lauegroup
                                     best_likelihood = likelihood
                                     best_r = r_merge
+                                    best_delta = delta
 
             if best_laue:
                 # the solution pointless gave is probably wrong!
@@ -540,7 +548,7 @@ if __name__ == '__main__':
 
     p.set_hklin(hklin)
 
-    pointgroup = False
+    pointgroup = True
 
     if pointgroup:
         p.decide_pointgroup()
