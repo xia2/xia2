@@ -1,24 +1,39 @@
+#!/usr/bin/env python
+# NMolLib.py
+#   Copyright (C) 2006 CCLRC, Graeme Winter
+#
+#   This code is distributed under the terms and conditions of the
+#   CCP4 Program Suite Licence Agreement as a CCP4 Library.
+#   A copy of the CCP4 licence can be obtained by writing to the
+#   CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
+#
+# 21/SEP/06
+
 # NMol per ASU Calculations based on the Kantardjieff & Rupp method.
 # 
 # Implementing the cell volume calculations of Kantardjieff and Rupp,
 # Protein Science volume 12, 2002. Uses "mattprob_params.dat" from
 # http://www-structure.llnl.gov/mattprob
 #
-# Relies on $XIAHOME/third_party/data/mattprob_params.dat
+# Relies on $DPA_ROOT/Data/NMol/mattprob_params.dat
 
 import os, sys, math
 
-if not os.environ.has_key('XIAHOME'):
-    raise RuntimeError, 'XIAHOME not defined'
+if not os.environ.has_key('DPA_ROOT'):
+    raise RuntimeError, 'DPA_ROOT not defined'
 
-if not os.path.exists(os.path.join(os.environ['XIAHOME'],
-                                   'third_party',
-                                   'data',
+if not os.environ['DPA_ROOT'] in sys.path:
+    sys.path.append(os.environ['DPA_ROOT'])
+
+from Handlers.Syminfo import Syminfo
+
+if not os.path.exists(os.path.join(os.environ['DPA_ROOT'],
+                                   'Data', 'NMol',
                                    'mattprob_params.dat')):
     raise RuntimeError, 'mattprob_params.dat not found'
 
-def UnitCellVolume(cell_a, cell_b, cell_c,
-                   cell_alpha, cell_beta, cell_gamma):
+def unit_cell_volume(cell_a, cell_b, cell_c,
+                     cell_alpha, cell_beta, cell_gamma):
     '''From the unit cell constants, compute the volume of the unit cell in
     A^3. Note that it is assumed that the cell_alpha, cell_beta, cell_gamma,
     angles are in degrees and the cell lengths (a, b, c) are in A.'''
@@ -45,7 +60,7 @@ def UnitCellVolume(cell_a, cell_b, cell_c,
                                              + 2 * ca * cb * cc)
     return V
 
-def SpacegroupNumSymops(spacegroup):
+def spacegroup_number_operators(spacegroup):
     '''From the spacegroup name (either the long or short version of the name)
     compute the number of symmetry operators. This will use the CCP4 symmetry
     library in "counting" mode.'''
@@ -58,12 +73,12 @@ def SpacegroupNumSymops(spacegroup):
         spacegroup_number = int(spacegroup)
     except:
         # spacegroup was passed in as a name
-        spacegroup_number = SystematicAbsence.name_to_number(
-            spacegroup.lower())
+        spacegroup_number = Syminfo.spacegroup_name_to_number(
+            spacegroup.upper())
 
-    return SystematicAbsence.get_num_symops(spacegroup_number)
+    return Syminfo.get_num_symops(spacegroup_number)
 
-def SequenceMass(sequence):
+def sequence_mass(sequence):
     '''Return a mass for this sequence - initially will be 128.0 * len'''
 
     # if input is simply a sequence length, return the appropriate
@@ -76,11 +91,10 @@ def SequenceMass(sequence):
 
     return 128.0 * len(sequence)
 
-def CalculateNMol(volume, mass, resolution):
+def compute_nmol(volume, mass, resolution):
 
-    file = open(os.path.join(os.environ['XIAHOME'],
-                             'third_party',
-                             'data',
+    file = open(os.path.join(os.environ['DPA_ROOT'],
+                             'Data', 'NMol',
                              'mattprob_params.dat'), 'r')
 
     while 1:
@@ -140,7 +154,7 @@ def CalculateNMol(volume, mass, resolution):
 
     return nmols, pdfs
 
-def NMol(cell_a, cell_b, cell_c,
+def nmol(cell_a, cell_b, cell_c,
          cell_alpha, cell_beta, cell_gamma,
          spacegroup, resolution, sequence_length):
     '''From some information about the unit cell & symmetry, and the
@@ -150,18 +164,19 @@ def NMol(cell_a, cell_b, cell_c,
     # since we have as input the lattice and so on some transformation
     # is needed - first compute unit cell volume
 
-    volume = UnitCellVolume(cell_a, cell_b, cell_c,
-                            cell_alpha, cell_beta, cell_gamma)
+    volume = unit_cell_volume(cell_a, cell_b, cell_c,
+                              cell_alpha, cell_beta, cell_gamma)
 
     # then compute the likely unit of mass within the unit cell - that
     # is, one copy of the molecule per asymmetric unit
 
-    mass = SequenceMass(sequence_length) * SpacegroupNumSymops(spacegroup)
+    mass = sequence_mass(sequence_length) * \
+           spacegroup_number_operators(spacegroup)
 
     # this returns a list of possible nmols, with another list of the
     # associated probabilities
 
-    nmols, pdfs = CalculateNMol(volume, mass, resolution)
+    nmols, pdfs = compute_nmol(volume, mass, resolution)
 
     ptot = 0
 
@@ -188,7 +203,7 @@ def NMol(cell_a, cell_b, cell_c,
 
 if __name__ == '__main__':
 
-    nmol = NMol(96.0, 96.0, 36.75, 90.0, 90.0, 90.0,
+    nmol = nmol(96.0, 96.0, 36.75, 90.0, 90.0, 90.0,
                 'P 43 21 2', 1.8, 82)
 
     if nmol != 2:

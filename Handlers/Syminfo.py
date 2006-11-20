@@ -70,6 +70,7 @@ class _Syminfo(Object):
         self._spacegroup_name_to_lattice = { }
         self._spacegroup_short_to_long = { }
         self._spacegroup_long_to_short = { }
+        self._spacegroup_name_to_number = { }
 
         current = 0
 
@@ -95,6 +96,9 @@ class _Syminfo(Object):
 
                 if not self._spacegroup_name_to_lattice.has_key(shortname):
                     self._spacegroup_name_to_lattice[shortname] = lattice
+
+                if not self._spacegroup_name_to_number.has_key(shortname):
+                    self._spacegroup_name_to_number[shortname] = index
 
                 if not self._spacegroup_long_to_short.has_key(longname):
                     self._spacegroup_long_to_short[longname] = shortname
@@ -127,14 +131,14 @@ class _Syminfo(Object):
         # introspect on the input to figure out what to return
 
         if type(name) == type(1):
-            return self.getSyminfo(name)['lattice']
+            return self.get_syminfo(name)['lattice']
 
         # check that this isn't a string of an integer - if it is
         # repeat above...
 
         if self._int_re.match(name):
             name = int(name)
-            return self.getSyminfo(name)['lattice']
+            return self.get_syminfo(name)['lattice']
 
         # ok this should be a "pure" spacegroup string
         
@@ -153,6 +157,30 @@ class _Syminfo(Object):
 
         return numbers
 
+    def spacegroup_name_to_number(self, spacegroup):
+        '''Return the number corresponding to this spacegroup.'''
+
+        # check have not had number passed in
+
+        try:
+            number = int(spacegroup)
+            return number
+        except:
+            pass
+
+        # next check to see if this is the long form
+
+        if self._spacegroup_long_to_short.has_key(spacegroup):
+            spacegroup = self._spacegroup_long_to_short[spacegroup]
+
+        return self._spacegroup_name_to_number[spacegroup]
+
+    def get_num_symops(self, spacegroup_number):
+        '''Get the number of symmetry operations that spacegroup
+        number has.'''
+
+        return self._symop[spacegroup_number]['symops']
+    
 Syminfo = _Syminfo()
     
 if __name__ == '__main__':
