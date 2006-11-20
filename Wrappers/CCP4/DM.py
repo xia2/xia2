@@ -104,6 +104,8 @@ if __name__ == '__main__':
     dm.set_hklout('1VR5_13193_phased_improved.mtz')
     dm.set_solvent(0.608)
 
+    dm.write_log_file('dm.log')
+
     dm.improve_phases()
 
     
