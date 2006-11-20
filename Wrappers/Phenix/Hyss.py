@@ -29,8 +29,8 @@ if not os.environ['SS_ROOT'] in sys.path:
 
 # explicitly add the "lib" directory to the path...
 
-if not os.path.join(os.environ['SS_ROOT'], lib) in sys.path:
-    sys.path.append(os.path.join(os.environ['SS_ROOT'], lib))
+if not os.path.join(os.environ['SS_ROOT'], 'lib') in sys.path:
+    sys.path.append(os.path.join(os.environ['SS_ROOT'], 'lib'))
 
 from Driver.DriverFactory import DriverFactory
 from SubstructureLib import parse_pdb_sites_file, \
