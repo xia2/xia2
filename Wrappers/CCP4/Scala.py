@@ -74,6 +74,8 @@ def Scala(DriverType = None):
             # scaling parameters
             self._resolution = None
 
+            self._resolution_by_run = { }
+
             # scales file for recycling
             self._scales_file = None
 
@@ -164,6 +166,12 @@ def Scala(DriverType = None):
             default is to include all reflections.'''
 
             self._resolution = resolution
+            return
+
+        def set_resolution_by_run(self, run, resolution):
+            '''Set the resolution for a particular run.'''
+
+            self._resolution_by_run = { }
             return
 
         def set_scales_file(self, scales_file):
@@ -423,6 +431,10 @@ def Scala(DriverType = None):
 
             if self._resolution:
                 self.input('resolution %f' % self._resolution)
+
+            if self._resolution_by_run != { }:
+                # FIXME 20/NOV/06 this needs implementing somehow...
+                pass
 
             self.input('cycles %d' % self._cycles)
 
