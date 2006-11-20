@@ -1433,6 +1433,18 @@ class CCP4Scaler(Scaler):
         # finally add a FreeR column, and record the new merged reflection
         # file with the free column added.
 
+        f = self.Freerflag()
+
+        f.set_hklin(self._scalr_scaled_reflection_files['mtz_merged'])
+        f.set_hklout(
+            self._scalr_scaled_reflection_files['mtz_merged'].replace(
+            'merged',
+            'merged_free'))
+        
+        f.add_free_flag()
+
+        self._scalr_scaled_reflection_files['mtz_merged_free'] = f.get_hklout()
+
         return
 
     
