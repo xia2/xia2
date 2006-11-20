@@ -28,13 +28,18 @@
 # FIXME 27/OCT/06 need to update the use case documentation - where is this?
 #                 in Wrappers/CCP4/Doc I presume...
 # 
-# FIXME 06/NOV/06 need to update the interface to also allow a quick scaling
+# FIXED 06/NOV/06 need to update the interface to also allow a quick scaling
 #                 option, to use in the case (well illustrated by TS02) where
 #                 pointless needs to reindex data sets to a standard defined
 #                 by the first reflection file...
 # 
 #                 Recipe is "cycles 6" "run 1 all"
 #                 "scales rotation spacing 10" 
+#
+# FIXME 20/NOV/06 need to input the resolution on a per-run basis, e.g.
+#                 "resolution run 1 1.65" &c. This should make the summaries
+#                 at the end internally useful.
+# 
 
 import os
 import sys
