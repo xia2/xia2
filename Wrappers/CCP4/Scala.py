@@ -439,7 +439,7 @@ def Scala(DriverType = None):
 
             if self._scales_file:
                 self.input('onlymerge')
-                self.input('restore "%s"' % self._scales_file)
+                self.input('restore %s' % self._scales_file)
 
             self.close_wait()
 
