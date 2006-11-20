@@ -174,5 +174,8 @@ if __name__ == '__main__':
     bp3.set_biso(22.0)
 
     bp3.set_xname('13193')
+
+    bp3.write_log_file('bp3.log')
+    
     bp3.phase()
 
