@@ -98,6 +98,7 @@ from Wrappers.CCP4.Rebatch import Rebatch as _Rebatch
 from Wrappers.CCP4.Reindex import Reindex as _Reindex
 from Wrappers.CCP4.Mtz2various import Mtz2various as _Mtz2various
 from Wrappers.CCP4.Cad import Cad as _Cad
+from Wrappers.CCP4.Freerflag import Freerflag as _Freerflag
 from Wrappers.CCP4.Pointless import Pointless as _Pointless
 
 from Handlers.Streams import Chatter
@@ -194,6 +195,14 @@ class CCP4Scaler(Scaler):
         cad.set_working_directory(self.get_working_directory())
         auto_logfiler(cad)
         return cad
+
+    def Freerflag(self):
+        '''Create a Freerflag wrapper from _Freerflag - set the working
+        directory and log file stuff as a part of this...'''
+        freerflag = _Freerflag()
+        freerflag.set_working_directory(self.get_working_directory())
+        auto_logfiler(freerflag)
+        return freerflag
 
     def Pointless(self):
         '''Create a Pointless wrapper from _Pointless - set the
