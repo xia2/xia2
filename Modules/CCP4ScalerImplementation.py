@@ -69,11 +69,15 @@
 #                 If it's P43212 or P41212 then I need to decide what is 
 #                 best to do...
 # 
-# FIXME 15/NOV/06 need to add a FreeR column to the reflection file.
+# FIXED 15/NOV/06 need to add a FreeR column to the reflection file.
 #
-# FIXME 16/NOV/06 also need to run pointless on the final data sets to
+# FIXED 16/NOV/06 also need to run pointless on the final data sets to
 #                 have a stab at the correct spacegroup, e.g. P212121.
-# 
+#
+# FIXME 20/NOV/06 do not want to go refining the standard error parameters
+#                 in cases where there is radiation damage - this will cause
+#                 nasty things to happen, since the spread really is larger
+#                 than the errors. This is systematic! E.g. TS03.
 
 import os
 import sys
