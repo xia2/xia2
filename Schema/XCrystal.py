@@ -51,6 +51,15 @@
 #  WAVELENGTH NATIVE
 #
 #  ... &c. ...
+#
+# FIXME 20/NOV/06 want to be able to use this to calculate the likely number
+#                 of molecules per ASU and also the solvent content, to 
+#                 help with the links to the experimental phasing. Should
+#                 also pass back the spacegroup generated in data reduction
+#                 to this. Finally, should provide a user input to allow the
+#                 spacegroup to be assigned (and perhaps number of molecules
+#                 in the ASU?) from the .xinfo file...
+# 
 
 import os
 import sys
