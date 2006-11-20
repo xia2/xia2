@@ -1,0 +1,1025 @@
+
+                       MLPHARE (CCP4: Supported Program)
+
+NAME
+
+   mlphare   -   maximum  likelihood  heavy  atom  refinement  and  phase
+   calculation
+
+SYNOPSIS
+
+   mlphare  hklin  foo.mtz hklout foo_out.mtz newparm foo_out.com [xyzout
+   foo.brk]
+   [Keyworded input]
+
+DESCRIPTION
+
+   This  program  will  refine heavy atom parameters and error estimates,
+   then  use  these refined parameters to generate phase information. The
+   maximum  number  of  heavy  atoms  which  may be refined is 130 over a
+   maximum of 20 derivatives. The program was originally written for MIR,
+   but  may  also  be used for phasing from MAD data, where the different
+   wavelengths are interpreted as different "derivatives".
+
+   Beware:  This  program  is fundamentally different from the old PHARE,
+   even  though some of the code looks familiar. The incorporation of the
+   concepts of Maximum Likelihood means that the refinement of parameters
+   is much more robust, and the generation of phases and figures of merit
+   is more realistic. See NOTES ON USAGE.
+
+   Note:  heavy atom parameters can also be refined in vector-space using
+   the program VECREF.
+
+   Ref: Z.Otwinowski: Daresbury Study Weekend proceedings, 1991
+
+KEYWORDED INPUT
+
+   Keywords are divided into two sets.
+
+    Set 1: general keywords
+
+   These keywords control the calculation. Compulsory keywords are:
+      LABIN
+      CYCLE or PHASE
+      LABOUT - essential if you wish to output an HKLOUT file.
+      END - to designate the end of input; if more than one
+            derivative is described, the keyword DERIV
+            designates the end of input for the previous derivative.
+
+   Optional keywords are:
+
+     ANGLE,  APPLY, CENTRIC, COORDS, EXCLUDE, SKIP, FHOUT, HLOUT, PRINT,
+     RESOLUTION, SCALE, SCRIPT, THRESHOLD, TITLE
+
+   In   addition,  the  following  optional  keywords  control  the  data
+   harvesting functionality:
+
+     PNAME, DNAME, PRIVATE, USECWD, RSIZE, NOHARVEST
+
+    Set 2: derivative keywords which MUST follow the above list
+
+   These are repeated once for each derivative.
+
+   Compulsory keywords are:
+
+     ATOM, ATREF, DCYCLE, DERIVATIVE
+
+   Optional keywords are:
+
+     ANOERROR, EXCLUDE, ISOERROR, RESOLUTION, SCALE, WAVE
+
+  Set 1: general keywords
+
+  CYCLE <ncycle> [ <kcycle1> <kcycle2> .....]
+
+   <ncycle>  sets the number of cycles that the program will run (default
+   10).  The  first  (<ncycle>-1)  cycles  are used for refinement of the
+   heavy  atom  parameters  and  the  error estimates. The phases for ALL
+   reflections  in  the file to the outer resolution limit are calculated
+   on  the  final  cycle.  Statistics may be collected for both the final
+   cycle of refinement, and the phasing cycle.
+
+   <kcycle1> <kcycle2> ... are flags for externally calculated phases and
+   need  only  be set if you want to use these. In general the refinement
+   procedure  works  out  the  likely  weighting  of all possible protein
+   phases  sampled round the phase circle and uses this information to do
+   a  phased  refinement.  Any particular derivative contribution will be
+   controlled by the parameters on the DCYCLE input line.
+
+   If  you  want  to  input  phases  calculated elsewhere and use them in
+   refinement for some cycles, list these cycle numbers here. E.g.:
+   CYCLE 10 2 3 5 7 9
+   would  mean  that  10 cycles will be run, 9 for refinement and a final
+   phasing   cycle,  and  that  external  phases  would  be  used  during
+   refinement on cycles 2, 3, 5, 7 and 9. If these flags are set you must
+   assign  a  column for PHIC, and for either WC or FC. See NOTES ON PHIC
+   for  details of how these are used. A contribution may be added to the
+   phase  likelihood  calculated  from derivatives to favour the external
+   phase or it may be used alone.
+
+  PHASE
+
+   This keyword signals that you ONLY want to calculate phases and not to
+   do  any  refinement.  It  is equivalent to CYCLE 1. The phases for ALL
+   reflections in the file to the outer resolution limit are calculated.
+
+  LABIN <program label>=<file label> .....
+
+   Associates  the  column  labels  that  the program expects with column
+   labels  in  the  input  file.  The  following  <program label>s can be
+   assigned:
+        FP      SIGFP
+        FPH1    SIGFPH1    DPH1    SIGDPH1
+        FPH2    SIGFPH2    DPH2    SIGDPH2
+        FPH3    SIGFPH3    DPH3    SIGDPH3
+        FPH4    SIGFPH4    DPH4    SIGDPH4
+        FPH5    SIGFPH5    DPH5    SIGDPH5
+        .
+        .
+        .
+        FPH20   SIGFPH20   DPH20   SIGDPH20
+        FC      PHIC      WC
+        F0      F1        F2       F3   ..F19
+
+   Where:
+
+   H, K, L
+
+   FP
+          Native F
+
+   SIGFP
+          sigma(FP)
+
+   Then for each derivative (i=derivative number)
+
+   FPHi
+          Derivative F
+
+   SIGFPHi
+          sigma(FPHi)
+
+   [DPHi]
+          Anomalous difference (if anomalous data are used)
+
+   [SIGDPHi]
+          sigma(DELi)
+
+   For externally calculated phases
+
+   PHIC
+          The phases to be used in refinement. This is only needed if the
+          <kcycle> flags have been set. See keyword CYCLE.
+
+   [WC]
+          Weight for these phases. Defaults to 1.0.
+
+   [FC]
+          Fcalc value. Used to estimate Sim Weight for calculated phases.
+
+   F0  F1  ..  Assignments for selected extra columns to be copied to the
+   output  file.  NB F0, F1 etc should not be assigned if LABOUT ALLIN is
+   also being used.
+
+   Assignments  are  required  for FP, SIGFP, and at least one derivative
+   (FPH1,  SIGFPH1).  The  number of derivatives is deduced from the FPHi
+   assignments.
+
+   If  you  wish  to  copy all columns from input to output file, specify
+   ALLIN  on  the  LABOUT line. If you wish to copy selected columns from
+   input to output file, you may assign up to 19 columns, using F0 F1 ...
+   F19
+
+  LABOUT [ ALLIN | [ <program label>=<file label> ... ] ]
+
+   Associates  column  labels  in the output file with labels used by the
+   program.
+
+   Specifying  ALLIN  copies  all input columns to output. NB if ALLIN is
+   specified then LABIN F0=... F1=... etc should not be used.
+
+   The following extra labels can be assigned.
+        PHIB    FOM
+        HLA     HLB        HLC     HLD
+        FH1     PHIH1      FHA1    PHIHA1
+        FH2     PHIH2      FHA2    PHIHA2
+        .....
+        FH20    PHIH20     FHA20   PHIHA20
+
+   where
+
+   PHIB
+          maximum likelihood phase
+
+   FOM
+          figure of merit
+
+   HLA,HLB,HLC,HLD
+          Hendrickson-Lattman coefficients output if HLOUT requested
+
+   FHi PHIHi FHAi PHIHAi
+          give  the  heavy  atom  real  and  imaginary structure factors.
+          Output  if  FHOUT  is  requested  for this derivative (the FPHi
+          SIGFPHi  [  DPHi  SIGDPHi  ]  will also be copied to the output
+          file).  This  information  is  needed  if you want to do double
+          difference  Fourier  to find more heavy atom sites. See the FFT
+          documentation.
+
+   FP SIGFP PHIB and FOM
+          are always output.
+
+   The  following  are  copied  from  the  input  file  if they have been
+   assigned.
+        FC      PHIC      WC
+        F0      F1        F2       F3   ..F11
+
+   If  LABOUT  is specified the program outputs a file assigned to HKLOUT
+   containing at least H K L FP SIGFP PHIB FOM and other optional columns
+   FOR  ALL REFLECTIONS to the outer resolution cut off. IF LABOUT is NOT
+   specified you get no output file.
+
+   For  certain  problems  it  is convenient to assign FP and FPHi to the
+   same column.
+
+  Optional keywords:
+
+  ANGLE <iangle>
+
+   <iangle> is the angle interval in degrees for calculation of the phase
+   probability curve (default 10).
+
+   N.B.: The program speed is proportional to 360/<iangle>. ZO recommends
+   <iangle>=20  except  when  the derivative has high phasing power, then
+   <iangle>=10. EJD always uses <iangle>=10 - time is not so valuable...
+
+  APPLY
+
+   The  final  overall scale and B values for each derivative are applied
+   to  FPHi,  SIGFPHi,  DPHi, SIGDPHi before these are written to HKLOUT.
+   The default is to simply echo the columns which are input.
+
+  CENTRIC
+
+   This  restricts  the  program  to  use  only  centric  reflections for
+   refinement.  This  is  sensible  if  you  have enough centric data. In
+   general  there  are  many  many  more  observations  than  heavy  atom
+   parameters   to   refine,   and  the  coordinates  and  relative  real
+   occupancies  can  often  be  accurately  refined from the centric data
+   alone.  You  will  however  have  to  use  acentric data to refine the
+   anomalous  occupancy.  In  that  case,  it  is  sensible to refine the
+   coordinates  and  real  occupancies  against  centric  data first, and
+   include acentric data in a second run.
+
+  SKIP <nskip>
+
+   <nskip>  The  program only uses every "Icycle+nskip-th" reflection for
+   refinement.  This  saves  a  great  deal  of  time. The reflection set
+   changes with each cycle. The final phasing cycle uses all reflections.
+
+  EXCLUDE [SIGFP <siglim>]
+
+   If  SIGFP is followed by a number <siglim> reflections are excluded if
+   FP < siglim*SIGFP. Other EXCLUSION tests are given for each derivative
+   in turn.
+
+  FHOUT [DERIV] <i1> <i2> ...
+
+   <i1>  <i2>... give the derivative numbers for which you want FHi PHIHi
+   [FHAi PHIHAi] output ready for double difference maps.
+
+  HLOUT
+
+   Causes output of Hendrickson-Lattman coefficients.
+   Default labels HLA HLB HLC HLD
+
+  PRINT [STATS] [AVF] [AVE] .... [NOSTATS] [MON <nmon>] [COR]
+
+   The  subsidiary  keywords  control  the  type of output. Default is to
+   output statistics for the final cycle only. Refinement statistics only
+   include  reflections  used  for a REFINEMENT pass for that derivative.
+   The final statistics will include information from all reflections. If
+   you  are  only  doing  phasing,  for  instance after changing hand, no
+   statistics are output.
+
+   Possible keywords are:
+
+   STATS
+          statistical output and xloggraphs for last refinement cycle and
+          final phasing cycle.
+
+   NOSTATS
+          no statistics output.
+
+   MON <nmon>
+          Set this if you want to monitor every <nmon>-th reflection. The
+          default is every 10-th reflection.
+
+   COR
+          Output correlation matrix (default: do not)
+
+   Keywords to control type of statistical analysis.
+     The " OLD WEIGHT ( W1)" is defined as:
+     W1 = (Phase Prob of all phases) /(SIG(Fph)**2 + VCALC + IsoError**2(resn)
+)
+ where VCALC = SIGFP**2 *((FPSQ + FPA * FHA + FPB * FHB) / (FP * FPH))**2
+     FPA = FP * COS(PhiX)   FHA = FH * COS(PhiH)
+     FPB = FP * SIN(PhiX)   FHB = FH * SIN(PhiH)
+
+     The " NEW WEIGHT ( W2)" is defined as:
+     W1 = Phase Prob /(SIG(Fph)**2 + SIG(Fp)**2)
+
+   AVF
+          gives unweighted Average FP FPH FH
+
+   AVE
+          gives unweighted Average Lack_of_closure terms.
+
+   RMSF
+          gives unweighted rms FP FPH FH
+
+   RMSE
+          gives unweighted rms Lack_of_closure terms.
+
+   W1AVE
+          gives weighted Average FP FPH FH summed over the phase circle
+
+   W2AVE
+          gives  weighted  Average Lack_of_closures summed over the phase
+          circle
+
+   W1RMSE
+          gives weighted rms FP FPH FH summed over the phase circle
+
+   W2RMSE
+          gives  weighted  rms  Lack_of_closures  summed  over  the phase
+          circle
+
+   There  is some debate over which type of statistic is the most useful.
+   EJD  uses  AVE  and  AVF.  It  is  important  to  use only ONE option,
+   otherwise  you  are  swamped  with  information,  and to stick to that
+   option.  To  assess whether new sites are contributing EJD looks for a
+   reduction in the Cullis R-factors as new sites are added. See NOTES ON
+   USAGE for hints on using this information.
+
+  RESOLUTION [ <rmin> ] <rmax>
+
+   Overall  resolution  range for all refinement and phasing in Angstroms
+   (or as 4sin(theta)**2/lambda**2 limits iff both are <1.0). If only one
+   limit  is given, it is the upper limit; otherwise the limits can be in
+   either  order. The default is to use the resolution from the MTZ file.
+   Data  for  derivatives  can  each  be  limited by a further RESOLUTION
+   keyword after the DERIVATIVE definitions.
+
+  SCALE SIGFP <scale>
+
+   Specifies  the scale factor by which to multiply SIGFP. The default is
+   <scale>=1.
+
+  THRESHOLD <thr> <acl>
+
+   These parameters allow you to modify large shifts in any parameter. If
+   any parameter_shift exceeds <thr>*SD_parameter_shift then the shift is
+   dampened by <acl>. The default is <ac1>=1, <thr> not set.
+
+  TITLE <title>
+
+   The  specified title is written to the HKLOUT file. The default is the
+   title from the MTZ file.
+
+  SCRIPT
+
+   This  will  produce  a unix script. One can then run MLPHARE again but
+   with  the  refined  heavy  atom  parameters  in the ATOM, ISOERROR and
+   ANOERROR  cards.  The  other  input  cards  will be the same as in the
+   original script. However, the ATREF cards will allow refinement of all
+   parameters  in  every  cycle.  The  output  script file is assigned to
+   NEWPARM.
+
+  COORDS
+
+   This  will  cause the program to output the refined coordinates of the
+   heavy atom sites into the external file with logical name XYZOUT, in a
+   pseudo-PDB  format  suitable  for  input  into  a viewing program e.g.
+   RASMOL.
+
+   The  file  contains CRYST1 and SCALE cards, and the following data for
+   each site appears on an ATOM record (from left-to-right):
+
+   Position in pseudo-PDB file Quantity
+   7-12 (Atom serial number) Position of the site in the list
+   13-14 (Chemical symbol) Chemical symbol of heavy atom (supplied on
+   ATOM keyword)
+   23-26 (residue number) Derivative number
+   31-54  (angstrom  orthogonal  coordinates)  Refined  X,Y,Z  orthogonal
+   coordinates of the site
+   55-60 (occupancy) Refined occupancy of the site
+   61-66 (iso b-factor) Refined isotropic B-factor
+
+    Data Harvesting keywords
+
+   Provided  a  Project  Name  and  a  Dataset Name are specified (either
+   explicitly or from the MTZ file) and provided the NOHARVEST keyword is
+   not  given,  the  program will automatically produce a data harvesting
+   file. This file will be written to
+
+   $HARVESTHOME/DepositFiles/<projectname>/ <datasetname>.mlphare
+
+   The  environment  variable  $HARVESTHOME  defaults  to the user's home
+   directory,  but  could  be  changed,  for  example, to a group project
+   directory.  When  running  the program through the CCP4 interface, the
+   $HARVESTHOME variable defaults to the 'PROJECT' directory.
+
+  PNAME<project_name>
+
+   Project Name. In most cases, this will be inherited from the MTZ file.
+
+  DNAME<dataset_name>
+
+   Dataset Name. In most cases, this will be inherited from the MTZ file.
+
+  PRIVATE
+
+   Set  the  directory  permissions to '700', i.e. read/write/execute for
+   the user only (default '755').
+
+  USECWD
+
+   Write  the  deposit  file  to  the  current  directory,  rather than a
+   subdirectory  of  $HARVESTHOME. This can be used to send deposit files
+   from  speculative runs to the local directory rather than the official
+   project  directory,  or can be used when the program is being run on a
+   machine without access to the directory $HARVESTHOME.
+
+  RSIZE<row_length>
+
+   Maximum  width of a row in the deposit file (default 80). <row_length>
+   should be between 80 and 132 characters.
+
+  NOHARVEST
+
+   Do  not write out a deposit file; default is to do so provided Project
+   and Dataset names are available.
+
+  Set 2: derivative keywords
+
+   Next cards are repeated once for each derivative
+
+  DERIV <title>
+
+   <title>  is  used  to flag the output. Be informative! (Compulsory for
+   each derivative assigned on the LABIN line.)
+
+  DCYCLE [PHASE] i1 i2 [REFCYCLE] j1 j2 [KBOVERALL] k1 k2
+
+   Subsidiary keywords PHASE, REFCYCLE, KBOVERALL control the use of this
+   derivative.  Default  is NOT to use the derivative for PHASE, REFC and
+   KBOV.
+  PHASE [ALL] or i1 i2 ...
+  REFCYCLE [ALL] or j1 j2 ...
+  KBOVERALL [ALL] or k1 k2 ...
+
+   Then the derivative is used for:
+   phasing on cycles i1 i2 ... refining on cycles j1 j2 ...
+   The overall scale and B are refined on cycles k1 k2 ...
+   (The word ALL means act on all cycles...)
+
+  EXCLUDE [SIGFPH <siglim>] [DISO <isolim>] [DANO <anolim1 anolim2>]
+
+   SIGFPHi <siglim>
+          Reflections  are  excluded if FPHi < siglim*SIGFPHi. Default is
+          <siglim>=0.
+
+   DISO <isolim>
+          Reflections  are  excluded  if  abs(FPHi-FP)  >  <isolim>.  The
+          default is <isolim> unset and unused.
+
+   DANO <anolim1> [ <anolim2> ]
+          Reflections  are excluded if abs(FPHi(+) -FPHi(-)) > <anolim1>.
+          The  default  is  unset.  Reflections  can  also be excluded if
+          abs(FPHi(+)  -FPHi(-)) < <anolim2>. EJD feels it is very unwise
+          to use this.
+
+  SCALE FPHi <scale> <b>
+
+   (i=1,2...) followed by <scale> and <b> to apply to FPHi and SIGFPHi as
+   exp(-<b>*ss)/<scale>.  The  defaults are <scale>=1, <b>=0 which should
+   be sufficient if the data has been through FHSCAL or SCALEIT.
+   <scale> and <b> may subsequently be refined by the program, see DCYCLE
+   keyword.
+
+  SCALE SIGFPHi <scale2>
+
+   <scale2>  is  used  to  further  scale  up  SIGFPHi.  Final  SIGFPHi =
+   <scale2>*exp(-<b>*ss)/<scale>
+   The default is <scale2>=1.
+
+  RESOLUTION [ <rmin> ] <rmax>
+
+   Specify resolution limits to use for this derivative (as above for the
+   overall resolution).
+
+  RESOLUTION ANO <rmin> <rmax>
+
+   Resolution  range  for  use  of  anomalous  data  for  this derivative
+   (defaults to limits for isomorphous data).
+
+  ISOERROR <ierr1> <ierr2> ... <ierr8>
+
+   Eight  numbers  giving the estimated isomorphous lack of closure error
+   as  a  function  of  resolution.  For  initial refinements do not give
+   these,  and  allow  the  program  to evaluate them. If running a final
+   phasing  pass,  take  the  values  output at the end of the refinement
+   cycle.
+
+  ANOERROR <aerr1> <aerr2> ... <aerr8>
+
+   Eight  numbers giving the estimated anomalous lack of closure error as
+   a function of resolution. For initial refinements allow the program to
+   evaluate  these.  For  a final phasing pass, take the values output at
+   the end of a refinement cycle.
+
+  ATOM <ID> <Xfrac> <Yfrac> <Zfrac> <occ> [<aocc>] BFAC <b1> [<b2> <b3> <b4>
+  <b5> <b6>]
+
+   One  for  each  site  (at  least  one  site  must  be  given  for each
+   derivative).
+
+   <ID>
+          Atom  identifier  which  must  match a form factor given in the
+          file   assigned  to  ATOMSF  (default  $CLIBD/atomsf.lib).  The
+          standard form factors are given for the CuKa wavelength, so the
+          values  of  f'  and  f''  may  not  be  appropriate  for  other
+          wavelengths.  You  will  need  to  interpret  your  occupancies
+          intelligently:   the  refinement  of  the  real  and  anomalous
+          occupancies  models  f' and f'' perfectly well, and can be used
+          to  phase and refine with heavy atom data collected at multiple
+          wavelengths. Selecting <ID> = Ano sets f' and f'' equal to 1 so
+          that   everything   is  included  in  the  real  and  anomalous
+          occupancies. In fact using MLPHARE for multiple wavelength data
+          has  generally  been  found  to  be better, and easier than the
+          geometric phasing method proposed by Karle and Hendrickson.
+
+   <Xfrac> <Yfrac> <Zfrac>
+          atomic coordinates given as fractions of unit cell.
+
+   <occ>
+          atom  occupancy. Remember this will probably be on an arbitrary
+          scale. At this stage you are unlikely to have amplitudes on the
+          absolute scale.
+
+   <aocc>
+          anomalous  occupancy.  Remember  this  will  probably  be on an
+          arbitrary  scale  too. See NOTES ON USAGE for interpretation of
+          sign.
+
+   <b1> [<b2> <b3> <b4> <b5> <b6>]
+          If  only  <b1> is set, <b1> is the isotropic temperature factor
+          If  <b1>  <b2>  <b3>  <b4>  <b5>  <b6> are set, they define the
+          anisotropic <b> factor. The temperature factor is defined as:
+          exp(-(h*h*<b1>  +  h*k*<b2>  + h*l*<b3> + k*k*<b4> + k*l*<b5> +
+          l*l*<b6>))
+          For  a rough approximation to give an anisotropic B factor take
+          <b1> = <b4> = <b6> = <b>, <b2> = <b3> = <b5> = 0.
+
+   The isotropic B factor is approximated by 1/3(<b1>+<b4>+<b6>).
+
+   Following Willis and Pryor conventions, I think
+           b1 = k*beta11, b4 = k*beta22, b6=k*beta33
+           b2 = k*beta12, b3 = k*beta31, b5=k*beta23
+where their temperature factor is expressed as:
+
+ exp(-0.25(  h**2 * (a*)**2 * beta11 + k**2 * (b*)**2 * beta22
+           + l**2 * (c*)**2 * beta33  + 2*k*l*(b*)*(c*)*beta23
+           + 2*l*h*(c*)*(a*) *beta31 + 2*h*k*(a*)*(b*) *beta12))
+
+   This means the Uij terms of an anisotropic temperature factor is equal
+   to betai */(8*pi**2).
+
+  ATREF [ [X | AX] [ALL | <k1> <k2>...] ] [Y | AY ... Z | AZ ...] [OCC [ALL |
+  <i1> <i2>... ]] [AOCC [ALL | <j1> <j2> ...]] [ [B | AB] [ALL | <l1> <l2>...]
+  ]
+
+   The  keywords X or AX, Y or AY, Z or AZ, OCC, AOCC, B or AB flag which
+   parameter  should  be refined. X Y Z mean refine coordinate to fit the
+   isomorphous  differences.  AX AY AZ mean refine coordinates to fit the
+   anomalous differences (only one of X or AX can be used). Similarly for
+   B  and  AB.  The  keyword  ALL  means  refine parameter on all cycles.
+   Numbers  <i1>  <i2> etc. mean refine parameters on the numbered cycles
+   only.
+
+  WAVE [LAM <wavelength>] [FPR <f'>] [FDP <f">]
+
+   The  keyword  WAVE  specifies  the  wavelength for this derivative. It
+   allows the user to alter the default values of f' and f" for the heavy
+   atom. Specify the f' (FPR) and f" (FDP) at this wavelength.
+Example:
+
+  WAVE  0.9000  FPR -1.622  FDP 3.285
+  WAVE  0.9795  FPR -8.198  FDP 2.058
+  WAVE  0.9809  FPR -6.203  FDP 3.663
+
+  END
+
+   Each DERIVATIVE set finishes with another DERIV card or END.
+
+INPUT AND OUTPUT FILES
+
+   The input files are:
+    a. The control data file
+    b. The input reflection data file in standard MTZ format.
+
+   The output files are:
+    a. A   log   file  which  contains  a  complete  description  of  the
+       calculation  plus  some  extremely  useful  XLOGGRAPH  tables (see
+       xloggraph documentation for instructions on how to display these).
+       The  final  lines  are in the format for updating the control data
+       file; containing refined heavy atom scale factors, calculated lack
+       of closure errors and parameters. You can edit these back into the
+       next  control  data  file  or set the SCRIPT keyword. Take care to
+       reset the ATREF flags to do what you want to do.
+    b. A  reflection  data  file which will copy some or all of the input
+       reflection data file with the following additional columns:
+
+        PHIB
+                Phase
+
+        FOM
+                Figure of merit
+
+        [HLA,HLB,HLC,HLD]
+                Hendrickson-Lattman coefficients if required
+
+        [FHi PHIHi [ FHAi PHIHAi ] ]
+                Two or four items per derivative if FHOUT requested.
+
+    c. A  script/COM  file  which  can run mlphare again but contains the
+       refined heavy atoms parameters mentioned in a).
+
+NOTES ON USAGE - Eleanor Dodson
+
+   Definitions of abbreviations:
+
+   MIR
+          Multiple  Isomorphous  Replacement  - generating protein phases
+          from  the observed differences between FP and several FPHi, and
+          the  FHi vectors calculated from the various sets of heavy atom
+          positions.
+
+   MIRAS
+          Multiple  Isomorphous  Replacement  - generating protein phases
+          from  the  observed  differences between FP and the FPHi(+) and
+          FPHi(-) + FHi
+
+   SIR
+          Single Isomorphous Replacement - generating protein phases from
+          the observed differences between FP and one FPH + FHi
+
+   SIRAS
+          Single Isomorphous Replacement - generating protein phases from
+          the  observed  differences between FP and one FPH(+) and FPH(-)
+          and FHi
+
+   MAD
+          Multi-wavelength  Dispersion  -  generating protein phases from
+          the  observed  differences  between  several sets of FPH(+) and
+          FPH(-)  measured at different wavelengths where the f' and f of
+          the  heavy  atom  scatterer  are  different, and the FH vectors
+          calculated from these heavy atom positions.
+
+   See the EXAMPLES for detailed comments on heavy atom analysis.
+
+   This  program  refines  heavy  atoms  without  significant  bias,  and
+   estimates  figure  of merits realistically. THIS MEANS THAT THE OUTPUT
+   WILL   PERFORM   MUCH  BETTER  AFTER  SOLVENT  FLATTENING  OR  DENSITY
+   MODIFICATION  THAN BEFORE. Mlphare is NOT usually used to generate the
+   phases  for  the  map  to be interpreted - it is giving you an INITIAL
+   STARTING  point  for  'dm'  or some other phase improvement procedure.
+   Thus  the  reliability  of  the Figure of Merits is the most important
+   information it gives.
+
+   It  is  sensible  to  refine heavy atoms occupancies first against the
+   centric  data, if you have some. This gives very similar answers to 3D
+   data  in  a  fraction  of  the  time.  It is possible to phase on some
+   derivatives  and  refine  others.  In my experience this gives answers
+   very  close  to  the default procedure of including all parameters for
+   both phasing and refinement.
+
+   It  is  sensible  to  exclude  any  suspect  data  from the heavy atom
+   refinement.  Using  a sigma cutoff and values for DISO and DANO chosen
+   using  SCALEIT  output  reduced  the standard deviation of parameters.
+   Phases  are  calculated  for  all  reflections to the outer resolution
+   limit on the final cycle. The option to input external phases seems to
+   work.  But I am not sure of the theoretical correctness of this. There
+   can't be much maximum likelihood going on. See NOTES ON PHIC - I think
+   the  relative  weighting of the PHIC contribution is probably not very
+   sensible. But it is really not necessary - there is so little evidence
+   of  bias  in  standard  calculations  I would never recommend using it
+   here.  (Of  course  externally  obtained phases can be very helpful in
+   doing  difference  Fourier  to  help  you  find the sites in the first
+   place...)
+
+   For  the  best phasing you need to find all the significant sites in a
+   derivative.  After  you  have found and refined the first set of sites
+   you  can  use a difference Fourier with these SIR phases to find other
+   sites.  However these maps will usually show confusing ghosting in the
+   vicinity  of  the  existing  sites.  Alternatively,  you  can  use the
+   procedure  below which uses cross difference Fouriers to find sites in
+   other  derivatives.  If  you have several independent derivatives, one
+   good procedure is to refine the heavy atom sites of the first, use the
+   SIR  phases  from  this  one to do difference Fouriers for the second;
+   check  that  sites  found  in  the  second  derivative difference maps
+   correspond  to  Patterson  peaks.  Repeat  the  procedure with the SIR
+   phases  from  the  second  derivative  and confirm these maps show the
+   sites  in  the first derivative, and so on. HOWEVER many things can go
+   wrong!   The   most  troublesome  is  trying  to  decide  whether  the
+   derivatives  have  common sites. The SIR phases usually generate ghost
+   peaks  and  holes in the neighbourhood of the first site, which can be
+   very  confusing.  And  very  often  heavy  atom  sites sit on symmetry
+   points,  so  the  SIR  phases are essentially centric, and maps phased
+   with them contain peaks at both xyz AND -x,-y,-z...
+
+   The  advantage  of this cross difference Fourier approach is that your
+   sites  for a second derivative will be determined relative to the same
+   origin as the first. Pattersons alone in P212121 can give solutions of
+   either  (x,y,z)  +  (n1/2,n2/2,n3/2)  or (-x,-y,-z) + (n1/2,n2/2,n3/2)
+   where  n1,n2,n3 can be either 0, or 1; i.e. there are 16 possibilities
+   to  consider.  It doesn't matter for the first site you choose but all
+   others  within  that  derivative  and  all others must follow the same
+   convention.
+
+   Assuming  you now have two derivatives consistent with each other, you
+   can  refine  the  anomalous  occupancies of both beginning with AOCC =
+   0.00  and  they  should  all become either positive, in which case you
+   have  chosen  the  right  hand,  or  negative,  so you need to use the
+   enantiomorph  if you wish to see right handed alpha helices. Note that
+   FOM will not be able to distinguish between the enantiomorphs. You can
+   visualise  this  by  appreciating  that  changing hand generates phase
+   circles  which  are mirrored through the line PHI=0 and therefore have
+   the  same  quality crossings. One hand gives phases PHIB and the other
+   phases -PHIB.
+
+   Another  approach  which  is  worth  following in cases where you have
+   anomalous  data (and there should not be any where you don't..) is the
+   following:
+   Refine  the  single  derivative  heavy  atom  real  occupancies (using
+   centric  data  if  you  have enough) then start refining the anomalous
+   occupancies  (using  all the data). You will need to start them all at
+   some  positive  value;  otherwise  they  will  stick at 0.0000. If the
+   derivative  and  data are OK all occupancies should stay with the same
+   sign.  You  then  need  to  recalculate  the  phases  with  the  other
+   enantiomorph;  here  the FOM will be the same, but the phases will not
+   be  just the mirror image of the first set. Don't forget: Changing the
+   enantiomorph  requires  changing  the  space-group  as  well  for some
+   space-groups,  e.g.  P41/P43;  P31/P32,  P61/P65 P62/P64 and variants.
+   There  is  even  an awful cubic one where you have to move the origin.
+   This requires you run mtzutils or cad to produce a new mtz file with a
+   different  spacegroup  defined in the header. Now you have two sets of
+   SIRAS  phases,  you choose between them by looking at maps. Difference
+   Fouriers  for  one enantiomorph SHOULD give clearer peaks than for the
+   other. 'dm' output for one set of phases should give better statistics
+   than for the other. BUT this distinction can be very marginal; if your
+   anomalous  occupancies  refine  away  towards  0.0  there  will  be no
+   distinction of course.
+
+   Here are some specific notes on using mlphare to refine and phase from
+   MAD  data. This is simply a special case of MIR phasing, where now the
+   real  occupancies  will  be  proportional to the f'(j) -f'(P), and the
+   anomalous  occupancies  are  proportional  to f(j) . The FP assignment
+   must  be the same as one of the FPHi and that DERIVATIVE will have all
+   real  occupancies == 0.0 and these cannot be refined. The enantiomorph
+   problem  is  now  particularly  serious;  since all the FH vectors are
+   parallel  to  each  other,  it is possible to reflect the phase circle
+   diagram  both about AlphaH ( equivalent to changing coordinates to the
+   other hand) AND about the direction AlphaH +90 ( equivalent to getting
+   the  sign  of  the  f'(j)  -f'(P)  reversed.)  and in each case to get
+   exactly  the same Figures of Merit. Since the wavelength for each data
+   set  is  known it is possible to get the signs of the real occupancies
+   correct. Be careful!! It may be best to have as the 'native', the data
+   set collected at the lowest f' wavelength so that all real occupancies
+   should  be positive, but if this data set is incomplete there may be a
+   good reason to choose another.
+
+   Our procedure is summarised here:
+  Find anomalous scatterer sites
+  ( Patterson? Shelx90?? However..)
+
+  Refine real occupancies and XYZ using CENTRIC option for
+  MLPHARE doing each pair of wave lengths independently.
+  This is very quick - seems more accurate than using all
+  data, and gives independent estimates of how good your f'
+  estimates are.
+
+  ( the ratios of f'(j)-f'(P) should be constant for all
+  sites - they will NOT be on the absolute scale though..)
+
+  Then we take those real occupancies and ISOE tables and
+  hold them fixed while refining the anom occupancies ( you
+  must remember to use ATREF AX ALL AY ALL AZ ALL etc  if you
+  want to refine any other parameter to make sure the
+  anomalous differences are used)
+
+  As I said push the occupancies towards the positive sign
+  by a bit. Obviously it is bad if you get some positive and
+  some negative, and again the ratio of the different
+  occupancies should reflect the expected f'' values ( I am
+  afraid they are never spot on for us - we can't be so good
+  at staying on the inflection point..)
+
+  This refinement with all the data will give sites and
+  ANOEs, and these can be cut and pasted into a test where
+  the x y z sign is reversed.
+
+  THEN we do two things: look at maps - one map should have
+  a clearer solvent boundary than the other, and run DM -
+  and one hand should give marginally better statistics than
+  the other.
+
+  It works - providing the data is good enough, the anomalous
+  scatterer is correctly positioned, and none of the other
+  disasters which can occur have occurred!
+
+   A  common one is: Starting X Y Z refinement with ALL occupancies zero.
+   This  means  there  are  no  sensible gradients for x y z and they can
+   slide about.
+
+NOTES ON PHIC
+
+   In  order  to  merge  information about external phases with MIR phase
+   information,  an  extra  calculated  phase probability contribution is
+   calculated.
+ PROB(PHASEi)= PROB(PHASEi) + exp(-((FPAi-WC*FCA)**2
+                            + (FPBi-WC*FCB)**2))/
+                    ((FC*(1-WC))**2 + sigma(fnat)**2)
+     FPAi = FP*cos(PHASEi)
+     FPBi = FP*sin(PHASEi)
+     FCA  = FC*cos(PHIC)
+     FCB  = FC*sin(PHIC)
+  if FC is not input, then FC equals FP
+  if WC is not input WC = 1.
+
+   See examples.
+
+NOTES ON OCCUPANCIES
+
+   The occupancies used by heavy atom refinement programs are on the same
+   scale as FP, so if you haven't put your data on an absolute scale (and
+   you can't without using high resolution data) the occupancies will not
+   be absolute. E.g., if your FPs are 10 times absolute, your occupancies
+   should  be  in the range 0 to 10. Because all your derivatives have to
+   be on the same scale as FP, using relative occupancies will not affect
+   the results in any way (except of course for the apparent non-physical
+   meaning of occupancies >1!).
+
+PRINTER OUTPUT
+
+   The  printer  output  starts  with  details from the control data file
+   followed  by  details of the input reflection data file and the header
+   information written to the output reflection data file.
+
+   After  each  cycle the current error estimates and figure of merit are
+   tabulated  over  the  resolution  range.  The new parameters and their
+   standard  deviations are listed. N.B.: If an occupancy becomes near to
+   0.0 the coordinate shifts will possibly be meaningless.
+
+   Then  for  the last cycle of the refinement the following sections are
+   output  giving an extensive statistical analysis of the results of the
+   refinement.  This  is  repeated for the final phasing cycle, which may
+   well involve more reflections.
+
+   For each compound the following sections are output:
+    i. Details  of  the  parameters  for  each  heavy  atom  site  of the
+       compound,  details  of  the  correlation  matrix if requested. The
+       determinant of the normal matrix.
+   ii. The   refinement   parameter   for   isomorphous   and   anomalous
+       differences. At convergence these should be ~1.0
+   iii. Analysis of Differences between Heavy Atom and Protein Phases:
+         a. as a Function of Figure of merit
+         b. as a Function of Resolution
+
+   Note:
+    i. The mean difference should be ~90. If it is not, the scale between
+       FP and FPH is probably wrong.
+   ii. The  standard  deviation  of  the distribution should be 51.96 for
+       acentric  reflections,  and  90  for  centric  reflections  if the
+       protein  phases  are based on several independent derivatives. The
+       table gives:
+          <FOM> range
+     or [ <4SSQ/LL>  range
+          Resolution (Angstroms) ]
+          Number of reflections                  (acentrics)
+          Average Phase difference               (acentrics)
+          Standard deviation of phase difference (acentrics)
+
+          Number of reflections                  (centrics)
+          Average Phase difference               (centrics)
+          Standard deviation of phase difference (centrics)
+   iii. Analysis  of  average  or  rms  FP  FPH  and  FH as a Function of
+       Resolution.  For  acentric  reflections  the FH components derived
+       from  the  fh-fh'  and  from  the  fh'' are listed separately. The
+       values can be weighted - see keyword PRINT for details.
+       The table gives:
+          <4SSQ/LL>  range
+          Resolution (Angstroms)
+          Number of reflections                  (acentrics)
+          Mean or rms FP                         (acentrics)
+          Mean or rms FPH                        (acentrics)
+          Mean or rms calculated FH_real         (acentrics)
+          Mean or rms calculated FH_imag         (acentrics)
+
+          Number of reflections                  (centrics)
+          Mean or rms FP                         (centrics)
+          Mean or rms FPH                        (centrics)
+          Mean or rms calculated FH_real         (centrics)
+   iv. Analysis  of  average  or  rms  isomorphous  lack  of closure as a
+       function  of  resolution. The values can be weighted - see keyword
+       PRINT for details.
+       Isomorphous difference is |FPHi -FP|.
+       Lack  of closure is |FPHi - |FP+FH|| where |FP+FH| is a vector sum
+       of  the  calculated  FH, phase PHIH and FP with the protein phase.
+       For  the  unweighted  averages or rms entries the protein phase is
+       that obtained by MLPHARE.
+       For  the  weighted  tables  every  value  of PHIx around the phase
+       circle  is included with the appropriate weight. Since the weights
+       for  most values of PHIx are ~0.0 these tables should give similar
+       results to the unweighted ones.
+       Phasing power is <FH/ Lack_of_closure>.
+       Cullis  R  factor  is  <Lack_of_closure>/<Isomorphous difference>.
+       N.B.:  This is tabulated for acentric and centric terms, extending
+       the former definition.
+       It is the most useful signal for a usable derivative. Values < 0.6
+       for  centric data are excellent; values < 0.9 are usable. If a new
+       site  does  not  reduce  the  Cullis  R  factor it is probably not
+       correct.
+       The table gives:
+          <4SSQ/LL>  range
+          Resolution (Angstroms)
+          Number of reflections                  (acentrics)
+          Mean or rms isomorphous difference     (acentrics)
+          Mean or rms lack of closure            (acentrics)
+          Phasing power                          (acentrics)
+          Cullis R factor                        (acentrics)
+
+          Number of reflections                  (centrics)
+          Mean or rms isomorphous difference     (centrics)
+          Mean or rms lack of closure            (centrics)
+          Phasing power                          (centrics)
+          Cullis R factor                        (centrics)
+    v. Analysis of average or rms anomalous lack of closure as a function
+       of  resolution. The values can be weighted - see keyword PRINT for
+       details.
+       Anomalous difference is |FPHi(+) -FPHi(-)|.
+       Calculated  anomalous difference is 2 * FHi * sin(PHIx) where PHIx
+       is the protein phase.
+       Lack of closure is | Anom.Diff - Calc.Anom.Diff|.
+       Cullis R factor is <Lack_of_closure>/ <Anomalous difference>. This
+       is  tabulated  for  acentric  terms. Any value <1.0 means there is
+       some contribution to the phasing from the anomalous data.
+       The table gives:
+          <4SSQ/LL>  range
+          Resolution (Angstroms)
+          Number of reflections                  (acentrics)
+          Mean or rms anomalous difference       (acentrics)
+          Mean or rms calculated anomalous difference     (acentrics)
+          Mean or rms lack of closure            (acentrics)
+          Cullis R factor                        (acentrics)
+   vi. Table   of  estimated  error  in  the  isomorphous  and  anomalous
+       differences.  These are the values to enter with keywords ISOERROR
+       and ANOERROR.
+   vii. Table  of  figure of merit as a function of resolution. The table
+       gives:
+          <4SSQ/LL>  range
+          Resolution (Angstroms)
+          Number of reflections                  (acentrics)
+          Mean figure of merit                   (acentrics)
+
+          Number of reflections                  (centrics)
+          Mean figure of merit                   (centrics)
+   viii. The refinement parameter
+   ix. If  anomalous  data  are  being  used  for  the  compound then the
+       anomalous refinement parameter is given.
+
+ERRORS DURING PHASE CALCULATION
+
+   If  the  lack  of  closure  is  very  bad  and  the phase is virtually
+   undetermined,  the  following error message is output, and the program
+   continues.
+
+     Reflection  HKL: 0 4 1 has inconsistent phase likelihood, log Pmax=
+     0.13E+05
+
+ERRORS DURING MATRIX SOLUTION
+
+   If  there are problems in solving the matrix for the refinement of the
+   heavy  atom  parameters  then the following message may be printed and
+   the  program will stop. This often means occupancies have become 0.00.
+   Trying to refine coordinates for a site at a special position can also
+   give this error.
+
+     **** IN SUBROUTINE MATSOL DET IS LESS THAN 10E-30 ****
+
+CAVEAT
+
+   Note the comment above about errors during matrix solution when trying
+   to  refine  coordinates  for  a site at a special position. In certain
+   cases,  this  might  not  cause  an  error  per  se,  but simply yield
+   less-than-perfect occupancies etc. Check that the fixed parameters for
+   the special position are NOT refined!
+
+SEE ALSO
+
+   VECREF - vector-space refinement of heavy atom sites
+
+EXAMPLES
+
+  Example 1
+
+  Simple unix example script found in $CEXAM/unix/runnable/
+
+     mlphare.exam (heavy atom refinement and phasing).
+
+  Also found combined with other programs in the example scripts
+  ($CEXAM/unix/runnable/)
+
+     phistats.exam (phase analysis)
+
+     mir_steps (heavy atom refinement and phasing)

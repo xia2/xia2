@@ -1,0 +1,144 @@
+
+                       CROSSEC (CCP4: Supported Program)
+
+NAME
+
+   crossec  -  interpolate  X-ray  cross  sections  and compute anomalous
+   scattering factors
+
+SYNOPSIS
+
+   crossec
+   [Keyworded input]
+
+DESCRIPTION
+
+   CROSSEC  interpolates  X-ray  cross  sections  and  computes anomalous
+   scattering  factors.  f'  and  f'' values are derived for a given atom
+   type at given wavelengths. These are important for data collection and
+   analysis with heavy atoms.
+
+   Three contributions to f' are listed separately in the output (VERBose
+   option):
+
+   P.E.
+          Photoelectric contribution
+
+   Eterm
+          Term dependent on the total energy of the atom (reference [2])
+
+   Jensen
+          Term dependent on the X-ray energy (reference [3])
+
+   The output is marked up for plotting with XLOGGRAPH.
+
+   The  cross  section  file  has a number of orbitals for each atom from
+   atomic  number 3-98. The first MX records (MX=5 for this cross-section
+   file  and  is  set  in  the  program for each orbital) will have cross
+   sections  at  MX values of energy from about 1 to 80 keV approximately
+   equally  spaced  in  log(energy).  The next five records will be cross
+   sections  at energies selected by the Gauss integration scheme. If the
+   function type is 0 (IF=0) (reference [2]) a sixth value is read in for
+   an  energy of 1.001*(binding energy). If the X-ray energy is less than
+   the binding energy, FUNCTION SIGMA3 will be used (reference [4]).
+
+   Warning
+
+   If  An  X-ray  energy is very close to one of the energies used in the
+   Gauss  integration  an  `anomalous'  anomalous  scattering  factor may
+   result.  There  is no easy way out of this problem. A suggested way is
+   to  compute several values at nearby energies and draw a smooth curve.
+   This  method  should  work  provided the points do not pass through an
+   edge.
+
+INPUT AND OUTPUT FILES
+
+   The  data  file  is  read from logical name CROSSECDATA (defaulting to
+   $CLIBD/crossec.lib).
+
+KEYWORDED INPUT
+
+   The  ATOM  keyword  is  compulsory.  You  must  also  specify a set of
+   wavelengths using the NWAV keyword and/or the CWAV keyword. Any number
+   of  NWAV  and  CWAV  keywords  may  be given, but there is currently a
+   maximum  of 1000 on the total number of wavelengths allowed. All other
+   keywords are optional. The possible keywords are:
+
+     ATOM, CWAV, END, NORD, NWAV, VERB
+
+  ATOM <atom>
+
+   (Compulsory).
+   Atomic symbol for the element of interest (case-insensitive).
+
+  NWAV <nwav> <wav_1> .... <wav_nwav>
+
+   Number  <nwav>  of  wavelengths to be given, followed by a list of the
+   wavelengths themselves (in Angstroms).
+
+  CWAV <nwav> <centre> <step>
+
+   CWAV  is a more compact way of specifying a series of regularly spaced
+   wavelengths  than  NWAV.  This  keyword  specifies  <nwav> wavelengths
+   centred  on  <centre>  (in  Angstroms)  and  separated  by  <step> (in
+   Angstroms).  This  may  be  useful  if you want to look at a series of
+   wavelengths on either side of an edge.
+
+  NORD <nord>
+
+   (Default 2).
+   Interpolation  in  the  data  file  is  governed  by the NORD value as
+   follows:
+
+   0
+          Interpolation   is   by  fitting  three  closest  points  to  a
+          quadratic.
+
+   1,2,3 etc.
+          Use  Aitken's  interpolation method with NORD the interpolation
+          order. 2 is probably the best value to use.
+
+  VERB
+
+   Verbose  output. The default is to only produce the final table (which
+   can be viewed with XLOGGRAPH).
+
+  END
+
+   End input and run.
+
+EXAMPLE
+
+  Unix example script found in $CEXAM/unix/runnable/
+
+     crossec.exam
+
+AUTHORS
+
+   Don Cromer, LANL.
+
+REFERENCES
+
+    1. Don  T.  Cromer.  `Calculation  of Anomalous Scattering Factors at
+       Arbitrary Wavelengths', J. Applied Cryst. 16 437-8 (1983)
+    2. Cromer and Liberman. J. Chem. Phys. 53 1891-1898 (1970)
+    3. Jensen. Physics Letters 74A 41-44 (1979)
+    4. Cromer and Liberman Acta Cryst. A37 267-268 (1981)
+    5. Henke,  Gullikson  and  Davis, Atomic Data and Nuclear Data Tables
+       Vol. 54 No.2 181-342 (1993).
+       (See http://xray.uu.se/hypertext/henke.html)
+       Note  however  that  they are not given in fine intervals. This is
+       only important in the immediate region of an absorption edge where
+       they  change quickly. In any case near edge features mean that any
+       values  of  f' or f'' for an isolated atom in this region could be
+       unreliable as they depend on the environment of the atom.
+    6. Alain Soyer, J.Appl.Cryst. 28 244 (1995).
+       The  program  Fhkl can plot values from the Henke et al and Cromer
+       et al methods, though it is designed for other purposes.
+    7. D.  Waasmaier  and  A.  Kirfel,  `New Analytical Scattering Factor
+       Functions for Free Atoms and Ions', Acta Cryst. A51 (1995).
+       FTP Uni Wuerzburg
+
+SEE ALSO
+
+   xloggraph

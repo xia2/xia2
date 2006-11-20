@@ -1,0 +1,356 @@
+
+                        ECALC (CCP4: Supported Program)
+
+NAME
+
+   ecalc - calculate normalised structure amplitudes
+
+SYNOPSIS
+
+   ecalc hklin foo.mtz hklout foo_e.mtz
+   [Keyworded input]
+
+DESCRIPTION
+
+   The program ECALC is used to calculate normalised structure amplitudes
+   for  a  reflection  data set. The normalised structure amplitude for a
+   reflection is taken as:
+
+                   |F| / sqrt(epsilon)
+      E  =  --------------------------------
+             rms of ( |F| / sqrt(epsilon) )
+
+   Here,  F  is  a  structure  factor  amplitude.  This  may  be the true
+   structure  factor  amplitude,  or  a  difference term representing the
+   contribution   of   a   sub-structure  of  heavy  atoms  or  anomalous
+   scatterers,  depending  on  the LABIN keyword. Epsilon is the symmetry
+   factor  which  increases  the  mean  intensities for certain planes or
+   lines  in  reciprocal  space,  and  is  determined  by  the Laue group
+   symmetry.  The  r.m.s.  value  in  the  denominator is calculated as a
+   function  of the resolution, and normalises the data such that <E^2> =
+   1.
+
+   Normalised  structure amplitudes are used for direct methods programs,
+   molecular  replacement  searches,  etc. ECALC also generates the terms
+   required to calculate origin-removed Pattersons.
+
+   The  normalisation  procedure used is done using the "Karle" approach,
+   and  NOT by applying an overall temperature factor taken from a Wilson
+   plot,  i.e.  the  amplitudes are modified so that <E**2> = 1.0 in each
+   resolution  shell.  This  is  necessary  for macromolecular structures
+   where  the  low resolution <I> distribution is very different from the
+   Wilson ideal.
+
+   The  output MTZ file will contain all entries in the input file plus F
+   E SIGE F2OR E2OR. These are described in more detail below.
+
+KEYWORDED INPUT
+
+   The  various  data  control  lines  are  identified by keywords, those
+   available being:
+
+     LABIN  (compulsory),  LABOUT,  EXCLUDE, MODDIFF, RESOLUTION, SCALE,
+     SHELL, SPACEGROUP, TITLE, MULTAN, REFLECTIONS, SNB
+
+  LABIN <program label>=<file label> ...
+
+   Column  label  assignments for H, K, L, and optionally FP, SIGFP, FPH,
+   SIGFPH, DPH, SIGDPH.
+
+   FP  is  one structure amplitude, possibly a native amplitude, or maybe
+   F(+) for data with an anomalous signal
+   SIGFP is its standard deviation
+   FPH is another structure amplitude, either a derivative set or F(-)
+   SIGFPH is its standard deviation
+   DPH is the derivative anomalous difference
+   SIGDPH is its standard deviation
+
+   The  behavior  of  the  program  is  largely  governed  by  the column
+   assignments.  Data  is  assumed  missing if the associated SIG is less
+   than or equal to 0, or the missing number flag is set.
+    1. If  only FP (and SIGFP) are assigned, the amplitude assigned to FP
+       is used to calculate the E value.
+    2. If  FPH  is  also  assigned,  the  structure  "amplitude"  used to
+       calculate  the  F  and E values for output is the magnitude of the
+       difference between the columns assigned to FP and FPH (i.e., if FP
+       is   a  native,  and  FHP  a  derivative  amplitude  this  is  the
+       isomorphous difference, or if FP is set as F(+) and FPH as F(-) it
+       is  an  anomalous  difference  ).  If  using  this  to  define  an
+       "anomalous  difference"  it is sensible to use the EXCLUDE keyword
+       to  exclude  centric  terms. The difference may be reduced to take
+       into   account  the  overestimation  due  to  the  noise  in  each
+       measurement. See MODDIFF.
+    3. If  DPH is assigned, then none of FP SIGFP FPH or SIGFPH should be
+       assigned.  The structure "amplitude" used to calculate the F and E
+       values  for  output  is  the magnitude of the anomalous difference
+       DPH.  Centric  reflections will not be used. Again, the difference
+       may  be reduced to take into account the overestimation due to the
+       noise in the measurement. See MODDIFF.
+
+  EXCLUDE [CENTRIC] [SIGP <nsigp>] [SIGPH <nsigph>] [FPMAX <fpmax>] [FPHMAX
+  <fphmax>] [DIFF <diffmax>]
+
+   Set criteria for excluding data from the generation of E values. Large
+   errors can distort the normalisation seriously.
+
+   Excluded  data will still be written to the output file but there will
+   be  no  associated  value  for  E;  it  will  be flagged as a "Missing
+   number". The default is to include all data.
+
+   The following subkeys select the tests to be applied:
+
+        CENTRIC
+                exclude all centric reflections - required for the use of
+                anomalous differences
+
+        SIGP <nsigp>
+                exclude reflections if FP < <nsigp>* SIGP
+
+        SIGPH <nsigph>
+                exclude reflections if FPH < <nsigph>* SIGPH
+
+        FPMAx <fpmax>
+                exclude reflections if FP > <fpmax>
+
+        FPHMax <fphmax>
+                exclude reflections if FPH > <fphmax>
+
+        DIFF <diffmax>
+                exclude  reflections  if  the  isomorphous  or  anomalous
+                difference  is  greater  than  <diffmax>  See  LABIN  and
+                MODDIFF   for  further  discussion  on  generating  these
+                differences.
+
+  MODDIFF [ YES | NO ]
+
+   Default NO.
+
+   In  general  the  differences  used  to  estimate  the  isomorphous or
+   anomalous  contributions will be overestimated as a result of noise in
+   the measurements. It is possible to apply a correction and approximate
+   the difference by sqrt( |FPH-FP|**2 - Sqrt*(SIGFP**2 + SIGFPH**2) ) or
+   sqrt(  |DPH|**2  - Sqrt*(SIGDPH**2) ). If the term to be square-rooted
+   is  negative  the  difference is set to 0.0. It is obviously important
+   that the standard deviations are reasonably reliable.
+
+  LABOUT <program label>=<file label> ...
+
+   This  card  can  be used when outputting reflections to an MTZ file to
+   assign customised labels to the additional output columns.
+
+   The  following  additional  columns  will  be output and labels can be
+   assigned:
+     FECALC    E  SIGE      F2OR      E2OR
+
+   where
+
+   FECALC
+          is  the  "amplitude"  used  for the normalisation, either FP or
+          |FPH-FP| or |DPH|
+
+   E and SIGE
+          the  normalised  "amplitude" and standard deviation modified so
+          that  <E**2> = 1.0 in all resolution shells. Note that column E
+          now has MTZ type 'E' (it was previously 'F').
+
+   F2OR and E2OR
+          The terms required for calculating an origin removed Patterson.
+          F2OR = F**2 -<E**2> and E2OR = E**2 - <E**2> = E**2 - 1.0. They
+          can be used as input to the fft programs using LABI I=F2OR, etc
+          ( See fft documentation)
+
+  RESOLUTION <resmax>
+
+   Default:  take  the  maximum resolution from the MTZ header. The value
+   <resmax>  is  the resolution cutoff in Angstroms. Usually 0 to include
+   all reflections.
+
+  SHELL <number>
+
+   Specifies  the  approximate number (default 200) of reflections wanted
+   to  average for each shell. If this is too small you are likely to get
+   wildly  fluctuating  or  even  shells  with no reflections at all. The
+   program will stop with the message Empty shell. If it is too big there
+   may  not  be enough shells to give sensible averages. Note this number
+   refers to independent reflections; however the output shows the number
+   in a hemisphere of reciprocal space.
+
+  SPACEGROUP <group>
+
+   The  space  group  is read from file with logical name SYMOP. Default:
+   Take the SPACEGROUP from the MTZ header. Group is the space group name
+   or  number  in  International  Tables.  Only  the rotation part of the
+   symmetry  operations  is  used, so for example 177 (P622), 178 (P6122)
+   and  179  (P6522) are all equivalent. This keyword is required only if
+   the  symmetry  information in the reflection file header is missing or
+   wrong.
+
+  TITLE <title>
+
+   Title  for the output file (up to 80 characters). The text PRODUCED BY
+   ECALC will be appended to this title automatically.
+
+  SCALE <scale>
+
+   The  output columns F will be scaled by the value <scale>. The default
+   scale is 1.0.
+
+  MULTAN
+
+   No  further  data  are  required  on  this line. Outputs E values in a
+   formatted  ASCII  file e.g. for Direct Method packages such as MULTAN.
+   Normally  however,  most  Direct  Method  programs  will  calculate Es
+   internally. Default is to output E values in standard MTZ format e.g.,
+   for ALMN.
+
+  SNB
+
+   No  further  data  are  required  on  this line. Outputs E values in a
+   formatted ASCII file suitable for SnB (Shake-and-Bake).
+
+  REFLECTIONS <nwant>
+
+   This only applies when outputting reflections to an ASCII file and not
+   an MTZ file i.e. in conjunction with the MULTAN/SNB cards. The largest
+   <nwant>  Es  are  written  to  HKLOUT,  the  default  is  to write all
+   reflections.  This  cutoff may be necessary because some programs will
+   only  accept a limited number of reflections. Also, when generating Es
+   from   isomorphous   or   anomalous   differences,  i.e.  |FPH-FP|  or
+   |F(+)-F(-)|,  small  E  values will not necessarily reflect the true E
+   value  calculated from the heavy atom sub-structure. For instance, for
+   anomalous differences all the centric reflections have an E of zero.
+
+INPUT AND OUTPUT FILES
+
+   The input files are
+
+   The control data file.
+
+   HKLIN
+          The input reflection data file in standard MTZ format.
+
+   HKLOUT
+          If  no  MULTAN/SNB  keyword  is specified, the output file is a
+          reflection  data  file in MTZ format containing the items H K L
+          (all input) + F E SIGE where F=FP is copied from the input file
+          if   only   FP   is   assigned,   or   F=sqrt(max((FPH-FP)^2  -
+          SIGFP^2-SIGFPH^2,0))  if  FPH  is  assigned  as  well. E is the
+          normalised structure amplitude, SIGE is its standard deviation.
+
+   For  the  MULTAN  option  the output is H K L 1000*E in FORMAT(3I4,I6)
+   terminated by E=-1.
+
+   SYMOP
+          The library symmetry data file, normally defaulted.
+
+PRINTER OUTPUT
+
+   The line printer output may be divided into the following sections:
+    1. Echo of the input control data.
+    2. A  table  showing  the  distribution  of the reflections in shells
+       (chosen  to  give roughly equal numbers per shell) with mean d*^3,
+       F^2, E^2-1 and (E^2-1)^2.
+    3. Scatter  plot  of  F  versus d*^2 with a smoothed plot of r.m.s. F
+       versus d*^2 superimposed.
+    4. Mean values of E^2 and (E^2-1)^2 by parity groups.
+    5. Mean values of E^n where n = 1 to 6.
+       Mean values of |E^2-1|^n where n = 1 to 3.
+       For  each mean the theoretical value for the acentric, centric and
+       hypercentric distributions is also tabulated.
+    6. Cumulative  distribution  of  E's  for  centric  and acentric with
+       theoretical values. This table can also be graphed with xloggraph.
+
+EXAMPLES
+
+   Example  of  the  control  data  for  calculating  a set of normalised
+   structure factors.
+
+
+ecalc hklin junk1.mtz hklout junk2.mtz << eof
+TITLE TEST OF PROGRAM ECALC WITH C2HKL REFLECTION DATA
+LABI FP=FO  SIGFP=SIGFO
+eof
+
+
+ecalc hklin junk1.mtz hklout junk2.dat << eof
+TITLE TEST OF PROGRAM ECALC For isomorphous differences
+LABI FP=FO  SIGFP=SIGFO  FPH=FPH1 SIGFPH=SIGFPH1
+MULTAN
+REFLECTION 1500
+eof
+
+
+ecalc hklin junk1.mtz hklout junk2.dat << eof
+TITLE TEST OF PROGRAM ECALC For anomalous differences
+LABI FP=FO(+)  SIGFP=SIGFO(+) FPH=FO(-)  SIGFP=SIGFO(-)
+EXCL CENTRIC
+LABO E=E_ano
+eof
+
+
+ecalc hklin junk1.mtz hklout junk2.dat << eof
+TITLE TEST OF PROGRAM ECALC For anomalous differences from DPH
+LABI DPH=DANO  SIGDPH=SIGDANO
+EXCL CENTRIC
+LABO E=E_dano
+eof
+
+
+ecalc hklin junk1.mtz hklout junk2.mtz << eof
+TITL Es from isomorphous differences removing sigma bias etc
+LABI FP=FP SIGFP=SIGFP FPH=FPHderv1 SIGFPH=SIGFPHderv1
+EXCLUDE SIGP 3
+EXCLUDE SIGPH 3
+EXCLUDE DIFF 120
+MODDIFF YES
+eof
+
+  Using coefficients from ECALC for origin-removed Patterson map
+
+   ECALC  produces squared F's or square E's with the origin contribution
+   removed in the F2OR or E2OR columns. These can be used as input to FFT
+   to  produce  an origin-removed Patterson function. Since the terms may
+   be positive or negative you need to assign LABI I=F2OR in the fft, not
+   F1 - see below.
+
+   For example:
+ecalc hklin nat_der_scal.mtz hklout nat_der_scal_e.mtz << eof-ec
+exclude SIGP 2 SIGPH 2 DIFF 100.
+scale 1.
+shell 50
+labin FP=F_CNAT2 SIGFP=SIGF_CNAT2   FPH=F_CEMS SIGFPH=SIGF_CEMS
+labout FECALC=DISO E=E F2OR=F2OR E2OR=E2OR
+eof-ec
+
+fft hklin nat_der_scal_e.mtz mapout pat_der.map << eof-fft
+title origin removed diff-patterson
+PATT
+LABIN I=F2OR
+END
+eof-fft
+
+   (With thanks to Steve Prince)
+
+PROGRAM STRUCTURE
+
+   The  program  structure  is  straightforward and involves three passes
+   through  the  input  reflection  data  file. The structure is outlined
+   below:
+     * Open files
+     * Pass  1  through  reflection data: Find maximum F and S values and
+       count the number of reflections. Print these values.
+     * Pass 2 through reflection data: Collect F^2 values in bins of d*^3
+       (sums and numbers of reflections). Print a table of these results.
+       Apply adjacent channel smoothing for points giving the average F^2
+       and d*^3 values for these bins.
+     * Open the output mtz file.
+     * Pass  3  through  reflection  data:  Calculate E values (using the
+       function  AVF,  write  the output reflection data and collect data
+       for the statistics.
+     * Print  scatter  plot,  average values of E^1 to E^6 and cumulative
+       distribution of E's.
+
+AUTHOR
+
+   Originator: Ian Tickle
+   Contact: Ian Tickle, Birkbeck College
