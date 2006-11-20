@@ -1,0 +1,681 @@
+
+                      BP3 Version 1.0 - Documentation
+
+NAME
+
+   bp3 - multivariate likelihood substructure refinement and phasing of
+   S/MIR(AS) and/or S/MAD.
+
+SYNOPSIS
+
+   bp3 hklin foo.mtz hklout foo_out.mtz
+
+   Keyworded input
+
+DESCRIPTION
+
+   This program will refine heavy and/or anomalously scattering atomic
+   parameters along with errors parameters to generate phase information.
+
+GETTING STARTED
+
+   The best way to start is to use the CCP4i interface or example
+   scripts. The example scripts are straightforward to modify for most
+   possible phasing scenarios and are given at the end of this document.
+   If you would like to determine phases quickly, check out the PHASe
+   keyword.
+
+MAD PHASING
+
+   At the moment, S/MIR(AS) and SAD phasing is quite fast - MAD is a bit
+   slow. So, it might be worth starting a first run with the PHASe
+   keyword if you have a MAD experiment.
+
+KEYWORDED INPUT
+
+   Note that the ordering of some keywords is important. In particular,
+   the XTAL subkeywords (CELL, ATOM, DNAME) must be preceded by the
+   corresponding XTAL keyword, and similarly for the ATOM and DNAME
+   subkeywords.
+
+  SITE <NUMB> <Xfrac> <Yfrac> <Zfrac> [NOREf [X] [Y] [Z] ]
+
+   The SITE keyword should be used if you have the same site in more than
+   one crystal. The SITE keyword can not be used in combination with the
+   FRAC subkeyword of ATOM (described below).
+
+   <NUMB>
+          The Site number - the first site number must be 1 and
+          incremented by 1 with every other SITE keyword.
+
+   <Xfrac> <Yfrac> <Zfrac>
+          Fractional atomic coordinates for the SITE.
+
+   NOREF X Y Z
+          The NOREf subkeyword indicates that the X, Y and/or Z
+          coordinates of this site will not be refined. Default: refine
+          all the coordinates.
+
+  XTAL <ID>
+
+   <ID>
+          The crystal's name/identification string.
+
+  XTAL SUBKEYWORDS:
+
+    CELL
+
+   <a> <b> <c> <alpha> <beta> <gamma>
+
+   <a> <b> <c> <alpha> <beta> <gamma>
+          Cell parameters for the given XTAL. Default: take the values
+          from the mtz file.
+
+    ATOM <ID> [SITE <NUMB> ]
+
+   <ID>
+          The atom's name. The name must match a (case insensitive)
+          atom's name in $CLIBD/atomsf.lib.
+
+   [SITE <NUMB> ] If sites are specified with the SITE keyword, give this
+          keyword along with the corresponding site number for this atom.
+
+    ATOM SUBKEYWORDS:
+
+      XYZ <Xfrac> <Yfrac> <Zfrac> [NOREf [X] [Y] [Z] ]
+
+   <Xfrac> <Yfrac> <Zfrac>
+          Fractional atomic coordinates.
+
+   NOREF X Y Z
+          Including the NOREf subkeyword of XYZ indicates that the X, Y
+          and/or Z coordinate of this atom will not be refined. Default:
+          refine all the coordinates.
+
+   Note! The FRAC keyword can not be used in combination with the SITE
+   keyword.
+
+      OCCU <occ> [NOREf]
+
+   <occ>
+          Atomic occupancy - at the moment, convergence is faster if you
+          start with a lower value (ie. 0.25)
+
+   NOREf
+          The atomic occupancy will not be refined
+
+      BISO <bfac> [NOREf]
+
+   <bfac>
+          Atomic isotropic B factor. For faster convergence, use the
+          B-factor from a Wilson plot (ie. from the WILSON program). This
+          will be the default value when using CCP4i.
+          NOREf
+
+   The atomic B factor will not be refined
+
+      UANO <U11> <U12> <U13> <U22> <U23> <U33> [NOREf]
+
+   <U11> <U12> <U13> <U22> <U23> <U33>
+          Atomic anisotropic U factor. If only one value is given (ie.
+          <U11>), it will be assumed that it was an Atomic isotropic B
+          factor, and it will be converted to an anisotropic U.
+
+   NOREf
+          The anisotropic U's will not be refined.
+
+    DNAMe <ID>
+
+   The dataset identifier. This keyword is required.
+
+    DNAMe SUBKEYWORDS:
+
+      COLUmn F=<f> SF=<sf> F+=<f+> SF+=<sf+> F-=<f-> SF-=<sf->
+
+   Diffraction data for the XTAL and DNAMe defined. If anomalous data is
+   not to be used, set F and SF only. If using anomalous data, set F+,
+   SF+, F-, SF-. Setting both F and F+ will result in an error. If only F
+   and DANO is present in the mtz file, use the ccp4 program mtzMADmod to
+   change F/DANO to F+/F-.
+
+   <f>
+          |F| (observed structure factor amplitude *if no anomalous data
+          is present*).
+
+   <sf>
+          Corresponding sigma for <f>.
+
+   <f+>
+          |F+| (observed structure factor amplitude of positive Bijvoet
+          pair).
+
+   <sf+>
+          Corresponding sigma of <f+>.
+
+   <f->
+          |F-| (observed structure factor amplitude of negative Bijvoet
+          pair).
+
+   <sf->
+          Corresponding sigma of <f->.
+
+      FORM <ATOMID> [FP <fp>] [FPP <fpp>]
+
+   Specify f' and f'' values - the default is to use CuKa radiation.
+   <ATOMID> MUST match an atom previously declared by the ATOM keyword.
+
+      RESO <hires> <lores>
+
+   Specify resolution limits for the given XTAL and DNAMe diffraction
+   data. Default: use all the data available in the mtz file.
+
+      BINS
+
+   Number of bins for luzzati parameter estimation and refinement and
+   output of statistics.
+
+      ISOE <isoe1> <isoe2> ... <isoen> [NOREf]
+
+   Luzzati isomorphic error parameters. The number of parameters MUST be
+   the same as the number of BINS, or an error will result. If the NOREf
+   keyword is given, the parameters will not be refined.
+
+      ANOE <anoe1> <anoe2> ... <anoen> [NOREf]
+
+   Luzzati anomalous error parameters. The number of parameters MUST be
+   the same as the number of BINS, or an error will result. If the NOREf
+   keyword is given, the parameters will not be refined.
+
+      SDLU <sdlu1> <sdlu2> ... <sdlun> [NOREf]
+
+   Luzzati error parameters in SAD function. The number of parameters
+   MUST be the same as the number of BINS, or an error will result. If
+   the NOREf keyword is given, the parameters will not be refined.
+
+      KSCALe <k> [REFIne]
+
+   Scale factor to apply to the data set to scale it relative to the
+   reference set. The default is 1 and not to refine this parameter, as
+   it is highly correlated to the Luzzati isomorphism parameter.
+
+      BSCALe <b> [REFIne]
+
+   Isotropic B-factor to apply to the data set to scale it relative to
+   the reference set. The default is 0 and not to refine, as again, it is
+   highly correlated to the Luzzati isomorphism parameter.
+
+OPTIONAL KEYWORDS:
+
+  REFIne
+
+   The program will refine atomic and error parameters and calculates
+   phases (default).
+
+  PHASe
+
+   The program will just calculate phases with refining only atomic
+   occupancies in the first macro-cycle, refining occupancies and error
+   parameters in the second macro-cycle and then occupancies, coordinates
+   and error parameters in the second and last macro-cycle. The keyword
+   specifies the micro-cycles within a macrocycle - the default is 2. Use
+   should use this option for very quick phasing, but make sure the
+   occupancies and coordinates inputted are from CRUNCH2 or SHELXD and
+   the B factors are also reasonable (ie. a good guess is the Wilson B
+   factor for the data set). The occupancies should be normalized to be
+   between 0 and 1.
+
+  CYCle
+
+   The number of cycles of refinement to perform (unless convergence is
+   reached before) Default: 500
+
+  NORM
+
+   The minimum magnitude of the gradient vector required for
+   convergence/terminiation of minimization. Default: 25
+
+  WOLFe <alpha> <beta>
+
+   alpha and beta parameters for the Wolfe (or Amijo/Goldstein) line
+   search conditions. Default: alpha = 0.0001, beta = 0.975
+
+  REFAll
+
+   For greater numerical stability, the program by default refines just
+   the occupancies in the first refinement cycle and then all parameters
+   (error and atomic) in the second and final. This keyword goes directly
+   to refining all parameters without refining occupancies and should be
+   used in subsequent refinements using refined values of the error and
+   atomic coordinates.
+
+  SHELdrick <thres>
+
+   Just perform one macrocycle of refining Luzzati error parameters and
+   atomic occupancies (ie. no refinement of x, y, z coordinates or b
+   factors). By default, if the number of atoms is greater than 50, the
+   default , no refinement of x, y, z occurs. The can be increased or
+   decreased via the SHELdrick keyword.
+
+  OUTPut <outputname>
+
+   <outputname> is the string associated with the pdb file, crank XML and
+   script file that bp3 writes out.. The default <outputname> is "heavy".
+
+  NODEs [CENTric <cen> PHASe <pha> AMPLitude <amp> SAD <sad> ]
+
+   Increase the number of nodes (i.e. points of evaluation for numerical
+   integration) for the CENTric integral and the acentric PHASe and
+   AMPLitude integral. Default: CENTRic = 5, PHASe = 25, AMPLitude = 5,
+   SAD = 30.
+
+  THREshold
+
+   Parameter giving value of FOBSref/SIGFref (i.e. f over sigma for the
+   reference data set) of when to switch from one dimensional numerical
+   integration to two dimensional integration for acentric reflections.
+   Therefore, if THREshold is less than or equal to ZERO, only one
+   dimensional (phase) inegration will be performed. Or, if THREshold is
+   very large (i.e. 100000), a two dimensional integration (both
+   amplitude and phase) will be done. Default: 4.
+
+  ACENtric
+
+   Only refine and phase acentric reflections. For testing purposes only.
+
+  CENTric
+
+   Only refine and phase centric reflections. Possibly useful, but not
+   recommended.
+
+  TITLe <title>
+
+   Title to be added to the mtz file. Default: "Phasing from BP3".
+
+  VERBose <n>
+
+   Specify amount of information to be outputted (where n is a positive
+   integer). n = 0 is the normal output, n = 1 is more output and n = 2
+   is for debugging purposes. Default: n = 0.
+
+OUTPUT:
+
+  COLUMNS in HKLOUT
+
+   FPHASED
+          Structure factor amplitude of reference data set
+
+   SIGFPHASED
+          Corresponding sigma of FPHASED
+
+   FB
+          Maximum likelihood amplitude (roughly equal to FOM * FP)
+
+   PHIB
+          Maximum likelihood phase
+
+   PHIBOH
+          Maximum likelihood phase for the enantiomorph/other hand
+          (PHIBOH = -PHIB)
+
+   FOM
+          Figure of merit.
+
+   HLA, HLB, HLC, HLD
+          Hendrickson-Lattman coefficients
+
+   PDB FILES:
+          Orthogonal heavy atom parameters in file
+          <outputname><crystalnumber>.pdb
+
+   CRANK XML FILES:
+          CRANK XML file for any subsequent jobs in file
+          <outputname><crystalnumber>.xml
+
+   BP3 script FILES:
+          in file <outputname>.sh
+
+EXAMPLES
+
+Example (1)
+
+#!/bin/sh
+
+set -e
+
+# Phasing the rnase using Pt sites only.
+# See Sevcik, Dodson and Dodson, Acta Cryst. B47 240 (1991)
+
+bp3 HKLIN $CEXAM/rnase/rnase25.mtz \
+    HKLOUT $CCP4_SCR/rnase_phase_mir.mtz << eof-bp3
+
+# native crystal
+
+Xtal NATIVE
+  DName NATIVE
+    COLUmn F=FNAT SF=SIGFNAT
+
+# platinum derivative
+
+Xtal Platinum
+  ATOM Pt
+    XYZ 0.566  0.828  0.018
+    OCCU 0.2
+    BISO 25.0
+  ATOM Pt
+    XYZ 0.842  0.944  0.469
+    OCCU 0.2
+    BISO 25.0
+  ATOM Pt
+    XYZ 0.103  0.941  0.189
+    OCCU 0.2
+    BISO 25.0
+  ATOM Pt
+    XYZ 0.190  0.005  0.742
+    OCCU 0.2
+    BISO 25.0
+  ATOM Pt
+    XYZ 0.047  0.848  0.273
+    OCCU 0.2
+    BISO 25.0
+
+  DNAME Plat
+    COLUmn F=FPTNCD25 SF=SIGFPTNCD25
+
+# Note! - to add anomalous data, run mtzMADmod to get F+/F-
+# then, input F+ and F- columns to bp3
+
+ALLIn
+
+eof-bp3
+
+##############################################################
+
+Example 2 - SAD Phasing
+
+#!/bin/sh
+
+set -e
+
+bp3 HKLIN $CEXAM/tutorial/data/gere_MAD.mtz \
+    HKLOUT $CCP4_SCR/gere_MAD_phase.mtz << eof-bp3
+
+# selenium
+
+Xtal DER1
+  ATOM Se
+    XYZ 0.567606  0.19651  0.117643
+    OCCU 0.5
+    BISO 25.0
+  ATOM Se
+    XYZ 0.637982  0.0428475  0.217668
+    OCCU 0.5
+    BISO 25.0
+  ATOM Se
+    XYZ 0.469871  0.255659  0.23827
+    OCCU 0.5
+    BISO 25.0
+  ATOM Se
+    XYZ 0.49385  0.188126  0.41977
+    OCCU 0.5
+    BISO 25.0
+  ATOM Se
+    XYZ 0.794401  0.401274  0.137605
+    OCCU 0.5
+    BISO 25.0
+  ATOM Se
+    XYZ 0.716238  0.238362  0.0869784
+    OCCU 0.5
+    BISO 25.0
+  ATOM Se
+    XYZ 0.259739  0.00855349  0.239787
+    OCCU 0.5
+    BISO 25.0
+  ATOM Se
+    XYZ 0.343637  0.168551  0.319304
+    OCCU 0.5
+    BISO 25.0
+  ATOM Se
+    XYZ 0.173773  -0.0720953  0.391003
+    OCCU 0.5
+    BISO 25.0
+  ATOM Se
+    XYZ 0.179076  0.0804735  0.520765
+    OCCU 0.5
+    BISO 25.0
+  ATOM Se
+    XYZ 0.926494  0.231291  0.18954
+    OCCU 0.5
+ DNAME PEAK
+   COLUmn F+=F(+)SEpeak SF+=SIGF(+)SEpeak F-=F(-)SEpeak SF-=SIGF(-)SEpeak
+   FORM Se FP=-4.0 FPP=4.0
+
+ALLIn
+
+eof-bp3
+
+##############################################################
+
+Example 3
+
+#!/bin/sh
+
+set -e
+
+bp3 HKLIN $CEXAM/toxd/toxd.mtz \
+    HKLOUT $CCP4_SCR/toxd_phase_mir.mtz   \
+ << eof-bp3
+
+# native crystal
+
+Xtal NATIVE
+  Dname NATIVE
+    COLUmn F=FTOXD3 SF=SIGFTOXD3
+
+# silver derivative
+
+Xtal SILVER
+  ATOM Au
+    XYZ 0.177  0.104 -0.114
+    OCCU 0.2
+    BISO 30.0
+  ATOM Au
+    XYZ 0.218 0.138 -0.105
+    OCCU 0.2
+    BISO 30.0
+  DNAMe AU
+    COLUmn F=FAU20 SF=SIGFAU20
+
+# Note! - to add anomalous data, run mtzMADmod to get F+/F-
+# then, input F+ and F- columns to bp3
+
+# mercury derivative
+
+XTAL MERCURY
+  ATOM Hg+2
+    XYZ 0.180  0.294  0.089
+    OCCU 0.2
+    BISO 30.0
+  DNAMe HG
+    COLUmn F=FMM11 SF=SIGFMM11
+
+# iodine derivative
+
+ Xtal IODINE
+  ATOM I-1
+    XYZ 0.491  0.370  0.487
+    OCCU 0.2
+    BISO 30.0
+  DNAMe IO
+    COLUmn F=FI100 SF=SIGFI100
+
+ALLIn
+
+eof-bp3
+
+##############################################################
+
+Example 4
+
+
+# Example 4
+
+# 2 wavelength MAD
+
+#!/bin/sh
+
+set -e
+
+bp3 HKLIN $CEXAM/tutorial/data/gere_MAD_nat.mtz \
+    HKLOUT $CCP4_SCR/gere_MAD_phase.mtz << eof-bp3
+
+# MAD data
+
+Xtal DER1
+  ATOM Se
+    XYZ 0.567606  0.19651  0.117643
+    OCCU 0.5
+    BISO 50.0
+  ATOM Se
+    XYZ 0.637982  0.0428475  0.217668
+    OCCU 0.5
+    BISO 50.0
+  ATOM Se
+    XYZ 0.469871  0.255659  0.23827
+    OCCU 0.5
+    BISO 50.0
+  ATOM Se
+    XYZ 0.49385  0.188126  0.41977
+    OCCU 0.5
+    BISO 50.0
+  ATOM Se
+    XYZ 0.794401  0.401274  0.137605
+    OCCU 0.5
+    BISO 50.0
+  ATOM Se
+    XYZ 0.716238  0.238362  0.0869784
+    OCCU 0.5
+    BISO 50.0
+  ATOM Se
+    XYZ 0.259739  0.00855349  0.239787
+    OCCU 0.5
+    BISO 50.0
+  ATOM Se
+    XYZ 0.343637  0.168551  0.319304
+    OCCU 0.5
+    BISO 50.0
+  ATOM Se
+    XYZ 0.173773  -0.0720953  0.391003
+    OCCU 0.5
+    BISO 50.0
+  ATOM Se
+    XYZ 0.179076  0.0804735  0.520765
+    OCCU 0.5
+    BISO 50.0
+  ATOM Se
+    XYZ 0.926494  0.231291  0.18954
+    OCCU 0.5
+    BISO 50.0
+ DNAME PEAK
+   COLUmn F+=F_peak(+) SF+=SIGF_peak(+) F-=F_peak(-) SF-=SIGF_peak(-)
+   FORM Se FP=-4.0 FPP=4.0
+ DNAME INFL
+   COLUmn F+=F_infl(+) SF+=SIGF_infl(+) F-=F_infl(-) SF-=SIGF_infl(-)
+   FORM Se FP=-6.0 FPP=2.0
+ALLIn
+
+# phase keyword to make things faster!
+PHASe
+
+eof-bp3
+
+##############################################################
+
+Example 5
+
+
+# Example 5
+
+# 3 wavelength MAD + native
+
+#!/bin/sh
+
+set -e
+
+bp3 HKLIN $CEXAM/tutorial/data/gere_MAD_nat_scaleit1.mtz \
+    HKLOUT $CCP4_SCR/gere_MAD_phase.mtz << eof-bp3
+
+# MAD data + natve
+# always define MAD "derivative" crystal first!
+
+Xtal DER1
+  ATOM Se
+    XYZ 0.567606  0.19651  0.117643
+    OCCU 0.5
+    BISO 50.0
+  ATOM Se
+    XYZ 0.637982  0.0428475  0.217668
+    OCCU 0.5
+    BISO 50.0
+  ATOM Se
+    XYZ 0.469871  0.255659  0.23827
+    OCCU 0.5
+    BISO 50.0
+  ATOM Se
+    XYZ 0.49385  0.188126  0.41977
+    OCCU 0.5
+    BISO 50.0
+  ATOM Se
+    XYZ 0.794401  0.401274  0.137605
+    OCCU 0.5
+    BISO 50.0
+  ATOM Se
+    XYZ 0.716238  0.238362  0.0869784
+    OCCU 0.5
+    BISO 50.0
+  ATOM Se
+    XYZ 0.259739  0.00855349  0.239787
+    OCCU 0.5
+    BISO 50.0
+  ATOM Se
+    XYZ 0.343637  0.168551  0.319304
+    OCCU 0.5
+    BISO 50.0
+  ATOM Se
+    XYZ 0.173773  -0.0720953  0.391003
+    OCCU 0.5
+    BISO 50.0
+  ATOM Se
+    XYZ 0.179076  0.0804735  0.520765
+    OCCU 0.5
+    BISO 50.0
+  ATOM Se
+    XYZ 0.926494  0.231291  0.18954
+    OCCU 0.5
+    BISO 50.0
+  DNAME PEAK
+    COLUmn F+=F_peak(+) SF+=SIGF_peak(+) F-=F_peak(-) SF-=SIGF_peak(-)
+    FORM Se FP=-4.0 FPP=4.0
+  DNAME INFL
+    COLUmn F+=F_infl(+) SF+=SIGF_infl(+) F-=F_infl(-) SF-=SIGF_infl(-)
+    FORM Se FP=-6.0 FPP=2.0
+  DNAME HRM
+    COLUmn F+=F_hrm(+) SF+=SIGF_hrm(+) F-=F_hrm(-) SF-=SIGF_hrm(-)
+    FORM Se FP=-3.0 FPP=1.0
+
+# This version of BP3 will just ignore the NATIVE in MAD phasing, so you might
+as well
+# comment this out!
+
+! Xtal Native
+!   DNAME native
+!     COLUMN F=F_native SF=SIGF_native
+
+ALLIn
+
+# phase keyword to make things faster!
+PHASe
+
+eof-bp3
+     _________________________________________________________________
+
+   Last modified: Tue Dec 6 21:14:39 CET 2005

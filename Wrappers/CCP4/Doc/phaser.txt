@@ -1,0 +1,1775 @@
+
+                     Phaser 1.3 (CCP4: Supported Program)
+
+   Phaser is crystallographic software for phasing macromolecular crystal
+       structures with maximum likelihood techniques.
+       Index to Documentation 1. Introduction
+
+   1.1 Keyword Index
+       1.2 Syntax of Documentation
+       1.3 Bug Reports
+
+   2. Molecular Replacement
+   2.1 How to Define Data
+       2.2 How to Define Models
+       2.3 How to Define Solutions
+       2.4 How to Control Output
+       2.5 How to Select Peaks
+       2.6 How to Run Phaser
+
+   2.6.1 Automated Molecular Replacement
+       2.6.2 Fast Rotation Function
+       2.6.3 Brute Rotation Function
+       2.6.4 Fast Translation Function
+       2.6.5 Brute Translation Function
+       2.6.6 Refinement and Phasing
+       2.6.7 Log-Likelihood Gain
+       2.6.8 Packing
+       2.6.9 Anisotropy Correction
+       2.6.10 Normal Mode Analysis
+       2.6.11 Cell Content Analysis
+
+   2.7 How to know whether Phaser has solved it
+   2.8 What to do in difficult cases
+   3. Preprocessor
+   4. Keywords
+   5. Python Scripting
+   6. XML
+   7. Version History
+   8. References
+     _________________________________________________________________
+
+1. Introduction
+
+   This  is  the documentation for running Phaser-1.3 with keyword input.
+       There  are  some  minor  changes  to  the  keyword  input  between
+       Phaser-1.2  and  Phaser-1.3,  so  input  scripts  may  need  minor
+       editing.
+       1.1 Keyword Index
+
+   BINS BOXScale
+       CELL CLMN COMPosition
+       EIGEn ENSEmble ENSIn
+       FINAl
+       HKLIn HKLOut
+       LABIn
+       MODE MRMAcrocycle
+       NORMalization NMAMethod NMAPdb
+       OUTLier
+       PACK PERMutations
+       RESCore RESOlution ROOT ROTAte
+       SAMPling  SAVE  SCRIpt  SEARch  SGALternative SHANnon SNMAcrocycle
+       SOLUtion SOLParams SPACegroup SUITe
+       TARGet TITLe TOPFiles TRANslate
+       VERBose
+       XYZOut
+
+  1.2 Syntax of Documentation
+
+   KEYWord
+       Courier  font in blue means a keyword. Only the first four letters
+       (sometimes less) of any input keyword are required/recognized. The
+       required  characters  for  each keyword are given in uppercase and
+       those not required in lowercase. Keywords are not case sensitive.
+   <PARAMETER>
+       Angle  brackets  mean  a  parameter  value. Input strings are case
+       sensitive: the case of titles and filenames is preserved.
+   { KEYWord <X Y Z> }
+       Curly  brackets  mean  a  group  of  keywords/parameters must come
+       together.
+   [ X | Y ]
+       Square brackets and line separating options means X or Y.
+   KEYWord <X Y Z>
+       Italics mean the keyword/input is optional.
+
+  1.3 Bug Reports
+
+   We   apologize   for   the   bugs.   Please   send   bug   reports  to
+       cimr-phaser@lists.cam.ac.uk or rjr27@cam.ac.uk (Randy Read).
+     _________________________________________________________________
+
+2. Molecular Replacement
+
+   Phaser  should  be  able  to  solve most structures with the Automated
+       Molecular  Replacement  mode,  and this is the first mode that you
+       should  try.  Give  Phaser your data (How to Define Data) and your
+       models (How to Define Models), tell Phaser what to search for (use
+       SEARch  keyword),  and a list of possible spacegroups (in the same
+       pointgroup  - use the SGALternative keyword). The flow diagram for
+       the  automated  molecular replacement mode is shown below. If this
+       doesn't work (see "How to know whether Phaser has solved it"), you
+       can  try  selecting  peaks  of  lower significance in the rotation
+       function in case the real orientation was not within the selection
+       criteria.  By default peaks above 75% of the top peak are selected
+       (see  "How  to Select Peaks"). See "What to do in difficult cases"
+       for  more  hints  and tips. If the automated molecular replacement
+       mode  doesn't work even with non-default input you need to run the
+       modes  of  Phaser  separately. The possibilities are endless - you
+       can   even   try   exhaustive   searches   (translations   of  all
+       orientations)  if  you  want  - but experience has shown that most
+       structures  that  can  be  solved  by  Phaser  can  be  solved  by
+       relatively simple strategies.
+       Flow   Diagram  for  Automated  Molecular  Replacement  in  Phaser
+       [MR_auto.gif]
+       2.1 How to Define Data
+
+   You  need to tell Phaser the name of the mtz file containing your data
+       and  the  columns  in  the mtz file to be used using the HKLIn and
+       LABIn  keywords. Additional keywords (BINS CELL OUTLier RESOlution
+       SPACegroup) define how the data are used.
+
+  2.2 How To Define Models
+
+       Molecular replacement models are defined with the ENSEmble keyword
+       and   the   COMPosition  keyword.  To  compute  a  Sigma(A)  curve
+       representing the accuracy of model structure factors as a function
+       of  resolution,  Phaser  needs  to  know  the RMS coordinate error
+       expected for the model (determined directly from RMS or indirectly
+       from  IDENtity  in  the  ENSEmble keyword) and the fraction of the
+       scattering   power   in   the  asymmetric  unit  that  this  model
+       contributes  (deduced from the COMPosition keywords). If fp is the
+       fraction scattering and RMS is the rms coordinate error, then
+       Sigma(A)  =  SQRT{fp*[1-fsol*exp(-Bsol*(sin(theta)/lambda)^2)]}  *
+       exp{-(8 Pi^2/3)*RMS^2*(sin(theta)/lambda)^2}
+       where  fsol(=0.95)  and  Bsol(=300Å^2)  account for the effects of
+       disordered  solvent  on  the  completeness  of  the  model  at low
+       resolution.
+       Phaser  must  be  given  the models that it will use for molecular
+       replacement.  A  molecular replacement model is constructed in one
+       of  two  ways - either by making an ensemble from a set of aligned
+       homologous  structures,  entered  as  pdb  files, or by entering a
+       model  from  a  map,  entered as structure factors in an mtz file.
+       Each  ensemble  is  treated as a separate type of rigid body to be
+       placed  in  the molecular replacement solution. An ensemble should
+       only  be  defined  once,  even  if there are several copies of the
+       molecule in the asymmetric unit.
+       If  you construct a model by homology modelling, remember that the
+       RMS  error you expect is essentially the error you expect from the
+       template  structure.  So  specify  the  sequence  identity  of the
+       template, not of the homology model!
+       Examples of building an Ensemble from Coordinates
+
+        You have one structure as a model with 44% sequence identity to
+                the protein in the crystal.
+                ENSEmble mol1 PDB homology1.pdb IDENtity .44
+
+        You have three structures as models with 44%, 39% and 35%
+                identity to the protein in the crystal.
+                ENSEmble   mol2   PDB   homology1.pdb  IDENtity  .44  PDB
+                homology2.pdb IDENtity .39 PDB homology3.pdb IDENtity .35
+
+        You have an NMR Ensemble as a model. There is no need to split
+                the coordinates in the pdb file provided that the models
+                are separated by MODEL and ENDMDL cards. In this case the
+                homology is not a good indication of the similarity of
+                the structural coordinates to the target structure. You
+                should use the RMS option; several test cases have
+                succeeded with an RMS value of about 1.5Å.
+                ENSEmble mol3 PDB nmr.pdb RMS 1.5
+
+    Examples of a Map as an "Ensemble"
+
+        You have low resolution electron density of your model. This
+                density has been cut out and converted to structure
+                factors in a large cell.
+                ENSEmble  mol1  HKLIn mol1.mtz F = Fmol1 P = Pmol1 EXTEnt
+                23  25  29 RMS 2.0 CENTre 4 3 30 PROTein MW 10241 NUCLeic
+                MW 0
+
+       When using density as a model, it is necessary to specify both the
+       extent  (x,y,z  limits)  of the cut-out region of density, and the
+       centre  of this region. With coordinates, Phaser can work this out
+       by itself. This information is needed, for instance, to decide how
+       large  rotational steps can be in the rotation search and to carry
+       out  the  molecular transform interpolation correctly. In the case
+       of electron density, the RMS value does not have the same physical
+       meaning  that  it  has  when  the  model  is  specified  by atomic
+       coordinates,  but  it  is  used  to  judge how the accuracy of the
+       calculated structure factors drops off with resolution. A suitable
+       value  for  RMS  can  be  obtained, in the case of density from an
+       experimentally-phased  map,  by  choosing  a  value that makes the
+       SigmaA  curve  fall  off  with  resolution  similar  to  the  mean
+       figures-of-merit.  In  the  case  of  density  from  an  EM  image
+       reconstruction,  the  RMS  value should make the SigmaA curve fall
+       off  similar  to  a  Fourier  correlation  curve used to judge the
+       resolution of the EM image.
+       Phaser  must  know  what  percentage of the scattering is given by
+       each  Ensemble.  It  can  not  work  this  out without knowing the
+       content  of the asymmetric unit. The composition of the asymmetric
+       unit  is  defined  either  by  entering  the  molecular weights or
+       sequences of the components in the asymmetric unit, and giving the
+       number of copies of each. Expert users can also enter the fraction
+       of  the  scattering  of  each  component  directly,  although  the
+       composition   must   still  be  entered  for  the  absolute  scale
+       calculation.
+       Examples of Composition by Molecular Weight
+
+        You have one protein (with MW 21022) in the asymmetric unit
+                COMPosition PROTein MW 21022
+
+        You have three copies of a protein (with MW 21022) in the
+                asymmetric unit
+                COMPosition PROTein MW 21022
+                COMPosition PROTein MW 21022
+                COMPosition PROTein MW 21022
+
+        Another way of entering the same thing is
+                COMPosition PROTein MW 21022 NUMber 3
+
+        Yet another way of entering the same thing is
+                COMPosition PROTein MW 63066
+
+        You have two copies of a protein (with MW 21022), two copies of a
+                protein (with MW 9843) and RNA with (MW 32004) in the
+                asymmetric unit
+                COMPosition PROTein MW 21022 NUMber 2
+                COMPosition PROTein MW 9843 NUMber 2
+                COMPosition NUCLeic MW 32004
+
+    Examples of Composition by Sequence
+
+        You have one protein (with sequence in fasta format in the file
+                prot1.seq) in the asymmetric unit
+                COMPosition PROTein SEQuence prot1.seq
+
+        You have three copies of a protein (with sequence in fasta format
+                in the file prot1.seq) in the asymmetric unit
+                COMPosition PROTein SEQuence prot1.seq
+                COMPosition PROTein SEQuence prot1.seq
+                COMPosition PROTein SEQuence prot1.seq
+
+        Another way of entering the same thing is
+                COMPosition PROTein SEQuence prot1.seq NUMber 3
+
+        Yet another way of entering the same thing is to make a sequence
+                file with all the amino acids concatenated together
+                (prot1.seq3)
+                COMPosition PROTein SEQuence prot1.seq3
+
+        You have two copies of a protein (with sequence in fasta format
+                in the file prot1.seq), two copies of a protein (with
+                sequence in fasta format in the file prot2.seq) and RNA
+                with (with sequence in fasta format in the file
+                nucl1.seq) in the asymmetric unit
+                COMPosition PROTein SEQuence prot1.seq NUMber 2
+                COMPosition PROTein SEQuence prot2.seq NUMber 2
+                COMPosition NUCLeic SEQuence nucl1.seq
+
+    Examples of Composition by Percentage Scattering
+
+        Each copy of Ensemble mol1 gives 22% of the scattering
+                COMPosition ENSEmble mol1 FRACtional 0.22
+
+        Each copy of Ensemble mol2 gives 78% of the scattering
+                COMPosition ENSEmble mol2 FRACtional 0.78
+
+  2.3 How To Define Solutions
+
+   You  don't  really  need  to  know how to define molecular replacement
+       solutions as Phaser writes out files ending in ".sol" and ".rlist"
+       that  contain  the  solution information from the job. The root of
+       the  files  is  given  by  the  ROOT keyword. By default, the root
+       filename  is  PHASER. These files can be read back into subsequent
+       runs  of  Phaser  to  build  up solutions containing more than one
+       molecule in the asymmetric unit.
+
+   "PHASER.sol" files are generated by all modes, and contain the current
+       idea of potential molecular replacement solutions.
+       "PHASER.rlist" files are generated by the rotation function modes,
+       and  are  for  performing  translation  functions.  (They are also
+       produced  by degenerate (2D) translation functions, for performing
+       a translation function to find the third dimension)
+
+   To include the files you should use the preprocessor command @
+   @ filename.sol
+       @ filename.rlist
+
+   However,  if  you  want  to understand "PHASER.sol" and "PHASER.rlist"
+   files, read on...
+
+    PHASER.sol
+
+   At  different  stages  of  molecular  replacement, an Ensemble will be
+   oriented  but  not positioned (after the rotation search), or oriented
+   and  positioned  (after  the translation search), or, rarely, oriented
+   and  the  position  in  2  of  3  dimensions known. These three states
+   correspond  to  solutions  defined  by  the  keywords  SOLUtion  3DIM,
+   SOLUtion 6DIM, and SOLUtion 5DIM. Each Ensemble in the asymmetric unit
+   has  its  own  SOLUtion  keyword.  Examples  of the different types of
+   molecular replacement solutions are:
+
+   One copy of mol1 with known orientation and position (fractional
+          coordinates)
+          SOLUtion 6DIM ENSEmble mol1 EULEr 17 20 32 FRACtional 0.12 0.05
+          0.74
+
+   One copy of mol1 with known orientation only
+          SOLUtion 3DIM ENSEmble mol1 EULEr 17 20 32
+
+   One copy of mol1 with known orientation and position (fractional
+          coordinates) and one copy of mol2 with known orientation only
+          SOLUtion 6DIM ENSEmble mol1 EULEr 17 20 32 FRACtional 0.12 0.05
+          0.74
+          SOLUtion 3DIM ENSEmble mol2 EULEr 5 183 230
+
+   Two copies of mol1 with known orientation and position (fractional
+          coordinates), one copy of mol2 with known orientation and
+          position (fractional coordinates) and one copy of mol2 with
+          known orientation only
+          SOLUtion 6DIM ENSEmble mol1 EULEr 17 20 32 FRACtional 0.12 0.05
+          0.74
+          SOLUtion 6DIM ENSEmble mol1 EULEr 24 23 24 FRACtional 0.58 0.73
+          0.93
+          SOLUtion  3DIM ENSEmble mol2 EULEr 68 7 85 FRACtional 0.04 0.19
+          0.25
+          SOLUtion 3DIM ENSEmble mol2 EULEr 5 183 230
+
+   When  more  than  one  molecular  replacement solution is present, the
+   solutions are separated with the SOLUTION SET keywords.
+   At  any  given  stage in the structure solution all the solutions will
+   have  the  same  number  of  ensembles  oriented,  and/or oriented and
+   positioned, and the solutions will look very similar.. For example, if
+   the  rotation  function  and  translation  function for mol1 were very
+   clear,  then there will only be one type of 6DIM solution for mol1. If
+   the  rotation  and translation functions for mol2 were then not clear,
+   there will be a series of possible 6DIM solutions for mol2.
+
+          SOLUtion SET
+          SOLUtion 6DIM ENSEmble mol1 EULEr 17 20 32 FRACtional 0.12 0.05
+          0.74
+          SOLUtion  6DIM  ENSEmble  mol2  EULEr 5 183 230 FRACtional 0.71
+          0.54 0.81
+          SOLUtion SET
+          SOLUtion 6DIM ENSEmble mol1 EULEr 17 20 32 FRACtional 0.12 0.05
+          0.74
+          SOLUtion 6DIM ENSEmble mol2 EULEr 51 93 75 FRACtional 0.08 0.57
+          0.25
+          SOLUtion SET
+          SOLUtion 6DIM ENSEmble mol1 EULEr 17 20 32 FRACtional 0.12 0.05
+          0.74
+          SOLUtion  3DIM ENSEmble mol2 EULEr 5 33 21 FRACtional 0.32 0.05
+          0.44
+
+   Where  only  the  coordinates  in  2  dimensions  (a plane through the
+   origin)  of  an  oriented  Ensemble are determined, a solution of type
+   5DIM is produced. The degenerate direction is defined as the direction
+   perpendicular  to  the  plane  in  which  the position is given. These
+   solutions  can be treated in exactly the same way as the 3DIM and 6DIM
+   solutions
+   SOLUtion  5DIM  ENSEmble  mol1  EULEr 17 20 32 DEGEnerate X FRACtional
+       0.05 0.74
+
+    PHASER.rlist
+
+   These  files  define  a rotation function list. The peak list is given
+   with a series of SOLUtion TRIAl keywords.
+   SOLUtion TRIAl ENSEmble mol1 EULEr 17 20 32
+       SOLUtion TRIAl ENSEmble mol1 EULEr 67 65 51
+       SOLUtion TRIAl ENSEmble mol1 EULEr 67 112 81
+
+   If  a  partial solution is already known, then the information for the
+   currently  "known"  parts  of the asymmetric unit is given in the form
+   used   for  the  PHASER.sol  file,  followed  by  the  list  of  trial
+   orientations for which a translation function is to be performed.
+   SOLUtion SET
+       SOLUtion  6DIM  ENSEmble  mol1 EULEr 17 20 32 FRACtional 0.12 0.05
+       0.74
+       SOLUtion TRIAl ENSEmble mol1 EULEr 44 20 32
+       SOLUtion TRIAl ENSEmble mol1 EULEr 67 65 51
+       SOLUtion SET
+       SOLUtion  6DIM  ENSEmble  mol1 EULEr 17 20 32 FRACtional 0.13 0.55
+       0.76
+       SOLUtion TRIAl ENSEmble mol1 EULEr 83 9 180
+       SOLUtion TRIAl ENSEmble mol1 EULEr 8 36 92
+       SOLUtion TRIAl ENSEmble mol1 EULEr 48 87 10
+
+   When  the  rlist  file  is  generated by Phaser, an additional keyword
+   SCORE  appears  on  the  end  of the SOLUtion TRIAl lines. This is the
+   z-score  from  the  rotation  function.  It is not used by Phaser, but
+   allows the user to keep track of the results.
+   SOLUtion SET
+       SOLUtion  6DIM  ENSEmble  mol1 EULEr 17 20 32 FRACtional 0.12 0.05
+       0.74
+       SOLUtion TRIAl ENSEmble mol1 EULEr 44 20 32 SCORe 3.4
+       SOLUtion TRIAl ENSEmble mol1 EULEr 67 65 51 SCORe 3.0
+
+   If  a  degenerate  translation  function is performed, then a SOLUtion
+   TRIAl  line  is  produced  with the degenerate translation information
+   present,  ready  for  performing the translation function on the third
+   dimension.
+   SOLUtion  TRIAl  ENSEmble  mol1 EULEr 17 20 32 DEGEnerate X FRACtional
+       0.05 0.74
+
+  2.4 How to Control Output
+
+   The  output  of  Phaser  can be controlled with the following optional
+       keywords.  The  ROOT  keyword  is not compulsory (the default root
+       filename  is  "PHASER"),  but should always be given, so that your
+       jobs have separate and meaningful output filenames.
+       Optional Keywords
+
+   HKLOut ROOT SCRIpt SUITe TITLe TOPFiles VERBose XYZOut
+
+   Where  HKLOut  ON  is given as an optional keyword, Phaser produces an
+   mtz  file  with  "SigmaA"  type  weighted Fourier map coefficients for
+   producing electron density maps for rebuilding.
+
+   MTZ Column Labels Description
+   FWT PHWT Amplitude and phase for 2m|Fobs|-D|Fcalc| exp(i alpha-calc)
+   map
+   DELFWT   PHDELWT   Amplitude  and  phase  for  m|Fobs|-D|Fcalc|  exp(i
+   alpha-calc) map
+   FOM   m, analogous to the "Sim" weight, to estimate the reliability of
+   alpha-calc
+
+  2.5 How to Select Peaks
+
+   The   selection  of  peaks  saved  for  output  in  the  rotation  and
+       translation  functions  can  be done in four different ways. Peaks
+       can  either  be selected by "PERCent", "SIGma", "NUMber" or "ALL",
+       illustrated  below.  "PERCent"  means that the cutoff value is the
+       percentage  of  the  top  peak, where the value of the top peak is
+       defined  as  100%  and  the  value  of  the mean is defined as 0%.
+       "SIGma"  means  that  the  cutoff  value is the number of standard
+       deviations   (sigmas)  over  the  mean  (otherwise  known  as  the
+       Z-score).  "NUMber"  means  that the cutoff value is the number of
+       top peaks to select. "ALL" mean that all peaks are selected.
+       The default is selection by "PERCent" with the cutoff value set at
+       75%. This has the advantage that there are always peaks output. If
+       the solution is clear, and is a long way above the mean, then only
+       the  clear  solution(s) will be output, but if the distribution of
+       peaks  is  rather flat, then many peaks will be output for testing
+       in the next part of the molecular replacement procedure (e.g. many
+       peaks  selected  from  the  rotation  function  for testing with a
+       translation   function).  If  an  absolute  significance  test  is
+       required,  then selection by "SIGma" is more appropriate, although
+       not  all  searches  will produce output if the cutoff value is too
+       high  (e.g.  5  sigma).  If  the distribution is very flat then it
+       might  be better to select by "NUMber", for example select the top
+       1000 rotation peaks for testing in the translation function. "ALL"
+       is  for  full 6 dimensional searches, where all the solutions from
+       the  rotation  function  are output for testing in the translation
+       function  (although  this  should  never be necessary; it would be
+       much  faster  and  probably just as likely to work if the top 1000
+       peaks were used in this way).
+       [selection.gif]
+       Peaks  can  also be clustered or not clustered prior to selection.
+       If  clustering  is off, then all high peaks on the search grid are
+       selected. If clustering is on, then points on the search grid with
+       higher neighboring points are removed from the selection.
+       [clustering.gif]
+       The  selection  of  peaks  is  done  in  three stages for the fast
+       rotation  and  fast  translation  searches. The first stage is the
+       selection of peaks from the fast search that will be rescored with
+       the  full  likelihood  target.  Rescoring with the full likelihood
+       target  may  change the order of the peaks and their significance.
+       The  second  stage is the selection of peaks from the rescoring to
+       be  saved  and  combined with other searches performed in the same
+       phaser  job.  The third stage is the final selection of peaks from
+       the  merged  list for output from the phaser job. The selection of
+       peaks to go into rescoring is controlled with the RESCORE keyword,
+       the  selection  of  peaks  saved  from  each  separate  search  is
+       controlled  with  the  SAVE  keyword,  and  the final selection is
+       controlled with the FINAL keyword.
+       [threeway.gif]
+       If RESCORE OFF is requested (no rescoring of the fast search peaks
+       is  performed),  or  if the brute rotation or translation searches
+       are  carried out, then the SAVE keyword refers to the selection of
+       peaks  from  the  fast search (or brute search) for merging in the
+       final stage (the RESCORE keyword is not used for selection in this
+       case).
+       [twoway.gif]
+
+  2.6 How to Run Phaser
+
+   Phaser  runs  in  different  modes,  which  perform Phaser's different
+       functionalities,   such  as  rotation  functions  and  translation
+       functions.  Some  of  the modes combine the functionality of other
+       modes  to  allow  automatic  structure  solution  (e.g.  Automated
+       Molecular   Replacement),  while  others  are  basic  modes  (e.g.
+       Molecular Replacement Anisotropy Correction).
+       The  example  scripts  all  refer  to  the tutorial test case, the
+       crystal  structure  of a hetero-dimer of beta-lactamase (BETA) and
+       beta-lactamase  inhibitor  protein  (BLIP),  both  with  molecular
+       replacement  models from crystal structures of the individual BETA
+       and  BLIP  components.  The pdb and mtz files required for running
+       this test case are distributed with Phaser.
+    2.6.1 Automated Molecular Replacement
+
+   This   mode   (MODE   MR_AUTO)  combines  the  anisotropy  correction,
+       likelihood  enhanced  fast  rotation function, likelihood enhanced
+       fast  translation  function,  packing  and  refinement  modes  for
+       multiple  search  models  and  a  set  of  possible spacegroups to
+       automatically  solve  a  structure  by  molecular replacement. Top
+       solutions are output to the files FILEROOT.sol, FILEROOT.#.mtz and
+       FILEROOT.#.pdb  (where  "#"  refers  to the solution number). Many
+       structures  can  be  solved  by  running  an  automated  molecular
+       replacement  search  with  defaults, giving the ensembles that you
+       expect to be easiest to find first.
+       Example  command  script  for  finding  BETA and BLIP. This is the
+       minimum input, using all defaults (except the ROOT filename).
+       beta_blip_auto.com
+
+   phaser << eof
+       TITLe beta blip automatic
+       MODE MR_AUTO
+       HKLIn beta_blip.mtz
+       LABIn F=Fobs SIGF=Sigma
+       ENSEmble beta PDB beta.pdb IDENtity 100
+       ENSEmble blip PDB blip.pdb IDENtity 100
+       COMPosition PROTein MW 28853 NUM 1 #beta
+       COMPosition PROTein MW 17522 NUM 1 #blip
+       SEARch ENSEmble beta NUM 1
+       SEARch ENSEmble blip NUM 1
+       ROOT beta_blip_auto # not the default
+       eof
+
+   Example  command  script  for  finding  BETA  and BLIP. The spacegroup
+   recorded  on  the  mtz  file  is  P3[2]21 but the other hand is also a
+   possibility.  Both  search  orders  (BETA  first, BLIP second and BLIP
+   first,  BETA  second) are tried, using the PERMutations ON keyword. We
+   would  not  normally  recommend  using the PERMutations ON keyword for
+   this  case, as it is obvious that the larger molecule should be easier
+   to find first.
+   beta_blip_auto_sg.com
+   phaser << eof
+       TITLe beta blip automatic
+       MODE MR_AUTO
+       HKLIn beta_blip.mtz
+       LABIn F=Fobs SIGF=Sigma
+       ENSEmble beta PDB beta.pdb IDENtity 100
+       ENSEmble blip PDB blip.pdb IDENtity 100
+       COMPosition PROTein MW 28853 NUM 1 #beta
+       COMPosition PROTein MW 17522 NUM 1 #blip
+       SEARch ENSEmble beta NUM 1
+       SEARch ENSEmble blip NUM 1
+       PERMutations ON # not the default
+       SGALternative HAND # not the default
+       ROOT beta_blip_auto_sg # not the default
+       eof
+
+   Compulsory Keywords
+   COMPosition ENSEmble HKLIn LABIn MODE SEARch
+
+   Optional Keywords
+   FINAl  HKLOut  PACK PERMutations RESCore RESOlution ROOT SAMPling SAVE
+       SCRIpt  SGALternative  SOLUtion  SPACegroup TITLe TOPFiles VERBose
+       XYZOut
+       *BINS *BOXScale *CELL *CLMN *OUTLier *SHANnon *SOLParams *SUITe
+
+    2.6.2 Fast Rotation Function
+
+   This  mode  (MODE  MR_FRF)  combines  the  anisotropy  correction  and
+       likelihood-enhanced   fast   rotation   function  (2),  optionally
+       rescored  with  the full rotation likelihood function (1), to find
+       the  orientation of a model in molecular replacement. Top rotation
+       solutions  are  output  to  the file FILEROOT.rlist for input to a
+       translation  function.  Top  rotation solutions are also output to
+       the file FILEROOT.sol.
+       Example  command  script  for  fast  rotation function to find the
+       orientation of BETA.
+       beta_frf.com
+
+   phaser << eof
+       TITLe beta FRF
+       MODE MR_FRF
+       HKLIn beta_blip.mtz
+       LABIn F=Fobs SIGF=Sigma
+       ENSEmble beta PDB beta.pdb IDENtity 100
+       COMPosition PROTein MW 28853 NUM 1 #beta
+       COMPosition PROTein MW 17522 NUM 1 #blip
+       SEARCH ENSEmble beta
+       ROOT beta_frf
+       eof
+
+   Example  command  script  for  fast  rotation  function  to  find  the
+   orientation of BLIP knowing the position and orientation of BETA, with
+   the position and orientation of BETA input from the command line.
+   blip_frf_with_beta.com
+   phaser << eof
+       TITLe blip FRF with beta rotation and translation
+       MODE MR_FRF
+       HKLIn beta_blip.mtz
+       LABIn F=Fobs SIGF=Sigma
+       ENSEmble beta PDB beta.pdb IDENtity 100
+       ENSEmble blip PDB blip.pdb IDENtity 100
+       COMPosition PROTein MW 28853 #beta
+       COMPosition PROTein MW 17522 #blip
+       SEARch ENSEmble blip
+       SOLUtion  6DIM  ENSEmble beta EULEr 201 41 184 FRACtional -0.49408
+       -0.15571 -0.28148
+       ROOT blip_frf_with_beta
+       eof
+
+   Example  command  script  for  fast  rotation  function  to  find  the
+   orientation  of  BLIP  knowing  only the orientation of BETA, with the
+   orientation  of  BETA  input  using  the output solution file from the
+   beta_frf.com job above.
+   blip_frf_with_beta_rot.com
+   phaser << eof
+       TITLe blip FRF with beta R
+       MODE MR_FRF
+       HKLIn beta_blip.mtz
+       LABIn F=Fobs SIGF=Sigma
+       ENSEmble beta PDB beta.pdb IDENtity 100
+       ENSEmble blip PDB blip.pdb IDENtity 100
+       COMPosition PROTein MW 28853 NUM 1 #beta
+       COMPosition PROTein MW 17522 NUM 1 #blip
+       SEARch ENSEmble blip
+       @beta_frf.sol # solution file output by phaser
+       ROOT blip_frf_with_beta_rot
+       eof
+
+   Compulsory Keywords
+   COMPosition ENSEmble HKLIn LABIn MODE SEARch
+
+   Optional Keywords
+   FINAl RESCore RESOlution ROOT SAMPling SAVE SCRIpt SOLUtion SPACegroup
+       TITLe TOPFiles VERBose XYZOut
+       *BINS  *BOXScale  *CELL  *CLMN *OUTLier *SHANnon *SOLParams *SUITe
+       *TARGet
+
+    2.6.3 Brute Rotation Function
+
+   This  mode  (MODE MR_BRF) combines the anisotropy correction and brute
+       force  likelihood rotation function (1) to find the orientation of
+       a  model  in  molecular  replacement.  Top  rotation solutions are
+       output  to  the  file  FILEROOT.rlist  for  input to a translation
+       function.  Top  rotation  solutions  are  also  output to the file
+       FILEROOT.sol.
+       Example  command  script  for  brute rotation function to find the
+       orientation of BETA
+       beta_brf.com
+
+   phaser << eof
+       TITLe beta BRF
+       MODE MR_BRF
+       HKLIn beta_blip.mtz
+       LABIn F=Fobs SIGF=Sigma
+       ENSEmble beta PDB beta.pdb IDENtity 100
+       COMPosition PROTein MW 28853 NUM 1 #beta
+       COMPosition PROTein MW 17522 NUM 1 #blip
+       SEARch ENSEmble beta
+       ROOT beta_brf
+       eof
+
+   Example command script for brute rotation function to find the optimal
+   orientation  of  BETA  in a restricted search range and on a fine grid
+   around the position from the fast rotation search.
+   beta_brf_around.com
+   phaser << eof
+       TITLe beta BRF fine sampling
+       MODE MR_BRF
+       HKLIn beta_blip.mtz
+       LABIn F=Fobs SIGF=Sigma
+       ENSEmble beta PDB beta.pdb IDENtity 100
+       ENSEmble blip PDB blip.pdb IDENtity 100
+       COMPosition PROTein MW 28853 NUM 1 #beta
+       COMPosition PROTein MW 17522 NUM 1 #blip
+       SEARch ENSEmble beta
+       ROTAte AROUnd EULEr 201 41 184 RANGE 10
+       SAMPling ROTation 0.5
+       XYZOut ON # not the default
+       TOPFiles 1 # not the default
+       ROOT beta_brf_around
+       eof
+
+   Compulsory Keywords
+   COMPosition ENSEmble HKLIn LABIn MODE SEARch
+
+   Optional Keywords
+   FINAl   RESOlution   ROOT   Rotation  SAMPling  SAVE  SCRIpt  SOLUtion
+       SPACegroup TITLe TOPFiles VERBose XYZOut
+       *BINS *BOXScale *CELL *OUTLier *SHANnon *SOLParams *SUITe
+
+    2.6.4 Fast Translation Function
+
+   This  mode  (MODE  MR_FTF)  combines  the  anisotropy  correction  and
+       likelihood-enhanced  fast  translation  function  (3),  optionally
+       rescored  by the full likelihood translation function (1), to find
+       the   position   of  a  previously  oriented  model  in  molecular
+       replacement.  Top  translation  solutions  are  output to the file
+       FILEROOT.sol.
+       Example  command script for finding the position of BETA after the
+       rotation  function has been run and the results output to the file
+       beta_frf.rlist
+       beta_ftf.com
+
+   phaser << eof
+       TITLe beta FTF
+       MODE MR_FTF
+       HKLIn beta_blip.mtz
+       LABIn F=Fobs SIGF=Sigma
+       ENSEmble beta PDB beta.pdb IDENtity 100
+       ENSEmble blip PDB blip.pdb IDENtity 100
+       COMPosition PROTein MW 28853 NUM 1 #beta
+       COMPosition PROTein MW 17522 NUM 1 #blip
+       @beta_frf.rlist
+       ROOT beta_ftf
+       eof
+
+   Example  command  script  for  finding  the position of BLIP after the
+   rotation  function  has  been  run  and the results output to the file
+   blip_frf_with_beta.rlist,  which  has  the SOLUtion 6DIM keyword input
+   for  BETA and the SOLUtion TRIAL keyword input for the orientations to
+   try for BLIP with the translation function.
+   blip_ftf_with_beta.com
+   phaser << eof
+       TITLe beta FTF
+       MODE MR_FTF
+       HKLIn beta_blip.mtz
+       LABIn F=Fobs SIGF=Sigma
+       ENSEmble beta PDB beta.pdb IDENtity 100
+       ENSEmble blip PDB blip.pdb IDENtity 100
+       COMPosition PROTein MW 28853 NUM 1 #beta
+       COMPosition PROTein MW 17522 NUM 1 #blip
+       @blip_frf_with_beta.rlist
+       ROOT blip_ftf_with_beta
+       eof
+
+   Compulsory Keywords
+   COMPosition ENSEmble HKLIn LABIn MODE SEARch SOLUtion
+
+   Optional Keywords
+   FINAl   RESCore   RESCore   RESOlution   ROOT   SAMPling  SAVE  SCRIpt
+       SGALternative SOLUtion SPACegroup TITLe TOPFiles VERBose XYZOut
+       *BINS *BOXScale *CELL *OUTLier *SHANnon *SOLParams *SUITe *TARGet
+
+    2.6.5 Brute Translation Function
+
+   This  mode  (MODE MR_BTF) combines the anisotropy correction and brute
+       force  likelihood translation function (1) to find the position of
+       a   previously   oriented  model  in  molecular  replacement.  Top
+       translation solutions are output to the file FILEROOT.sol.
+       Example  command script for brute Translation function to find the
+       position of BETA after the rotation function has been run
+       beta_btf.com
+
+   phaser << eof
+       TITLe beta BTF
+       MODE MR_BTF
+       HKLIn beta_blip.mtz
+       LABIn F=Fobs SIGF=Sigma
+       ENSEmble beta PDB beta.pdb IDENtity 100
+       ENSEmble blip PDB blip.pdb IDENtity 100
+       COMPosition PROTein MW 28853 NUM 1 #beta
+       COMPosition PROTein MW 17522 NUM 1 #blip
+       @beta_frf.rlist
+       TRANslate AROUnd FRACtional POINt -0.49408 -0.15571 -0.28148 RANGe
+       5
+       ROOT beta_btf
+       eof
+
+   Example  command  script  for  brute  Translation function to find the
+   position  of BETA degenerate in X after the rotation function has been
+   run
+   beta_btf_degen_x.com
+   phaser << eof
+       TITLe beta degenerate X
+       MODE MR_BTF
+       HKLIn beta_blip.mtz
+       LABIn F=Fobs SIGF=Sigma
+       ENSEmble beta PDB beta.pdb IDENtity 100
+       ENSEmble blip PDB blip.pdb IDENtity 100
+       COMPosition PROTein MW 28853 NUM 1 #beta
+       COMPosition PROTein MW 17522 NUM 1 #blip
+       @beta_frf.rlist
+       TRANslate DEGEnerate X
+       ROOT beta_btf_degen_x
+       eof
+
+   Compulsory Keywords
+   COMPosition ENSEmble HKLIn LABIn MODE SEARch SOLUtion
+
+   Optional Keywords
+   FINAl  RESOlution  ROOT  SAMPling  SAVE  SCRIpt SGALternative SOLUtion
+       SPACegroup TITLe TOPFiles TRANslate VERBose XYZOut
+       *BINS  *BOXScale  *CELL  *COMPosition *OUTLier *SHANnon *SOLParams
+       *SUITe
+
+    2.6.6 Refinement and Phasing
+
+   This  mode  (MODE  MR_RNP)  combines  the  anisotropy  correction  and
+       refinement against the likelihood function (1) to optimize full or
+       partial molecular replacement solutions and phase the data. At the
+       end   of   refinement,  the  list  of  solutions  is  checked  for
+       duplicates,  which are pruned. Refined solutions are output to the
+       file FILEROOT.sol.
+       Example command script to refine a set of solutions
+       beta_blip_rnp.com
+
+   phaser << eof
+       TITLe beta blip rigid body refinement
+       MODE MR_RNP
+       HKLIn beta_blip.mtz
+       LABIn F=Fobs SIGF=Sigma
+       ENSEmble beta PDB beta.pdb IDENtity 100
+       ENSEmble blip PDB blip.pdb IDENtity 100
+       COMPosition PROTein MW 28853 NUM 1 #beta
+       COMPosition PROTein MW 17522 NUM 1 #blip
+       ROOT beta_blip_rnp # not the default
+       HKLOut OFF # not the default
+       XYZOut OFF # not the default
+       @beta_blip.sol
+       eof
+
+   Compulsory Keywords
+   COMPosition ENSEmble HKLIn LABIn MODE SEARch SOLUtion
+
+   Optional Keywords
+   HKLOut RESOlution ROOT SCRIpt SPACegroup TITLe TOPFiles VERBose XYZOut
+       *BINS  *BOXScale  *CELL *MRMAcrocycle *OUTLier *SHANnon *SOLParams
+       *SUITe
+
+    2.6.7 Log-Likelihood Gain
+
+   This  mode  (MODE  MR_LLG)  combines the anisotropy correction and the
+       likelihood  function  (1) to calculate the log-likelihood gain for
+       full  or  partial  molecular  replacement solutions. Solutions are
+       output to the file FILEROOT.sol.
+       Example  command script to rescore the solutions using a different
+       resolution range of data and a different spacegroup
+       beta_blip_llg.com
+
+   phaser << eof
+       TITLe beta blip solution 6A P3121
+       MODE MR_LLG
+       HKLIn beta_blip.mtz
+       LABIn F=F SIGF = SIGF
+       ENSEmble beta PDB beta.pdb IDENtity 100
+       ENSEmble blip PDB blip.pdb IDENtity 100
+       COMPosition PROTein MW 28853 NUM 1 #beta
+       COMPosition PROTein MW 17522 NUM 1 #blip
+       ROOT beta_blip_llg # not the default
+       RESOlution 6.0
+       SPACegroup P 31 2 1
+       @beta_blip.sol
+       eof
+
+   Compulsory Keywords
+   COMPosition ENSEmble HKLIn LABIn MODE SEARch SOLUtion
+
+   Optional Keywords
+   HKLOut RESOlution ROOT SCRIpt SPACegroup TITLe TOPFiles VERBose XYZOut
+       *BINS *BOXScale *CELL *OUTLier *SHANnon *SOLParams *SUITe
+
+    2.6.8 Packing
+
+   This  mode  (MODE  MR_PAK)  determines  whether  molecular replacement
+       solutions pack in the unit cell. Solutions that pack are output to
+       the file FILEROOT.sol.
+       Example  command script for determining whether a set of molecular
+       replacement solutions pack in the unit cell
+       beta_blip_pak.com
+
+   phaser << eof
+       TITLe beta blip packing check
+       MODE MR_PAK
+       HKLIn beta_blip.mtz
+       LABIn F=F SIGF=SIGF
+       ENSEmble beta PDB beta.pdb IDENtity 100
+       ENSEmble blip PDB blip.pdb IDENtity 100
+       COMPosition PROTein MW 28853 NUM 1 #beta
+       COMPosition PROTein MW 17522 NUM 1 #blip
+       ROOT beta_blip_pak # not the default
+       PACK 1 # not the default
+       @beta_blip.sol
+       eof
+
+   Compulsory Keywords
+   ENSEmble HKLIn LABIn MODE SEARch SOLUtion
+
+   Optional Keywords
+   PACK ROOT SCRIpt SPACegroup TITLe VERBose XYZOut
+       *CELL *SUITe
+
+    2.6.9 Anisotropy Correction
+
+   This mode (MODE MR_ANO) corrects the experimental data for anisotropy.
+       Data (amplitude and associated sigma) are corrected for anisotropy
+       and  output  to  FILEROOT.mtz  with  column label set to the input
+       column label with the addition of _ISO.
+       Example  command  script to phase a molecular replacement solution
+       only
+       beta_blip_ano.com
+
+   phaser << eof
+       TITLe beta blip data correction
+       MODE MR_ANO
+       HKLIn beta_blip.mtz
+       LABIn F=Fobs SIGF=Sigma
+       ROOT beta_blip_ano # not the default
+       eof
+
+   Compulsory Keywords
+   HKLIn LABIn MODE
+
+   Optional Keywords
+   ROOT SCRIpt SPACegroup TITLe VERBose
+       *CELL *SNMAcrocycle *SUITe
+
+    2.6.10 Normal Mode Analysis
+
+   This  mode (MODE MR_NMA) writes out pdb files that have been perturbed
+       along  normal  modes,  in a procedure similar to that described by
+       Suhre  &  Sanejouand (Acta Cryst. D60, 796-799, 2004). Each run of
+       the  program  writes  out  a matrix FILEROOT.mat that contains the
+       eigenvectors  and  eigenvalues  of  the atomic Hessian, and can be
+       read  into  subsequent  runs  of  the  same  job,  to speed up the
+       analysis.
+       Do  normal  mode  analysis  only,  write  out  eigenfile  but  not
+       coordinates
+       beta_nma.com
+
+   phaser << eof
+       TITLe beta normal mode analysis
+       MODE MR_NMA
+       ENSEmble beta PDB beta.pdb IDENtity 100
+       XYZOut OFF
+       ROOT beta_nma # not the default
+       eof
+
+   Write  out  pdb  files  perturbed  in 0.5 angstrom rms intervals along
+   modes 7 and 8 (and combinations of 7 and 8)
+   beta_nma_pdb.com
+   phaser << eof
+       TITLe beta normal mode analysis pdb file generation
+       MODE MR_NMA
+       ENSEmble beta PDB beta.pdb IDENtity 100
+       ROOT beta_nma_pdb # not the default
+       EIGEn beta_nma.mat
+       NMAPdb MODE 7 MODE 8 RMS 0.5
+       eof
+
+   Compulsory Keywords
+   ENSEmble MODE
+
+   Optional Keywords
+   NMAMethod ROOT SCRIpt TITLe VERBose XYZOut EIGEn NMAPdb
+       *SUITe
+
+    2.6.11 Cell Content Analysis
+
+   This  mode  (MODE  MR_CCA)  determines the composition of the crystals
+       using  the  "new"  Matthews  coefficients  of  Kantardjieff & Rupp
+       (2003) "Matthews coefficient probabilities: Improved estimates for
+       unit  cell  contents  of  proteins,  DNA  and protein-nucleic acid
+       complex  crystals".  Protein  Science  12:1865-1871. The molecular
+       weight of ONE complex or assembly to be packed into the asymmetric
+       unit  is  given  with  the COMPosition keyword, and the possible Z
+       values (number of copies of the complex or assembly) that will fit
+       in  the  asymmetric  unit  and  the  relative  frequency  of their
+       corresponding  VM  values is reported. RESOlution should be set to
+       the maximum resolution that has been observed for the crystal.
+       Do cell content analysis
+       beta_cca.com
+
+   phaser << eof
+       TITLe beta-blip cell content analysis
+       MODE MR_CCA
+       COMPosition PROTein MW 28853 NUM 1 #beta
+       COMPosition PROTein MW 17522 NUM 1 #blip
+       RESO 3.0
+       ROOT beta_blip_cca # not the default
+       eof
+
+   Compulsory Keywords
+   COMPosition MODE
+
+   Optional Keywords
+   SEARch RESOlution ROOT TITLe VERBose
+       *SUITe
+
+  2.7. How to know whether Phaser has solved it
+
+       By   default,  Phaser  selects  solutions  over  75%  of  the  the
+       difference  between  the  top solution and the mean. Ideally, only
+       the  number  of  solutions you are expecting should be selected by
+       this  criterion, but if the signal-to-noise of your search is low,
+       there   will  be  noise  peaks  in  this  selection  also.  For  a
+       translation  function  the  correct solution will generally have a
+       Z-score  (number of standard deviations above the mean value) over
+       5  and  be  well  separated  from the rest of the solutions. For a
+       rotation  function, the correct solution may be in the list with a
+       Z-score  under  4,  and  will  not  be  found  until a translation
+       function is performed and picks out the correct solution.
+       Of  course,  there will always be exceptions! Note, in particular,
+       that   in   the   presence   of   translational   NCS,   pairs  of
+       similarly-oriented  molecules separated by the correct translation
+       vector  will  give  large  Z-scores,  even  if they are incorrect,
+       because  they  explain  the  systematic  variation  in intensities
+       caused by the translational NCS.
+
+                                    Z-score
+                               Have I solved it?
+                                  less than 5
+                                      no
+                                     5 - 6
+                                   unlikely
+                                     6 - 7
+                                   possibly
+                                     7 - 8
+                                   probably
+                                  more than 8
+                                  definitely
+
+   You  should  always  at least glance through the summary log file. One
+       thing  to  look  for,  in  particular,  is whether any translation
+       solutions  with  a clear signal-to-noise have been rejected by the
+       packing  step,  especially  with a small number of clashes. Such a
+       solution may be correct, and the clashes may arise only because of
+       differences  in  small  surface loops. If this happens, repeat the
+       run allowing a suitable number of clashes with the PACK keyword.
+
+  2.8. What to do in difficult cases
+
+   Not  every  structure  can be solved by molecular replacement, but the
+       right  strategy  can  push the limits. What to do when the default
+       jobs fail depends on why your structure is difficult.
+    Flexible structure
+       The  relative orientations of the domains may be different in your
+       crystal  than  in  the  model.  If that may be the case, break the
+       model  into  separate PDB files containing rigid-body units, enter
+       these  as  separate  ensembles, and search for them separately. If
+       you  find a convincing solution for one domain, but fail to find a
+       solution  for  the  next  domain,  you  can  take advantage of the
+       knowledge  that its orientation is likely to be similar to that of
+       the  first  domain. The ROTAte AROUnd option of the brute rotation
+       search  can be used to restrict the search to orientations within,
+       say,  30  degrees  of  that  of  the known domain. Allow for close
+       approach of the domains by increasing the allowed clashes with the
+       PACK keyword by, say, 1 for each domain break that you introduce.
+       Alternatively,  you  could  try  generating  a  series  of  models
+       perturbed  by  normal modes, with the NMAPdb keyword. One of these
+       may duplicate the hinge motion and provide a good single model.
+       Poor or incomplete model
+       Signal-to-noise  is reduced by coordinate errors or incompleteness
+       of  the model. Since the rotation search has lower signal to begin
+       with  than  the  translation  search,  it is usually more severely
+       affected.  For  this  reason,  it  can  be  very useful to use the
+       subsequent  translation  search as a way to choose among many (say
+       1000)   orientations.  Try  increasing  the  number  of  clustered
+       orientations  in  an  AUTO  job  using  the  keyword  FINAl,  e.g.
+       FINAl ROT SELEct PERCent 65.  If  that  fails, try turning off the
+       clustering   feature  in  the  save  step  (SAVE ROT CLUSter OFF),
+       because  the correct orientation may sit on the shoulder of a peak
+       in the rotation function.
+       As  shown convincingly by Schwarzenbacher et al. (Schwarzenbacher,
+       Godzik,  Grzechnik  &  Jaroszewski,  Acta  Cryst.  D60, 1229-1236,
+       2004),  judicious editing can make a significant difference in the
+       quality  of  a distant model. In a number of tests with their data
+       on  models  below 30% sequence identity, we have found that Phaser
+       works  best  with a "mixed model" (non-identical sidechains longer
+       than  Ser  replaced  by Ser). In agreement with their results, the
+       best   models  are  generally  derived  using  more  sophisticated
+       alignment protocols, such as their FFAS protocol.
+       High  degree  of  non-crystallographic symmetry If there are clear
+       peaks  in  the self-rotation function, you can expect orientations
+       to be related by this known NCS. Methods to automatically use such
+       information  will be implemented in a future version of Phaser. In
+       the  meantime, you can work out for yourself the orientations that
+       would  be  consistent with NCS and use the ROTAte AROUnd option to
+       sample  similar  orientations.  Alternatively,  you  may  have  an
+       oligomeric  model  and  expect  similar  NCS in the crystal. First
+       search  with  the  oligomeric  model; if this fails, search with a
+       monomer.  If  that  succeeds,  you can again use the ROTAte AROUnd
+       option  to  force  a  subsequent  monomer  to adopt an orientation
+       similar to the one you expect.
+    Pseudo-translational  non-crystallographic  symmetry It is frequently
+       the case that crystallographic and non-crystallographic rotational
+       symmetry    axes   are   parallel.   The   combination   generates
+       translational  NCS,  in  which  more  than  one unique copy of the
+       molecule is found in the same orientation in the crystal. This can
+       be  recognized  by  the  presence of large non-origin peaks in the
+       native  Patterson  map.  If  one  copy  of the search model can be
+       found, then the translational NCS tells you where to place another
+       copy. Unfortunately, the presence of translational NCS can make it
+       difficult  to  solve a structure using Phaser, because the current
+       likelihood  targets  do not account for the statistical effects of
+       NCS.
+     _________________________________________________________________
+
+3. Preprocessor
+
+   Preprocessor commands (@ # & END GO RUN START STOP QUIT EXIT KILL) may
+       be used in the keyword input to incorporate files, add comments or
+       allow line continuation.
+     * To include a file in the input stream use @<filename>
+     * All characters on a line after a hash (#) character are ignored
+     * Line continuation with the ampersand (&) character
+     * END  GO RUN START STOP QUIT EXIT KILL or "eof" from a command file
+       ends the input and starts Phaser
+     _________________________________________________________________
+
+4. Keywords
+
+   Phaser  can  be  controlled  using keyword input. Not all keywords are
+       relevant for all modes of operation (the list of relevant keywords
+       for  each  mode  is given with each mode above). Some keywords are
+       only for single use, others have meaning when used more than once.
+       The  input values of many parameters are constrained to physically
+       meaningful values. All non-compulsory parameters have defaults.
+
+   Asterisk (*) Keywords are for "expert" use only, or use in
+   development.
+   Constraints X=integer(+) If X is a positive integer, stored value = X,
+   else error
+   Constraints  X=%  If 1<X<=100, stored value = X, else if 0<X<1, stored
+   value = X*100, else error
+   Default  Some  default  values are constants, others are set by Phaser
+   after it has analyzed the input data.
+   Single  Use  Keyword only applicable once. If used multiple times, the
+   last value input will be used.
+   Multiple  Use  Keyword  is meaningful when entered multiple times. The
+   order may or may not be important.
+
+        *BINS {MINimum <L>} {MAXimum <H>} {NUMber <N>} {WIDTh <W>} {CUBIc
+                <A B C>}
+                The  binning of the data. L = minimum number of bins, H =
+                maximum  number of bins, N = number of bins, W = width of
+                the  bins  in  number  of  reflections,  A  B  C  are the
+                coefficients  for the binning function A(S*S*S)+B(S*S)+CS
+                where  S  = (1/resolution). If N is given then the values
+                of L and H are ignored.
+                Single Use
+                Constraints   L,H,N,W=integer(+)   CUBIc   restricted  to
+                monotonically  increasing: Either (a) AC >0,BC >0,C >0 or
+                (b) A=B=0 or (c) A=0 or (d) B=0
+                Default BINS MINimum 6 MAXimum 50 WIDTh 1000 CUBIc 0 1 0
+
+        *BOXScale <BOXSCALE>
+                Scale  for  box  for  calculating  structure factors. The
+                ensembles   are   put  in  a  box  equal  to  (extent  of
+                molecule)*BOXSCALE.   This   BOXSCALE   applies   to  all
+                ensembles,  except  those for which BOXSCALE has been set
+                individually using the ENSEmble keyword.
+                Single Use
+                Constraints BOXSCALE >2.4
+                Default BOXScale 4
+
+        *CELL <A B C ALPHA BETA GAMMA>
+                Unit cell dimensions
+                Single Use
+                Constraints A>0,B>0,C>0,ALPHA>0,BETA>0,GAMMA>0
+                Default Cell read from MTZ file
+
+        *CLMN {SPHEre <SPHERE>} {LMINimum <LMIN>} {LMAXimum <LMAX>} 
+                The  radii  or  L  values  for  the  decomposition of the
+                Patterson in Ångstroms.
+                Single Use
+                Constraints SPHERE>5,LMIN>0,LMAX>LMIN
+                Default CLMN SPHEre <2*geometric mean radius of Ensemble>
+                LMIN 2
+
+        COMPosition MATThews { BEST <NUM> | ALL }
+                Composition  of  the  crystals  estimated using the "new"
+                Matthews  coefficients  of  Kantardjieff  &  Rupp  (2003)
+                "Matthews  coefficient  probabilities: Improved estimates
+                for   unit   cell   contents   of   proteins,   DNA   and
+                protein-nucleic  acid  complex crystals". Protein Science
+                12:1865-1871
+                Single Use
+                Default Composition determined by Matthews coefficient
+
+        COMPosition [PROTein | NUCLeic] [MW <MW> | SEQuence <FILE>]
+                NUMber <NUM>
+                Composition  of the crystals. The number of copies NUMber
+                of  molecular weight MW or SEQuence given in fasta format
+                in  FILE  of  protein  or  nucleic acid in the asymmetric
+                unit.
+                Multiple Use
+                Constraints MW>0, NUMber=integer(+)
+                Default  None  for  MW,  compulsory when required. NUMber
+                defaults to 1.
+
+        COMPosition ATOM <ATOMTYPE> <NUM>
+                NUM atoms of ATOMTYPE are added to the composition.
+                Multiple Use
+
+        COMPosition SCAttering <SCATTERING>
+                Add scattering directly.
+                Multiple Use
+
+        COMPosition NUM <NUM>
+                If  the  composition  given by other COMP PROT, COMP NUCL
+                and   COMP   ATOM  cards  represents  a  complex  in  the
+                asymmttric  unit  then  COMP  NUM can be used to give how
+                many times this complex is present in the asymmtric unit.
+                Single Use
+
+        COMPosition ENSEmble <MODLID> FRACtional <FRAC>
+                Alternative   way   of   defining  composition.  Fraction
+                scattering is entered explicitly for each ENSEmble .
+                Multiple Use
+                Constraints 0<FRAC<=1
+                Default None, compulsory when required
+
+
+        EIGEn [ {READ <EIGENFILE>} | {WRITe [ON|OFF]} ]
+                READ  or  WRITe  a  file  containing the eigenvectors and
+                eigenvalues. If reading, the eigenvalues and eigenvectors
+                of the atomic Hessian are read from the file generated by
+                a  previous run, rather than calculated. This option must
+                be   used  with  CAUTION:  the  job  that  generated  the
+                eigenfile  and  the  job  reading the eigenfile must have
+                identical  (or  default) input for keyword NMAMethod. Use
+                WRITe  to control whether or not the eigenfile is written
+                when not using the READ mode.
+                Single Use
+                Default EIGEN WRITE ON
+
+        ENSEmble <MODLID> PDB <PDBFILE> [RMS | IDENtity] <NUM> {PDB
+                <PDBFILE> [RMS | IDENtity] <NUM>}... 
+                The  names  of the PDB files used to build the ENSEmble ,
+                and  either the expected RMS deviation of the coordinates
+                to  the "real" structure or the percent sequence identity
+                with the real sequence.
+                Multiple Use
+                Constraints NUM=% if IDENtity
+                Default None, compulsory when required
+
+        ENSEmble <MODLID> BOXScale <BOXSCALE>
+                Boxscale for building ensemble.
+                Multiple Use
+                Constraints BOXSCALE > 0
+                Default BOXScale 4
+
+        ENSEmble <MODLID> HKLIn <MTZFILE> F = <F> PHI = <P> EXTEnt <EX EY
+                EZ> RMS <RMS> CENTre <CX CY CZ> PROTein MW <PMW> NUCLeic
+                MW <NMW>
+                An  ENSEmble  defined  from  a map (via an mtz file). The
+                molecular  weight  of  the  object  the map represents is
+                required  for scaling. The effective RMS coordinate error
+                is  needed  to  judge how the map accuracy falls off with
+                resolution.. The extent is needed to determine reasonable
+                rotation  steps,  and the centre is needed to carry out a
+                proper  interpolation  of  the  molecular  transform. The
+                extent and the centre are both given in Angstroms.
+                Multiple Use
+                Default None, compulsory when required
+
+        *ENSEmble <MODLID> BINS {MINimum <L>} {MAXimum <H>} {NUMber <N>}
+                {WIDTh <W>} {CUBIc <A B C>}
+                Bins for the MODLID
+                Multiple Use
+                Constraints  L,H,N,W  =  integer(+)  CUBIc  restricted to
+                monotonically  increasing: Either (a) AC >0,BC >0,C >0 or
+                (b) A=B=0 or (c) A=0 or (d) B=0 
+                Default  ENSEmble  <MODLID>  BINS  MINimum  6 MAXimum 200
+                WIDTh 1000 CUBIc 0 1 0
+
+        *ENSIn <MODLID> HKLIn <MTZFILE> SCATtering <SCAT> EXTEnt <EX EY
+                EZ> PR <P1 P2 P3 P4 P5 P6 P7 P8 P9> PT <TX TY TZ>
+                This  option  can  be used (but rarely is) to read back a
+                molecular transform computed in an earlier Phaser job run
+                in the MR_ENS mode.
+                Single Use
+                Constraints S>0,N=integer(+),P=%
+                Default FINAl SELEct PERCent 75
+
+        FINAl [ROT | TRA] SELEct [{SIGma <S>} | {NUMber <N>} | {PERCent
+                <P>} | ALL]
+                Final  selection  criteria  for peaks. If no criteria are
+                given  for  saving  or rescoring steps, then the criteria
+                given for final selection is used as the criteria for the
+                saving and rescoring steps also.
+                Single Use
+                Constraints S>0,N=integer(+),P=%
+                Default FINAl SELEct PERCent 75
+
+        HKLIn <FILENAME>
+                The mtz file containing the data
+                Single Use
+                Default None, compulsory when required
+
+        HKLOut [ON|OFF]
+                Flags  for  output  of an mtz file containing the phasing
+                information
+                Single Use
+                Default HKLOut ON
+
+        LABIn F = <F> SIGF = <SIGF>
+                Columns  in  mtz  file.  F  must be given. SIGF should be
+                given but is optional.
+                Single Use
+                Default None, compulsory when required
+
+        MODE [MR_AUTO | MR_FRF | MR_FTF | MR_BRF | MR_BTF | MR_RNP |
+                MR_LLG | MR_PAK | MR_ANO]
+                The mode of operation of Phaser
+                Single Use
+                Default None, compulsory
+
+        NMAMethod {RTB {NRESidues <NRES>} {MAXBlocks <MAXBLOCKS>} | CA |
+                ALL } {RADIus <RADIUS>} {FORCe <FORCE>}
+                Input  for the normal mode analysis. Writes out pdb files
+                perturbed  along  normal mode(s). {RTB|CA|ALL} define the
+                atoms    used    for   the   analysis.   RTB   uses   the
+                rotation-translation  block method, CA uses C-alpha atoms
+                only  to  determine  the modes, and ALL uses all atoms to
+                determine   the   modes  (only  for  use  on  very  small
+                molecules, less than 250 atoms). For the RTB analysis, by
+                default  NRES  is  calculated so that it is as high as it
+                can be without reaching MAXBlocks. The interaction radius
+                used for the calculations and the force constant can also
+                be altered.
+                Single Use
+                Default RTB MAXBlocks 250 RADIus 5.0 FORCe 1.0
+
+        NMAPdb {MODE <M1> {MODE <M2>...}} {RMS <RMS>} {CLASh <CLASH>}
+                {STREtch <STRETCH>} {MAXRms <MAXRMS>} {FORWard | BACKward
+                | TOFRo} {DQ <DQ1> {DQ <DQ2>...}} {COMBination [ON|OFF]}
+                MODE is the mode along which to perturb the structure. If
+                multiple  modes  are  entered, the structure is perturbed
+                along  all the modes AND combinations of the modes given.
+                There  is  no  limit  on  the number of modes that can be
+                entered,   but   the   number   of   pdb  files  explodes
+                combinatorially.  RMS  is  the increment in rms angstroms
+                between  pdb  files  to be written. The structure will be
+                perturbed  along each mode until either the C-alpha atoms
+                clash with (come within CLASH angstroms of) other C-alpha
+                atoms,  the  distances  between C-alpha atoms STREtch too
+                far (note that normal modes do not preserve the geometry)
+                or  the  MAXRMS deviation has been reached. The structure
+                is  perturbed  either forwards or backwards or to-and-fro
+                (FORWard|BACKward|TOFRo)  along  the  eigenvectors of the
+                modes  specified.  Alternatively, the DQ factors (as used
+                by  the  Elnemo  server  (K. Suhre & Y-H. Sanejouand, NAR
+                2004  vol  32)  ) by which to perturb the atoms along the
+                eigenvectors   can   be  entered  directly.  The  keyword
+                COMBination controls whether or not only those structures
+                that are a combination of all modes are written out (i.e.
+                no displacements of zero along any of the modes).
+                Single Use
+                Default MODE 7 RMS 1.0 TOFRo STREtch 5.0 CLASh 2.0 MAXRms
+                50.0 COMBination OFF
+
+        *MRMAcrocycle ROTation [ON|OFF] TRAnslation [ON|OFF] NCYCle
+                <NCYC> MINImizer <MINIMIZER>
+                Molecular    replacement   refinement   macrocycle.   The
+                macrocycles  are  performed  in  the  order that they are
+                entered
+                Multiple Use
+                Default MRMAcrocycle ROTation ON TRAnslation ON NCYCle 20
+                MINImizer BFGS
+
+
+        *NORMalization {BINS <B1 B2 B3 ...>} {ANISotropic <HH KK LL HK HL
+                KL>} {ISOB <ISOB>} {SOLK <SOLK>} {SOLB <SOLB>} FIXB FIXA
+                FIXS FIXK
+                Normalization  parameters  for  the  data.  Normalization
+                factor  for  reflection hkl in bin i is given by SigmaN =
+                Bi*(1-SOLK*exp(-SOLB))*  exp(-(HH*h*h + KK*k*k + LL*l*l +
+                HK*h*k + HL*h*l + KL*k*l))
+                Single Use
+                Default Calculated by Phaser
+
+        *OUTLier [{ON <OUTLIER_PROB>} | OFF]
+                Control of the large unlikely E-value rejection. Outliers
+                with a probability less than OUTLIER_PROB are rejected.
+                Single Use
+                Default OUTLier ON 0.000001
+
+        PACK <ALLOWED_CLASHES>
+                NUMber of C-alpha atoms that can clash within 2A.
+                Single Use
+                Default PACK 0
+
+        PERMutations [ON|OFF]
+                Toggle  for  whether the order of the search set is to be
+                permuted.
+                Single Use
+                Default PERMutations OFF
+
+        *REFLection <H K L FMEAN SIGFMEAN>
+                Reflection data input manually.
+                Multiple Use
+                Default None
+
+        RESCore [ROTation | TRAnslation] [ON|OFF]
+                Toggle for rescoring of fast search peaks
+                Single Use
+                Default RESCore ON
+
+        RESCore [ROTation | TRAnslation] SELEct [{SIGma <S>} | {NUMber
+                <N>} | {PERCent <P>} | ALL]
+                Selection criteria for peaks to be rescored.
+                Single Use
+                Constraints S>0,N=integer(+),P=%
+                Default RESCore SELEct PERCent 67.5
+
+        RESCore [ROTation | TRAnslation] CLUSter [ON|OFF] {DUMP <NDUMP>}
+                {LOG [ON|OFF]}
+                CLUSter  ON or OFF selects whether raw or clustered peaks
+                are  to  be used in the rescoring. If clustered peaks are
+                used,  then NDUMP raw peaks will be dumped to the output.
+                If  clustered  peaks  are  not  used,  then you may still
+                perform  the  clustering  and  log the results to the log
+                file  (this  may  be  time consuming if a large number of
+                peaks are selected for clustering).
+                Single Use
+                Constraints NDUMP>0
+                Default RESCore CLUSter OFF LOG ON
+
+        RESOlution <HIRES> <LORES>
+                Resolution  range  in  Angstroms.  If  only  one limit is
+                given,  it  is  the  high resolution limit; otherwise the
+                limits can be in either order.
+                Single Use
+                Constraints HIRES>0,LORES >0
+                Default  Resolution  range  set  to accommodate all input
+                reflections
+
+        ROOT <FILEROOT>
+                Root filename for output files (e.g. FILEROOT.log)
+                Single Use
+                Default ROOT PHASER
+
+        ROTAte FULL
+                Sample all unique angles
+
+        ROTAte AROUnd EULEr <A B G> RANGe <RANGE>
+                Restrict  the  search  to the region of +/- RANGE degrees
+                around orientation <A B G>
+                Single Use
+                Constraints RANGE>0
+                Default ROTAte FULL
+
+        SAMPling {ROTation <ROTSAMP>} {TRAnslation <TRASAMP>}
+                Sampling of search given in degrees for a rotation search
+                and Angstroms for a translation search.
+                Single Use
+                Constraints ROTSAMP>0, TRASAMP>0
+                Default  SAMPling  ROTSAMP <2*atan(dmin/(4*geometric mean
+                radius))>   TRASAMP  <dmin/5>  for  brute  force  search,
+                <dmin/3> for fast translation search
+
+        SAVE [ROTation | TRAnslation] SELEct [{SIGma <S>} | {NUMber <N>}
+                | {PERCent <P>} | ALL]
+                Peaks  satisfying  selection  criteria  are  saved. If no
+                criteria  are  given  for  the  rescoring  step, then the
+                criteria given for saving is used as the criteria for the
+                rescoring step also.
+                Single Use
+                Constraints S>0,N=integer(+),P=%
+                Default SAVE SELEct PERCent 75
+
+        SAVE [ROTation | TRAnslation] CLUSter [ON|OFF] {DUMP <NDUMP>}
+                {LOG [ON|OFF]}
+                CLUSter   ON  selects  clustered  peaks  for  saving.  If
+                clustered  peaks  are  used, then NDUMP raw peaks will be
+                dumped  to  the output. CLUSter OFF selects raw peaks for
+                saving.  If  clustered  peaks  are not used, then you may
+                still  perform  the clustering and log the results to the
+                log file (this may be time consuming).
+                Single Use
+                Constraints NDUMP>0
+                Default SAVE CLUSter ON DUMP 20
+
+        *SCRIpt [ON|OFF]
+                Write Phaser script file
+                Single Use
+                Default SCRIpt ON
+
+        SEARch ENSEmble <MODLID> {OR ENSEmble <MODLID>}... {NUMber <NUM>}
+                The  ENSEmble  to be searched for in a rotation search or
+                an  automatic  search.  When multiple ensembles are given
+                using  the  OR  keyword, the search is performed for each
+                ENSEmble  in  turn. The final results are the best of all
+                the  searches  (controlled  with the FINAL keyword). When
+                the  keyword  is  entered  multiple times in the MR mode,
+                each  SEARCH  keyword  refers  to  a new component of the
+                structure. If the component is present multiple times the
+                sub-keyword  NUMber can be used (rather than entering the
+                same  SEARCH  keyword  NUMber  times).  If the MR mode is
+                being  used  with  a  fixed  partial solution, only enter
+                SEARCH   keywords   (or   associated   NUMbers)  for  the
+                components that remain to be found.
+                Multiple Use
+                Constraints ENSEmble MODLID must be defined
+                Default None, compulsory when required
+
+        SEARch MATThews [ON | OFF]
+                The  number  of copies of the search components to search
+                for  is  determined  by  the  Matthews  coefficient.  The
+                stoichiometry  of  the  search  is  given  using  the NUM
+                keyword above.
+                Single Use
+                Default SEARCH MATThews BEST 1
+
+        SGALternative [ALL | HAND | {TEST <SG>}]
+                Alternative  space  groups  to  test  in  the translation
+                function. All tests all possible space groups, hand tests
+                the  given spacegroup and its enantiomorph and <SG> tests
+                the give space group.
+                Multiple Use
+                Default None
+
+        *SHANnon <SHARAT>
+                Shannon  sampling  given  by  (2*SHARAT) for the Ensemble
+                maps. Increase SHARAT to 2 to sharpen the sampling.
+                Single Use
+                Constraints SHARAT>1.1
+                Default SHANnon 1.5
+
+        *SNMAcrocycle ANISotropic [ON|OFF] BINS [ON|OFF] SOLK [ON|OFF]
+                SOLB [ON|OFF] NCYCle <NCYC> MINImizer <MINIMIZER>
+                Macrocycles   for   the   refinement  of  SigmaN  in  the
+                anisotropy correction
+                Multiple Use
+                Constraints NCYC=integer(+)
+                Default SNMAcrocycle ANISotropic ON BINS ON SOLK OFF SOLB
+                OFF NCYCle 50 MINImizer BFGS
+
+        *SNMAcrocycle OFF
+                Turns off the anisotropy correction
+
+        SOLUtion SET <ANNOTATION>
+                Start new set of solutions
+                Multiple Use
+
+        SOLUtion 3DIM ENSEmble <MODLID> EULEr <A B G> FIXR
+                Rotation  only  solution.  Use  this  keyword if only the
+                orientation  in  3  dimensions  is known. This keyword is
+                repeated  for  each  case.  A B G are the Euler angles in
+                degrees.
+                Multiple Use
+
+        SOLUtion 5DIM ENSEmble <MODLID> EULEr <A B G> DEGEnerate [X|Y|Z]
+                FRACtional <U V> FIXR FIXT
+                Use  this  keyword if the orientation in 3 dimensions and
+                and  the  position  of the MODLID in only 2 dimensions is
+                known.  This keyword is repeated for each case. A B G are
+                the  Euler angles in degrees. The keywords [X|Y|Z]specify
+                the  degenerate  direction and U V are the translation in
+                the other two directions.
+                Multiple Use
+
+        SOLUtion 6DIM ENSEmble <MODLID> EULEr <A B G> [ORTHogonal |
+                FRACtional] <X Y Z> FIXR FIXT 
+                This  keyword  is  repeated  for  each known position and
+                orientation  of a ENSEmble ID. A B G are the Euler angles
+                and X Y Z are the translation.
+                Multiple Use
+
+        SOLUtion TRIAl ENSEmble <MODLID> EULEr <A B G> {DEGEnerate
+                [X|Y|Z] FRACtional <U V> } {SCORe <score>}
+                Rotation List for translation function
+                Multiple Use
+                Default none, compulsory when required
+
+
+        *SOLParams <FSOL> <BSOL>
+                Optionally  change solvent parameters for Sigma(A) curves
+                from  the  default  values.  The results are not terribly
+                sensitive  to  these  parameters, which affect only lower
+                resolution  data.  FSOL  and  BSOL can be given in either
+                order, the lower number being taken as FSOL.
+                Single Use
+                Constraints 0<FSOL<1 and BSOL>0
+                Default FSOL=0.95 BSOL=300
+
+        SPACegroup {HALL} <SG>
+                Spacegroup may be altered from the one on the MTZ file to
+                a spacegroup in the same point group. The spacegroup name
+                or  number  can  be  given  e.g. P 21 21 21 or 19. If the
+                keyword   HALL   is   present,  then  the  spacegroup  is
+                interpreted as a Hall symbol.
+                Single Use
+                Default read from MTZ file
+
+        *SUITe [CCP4 | PHENIX | CIMR]
+                Switch output to match the style of ccp4, phenix and cimr
+                (development).
+                Single Use
+                Default SUITe CCP4
+
+        *TARGet [ LERF1 | LERF2 | CROWTHER | LETF1 | LETF2 | LETFL |
+                LETFQ | CORRelation ]
+                Target function for mode.
+                LERF1, LERF2 and CROWTHER apply to fast rotation searches
+                (2).
+                LETF1,  LETF2, LETFL, LETFQ and CORRelation apply to fast
+                translation searches (3).
+                Single Use
+                Default for fast rotation function TARGet LERF1
+                Default for fast translation function TARGet LETF1
+
+        TITLe <TITLE>
+                Title for job
+                Single Use
+                Default TITLe [no title given]
+
+        TOPFiles <NUM>
+                Number of top pdbfiles or mtzfiles to write to output.
+                Single Use
+                Constraints NPDB=integer(+)
+                Default TOPFiles 1
+
+        TRANslate FULL
+                Search  volume  for  brute  force  translation  function.
+                Cheshire cell or Primitive cell volume.
+
+        TRANslate LINE [ORTHogonal|FRACtional] STARt <XS YS ZS> END <XE
+                YE ZE>
+                Search  volume  for  brute  force  translation  function.
+                Search along line.
+
+        TRANslate REGIon [ORTHogonal|FRACtional] STARt <XS YS ZS> END <XE
+                YE ZE>
+                Search  volume  for  brute  force  translation  function.
+                Search region.
+
+        TRANslate AROUnd [ORTHogonal|FRACtional] POINt <X Y Z> RANGe
+                <RANGE>
+                Search  volume  for  brute  force  translation  function.
+                Search   within   +/-  RANGE  Angstroms  (not  fractional
+                coordinates,  even  if  the  search  point  is  given  as
+                fractional coordinates) of a point <X Y Z>.
+
+        TRANslate DEGEnerate [X|Y|Z]
+                Search  volume  for brute force translation function. The
+                search volume is the plane perpendicular to the direction
+                of the search.
+                Single Use
+                Default TRANslate FULL
+
+        VERBose [{ON EXTRA} |OFF]
+                Toggle  to  send verbose output to log file. If ON or OFF
+                are  not  specified,  verbose is switched ON. If EXTRA is
+                ON, then extra verbose information is logged.
+                Single Use
+                Default VERBose OFF
+
+        XYZOut [ON|OFF]
+                Toggle for output coordinate files.
+                Single Use
+                Default   Rotation   functions   XYZOut   OFF  All  other
+                (relevant) modes XYZOut ON
+     _________________________________________________________________
+
+5. Python Scripting
+
+   As an alternative to keyword input, Phaser can be called directly from
+       a  python  script,  because  the  core Phaser modes have been made
+       available  to  python  using  the Boost library. The syntax of the
+       calls  mirrors  the keyworded input and is easy to use. Users will
+       need  to  have  Phaser installed from source to have access to the
+       python  scripting.  The  advantage in calling phaser from a python
+       script  is  that the results are available directly to the script,
+       and  there  is no need to grep logfiles or read XML tags. For more
+       information, please email cimr-phaser@lists.cam.ac.uk.
+       Python script for anisotropy correction of beta-blip
+       beta_blip_ano.py
+
+   from phaser import *
+       i = InputMR_DAT()
+       i.setHKLI("beta_blip.mtz")
+       i.addLABI("Fobs","Sigma")
+       o = Output()
+       r = runMR_DAT(i,o)
+       print r.logfile()
+       i = InputMR_ANO()
+       i.setSPAC_HALL(r.getHall())
+       i.setCELL6(r.getUnitCell())
+       i.setREFL(r.getMiller(),r.getFobs(),r.getSigFobs())
+       i.setROOT("beta_blip_ano")
+       del(r)
+       r = runMR_ANO(i,o)
+       print r.logfile()
+
+   You  can  also  run  the  default  automated structure solution from a
+   script
+   beta_blip_auto.py
+   from phaser import *
+       i = InputMR_DAT()
+       i.setHKLI("beta_blip.mtz")
+       i.addLABI("Fobs","Sigma")
+       i.setHIRES(6.0)
+       o = Output()
+       r = runMR_DAT(i,o)
+       print r.summary()
+       i = InputMR_AUTO()
+       i.setSPAC_HALL(r.getHall())
+       i.setCELL6(r.getUnitCell())
+       i.setREFL(r.getMiller(),r.getFobs(),r.getSigFobs())
+       i.setROOT("beta_blip_auto")
+       i.addPDB_ID("beta","beta.pdb",1.0)
+       i.addPDB_ID("blip","blip.pdb",1.0)
+       i.addPROT(28853,1)
+       i.addPROT(17522,1)
+       i.addSEAR(["beta"])
+       i.addSEAR(["blip"])
+       del(r)
+       r = runMR_AUTO(i,o)
+       print r.summary()
+     _________________________________________________________________
+
+6. XML
+
+   Phaser  outputs an XML file when called with the command line argument
+       -xml  (optionally  followed  by the filename for output). The file
+       contains  exit  status,  errors,  the  names  of pdb and mtz files
+       output,  spacegroup  information etc.. For more information, or if
+       you  would like to request additional elements be added to the XML
+       file, please email cimr-phaser@lists.cam.ac.uk.
+       phaser -xml <filename>
+       The default <filename> is PHASER.XML.
+       Note  that  any  keywords given on the command line (such as HKLIN
+       filename.mtz) given after the -xml flag will be ignored.
+     _________________________________________________________________
+
+7. Version History
+
+     * Phaser-1.3.1
+
+     * Minor bug fixes after Phenix-1.1a release
+     * R-factor reported by MR_RNP and MR_LLG modes (verbose output)
+
+     Phaser-1.3
+     * Released as part of Phenix-1.1a
+     * New Normal Mode Analysis of structures
+     * New Cell Content Analysis mode
+     * Improved Automated MR
+     * Map coefficients appended to input mtz file
+     * Score stored in .sol file is Z-score rather than LLG
+     * Final phasing and refinement to full resolution on mtz file
+     * Packing of RNA/DNA
+     * Packing to form close packed oligomeric complexes
+     * Waters in pdb files excluded from packing
+     * Only  the most homologous model in an ensemble is used for packing
+       analysis
+     * Reduced memory requirements
+     * Composition/MW determined from sequence
+     * Automated MR now available as a python script
+     * Bug fixes for Phaser-1.2
+
+     Phaser-1.2
+     * First "official" release of Phaser software
+     * Automated solution of structures
+     * New Likelihood Enhanced fast Translation Function (LETF)
+     * Ability  to  use  electron  density  maps as molecular replacement
+       models
+     * Rigid body solution refinement against maximum likelihood target
+     * Pruning of duplicate solutions from solution list
+     * Searching of multiple alternative space groups
+     * Searching of multiple alternative models
+     * Better minimizers
+
+     Phaser-1.1
+     * Bug in anisotropy refinement corrected
+
+     Phaser-1.0
+     * Alpha release
+     _________________________________________________________________
+
+8. References
+
+    1. Read, R.J. (2001). Pushing the boundaries of molecular replacement
+       with maximum likelihood. Acta Cryst. D57, 1373-1382
+    2. Storoni,    L.C.,    McCoy,    A.J.    &    Read,   R.J.   (2004).
+       Likelihood-enhanced  fast  rotation  functions.  Acta  Cryst  D60,
+       432-438
+    3. McCoy,  A.J.,  Grosse-Kunstleve,  R.W., Storoni, L.C. & Read, R.J.
+       (2005). Likelihood-enhanced fast translation functions. Acta Cryst
+       D61, 458-464
