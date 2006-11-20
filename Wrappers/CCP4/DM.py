@@ -81,7 +81,7 @@ def DM(DriverType = None):
                 line = self.output()
 
                 if not line:
-                    breal
+                    break
 
                 print line[:-1]
 
@@ -102,6 +102,18 @@ if __name__ == '__main__':
 
     dm.set_hklin('1VR5_13193_phased.mtz')
     dm.set_hklout('1VR5_13193_phased_improved.mtz')
+    dm.set_solvent(0.608)
+
+    dm.write_log_file('dm.log')
+
+    dm.improve_phases()
+
+    # also do the alternative hand
+
+    dm = DM()
+
+    dm.set_hklin('1VR5_13193_phased_inverted.mtz')
+    dm.set_hklout('1VR5_13193_phased_inverted_improved.mtz')
     dm.set_solvent(0.608)
 
     dm.write_log_file('dm.log')

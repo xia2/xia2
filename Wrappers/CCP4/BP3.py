@@ -118,6 +118,7 @@ def BP3(DriverType = None):
                             self._input_form_factors[dname][0],
                             self._input_form_factors[dname][1]))
 
+            # FIXME should this be refine???
             self.input('phase')
 
             # self.close_wait()
@@ -147,7 +148,7 @@ if __name__ == '__main__':
     if not os.path.join(os.environ['SS_ROOT'], 'lib') in sys.path:
         sys.path.append(os.path.join(os.environ['SS_ROOT'], 'lib'))
         
-    from SubstructureLib import parse_pdb_sites_file
+    from SubstructureLib import parse_pdb_sites_file, invert_hand
 
     if not os.environ.has_key('X2TD_ROOT'):
         raise RuntimeError, 'X2TD_ROOT not defined'
@@ -179,3 +180,23 @@ if __name__ == '__main__':
     
     bp3.phase()
 
+    # run again with the other hand, for good measure!
+
+    sites_invert = invert_hand(sites)
+    hklout_invert = os.path.join(os.getcwd(), '1VR5_13193_phased_inverted.mtz')
+
+    bp3 = BP3()
+
+    bp3.set_hklin(hklin)
+    bp3.set_hklout(hklout_invert)
+    bp3.set_sites(sites_invert)
+    bp3.add_dataset('INFL', -11.0, 4.0)
+    bp3.add_dataset('LREM', -2.5, 0.5)
+    bp3.add_dataset('PEAK', -8.0, 6.0)
+    bp3.set_biso(22.0)
+
+    bp3.set_xname('13193')
+
+    bp3.write_log_file('bp3.log')
+    
+    bp3.phase()
