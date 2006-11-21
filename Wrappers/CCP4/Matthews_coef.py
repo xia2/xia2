@@ -48,7 +48,7 @@ def Matthews_coef(DriverType = None):
             self._nmol = 1
             self._nres = 0
             self._cell = None
-            self._symmetry = None
+            self._spacegroup = None
 
             # results
 
@@ -70,8 +70,8 @@ def Matthews_coef(DriverType = None):
             self._cell = cell
             return
 
-        def set_symmetry(self, symmetry):
-            self._symmetry = symmetry
+        def set_spacegroup(self, spacegroup):
+            self._spacegroup = spacegroup
             return
 
         def compute_solvent(self):
@@ -79,7 +79,10 @@ def Matthews_coef(DriverType = None):
             self.start()
             
             self.input('cell %f %f %f %f %f %f' % tuple(self._cell))
-            self.input('symmetry %s' % self._symmetry)
+
+            # cannot cope with spaces in the spacegroup!
+            
+            self.input('symmetry %s' % self._spacegroup.replace(' ', ''))
             self.input('nres %d' % self._nres)
             self.input('nmol %d' % self._nmol)
 
@@ -108,7 +111,7 @@ if __name__ == '__main__':
 
     m = Matthews_coef()
 
-    m.set_symmetry('P43212')
+    m.set_spacegroup('P43212')
     m.set_cell((96.0, 96.0, 36.75, 90.0, 90.0, 90.0))
     m.set_nmol(2)
     m.set_nres(82)
