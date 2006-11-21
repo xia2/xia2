@@ -71,11 +71,16 @@ if not os.environ.has_key('DPA_ROOT'):
 if not os.environ['DPA_ROOT'] in sys.path:
     sys.path.append(os.environ['DPA_ROOT'])
 
+if not os.path.join(os.environ['DPA_ROOT'],'lib') in sys.path:
+    sys.path.append(os.path.join(os.environ['DPA_ROOT'], lib))
+
 from Object import Object
 
 from Wrappers.CCP4.Othercell import Othercell
 from Handlers.Environment import Environment
 from Modules.ScalerFactory import Scaler
+
+from NMolLib import compute_nmol
 
 def sort_o_dict(dict, metric):
     '''A generic sorter for dictionaries - will return the keys in
@@ -252,6 +257,50 @@ class XCrystal(Object):
                         result += '\t%s' % value
                     result += '\n'
             result += '\n'
+
+        # then print out some "derived" information based on the
+        # scaling - this is presented through the Scaler interface
+        # explicitly...
+
+        cell = self._get_scaler().get_scaler_cell()
+        spacegroups = self._get_scaler().get_likely_spacegroups()
+        spacegroup = spacegroups[0]
+        resolution = self._get_scaler().get_scaler_highest_resolution()
+
+        result += 'Assuming spacegroup: %s\n' % spacegroup
+        if len(spacegroups) > 1:
+            result += 'Other likely alternatives are:\n' 
+            for sg in spacegroups[1:]:
+                result += '%s\n' % sg
+                
+        result += 'Unit cell:\n'
+        result += '%7.3f %7.3f %7.3f\n%7.3f %7.3f %7.3f\n' % tuple(cell)
+
+        # now, use this information and the sequence (if provided)
+        # and also matthews_coef (should I be using this directly, here?)
+        # to compute a likely number of molecules in the ASU and also
+        # the solvent content...
+
+        if self._aa_sequence:
+            residues = self._aa_sequence().get_sequence()
+            if residues:
+                nres = len(residues)
+
+                # first compute the number of molecules using the K&R
+                # method
+
+                nmol = compute_nmol(cell[0], cell[1], cell[2],
+                                    cell[3], cell[4], cell[5],
+                                    spacegroup, resolution, nres)
+
+                # then compute the solvent fraction
+
+                solvent = compute_solvent(cell[0], cell[1], cell[2],
+                                          cell[3], cell[4], cell[5],
+                                          spacegroup, nmol, nres)
+
+                result += 'Likely number of molecules in ASU: %d\n' % nmol
+                result += 'Giving solvent fraction:        %4.2f\n' % solvent
 
         if type(reflections_all) == type({}):
             for format in reflections_all.keys():
