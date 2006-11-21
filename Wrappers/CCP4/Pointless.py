@@ -499,6 +499,11 @@ def Pointless(DriverType = None):
             
             sg_list = dom.getElementsByTagName('SpacegroupList')[0]
             sg_node = dom.getElementsByTagName('Spacegroup')[0]
+
+            # FIXME 21/NOV/06 in here record a list of valid spacegroups
+            # (that is, those which are as likely as the most likely)
+            # for later use...
+
             self._spacegroup = sg_node.getElementsByTagName(
                 'SpacegroupName')[0].childNodes[0].data.strip()
             self._spacegroup_reindex_operator = sg_node.getElementsByTagName(
