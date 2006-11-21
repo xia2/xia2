@@ -26,6 +26,7 @@ if not os.environ['DPA_ROOT'] in sys.path:
     sys.path.append(os.environ['DPA_ROOT'])
 
 from Handlers.Syminfo import Syminfo
+from Wrappers.CCP4.Matthews_coef import Matthews_coef
 
 if not os.path.exists(os.path.join(os.environ['DPA_ROOT'],
                                    'Data', 'NMol',
@@ -201,6 +202,25 @@ def compute_nmol(cell_a, cell_b, cell_c,
 
     return mbest
 
+def compute_solvent(cell_a, cell_b, cell_c,
+                    cell_alpha, cell_beta, cell_gamma,
+                    spacegroup, nmol, sequence_length):
+    '''Compute (using matthews_coef) the solvent fraction [0-1] of the
+    crystal.'''
+
+    m = Matthews_coef()
+
+    m.set_spacegroup(spacegroup)
+    m.set_cell((cell_a, cell_b, cell_c,
+                cell_alpha, cell_beta, cell_gamma))
+    m.set_nmol(nmol)
+    m.set_nres(sequence_length)
+
+    m.compute_solvent()
+
+    return m.get_solvent()
+    
+
 if __name__ == '__main__':
 
     nmol = compute_nmol(96.0, 96.0, 36.75, 90.0, 90.0, 90.0,
@@ -208,3 +228,9 @@ if __name__ == '__main__':
 
     if nmol != 2:
         raise RuntimeError, 'error in nmol per asu'
+
+    solvent = compute_solvent(96.0, 96.0, 36.75, 90.0, 90.0, 90.0,
+                              'P 43 21 2', nmol, 82)
+
+    if math.fabs(solvent - 0.46) > 0.1:
+        raise RuntimeError, 'error in solvent content'
