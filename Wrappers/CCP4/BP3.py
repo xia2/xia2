@@ -121,23 +121,15 @@ def BP3(DriverType = None):
             # FIXME should this be refine??? test it out - used to be phase
             self.input('refine')
 
-            # self.close_wait()
-
-            self.close()
-
-            while True:
-
-                line = self.output()
-
-                if not line:
-                    break
-
-                print line[:-1]
+            self.close_wait()
 
             self.check_for_errors()
             self.check_ccp4_errors()
 
             # get useful stuff out here... like did it work???
+
+            loggraphs = self.parse_ccp4_loggraph()
+
 
     return BP3Wrapper()
 

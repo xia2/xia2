@@ -11,9 +11,14 @@
 #  
 # A wrapper for the CCP4 phase improvement program DM.
 # 
-# 
-# 
-# 
+# FIXME 21/NOV/06 need to add the FreeR column if it is in the input
+#                 data set. In practice, the input data from data
+#                 reduction needs to be "cadded in" with the results
+#                 of phasing prior to phase improvement.
+#
+# FIXME 21/NOV/06 need to consider cases where there may be some NCS
+#                 (e.g. when the number of molecules in the ASU > 1)
+#                 and switch on NCS averaging if this is the case.
 
 import sys
 import os
@@ -74,21 +79,14 @@ def DM(DriverType = None):
                        'HLA=HLA HLB=HLB HLC=HLC HLD=HLD')
             self.input('labout PHIDM=PHIDM FOMDM=FOMDM')
 
-            self.close()
-
-            while True:
-
-                line = self.output()
-
-                if not line:
-                    break
-
-                print line[:-1]
+            self.close_wait()
 
             self.check_for_errors()
             self.check_ccp4_errors()
 
             # get useful information out here...
+
+            loggraphs = self.parse_ccp4_loggraph()
 
             return
         
