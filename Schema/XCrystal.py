@@ -72,7 +72,7 @@ if not os.environ['DPA_ROOT'] in sys.path:
     sys.path.append(os.environ['DPA_ROOT'])
 
 if not os.path.join(os.environ['DPA_ROOT'],'lib') in sys.path:
-    sys.path.append(os.path.join(os.environ['DPA_ROOT'], lib))
+    sys.path.append(os.path.join(os.environ['DPA_ROOT'], 'lib'))
 
 from Object import Object
 
