@@ -66,6 +66,17 @@ def spacegroup_name_short_to_long(name):
 
     # uh oh this doesn't exist!
 
+def is_own_enantiomorph(spacegroup):
+    '''Check if this spacegroup is its own enantiomorph - i.e. its inverse
+    hand is itself.'''
+
+    enantiomorph = compute_enantiomorph(spacegroup)
+
+    if enantiomorph == spacegroup:
+        return True
+
+    return False
+
 def compute_enantiomorph(spacegroup):
     '''Compute the spacegroup enantiomorph name. There are 11 pairs where
     this is needed.'''
