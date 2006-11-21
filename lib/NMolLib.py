@@ -91,7 +91,7 @@ def sequence_mass(sequence):
 
     return 128.0 * len(sequence)
 
-def compute_nmol(volume, mass, resolution):
+def compute_nmol_from_volume(volume, mass, resolution):
 
     file = open(os.path.join(os.environ['DPA_ROOT'],
                              'Data', 'NMol',
@@ -154,9 +154,9 @@ def compute_nmol(volume, mass, resolution):
 
     return nmols, pdfs
 
-def nmol(cell_a, cell_b, cell_c,
-         cell_alpha, cell_beta, cell_gamma,
-         spacegroup, resolution, sequence_length):
+def compute_nmol(cell_a, cell_b, cell_c,
+                 cell_alpha, cell_beta, cell_gamma,
+                 spacegroup, resolution, sequence_length):
     '''From some information about the unit cell & symmetry, and the
     length of the sequence and an estimate of the resolution, return
     a likely number of molecules.'''
@@ -176,7 +176,7 @@ def nmol(cell_a, cell_b, cell_c,
     # this returns a list of possible nmols, with another list of the
     # associated probabilities
 
-    nmols, pdfs = compute_nmol(volume, mass, resolution)
+    nmols, pdfs = compute_nmol_from_volume(volume, mass, resolution)
 
     ptot = 0
 
@@ -203,8 +203,8 @@ def nmol(cell_a, cell_b, cell_c,
 
 if __name__ == '__main__':
 
-    nmol = nmol(96.0, 96.0, 36.75, 90.0, 90.0, 90.0,
-                'P 43 21 2', 1.8, 82)
+    nmol = compute_nmol(96.0, 96.0, 36.75, 90.0, 90.0, 90.0,
+                        'P 43 21 2', 1.8, 82)
 
     if nmol != 2:
         raise RuntimeError, 'error in nmol per asu'
