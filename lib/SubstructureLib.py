@@ -159,9 +159,13 @@ def write_pdb_sites_file(sites_info, out = sys.stdout):
     # header guff
     
     out.write('REMARK PDB FILE WRITTEN BY XIA2\n')
-    out.write('CRYST1 %8.3f %8.3f %8.3f %6.2f %6.2f %6.2f %s\n' % \
-              (cell[0], cell[1], cell[2], cell[3], cell[4], cell[5],
-               symm))
+    if symm:
+        out.write('CRYST1 %8.3f %8.3f %8.3f %6.2f %6.2f %6.2f %s\n' % \
+                  (cell[0], cell[1], cell[2], cell[3], cell[4], cell[5],
+                   symm))
+    else:
+        out.write('CRYST1 %8.3f %8.3f %8.3f %6.2f %6.2f %6.2f\n' % \
+                  (cell[0], cell[1], cell[2], cell[3], cell[4], cell[5]))
 
     for j in range(3):
         out.write('SCALE%d     %9.6f %9.6f %9.6f        0.00000\n' % \
@@ -318,9 +322,14 @@ def invert_hand(sites_info):
                               'cartesian':new_cartesian,
                               'fractional':new_fractional})
 
-        # perhaps invert the spacegroup to it's enantiomorph
-        new_sites_info['spacegroup'] = compute_enantiomorph(
-            sites_info['spacegroup'])
+        # perhaps invert the spacegroup to it's enantiomorph -
+        # if it is set at all!
+
+        if sites_info['spacegroup']:
+            new_sites_info['spacegroup'] = compute_enantiomorph(
+                sites_info['spacegroup'])
+        else:
+            new_sites_info['spacegroup'] = sites_info['spacegroup']
 
     new_sites_info['sites'] = new_sites
 
