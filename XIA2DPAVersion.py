@@ -45,9 +45,12 @@
 # 
 # 0.2.1 - 15/NOV/06 release candidate to go with CCP4 6.0.2.
 # 
+# 0.2.2 - 21/NOV/06 second release candidate - this one includes stuff for
+#         estimating number of molecules in ASU, solvent fraction, spacegroup.
+# 
 
 
-VersionNumber = "0.2.1"
+VersionNumber = "0.2.2"
 Version = "XIA2DPA %s" % VersionNumber
 CVSTag = "xia2dpa-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2dpa-%s" % VersionNumber
