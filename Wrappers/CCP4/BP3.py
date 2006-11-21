@@ -118,8 +118,8 @@ def BP3(DriverType = None):
                             self._input_form_factors[dname][0],
                             self._input_form_factors[dname][1]))
 
-            # FIXME should this be refine???
-            self.input('phase')
+            # FIXME should this be refine??? test it out - used to be phase
+            self.input('refine')
 
             # self.close_wait()
 
