@@ -148,7 +148,7 @@
 # XDSScaler &c., which will be a composite class which performs the operation,
 # using wrapper classes for the different programs...
 # 
-# FIXME 02/NOV/06 need to move this over to the same framework as in 
+# FIXED 02/NOV/06 need to move this over to the same framework as in 
 #                 Integrater - that is, prepare_scale, do_scale both until
 #                 happiness has arrived - this could be complicated but 
 #                 is really the only way to structure it...
@@ -156,6 +156,16 @@
 #                 Will also allow for a certain amount of iteration, but 
 #                 not repetition of e.g. sorting, reindexing (unless
 #                 necessary.)
+#
+# FIXME 21/NOV/06 add information about spacegroups. This should perhaps
+#                 come from an analysis of the systematic absences, but 
+#                 may just be "all spacegroups in this point group."
+#                 For instance, get_all_likely_spacegroups(),
+#                 get_likely_spacegroup(), get_all_less_likely_spacegroups().
+#                 Also want to be able to return some information about
+#                 the resolution of the sample and also the rough B factor.
+#                 Method names will need some thinking about!
+# 
 
 import os
 import sys
