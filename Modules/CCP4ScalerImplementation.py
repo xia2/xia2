@@ -89,6 +89,9 @@ if not os.environ.has_key('DPA_ROOT'):
 if not os.environ['DPA_ROOT'] in sys.path:
     sys.path.append(os.environ['DPA_ROOT'])
 
+if not os.path.join(os.environ['DPA_ROOT'],'lib') in sys.path:
+    sys.path.append(os.path.join(os.environ['DPA_ROOT'], lib))
+
 # the interface definition that this will conform to 
 from Schema.Interfaces.Scaler import Scaler
 
@@ -609,6 +612,18 @@ class CCP4Scaler(Scaler):
         # calling entity. Note well that I also want to write in
         # here the spacegroup enantiomorphs.
 
+        # FIXME 21/NOV/06 need now to get this from the pointless output...
+
+        self._scalr_likely_spacegroups = [spacegroup]
+
+
+        # also need in here to generate cases like I222/I212121, I23, I213,
+        # as likely cases
+
+        # then consider all other spacegroups for this pointgroup (at least
+        # the ones in "legal" settings) which are not already in the
+        # likely list - these will be considered as the unlikely ones.
+
         Chatter.write('Reindexing to correct spacegroup setting: %s (%s)' % \
                       (spacegroup, reindex_operator))
 
@@ -1045,6 +1060,8 @@ class CCP4Scaler(Scaler):
             Chatter.write('Resolution limit for %s: %5.2f' % \
                           (dataset, resolution_limits[dataset]))
 
+        self._scalr_highest_resolution = highest_resolution
+
         # Ok, now we have the resolution limit stuff, need to work through
         # all of the integraters which belong to this set and if the
         # resolution defined for a given dataset is found to be lower
@@ -1403,6 +1420,8 @@ class CCP4Scaler(Scaler):
         Chatter.write('Computed average unit cell (will use in all files)')
         Chatter.write('%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
                       average_unit_cell)
+
+        self._scalr_cell = average_unit_cell
 
         for key in scaled_reflection_files.keys():
             file = scaled_reflection_files[key]
