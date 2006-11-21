@@ -38,7 +38,12 @@
 #
 # FIXME 20/NOV/06 need to input the resolution on a per-run basis, e.g.
 #                 "resolution run 1 1.65" &c. This should make the summaries
-#                 at the end internally useful.
+#                 at the end internally useful. Have contacted Phil Evans
+#                 about this and he seems prepared to write out the
+#                 summary using the last populated bin for the outer bin,
+#                 and I assume the last populated bin for the overall range.
+#                 Having arbitrary resolution ranges would make comparison
+#                 of the scaling statistics between resolutions tricky.
 # 
 
 import os
