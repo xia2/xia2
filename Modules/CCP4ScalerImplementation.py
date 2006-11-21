@@ -603,6 +603,11 @@ class CCP4Scaler(Scaler):
 
         spacegroup = p.get_spacegroup()
         reindex_operator = p.get_spacegroup_reindex_operator()
+        
+        # Write this spacegroup information back to the storage areas
+        # in the Scaler interface to allow them to be obtained by the
+        # calling entity. Note well that I also want to write in
+        # here the spacegroup enantiomorphs.
 
         Chatter.write('Reindexing to correct spacegroup setting: %s (%s)' % \
                       (spacegroup, reindex_operator))

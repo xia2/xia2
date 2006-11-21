@@ -164,7 +164,8 @@
 #                 get_likely_spacegroup(), get_all_less_likely_spacegroups().
 #                 Also want to be able to return some information about
 #                 the resolution of the sample and also the rough B factor.
-#                 Method names will need some thinking about!
+#                 Method names will need some thinking about! Also want
+#                 the unit cell information.
 # 
 
 import os
@@ -209,6 +210,12 @@ class Scaler:
 
         # this needs to be a dictionary keyed by dataset
         self._scalr_statistics = None
+
+        # information for returning "interesting facts" about the data
+        self._scalr_highest_resolution = 0.0
+        self._scalr_cell = None
+        self._scalr_likely_spacegroups = []
+        self._scalr_unlikely_spacegroups = []
 
         return
 
@@ -317,4 +324,41 @@ class Scaler:
             self.scale()
 
         return self._scalr_statistics
+        
+    def get_scaler_cell(self):
+        '''Return the final unit cell from scaling.'''
+
+        if not self._scalr_done:
+            self.scale()
+
+        return self._scalr_cell
+
+    def get_scaler_likely_spacegroups(self):
+        '''Return a list of likely spacegroups - you should try using
+        the first in this list first.'''
+
+        if not self._scalr_done:
+            self.scale()
+
+        return self._scalr_likely_spacegroups
+
+    def get_scaler_unlikely_spacegroups(self):
+        '''Return a list of unlikely spacegroups - you should try using
+        the likely ones first. These are spacegroups in the correct
+        pointgroup but with systematic absences which dont match up.'''
+
+        if not self._scalr_done:
+            self.scale()
+
+        return self._scalr_unlikely_spacegroups
+
+    def get_scaler_highest_resolution(self):
+        '''Get the highest resolution achieved by the crystal.'''
+
+        if not self._scalr_done:
+            self.scale()
+
+            return self._scalr_highest_resolution
+
+
         
