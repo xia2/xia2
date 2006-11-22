@@ -48,9 +48,10 @@
 # 0.2.2 - 21/NOV/06 second release candidate - this one includes stuff for
 #         estimating number of molecules in ASU, solvent fraction, spacegroup.
 # 
+# 0.2.2a - 22/NOV/06 fixed typo!
+# 
 
-
-VersionNumber = "0.2.2"
+VersionNumber = "0.2.2a"
 Version = "XIA2DPA %s" % VersionNumber
 CVSTag = "xia2dpa-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2dpa-%s" % VersionNumber
