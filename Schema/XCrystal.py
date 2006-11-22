@@ -282,7 +282,7 @@ class XCrystal(Object):
         # the solvent content...
 
         if self._aa_sequence:
-            residues = self._aa_sequence().get_sequence()
+            residues = self._aa_sequence.get_sequence()
             if residues:
                 nres = len(residues)
 
