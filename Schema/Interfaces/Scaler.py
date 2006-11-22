@@ -358,7 +358,7 @@ class Scaler:
         if not self._scalr_done:
             self.scale()
 
-            return self._scalr_highest_resolution
+        return self._scalr_highest_resolution
 
 
         
