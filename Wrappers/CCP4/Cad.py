@@ -256,3 +256,16 @@ def Cad(DriverType = None):
             return self.get_ccp4_status()
 
     return CadWrapper()
+
+if __name__ == '__main__':
+    # the run a test!
+
+    c = Cad()
+    c.add_hklin(os.path.join(os.environ['X2TD_ROOT'],
+                             'Test', 'UnitTest', 'Wrappers', 'Cad',
+                             'TS01_12847_truncated.mtz'))
+    c.set_new_suffix('NATIVE')
+    average_unit_cell = (228.21, 52.61, 44.11, 90.00, 100.64, 90.00)
+    c.set_new_cell(average_unit_cell)
+    c.set_hklout('bar.mtz')
+    c.update()    
