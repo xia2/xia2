@@ -1062,6 +1062,9 @@ class CCP4Scaler(Scaler):
 
         self._scalr_highest_resolution = highest_resolution
 
+        Chatter.write('Scaler highest resolution set to %f' % \
+                      self.get_scaler_highest_resolution())
+
         # Ok, now we have the resolution limit stuff, need to work through
         # all of the integraters which belong to this set and if the
         # resolution defined for a given dataset is found to be lower
