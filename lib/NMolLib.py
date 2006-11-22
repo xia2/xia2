@@ -26,6 +26,7 @@ if not os.environ['DPA_ROOT'] in sys.path:
     sys.path.append(os.environ['DPA_ROOT'])
 
 from Handlers.Syminfo import Syminfo
+from Handlers.Streams import Chatter
 from Wrappers.CCP4.Matthews_coef import Matthews_coef
 
 if not os.path.exists(os.path.join(os.environ['DPA_ROOT'],
@@ -114,8 +115,8 @@ def compute_nmol_from_volume(volume, mass, resolution):
     if resolution > resolutions[-1]:
         raise RuntimeError, 'Resolution outside useful range'
     if resolution < resolutions[0]:
-        Messenger.log_write('Resolution higher than peak %f -> %f' % \
-                            (resolution, resolutions[0]))
+        Chatter.write('Resolution higher than peak %f -> %f' % \
+                      (resolution, resolutions[0]))
         resolution = resolutions[0]
                             
 
