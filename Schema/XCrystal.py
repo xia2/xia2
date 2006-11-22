@@ -263,7 +263,7 @@ class XCrystal(Object):
         # explicitly...
 
         cell = self._get_scaler().get_scaler_cell()
-        spacegroups = self._get_scaler().get_likely_spacegroups()
+        spacegroups = self._get_scaler().get_scaler_likely_spacegroups()
         spacegroup = spacegroups[0]
         resolution = self._get_scaler().get_scaler_highest_resolution()
 
