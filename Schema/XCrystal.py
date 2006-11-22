@@ -80,7 +80,7 @@ from Wrappers.CCP4.Othercell import Othercell
 from Handlers.Environment import Environment
 from Modules.ScalerFactory import Scaler
 
-from NMolLib import compute_nmol
+from NMolLib import compute_nmol, compute_solvent
 
 def sort_o_dict(dict, metric):
     '''A generic sorter for dictionaries - will return the keys in
