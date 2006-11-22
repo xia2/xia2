@@ -27,6 +27,7 @@
 
 import os
 import sys
+import time
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -248,6 +249,8 @@ def Cad(DriverType = None):
                 except:
                     pass
                 raise e
+
+            time.sleep(1)
                 
             return self.get_ccp4_status()
 
