@@ -100,6 +100,7 @@ def Cad(DriverType = None):
 
             for hklin in self._hklin_files:
                 md = Mtzdump()
+                md.set_working_directory(self.get_working_directory())
                 md.set_hklin(hklin)
                 md.dump()
                 columns = md.get_columns()
