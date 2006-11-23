@@ -228,7 +228,9 @@ class XInfo:
                 i += 1
                 record = crystal_records[i]
                 while record != 'END AA_SEQUENCE':
-                    sequence += record.strip()
+                    if not '#' in record or '!' in record:
+                        sequence += record.strip()
+                        
                     i += 1
                     record = crystal_records[i]
 
