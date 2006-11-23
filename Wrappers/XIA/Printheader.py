@@ -71,7 +71,8 @@ detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('adsc', 6144, 51):'adsc q315',
                   ('adsc', 3072, 102):'adsc q315 2x2 binned',
                   ('marccd', 4096, 73):'mar 300',
-                  ('marccd', 3072, 73):'mar 225'}
+                  ('marccd', 3072, 73):'mar 225',
+                  ('mar', 2300, 150):'mar 345'}
 
 def Printheader(DriverType = None):
     '''A factory for wrappers for the printheader.'''
@@ -102,6 +103,11 @@ def Printheader(DriverType = None):
 
             if len(datestring) == 0:
                 raise RuntimeError, 'empty date'
+
+            if datestring == 'N/A':
+                # we don't have the date!
+                # set default to 0-epoch
+                return datetime.datetime(1970, 1, 1, 1, 0, 0).timetuple()
 
             try:
                 struct_time = time.strptime(datestring)
@@ -161,7 +167,9 @@ def Printheader(DriverType = None):
             fudge = {'adsc':{'wavelength':1.0,
                              'pixel':1.0},
                      'marccd':{'wavelength':10.0,
-                               'pixel':0.001}}            
+                               'pixel':0.001},
+                     'mar':{'wavelength':1.0,
+                            'pixel':1.0}}
 
             for o in output:
                 l = o.split(':')
