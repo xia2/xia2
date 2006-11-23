@@ -1465,6 +1465,9 @@ class CCP4Scaler(Scaler):
 
             # we don't need to explicitly merge it, since that's just
             # silly ;o)
+
+            # however this doesn't allow for the renaming below in the free
+            # flag adding step! Doh!
             
             self._scalr_scaled_reflection_files[
                 'mtz_merged'] = scaled_reflection_files[
@@ -1475,11 +1478,13 @@ class CCP4Scaler(Scaler):
 
         f = self.Freerflag()
 
+        # changed this to not assume that the file is called _merged.mtz
+
         f.set_hklin(self._scalr_scaled_reflection_files['mtz_merged'])
         f.set_hklout(
             self._scalr_scaled_reflection_files['mtz_merged'].replace(
-            'merged',
-            'merged_free'))
+            '.mtz',
+            '_free.mtz'))
         
         f.add_free_flag()
 
