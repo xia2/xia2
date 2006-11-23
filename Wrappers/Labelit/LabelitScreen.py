@@ -141,6 +141,10 @@ def LabelitScreen(DriverType = None):
 
             self._refine_beam = True
 
+            # this is linked to the above!
+            
+            self._beam_search_scope = 0.0
+
             self._solutions = { }
 
             self._solution = None
@@ -175,17 +179,19 @@ def LabelitScreen(DriverType = None):
                           self.get_beam())
             if self._refine_beam is False:
                 out.write('beam_search_scope = 0.0\n')
+            else:
+                # FIXME latest version of labelit has messed up the beam
+                # centre finding :o( so add this for the moment until that
+                # is fixed
+                
+                out.write('beam_search_scope = %f\n' % \
+                          self._beam_search_scope)
+
 
             # new feature - index on the spot centre of mass, not the
             # highest pixel (should improve the RMS deviation reports.)
 
             out.write('distl_spotfinder_algorithm = "maximum_pixel"\n')
-
-            # FIXME latest version of labelit has messed up the beam
-            # centre finding :o( so add this for the moment until that
-            # is fixed
-
-            out.write('beam_search_scope = 0.0\n')
 
             # 03/NOV/06 looks like this can be "fixed" by the following:
             # out.write('percent_overlap_forcing_detail = 1\n')
@@ -294,9 +300,33 @@ def LabelitScreen(DriverType = None):
             # check for errors
             self.check_for_errors()
 
-            # check for labelit errors
-            self.check_labelit_errors()
+            # check for labelit errors - if something went wrong, then
+            # try to address it by e.g. extending the beam search area...
 
+            try:
+                
+                self.check_labelit_errors()
+                
+            except RuntimeError, e:
+                
+                if self._refine_beam is False:
+                    raise e
+
+                # can we improve the situation?
+                
+                if self._beam_search_scope < 4.0:
+                    self._beam_search_scope += 4.0
+                    
+                    # try repeating the indexing!
+                    
+                    self.set_indexer_done(False)
+                    return 'failed'
+
+                # otherwise this is beyond redemption
+
+                raise e
+
+                    
             # ok now we're done, let's look through for some useful stuff
             output = self.get_all_output()
 
