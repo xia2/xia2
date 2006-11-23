@@ -86,13 +86,19 @@ class _Stream:
 
         return
 
+# FIXME 23/NOV/06 now write a xia2.txt from chatter and rename that
+# output stream Stdout... then copy everything there!
+
 Science = _Stream('xia-science', 'SCI-')
 Admin = _Stream('xia-admin', 'ADMN')
 Status = _Stream('xia-status', 'STAT')
-Chatter = _Stream(None, 'XIA2')
+Chatter = _Stream('xia2', 'XIA2')
+Stdout = _Stream(None, 'XIA2')
+
 Science.join(Chatter)
 Admin.join(Chatter)
 Status.join(Chatter)
+Chatter.join(Stdout)
 
 def streams_off():
     '''Switch off the chatter output - designed for unit tests...'''
