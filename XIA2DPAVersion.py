@@ -49,9 +49,11 @@
 #         estimating number of molecules in ASU, solvent fraction, spacegroup.
 # 
 # 0.2.2a - 22/NOV/06 fixed typo!
-# 
+#
+# 0.2.2.1 - 23/NOV/06 fixed bug in TS01 - was running freer_flag with hklin
+#         = hklout - Doh!
 
-VersionNumber = "0.2.2a"
+VersionNumber = "0.2.2.1"
 Version = "XIA2DPA %s" % VersionNumber
 CVSTag = "xia2dpa-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2dpa-%s" % VersionNumber
