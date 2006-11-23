@@ -33,15 +33,70 @@
     to hand anyway - here is a simple example, a more complex example 
     can be found below.
 
-    <!-- FIXME this needs adding -->
-
     <pre>
+! This is a demonstration .xinfo file which illustrates how to cope
+! with a simple case - this example is a native cubic insulin data
+! set measured on 14.2 at the SRS
+
+BEGIN PROJECT DEMONSTRATION
+
+BEGIN CRYSTAL INSULIN
+
+BEGIN AA_SEQUENCE
+
+! this is only really needed at the moment for assessing the solvent
+! content and number of residues in the asu
+
+GIVEQCCASVCSLYQLENYCN
+FVNQHLCGSHLVEALYLVCGERGFFYTPKA
+
+END AA_SEQUENCE
+
+BEGIN WAVELENGTH NATIVE
+WAVELENGTH 0.979000
+
+! in here you can also have
+! F' value
+! F'' value
+
+END WAVELENGTH NATIVE
+
+BEGIN SWEEP NATIVE
+WAVELENGTH NATIVE
+IMAGE insulin_1_001.img
+
+! you will probably need to change this - this is the only thing which 
+! you will need to change for the demonstration data set
+
+DIRECTORY /media/data1/graeme/demo/
+
+! additionally you can add the following information - if it is wrong
+! in the headers
+! BEAM x y (mm)
+! DISTANCE z (mm)
+
+! this describes the order in which the sweeps were collected - 
+! it usually comes from the image header if that information is in there
+! EPOCH 5
+
+! you can also add this to only reduce a subset of the data 
+! START_END 1 30 (image numbers)
+
+END SWEEP 
+
+END CRYSTAL INSULIN
+
+END PROJECT DEMONSTRATION
     </pre>
 
-    <!-- FIXME need the test data linked in here -->
+    This uses test images which are available from the links below. 
+    Thanks to John Cowan for providing this test data!
 
-    This uses test images which are available from here. Thanks to John 
-    Cowan for providing this test data!
+    <ul>
+      <li><a href="demo.zip">Windows (as .zip file)</a></li>
+      <li><a href="demo.tar.bz2">Unix (as .tar.bz2 file)</a></li>
+      <li><a href="demo.tar.gz">Unix (as .tar.gz file)</a></li>
+    </ul>
 
     More examples can be found in $DPA_ROOT/examples. Remember - you need 
     to tell xia2 where to find your data!
@@ -76,12 +131,12 @@
 
     <h1>Download</h1>
 
-    The current version, 0.2.2.1 can be obtained by following these links:
+    The current version, 0.2.2.2 can be obtained by following these links:
 
     <ul>
-      <li><a href="xia2-0.2.2.1.zip">Windows (as .zip file)</a></li>
-      <li><a href="xia2-0.2.2.1.tar.bz2">Unix (as .tar.bz2 file)</a></li>
-      <li><a href="xia2-0.2.2.1.tar.gz">Unix (as .tar.gz file)</a></li>
+      <li><a href="xia2-0.2.2.2.zip">Windows (as .zip file)</a></li>
+      <li><a href="xia2-0.2.2.2.tar.bz2">Unix (as .tar.bz2 file)</a></li>
+      <li><a href="xia2-0.2.2.2.tar.gz">Unix (as .tar.gz file)</a></li>
     </ul>
 
     All of the files are the same, simply packed for different platforms.
@@ -95,8 +150,8 @@
     Since everything is precompiled, the only requirement is to unpack the
     directory somewhere and edit the directory setup.bat, setup.csh or
     setup.sh appropriately, for instance setting XIA2_HOME as 
-    /opt/px/xia/xia-0.2.2.1 if you unpacked the tarball in /opt/px/xia.
-    Note that this includes the xia-0.2.2.1 directory!
+    /opt/px/xia/xia-0.2.2.2 if you unpacked the tarball in /opt/px/xia.
+    Note that this includes the xia-0.2.2.2 directory!
 
     All that is then needed is to source this setup file and the application
     xia2 should be available.
@@ -231,14 +286,14 @@ END PROJECT TS01
     This is a particularly complex example, but it illustrates the capability 
     of the system well. There are data from two cystals, one native and 
     the other selenomethionated. The native set is measured in two sweeps.
-    Currently (version 0.2.2.1) no attempt is made to combine data from 
+    Currently (version 0.2.2.2) no attempt is made to combine data from 
     multiple crystals, however this is on the to-do list.
 
     <hr>
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Thu Nov 23 12:02:27 GMT Standard Time 2006
+Last modified: Thu Nov 23 15:06:12 GMT Standard Time 2006
 <!-- hhmts end -->
   </body>
 </html>
