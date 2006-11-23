@@ -1,0 +1,219 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>xia2: Automated Data Reduction</title>
+  </head>
+
+  <body>
+    <h1>xia2: Automated Data Reduction</h1>
+
+    xia2 is a new automated data reduction system designed to work from raw
+    diffraction data and a little metadata, and produce usefully reduced
+    data in a form suitable for immediately starting phasing and structure
+    solution, e.g. through Mr BUMP or your favourite experimental phasing
+    suite.
+
+    The following steps are performed (although not strictly in this order)
+
+    <ul>
+      <li>Integration with feedback and complex lattice selection stuff</li>
+      <li>Reindexing to standard setting for spacegroup (e.g. P 2 21 21 to
+	P 21 21 2)</li>
+      <li>Scaling together of all data to maximise anomalous signal</li>
+      <li>Estimation of number of molecules in ASU and solvent fraction
+	based on sequence information (if provided)</li>
+    </ul>
+
+    There is a lot of fun stuff which goes on in there - run it to find 
+    out more...
+
+    The system is designed to cope with MAD data and data measured in 
+    multiple passes, of a combination of the two. The input is a therefore
+    a little complex, but consists only of information you should have 
+    to hand anyway - here is an example...
+
+    <pre>
+BEGIN PROJECT TS01
+BEGIN CRYSTAL 12847
+
+BEGIN AA_SEQUENCE
+
+MKVKKWVTQDFPMVEESATVRECLHRMRQYQTNECIVKDREGHFRGVVNKEDLLDLDLDSSVFNKVSLPD
+FFVHEEDNITHALLLFLEHQEPYLPVVDEEMRLKGAVSLHDFLEALIEALAMDVPGIRFSVLLEDKPGEL
+RKVVDALALSNINILSVITTRSGDGKREVLIKVDAVDEGTLIKLFESLGIKIESIEKEEGF
+
+END AA_SEQUENCE
+
+BEGIN WAVELENGTH NATIVE
+WAVELENGTH 0.99187
+END WAVELENGTH NATIVE
+
+! high resolution native pass
+
+BEGIN SWEEP NATIVE_HR
+WAVELENGTH NATIVE
+BEAM 109.0 105.0
+IMAGE 12847_4_001.img
+DIRECTORY /Volumes/Arthur/JCSG Data/1vr9/data/jcsg/als1/8.2.1/20050121/collection/TM0892/12847/
+END SWEEP NATIVE_HR
+
+! low resolution native pass
+
+BEGIN SWEEP NATIVE_LR
+WAVELENGTH NATIVE
+BEAM 109.0 105.0
+IMAGE 12847_5_001.img
+DIRECTORY /Volumes/Arthur/JCSG Data/1vr9/data/jcsg/als1/8.2.1/20050121/collection/TM0892/12847/
+END SWEEP NATIVE_LR
+
+END CRYSTAL 12847
+
+BEGIN CRYSTAL 13140
+
+BEGIN AA_SEQUENCE
+
+MKVKKWVTQDFPMVEESATVRECLHRMRQYQTNECIVKDREGHFRGVVNKEDLLDLDLDSSVFNKVSLPD
+FFVHEEDNITHALLLFLEHQEPYLPVVDEEMRLKGAVSLHDFLEALIEALAMDVPGIRFSVLLEDKPGEL
+RKVVDALALSNINILSVITTRSGDGKREVLIKVDAVDEGTLIKLFESLGIKIESIEKEEGF
+
+END AA_SEQUENCE
+
+BEGIN HA_INFO
+ATOM SE
+NUMBER_PER_MONOMER 5
+END HA_INFO
+
+BEGIN WAVELENGTH INFL
+WAVELENGTH 0.979741
+F' -10.0
+F'' 3.2
+END WAVELENGTH INFL
+
+BEGIN WAVELENGTH LREM
+WAVELENGTH 1.019859
+F' -2.6
+F'' 0.55
+END WAVELENGTH LREM
+
+BEGIN SWEEP INFL
+WAVELENGTH INFL
+BEAM 108.7 102.0
+IMAGE 13140_1_E1_001.img
+DIRECTORY /Volumes/Arthur/JCSG Data/1vr9/data/jcsg/als1/8.3.1/20050105/collect/TM0892/13140/
+END SWEEP
+
+BEGIN SWEEP LREM
+WAVELENGTH LREM
+BEAM 108.7 102.0
+IMAGE 13140_1_E2_001.img
+DIRECTORY /Volumes/Arthur/JCSG Data/1vr9/data/jcsg/als1/8.3.1/20050105/collect/TM0892/13140/
+END SWEEP
+
+END CRYSTAL 13140
+
+END PROJECT TS01
+    </pre>
+
+    This is a particularly complex example, but it illustrates the capability 
+    of the system well. There are data from two cystals, one native and 
+    the other selenomethionated. The native set is measured in two sweeps.
+    Currently (version 0.2.2.1) no attempt is made to combine data from 
+    multiple crystals, however this is on the to-do list.
+
+    <h1>Platforms</h1>
+
+    The following platforms are supported:
+
+    <ul>
+      <li>GNU/Linux on i386 (and 64 bit extensions)</li>
+      <li>OS X 10.4 intel (PPC support will be added if there is demand)</li>
+      <li>Microsoft Windows 2000/XP (Vista is untested)</li>
+    </ul>
+
+    <h1>Requirements</h1>
+
+    The only software which is actually required is CCP4 6.0.1/2 and Python
+    2.4.x. On windows the PyWin32 module is also required, to provide
+    additional process control functionality. If you are using this quite
+    on a Windows platform and wish to be able to use the integration
+    functionality, you should get in touch with Harry Powell for a custom
+    build of Mosflm.
+
+    In addition the autoindexing program Labelit is supported but the system 
+    will work without it.
+
+    <h1>License</h1>
+
+    This software is distributed under the CCP4 Applications license for
+    non commercial use. Commercial users should contact the author.
+
+    <h1>Download</h1>
+
+    The current version, 0.2.2.1 can be obtained by following these links:
+
+    <ul>
+      <li><a href="xia2-0.2.2.1.zip">Windows (as .zip file)</a></li>
+      <li><a href="xia2-0.2.2.1.tar.bz2">Unix (as .tar.bz2 file)</a></li>
+      <li><a href="xia2-0.2.2.1.tar.gz">Unix (as .tar.gz file)</a></li>
+    </ul>
+
+    All of the files are the same, simply packed for different platforms.
+    Inside are a number of precompiled jiffy programs and pointless and
+    othercell (available from the CCP4 prerelease pages) for convenience.
+
+    <h1>Installation</h1>
+
+    Since everything is precompiled, the only requirement is to unpack the
+    directory somewhere and edit the directory setup.bat, setup.csh or
+    setup.sh appropriately, for instance setting XIA2_HOME as 
+    /opt/px/xia/xia-0.2.2.1 if you unpacked the tarball in /opt/px/xia.
+
+    All that is then needed is to source this setup file and the application
+    xia2 should be available.
+
+    <h1>Usage</h1>
+
+    Once the software is installed, the first thing you need to do is 
+    prepare a .xinfo file (example above) to run from. This contains a 
+    description of the experiment, which will allow xia2 to decide how to 
+    handle your data and what information to put in the MTZ headers.
+
+    Essentially the input file just needs a description of the data
+    which were collected from each crystal - for instance, if you measured
+    three MAD wavelengths, a peak, inflection and high remote, then 
+    there should be three WAVELENGTH blocks in the file, containing the 
+    fp, fpp and wavelength values. The images that you measured from these
+    should then be described in the SWEEP block, which is then assigned to 
+    a wavelength. This structure simplifies handling of multiple passes
+    contributing to one wavelength. In the reduced output, the wavelength 
+    names will correspond to MTZ datasets.
+
+    The program is actually run with:
+
+    <pre>
+xia2 -xinfo project.xinfo
+    </pre>
+    
+    And all data reduction is performed in the working directory, with the
+    a directory structure CRYSTAL/WAVELENGTH/SWEEP. Interesting log files
+    can be found in the CRYSTAL/scale directory.
+
+    <h1>Acknowledgements</h1>
+
+    Development of xia2 is supported by the BBSRC e-HTPX grant and the 
+    EU framework 6 BioXHit initiative. xia2 makes extensive use of Phil Evans's
+    program Pointless, and I would like to thank him for the extensive
+    modifications made to the program. I would also like to acknowledge
+    the US structural genomics JCSG group for providing their extensive
+    collection of raw diffraction data to methods devlopers. Finally I 
+    would like to acknowledge CCP4, for without their software this project
+    would go nowhere!
+
+    <hr>
+    <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
+<!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
+<!-- hhmts start -->
+Last modified: Thu Nov 23 11:03:54 GMT 2006
+<!-- hhmts end -->
+  </body>
+</html>
