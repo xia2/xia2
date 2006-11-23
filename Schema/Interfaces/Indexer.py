@@ -268,11 +268,16 @@ class Indexer:
             # and populated here, perhaps? then the highest solution picked
             # and if different to the selected one then this should be
             # reimposed and rerun.
-
-            self._indxr_done = True
             
+            self._indxr_done = True
+
             if not self._indxr_helper:
+
                 result = self._index()
+
+                if not self._indxr_done:
+                    Science.write('Looks like indexing failed - try again!')
+                    continue
 
                 solutions = { }
                 for k in self._indxr_other_lattice_cell.keys():
