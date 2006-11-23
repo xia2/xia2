@@ -600,6 +600,12 @@ def Mosflm(DriverType = None):
             mosaic = indxr.get_indexer_mosaic()
             cell = indxr.get_indexer_cell()
             beam = indxr.get_indexer_beam()
+
+            # check to see if there is a special mosflm beam around!
+
+            if indxr.get_indexer_payload('mosflm_beam_centre'):
+                beam = indxr.get_indexer_payload('mosflm_beam_centre')
+
             distance = indxr.get_indexer_distance()
             matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
 

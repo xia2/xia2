@@ -485,6 +485,15 @@ def LabelitScreen(DriverType = None):
             lms.set_solution(self._solution['number'])
             self._indxr_payload['mosflm_orientation_matrix'] = lms.calculate()
 
+            # get the beam centre from the mosflm script - mosflm
+            # may have inverted the beam centre and labelit will know
+            # this!
+
+            mosflm_beam = lms.get_mosflm_beam()
+
+            if mosflm_beam:
+                self._indxr_payload['mosflm_beam_centre'] = tuple(mosflm_beam)
+
             # also get an estimate of the resolution limit from the
             # labelit.stats_distl output... FIXME the name is wrong!
 

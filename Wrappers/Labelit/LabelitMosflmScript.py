@@ -52,6 +52,7 @@ def LabelitMosflmScript(DriverType = None):
             self.set_executable('labelit.mosflm_script')
 
             self._solution = None
+            self._mosflm_beam = None
 
             return
 
@@ -78,7 +79,16 @@ def LabelitMosflmScript(DriverType = None):
                          ).readlines()
             matrix = output[2:11]
 
+            # also check for the beam centre in mosflm land!
+
+            for o in output:
+                if 'BEAM' in o[:4]:
+                    self._mosflm_beam = map(float, o.split()[1:])
+
             return matrix
+
+        def get_mosflm_beam(self):
+            return self._mosflm_beam
 
     return LabelitMosflmScriptWrapper()
 
