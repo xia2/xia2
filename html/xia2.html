@@ -28,13 +28,23 @@
     out more...
 
     The system is designed to cope with MAD data and data measured in 
-    multiple passes, of a combination of the two. The input is a therefore
+    multiple passes, or a combination of the two. The input is a therefore
     a little complex, but consists only of information you should have 
     to hand anyway - here is a simple example, a more complex example 
     can be found below.
 
+    <!-- FIXME this needs adding -->
+
     <pre>
     </pre>
+
+    <!-- FIXME need the test data linked in here -->
+
+    This uses test images which are available from here. Thanks to John 
+    Cowan for providing this test data!
+
+    More examples can be found in $DPA_ROOT/examples. Remember - you need 
+    to tell xia2 where to find your data!
 
     <h1>Platforms</h1>
 
@@ -49,14 +59,15 @@
     <h1>Requirements</h1>
 
     The only software which is actually required is CCP4 6.0.1/2 and Python
-    2.4.x. On windows the PyWin32 module is also required, to provide
+    2.4.x. On Windows the PyWin32 module is also required, to provide
     additional process control functionality. If you are using this 
     on a Windows platform and wish to be able to use the integration
     functionality, you should get in touch with Harry Powell for a custom
     build of Mosflm.
 
     In addition the autoindexing program Labelit is supported but the system 
-    will work without it.
+    will work without it. If it is installed (and it should be a moderately
+    recent version) then it will be used for autoindexing. 
 
     <h1>License</h1>
 
@@ -75,7 +86,9 @@
 
     All of the files are the same, simply packed for different platforms.
     Inside are a number of precompiled jiffy programs and pointless and
-    othercell (available from the CCP4 prerelease pages) for convenience.
+    othercell (also available from the CCP4 
+    <a href="http://www.ccp4.ac.uk/prerelease_page.php">prerelease</a>
+    pages) for convenience.
 
     <h1>Installation</h1>
 
@@ -83,6 +96,7 @@
     directory somewhere and edit the directory setup.bat, setup.csh or
     setup.sh appropriately, for instance setting XIA2_HOME as 
     /opt/px/xia/xia-0.2.2.1 if you unpacked the tarball in /opt/px/xia.
+    Note that this includes the xia-0.2.2.1 directory!
 
     All that is then needed is to source this setup file and the application
     xia2 should be available.
@@ -224,7 +238,7 @@ END PROJECT TS01
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Thu Nov 23 11:55:27 GMT Standard Time 2006
+Last modified: Thu Nov 23 12:02:27 GMT Standard Time 2006
 <!-- hhmts end -->
   </body>
 </html>
