@@ -33,6 +33,8 @@
 # FIXED 24/NOV/06 before running should check that the file actually 
 #                 exists!
 # 
+# FIXME 24/NOV/06 if beam centre is 0.0, 0.0 then perhaps reset it to
+#                 the centre of the image.
 # 
 
 import os
@@ -245,6 +247,9 @@ def Printheader(DriverType = None):
                 if math.fabs((beam[0] - 0.5 * size[0]) / size[0]) < 0.25:
                     new_beam = (beam[0] * pixel[0], beam[1] * pixel[1])
                     self._header['beam'] = new_beam
+
+            # FIXME here - if the beam centre is exactly 0.0, 0.0,
+            # then perhaps reset it to the centre of the image?
             
             if self._header.has_key('detector') and \
                self._header.has_key('pixel') and \
