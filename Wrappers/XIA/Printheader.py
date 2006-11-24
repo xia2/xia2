@@ -29,6 +29,11 @@
 
 # FIXME this should probably be replaced with a module which uses the
 # swig-python bindings of the DiffractionImage library directly.
+# 
+# FIXED 24/NOV/06 before running should check that the file actually 
+#                 exists!
+# 
+# 
 
 import os
 import sys
@@ -149,6 +154,12 @@ def Printheader(DriverType = None):
             if HeaderCache.check(self._image):
                 self._header = HeaderCache.get(self._image)
                 return copy.deepcopy(self._header)
+
+            # check that the input file exists..
+
+            if not os.path.exists(self._image):
+                raise RuntimeError, 'image %s does not exist' % \
+                      self._image
 
             self.add_command_line(self._image)
             self.start()
