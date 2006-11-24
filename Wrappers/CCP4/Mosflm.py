@@ -761,8 +761,10 @@ def Mosflm(DriverType = None):
             # fudge factors to prevent Mosflm from being too fussy
             self.input('refinement residual 10.0')
 
-            # set up the cell refinement
-            self.input('postref multi segments %d' % \
+            # set up the cell refinement - allowing quite a lot of
+            # refinement for tricky cases (e.g. 7.2 SRS insulin SAD
+            # data collected on MAR IP)
+            self.input('postref multi segments %d repeat 10' % \
                        len(self._mosflm_cell_ref_images))
             for cri in self._mosflm_cell_ref_images:
                 self.input('process %d %d' % cri)
