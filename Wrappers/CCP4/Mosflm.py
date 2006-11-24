@@ -250,6 +250,14 @@ def Mosflm(DriverType = None):
             phi_width = self.get_header_item('phi_width')
             images = self.get_matching_images()
 
+            # FIXME what to do if phi_width is 0.0? set it
+            # to 1.0! This should be safe enough... though a warning
+            # would not go amiss...
+
+            if phi_width == 0.0:
+                Chatter.write('Phi width 0.0? Assuming 1.0!')
+                phi_width = 1.0
+
             self.add_indexer_image_wedge(images[0])
             if int(90.0 / phi_width) in images:
                 self.add_indexer_image_wedge(int(90.0 / phi_width))
@@ -278,6 +286,15 @@ def Mosflm(DriverType = None):
                 raise DPAException, 'cannot cope with more than 3 wedges'
 
             phi_width = self.get_header_item('phi_width')
+
+            # FIXME what to do if phi_width is 0.0? set it
+            # to 1.0! This should be safe enough... though a warning
+            # would not go amiss...
+
+            if phi_width == 0.0:
+                Chatter.write('Phi width 0.0? Assuming 1.0!')
+                phi_width = 1.0
+            
             min_images = max(3, int(2 * mosaic / phi_width))
             
             # next select what we need from the list...

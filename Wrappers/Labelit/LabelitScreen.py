@@ -230,6 +230,14 @@ def LabelitScreen(DriverType = None):
             images = self.get_matching_images()
 
             self.add_indexer_image_wedge(images[0])
+
+            # FIXME what to do if phi_width is recorded as zero?
+            # perhaps assume that it is 1.0!
+
+            if phi_width == 0.0:
+                Chatter.write('Phi width 0.0? Assuming 1.0!')
+                phi_width = 1.0
+
             if int(90.0 / phi_width) in images:
                 self.add_indexer_image_wedge(int(90.0 / phi_width))
             else:
