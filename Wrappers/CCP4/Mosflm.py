@@ -758,6 +758,9 @@ def Mosflm(DriverType = None):
             for p in parameters.keys():
                 self.input('%s %s' % (p, str(parameters[p])))
 
+            # fudge factors to prevent Mosflm from being too fussy
+            self.input('refinement residual 10.0')
+
             # set up the cell refinement
             self.input('postref multi segments %d' % \
                        len(self._mosflm_cell_ref_images))
