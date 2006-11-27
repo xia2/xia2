@@ -4,11 +4,11 @@
 
 # FIXME this needs to account for mac_ppc
 
-set platform `uname`
+setenv platform `uname`
 if ( "$platform" == "Linux" ) then
   setenv PATH ${PATH}:${DPA_ROOT}/binaries/linux_386
 else
-  set arch `uname -a | awk '{print $NF}'`
+  setenv arch `uname -a | awk '{print $NF}'`
   if ( "$arch" == "powerpc" ) then
     setenv PATH ${PATH}:${DPA_ROOT}/binaries/mac_ppc
   else
