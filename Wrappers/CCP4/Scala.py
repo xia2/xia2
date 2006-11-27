@@ -45,6 +45,12 @@
 #                 Having arbitrary resolution ranges would make comparison
 #                 of the scaling statistics between resolutions tricky.
 # 
+# FIXME 27/NOV/06 provide ability to use 0-dose extrapolation using the
+#                 ZERODOSE keyword - however this only works with exactly
+#                 one run, so the data would have to be scaled separately
+#                 then rescaled with, say, scaleit. This should, however,
+#                 only be done if the multiplicity is higher than say 6.
+# 
 
 import os
 import sys
