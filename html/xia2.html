@@ -116,7 +116,8 @@ END PROJECT DEMONSTRATION
 
     <h1>Platforms</h1>
 
-    The following platforms are supported:
+    The following platforms are supported (see notes at bottom of page
+    for platform specific advice.)
 
     <ul>
       <li>GNU/Linux on i386 (and 64 bit extensions)</li>
@@ -319,6 +320,39 @@ END PROJECT TS01
       <li>Included more example .xinfo files in the examples directory</li>
       <li>Relaxed refinement parameters in Mosflm cell refinement</li>
     </ul>
+
+    <h1>Platform Specific Advice</h1>
+
+    <h2>Linux</h2>
+
+    There should be no particular problems on this platform - assuming
+    that you have a recent version of Python. Any 2.4 version should work,
+    but I have mostly used 2.4.3 and 2.4.4, and would recommend them.
+    If the version you have on your system by default (type "python"
+    to find out what version you have)is too old, you can easily install
+    a new version, perhaps in the xia directory, from 
+    <a href="http://www.python.org/download/releases/2.4.4/">here</a>.
+    This is best installed by unpacking the tarball (tar xvfz 
+    Python-2.4.4.tgz) then doing ./configure /where/I/want/it then
+    make, make install.
+
+    <h2>OS X 10.4</h2>
+
+    The only potential problem with this platform is that the Python 
+    which comes as standard is 2.3 - however a universal binary is 
+    available from 
+    <a href="http://www.python.org/download/releases/2.4.4/">here</a>,
+    which should sort out any problems. Just follow the instructions in 
+    the disk image.
+
+    <h2>Windows XP</h2>
+
+    Once more you will need a recent version of Python - which can be found
+    <a href="http://www.python.org/download/releases/2.4.4/">here</a>,
+    however, you will also need "pywin32" to provide a little more
+    job control functionality - this is available from 
+    <a href="http://sourceforge.net/projects/pywin32/">here</a>. Both are
+    simple, double-click, binary installers.
 
     <hr>
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
