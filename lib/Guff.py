@@ -196,17 +196,12 @@ def lauegroup_to_lattice(lauegroup):
     # select correct spacegroup from this mapping table
     spacegroup = mapping[(centring, laue)]
 
-    # and finally convert this to a lattice
-    lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5,
-                             'oP':16, 'oC':20, 'oF':22,
-                             'oI':23, 'tP':75, 'tI':79,
-                             'hP':143, 'hR':146,
-                             'cP':195, 'cF':196,
-                             'cI':197}
-    
-    spacegroup_to_lattice = { }
-    for k in lattice_to_spacegroup.keys():
-        spacegroup_to_lattice[lattice_to_spacegroup[k]] = k
+    # FIXME this will need P6 P622 P32 &c as well...
+
+    spacegroup_to_lattice = {1: 'aP', 3: 'mP', 196: 'cF', 5: 'mC',
+                             75: 'tP', 143: 'hP', 16: 'oP', 146: 'hR',
+                             195: 'cP', 20: 'oC', 22: 'oF', 23: 'oI',
+                             79: 'tI', 197: 'cI', 89: 'tP'}
 
     return spacegroup_to_lattice[spacegroup]
 
@@ -214,6 +209,7 @@ if __name__ == '__main__':
     print lauegroup_to_lattice('I m m m')
     print lauegroup_to_lattice('C 1 2/m 1')
     print lauegroup_to_lattice('P -1')
+    print lauegroup_to_lattice('P 4/mmm')
     
 if __name__ == '__main_old__':
     # run a test
