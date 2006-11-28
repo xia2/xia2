@@ -298,8 +298,6 @@ class CCP4Scaler(Scaler):
             if self._common_dname != dname:
                 self._common_dname = None
 
-
-
         # FIXME 06/NOV/06 and before, need to merge the first reflection
         # file in the "correct" pointgroup, so that the others can be
         # reindexed against this - this will ensure consistent indexing
@@ -424,8 +422,28 @@ class CCP4Scaler(Scaler):
                 os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
             pl.set_hklin(hklin)
 
-            # write a pointless log file...
             pl.decide_pointgroup()
+
+            # check this against the records in the indexer
+
+            feedback_is_ready = False
+
+            if feedback_is_ready:
+
+                indexer = self._sweep_information['epoch'][
+                    'integrater'].get_indexer()
+
+                if indexer:
+                    for lattice in pl.get_possible_lattices():
+                        if indexer.set_indexer_asserted_lattice(lattice):
+                            break
+
+                # reget the integrated reflections - this could trigger
+                # repeated indexing and integration...
+                
+                self._sweep_information[epoch][
+                    'hklin'] = self._sweep_information[epoch][
+                    'integrater'].get_integrater_reflections()
 
             Chatter.write('Pointless analysis of %s' % hklin)
 
