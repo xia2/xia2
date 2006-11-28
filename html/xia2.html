@@ -4,19 +4,17 @@
     <title>xia2: Automated Data Reduction</title>
   </head>
 
-  <!-- FIXME 27/NOV/06 need to put "p" tags around paragraphs -->
-
-  
   <body>
     <h1>xia2: Automated Data Reduction</h1>
 
-    xia2 is a new automated data reduction system designed to work from raw
-    diffraction data and a little metadata, and produce usefully reduced
-    data in a form suitable for immediately starting phasing and structure
-    solution, e.g. through Mr BUMP or your favourite experimental phasing
-    suite.
+    <p>xia2 is a new automated data reduction system designed to work from raw
+      diffraction data and a little metadata, and produce usefully reduced
+      data in a form suitable for immediately starting phasing and structure
+      solution, e.g. through Mr BUMP or your favourite experimental phasing
+      suite.</p>
 
-    The following steps are performed (although not strictly in this order)
+    <p>The following steps are performed (although not strictly in 
+      this order)</p>
 
     <ul>
       <li>Integration with feedback and complex lattice selection stuff</li>
@@ -27,14 +25,14 @@
 	based on sequence information (if provided)</li>
     </ul>
 
-    There is a lot of fun stuff which goes on in there - run it to find 
-    out more...
-
-    The system is designed to cope with MAD data and data measured in 
-    multiple passes, or a combination of the two. The input is a therefore
-    a little complex, but consists only of information you should have 
-    to hand anyway - here is a simple example, a more complex example 
-    can be found below.
+    <p>There is a lot of fun stuff which goes on in there - run it to find 
+      out more...</p>
+    
+    <p>The system is designed to cope with MAD data and data measured in 
+      multiple passes, or a combination of the two. The input is a therefore
+      a little complex, but consists only of information you should have 
+      to hand anyway - here is a simple example, a more complex example 
+      can be found below.</p>
 
     <pre>
 ! This is a demonstration .xinfo file which illustrates how to cope
@@ -92,8 +90,8 @@ END CRYSTAL INSULIN
 END PROJECT DEMONSTRATION
     </pre>
 
-    This uses test images which are available from the links below. 
-    Thanks to John Cowan for providing this test data!
+    <p>This uses test images which are available from the links below. 
+      Thanks to John Cowan for providing this test data!</p>
 
     <ul>
       <li><a href="demo.zip">Windows (as .zip file)</a></li>
@@ -101,12 +99,12 @@ END PROJECT DEMONSTRATION
       <li><a href="demo.tar.gz">Unix (as .tar.gz file)</a></li>
     </ul>
 
-    Here are a couple of templates - for native data from two sweeps, 
-    SAD data from one sweep, MAD data from three wavelengths - all 
-    you need to do is select an appropriate one and add your own
-    information! Please note - if you wish to comment something out
-    from a .xinfo file, simply at a "!" at the beginning 
-    of the appropriate lines.
+    <p>Here are a couple of templates - for native data from two sweeps, 
+      SAD data from one sweep, MAD data from three wavelengths - all 
+      you need to do is select an appropriate one and add your own
+      information! Please note - if you wish to comment something out
+      from a .xinfo file, simply at a "!" at the beginning 
+      of the appropriate lines.</p>
 
     <ul>
       <li><a href="NATIVE.xinfo">Native data</a></li>
@@ -114,13 +112,13 @@ END PROJECT DEMONSTRATION
       <li><a href="MAD.xinfo">MAD data</a></li>
     </ul>
 
-    More examples can be found in $DPA_ROOT/examples. Remember - you need 
-    to tell xia2 where to find your data!
+    <p>More examples can be found in $DPA_ROOT/examples. Remember - you need 
+      to tell xia2 where to find your data!</p>
 
     <h1>Platforms</h1>
 
-    The following platforms are supported (see notes at bottom of page
-    for platform specific advice.)
+    <p>The following platforms are supported (see notes at bottom of page
+      for platform specific advice.)</p>
 
     <ul>
       <li>GNU/Linux on i386 (and 64 bit extensions)</li>
@@ -130,7 +128,7 @@ END PROJECT DEMONSTRATION
 
     <h1>Supported Detector Types</h1>
 
-    The following detectors are supported:
+    <p>The following detectors are supported:</p>
 
     <ul>
      <li>ADSC CCD detectors</li>
@@ -139,30 +137,31 @@ END PROJECT DEMONSTRATION
      <li>RAXIS IV image plates</li>
     </ul>
 
-    If you have another detector class which needs support, please get 
-    in touch.
+    <p>If you have another detector class which needs support, please get 
+      in touch.</p>
 
     <h1>Requirements</h1>
 
-    The only software which is actually required is CCP4 6.0.1/2 and Python
-    2.4.x. On Windows the PyWin32 module is also required, to provide
-    additional process control functionality. If you are using this 
-    on a Windows platform and wish to be able to use the integration
-    functionality, you should get in touch with Harry Powell for a custom
-    build of Mosflm.
+    <p>The only software which is actually required is CCP4 6.0.1/2 and Python
+      2.4.x. On Windows the PyWin32 module is also required, to provide
+      additional process control functionality. If you are using this 
+      on a Windows platform and wish to be able to use the integration
+      functionality, you should get in touch with Harry Powell for a custom
+      build of Mosflm.</p>
 
-    In addition the autoindexing program Labelit is supported but the system 
-    will work without it. If it is installed (and it should be a moderately
-    recent version) then it will be used for autoindexing. 
+    <p>In addition the autoindexing program Labelit is supported but the 
+      system will work without it. If it is installed (and it should be a 
+      moderately recent version) then it will be used for autoindexing.</p>
 
     <h1>License</h1>
 
-    This software is distributed under the CCP4 Applications license for
-    non commercial use. Commercial users should contact the author.
+    <p>This software is distributed under the CCP4 Applications license for
+      non commercial use. Commercial users should contact the author.</p>
 
     <h1>Download</h1>
 
-    The current version, 0.2.2.4 can be obtained by following these links:
+    <p>The current version, 0.2.2.4 can be obtained by following these 
+      links:</p>
 
     <ul>
       <li><a href="xia2-0.2.2.4.zip">Windows (as .zip file)</a></li>
@@ -170,67 +169,67 @@ END PROJECT DEMONSTRATION
       <li><a href="xia2-0.2.2.4.tar.gz">Unix (as .tar.gz file)</a></li>
     </ul>
 
-    All of the files are the same, simply packed for different platforms.
-    Inside are a number of precompiled jiffy programs and pointless and
-    othercell (also available from the CCP4 
-    <a href="http://www.ccp4.ac.uk/prerelease_page.php">prerelease</a>
-    pages) for convenience.
+    <p>All of the files are the same, simply packed for different platforms.
+      Inside are a number of precompiled jiffy programs and pointless and
+      othercell (also available from the CCP4 
+      <a href="http://www.ccp4.ac.uk/prerelease_page.php">prerelease</a>
+      pages) for convenience.</p>
 
     <h1>Installation</h1>
 
-    Since everything is precompiled, the only requirement is to unpack the
-    directory somewhere and edit the directory setup.bat, setup.csh or
-    setup.sh appropriately, for instance setting XIA2_HOME as 
-    /opt/px/xia/xia-0.2.2.4 if you unpacked the tarball in /opt/px/xia.
-    Note that this includes the xia-0.2.2.4 directory!
+    <p>Since everything is precompiled, the only requirement is to unpack the
+      directory somewhere and edit the directory setup.bat, setup.csh or
+      setup.sh appropriately, for instance setting XIA2_HOME as 
+      /opt/px/xia/xia-0.2.2.4 if you unpacked the tarball in /opt/px/xia.
+      Note that this includes the xia-0.2.2.4 directory!</p>
 
-    All that is then needed is to source this setup file and the application
-    xia2 should be available.
+    <p>All that is then needed is to source this setup file and the application
+      xia2 should be available.</p>
 
     <h1>Usage</h1>
 
-    Once the software is installed, the first thing you need to do is 
-    prepare a .xinfo file (example above) to run from. This contains a 
-    description of the experiment, which will allow xia2 to decide how to 
-    handle your data and what information to put in the MTZ headers.
-
-    Essentially the input file just needs a description of the data
-    which were collected from each crystal - for instance, if you measured
-    three MAD wavelengths, a peak, inflection and high remote, then 
-    there should be three WAVELENGTH blocks in the file, containing the 
-    fp, fpp and wavelength values. The images that you measured from these
-    should then be described in the SWEEP block, which is then assigned to 
-    a wavelength. This structure simplifies handling of multiple passes
-    contributing to one wavelength. In the reduced output, the wavelength 
-    names will correspond to MTZ datasets.
-
-    The program is actually run with:
+    <p>Once the software is installed, the first thing you need to do is 
+      prepare a .xinfo file (example above) to run from. This contains a 
+      description of the experiment, which will allow xia2 to decide how to 
+      handle your data and what information to put in the MTZ headers.</p>
+      
+    <p>Essentially the input file just needs a description of the data
+      which were collected from each crystal - for instance, if you measured
+      three MAD wavelengths, a peak, inflection and high remote, then 
+      there should be three WAVELENGTH blocks in the file, containing the 
+      fp, fpp and wavelength values. The images that you measured from these
+      should then be described in the SWEEP block, which is then assigned to 
+      a wavelength. This structure simplifies handling of multiple passes
+      contributing to one wavelength. In the reduced output, the wavelength 
+      names will correspond to MTZ datasets.</p>
+    
+    <p>The program is actually run with:</p>
 
     <pre>
 xia2 -xinfo project.xinfo
     </pre>
     
-    And all data reduction is performed in the working directory, with the
-    a directory structure CRYSTAL/WAVELENGTH/SWEEP. Interesting log files
-    can be found in the CRYSTAL/scale directory.
+    <p>And all data reduction is performed in the working directory, with the
+      a directory structure CRYSTAL/WAVELENGTH/SWEEP. Interesting log files
+      can be found in the CRYSTAL/scale directory.</p>
 
     <h1>Acknowledgements</h1>
 
-    Development of xia2 is supported by the BBSRC e-HTPX grant and the 
-    EU framework 6 BioXHit initiative. xia2 makes extensive use of Phil Evans's
-    program Pointless, and I would like to thank him for the extensive
-    modifications made to the program. I would also like to acknowledge
-    the US structural genomics JCSG group for providing their extensive
-    collection of raw diffraction data to methods developers. Finally I 
-    would like to acknowledge CCP4, for without their software this project
-    would go nowhere!
+    <p>Development of xia2 is supported by the BBSRC e-HTPX grant and the 
+      EU framework 6 BioXHit initiative. xia2 makes extensive use of Phil 
+      Evans's program Pointless, and I would like to thank him for the 
+      extensive modifications made to the program. I would also like to thank
+      the US structural genomics JCSG group for providing their extensive
+      collection of raw diffraction data to methods developers. Finally I 
+      would like to acknowledge CCP4, for without their software this project
+      would go nowhere!</p>
 
     <h1>The More Complex Example</h1>
 
-    This example has two crystals, one of which is selenomethionated,
-    with two wavelengths (inflection and low remote) measured for the 
-    derivative and two native sweeps measured for the native sample.
-    Lines beginning with # or ! will be treated as comments.
+    <p>This example has two crystals, one of which is selenomethionated,
+      with two wavelengths (inflection and low remote) measured for the 
+      derivative and two native sweeps measured for the native sample.
+      Lines beginning with # or ! will be treated as comments.</p>
 
     <pre>
 BEGIN PROJECT TS01
@@ -314,22 +313,22 @@ END CRYSTAL 13140
 END PROJECT TS01
     </pre>
 
-    This is a particularly complex example, but it illustrates the capability 
-    of the system well. There are data from two cystals, one native and 
-    the other selenomethionated. The native set is measured in two sweeps.
-    Currently (version 0.2.2.4) no attempt is made to combine data from 
-    multiple crystals, however this is on the to-do list.
-
+    <p>This is a particularly complex example, but it illustrates the 
+      capability of the system well. There are data from two cystals, one 
+      native and the other selenomethionated. The native set is measured in 
+      two sweeps. Currently (version 0.2.2.4) no attempt is made to combine 
+      data from multiple crystals, however this is on the to-do list.</p>
+    
     <h1>Release Notes</h1>
 
-    Changes since 0.2.2.3:
-
+    <p>Changes since 0.2.2.3:</p>
+    
     <ul>
       <li>Created version for Power PC G4/G5</li>
       <li>Fixed .csh setup scripts</li>
-    <ul>
-
-    Changes since 0.2.2.2:
+    </ul>
+    
+    <p>Changes since 0.2.2.2:</p>
 
     <ul>
       <li>Updated printheader to cope with MAR 165</li>
@@ -342,41 +341,42 @@ END PROJECT TS01
     <h1>Platform Specific Advice</h1>
 
     <h2>Linux</h2>
-
-    There should be no particular problems on this platform - assuming
-    that you have a recent version of Python. Any 2.4 version should work,
-    but I have mostly used 2.4.3 and 2.4.4, and would recommend them.
-    If the version you have on your system by default (type "python"
-    to find out what version you have)is too old, you can easily install
-    a new version, perhaps in the xia directory, from 
-    <a href="http://www.python.org/download/releases/2.4.4/">here</a>.
-    This is best installed by unpacking the tarball (tar xvfz 
-    Python-2.4.4.tgz) then doing ./configure /where/I/want/it then
-    make, make install.
+    
+    <p>There should be no particular problems on this platform - assuming
+      that you have a recent version of Python. Any 2.4 version should work,
+      but I have mostly used 2.4.3 and 2.4.4, and would recommend them.
+      If the version you have on your system by default (type "python"
+      to find out what version you have)is too old, you can easily install
+      a new version, perhaps in the xia directory, from 
+      <a href="http://www.python.org/download/releases/2.4.4/">here</a>.
+      This is best installed by unpacking the tarball (tar xvfz 
+      Python-2.4.4.tgz) then doing ./configure /where/I/want/it then
+      make, make install.</p>
 
     <h2>OS X 10.4</h2>
 
-    The only potential problem with this platform is that the Python 
-    which comes as standard is 2.3 - however a universal binary is 
-    available from 
-    <a href="http://www.python.org/download/releases/2.4.4/">here</a>,
-    which should sort out any problems. Just follow the instructions in 
-    the disk image.
+    <p>The only potential problem with this platform is that the Python 
+      which comes as standard is 2.3 - however a universal binary is 
+      available from 
+      <a href="http://www.python.org/download/releases/2.4.4/">here</a>,
+      which should sort out any problems. Just follow the instructions in 
+      the disk image.</p>
 
     <h2>Windows XP</h2>
 
-    Once more you will need a recent version of Python - which can be found
-    <a href="http://www.python.org/download/releases/2.4.4/">here</a>,
-    however, you will also need "pywin32" to provide a little more
-    job control functionality - this is available from 
-    <a href="http://sourceforge.net/projects/pywin32/">here</a>. Both are
-    simple, double-click, binary installers.
+    <p>Once more you will need a recent version of Python - which can be found
+      <a href="http://www.python.org/download/releases/2.4.4/">here</a>,
+      however, you will also need "pywin32" to provide a little more
+      job control functionality - this is available from 
+      <a href="http://sourceforge.net/projects/pywin32/">here</a>. Both are
+      simple, double-click, binary installers.</p>
 
     <hr>
+
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Mon Nov 27 20:46:24 GMT 2006
+Last modified: Tue Nov 28 15:17:55 GMT Standard Time 2006
 <!-- hhmts end -->
   </body>
 </html>
