@@ -1,1 +1,3 @@
-@PATH=%PATH%;%SS_ROOT%\Applications
+@PATH=%PATH%;%XIA2_ROOT%\binaries\win32
+@PATH=%PATH%;%XIA2_ROOT%\Applications
+
