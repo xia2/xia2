@@ -167,6 +167,15 @@
 #                 Method names will need some thinking about! Also want
 #                 the unit cell information.
 # 
+# FIXME 28/NOV/06 also need to plumb this back to the Indexer(s) so that 
+#                 they can discuss what the correct lattice.
+#
+# FIXME 28/NOV/06 should use all of the data for all sweeps within one 
+#                 crystal for deciding on the correct pointgroup (e.g.
+#                 some kind of composite decision) - or - should at least
+#                 verify that all solutions agree (raise an exception if
+#                 not?)
+#
 
 import os
 import sys

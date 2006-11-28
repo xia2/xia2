@@ -83,15 +83,46 @@
 #
 #                 This is now done and appears to work pretty well...
 #
-# FIXME 03/NOV/06 need to add the standard "interface" loop structure to
+# FIXED 03/NOV/06 need to add the standard "interface" loop structure to
 #                 the Indexer interface - move all of the image picking
 #                 stuff to a prepare method and everything else to an
 #                 index loop which will need to keep track of flags. This
 #                 has been pushed by the new improved Labelit which screws 
 #                 up on the beam centre selection...
+# 
+# FIXME 28/NOV/06 need to provide connnections so that the Indexer can 
+#                 "discuss" with the scaler what the most suitable lattice
+#                 is, e.g. including the pointgroup determination.
+#                 Implement this through something like
+#
+#                 set_indexer_asserted_lattice('tP')
+# 
+#                                              => will reset if this is
+#                                                 different (incompatible)
+#                                                 but reasonable and 
+#                                                 return True
+#                                              => will do nothing if this
+#                                                 is what we have already
+#                                                 and return True
+#                                              => will return False if
+#                                                 already eliminated
+#                                              => will raise exception if
+#                                                 impossible *
+# 
+#                 this could work with the aid of set_indexer_input_lattice
+#                 and the indexer helper get_all method (new.)
+# 
+#                 * actually it won't, because you cannot tell the difference
+#                   between eliminated and impossible!
+#
+#                 Ok, this is now implemented so what I now need is a test
+#                 case which will make use of this. Turns out that including
+#                 the new unit cell is too tricky and shouldn't be needed
+#                 anyway - removing...
 
 import os
 import sys
+import math
 
 if not os.environ.has_key('DPA_ROOT'):
     raise RuntimeError, 'DPA_ROOT not defined'
@@ -106,6 +137,9 @@ from Experts.LatticeExpert import SortLattices
 class _IndexerHelper:
     '''A class to manage autoindexing results in a useful way, to ensure
     that the indexing solutions are properly managed, c/f TS01:1VR9.'''
+
+    # FIXME 28/NOV/06 need to add a method in here to handle the
+    # lattice assertions...
 
     def __init__(self, lattice_cell_dict):
         '''Initialise myself from a dictionary keyed by crystal lattice
@@ -125,6 +159,11 @@ class _IndexerHelper:
         '''Get the highest currently allowed lattice.'''
 
         return self._sorted_list[0]
+
+    def get_all(self):
+        '''Return a list of all allowed lattices, as [(lattice, cell)].'''
+
+        return self._sorted_list
 
     def repr(self):
         '''Return a string representation.'''
@@ -213,6 +252,8 @@ class Indexer:
 
     def get_indexer_done(self):
         return self._indxr_done
+
+    # FIXME 28/NOV/06 this is obsolete and should be removed
     
     def no_longer_index_select_images(self):
         '''Call the local implementation...'''
@@ -458,5 +499,45 @@ class Indexer:
         self._indxr_payload[this] = value
         
         return
+
+    # new method to handle interaction with the pointgroup determination
+    # much later on in the process - this allows a dialogue to be established.
+
+    def set_indexer_asserted_lattice(self, asserted_lattice):
+        '''Assert that this lattice is correct - if this is allowed (i.e.
+        is in the helpers list of kosher lattices) then it will be enabled.
+        If this is different to the current favourite then processing
+        may ensue, otherwise nothing will happen, and True will be returned.
+        If the asserted lattice is not in the current list then False will
+        be returned and nothing will change.'''
+
+        if not self._indxr_helper:
+            raise RuntimeError, 'no indexing performed yet'
+
+        all_lattices = self._indxr_helper.get_all()
+
+        lattices = []
+
+        for l in all_lattices:
+            lattices.append(l[0])
+
+        if not asserted_lattice in lattices:
+            return False
+
+        # check if this is the top one - if so we don't need to
+        # do anything
+
+        if asserted_lattice == all_lattices[0][0]:
+            return True
+
+        # ok this means that we need to do something - work through
+        # eliminating lattices until the "correct" one is found...
+
+        while self._indxr_helper.get()[0] != asserted_lattice:
+            self._indxr_helper.eliminate()
+
+        # ok by now everything should be ready for the recycling...
+
+        return True
 
     # end of interface

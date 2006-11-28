@@ -95,6 +95,9 @@
 #                 by integrate...
 #
 # FIXED 02/NOV/06 want to hide the "done" flags inside getter/setter methods.
+#  
+# FIXME 28/NOV/06 need to enable the connection between the Scaler and the
+#                 Indexer to pass back and forth (discuss) pointgroup options.
 # 
 
 import os

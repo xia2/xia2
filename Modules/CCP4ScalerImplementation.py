@@ -30,30 +30,33 @@
 # 
 #                 This defaults to the data set with the shortest wavelength.
 #  
-# FIXME 27/OCT/06 need to make sure that the pointless run in here does not
+# FIXED 27/OCT/06 need to make sure that the pointless run in here does not
 #                 select a symmetry for the crystal which has been eliminated
-#                 already...
+#                 already... this will be fixed as a part of FIXME 28/NOV/06
+#                 below (pertaining to fedback.)
 # 
 # FIXME 31/OCT/06 need to make the scaling do the following:
-#                 (1) assert a sensible resolution limit.
-#                 (2) twiddle the sd parameters to get the flattest
-#                     error curve possible.
-#                 (3) limit by batch in radiation damage terms.
-#                 (4) eliminate badly radiation damaged data in different
-#                     sweeps.
+#                 (1)  assert a sensible resolution limit.
+#                 (2)  twiddle the sd parameters to get the flattest
+#                      error curve possible.
+#                 (3)  limit by batch in radiation damage terms - or -
+#                 (3a) switch on zero-dose extrapolation.
+#                 (4)  eliminate badly radiation damaged data in different
+#                      sweeps.
 #
 # FIXME 01/NOV/06 should probably sort together all data for a particular
 #                 wavelength before running pointless - this will probably
 #                 give better statistics from that program.
 #  
-# FIXME 03/NOV/06 need to merge the first sweep in whatever pointgroup we 
+# FIXED 03/NOV/06 need to merge the first sweep in whatever pointgroup we 
 #                 think is correct, and then reindex the rest of this data
 #                 using the first one as a reference, and then perform the 
 #                 scaling based on this. TS02 breaks on the unit cell check
 #                 at the CAD phase below.
 #
-# FIXME 03/NOV/06 should check that the reflection files have consistent
+# FIXED 03/NOV/06 should check that the reflection files have consistent
 #                 unit cell parameters going in to scaling. c/f FIXME above.
+#                 This is now handled.
 # 
 # FIXED 06/NOV/06 this is more complicated than I at first thought, since
 #                 pointless will not reindex into the correct symmetry a 
@@ -64,10 +67,10 @@
 #                 indexed in the "correct" pointgroup) data which can then
 #                 be correctly re-set... shockingly this seems to work fine!
 # 
-# FIXME 06/NOV/06 need also to investigate the systematic absences and reset
+# FIXED 06/NOV/06 need also to investigate the systematic absences and reset
 #                 to a standard setting (pointless does this) if appropriate.
 #                 If it's P43212 or P41212 then I need to decide what is 
-#                 best to do...
+#                 best to do... provide a list - this is in hand.
 # 
 # FIXED 15/NOV/06 need to add a FreeR column to the reflection file.
 #
@@ -78,6 +81,14 @@
 #                 in cases where there is radiation damage - this will cause
 #                 nasty things to happen, since the spread really is larger
 #                 than the errors. This is systematic! E.g. TS03.
+# 
+# FIXME 28/NOV/06 implement 0-dose extrapolation if apropriate (i.e.
+#                 multiplicity > say 6 and radiation damage detected)
+#
+# FIXME 28/NOV/06 implement feedback to the indexing from the pointgroup
+#                 determination. See FIXME's in Scaler, Indexer, Integrater
+#                 interface specifications.
+# 
 
 import os
 import sys
@@ -253,7 +264,8 @@ class CCP4Scaler(Scaler):
                 'pname':pname,
                 'xname':xname,
                 'dname':dname,
-                'batches':intgr.get_integrater_batches()}
+                'batches':intgr.get_integrater_batches(),
+                'integrater':intgr}
             
         # next check through the reflection files that they are all MTZ
         # format - if not raise an exception.
@@ -364,6 +376,7 @@ class CCP4Scaler(Scaler):
 
         Chatter.write('Quickly scaling reference data set: %s' % \
                       os.path.split(hklin)[-1])
+        Chatter.write('to give indexing standard')
 
         qsc = self.Scala()
         qsc.set_hklin(hklin)
@@ -395,6 +408,15 @@ class CCP4Scaler(Scaler):
         # ---------- REINDEX TO CORRECT POINTGROUP ----------
         
         for epoch in self._sweep_information.keys():
+
+            # in this loop need to include feedback to the indexing
+            # to ensure that the solutions selected are tractable -
+            # note that this will require linking back to the integraters
+            # so that the next call to get_integrated_reflections()
+            # may trigger reintegration... This is now handled by
+            # adding a pointer to the Integrater into the sweep_information
+            # which can then be used to pass around this information.
+            
             pl = self.Pointless()
             hklin = self._sweep_information[epoch]['hklin']
             hklout = os.path.join(

@@ -131,8 +131,91 @@ def nint(a):
         i += 1
 
     return i
+
+# this should be in a symmetry library somewhere
+
+def lauegroup_to_lattice(lauegroup):
+    '''Convert a Laue group representation (from pointless, e.g. I m m m)
+    to something useful, like the implied crystal lattice (in this
+    case, oI.)'''
+
+    # parse syminfo, symop -> generate mapping table
+
+    current_spacegroup = 0
+    lauegroup_info = {0:{ }}
+
+    for record in open(os.path.join(os.environ['CCP4'], 'lib', 'data',
+                                    'syminfo.lib'), 'r').readlines():
+
+        if record[0] == '#':
+            continue
+
+        if 'begin_spacegroup' in record:
+            current_spacegroup = 0
+
+        if 'number' in record[:6]:
+            # this will ensure that garbage goes into record '0'
+            number = int(record.split()[-1])
+            if not number in lauegroup_info.keys():
+                current_spacegroup = number
+                lauegroup_info[current_spacegroup] = { }
+
+        if 'symbol old' in record:
+            name = record.split('\'')[1].split()
+            if name:
+                centring = name[0]
+                lauegroup_info[current_spacegroup]['centring'] = centring
+
+        if 'symbol laue' in record:
+            laue = record.split('\'')[-2].strip()
+            lauegroup_info[current_spacegroup]['laue'] = laue
+
+    # next invert this to generate the mapping
+
+    mapping = { }
+
+    spacegroups = lauegroup_info.keys()
+    spacegroups.sort()
+
+    for spacegroup in spacegroups:
+        centring = lauegroup_info[spacegroup]['centring']
+        laue = lauegroup_info[spacegroup]['laue']
+
+        # want the lowest spacegroup number for a given configuration
+        if not mapping.has_key((centring, laue)):
+            mapping[(centring, laue)] = spacegroup
+
+    # transmogrify the input laue group to a useful key
+
+    centring = lauegroup.split()[0]
+    laue = ''
+    for k in lauegroup.split()[1:]:
+        if not k == '1':
+            laue += k
+
+    # select correct spacegroup from this mapping table
+    spacegroup = mapping[(centring, laue)]
+
+    # and finally convert this to a lattice
+    lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5,
+                             'oP':16, 'oC':20, 'oF':22,
+                             'oI':23, 'tP':75, 'tI':79,
+                             'hP':143, 'hR':146,
+                             'cP':195, 'cF':196,
+                             'cI':197}
     
+    spacegroup_to_lattice = { }
+    for k in lattice_to_spacegroup.keys():
+        spacegroup_to_lattice[lattice_to_spacegroup[k]] = k
+
+    return spacegroup_to_lattice[spacegroup]
+
 if __name__ == '__main__':
+    print lauegroup_to_lattice('I m m m')
+    print lauegroup_to_lattice('C 1 2/m 1')
+    print lauegroup_to_lattice('P -1')
+    
+if __name__ == '__main_old__':
     # run a test
 
     class A:

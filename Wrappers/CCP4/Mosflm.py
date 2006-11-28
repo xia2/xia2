@@ -167,7 +167,12 @@
 #                 refinement gives a "large" error in something... in
 #                 particular be able to use more images for cell refinement
 #                 and have another go! Done.
-
+# 
+# FIXME 28/NOV/06 need to rerun integration with the correct GAIN set before
+#                 assessing I/sigma limits, since these will depend on the
+#                 GAIN (however this could be weak - assess the benefit in
+#                 repeating the integration.)
+#
 
 import os
 import sys

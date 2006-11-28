@@ -140,6 +140,8 @@ from Decorators.DecoratorFactory import DecoratorFactory
 
 from Handlers.Streams import Chatter, Science
 
+from lib.Guff import lauegroup_to_lattice
+
 def Pointless(DriverType = None):
     '''A factory for PointlessWrapper classes.'''
 
@@ -164,6 +166,12 @@ def Pointless(DriverType = None):
             self._reindex_matrix = None
             self._confidence = 0.0
             self._hklref = None
+
+            # space to store all possible solutions, to allow discussion of
+            # the correct lattice with the indexer... this should be a
+            # list containing e.g. 'tP'
+
+            self._possible_lattices = []
 
         def set_hklref(self, hklref):
             self._hklref = hklref
@@ -323,7 +331,7 @@ def Pointless(DriverType = None):
             best_delta = 0.0
 
             # do not want to do this is we have specified the correct
-            # pointgroup either through the command inpit or implicitly
+            # pointgroup either through the command input or implicitly
             # through providing a reference set..
             
             if not self._input_laue_group and not self._hklref:
@@ -355,6 +363,12 @@ def Pointless(DriverType = None):
                         'R')[0].childNodes[0].data)
                     delta = float(s.getElementsByTagName(
                         'CellDelta')[0].childNodes[0].data)
+
+                    # record this as a possible lattice...
+
+                    lattice = lauegroup_to_lattice(lauegroup)
+                    if not lattice in self._possible_lattices:
+                        self._possible_lattices.append(lattice)
                     
                     # check to see if this is the "correct" answer - if it
                     # is (and it should be the first!) then record the NetZc
@@ -529,6 +543,9 @@ def Pointless(DriverType = None):
 
         def get_confidence(self):
             return self._confidence
+
+        def get_possible_lattices(self):
+            return self._possible_lattices
             
     return PointlessWrapper()
 
