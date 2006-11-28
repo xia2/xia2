@@ -1,4 +1,4 @@
 @echo off
-python %DPA_ROOT%\Applications\xia2scan.py %*
+python %XIA2_ROOT%\Applications\xia2scan.py %*
 
 

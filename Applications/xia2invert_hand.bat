@@ -1,2 +1,2 @@
 @echo off
-python %SS_ROOT%\Applications\xia2invert_hand.py %*
+python %XIA2_ROOT%\Applications\xia2invert_hand.py %*
