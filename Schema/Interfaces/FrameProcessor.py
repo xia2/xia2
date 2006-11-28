@@ -28,11 +28,11 @@
 import os
 import sys
 
-if not os.environ.has_key('DPA_ROOT'):
-    raise RuntimeError, 'DPA_ROOT not defined'
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
 
-if not os.environ['DPA_ROOT'] in sys.path:
-    sys.path.append(os.path.join(os.environ['DPA_ROOT']))
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Experts.FindImages import image2template_directory, \
      template_directory_number2image, image2image, find_matching_images
@@ -197,7 +197,7 @@ if __name__ == '__main__':
     # run a quick test
 
 
-    fp = FrameProcessor(os.path.join(os.environ['DPA_ROOT'],
+    fp = FrameProcessor(os.path.join(os.environ['XIA2_ROOT'],
                                      'Data', 'Test', 'Images',
                                      '12287_1_E1_001.img'))
 

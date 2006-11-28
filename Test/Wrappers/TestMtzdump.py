@@ -16,12 +16,12 @@
 
 import os, sys
 
-if not os.environ.has_key('DPA_ROOT'):
-    raise RuntimeError, 'DPA_ROOT not defined'
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
-sys.path.append(os.path.join(os.environ['DPA_ROOT']))
+sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Wrappers.CCP4.Mtzdump import Mtzdump
 import unittest
@@ -52,7 +52,7 @@ class TestMtzdump(unittest.TestCase):
 
     def testnotmtzfile(self):
         '''Test mtzdump with an input file in the wrong format.'''
-        dpa = os.environ['DPA_ROOT']
+        dpa = os.environ['XIA2_ROOT']
         
         hklin = os.path.join(dpa,
                              'Data', 'Test', 'Mtz', 'not-mtz.txt')
@@ -63,7 +63,7 @@ class TestMtzdump(unittest.TestCase):
 
     def testnofile(self):
         '''Test mtzdump with a missing input file.'''
-        dpa = os.environ['DPA_ROOT']
+        dpa = os.environ['XIA2_ROOT']
         
         hklin = os.path.join(dpa,
                              'Data', 'Test', 'Mtz', 'nosuchfile.mtz')

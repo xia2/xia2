@@ -16,10 +16,10 @@
 
 import os, sys
 
-if not os.environ.has_key('DPA_ROOT'):
-    raise RuntimeError, 'DPA_ROOT not defined'
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
 
-sys.path.append(os.path.join(os.environ['DPA_ROOT']))
+sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Wrappers.Labelit.LabelitScreen import LabelitScreen
 import unittest
@@ -46,7 +46,7 @@ class TestLabelitScreen(unittest.TestCase):
 
         ls = LabelitScreen()
 
-        directory = os.path.join(os.environ['DPA_ROOT'],
+        directory = os.path.join(os.environ['XIA2_ROOT'],
                                  'Data', 'Test', 'Images')
 
         ls.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
@@ -79,7 +79,7 @@ class TestLabelitScreen(unittest.TestCase):
 
         ls = LabelitScreen()
 
-        directory = os.path.join(os.environ['DPA_ROOT'],
+        directory = os.path.join(os.environ['XIA2_ROOT'],
                                  'Data', 'Test', 'Images')
 
         ls.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))

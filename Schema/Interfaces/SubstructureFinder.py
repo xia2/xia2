@@ -25,8 +25,8 @@ import os
 if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
 
-if not os.environ['DPA_ROOT'] in sys.path:
-    sys.path.append(os.environ['DPA_ROOT'])
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
 
 class SubstructureFinder:
     '''A class to represent the problem of substructure determination.'''

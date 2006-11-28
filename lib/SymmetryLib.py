@@ -25,10 +25,10 @@
 import os
 import sys
 
-if not os.environ.has_key('SS_ROOT'):
-    raise RuntimeError, 'SS_ROOT undefined'
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT undefined'
 
-symop = os.path.join(os.environ['SS_ROOT'],
+symop = os.path.join(os.environ['XIA2_ROOT'],
                      'Data', 'Symmetry', 'symop.lib')
 
 def get_all_spacegroups_short():

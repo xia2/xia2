@@ -23,11 +23,11 @@
 import os
 import sys
 
-if not os.environ.has_key('DPA_ROOT'):
-    raise RuntimeError, 'DPA_ROOT not defined'
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
 
-if not os.environ['DPA_ROOT'] in sys.path:
-    sys.path.append(os.environ['DPA_ROOT'])
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
 
 # output streams
 
@@ -344,7 +344,7 @@ def _parse_mosflm_index_output(index_output_list):
     return results
 
 if __name__ == '__main__':
-    integrate_lp = os.path.join(os.environ['DPA_ROOT'], 'Wrappers', 'CCP4',
+    integrate_lp = os.path.join(os.environ['XIA2_ROOT'], 'Wrappers', 'CCP4',
                                 'Doc', 'mosflm-reintegration.log')
     stats = _parse_mosflm_integration_output(
         open(integrate_lp, 'r').readlines())
@@ -356,7 +356,7 @@ if __name__ == '__main__':
           decide_integration_resolution_limit(
         open(integrate_lp, 'r').readlines())        
 
-    index_lp = os.path.join(os.environ['DPA_ROOT'], 'Wrappers', 'CCP4',
+    index_lp = os.path.join(os.environ['XIA2_ROOT'], 'Wrappers', 'CCP4',
                             'Doc', 'mosflm-autoindex.lp')
     _parse_mosflm_index_output(open(index_lp, 'r').readlines())
 

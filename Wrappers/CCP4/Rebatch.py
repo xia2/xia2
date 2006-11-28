@@ -133,7 +133,7 @@ def Rebatch(DriverType = None):
 if __name__ == '__main__':
     # add a test here
 
-    hklin = os.path.join(os.environ['DPA_ROOT'],
+    hklin = os.path.join(os.environ['XIA2_ROOT'],
                          'Data', 'Test', 'Mtz', '12287_1_E1_1_10.mtz')
     hklout = 'temp.mtz'
 

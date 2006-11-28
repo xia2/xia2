@@ -16,12 +16,12 @@
 
 import os, sys
 
-if not os.environ.has_key('DPA_ROOT'):
-    raise RuntimeError, 'DPA_ROOT not defined'
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
-sys.path.append(os.path.join(os.environ['DPA_ROOT']))
+sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Wrappers.CCP4.Scala import Scala
 import unittest
@@ -100,7 +100,7 @@ class TestScala(unittest.TestCase):
         '''Test scala with the data from XIA core unit tests. This example
         tests what happens when the input file is not mtz format.'''
         
-        hklin = os.path.join(os.environ['DPA_ROOT'],
+        hklin = os.path.join(os.environ['XIA2_ROOT'],
                              'Data', 'Test', 'Mtz', 'not-mtz.txt')
         
         s = Scala()

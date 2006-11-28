@@ -22,16 +22,16 @@ import copy
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
-if not os.environ.has_key('DPA_ROOT'):
-    raise RuntimeError, 'DPA_ROOT not defined'
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
 
 if not os.path.join(os.environ['XIA2CORE_ROOT'],
                     'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
     
-if not os.environ['DPA_ROOT'] in sys.path:
-    sys.path.append(os.environ['DPA_ROOT'])
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
 
 from Driver.DriverFactory import DriverFactory
 
@@ -168,7 +168,7 @@ def _happy_integrate_lp(integrate_lp_stats):
 
 
 if __name__ == '__main__':
-    integrate_lp = os.path.join(os.environ['DPA_ROOT'], 'Wrappers', 'XDS',
+    integrate_lp = os.path.join(os.environ['XIA2_ROOT'], 'Wrappers', 'XDS',
                                 'Doc', 'INTEGRATE.LP')
     stats = _parse_integrate_lp(integrate_lp)
     _print_integrate_lp(stats)

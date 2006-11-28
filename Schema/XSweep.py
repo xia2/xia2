@@ -90,13 +90,13 @@ import copy
 from Object import Object
 
 # allow output
-if not os.environ.has_key('DPA_ROOT'):
-    raise RuntimeError, 'DPA_ROOT not defined'
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
-if not os.environ['DPA_ROOT'] in sys.path:
-    sys.path.append(os.environ['DPA_ROOT'])
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
 
 from Handlers.Streams import Chatter
 from Handlers.Environment import Environment
@@ -516,7 +516,7 @@ class XSweep(Object):
 
 if __name__ == '__main__':
 
-    # directory = os.path.join(os.environ['DPA_ROOT'],
+    # directory = os.path.join(os.environ['XIA2_ROOT'],
     # 'Data', 'Test', 'Images')
 
     directory = os.path.join('z:', 'data', '12287')

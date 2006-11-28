@@ -279,7 +279,7 @@ if __name__ == '__main__':
     
     p = Printheader()
 
-    directory = os.path.join(os.environ['DPA_ROOT'],
+    directory = os.path.join(os.environ['XIA2_ROOT'],
                              'Data', 'Test', 'Images')
 
     if len(sys.argv) == 1:

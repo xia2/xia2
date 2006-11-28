@@ -22,12 +22,12 @@ import sys
 import copy
 import time
 
-if not os.environ.has_key('DPA_ROOT'):
-    raise RuntimeError, 'DPA_ROOT not defined'
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
-sys.path.append(os.path.join(os.environ['DPA_ROOT']))
+sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 # stuff to allow population and inspection of the data set
 
@@ -201,10 +201,10 @@ if __name__ == '__main__':
         d = Dataset(sys.argv[1])
         sys.exit()
 
-    d = Dataset(os.path.join(os.environ['DPA_ROOT'],
+    d = Dataset(os.path.join(os.environ['XIA2_ROOT'],
                              'Data', 'Test', 'Images', '12287_1_E1_001.img'))
 
-    e = Dataset(os.path.join(os.environ['DPA_ROOT'],
+    e = Dataset(os.path.join(os.environ['XIA2_ROOT'],
                              'Data', 'Test', 'Images', '12287_1_E1_001.img'))
 
     if d != e:

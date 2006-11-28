@@ -17,11 +17,11 @@ import os
 import sys
 import math
 
-if not os.environ.has_key('DPA_ROOT'):
-    raise RuntimeError, 'DPA_ROOT not defined'
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
 
-if not os.environ['DPA_ROOT'] in sys.path:
-    sys.path.append(os.environ['DPA_ROOT'])
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
 
 from Object import Object
 
@@ -130,7 +130,7 @@ class XProject(Object):
 if __name__ == '__main__':
     import os
 
-    xi_file = os.path.join(os.environ['DPA_ROOT'], 'Data', 'Test', 'Xinfo', '1vpj.xinfo')
+    xi_file = os.path.join(os.environ['XIA2_ROOT'], 'Data', 'Test', 'Xinfo', '1vpj.xinfo')
     
     xp = XProject(xi_file)
 

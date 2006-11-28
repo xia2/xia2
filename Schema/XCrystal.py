@@ -65,14 +65,14 @@ import os
 import sys
 import math
 
-if not os.environ.has_key('DPA_ROOT'):
-    raise RuntimeError, 'DPA_ROOT not defined'
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
 
-if not os.environ['DPA_ROOT'] in sys.path:
-    sys.path.append(os.environ['DPA_ROOT'])
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
 
-if not os.path.join(os.environ['DPA_ROOT'],'lib') in sys.path:
-    sys.path.append(os.path.join(os.environ['DPA_ROOT'], 'lib'))
+if not os.path.join(os.environ['XIA2_ROOT'],'lib') in sys.path:
+    sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'lib'))
 
 from Object import Object
 

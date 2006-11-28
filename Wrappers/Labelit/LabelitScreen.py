@@ -88,16 +88,16 @@ import math
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
-if not os.environ.has_key('DPA_ROOT'):
-    raise RuntimeError, 'DPA_ROOT not defined'
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
 
 if not os.path.join(os.environ['XIA2CORE_ROOT'],
                     'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
     
-if not os.environ['DPA_ROOT'] in sys.path:
-    sys.path.append(os.environ['DPA_ROOT'])
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
 
 from Driver.DriverFactory import DriverFactory
 
@@ -549,12 +549,12 @@ if __name__ == '__main__':
 
     # run a demo test
 
-    if not os.environ.has_key('DPA_ROOT'):
-        raise RuntimeError, 'DPA_ROOT not defined'
+    if not os.environ.has_key('XIA2_ROOT'):
+        raise RuntimeError, 'XIA2_ROOT not defined'
 
     l = LabelitScreen()
 
-    directory = os.path.join(os.environ['DPA_ROOT'],
+    directory = os.path.join(os.environ['XIA2_ROOT'],
                              'Data', 'Test', 'Images')
 
     l.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))

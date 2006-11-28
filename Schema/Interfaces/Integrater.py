@@ -104,11 +104,11 @@ import os
 import sys
 import exceptions
 
-if not os.environ.has_key('DPA_ROOT'):
-    raise RuntimeError, 'DPA_ROOT not defined'
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
 
-if not os.environ['DPA_ROOT'] in sys.path:
-    sys.path.append(os.path.join(os.environ['DPA_ROOT']))
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from lib.Guff import inherits_from
 from Handlers.Streams import Chatter

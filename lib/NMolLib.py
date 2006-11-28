@@ -15,21 +15,21 @@
 # Protein Science volume 12, 2002. Uses "mattprob_params.dat" from
 # http://www-structure.llnl.gov/mattprob
 #
-# Relies on $DPA_ROOT/Data/NMol/mattprob_params.dat
+# Relies on $XIA2_ROOT/Data/NMol/mattprob_params.dat
 
 import os, sys, math
 
-if not os.environ.has_key('DPA_ROOT'):
-    raise RuntimeError, 'DPA_ROOT not defined'
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
 
-if not os.environ['DPA_ROOT'] in sys.path:
-    sys.path.append(os.environ['DPA_ROOT'])
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
 
 from Handlers.Syminfo import Syminfo
 from Handlers.Streams import Chatter
 from Wrappers.CCP4.Matthews_coef import Matthews_coef
 
-if not os.path.exists(os.path.join(os.environ['DPA_ROOT'],
+if not os.path.exists(os.path.join(os.environ['XIA2_ROOT'],
                                    'Data', 'NMol',
                                    'mattprob_params.dat')):
     raise RuntimeError, 'mattprob_params.dat not found'
@@ -95,7 +95,7 @@ def sequence_mass(sequence):
 
 def compute_nmol_from_volume(volume, mass, resolution):
 
-    file = open(os.path.join(os.environ['DPA_ROOT'],
+    file = open(os.path.join(os.environ['XIA2_ROOT'],
                              'Data', 'NMol',
                              'mattprob_params.dat'), 'r')
 

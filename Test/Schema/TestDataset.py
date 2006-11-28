@@ -16,10 +16,10 @@
 
 import os, sys
 
-if not os.environ.has_key('DPA_ROOT'):
-    raise RuntimeError, 'DPA_ROOT not defined'
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
 
-sys.path.append(os.path.join(os.environ['DPA_ROOT']))
+sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Schema.Dataset import Dataset
 import unittest
@@ -31,11 +31,11 @@ class TestDataset(unittest.TestCase):
 
     def testequality(self):
         '''Test the equality of objects.'''
-        d = Dataset(os.path.join(os.environ['DPA_ROOT'],
+        d = Dataset(os.path.join(os.environ['XIA2_ROOT'],
                                  'Data', 'Test', 'Images',
                                  '12287_1_E1_001.img'))
         
-        e = Dataset(os.path.join(os.environ['DPA_ROOT'],
+        e = Dataset(os.path.join(os.environ['XIA2_ROOT'],
                                  'Data', 'Test', 'Images',
                                  '12287_1_E1_001.img'))
 
@@ -45,7 +45,7 @@ class TestDataset(unittest.TestCase):
 
     def testindex(self):
         '''Test simple indexing.'''
-        d = Dataset(os.path.join(os.environ['DPA_ROOT'],
+        d = Dataset(os.path.join(os.environ['XIA2_ROOT'],
                                  'Data', 'Test', 'Images',
                                  '12287_1_E1_001.img'))
         lattice_info = d.getLattice_info()
@@ -55,7 +55,7 @@ class TestDataset(unittest.TestCase):
 
     def testindexprior(self):
         '''Test defined indexing.'''
-        d = Dataset(os.path.join(os.environ['DPA_ROOT'],
+        d = Dataset(os.path.join(os.environ['XIA2_ROOT'],
                                  'Data', 'Test', 'Images',
                                  '12287_1_E1_001.img'))
 
@@ -67,11 +67,11 @@ class TestDataset(unittest.TestCase):
 
     def testinequality(self):
         '''Test object inequality.'''        
-        d = Dataset(os.path.join(os.environ['DPA_ROOT'],
+        d = Dataset(os.path.join(os.environ['XIA2_ROOT'],
                                  'Data', 'Test', 'Images',
                                  '12287_1_E1_001.img'))
         d.setLattice('oP')
-        e = Dataset(os.path.join(os.environ['DPA_ROOT'],
+        e = Dataset(os.path.join(os.environ['XIA2_ROOT'],
                                  'Data', 'Test', 'Images',
                                  '12287_1_E1_001.img'))
 

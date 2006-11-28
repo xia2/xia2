@@ -224,8 +224,8 @@ def headers2sweeps(header_dict):
 if __name__ == '__main__':
     # run some tests...
 
-    if not os.environ.has_key('DPA_ROOT'):
-        raise RuntimeError, 'DPA_ROOT not defined'
+    if not os.environ.has_key('XIA2_ROOT'):
+        raise RuntimeError, 'XIA2_ROOT not defined'
 
     print image2template('foo_bar_1_001.img')
     print image2template('foo_bar_001.img')
@@ -233,15 +233,15 @@ if __name__ == '__main__':
     print image2template('foo_bar.001')
 
     print find_matching_images(image2template('12287_1_E1_001.img'),
-                               os.path.join(os.environ['DPA_ROOT'],
+                               os.path.join(os.environ['XIA2_ROOT'],
                                             'Data', 'Test', 'Images'))
 
     
     print template_directory_number2image(image2template('12287_1_E1_001.img'),
-                                          os.path.join(os.environ['DPA_ROOT'],
+                                          os.path.join(os.environ['XIA2_ROOT'],
                                                        'Data', 'Test',
                                                        'Images'), 1)
     print template_directory_number2image(image2template('12287_1_E1_001.img'),
-                                          os.path.join(os.environ['DPA_ROOT'],
+                                          os.path.join(os.environ['XIA2_ROOT'],
                                                        'Data', 'Test',
                                                        'Images'), 1000)

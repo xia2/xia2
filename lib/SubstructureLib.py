@@ -23,8 +23,8 @@ import random
 if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
 
-if not os.environ['DPA_ROOT'] in sys.path:
-    sys.path.append(os.environ['DPA_ROOT'])
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
 
 from SymmetryLib import spacegroup_name_short_to_long, compute_enantiomorph
 
@@ -337,7 +337,7 @@ def invert_hand(sites_info):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        pdb = os.path.join(os.environ['SS_ROOT'],
+        pdb = os.path.join(os.environ['XIA2_ROOT'],
                            'Data', 'Test', 'Sites', 'hyss-sites.pdb')
     else:
         pdb = sys.argv[1]

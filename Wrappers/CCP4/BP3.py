@@ -137,8 +137,8 @@ if __name__ == '__main__':
 
     # run a test
 
-    if not os.path.join(os.environ['SS_ROOT'], 'lib') in sys.path:
-        sys.path.append(os.path.join(os.environ['SS_ROOT'], 'lib'))
+    if not os.path.join(os.environ['XIA2_ROOT'], 'lib') in sys.path:
+        sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'lib'))
         
     from SubstructureLib import parse_pdb_sites_file, invert_hand
 

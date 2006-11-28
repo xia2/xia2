@@ -639,7 +639,7 @@ def Scala(DriverType = None):
 if __name__ == '__output_main__':
     # test parsing the output
 
-    logfile = os.path.join(os.environ['DPA_ROOT'],
+    logfile = os.path.join(os.environ['XIA2_ROOT'],
                            'Doc', 'Logfiles', 'scala.log')
 
     s = Scala()

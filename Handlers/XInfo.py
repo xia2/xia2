@@ -9,7 +9,7 @@
 # 
 # A handler for .xinfo files, an example of which can be found in:
 # 
-# os.path.join(os.environ['DPA_ROOT'], 'Data', 'Test', 'Xinfo', '1vr9.xinfo')
+# os.path.join(os.environ['XIA2_ROOT'], 'Data', 'Test', 'Xinfo', '1vr9.xinfo')
 # 
 # This file should record some metadata about the experiment, and contain 
 # enough information to solve the structure. A similar .xinfo file
@@ -352,7 +352,7 @@ class XInfo:
 if __name__ == '__main__':
     import os
 
-    xi = XInfo(os.path.join(os.environ['DPA_ROOT'], 'Data', 'Test', 'Xinfo', '1vr9.xinfo'))
+    xi = XInfo(os.path.join(os.environ['XIA2_ROOT'], 'Data', 'Test', 'Xinfo', '1vr9.xinfo'))
 
     print xi
                     

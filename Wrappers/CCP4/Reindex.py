@@ -113,7 +113,7 @@ if __name__ == '__main__':
     if not os.environ.has_key('XIA2CORE_ROOT'):
         raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
-    dpa = os.environ['DPA_ROOT']
+    dpa = os.environ['XIA2_ROOT']
 
     hklin = os.path.join(dpa,
                          'Data', 'Test', 'Mtz', '12287_1_E1_1_10.mtz')

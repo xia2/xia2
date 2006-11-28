@@ -15,8 +15,8 @@
 import sys
 import os
 
-if not os.environ['SS_ROOT'] in sys.path:
-    sys.path.append(os.environ['SS_ROOT'])
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
 
 from lib import SubstructureLib
 
