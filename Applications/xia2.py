@@ -11,11 +11,14 @@
 #
 # A top-level interface to the whole of xia2, for data processing & analysis.
 # 
+# FIXED 28/NOV/06 record the total processing time to Chatter.
+#
+# FIXME 28/NOV/06 be able to e-mail someone with the job once finished.
 # 
-
 
 import sys
 import os
+import time
 
 if not os.environ.has_key('DPA_ROOT'):
     raise RuntimeError, 'DPA_ROOT not defined'
@@ -31,8 +34,17 @@ def xia2():
     if not CommandLine.get_xinfo():
         raise RuntimeError, 'xinfo not defined'
     
+    start_time = time.time()
+    
+    # this actually gets the processing started...
     Chatter.write(str(CommandLine.get_xinfo()))
 
+    duration = time.time() - start_time
+
+    # write out the time taken in a human readable way
+    Chatter.write('Processing took %s' % \
+                  time.strftime("%Hh %Mm %Ss", time.gmtime(duration)))
+    
     return
 
 if __name__ == '__main__':
