@@ -39,7 +39,14 @@ Should the resolution limits be decided as one limit for all data sets or
 a number of limits? Need to decide what I am going to do with the data 
 afterwards (in particular, how does solve/resolve cope?)
 
+Right, what is actually implemented is a resolution limit where 
+$I/\sigma \sim 2$ is found from the merged data - this is then set in the 
+integrater and perhaps the integration is repeated. This consideration is
+made \emph{per wavelength} so all sweeps contributing to a given wavelength
+will be limited to the same resolution - I am assuming that the weighting
+done by Scala should handle this.
 
+As to solve/resolve? It will have to cope.
 
 \section{Setting Error Parameters}
 
@@ -53,6 +60,12 @@ around 10, while the SdAdd of typically 0.02 (the default) affects the
 overall shape and gradient of the curve.
 
 In the summary the standard deviations for each integration bin should 
-be $\sim 1$.
+be $\sim 1$. This is achieved by searching for a best SdB for full and
+partial, then searching with the best SdB's for SdAdd, then researching for 
+SdB just in case this has changed. This seems to work well.
+
+However, if the data are radiation damaged then this is not appropriate,
+because the measured spread will be larger than the error on the reflections - 
+this must be factored in!
 
 \end{document}
