@@ -404,6 +404,10 @@ class CCP4Scaler(Scaler):
         # to get the reflections reindexed into the correct pointgroup
 
         # ---------- REINDEX TO CORRECT POINTGROUP ----------
+
+        # all should share the same pointgroup
+        
+        overall_pointgroup = None
         
         for epoch in self._sweep_information.keys():
 
@@ -455,6 +459,12 @@ class CCP4Scaler(Scaler):
             # get the correct pointgroup
             pointgroup = pl.get_pointgroup()
 
+            if not overall_pointgroup:
+                overall_pointgroup = pointgroup
+
+            if overall_pointgroup != pointgroup:
+                Chatter.write('Uh oh - non uniform pointgroups!')
+
             # and reindexing operation
             reindex_op = pl.get_reindex_operator()
 
@@ -463,6 +473,8 @@ class CCP4Scaler(Scaler):
             # perform a reindexing operation
             ri = self.Reindex()
             ri.set_hklin(hklin)
+
+            # hklout was defined above...
             ri.set_hklout(hklout)
             ri.set_spacegroup(pointgroup)
             ri.set_operator(reindex_op)
