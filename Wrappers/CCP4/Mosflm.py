@@ -1243,7 +1243,7 @@ def Mosflm(DriverType = None):
                 if 'Smoothed value for refined mosaic spread' in o:
                     mosaic = float(o.split()[-1])
                     if mosaic < 0.0:
-                        raise RuntimeError, 'nagative mosaic spread'
+                        raise RuntimeError, 'negative mosaic spread'
 
                 if 'WRITTEN OUTPUT MTZ FILE' in o:
                     self._mosflm_hklout = os.path.join(
