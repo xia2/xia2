@@ -140,7 +140,8 @@ from Decorators.DecoratorFactory import DecoratorFactory
 
 from Handlers.Streams import Chatter, Science
 
-from lib.SymmetryLib import lauegroup_to_lattice
+# this is rather complicated!
+# from lib.SymmetryLib import lauegroup_to_lattice
 
 def Pointless(DriverType = None):
     '''A factory for PointlessWrapper classes.'''
@@ -171,7 +172,7 @@ def Pointless(DriverType = None):
             # the correct lattice with the indexer... this should be a
             # list containing e.g. 'tP'
 
-            self._possible_lattices = []
+            # self._possible_lattices = []
 
         def set_hklref(self, hklref):
             self._hklref = hklref
@@ -365,10 +366,10 @@ def Pointless(DriverType = None):
                         'CellDelta')[0].childNodes[0].data)
 
                     # record this as a possible lattice...
-
-                    lattice = lauegroup_to_lattice(lauegroup)
-                    if not lattice in self._possible_lattices:
-                        self._possible_lattices.append(lattice)
+                    # note well - this doesn't actually work!
+                    # lattice = lauegroup_to_lattice(lauegroup)
+                    # if not lattice in self._possible_lattices:
+                    # self._possible_lattices.append(lattice)
                     
                     # check to see if this is the "correct" answer - if it
                     # is (and it should be the first!) then record the NetZc
@@ -544,8 +545,8 @@ def Pointless(DriverType = None):
         def get_confidence(self):
             return self._confidence
 
-        def get_possible_lattices(self):
-            return self._possible_lattices
+        # def get_possible_lattices(self):
+        # return self._possible_lattices
             
     return PointlessWrapper()
 

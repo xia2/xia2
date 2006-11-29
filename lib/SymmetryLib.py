@@ -125,6 +125,9 @@ def lauegroup_to_lattice(lauegroup):
 
     # parse syminfo, symop -> generate mapping table
 
+    if True:
+        raise RuntimeError, 'do not call me I am broken'
+
     current_spacegroup = 0
     lauegroup_info = {0:{ }}
 

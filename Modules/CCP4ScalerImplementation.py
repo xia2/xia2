@@ -430,6 +430,9 @@ class CCP4Scaler(Scaler):
 
             # check this against the records in the indexer
 
+            # this is very broken - more a problem with the lauegroup
+            # to lattice method though...
+
             feedback_is_ready = False
 
             if feedback_is_ready:
