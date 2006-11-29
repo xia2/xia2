@@ -161,7 +161,9 @@ def lauegroup_to_lattice(lauegroup):
     spacegroups = lauegroup_info.keys()
     spacegroups.sort()
 
-    for spacegroup in spacegroups:
+    # we don't want "spacegroup" 0!
+
+    for spacegroup in spacegroups[1:]:
         centring = lauegroup_info[spacegroup]['centring']
         laue = lauegroup_info[spacegroup]['laue']
 
