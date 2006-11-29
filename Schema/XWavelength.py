@@ -85,6 +85,15 @@ class XWavelength(Object):
     def get_wavelength(self):
         return self._wavelength
 
+    def set_wavelength(self, wavelength):
+        # FIXME 29/NOV/06 provide a facility to update this when it is
+        # not provided in the .xinfo file - this will come from the
+        # image header
+        if self._wavelength != 0.0:
+            raise RuntimeError, 'setting wavelength when already set'
+        self._wavelength = wavelength
+        return
+
     def get_fpr(self):
         return self._fpr
 

@@ -101,9 +101,22 @@ class XProject(Object):
                     xc.set_ha_info(crystals[crystal]['ha_info'])
 
             for wavelength in crystals[crystal]['wavelengths'].keys():
+                # FIXME 29/NOV/06 in here need to be able to cope with
+                # no wavelength information - this should default to the
+                # information in the image header (John Cowan pointed
+                # out that this was untidy - requiring that it agrees
+                # with the value in the header makes this almost
+                # useless.)
+
                 wave_info = crystals[crystal]['wavelengths'][wavelength]
+
+                if not wave_info.has_key('wavelength'):
+                    Chatter.write(
+                        'No wavelength value given for wavelength %s' %
+                        wavelength)
+
                 xw = XWavelength(wavelength, xc,
-                                 wave_info['wavelength'],
+                                 wave_info.get('wavelength', 0.0),
                                  wave_info.get('f\'', 0.0),
                                  wave_info.get('f\'\'', 0.0))
 

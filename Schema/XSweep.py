@@ -233,6 +233,15 @@ class XSweep(Object):
             # is not None
 
             if not wavelength == None:
+
+                # FIXME 29/NOV/06 if the wavelength wavelength value
+                # is 0.0 then first set it to the header value - note
+                # that this assumes that the header value is correct
+                # (a reasonable assumption)
+
+                if wavelength.get_wavelength() == 0.0:
+                    wavelength.set_wavelength(header['wavelength'])
+
                 if math.fabs(header['wavelength'] -
                              wavelength.get_wavelength()) > 0.0001:
                     format = 'wavelength for sweep %s does not ' + \
