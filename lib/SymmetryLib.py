@@ -185,7 +185,7 @@ def lauegroup_to_lattice(lauegroup):
     spacegroup_to_lattice = {1: 'aP', 3: 'mP', 196: 'cF', 5: 'mC',
                              75: 'tP', 143: 'hP', 16: 'oP', 146: 'hR',
                              195: 'cP', 20: 'oC', 22: 'oF', 23: 'oI',
-                             79: 'tI', 197: 'cI', 89: 'tP', 97: 'tI'
+                             79: 'tI', 197: 'cI', 89: 'tP', 97: 'tI',
                              149: 'hP', 150: 'hP', 155: 'hP', 168: 'hP',
                              177: 'hP', 207: 'cP', 211: 'cI', 209: 'cF'}
 
