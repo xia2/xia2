@@ -140,7 +140,7 @@ from Decorators.DecoratorFactory import DecoratorFactory
 
 from Handlers.Streams import Chatter, Science
 
-from lib.Guff import lauegroup_to_lattice
+from lib.SymmetryLib import lauegroup_to_lattice
 
 def Pointless(DriverType = None):
     '''A factory for PointlessWrapper classes.'''
