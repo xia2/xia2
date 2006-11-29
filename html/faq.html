@@ -11,6 +11,17 @@
 
     <p>A CCP4i interface for xia2 is in development.</p>
 
+    <h3>How long does it take?</h3>
+
+    <p>Because xia2 is quite thorough in the data reduction, it can take
+      a little while and also appear to be doing the same thing over and 
+      over again, for instance integrating a particular sweep. However,
+      by it's design each of these jobs is required, and should be making
+      the results better. For my test cases, which are reasonably typical
+      MAD, SAD and native data sets, anywhere between 30 minutes and four
+      hours is typical - however this depends greatly on the computer, where 
+      the data are stored.
+
     <h3>What about directories with spaces in?</h3>
 
     <p>Working from directories with spaces in the path, or in directories
@@ -46,11 +57,18 @@
       "best" solution is to fix the offending format statement in Scala, 
       and a patch has been submitted.</p>
 
+    <h3>Why does it do so many redundant reindexing jobs?</h3>
+
+    <p>Basically because I haven't got around to coding the switches
+      to see if the reindexing operator is h,k,l and the input and
+      output spacegroup records are identical - this will happen shortly
+      though which should reduce the time taken for large data sets.</p>
+
     <hr>
-    <address><a href="mailto:Graeme@GRAEME-LAPTOP"></a></address>
+    <address><a href="mailto:g.winter@dl.ac.uk"></a></address>
 <!-- Created: Wed Nov 29 09:59:12 GMT Standard Time 2006 -->
 <!-- hhmts start -->
-Last modified: Wed Nov 29 10:08:24 GMT Standard Time 2006
+Last modified: Wed Nov 29 09:12:02 GMT 2006
 <!-- hhmts end -->
   </body>
 </html>
