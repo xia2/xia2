@@ -388,8 +388,19 @@ class Integrater:
             # but it may not be - if the integrate itself decides something
             # needs redoing
 
-            self._intgr_hklout = self._integrate()
+	    try:
 
+                self._intgr_hklout = self._integrate()
+
+            except RuntimeError, e:
+		if 'negative mosaic spread' in e:
+                    Chatter.write('Doh! %s' % str(e))
+                    self._intgr_indexer.eliminate()
+                    self._intgr_prepare_done = False
+                    self._intgr_done = False
+		else:
+		    raise e        
+            
             # to repeat the integration this should reset the 
             # self._intgr_prepare_done = False flag
 
