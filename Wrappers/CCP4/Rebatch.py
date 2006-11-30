@@ -76,7 +76,7 @@ def Rebatch(DriverType = None):
 
             self.start()
 
-            self.input('batch -100000 to %d relect' % (first - 1))
+            self.input('batch -100000 to %d reject' % (first - 1))
             self.input('batch %d to 1000000 reject' % (last + 1))
 
             self.close_wait()
