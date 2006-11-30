@@ -11,7 +11,10 @@
 # 
 # A wrapper for the CCP4 program REBATCH.
 # 
+# FIXME 30/NOV/06 need to add a facility to use this to select batches
+#                 from the input reflection file...
 # 
+
 import os
 import sys
 
@@ -61,6 +64,62 @@ def Rebatch(DriverType = None):
         def set_add_batch(self, add_batch):
             self._add_batch = add_batch
             return
+
+        def limit_batches(self, first, last):
+            '''Limit the batches to first to last.'''
+
+            self.check_hklin()
+            self.check_hklout()
+
+            if self._first_batch > 0 or self._add_batch > 0:
+                raise RuntimeError, 'limiting when batches set to renumber'
+
+            self.start()
+
+            self.input('batch -100000 to %d relect' % (first - 1))
+            self.input('batch %d to 1000000 reject' % (last + 1))
+
+            self.close_wait()
+
+            # check for errors...
+            try:
+                self.check_for_errors()
+                self.check_ccp4_errors()
+
+            except RuntimeError, e:
+                try:
+                    os.remove(self.get_hklout())
+                except:
+                    pass
+
+                raise e
+
+            # get out the new batch range...
+
+            output = self.get_all_output()
+
+            min = 10000000
+            max = -10000000
+            
+            for i in range(len(output)):
+                o = output[i]
+                if o.split()[:5] == ['Old', 'batch', 'New', 'batch', 'Max']:
+                    j = i + 2
+                    m = output[j]
+                    while not 'SUMMARY_END' in m:
+                        l = m.split()
+                        if len(l) == 3:
+                            batch = int(l[1])
+                            if batch < min:
+                                min = batch
+                            if batch > max:
+                                max = batch
+                        j += 1
+                        m = output[j]
+            
+            new_batches = (min, max)
+
+            return new_batches            
 
         def rebatch(self):
             self.check_hklin()
