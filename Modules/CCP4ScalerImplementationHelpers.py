@@ -14,6 +14,9 @@
 # small functions for computing e.g. resolution limits.
 #
 
+import os
+import sys
+
 from Wrappers.CCP4.Mtzdump import Mtzdump
 from Wrappers.CCP4.Rebatch import Rebatch
 from lib.Guff import auto_logfiler
@@ -76,7 +79,9 @@ def _prepare_pointless_hklin(working_directory,
     if batches * phi_width < phi_limit:
         return hklin
 
-    hklout = '%s_prepointless.mtz' % hklin[:-4]
+    hklout = os.path.join(
+        working_directory,
+        '%s_prepointless.mtz' % (os.path.split(hklin)[-1][:-4]))
 
     rb = Rebatch()
     rb.set_working_directory(working_directory)
