@@ -27,12 +27,14 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
 from Schema.Interfaces.Integrater import Integrater
+from Schema.Interfaces.FrameProcessor import FrameProcessor
 from Wrappers.CCP4.Mtzutils import Mtzutils
 from Handlers.Streams import Chatter
 
 from lib.Guff import auto_logfiler
 
-class NullIntegrater(Integrater):
+class NullIntegrater(FrameProcessor,
+                     Integrater):
     '''A null class to present the integrater interface.'''
 
     def __init__(self, integrated_reflection_file):
