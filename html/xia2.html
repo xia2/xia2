@@ -335,6 +335,12 @@ END PROJECT TS01
       <li>Fixed .csh setup scripts</li>
       <li>If wavelength values not specified in the .xinfo file will use
 	values from the image headers</li>
+      <li>If loggraph output from scala is broken by having Mn(I/sigma)
+	greater than 99.99 can now cope (ignores that record)</li>
+      <li>Will now use a maximum of 180 degrees of data for deciding 
+	e.g. the point group, spacegroup and correct indexing standards -
+	this helps the cases where exceptionally high redundancy data 
+	has been measured</li>
     </ul>
     
     <p>Changes since 0.2.2.2:</p>
@@ -385,7 +391,7 @@ END PROJECT TS01
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Wed Nov 29 13:24:41 GMT Standard Time 2006
+Last modified: Thu Nov 30 13:34:41 GMT Standard Time 2006
 <!-- hhmts end -->
   </body>
 </html>
