@@ -54,7 +54,8 @@ def _resolution_estimate(ordered_pair_list, cutoff):
 
     return resolution
 
-def _prepare_pointless_hklin(hklin,
+def _prepare_pointless_hklin(working_directory,
+                             hklin,
                              phi_width):
     '''Prepare some data for pointless - this will take only 180 degrees
     of data if there is more than this (through a "rebatch" command) else
@@ -63,6 +64,7 @@ def _prepare_pointless_hklin(hklin,
     # find the number of batches
 
     md = Mtzdump()
+    md.set_working_directory(working_directory)
     auto_logfiler(md)
     md.set_hklin(hklin)
     md.dump()
@@ -77,6 +79,7 @@ def _prepare_pointless_hklin(hklin,
     hklout = '%s_prepointless.mtz' % hklin[:-4]
 
     rb = Rebatch()
+    rb.set_working_directory(working_directory)
     auto_logfiler(rb)
     rb.set_hklin(hklin)
     rb.set_hklout(hklout)
