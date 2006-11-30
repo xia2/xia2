@@ -88,7 +88,10 @@
 # FIXME 28/NOV/06 implement feedback to the indexing from the pointgroup
 #                 determination. See FIXME's in Scaler, Indexer, Integrater
 #                 interface specifications.
-# 
+#
+# FIXME 30/NOV/06 need to limit the amount of data used to run pointless
+#                 with - there should be no advantage in using more than
+#                 180 degrees...
 
 import os
 import sys
@@ -125,7 +128,8 @@ from Handlers.Streams import Chatter
 from lib.Guff import is_mtz_file, nifty_power_of_ten, auto_logfiler
 from lib.Guff import transpose_loggraph, nint
 
-from CCP4ScalerImplementationHelpers import _resolution_estimate
+from CCP4ScalerImplementationHelpers import _resolution_estimate, \
+     _prepare_pointless_hklin
 
 class CCP4Scaler(Scaler):
     '''An implementation of the Scaler interface using CCP4 programs.'''
@@ -265,7 +269,8 @@ class CCP4Scaler(Scaler):
                 'xname':xname,
                 'dname':dname,
                 'batches':intgr.get_integrater_batches(),
-                'integrater':intgr}
+                'integrater':intgr,
+                'header':intgr.get_header()}
             
         # next check through the reflection files that they are all MTZ
         # format - if not raise an exception.
@@ -316,18 +321,25 @@ class CCP4Scaler(Scaler):
         epochs = self._sweep_information.keys()
         epochs.sort()
         first = epochs[0]
-        
-        pl = self.Pointless()
+
+        # FIXME in here I need to consider if the reflection file is
+        # huge - and if it is, do something sensible like take only
+        # the first 90 degrees of data or something... use the image
+        # header to make this decision...
+
         hklin = self._sweep_information[first]['hklin']
-        hklout = os.path.join(
+        header = self._sweep_information[first]['header']
+
+        pl = self.Pointless()
+        pl.set_hklin(_prepare_pointless_hklin(
             self.get_working_directory(),
-            os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
-        pl.set_hklin(hklin)
+            hklin, self._sweep_information[epoch]['header'].get(
+            'phi_width', 0.0)))
 
         # write a pointless log file...
         pl.decide_pointgroup()
         
-        Chatter.write('Pointless analysis of %s' % hklin)
+        Chatter.write('Pointless analysis of %s' % pl.get_hklin())
 
         # FIXME here - do I need to contemplate reindexing
         # the reflections? if not, don't bother - could be an
@@ -341,6 +353,10 @@ class CCP4Scaler(Scaler):
         reindex_op = pl.get_reindex_operator()
         
         Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+
+        hklout = os.path.join(
+            self.get_working_directory(),
+            os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
 
         # perform a reindexing operation
         ri = self.Reindex()
@@ -371,6 +387,9 @@ class CCP4Scaler(Scaler):
 
         # need to remember this hklout - it will be the reference reflection
         # file for all of the reindexing below...
+
+        # FIXME only really need to do this if there are more than
+        # one input sweep!
 
         Chatter.write('Quickly scaling reference data set: %s' % \
                       os.path.split(hklin)[-1])
@@ -424,7 +443,10 @@ class CCP4Scaler(Scaler):
             hklout = os.path.join(
                 self.get_working_directory(),
                 os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
-            pl.set_hklin(hklin)
+            pl.set_hklin(_prepare_pointless_hklin(
+                self.get_working_directory(),
+                hklin, self._sweep_information[epoch]['header'].get(
+                'phi_width', 0.0)))
 
             pl.decide_pointgroup()
 
@@ -452,7 +474,7 @@ class CCP4Scaler(Scaler):
                     'hklin'] = self._sweep_information[epoch][
                     'integrater'].get_integrater_reflections()
 
-            Chatter.write('Pointless analysis of %s' % hklin)
+            Chatter.write('Pointless analysis of %s' % pl.get_hklin())
 
             # FIXME here - do I need to contemplate reindexing
             # the reflections? if not, don't bother - could be an
@@ -497,7 +519,10 @@ class CCP4Scaler(Scaler):
             hklout = os.path.join(
                 self.get_working_directory(),
                 os.path.split(hklin)[-1].replace('_rdx.mtz', '_rdx2.mtz'))
-            pl.set_hklin(hklin)
+            pl.set_hklin(_prepare_pointless_hklin(
+                self.get_working_directory(),
+                hklin, self._sweep_information[epoch]['header'].get(
+                'phi_width', 0.0)))
 
             # now set the initial reflection set as a reference...
             
@@ -506,7 +531,7 @@ class CCP4Scaler(Scaler):
             # write a pointless log file...
             pl.decide_pointgroup()
 
-            Chatter.write('Pointless analysis of %s' % hklin)
+            Chatter.write('Pointless analysis of %s' % pl.get_hklin())
 
             # FIXME here - do I need to contemplate reindexing
             # the reflections? if not, don't bother - could be an
@@ -655,10 +680,23 @@ class CCP4Scaler(Scaler):
         hklin = hklout
         hklout = hklin.replace('sorted.mtz', 'temp.mtz')
 
-        p = self.Pointless()
-        p.set_hklin(hklin)
-        p.decide_spacegroup()
+        # note here I am not abbreviating the reflection file as I
+        # don't know whether this is a great idea...?  30/NOV/06
 
+        # if it's a huge SAD data set then do it! else don't...
+
+        p = self.Pointless()
+        if len(self._sweep_information.keys()) > 1:
+            p.set_hklin(hklin)
+        else:
+            # permit the use of pointless preparation...
+            epoch = self._sweep_information.keys()[0]
+            p.set_hklin(_prepare_pointless_hklin(
+                self.get_working_directory(),
+                hklin, self._sweep_information[epoch]['header'].get(
+                'phi_width', 0.0)))
+
+        p.decide_spacegroup()
         spacegroup = p.get_spacegroup()
         reindex_operator = p.get_spacegroup_reindex_operator()
         
