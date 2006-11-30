@@ -71,7 +71,7 @@ def _prepare_pointless_hklin(working_directory,
 
     batches = max(md.get_batches()) - min(md.get_batches())
 
-    phi_limit = 45
+    phi_limit = 180
 
     if batches * phi_width < phi_limit:
         return hklin
@@ -85,7 +85,7 @@ def _prepare_pointless_hklin(working_directory,
     rb.set_hklout(hklout)
 
     first = min(md.get_batches())
-    last = first + int(180.0 / phi_width)
+    last = first + int(phi_limit / phi_width)
 
     Chatter.write('Preparing data for pointless - %d batches (%d degrees)' % \
                   ((last - first), phi_limit))
