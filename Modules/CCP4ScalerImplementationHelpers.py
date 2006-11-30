@@ -85,7 +85,7 @@ def _prepare_pointless_hklin(hklin,
     last = first + int(180.0 / phi_width)
 
     Chatter.write('Preparing data for pointless - %d batches (%d degrees)' % \
-                  (last - first), phi_limit)
+                  ((last - first), phi_limit))
 
     rb.limit_batches(first, last)
 
