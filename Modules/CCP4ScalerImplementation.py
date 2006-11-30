@@ -308,128 +308,125 @@ class CCP4Scaler(Scaler):
         # reindexed against this - this will ensure consistent indexing
         # in the TS02 case where the unit cell parameters are a bit fiddly.
 
-        # get the "first" sweep (in epoch terms)
+        if len(self._sweep_information.keys()) > 1:
 
-        # ---------- GENERATE REFERENCE SET ----------
+            # ---------- GENERATE REFERENCE SET ----------
 
-        # pointless it, sort it, quick scale it
+            # pointless it, sort it, quick scale it
 
-        # record this as the reference set, feed this to all subsequent
-        # pointless runs through HKLREF (FIXED this needs to be added to the
-        # pointless interface - set_hklref()!) 
+            # record this as the reference set, feed this to all subsequent
+            # pointless runs through HKLREF (FIXED this needs to be added to
+            # the pointless interface - set_hklref()!) 
 
-        epochs = self._sweep_information.keys()
-        epochs.sort()
-        first = epochs[0]
+            epochs = self._sweep_information.keys()
+            epochs.sort()
+            first = epochs[0]
 
-        # FIXME in here I need to consider if the reflection file is
-        # huge - and if it is, do something sensible like take only
-        # the first 90 degrees of data or something... use the image
-        # header to make this decision...
+            # FIXME in here I need to consider if the reflection file is
+            # huge - and if it is, do something sensible like take only
+            # the first 90 degrees of data or something... use the image
+            # header to make this decision...
 
-        hklin = self._sweep_information[first]['hklin']
-        header = self._sweep_information[first]['header']
+            hklin = self._sweep_information[first]['hklin']
+            header = self._sweep_information[first]['header']
 
-        pl = self.Pointless()
-        pl.set_hklin(_prepare_pointless_hklin(
-            self.get_working_directory(),
-            hklin, self._sweep_information[epoch]['header'].get(
-            'phi_width', 0.0)))
+            pl = self.Pointless()
+            pl.set_hklin(_prepare_pointless_hklin(
+                self.get_working_directory(),
+                hklin, self._sweep_information[epoch]['header'].get(
+                'phi_width', 0.0)))
 
-        # write a pointless log file...
-        pl.decide_pointgroup()
+            # write a pointless log file...
+            pl.decide_pointgroup()
         
-        Chatter.write('Pointless analysis of %s' % pl.get_hklin())
+            Chatter.write('Pointless analysis of %s' % pl.get_hklin())
 
-        # FIXME here - do I need to contemplate reindexing
-        # the reflections? if not, don't bother - could be an
-        # expensive waste of time for large reflection files
-        # (think Ed Mitchell data...)
-        
-        # get the correct pointgroup
-        pointgroup = pl.get_pointgroup()
-        
-        # and reindexing operation
-        reindex_op = pl.get_reindex_operator()
-        
-        Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
-
-        hklout = os.path.join(
-            self.get_working_directory(),
-            os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
-
-        # perform a reindexing operation
-        ri = self.Reindex()
-        ri.set_hklin(hklin)
-        ri.set_hklout(hklout)
-        ri.set_spacegroup(pointgroup)
-        ri.set_operator(reindex_op)
-        ri.reindex()
-        
-        # next sort this reflection file
+            # FIXME here - do I need to contemplate reindexing
+            # the reflections? if not, don't bother - could be an
+            # expensive waste of time for large reflection files
+            # (think Ed Mitchell data...)
             
-        hklin = hklout
-        hklout = os.path.join(
-            self.get_working_directory(),
-            os.path.split(hklin)[-1].replace('_rdx.mtz', '_ref_srt.mtz'))
-
-        s = self.Sortmtz()
-        s.set_hklout(hklout)
-        s.add_hklin(hklin)
-        s.sort()
+            # get the correct pointgroup
+            pointgroup = pl.get_pointgroup()
+            
+            # and reindexing operation
+            reindex_op = pl.get_reindex_operator()
         
-        # now quickly merge the reflections
+            Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
-        hklin = hklout
-        reference = os.path.join(
-            self.get_working_directory(),
-            os.path.split(hklin)[-1].replace('_ref_srt.mtz', '_ref.mtz'))
+            hklout = os.path.join(
+                self.get_working_directory(),
+                os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
+            
+            # perform a reindexing operation
+            ri = self.Reindex()
+            ri.set_hklin(hklin)
+            ri.set_hklout(hklout)
+            ri.set_spacegroup(pointgroup)
+            ri.set_operator(reindex_op)
+            ri.reindex()
+        
+            # next sort this reflection file
+            
+            hklin = hklout
+            hklout = os.path.join(
+                self.get_working_directory(),
+                os.path.split(hklin)[-1].replace('_rdx.mtz', '_ref_srt.mtz'))
+            
+            s = self.Sortmtz()
+            s.set_hklout(hklout)
+            s.add_hklin(hklin)
+            s.sort()
+        
+            # now quickly merge the reflections
+            
+            hklin = hklout
+            self._reference = os.path.join(
+                self.get_working_directory(),
+                os.path.split(hklin)[-1].replace('_ref_srt.mtz', '_ref.mtz'))
+            
+            # need to remember this hklout - it will be the reference
+            # reflection file for all of the reindexing below...
 
-        # need to remember this hklout - it will be the reference reflection
-        # file for all of the reindexing below...
+            Chatter.write('Quickly scaling reference data set: %s' % \
+                          os.path.split(hklin)[-1])
+            Chatter.write('to give indexing standard')
 
-        # FIXME only really need to do this if there are more than
-        # one input sweep!
+            qsc = self.Scala()
+            qsc.set_hklin(hklin)
+            qsc.set_hklout(self._reference)
+            qsc.quick_scale()
 
-        Chatter.write('Quickly scaling reference data set: %s' % \
-                      os.path.split(hklin)[-1])
-        Chatter.write('to give indexing standard')
+            # for the moment ignore all of the scaling statistics and whatnot!
 
-        qsc = self.Scala()
-        qsc.set_hklin(hklin)
-        qsc.set_hklout(reference)
-        qsc.quick_scale()
+            # then check that the unit cells &c. in these reflection files
+            # correspond to those rescribed in the indexers belonging to the
+            # parent integraters.
+            
+            # at this stage (see FIXME from 25/SEP/06) I need to run pointless
+            # to assess the likely pointgroup. This, unfortunately, will need
+            # to tie into the .xinfo hierarchy, as the crystal lattice
+            # management takes place in there...
+            # also need to make sure that the results from each sweep match
+            # up...
 
-        # for the moment ignore all of the scaling statistics and whatnot!
+            # FIXME 27/OCT/06 need a hook in here to the integrater->indexer
+            # to inspect the lattices which have ben contemplated (read tested)
+            # because it is quite possible that pointless will come up with
+            # a solution which has already been eliminated in the data
+            # reduction (e.g. TS01 native being reindexed to I222.)
 
-        # then check that the unit cells &c. in these reflection files
-        # correspond to those rescribed in the indexers belonging to the
-        # parent integraters.
+            # FIXME 06/NOV/06 first run through this with the reference ignored
+            # to get the reflections reindexed into the correct pointgroup
 
-        # at this stage (see FIXME from 25/SEP/06) I need to run pointless
-        # to assess the likely pointgroup. This, unfortunately, will need to
-        # tie into the .xinfo hierarchy, as the crystal lattice management
-        # takes place in there...
-        # also need to make sure that the results from each sweep match
-        # up...
-
-        # FIXME 27/OCT/06 need a hook in here to the integrater->indexer
-        # to inspect the lattices which have ben contemplated (read tested)
-        # because it is quite possible that pointless will come up with
-        # a solution which has already been eliminated in the data reduction
-        # (e.g. TS01 native being reindexed to I222.)
-
-        # FIXME 06/NOV/06 first run through this with the reference ignored
-        # to get the reflections reindexed into the correct pointgroup
-
-        # ---------- REINDEX TO CORRECT POINTGROUP ----------
+        # ---------- REINDEX ALL DATA TO CORRECT POINTGROUP ----------
 
         # all should share the same pointgroup
         
         overall_pointgroup = None
         
         for epoch in self._sweep_information.keys():
-
+            
             # in this loop need to include feedback to the indexing
             # to ensure that the solutions selected are tractable -
             # note that this will require linking back to the integraters
@@ -511,51 +508,53 @@ class CCP4Scaler(Scaler):
         # FIXME 06/NOV/06 need to run this again - this time with the
         # reference file... messy but perhaps effective?
 
-        # ---------- REINDEX TO CORRECT SETTING ---------- 
-
-        for epoch in self._sweep_information.keys():
-            pl = self.Pointless()
-            hklin = self._sweep_information[epoch]['hklin']
-            hklout = os.path.join(
-                self.get_working_directory(),
-                os.path.split(hklin)[-1].replace('_rdx.mtz', '_rdx2.mtz'))
-            pl.set_hklin(_prepare_pointless_hklin(
-                self.get_working_directory(),
-                hklin, self._sweep_information[epoch]['header'].get(
-                'phi_width', 0.0)))
-
-            # now set the initial reflection set as a reference...
+        if len(self._sweep_information.keys()) > 1:
             
-            pl.set_hklref(reference)
+            # ---------- REINDEX TO CORRECT (REFERENCE) SETTING ----------
+            
+            for epoch in self._sweep_information.keys():
+                pl = self.Pointless()
+                hklin = self._sweep_information[epoch]['hklin']
+                hklout = os.path.join(
+                    self.get_working_directory(),
+                    os.path.split(hklin)[-1].replace('_rdx.mtz', '_rdx2.mtz'))
+                pl.set_hklin(_prepare_pointless_hklin(
+                    self.get_working_directory(),
+                    hklin, self._sweep_information[epoch]['header'].get(
+                    'phi_width', 0.0)))
 
-            # write a pointless log file...
-            pl.decide_pointgroup()
+                # now set the initial reflection set as a reference...
+            
+                pl.set_hklref(self._reference)
 
-            Chatter.write('Pointless analysis of %s' % pl.get_hklin())
+                # write a pointless log file...
+                pl.decide_pointgroup()
 
-            # FIXME here - do I need to contemplate reindexing
-            # the reflections? if not, don't bother - could be an
-            # expensive waste of time for large reflection files
-            # (think Ed Mitchell data...)
+                Chatter.write('Pointless analysis of %s' % pl.get_hklin())
+                
+                # FIXME here - do I need to contemplate reindexing
+                # the reflections? if not, don't bother - could be an
+                # expensive waste of time for large reflection files
+                # (think Ed Mitchell data...)
+                
+                # get the correct pointgroup
+                pointgroup = pl.get_pointgroup()
 
-            # get the correct pointgroup
-            pointgroup = pl.get_pointgroup()
+                # and reindexing operation
+                reindex_op = pl.get_reindex_operator()
+                
+                Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
-            # and reindexing operation
-            reindex_op = pl.get_reindex_operator()
+                # perform a reindexing operation
+                ri = self.Reindex()
+                ri.set_hklin(hklin)
+                ri.set_hklout(hklout)
+                ri.set_spacegroup(pointgroup)
+                ri.set_operator(reindex_op)
+                ri.reindex()
 
-            Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
-
-            # perform a reindexing operation
-            ri = self.Reindex()
-            ri.set_hklin(hklin)
-            ri.set_hklout(hklout)
-            ri.set_spacegroup(pointgroup)
-            ri.set_operator(reindex_op)
-            ri.reindex()
-
-            # record the change in reflection file...
-            self._sweep_information[epoch]['hklin'] = hklout
+                # record the change in reflection file...
+                self._sweep_information[epoch]['hklin'] = hklout
 
         # ---------- SORT TOGETHER DATA ----------
             
