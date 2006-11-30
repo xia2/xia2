@@ -14,6 +14,11 @@
 # small functions for computing e.g. resolution limits.
 #
 
+from Wrappers.CCP4.Mtzdump import Mtzdump
+from Wrappers.CCP4.Rebatch import Rebatch
+from lib.Guff import auto_logfiler
+from Handlers.Streams import Chatter
+
 def _resolution_estimate(ordered_pair_list, cutoff):
     '''Come up with a linearly interpolated estimate of resolution at
     cutoff cutoff from input data [(resolution, i_sigma)].'''
@@ -49,4 +54,39 @@ def _resolution_estimate(ordered_pair_list, cutoff):
 
     return resolution
 
+def _prepare_pointless_hklin(hklin,
+                             phi_width):
+    '''Prepare some data for pointless - this will take only 180 degrees
+    of data if there is more than this (through a "rebatch" command) else
+    will simply return hklin.'''
 
+    # find the number of batches
+
+    md = Mtzdump()
+    auto_logfiler(md)
+    md.set_hklin(hklin)
+    md.dump()
+
+    batches = max(md.get_batches()) - min(md.get_batches())
+
+    phi_limit = 45
+
+    if batches * phi_width < phi_limit:
+        return hklin
+
+    hklout = '%s_prepointless.mtz' % hklin[:-4]
+
+    rb = Rebatch()
+    auto_logfiler(rb)
+    rb.set_hklin(hklin)
+    rb.set_hklout(hklout)
+
+    first = min(md.get_batches())
+    last = first + int(180.0 / phi_width)
+
+    Chatter.write('Preparing data for pointless - %d batches (%d degrees)' % \
+                  (last - first), phi_limit)
+
+    rb.limit_batches(first, last)
+
+    return hklout
