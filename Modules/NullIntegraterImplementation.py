@@ -40,6 +40,7 @@ class NullIntegrater(FrameProcessor,
     def __init__(self, integrated_reflection_file):
         '''Create a null integrater pointing at this reflection file.'''
 
+        FrameProcessor.__init__(self)
         Integrater.__init__(self)
 
         self._intgr_hklout_orig = integrated_reflection_file
