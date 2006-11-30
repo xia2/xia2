@@ -112,6 +112,12 @@ def image2template_directory(filename):
     '''Separate out the template and directory from an image name.'''
 
     directory = os.path.dirname(filename)
+
+    if not directory:
+        
+        # then it should be the current working directory
+        directory = os.getcwd()
+        
     image = os.path.split(filename)[-1]
     template = image2template(image)
 
