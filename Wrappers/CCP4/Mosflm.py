@@ -677,6 +677,7 @@ def Mosflm(DriverType = None):
                                      'tP':75,
                                      'tI':79,
                                      'hP':143,
+                                     'hR':146,
                                      'cP':195,
                                      'cF':196,
                                      'cI':197}
@@ -1123,6 +1124,7 @@ def Mosflm(DriverType = None):
                                      'tP':75,
                                      'tI':79,
                                      'hP':143,
+                                     'hR':146,
                                      'cP':195,
                                      'cF':196,
                                      'cI':197}
