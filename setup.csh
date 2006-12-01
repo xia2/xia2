@@ -13,6 +13,7 @@ else
     setenv PATH ${PATH}:${XIA2_ROOT}/binaries/mac_ppc
   else
     setenv PATH ${PATH}:${XIA2_ROOT}/binaries/mac_386
+  endif
 endif
 
 setenv PATH ${PATH}:${XIA2_ROOT}/Applications
