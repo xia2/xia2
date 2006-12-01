@@ -355,6 +355,14 @@ END PROJECT TS01
 
     <h1>Platform Specific Advice</h1>
 
+    <h2>Gfortran compiled CCP4</h2>
+
+    <p>Recent versions of the gcc compiler suite have included a new compiler
+      called "gfortran" in place of "g77". This has, unfortunately, been 
+      designed with optimisation too high on the agenda, and the output
+      from programs can sometimes be mashed. If this happens you need to
+      set "GFOTRAN_UNBUFFERED_ALL" to 1 in your environment.</p>
+
     <h2>Linux</h2>
     
     <p>There should be no particular problems on this platform - assuming
@@ -391,7 +399,7 @@ END PROJECT TS01
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Thu Nov 30 13:34:41 GMT Standard Time 2006
+Last modified: Fri Dec 01 09:15:18 GMT Standard Time 2006
 <!-- hhmts end -->
   </body>
 </html>
