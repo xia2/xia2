@@ -474,6 +474,20 @@ def Mosflm(DriverType = None):
                     # mosflm built on linux in CCP4 6.0.1...
                     raise DPAException, 'mosaicity estimation failed'
 
+                # or it may alternatively look like this...
+
+                if 'The mosaicity has NOT been estimated' in o:
+                    # then consider setting it do a default value...
+                    # equal to the oscillation width (a good guess)
+                    
+                    phi_width = self.get_header_item('phi_width')
+
+                    Chatter.write(
+                        'Mosaic estimation failed, so guessing at %4.2f' % \
+                        phi_width)
+
+                    self._indxr_mosaic = phi_width
+
                 # mosflm doesn't refine this in autoindexing...
                 if 'Crystal to detector distance of' in o:
                     self._indxr_refined_distance = float(o.split(
