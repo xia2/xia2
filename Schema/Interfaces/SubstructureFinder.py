@@ -36,7 +36,7 @@ class SubstructureFinder:
         # local parameters - these will need to come from somewhere
 
         self._ssfnd_n_sites = 0
-        self._ssfnd_atomname = None
+        self._ssfnd_atom = None
         self._ssfnd_spacegroup = None
 
         # input actors - these are where the actual data will come from
@@ -97,8 +97,8 @@ class SubstructureFinder:
         self._ssfnd_n_sites = n_sites
         return
 
-    def substructure_find_set_atomname(self, atomname):
-        self._ssfnd_atomname = atomname
+    def substructure_find_set_atom(self, atom):
+        self._ssfnd_atom = atom
         return
 
     def substructure_find_set_spacegroup(self, spacegroup):
