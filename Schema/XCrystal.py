@@ -515,7 +515,8 @@ class XCrystal(Object):
                 Environment.generate_directory([self._name,
                                                 'substructure_find']))
 
-            self._substructure_finder.set_scaler(self._get_scaler())
+            self._substructure_finder.substructure_find_set_scaler(
+		self._get_scaler())
 
             # set up all of the derived information...
 
@@ -526,17 +527,18 @@ class XCrystal(Object):
 
             info = self._ha_info[atoms[0]]
 
-            self._substructure_finder.set_atom(atoms[0])
+            self._substructure_finder.substructure_find_set_atom(atoms[0])
             if info.get_number_total():
-                self._substructure_finder.set_n_sites(info.get_number_total())
+                self._substructure_finder.substructure_find_set_n_sites(
+		    info.get_number_total())
             else:
-                self._substructure_finder.set_n_sites(
+                self._substructure_finder.substructure_find_set_n_sites(
                     info.get_number_per_monomer() * self._nmol)
 
-            self._substructure_finder.set_spacegroup(
+            self._substructure_finder.substructure_find_set_spacegroup(
                 self._get_scaler().get_scaler_likely_spacegroups()[0])
 
-            self._substructure_finder.set_name(self._name)
+            self._substructure_finder.substructure_find_set_name(self._name)
 
         return self._substructure_finder
 
