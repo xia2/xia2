@@ -84,10 +84,15 @@
 #                 information in the .xinfo file to cope with cases
 #                 where this information is not in the image headers.
 # 
-# FIXME 15/NOV/06 allow for a role for wavelengths, for example in shelxc/d/e
+# FIXED 15/NOV/06 allow for a role for wavelengths, for example in shelxc/d/e
 #                 it would help matters to define peak, inflection, low and
 #                 high remote. This should be done automatically in a perfect
-#                 world.
+#                 world. In fact, this is best done by assigning one of these
+#                 names to the wavelength name - job done!
+# 
+# FIXME 04/DEC/06 need to also allow for starting from post-scaled data - 
+#                 this will make debugging easier and also provide a 
+#                 xia2ha like functionality.
 # 
 
 class XInfo:
@@ -346,9 +351,14 @@ class XInfo:
                     i += 1
                     record = crystal_records[i]
 
-                    
-                                                                          
-            
+            # now look for one-record things
+
+            if 'SCALED_MERGED_REFLECTION_FILE' in record:
+                self._crystals[
+                    'scaled_merged_reflection_file'] = \
+                    record.replace('SCALED_MERGED_REFLECTION_FILE',
+                                   '').strip()
+
 if __name__ == '__main__':
     import os
 

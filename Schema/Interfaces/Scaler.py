@@ -226,7 +226,17 @@ class Scaler:
         self._scalr_likely_spacegroups = []
         self._scalr_unlikely_spacegroups = []
 
+        # admin junk
+        self._working_directory = os.getcwd()
+
         return
+
+    def set_working_directory(self, working_directory):
+        self._working_directory = working_directory
+        return
+
+    def get_working_directory(self):
+        return self._working_directory 
 
     def set_scaler_prepare_done(self, done = True):
         self._scalr_prepare_done = done

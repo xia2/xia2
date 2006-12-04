@@ -92,6 +92,9 @@
 # FIXME 30/NOV/06 need to limit the amount of data used to run pointless
 #                 with - there should be no advantage in using more than
 #                 180 degrees...
+# 
+# FIXME 04/DEC/06 move the working directory stuff to the interface definition
+# 
 
 import os
 import sys
@@ -136,8 +139,6 @@ class CCP4Scaler(Scaler):
 
     def __init__(self):
         Scaler.__init__(self)
-
-        self._working_directory = os.getcwd()
 
         self._sweep_information = { }
 
@@ -233,13 +234,6 @@ class CCP4Scaler(Scaler):
         pointless.set_working_directory(self.get_working_directory())
         auto_logfiler(pointless)
         return pointless
-
-    def set_working_directory(self, working_directory):
-        self._working_directory = working_directory
-        return
-
-    def get_working_directory(self):
-        return self._working_directory 
 
     def _scale_prepare(self):
         '''Perform all of the preparation required to deliver the scaled

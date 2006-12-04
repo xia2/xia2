@@ -226,6 +226,10 @@ class XCrystal(Object):
         self._scaler = None
         self._substructure_finder = None
 
+        # things to help the great passing on of information
+
+        self._scaled_merged_reflections = None
+
         # derived information
         self._nmol = 1
 
@@ -332,6 +336,10 @@ class XCrystal(Object):
 
     def __str__(self):
         return self.__repr__()
+
+    def set_scaled_merged_reflections(self, scaled_merged_reflections):
+        self._scaled_merged_reflections = scaled_merged_reflections
+        return
 
     def get_project(self):
         return self._project
@@ -471,6 +479,15 @@ class XCrystal(Object):
 
     def _get_scaler(self):
         if self._scaler is None:
+
+            # in here check if
+            # 
+            # (1) self._scaled_merged_reflections is set and
+            # (2) there is no sweep information
+            #
+            # if both of these are true then produce a null scaler
+            # which will wrap this information
+
             self._scaler = Scaler()
 
             # set up a sensible working directory

@@ -11,7 +11,9 @@
 # represents the "top level" of the .xinfo hierarchy, and should
 # exactly correspond to the contents of the .xinfo file.
 # 
-# 
+# Thoughts:
+# Scaling will fix radiation damage issues, so I don't need epochs
+# in the post-scaling universe.
 
 import os
 import sys
@@ -99,6 +101,10 @@ class XProject(Object):
             if crystals[crystal].has_key('ha_info'):
                 if crystals[crystal]['ha_info'] != { }:
                     xc.set_ha_info(crystals[crystal]['ha_info'])
+
+            if crystals[crystal].has_key('scaled_merged_reflection_file'):
+                xc.set_scaled_merged_reflections(
+                    crystals[crystal]['scaled_merged_reflections'])
 
             for wavelength in crystals[crystal]['wavelengths'].keys():
                 # FIXME 29/NOV/06 in here need to be able to cope with
