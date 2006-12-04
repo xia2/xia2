@@ -17,6 +17,7 @@
 
 import sys
 import os
+import exceptions
 
 if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
@@ -30,6 +31,7 @@ from Wrappers.Shelx.Shelxc import Shelxc
 from Wrappers.Phenix.Hyss import Hyss
 
 from Handlers.Streams import Admin
+from lib.Guff import auto_logfiler
 
 class HyssSubstructureFinder(SubstructureFinder):
     '''An implementation of the SubstructureFinder interfaces using
@@ -53,6 +55,9 @@ class HyssSubstructureFinder(SubstructureFinder):
         # FIXME 04/DEC/06 this should go through a get_scaler()
 
         shelxc = Shelxc()
+
+	auto_logfiler(shelxc)
+	shelxc.set_working_directory(self.get_working_directory())
 
         scafiles = self._ssfnd_scaler.get_scaled_merged_reflections(
             )['sca']
@@ -78,7 +83,7 @@ class HyssSubstructureFinder(SubstructureFinder):
 
         shelxc.set_cell(self._ssfnd_scaler.get_scaler_cell())
         shelxc.set_symmetry(self._ssfnd_spacegroup)
-        shelxc.set_n_sites(self._n_sites)
+        shelxc.set_n_sites(self._ssfnd_n_sites)
 
         shelxc.set_name(self._ssfnd_name)
 
@@ -93,8 +98,8 @@ class HyssSubstructureFinder(SubstructureFinder):
             shelxc = Shelxc()
             Admin.write('Using shelxc to prepare HA data.')
             self._shelxc_prepare_data()
-        except:
-            Admin.write('No shelxc!')
+        except exceptions.Exception, e:
+            Admin.write('No shelxc? %s' % str(e))
 
         return
 
@@ -102,6 +107,9 @@ class HyssSubstructureFinder(SubstructureFinder):
         '''Actually find the sites, perhaps with prepared data.'''
 
         hyss = Hyss()
+
+	auto_logfiler(hyss)
+	hyss.set_working_directory(self.get_working_directory())
 
         if self._hklf3_in:
             hyss.set_hklin(self._hklf3_in)
