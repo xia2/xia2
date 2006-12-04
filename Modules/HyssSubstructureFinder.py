@@ -123,3 +123,5 @@ class HyssSubstructureFinder(SubstructureFinder):
 
 if __name__ == '__main__':
     # need to be able to add in a unit test here...
+
+    pass
