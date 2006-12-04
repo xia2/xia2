@@ -79,6 +79,7 @@ from Object import Object
 from Wrappers.CCP4.Othercell import Othercell
 from Handlers.Environment import Environment
 from Modules.ScalerFactory import Scaler
+from Modules.SubstructureFinderFactory import SubstructureFinder
 
 from NMolLib import compute_nmol, compute_solvent
 
@@ -223,6 +224,10 @@ class XCrystal(Object):
         # hooks to dangle command interfaces from
 
         self._scaler = None
+        self._substructure_finder = None
+
+        # derived information
+        self._nmol = 1
 
         return
 
@@ -302,6 +307,8 @@ class XCrystal(Object):
                 result += 'Likely number of molecules in ASU: %d\n' % nmol
                 result += 'Giving solvent fraction:        %4.2f\n' % solvent
 
+                self._nmol = nmol
+
         if type(reflections_all) == type({}):
             for format in reflections_all.keys():
                 result += '%s format:\n' % format
@@ -314,6 +321,12 @@ class XCrystal(Object):
                 else:
                     result += 'Scaled & merged reflections: %s\n' % \
                               str(reflections)
+
+        # and now some site information... maybe
+        if self._ha_info:
+            
+            result += 'HA Sites %s' % str(self._get_substructure_finder(
+                ).substructure_find_get_sites())
 
         return result
 
@@ -475,6 +488,40 @@ class XCrystal(Object):
                 self._scaler.add_scaler_integrater(i)
 
         return self._scaler
+
+    def _get_substructure_finder(self):
+        if self._substructure_finder is None:
+            self._substructure_finder = SubstructureFinder()
+
+            # set up a sensible working directory
+            self._substructure_finder.set_working_directory(
+                Environment.generate_directory([self._name,
+                                                'substructure_find']))
+
+            self._substructure_finder.set_scaler(self._get_scaler())
+
+            # set up all of the derived information...
+
+            atoms = self._ha_info.keys()
+
+            if len(atoms) > 1:
+                raise RuntimeError, 'more than one atom type'
+
+            info = self._ha_info[atoms[0]]
+
+            self._substructure_finder.set_atom(atoms[0])
+            if info.get_number_total():
+                self._substructure_finder.set_n_sites(info.get_number_total())
+            else:
+                self._substructure_finder.set_n_sites(
+                    info.get_number_per_monomer() * self._nmol)
+
+            self._substructure_finder.set_spacegroup(
+                self._get_scaler().get_scaler_likely_spacegroups()[0])
+
+            self._substructure_finder.set_name(self._name)
+
+        return self._substructure_finder
 
 if __name__ == '__main__':
     # lm = _lattice_manager('aP', (43.62, 52.27, 116.4, 103, 100.7, 90.03))

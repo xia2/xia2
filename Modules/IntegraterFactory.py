@@ -8,7 +8,7 @@
 #   CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
 # 
 # A factory for Integrater implementations. At the moment this will 
-# support only Mosflm.
+# support only Mosflm, and the null integrater implementation.
 # 
 
 import os

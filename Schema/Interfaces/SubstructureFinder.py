@@ -54,9 +54,17 @@ class SubstructureFinder:
 
         # handle information
 
-        self._ssfnd_project = None
+        self._ssfnd_name = None
+        self._working_directory = os.getcwd()
 
         return
+
+    def set_working_directory(self, working_directory):
+        self._working_directory = working_directory
+        return
+
+    def get_working_directory(self):
+        return self._working_directory 
 
     def find(self):
         '''Actually initiate the finding process...'''
@@ -109,10 +117,10 @@ class SubstructureFinder:
         
         return self._ssfnd_sites
 
-    def substructure_find_set_project(self, project):
-        '''Set a project name.'''
+    def substructure_find_set_name(self, name):
+        '''Set a name name.'''
 
-        self._ssfnd_project = project
+        self._ssfnd_name = name
 
         return
 

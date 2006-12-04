@@ -41,6 +41,10 @@ class HyssSubstructureFinder(SubstructureFinder):
 
         self._hklf3_in = None
 
+        # check that hyss exists...
+
+        hyss = Hyss()
+
         return
 
     def _shelxc_prepare_data(self):
@@ -76,7 +80,7 @@ class HyssSubstructureFinder(SubstructureFinder):
         shelxc.set_symmetry(self._ssfnd_spacegroup)
         shelxc.set_n_sites(self._n_sites)
 
-        shelxc.set_name(self._ssfnd_project)
+        shelxc.set_name(self._ssfnd_name)
 
         shelxc.prepare()
         
