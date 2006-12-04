@@ -327,7 +327,7 @@ class XCrystal(Object):
                               str(reflections)
 
         # and now some site information... maybe
-        if self._ha_info and False:
+        if self._ha_info:
             
             result += 'HA Sites %s' % str(self._get_substructure_finder(
                 ).substructure_find_get_sites())

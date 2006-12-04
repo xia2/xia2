@@ -114,7 +114,7 @@ class HyssSubstructureFinder(SubstructureFinder):
 
         # set the spacegroup and number of sites
 
-        hyss.set_spacegroup(self._spacegroup)
+        hyss.set_spacegroup(self._ssfnd_spacegroup)
         hyss.set_n_sites(self._ssfnd_n_sites)
         hyss.set_atom(self._ssfnd_atom)
         hyss.find_substructure()

@@ -123,78 +123,50 @@ def lauegroup_to_lattice(lauegroup):
     to something useful, like the implied crystal lattice (in this
     case, oI.)'''
 
-    # parse syminfo, symop -> generate mapping table
+    # this has been calculated from the results of Ralf GK's sginfo and a 
+    # little fiddling...
 
-    if True:
-        raise RuntimeError, 'do not call me I am broken'
+{'aP': 1,
+ 'cF': 196,
+ 'cI': 197,
+ 'cP': 195,
+ 'hP': 143,
+ 'hR': 146,
+ 'mC': 5,
+ 'mP': 3,
+ 'oA': 38,
+ 'oC': 20,
+ 'oF': 22,
+ 'oI': 23,
+ 'oP': 16,
+ 'tI': 79,
+ 'tP': 75}
+{'Ammm': 'oA',
+ 'C2/m': 'mC',
+ 'Cmmm': 'oC',
+ 'Fm-3': 'cF',
+ 'Fm-3m': 'cF',
+ 'Fmmm': 'oF',
+ 'H-3': 'hR',
+ 'H-3m1': 'hR',
+ 'I4/m': 'tI',
+ 'I4/mmm': 'tI',
+ 'Im-3': 'cI',
+ 'Im-3m': 'cI',
+ 'Immm': 'oI',
+ 'P-1': 'aP',
+ 'P-3': 'hP',
+ 'P-31m': 'hP',
+ 'P-3m1': 'hP',
+ 'P2/m': 'mP',
+ 'P4/m': 'tP',
+ 'P4/mmm': 'tP',
+ 'P6/m': 'hP',
+ 'P6/mmm': 'hP',
+ 'Pm-3': 'cP',
+ 'Pm-3m': 'cP',
+ 'Pmmm': 'oP'}
 
-    current_spacegroup = 0
-    lauegroup_info = {0:{ }}
-
-    for record in open(os.path.join(os.environ['CCP4'], 'lib', 'data',
-                                    'syminfo.lib'), 'r').readlines():
-
-        if record[0] == '#':
-            continue
-
-        if 'begin_spacegroup' in record:
-            current_spacegroup = 0
-
-        if 'number' in record[:6]:
-            # this will ensure that garbage goes into record '0'
-            number = int(record.split()[-1])
-            if not number in lauegroup_info.keys():
-                current_spacegroup = number
-                lauegroup_info[current_spacegroup] = { }
-
-        if 'symbol old' in record:
-            name = record.split('\'')[1].split()
-            if name:
-                centring = name[0]
-                lauegroup_info[current_spacegroup]['centring'] = centring
-
-        if 'symbol laue' in record:
-            laue = record.split('\'')[-2].strip()
-            lauegroup_info[current_spacegroup]['laue'] = laue
-
-    # next invert this to generate the mapping
-
-    mapping = { }
-
-    spacegroups = lauegroup_info.keys()
-    spacegroups.sort()
-
-    # we don't want "spacegroup" 0!
-
-    for spacegroup in spacegroups[1:]:
-        centring = lauegroup_info[spacegroup]['centring']
-        laue = lauegroup_info[spacegroup]['laue']
-
-        # want the lowest spacegroup number for a given configuration
-        if not mapping.has_key((centring, laue)):
-            mapping[(centring, laue)] = spacegroup
-
-    # transmogrify the input laue group to a useful key
-
-    centring = lauegroup.split()[0]
-    laue = ''
-    for k in lauegroup.split()[1:]:
-        if not k == '1':
-            laue += k
-
-    # select correct spacegroup from this mapping table
-    spacegroup = mapping[(centring, laue)]
-
-    # FIXME this will need P6 P622 P32 &c as well...
-
-    spacegroup_to_lattice = {1: 'aP', 3: 'mP', 196: 'cF', 5: 'mC',
-                             75: 'tP', 143: 'hP', 16: 'oP', 146: 'hR',
-                             195: 'cP', 20: 'oC', 22: 'oF', 23: 'oI',
-                             79: 'tI', 197: 'cI', 89: 'tP', 97: 'tI',
-                             149: 'hP', 150: 'hP', 155: 'hP', 168: 'hP',
-                             177: 'hP', 207: 'cP', 211: 'cI', 209: 'cF'}
-
-    return spacegroup_to_lattice[spacegroup]
 
 if __name__ == '__main__':
     print lauegroup_to_lattice('I m m m')
@@ -209,3 +181,4 @@ if __name__ == '__main__':
 
         if enantiomorph != spacegroup:
             print '%s -> %s' % (spacegroup, enantiomorph)
+ 
