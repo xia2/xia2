@@ -56,8 +56,8 @@ class HyssSubstructureFinder(SubstructureFinder):
 
         shelxc = Shelxc()
 
-	auto_logfiler(shelxc)
 	shelxc.set_working_directory(self.get_working_directory())
+	auto_logfiler(shelxc)
 
         scafiles = self._ssfnd_scaler.get_scaled_merged_reflections(
             )['sca']
@@ -108,8 +108,8 @@ class HyssSubstructureFinder(SubstructureFinder):
 
         hyss = Hyss()
 
-	auto_logfiler(hyss)
 	hyss.set_working_directory(self.get_working_directory())
+	auto_logfiler(hyss)
 
         if self._hklf3_in:
             hyss.set_hklin(self._hklf3_in)
