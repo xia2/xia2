@@ -457,16 +457,15 @@ class CCP4Scaler(Scaler):
                     for lattice in pl.get_possible_lattices():
                         if indexer.set_indexer_asserted_lattice(lattice):
                             Chatter.write(
-                                'Pointless %s - Indexer - Yes!' %
-                                lattice)                            
+                                'Agreed lattice %s' % lattice)
+                            break
                         else:
                             # then we have the situation where pointless
                             # thinks that the lattice is higher than
                             # possible?? what do we want to do here
                             # (thinking about TS01/NATIVE)
                             Chatter.write(
-                                'Pointless %s - Indexer - No!' %
-                                lattice)
+                                'Rejected lattice %s' % lattice)
 
                 # reget the integrated reflections - this could trigger
                 # repeated indexing and integration...

@@ -535,6 +535,7 @@ class Indexer:
 
         while self._indxr_helper.get()[0] != asserted_lattice:
             self._indxr_helper.eliminate()
+            self._indxr_done = False
 
         # ok by now everything should be ready for the recycling...
 
