@@ -126,47 +126,55 @@ def lauegroup_to_lattice(lauegroup):
     # this has been calculated from the results of Ralf GK's sginfo and a 
     # little fiddling...
 
-{'aP': 1,
- 'cF': 196,
- 'cI': 197,
- 'cP': 195,
- 'hP': 143,
- 'hR': 146,
- 'mC': 5,
- 'mP': 3,
- 'oA': 38,
- 'oC': 20,
- 'oF': 22,
- 'oI': 23,
- 'oP': 16,
- 'tI': 79,
- 'tP': 75}
-{'Ammm': 'oA',
- 'C2/m': 'mC',
- 'Cmmm': 'oC',
- 'Fm-3': 'cF',
- 'Fm-3m': 'cF',
- 'Fmmm': 'oF',
- 'H-3': 'hR',
- 'H-3m1': 'hR',
- 'I4/m': 'tI',
- 'I4/mmm': 'tI',
- 'Im-3': 'cI',
- 'Im-3m': 'cI',
- 'Immm': 'oI',
- 'P-1': 'aP',
- 'P-3': 'hP',
- 'P-31m': 'hP',
- 'P-3m1': 'hP',
- 'P2/m': 'mP',
- 'P4/m': 'tP',
- 'P4/mmm': 'tP',
- 'P6/m': 'hP',
- 'P6/mmm': 'hP',
- 'Pm-3': 'cP',
- 'Pm-3m': 'cP',
- 'Pmmm': 'oP'}
+    lattice_to_spacegroup = {'aP': 1,
+                             'cF': 196,
+                             'cI': 197,
+                             'cP': 195,
+                             'hP': 143,
+                             'hR': 146,
+                             'mC': 5,
+                             'mP': 3,
+                             'oA': 38,
+                             'oC': 20,
+                             'oF': 22,
+                             'oI': 23,
+                             'oP': 16,
+                             'tI': 79,
+                             'tP': 75}
+    
+    lauegroup_to_lattice = {'Ammm': 'oA',
+                            'C2/m': 'mC',
+                            'Cmmm': 'oC',
+                            'Fm-3': 'cF',
+                            'Fm-3m': 'cF',
+                            'Fmmm': 'oF',
+                            'H-3': 'hR',
+                            'H-3m1': 'hR',
+                            'I4/m': 'tI',
+                            'I4/mmm': 'tI',
+                            'Im-3': 'cI',
+                            'Im-3m': 'cI',
+                            'Immm': 'oI',
+                            'P-1': 'aP',
+                            'P-3': 'hP',
+                            'P-31m': 'hP',
+                            'P-3m1': 'hP',
+                            'P2/m': 'mP',
+                            'P4/m': 'tP',
+                            'P4/mmm': 'tP',
+                            'P6/m': 'hP',
+                            'P6/mmm': 'hP',
+                            'Pm-3': 'cP',
+                            'Pm-3m': 'cP',
+                            'Pmmm': 'oP'}
 
+    updated_laue = ''
+
+    for l in lauegroup.split():
+        if not l == '1':
+            updated_laue += l
+
+    return lauegroup_to_lattice[updated_laue]
 
 if __name__ == '__main__':
     print lauegroup_to_lattice('I m m m')
