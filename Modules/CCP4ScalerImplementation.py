@@ -700,15 +700,19 @@ class CCP4Scaler(Scaler):
 
         # FIXME 21/NOV/06 need now to get this from the pointless output...
 
-        self._scalr_likely_spacegroups = [spacegroup]
-
+        self._scalr_likely_spacegroups = p.get_likely_spacegroups()
 
         # also need in here to generate cases like I222/I212121, I23, I213,
-        # as likely cases
+        # as likely cases - however they are probably included in the
+        # likely list...
 
         # then consider all other spacegroups for this pointgroup (at least
         # the ones in "legal" settings) which are not already in the
         # likely list - these will be considered as the unlikely ones.
+
+        Chatter.write('Likely spacegroups:')
+        for spag in self._scalr_likely_spacegroups:
+            Chatter.write('%s' % spag)
 
         Chatter.write('Reindexing to correct spacegroup setting: %s (%s)' % \
                       (spacegroup, reindex_operator))

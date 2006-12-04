@@ -171,8 +171,10 @@ def Pointless(DriverType = None):
             # space to store all possible solutions, to allow discussion of
             # the correct lattice with the indexer... this should be a
             # list containing e.g. 'tP'
+            self._possible_lattices = []
 
-            # self._possible_lattices = []
+            # all "likely" spacegroups...
+            self._likely_spacegroups = []
 
         def set_hklref(self, hklref):
             self._hklref = hklref
@@ -513,7 +515,9 @@ def Pointless(DriverType = None):
             dom = xml.dom.minidom.parse(xml_file)
             
             sg_list = dom.getElementsByTagName('SpacegroupList')[0]
-            sg_node = dom.getElementsByTagName('Spacegroup')[0]
+            sg_node = sg_list.getElementsByTagName('Spacegroup')[0]
+            best_prob = float(sg_node.getElementsByTagName(
+                'TotalProb')[0].childNodes[0].data.strip())
 
             # FIXME 21/NOV/06 in here record a list of valid spacegroups
             # (that is, those which are as likely as the most likely)
@@ -523,6 +527,18 @@ def Pointless(DriverType = None):
                 'SpacegroupName')[0].childNodes[0].data.strip()
             self._spacegroup_reindex_operator = sg_node.getElementsByTagName(
                 'ReindexOperator')[0].childNodes[0].data.strip()
+
+            # get a list of "equally likely" spacegroups
+
+            for node in sg_list.getElementsByTagName('Spacegroup'):
+                prob = float(node.getElementsByTagName(
+                    'TotalProb')[0].childNodes[0].data.strip())
+                name = node.getElementsByTagName(
+                    'SpacegroupName')[0].childNodes[0].data.strip()
+
+                if math.fabs(prob - best_prob) < 0.01:
+                    # this is jolly likely!
+                    self._likely_spacegroups.append(name)
 
             return 'ok'
 
@@ -541,6 +557,9 @@ def Pointless(DriverType = None):
 
         def get_spacegroup_reindex_operator(self):
             return self._spacegroup_reindex_operator
+
+        def get_likely_spacegroups(self):
+            return self._likely_spacegroups
 
         def get_confidence(self):
             return self._confidence
