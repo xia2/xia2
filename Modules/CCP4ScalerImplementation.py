@@ -444,19 +444,29 @@ class CCP4Scaler(Scaler):
             # check this against the records in the indexer
 
             # this is very broken - more a problem with the lauegroup
-            # to lattice method though...
+            # to lattice method though... which is now fixed!
 
-            feedback_is_ready = False
+            feedback_is_ready = True
 
             if feedback_is_ready:
 
-                indexer = self._sweep_information['epoch'][
-                    'integrater'].get_indexer()
+                indexer = self._sweep_information[epoch][
+                    'integrater'].get_integrater_indexer()
 
                 if indexer:
                     for lattice in pl.get_possible_lattices():
                         if indexer.set_indexer_asserted_lattice(lattice):
-                            break
+                            Chatter.write(
+                                'Pointless %s - Indexer - Yes!' %
+                                lattice)                            
+                        else:
+                            # then we have the situation where pointless
+                            # thinks that the lattice is higher than
+                            # possible?? what do we want to do here
+                            # (thinking about TS01/NATIVE)
+                            Chatter.write(
+                                'Pointless %s - Indexer - No!' %
+                                lattice)
 
                 # reget the integrated reflections - this could trigger
                 # repeated indexing and integration...

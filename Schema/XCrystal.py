@@ -327,13 +327,13 @@ class XCrystal(Object):
                               str(reflections)
 
         # and now some site information... maybe
-        if self._ha_info:
+        if self._ha_info and False:
             
 	    try:
-                result += 'HA Sites %s' % str(self._get_substructure_finder(
+                result += 'HA Sites %s\n' % str(self._get_substructure_finder(
                     ).substructure_find_get_sites())
 	    except:
-                result += 'No sites - sorry!'
+                result += 'No sites - sorry!\n'
 
         return result
 
