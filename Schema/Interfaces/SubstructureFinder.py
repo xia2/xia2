@@ -47,10 +47,14 @@ class SubstructureFinder:
 
         self._ssfnd_sites = None
 
-        #job management flags
+        # job management flags
 
         self._ssfnd_prepare_done = False
         self._ssfnd_done = False
+
+        # handle information
+
+        self._ssfnd_project = None
 
         return
 
@@ -104,3 +108,12 @@ class SubstructureFinder:
         self.find()
         
         return self._ssfnd_sites
+
+    def substructure_find_set_project(self, project):
+        '''Set a project name.'''
+
+        self._ssfnd_project = project
+
+        return
+
+    

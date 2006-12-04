@@ -27,13 +27,8 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
-# explicitly add the "lib" directory to the path...
-
-if not os.path.join(os.environ['XIA2_ROOT'], 'lib') in sys.path:
-    sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'lib'))
-
 from Driver.DriverFactory import DriverFactory
-from SubstructureLib import parse_pdb_sites_file, \
+from lib.SubstructureLib import parse_pdb_sites_file, \
      write_pdb_sites_file
 
 # from Schema.Interfaces.SubstructureFinder import SubstructureFinder
