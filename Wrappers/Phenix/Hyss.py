@@ -133,7 +133,8 @@ def Hyss(DriverType = None):
 
             for line in self.get_all_output():
                 if 'Writing consensus model as PDB' in line:
-                    pdb_file = line.split()[-1]
+                    pdb_file = os.path.join(self.get_working_directory(),
+                                            line.split()[-1])
                     self._sites = parse_pdb_sites_file(pdb_file)
 
             return
