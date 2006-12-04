@@ -13,7 +13,9 @@
 # (a separately licensed program) and, possibly, shelxc to prepare the data
 # if available.
 # 
-#
+# FIXME 04/DEC/06 if there are no wavelengths which "look" anomalous - e.g.
+#                 they are called PEAK, INFL, LREM, HREM, SAD - then this
+#                 should barf.
 
 import sys
 import os
