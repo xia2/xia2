@@ -93,8 +93,11 @@
 #                 with - there should be no advantage in using more than
 #                 180 degrees...
 # 
-# FIXME 04/DEC/06 move the working directory stuff to the interface definition
-# 
+# FIXED 04/DEC/06 move the working directory stuff to the interface definition.
+#
+# FIXME 05/DEC/06 need to make sure that there is no radiation damage before
+#                 trying to optimise the error parameters. This includes
+#                 between sweeps, and is a big and important thing!
 
 import os
 import sys
