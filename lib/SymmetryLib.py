@@ -118,13 +118,12 @@ def compute_enantiomorph(spacegroup):
 
     return result
 
-def lauegroup_to_lattice(lauegroup):
-    '''Convert a Laue group representation (from pointless, e.g. I m m m)
-    to something useful, like the implied crystal lattice (in this
-    case, oI.)'''
+def lattices_in_order():
+    '''Return a list of possible crystal lattices (e.g. tP) in order of
+    increasing symmetry...'''
 
-    # this has been calculated from the results of Ralf GK's sginfo and a 
-    # little fiddling...
+    # eliminated this entry ... 'oA': 38,
+
 
     lattice_to_spacegroup = {'aP': 1,
                              'cF': 196,
@@ -134,13 +133,30 @@ def lauegroup_to_lattice(lauegroup):
                              'hR': 146,
                              'mC': 5,
                              'mP': 3,
-                             'oA': 38,
                              'oC': 20,
                              'oF': 22,
                              'oI': 23,
                              'oP': 16,
                              'tI': 79,
                              'tP': 75}
+
+    spacegroup_to_lattice = { }
+
+    for lattice in lattice_to_spacegroup.keys():
+        spacegroup_to_lattice[lattice_to_spacegroup[lattice]] = lattice
+
+    spacegroups = spacegroup_to_lattice.keys()
+    spacegroups.sort()
+
+    return [spacegroup_to_lattice[s] for s in spacegroups]
+
+def lauegroup_to_lattice(lauegroup):
+    '''Convert a Laue group representation (from pointless, e.g. I m m m)
+    to something useful, like the implied crystal lattice (in this
+    case, oI.)'''
+
+    # this has been calculated from the results of Ralf GK's sginfo and a 
+    # little fiddling...
     
     lauegroup_to_lattice = {'Ammm': 'oA',
                             'C2/m': 'mC',
@@ -180,6 +196,8 @@ if __name__ == '__main__':
     print lauegroup_to_lattice('C 1 2/m 1')
     print lauegroup_to_lattice('P -1')
     print lauegroup_to_lattice('P 4/mmm')
+
+    print lattices_in_order()
 
 if __name__ == '__main__':
 

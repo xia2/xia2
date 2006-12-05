@@ -119,6 +119,11 @@
 #                 case which will make use of this. Turns out that including
 #                 the new unit cell is too tricky and shouldn't be needed
 #                 anyway - removing...
+#
+#                 Update 05/DEC/06 actually this should return the resulting
+#                 lattice if it is changed or "None" if it isn't happy with
+#                 it - if something has changed we need to know, so that
+#                 we can leave the scaling and return to the data reduction.
 
 import os
 import sys
@@ -522,13 +527,13 @@ class Indexer:
             lattices.append(l[0])
 
         if not asserted_lattice in lattices:
-            return False
+            return 'impossible'
 
         # check if this is the top one - if so we don't need to
         # do anything
 
         if asserted_lattice == all_lattices[0][0]:
-            return True
+            return 'correct'
 
         # ok this means that we need to do something - work through
         # eliminating lattices until the "correct" one is found...
@@ -539,6 +544,6 @@ class Indexer:
 
         # ok by now everything should be ready for the recycling...
 
-        return True
+        return 'possible'
 
     # end of interface

@@ -130,6 +130,7 @@ from Handlers.Streams import Chatter
 # jiffys
 from lib.Guff import is_mtz_file, nifty_power_of_ten, auto_logfiler
 from lib.Guff import transpose_loggraph, nint
+from lib.SymmetryLib import lattices_in_order
 
 from CCP4ScalerImplementationHelpers import _resolution_estimate, \
      _prepare_pointless_hklin
@@ -418,6 +419,8 @@ class CCP4Scaler(Scaler):
         # all should share the same pointgroup
         
         overall_pointgroup = None
+
+        need_to_return = False
         
         for epoch in self._sweep_information.keys():
             
@@ -454,25 +457,58 @@ class CCP4Scaler(Scaler):
                     'integrater'].get_integrater_indexer()
 
                 if indexer:
-                    for lattice in pl.get_possible_lattices():
-                        if indexer.set_indexer_asserted_lattice(lattice):
+                    # FIXED 05/DEC/06 this needs to really be run
+                    # in order of decreasing pointgroup...
+
+                    ordered_lattices = lattices_in_order()
+                    ordered_lattices.reverse()
+
+                    possible = pl.get_possible_lattices()
+
+                    likely = []
+                    for l in ordered_lattices:
+                        if l in possible:
+                            likely.append(l)
+                    
+                    for lattice in likely:
+                        state = indexer.set_indexer_asserted_lattice(lattice)
+                        if state == 'correct':
+                            
+                            # pointless and indexing agree
                             Chatter.write(
                                 'Agreed lattice %s' % lattice)
                             break
-                        else:
-                            # then we have the situation where pointless
-                            # thinks that the lattice is higher than
-                            # possible?? what do we want to do here
-                            # (thinking about TS01/NATIVE)
+                        
+                        elif state == 'impossible':
+
+                            # pointless wants something where no indexing
+                            # solution exists...
                             Chatter.write(
                                 'Rejected lattice %s' % lattice)
 
+                            # this means that I will need to rerun pointless
+                            # with a lower symmetry target...
+                            
+                            continue
+                        
+                        elif state == 'possible':
+                            # then this is a possible indexing solution
+                            # but is not the highest symmetry - need to
+                            # return...
+
+                            Chatter.write(
+                                'Accepted lattice %s ...' % lattice)
+                            Chatter.write(
+                                '... will reprocess accordingly')
+
+                            need_to_return = True
+
                 # reget the integrated reflections - this could trigger
-                # repeated indexing and integration...
+                # repeated indexing and integration... don't need this now...
                 
-                self._sweep_information[epoch][
-                    'hklin'] = self._sweep_information[epoch][
-                    'integrater'].get_integrater_reflections()
+                # self._sweep_information[epoch][
+                # 'hklin'] = self._sweep_information[epoch][
+                # 'integrater'].get_integrater_reflections()
 
             Chatter.write('Pointless analysis of %s' % pl.get_hklin())
 
@@ -507,6 +543,14 @@ class CCP4Scaler(Scaler):
 
             # record the change in reflection file...
             self._sweep_information[epoch]['hklin'] = hklout
+
+        # if the pointgroup comparison above results in a need to
+        # re-reduce the data then allow for this...
+
+        if need_to_return:
+            self._scalr_done = False
+            self._scalr_prepare_done = False
+            return
 
         # FIXME 06/NOV/06 need to run this again - this time with the
         # reference file... messy but perhaps effective?
