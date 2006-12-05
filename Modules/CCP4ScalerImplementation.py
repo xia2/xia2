@@ -446,69 +446,70 @@ class CCP4Scaler(Scaler):
 
             # check this against the records in the indexer
 
-            # this is very broken - more a problem with the lauegroup
-            # to lattice method though... which is now fixed!
+            indexer = self._sweep_information[epoch][
+                'integrater'].get_integrater_indexer()
 
-            feedback_is_ready = True
-
-            if feedback_is_ready:
-
-                indexer = self._sweep_information[epoch][
-                    'integrater'].get_integrater_indexer()
-
-                if indexer:
-                    # FIXED 05/DEC/06 this needs to really be run
-                    # in order of decreasing pointgroup...
-
-                    ordered_lattices = lattices_in_order()
-                    ordered_lattices.reverse()
-
-                    possible = pl.get_possible_lattices()
-
-                    likely = []
-                    for l in ordered_lattices:
-                        if l in possible:
-                            likely.append(l)
-                    
-                    for lattice in likely:
-                        state = indexer.set_indexer_asserted_lattice(lattice)
-                        if state == 'correct':
-                            
-                            # pointless and indexing agree
-                            Chatter.write(
-                                'Agreed lattice %s' % lattice)
-                            break
-                        
-                        elif state == 'impossible':
-
-                            # pointless wants something where no indexing
-                            # solution exists...
-                            Chatter.write(
-                                'Rejected lattice %s' % lattice)
-
-                            # this means that I will need to rerun pointless
-                            # with a lower symmetry target...
-                            
-                            continue
-                        
-                        elif state == 'possible':
-                            # then this is a possible indexing solution
-                            # but is not the highest symmetry - need to
-                            # return...
-
-                            Chatter.write(
-                                'Accepted lattice %s ...' % lattice)
-                            Chatter.write(
-                                '... will reprocess accordingly')
-
-                            need_to_return = True
-
-                # reget the integrated reflections - this could trigger
-                # repeated indexing and integration... don't need this now...
+            # flag to record whether I need to do some rerunning
+            rerun_pointless = False
+            
+            if indexer:
+                # FIXED 05/DEC/06 this needs to really be run
+                # in order of decreasing pointgroup...
                 
-                # self._sweep_information[epoch][
-                # 'hklin'] = self._sweep_information[epoch][
-                # 'integrater'].get_integrater_reflections()
+                ordered_lattices = lattices_in_order()
+                ordered_lattices.reverse()
+                
+                possible = pl.get_possible_lattices()
+                
+                likely = []
+                for l in ordered_lattices:
+                    if l in possible:
+                        likely.append(l)
+
+                original_pointgroup = pl.get_pointgroup()
+                    
+                for lattice in likely:
+                    state = indexer.set_indexer_asserted_lattice(lattice)
+                    if state == 'correct':
+                            
+                        # pointless and indexing agree
+                        Chatter.write(
+                            'Agreed lattice %s' % lattice)
+
+                        correct_lattice = lattice
+                        
+                        break
+                    
+                    elif state == 'impossible':
+
+                        # pointless wants something where no indexing
+                        # solution exists...
+                        Chatter.write(
+                            'Rejected lattice %s' % lattice)
+                        
+                        # this means that I will need to rerun pointless
+                        # with a lower symmetry target...
+
+                        rerun_pointless = True
+                        
+                        continue
+                    
+                    elif state == 'possible':
+                        # then this is a possible indexing solution
+                        # but is not the highest symmetry - need to
+                        # return...
+                        
+                        Chatter.write(
+                            'Accepted lattice %s ...' % lattice)
+                        Chatter.write(
+                            '... will reprocess accordingly')
+                        
+                        need_to_return = True
+
+            if rerun_pointless:
+                pl.set_correct_lattice(correct_lattice)
+                pl.decide_pointgroup()
+
 
             Chatter.write('Pointless analysis of %s' % pl.get_hklin())
 
@@ -525,6 +526,8 @@ class CCP4Scaler(Scaler):
 
             if overall_pointgroup != pointgroup:
                 Chatter.write('Uh oh - non uniform pointgroups!')
+
+                # FIXME 05/DEC/06 need to raise an exception here...
 
             # and reindexing operation
             reindex_op = pl.get_reindex_operator()

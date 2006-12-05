@@ -173,6 +173,8 @@ def Pointless(DriverType = None):
             # list containing e.g. 'tP'
             self._possible_lattices = []
 
+            self._lattice_to_laue = { }
+
             # all "likely" spacegroups...
             self._likely_spacegroups = []
 
@@ -188,6 +190,21 @@ def Pointless(DriverType = None):
                 raise RuntimeError, 'hklref not defined'
             if not os.path.exists(self._hklref):
                 raise RuntimeError, 'hklref %s does not exist' % self._hklref
+
+        def set_correct_lattice(self, lattice):
+            '''In a rerunning situation, set the correct lattice, which will
+            assert a correct lauegroup based on the previous run of the
+            program...'''
+
+            if self._lattice_to_lauegroup = { }:
+                raise RuntimeError, 'no lattice to lauegroup mapping'
+
+            if not self._lattice_to_lauegroup.has_key(lattice):
+                raise RuntimeError, 'lattice %s not possible' % lattice
+
+            self._input_laue_group = self._lattice_to_lauegroup[lattice]
+
+            return
 
         def decide_pointgroup(self):
             '''Decide on the correct pointgroup for hklin.'''
@@ -368,10 +385,11 @@ def Pointless(DriverType = None):
                         'CellDelta')[0].childNodes[0].data)
 
                     # record this as a possible lattice...
-                    # note well - this doesn't actually work!
+
                     lattice = lauegroup_to_lattice(lauegroup)
                     if not lattice in self._possible_lattices:
                         self._possible_lattices.append(lattice)
+                        self._lattice_to_laue[lattice] = lauegroup
                     
                     # check to see if this is the "correct" answer - if it
                     # is (and it should be the first!) then record the NetZc
