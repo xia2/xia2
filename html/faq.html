@@ -20,7 +20,7 @@
       the results better. For my test cases, which are reasonably typical
       MAD, SAD and native data sets, anywhere between 30 minutes and four
       hours is typical - however this depends greatly on the computer, where 
-      the data are stored.
+      the data are stored.</p>
 
     <h3>What about directories with spaces in?</h3>
 
@@ -63,12 +63,35 @@
       to see if the reindexing operator is h,k,l and the input and
       output spacegroup records are identical - this will happen shortly
       though which should reduce the time taken for large data sets.</p>
+    
+    <h3>What does this weird error mean?</h3>
+
+    <pre>
+"/opt/px/xia/xia2-0.2.2.3/xia2dpa-0.2.2.3/Modules/CCP4ScalerImplementation.py", 
+line 828, in _refine_sd_parameters
+     rms_full, rms_partial = self._refine_sd_parameters_remerge(
+   File 
+"/opt/px/xia/xia2-0.2.2.3/xia2dpa-0.2.2.3/Modules/CCP4ScalerImplementation.py", 
+line 689, in _refine_sd_parameters_remerge
+     loggraph = sc.parse_ccp4_loggraph()
+   File 
+"/opt/px/xia/xia2-0.2.2.3/xia2core-0.2.2.1/Python/Decorators/CCP4Decorator.py", 
+line 384, in parse_ccp4_loggraph
+     record.append(data.pop())
+IndexError: pop from empty list
+</pre>
+
+    <p>This is a result of two columns merging - most commonly Mn(I/sigma)
+      in the scala loggraph output being greater than 99.99, and sometimes
+      occurs when you have measured high redundancy S-SAD data. This is a 
+      bug which has been reported to CCP4, and a workaround is included
+      in version 0.2.2.4 and later of xia2.</p>
 
     <hr>
     <address><a href="mailto:g.winter@dl.ac.uk"></a></address>
 <!-- Created: Wed Nov 29 09:59:12 GMT Standard Time 2006 -->
 <!-- hhmts start -->
-Last modified: Wed Nov 29 09:12:02 GMT 2006
+Last modified: Tue Dec 05 09:56:46 GMT Standard Time 2006
 <!-- hhmts end -->
   </body>
 </html>
