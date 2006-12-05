@@ -196,13 +196,13 @@ def Pointless(DriverType = None):
             assert a correct lauegroup based on the previous run of the
             program...'''
 
-            if self._lattice_to_lauegroup == { }:
+            if self._lattice_to_laue == { }:
                 raise RuntimeError, 'no lattice to lauegroup mapping'
 
-            if not self._lattice_to_lauegroup.has_key(lattice):
+            if not self._lattice_to_laue.has_key(lattice):
                 raise RuntimeError, 'lattice %s not possible' % lattice
 
-            self._input_laue_group = self._lattice_to_lauegroup[lattice]
+            self._input_laue_group = self._lattice_to_laue[lattice]
 
             return
 
