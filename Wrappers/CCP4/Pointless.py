@@ -384,12 +384,14 @@ def Pointless(DriverType = None):
                     delta = float(s.getElementsByTagName(
                         'CellDelta')[0].childNodes[0].data)
 
-                    # record this as a possible lattice...
+                    # record this as a possible lattice... if it's Z score
+                    # is positive, anyway
 
                     lattice = lauegroup_to_lattice(lauegroup)
                     if not lattice in self._possible_lattices:
-                        self._possible_lattices.append(lattice)
-                        self._lattice_to_laue[lattice] = lauegroup
+                        if netzc > 0.0:
+                            self._possible_lattices.append(lattice)
+                            self._lattice_to_laue[lattice] = lauegroup
                     
                     # check to see if this is the "correct" answer - if it
                     # is (and it should be the first!) then record the NetZc
