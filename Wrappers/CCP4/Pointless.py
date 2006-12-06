@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # 2nd june 2006
 # 
@@ -385,11 +383,14 @@ def Pointless(DriverType = None):
                         'CellDelta')[0].childNodes[0].data)
 
                     # record this as a possible lattice... if it's Z score
-                    # is positive, anyway
+                    # is positive, anyway - no, in fact if it is
+                    # "reasonably likely" e.g. within 0.15 of the most
+                    # likely...
 
                     lattice = lauegroup_to_lattice(lauegroup)
                     if not lattice in self._possible_lattices:
-                        if netzc > 0.0:
+                        if math.fabs(likelihood -
+                                     self._totalprob) < 0.15:
                             self._possible_lattices.append(lattice)
                             self._lattice_to_laue[lattice] = lauegroup
                     
