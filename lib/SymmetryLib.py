@@ -4,14 +4,12 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # 16th November 2006
 # 
 # A library of things to help with simple symmetry operation stuff.
 # 
-# FIXME 17/NOV/06 add a method in here to give a list of likely, and then
+# FIXED 17/NOV/06 add a method in here to give a list of likely, and then
 #                 less likely, spacegroups based on an input spacegroup.
 #                 For instance, if the input spacegroup is P 41 21 2 then
 #                 another likely spacegroup is P 43 21 2 and less likely
@@ -20,6 +18,11 @@
 #                 Mitchell example.) This should also allow in the likely
 #                 case for body centred spacegroups where the screw axes
 #                 are hidden, for example I 2 2 2/I 21 21 21 and I 2 3/I 21 3.
+#                 This is now handled by Pointless in the "likely spacegroups"
+#                 section.
+#
+# FIXME 06/DEC/06 need a mapping table from "old" spacegroup names to e.g. xHM
+#                 for use with phenix.hyss.
 # 
 
 import os
@@ -31,6 +34,36 @@ if not os.environ.has_key('XIA2_ROOT'):
 symop = os.path.join(os.environ['XIA2_ROOT'],
                      'Data', 'Symmetry', 'symop.lib')
 
+syminfo = os.path.join(os.environ['CCP4'],
+                       'lib', 'data', 'syminfo.lib')
+
+def spacegroup_name_old_to_xHM(old):
+    '''Convert from old to xHM name.'''
+
+    # generate mapping table
+
+    mapping = { }
+    current_old = ''
+    current_xHM = ''
+
+    for line in open(syminfo, 'r').readlines():
+        if line[0] == '#':
+            continue
+
+        if 'symbol old' in line:
+            current_old = line.split('\'')[1]
+
+        if 'symbol xHM' in line:
+            current_xHM = line.split('\'')[1]
+
+        if 'end_spacegroup' in line:            
+            mapping[current_old] = current_xHM
+
+    if not old in mapping.keys():
+        raise RuntimeError, 'spacegroup %s unknown' % old
+
+    return mapping[old]
+    
 def get_all_spacegroups_short():
     '''Get a list of all short spacegroup names.'''
 
@@ -198,6 +231,8 @@ if __name__ == '__main__':
     print lauegroup_to_lattice('P 4/mmm')
 
     print lattices_in_order()
+
+    print spacegroup_name_old_to_xHM('H 3 2')
 
 if __name__ == '__main__':
 
