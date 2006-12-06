@@ -817,7 +817,17 @@ def Mosflm(DriverType = None):
             # is pretty damn robust.
 
             if not cell_refinement_ok:
-                raise DPAException, 'Cell refinement failed'
+
+                # in here try first to repair it, as described
+                # in the inaccurate cell parameters block below...
+                # in fact all errors should now be trapped below
+                # so this section isn't a lot of use...
+
+                # FIXME 06/DEC/06 is this appropriate???
+
+                # raise DPAException, 'Cell refinement failed'
+
+                pass
 
             # if it succeeded then populate the indexer output (myself)
             # with the new information - this can then be used
