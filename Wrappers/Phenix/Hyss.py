@@ -28,6 +28,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Driver.DriverFactory import DriverFactory
 from lib.SubstructureLib import parse_pdb_sites_file, \
      write_pdb_sites_file
+from lib.SymmetryLib import spacegroup_name_old_to_xHM
 
 # from Schema.Interfaces.SubstructureFinder import SubstructureFinder
 
@@ -118,7 +119,12 @@ def Hyss(DriverType = None):
             # FIXME 06/DEC/06 in here need to convert this - perhaps
             # because Ralf GK likes to call H32 R32:H, for instance
 
-            self.add_command_line('--space_group=%s' % self._spacegroup)
+            # looks like I need to convert to the xHM symbol from the
+            # "old" symbol, as described in $CLIBD/syminfo.lib.
+
+            self.add_command_line(
+                '--space_group=%s' % spacegroup_name_old_to_xHM(
+                self._spacegroup))
 
             if self._cell:
                 self.add_command_line('--unit_cell=%f,%f,%f,%f,%f,%f' % \
