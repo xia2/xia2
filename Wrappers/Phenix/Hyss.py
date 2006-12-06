@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # 16th November 2006
 # 
@@ -116,6 +114,9 @@ def Hyss(DriverType = None):
 
             self.add_command_line('%d' % self._n_sites)
             self.add_command_line('%s' % self._atom)
+
+            # FIXME 06/DEC/06 in here need to convert this - perhaps
+            # because Ralf GK likes to call H32 R32:H, for instance
 
             self.add_command_line('--space_group=%s' % self._spacegroup)
 
