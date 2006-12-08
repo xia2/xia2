@@ -957,7 +957,8 @@ def Mosflm(DriverType = None):
                 if 'Refined mosaic spread (excluding safety factor)' in o:
                     mosaic = float(o.split()[-1])
                     if mosaic < 0.0:
-                        Science.write('Negative mosaic spread (%5.2)' % mosaic)
+                        Science.write('Negative mosaic spread (%5.2f)' %
+                                      mosaic)
                         # raise DPAException, 'negative refined mosaic spread'
 
                         if len(self._mosflm_cell_ref_images) <= 3:
