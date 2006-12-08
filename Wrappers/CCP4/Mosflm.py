@@ -957,7 +957,31 @@ def Mosflm(DriverType = None):
                 if 'Refined mosaic spread (excluding safety factor)' in o:
                     mosaic = float(o.split()[-1])
                     if mosaic < 0.0:
-                        raise DPAException, 'negative refined mosaic spread'
+                        Science.write('Negative mosaic spread (%5.2)' % mosaic)
+                        # raise DPAException, 'negative refined mosaic spread'
+
+                        if len(self._mosflm_cell_ref_images) <= 3:
+                            # set this up to be more images
+                            new_cell_ref_images = self._refine_select_images(
+                                len(self._mosflm_cell_ref_images) + 1,
+                                mosaic)
+                            self._mosflm_cell_ref_images = new_cell_ref_images
+                            
+                            self.set_integrater_prepare_done(False)
+                            
+                            Science.write(
+                                'Repeating cell refinement with more data.')
+
+                            return
+
+                        else:
+
+                            Science.write(
+                                'Integration will be aborted because of this.')
+                        
+                            raise RuntimeError, 'cell refinement failed: ' + \
+                                  'negative mosaic spread'
+                        
 
             # AFTER that, read the refined parameters
             
