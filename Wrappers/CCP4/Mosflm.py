@@ -379,7 +379,7 @@ def Mosflm(DriverType = None):
                 self.input('beam %f %f' % self.get_beam())
 
             if self.get_wavelength_prov() == 'user':
-                self.input('wavelength %f %f' % self.get_wavelength())
+                self.input('wavelength %f' % self.get_wavelength())
 
             if self.get_distance_prov() == 'user':
                 self.input('distance %f' % self.get_distance())
@@ -762,7 +762,7 @@ def Mosflm(DriverType = None):
             # note well that the beam centre is coming from indexing so
             # should be already properly handled
             if self.get_wavelength_prov() == 'user':
-                self.input('wavelength %f %f' % self.get_wavelength())
+                self.input('wavelength %f' % self.get_wavelength())
 
             # get all of the stored parameter values
             parameters = self.get_integrater_parameters('mosflm')
@@ -1202,7 +1202,7 @@ def Mosflm(DriverType = None):
             # note well that the beam centre is coming from indexing so
             # should be already properly handled - likewise the distance
             if self.get_wavelength_prov() == 'user':
-                self.input('wavelength %f %f' % self.get_wavelength())
+                self.input('wavelength %f' % self.get_wavelength())
 
             # get all of the stored parameter values
             parameters = self.get_integrater_parameters('mosflm')

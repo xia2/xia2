@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #  
 # A versioning object representation of the sweep. This will include
 # methods for handling the required actions which may be performed
@@ -242,11 +240,25 @@ class XSweep(Object):
                 if wavelength.get_wavelength() == 0.0:
                     wavelength.set_wavelength(header['wavelength'])
 
+                # FIXME 08/DEC/06 in here need to allow for the fact
+                # that the wavelength in the image header could be wrong and
+                # in fact it should be replaced with the input value -
+                # through the user will need to be warned of this and
+                # also everything using the FrameProcessor interface
+                # will also have to respect this!
+
                 if math.fabs(header['wavelength'] -
                              wavelength.get_wavelength()) > 0.0001:
-                    format = 'wavelength for sweep %s does not ' + \
-                             'match wavelength %s'
-                    raise RuntimeError, format  % (name, wavelength.get_name())
+                    # format = 'wavelength for sweep %s does not ' + \
+                    # 'match wavelength %s'
+                    # raise RuntimeError, format  % \
+                    # (name, wavelength.get_name())
+
+                    format = 'Header wavelength for sweep %s differerent' + \
+                             ' to assigned value (%4.2f vs. %4.2f)'
+
+                    Chatter.write(format % (name, header['wavelength'],
+                                            wavelength.get_wavelength()))
 
             
         else:
@@ -489,6 +501,14 @@ class XSweep(Object):
 
     def get_wavelength(self):
         return self._wavelength
+
+    def get_wavelength_value(self):
+        '''Return the wavelength value in Angstroms.'''
+
+        try:
+            return self.get_wavelength().get_wavelength()
+        except:
+            return 0.0
 
     def get_integrater_reflections(self):
         reflections = self._get_integrater().get_integrater_reflections()

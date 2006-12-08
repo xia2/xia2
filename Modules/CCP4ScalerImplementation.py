@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # 21/SEP/06
 # 
@@ -1475,6 +1473,11 @@ class CCP4Scaler(Scaler):
         # weighted according to (1) the number of reflections and
         # perhaps (2) the epoch order of that data set...
 
+        # FIXME 08/DEC/06 in some cases e.g. when you have a wider range
+        # of wavelengths the criterion in here is rather strict - that is,
+        # the unit cell parameters could vary by more if you have a factor
+        # of say 2 between different wavelengths.
+
         average_cell_a = 0.0
         average_cell_b = 0.0
         average_cell_c = 0.0
@@ -1483,6 +1486,11 @@ class CCP4Scaler(Scaler):
         average_cell_gamma = 0.0
 
         average_cell_nref = 0
+
+        # in here I want to go through and dump out all of the information
+        # first and then go through again and compute the average unit
+        # cell values and so on, because then I can take into account the
+        # spread of wavelength values. See bug # 1757.
 
         for key in scaled_reflection_files.keys():
             hklin = scaled_reflection_files[key]

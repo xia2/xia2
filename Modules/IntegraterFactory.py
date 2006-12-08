@@ -62,6 +62,12 @@ def IntegraterForXSweep(xsweep):
     if xsweep._epoch > 0:
         integrater.set_integrater_epoch(xsweep._epoch)
 
+    # need to do the same for wavelength now as that could be wrong in
+    # the image header...
+
+    if xsweep.get_wavelength_value():
+        integrater.set_wavelength(xsweep.get_wavelength_value())
+
     return integrater
 
 def Integrater():

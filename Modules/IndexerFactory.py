@@ -95,6 +95,12 @@ def IndexerForXSweep(xsweep):
 
     # FIXME more - need to check if we should be indexing in a specific
     # lattice - check xsweep.get_crystal_lattice()
+
+    # need to do the same for wavelength now as that could be wrong in
+    # the image header...
+
+    if xsweep.get_wavelength_value():
+        indexer.set_wavelength(xsweep.get_wavelength_value())
     
     return indexer
     
