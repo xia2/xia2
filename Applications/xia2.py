@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # 21/SEP/06
 #
@@ -30,6 +28,18 @@ sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 from Handlers.CommandLine import CommandLine
 from Handlers.Streams import Chatter
 
+def check():
+    '''Check that the set-up is ok...'''
+
+    sys.path.append(os.path.join((os.environ['XIA2CORE_ROOT']),
+                                 'Python'))
+
+    from TestPython import test_python_setup
+    
+    test_python_setup()
+
+    return
+
 def xia2():
     if not CommandLine.get_xinfo():
         raise RuntimeError, 'xinfo not defined'
@@ -48,6 +58,8 @@ def xia2():
     return
 
 if __name__ == '__main__':
+
+    check()
     xia2()
 
     
