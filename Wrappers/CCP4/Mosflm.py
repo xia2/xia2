@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # 23rd June 2006
 # 
@@ -734,7 +732,7 @@ def Mosflm(DriverType = None):
             # write the matrix file in xiaindex.mat
 
             f = open(os.path.join(self.get_working_directory(),
-                                  'xiaindex.mat'), 'w')
+                                  'xiaindex-%s.mat' % lattice), 'w')
             for m in matrix:
                 f.write(m)
             f.close()
@@ -751,7 +749,7 @@ def Mosflm(DriverType = None):
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())
 
-            self.input('matrix xiaindex.mat')
+            self.input('matrix xiaindex-%s.mat' % lattice)
             self.input('newmat xiarefine.mat')
 
             self.input('beam %f %f' % beam)
