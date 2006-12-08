@@ -134,7 +134,7 @@ from lib.Guff import transpose_loggraph, nint
 from lib.SymmetryLib import lattices_in_order
 
 from CCP4ScalerImplementationHelpers import _resolution_estimate, \
-     _prepare_pointless_hklin
+     _prepare_pointless_hklin, _fraction_difference
 
 class CCP4Scaler(Scaler):
     '''An implementation of the Scaler interface using CCP4 programs.'''
@@ -1534,18 +1534,25 @@ class CCP4Scaler(Scaler):
                     Chatter.write('%d reflections in dataset %s' % \
                                   (reflections, d))
 
-                    if math.fabs(cell[0] -
-                                 (average_cell_a / average_cell_nref)) > 0.5:
+                    # FIXME 08/DEC/08 cell axis differences now in 1% range,
+                    # keep angles as 0.5 degrees
+
+                    if _fraction_difference(
+                        cell[0],
+                        average_cell_a / average_cell_nref) > 0.01:
                         raise RuntimeError, \
                               'incompatible unit cell for set %s' % d
-                    if math.fabs(cell[1] -
-                                 (average_cell_b / average_cell_nref)) > 0.5:
+                    if _fraction_difference(
+                        cell[1],
+                        average_cell_b / average_cell_nref) > 0.01:
                         raise RuntimeError, \
                               'incompatible unit cell for set %s' % d
-                    if math.fabs(cell[2] -
-                                 (average_cell_c / average_cell_nref)) > 0.5:
+                    if _fraction_difference(
+                        cell[2],
+                        average_cell_c / average_cell_nref) > 0.01:
                         raise RuntimeError, \
                               'incompatible unit cell for set %s' % d
+
                     if math.fabs(cell[3] -
                                  (average_cell_alpha /
                                   average_cell_nref)) > 0.5:

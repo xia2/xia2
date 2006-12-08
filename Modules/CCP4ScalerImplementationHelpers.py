@@ -16,6 +16,7 @@
 
 import os
 import sys
+import math
 
 from Wrappers.CCP4.Mtzdump import Mtzdump
 from Wrappers.CCP4.Rebatch import Rebatch
@@ -98,3 +99,12 @@ def _prepare_pointless_hklin(working_directory,
     rb.limit_batches(first, last)
 
     return hklout
+
+def _fraction_difference(value, reference):
+    '''How much (what %age) does value differ to reference?'''
+
+    if reference == 0.0:
+        return value
+
+    return math.fabs((value - reference) / reference)
+
