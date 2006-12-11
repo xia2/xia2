@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # A versioning object representation of the toplevel crystal object,
 # which presents much of the overall interface of xia2dpa to the 
@@ -327,7 +325,7 @@ class XCrystal(Object):
                               str(reflections)
 
         # and now some site information... maybe
-        if self._ha_info and True:
+        if self._ha_info and False:
             
 	    try:
                 result += 'HA Sites %s\n' % str(self._get_substructure_finder(
