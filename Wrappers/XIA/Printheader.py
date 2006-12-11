@@ -80,7 +80,7 @@ detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('marccd', 3072, 73):'mar 225',
                   ('marccd', 2048, 79):'mar 165',
                   ('mar', 2300, 150):'mar 345',
-                  {'raxis', 3000, 100}:'raxis IV'}
+                  ('raxis', 3000, 100):'raxis IV'}
 
 def Printheader(DriverType = None):
     '''A factory for wrappers for the printheader.'''
@@ -179,6 +179,8 @@ def Printheader(DriverType = None):
             detector = None
             
             fudge = {'adsc':{'wavelength':1.0,
+                             'pixel':1.0},
+                     'raxis':{'wavelength':1.0,
                              'pixel':1.0},
                      'marccd':{'wavelength':10.0,
                                'pixel':0.001},
