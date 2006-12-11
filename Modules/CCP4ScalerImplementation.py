@@ -108,7 +108,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
 if not os.path.join(os.environ['XIA2_ROOT'],'lib') in sys.path:
-    sys.path.append(os.path.join(os.environ['XIA2_ROOT'], lib))
+    sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'lib'))
 
 # the interface definition that this will conform to 
 from Schema.Interfaces.Scaler import Scaler
