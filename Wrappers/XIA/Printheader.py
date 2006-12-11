@@ -41,6 +41,7 @@ import copy
 import time
 import datetime
 import math
+import exceptions
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -78,7 +79,8 @@ detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('marccd', 4096, 73):'mar 300',
                   ('marccd', 3072, 73):'mar 225',
                   ('marccd', 2048, 79):'mar 165',
-                  ('mar', 2300, 150):'mar 345'}
+                  ('mar', 2300, 150):'mar 345',
+                  {'raxis', 3000, 100}:'raxis IV'}
 
 def Printheader(DriverType = None):
     '''A factory for wrappers for the printheader.'''
@@ -190,11 +192,16 @@ def Printheader(DriverType = None):
                     detector = self._header['detector']
 
                 if 'Exposure epoch' in o:
-                    d = o[o.index(':') + 1:]
-                    if d.strip():
-                        self._header['epoch'] = self._epoch(d.strip())
-                        self._header['date'] = self._date(d.strip())
-                    else:
+                    try:
+                        d = o[o.index(':') + 1:]
+                        if d.strip():
+                            self._header['epoch'] = self._epoch(d.strip())
+                            self._header['date'] = self._date(d.strip())
+                        else:
+                            self._header['epoch'] = 0.0
+                            self._header['date'] = ''
+                    except exceptions.Exception, e:
+                        # this is badly formed....
                         self._header['epoch'] = 0.0
                         self._header['date'] = ''
 
