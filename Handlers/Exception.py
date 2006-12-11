@@ -16,6 +16,9 @@ import exceptions
 
 class DPAException(exceptions.Exception):
     def __init__(self, args):
+
+        exceptions.Exception.__init__(self)
+
         self.args = args
 
     def __repr__(self):

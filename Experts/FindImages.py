@@ -85,13 +85,6 @@ def image2image(filename):
                     r'(.*)_([0-9]*)\.(.*)',
                     r'(.*?)([0-9]*)\.(.*)']
 
-    # patterns is a dictionary of possible regular expressions with
-    # the format strings to put the file name back together
-
-    patterns = {r'([^\.]*)\.([0-9]+)':'%s.%s%s',
-                r'(.*)_([0-9]*)\.(.*)':'%s_%s.%s',
-                r'(.*?)([0-9]*)\.(.*)':'%s%s.%s'}
-
     for pattern in pattern_keys:
         match = re.compile(pattern).match(filename)
 

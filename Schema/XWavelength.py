@@ -94,11 +94,11 @@ class XWavelength(Object):
         self._wavelength = wavelength
         return
 
-    def get_fpr(self):
-        return self._fpr
+    def get_f_pr(self):
+        return self._f_pr
 
-    def get_fprpr(self):
-        return self._fprpr
+    def get_f_prpr(self):
+        return self._f_prpr
 
     def get_crystal(self):
         return self._crystal

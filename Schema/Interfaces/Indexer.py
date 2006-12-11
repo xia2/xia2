@@ -127,7 +127,6 @@
 
 import os
 import sys
-import math
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
@@ -236,6 +235,12 @@ class Indexer:
         self._indxr_resolution_estimate = 0.0
 
         return
+
+    def _index(self):
+        raise RuntimeError, 'overload me'
+
+    def _index_prepare(self):
+        raise RuntimeError, 'overload me'
 
     def _index_select_images(self):
         '''This is something the implementation needs to implement.

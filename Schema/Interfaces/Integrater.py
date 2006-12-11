@@ -160,6 +160,12 @@ class Integrater:
         
         return
 
+    def _integrate(self):
+        raise RuntimeError, 'overload me'
+
+    def _integrate_prepare(self):
+        raise RuntimeError, 'overload me'
+
     def set_integrater_prepare_done(self, done = True):
         self._intgr_prepare_done = done
         return

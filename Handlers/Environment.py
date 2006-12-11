@@ -17,7 +17,6 @@
 # 
 
 import os
-import sys
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'

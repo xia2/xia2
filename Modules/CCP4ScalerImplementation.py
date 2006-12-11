@@ -947,7 +947,6 @@ class CCP4Scaler(Scaler):
         step_sdadd_full = 0.01
         step_sdadd_partial = 0.01
         step_sdb_full = 2.0
-        step_sdb_partial = 2.0
 
         sdadd_full = 0.0
         sdadd_partial = 0.0

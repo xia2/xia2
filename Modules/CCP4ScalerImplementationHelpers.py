@@ -15,7 +15,6 @@
 #
 
 import os
-import sys
 import math
 
 from Wrappers.CCP4.Mtzdump import Mtzdump

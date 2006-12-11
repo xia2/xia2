@@ -38,7 +38,6 @@
 
 import os
 import sys
-import copy
 
 import xml.dom.minidom
 

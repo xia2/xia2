@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # 27th October 2006
 # 
@@ -15,7 +13,6 @@
 
 import os
 import sys
-import copy
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'

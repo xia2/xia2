@@ -44,16 +44,12 @@ def unit_cell_volume(cell_a, cell_b, cell_c,
 
     pi = 4.0 * math.atan(1.0)
     dtor = pi / 180.0
-    rtod = 180.0 / pi
 
     # then compute the required sines and cosines
     
     ca = math.cos(dtor * cell_alpha)
     cb = math.cos(dtor * cell_beta)
     cc = math.cos(dtor * cell_gamma)
-    sa = math.sin(dtor * cell_alpha)
-    sb = math.sin(dtor * cell_beta)
-    sc = math.sin(dtor * cell_gamma)
 
     # finally evaluate the volume - this is simply the volume of a
     # parallelopiped

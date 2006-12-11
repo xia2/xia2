@@ -594,8 +594,6 @@ if __name__ == '__main__':
 
     # then run some sort of test
 
-    import os
-
     if not os.environ.has_key('XIA2CORE_ROOT'):
         raise RuntimeError, 'XIA2CORE_ROOT not defined'
 

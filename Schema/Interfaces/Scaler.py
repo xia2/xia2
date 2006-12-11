@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # An interface for programs which do scaling - this will handle all of the
 # input and output, delegating the actual implementation to a wrapper which
@@ -231,6 +229,12 @@ class Scaler:
 
         return
 
+    def _scale_prepare(self):
+        raise RuntimeError, 'overload me'
+
+    def _scale(self):
+        raise RuntimeError, 'overload me'
+
     def set_working_directory(self, working_directory):
         self._working_directory = working_directory
         return
@@ -288,6 +292,7 @@ class Scaler:
         self._scalr_done = False
 
         return
+
 
     def scale(self):
         '''Actually perform the scaling - this is delegated to the

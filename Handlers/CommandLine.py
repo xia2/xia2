@@ -213,7 +213,6 @@ class _CommandLine(Object):
         # have to enforce not making both selections...
 
         index_lattice = -1
-        index_spacegroup = -1
 
         try:
             index_lattice = sys.argv.index('-lattice')
