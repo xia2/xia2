@@ -42,7 +42,7 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.path.join(os.environ['XIA2_ROOT']) in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
-def header_to_xds(header):
+def header_to_xds(header, synchrotron = True):
     '''A function to take an input header dictionary from Printheader
     and generate a list of records to start XDS - see Doc/INP.txt.'''
 
@@ -122,13 +122,26 @@ def header_to_xds(header):
     result.append('ORGX=%d ORGX=%d' % \
                   (width / 2, height / 2))
 
+    result.append('DETECTOR_DISTANCE=%7.3f' % header['distance'])
+    result.append('OSCILLATION_RANGE=%4.2f' % (header['phi_end'] -
+                                               header['phi_start']))
+    result.append('X-RAY_WAVELENGTH=%8.6f' % header['wavelength'])
     result.append('ROTATION_AXIS= %s' % \
                   detector_to_rotation_axis[detector])
 
     result.append('INCIDENT_BEAM_DIRECTION=0.0 0.0 1.0')
 
-    return result
+    if synchrotron:
+        result.append('FRACTION_OF_POLARIZATION=0.95')
+        result.append('POLARIZATION_PLANE_NORMAL= 0.0 1.0 0.0')
+    else:
+        result.append('FRACTION_OF_POLARIZATION=0.5')
+        result.append('POLARIZATION_PLANE_NORMAL= 0.0 1.0 0.0')
 
+    # FIXME 11/DEC/06 this should depend on the wavelength
+    result.append('AIR=0.001')
+
+    return result
 
 if __name__ == '__main__':
     from Wrappers.XIA.Printheader import Printheader
