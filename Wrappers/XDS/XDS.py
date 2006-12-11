@@ -58,7 +58,7 @@ def header_to_xds(header, synchrotron = True):
         'mar':130000,
         'marccd':65000,
         'raxis':1000000,
-        'adsc':65536}
+        'adsc':65000}
 
     detector_to_x_axis = {
         'mar':'1.0 0.0 0.0',
@@ -101,7 +101,7 @@ def header_to_xds(header, synchrotron = True):
 
     result = []
 
-    result.append('DETECTOR %s MINIMUM_VALID_PIXEL_VALUE=%d OVERLOAD=%d' % \
+    result.append('DETECTOR=%s MINIMUM_VALID_PIXEL_VALUE=%d OVERLOAD=%d' % \
                   (detector_to_detector[detector], 0,
                    detector_to_overload[detector]))
 
@@ -119,7 +119,7 @@ def header_to_xds(header, synchrotron = True):
     result.append('NX=%d NY=%d QX=%6.4f QY=%6.4f' % \
                   (width, height, qx, qy))
 
-    result.append('ORGX=%d ORGX=%d' % \
+    result.append('ORGX=%d ORGY=%d' % \
                   (width / 2, height / 2))
 
     result.append('DETECTOR_DISTANCE=%7.3f' % header['distance'])
