@@ -80,6 +80,8 @@ def XDSXycorr(DriverType = None):
             xds_inp = open(os.path.join(self.get_working_directory(),
                                         'XDS.INP'), 'w')
 
+            # what are we doing?
+            xds_inp.write('JOB=XYCORR\n')
             
             for record in header:
                 xds_inp.write('%s\n' % record)
@@ -114,7 +116,8 @@ def XDSXycorr(DriverType = None):
             xds_inp.write('DATA_RANGE=%d %d\n' % self._data_range)
             for spot_range in self._spot_range:
                 xds_inp.write('SPOT_RANGE=%d %d\n' % spot_range)
-            xds_inp.write('BACKGROUND_RANGE=%d %d\n' % self._background_range)
+            xds_inp.write('BACKGROUND_RANGE=%d %d\n' % \
+                          self._background_range)
 
             xds_inp.close()
             
@@ -122,6 +125,7 @@ def XDSXycorr(DriverType = None):
             self.close_wait()
 
             for line in self.get_all_output():
+                # fixme I need to look for errors in here
                 print line[:-1]
 
             # tidy up...

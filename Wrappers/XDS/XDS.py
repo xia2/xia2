@@ -119,9 +119,6 @@ def header_to_xds(header, synchrotron = True):
     result.append('NX=%d NY=%d QX=%6.4f QY=%6.4f' % \
                   (width, height, qx, qy))
 
-    result.append('ORGX=%d ORGY=%d' % \
-                  (width / 2, height / 2))
-
     result.append('DETECTOR_DISTANCE=%7.3f' % header['distance'])
     result.append('OSCILLATION_RANGE=%4.2f' % (header['phi_end'] -
                                                header['phi_start']))
