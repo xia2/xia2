@@ -33,6 +33,9 @@ from Schema.Interfaces.FrameProcessor import FrameProcessor
 # generic helper stuff
 from XDS import header_to_xds
 
+# specific helper stuff
+from XDSIdxrefHelpers import _parse_idxref_lp
+
 def XDSIdxref(DriverType = None):
 
     DriverInstance = DriverFactory.Driver(DriverType)
@@ -151,6 +154,14 @@ def XDSIdxref(DriverType = None):
                 os.remove('xds-image-directory')
             except OSError, e:
                 pass
+
+            # parse the output
+
+            self._idxref_data = _parse_idxref_lp(open(os.path.join(
+                self.get_working_directory(), 'IDXREF.LP'), 'r').readlines())
+
+            for j in range(1, 45):
+                print self._idxref_data[j]
             
             return
 

@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 # 
 # A program wrapper for Phil Evan's program othercell (a part of 
 # pointless) for providing other reasonable lattice solutions
