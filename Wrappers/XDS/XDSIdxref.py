@@ -61,6 +61,9 @@ def XDSIdxref(DriverType = None):
 
             self._org = [0.0, 0.0]
 
+            self._cell = None
+            self._symm = 0
+
             return
 
         # this needs setting up from setup_from_image in FrameProcessor
@@ -92,7 +95,11 @@ def XDSIdxref(DriverType = None):
             
             xds_inp.write('ORGX=%f ORGY=%f\n' % \
                           self._org)
-            xds_inp.write('SPACE_GROUP_NUMBER=0\n')
+
+            xds_inp.write('SPACE_GROUP_NUMBER=%d\n' % self._symm)
+            if self._cell:
+                xds_inp.write('UNIT_CELL_CONSTANTS=%f %f %f %f %f %f' % \
+                              self._cell)
 
             for record in header:
                 xds_inp.write('%s\n' % record)
@@ -158,11 +165,15 @@ if __name__ == '__main__':
     
     idxref.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 
+    # FIXME 12/DEC/06 need to work out how this is related to the beam centre
+    # from labelit...
+    
     idxref.set_beam_centre(1030, 1066)
 
     idxref.set_data_range(1, 1)
     idxref.set_background_range(1, 1)
     idxref.add_spot_range(1, 1)
+    idxref.add_spot_range(90, 90)
 
     idxref.run()
 
