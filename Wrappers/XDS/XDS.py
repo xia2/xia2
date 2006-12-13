@@ -42,6 +42,27 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.path.join(os.environ['XIA2_ROOT']) in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
+def _xds_version(xds_output_list):
+    '''Return the version of XDS which has been run.'''
+
+    for line in xds_output_list:
+        if 'XDS VERSION' in line:
+            return line.split('XDS VERSION')[1].split(')')[0].strip()
+
+    raise RuntimeError, 'XDS version not found'
+
+def xds_check_version_supported(xds_output_list):
+    '''Check that the XDS version is supported.'''
+
+    xds_version = _xds_version(xds_output_list)
+
+    supported_version = 'June 2006'
+
+    if xds_version != supported_version:
+        raise RuntimeError, 'XDS version "%s" not supported' % xds_version
+
+    return
+
 def header_to_xds(header, synchrotron = True):
     '''A function to take an input header dictionary from Printheader
     and generate a list of records to start XDS - see Doc/INP.txt.'''

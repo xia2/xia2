@@ -31,7 +31,7 @@ from Driver.DriverFactory import DriverFactory
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
-from XDS import header_to_xds
+from XDS import header_to_xds, xds_check_version_supported
 
 def XDSColspot(DriverType = None):
 
@@ -123,6 +123,8 @@ def XDSColspot(DriverType = None):
             
             self.start()
             self.close_wait()
+
+            xds_check_version_supported(self.get_all_output())
 
             for line in self.get_all_output():
                 # fixme I need to look for errors in here
