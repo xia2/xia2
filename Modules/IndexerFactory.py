@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # 13th June 2006
 # 
@@ -24,6 +22,7 @@
 # 
 # Mosflm/Indexer
 # LabelitScreen/Indexer
+# XDS/Indexer
 # 
 # And will make a decision based on the screen information if available.
 # Integral unit test was also out of date, because the interface has changed.
@@ -41,8 +40,9 @@ sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 # from LabelitIndexer import LabelitIndexer
 
-from Wrappers.Labelit import LabelitScreen
-from Wrappers.CCP4 import Mosflm
+from Wrappers.Labelit.LabelitScreen import LabelitScreen
+from Wrappers.CCP4.Mosflm import Mosflm
+from Modules.XDSIndexer import XDSIndexer
 
 from Handlers.Streams import Admin
 
@@ -116,17 +116,24 @@ def Indexer():
 
     if not indexer:
         try:
-            indexer = LabelitScreen.LabelitScreen()
+            indexer = LabelitScreen()
             Admin.write('Using LabelitScreen Indexer')
         except RuntimeError, e:
             Admin.write('Indexer LabelitScreen not available: %s' % str(e))
 
     if not indexer:
         try:
-            indexer = Mosflm.Mosflm()
+            indexer = Mosflm()
             Admin.write('Using Mosflm Indexer')
         except RuntimeError, e:
             Admin.write('Indexer Mosflm not available: %s' % str(e))
+
+    if not indexer:
+        try:
+            indexer = XDSIndexer()
+            Admin.write('Using XDS Indexer')
+        except RuntimeError, e:
+            Admin.write('Indexer XDS not available: %s' % str(e))
 
     if not indexer:
         raise RuntimeError, 'no indexer implementations found'
