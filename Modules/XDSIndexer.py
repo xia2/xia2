@@ -254,9 +254,14 @@ class XDSIndexer(FrameProcessor,
 
         # need to get the indexing solutions out somehow...
 
-        return
+        self._indxr_other_lattice_cell = idxref.get_indexing_solutions()
+        self._indxr_lattice, self._indxr_cell, self._indxr_mosaic = \
+                             idxref.get_indexing_solution()
+        
+        self._indxr_refined_beam = idxref.get_refined_beam()
+        self._indxr_refined_distance = idxref.get_refined_distance()
 
-    
+        return
         
 if __name__ == '__main__':
 

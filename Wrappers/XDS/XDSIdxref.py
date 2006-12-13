@@ -34,7 +34,8 @@ from Schema.Interfaces.FrameProcessor import FrameProcessor
 from XDS import header_to_xds, xds_check_version_supported
 
 # specific helper stuff
-from XDSIdxrefHelpers import _parse_idxref_lp
+from XDSIdxrefHelpers import _parse_idxref_lp, _parse_idxref_lp_distance_etc
+from Experts.LatticeExpert import SortLattices
 
 def XDSIdxref(DriverType = None):
 
@@ -67,7 +68,30 @@ def XDSIdxref(DriverType = None):
             self._cell = None
             self._symm = 0
 
+            # results
+
+            self._refined_beam = (0, 0)
+            self._refined_distance = 0
+
+            self._indexing_solutions = { }
+
+            self._indxr_lattice = None
+            self._indxr_cell = None
+            self._indxr_mosaic = None
+
             return
+
+        def get_refined_beam(self):
+            return self._refined_beam
+
+        def get_refined_distance(self):
+            return self._refined_distance
+
+        def get_indexing_solutions(self):
+            return self._indexing_solutions
+
+        def get_indexing_solution(self):
+            return self._indxr_lattice, self._indxr_cell, self._indxr_mosaic
 
         # this needs setting up from setup_from_image in FrameProcessor
 
@@ -147,10 +171,6 @@ def XDSIdxref(DriverType = None):
 
             xds_check_version_supported(self.get_all_output())
 
-            for line in self.get_all_output():
-                # fixme I need to look for errors in here
-                print line[:-1]
-
             # tidy up...
             try:
                 os.remove('xds-image-directory')
@@ -159,11 +179,48 @@ def XDSIdxref(DriverType = None):
 
             # parse the output
 
-            self._idxref_data = _parse_idxref_lp(open(os.path.join(
-                self.get_working_directory(), 'IDXREF.LP'), 'r').readlines())
+            lp = open(os.path.join(
+                self.get_working_directory(), 'IDXREF.LP'), 'r').readlines()
+
+            self._idxref_data = _parse_idxref_lp(lp)
 
             for j in range(1, 45):
-                print self._idxref_data[j]
+                data = self._idxref_data[j]
+                lattice = data['lattice']
+                fit = data['fit']
+                cell = data['cell']
+                mosaic = data['mosaic']
+                reidx = data['reidx']
+
+                # only consider indexing solutions with goodness of fit < 30
+
+                if fit < 30.0:
+                    if self._indexing_solutions.has_key(lattice):
+                        if self._indexing_solutions[lattice][
+                            'goodness'] < fit:
+                            continue
+                        
+                    self._indexing_solutions[lattice] = {
+                        'goodness':fit,
+                        'cell':cell}
+
+            # get the highest symmetry "acceptable" solution
+            
+            list = [(k, self._indexing_solutions[k]['cell']) for k in \
+                    self._indexing_solutions.keys()]
+        
+            sorted_list = SortLattices(list)
+
+            self._indxr_lattice = sorted_list[0][0]
+            self._indxr_cell = sorted_list[0][1]
+            self._indxr_mosaic = mosaic
+            
+            # get the refined distance &c.
+
+            beam, distance = _parse_idxref_lp_distance_etc(lp)
+
+            self._refined_beam = beam
+            self._refined_distance = distance
             
             return
 

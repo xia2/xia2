@@ -126,10 +126,6 @@ def XDSColspot(DriverType = None):
 
             xds_check_version_supported(self.get_all_output())
 
-            for line in self.get_all_output():
-                # fixme I need to look for errors in here
-                print line[:-1]
-
             # tidy up...
             try:
                 os.remove('xds-image-directory')

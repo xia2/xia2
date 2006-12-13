@@ -21,15 +21,41 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Experts.LatticeExpert import ApplyLattice
 
+def _parse_idxref_lp_distance_etc(lp_file_lines):
+    '''Parse the LP file for refined diatance, beam centre and so on...'''
+
+    beam = None
+    diatance = None
+
+    i = 0
+    while i < len(lp_file_lines):
+        line = lp_file_lines[i]
+        i += 1
+
+        if 'DETECTOR COORDINATES' in line and 'DIRECT BEAM' in line:
+            beam = tuple(map(float, line.split()[-2:]))
+        if 'CRYSTAL TO DETECTOR' in line:
+            distance = float(line.split()[-1])
+
+    return beam, distance
+
 def _parse_idxref_lp(lp_file_lines):
     '''Parse the list of lines from idxref.lp.'''
 
     lattice_character_info = {}
 
     i = 0
+
+    mosaic = 0.0
+
     while i < len(lp_file_lines):
         line = lp_file_lines[i]
         i += 1
+
+        # get the mosaic information
+
+        if 'CRYSTAL MOSAICITY' in line:
+            mosaic = float(line.split()[-1])
 
         # get the lattice character information
         
@@ -48,6 +74,7 @@ def _parse_idxref_lp(lp_file_lines):
                     'lattice':lattice,
                     'fit':fit,
                     'cell':constrained_cell,
+                    'mosaic':mosaic,
                     'reidx':reindex_card}
 
                 j += 1
