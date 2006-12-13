@@ -59,6 +59,8 @@ def XDSXycorr(DriverType = None):
             self._background_range = (0, 0)
             self._resolution_range = (0, 0)
 
+            self._org = [0.0, 0.0]
+
             return
 
         # this needs setting up from setup_from_image in FrameProcessor
@@ -71,6 +73,9 @@ def XDSXycorr(DriverType = None):
 
         def set_background_range(self, start, end):
             self._background_range = (start, end)
+
+        def set_beam_centre(self, x, y):
+            self._org = float(x), float(y)
 
         def run(self):
             '''Run xycorr.'''
@@ -119,6 +124,8 @@ def XDSXycorr(DriverType = None):
             xds_inp.write('BACKGROUND_RANGE=%d %d\n' % \
                           self._background_range)
 
+            xds_inp.write('ORGX=%f ORGY=%f\n' % \
+                          tuple(self._org))
             xds_inp.close()
             
             self.start()

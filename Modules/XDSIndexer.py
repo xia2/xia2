@@ -52,11 +52,21 @@ class XDSIndexer(FrameProcessor,
         # check that the programs exist - this will raise an exception if
         # they do not...
 
-        idxref = XDSIdxref()
+        idxref = _Idxref()
 
-        # no further information
+        # admin junk
+        self._working_directory = os.getcwd()
 
         return
+
+    # admin functions
+
+    def set_working_directory(self, working_directory):
+        self._working_directory = working_directory
+        return
+
+    def get_working_directory(self):
+        return self._working_directory 
 
     # factory functions
 
@@ -70,6 +80,39 @@ class XDSIndexer(FrameProcessor,
         auto_logfiler(xycorr)
 
         return xycorr
+
+    def Init(self):
+        init = _Init()
+        init.set_working_directory(self.get_working_directory())
+
+        init.setup_from_image(self.get_image_name(
+            self._indxr_images[0][0]))
+
+        auto_logfiler(init)
+
+        return init
+
+    def Colspot(self):
+        colspot = _Colspot()
+        colspot.set_working_directory(self.get_working_directory())
+
+        colspot.setup_from_image(self.get_image_name(
+            self._indxr_images[0][0]))
+
+        auto_logfiler(colspot)
+
+        return colspot
+
+    def Idxref(self):
+        idxref = _Idxref()
+        idxref.set_working_directory(self.get_working_directory())
+
+        idxref.setup_from_image(self.get_image_name(
+            self._indxr_images[0][0]))
+
+        auto_logfiler(idxref)
+
+        return idxref
 
     # helper functions
 
@@ -126,25 +169,31 @@ class XDSIndexer(FrameProcessor,
         if self._indxr_images == []:
             self._index_select_images()
 
+        all_images = self.get_matching_images()
+
+        first = min(all_images)
+        last = max(all_images)
+
         # next start to process these - first xycorr
 
         xycorr = self.Xycorr()
 
-        xycorr.set_data_range(self._indxr_images[0][0],
-                              self._indxr_images[0][1])
+        xycorr.set_data_range(first, last)
         xycorr.set_background_range(self._indxr_images[0][0],
                                     self._indxr_images[0][1])
         for block in self._indxr_images:
             xycorr.add_spot_range(block[0], block[1])
 
+        # FIXME need to set the origin here
+
+        xycorr.set_beam_centre(1030, 1066)
         xycorr.run()
 
         # next start to process these - then init
 
         init = self.Init()
 
-        init.set_data_range(self._indxr_images[0][0],
-                            self._indxr_images[0][1])
+        init.set_data_range(first, last)
         init.set_background_range(self._indxr_images[0][0],
                                   self._indxr_images[0][1])
         for block in self._indxr_images:
@@ -156,8 +205,7 @@ class XDSIndexer(FrameProcessor,
 
         colspot = self.Colspot()
 
-        colspot.set_data_range(self._indxr_images[0][0],
-                               self._indxr_images[0][1])
+        colspot.set_data_range(first, last)
         colspot.set_background_range(self._indxr_images[0][0],
                                      self._indxr_images[0][1])
         for block in self._indxr_images:
@@ -184,6 +232,9 @@ class XDSIndexer(FrameProcessor,
         for block in self._indxr_images:
             idxref.add_spot_range(block[0], block[1])
 
+        # FIXME need to set the origin here
+
+        idxref.set_beam_centre(1030, 1066)
         idxref.run()
 
         # need to get the indexing solutions out somehow...
@@ -192,3 +243,26 @@ class XDSIndexer(FrameProcessor,
 
     
         
+if __name__ == '__main__':
+
+    # run a demo test
+
+    if not os.environ.has_key('XIA2_ROOT'):
+        raise RuntimeError, 'XIA2_ROOT not defined'
+
+    xi = XDSIndexer()
+
+    directory = os.path.join(os.environ['XIA2_ROOT'],
+                             'Data', 'Test', 'Images')
+
+    xi.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
+
+    xi.index()
+
+    print 'Refined beam is: %6.2f %6.2f' % xi.get_indexer_beam()
+    print 'Distance:        %6.2f' % xi.get_indexer_distance()
+    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % xi.get_indexer_cell()
+    print 'Lattice: %s' % xi.get_indexer_lattice()
+    print 'Mosaic: %6.2f' % xi.get_indexer_mosaic()
+
+

@@ -97,7 +97,7 @@ def XDSIdxref(DriverType = None):
             # FIXME this needs to be calculated from the beam centre...
             
             xds_inp.write('ORGX=%f ORGY=%f\n' % \
-                          self._org)
+                          tuple(self._org))
 
             xds_inp.write('SPACE_GROUP_NUMBER=%d\n' % self._symm)
             if self._cell:
