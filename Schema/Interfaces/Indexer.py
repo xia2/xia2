@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 # 
 # An interface for programs which perform indexing - this will handle
 # all of the aspects of the interface which are common between indexing
