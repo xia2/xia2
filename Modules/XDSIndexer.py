@@ -28,6 +28,10 @@ from Wrappers.XDS.XDSInit import XDSInit as _Init
 from Wrappers.XDS.XDSColspot import XDSColspot as _Colspot
 from Wrappers.XDS.XDSIdxref import XDSIdxref as _Idxref
 
+# helper functions
+
+from Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
+
 # interfaces that this must implement to be an indexer
 
 from Schema.Interfaces.Indexer import Indexer
@@ -146,7 +150,7 @@ class XDSIndexer(FrameProcessor,
 
             block_size = int(3.0 / phi_width)
 
-            self.add_indexer_image_wedge((images[0], images[block_size]))
+            self.add_indexer_image_wedge((images[0], images[block_size] - 1))
 
             if int(90.0 / phi_width) + block_size in images:
                 self.add_indexer_image_wedge((int(90.0 / phi_width),
@@ -232,9 +236,20 @@ class XDSIndexer(FrameProcessor,
         for block in self._indxr_images:
             idxref.add_spot_range(block[0], block[1])
 
-        # FIXME need to set the origin here
+        # FIXME need to set the beam centre here - this needs to come
+        # from the input .xinfo object or header, and be converted
+        # to the XDS frame...
 
-        idxref.set_beam_centre(1030, 1066)
+        mosflm_beam_centre = self.get_beam()
+        xds_beam_centre = beam_centre_mosflm_to_xds(
+            mosflm_beam_centre[0], mosflm_beam_centre[1], self.get_header())
+        
+        idxref.set_beam_centre(xds_beam_centre[0],
+                               xds_beam_centre[1])
+
+        # fixme need to check if the lattice, cell have been set already,
+        # and if they have, pass these in as input to the indexing job.
+
         idxref.run()
 
         # need to get the indexing solutions out somehow...
@@ -255,7 +270,9 @@ if __name__ == '__main__':
     directory = os.path.join(os.environ['XIA2_ROOT'],
                              'Data', 'Test', 'Images')
 
+    # directory = '/data/graeme/12287'
     xi.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
+    xi.set_beam((108.9, 105.0))
 
     xi.index()
 

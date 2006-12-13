@@ -161,6 +161,38 @@ def header_to_xds(header, synchrotron = True):
 
     return result
 
+def beam_centre_mosflm_to_xds(x, y, header):
+    '''Convert a beam centre for image with header information in
+    header from mm x, y in the Mosflm cordinate frame to pixels
+    x, y in the XDS frame.'''
+
+    # first gather up some useful information from the header
+
+    width, height = tuple(map(int, header['size']))
+    qx, qy = tuple(header['pixel'])
+    detector = header['detector']
+
+    # convert input to pixels
+
+    px = x / qx
+    py = y / qy
+
+    # next ensure that the beam centre is on the detector
+
+    if px < 0 or px > width:
+        raise RuntimeError, 'beam x coordinate outside detector'
+
+    if py < 0 or py > width:
+        raise RuntimeError, 'beam y coordinate outside detector'
+
+    # next perform some detector specific transformation to put
+    # the centre in the right place... from looking at the papers
+    # by Kabsch and Rossmann it turns out that the coordinate
+    # frames are the same in the case where the experimental geometry
+    # is the same... you just have to swap x & y
+
+    return py, px
+
 if __name__ == '__main__':
     from Wrappers.XIA.Printheader import Printheader
 
