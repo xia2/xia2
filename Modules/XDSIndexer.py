@@ -31,6 +31,7 @@ from Wrappers.XDS.XDSIdxref import XDSIdxref as _Idxref
 # helper functions
 
 from Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
+from Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
 
 # interfaces that this must implement to be an indexer
 
@@ -190,7 +191,6 @@ class XDSIndexer(FrameProcessor,
 
         # FIXME need to set the origin here
 
-        xycorr.set_beam_centre(1030, 1066)
         xycorr.run()
 
         # next start to process these - then init
@@ -258,7 +258,9 @@ class XDSIndexer(FrameProcessor,
         self._indxr_lattice, self._indxr_cell, self._indxr_mosaic = \
                              idxref.get_indexing_solution()
         
-        self._indxr_refined_beam = idxref.get_refined_beam()
+        self._indxr_refined_beam = beam_centre_xds_to_mosflm(
+            idxref.get_refined_beam()[0], idxref.get_refined_beam()[1],
+            self.get_header())
         self._indxr_refined_distance = idxref.get_refined_distance()
 
         return

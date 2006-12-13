@@ -193,6 +193,22 @@ def beam_centre_mosflm_to_xds(x, y, header):
 
     return py, px
 
+def beam_centre_xds_to_mosflm(px, py, header):
+    '''Convert back...'''
+
+    # first gather up some useful information from the header
+
+    width, height = tuple(map(int, header['size']))
+    qx, qy = tuple(header['pixel'])
+    detector = header['detector']
+
+    # convert input to pixels
+
+    x = px * qx
+    y = py * qy
+
+    return y, x
+
 if __name__ == '__main__':
     from Wrappers.XIA.Printheader import Printheader
 
