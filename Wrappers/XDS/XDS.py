@@ -56,9 +56,9 @@ def xds_check_version_supported(xds_output_list):
 
     xds_version = _xds_version(xds_output_list)
 
-    supported_version = 'June 2006'
+    supported_versions = ['June 2006', 'August 18, 2006']
 
-    if xds_version != supported_version:
+    if not xds_version in supported_versions:
         raise RuntimeError, 'XDS version "%s" not supported' % xds_version
 
     return
