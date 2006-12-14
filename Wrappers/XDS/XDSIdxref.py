@@ -126,7 +126,7 @@ def XDSIdxref(DriverType = None):
 
             xds_inp.write('SPACE_GROUP_NUMBER=%d\n' % self._symm)
             if self._cell:
-                xds_inp.write('UNIT_CELL_CONSTANTS=%f %f %f %f %f %f' % \
+                xds_inp.write('UNIT_CELL_CONSTANTS=%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f\n' % \
                               self._cell)
 
             for record in header:
@@ -239,7 +239,7 @@ def XDSIdxref(DriverType = None):
                         # check the unit cell...
                         cell = l[1]
 
-                        for j in range[6]:
+                        for j in range(6):
                             if math.fabs(cell[j] - self._cell[j]) > 5:
                                 raise RuntimeError, 'bad unit cell in idxref'
 
