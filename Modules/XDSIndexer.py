@@ -250,7 +250,10 @@ class XDSIndexer(FrameProcessor,
         # fixme need to check if the lattice, cell have been set already,
         # and if they have, pass these in as input to the indexing job.
 
-        idxref.run()
+        done = False
+
+        while not done:
+            done = idxref.run()
 
         # need to get the indexing solutions out somehow...
 

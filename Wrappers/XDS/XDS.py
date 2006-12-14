@@ -189,7 +189,9 @@ def beam_centre_mosflm_to_xds(x, y, header):
     # the centre in the right place... from looking at the papers
     # by Kabsch and Rossmann it turns out that the coordinate
     # frames are the same in the case where the experimental geometry
-    # is the same... you just have to swap x & y
+    # is the same... you just have to swap x & y. I have checked this
+    # and it is correct - the Mosflm frame has the x, y axes mirrored to
+    # the traditional Cartesian frame.
 
     return py, px
 

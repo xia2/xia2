@@ -10,6 +10,7 @@
 
 import os
 import sys
+import math
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -208,12 +209,58 @@ def XDSIdxref(DriverType = None):
             
             list = [(k, self._indexing_solutions[k]['cell']) for k in \
                     self._indexing_solutions.keys()]
-        
-            sorted_list = SortLattices(list)
 
-            self._indxr_lattice = sorted_list[0][0]
-            self._indxr_cell = sorted_list[0][1]
-            self._indxr_mosaic = mosaic
+            # if there was a preassigned cell and symmetry return now
+            # with everything done, else select the "top" solution and
+            # reindex, resetting the input cell and symmetry.
+
+            lattice_to_spacegroup = {'aP':1,
+                                     'mP':3,
+                                     'mC':5,
+                                     'oP':16,
+                                     'oC':20,
+                                     'oF':22,
+                                     'oI':23,
+                                     'tP':75,
+                                     'tI':79,
+                                     'hP':143,
+                                     'hR':146,
+                                     'cP':195,
+                                     'cF':196,
+                                     'cI':197}
+            
+            if self._cell:
+
+                # select the solution which matches the input unit cell
+
+                for l in list:
+                    if lattice_to_spacegroup[l[0]] == self._symm:
+                        # this should be the correct solution...
+                        # check the unit cell...
+                        cell = l[1]
+
+                        for j in range[6]:
+                            if math.fabs(cell[j] - self._cell[j]) > 5:
+                                raise RuntimeError, 'bad unit cell in idxref'
+
+                        self._indxr_lattice = l[0]
+                        self._indxr_cell = l[1]
+                        self._indxr_mosaic = mosaic
+
+                        return True
+            
+            else:
+
+                # select the top solution as the input cell and reset the
+                # "indexing done" flag
+                    
+                sorted_list = SortLattices(list)
+
+                self._symm = lattice_to_spacegroup[sorted_list[0][0]]
+                self._cell = sorted_list[0][1]
+
+                return False
+
             
             # get the refined distance &c.
 
