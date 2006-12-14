@@ -233,12 +233,13 @@ class XDSIndexer(FrameProcessor,
                               self._indxr_images[0][1])
         idxref.set_background_range(self._indxr_images[0][0],
                                     self._indxr_images[0][1])
+
         for block in self._indxr_images:
             idxref.add_spot_range(block[0], block[1])
 
-        # FIXME need to set the beam centre here - this needs to come
+        # FIXED need to set the beam centre here - this needs to come
         # from the input .xinfo object or header, and be converted
-        # to the XDS frame...
+        # to the XDS frame... done.
 
         mosflm_beam_centre = self.get_beam()
         xds_beam_centre = beam_centre_mosflm_to_xds(
