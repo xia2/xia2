@@ -5,21 +5,15 @@
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
 #
-# 18th October 2006
-# 
-# A wrapper for XDS when running the correct step - this will - 
-# 
-#  - check that all input files are present and correct
-#  - run xds to do integration, with help from the input parameters
-#    and a generic xds writer
-#  - parse the output from CORRECT.LP
+# A wrapper to handle the JOB=CORRECT module in XDS.
+#
 
 import os
 import sys
-import copy
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
+
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
 
@@ -33,50 +27,128 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Driver.DriverFactory import DriverFactory
 
-# helper methods/functions - these can be used externally for the purposes
-# of testing...
+# interfaces that this inherits from ...
+from Schema.Interfaces.FrameProcessor import FrameProcessor
 
-def _parse_correct_lp(filename):
-    '''Parse the contents of the CORRECT.LP file pointed to by filename.'''
+# generic helper stuff
+from XDS import header_to_xds, xds_check_version_supported
 
-    if not os.path.split(filename)[-1] == 'CORRECT.LP':
-        raise RuntimeError, 'input filename not CORRECT.LP'
+def XDSCorrect(DriverType = None):
 
-    file_contents = open(filename, 'r').readlines()
+    DriverInstance = DriverFactory.Driver(DriverType)
 
-    postrefinement_stats = { }
+    class XDSCorrectWrapper(DriverInstance.__class__,
+                            FrameProcessor):
+        '''A wrapper for wrapping XDS in correct mode.'''
 
-    for i in range(len(file_contents)):
-        if 'OF SPOT    POSITION (PIXELS)' in file_contents[i]:
-            rmsd_pixel = float(file_contents[i].split()[-1])
-            postrefinement_stats['rmsd_pixel'] = rmsd_pixel
+        def __init__(self):
 
-        if 'OF SPINDLE POSITION (DEGREES)' in file_contents[i]:
-            rmsd_phi = float(file_contents[i].split()[-1])
-            postrefinement_stats['rmsd_phi'] = rmsd_phi        
+            # set up the object ancestors...
 
-        # want to convert this to mm in some standard setting!
-        if 'DETECTOR COORDINATES (PIXELS) OF DIRECT BEAM' in file_contents[i]:
-            beam = map(float, file_contents[i].split()[-2:])
-            postrefinement_stats['beam'] = beam        
+            DriverInstance.__class__.__init__(self)
+            FrameProcessor.__init__(self)
+
+            # now set myself up...
             
-        if 'CRYSTAL TO DETECTOR DISTANCE (mm)' in file_contents[i]:
-            distance = float(file_contents[i].split()[-1])
-            postrefinement_stats['distance'] = distance
-        
+            self.set_executable('xds')
 
-        if 'UNIT CELL PARAMETERS' in file_contents[i]:
-            cell = map(float, file_contents[i].split()[-6:])
-            postrefinement_stats['cell'] = cell
+            # generic bits
 
-        if 'E.D.D. OF CELL PARAMETERS' in file_contents[i]:
-            cell_esd = map(float, file_contents[i].split()[-6:])
-            postrefinement_stats['cell_esd'] = cell_esd
+            self._data_range = (0, 0)
+            self._spot_range = []
+            self._background_range = (0, 0)
+            self._resolution_range = (0, 0)
 
-    return postrefinement_stats
+            return
+
+        # this needs setting up from setup_from_image in FrameProcessor
+
+        def set_data_range(self, start, end):
+            self._data_range = (start, end)
+
+        def add_spot_range(self, start, end):
+            self._spot_range.append((start, end))
+
+        def set_background_range(self, start, end):
+            self._background_range = (start, end)
+
+        def run(self):
+            '''Run correct.'''
+
+            header = header_to_xds(self.get_header())
+
+            xds_inp = open(os.path.join(self.get_working_directory(),
+                                        'XDS.INP'), 'w')
+
+            # what are we doing?
+            xds_inp.write('JOB=CORRECT\n')
+            
+            for record in header:
+                xds_inp.write('%s\n' % record)
+
+            name_template = os.path.join(self.get_directory(),
+                                         self.get_template().replace('#', '?'))
+
+            record = 'NAME_TEMPLATE_OF_DATA_FRAMES=%s\n' % \
+                     name_template
+
+            if len(record) < 80:
+                xds_inp.write(record)
+                
+            else:
+                # else we need to make a softlink, then run, then remove 
+                # softlink....
+
+                try:
+                    os.symlink(self.get_directory(),
+                               'xds-image-directory')
+                except OSError, e:
+                    pass
+                
+                name_template = os.path.join('xds-image-directory',
+                                             self.get_template().replace(
+                    '#', '?'))
+                record = 'NAME_TEMPLATE_OF_DATA_FRAMES=%s\n' % \
+                         name_template
+
+                xds_inp.write(record)
+
+            xds_inp.write('DATA_RANGE=%d %d\n' % self._data_range)
+            for spot_range in self._spot_range:
+                xds_inp.write('SPOT_RANGE=%d %d\n' % spot_range)
+            xds_inp.write('BACKGROUND_RANGE=%d %d\n' % \
+                          self._background_range)
+
+            xds_inp.close()
+            
+            self.start()
+            self.close_wait()
+
+            xds_check_version_supported(self.get_all_output())
+
+            # tidy up...
+            try:
+                os.remove('xds-image-directory')
+            except OSError, e:
+                pass
+            
+            return
+
+    return XDSCorrectWrapper()
 
 if __name__ == '__main__':
-    correct_lp = os.path.join(os.environ['XIA2_ROOT'], 'Wrappers', 'XDS',
-                              'Doc', 'CORRECT.LP')
-    print _parse_correct_lp(correct_lp)
+
+    correct = XDSCorrect()
+    directory = os.path.join(os.environ['XIA2_ROOT'],
+                             'Data', 'Test', 'Images')
+
+    
+    correct.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
+
+    correct.set_data_range(1, 1)
+    correct.set_background_range(1, 1)
+    correct.add_spot_range(1, 1)
+
+    correct.run()
+
 
