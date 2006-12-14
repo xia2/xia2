@@ -126,8 +126,9 @@ def XDSIdxref(DriverType = None):
 
             xds_inp.write('SPACE_GROUP_NUMBER=%d\n' % self._symm)
             if self._cell:
-                xds_inp.write('UNIT_CELL_CONSTANTS=%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f\n' % \
-                              self._cell)
+                cell_format = '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f'
+                xds_inp.write('UNIT_CELL_CONSTANTS=%s\n' % \
+                              cell_format % self._cell)
 
             for record in header:
                 xds_inp.write('%s\n' % record)
