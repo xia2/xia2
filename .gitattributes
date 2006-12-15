@@ -1,5 +1,6 @@
 * text=auto !eol
 Applications/Doc/xia2scan.pdf -text
+Applications/Doc/xia2setup.pdf -text
 Data/NMol/mattprob_params.dat -text svneol=native#unset
 Experts/Doc/FindImages.pdf -text
 Handlers/Doc/CommandLine.pdf -text

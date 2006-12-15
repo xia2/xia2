@@ -1,0 +1,32 @@
+\documentclass[a4paper, 11pt]{article}
+\begin{document}
+\section{Application: xia2setup}
+\subsection{Introduction}
+
+xia2setup is a new application which will ``trawl'' a directory and construct
+a .xinfo file to reduce the data that is found, with the following assumptions:
+
+\begin{itemize}
+\item{All data in a directory is measured from one crystal.}
+\item{The date and time of data collection is in the image header.}
+\item{If a sequence (\verb|.seq|) file is found in the directory this
+corresponds to the sequence of that crystal.}
+\item{If a scan (\verb|.scan|) file is found this corresponds to the
+wavelengths of the data which were collected.}
+\item{Heavy atom information will be passed in on the command line.}
+\end{itemize}
+
+This will give a command line something like:
+
+\begin{verbatim}
+xia2setup -atom se /path/to/directory
+\end{verbatim}
+
+This will generate a \verb|.xinfo| file called \verb|automatic.xinfo|
+which should be inspected and perhaps updated before being used. If heavy
+atom information and a scan are supplied then the system will try to identify 
+PEAK, INFLECTION, LOW and HIGH REMOTE data sets, or SAD if appropriate, else 
+for sigle wavelength sets this will be called ``NATIVE'' or WAVE1 ...
+
+\end{document}
+
