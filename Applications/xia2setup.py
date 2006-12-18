@@ -122,8 +122,16 @@ def print_sweeps():
 
     wavelength_map = { }
 
-    print 'BEGIN PROJECT AUTOMATIC'
-    print 'BEGIN CRYSTAL DEFAULT'
+    project = CommandLine.get_project_name()
+    if not project:
+        project = 'AUTOMATIC'
+
+    crystal = CommandLine.get_crystal_name()
+    if not crystal:
+        crystal = 'DEFAULT'
+
+    print 'BEGIN PROJECT %s' % project
+    print 'BEGIN CRYSTAL %s' % crystal
 
     print ''
     
@@ -170,8 +178,8 @@ def print_sweeps():
 
             print ''
 
-    print 'END CRYSTAL DEFAULT'
-    print 'END PROJECT AUTOMATIC'
+    print 'END CRYSTAL %s' % crystal
+    print 'END PROJECT %s' % project
 
 if __name__ == '__main__':
 
@@ -181,6 +189,18 @@ if __name__ == '__main__':
     # spaced command lines
 
     path = argv.pop()
+
+    # perhaps move to a new directory...
+
+    crystal = CommandLine.get_crystal_name()
+
+    if not crystal:
+        crystal = 'DEFAULT'
+
+    directory = os.path.join(os.getcwd(), crystal, 'setup')
+
+    os.makedirs(directory)
+    os.setcwd(directory)
 
     while not os.path.exists(path):
         path = '%s %s' % (argv.pop(), path)

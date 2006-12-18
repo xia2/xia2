@@ -85,11 +85,11 @@ class _CommandLine(Object):
             raise RuntimeError, '%s (%s)' % \
                   (self._help_resolution_limit(), str(e))
 
-        # try:
-        self._read_xinfo()
-        # except exceptions.Exception, e:
-        # raise RuntimeError, '%s (%s)' % \
-        # (self._help_xinfo(), str(e))
+        try:
+            self._read_xinfo()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_xinfo(), str(e))
 
         return
 
@@ -253,6 +253,45 @@ class _CommandLine(Object):
     def _help_resolution_limit(self):
         return '-resolution 1.6'
 
+    def get_resolution_limit(self):
+        return self._default_resolution_limit
+
+    def _read_project_name(self):
+        try:
+            index = sys.argv.index('-project')
+
+        except ValueError, e:
+            self._default_project_name = None
+            return
+
+        self._default_project_name = sys.argv[index + 1]
+        
+        return
+
+    def _help_project_name(self):
+        return '-project foo'
+
+    def get_project_name(self):
+        return self._default_project_name
+
+    def _read_crystal_name(self):
+        try:
+            index = sys.argv.index('-crystal')
+
+        except ValueError, e:
+            self._default_crystal_name = None
+            return
+
+        self._default_crystal_name = sys.argv[index + 1]
+        
+        return
+
+    def _help_crystal_name(self):
+        return '-crystal foo'
+
+    def get_crystal_name(self):
+        return self._default_crystal_name
+
     def _read_xinfo(self):
         try:
             index = sys.argv.index('-xinfo')
@@ -289,8 +328,6 @@ class _CommandLine(Object):
     def get_spacegroup(self):
         raise RuntimeError, 'this needs to be implemented'
 
-    def get_resolution_limit(self):
-        return self._default_resolution_limit
 
 CommandLine = _CommandLine()
 
