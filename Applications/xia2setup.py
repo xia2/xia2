@@ -139,10 +139,19 @@ def print_sweeps():
 
 if __name__ == '__main__':
 
-    if not os.path.isabs(sys.argv[-1]):
-        path = os.path.abspath(sys.argv[-1])
-    else:
-        path = sys.argv[-1]
+    argv = sys.argv
+
+    # test to see if sys.argv[-2] + path is a valid path - to work around
+    # spaced command lines
+
+    path = argv.pop()
+
+    while not os.path.exists(path):
+        path = '%s %s' % (argv.pop(), path)
+
+    if not os.path.isabs(path):
+        path = os.path.abspath(path)
+
 
     os.path.walk(path, visit, os.getcwd())
 
