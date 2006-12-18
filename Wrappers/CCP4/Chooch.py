@@ -94,12 +94,12 @@ def Chooch(DriverType = None):
                         collect = False
                         continue
                     
-                    name, energy, fp, fp = tuple(map(string.strip,
-                                                     o.split('|')[1:5]))
+                    name, energy, fp, fpp = tuple(map(string.strip,
+                                                      o.split('|')[1:5]))
                     self._edge_table[name] = {
                         'energy':float(energy),
                         'fp':float(fp),
-                        'fpp':float(fp),
+                        'fpp':float(fpp),
                         'wave':energy_to_wavelength(float(energy))}
                 
                 if 'energy' in o and 'f\'' in o and 'f\'\'' in o:
