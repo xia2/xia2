@@ -148,6 +148,9 @@ if __name__ == '__main__':
 
     else:
         for scan in sys.argv[1:]:
+
+            print os.path.split(scan)[-1]
+
             c = Chooch()
             c.set_scan(scan)
             c.set_atom('se')
@@ -160,4 +163,6 @@ if __name__ == '__main__':
                                                 edges[key]['fp'],
                                                 edges[key]['fpp'],
                                                 edges[key]['wave'])
+
+	    print ''
             
