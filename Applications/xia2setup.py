@@ -89,6 +89,9 @@ def print_sweeps():
         sweeps.sort()
         for s in sweeps:
 
+            if len(s.get_images()) < 10:
+                continue
+
             wavelength = s.get_wavelength()
             if not wavelength in wavelengths:
                 wavelengths.append(wavelength)
@@ -115,6 +118,9 @@ def print_sweeps():
         # this should sort on exposure epoch ...?
         sweeps.sort()
         for s in sweeps:
+            if len(s.get_images()) < 10:
+                continue
+
             j += 1
             name = 'SWEEP%d' % j
 
