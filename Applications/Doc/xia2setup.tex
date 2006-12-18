@@ -19,7 +19,7 @@ wavelengths of the data which were collected.}
 This will give a command line something like:
 
 \begin{verbatim}
-xia2setup -atom se /path/to/directory
+xia2setup -atom se -beam x,y -project foo -crystal bar /path/to/directory
 \end{verbatim}
 
 This will generate a \verb|.xinfo| file called \verb|automatic.xinfo|
@@ -27,6 +27,21 @@ which should be inspected and perhaps updated before being used. If heavy
 atom information and a scan are supplied then the system will try to identify 
 PEAK, INFLECTION, LOW and HIGH REMOTE data sets, or SAD if appropriate, else 
 for sigle wavelength sets this will be called ``NATIVE'' or WAVE1 ...
+
+Sweeps are named SWEEP1 ... SWEEPN, since the names of sweeps are not recorded
+beyond the integration stage.
+
+\subsection{Identification of Wavelengths}
+
+If an edge scan is supplied then \textsc{Chooch} is run to identify the 
+\verb|f'| and \verb|f''| values as well as the peak and inflection point.
+Wavelengths are scanned, and the nearest to the inflection and peak is 
+identified as such, with a 0.001\AA\ margin. Beyond this range, the wavelength
+is identified as a low or high remote - in which case the form factors will
+be identified by \textsc{Crossec}.
+
+This now basically works, though more work is needed to make it less
+horrible.
 
 \end{document}
 
