@@ -17,6 +17,7 @@ import os
 import sys
 import math
 import string
+import exceptions
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -52,10 +53,15 @@ def preprocess_scan(scan_file):
     except:
         # assume that this is not in the friendly format...
         data = open(scan_file, 'r').readlines()
-        count = len(data) - 1
+        more_data = []
+        for d in data:
+           if not '#' in d and d.strip():
+               more_data.append(d)
+        data = more_data
+        count = len(data)
         out = open('xia2-chooch.raw', 'w')
         out.write('Chooch Scan File from xia2\n%d\n' % count)
-        for d in data[1:]:
+        for d in data:
             out.write('%f %f\n' % tuple(map(float, d.split(',')[:2])))
         out.close()
         return 'xia2-chooch.raw'
@@ -165,8 +171,8 @@ if __name__ == '__main__':
                                                     edges[key]['fp'],
                                                     edges[key]['fpp'],
                                                     edges[key]['wave'])
-            except:
-                print 'failed'
+            except exceptions.Exception, e:
+                print 'failed (%s)' % str(e)
 
 
 	    print ''
