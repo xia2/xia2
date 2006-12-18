@@ -3,11 +3,11 @@
   <head>
     <title>xia2: Automated Data Reduction</title>
   </head>
-
+  
   <body>
-    <img src="xia2-new-logo.gif" alt="xia2">
+    <img src="xia2-new-logo.gif" alt="xia2"></img>
     <h1>Automated Data Reduction</h1>
-
+      
     <p>xia2 is a new automated data reduction system designed to work from raw
       diffraction data and a little metadata, and produce usefully reduced
       data in a form suitable for immediately starting phasing and structure
@@ -121,6 +121,24 @@ END PROJECT DEMONSTRATION
     <p>More examples can be found in $DPA_ROOT/examples. Remember - you need 
       to tell xia2 where to find your data! Answers to frequently asked
       questions can be found <a href="faq.html">here</a>.</p>
+
+    <p>To assist in generating the .xinfo file I have written a small
+      program xia2setup, which is passed in the directory where your data
+      are stored, and will write to the standard output an illustrative
+      .xinfo file. This will number the wavelengths and sweeps, and so 
+      will not add sensible information, and will get all of it's information
+      from the image headers, which are sometimes unreliable.</p>
+    
+    <p>The new program is run thus:</p>
+
+    <pre>
+xia2setup -beam 109,105 /path/to/images > automatic.xinfo
+    </pre>
+
+    <p>You should then load automatic.xinfo in your favourite editor, and 
+      perform a global find 'n' replace for the different names and so 
+      on, as well as checking that the epoch numbers are set correctly and
+      also that the wavelengths and beam centres are correct.</p>
 
     <h1>Platforms</h1>
 
@@ -420,7 +438,7 @@ END PROJECT TS01
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Tue Dec 12 15:17:50 GMT Standard Time 2006
+Last modified: Mon Dec 18 13:59:17 GMT Standard Time 2006
 <!-- hhmts end -->
   </body>
 </html>
