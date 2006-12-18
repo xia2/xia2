@@ -122,7 +122,8 @@ def print_sweeps():
             print 'WAVELENGTH %s' % wavelength_map[s.get_wavelength()]
             
             print 'DIRECTORY %s' % s.get_directory()
-            print 'IMAGE %s' % s.imagename(min(s.get_images()))
+            print 'IMAGE %s' % os.path.split(s.imagename(min(
+                s.get_images())))[-1]
             print 'EPOCH %d' % int(s.get_collect()[0])
             cl_beam = CommandLine.get_beam()
             if cl_beam[0] or cl_beam[1]:
@@ -138,10 +139,12 @@ def print_sweeps():
 
 if __name__ == '__main__':
 
-    if len(sys.argv) < 2:
-        os.path.walk(os.getcwd(), visit, os.getcwd())
+    if not os.path.isabs(sys.argv[-1]):
+        path = os.path.abspath(sys.argv[-1])
     else:
-        os.path.walk(sys.argv[1], visit, os.getcwd())
+        path = sys.argv[-1]
+
+    os.path.walk(path, visit, os.getcwd())
 
     print_sweeps()
 
