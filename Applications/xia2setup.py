@@ -87,11 +87,14 @@ def visit(root, directory, files):
     for f in files:
         get_sweep(os.path.join(directory, f))
 
-        if is_scan_file(os.path.join(directory, f)):
+        if is_scan_name(os.path.join(directory, f)):
             global latest_chooch
-            latest_chooch = Chooch()
-            latest_chooch.set_scan(os.path.join(directory, f))
-            latest_chooch.scan()
+            try:
+                latest_chooch = Chooch()
+                latest_chooch.set_scan(os.path.join(directory, f))
+                latest_chooch.scan()
+            except:
+                latest_chooch = None
         
 def print_sweeps():
 
@@ -129,7 +132,7 @@ def print_sweeps():
         global latest_chooch
 
         if latest_chooch:
-            name = chooch.id_wavelength[wavelengths[j]]
+            name = latest_chooch.id_wavelength(wavelengths[j])
         else:
             name = 'WAVE%d' % (j + 1)
         wavelength_map[wavelengths[j]] = name
