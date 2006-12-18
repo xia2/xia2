@@ -111,16 +111,36 @@ def Chooch(DriverType = None):
     return ChoochWrapper()
 
 if __name__ == '__main__':
-    c = Chooch()
-    c.set_scan(os.path.join(os.environ['XIA2_ROOT'], 'Data', 'Test', 'Scans',
-                            'TM0486-9172-Se.raw'))
-    c.set_atom('se')
-    c.scan()
 
-    edges = c.get_edges()
+    if len(sys.argv) < 2:
 
-    for key in edges.keys():
-        print '%s %6.2f %6.2f %8.6f' % (key,
-                                        edges[key]['fp'],
-                                        edges[key]['fpp'],
-                                        edges[key]['wave'])
+        c = Chooch()
+        c.set_scan(os.path.join(os.environ['XIA2_ROOT'], 'Data',
+                                'Test', 'Scans',
+                                'TM0486-9172-Se.raw'))
+        c.set_atom('se')
+        c.scan()
+        
+        edges = c.get_edges()
+        
+        for key in edges.keys():
+            print '%s %6.2f %6.2f %8.6f' % (key,
+                                            edges[key]['fp'],
+                                            edges[key]['fpp'],
+                                            edges[key]['wave'])
+
+    else:
+        for scan in sys.argv[1:]:
+            c = Chooch()
+            c.set_scan(scan)
+            c.set_atom('se')
+            c.scan()
+            
+            edges = c.get_edges()
+            
+            for key in edges.keys():
+                print '%s %6.2f %6.2f %8.6f' % (key,
+                                                edges[key]['fp'],
+                                                edges[key]['fpp'],
+                                                edges[key]['wave'])
+            
