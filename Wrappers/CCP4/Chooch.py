@@ -43,6 +43,23 @@ def energy_to_wavelength(energy):
 
     return 1.0e10 * (h * c) / (e * energy)
 
+def preprocess_scan(scan_file):
+    '''Preprocess the scan file to a form that chooch will accept.'''
+
+    try:
+        i = int(open(scan_file, 'r').readlines()[1])
+        return scan_file
+    except:
+        # assume that this is not in the friendly format...
+        data = open(scan_file, 'r').readlines()
+        count = len(data) - 1
+        out = open('xia2-chooch.raw', 'w')
+        out.write('Chooch Scan File from xia2\n%d\n' % count)
+        for d in data[1:]:
+            out.write('%f %f\n' % tuple(map(float, d.split(',')[:2])))
+        out.close()
+        return 'xia2-chooch.raw'
+
 def Chooch(DriverType = None):
     '''Factory for Chooch wrapper classes, with the specified
     Driver type.'''
@@ -63,7 +80,7 @@ def Chooch(DriverType = None):
         def set_scan(self, scan):
             '''Set a scan file for chooch to parse.'''
 
-            self._scan = scan
+            self._scan = preprocess_scan(scan)
             return
 
         def set_atom(self, atom):
