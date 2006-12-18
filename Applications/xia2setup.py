@@ -26,6 +26,7 @@ sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Schema.Sweep import SweepFactory
 from Experts.FindImages import image2template_directory
+from Handlers.CommandLine import CommandLine
 
 known_image_extensions = ['img', 'mccd', 'mar2300', 'osc', 'cbf']
 known_sweeps = { }
@@ -123,7 +124,11 @@ def print_sweeps():
             print 'DIRECTORY %s' % s.get_directory()
             print 'IMAGE %s' % s.imagename(min(s.get_images()))
             print 'EPOCH %d' % int(s.get_collect()[0])
-            print 'BEAM %f %f' % tuple(s.get_beam())
+            cl_beam = CommandLine.get_beam()
+            if cl_beam[0] or cl_beam[1]:
+                print 'BEAM %f %f' % cl_beam
+            else:
+                print 'BEAM %f %f' % tuple(s.get_beam())
             print 'END SWEEP %s' % name
 
             print ''

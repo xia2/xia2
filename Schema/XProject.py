@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # A versioning object representation of a complete project - this
 # represents the "top level" of the .xinfo hierarchy, and should
