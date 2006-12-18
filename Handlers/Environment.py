@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # Maintained by Graeme Winter
 # 18th September 2006
@@ -29,6 +27,13 @@ class _Environment:
     def __init__(self):
         self._cwd = os.getcwd()
 
+        self._is_setup = False
+
+    def _setup(self):
+        if self._is_setup:
+            return
+        
+        self._is_setup = True
         harvest_directory = self.generate_directory('Harvest')
         self.setenv('HARVESTHOME', harvest_directory)
 
@@ -37,9 +42,12 @@ class _Environment:
 	# matter too much...
         if not os.environ.has_key('USER'):
 	    os.environ['USER'] = 'xia2'
+            
 
     def generate_directory(self, path_tuple):
         '''Used for generating working directories.'''
+        self._setup()
+
         path = self._cwd
 
         if type(path_tuple) == type('string'):
@@ -60,12 +68,14 @@ class _Environment:
     def setenv(self, name, value):
         '''A wrapper for os.environ.'''
 
+        self._setup()
         os.environ[name] = value
 
         return
 
     def getenv(self, name):
         '''A wrapper for os.environ.'''
+        self._setup()
         try:
             return os.environ[name]
         except:
