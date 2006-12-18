@@ -120,7 +120,7 @@ class XProject(Object):
                         wavelength)
                 else:
                     Chatter.write(
-                        'Overriding value for wavelength %s to %6.4f' % \
+                        'Overriding value for wavelength %s to %8.6f' % \
                         (wavelength, float(wave_info['wavelength'])))
 
                 xw = XWavelength(wavelength, xc,
