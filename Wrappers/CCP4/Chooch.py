@@ -131,6 +131,31 @@ def Chooch(DriverType = None):
         def get_edges(self):
             return self._edge_table
 
+        def id_wavelength(self, wave):
+            '''Try to identify a wavelength.'''
+
+            min_wave_diff = 1.0e100
+            name = None
+
+            waves = []
+
+            for edge in self._edge_table.keys():
+                waves.append(self._edge_table[edge]['wave'])
+                if math.fabs(self._edge_table[edge]['wave'] - wave) < \
+                   min_wave_diff:
+                    min_wave_diff = math.fabs(self._edge_table[edge]['wave'] -
+                                              wave)
+                    name = edge
+
+            if min_wave_diff > 0.01:
+                # assume that this is a remote...
+                if wave > max(waves):
+                    return 'LREM'
+                else:
+                    return 'HREM'
+
+            return name.upper()
+                
     return ChoochWrapper()
 
 if __name__ == '__main__':

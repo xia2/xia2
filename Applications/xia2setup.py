@@ -27,9 +27,23 @@ sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 from Schema.Sweep import SweepFactory
 from Experts.FindImages import image2template_directory
 from Handlers.CommandLine import CommandLine
+from Wrappers.CCP4.Chooch import Chooch
 
 known_image_extensions = ['img', 'mccd', 'mar2300', 'osc', 'cbf']
 known_sweeps = { }
+
+known_scan_extensions = ['scan']
+
+latest_chooch = None
+
+def is_scan_name(file):
+    global known_scan_extensions
+
+    if os.path.isfile(file):
+        if file.split('.')[-1] in known_scan_extensions:
+            return True
+
+    return False
 
 def is_image_name(file):
 
@@ -69,8 +83,15 @@ def get_sweep(file):
     return
 
 def visit(root, directory, files):
+    files.sort()
     for f in files:
         get_sweep(os.path.join(directory, f))
+
+        if is_scan_file(os.path.join(directory, f)):
+            global latest_chooch
+            latest_chooch = Chooch()
+            latest_chooch.set_scan(os.path.join(directory, f))
+            latest_chooch.scan()
         
 def print_sweeps():
 
@@ -104,7 +125,13 @@ def print_sweeps():
     print ''
     
     for j in range(len(wavelengths)):
-        name = 'WAVE%d' % (j + 1)
+
+        global latest_chooch
+
+        if latest_chooch:
+            name = chooch.id_wavelength[wavelengths[j]]
+        else:
+            name = 'WAVE%d' % (j + 1)
         wavelength_map[wavelengths[j]] = name
         
         print 'BEGIN WAVELENGTH %s' % name
@@ -157,7 +184,6 @@ if __name__ == '__main__':
 
     if not os.path.isabs(path):
         path = os.path.abspath(path)
-
 
     os.path.walk(path, visit, os.getcwd())
 
