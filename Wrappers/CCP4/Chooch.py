@@ -151,18 +151,23 @@ if __name__ == '__main__':
 
             print os.path.split(scan)[-1]
 
-            c = Chooch()
-            c.set_scan(scan)
-            c.set_atom('se')
-            c.scan()
+            try:
+
+                c = Chooch()
+                c.set_scan(scan)
+                c.set_atom('se')
+                c.scan()
             
-            edges = c.get_edges()
+                edges = c.get_edges()
             
-            for key in edges.keys():
-                print '%s %6.2f %6.2f %8.6f' % (key,
-                                                edges[key]['fp'],
-                                                edges[key]['fpp'],
-                                                edges[key]['wave'])
+                for key in edges.keys():
+                    print '%s %6.2f %6.2f %8.6f' % (key,
+                                                    edges[key]['fp'],
+                                                    edges[key]['fpp'],
+                                                    edges[key]['wave'])
+            except:
+                print 'failed'
+
 
 	    print ''
             
