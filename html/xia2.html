@@ -133,7 +133,7 @@ END PROJECT DEMONSTRATION
 
     <pre>
 xia2setup -atom se -project foo -crystal bar \
--beam 109,105 /path/to/images > automatic.xinfo
+-beam 109,105 /path/to/image/directory > automatic.xinfo
     </pre>
 
     <p>This will look for sequence files (.seq) scan files (.scan) and
@@ -151,6 +151,11 @@ xia2setup -atom se -project foo -crystal bar \
       <li>The sequence file, if present, should be in the one letter form
 	and all comment lines should begin with a character not in A-Z.
 	Again the alphabetically latest sequence file will be used.</li>
+      <li>If the sequence file is provided, and the atom is "se", then
+	xia2setup will assume that you are doing a SeMet experiment
+	and will provide an appropriate number of atoms per monomer - though
+	<b>you will still have to uncomment this</b> to include it,
+	in case it has guessed wrong.</li>
     </ul>
 
     <p>If you want to combine data from a number of crystals in the same
@@ -461,7 +466,7 @@ END PROJECT TS01
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Tue Dec 19 10:04:45 GMT Standard Time 2006
+Last modified: Tue Dec 19 13:50:37 GMT Standard Time 2006
 <!-- hhmts end -->
   </body>
 </html>
