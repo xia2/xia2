@@ -99,9 +99,9 @@ def parse_sequence(sequence_file):
     sequence = ''
     
     for record in open(sequence_file).readlines():
-        if record[0] in \
+        if record[0].upper() in \
            'ABCDEFGHIJKLMNOPQRSTUVWXYZ ':
-            sequence += record.strip()
+            sequence += record.strip().upper()
 
     global latest_sequence
     latest_sequence = sequence
@@ -176,9 +176,15 @@ def print_sweeps():
 
     if CommandLine.get_atom_name():
         print 'BEGIN HA_INFO'
-        print 'ATOM %s' % CommandLine.get_atom_name().upper()
-        print '!NUMBER_PER_MONOMER N'
-        print '!NUMBER_TOTAL M'
+        print 'ATOM %s' % CommandLine.get_atom_name().lower()
+        if CommandLine.get_atom_name().lower() == 'se' and latest_sequence:
+            # assume that this is selenomethionine
+            print '! If this is SeMet uncomment next line...'
+            print '!NUMBER_PER_MONOMER %d' % latest_sequence.count('M')
+            print '!NUMBER_TOTAL M'
+        else:
+            print '!NUMBER_PER_MONOMER N'
+            print '!NUMBER_TOTAL M'
         print 'END HA_INFO'
         print ''
     
