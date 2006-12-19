@@ -1,0 +1,45 @@
+\documentclass[a4paper, 11pt]{article}
+\begin{document}
+\section{Implementation of Data Processing with XDS}
+
+\subsection{Indexing}
+
+\begin{verbatim}
+xycorr -> init -> colspot -> idxref -> [select] -> idxref
+\end{verbatim}
+
+
+\subsection{Integration 1}
+
+\begin{verbatim}
+[select p1] -> defpix -> integrate [-> correct]
+\end{verbatim}
+
+\subsection{Pointgroup Determination}
+
+\begin{verbatim}
+integrate.hkl -> combat -> pointless -> [select indexing solution]
+\end{verbatim}
+
+\subsection{Integration 2}
+
+\begin{verbatim}
+[select indexing solution] -> defpix -> integrate -> correct [in correct pg]
+if fail, --spacegroup; repeat
+\end{verbatim}
+
+\subsection{Reindexing \& Spacegroup Determination}
+
+\begin{verbatim}
+[sweep 1] -> [quick scale]
+[n] * xds_ascii.hkl -> pointless [reindex against quick scale] -> correct
+\end{verbatim}
+
+\subsection{Scaling \& Merging}
+
+\begin{verbatim}
+xscale [output unmerged] -> scala
+\end{verbatim}
+
+\end{document}
+
