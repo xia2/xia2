@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 # 
 # An interface for programs which do integration - this will handle
 # all of the input and output, delegating the actual processing to an

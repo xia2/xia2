@@ -34,6 +34,10 @@ known_sweeps = { }
 
 known_scan_extensions = ['scan']
 
+known_sequence_extensions = ['seq']
+
+latest_sequence = None
+
 latest_chooch = None
 
 def is_scan_name(file):
@@ -41,6 +45,15 @@ def is_scan_name(file):
 
     if os.path.isfile(file):
         if file.split('.')[-1] in known_scan_extensions:
+            return True
+
+    return False
+
+def is_sequence_name(file):
+    global known_sequence_extensions
+
+    if os.path.isfile(file):
+        if file.split('.')[-1] in known_sequence_extensions:
             return True
 
     return False
@@ -82,6 +95,17 @@ def get_sweep(file):
 
     return
 
+def parse_sequence(sequence_file):
+    sequence = ''
+    
+    for record in open(sequence_file).readlines():
+        if not record[0] == '#':
+            sequence += record.strip()
+
+    global latest_sequence
+    latest_sequence = sequence
+    return
+
 def visit(root, directory, files):
     files.sort()
     for f in files:
@@ -91,14 +115,18 @@ def visit(root, directory, files):
             global latest_chooch
             try:
                 latest_chooch = Chooch()
+                if CommandLine.get_atom_name():
+                    latest_chooch.set_atom(CommandLine.get_atom_name())
                 latest_chooch.set_scan(os.path.join(directory, f))
                 latest_chooch.scan()
             except:
                 latest_chooch = None
-        
+        if is_sequence_name(os.path.join(directory, f)):
+            parse_sequence(os.path.join(directory, f))
+            
 def print_sweeps():
 
-    global known_sweeps
+    global known_sweeps, latest_sequence
     
     sweeplists = known_sweeps.keys()
     sweeplists.sort()
@@ -134,6 +162,24 @@ def print_sweeps():
     print 'BEGIN CRYSTAL %s' % crystal
 
     print ''
+
+    if latest_sequence:
+        print 'BEGIN AA_SEQUENCE'
+        print ''
+        for sequence_chunk in [latest_sequence[i:i + 60] \
+                               for i in range(0, len(latest_sequence), 60)]:
+            print sequence_chunk
+        print ''
+        print 'END AA_SEQUENCE'        
+        print ''
+
+    if CommandLine.get_atom_name():
+        print 'BEGIN HA_INFO'
+        print 'ATOM %s' % CommandLine.get_atom_name().upper()
+        print '!NUMBER_PER_MONOMER N'
+        print '!NUMBER_TOTAL M'
+        print 'END HA_INFO'
+        print ''
     
     for j in range(len(wavelengths)):
 

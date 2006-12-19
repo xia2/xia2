@@ -80,6 +80,12 @@ class _CommandLine(Object):
                   (self._help_project_name(), str(e))
 
         try:
+            self._read_atom_name()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_atom_name(), str(e))
+
+        try:
             self._read_crystal_name()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -267,6 +273,24 @@ class _CommandLine(Object):
 
     def get_resolution_limit(self):
         return self._default_resolution_limit
+
+    def _read_atom_name(self):
+        try:
+            index = sys.argv.index('-atom')
+
+        except ValueError, e:
+            self._default_atom_name = None
+            return
+
+        self._default_atom_name = sys.argv[index + 1]
+        
+        return
+
+    def _help_atom_name(self):
+        return '-atom se'
+
+    def get_atom_name(self):
+        return self._default_atom_name
 
     def _read_project_name(self):
         try:
