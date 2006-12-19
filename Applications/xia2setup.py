@@ -99,7 +99,8 @@ def parse_sequence(sequence_file):
     sequence = ''
     
     for record in open(sequence_file).readlines():
-        if not record[0] == '#':
+        if record[0] in \
+           'ABCDEFGHIJKLMNOPQRSTUVWXYZ ':
             sequence += record.strip()
 
     global latest_sequence

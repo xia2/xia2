@@ -132,13 +132,36 @@ END PROJECT DEMONSTRATION
     <p>The new program is run thus:</p>
 
     <pre>
-xia2setup -beam 109,105 /path/to/images > automatic.xinfo
+xia2setup -atom se -project foo -crystal bar \
+-beam 109,105 /path/to/images > automatic.xinfo
     </pre>
 
+    <p>This will look for sequence files (.seq) scan files (.scan) and
+      images files (.img, .osc, .mmar345, .mccd, .cbf) and make a good
+      guess as to what is going on. If you have a scan file in there and
+      you have chooch installed, then xia2 will have a stab at identifying
+      the different wavelengths. This is a guess and may be wrong. For this
+      to work I have made the following assumptions:</p>
+
+    <ul>
+      <li>All images are from one crystal only.</li>
+      <li>The scan, if present, was the one used to select the wavelengths 
+	for data collection. If more than one is present, the alphabetically
+	latest one will be used.</li>
+      <li>The sequence file, if present, should be in the one letter form
+	and all comment lines should begin with a character not in A-Z.
+	Again the alphabetically latest sequence file will be used.</li>
+    </ul>
+
+    <p>If you want to combine data from a number of crystals in the same
+      .xinfo file, then you will need to copy out all text from
+      BEGIN CRYSTAL to END CRYSTAL from one .xinfo file to the other.</p>
+
     <p>You should then load automatic.xinfo in your favourite editor, and 
-      perform a global find 'n' replace for the different names and so 
-      on, as well as checking that the epoch numbers are set correctly and
-      also that the wavelengths and beam centres are correct.</p>
+      check that the sequence looks correct and that the names are sensible
+      as well as checking that the epoch numbers are set correctly and
+      also that the wavelengths and beam centres are correct. If you 
+      provided a heavy atom there is a place to say how many to look for.</p>
 
     <h1>Platforms</h1>
 
@@ -438,7 +461,7 @@ END PROJECT TS01
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Mon Dec 18 13:59:17 GMT Standard Time 2006
+Last modified: Tue Dec 19 10:04:45 GMT Standard Time 2006
 <!-- hhmts end -->
   </body>
 </html>
