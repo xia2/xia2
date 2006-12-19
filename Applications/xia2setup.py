@@ -199,8 +199,13 @@ if __name__ == '__main__':
 
     directory = os.path.join(os.getcwd(), crystal, 'setup')
 
-    os.makedirs(directory)
-    os.setcwd(directory)
+    try:
+        os.makedirs(directory)
+    except OSError, e:
+        if not 'File exists' in str(e):
+            raise e
+        
+    os.chdir(directory)
 
     while not os.path.exists(path):
         path = '%s %s' % (argv.pop(), path)

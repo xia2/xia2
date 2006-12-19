@@ -74,6 +74,18 @@ class _CommandLine(Object):
                   (self._help_image(), str(e))
 
         try:
+            self._read_project_name()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_project_name(), str(e))
+
+        try:
+            self._read_crystal_name()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_crystal_name(), str(e))
+        
+        try:
             self._read_lattice_spacegroup()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
