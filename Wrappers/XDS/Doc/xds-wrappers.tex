@@ -1,6 +1,22 @@
 \documentclass[a4paper, 11pt]{article}
 \begin{document}
-\section{Implementation of Data Processing with XDS}
+\section{Implementation of Data Processing with 
+XDS}
+
+\subsection{Introduction}
+
+This document describes the implementation of the xia2 data processing 
+interfaces (indexing, integration and scaling) with XDS. There are
+two possibilities for this:
+
+\begin{itemize}
+\item{Processing with only XDS, XSCALE - that is, not assuming that pointless,
+scala etc can be used.}
+\item{Processing with XDS, XSCALE and CCP4 tools - this will probably be more
+like the CCP4 Scaler implementation.}
+\end{itemize}
+
+Perhaps there should be two implementations...?
 
 \subsection{Indexing}
 
@@ -8,12 +24,17 @@
 xycorr -> init -> colspot -> idxref -> [select] -> idxref
 \end{verbatim}
 
+This will list all possible indexing solutions - the highest will be selected
+for integration as per the current implementation with Mosflm.
 
 \subsection{Integration 1}
 
 \begin{verbatim}
-[select p1] -> defpix -> integrate [-> correct]
+defpix -> integrate [-> correct]
 \end{verbatim}
+
+This may recycle if the integration fails... for instance, I need to see how
+the TS01 NATIVE is handled by XDS integrating in oI, when mC is correct.
 
 \subsection{Pointgroup Determination}
 
@@ -21,12 +42,18 @@ xycorr -> init -> colspot -> idxref -> [select] -> idxref
 integrate.hkl -> combat -> pointless -> [select indexing solution]
 \end{verbatim}
 
+This once again needs to be linked in to the indexer as per the 
+CCP4 Scaler implementation. 
+
 \subsection{Integration 2}
 
 \begin{verbatim}
 [select indexing solution] -> defpix -> integrate -> correct [in correct pg]
 if fail, --spacegroup; repeat
 \end{verbatim}
+
+This may work out as being the same module as Integration 1, if it is
+implemented in the same way as the CCP4 system.
 
 \subsection{Reindexing \& Spacegroup Determination}
 
