@@ -248,7 +248,7 @@ def XDSIdxref(DriverType = None):
                         self._indxr_cell = l[1]
                         self._indxr_mosaic = mosaic
 
-                        return True
+                        # return True
             
             else:
 
@@ -270,7 +270,7 @@ def XDSIdxref(DriverType = None):
             self._refined_beam = beam
             self._refined_distance = distance
             
-            return
+            return True
 
     return XDSIdxrefWrapper()
 

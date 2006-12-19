@@ -261,7 +261,7 @@ class XDSIndexer(FrameProcessor,
         self._indxr_other_lattice_cell = idxref.get_indexing_solutions()
         self._indxr_lattice, self._indxr_cell, self._indxr_mosaic = \
                              idxref.get_indexing_solution()
-        
+
         self._indxr_refined_beam = beam_centre_xds_to_mosflm(
             idxref.get_refined_beam()[0], idxref.get_refined_beam()[1],
             self.get_header())
