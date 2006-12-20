@@ -13,8 +13,6 @@ import os
 import sys
 import exceptions
 
-from Streams import Admin
-
 class _FileHandler:
     '''A singleton class to manage files.'''
 
@@ -23,16 +21,18 @@ class _FileHandler:
         self._output_files = []
 
     def __del__(self):
+        out = open('xia-files.txt', 'w')
         for f in self._temporary_files:
             try:
                 os.remove(f)
-                Admin.write('Deleted: %s' % f, forward = False)
+                out.write('Deleted: %s\n' % f)
             except:
-                Admin.write('Failed to delete: %s' % f, forward = False)
+                out.write('Failed to delete: %s\n' % f)
 
         for f in self._output_files:
-            Admin.write('Output file (%s): %s' % f, forward = False)
+            out.write('Output file (%s): %s\n' % f)
 
+        out.close()
         return
 
     def record_output_file(self, filename, type):
