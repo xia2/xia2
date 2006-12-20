@@ -195,7 +195,13 @@ def print_sweeps():
         if latest_chooch:
             name = latest_chooch.id_wavelength(wavelengths[j])
         else:
-            name = 'WAVE%d' % (j + 1)
+            if len(wavelengths) == 1 and CommandLine.get_atom_name():
+                name = 'SAD'
+            elif len(wavelengths) == 1:
+                name = 'NATIVE'
+            else:
+                name = 'WAVE%d' % (j + 1)
+                
         wavelength_map[wavelengths[j]] = name
         
         print 'BEGIN WAVELENGTH %s' % name
