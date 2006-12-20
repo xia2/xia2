@@ -27,9 +27,8 @@ class _FileHandler:
             try:
                 os.remove(f)
                 Admin.write('Deleted: %s' % f, forward = False)
-            except exceptions.Exception, e:
-                Admin.write('Failed to delete: %s (%s)' % \
-                            (f, str(e)), forward = False)
+            except:
+                Admin.write('Failed to delete: %s' % f, forward = False)
 
         for f in self._output_files:
             Admin.write('Output file (%s): %s' % f, forward = False)
