@@ -99,7 +99,7 @@ def _prepare_pointless_hklin(working_directory,
     rb.limit_batches(first, last)
 
     # we will want to delete this one exit
-    FileHandler.register_temporary_file(hklout)
+    FileHandler.record_temporary_file(hklout)
     
     return hklout
 

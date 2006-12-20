@@ -357,7 +357,7 @@ class CCP4Scaler(Scaler):
                 os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
 
             # we will want to delete this one exit
-            FileHandler.register_temporary_file(hklout)
+            FileHandler.record_temporary_file(hklout)
             
             # perform a reindexing operation
             ri = self.Reindex()
@@ -375,7 +375,7 @@ class CCP4Scaler(Scaler):
                 os.path.split(hklin)[-1].replace('_rdx.mtz', '_ref_srt.mtz'))
             
             # we will want to delete this one exit
-            FileHandler.register_temporary_file(hklout)
+            FileHandler.record_temporary_file(hklout)
 
             s = self.Sortmtz()
             s.set_hklout(hklout)
@@ -402,7 +402,7 @@ class CCP4Scaler(Scaler):
             qsc.quick_scale()
 
             # we will want to delete this one exit
-            FileHandler.register_temporary_file(qsc.get_hklout())
+            FileHandler.record_temporary_file(qsc.get_hklout())
 
             # for the moment ignore all of the scaling statistics and whatnot!
 
@@ -455,7 +455,7 @@ class CCP4Scaler(Scaler):
                 'phi_width', 0.0)))
 
             # we will want to delete this one exit
-            FileHandler.register_temporary_file(hklout)
+            FileHandler.record_temporary_file(hklout)
 
             pl.decide_pointgroup()
 
@@ -589,7 +589,7 @@ class CCP4Scaler(Scaler):
                     'phi_width', 0.0)))
 
                 # we will want to delete this one exit
-                FileHandler.register_temporary_file(hklout)
+                FileHandler.record_temporary_file(hklout)
 
                 # now set the initial reflection set as a reference...
             
@@ -704,7 +704,7 @@ class CCP4Scaler(Scaler):
                                   (pname, xname, dname, counter))
 
             # we will want to delete this one exit
-            FileHandler.register_temporary_file(hklout)
+            FileHandler.record_temporary_file(hklout)
 
             rb.set_hklin(hklin)
             rb.set_first_batch(counter * max_batches + 1)
@@ -734,7 +734,7 @@ class CCP4Scaler(Scaler):
         s.set_hklout(hklout)
 
         # we will want to delete this one exit
-        FileHandler.register_temporary_file(hklout)
+        FileHandler.record_temporary_file(hklout)
 
         for epoch in epochs:
             s.add_hklin(self._sweep_information[epoch]['hklin'])
@@ -807,7 +807,7 @@ class CCP4Scaler(Scaler):
         ri.reindex()
         
         # we will want to delete this one exit
-        FileHandler.register_temporary_file(hklout)
+        FileHandler.record_temporary_file(hklout)
         
         # then resort the reflections (one last time!)
 
