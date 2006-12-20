@@ -275,7 +275,7 @@ def LabelitScreen(DriverType = None):
             for i in _images:
                 self.add_command_line(self.get_image_name(i))
 
-            if self._indxr_input_lattice:
+            if self._indxr_input_lattice and False:
                 lattice_to_spacegroup = {'aP':1,
                                          'mP':3,
                                          'mC':5,
@@ -295,7 +295,7 @@ def LabelitScreen(DriverType = None):
                     'known_symmetry=%d' % \
                     lattice_to_spacegroup[self._indxr_input_lattice])
 
-            if self._indxr_input_cell:
+            if self._indxr_input_cell and False:
                 self.add_command_line('known_cell=%f,%f,%f,%f,%f,%f' % \
                                       self._indxr_input_cell)
 
