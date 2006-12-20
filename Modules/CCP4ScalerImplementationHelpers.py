@@ -21,6 +21,7 @@ from Wrappers.CCP4.Mtzdump import Mtzdump
 from Wrappers.CCP4.Rebatch import Rebatch
 from lib.Guff import auto_logfiler
 from Handlers.Streams import Chatter
+from Handlers.Files import FileHandler
 
 def _resolution_estimate(ordered_pair_list, cutoff):
     '''Come up with a linearly interpolated estimate of resolution at
@@ -97,6 +98,9 @@ def _prepare_pointless_hklin(working_directory,
 
     rb.limit_batches(first, last)
 
+    # we will want to delete this one exit
+    FileHandler.register_temporary_file(hklout)
+    
     return hklout
 
 def _fraction_difference(value, reference):

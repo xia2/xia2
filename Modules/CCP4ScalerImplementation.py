@@ -87,7 +87,7 @@
 #                 determination. See FIXME's in Scaler, Indexer, Integrater
 #                 interface specifications.
 #
-# FIXME 30/NOV/06 need to limit the amount of data used to run pointless
+# FIXED 30/NOV/06 need to limit the amount of data used to run pointless
 #                 with - there should be no advantage in using more than
 #                 180 degrees...
 # 
@@ -128,6 +128,7 @@ from Wrappers.CCP4.Freerflag import Freerflag as _Freerflag
 from Wrappers.CCP4.Pointless import Pointless as _Pointless
 
 from Handlers.Streams import Chatter
+from Handlers.Files import FileHandler
 
 # jiffys
 from lib.Guff import is_mtz_file, nifty_power_of_ten, auto_logfiler
@@ -354,6 +355,9 @@ class CCP4Scaler(Scaler):
             hklout = os.path.join(
                 self.get_working_directory(),
                 os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
+
+            # we will want to delete this one exit
+            FileHandler.register_temporary_file(hklout)
             
             # perform a reindexing operation
             ri = self.Reindex()
@@ -370,6 +374,9 @@ class CCP4Scaler(Scaler):
                 self.get_working_directory(),
                 os.path.split(hklin)[-1].replace('_rdx.mtz', '_ref_srt.mtz'))
             
+            # we will want to delete this one exit
+            FileHandler.register_temporary_file(hklout)
+
             s = self.Sortmtz()
             s.set_hklout(hklout)
             s.add_hklin(hklin)
@@ -393,6 +400,9 @@ class CCP4Scaler(Scaler):
             qsc.set_hklin(hklin)
             qsc.set_hklout(self._reference)
             qsc.quick_scale()
+
+            # we will want to delete this one exit
+            FileHandler.register_temporary_file(qsc.get_hklout())
 
             # for the moment ignore all of the scaling statistics and whatnot!
 
@@ -443,6 +453,9 @@ class CCP4Scaler(Scaler):
                 self.get_working_directory(),
                 hklin, self._sweep_information[epoch]['header'].get(
                 'phi_width', 0.0)))
+
+            # we will want to delete this one exit
+            FileHandler.register_temporary_file(hklout)
 
             pl.decide_pointgroup()
 
@@ -575,6 +588,9 @@ class CCP4Scaler(Scaler):
                     hklin, self._sweep_information[epoch]['header'].get(
                     'phi_width', 0.0)))
 
+                # we will want to delete this one exit
+                FileHandler.register_temporary_file(hklout)
+
                 # now set the initial reflection set as a reference...
             
                 pl.set_hklref(self._reference)
@@ -687,6 +703,9 @@ class CCP4Scaler(Scaler):
                                   '%s_%s_%s_%d.mtz' % \
                                   (pname, xname, dname, counter))
 
+            # we will want to delete this one exit
+            FileHandler.register_temporary_file(hklout)
+
             rb.set_hklin(hklin)
             rb.set_first_batch(counter * max_batches + 1)
             rb.set_hklout(hklout)
@@ -713,6 +732,9 @@ class CCP4Scaler(Scaler):
 
         
         s.set_hklout(hklout)
+
+        # we will want to delete this one exit
+        FileHandler.register_temporary_file(hklout)
 
         for epoch in epochs:
             s.add_hklin(self._sweep_information[epoch]['hklin'])
@@ -783,6 +805,9 @@ class CCP4Scaler(Scaler):
         ri.set_spacegroup(spacegroup)
         ri.set_operator(reindex_operator)
         ri.reindex()
+        
+        # we will want to delete this one exit
+        FileHandler.register_temporary_file(hklout)
         
         # then resort the reflections (one last time!)
 
