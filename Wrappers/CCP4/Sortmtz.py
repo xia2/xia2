@@ -103,7 +103,7 @@ def Sortmtz(DriverType = None):
 
             if self._hklin_files:
                 for m in self._hklin_files:
-                    self.input(m)
+                    self.input('"%s"' % m)
 
             self.close_wait()
 
