@@ -12,6 +12,8 @@
 #
 # This will "wrap" the XDS programs DEFPIX and INTEGRATE - CORRECT is
 # considered to be a part of the scaling - see XDSScaler.py.
+#
+# 02/JAN/07 FIXME need to ensure that the indexing is repeated if necessary.
 
 import os
 import sys

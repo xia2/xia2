@@ -77,7 +77,7 @@ def Integrater():
 
     integrater = None
 
-    return XDSIntegrater()
+    # return XDSIntegrater()
 
     if not integrater:
         try:

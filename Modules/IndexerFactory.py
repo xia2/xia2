@@ -114,7 +114,7 @@ def Indexer():
 
     indexer = None
 
-    return XDSIndexer()
+    # return XDSIndexer()
 
     if not indexer:
         try:
