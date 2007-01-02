@@ -10,5 +10,6 @@
 # An implementation of the Integrater interface using XDS. This depends on the
 # XDS wrappers to actually implement the functionality.
 #
-
+# This will "wrap" the XDS programs DEFPIX and INTEGRATE - CORRECT is
+# considered to be a part of the scaling - see XDSScaler.py.
 
