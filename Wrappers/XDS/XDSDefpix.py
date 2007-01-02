@@ -55,8 +55,6 @@ def XDSDefpix(DriverType = None):
             # generic bits
 
             self._data_range = (0, 0)
-            self._spot_range = []
-            self._background_range = (0, 0)
             self._resolution_range = (0, 0)
 
             return
@@ -65,12 +63,6 @@ def XDSDefpix(DriverType = None):
 
         def set_data_range(self, start, end):
             self._data_range = (start, end)
-
-        def add_spot_range(self, start, end):
-            self._spot_range.append((start, end))
-
-        def set_background_range(self, start, end):
-            self._background_range = (start, end)
 
         def run(self):
             '''Run defpix.'''
@@ -114,11 +106,6 @@ def XDSDefpix(DriverType = None):
                 xds_inp.write(record)
 
             xds_inp.write('DATA_RANGE=%d %d\n' % self._data_range)
-            for spot_range in self._spot_range:
-                xds_inp.write('SPOT_RANGE=%d %d\n' % spot_range)
-            xds_inp.write('BACKGROUND_RANGE=%d %d\n' % \
-                          self._background_range)
-
             xds_inp.close()
             
             self.start()

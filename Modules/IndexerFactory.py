@@ -114,6 +114,8 @@ def Indexer():
 
     indexer = None
 
+    return XDSIndexer()
+
     if not indexer:
         try:
             indexer = LabelitScreen()

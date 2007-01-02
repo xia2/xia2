@@ -55,8 +55,6 @@ def XDSIntegrate(DriverType = None):
             # generic bits
 
             self._data_range = (0, 0)
-            self._spot_range = []
-            self._background_range = (0, 0)
             self._resolution_range = (0, 0)
 
             return
@@ -65,12 +63,6 @@ def XDSIntegrate(DriverType = None):
 
         def set_data_range(self, start, end):
             self._data_range = (start, end)
-
-        def add_spot_range(self, start, end):
-            self._spot_range.append((start, end))
-
-        def set_background_range(self, start, end):
-            self._background_range = (start, end)
 
         def run(self):
             '''Run integrate.'''

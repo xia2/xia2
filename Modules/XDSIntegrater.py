@@ -38,6 +38,10 @@ from Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
 from Schema.Interfaces.Integrater import Integrater
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 
+# indexing functionality if not already provided
+
+from Modules.XDSIndexer import XDSIndexer
+
 # odds and sods that are needed
 
 from lib.Guff import auto_logfiler
@@ -81,7 +85,7 @@ class XDSIntegrater(FrameProcessor,
         defpix.set_working_directory(self.get_working_directory())
 
         defpix.setup_from_image(self.get_image_name(
-            self._indxr_images[0][0]))
+            self._intgr_wedge[0]))
 
         auto_logfiler(defpix)
 
@@ -92,7 +96,7 @@ class XDSIntegrater(FrameProcessor,
         integrate.set_working_directory(self.get_working_directory())
 
         integrate.setup_from_image(self.get_image_name(
-            self._indxr_images[0][0]))
+            self._intgr_wedge[0]))
 
         auto_logfiler(integrate)
 
@@ -104,10 +108,11 @@ class XDSIntegrater(FrameProcessor,
         '''Prepare for integration - in XDS terms this will mean running
         DEFPIX to analyse the background etc.'''
 
-        defpix = self.Defpix()
-
         # decide what images we are going to process, if not already
         # specified
+
+        if not self._intgr_indexer:
+            self.set_integrater_indexer(XDSIndexer())
 
         if not self._intgr_wedge:
             images = self.get_matching_images()
@@ -116,7 +121,8 @@ class XDSIntegrater(FrameProcessor,
 
         first_image_in_wedge = self.get_image_name(self._intgr_wedge[0])
 
-        defpix.setup_from_image(first_image_in_wedge)
+        defpix = self.Defpix()
+
         defpix.set_data_range(self._intgr_wedge[0],
                               self._intgr_wedge[1])
 
@@ -140,7 +146,6 @@ class XDSIntegrater(FrameProcessor,
 
         first_image_in_wedge = self.get_image_name(self._intgr_wedge[0])
 
-        integrate.setup_from_image(first_image_in_wedge)
         integrate.set_data_range(self._intgr_wedge[0],
                                  self._intgr_wedge[1])
 

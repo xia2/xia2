@@ -4,11 +4,9 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 # 
 # A factory for Integrater implementations. At the moment this will 
-# support only Mosflm, and the null integrater implementation.
+# support only Mosflm, XDS and the null integrater implementation.
 # 
 
 import os
@@ -24,6 +22,8 @@ sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Wrappers.CCP4 import Mosflm
 from Handlers.Streams import Admin
+
+from Modules.XDSIntegrater import XDSIntegrater
 
 from NullIntegraterImplementation import NullIntegrater
 
@@ -76,6 +76,8 @@ def Integrater():
     # FIXME this should take an indexer as an argument...
 
     integrater = None
+
+    return XDSIntegrater()
 
     if not integrater:
         try:
