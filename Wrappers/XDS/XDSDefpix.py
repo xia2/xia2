@@ -165,9 +165,13 @@ if __name__ == '__main__':
     
     defpix.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 
+    for file in ['X-CORRECTIONS.pck',
+                 'Y-CORRECTIONS.pck',
+                 'BKGINIT.pck',
+                 'XPARM.XDS']:
+        defpix.set_input_data_file(file, open(file, 'rb').read())
+            
     defpix.set_data_range(1, 1)
-    defpix.set_background_range(1, 1)
-    defpix.add_spot_range(1, 1)
 
     defpix.run()
 

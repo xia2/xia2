@@ -130,10 +130,6 @@ def XDSIntegrate(DriverType = None):
                 xds_inp.write(record)
 
             xds_inp.write('DATA_RANGE=%d %d\n' % self._data_range)
-            for spot_range in self._spot_range:
-                xds_inp.write('SPOT_RANGE=%d %d\n' % spot_range)
-            xds_inp.write('BACKGROUND_RANGE=%d %d\n' % \
-                          self._background_range)
 
             xds_inp.close()
             
@@ -174,9 +170,15 @@ if __name__ == '__main__':
     
     integrate.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 
+    for file in ['X-CORRECTIONS.pck',
+                 'Y-CORRECTIONS.pck',
+                 'BLANK.pck',
+                 'BKGPIX.pck',
+                 'GAIN.pck',
+                 'XPARM.XDS']:
+        integrate.set_input_data_file(file, open(file, 'rb').read())
+    
     integrate.set_data_range(1, 1)
-    integrate.set_background_range(1, 1)
-    integrate.add_spot_range(1, 1)
 
     integrate.run()
 
