@@ -59,7 +59,26 @@ def XDSInit(DriverType = None):
             self._background_range = (0, 0)
             self._resolution_range = (0, 0)
 
+            self._input_data_files = { }
+            self._output_data_files = { }
+
+            self._input_data_files_list = ['X-CORRECTIONS.pck',
+                                           'Y-CORRECTIONS.pck']
+
+            self._output_data_files_list = ['BKGINIT.pck',
+                                            'BLANK.pck',
+                                            'GAIN.pck']
+            
             return
+
+        # getter and setter for input / output data
+
+        def set_input_data_file(self, name, data):
+            self._input_data_files[name] = data
+            return
+
+        def get_output_data_file(self, name):
+            return self._output_data_files[name]
 
         # this needs setting up from setup_from_image in FrameProcessor
 
@@ -122,19 +141,36 @@ def XDSInit(DriverType = None):
                           self._background_range)
 
             xds_inp.close()
+
+            # write the input data files...
+
+            for file in self._input_data_files_list:
+                open(os.path.join(
+                    self.get_working_directory(), file), 'wb').write(
+                    self._data_files[file])
             
             self.start()
             self.close_wait()
 
             xds_check_version_supported(self.get_all_output())
 
+            # check the job status here
+
             # tidy up...
+            
             try:
                 os.remove('xds-image-directory')
             except OSError, e:
                 pass
             
+            # gather the output files
+
+            for file in self._output_data_files_list:
+                self._data_files[file] = open(os.path.join(
+                    self.get_working_directory(), file), 'rb').read()
+
             return
+
 
     return XDSInitWrapper()
 

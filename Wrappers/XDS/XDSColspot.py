@@ -59,8 +59,28 @@ def XDSColspot(DriverType = None):
             self._background_range = (0, 0)
             self._resolution_range = (0, 0)
 
+            self._input_data_files = { }
+            self._output_data_files = { }
+
+            self._input_data_files_list = ['X-CORRECTIONS.pck',
+                                           'Y-CORRECTIONS.pck',
+                                           'BLANK.pck',
+                                           'BKGINIT.pck',
+                                           'GAIN.pck']
+
+            self._output_data_files_list = ['SPOT.XDS']
+
             return
 
+        # getter and setter for input / output data
+
+        def set_input_data_file(self, name, data):
+            self._input_data_files[name] = data
+            return
+
+        def get_output_data_file(self, name):
+            return self._output_data_files[name]
+        
         # this needs setting up from setup_from_image in FrameProcessor
 
         def set_data_range(self, start, end):
@@ -121,6 +141,13 @@ def XDSColspot(DriverType = None):
 
             xds_inp.close()
             
+            # write the input data files...
+
+            for file in self._input_data_files_list:
+                open(os.path.join(
+                    self.get_working_directory(), file), 'wb').write(
+                    self._data_files[file])
+
             self.start()
             self.close_wait()
 
@@ -132,6 +159,12 @@ def XDSColspot(DriverType = None):
             except OSError, e:
                 pass
             
+            # gather the output files
+
+            for file in self._output_data_files_list:
+                self._data_files[file] = open(os.path.join(
+                    self.get_working_directory(), file), 'rb').read()
+
             return
 
     return XDSColspotWrapper()

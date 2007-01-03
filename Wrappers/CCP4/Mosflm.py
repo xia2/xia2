@@ -1125,6 +1125,8 @@ def Mosflm(DriverType = None):
                 # FIXME this needs implementing - copy information
                 # from this indexer to myself, then reset my indexer too me
 
+                # FIXME this should probably raise an exception...
+
                 pass
 
             lattice = indxr.get_indexer_lattice()

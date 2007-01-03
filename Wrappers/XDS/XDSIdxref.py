@@ -80,7 +80,24 @@ def XDSIdxref(DriverType = None):
             self._indxr_cell = None
             self._indxr_mosaic = None
 
+            self._input_data_files = { }
+            self._output_data_files = { }
+
+            self._input_data_files_list = ['SPOT.XDS']
+
+            self._output_data_files_list = ['SPOT.XDS',
+                                            'XPARM.XDS']
+
             return
+
+        # getter and setter for input / output data
+
+        def set_input_data_file(self, name, data):
+            self._input_data_files[name] = data
+            return
+
+        def get_output_data_file(self, name):
+            return self._output_data_files[name]
 
         def get_refined_beam(self):
             return self._refined_beam
@@ -167,7 +184,14 @@ def XDSIdxref(DriverType = None):
                           self._background_range)
 
             xds_inp.close()
-            
+
+            # write the input data files...
+
+            for file in self._input_data_files_list:
+                open(os.path.join(
+                    self.get_working_directory(), file), 'wb').write(
+                    self._data_files[file])
+
             self.start()
             self.close_wait()
 
@@ -270,6 +294,12 @@ def XDSIdxref(DriverType = None):
             self._refined_beam = beam
             self._refined_distance = distance
             
+            # gather the output files
+
+            for file in self._output_data_files_list:
+                self._data_files[file] = open(os.path.join(
+                    self.get_working_directory(), file), 'rb').read()
+
             return True
 
     return XDSIdxrefWrapper()
