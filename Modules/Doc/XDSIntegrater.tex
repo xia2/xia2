@@ -1,0 +1,21 @@
+\documentclass[a4paper, 11pt]{article}
+\begin{document}
+
+\section{XDS Integrater Implementation}
+
+\subsection{Introduction}
+
+Unlike the indexing, integration with XDS is relatively straightforward,
+consisting of three stages - definition of the area of the detector
+over which to measure reflections, integration of those reflections
+and initial scaling and postrefinement. In xia2 the latter stage will be
+considered as part of the scaling, though this may feed back to integration
+the postrefined XPARM information.
+
+Integration is the first point at which the output files from XDS become 
+particularly large, as they contain reflections. They will therefore not
+be stored in memory.
+
+
+\end{document}
+
