@@ -190,7 +190,7 @@ def XDSIdxref(DriverType = None):
             for file in self._input_data_files_list:
                 open(os.path.join(
                     self.get_working_directory(), file), 'wb').write(
-                    self._data_files[file])
+                    self._input_data_files[file])
 
             self.start()
             self.close_wait()
@@ -297,7 +297,7 @@ def XDSIdxref(DriverType = None):
             # gather the output files
 
             for file in self._output_data_files_list:
-                self._data_files[file] = open(os.path.join(
+                self._output_data_files[file] = open(os.path.join(
                     self.get_working_directory(), file), 'rb').read()
 
             return True
@@ -313,9 +313,12 @@ if __name__ == '__main__':
     
     idxref.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 
-    # FIXME 12/DEC/06 need to work out how this is related to the beam centre
+    # FIXED 12/DEC/06 need to work out how this is related to the beam centre
     # from labelit...
     
+    for file in ['SPOT.XDS']:
+        idxref.set_input_data_file(file, open(file, 'rb').read())
+
     idxref.set_beam_centre(1030, 1066)
 
     idxref.set_data_range(1, 1)

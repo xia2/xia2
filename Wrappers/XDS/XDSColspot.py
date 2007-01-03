@@ -146,7 +146,7 @@ def XDSColspot(DriverType = None):
             for file in self._input_data_files_list:
                 open(os.path.join(
                     self.get_working_directory(), file), 'wb').write(
-                    self._data_files[file])
+                    self._input_data_files[file])
 
             self.start()
             self.close_wait()
@@ -162,7 +162,7 @@ def XDSColspot(DriverType = None):
             # gather the output files
 
             for file in self._output_data_files_list:
-                self._data_files[file] = open(os.path.join(
+                self._output_data_files[file] = open(os.path.join(
                     self.get_working_directory(), file), 'rb').read()
 
             return
@@ -177,6 +177,13 @@ if __name__ == '__main__':
 
     
     colspot.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
+
+    for file in ['X-CORRECTIONS.pck',
+                 'Y-CORRECTIONS.pck',
+                 'BLANK.pck',
+                 'BKGINIT.pck',
+                 'GAIN.pck']:
+        colspot.set_input_data_file(file, open(file, 'rb').read())
 
     colspot.set_data_range(1, 1)
     colspot.set_background_range(1, 1)

@@ -150,7 +150,7 @@ def XDSCorrect(DriverType = None):
             for file in self._input_data_files_list:
                 open(os.path.join(
                     self.get_working_directory(), file), 'wb').write(
-                    self._data_files[file])
+                    self._input_data_files[file])
 
             self.start()
             self.close_wait()
@@ -166,7 +166,7 @@ def XDSCorrect(DriverType = None):
             # gather the output files
 
             for file in self._output_data_files_list:
-                self._data_files[file] = open(os.path.join(
+                self._output_data_files[file] = open(os.path.join(
                     self.get_working_directory(), file), 'rb').read()
 
             return
