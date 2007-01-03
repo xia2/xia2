@@ -117,18 +117,39 @@ class XDSIntegrater(FrameProcessor,
         # decide what images we are going to process, if not already
         # specified
 
+        if not self._intgr_wedge:
+            images = self.get_matching_images()
+            self.set_integrater_wedge(min(images),
+                                      max(images))
+
         if not self._intgr_indexer:
             self.set_integrater_indexer(XDSIndexer())
 
+            self._intgr_indexer.set_working_directory(
+                self.get_working_directory())
+            
+            self._intgr_indexer.setup_from_image(self.get_image_name(
+                self._intgr_wedge[0]))
+
             # this needs to be set up from the contents of the
             # Integrater frame processer - wavelength &c.
+
+            if self.get_beam():
+                self._intgr_indexer.set_beam(self.get_beam())
+
+            if self.get_distance():
+                self._intgr_indexer.set_distance(self.get_distance())
+
+            if self.get_wavelength():
+                self._intgr_indexer.set_wavelength(
+                    self.get_wavelength())
 
         # get the unit cell from this indexer to initiate processing
         # if it is new... and also copy out all of the information for
         # the XDS indexer if not...
 
         cell = self._intgr_indexer.get_indexer_cell()
-        lattice = self._indgr_indexer.get_indexer_lattice()
+        lattice = self._intgr_indexer.get_indexer_lattice()
         beam = self._intgr_indexer.get_indexer_beam()
         distance = self._intgr_indexer.get_indexer_distance()
 
@@ -155,11 +176,6 @@ class XDSIntegrater(FrameProcessor,
         self._data_files = self._intgr_indexer.get_indexer_payload(
             'xds_files')
             
-        if not self._intgr_wedge:
-            images = self.get_matching_images()
-            self.set_integrater_wedge(min(images),
-                                      max(images))
-
         first_image_in_wedge = self.get_image_name(self._intgr_wedge[0])
 
         defpix = self.Defpix()
@@ -227,6 +243,11 @@ if __name__ == '__main__':
 
     directory = os.path.join(os.environ['XIA2_ROOT'],
                              'Data', 'Test', 'Images')
+
+    # to test with a full data set - need to define another
+    # environment variable for this...
+    
+    directory = os.path.join('/data','graeme','12287')
 
     xi.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
     xi.set_beam((108.9, 105.0))

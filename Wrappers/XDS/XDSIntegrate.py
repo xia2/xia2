@@ -163,7 +163,7 @@ def XDSIntegrate(DriverType = None):
                 self._output_data_files[file] = open(os.path.join(
                     self.get_working_directory(), file), 'rb').read()
 
-            self._integrate_hkl = os.path.join(self.get_woring_directory(),
+            self._integrate_hkl = os.path.join(self.get_working_directory(),
                                                'INTEGRATE.HKL')
 
             return
