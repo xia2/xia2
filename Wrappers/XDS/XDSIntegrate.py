@@ -70,7 +70,10 @@ def XDSIntegrate(DriverType = None):
             self._output_data_files_list = ['FRAME.pck']
 
             # note well - INTEGRATE.HKL is not included in this list
-            # because it is likely to be very large
+            # because it is likely to be very large - this is treated
+            # separately...
+
+            self._integrate_hkl = None
 
             return
 
@@ -82,6 +85,9 @@ def XDSIntegrate(DriverType = None):
 
         def get_output_data_file(self, name):
             return self._output_data_files[name]
+
+        def get_integrate_hkl(self):
+            return self._integrate_hkl
 
         # this needs setting up from setup_from_image in FrameProcessor
 
@@ -156,6 +162,9 @@ def XDSIntegrate(DriverType = None):
             for file in self._output_data_files_list:
                 self._output_data_files[file] = open(os.path.join(
                     self.get_working_directory(), file), 'rb').read()
+
+            self._integrate_hkl = os.path.join(self.get_woring_directory(),
+                                               'INTEGRATE.HKL')
 
             return
 

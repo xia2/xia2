@@ -73,6 +73,13 @@ def XDSCorrect(DriverType = None):
             #
             # and XDS_ASCII.HKL is produced.
 
+            # in
+            self._integrate_hkl = None
+            self._remove_hkl = None
+
+            # out
+            self._xds_ascii_hkl = None
+
             return
 
         # getter and setter for input / output data
@@ -84,6 +91,16 @@ def XDSCorrect(DriverType = None):
         def get_output_data_file(self, name):
             return self._output_data_files[name]
 
+        def set_integrate_hkl(self, integrate_hkl):
+            self._integrate_hkl = integrate_hkl
+            return
+
+        def set_remove_hkl(self, remove_hkl):
+            self._remove_hkl = remove_hkl
+            return
+
+        def get_xds_ascii_hkl(self):
+            return self._xds_ascii_hkl
 
         # this needs setting up from setup_from_image in FrameProcessor
 
@@ -168,6 +185,9 @@ def XDSCorrect(DriverType = None):
             for file in self._output_data_files_list:
                 self._output_data_files[file] = open(os.path.join(
                     self.get_working_directory(), file), 'rb').read()
+
+            self._xds_ascii_hkl = os.path.join(
+                self.get_working_directory(), 'XDS_ASCII.HKL')
 
             return
 
