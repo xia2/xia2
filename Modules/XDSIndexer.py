@@ -62,6 +62,9 @@ class XDSIndexer(FrameProcessor,
         # admin junk
         self._working_directory = os.getcwd()
 
+        # place to store working data
+        self._data_files = { }
+
         return
 
     # admin functions
@@ -193,9 +196,17 @@ class XDSIndexer(FrameProcessor,
 
         xycorr.run()
 
+        for file in ['X-CORRECTIONS.pck',
+                     'Y-CORRECTIONS.pck']:
+            self._data_files[file] = xycorr.get_output_data_file(file)
+
         # next start to process these - then init
 
         init = self.Init()
+
+        for file in ['X-CORRECTIONS.pck',
+                     'Y-CORRECTIONS.pck']:
+            init.set_input_data_file(file, self._data_files[file])
 
         init.set_data_range(first, last)
         init.set_background_range(self._indxr_images[0][0],
@@ -205,9 +216,22 @@ class XDSIndexer(FrameProcessor,
 
         init.run()
 
+        for file in ['BLANK.pck',
+                     'BKGINIT.pck',
+                     'GAIN.pck']:
+            self._data_files[file] = init.get_output_data_file(file)
+        
+
         # next start to process these - then colspot
 
         colspot = self.Colspot()
+
+        for file in ['X-CORRECTIONS.pck',
+                     'Y-CORRECTIONS.pck',
+                     'BLANK.pck',
+                     'BKGINIT.pck',
+                     'GAIN.pck']:
+            colspot.set_input_data_file(file, self._data_files[file])
 
         colspot.set_data_range(first, last)
         colspot.set_background_range(self._indxr_images[0][0],
@@ -216,6 +240,9 @@ class XDSIndexer(FrameProcessor,
             colspot.add_spot_range(block[0], block[1])
 
         colspot.run()
+
+        for file in ['SPOT.XDS']:
+            self._data_files[file] = colspot.get_output_data_file(file)
 
         # that should be everything prepared... all of the important
         # files should be loaded into memory to be able to cope with
@@ -229,6 +256,9 @@ class XDSIndexer(FrameProcessor,
 
         idxref = self.Idxref()
 
+        for file in ['SPOT.XDS']:
+            idxref.set_input_data_file(file, self._data_files[file])
+            
         idxref.set_data_range(self._indxr_images[0][0],
                               self._indxr_images[0][1])
         idxref.set_background_range(self._indxr_images[0][0],
@@ -255,6 +285,10 @@ class XDSIndexer(FrameProcessor,
 
         while not done:
             done = idxref.run()
+
+        for file in ['SPOT.XDS',
+                     'XPARM.XDS']:
+            self._data_files[file] = idxref.get_output_data_file(file)
 
         # need to get the indexing solutions out somehow...
 

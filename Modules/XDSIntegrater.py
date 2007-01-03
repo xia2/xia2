@@ -69,6 +69,9 @@ class XDSIntegrater(FrameProcessor,
         # admin junk
         self._working_directory = os.getcwd()
 
+        # place to store working data
+        self._data_files = { }
+
         return
 
     # admin functions
