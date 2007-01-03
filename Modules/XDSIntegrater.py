@@ -40,7 +40,8 @@ from Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
 from Schema.Interfaces.Integrater import Integrater
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 
-# indexing functionality if not already provided
+# indexing functionality if not already provided - even if it is
+# we still need to reindex with XDS.
 
 from Modules.XDSIndexer import XDSIndexer
 
@@ -119,6 +120,41 @@ class XDSIntegrater(FrameProcessor,
         if not self._intgr_indexer:
             self.set_integrater_indexer(XDSIndexer())
 
+            # this needs to be set up from the contents of the
+            # Integrater frame processer - wavelength &c.
+
+        # get the unit cell from this indexer to initiate processing
+        # if it is new... and also copy out all of the information for
+        # the XDS indexer if not...
+
+        cell = self._intgr_indexer.get_indexer_cell()
+        lattice = self._indgr_indexer.get_indexer_lattice()
+        beam = self._intgr_indexer.get_indexer_beam()
+        distance = self._intgr_indexer.get_indexer_distance()
+
+        # check that the indexer is an XDS indexer - if not then
+        # create one...
+
+        if not self._intgr_indexer.get_indexer_payload('xds_files'):
+            self.set_integrater_indexer(XDSIndexer())
+            
+            # now copy information from the old indexer to the new
+            # one - lattice, cell, distance etc.
+
+            self._intgr_indexer.set_indexer_input_cell(cell)
+            self._intgr_indexer.set_indexer_input_latice(lattice)
+            self._intgr_indexer.set_distance(distance)
+            self._intgr_indexer.set_beam(beam)
+
+            # re-get the unit cell &c. and check that the indexing
+            # worked correctly
+            cell = self._intgr_indexer.get_indexer_cell()
+            lattice = self._indgr_indexer.get_indexer_lattice()
+
+        # copy the data across
+        self._data_files = self._intgr_indexer.get_indexer_payload(
+            'xds_files')
+            
         if not self._intgr_wedge:
             images = self.get_matching_images()
             self.set_integrater_wedge(min(images),
@@ -128,10 +164,24 @@ class XDSIntegrater(FrameProcessor,
 
         defpix = self.Defpix()
 
+        # pass in the correct data
+
+        for file in ['X-CORRECTIONS.pck',
+                     'Y-CORRECTIONS.pck',
+                     'BKGINIT.pck',
+                     'XPARM.XDS']:
+            defpix.set_input_data_file(file, self._data_files[file])
+
         defpix.set_data_range(self._intgr_wedge[0],
                               self._intgr_wedge[1])
 
         defpix.run()
+
+        # and gather the result files
+        for file in ['BKGPIX.pck',
+                     'ABS.pck']:
+            self._data_files[file] = defpix.get_output_data_file(file)
+        
 
         return
 
@@ -154,8 +204,31 @@ class XDSIntegrater(FrameProcessor,
         integrate.set_data_range(self._intgr_wedge[0],
                                  self._intgr_wedge[1])
 
+        for file in ['X-CORRECTIONS.pck',
+                     'Y-CORRECTIONS.pck',
+                     'BLANK.pck',
+                     'BKGPIX.pck',
+                     'GAIN.pck',
+                     'XPARM.XDS']:
+            integrate.set_input_data_file(file, self._data_files[file])
+
         integrate.run()
 
         return
 
-    
+if __name__ == '__main__':
+
+    # run a demo test
+
+    if not os.environ.has_key('XIA2_ROOT'):
+        raise RuntimeError, 'XIA2_ROOT not defined'
+
+    xi = XDSIntegrater()
+
+    directory = os.path.join(os.environ['XIA2_ROOT'],
+                             'Data', 'Test', 'Images')
+
+    xi.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
+    xi.set_beam((108.9, 105.0))
+
+    xi.integrate()

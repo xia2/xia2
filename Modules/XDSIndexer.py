@@ -10,6 +10,9 @@
 # An implementation of the Indexer interface using XDS. This depends on the
 # XDS wrappers to actually implement the functionality.
 #
+# 03/JAN/07 FIXME - once the indexing step is complete, all of the files
+#                   which are needed for integration should be placed in the 
+#                   indexer "payload".
 
 import os
 import sys
@@ -301,6 +304,8 @@ class XDSIndexer(FrameProcessor,
             self.get_header())
         self._indxr_refined_distance = idxref.get_refined_distance()
 
+        self._indxr_payload['xds_files'] = self._data_files
+
         return
         
 if __name__ == '__main__':
@@ -320,7 +325,7 @@ if __name__ == '__main__':
     xi.set_beam((108.9, 105.0))
 
     xi.index()
-
+    
     print 'Refined beam is: %6.2f %6.2f' % xi.get_indexer_beam()
     print 'Distance:        %6.2f' % xi.get_indexer_distance()
     print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % xi.get_indexer_cell()
