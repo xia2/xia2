@@ -7,6 +7,8 @@
 #
 # A wrapper to handle the JOB=CORRECT module in XDS.
 #
+# 04/JAN/07 FIXME - need to know if we want anomalous pairs separating
+#                   in this module...
 
 import os
 import sys
