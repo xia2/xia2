@@ -191,7 +191,7 @@ def XDSIntegrate(DriverType = None):
             Chatter.write('Standard Deviation in pixel range: %f %f' % \
                           (low, high))
 
-            if (high - low) / (0.5 * (high + low)) > 1.25:
+            if (high - low) / (0.5 * (high + low)) > 0.25:
                 # there was a very large variation in deviation
                 raise RuntimeError, 'very large variation in pixel deviation'
 
