@@ -275,8 +275,8 @@ class XDSIndexer(FrameProcessor,
         # the helper... indirectly
 
         if self._indxr_input_lattice and self._indxr_input_cell:
-            ifxref.set_indexer_input_lattice(self._indxr_input_lattice)
-            ifxref.set_indexer_input_cell(self._indxr_input_cell)
+            idxref.set_indexer_input_lattice(self._indxr_input_lattice)
+            idxref.set_indexer_input_cell(self._indxr_input_cell)
 
         # FIXED need to set the beam centre here - this needs to come
         # from the input .xinfo object or header, and be converted
