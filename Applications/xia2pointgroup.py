@@ -38,7 +38,7 @@ def xia2pointgroup():
 
     l = LabelitScreen()
 
-    l.setup_from_image(CommandLine.getImage())
+    l.setup_from_image(CommandLine.get_image())
 
     phi_width = l.get_header_item('phi_width')
     images = l.get_matching_images()
@@ -46,7 +46,7 @@ def xia2pointgroup():
     # shouldn't need this any more
     l.add_indexer_image_wedge(images[0])
     if int(90 / phi_width) in images:
-        l.add_indexer_image_wedge(int(90/ phi_width))
+        l.add_indexer_image_wedge(int(90.0 / phi_width))
     else:
         l.add_indexer_image_wedge(images[-1])
 
@@ -56,10 +56,10 @@ def xia2pointgroup():
     for width in [5.0, 10.0, 15.0, 30.0]:
         if len(images) * phi_width >= width:
             m = Mosflm()
-            m.setup_from_image(CommandLine.getImage())
-            m.integrate_set_indexer(l)
-            m.integrate_set_wedge(images[0],
-                                  images[0] + int(width / phi_width))
+            m.setup_from_image(CommandLine.get_image())
+            m.set_integrater_indexer(l)
+            m.set_integrater_wedge(images[0],
+                                   images[0] + int(width / phi_width))
             
             p = Pointless()
             hklout = m.integrate()
