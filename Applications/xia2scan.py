@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # 9th June 2006
 # 
@@ -58,6 +56,11 @@ def xia2scan():
     
     beam = CommandLine.get_beam()
 
+    if '-omit' in sys.argv:
+        omit = True
+    else:
+        omit = False
+
     sweeps = SweepFactory(template, directory, beam)
 
     summary_info = { }
@@ -102,9 +105,10 @@ def xia2scan():
                 summary_info[i]['spots_total'] = stats['spots_total']
                 summary_info[i]['resol_one'] = stats['resol_one']
                 summary_info[i]['resol_two'] = stats['resol_two']
+                summary_info[i]['saturation'] = stats['saturation']
 
             except exceptions.Exception, e:
-                print 'Uh oh! %s' % str(e)
+                # print 'Uh oh! %s' % str(e)
 
                 summary_info[i] = { }
                 summary_info[i]['volume'] = 0.0
@@ -113,20 +117,24 @@ def xia2scan():
                 summary_info[i]['spots_total'] = 0.0
                 summary_info[i]['resol_one'] = 0.0
                 summary_info[i]['resol_two'] = 0.0
+                summary_info[i]['saturation'] = 0.0
 
     sys.stdout.write('\n')
 
     images = summary_info.keys()
     images.sort()
     for i in images:
-        if summary_info[i]['volume'] > 0:
-            print '%3d %6d %6d %6.2f %6.2f %6.2f %9d' % \
-                  (i, summary_info[i]['spots_total'],
-                   summary_info[i]['spots_good'],
-                   summary_info[i]['resol_one'],
-                   summary_info[i]['resol_two'],
-                   summary_info[i]['mosaic'],
-                   summary_info[i]['volume'])
+        if summary_info[i]['volume'] == 0 and omit:
+            continue
+        
+        print '%3d %6d %6d %6.2f %6.2f %6.2f %6.2f %9d' % \
+              (i, summary_info[i]['spots_total'],
+               summary_info[i]['spots_good'],
+               summary_info[i]['resol_one'],
+               summary_info[i]['resol_two'],
+               summary_info[i]['mosaic'],
+               summary_info[i]['saturation'],
+               summary_info[i]['volume'])
 
 if __name__ == '__main__':
     xia2scan()

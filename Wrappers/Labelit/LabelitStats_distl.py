@@ -97,6 +97,9 @@ def LabelitStats_distl(DriverType = None):
                     self._statistics[current_image]['resol_one'] = float(l[-1])
                 if l[:3] == ['Method', '2', 'Resolution']:
                     self._statistics[current_image]['resol_two'] = float(l[-1])
+                if l[:3] == ['%Saturation,', 'Top', '50']:
+                    self._statistics[current_image][
+                        'saturation'] = float(l[-1])
 
             return 'ok'
 
