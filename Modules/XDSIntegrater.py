@@ -249,7 +249,13 @@ if __name__ == '__main__':
     
     directory = os.path.join('/data','graeme','12287')
 
-    xi.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
+    directory = os.path.join('/Volumes','Arthur', 'JCSG Data',
+                             '1vr9', 'data', 'jcsg', 'als1',
+                             '8.2.1', '20050121', 'collection',
+                             'TM0892', '12847')
+
+    # xi.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
+    xi.setup_from_image(os.path.join(directory, '12847_4_001.img'))
     xi.set_beam((108.9, 105.0))
 
     xi.integrate()
