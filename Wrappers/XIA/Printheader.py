@@ -81,6 +81,7 @@ detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('marccd', 3072, 73):'mar 225',
                   ('marccd', 2048, 79):'mar 165',
                   ('mar', 2300, 150):'mar 345',
+                  ('mar', 3450, 100):'mar 345',
                   ('raxis', 3000, 100):'raxis IV'}
 
 def Printheader(DriverType = None):
