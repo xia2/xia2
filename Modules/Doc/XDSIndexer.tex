@@ -37,4 +37,20 @@ This presumes that the penalty function behaves itself, but this is reasonable.
 The indexing solution management then proceeds as described in the general
 documentation.
 
+\subsection{Tricky Cases}
+
+The old chestnut of the TS01 Native data (1vr9/12847) shows up well here - the
+autoindexing solution XDS finds gives a reasonable penalty to the oI solution,
+and in integration the standard deviations of spot position are a little 
+high but nothing to cry about. In this case it may be best to integrate the 
+data in P1, and then assign the unit cell \& lattice from the postrefined 
+cell parameters, since it seems unlikely that the integration will fail - 
+the indicator in the Mosflm implementation that ``something was wrong''. Note
+well that this is a tricky case, because Pointless will also decide that the
+correct symmetry is I222.
+
+Indicator - the standard deviation in spot position is increasing - does
+this suggest that the select lattice has too high symmetry? Should probably
+analyse the results and see how they look.
+
 \end{document}

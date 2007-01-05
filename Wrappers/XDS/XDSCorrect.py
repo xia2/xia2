@@ -162,6 +162,10 @@ def XDSCorrect(DriverType = None):
             xds_inp.write('BACKGROUND_RANGE=%d %d\n' % \
                           self._background_range)
 
+            # assume for the moment anomalous data
+
+            xds_inp.write('FRIEDEL\'S_LAW=FALSE\n')
+
             xds_inp.close()
             
             # write the input data files...
