@@ -33,6 +33,10 @@ from Schema.Interfaces.FrameProcessor import FrameProcessor
 # generic helper stuff
 from XDS import header_to_xds, xds_check_version_supported
 
+# specific helper stuff
+
+from XDSIntegrateHelpers import _parse_integrate_lp
+
 def XDSIntegrate(DriverType = None):
 
     DriverInstance = DriverFactory.Driver(DriverType)
@@ -165,6 +169,27 @@ def XDSIntegrate(DriverType = None):
 
             self._integrate_hkl = os.path.join(self.get_working_directory(),
                                                'INTEGRATE.HKL')
+
+            stats = _parse_integrate_lp(os.path.join(
+                self.get_working_directory(),
+                'INTEGRATE.HKL'))
+
+            # analyse stats here, perhaps raising an exception if we
+            # are unhappy with something, so that the indexing solution
+            # can be eliminated in the integrater.
+
+            images = stats.keys()
+            images.sort()
+
+            standard_deviations_spot_positions = [stats[i]['rmsd_pixel'] \
+                                                  for i in images]
+
+            low, high = min(standard_deviations_spot_positions), \
+                        max(standard_deviations_spot_positions)          
+
+            if (high - low) / (0.5 * (high + low)) > 1.5:
+                # there was a very large variation in deviation
+                raise RuntimeError, 'very large variation in pixel deviation'
 
             return
 

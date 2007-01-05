@@ -55,6 +55,21 @@ if fail, --spacegroup; repeat
 This may work out as being the same module as Integration 1, if it is
 implemented in the same way as the CCP4 system.
 
+\subsection{Analysing Integration Output}
+
+For the 1VR9/TS01 NATIVE data set the indexing solution gives oI as the 
+correct lattice. In integration, the STANDARD DEVIATION IN SPOT POSITION 
+starts off rather high, then drops a little, then rises significantly again.
+In addition, the spot profiles in the integration output look rather smeared.
+This means that the output of both need to be analysed. This analysis should 
+look at the centres of mass of the spots and also the second moments - 
+that is the elipsoid which defines this, and assess how ``spherical''
+this is.
+
+Uniformity is the key, because we don't know the absolutely correct values.
+For the standard deviation, if it varies by more than say a factor of 1.5 or 
+2 then a problem should be raised.
+
 \subsection{Reindexing \& Spacegroup Determination}
 
 \begin{verbatim}
