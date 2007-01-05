@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # 5th June 2006
 # 
@@ -103,7 +101,12 @@ def Sortmtz(DriverType = None):
 
             if self._hklin_files:
                 for m in self._hklin_files:
-                    self.input('"%s"' % m)
+                    # FIXME have removed the quotes as this breaks the parser
+                    # it is assumed that the file is a comment!
+                    if ' ' in m:
+                        raise RuntimeError, \
+                              'cannot cope with files with spaces in name'
+                    self.input('%s' % m)
 
             self.close_wait()
 
