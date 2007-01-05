@@ -270,6 +270,14 @@ class XDSIndexer(FrameProcessor,
         for block in self._indxr_images:
             idxref.add_spot_range(block[0], block[1])
 
+        # FIXME need to also be able to pass in the known unit
+        # cell and lattice if already available e.g. from
+        # the helper... indirectly
+
+        if self._indxr_input_lattice and self._indxr_input_cell:
+            ifxref.set_indexer_input_lattice(self._indxr_input_lattice)
+            ifxref.set_indexer_input_cell(self._indxr_input_cell)
+
         # FIXED need to set the beam centre here - this needs to come
         # from the input .xinfo object or header, and be converted
         # to the XDS frame... done.

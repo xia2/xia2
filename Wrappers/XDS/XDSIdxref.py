@@ -76,6 +76,9 @@ def XDSIdxref(DriverType = None):
 
             self._indexing_solutions = { }
 
+            self._indxr_input_lattice = None
+            self._indxr_input_cell = None
+            
             self._indxr_lattice = None
             self._indxr_cell = None
             self._indxr_mosaic = None
@@ -91,6 +94,20 @@ def XDSIdxref(DriverType = None):
             return
 
         # getter and setter for input / output data
+
+        def set_indexer_input_lattice(self, lattice):
+            self._indxr_input_lattice = lattice
+            return
+
+        def set_indexer_input_cell(self, cell):
+            if not type(cell) == type(()):
+                raise RuntimeError, 'cell must be a 6-tuple de floats'
+
+            if len(cell) != 6:
+                raise RuntimeError, 'cell must be a 6-tuple de floats'
+
+            self._indxr_input_cell = tuple(map(float, cell))
+            return
 
         def set_input_data_file(self, name, data):
             self._input_data_files[name] = data
@@ -140,6 +157,26 @@ def XDSIdxref(DriverType = None):
             
             xds_inp.write('ORGX=%f ORGY=%f\n' % \
                           tuple(self._org))
+
+            lattice_to_spacegroup = {'aP':1,
+                                     'mP':3,
+                                     'mC':5,
+                                     'oP':16,
+                                     'oC':20,
+                                     'oF':22,
+                                     'oI':23,
+                                     'tP':75,
+                                     'tI':79,
+                                     'hP':143,
+                                     'hR':146,
+                                     'cP':195,
+                                     'cF':196,
+                                     'cI':197}
+
+            if self._indxr_input_cell:
+                self._cell = self._indxr_input_cell
+            if self._indxr_input_lattice:
+                self._symm = lattice_to_spacegroup[self._indxr_input_lattice]
 
             xds_inp.write('SPACE_GROUP_NUMBER=%d\n' % self._symm)
             if self._cell:
