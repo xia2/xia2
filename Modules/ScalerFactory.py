@@ -10,7 +10,7 @@
 # Note that this is not production code...
 
 from CCP4ScalerImplementation import CCP4Scaler
-from XDSScaler import XDSScaler
+# from XDSScaler import XDSScaler
 
 def Scaler():
     '''Create a Scaler implementation.'''
