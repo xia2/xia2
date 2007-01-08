@@ -18,6 +18,7 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
+sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Wrappers.CCP4 import Mosflm
@@ -26,6 +27,8 @@ from Handlers.Streams import Admin
 from Modules.XDSIntegrater import XDSIntegrater
 
 from NullIntegraterImplementation import NullIntegrater
+
+from Exceptions.NotAvailableError import NotAvailableError
 
 # FIXME 06/SEP/06 this should take an implementation of indexer to 
 #                 help with the decision about which integrater to
@@ -77,11 +80,11 @@ def Integrater():
 
     integrater = None
 
-    if not integrater:
+    if not integrater and False:
         try:
             integrater = XDSIntegrater()
             Admin.write('Using XDS Integrater')
-        except RuntimeError, e:
+        except NotAvailableError, e:
             # Admin.write('Integrater XDS not available: %s' % str(e))
             pass
             
@@ -89,7 +92,7 @@ def Integrater():
         try:
             integrater = Mosflm.Mosflm()
             Admin.write('Using Mosflm Integrater')
-        except RuntimeError, e:
+        except NotAvailableError, e:
             # Admin.write('Integrater Mosflm not available: %s' % str(e))
             pass
             

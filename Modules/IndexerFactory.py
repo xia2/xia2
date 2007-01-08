@@ -36,6 +36,7 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
+sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 # from LabelitIndexer import LabelitIndexer
@@ -44,6 +45,7 @@ from Wrappers.Labelit.LabelitScreen import LabelitScreen
 from Wrappers.CCP4.Mosflm import Mosflm
 from Modules.XDSIndexer import XDSIndexer
 
+from Exceptions.NotAvailableError import NotAvailableError
 from Handlers.Streams import Admin
 
 def IndexerForXSweep(xsweep):
@@ -120,7 +122,7 @@ def Indexer():
         try:
             indexer = LabelitScreen()
             Admin.write('Using LabelitScreen Indexer')
-        except RuntimeError, e:
+        except NotAvailableError, e:
             # FIXME this should raise a NotAvailableError
             # Admin.write('Indexer LabelitScreen not available: %s' % str(e))
             pass
@@ -129,15 +131,15 @@ def Indexer():
         try:
             indexer = Mosflm()
             Admin.write('Using Mosflm Indexer')
-        except RuntimeError, e:
+        except NotAvailableError, e:
             # Admin.write('Indexer Mosflm not available: %s' % str(e))
             pass
 
-    if not indexer:
+    if not indexer and False:
         try:
             indexer = XDSIndexer()
             Admin.write('Using XDS Indexer')
-        except RuntimeError, e:
+        except NotAvailableError, e:
             # Admin.write('Indexer XDS not available: %s' % str(e))
             pass
 
