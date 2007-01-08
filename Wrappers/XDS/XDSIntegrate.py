@@ -193,6 +193,8 @@ def XDSIntegrate(DriverType = None):
 
             if (high - low) / (0.5 * (high + low)) > 0.25:
                 # there was a very large variation in deviation
+                # FIXME 08/JAN/07 this should raise a BadLatticeException
+                
                 raise RuntimeError, 'very large variation in pixel deviation'
 
             return

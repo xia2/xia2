@@ -61,6 +61,11 @@ def XDSCorrect(DriverType = None):
             self._background_range = (0, 0)
             self._resolution_range = (0, 0)
 
+            # specific information
+
+            self._cell = None
+            self._spacegroup_number = None
+
             self._input_data_files = { }
             self._output_data_files = { }
 
@@ -85,6 +90,14 @@ def XDSCorrect(DriverType = None):
             return
 
         # getter and setter for input / output data
+
+        def set_spacegroup_number(self, spacegroup_number):
+            self._spacegroup_number = spacegroup_number
+            return
+
+        def set_cell(self, cell):
+            self._cell = cell
+            return
 
         def set_input_data_file(self, name, data):
             self._input_data_files[name] = data
@@ -117,6 +130,12 @@ def XDSCorrect(DriverType = None):
 
         def run(self):
             '''Run correct.'''
+
+            # this is ok...
+            # if not self._cell:
+            # raise RuntimeError, 'cell not set'
+            # if not self._spacegroup_number:
+            # raise RuntimeError, 'spacegroup not set'
 
             header = header_to_xds(self.get_header())
 
@@ -157,14 +176,22 @@ def XDSCorrect(DriverType = None):
                 xds_inp.write(record)
 
             xds_inp.write('DATA_RANGE=%d %d\n' % self._data_range)
-            for spot_range in self._spot_range:
-                xds_inp.write('SPOT_RANGE=%d %d\n' % spot_range)
-            xds_inp.write('BACKGROUND_RANGE=%d %d\n' % \
-                          self._background_range)
+            # for spot_range in self._spot_range:
+            # xds_inp.write('SPOT_RANGE=%d %d\n' % spot_range)
+            # xds_inp.write('BACKGROUND_RANGE=%d %d\n' % \
+            # self._background_range)
 
             # assume for the moment anomalous data
 
             xds_inp.write('FRIEDEL\'S_LAW=FALSE\n')
+
+            if self._spacegroup_number:
+                xds_inp.write('SPACE_GROUP_NUMBER=%d\n' % \
+                              self._spacegroup_number)
+            if self._cell:
+                xds_inp.write('UNIT_CELL_CONSTANTS=')
+                xds_inp.write('%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+                              self._cell)
 
             xds_inp.close()
             
@@ -205,7 +232,6 @@ if __name__ == '__main__':
     directory = os.path.join(os.environ['XIA2_ROOT'],
                              'Data', 'Test', 'Images')
 
-    
     correct.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 
     correct.set_data_range(1, 1)
