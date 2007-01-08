@@ -121,21 +121,25 @@ def Indexer():
             indexer = LabelitScreen()
             Admin.write('Using LabelitScreen Indexer')
         except RuntimeError, e:
-            Admin.write('Indexer LabelitScreen not available: %s' % str(e))
+            # FIXME this should raise a NotAvailableError
+            # Admin.write('Indexer LabelitScreen not available: %s' % str(e))
+            pass
 
     if not indexer:
         try:
             indexer = Mosflm()
             Admin.write('Using Mosflm Indexer')
         except RuntimeError, e:
-            Admin.write('Indexer Mosflm not available: %s' % str(e))
+            # Admin.write('Indexer Mosflm not available: %s' % str(e))
+            pass
 
     if not indexer:
         try:
             indexer = XDSIndexer()
             Admin.write('Using XDS Indexer')
         except RuntimeError, e:
-            Admin.write('Indexer XDS not available: %s' % str(e))
+            # Admin.write('Indexer XDS not available: %s' % str(e))
+            pass
 
     if not indexer:
         raise RuntimeError, 'no indexer implementations found'

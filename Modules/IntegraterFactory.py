@@ -77,14 +77,21 @@ def Integrater():
 
     integrater = None
 
-    # return XDSIntegrater()
-
+    if not integrater:
+        try:
+            integrater = XDSIntegrater()
+            Admin.write('Using XDS Integrater')
+        except RuntimeError, e:
+            # Admin.write('Integrater XDS not available: %s' % str(e))
+            pass
+            
     if not integrater:
         try:
             integrater = Mosflm.Mosflm()
             Admin.write('Using Mosflm Integrater')
         except RuntimeError, e:
-            Admin.write('Integrater Mosflm not available: %s' % str(e))
+            # Admin.write('Integrater Mosflm not available: %s' % str(e))
+            pass
             
     if not integrater:
         raise RuntimeError, 'no integrater implementations found'
