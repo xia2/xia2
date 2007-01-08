@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # 2nd June 2006
 # 
@@ -112,6 +110,9 @@ def LabelitDistl(DriverType = None):
                     self._statistics[current_image]['resol_one'] = float(l[-1])
                 if l[:3] == ['Method', '2', 'Resolution']:
                     self._statistics[current_image]['resol_two'] = float(l[-1])
+                if l[:3] == ['%Saturation,', 'Top', '50']:
+                    self._statistics[current_image][
+                        'saturation'] = float(l[-1])
                 
             return 'ok'
 
