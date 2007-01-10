@@ -47,6 +47,7 @@ from Modules.XDSIndexer import XDSIndexer
 
 from Exceptions.NotAvailableError import NotAvailableError
 from Handlers.Streams import Admin
+from Handlers.PipelineSelection import search_for_preferences
 
 def IndexerForXSweep(xsweep):
     '''Provide an indexer to work with XSweep instance xsweep.'''
@@ -118,36 +119,38 @@ def Indexer():
 
     # return XDSIndexer()
 
-    if not indexer:
+    preselection = search_for_preferences().get('indexer')
+
+    if not indexer and (not preselection or preselection == 'labelit'):
         try:
             indexer = LabelitScreen()
             Admin.write('Using LabelitScreen Indexer')
         except NotAvailableError, e:
-            # FIXME this should raise a NotAvailableError
-            # Admin.write('Indexer LabelitScreen not available: %s' % str(e))
+            if preselection:
+                raise RuntimeError, \
+                      'preselected indexer labelit not available'            
             pass
 
-    if not indexer:
+    if not indexer and (not preselection or preselection == 'mosflm'):
         try:
             indexer = Mosflm()
             Admin.write('Using Mosflm Indexer')
         except NotAvailableError, e:
-            # Admin.write('Indexer Mosflm not available: %s' % str(e))
+            if preselection:
+                raise RuntimeError, 'preselected indexer mosflm not available'
             pass
 
-    if not indexer and False:
+    if not indexer and (not preselection or preselection == 'xds'):
         try:
             indexer = XDSIndexer()
             Admin.write('Using XDS Indexer')
         except NotAvailableError, e:
-            # Admin.write('Indexer XDS not available: %s' % str(e))
+            if preselection:
+                raise RuntimeError, 'preselected indexer xds not available'
             pass
 
     if not indexer:
         raise RuntimeError, 'no indexer implementations found'
-
-    # configure indexer implementation here, e.g. pass in the
-    # xsweep definition if available
 
     return indexer
 

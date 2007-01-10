@@ -43,11 +43,14 @@ def parse_preferences(file, preferences):
 
     for line in open(file, 'r').readlines():
 
+        # all lower case
+        line = line.lower()
+
         # ignore comment lines    
         if line[0] == '!' or line[0] == '#':
             continue
 
-        preferences[line.split(':')[0]] = line.split(':')[1].split()
+        preferences[line.split(':')[0]] = line.split(':')[1].split()[0]
 
     return preferences
 
