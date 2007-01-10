@@ -10,6 +10,7 @@
 
 import os
 import sys
+import math
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -42,9 +43,23 @@ def XScale(DriverType = None):
             # now set myself up...
             self.set_executable('xscale')
 
+            # overall information
             self._resolution_shells = []
             self._cell = None
             self._spacegroup_number = None
+
+            # input reflections information - including grouping information
+            # in the same way as the .xinfo files - through the wavelength
+            # names, which will be used for the output files.
+            self._input_reflection_files = []
+            self._input_reflection_wavelength_names = []
+            self._input_resolution_ranges = []
+
+            # decisions about the scaling
+            self._crystal = None
+            self._zero_dose = False
+            self._anomalous = True
+            self._merge = False
 
             return
 
@@ -54,14 +69,6 @@ def XScale(DriverType = None):
 
         def set_cell(self, cell):
             self._cell = cell
-            return
-
-        def _generate_resolution_shells(self, low, high):
-            '''Generate evenly spaced in reciprocal space resolution
-            shells from low to high resolution.'''
-
-            
-
             return
 
     return XScaleWrapper()
