@@ -23,7 +23,7 @@ sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Wrappers.CCP4 import Mosflm
 from Handlers.Streams import Admin
-from Handlers.PipelineSelection import search_for_preferences
+from Handlers.PipelineSelection import get_preferences, add_preference
 
 from Modules.XDSIntegrater import XDSIntegrater
 
@@ -80,12 +80,13 @@ def Integrater():
     # FIXME this should take an indexer as an argument...
 
     integrater = None
-    preselection = search_for_preferences().get('integrater')
+    preselection = get_preferences().get('integrater')
 
     if not integrater and (not preselection or preselection == 'xds'):
         try:
             integrater = XDSIntegrater()
             Admin.write('Using XDS Integrater')
+            add_preference('scaler' 'xds')
         except NotAvailableError, e:
             if preselection == 'xds':
                 raise RuntimeError, \
@@ -96,6 +97,7 @@ def Integrater():
         try:
             integrater = Mosflm.Mosflm()
             Admin.write('Using Mosflm Integrater')
+            add_preference('scaler' 'ccp4')
         except NotAvailableError, e:
             if preselection == 'mosflm':
                 raise RuntimeError, \

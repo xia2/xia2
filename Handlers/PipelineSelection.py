@@ -13,8 +13,53 @@
 import os
 import sys
 
+def check(key, value):
+    '''Check that this thing is allowed to have this value.'''
+
+    if key == 'indexer':
+        if not value in ['xds', 'mosflm', 'labelit']:
+            raise RuntimeError, 'indexer %s unknown' % value
+
+    if key == 'indexer':
+        if not value in ['xds', 'mosflm']:
+            raise RuntimeError, 'integrater %s unknown' % value
+
+    if key == 'scaler':
+        if not value in ['xds', 'ccp4']:
+            raise RuntimeError, 'scaler %s unknown' % value
+
+    return
+
+preferences = { }
+
+def get_preferences():
+    global preferences
+
+    if preferences == { }:
+        search_for_preferences()
+
+    return preferences
+
+def add_preference(key, value):
+    '''Add in run-time a preference.'''
+
+    global preferences
+
+    check(key, value)
+
+    if preferences.has_key(key):
+        if preferences[key] != value:
+            raise RuntimeError, 'setting %s to %s: already %s' % \
+                  (key, value, preferences[key])
+        
+    preferences[key] = value
+
+    return
+
 def search_for_preferences():
     '''Search for a preferences file, first in HOME then here.'''
+
+    global preferences
 
     if os.name == 'nt':
         homedir = os.path.join(os.environ['HOMEDRIVE'],
@@ -23,8 +68,6 @@ def search_for_preferences():
     else:
         homedir = os.environ['HOME']
         xia2dir = os.path.join(homedir, '.xia2')
-
-    preferences = { }
 
     if os.path.exists(os.path.join(xia2dir, 'preferences.xia')):
         preferences = parse_preferences(
@@ -50,7 +93,9 @@ def parse_preferences(file, preferences):
         if line[0] == '!' or line[0] == '#':
             continue
 
-        preferences[line.split(':')[0]] = line.split(':')[1].split()[0]
+        check_value(line.split(':')[0], line.split(':')[1])
+
+        preferences[line.split(':')[0]] = line.split(':')[1]
 
     return preferences
 

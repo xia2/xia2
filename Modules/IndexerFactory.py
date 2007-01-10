@@ -47,7 +47,7 @@ from Modules.XDSIndexer import XDSIndexer
 
 from Exceptions.NotAvailableError import NotAvailableError
 from Handlers.Streams import Admin
-from Handlers.PipelineSelection import search_for_preferences
+from Handlers.PipelineSelection import get_preferences
 
 def IndexerForXSweep(xsweep):
     '''Provide an indexer to work with XSweep instance xsweep.'''
@@ -119,7 +119,7 @@ def Indexer():
 
     # return XDSIndexer()
 
-    preselection = search_for_preferences().get('indexer')
+    preselection = get_preferences().get('indexer')
 
     if not indexer and (not preselection or preselection == 'labelit'):
         try:
