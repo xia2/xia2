@@ -43,3 +43,29 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Driver.DriverHelper import executable_exists
 
 # write in strategy dictionary here
+
+strategy_dict = {
+    'default':{
+    'score':1,
+    'pipeline':{
+    'indexer':'labelit', 'integrater':'xds', 'scaler':'xds-hybrid'}
+    'depends-on':['labelit.screen', 'xds', 'xscale', 'scala', 'combat',
+                  'pointless-1.1.0.4']},
+    'default':{
+    'score':2,
+    'pipeline':{
+    'indexer':'labelit', 'integrater':'mosflm', 'scaler':'mosflm'}
+    'depends-on':['labelit.screen', 'mosflm', 'scala', 'reindex',
+                  'pointless-1.1.0.4']},
+    'mosaic':{
+    'score':1,
+    'pipeline':{
+    'indexer':'labelit', 'integrater':'xds', 'scaler':'xds-hybrid'}
+    'depends-on':['labelit.screen', 'xds', 'xscale', 'scala', 'combat',
+                  'pointless-1.1.0.4']},
+    'mosaic':{
+    'score':2,
+    'pipeline':{
+    'indexer':'xds', 'integrater':'xds', 'scaler':'xds'}
+    'depends-on':['xds', 'xscale']}
+    }
