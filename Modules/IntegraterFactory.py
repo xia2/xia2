@@ -86,7 +86,7 @@ def Integrater():
         try:
             integrater = XDSIntegrater()
             Admin.write('Using XDS Integrater')
-            add_preference('scaler' 'xds')
+            add_preference('scaler', 'xds')
         except NotAvailableError, e:
             if preselection == 'xds':
                 raise RuntimeError, \
@@ -97,7 +97,7 @@ def Integrater():
         try:
             integrater = Mosflm.Mosflm()
             Admin.write('Using Mosflm Integrater')
-            add_preference('scaler' 'ccp4')
+            add_preference('scaler', 'ccp4')
         except NotAvailableError, e:
             if preselection == 'mosflm':
                 raise RuntimeError, \
