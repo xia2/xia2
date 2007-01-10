@@ -190,7 +190,7 @@ def XDSCorrect(DriverType = None):
                               self._spacegroup_number)
             if self._cell:
                 xds_inp.write('UNIT_CELL_CONSTANTS=')
-                xds_inp.write('%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+                xds_inp.write('%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f\n' % \
                               self._cell)
 
             xds_inp.close()
