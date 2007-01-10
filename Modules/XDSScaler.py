@@ -44,3 +44,34 @@
 # which could be recycled. A pointgroup determination routine will be needed.
 # XDS reindexing needs to be sussed, as well as getting comparative R factors
 # - how easy is this?
+
+import os
+import sys
+import math
+
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
+
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
+
+# the interface definition that this will conform to 
+from Schema.Interfaces.Scaler import Scaler
+
+class XDSScaler(Scaler):
+    '''An implementation of the xia2 Scaler interface implemented with
+    xds and xscale, possibly with some help from a couple of CCP4
+    programs like pointless and combat.'''
+
+    def __init__(self):
+        Scaler.__init__(self)
+
+        self._sweep_information = { }
+
+        self._common_pname = None
+        self._common_xname = None
+        self._common_dname = None
+
+        return
+
+    

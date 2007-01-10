@@ -191,7 +191,7 @@ def XDSIntegrate(DriverType = None):
             Chatter.write('Standard Deviation in pixel range: %f %f' % \
                           (low, high))
 
-            if (high - low) / (0.5 * (high + low)) > 0.25:
+            if (high - low) / (0.5 * (high + low)) > 0.5:
                 # there was a very large variation in deviation
                 # FIXME 08/JAN/07 this should raise a BadLatticeException
                 
