@@ -24,7 +24,7 @@
 # Pixel Size : (0.102400 mm, 0.102400 mm)
 # Angle range : 290.000000 -> 291.000000
 # Two Theta value: N/A
-
+#
 # FIXME this should probably be replaced with a module which uses the
 # swig-python bindings of the DiffractionImage library directly.
 # 
@@ -80,6 +80,7 @@ detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('marccd', 4096, 79):'mar 325',
                   ('marccd', 3072, 73):'mar 225',
                   ('marccd', 2048, 79):'mar 165',
+                  ('marccd', 2048, 64):'mar 135',
                   ('mar', 2300, 150):'mar 345',
                   ('mar', 3450, 100):'mar 345',
                   ('raxis', 3000, 100):'raxis IV'}
