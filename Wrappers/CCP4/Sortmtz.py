@@ -27,6 +27,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
 
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
+from Handlers.Streams import Chatter
 
 def Sortmtz(DriverType = None):
     '''A factory for SortmtzWrapper classes.'''
@@ -102,11 +103,15 @@ def Sortmtz(DriverType = None):
             if self._hklin_files:
                 for m in self._hklin_files:
                     # FIXME have removed the quotes as this breaks the parser
-                    # it is assumed that the file is a comment!
+                    # it is assumed that the file is a comment! This is not
+                    # a problem in 6.0.2 - so allow for the quotes to
+                    # be added if and only if there is a space...
                     if ' ' in m:
-                        raise RuntimeError, \
-                              'cannot cope with files with spaces in name'
-                    self.input('%s' % m)
+                        Chater.write(
+                            'Quoting input files - you have been warned!')
+                        self.input('"%s"' % m)
+                    else:
+                        self.input('%s' % m)
 
             self.close_wait()
 
