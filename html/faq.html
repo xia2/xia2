@@ -41,13 +41,15 @@
       <li>ADSC CCD detectors</li>
       <li>MAR CCD detectors</li>
       <li>MAR image plate detectors</li>
+      <li>RAXIS IV image plate detectors</li>
     </ul>
 
+    <!-- 
     <p>and I think that RAXIS IV image plate detectors work as well - however
       I do not have data to routinely test against. If you have a different
       detector you would like supporting (which writes out <i>corrected</i>
       images, please get in touch - ideally with a test data set of insulin
-      or lysozyme for me to work with.</p>
+      or lysozyme for me to work with.</p> -->
 
     <h3>Scaling 180 degrees of cubic inculin fails - why?</h3>
 
@@ -87,11 +89,24 @@ IndexError: pop from empty list
       bug which has been reported to CCP4, and a workaround is included
       in version 0.2.2.4 and later of xia2.</p>
 
+    <h3>What does error getting status meean?</h3>
+
+    <p>This usually - with a CCP4 program - indicates that the output
+      has got a little mashed and the status record has been moved. 
+      This is usually a side-effect of compilation with gfortran, so
+      it is probably worth adding</p>
+
+    <pre>
+GFORTRAN_UNBUFFERED_ALL=1
+    </pre>
+    
+    <p>to your environment.</p>
+
     <hr>
     <address><a href="mailto:g.winter@dl.ac.uk"></a></address>
 <!-- Created: Wed Nov 29 09:59:12 GMT Standard Time 2006 -->
 <!-- hhmts start -->
-Last modified: Tue Dec 05 09:56:46 GMT Standard Time 2006
+Last modified: Fri Jan 12 11:28:07 GMT 2007
 <!-- hhmts end -->
   </body>
 </html>
