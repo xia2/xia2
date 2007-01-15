@@ -49,6 +49,20 @@
 #                 then rescaled with, say, scaleit. This should, however,
 #                 only be done if the multiplicity is higher than say 6.
 # 
+#
+# FIXME 15/JAN/07 selection of "reference" (BASE) wavelength... from
+#                 http://www.ccp4.ac.uk/courses/
+#                 proceedings/1997/p_evans/main.html
+#  
+#                 Choose reference set: this should be (in order of importance)
+#                 (a) the most complete
+#                 (b) the most accurate
+#                 (c) remote from the anomalous edge
+#
+#                 Worth thinking about...                  
+
+
+
 
 import os
 import sys
