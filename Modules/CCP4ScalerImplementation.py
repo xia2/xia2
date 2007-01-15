@@ -1690,10 +1690,12 @@ class CCP4Scaler(Scaler):
             crd.set_hklout(f.get_hklout().replace('merged_free', 'rd_analyse'))
 
             status = crd.detect()
-            
+
+            Chatter.write('')
             Chatter.write('Inter-wavelength radiation damage analysis.')
             for s in status:
                 Chatter.write('%s %s' % s)
+            Chatter.write('')
         
 
         return
