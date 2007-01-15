@@ -15,11 +15,11 @@
 # also decide how much time to devote to the accurate identification of 
 # sweeps... FIXME this needs to be thought about/implemented.
 # 
-# 23/AUG/06 FIXME (1) need to print out the exposure time
+# 23/AUG/06 FIXED (1) need to print out the exposure time
 #                 (2) need to print out the exposure epoch in a human 
 #                     readable way - this is done with time.ctime()
 # 
-# 25/SEP/06 FIXME also need to be able to handle images like blah_foo.0001
+# 25/SEP/06 FIXED also need to be able to handle images like blah_foo.0001
 #                 since this is a reasonably common way of collecting frames.
 
 import sys
