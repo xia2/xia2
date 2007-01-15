@@ -199,10 +199,16 @@ def Scaleit(DriverType = None):
 if __name__ == '__main__':
     s = Scaleit()
 
-    hklin = os.path.join(
-        os.environ['X2TD_ROOT'],
-        'Test', 'UnitTest', 'Wrappers', 'Scaleit',
-        'TS03_INTER_RD.mtz')
+    if len(sys.argv) == 1:
+        
+        hklin = os.path.join(
+            os.environ['X2TD_ROOT'],
+            'Test', 'UnitTest', 'Wrappers', 'Scaleit',
+            'TS03_INTER_RD.mtz')
+
+    else:
+
+        hklin = sys.argv[1]
 
     s.set_hklin(hklin)
     s.set_hklout('junk.mtz')
