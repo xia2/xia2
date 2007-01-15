@@ -31,6 +31,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
 from Wrappers.CCP4.Scaleit import Scaleit
+from lib.Guff import auto_logfiler
 
 # Operation:
 #
@@ -104,6 +105,9 @@ class CCP4InterRadiationDamageDetector:
         # check that hklin is an mtz file.
 
         scaleit = Scaleit()
+        scaleit.set_working_directory(self.get_working_directory())
+        auto_logfiler(scaleit)
+
         scaleit.set_hklin(self.get_hklin())
         scaleit.set_hklout(self.get_hklout())
 

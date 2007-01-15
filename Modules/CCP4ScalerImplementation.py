@@ -1686,6 +1686,8 @@ class CCP4Scaler(Scaler):
         if len(scaled_reflection_files.keys()) > 1:
             crd = CCP4InterRadiationDamageDetector()
 
+            crd.set_working_directory(self.get_working_directory())
+
             crd.set_hklin(f.get_hklout())
             crd.set_hklout(f.get_hklout().replace('merged_free', 'rd_analyse'))
 
