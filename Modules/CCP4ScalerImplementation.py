@@ -138,6 +138,8 @@ from lib.SymmetryLib import lattices_in_order
 from CCP4ScalerImplementationHelpers import _resolution_estimate, \
      _prepare_pointless_hklin, _fraction_difference
 
+from CCP4InterRadiationDamageDetector import CCP4InterRadiationDamageDetector
+
 class CCP4Scaler(Scaler):
     '''An implementation of the Scaler interface using CCP4 programs.'''
 
@@ -1678,6 +1680,21 @@ class CCP4Scaler(Scaler):
         f.add_free_flag()
 
         self._scalr_scaled_reflection_files['mtz_merged_free'] = f.get_hklout()
+
+        # next have a look for radiation damage... if more than one wavelength
+
+        if len(scaled_reflection_files.keys()) > 1:
+            crd = CCP4InterRadiationDamageDetector()
+
+            crd.set_hklin(f.get_hklout())
+            crd.set_hklout(f.get_hklout().replace('merged_free', 'rd_analyse'))
+
+            status = crd.detect()
+            
+            Chatter.write('Inter-wavelength radiation damage analysis.')
+            for s in status:
+                Chatter.write('%s %s' % s)
+        
 
         return
 
