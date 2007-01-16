@@ -9,12 +9,12 @@ platform=`uname`
 if [ "$platform" = "Darwin" ]; then
   arch=`uname -a | awk '{print $NF}'`
   if [ "$arch" = "powerpc" ]; then
-    export PATH=${PATH}:${XIA2_ROOT}/binaries/mac_ppc
+    export PATH=${XIA2_ROOT}/binaries/mac_ppc:${PATH}
   elif [ "$arch" = "i386" ]; then
-    export PATH=${PATH}:${XIA2_ROOT}/binaries/mac_386  
+    export PATH=${XIA2_ROOT}/binaries/mac_386:${PATH}
   fi
 elif [ "$platform" = "Linux" ]; then
-  export PATH=${PATH}:${XIA2_ROOT}/binaries/linux_386
+  export PATH=${XIA2_ROOT}/binaries/linux_386:${PATH}
 fi
 
 export PATH=${PATH}:${XIA2_ROOT}/Applications

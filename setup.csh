@@ -6,13 +6,13 @@
 
 setenv platform `uname`
 if ( "$platform" == "Linux" ) then
-  setenv PATH ${PATH}:${XIA2_ROOT}/binaries/linux_386
+  setenv PATH ${XIA2_ROOT}/binaries/linux_386:${PATH}
 else
   setenv arch `uname -a | awk '{print $NF}'`
   if ( "$arch" == "powerpc" ) then
-    setenv PATH ${PATH}:${XIA2_ROOT}/binaries/mac_ppc
+    setenv PATH ${XIA2_ROOT}/binaries/mac_ppc:${PATH}
   else
-    setenv PATH ${PATH}:${XIA2_ROOT}/binaries/mac_386
+    setenv PATH ${XIA2_ROOT}/binaries/mac_386:${PATH}
   endif
 endif
 
