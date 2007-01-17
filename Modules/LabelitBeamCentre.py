@@ -26,5 +26,44 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
+from Wrappers.Labelit.LabelitScreen import LabelitScreen
+
+def compute_beam_centre(sweep, working_directory = os.getcwd()):
+    '''Compute the beam centre for the input sweep, working in the provided
+    directory, perhaps.'''
+
+    beam = sweep.get_beam()
+
+    # perhaps fiddle with the beam here
+
+    try:
+        ls = LabelitScreen()
+        ls.setup_from_image(s.imagename(min(s.get_images())))
+        beam = ls.get_indexer_beam()
+    except:
+        # do not have labelit installed?
+        pass
+
+    return beam
+
+if __name__ == '__main__':
+
+    from Experts.FindImages import image2template_directory
+    from Schema.Sweep import SweepFactory
+
+    if len(sys.argv) < 2:
+        image = os.path.join(os.environ['XIA2_ROOT'],
+                             'Data', 'Test', 'Images', '12287_1_E1_001.img')
+    else:
+        image = sys.argv[1]
+        
+    template, directory = image2template_directory(image)
+    
+    sl = SweepFactory(template, directory)
+
+    for s in sl:
+
+        print '%6.2f %6.2f' % compute_beam_centre(s)
 
 
+                                                     
