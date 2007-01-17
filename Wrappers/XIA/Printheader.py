@@ -192,6 +192,11 @@ def Printheader(DriverType = None):
 
             for o in output:
                 l = o.split(':')
+
+                if len(l) > 1:
+                    l2 = l[1].split()
+                else:
+                    l2 = ''
                 if 'Image type' in o:
                     self._header['detector'] = l[1].strip()
                     detector = self._header['detector']
@@ -211,10 +216,10 @@ def Printheader(DriverType = None):
                         self._header['date'] = ''
 
                 if 'Exposure time' in o:
-                    self._header['exposure_time'] = float(l[1])
+                    self._header['exposure_time'] = float(l2[0])
 
                 if 'Wavelength' in o:
-                    self._header['wavelength'] = float(l[1]) * \
+                    self._header['wavelength'] = float(l2[0]) * \
                                                  fudge[detector]['wavelength']
 
                 if 'Distance' in o:
@@ -222,7 +227,8 @@ def Printheader(DriverType = None):
                         l[1].replace('mm', '').strip())
 
                 if 'Beam cent' in o:
-                    beam = l[1].replace('(', '').replace(')', '').split(',')
+                    beam = l[1].replace('(', '').replace(
+                        ')', '').replace('mm', ' ').split(',')
                     self._header['beam'] = map(float, beam)
 
                 if 'Image Size' in o:
@@ -239,6 +245,12 @@ def Printheader(DriverType = None):
                 
                 if 'Angle range' in o:
                     phi = map(float, l[1].split('->'))
+                    self._header['phi_start'] = phi[0]
+                    self._header['phi_end'] = phi[1]
+                    self._header['phi_width'] = phi[1] - phi[0]
+
+                if 'Oscillation range' in o:
+                    phi = map(float, l[1].replace('deg', '').split('->'))
                     self._header['phi_start'] = phi[0]
                     self._header['phi_end'] = phi[1]
                     self._header['phi_width'] = phi[1] - phi[0]
