@@ -201,7 +201,7 @@ def Printheader(DriverType = None):
                     self._header['detector'] = l[1].strip()
                     detector = self._header['detector']
 
-                if 'Exposure epoch' in o:
+                if 'Exposure epoch' in o or 'Collection date' in o:
                     try:
                         d = o[o.index(':') + 1:]
                         if d.strip():
