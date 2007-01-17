@@ -38,10 +38,11 @@ def compute_beam_centre(sweep, working_directory = os.getcwd()):
 
     try:
         ls = LabelitScreen()
-        ls.setup_from_image(s.imagename(min(s.get_images())))
+        ls.setup_from_image(sweep.imagename(min(sweep.get_images())))
         beam = ls.get_indexer_beam()
-    except:
+    except exceptions.Exception, e:
         # do not have labelit installed?
+        print e
         pass
 
     return beam

@@ -34,6 +34,7 @@ from Experts.FindImages import image2template_directory
 from Handlers.CommandLine import CommandLine
 from Wrappers.CCP4.Chooch import Chooch
 from Modules.LabelitBeamCentre import compute_beam_centre
+from Handlers.Streams import streams_off
 
 known_image_extensions = ['img', 'mccd', 'mar2300', 'osc', 'cbf']
 known_sweeps = { }
@@ -236,11 +237,11 @@ def print_sweeps():
             print 'EPOCH %d' % int(s.get_collect()[0])
             cl_beam = CommandLine.get_beam()
             if cl_beam[0] or cl_beam[1]:
-                print 'BEAM %f %f' % cl_beam
+                print 'BEAM %6.2f %6.2f' % cl_beam
             else:
-                # print 'BEAM %f %f' % tuple(s.get_beam())
+                # print 'BEAM %6.2f %6.2f' % tuple(s.get_beam())
                 beam = compute_beam_centre(s)
-                print 'BEAM %f %f' % beam
+                print 'BEAM %6.2f %6.2f' % tuple(beam)
             print 'END SWEEP %s' % name
 
             print ''
@@ -249,6 +250,8 @@ def print_sweeps():
     print 'END PROJECT %s' % project
 
 if __name__ == '__main__':
+
+    streams_off()
 
     argv = sys.argv
 
