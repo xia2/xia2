@@ -42,6 +42,7 @@
       <li>MAR CCD detectors</li>
       <li>MAR image plate detectors</li>
       <li>RAXIS IV image plate detectors</li>
+      <li>Rigaku Saturn CCD detectors</li>
     </ul>
 
     <!-- 
@@ -65,6 +66,17 @@
       to see if the reindexing operator is h,k,l and the input and
       output spacegroup records are identical - this will happen shortly
       though which should reduce the time taken for large data sets.</p>
+
+    <h3>What happens with resolution limits?</h3>
+
+    <p>There are two places where resolution limits are imposed, during
+      integration and then during scaling. The integration resolution 
+      limit is imposed where the measurement of individual reflections
+      has an I/sigma of about 1.0. This is applied separately for each 
+      sweep. The resolution limit from scaling is applied per sweep, and
+      is where the overall (merged) I/sigma is about 2.0.</p>
+
+    <h1>Error Questions</h1>
     
     <h3>What does this weird error mean?</h3>
 
@@ -106,7 +118,7 @@ GFORTRAN_UNBUFFERED_ALL=1
     <address><a href="mailto:g.winter@dl.ac.uk"></a></address>
 <!-- Created: Wed Nov 29 09:59:12 GMT Standard Time 2006 -->
 <!-- hhmts start -->
-Last modified: Fri Jan 12 11:28:07 GMT 2007
+Last modified: Wed Jan 17 15:26:43 GMT Standard Time 2007
 <!-- hhmts end -->
   </body>
 </html>
