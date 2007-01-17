@@ -12,11 +12,30 @@
 # FIXED 28/NOV/06 record the total processing time to Chatter.
 #
 # FIXME 28/NOV/06 be able to e-mail someone with the job once finished.
+#
+# FIXME 17/JAN/07 check environment before startup.
 # 
 
 import sys
 import os
 import time
+
+def check_environment():
+    '''Check the environment we are running in...'''
+
+    xia2_keys = ['XIA2_ROOT', 'XIA2CORE_ROOT']
+
+    ccp4_keys = ['CCP4', 'CLIBD']
+
+    for k in xia2_keys:
+        if not os.environ.has_key(k):
+            raise RuntimeError, '%s not defined - is xia2 set up?'
+
+    for k in ccp4_keys:
+        if not os.environ.has_key(k):
+            raise RuntimeError, '%s not defined - is CCP4 set up?'
+
+    return
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
@@ -59,6 +78,7 @@ def xia2():
 
 if __name__ == '__main__':
 
+    check_environment()
     check()
     xia2()
 
