@@ -33,6 +33,7 @@ from Schema.Sweep import SweepFactory
 from Experts.FindImages import image2template_directory
 from Handlers.CommandLine import CommandLine
 from Wrappers.CCP4.Chooch import Chooch
+from Modules.LabelitBeamCentre import compute_beam_centre
 
 known_image_extensions = ['img', 'mccd', 'mar2300', 'osc', 'cbf']
 known_sweeps = { }
@@ -237,7 +238,9 @@ def print_sweeps():
             if cl_beam[0] or cl_beam[1]:
                 print 'BEAM %f %f' % cl_beam
             else:
-                print 'BEAM %f %f' % tuple(s.get_beam())
+                # print 'BEAM %f %f' % tuple(s.get_beam())
+                beam = compute_beam_centre(s)
+                print 'BEAM %f %f' % beam
             print 'END SWEEP %s' % name
 
             print ''
