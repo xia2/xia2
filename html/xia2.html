@@ -137,7 +137,7 @@ xia2setup -atom se -project foo -crystal bar \
     </pre>
 
     <p>This will look for sequence files (.seq) scan files (.scan) and
-      images files (.img, .osc, .mmar345, .mccd, .cbf) and make a good
+      images files (.img, .osc, .mar345, .mccd, .cbf) and make a good
       guess as to what is going on. If you have a scan file in there and
       you have chooch installed, then xia2 will have a stab at identifying
       the different wavelengths. This is a guess and may be wrong. For this
@@ -167,6 +167,10 @@ xia2setup -atom se -project foo -crystal bar \
       as well as checking that the epoch numbers are set correctly and
       also that the wavelengths and beam centres are correct. If you 
       provided a heavy atom there is a place to say how many to look for.</p>
+
+    <p>Finally, if you have labelit installed xia2setup will run this 
+      to update the beam positions. If this happens, you will see a comment
+      to this effect above the BEAM records in the sweeps.</p>
 
     <h1>Platforms</h1>
 
@@ -476,7 +480,7 @@ END PROJECT TS01
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Wed Jan 17 11:45:52 GMT Standard Time 2007
+Last modified: Wed Jan 17 11:47:49 GMT Standard Time 2007
 <!-- hhmts end -->
   </body>
 </html>
