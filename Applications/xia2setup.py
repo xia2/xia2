@@ -201,7 +201,9 @@ def print_sweeps():
 
         if latest_chooch:
             name = latest_chooch.id_wavelength(wavelengths[j])
+            fp, fpp = latest_chooch.get_fp_fpp(wavelengths[j])
         else:
+            fp, fpp = 0.0, 0.0
             if len(wavelengths) == 1 and CommandLine.get_atom_name():
                 name = 'SAD'
             elif len(wavelengths) == 1:
@@ -213,6 +215,10 @@ def print_sweeps():
         
         print 'BEGIN WAVELENGTH %s' % name
         print 'WAVELENGTH %f' % wavelengths[j]
+        if fp != 0.0 and fpp != 0.0:
+            print 'F\' %5.2f' % fp
+            print 'F\'\' %5.2f' % fpp
+            
         print 'END WAVELENGTH %s' % name
         print ''
 

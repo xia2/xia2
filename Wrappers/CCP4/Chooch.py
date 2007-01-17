@@ -83,6 +83,8 @@ def Chooch(DriverType = None):
 
             self._atom = 'se'
 
+            self._data = []
+
         def set_scan(self, scan):
             '''Set a scan file for chooch to parse.'''
 
@@ -107,6 +109,11 @@ def Chooch(DriverType = None):
 
             self.check_for_errors()
 
+            self._data = []
+            for o in open(os.path.join(self.get_working_directory(),
+                                       'output.efs'), 'r').readlines():
+                self._data.append(map(float, o.split()))
+
             output = self.get_all_output()
             collect = False
 
@@ -130,6 +137,25 @@ def Chooch(DriverType = None):
 
         def get_edges(self):
             return self._edge_table
+
+        def get_fp_fpp(self, wave):
+            '''Get the fp, fpp for a wavelength.'''
+
+            if not self._data:
+                raise RuntimeError, 'data array empty'
+
+            fp = 0.0
+            fpp = 0.0
+            closest = 1.0e100
+
+            for d in self._data:
+                w = energy_to_wavelength(d[0])
+                if math.fabs(w - wave) < closest:
+                    fp = d[2]
+                    fpp = d[1]
+                    closest = math.fabs(w - wave)
+
+            return fp, fpp            
 
         def id_wavelength(self, wave):
             '''Try to identify a wavelength.'''
