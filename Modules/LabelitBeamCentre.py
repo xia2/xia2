@@ -42,7 +42,7 @@ def compute_beam_centre(sweep, working_directory = os.getcwd()):
         beam = ls.get_indexer_beam()
         print '! used labelit to compute beam of %6.2f %6.2f for ' % \
               tuple(beam)
-        print '! image %s' os.path.split(sweep.imagename(
+        print '! image %s' % os.path.split(sweep.imagename(
             min(sweep.get_images())))[-1]
     except exceptions.Exception, e:
         # do not have labelit installed?
