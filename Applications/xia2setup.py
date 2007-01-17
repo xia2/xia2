@@ -11,6 +11,11 @@
 #
 # 18th December 2006
 #
+# 17/JAN/07 FIXME need to add a "calculation of beam centre" stage to this 
+#                 process.
+# 
+# 
+# 
 
 import os
 import sys
