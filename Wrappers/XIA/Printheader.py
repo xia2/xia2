@@ -83,7 +83,8 @@ detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('marccd', 2048, 64):'mar 135',
                   ('mar', 2300, 150):'mar 345',
                   ('mar', 3450, 100):'mar 345',
-                  ('raxis', 3000, 100):'raxis IV'}
+                  ('raxis', 3000, 100):'raxis IV',
+                  ('saturn', 2084, 45):'rigaku saturn'}
 
 def Printheader(DriverType = None):
     '''A factory for wrappers for the printheader.'''
@@ -125,14 +126,24 @@ def Printheader(DriverType = None):
             except:
                 # this may be a mar format date...
                 # MMDDhhmmYYYY.ss - go figure
-                month = int(datestring[:2])
-                day = int(datestring[2:4])
-                hour = int(datestring[4:6])
-                minute = int(datestring[6:8])
-                year = int(datestring[8:12])
-                second = int(datestring[-2:])
-                d = datetime.datetime(year, month, day, hour, minute, second)
-                struct_time = d.timetuple()
+                # or it could also be the format from
+                # saturn images like:
+                # 23-Oct-2006 13:42:36
+                if not '-' in datestring:
+                    month = int(datestring[:2])
+                    day = int(datestring[2:4])
+                    hour = int(datestring[4:6])
+                    minute = int(datestring[6:8])
+                    year = int(datestring[8:12])
+                    second = int(datestring[-2:])
+                    d = datetime.datetime(year, month, day,
+                                          hour, minute, second)
+                    struct_time = d.timetuple()
+
+                else:
+                    struct_time = time.strptime(datestring,
+                                                '%d-%b-%Y %H:%M:%S')
+
 
             return struct_time
         
@@ -185,6 +196,8 @@ def Printheader(DriverType = None):
                              'pixel':1.0},
                      'raxis':{'wavelength':1.0,
                              'pixel':1.0},
+                     'saturn':{'wavelength':1.0,
+                               'pixel':1.0},
                      'marccd':{'wavelength':10.0,
                                'pixel':0.001},
                      'mar':{'wavelength':1.0,
