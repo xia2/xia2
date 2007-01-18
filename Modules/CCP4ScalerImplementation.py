@@ -1201,6 +1201,11 @@ class CCP4Scaler(Scaler):
 
         highest_resolution = 100.0
 
+        # check in here that there is actually some data to scale..!
+
+        if len(resolution_info.keys()) == 0:
+            raise RuntimeError, 'no resolution info'
+
         for dataset in resolution_info.keys():
             # transform this to a useful form... [(resol, i/sigma), (resol..)]
             resolution_points = []
@@ -1268,6 +1273,7 @@ class CCP4Scaler(Scaler):
             # note well that this spacing (0.075A) is designed to ensure that
             # integration shouldn't be repeated once it has been repeated
             # once...
+            
             elif dmin > resolution_limits[dname] - 0.075:
                 # no need to reprocess the data - this is near enough...
                 # this should save us from the "infinate loop"

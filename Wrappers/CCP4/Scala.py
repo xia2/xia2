@@ -290,6 +290,8 @@ def Scala(DriverType = None):
                     raise RuntimeError, 'hklin not sorted'
                 if 'Negative scales' in line:
                     raise RuntimeError, 'negative scales'
+                if 'Scaling has failed to converge' in line:
+                    raise RuntimeError, 'scaling not converged'
 
 
             return
