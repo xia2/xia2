@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 # 
 # A handler for .xinfo files, an example of which can be found in:
 # 
@@ -339,6 +337,9 @@ class XInfo:
 
                     elif 'START_END' == record.split()[0]:
                         start_end = map(int, record.split()[1:])
+                        if len(start_end) != 2:
+                            raise RuntimeError, \
+                                  'START_END start end, not "%s"' % record
                         self._crystals[crystal]['sweeps'][sweep][
                             'start_end'] = start_end
                         
