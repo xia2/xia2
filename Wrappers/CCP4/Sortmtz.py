@@ -107,7 +107,7 @@ def Sortmtz(DriverType = None):
                     # a problem in 6.0.2 - so allow for the quotes to
                     # be added if and only if there is a space...
                     if ' ' in m:
-                        Chater.write(
+                        Chatter.write(
                             'Quoting input files - you have been warned!')
                         self.input('"%s"' % m)
                     else:
