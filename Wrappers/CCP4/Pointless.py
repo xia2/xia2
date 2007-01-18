@@ -156,7 +156,7 @@ def Pointless(DriverType = None):
             
             # FIXME 08/SEP/06 this needs updating to
             # version 1.1.0.4 - done
-            self.set_executable('pointless-1.1.0.4')
+            self.set_executable('pointless-1.1.0.9')
 
             self._input_laue_group = None
 
