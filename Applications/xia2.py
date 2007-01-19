@@ -46,6 +46,7 @@ sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Handlers.CommandLine import CommandLine
 from Handlers.Streams import Chatter
+from Handlers.Files import cleanup
 
 def check():
     '''Check that the set-up is ok...'''
@@ -73,6 +74,9 @@ def xia2():
     # write out the time taken in a human readable way
     Chatter.write('Processing took %s' % \
                   time.strftime("%Hh %Mm %Ss", time.gmtime(duration)))
+
+    # delete all of the temporary mtz files...
+    cleanup()
     
     return
 

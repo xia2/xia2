@@ -20,14 +20,15 @@ class _FileHandler:
         self._temporary_files = []
         self._output_files = []
 
-    def __del__(self):
+    def cleanup(self):
         out = open('xia-files.txt', 'w')
         for f in self._temporary_files:
             try:
                 os.remove(f)
                 out.write('Deleted: %s\n' % f)
-            except:
-                out.write('Failed to delete: %s\n' % f)
+            except exceptions.Exception, e:
+                out.write('Failed to delete: %s (%s)\n' % \
+                          (f, str(e)))
 
         for f in self._output_files:
             out.write('Output file (%s): %s\n' % f)
@@ -44,6 +45,9 @@ class _FileHandler:
         return
 
 FileHandler = _FileHandler()
+
+def cleanup():
+    FileHandler.cleanup()
 
 if __name__ == '__main__':
     FileHandler.record_temporary_file('noexist.txt')
