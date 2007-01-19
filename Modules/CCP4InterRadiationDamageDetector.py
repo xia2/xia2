@@ -126,13 +126,14 @@ class CCP4InterRadiationDamageDetector:
         for j in derivatives:
             name = b_factors[j]['dname']
             b = b_factors[j]['b']
+            r = b_factors[j]['r']
 
             # this is arbitrary!
 
             if b < -3:
-                status.append((name, 'damaged'))
+                status.append((name, '%4.1f %4.2f (damaged)' % (b, r)))
             else:
-                status.append((name, 'ok'))
+                status.append((name, '%4.1f %4.2f (ok)' % (b, r)))
 
         return status
 
