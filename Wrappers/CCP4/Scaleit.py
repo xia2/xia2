@@ -168,6 +168,8 @@ def Scaleit(DriverType = None):
 
             j = 0
 
+            r_values = []
+
             while j < len(output):
                 line = output[j]
 
@@ -185,7 +187,17 @@ def Scaleit(DriverType = None):
                         j += 1
                         line = output[j]
 
+                if 'THE TOTALS' in line:
+                    r_values.append(float(line.split()[6]))                        
+
                 j += 1
+
+            # transform back the r values to the statistics
+
+            for j in range(len(r_values)):
+                d = j + 1
+                self._statistics['b_factor'][d]['r'] = r_values[j]
+            
 
             return
 
