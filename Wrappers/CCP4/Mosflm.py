@@ -863,7 +863,7 @@ def Mosflm(DriverType = None):
                     while output[j].split():
                         cycle = int(output[j].split()[1])
                         record = [output[j][k:k + 6] \
-                                  for k in range(12, len(output[j]), 6)]
+                                  for k in range(11, len(output[j]), 6)]
                         Chatter.write('%s' % str(record))
                         try:
                             rms_values[cycle] = map(float,
