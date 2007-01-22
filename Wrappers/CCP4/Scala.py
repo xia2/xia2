@@ -643,7 +643,7 @@ def Scala(DriverType = None):
                 'Low resolution limit':'Low resolution limit',
                 'Mean((I)/sd(I))':'I/sigma',
                 'Mid-Slope of Anom Normal Probability':'Anomalous slope',
-                'Multiplcity':'Multiplicity',
+                'Multiplicity':'Multiplicity',
                 'Rmerge':'Rmerge',
                 'Rmeas (all I+ & I-)':'Rmeas(I)',
                 'Rmeas (within I+/I-)':'Rmeas(I+/-)',
