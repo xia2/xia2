@@ -1396,6 +1396,9 @@ def Mosflm(DriverType = None):
                                                                  gain)
                             Science.write('GAIN found to be %f' % gain)
 
+                            # this should probably override the input
+                            self._gain = gain
+
                             self._mosflm_rerun_integration = True
 
                 if 'Smoothed value for refined mosaic spread' in o:
