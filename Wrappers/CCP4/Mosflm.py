@@ -862,8 +862,15 @@ def Mosflm(DriverType = None):
                     j = i + 2
                     while output[j].split():
                         cycle = int(output[j].split()[1])
-                        rms_values[cycle] = map(float, output[j].split()[2:])
-                        rms_values_last = map(float, output[j].split()[2:])
+                        try:
+                            rms_values[cycle] = map(float,
+                                                    output[j].split()[2:])
+                            rms_values_last = map(float,
+                                                  output[j].split()[2:])
+                        except ValueError, e:
+                            Chatter.write(
+                                'Error parsing %s as float' % \
+                                output[j])
                         j += 1
                         
                     # by now we should have recorded everything so...print!
@@ -872,7 +879,11 @@ def Mosflm(DriverType = None):
                     # Chatter.write('- %4d %5.3f' % (images[j],
                     # rms_values_last[j]))
 
-                    rmsd_range = max(rms_values_last), min(rms_values_last)
+                    if rms_values_last:
+                        rmsd_range = max(rms_values_last), min(rms_values_last)
+                    else:
+                        # there must have been a bigger problem than this!
+                        rmsd_range = 1.0, 1.0
 
                 # look for "error" type problems
                 if 'INACCURATE CELL PARAMETERS' in o:
