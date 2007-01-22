@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # A versioning object representing the wavelength level in the .xinfo
 # hierarchy. This will include all of the methods for performing operations
