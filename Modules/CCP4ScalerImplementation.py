@@ -95,7 +95,9 @@
 #
 # FIXME 05/DEC/06 need to make sure that there is no radiation damage before
 #                 trying to optimise the error parameters. This includes
-#                 between sweeps, and is a big and important thing!
+#                 between sweeps, and is a big and important thing! This could
+#                 be done by looking at the overall Rmerge, or the highest
+#                 resolution shell.
 
 import os
 import sys

@@ -629,6 +629,30 @@ def Scala(DriverType = None):
 
             total_summary = { }
 
+            # a mapper of names to allow standard names to be provided
+            # and a clear order defined...
+
+            scala_names_to_standard = {
+                'Anomalous completeness':'Anomalous completeness',
+                'Anomalous multiplicity':'Anomalous multiplicity',
+                'Completeness':'Completeness',
+                'DelAnom correlation between half-sets':\
+                'Anomalous correlation',
+                'Fractional partial bias':'Partial bias',
+                'High resolution limit':'High resolution limit',
+                'Low resolution limit':'Low resolution limit',
+                'Mean((I)/sd(I))':'I/sigma',
+                'Mid-Slope of Anom Normal Probability':'Anomalous slope',
+                'Multiplcity':'Multiplicity',
+                'Rmerge':'Rmerge',
+                'Rmeas (all I+ & I-)':'Rmeas(I)',
+                'Rmeas (within I+/I-)':'Rmeas(I+/-)',
+                'Rpim (all I+ & I-)':'Rpim(I)',
+                'Rpim (within I+/I-)':'Rpim(I+/-)',
+                'Total number of observations':'Total observations',
+                'Total number unique':'Total unique'
+                }
+
             for i in range(length):
                 line = output[i]
                 if 'Summary data for' in line:
@@ -641,7 +665,8 @@ def Scala(DriverType = None):
                         if len(line) > 40:
                             key = line[:40].strip()
                             if key:
-                                summary[key] = line[40:].split()
+                                summary[scala_names_to_standard[
+                                    key]] = map(float, line[40:].split())
                         i += 1
                         line = output[i]
                     total_summary[(pname, xname, dname)] = summary

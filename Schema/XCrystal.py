@@ -249,19 +249,43 @@ class XCrystal(Object):
             pname, xname, dname = key
 
             result += 'For %s/%s/%s\n' % key
-            stats = statistics_all[key].keys()
-            stats.sort()
+            available = statistics_all[key].keys()
+
+            stats = []
+            keys = [
+                'High resolution limit',
+                'Low resolution limit',
+                'Completeness',
+                'Multiplicity',
+                'I/sigma',
+                'Rmerge',
+                'Rmeas(I)',
+                'Rmeas(I+/-)',
+                'Rpim(I)',
+                'Rpim(I+/-)',
+                'Partial bias',
+                'Anomalous completeness',
+                'Anomalous multiplicity',
+                'Anomalous correlation',
+                'Anomalous slope',
+                'Total observations',
+                'Total unique']
+
+            for k in keys:
+                if k in available:
+                    stats.append(k)
+
             for s in stats:
                 if type(statistics_all[key][s]) == type(0.0):
                     result += '%s: %f\n' % (s.ljust(40),
                                             statistics_all[key][s])
                 elif type(statistics_all[key][s]) == type(""):
-                    result += '%s: %f\n' % (s.ljust(40),
+                    result += '%s: %s\n' % (s.ljust(40),
                                             statistics_all[key][s])
                 elif type(statistics_all[key][s]) == type([]):
                     result += '%s ' % s.ljust(40)
                     for value in statistics_all[key][s]:
-                        result += '\t%s' % value
+                        result += '\t%s' % str(value)
                     result += '\n'
             result += '\n'
 
