@@ -848,6 +848,26 @@ def Mosflm(DriverType = None):
                 if 'Processing will be aborted' in o:
                     raise RuntimeError, 'cell refinement failed'
                 
+                # look to store the rms deviations on a per-image basis
+                # this may be used to decide what to do about "inaccurate
+                # cell parameters" below...
+
+                if 'Rms positional error (mm) as a function of' in o:
+                    images = map(int, output[i + 1].split()[1:])
+                    rms_values = { }
+                    rms_values_last = []
+                    j = i + 2
+                    while output[j].split():
+                        cycle = int(output[j].split()[1])
+                        rms_values[cycle] = map(float, output[j].split()[2:])
+                        rms_values_last = map(float, output[j].split()[2:])
+                        j += 1
+                        
+                    # by now we should have recorded everything so...print!
+                    Chatter.write('Final RMS deviations per image')
+                    for j in range(len(images)):
+                        Chatter.write('%4d %5.3f' % (images[j],
+                                                     rms_values_last[j]))
 
                 # look for "error" type problems
                 if 'INACCURATE CELL PARAMETERS' in o:
