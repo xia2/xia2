@@ -835,7 +835,10 @@ def Mosflm(DriverType = None):
             # cell and matrix - should also look the yscale and so on, as
             # well as the final rms deviation in phi and distance
 
-            # FIRST look for errors
+            # FIRST look for errors, and analysis stuff which may be
+            # important...
+
+            rmsd_range = None
 
             for i in range(len(output)):
                 o = output[i]
@@ -864,10 +867,12 @@ def Mosflm(DriverType = None):
                         j += 1
                         
                     # by now we should have recorded everything so...print!
-                    Chatter.write('Final RMS deviations per image')
-                    for j in range(len(images)):
-                        Chatter.write('%4d %5.3f' % (images[j],
-                                                     rms_values_last[j]))
+                    # Chatter.write('Final RMS deviations per image')
+                    # for j in range(len(images)):
+                    # Chatter.write('- %4d %5.3f' % (images[j],
+                    # rms_values_last[j]))
+
+                    rmsd_range = max(rms_values_last), min(rms_values_last)
 
                 # look for "error" type problems
                 if 'INACCURATE CELL PARAMETERS' in o:
@@ -896,6 +901,21 @@ def Mosflm(DriverType = None):
                     # in a was > 0.1A in 228. Assert perhaps that the error
                     # should be less than 1.0e-3 * cell axis and less than
                     # 0.15A?
+
+                    # inspect rmsd_range
+
+                    if rmsd_range is None:
+                        raise RuntimeError, 'no rms deviation information'
+
+                    # interested if max > 2 * min... 2 - 1 / (2 + 1)= 1 / 3
+
+                    large_rmsd_range = False
+
+                    if ((rmsd_range[0] - rmsd_range[1]) /
+                        (rmsd_range[0] + rmsd_range[1])) > 0.3333:
+                        large_rmsd_range = True
+                        Science.write(
+                            'Large range in RMSD variation per image')
 
                     # and warn about them
                     Science.write(
@@ -934,13 +954,19 @@ def Mosflm(DriverType = None):
 
                         return
 
-                    else:
+                    elif large_rmsd_range:
 
                         Science.write(
                             'Integration will be aborted because of this.')
                         
                         raise RuntimeError, 'cell refinement failed: ' + \
                               'inaccurate cell parameters'
+
+                    else:
+
+                        Science.write(
+                            'However, will continue to integration.')
+                        
 
 		if 'One or more cell parameters has changed by more' in o:
                     # this is a more severe example of the above problem...
