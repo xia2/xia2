@@ -205,6 +205,8 @@ from MosflmHelpers import _happy_integrate_lp, \
      _parse_mosflm_integration_output, decide_integration_resolution_limit, \
      _parse_mosflm_index_output
 
+from Modules.GainEstimater import gain
+
 from lib.Guff import auto_logfiler
 
 def Mosflm(DriverType = None):
@@ -235,8 +237,37 @@ def Mosflm(DriverType = None):
             self._mosflm_rerun_integration = False
             self._mosflm_hklout = ''
 
+            self._gain = None
+
             return
 
+        def _estimate_gain(self):
+            '''Estimate a GAIN appropriate for reducing this set.'''
+
+            if self._gain:
+                return
+
+            images = self.get_matching_images()
+
+            gains = []
+
+            if len(images) < 10:
+                # use all images
+                for i in images:
+                    gains.append(gain(self.get_image_name(i)))
+            else:
+                # use 5 from the start and 5 from the end
+                for i in images[:5]:
+                    gains.append(gain(self.get_image_name(i)))
+                for i in images[-5:]:
+                    gains.append(gain(self.get_image_name(i)))
+
+            self._gain = sum(gains) / len(gains)
+
+            Chatter.write('Estimate gain of %5.2f' % self._gain)
+            
+            return
+        
         def _index_prepare(self):
             # prepare to do some autoindexing
             
@@ -535,6 +566,9 @@ def Mosflm(DriverType = None):
             why this is needed to be run again, set self._intgr_prepare_done
             as False.'''
 
+            # generate the gain if necessary
+            self._estimate_gain()
+
             self.reset()
             auto_logfiler(self)
             self._mosflm_refine_cell()
@@ -745,6 +779,8 @@ def Mosflm(DriverType = None):
             self.set_task(task)
 
             self.start()
+
+            self.input('gain %5.2f' % self._gain)
 
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())
@@ -1301,6 +1337,11 @@ def Mosflm(DriverType = None):
             parameters = self.get_integrater_parameters('mosflm')
             for p in parameters.keys():
                 self.input('%s %s' % (p, str(parameters[p])))
+
+            # in here I need to get the GAIN parameter from the sweep
+            # or from somewhere in memory....
+
+            self.input('gain %5.2f' % self._gain)
 
             # check for resolution limits
             if self._intgr_reso_high > 0.0:
