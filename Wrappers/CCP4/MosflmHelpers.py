@@ -351,6 +351,26 @@ def _parse_mosflm_index_output(index_output_list):
 
     return results
 
+def standard_mask(detector):
+    '''Return a list of standard mask commands for the given detector.'''
+
+    # ADSC Q210 2x2 binned
+
+    if 'adsc q210' in detector:
+        return ['LIMITS EXCLUDE 104.6 0.1 105.1 209.0',
+                'LIMITS EXCLUDE 0.1 104.6 209.0 105.1']
+
+    if 'adsc q315' in detector:
+        return ['LIMITS EXCLUDE 104.6 0.1 105.1 314.0',
+                'LIMITS EXCLUDE 209.4 0.1 210.0 314.0',
+                'LIMITS EXCLUDE 0.1 104.6 314.0 105.1',
+                'LIMITS EXCLUDE 0.1 209.4 314.0 210.0']
+    
+    # unknown detector
+    
+    return []
+        
+
 if __name__ == '__main__':
     integrate_lp = os.path.join(os.environ['XIA2_ROOT'], 'Wrappers', 'CCP4',
                                 'Doc', 'mosflm-reintegration.log')
