@@ -539,8 +539,9 @@ def Mosflm(DriverType = None):
                 if '99% have resolution' in o:
                     self._indxr_resolution_estimate = float(
                         o.split()[-2])
-                    Science.write('Resolution estimated to be %5.2f A' % \
-                                  self._indxr_resolution_estimate)
+                    # remove this as useless, see bug # 2072
+                    # Science.write('Resolution estimated to be %5.2f A' % \
+                    # self._indxr_resolution_estimate)
 
 
             # look up other possible indexing solutions (not well - in
