@@ -203,7 +203,7 @@ from Handlers.Exception import DPAException
 
 from MosflmHelpers import _happy_integrate_lp, \
      _parse_mosflm_integration_output, decide_integration_resolution_limit, \
-     _parse_mosflm_index_output
+     _parse_mosflm_index_output, standard_mask
 
 from Modules.GainEstimater import gain
 
@@ -1321,6 +1321,11 @@ def Mosflm(DriverType = None):
 
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())
+
+            # generate the mask information from the detector class
+            mask = standard_mask(self._fp_header['detector_class'])
+            for m in mask:
+                self.input(m)
 
             self.input('matrix xiaintegrate.mat')
 

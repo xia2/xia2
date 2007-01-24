@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 # 
 # An interface for programs which process X-Ray diffraction images.
 # This adds the code for handling the templates, directories etc.
