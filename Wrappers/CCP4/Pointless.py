@@ -5,7 +5,7 @@
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
 #
-# 2nd june 2006
+# 2nd June 2006
 # 
 # A wrapper for the latest version of Phil Evans' program pointless - a
 # program for deciding the correct pointgroup for diffraction data and also

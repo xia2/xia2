@@ -145,16 +145,26 @@ def _parse_mosflm_integration_output(integration_output_list):
             # these will be collated in some mysterious way to give an
             # appropriate resolution limit to integrate the data set to.
 
-            resolution = map(float,
-                             integration_output_list[i + 1].split()[2:-1])
-            number_full = map(int,
-                              integration_output_list[i + 3].split()[1:-1])
-            sigma_full = map(float,
-                             integration_output_list[i + 6].split()[1:-1])
-            number_partial = map(int,
-                                 integration_output_list[i + 8].split()[1:-1])
-            sigma_partial = map(float,
-                                integration_output_list[i + 11].split()[1:-1])
+            resolution = map(
+                float,
+                integration_output_list[i + 1].split(
+                )[2:-1])
+            number_full = map(
+                int,
+                integration_output_list[i + 3].replace('Number', '').split(
+                )[:-1])
+            sigma_full = map(
+                float,
+                integration_output_list[i + 6].replace('<I/sigma>', '').split(
+                )[:-1])
+            number_partial = map(
+                int,
+                integration_output_list[i + 8].replace('Number', '').split(
+                )[:-1])
+            sigma_partial = map(
+                float,
+                integration_output_list[i + 11].replace('<I/sigma>', '').split(
+                )[:-1])
 
             resolution_list = []
 
