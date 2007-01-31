@@ -279,8 +279,12 @@ class Scaler:
 
         epoch = integrater.get_integrater_epoch()
 
-        if epoch == 0:
-            raise RuntimeError, 'integrater has epoch 0'
+        # this is ok if you have SAD data - e.g. the epoch is not
+        # important - so check also that there are other integraters
+        # already stored...
+
+        if epoch == 0 and self._scalr_integraters:
+            raise RuntimeError, 'multi-sweep integrater has epoch 0'
 
         if epoch in self._scalr_integraters.keys():
             raise RuntimeError, 'integrater with epoch %d already exists' % \
