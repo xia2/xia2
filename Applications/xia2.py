@@ -20,6 +20,8 @@ import sys
 import os
 import time
 
+from XIA2Version import Version
+
 def check_environment():
     '''Check the environment we are running in...'''
 
@@ -65,6 +67,9 @@ def xia2():
         raise RuntimeError, 'xinfo not defined'
     
     start_time = time.time()
+
+    # print the version
+    Chatter.write(Version)
     
     # this actually gets the processing started...
     Chatter.write(str(CommandLine.get_xinfo()))
