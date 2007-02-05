@@ -20,8 +20,6 @@ import sys
 import os
 import time
 
-from XIA2Version import Version
-
 def check_environment():
     '''Check the environment we are running in...'''
 
@@ -50,6 +48,8 @@ from Handlers.CommandLine import CommandLine
 from Handlers.Streams import Chatter
 from Handlers.Files import cleanup
 
+from XIA2Version import Version
+
 def check():
     '''Check that the set-up is ok...'''
 
@@ -63,13 +63,15 @@ def check():
     return
 
 def xia2():
-    if not CommandLine.get_xinfo():
-        raise RuntimeError, 'xinfo not defined'
+    '''Actually process something...'''
     
-    start_time = time.time()
-
     # print the version
     Chatter.write(Version)
+
+    start_time = time.time()
+
+    if not CommandLine.get_xinfo():
+        raise RuntimeError, 'xinfo not defined'
     
     # this actually gets the processing started...
     Chatter.write(str(CommandLine.get_xinfo()))
