@@ -28,6 +28,6 @@ Wrappers/Labelit/Doc/LabelitStats_distl.pdf -text
 Wrappers/XDS/Doc/xds-wrappers.pdf -text
 Wrappers/XIA/Doc/Printheader.pdf -text
 Wrappers/dTREK/Doc/dTREK.pdf -text
-/XIA2DPAVersion.py -text svneol=native#unset
+/XIA2Version.py -text svneol=native#unset
 html/xia2-new-logo.gif -text
 html/xia2-new-logo.psd -text
