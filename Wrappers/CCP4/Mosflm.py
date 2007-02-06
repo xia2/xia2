@@ -171,6 +171,18 @@
 #                 GAIN (however this could be weak - assess the benefit in
 #                 repeating the integration.)
 #
+# FIXME 06/FEB/07 need to be able to track the autoindex solution number,
+#                 so in cases where I want an exact solution I can fetch 
+#                 it out from the list of solutions and FORCE mosflm
+#                 to give me the right answer.
+#
+#                 This is going to have to work as follows. If there is
+#                 a "horrible" exception, then the "correct" solution number
+#                 needs to be obtained and set. The indexing done flag needs
+#                 to be set as False, then the _index method should return.
+#                 On the next pass the correct solution should be selected 
+#                 and everything should be peachy. On this correct solution
+#                 the recorded solution number should be reset to 0.
 
 import os
 import sys
@@ -203,7 +215,8 @@ from Handlers.Exception import DPAException
 
 from MosflmHelpers import _happy_integrate_lp, \
      _parse_mosflm_integration_output, decide_integration_resolution_limit, \
-     _parse_mosflm_index_output, standard_mask
+     _parse_mosflm_index_output, standard_mask, \
+     _get_indexing_solution_number
 
 from Modules.GainEstimater import gain
 
@@ -229,6 +242,9 @@ def Mosflm(DriverType = None):
             FrameProcessor.__init__(self)
             Indexer.__init__(self)
             Integrater.__init__(self)
+
+            # local parameters used in autoindexing
+            self._mosflm_autoindex_sol = 0
 
             # local parameters used in cell refinement
             self._mosflm_cell_ref_images = None
@@ -449,7 +465,17 @@ def Mosflm(DriverType = None):
             # better for TS01/LREM - need to make sure that this is 
             # generally applicable...
             for i in _images:
-                self.input('autoindex dps refine image %d thresh 10' % i)
+                if self._mosflm_autoindex_sol:
+                    self.input(
+                        'autoindex dps refine image %d thresh 10 solu %d' % \
+                        (i, self._mosflm_autoindex_sol))
+                else:
+                    self.input(
+                        'autoindex dps refine image %d thresh 10' % i)
+
+            # now forget this to prevent weird things happening later on
+            if self._mosflm_autoindex_sol:
+                self._mosflm_autoindex_sol = 0
 
             self.input('mosaic estimate')
             self.input('go')
@@ -459,6 +485,36 @@ def Mosflm(DriverType = None):
             output = self.get_all_output()
 
             intgr_params = { }
+
+            # look up other possible indexing solutions (not well - in
+            # standard settings only!) This is moved earlier as it could
+            # result in returning if Mosflm has selected the wrong
+            # solution!
+
+            try:
+                self._indxr_other_lattice_cell = _parse_mosflm_index_output(
+                    output)
+
+            except RuntimeError, e:
+                # check if mosflm rejected a solution we have it
+                if 'horrible' in e:
+                    # ok it did - time to break out the big guns...
+                    if not self._indxr_input_cell:
+                        raise RuntimeError, \
+                              'error in solution selection when not preset'
+
+                    self._mosflm_autoindex_sol = _get_indexing_solution_number(
+                        output,
+                        self._indxr_input_cell,
+                        self._indxr_input_lattice)
+
+                    # set the fact that we are not done...
+                    self.set_indexer_done(False)
+
+                    # and return - hopefully this will restart everything
+                    return
+                else:
+                    raise e
 
             for o in output:
                 if 'Final cell (after refinement)' in o:
@@ -542,13 +598,6 @@ def Mosflm(DriverType = None):
                     # remove this as useless, see bug # 2072
                     # Science.write('Resolution estimated to be %5.2f A' % \
                     # self._indxr_resolution_estimate)
-
-
-            # look up other possible indexing solutions (not well - in
-            # standard settings only!)
-
-            self._indxr_other_lattice_cell = _parse_mosflm_index_output(
-                output)
 
             # FIXME this needs to be picked up by the integrater
             # interface which uses this Indexer, if it's a mosflm

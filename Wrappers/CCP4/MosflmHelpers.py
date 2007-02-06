@@ -20,6 +20,7 @@
 
 import os
 import sys
+import math
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
@@ -318,6 +319,8 @@ def _parse_mosflm_index_output(index_output_list):
         if solutions_by_lattice[k]['number'] == correct_number:
             acceptable_rms = 1.1 * solutions_by_lattice[k]['rms']
 
+    # this should raise a HorribleIndexingException or something
+
     if acceptable_rms == 0.0:
         raise RuntimeError, 'something horribly bad has happened in indexing'
 
@@ -350,6 +353,79 @@ def _parse_mosflm_index_output(index_output_list):
                               'goodness':solutions_by_lattice[k]['rms']}
 
     return results
+
+def _parse_mosflm_index_output_all(index_output_list):
+    '''Parse the output text from autoindexing to build up complete list
+    of the solutions.'''
+
+    collect_solutions = False
+
+    solutions = { }
+
+    for i in range(len(index_output_list)):
+        output = index_output_list[i]
+
+        if 'No PENALTY SDCELL' in output:
+            collect_solutions = not collect_solutions
+
+        if collect_solutions:
+            try:
+                number = int(output.split()[0])
+                solutions[number] = output[:-1]
+            except:
+                pass
+
+    keys = solutions.keys()
+    keys.sort()
+
+    results = { }
+
+    for k in keys:
+        if not 'unrefined' in solutions[k]:
+            list = solutions[k].split()
+            penalty = float(list[1])
+            number = int(list[0])
+            rms = float(list[2]) + 0.005 * penalty
+            latt = list[4]
+            frc = float(list[3])
+            cell = map(float, list[5:11])
+            results[k] = {'rms':rms,
+                          'cell':cell,
+                          'frc':frc,
+                          'number':number,
+                          'lattice':latt,
+                          'penalty':penalty}
+
+    return results
+
+def _get_indexing_solution_number(index_output_list,
+                                  target_cell,
+                                  target_lattice):
+    '''Given a list of autoindexing solutions, return the solution
+    number for the provided unit cell and lattice.'''
+
+    # get the indexing results from the standard output
+    all_autoindex_results = _parse_mosflm_index_output_all(index_output_list)
+
+    # then select the one closest to the target cell - recording the
+    # solution number
+    
+    best = 0
+    difference = 60.0
+
+    for k in all_autoindex_results.keys():
+        if all_autoindex_results[k]['lattice'] == target_lattice:
+            cell = all_autoindex_results[k]['cell']
+            diff = 0.0
+            for j in range(6):
+                diff += math.fabs(cell[j] - target_cell[j])
+            if diff < difference:
+                best = k
+                difference = diff
+
+    # return the solution number
+
+    return best
 
 def standard_mask(detector):
     '''Return a list of standard mask commands for the given detector.'''
@@ -385,6 +461,17 @@ if __name__ == '__main__':
         open(integrate_lp, 'r').readlines())        
 
     index_lp = os.path.join(os.environ['XIA2_ROOT'], 'Wrappers', 'CCP4',
-                            'Doc', 'mosflm-autoindex.lp')
+                            'Doc', 'mosflm-autoindex.log')
     _parse_mosflm_index_output(open(index_lp, 'r').readlines())
+    idx = _parse_mosflm_index_output_all(open(index_lp, 'r').readlines())
 
+    keys = idx.keys()
+    keys.sort()
+    for k in keys:
+        print idx[k]
+
+    target_cell = [227.0, 52.2, 43.9, 90.0, 99.0, 90.0]
+    target_lattice = 'mC'
+
+    print _get_indexing_solution_number(open(index_lp, 'r').readlines(),
+                                        target_cell, target_lattice)
