@@ -982,6 +982,43 @@ def Mosflm(DriverType = None):
                         rmsd_range = 1.0, 1.0
 
                 # look for "error" type problems
+
+                if 'is greater than the maximum allowed' in o and \
+                       'FINAL weighted residual' in o:
+                   
+                    # the weighted residual is too high - this suggests
+                    # a poor indexing solution - jump out and redo
+                    
+                    Science.write('Large weighted residual...')
+                    
+                    if len(self._mosflm_cell_ref_images) < 3:
+                        # set this up to be more images
+                        new_cell_ref_images = self._refine_select_images(
+                            len(self._mosflm_cell_ref_images) + 1,
+                            mosaic)
+                        self._mosflm_cell_ref_images = new_cell_ref_images
+                        
+                        # set a flag to say cell refinement needs rerunning
+                        # c/f Integrator.py
+                        self.set_integrater_prepare_done(False)
+                        
+                        # tell the user what is going on
+
+                        Science.write(
+                            'Repeating cell refinement with more data.')
+
+                        # don't update the indexer - the results could be
+                        # wrong!
+                        
+                        return
+                    
+                    else:
+                        Science.write(
+                            'Integration will be aborted because of this.')
+                        
+                        raise RuntimeError, 'cell refinement failed: ' + \
+                              'inaccurate cell parameters'
+                    
                 if 'INACCURATE CELL PARAMETERS' in o:
                     
                     # get the inaccurate cell parameters in question
