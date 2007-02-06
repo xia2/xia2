@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # 26th October 2006
 # 
@@ -57,6 +55,10 @@ def Truncate(DriverType = None):
             self.check_hklout()
 
             self.start()
+
+            # write the harvest files in the local directory, not
+            # in $HARVESTHOME.
+            self.input('usecwd')
 
             self.close_wait()
 
