@@ -23,4 +23,70 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
+class PhaseCalculator:
+    '''An interface to represent programs which compute phases from anomalous
+    data and heavy atom locations.'''
 
+    def __init__(self):
+
+        # definately needed input data
+        self._pcr_sites = None
+        self._pcr_input_reflection_files = { }
+        self._pcr_b_factor = 0.0
+
+        # a place to store a scaler where much of the raw information
+        # will come from 
+        self._pcr_scaler = None
+
+        # optional input data 
+        self._pcr_spacegroup = None
+        self._pcr_test_enantionorph = True
+
+        # places to store the output
+        self._pcr_phased_reflection_files = { }
+
+        # job management stuff
+        self._pcr_prepare_done = False
+        self._pcr_done = False
+        self._working_directory = os.getcwd()
+
+        return
+
+    # functions which need to be overloaded
+
+    def _phase_compute_prepare(self):
+        raise RuntimeError, 'overload me'
+
+    def _phase_compute(self):
+        raise RuntimeError, 'overload me'
+
+    # administrative guff to allow propogation of e.g. working
+    # directories to actual processes
+    
+    def set_working_directory(self, working_directory):
+        self._working_directory = working_directory
+        return
+
+    def get_working_directory(self):
+        return self._working_directory 
+
+    # job control flags
+
+    def set_phase_computer_prepare_done(self, done = True):
+        self._pcr_prepare_done = done
+        return
+        
+    def set_phase_computer_done(self, done = True):
+        self._pcr_done = done
+        return
+
+    def set_phase_computer_scaler(self, scaler):
+        '''Set the input scaler.'''
+
+        # check input is a scaler
+
+        # save it
+
+        return
+
+    
