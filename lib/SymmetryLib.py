@@ -58,6 +58,8 @@ def spacegroup_name_old_to_xHM(old):
         if 'end_spacegroup' in line:            
             mapping[current_old] = current_xHM
 
+    old = old.upper()
+
     if not old in mapping.keys():
         raise RuntimeError, 'spacegroup %s unknown' % old
 

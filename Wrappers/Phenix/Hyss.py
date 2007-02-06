@@ -166,7 +166,10 @@ if __name__ == '__main__':
 
     hyss.set_hklin(hklin)
     hyss.set_hklin_type('hklf3')
-    hyss.set_spacegroup('p21212')
+
+    # the spacegroup needs to be in the correct format...
+
+    hyss.set_spacegroup('P 21 21 2')
     hyss.set_cell((140.26, 96.79, 115.88, 90.0, 90.0, 90.0))
     hyss.set_n_sites(18)
     hyss.set_atom('se')
