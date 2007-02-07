@@ -75,6 +75,9 @@ def DM(DriverType = None):
             self.input('mode solv hist mult')
             self.input('ncyc auto')
             self.input('scheme all')
+
+            # FIXME these column labels should not be harded coded!
+            
             self.input('labin FP=FPHASED SIGFP=SIGFPHASED FOMO=FOM ' +
                        'HLA=HLA HLB=HLB HLC=HLC HLD=HLD')
             self.input('labout PHIDM=PHIDM FOMDM=FOMDM')
