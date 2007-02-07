@@ -174,6 +174,10 @@
 #                 verify that all solutions agree (raise an exception if
 #                 not?)
 #
+# FIXME 07/FEB/07 need to be able to call scale() without checking status
+#                 and also provide for a NULL Scaler implementation.
+#                 This change could have a significant impact on the 
+#                 workflow...
 
 import os
 import sys
@@ -206,9 +210,8 @@ class Scaler:
         # get_integrater_project_information() - pname, xname, dname
         # get_integrater_epoch() - measurement of first frame
 
-        self._scalr_done = False
-        self._scalr_prepare_done = False
-
+        self.scaler_reset()
+        
         # places to hold the output
 
         # this should be a dictionary keyed by datset / format, or
@@ -248,6 +251,11 @@ class Scaler:
         
     def set_scaler_done(self, done = True):
         self._scalr_done = done
+        return
+
+    def scaler_reset(self):
+        self._scalr_done = False
+        self._scalr_prepare_done = False
         return
 
     def get_scaler_prepare_done(self):
@@ -293,7 +301,7 @@ class Scaler:
         self._scalr_integraters[epoch] = integrater
 
         # reset the scaler.
-        self._scalr_done = False
+        self.scaler_reset()
 
         return
 
@@ -314,8 +322,9 @@ class Scaler:
         # FIXME these should be reset by the input - calls to the scale
         # method should do nothing if the scaling has been done already
 
-        self._scalr_done = False
-        self._scalr_prepare_done = False
+        # 07/FEB/07 no longer assume that the scaling needs to be repeated...
+        # self._scalr_done = False
+        # self._scalr_prepare_done = False
 
         while not self._scalr_done:
             while not self._scalr_prepare_done:
@@ -343,24 +352,27 @@ class Scaler:
     def get_scaled_merged_reflections(self):
         '''Return the reflection files and so on.'''
 
-        if not self._scalr_done:
-            self.scale()
+        # change 07/FEB/07
+        # if not self._scalr_done:
+        self.scale()
 
         return self._scalr_scaled_reflection_files
 
     def get_scaler_statistics(self):
         '''Return the overall scaling statistics.'''
 
-        if not self._scalr_done:
-            self.scale()
+        # change 07/FEB/07
+        # if not self._scalr_done:
+        self.scale()
 
         return self._scalr_statistics
         
     def get_scaler_cell(self):
         '''Return the final unit cell from scaling.'''
 
-        if not self._scalr_done:
-            self.scale()
+        # change 07/FEB/07
+        # if not self._scalr_done:
+        self.scale()
 
         return self._scalr_cell
 
@@ -368,8 +380,9 @@ class Scaler:
         '''Return a list of likely spacegroups - you should try using
         the first in this list first.'''
 
-        if not self._scalr_done:
-            self.scale()
+        # change 07/FEB/07
+        # if not self._scalr_done:
+        self.scale()
 
         return self._scalr_likely_spacegroups
 
@@ -378,16 +391,20 @@ class Scaler:
         the likely ones first. These are spacegroups in the correct
         pointgroup but with systematic absences which dont match up.'''
 
-        if not self._scalr_done:
-            self.scale()
+        # is this method useful???
+
+        # change 07/FEB/07
+        # if not self._scalr_done:
+        self.scale()
 
         return self._scalr_unlikely_spacegroups
 
     def get_scaler_highest_resolution(self):
         '''Get the highest resolution achieved by the crystal.'''
 
-        if not self._scalr_done:
-            self.scale()
+        # change 07/FEB/07
+        # if not self._scalr_done:
+        self.scale()
 
         return self._scalr_highest_resolution
 
