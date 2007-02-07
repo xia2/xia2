@@ -311,6 +311,9 @@ class Scaler:
         # to enable things like sorting and friends to be considered
         # separately to the actual scaling...
 
+        # FIXME these should be reset by the input - calls to the scale
+        # method should do nothing if the scaling has been done already
+
         self._scalr_done = False
         self._scalr_prepare_done = False
 

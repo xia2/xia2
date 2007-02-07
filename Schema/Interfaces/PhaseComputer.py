@@ -23,6 +23,8 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
+from Handlers.Streams import Chatter
+
 class PhaseCalculator:
     '''An interface to represent programs which compute phases from anomalous
     data and heavy atom locations.'''
@@ -89,4 +91,43 @@ class PhaseCalculator:
 
         return
 
-    
+    def set_phase_computer_sites(self, sites):
+        '''Set the input sites to phase from.'''
+
+        # check that these are sites
+
+        # store them
+
+        return
+
+    def phase(self):
+        '''Actually perform the phasing process - note that this should
+        not be explicitly called by anyone else - this should really be
+        an internal method.'''
+
+        # check that the required input is present
+
+        # should these be set at the calling stage, or by a reset method?
+
+        self._pcr_done = False
+        self._pcr_prepare_done = False
+
+        # set up the processing with the standard framework...
+
+        while not self._pcr_done:
+            while not self._pcr_prepare_done:
+
+                Chatter.write('Preparing to do some phasing...')
+
+                self._pcr_prepare_done = True
+                self._phase_compute_prepare()
+
+            Chatter.write('Doing some phasing...')
+
+            self._pcr_done = True
+            self._phase_compute()
+
+        return
+
+
+    # in here need getter methods now which may perform the phasing...
