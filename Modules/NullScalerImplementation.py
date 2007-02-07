@@ -34,5 +34,15 @@ class NullScalerImplementation(Scaler):
     but actually does nothing but wrap a couple of reflection files.
     This will also transmogrify reflection files if appropriate.'''
 
+    def __init__(self):
+        '''Set myself up - making room for reflection file handles if
+        appropriate. Note that this should also have room to hold the
+        correct spacegroup (or a list of likely candidates) and also
+        the unit cell parameters. Setters will be needed for this,
+        so that that information may come from some modification of
+        a .xinfo file.'''
+
+        return
+
     pass
 
