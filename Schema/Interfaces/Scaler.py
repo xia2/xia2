@@ -256,6 +256,7 @@ class Scaler:
     def scaler_reset(self):
         self._scalr_done = False
         self._scalr_prepare_done = False
+        self._scalr_result = None
         return
 
     def get_scaler_prepare_done(self):
@@ -305,7 +306,6 @@ class Scaler:
 
         return
 
-
     def scale(self):
         '''Actually perform the scaling - this is delegated to the
         implementation.'''
@@ -343,11 +343,11 @@ class Scaler:
             self._scalr_done = True
 
             # this method may correct us on this matter
-            result = self._scale()
+            self._scalr_result = self._scale()
 
         # FIXME this result payload probably shouldn't exist...
 
-        return result
+        return self._scalr_result
 
     def get_scaled_merged_reflections(self):
         '''Return the reflection files and so on.'''
