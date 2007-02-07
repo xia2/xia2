@@ -31,6 +31,13 @@
 # 04/SEP/06 - FIXED - need to be able to pass in a resolution limit to
 #             work to, for development purposes (this should become
 #             automatic in the future.)
+#
+# 07/FEB/07 - FIXME need flags to control "experimental" functionality
+#             e.g. the phasing pipeline - for instance this could
+#             be -phase to perform phasing on the scaled data.
+# 
+#             At the moment the amount of feedback between the phasing
+#             and the rest of the data reduction is non existent.
 
 import sys
 import os
