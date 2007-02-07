@@ -33,11 +33,16 @@ class PhaseCalculator:
 
         # definately needed input data
         self._pcr_sites = None
+
+        # this will be used internally e.g. for passing information
+        # from prepare to do...
         self._pcr_input_reflection_files = { }
         self._pcr_b_factor = 0.0
 
         # a place to store a scaler where much of the raw information
-        # will come from 
+        # will come from - also needed if we are going through the .xinfo
+        # hierarchy, otherwise (e.g. for testing) the correct information
+        # can be pre-set. Or perhaps I should have a NULL scaler for this?
         self._pcr_scaler = None
 
         # optional input data 
@@ -46,6 +51,7 @@ class PhaseCalculator:
 
         # places to store the output
         self._pcr_phased_reflection_files = { }
+        self._pcr_statistics = { }
 
         # job management stuff
         self._pcr_prepare_done = False
@@ -89,6 +95,8 @@ class PhaseCalculator:
 
         # save it
 
+        self._pcr_scaler = scaler
+
         return
 
     def set_phase_computer_sites(self, sites):
@@ -97,6 +105,8 @@ class PhaseCalculator:
         # check that these are sites
 
         # store them
+
+        self._pcr_sites = sites
 
         return
 
@@ -129,5 +139,22 @@ class PhaseCalculator:
 
         return
 
-
     # in here need getter methods now which may perform the phasing...
+
+    def get_phase_computer_phased_reflection_files(self):
+        '''Get the phased reflection files.'''
+
+        self.phase()
+
+        # FIXME this should return a copy
+        return self._pcr_phased_reflection_files
+
+    def get_phase_computer_statistics(self):
+        '''Get the statistics from phase calculation.'''
+
+        self.phase()
+
+        # FIXME this should return a copy
+        return self._pcr_statistics
+
+    
