@@ -186,6 +186,7 @@
 
 import os
 import sys
+import math
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -495,9 +496,27 @@ def Mosflm(DriverType = None):
                 self._indxr_other_lattice_cell = _parse_mosflm_index_output(
                     output)
 
+                # check that the selected unit cell matches - and if
+                # not raise a "horrible" exception
+
+                if self._indxr_input_cell:
+                
+                    for o in output:
+                        if 'Final cell (after refinement)' in o:
+                            indxr_cell = tuple(map(float, o.split()[-6:]))
+
+                    for j in range(6):
+                        if math.fabs(self._indxr_input_cell[j] -
+                                     indxr_cell[j]) > 2.0:
+                            Chatter.write(
+                                'Mosflm autoindexing did not select ' +
+                                'correct (target) unit cell')
+                            raise RuntimeError, \
+                                  'something horrible happened in indexing'
+
             except RuntimeError, e:
                 # check if mosflm rejected a solution we have it
-                if 'horrible' in e:
+                if 'horribl' in str(e):
                     # ok it did - time to break out the big guns...
                     if not self._indxr_input_cell:
                         raise RuntimeError, \
@@ -1592,8 +1611,8 @@ if __name__ == '__main__':
         raise RuntimeError, 'XIA2_ROOT not defined'
 
     m = Mosflm()
-
-    directory = os.path.normpath(os.path.join('/', 'data', 'graeme', '12287'))
+    directory = os.path.join(os.environ['XIA2_ROOT'],
+                             'Data', 'Test', 'Images')
 
     # from Labelit
     m.set_beam((108.9, 105.0))
@@ -1604,8 +1623,14 @@ if __name__ == '__main__':
     # reason to manually specify the images
 
     m.add_indexer_image_wedge(1)
-    m.add_indexer_image_wedge(60)
+    m.add_indexer_image_wedge(90)
     # m.set_indexer_input_lattice('aP')
+
+    # to test the awkward indexing problems -
+    # this is not the default solution
+    
+    # m.set_indexer_input_lattice('mP')
+    # m.set_indexer_input_cell((51.72, 51.66, 157.89, 90.00, 90.00, 90.00))
 
     print 'Refined beam is: %6.2f %6.2f' % m.get_indexer_beam()
     print 'Distance:        %6.2f' % m.get_indexer_distance()
@@ -1616,6 +1641,8 @@ if __name__ == '__main__':
     print 'Matrix:'
     for l in m.get_indexer_payload('mosflm_orientation_matrix'):
         print l[:-1]
+
+if False:
 
     n = Mosflm()
     n.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))

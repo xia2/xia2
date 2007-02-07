@@ -340,7 +340,10 @@ class Indexer:
                 # rerun indexing - oh - no longer need to do this explicitly
                 # since I can just set the indxr_done flag to False...
 
-                if self._indxr_lattice != solution[0]:
+                # 07/FEB/06 only do this if there was no target cell
+
+                if self._indxr_lattice != solution[0] and \
+                       not self._indxr_input_cell:
                     Science.write('Rerunning indexing with target lattice %s' \
                                   % solution[0])
                     # self._indxr_input_lattice = solution[0]
@@ -418,10 +421,10 @@ class Indexer:
         '''Set the input unit cell (optional.)'''
 
         if not type(cell) == type(()):
-            raise RuntimeError, 'cell must be a 6-tuple de floats'
+            raise RuntimeError, 'cell must be a 6-tuple of floats'
 
         if len(cell) != 6:
-            raise RuntimeError, 'cell must be a 6-tuple de floats'
+            raise RuntimeError, 'cell must be a 6-tuple of floats'
 
         self._indxr_input_cell = tuple(map(float, cell))
 

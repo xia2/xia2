@@ -278,9 +278,15 @@ def _parse_mosflm_index_output(index_output_list):
         if 'Suggested Solution' in output:
             correct_number = int(output.split()[2])
 
-        # this will at least be there!
+        # this will at least be there! - unless the input solution has
+        # been set...
         if 'Mosflm has chosen solution' in output:
             correct_number = int(output.split()[4])
+
+        if 'Solution' in output and \
+               'has been chosen from the list' in output:
+            correct_number = int(output.split()[1])
+
 
     if correct_number == 0:
         # cannot find what Mosflm considers the correct answer
@@ -293,7 +299,10 @@ def _parse_mosflm_index_output(index_output_list):
     
     # FIXME 25/OCT/06 also need to take the penalty into account slightly
     # because this goes very wrong for TS02/PEAK - add this to the rms
-    # times a small magic number (0.5% at the moment)   
+    # times a small magic number (0.5% at the moment)
+
+    acceptable_rms = 0.0
+    
     for k in keys:
         if not 'unrefined' in solutions[k]:
             list = solutions[k].split()
@@ -303,21 +312,26 @@ def _parse_mosflm_index_output(index_output_list):
             latt = list[4]
             frc = float(list[3])
             cell = map(float, list[5:11])
+
+            # decide what we consider a reasonable rms deviation
+            if number == correct_number:
+                acceptable_rms = 1.1 * rms
+
             if solutions_by_lattice.has_key(latt):
                 if solutions_by_lattice[latt]['rms'] <= rms:
                     continue
+                
             solutions_by_lattice[latt] = {'rms':rms,
                                           'cell':cell,
                                           'frc':frc,
                                           'number':number}
+                
+    # find what we think is an acceptable solution... this now moved above
+    # acceptable_rms = 0.0
 
-    # find what we think is an acceptable solution...
-
-    acceptable_rms = 0.0
-
-    for k in solutions_by_lattice.keys():
-        if solutions_by_lattice[k]['number'] == correct_number:
-            acceptable_rms = 1.1 * solutions_by_lattice[k]['rms']
+    # for k in solutions_by_lattice.keys():
+    # if solutions_by_lattice[k]['number'] == correct_number:
+    # acceptable_rms = 1.1 * solutions_by_lattice[k]['rms']
 
     # this should raise a HorribleIndexingException or something
 
