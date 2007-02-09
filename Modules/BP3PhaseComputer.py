@@ -37,6 +37,13 @@ class BP3PhaseComputer(PhaseComputer):
 
     # factory
 
+    # stuff to implement phase_compute_prepare
+    # this should include estimating Wilson B factors if not already
+    # assigned - perhaps taking an average for all wavelengths provided
+
+    # stuff to implement phase_compute - this should perform the phasing
+    # with both hands until I can find a way of doing both at once
+
     pass
 
 
