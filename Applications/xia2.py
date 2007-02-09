@@ -20,28 +20,6 @@ import sys
 import os
 import time
 
-def check_environment():
-    '''Check the environment we are running in...'''
-
-    xia2_keys = ['XIA2_ROOT', 'XIA2CORE_ROOT']
-
-    ccp4_keys = ['CCP4', 'CLIBD']
-
-    for k in xia2_keys:
-        if not os.environ.has_key(k):
-            raise RuntimeError, '%s not defined - is xia2 set up?'
-
-    for k in ccp4_keys:
-        if not os.environ.has_key(k):
-            raise RuntimeError, '%s not defined - is CCP4 set up?'
-
-    return
-
-if not os.environ.has_key('XIA2_ROOT'):
-    raise RuntimeError, 'XIA2_ROOT not defined'
-if not os.environ.has_key('XIA2CORE_ROOT'):
-    raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Handlers.CommandLine import CommandLine
@@ -49,6 +27,31 @@ from Handlers.Streams import Chatter
 from Handlers.Files import cleanup
 
 from XIA2Version import Version
+
+def check_environment():
+    '''Check the environment we are running in...'''
+
+    xia2_keys = ['XIA2_ROOT', 'XIA2CORE_ROOT']
+
+    ccp4_keys = ['CCP4', 'CLIBD']
+
+    Chatter.write('Environment configuration...')
+    for k in xia2_keys:
+        if not os.environ.has_key(k):
+            raise RuntimeError, '%s not defined - is xia2 set up?'
+        Chatter.write('%s => %s' % (k, os.environ[k]))
+
+    for k in ccp4_keys:
+        if not os.environ.has_key(k):
+            raise RuntimeError, '%s not defined - is CCP4 set up?'
+        Chatter.write('%s => %s' % (k, os.environ[k]))
+
+    return
+
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
+if not os.environ.has_key('XIA2CORE_ROOT'):
+    raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
 def check():
     '''Check that the set-up is ok...'''
