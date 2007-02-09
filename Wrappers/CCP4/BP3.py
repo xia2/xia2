@@ -128,8 +128,8 @@ def BP3(DriverType = None):
             self.check_ccp4_errors()
 
             # get useful stuff out here... like did it work???
-
-            loggraphs = self.parse_ccp4_loggraph()
+            # loggraphs = self.parse_ccp4_loggraph()
+            # the loggraph output is broken... so don't!
 
             return
 
