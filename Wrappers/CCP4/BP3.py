@@ -119,7 +119,8 @@ def BP3(DriverType = None):
                             self._input_form_factors[dname][1]))
 
             # FIXME should this be refine??? test it out - used to be phase
-            self.input('refine')
+            # refine takes ages! use this only when the problem looks hard.
+            self.input('phase')
 
             self.close_wait()
 
@@ -130,6 +131,7 @@ def BP3(DriverType = None):
 
             loggraphs = self.parse_ccp4_loggraph()
 
+            return
 
     return BP3Wrapper()
 
