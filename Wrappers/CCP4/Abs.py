@@ -121,28 +121,28 @@ if __name__ == '__main__':
         'Test', 'UnitTest', 'Wrappers', 'BP3',
         'TS03_12287_fa_hyss_consensus_model.pdb'))
 
-    abs = Abs()
+    for dataset in ['INFL', 'LREM', 'PEAK']:
 
-    abs.set_hklin(hklin)
-    abs.set_sites(sites)
-    abs.add_dataset('PEAK')
+        print dataset
 
-    abs.write_log_file('abs.log')
+        abs = Abs()
+        
+        abs.set_hklin(hklin)
+        abs.set_sites(sites)
+        abs.add_dataset(dataset)
+
+        print abs.decide_hand()
+
+        sites_invert = invert_hand(sites)
+        hklin = os.path.join(os.environ['X2TD_ROOT'],
+                             'Test', 'UnitTest', 'Wrappers', 'BP3',
+                             'TS03_12287_merged_free_inv.mtz')
+
+        abs = Abs()
+        
+        abs.set_hklin(hklin)
+        abs.set_sites(sites_invert)
+        abs.add_dataset(dataset)
+
+        print abs.decide_hand()
     
-    print abs.decide_hand()
-
-    sites_invert = invert_hand(sites)
-    hklin = os.path.join(os.environ['X2TD_ROOT'],
-                         'Test', 'UnitTest', 'Wrappers', 'BP3',
-                         'TS03_12287_merged_free_inv.mtz')
-
-    abs = Abs()
-
-    abs.set_hklin(hklin)
-    abs.set_sites(sites_invert)
-    abs.add_dataset('PEAK')
-
-    abs.write_log_file('abs_inv.log')
-    
-    print abs.decide_hand()
-

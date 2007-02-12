@@ -37,6 +37,20 @@ class PhaseCalculator:
         # this will be used internally e.g. for passing information
         # from prepare to do...
         self._pcr_input_reflection_files = { }
+
+        # this will need to link e.g. form factors, a DNAME, a
+        # reflection file - so will need to be able to split this
+        # up...
+
+        # something like:
+        # add_wavelength(NAME, reflection_file, F', F'' = 0.0)
+        # since this could account for scalepack files, mtz files
+        # &c.
+        # reflection_file would have to be available somewhere from
+        # scaler - or perhaps could be the key name to the scaler
+        # reflection file dictionary
+        
+        self._pcr_input_form_factors = { }
         self._pcr_b_factor = 0.0
 
         # a place to store a scaler where much of the raw information

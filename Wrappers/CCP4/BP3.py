@@ -4,17 +4,11 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # 16th November 2006
 # 
 # A wrapper for the phasing program BP3.
-# 
-# 
-# 
-# 
-# 
+#
 
 import sys
 import os
