@@ -178,6 +178,11 @@
 #                 and also provide for a NULL Scaler implementation.
 #                 This change could have a significant impact on the 
 #                 workflow...
+#
+# FIXME 12/FEB/07 need to add format translation services, so in the event
+#                 that an implementation only partially populates the
+#                 reflection file dictionary the rest can be generated if
+#                 they are asked for... this could be complex.
 
 import os
 import sys
