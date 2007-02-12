@@ -41,6 +41,13 @@ class SubstructureFinder:
         
         self._ssfnd_scaler = None
 
+        # input parameters (these may or may not be used, e.g. using
+        # solve or hyss to find sites) - this will be keyed to
+        # provide wavelength, f', f'' and wavelength name, the last
+        # of which should be usable to get specific information from the
+        # Scaler (e.g. a .sca file for the PEAK, etc.)
+        self._ssfnd_wavelength_info = {}
+
         # output
 
         self._ssfnd_sites = None
@@ -91,6 +98,22 @@ class SubstructureFinder:
 
     # getter, setter methods
 
+    def substructure_find_add_wavelength_info(self,
+                                              wavelength_name,
+                                              wavelength,
+                                              f_pr,
+                                              f_prpr):
+        '''Set input wavelength information.'''
+
+        if self._ssfnd_wavelength_info.has_key(wavelength_name):
+            raise RuntimeError, 'wavelength %s already defined' % \
+                  wavelength_name
+
+        self._ssfnd_wavelength_info[
+            wavelength_name] = (wavelength, f_pr, f_prpr)
+
+        return
+                                                     
     def substructure_find_set_n_sites(self, n_sites):
         self._ssfnd_n_sites = n_sites
         return

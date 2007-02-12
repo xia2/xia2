@@ -13,6 +13,21 @@
 # sites from a SubstructureFinder (actually it will take the finder) and
 # some reflections with associated F', F'' values - most likely set up from
 # an XCrystal object.
+#
+# What does it need as input?
+#
+# PNAME/XNAME
+# WAVENAME, F', F'', WAVE groups.
+# WAVENAME will go to the scaler where the correctly identified reflection
+# file can be obtained. This will depend on the implementation if it asks
+# for .sca or .mtz. Implementation also responsible for dealing with desired
+# forms being missing. Presumes WAVENAME enough to get this info.
+#
+# F'. F'', WAVE from .xinfo XCrystal/XWavelength will come in as "text".
+#
+# Sites will be passed in through a substructure finder which will be passed
+# in as input. The SS finder will itself take as input a Scaler and some
+# meta data.
 
 import sys
 import os
@@ -31,7 +46,11 @@ class PhaseCalculator:
 
     def __init__(self):
 
-        # definately needed input data
+        # definately needed input data - this should be a substructure
+        # finder to keep with the original plan, as there may be feedback
+        # between the phasing and the substructure (e.g. more atoms
+        # found from partial phase information) this should therefore
+        # be used internally...
         self._pcr_sites = None
 
         # this will be used internally e.g. for passing information
@@ -50,7 +69,7 @@ class PhaseCalculator:
         # scaler - or perhaps could be the key name to the scaler
         # reflection file dictionary
         
-        self._pcr_input_form_factors = { }
+        self._pcr_input_form_factors_etc = { }
         self._pcr_b_factor = 0.0
 
         # a place to store a scaler where much of the raw information
@@ -59,9 +78,16 @@ class PhaseCalculator:
         # can be pre-set. Or perhaps I should have a NULL scaler for this?
         self._pcr_scaler = None
 
-        # optional input data 
+        # link to a substructure finder
+        self._pcr_substructure_finder = None
+
+        # optional input data - this should really come from the scaler
+        # though could come from somewhere in the .xinfo file...
+        # perhaps it should just be a list of spacegroups to consider
+        # (though reindexing to standard setting for e.g. P 2 21 21
+        # could be needed)
         self._pcr_spacegroup = None
-        self._pcr_test_enantionorph = True
+        self._pcr_test_enantionorph_spacegroup = True
 
         # places to store the output
         self._pcr_phased_reflection_files = { }

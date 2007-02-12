@@ -59,13 +59,26 @@ class HyssSubstructureFinder(SubstructureFinder):
 	shelxc.set_working_directory(self.get_working_directory())
 	auto_logfiler(shelxc)
 
+        # FIXME need to be able to cope with these files not being
+        # present => being able to run come kind of mtz2sca to
+        # regenerate them...
+
         scafiles = self._ssfnd_scaler.get_scaled_merged_reflections(
             )['sca']
         wavelengths = scafiles.keys()
 
-        # do the reflection file stuff
+        # do the reflection file stuff - FIXED this should
+        # check against the wavelengths it has been explicitly
+        # given if provided. 
 
         for wavelength in wavelengths:
+            if self._ssfnd_wavelength_info and \
+                   not self._ssfnd_wavelength_info.has_key(wavelength):
+                continue
+
+            # if we get to here then we are either supposed to use it
+            # or we are free to use whatever
+            
             if wavelength.upper() == 'PEAK':
                 shelxc.set_peak(scafiles[wavelength])
             if wavelength.upper() == 'INFL':
@@ -114,6 +127,8 @@ class HyssSubstructureFinder(SubstructureFinder):
         if self._hklf3_in:
             hyss.set_hklin(self._hklf3_in)
             hyss.set_hklin_type('hklf3')
+
+            # this should be defined as a part of the interface...
             hyss.set_cell(self._ssfnd_scaler.get_scaler_cell())
 
         else:
