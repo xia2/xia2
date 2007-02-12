@@ -78,17 +78,27 @@ class PhaseCalculator:
         # can be pre-set. Or perhaps I should have a NULL scaler for this?
         self._pcr_scaler = None
 
-        # link to a substructure finder
+        # link to a substructure finder - actually this should probably
+        # be a dictionary of them working in different (non-enantiomorphic)
+        # spacegroups - that would mean that if we have a list of spacegroups
+        # to test we can store the results properly in the "standard xia2
+        # way". It would also mean that the data management manages itself.
         self._pcr_substructure_finder = None
 
         # optional input data - this should really come from the scaler
         # though could come from somewhere in the .xinfo file...
         # perhaps it should just be a list of spacegroups to consider
         # (though reindexing to standard setting for e.g. P 2 21 21
-        # could be needed)
-        self._pcr_spacegroup = None
-        self._pcr_test_enantionorph_spacegroup = True
-
+        # could be needed.) Input spacegroups should not require reindexing,
+        # so P 2 21 21 is allowed. If this includes enantiomorphs they will
+        # be tested, but the sites will only be generated for one of the
+        # enantiomorphs and then the handedness changed. It is also worth
+        # noting that the results may be spacegroup dependent (phases will
+        # be different for P43 and P42) so need to contemplate storing
+        # these objects in a dictionary for the phase improvement stage
+        # too...
+        self._pcr_spacegroup_list = []
+        
         # places to store the output
         self._pcr_phased_reflection_files = { }
         self._pcr_statistics = { }
