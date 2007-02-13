@@ -178,10 +178,10 @@ class Integrater:
     def get_integrater_done(self):
         return self._intgr_done
 
-    def set_integrater_project_information(self,
-                                           project_name,
-                                           crystal_name,
-                                           dataset_name):
+    def set_integrater_project_info(self,
+                                    project_name,
+                                    crystal_name,
+                                    dataset_name):
         '''Set the metadata information, to allow passing on of information
         both into the reflection files (if possible) or to the scaling stages
         for dataset administration.'''
@@ -197,7 +197,7 @@ class Integrater:
         
         return
 
-    def get_integrater_project_information(self):
+    def get_integrater_project_info(self):
         return self._intgr_pname, self._intgr_xname, self._intgr_dname
 
     def get_integrater_epoch(self):

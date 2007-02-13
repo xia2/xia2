@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # 21/SEP/06
 # 
@@ -51,7 +49,7 @@ def Rebatch(DriverType = None):
 
             return
 
-        def set_project_information(self, pname, xname, dname):
+        def set_project_info(self, pname, xname, dname):
             self._pname = pname
             self._xname = xname
             self._dname = dname

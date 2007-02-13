@@ -1411,7 +1411,7 @@ def Mosflm(DriverType = None):
             # on then this means that the files will all go to the same
             # place - for the moment move this to cwd.
 
-            pname, xname, dname = self.get_integrater_project_information()
+            pname, xname, dname = self.get_integrater_project_info()
 
             if pname != None and xname != None and dname != None:
                 Chatter.write('Harvesting: %s/%s/%s' % (pname, xname, dname))

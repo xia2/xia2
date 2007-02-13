@@ -264,7 +264,7 @@ class CCP4Scaler(Scaler):
 
         for epoch in self._scalr_integraters.keys():
             intgr = self._scalr_integraters[epoch]
-            pname, xname, dname = intgr.get_integrater_project_information()
+            pname, xname, dname = intgr.get_integrater_project_info()
             self._sweep_information[epoch] = {
                 'hklin':intgr.get_integrater_reflections(),
                 'pname':pname,
@@ -1257,7 +1257,7 @@ class CCP4Scaler(Scaler):
 
         for epoch in self._scalr_integraters.keys():
             intgr = self._scalr_integraters[epoch]
-            pname, xname, dname = intgr.get_integrater_project_information()
+            pname, xname, dname = intgr.get_integrater_project_info()
 
             # check the resolution limit for this integrater
             dmin = intgr.get_integrater_high_resolution()

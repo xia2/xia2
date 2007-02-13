@@ -212,7 +212,7 @@ class Scaler:
         # integraters have the following methods for pulling interesting
         # information out:
         #
-        # get_integrater_project_information() - pname, xname, dname
+        # get_integrater_project_info() - pname, xname, dname
         # get_integrater_epoch() - measurement of first frame
 
         self.scaler_reset()

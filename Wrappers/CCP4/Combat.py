@@ -54,7 +54,7 @@ def Combat(DriverType = None):
 
             return
 
-        def set_project_information(self, pname, xname, dname):
+        def set_project_info(self, pname, xname, dname):
             self._pname = pname
             self._xname = xname
             self._dname = dname

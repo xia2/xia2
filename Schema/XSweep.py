@@ -462,9 +462,9 @@ class XSweep(Object):
                                                 self.get_name(),
                                                 'integrate']))
 
-            self._integrater.set_integrater_project_information(project_id,
-                                                                crystal_id,
-                                                                wavelength_id)
+            self._integrater.set_integrater_project_info(project_id,
+                                                         crystal_id,
+                                                         wavelength_id)
 
             # look to see if there are any global integration parameters
             # we can set...
