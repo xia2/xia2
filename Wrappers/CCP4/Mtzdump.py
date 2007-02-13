@@ -101,6 +101,7 @@ def Mtzdump(DriverType = None):
                 if 'Dataset ID, ' in line:
                     # then the project/crystal/dataset hierarchy
                     # follows with some cell/wavelength information
+                    # FIXME this only reads the first example!
                     dataset_number = int(output[i + 2].split()[0])
                     project = output[i + 2][10:].strip()
                     crystal = output[i + 3][10:].strip()

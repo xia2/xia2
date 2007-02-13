@@ -41,6 +41,15 @@ def Mtz2various(DriverType = None):
             # from a multi-set reflection file
             self._dataset_suffix = ''
 
+            return
+
+        def set_suffix(self, suffix):
+            if suffix:
+                self._dataset_suffix = '_%s' % suffix
+            else:
+                self._dataset_suffix = suffix
+            return
+
         def convert(self):
             '''Convert the input reflection file to .sca format.'''
 
