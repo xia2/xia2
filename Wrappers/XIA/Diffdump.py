@@ -333,7 +333,8 @@ def Diffdump(DriverType = None):
                 l = o.split(':')
 
                 if 'Estimation of gain' in o:
-                    gain = float(l[1])
+                    # This often seems to be an underestimate...
+                    gain = 1.333 * float(l[1])
                     
             return gain
 
