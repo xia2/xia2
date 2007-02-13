@@ -71,8 +71,6 @@ class Mtz2Scalepack:
         # then for each combination run mtz2various to convert it
         # to scalepack format
 
-        print datasets
-
         for d in datasets:
             pname, xname, dname = tuple(d.split('/'))
             m2 = self.Mtz2various()
