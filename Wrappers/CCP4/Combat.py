@@ -12,7 +12,8 @@
 # 
 # Provides:
 # 
-# Nothing
+# Conversion from XDS format and Unmerged scalepack format to MTZ
+# unmerged format.
 # 
 
 import os
@@ -45,6 +46,12 @@ def Combat(DriverType = None):
             self._xname = None
             self._dname = None
 
+            # optional information - useful if this is
+            # a scalepack input file though as we need to get the
+            # spacegroup and so on set...
+            self._spacegroup = None
+            self._cell = None
+
             return
 
         def set_project_information(self, pname, xname, dname):
@@ -52,6 +59,12 @@ def Combat(DriverType = None):
             self._xname = xname
             self._dname = dname
             return
+
+        def set_cell(self, cell):
+            self._cell = cell
+
+        def set_spacegroup(self, spacegroup):
+            self._spacegroup = spacegroup
 
         def run(self):
             '''Actually convert to MTZ.'''
@@ -62,6 +75,8 @@ def Combat(DriverType = None):
             # inspect hklin to decide what format it is...
 
             format = None
+
+            # check for XDS format
             
             first_char = open(self.get_hklin(), 'r').read(1)
             if first_char == '!':
@@ -70,9 +85,19 @@ def Combat(DriverType = None):
                 if 'XDS_ASCII' in first_line:
                     format = 'XDSASCII'
 
+            # check for scalepack format...?
+
+            if not format:
+                format = 'SCAL_NM2'
+
             if not format:
                 raise RuntimeError, 'unknown format input file %s' % \
                       self.get_hklin()
+
+            if format == 'SCAL_NM2' and not self._cell:
+                raise RuntimeError, 'need CELL for scalepack unmerged'
+            if format == 'SCAL_NM2' and not self._spacegroup:
+                raise RuntimeError, 'need SPACEGROUP for scalepack unmerged'
 
             self.start()
             self.input('input %s' % format)
@@ -84,9 +109,17 @@ def Combat(DriverType = None):
                 self.input('xname %s' % self._xname)
                 self.input('dname %s' % self._dname)
 
+            if self._cell:
+                self.input('cell %f %f %f %f %f %f' % self._cell)
+            if self._spacegroup:
+                self.input('symmetry %s' % self._spacegroup)
+
             self.close_wait()
 
             # check the status
+
+            for o in self.get_all_output():
+                print o[:-1]
 
             return
 
@@ -94,9 +127,22 @@ def Combat(DriverType = None):
 
 if __name__ == '__main__':
     # run a test
-    c = Combat()
 
-    c.set_hklin('XDS_ASCII.HKL')
+    # test XDS_ASCII
+    try:
+        c = Combat()
+        c.set_hklin('XDS_ASCII.HKL')
+        c.set_hklout('temp.mtz')
+        c.run()
+    except RuntimeError, e:
+        print e
+
+    # test unmerged polish
+
+    c = Combat()
+    c.set_hklin('polish_INFL.sca')
+    c.set_spacegroup('P212121')
+    c.set_cell((57.74, 73.93, 86.57, 90.00, 90.00, 90.00))
     c.set_hklout('temp.mtz')
     c.run()
 
