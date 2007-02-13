@@ -277,7 +277,26 @@ class XInfo:
 
                 # populate this with interesting things                
                 while not 'END WAVELENGTH' in record:
+
+                    # deal with a nested WAVELENGTH_STATISTICS block
+
+                    if 'BEGIN WAVELENGTH_STATISTICS' in record:
+                        self._crystals[crystal]['wavelengths'][
+                            wavelength]['statistics'] = { }
+                        i += 1
+                        record = crystal_records[i]
+                        while not 'END WAVELENGTH_STATISTICS' in record:
+                            key, value = tuple(record.split())
+                            self._crystals[crystal]['wavelengths'][
+                                wavelength]['statistics'][
+                                key.lower()] = float(value)
+                            i += 1
+                            record = crystal_records[i]
+
+                    # else deal with the usual tokens
+                    
                     key = record.split()[0].lower()
+                    
                     try:
                         value = float(record.split()[1])
                     except ValueError, e:
