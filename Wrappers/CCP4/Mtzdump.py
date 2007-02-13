@@ -101,25 +101,31 @@ def Mtzdump(DriverType = None):
                 if 'Dataset ID, ' in line:
                     # then the project/crystal/dataset hierarchy
                     # follows with some cell/wavelength information
-                    # FIXME this only reads the first example!
-                    dataset_number = int(output[i + 2].split()[0])
-                    project = output[i + 2][10:].strip()
-                    crystal = output[i + 3][10:].strip()
-                    dataset = output[i + 4][10:].strip()
-                    cell = map(float, output[i + 5].strip().split())
-                    wavelength = float(output[i + 6].strip())
+                    # FIXME this only reads the first set of information...
 
-                    dataset_id = '%s/%s/%s' % \
-                                 (project, crystal, dataset)
-
-                    self._header['datasets'].append(dataset_id)
-                    self._header['dataset_info'][dataset_id] = { }
-                    self._header['dataset_info'][dataset_id
-                                                 ]['wavelength'] = wavelength
-                    self._header['dataset_info'][dataset_id
-                                                 ]['cell'] = cell
-                    self._header['dataset_info'][dataset_id
-                                                 ]['id'] = dataset_number
+                    block = 0
+                    while output[block * 5 + i + 2].strip():
+                        dataset_number = int(
+                            output[5 * block + i + 2].split()[0])
+                        project = output[5 * block + i + 2][10:].strip()
+                        crystal = output[5 * block + i + 3][10:].strip()
+                        dataset = output[5 * block + i + 4][10:].strip()
+                        cell = map(float, output[5 * block + i + 5].strip(
+                            ).split())
+                        wavelength = float(output[5 * block + i + 6].strip())
+                        
+                        dataset_id = '%s/%s/%s' % \
+                                     (project, crystal, dataset)
+                        
+                        self._header['datasets'].append(dataset_id)
+                        self._header['dataset_info'][dataset_id] = { }
+                        self._header['dataset_info'][
+                            dataset_id]['wavelength'] = wavelength
+                        self._header['dataset_info'][dataset_id
+                                                     ]['cell'] = cell
+                        self._header['dataset_info'][dataset_id
+                                                     ]['id'] = dataset_number
+                        block += 1
 
                 if 'No. of reflections used in FILE STATISTICS' in line:
                     self._reflections = int(line.split()[-1])
@@ -179,10 +185,15 @@ if __name__ == '__main__':
     hklin = os.path.join(dpa,
                          'Data', 'Test', 'Mtz', '12287_1_E1_1_10.mtz')
 
+    hklin = os.path.join(os.environ['X2TD_ROOT'],
+                         'Test', 'UnitTest', 'Interfaces',
+                         'Scaler', 'Merged', 'TS00_13185_merged_free.mtz')
+
     if len(sys.argv) > 1:
         hklin = sys.argv[1]
 
     m = Mtzdump()
+    m.write_log_file('mtzdump.log')
     m.set_hklin(hklin)
     print m.dump()
 
