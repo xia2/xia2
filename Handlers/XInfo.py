@@ -169,13 +169,13 @@ class XInfo:
                     raise RuntimeError, 'error parsing END PROJECT record'
 
             # next look for crystals
-            if 'BEGIN CRYSTAL' in record:
+            if 'BEGIN CRYSTAL ' in record:
                 crystal_records = [record]
                 while True:
                     i += 1
                     record = project_records[i]
                     crystal_records.append(record)
-                    if 'END CRYSTAL' in record:
+                    if 'END CRYSTAL ' in record:
                         break
 
                 self._parse_crystal(crystal_records)
@@ -193,7 +193,7 @@ class XInfo:
 
         for i in range(len(crystal_records)):
             record = crystal_records[i]
-            if 'BEGIN CRYSTAL' in record:
+            if 'BEGIN CRYSTAL ' in record:
                 
                 # we should only ever have one of these records in
                 # a call to this method
@@ -201,7 +201,7 @@ class XInfo:
                 if crystal != '':
                     raise RuntimeError, 'error in BEGIN CRYSTAL record'
                 
-                crystal = record.replace('BEGIN CRYSTAL', '').strip()
+                crystal = record.replace('BEGIN CRYSTAL ', '').strip()
                 if self._crystals.has_key(crystal):
                     raise RuntimeError, 'crystal %s already exists' % \
                           crystal
@@ -262,8 +262,8 @@ class XInfo:
             # definitions with the same numerical value for the wavelength -
             # unless this is some way of handling RIP? maybe a NOFIXME.
 
-            if 'BEGIN WAVELENGTH' in record:
-                wavelength = record.replace('BEGIN WAVELENGTH', '').strip()
+            if 'BEGIN WAVELENGTH ' in record:
+                wavelength = record.replace('BEGIN WAVELENGTH ', '').strip()
 
                 # check that this is a new wavelength definition
                 if self._crystals[crystal]['wavelengths'].has_key(wavelength):
@@ -278,7 +278,11 @@ class XInfo:
                 # populate this with interesting things                
                 while not 'END WAVELENGTH' in record:
                     key = record.split()[0].lower()
-                    value = float(record.split()[1])
+                    try:
+                        value = float(record.split()[1])
+                    except ValueError, e:
+                        value = record.replace(record.split()[0], '').strip()
+                        
                     self._crystals[crystal]['wavelengths'][
                         wavelength][key] = value
                     i += 1
@@ -363,7 +367,7 @@ class XInfo:
 if __name__ == '__main__':
     import os
 
-    xi = XInfo(os.path.join(os.environ['XIA2_ROOT'], 'Data', 'Test', 'Xinfo', '1vr9.xinfo'))
+    xi = XInfo(os.path.join(os.environ['XIA2_ROOT'], 'Data', 'Test', 'Xinfo', '1vrm-post-scale.xinfo'))
 
     print xi
                     
