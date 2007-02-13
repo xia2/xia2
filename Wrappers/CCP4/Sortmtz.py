@@ -25,6 +25,9 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
 
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
+
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
 from Handlers.Streams import Chatter
@@ -138,7 +141,7 @@ def Sortmtz(DriverType = None):
 
     return SortmtzWrapper()
 
-if __name__ == '__main__':
+if __name__ == '__main_2_':
     # run some tests
 
     if not os.environ.has_key('XIA2CORE_ROOT'):
@@ -171,4 +174,8 @@ if __name__ == '__main__':
     except RuntimeError, e:
         print 'Error => %s' % e
 
-    
+if __name__ == '__main__':
+    s = Sortmtz()
+    s.add_hklin('TS00_13185_unmerged_INFL.mtz')
+    s.set_hklout('TS00_13185_sorted_INFL.mtz')
+    s.sort()

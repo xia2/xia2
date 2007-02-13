@@ -74,6 +74,9 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
 
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
+
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
 
@@ -698,7 +701,7 @@ if __name__ == '__output_main__':
         for property in dataset.keys():
             print k, property, dataset[property]
 
-if __name__ == '__main__':
+if __name__ == '__main_2_':
 
     # run a couple of tests - this will depend on the unit tests for
     # XIACore having been run...
@@ -740,3 +743,32 @@ if __name__ == '__main__':
 
     for k in summary.keys():
         print k, summary[k]
+
+
+if __name__ == '__main__':
+
+    s = Scala()
+    
+    hklin = 'TS00_13185_sorted_INFL.mtz'
+    hklout = 'TS00_13185_merged_INFL.mtz'
+
+    s.set_hklin(hklin)
+    s.set_hklout(hklout)
+
+    s.set_anomalous()
+    s.set_onlymerge()
+    s.merge()
+
+    s.write_log_file('merge.log')
+    
+    results = s.parse_ccp4_loggraph()
+
+    print 'The following loggraphs were found'
+    for k in results.keys():
+        print k
+
+    summary = s.get_summary()
+
+    for k in summary.keys():
+        print k, summary[k]
+    

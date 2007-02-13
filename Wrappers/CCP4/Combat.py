@@ -118,8 +118,17 @@ def Combat(DriverType = None):
 
             # check the status
 
-            for o in self.get_all_output():
-                print o[:-1]
+            try:
+                self.check_for_errors()
+                self.check_ccp4_errors()
+
+            except RuntimeError, e:
+                try:
+                    os.remove(self.get_hklout())
+                except:
+                    pass
+
+                raise e
 
             return
 
@@ -140,10 +149,15 @@ if __name__ == '__main__':
     # test unmerged polish
 
     c = Combat()
-    c.set_hklin('polish_INFL.sca')
+
+    hklin = os.path.join(os.environ['X2TD_ROOT'],
+                         'Test', 'UnitTest', 'Interfaces',
+                         'Scaler', 'Unmerged', 'TS00_13185_unmerged_INFL.sca')
+
+    c.set_hklin(hklin)
     c.set_spacegroup('P212121')
     c.set_cell((57.74, 73.93, 86.57, 90.00, 90.00, 90.00))
-    c.set_hklout('temp.mtz')
+    c.set_hklout('TS00_13185_unmerged_INFL.mtz')
     c.run()
 
     
