@@ -1492,7 +1492,7 @@ class CCP4Scaler(Scaler):
 
             self._scalr_statistics[
                 (self._common_pname, self._common_xname, key)
-                ]['Truncate B factor'] = [b_factor]
+                ]['Wilson B factor'] = [b_factor]
 
             # replace old with the new version which has F's in it 
             scaled_reflection_files[key] = hklout

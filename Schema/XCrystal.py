@@ -263,7 +263,7 @@ class XCrystal(Object):
                 'Rmeas(I+/-)',
                 'Rpim(I)',
                 'Rpim(I+/-)',
-                'Truncate B factor',
+                'Wilson B factor',
                 'Partial bias',
                 'Anomalous completeness',
                 'Anomalous multiplicity',
