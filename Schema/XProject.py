@@ -30,7 +30,6 @@ from Object import Object
 
 from Schema.XCrystal import XCrystal
 from Schema.XWavelength import XWavelength
-from Schema.XSweep import XSweep
 
 # .xinfo parser
 
@@ -133,6 +132,9 @@ class XProject(Object):
                                  wave_info.get('wavelength', 0.0),
                                  wave_info.get('f\'', 0.0),
                                  wave_info.get('f\'\'', 0.0))
+
+                # in here I also need to look and see if we have
+                # been given any scaled reflection files...
 
                 for sweep_name in crystals[crystal]['sweeps'].keys():
                     sweep_info = crystals[crystal]['sweeps'][sweep_name]
