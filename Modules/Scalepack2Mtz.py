@@ -26,7 +26,12 @@
 # 
 # Implementation fill follow line 1469++ of CCP4ScalerImplementation.
 #
+# Uses:
 # 
-
-
+# scalepack2mtz wrapper for merged files
+# combat, sortmtz, scala for unmerged files
+# mtzdump, cad, freerflag to muddle with files
+# truncate to compute F's from I's.
+# 
+# funfunfun!
 
