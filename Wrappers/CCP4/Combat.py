@@ -155,6 +155,7 @@ if __name__ == '__main__':
                          'Scaler', 'Unmerged', 'TS00_13185_unmerged_INFL.sca')
 
     c.set_hklin(hklin)
+    c.set_project_information('TS00', '13185', 'INFL')
     c.set_spacegroup('P212121')
     c.set_cell((57.74, 73.93, 86.57, 90.00, 90.00, 90.00))
     c.set_hklout('TS00_13185_unmerged_INFL.mtz')
