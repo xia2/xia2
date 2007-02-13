@@ -220,7 +220,8 @@ class XInfo:
                     'sequence':'',
                     'wavelengths':{},
                     'sweeps':{},
-                    'ha_info':{}
+                    'ha_info':{},
+                    'crystal_data':{}
                     }
 
             # next look for interesting stuff in the data structure...
@@ -261,6 +262,18 @@ class XInfo:
             # FIXME need to check that there are not two wavelength
             # definitions with the same numerical value for the wavelength -
             # unless this is some way of handling RIP? maybe a NOFIXME.
+
+            # look for data blocks
+
+            if 'BEGIN CRYSTAL_DATA' in record:
+                i += 1
+                record = crystal_records[i]
+                while not 'END CRYSTAL_DATA' in record:
+                    key = record.split()[0].lower()
+                    value = record.replace(record.split()[0], '').strip()
+                    self._crystals[crystal]['crystal_data'][key] = value
+                    i += 1
+                    record = crystal_records[i]
 
             if 'BEGIN WAVELENGTH ' in record:
                 wavelength = record.replace('BEGIN WAVELENGTH ', '').strip()
