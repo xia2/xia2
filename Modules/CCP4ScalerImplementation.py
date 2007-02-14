@@ -1483,6 +1483,9 @@ class CCP4Scaler(Scaler):
                 hklout = os.path.join(hklout, path)
             hklout = os.path.join(hklout, os.path.split(file)[-1].replace(
                 '_scaled', '_truncated'))
+
+            FileHandler.record_temporary_file(hklout)
+
             t.set_hklout(hklout)
             t.truncate()
 
@@ -1628,11 +1631,13 @@ class CCP4Scaler(Scaler):
         for key in scaled_reflection_files.keys():
             file = scaled_reflection_files[key]
             
+            hklout = '%s_cad.mtz' % file[:-4]
+            FileHandler.record_temporary_file(hklout)
+
             c = self.Cad()
             c.add_hklin(file)
             c.set_new_suffix(key)
             c.set_new_cell(average_unit_cell)
-            hklout = '%s_cad.mtz' % file[:-4]
             c.set_hklout(hklout)
             c.update()
             
@@ -1697,7 +1702,7 @@ class CCP4Scaler(Scaler):
             crd.set_working_directory(self.get_working_directory())
 
             crd.set_hklin(f.get_hklout())
-            crd.set_hklout(f.get_hklout().replace('merged_free', 'rd_analyse'))
+            crd.set_hklout(f.get_hklout().replace('merged_free', 'scaleit'))
 
             status = crd.detect()
 

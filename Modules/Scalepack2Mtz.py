@@ -154,14 +154,6 @@ class Scalepack2Mtz:
         auto_logfiler(sortmtz)
         return sortmtz
 
-    def Mtzdump(self):
-        '''Create a Mtzdump wrapper from _Mtzdump - set the working directory
-        and log file stuff as a part of this...'''
-        mtzdump = _Mtzdump()
-        mtzdump.set_working_directory(self.get_working_directory())
-        auto_logfiler(mtzdump)
-        return mtzdump
-
     def Truncate(self):
         '''Create a Truncate wrapper from _Truncate - set the working directory
         and log file stuff as a part of this...'''
@@ -169,22 +161,6 @@ class Scalepack2Mtz:
         truncate.set_working_directory(self.get_working_directory())
         auto_logfiler(truncate)
         return truncate
-
-    def Rebatch(self):
-        '''Create a Rebatch wrapper from _Rebatch - set the working directory
-        and log file stuff as a part of this...'''
-        rebatch = _Rebatch()
-        rebatch.set_working_directory(self.get_working_directory())
-        auto_logfiler(rebatch)
-        return rebatch
-
-    def Reindex(self):
-        '''Create a Reindex wrapper from _Reindex - set the working directory
-        and log file stuff as a part of this...'''
-        reindex = _Reindex()
-        reindex.set_working_directory(self.get_working_directory())
-        auto_logfiler(reindex)
-        return reindex
 
     def Mtz2various(self):
         '''Create a Mtz2various wrapper from _Mtz2various - set the working
@@ -210,8 +186,82 @@ class Scalepack2Mtz:
         auto_logfiler(freerflag)
         return freerflag    
 
-    # file inspection methods - check if reflections are merged or
-    # unmerged
+    # helper functions
+
+    def _merged_scalepack_to_mtz(self, dname):
+        '''Convert a merged reflection file for dname from scalepack format
+        to PNAME_XNAME_merged_tmp_DNAME.mtz.'''
+
+        scalepack_file = self._hklin_files(dname)
+        
+        s2m = self.Scalepack2mtz()        
+        s2m.set_hklin(scalepack_file)
+        s2m.set_hklout(os.path.join(self.get_working_directory(),
+                                    '%s_%s_merged_tmp_%s.mtz' % \
+                                    (self._pname, self._xname, dname)))
+        s2m.set_spacegroup(self._spacegroup)
+        s2m.set_cell(self._cell)
+        s2m.set_project_info(self._pname, self._xname, dname)
+        s2m.convert()
+
+        return
+        
+    def _unmerged_scalepack_to_mtz(self, dname):
+        '''Convert an unmerged reflection file for dname from scalepack format
+        to PNAME_XNAME_merged_tmp_DNAME.mtz.'''
+
+        scalepack_file = self._hklin_files(dname)
+
+        # convert to multirecord MTZ
+
+        hklout = os.path.join(self.get_working_directory(),
+                              '%s_%s_unmerged_tmp_%s.mtz' % \
+                              (self._pname, self._xname, dname))
+
+        FileHandler.record_temporary_file(hklout)
+
+        c = self.Combat()
+        c.set_hklin(scalepack_file)
+        c.set_hklout(hklout)
+        c.set_spacegroup(self._spacegroup)
+        c.set_cell(self._cell)
+        c.set_project_info(self._pname, self._xname, dname)
+        c.run()
+        
+        # sort
+
+        hklin = hklout
+        hklout = os.path.join(self.get_working_directory(),
+                              '%s_%s_sorted_tmp_%s.mtz' % \
+                              (self._pname, self._xname, dname))
+
+        FileHandler.record_temporary_file(hklout)
+        
+        s = self.Sortmtz()
+        s.set_hklin(hklin)
+        s.set_hklout(hklout)
+        s.sort()
+
+        # merge - FIXME should this presume that the input is anomalous
+        # data??
+
+        hklin = hklout
+        hklout = os.path.join(self.get_working_directory(),
+                              '%s_%s_merged_tmp_%s.mtz' % \
+                              (self._pname, self._xname, dname))
+
+        FileHandler.record_temporary_file(hklout)
+
+        sc = self.Scala()
+        sc.set_hklin(hklin)
+        sc.set_hklout(hklout)
+        sc.set_anomalous()
+        sc.set_onlymerge()
+        sc.merge()
+        
+        return
+        
+
 
     # merge method
 
