@@ -42,10 +42,16 @@ def Scalepack2mtz(DriverType = None):
             self._dname = None
             self._spacegroup = None
 
+            # optional information
+            self._cell = None
+
             return
 
         def set_spacegroup(self, spacegroup):
             self._spacegroup = spacegroup
+
+        def set_cell(self, cell):
+            self._cell = cell
 
         def set_project_info(self, pname, xname, dname):
             self._pname = pname
@@ -65,6 +71,8 @@ def Scalepack2mtz(DriverType = None):
             if self._pname and self._xname and self._dname:
                 self.input('name project %s crystal %s dataset %s' % \
                            (self._pname, self._xname, self._dname))
+            if self._cell:
+                self.input('cell %f %f %f %f %f %f' % self._cell)
 
             self.close_wait()
 
