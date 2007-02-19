@@ -1479,8 +1479,10 @@ def Mosflm(DriverType = None):
 
             # record a copy of it, perhaps
             if self.get_integrater_sweep_name():
-                FileHandler.record_log_file('mosflm integrate %s' % \
-                                            self.get_integrater_sweep_name(),
+                pname, xname, dname = self.get_integrater_project_info()
+                FileHandler.record_log_file('%s %s %s %s mosflm integrate' % \
+                                            (self.get_integrater_sweep_name(),
+                                             pname, xname, dname),
                                             self.get_log_file())
 
             # look for things that we want to know...

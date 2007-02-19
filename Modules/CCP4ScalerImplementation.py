@@ -1347,7 +1347,8 @@ class CCP4Scaler(Scaler):
         
         sc = self.Scala()
 
-        FileHandler.record_log_file('scala',
+        FileHandler.record_log_file('%s %s scala' (self._common_pname,
+                                                   self._common_xname),
                                     sc.get_log_file())
 
         sc.set_resolution(best_resolution)
@@ -1524,7 +1525,10 @@ class CCP4Scaler(Scaler):
             # this is tricksy - need to really just replace the last
             # instance of this string FIXME 27/OCT/06
 
-            FileHandler.record_log_file('truncate %s' % key,
+            FileHandler.record_log_file('%s %s %s truncate' % \
+                                        (self._common_pname,
+                                         self._common_xname,
+                                         key),
                                         t.get_log_file())
 
             hklout = ''
