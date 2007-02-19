@@ -1327,6 +1327,12 @@ class CCP4Scaler(Scaler):
         sdadd_full, sdb_full, sdadd_partial, sdb_partial = \
                     self._refine_sd_parameters(scales_file)
 
+        # remove the old scales file
+        try:
+            os.remove(scales_file)
+        except:
+            Chatter.write('Error removing %s' % scales_file)
+
         # then try tweaking the sdB parameter in a range say 0-20
         # starting at 0 and working until the RMS stops going down
 
@@ -1345,10 +1351,13 @@ class CCP4Scaler(Scaler):
 
         sc.set_hklin(self._prepared_reflections)
 
-        sc.add_sd_correction('full', 1.0, sdadd_full, sdb_full)
-        sc.add_sd_correction('partial', 1.0, sdadd_partial, sdb_partial)
+        scales_file = os.path.join(self.get_working_directory(),
+                                   '%s_final.scales' % self._common_xname)
 
         sc.set_new_scales_file(scales_file)
+
+        sc.add_sd_correction('full', 1.0, sdadd_full, sdb_full)
+        sc.add_sd_correction('partial', 1.0, sdadd_partial, sdb_partial)
 
         # this will require first sorting out the batches/runs, then
         # deciding what the "standard" wavelength/dataset is, then
@@ -1466,6 +1475,40 @@ class CCP4Scaler(Scaler):
 
             self._scalr_scaled_reflection_files['sca'][
                 key] = '%s.sca' % file[:-4]
+
+        # FIXME BUG 2146
+
+        # in here rerun scala recycling the final scales and writing out
+        # unmerged reflection files in scalepack format
+
+        sc = self.Scala()
+        sc.set_hklin(self._prepared_reflections)
+        sc.set_scales_file(scales_file)
+
+        sc.add_sd_correction('full', 1.0, sdadd_f, sdb_f)
+        sc.add_sd_correction('partial', 1.0, sdadd_p, sdb_p)
+        
+        for epoch in epochs:
+            input = self._sweep_information[epoch]
+            start, end = (min(input['batches']), max(input['batches']))
+            sc.add_run(start, end, pname = input['pname'],
+                       xname = input['xname'],
+                       dname = input['dname'])
+
+        sc.set_hklout(os.path.join(self.get_working_directory(), 'temp.mtz'))
+        sc.set_scalepack(os.path.join(self.get_working_directory(),
+                                      '%s_%s_unmerged.sca' % \
+                                      (self._common_pname,
+                                       self._common_xname)))
+
+        sc.set_anomalous()
+        sc.set_tails()
+        sc.scale()
+
+        # delete the mtz files which have been made (this should probably
+        # be done in the program wrapper)
+
+        # and record the unmerged scalepack files in the file dictionary
 
         # convert I's to F's in Truncate
 
