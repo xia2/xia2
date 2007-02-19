@@ -1347,6 +1347,9 @@ class CCP4Scaler(Scaler):
         
         sc = self.Scala()
 
+        FileHandler.record_log_file('scala',
+                                    sc.get_log_file())
+
         sc.set_resolution(best_resolution)
 
         sc.set_hklin(self._prepared_reflections)
@@ -1485,8 +1488,8 @@ class CCP4Scaler(Scaler):
         sc.set_hklin(self._prepared_reflections)
         sc.set_scales_file(scales_file)
 
-        sc.add_sd_correction('full', 1.0, sdadd_f, sdb_f)
-        sc.add_sd_correction('partial', 1.0, sdadd_p, sdb_p)
+        sc.add_sd_correction('full', 1.0, sdadd_full, sdb_full)
+        sc.add_sd_correction('partial', 1.0, sdadd_partial, sdb_partial)
         
         for epoch in epochs:
             input = self._sweep_information[epoch]
@@ -1520,6 +1523,9 @@ class CCP4Scaler(Scaler):
 
             # this is tricksy - need to really just replace the last
             # instance of this string FIXME 27/OCT/06
+
+            FileHandler.record_log_file('truncate %s' % key,
+                                        t.get_log_file())
 
             hklout = ''
             for path in os.path.split(file)[:-1]:

@@ -12,6 +12,9 @@
 import os
 import sys
 import exceptions
+import shutil
+
+from Environment import Environment
 
 class _FileHandler:
     '''A singleton class to manage files.'''
@@ -19,6 +22,9 @@ class _FileHandler:
     def __init__(self):
         self._temporary_files = []
         self._output_files = []
+
+        self._log_files = { }
+        self._log_file_keys = []
 
     def cleanup(self):
         out = open('xia-files.txt', 'w')
@@ -33,12 +39,29 @@ class _FileHandler:
         for f in self._output_files:
             out.write('Output file (%s): %s\n' % f)
 
+        # copy the log files
+        log_directory = Environment.generate_directory('LogFiles')
+        for f in self._log_file_keys:
+            filename = os.path.join(log_directory,
+                                    '%s.log' % f.replace(' ', '_'))
+            shutil.copyfile(self._log_files[f],
+                            filename)
+            out.write('Copied log file %s to %s' % \
+                      self._log_files[f],
+                      filename)
+
         out.close()
         return
 
     def record_output_file(self, filename, type):
         self._output_files.append((type, filename))
         return
+
+    def record_log_file(self, tag, filename):
+        '''Record a log file.'''
+        self._log_files[tag] = filename
+        if not tag in self._log_file_keys:
+            self._log_file_keys.append(tag)
 
     def record_temporary_file(self, filename):
         self._temporary_files.append(filename)

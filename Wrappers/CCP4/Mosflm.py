@@ -220,6 +220,7 @@ from MosflmHelpers import _happy_integrate_lp, \
      _get_indexing_solution_number
 
 from Modules.GainEstimater import gain
+from Handlers.Files import FileHandler
 
 from lib.Guff import auto_logfiler
 
@@ -1475,6 +1476,12 @@ def Mosflm(DriverType = None):
 
             # get the log file
             output = self.get_all_output()
+
+            # record a copy of it, perhaps
+            if self.get_integrater_sweep_name():
+                FileHandler.record_log_file('mosflm integrate %s' % \
+                                            self.get_integrater_sweep_name(),
+                                            self.get_log_file())
 
             # look for things that we want to know...
             # that is, the output reflection file name, the updated

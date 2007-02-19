@@ -60,6 +60,7 @@ def IntegraterForXSweep(xsweep):
         integrater = Integrater()
         integrater.setup_from_image(os.path.join(xsweep.get_directory(),
                                                  xsweep.get_image()))
+        integrater.set_integrater_sweep_name(xsweep.get_name())
 
     # check the epoch and perhaps pass this in for future reference
     # (in the scaling)

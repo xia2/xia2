@@ -132,6 +132,9 @@ class Integrater:
         # required parameters 
         self._intgr_wedge = None
 
+        # logging parameters
+        self._intgr_sweep_name = None
+
         # implementation dependent parameters - these should be keyed by
         # say 'mosflm':{'yscale':0.9999} etc.
         self._intgr_program_parameters = { }
@@ -163,6 +166,13 @@ class Integrater:
 
     def _integrate_prepare(self):
         raise RuntimeError, 'overload me'
+
+    def set_integrater_sweep_name(self, sweep_name):
+        self._intgr_sweep = sweep_name
+        return
+
+    def get_integrater_sweep_name(self):
+        return self._intgr_sweep
 
     def set_integrater_prepare_done(self, done = True):
         self._intgr_prepare_done = done
