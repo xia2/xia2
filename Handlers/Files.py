@@ -47,8 +47,8 @@ class _FileHandler:
             shutil.copyfile(self._log_files[f],
                             filename)
             out.write('Copied log file %s to %s' % \
-                      self._log_files[f],
-                      filename)
+                      (self._log_files[f],
+                       filename))
 
         out.close()
         return
