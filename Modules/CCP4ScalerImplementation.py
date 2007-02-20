@@ -1347,8 +1347,8 @@ class CCP4Scaler(Scaler):
         
         sc = self.Scala()
 
-        FileHandler.record_log_file('%s %s scala' (self._common_pname,
-                                                   self._common_xname),
+        FileHandler.record_log_file('%s %s scala' % (self._common_pname,
+                                                     self._common_xname),
                                     sc.get_log_file())
 
         sc.set_resolution(best_resolution)
