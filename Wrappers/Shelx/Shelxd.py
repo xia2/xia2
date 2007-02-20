@@ -41,15 +41,29 @@ def Shelxd(DriverType = None):
             DriverInstance.__class__.__init__(self)
 
             self.set_executable('shelxd')
-            self._name = None
-            self._sites = None
 
+            # input parameters
+
+            self._name = None
+
+            # an optional list of peers
+            self._peer_list = [self]
+
+            # an optional spacegroup override if we are changing
+            # what was in the .ins file
+            self._spacegroup = None
+
+            # some results - quality information
             self._cc_all = 0.0
             self._cc_weak = 0.0
 
-            self._peer_list = []
+            # the sites in a generic format e.g. for phasing with
+            # bp3 or sharp or something
+            self._sites = None
 
-            self._spacegroup = None
+            # the shelx-suite specific files for phasing with
+            # e.g. shelxe
+            self._res = None
 
             return
 
@@ -71,6 +85,13 @@ def Shelxd(DriverType = None):
 
         def _get_spacegroup(self):
             return self._spacegroup
+
+        def _get_res(self):
+            return self._res
+
+        def get_res(self):
+            self._peer_list.sort()
+            return self._peer_list[-1]._get_res()
 
         def get_spacegroup(self):
             '''This may initiate processing.'''
@@ -98,24 +119,29 @@ def Shelxd(DriverType = None):
 
             self.add_command_line('%s_fa' % self._name)
 
-            # jimmy the .ins file for the correct spacegroup
-            ins = open(os.path.join(self.get_working_directory(),
-                                    '%s_fa.ins' % self._name), 'r').readlines()
+            # optionally jimmy the .ins file for the correct spacegroup
+            if self._spacegroup:
+
+                # do not want the identity - the rest will be popped
+                # to prevent them from being written twice
+                sym_tokens = Syminfo.get_symops(self._spacegroup)[1:]
+
+                # reqrite the .ins file                
+                ins = open(os.path.join(self.get_working_directory(),
+                                        '%s_fa.ins' % self._name),
+                           'r').readlines()
             
-            out = open(os.path.join(self.get_working_directory(),
-                                    '%s_fa.ins' % self._name), 'w')
+                out = open(os.path.join(self.get_working_directory(),
+                                        '%s_fa.ins' % self._name), 'w')
 
-            # do not want the identity 
-            sym_tokens = Syminfo.get_symops(self._spacegroup)[1:]
+                for i in ins:
+                    if not 'SYMM' in i[:4]:
+                        out.write(i)
+                    else:
+                        while sym_tokens:
+                            out.write('SYMM %s\n' % sym_tokens.pop())
 
-            for i in ins:
-                if not 'SYMM' in i[:4]:
-                    out.write(i)
-                else:
-                    while sym_tokens:
-                        out.write('SYMM %s\n' % sym_tokens.pop())
-
-            out.close()
+                out.close()
 
             self.start()
             self.close_wait()
@@ -136,6 +162,11 @@ def Shelxd(DriverType = None):
 
             self._sites = parse_pdb_sites_file(os.path.join(
                 self.get_working_directory(), '%s_fa.pdb' % self._name))
+
+            # read the .res file
+
+            self._res = open(os.path.join(
+                self.get_working_directory(), '%s_fa.pdb' % self._name)).read()
 
             return
 
