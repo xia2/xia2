@@ -92,7 +92,8 @@ class _Syminfo(Object):
                                       'lattice':lattice,
                                       'name':shortname,
                                       'longname':longname,
-                                      'symops':0}
+                                      'symops':0,
+                                      'operations':[]}
 
                 if not self._spacegroup_name_to_lattice.has_key(shortname):
                     self._spacegroup_name_to_lattice[shortname] = lattice
@@ -111,6 +112,7 @@ class _Syminfo(Object):
             else:
 
                 self._symop[current]['symops'] += 1
+                self._symop[current]['operations'].append(line.strip())
 
         return
 
@@ -181,15 +183,28 @@ class _Syminfo(Object):
 
         return self._symop[spacegroup_number]['symops']
     
+    def get_symops(self, spacegroup):
+        '''Get the operations for spacegroup number N.'''
+
+        try:
+            number = int(spacegroup)
+        except ValueError, e:
+            number = self.spacegroup_name_to_number(spacegroup)
+
+        return self._symop[number]['operations']
+    
 Syminfo = _Syminfo()
     
 if __name__ == '__main__':
     # run a couple of tests.
 
-    for number in Syminfo.get_spacegroup_numbers():
+    if False:
+        # for number in Syminfo.get_spacegroup_numbers():
         info = Syminfo.get_syminfo(number)
 
         print '%4d %8s %2s [%2s]' % \
               (number, info['name'], info['lattice'],
                Syminfo.get_lattice(info['name']))
     
+    print Syminfo.get_symops('P22121')
+    print Syminfo.get_symops('P212121')
