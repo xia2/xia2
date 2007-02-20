@@ -166,7 +166,7 @@ def Shelxd(DriverType = None):
             # read the .res file
 
             self._res = open(os.path.join(
-                self.get_working_directory(), '%s_fa.pdb' % self._name)).read()
+                self.get_working_directory(), '%s_fa.res' % self._name)).read()
 
             return
 
