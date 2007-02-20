@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # 16th November 2006
 #  
@@ -18,6 +16,7 @@
 
 import sys
 import os
+import shutil
 
 if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
@@ -69,6 +68,18 @@ def Shelxc(DriverType = None):
 
             return
 
+        def _jimmy_file_name(self, file):
+            '''It appears that the maximum length of an input file name is
+            80 characters - so it it is longer than this copy the file.'''
+
+            if len(file) < 70:
+                return
+
+            shutil.copyfile(file,
+                            os.path.join(self.get_working_directory(),
+                                         os.path.split(file)[-1]))
+            return os.path.split(file)[-1]
+
         def set_cell(self, cell):
             self._cell = cell
             return
@@ -82,27 +93,27 @@ def Shelxc(DriverType = None):
             return
 
         def set_peak(self, peak):
-            self._peak = peak
+            self._peak = self._jimmy_file_name(peak)
             return
 
         def set_infl(self, infl):
-            self._infl = infl
+            self._infl = self._jimmy_file_name(infl)
             return
 
         def set_lrem(self, lrem):
-            self._lrem = lrem
+            self._lrem = self._jimmy_file_name(lrem)
             return
 
         def set_hrem(self, hrem):
-            self._hrem = hrem
+            self._hrem = self._jimmy_file_name(hrem)
             return
 
         def set_native(self, native):
-            self._native = native
+            self._native = self._jimmy_file_name(native)
             return
 
         def set_sad(self, sad):
-            self._sad = sad
+            self._sad = self._jimmy_file_name(sad)
             return
 
         def set_name(self, name):
@@ -152,3 +163,23 @@ def Shelxc(DriverType = None):
 
     return ShelxcWrapper()
 
+if __name__ == '__main__':
+    # run a test
+
+    data_dir = os.path.join(os.environ['X2TD_ROOT'],
+                            'Test', 'UnitTest', 'Interfaces',
+                            'Scaler', 'Unmerged')
+
+    sc = Shelxc()
+
+    sc.write_log_file('shelxc.log')
+
+    sc.set_cell((57.74, 76.93, 86.57, 90.00, 90.00, 90.00))
+    sc.set_symmetry('P212121')
+    sc.set_n_sites(5)
+    sc.set_infl(os.path.join(data_dir, 'TS00_13185_unmerged_INFL.sca'))
+    sc.set_lrem(os.path.join(data_dir, 'TS00_13185_unmerged_LREM.sca'))
+    sc.set_peak(os.path.join(data_dir, 'TS00_13185_unmerged_PEAK.sca'))
+    sc.set_name('TS00')
+    sc.prepare()
+    
