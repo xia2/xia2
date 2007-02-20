@@ -33,8 +33,9 @@ def Shelxe(DriverType = None):
             self.set_executable('shelxe')
 
             self._name = None
-
             self._solvent = 0.0
+
+            self._enantiomorph = False
 
         def set_solvent(self, solvent):
             self._solvent = solvent
@@ -42,6 +43,10 @@ def Shelxe(DriverType = None):
 
         def set_name(self, name):
             self._name = name
+            return
+
+        def set_enantiomorph(self, enantiomorph = True):
+            self._enantiomorph = enantiomorph
             return
 
         def phase(self):
@@ -52,6 +57,8 @@ def Shelxe(DriverType = None):
             self.add_command_line('-h')
             self.add_command_line('-s%f' % self._solvent)
             self.add_command_line('-m20')
+            if self._enantiomorph:
+                self.add_command_line('-i')
 
             self.start()
 
@@ -59,4 +66,47 @@ def Shelxe(DriverType = None):
 
             output = self.get_all_output()
 
+            # analyse the output
+
+            return
+
     return ShelxeWrapper()
+
+if __name__ == '__main__':
+    # continue the test
+
+    se = Shelxe()
+    se.write_log_file('shelxe.log')
+    se.set_name('TS00')
+    se.set_solvent(0.49)
+    se.phase()
+
+    se = Shelxe()
+    se.write_log_file('shelxe_oh.log')
+    se.set_name('TS00')
+    se.set_solvent(0.49)
+    se.set_enantiomorph()
+    se.phase()
+
+    # convert files to mtz to help displaying
+
+    from Wrappers.CCP4.F2mtz import F2mtz
+
+    f = F2mtz()
+
+    f.set_hklin('TS00.phs')
+    f.set_hklout('TS00.mtz')
+    f.set_cell((57.74, 76.93, 86.57, 90.00, 90.00, 90.00))
+    f.set_symmetry('P212121')
+    f.f2mtz()
+        
+    f = F2mtz()
+
+    f.set_hklin('TS00_i.phs')
+    f.set_hklout('TS00_oh.mtz')
+    f.set_cell((57.74, 76.93, 86.57, 90.00, 90.00, 90.00))
+    f.set_symmetry('P212121')
+    f.f2mtz()
+    
+    
+    

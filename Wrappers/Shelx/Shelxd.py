@@ -1,11 +1,17 @@
 #!/usr/bin/env python
-# FileName.py
+# Shelxd.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
 #
 # 16th November 2006
+# 
+# A wrapper for the substructure determination program shelxd - this will 
+# provide a source of heavy atom information based on prepared reflection
+# files from shelxc and a few interesting pieces of information. It will
+# return some interesting facts about the substructure and the substructure
+# itself, if it worked.
 # 
 
 import sys
@@ -49,6 +55,21 @@ def Shelxd(DriverType = None):
 
             output = self.get_all_output()
 
+            # check the status
+
+            # read the statistics from the file
+
+            # read the sites and populate a substructure
+            # object - these are in '%s_fa.pdb' % self._name
+
             return
 
     return ShelxdWrapper()
+
+if __name__ == '__main__':
+    # run the test - continued from Shelxc.py
+
+    sd = Shelxd()
+    sd.write_log_file('shelxd.log')
+    sd.set_name('TS00')
+    sd.find_sites()
