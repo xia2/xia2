@@ -175,7 +175,8 @@ if __name__ == '__main__':
     sc.write_log_file('shelxc.log')
 
     sc.set_cell((57.74, 76.93, 86.57, 90.00, 90.00, 90.00))
-    sc.set_symmetry('P212121')
+    # sc.set_symmetry('P212121')
+    sc.set_symmetry('P222')
     sc.set_n_sites(5)
     sc.set_infl(os.path.join(data_dir, 'TS00_13185_unmerged_INFL.sca'))
     sc.set_lrem(os.path.join(data_dir, 'TS00_13185_unmerged_LREM.sca'))

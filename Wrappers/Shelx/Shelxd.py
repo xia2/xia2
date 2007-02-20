@@ -25,6 +25,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from lib.SubstructureLib import parse_pdb_sites_file, \
      write_pdb_sites_file
+from Handlers.Syminfo import Syminfo
 
 from Driver.DriverFactory import DriverFactory
 
@@ -43,17 +44,78 @@ def Shelxd(DriverType = None):
             self._name = None
             self._sites = None
 
+            self._cc_all = 0.0
+            self._cc_weak = 0.0
+
+            self._peer_list = []
+
+            self._spacegroup = None
+
+            return
+
+        def __cmp__(self, other):
+            if self.get_cc_weak() < other.get_cc_weak():
+                return -1
+            elif self.get_cc_weak() > other.get_cc_weak():
+                return +1
+            return 0
+
+        def set_peer_list(self, peer_list):
+            self._peer_list = peer_list
+
+        def get_cc_weak(self):
+            if self._cc_weak == 0.0:
+                self._find_sites()
+
+            return self._cc_weak
+
+        def _get_spacegroup(self):
+            return self._spacegroup
+
+        def get_spacegroup(self):
+            '''This may initiate processing.'''
+            self._peer_list.sort()
+            return self._peer_list[-1]._get_spacegroup()
+
+        def set_spacegroup(self, spacegroup):
+            self._spacegroup = spacegroup
+
+        def get_sites(self):
+            self._peer_list.sort()
+            return self._peer_list[-1]._get_sites()
+            
         def set_name(self, name):
             self._name = name
             return
 
-        def get_sites(self):
+        def _get_sites(self):
+            if not self._sites:
+                self._find_sites()
             return self._sites
 
-        def find_sites(self):
+        def _find_sites(self):
             '''Find the HA sites.'''
 
             self.add_command_line('%s_fa' % self._name)
+
+            # jimmy the .ins file for the correct spacegroup
+            ins = open(os.path.join(self.get_working_directory(),
+                                    '%s_fa.ins' % self._name), 'r').readlines()
+            
+            out = open(os.path.join(self.get_working_directory(),
+                                    '%s_fa.ins' % self._name), 'w')
+
+            # do not want the identity 
+            sym_tokens = Syminfo.get_symops(self._spacegroup)[1:]
+
+            for i in ins:
+                if not 'SYMM' in i[:4]:
+                    out.write(i)
+                else:
+                    while sym_tokens:
+                        out.write('SYMM %s\n' % sym_tokens.pop())
+
+            out.close()
 
             self.start()
             self.close_wait()
@@ -63,6 +125,11 @@ def Shelxd(DriverType = None):
             # check the status
 
             # read the statistics from the file
+
+            for o in output:
+                if 'Try' in o and 'CC All' in o:
+                    self._cc_all = float(o.split()[8])
+                    self._cc_weak = float(o.split()[10].replace(',', ''))
 
             # read the sites and populate a substructure
             # object - these are in '%s_fa.pdb' % self._name

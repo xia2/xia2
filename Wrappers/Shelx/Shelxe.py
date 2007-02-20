@@ -97,7 +97,8 @@ if __name__ == '__main__':
     f.set_hklin('TS00.phs')
     f.set_hklout('TS00.mtz')
     f.set_cell((57.74, 76.93, 86.57, 90.00, 90.00, 90.00))
-    f.set_symmetry('P212121')
+    # f.set_symmetry('P212121')
+    f.set_symmetry('P222')
     f.f2mtz()
         
     f = F2mtz()
@@ -105,7 +106,8 @@ if __name__ == '__main__':
     f.set_hklin('TS00_i.phs')
     f.set_hklout('TS00_oh.mtz')
     f.set_cell((57.74, 76.93, 86.57, 90.00, 90.00, 90.00))
-    f.set_symmetry('P212121')
+    # f.set_symmetry('P212121')
+    f.set_symmetry('P222')
     f.f2mtz()
     
     
