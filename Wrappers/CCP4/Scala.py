@@ -358,9 +358,6 @@ def Scala(DriverType = None):
 
                 raise e
 
-            # if we scaled to a scalepack file, delete the
-            # mtz file we created
-
             if self._scalepack:
                 try:
                     os.remove(self.get_hklout())
@@ -555,6 +552,14 @@ def Scala(DriverType = None):
                     hklout_files.append(hklout)
             
             self._scalr_scaled_reflection_files = hklout_dict
+
+            if self._scalepack:
+                for k in hklout_dict.keys():
+                    try:
+                        os.remove(hklout_dict[k])
+                    except:
+                        pass
+
 
             return self.get_ccp4_status()
 

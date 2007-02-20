@@ -1509,10 +1509,18 @@ class CCP4Scaler(Scaler):
         sc.set_tails()
         sc.scale()
 
-        # delete the mtz files which have been made (this should probably
-        # be done in the program wrapper)
+        # this will delete the mtz files which have been made 
 
         # and record the unmerged scalepack files in the file dictionary
+
+        self._scalr_scaled_reflection_files['sca_unmerged'] = { }
+        for key in scaled_reflection_files:
+            file = scaled_reflection_files[key]
+            scalepack = os.path.join(os.path.split(file)[0],
+                                     os.path.split(file)[1].replace(
+                '_scaled_', '_unmerged_').replace('.mtz', '.sca'))
+            self._scalr_scaled_reflection_files['sca_unmerged'][
+                key] = scalepack
 
         # convert I's to F's in Truncate
 
