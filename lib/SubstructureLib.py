@@ -228,7 +228,8 @@ def parse_pdb_sites_file(pdb_file):
     scales_inverse = _invert_3x3_matrix(scales)
 
     for d in data:
-        if 'ATOM' in d[:4]:
+        # have to be able to get the sites from shelx too...
+        if 'ATOM' in d[:4] or 'HETATM' in d[:6]:
             cartesian = map(float, d.split()[5:8])
             occ = float(d.split()[8])
             atom = d.split()[2].lower()
