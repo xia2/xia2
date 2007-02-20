@@ -23,6 +23,9 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
+from lib.SubstructureLib import parse_pdb_sites_file, \
+     write_pdb_sites_file
+
 from Driver.DriverFactory import DriverFactory
 
 def Shelxd(DriverType = None):
@@ -37,13 +40,15 @@ def Shelxd(DriverType = None):
             DriverInstance.__class__.__init__(self)
 
             self.set_executable('shelxd')
-
             self._name = None
+            self._sites = None
 
         def set_name(self, name):
             self._name = name
-
             return
+
+        def get_sites(self):
+            return self._sites
 
         def find_sites(self):
             '''Find the HA sites.'''
@@ -62,6 +67,9 @@ def Shelxd(DriverType = None):
             # read the sites and populate a substructure
             # object - these are in '%s_fa.pdb' % self._name
 
+            self._sites = parse_pdb_sites_file(os.path.join(
+                self.get_working_directory(), '%s_fa.pdb' % self._name))
+
             return
 
     return ShelxdWrapper()
@@ -73,3 +81,4 @@ if __name__ == '__main__':
     sd.write_log_file('shelxd.log')
     sd.set_name('TS00')
     sd.find_sites()
+    write_pdb_sites_file(sd.get_sites())
