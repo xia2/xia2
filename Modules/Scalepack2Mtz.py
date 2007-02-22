@@ -209,7 +209,7 @@ class Scalepack2Mtz:
         '''Convert an unmerged reflection file for dname from scalepack format
         to PNAME_XNAME_merged_tmp_DNAME.mtz.'''
 
-        scalepack_file = self._hklin_files(dname)
+        scalepack_file = self._hklin_files[dname]
 
         # convert to multirecord MTZ
 
@@ -235,7 +235,7 @@ class Scalepack2Mtz:
                               (self._pname, self._xname, dname))
 
         FileHandler.record_temporary_file(hklout)
-        
+
         s = self.Sortmtz()
         s.set_hklin(hklin)
         s.set_hklout(hklout)
@@ -262,11 +262,54 @@ class Scalepack2Mtz:
                                     (self._pname, self._xname, dname),
                                     sc.get_log_file())
         
+        hklin = hklout
+        hklout = os.path.join(self.get_working_directory(),
+                              '%s_%s_merged_cad_tmp_%s.mtz' % \
+                              (self._pname, self._xname, dname))
+
+        FileHandler.record_temporary_file(hklout)
+
+        # need to assign the column labels here - this will probably
+        # have to be a quick CAD run. This prevents duplicate column
+        # names later on
+
+        c = self.Cad()
+        c.add_hklin(hklin)
+        c.set_hklout(hklout)
+        c.set_new_suffix(dname)
+        c.update()
+        
         return
         
+    def _decide_is_merged(self, file):
+        '''Decide if the input file is merged, based on first 3 lines.'''
+
+        f = open(file, 'r')
+        start = [f.readline() for j in range(3)]
+        f.close()
+
+        # merged scalepack looks like number, number, cell
+
+        if len(start[0].split()) == 1 and \
+           len(start[1].split()) == 1 and \
+           len(start[2].split()) > 6:
+            return True
+
+        # unmerged scalepack from scala looks like number spacegroup,
+        # symop, symop, symop...
+        
+        if len(start[0].split()) > 2 and \
+           len(start[1].split()) > 2 and \
+           len(start[2].split()) > 2:
+            return False
+
+        # get to here is a problem
+
+        raise RuntimeError, 'cannot decide file format'
+
     # merge method
 
-    def transmogrify(self):
+    def convert(self):
         '''Transmogrify the input scalepack files to mtz.'''
 
         merged_files = []
@@ -275,20 +318,19 @@ class Scalepack2Mtz:
             scalepack = self._hklin_files[dname]
 
             # inspect to see if it is merged
-
-            merged = self._do_magic()
+            merged = self._decide_is_merged(scalepack)
             
             # if (unmerged) merge with combat, sortmts, scala - this is
             # implemented in _unmerged_scalepack_to_mtz - takes dname
 
             hklout = os.path.join(self.get_working_directory(),
-                                  '%s_%s_merged_tmp_%s.mtz' % \
+                                  '%s_%s_merged_cad_tmp_%s.mtz' % \
                                   (self._pname, self._xname, dname))
 
             if merged:
-                self._unmerged_scalepack_to_mtz(dname)
-            else:
                 self._merged_scalepack_to_mtz(dname)
+            else:
+                self._unmerged_scalepack_to_mtz(dname)
                 
             # truncate the reflections
             
@@ -306,8 +348,8 @@ class Scalepack2Mtz:
             t.truncate()
 
             FileHandler.record_log_file('%s %s %s truncate' % \
-                                        (self._common_pname,
-                                         self._common_xname,
+                                        (self._pname,
+                                         self._xname,
                                          dname),
                                         t.get_log_file())
     
@@ -322,8 +364,8 @@ class Scalepack2Mtz:
             c.add_hklin(hklin)
         
         hklout = os.path.join(self.get_working_directory(),
-                              '%s_%s_merged.mtz' % (self._common_pname,
-                                                    self._common_xname))
+                              '%s_%s_merged.mtz' % (self._pname,
+                                                    self._xname))
         
         Chatter.write('Merging all data sets to %s' % hklout)
         
@@ -336,8 +378,8 @@ class Scalepack2Mtz:
 
         hklin = hklout
         hklout = os.path.join(self.get_working_directory(),
-                              '%s_%s_merged_free.mtz' % (self._common_pname,
-                                                         self._common_xname))
+                              '%s_%s_merged_free.mtz' % (self._pname,
+                                                         self._xname))
 
         f.set_hklin(hklin)
         f.set_hklout(hklout)        
@@ -346,3 +388,25 @@ class Scalepack2Mtz:
         # if (mad) look for inter radiation damage
 
         return hklout
+
+# add a unit test
+
+if __name__ == '__main__':
+    s2m = Scalepack2Mtz()
+
+    data_directory = os.path.join(os.environ['X2TD_ROOT'],
+                                  'Test', 'UnitTest', 'Interfaces',
+                                  'Scaler', 'Unmerged')
+
+    s2m.add_hklin('INFL', os.path.join(data_directory,
+                                       'TS00_13185_unmerged_INFL.sca'))
+    s2m.add_hklin('LREM', os.path.join(data_directory,
+                                       'TS00_13185_unmerged_LREM.sca'))   
+    s2m.add_hklin('PEAK', os.path.join(data_directory,
+                                       'TS00_13185_unmerged_PEAK.sca'))
+    
+    s2m.set_cell((57.73, 76.93, 86.57, 90.00, 90.00, 90.00))
+    s2m.set_spacegroup('P212121')
+    s2m.set_project_info('TS00', '13185')
+
+    print s2m.convert()
