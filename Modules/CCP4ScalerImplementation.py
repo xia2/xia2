@@ -1480,7 +1480,7 @@ class CCP4Scaler(Scaler):
             self._scalr_scaled_reflection_files['sca'][
                 key] = '%s.sca' % file[:-4]
 
-        # FIXME BUG 2146
+        # FIXED BUG 2146
 
         # in here rerun scala recycling the final scales and writing out
         # unmerged reflection files in scalepack format

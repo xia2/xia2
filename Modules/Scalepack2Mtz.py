@@ -63,7 +63,6 @@ from CCP4InterRadiationDamageDetector import CCP4InterRadiationDamageDetector
 
 from lib.Guff import auto_logfiler
 
-
 class Scalepack2Mtz:
     '''A jiffy class to enable transformation between scalepack format
     (merged or unmerged) to a properly structured MTZ file.'''
@@ -258,19 +257,92 @@ class Scalepack2Mtz:
         sc.set_anomalous()
         sc.set_onlymerge()
         sc.merge()
+
+        FileHandler.record_log_file('%s %s %s merge' % \
+                                    (self._pname, self._xname, dname),
+                                    sc.get_log_file())
         
         return
         
-
-
     # merge method
 
-    # if (unmerged) merge with combat, sortmts, scala
-    # else use scalepack2mtz
-    # truncate all reflections
-    # [do not need this as cell, spacegroup has to be explicitly set]
-    # [if (mad) compute cell constants, cad in cell constants, cad together]
-    # add FreeR column
-    # if (mad) look for inter radiation damage
+    def transmogrify(self):
+        '''Transmogrify the input scalepack files to mtz.'''
 
+        merged_files = []
+
+        for dname in self._dnames:
+            scalepack = self._hklin_files[dname]
+
+            # inspect to see if it is merged
+
+            merged = self._do_magic()
+            
+            # if (unmerged) merge with combat, sortmts, scala - this is
+            # implemented in _unmerged_scalepack_to_mtz - takes dname
+
+            hklout = os.path.join(self.get_working_directory(),
+                                  '%s_%s_merged_tmp_%s.mtz' % \
+                                  (self._pname, self._xname, dname))
+
+            if merged:
+                self._unmerged_scalepack_to_mtz(dname)
+            else:
+                self._merged_scalepack_to_mtz(dname)
+                
+            # truncate the reflections
+            
+            hklin = hklout
+
+            hklout = os.path.join(self.get_working_directory(),
+                                  '%s_%s_truncated_tmp_%s.mtz' % \
+                                  (self._pname, self._xname, dname))
+
+            FileHandler.record_temporary_file(hklout)
+
+            t = self.Truncate()
+            t.set_hklin(hklin)
+            t.set_hklout(hklout)
+            t.truncate()
+
+            FileHandler.record_log_file('%s %s %s truncate' % \
+                                        (self._common_pname,
+                                         self._common_xname,
+                                         dname),
+                                        t.get_log_file())
     
+        # cad together
+
+        c = self.Cad()
+        for dname in self._dnames:
+            hklin = os.path.join(self.get_working_directory(),
+                                 '%s_%s_truncated_tmp_%s.mtz' % \
+                                 (self._pname, self._xname, dname))
+            
+            c.add_hklin(hklin)
+        
+        hklout = os.path.join(self.get_working_directory(),
+                              '%s_%s_merged.mtz' % (self._common_pname,
+                                                    self._common_xname))
+        
+        Chatter.write('Merging all data sets to %s' % hklout)
+        
+        c.set_hklout(hklout)
+        c.merge()
+
+        # add FreeR column
+
+        f = self.Freerflag()
+
+        hklin = hklout
+        hklout = os.path.join(self.get_working_directory(),
+                              '%s_%s_merged_free.mtz' % (self._common_pname,
+                                                         self._common_xname))
+
+        f.set_hklin(hklin)
+        f.set_hklout(hklout)        
+        f.add_free_flag()
+
+        # if (mad) look for inter radiation damage
+
+        return hklout
