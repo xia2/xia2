@@ -261,24 +261,7 @@ class Scalepack2Mtz:
         FileHandler.record_log_file('%s %s %s merge' % \
                                     (self._pname, self._xname, dname),
                                     sc.get_log_file())
-        
-        hklin = hklout
-        hklout = os.path.join(self.get_working_directory(),
-                              '%s_%s_merged_cad_tmp_%s.mtz' % \
-                              (self._pname, self._xname, dname))
-
-        FileHandler.record_temporary_file(hklout)
-
-        # need to assign the column labels here - this will probably
-        # have to be a quick CAD run. This prevents duplicate column
-        # names later on
-
-        c = self.Cad()
-        c.add_hklin(hklin)
-        c.set_hklout(hklout)
-        c.set_new_suffix(dname)
-        c.update()
-        
+                
         return
         
     def _decide_is_merged(self, file):
@@ -324,7 +307,7 @@ class Scalepack2Mtz:
             # implemented in _unmerged_scalepack_to_mtz - takes dname
 
             hklout = os.path.join(self.get_working_directory(),
-                                  '%s_%s_merged_cad_tmp_%s.mtz' % \
+                                  '%s_%s_merged_tmp_%s.mtz' % \
                                   (self._pname, self._xname, dname))
 
             if merged:
@@ -352,13 +335,30 @@ class Scalepack2Mtz:
                                          self._xname,
                                          dname),
                                         t.get_log_file())
+
+            hklin = hklout
+            hklout = os.path.join(self.get_working_directory(),
+                                  '%s_%s_truncated_cad_tmp_%s.mtz' % \
+                                  (self._pname, self._xname, dname))
+            
+            FileHandler.record_temporary_file(hklout)
+            
+            # need to assign the column labels here - this will probably
+            # have to be a quick CAD run. This prevents duplicate column
+            # names later on
+
+            c = self.Cad()
+            c.add_hklin(hklin)
+            c.set_hklout(hklout)
+            c.set_new_suffix(dname)
+            c.update()
     
         # cad together
 
         c = self.Cad()
         for dname in self._dnames:
             hklin = os.path.join(self.get_working_directory(),
-                                 '%s_%s_truncated_tmp_%s.mtz' % \
+                                 '%s_%s_truncated_cad_tmp_%s.mtz' % \
                                  (self._pname, self._xname, dname))
             
             c.add_hklin(hklin)
