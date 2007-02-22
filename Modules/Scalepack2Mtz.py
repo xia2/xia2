@@ -191,7 +191,7 @@ class Scalepack2Mtz:
         '''Convert a merged reflection file for dname from scalepack format
         to PNAME_XNAME_merged_tmp_DNAME.mtz.'''
 
-        scalepack_file = self._hklin_files(dname)
+        scalepack_file = self._hklin_files[dname]
         
         s2m = self.Scalepack2mtz()        
         s2m.set_hklin(scalepack_file)
@@ -392,11 +392,13 @@ class Scalepack2Mtz:
 # add a unit test
 
 if __name__ == '__main__':
-    s2m = Scalepack2Mtz()
+    # UNMERGED
 
     data_directory = os.path.join(os.environ['X2TD_ROOT'],
                                   'Test', 'UnitTest', 'Interfaces',
                                   'Scaler', 'Unmerged')
+
+    s2m = Scalepack2Mtz()
 
     s2m.add_hklin('INFL', os.path.join(data_directory,
                                        'TS00_13185_unmerged_INFL.sca'))
@@ -410,3 +412,26 @@ if __name__ == '__main__':
     s2m.set_project_info('TS00', '13185')
 
     print s2m.convert()
+
+    # MERGED
+
+    data_directory = os.path.join(os.environ['X2TD_ROOT'],
+                                  'Test', 'UnitTest', 'Interfaces',
+                                  'Scaler', 'Merged')
+
+    s2m = Scalepack2Mtz()
+
+    s2m.add_hklin('INFL', os.path.join(data_directory,
+                                       'TS00_13185_scaled_INFL.sca'))
+    s2m.add_hklin('LREM', os.path.join(data_directory,
+                                       'TS00_13185_scaled_LREM.sca'))   
+    s2m.add_hklin('PEAK', os.path.join(data_directory,
+                                       'TS00_13185_scaled_PEAK.sca'))
+    
+    s2m.set_cell((57.73, 76.93, 86.57, 90.00, 90.00, 90.00))
+    s2m.set_spacegroup('P212121')
+    s2m.set_project_info('TS00A', '13185')
+
+    print s2m.convert()
+
+    

@@ -55,7 +55,7 @@ def Scalepack2mtz(DriverType = None):
 
         def set_project_info(self, pname, xname, dname):
             self._pname = pname
-            self._dname = xname
+            self._xname = xname
             self._dname = dname
 
         def convert(self):
