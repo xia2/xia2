@@ -1194,8 +1194,10 @@ def Mosflm(DriverType = None):
                         
             # look generally at the RMS deviation range - is this is
             # large then there may be something properly wrong...
+            # switch this off for a moment as it may be more appropriate
+            # for this test to look at the results from integration...
             
-            if rmsd_range:
+            if rmsd_range and False:
                 
                 if ((rmsd_range[0] - rmsd_range[1]) /
                     (rmsd_range[0] + rmsd_range[1])) > 0.3333:
