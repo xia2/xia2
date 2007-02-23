@@ -29,6 +29,11 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Wrappers.CCP4.Mtzdump import Mtzdump
 from Schema.Interfaces.Scaler import Scaler
 
+# file conversion (and merging) jiffies
+
+from Modules.Scalepack2Mtz import Scalepack2Mtz
+from Modules.Mtz2Scalepack import Mtz2Scalepack
+
 class NullScalerImplementation(Scaler):
     '''A null scaler implementation which looks like a real scaler
     but actually does nothing but wrap a couple of reflection files.
@@ -50,7 +55,7 @@ class NullScalerImplementation(Scaler):
         # self._scalr_cell - canonical unit cell from data reduction
         # self._scalr_likely_spacegroups - a list of likely spacegroups
         # self._scalr_highest_resolution - a float of the highest resolution
-        #                                  schieved from this crystal
+        #                                  achieved from this crystal
         # 
         # The following tokens will be defined (optionally) for the
         # whole resolution range of the data set in the .xinfo file
