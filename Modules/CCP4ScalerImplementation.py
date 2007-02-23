@@ -128,6 +128,7 @@ from Wrappers.CCP4.Mtz2various import Mtz2various as _Mtz2various
 from Wrappers.CCP4.Cad import Cad as _Cad
 from Wrappers.CCP4.Freerflag import Freerflag as _Freerflag
 from Wrappers.CCP4.Pointless import Pointless as _Pointless
+from Wrappers.CCP4.Sfcheck import Sfcheck as _Sfcheck
 
 from Handlers.Streams import Chatter
 from Handlers.Files import FileHandler
@@ -242,6 +243,14 @@ class CCP4Scaler(Scaler):
         pointless.set_working_directory(self.get_working_directory())
         auto_logfiler(pointless)
         return pointless
+
+    def Sfcheck(self):
+        '''Create a Sfcheck wrapper from _Sfcheck - set the
+        working directory and log file stuff as a part of this...'''
+        sfcheck = _Sfcheck()
+        sfcheck.set_working_directory(self.get_working_directory())
+        auto_logfiler(sfcheck)
+        return sfcheck
 
     def _scale_prepare(self):
         '''Perform all of the preparation required to deliver the scaled
@@ -1754,6 +1763,15 @@ class CCP4Scaler(Scaler):
         f.add_free_flag()
 
         self._scalr_scaled_reflection_files['mtz_merged_free'] = f.get_hklout()
+
+        # have a look for twinning ...
+
+        sfc = self.Sfcheck()
+        sfc.set_hklin(f.get_hklout())
+        sfc.analyse()
+        twinning_score = sfc.get_twinning()
+
+        Chatter.write('Overall twinning score: %4.2f' % twinning_score)
 
         # next have a look for radiation damage... if more than one wavelength
 
