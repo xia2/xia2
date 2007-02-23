@@ -1192,7 +1192,38 @@ def Mosflm(DriverType = None):
                             raise RuntimeError, 'cell refinement failed: ' + \
                                   'negative mosaic spread'
                         
+            # look generally at the RMS deviation range - is this is
+            # large then there may be something properly wrong...
+            
+            if rmsd_range:
+                
+                if ((rmsd_range[0] - rmsd_range[1]) /
+                    (rmsd_range[0] + rmsd_range[1])) > 0.3333:
+                    Science.write(
+                        'Large range in RMSD variation per image')
+                    
+                    if len(self._mosflm_cell_ref_images) <= 3:
+                        # set this up to be more images
+                        new_cell_ref_images = self._refine_select_images(
+                            len(self._mosflm_cell_ref_images) + 1,
+                            mosaic)
+                        self._mosflm_cell_ref_images = new_cell_ref_images
+                        
+                        self.set_integrater_prepare_done(False)
+                        
+                        Science.write(
+                            'Repeating cell refinement with more data.')
+                        
+                        return
 
+                    else:
+                        
+                        Science.write(
+                            'Integration will be aborted because of this.')
+                        
+                        raise RuntimeError, 'cell refinement failed: ' + \
+                              'negative mosaic spread'
+                    
             # AFTER that, read the refined parameters
             
             for i in range(len(output)):
