@@ -156,7 +156,7 @@ def Pointless(DriverType = None):
             
             # FIXME 08/SEP/06 this needs updating to
             # version 1.1.0.4 - done
-            self.set_executable('pointless-1.1.0.9')
+            self.set_executable('pointless-1.1.1.c')
 
             self._input_laue_group = None
 
@@ -416,7 +416,7 @@ def Pointless(DriverType = None):
                         # the NetZc and if it is much better then consider
                         # that the other solution may indeed be correct.
                     
-                        if math.fabs(likelihood - self._totalprob) < 0.1:
+                        if math.fabs(likelihood - self._totalprob) < 1:
                             if netzc - correct_netzc > 1.0:
                                 # this is perhaps more likely?
                                 if netzc > best_netzc:
@@ -443,7 +443,7 @@ def Pointless(DriverType = None):
                         # for TS01 NATIVE this is around 0.5... require delta
                         # also measurable (e.g. not exactly 0.0)
 
-                        if math.fabs(likelihood - self._totalprob) < 0.1:
+                        if math.fabs(likelihood - self._totalprob) < 1:
                             if correct_r / r_merge > 1.5 and \
                                    correct_delta > 0.1:
                                 if netzc > 0.0:
