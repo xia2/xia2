@@ -347,7 +347,7 @@ def Mosflm(DriverType = None):
                 Chatter.write('Phi width 0.0? Assuming 1.0!')
                 phi_width = 1.0
             
-            min_images = max(3, int(2 * mosaic / phi_width))
+            min_images = max(4, int(2 * mosaic / phi_width))
             
             # next select what we need from the list...
 
