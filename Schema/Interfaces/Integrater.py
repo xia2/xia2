@@ -417,7 +417,8 @@ class Integrater:
                     self._intgr_indexer.eliminate()
                     self._intgr_prepare_done = False
                     self._intgr_done = False
-                elif 'large weighted residual' in e:
+                elif 'large weighted residual' in str(e):
+                    Chatter.write('Doh! %s' % str(e))
                     self._intgr_indexer.eliminate()
                     self._intgr_prepare_done = False
                     self._intgr_done = False
