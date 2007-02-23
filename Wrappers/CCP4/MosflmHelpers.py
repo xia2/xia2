@@ -113,6 +113,9 @@ def _parse_mosflm_integration_output(integration_output_list):
             rmsd = residual / pixel_size
             per_image_stats[current_image]['rmsd_pixel'] = rmsd
             per_image_stats[current_image]['rmsd_phi'] = 0.0
+            weighted_residual = float(record.split()[-1])
+            per_image_stats[current_image][
+                'weighted_residual'] = weighted_residual
 
         if 'Real cell parameters' in record:
             cell = map(float, integration_output_list[i + 1].split())
@@ -211,10 +214,15 @@ def _happy_integrate_lp(integrate_lp_stats):
     Science.write('Report on images %d to %d' % (min(images), max(images)),
                   forward = False)
 
+    max_weighted_residual = 0.0
+
     for i in images:
         data = integrate_lp_stats[i]
 
         # FIXME need to look for "blank" "many bad spots" "overloaded"
+
+        if data['weighted_residual'] < max_weighted_residual:
+            max_weighted_residual = data['weighted_residual']
 
         if data['rmsd_pixel'] > 2.5:
             status = '!'
@@ -231,6 +239,10 @@ def _happy_integrate_lp(integrate_lp_stats):
         # also - # bad O overloaded . blank ! problem ? other
 
         results += status
+
+    if max_weighted_residual > 2.5:
+        raise RuntimeError, 'large weighted residual (%4.2f)' % \
+              max_weighted_residual
 
     return results
 

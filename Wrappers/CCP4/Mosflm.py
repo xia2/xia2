@@ -1585,8 +1585,26 @@ def Mosflm(DriverType = None):
             # write the report for each image as .*-#$ to Chatter -
             # detailed report will be written automagically to science...
 
-            spot_status = _happy_integrate_lp(
-                _parse_mosflm_integration_output(output))
+            parsed_output = _parse_mosflm_integration_output(output)
+
+            spot_status = _happy_integrate_lp(parsed_output)
+
+            # inspect the output for e.g. very high weighted residuals
+
+            images = parsed_output.keys()
+            images.sort()
+            
+            max_weighted_residual = 0.0
+            
+            for i in images:
+                data = parsed_output[i]
+
+                if data['weighted_residual'] < max_weighted_residual:
+                    max_weighted_residual = data['weighted_residual']
+            
+            if max_weighted_residual > 2.5:
+                raise RuntimeError, 'large weighted residual (%4.2f)' % \
+                      max_weighted_residual
 
             # if we have not processed to a given resolution, fix
             # the limit for future reference
