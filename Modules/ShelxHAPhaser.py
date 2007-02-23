@@ -35,8 +35,10 @@ data_dir = os.path.join(os.environ['X2TD_ROOT'],
                         'Test', 'UnitTest', 'Interfaces',
                         'Scaler', 'Unmerged')
 
-spacegroups = ['P222', 'P2221', 'P21212', 'P212121',
-               'P2122', 'P2212', 'P21221', 'P22121']
+# spacegroups = ['P222', 'P2221', 'P21212', 'P212121',
+#                'P2122', 'P2212', 'P21221', 'P22121']
+
+spacegroups = ['P222', 'P212121']
 
 shelxd_list = []
 
@@ -62,9 +64,10 @@ for s in spacegroups:
     shelxd.set_name('peer')
     shelxd.set_spacegroup(s)
     shelxd_list.append(shelxd)
-    shelxd.set_peer_list(shelxd_list)
 
 # this will get the right one from the list!
+shelxd_list.sort()
+shelxd = shelxd_list[-1]
 spacegroup = shelxd.get_spacegroup()
 
 print 'Correct spacegroup from list %s is %s' % \

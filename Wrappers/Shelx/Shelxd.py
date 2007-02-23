@@ -43,11 +43,7 @@ def Shelxd(DriverType = None):
             self.set_executable('shelxd')
 
             # input parameters
-
             self._name = None
-
-            # an optional list of peers
-            self._peer_list = [self]
 
             # an optional spacegroup override if we are changing
             # what was in the .ins file
@@ -74,42 +70,26 @@ def Shelxd(DriverType = None):
                 return +1
             return 0
 
-        def set_peer_list(self, peer_list):
-            self._peer_list = peer_list
-
         def get_cc_weak(self):
             if self._cc_weak == 0.0:
                 self._find_sites()
 
             return self._cc_weak
 
-        def _get_spacegroup(self):
+        def get_spacegroup(self):
             return self._spacegroup
 
-        def _get_res(self):
-            return self._res
-
         def get_res(self):
-            self._peer_list.sort()
-            return self._peer_list[-1]._get_res()
-
-        def get_spacegroup(self):
-            '''This may initiate processing.'''
-            self._peer_list.sort()
-            return self._peer_list[-1]._get_spacegroup()
+            return self._res
 
         def set_spacegroup(self, spacegroup):
             self._spacegroup = spacegroup
 
-        def get_sites(self):
-            self._peer_list.sort()
-            return self._peer_list[-1]._get_sites()
-            
         def set_name(self, name):
             self._name = name
             return
 
-        def _get_sites(self):
+        def get_sites(self):
             if not self._sites:
                 self._find_sites()
             return self._sites
