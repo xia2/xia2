@@ -1599,7 +1599,7 @@ def Mosflm(DriverType = None):
             for i in images:
                 data = parsed_output[i]
 
-                if data['weighted_residual'] < max_weighted_residual:
+                if data['weighted_residual'] > max_weighted_residual:
                     max_weighted_residual = data['weighted_residual']
             
             if max_weighted_residual > 2.5:
