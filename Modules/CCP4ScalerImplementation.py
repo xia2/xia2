@@ -495,6 +495,10 @@ class CCP4Scaler(Scaler):
                         likely.append(l)
 
                 original_pointgroup = pl.get_pointgroup()
+
+                Chatter.write('Possible lattices (pointless):')
+                for lattice in likely:
+                    Chatter.write('... %s' % lattice)
                     
                 for lattice in likely:
                     state = indexer.set_indexer_asserted_lattice(lattice)
