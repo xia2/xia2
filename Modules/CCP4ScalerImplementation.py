@@ -1772,6 +1772,12 @@ class CCP4Scaler(Scaler):
         twinning_score = sfc.get_twinning()
 
         Chatter.write('Overall twinning score: %4.2f' % twinning_score)
+        if twinning_score > 1.9:
+            Chatter.write('Your data do not appear to be twinned')
+        elif twinning_score < 1.6:
+            Chatter.write('Your data appear to be twinned')
+        else:
+            Chatter.write('Not sure what this means (1.6 < score < 1.9)')
 
         # next have a look for radiation damage... if more than one wavelength
 
