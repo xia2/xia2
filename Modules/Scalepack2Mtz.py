@@ -254,6 +254,7 @@ class Scalepack2Mtz:
         sc = self.Scala()
         sc.set_hklin(hklin)
         sc.set_hklout(hklout)
+        sc.set_project_info(self._pname, self._xname, dname)
         sc.set_anomalous()
         sc.set_onlymerge()
         sc.merge()

@@ -154,9 +154,21 @@ def Scala(DriverType = None):
             self._project_crystal_dataset = { }
             self._runs = []
 
+            # for adding data on merge - one dname
+            self._pname = None
+            self._xname = None
+            self._dname = None
+
             return
 
         # getter and setter methods
+
+        def set_project_info(self, pname, xname, dname):
+            '''Only use this for the merge() method.'''
+            self._pname = pname
+            self._xname = xname
+            self._dname = dname
+            return
 
         def add_run(self, start, end,
                     pname = None, xname = None, dname = None):
@@ -324,6 +336,12 @@ def Scala(DriverType = None):
             self.input('run 1 all')
             self.input('scales constant')
             self.input('initial unity')
+
+            # if project name etc set. merging => only one run
+            if self._pname and self._xname and self._dname:
+                self.input('name run 1 project %s crystal %s dataset %s' % \
+                           (self._pname, self._xname, self._dname))
+            
 
             if self._anomalous:
                 self.input('anomalous on')
