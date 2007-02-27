@@ -936,7 +936,8 @@ def Mosflm(DriverType = None):
                     rms_values_last = []
                     j = i + 2
                     while output[j].split():
-                        cycle = int(output[j].split()[1])
+                        # this does horrid things if 10 or more cycles...
+                        cycle = int(output[j].replace('Cycle', '').split()[0])
                         record = [output[j][k:k + 6] \
                                   for k in range(11, len(output[j]), 6)]
 
