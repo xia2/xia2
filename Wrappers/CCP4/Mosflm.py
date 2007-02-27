@@ -210,7 +210,6 @@ from Schema.Interfaces.Integrater import Integrater
 # output streams &c.
 
 from Handlers.Streams import Admin, Science, Status, Chatter
-from Handlers.Exception import DPAException
 
 # helpers
 
@@ -229,6 +228,7 @@ from lib.SymmetryLib import lattice_to_spacegroup
 
 from Schema.Exceptions.BadLatticeError import BadLatticeError
 from Schema.Exceptions.IntegrationError import IntegrationError
+from Schema.Exceptions.IndexingError import IndexingError
 
 def Mosflm(DriverType = None):
     '''A factory for MosflmWrapper classes.'''
@@ -534,7 +534,7 @@ def Mosflm(DriverType = None):
                     self._indxr_refined_beam = tuple(map(float, o.split(
                         )[-2:]))
 
-                # FIXME this may not be there if this is a repeat indexing!
+                # FIXED this may not be there if this is a repeat indexing!
                 if 'Symmetry:' in o:
                     self._indxr_lattice = o.split(':')[1].split()[0]
 
@@ -568,7 +568,9 @@ def Mosflm(DriverType = None):
                 if 'The mosaicity estimation has not worked for some' in o:
                     # this is a problem... in particular with the
                     # mosflm built on linux in CCP4 6.0.1...
-                    raise DPAException, 'mosaicity estimation failed'
+                    # FIXME this should be a specific kind of
+                    # exception e.g. an IndexError
+                    raise IndexingError, 'mosaicity estimation failed'
 
                 # or it may alternatively look like this...
 
@@ -886,6 +888,10 @@ def Mosflm(DriverType = None):
                 if 'Cell refinement is complete' in o:
                     cell_refinement_ok = True
 
+            if not cell_refinement_ok:
+                Chatter.write(
+                    'Looks like cell refinement failed - more follows...')
+
             # how best to handle this, I don't know... could
             #
             # (1) raise an exception
@@ -895,19 +901,6 @@ def Mosflm(DriverType = None):
             # level of intelligence to sort it out. don't worry too hard
             # about this in the initial version, since labelit indexing
             # is pretty damn robust.
-
-            if not cell_refinement_ok:
-
-                # in here try first to repair it, as described
-                # in the inaccurate cell parameters block below...
-                # in fact all errors should now be trapped below
-                # so this section isn't a lot of use...
-
-                # FIXME 06/DEC/06 is this appropriate???
-
-                # raise DPAException, 'Cell refinement failed'
-
-                pass
 
             # if it succeeded then populate the indexer output (myself)
             # with the new information - this can then be used
@@ -1144,7 +1137,6 @@ def Mosflm(DriverType = None):
                     if mosaic < 0.0:
                         Science.write('Negative mosaic spread (%5.2f)' %
                                       mosaic)
-                        # raise DPAException, 'negative refined mosaic spread'
 
                         if len(self._mosflm_cell_ref_images) <= 3:
                             # set this up to be more images
