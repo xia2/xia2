@@ -1262,7 +1262,7 @@ def Mosflm(DriverType = None):
             for i in range(len(output)):
                 o = output[i]
 
-                # FIXME for all of these which follow - the refined values
+                # FIXED for all of these which follow - the refined values
                 # for these parameters should only be stored if the cell
                 # refinement were 100% successful - therefore gather
                 # them up here and store them at the very end (e.g. once
@@ -1590,7 +1590,8 @@ def Mosflm(DriverType = None):
                         message += '  %s' % input
                     Chatter.write(message)
                     raise RuntimeError, \
-                          'integration failed: reason unknown'
+                          'integration failed: reason unknown (log %s)' % \
+                          self.get_log_file()
 
             self._intgr_batches_out = (integrated_images_first,
                                        integrated_images_last)
