@@ -110,7 +110,6 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from lib.Guff import inherits_from
 from Handlers.Streams import Chatter
-from Handlers.Exception import DPAException
 
 from Schema.Exceptions.BadLatticeError import BadLatticeError
 from Schema.Exceptions.IntegrationError import IntegrationError
