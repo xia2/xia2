@@ -94,7 +94,7 @@
 #
 # FIXED 02/NOV/06 want to hide the "done" flags inside getter/setter methods.
 #  
-# FIXME 28/NOV/06 need to enable the connection between the Scaler and the
+# FIXED 28/NOV/06 need to enable the connection between the Scaler and the
 #                 Indexer to pass back and forth (discuss) pointgroup options.
 # 
 
@@ -265,8 +265,6 @@ class Integrater:
 
         self._intgr_reso_high = dmin
 
-        # Chatter.write('Setting high resolution limit')
-        
         self._intgr_done = False
         return
 
