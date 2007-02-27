@@ -36,6 +36,30 @@ symop = os.path.join(os.environ['XIA2_ROOT'],
 syminfo = os.path.join(os.environ['CCP4'],
                        'lib', 'data', 'syminfo.lib')
 
+def lattice_to_spacegroup(lattice):
+    '''Convert a lattice e.g. tP into the minimal spacegroup number
+    to represent this.'''
+
+    _lattice_to_spacegroup = {'aP':1,
+                              'mP':3,
+                              'mC':5,
+                              'oP':16,
+                              'oC':20,
+                              'oF':22,
+                              'oI':23,
+                              'tP':75,
+                              'tI':79,
+                              'hP':143,
+                              'hR':146,
+                              'cP':195,
+                              'cF':196,
+                              'cI':197}
+    
+    if not lattice in _lattice_to_spacegroup.keys():
+        raise RuntimeError, 'lattice "%s" unknown' % lattice
+    
+    return _lattice_to_spacegroup[lattice]
+
 def spacegroup_name_old_to_xHM(old):
     '''Convert from old to xHM name.'''
 
@@ -158,26 +182,16 @@ def lattices_in_order():
 
     # eliminated this entry ... 'oA': 38,
 
-
-    lattice_to_spacegroup = {'aP': 1,
-                             'cF': 196,
-                             'cI': 197,
-                             'cP': 195,
-                             'hP': 143,
-                             'hR': 146,
-                             'mC': 5,
-                             'mP': 3,
-                             'oC': 20,
-                             'oF': 22,
-                             'oI': 23,
-                             'oP': 16,
-                             'tI': 79,
-                             'tP': 75}
+    lattices = ['aP', 'mP', 'mC', 'oP',
+                'oC', 'oF', 'oI', 'tP',
+                'tI', 'hP', 'hR', 'cP',
+                'cF', 'cI']
 
     spacegroup_to_lattice = { }
 
-    for lattice in lattice_to_spacegroup.keys():
-        spacegroup_to_lattice[lattice_to_spacegroup[lattice]] = lattice
+    for lattice in lattices:
+        spacegroup_to_lattice[lattice_to_spacegroup(lattice)
+                              ] = lattice_to_spacegroup(lattice)
 
     spacegroups = spacegroup_to_lattice.keys()
     spacegroups.sort()
