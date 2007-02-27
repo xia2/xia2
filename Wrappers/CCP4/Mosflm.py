@@ -223,6 +223,11 @@ from Modules.GainEstimater import gain
 from Handlers.Files import FileHandler
 
 from lib.Guff import auto_logfiler
+from lib.SymmetryLib import lattice_to_spacegroup
+
+# exceptions
+
+from Schema.Exceptions.BadLatticeError import BadLatticeError
 
 def Mosflm(DriverType = None):
     '''A factory for MosflmWrapper classes.'''
@@ -444,23 +449,8 @@ def Mosflm(DriverType = None):
                            self._indxr_input_cell)
 
             if self._indxr_input_lattice != None:
-                lattice_to_spacegroup = {'aP':1,
-                                         'mP':3,
-                                         'mC':5,
-                                         'oP':16,
-                                         'oC':20,
-                                         'oF':22,
-                                         'oI':23,
-                                         'tP':75,
-                                         'tI':79,
-                                         'hP':143,
-                                         'hR':146,
-                                         'cP':195,
-                                         'cF':196,
-                                         'cI':197}
-                                     
-                spacegroup_number = lattice_to_spacegroup[
-                    self._indxr_input_lattice]
+                spacegroup_number = lattice_to_spacegroup(
+                    self._indxr_input_lattice)
                 self.input('symmetry %d' % spacegroup_number)
 
 	    # FIXME 25/OCT/06 have found that a threshold of 10 works
@@ -783,22 +773,7 @@ def Mosflm(DriverType = None):
             # something like tP etc. FIXME how to cope when the
             # spacegroup has been explicitly stated?
 
-            lattice_to_spacegroup = {'aP':1,
-                                     'mP':3,
-                                     'mC':5,
-                                     'oP':16,
-                                     'oC':20,
-                                     'oF':22,
-                                     'oI':23,
-                                     'tP':75,
-                                     'tI':79,
-                                     'hP':143,
-                                     'hR':146,
-                                     'cP':195,
-                                     'cF':196,
-                                     'cI':197}
-                                     
-            spacegroup_number = lattice_to_spacegroup[lattice]
+            spacegroup_number = lattice_to_spacegroup(lattice)
 
 	    # FIXME 11/SEP/06 have an example set of data which will
             #                 make cell refinement "fail" - that is
@@ -955,7 +930,7 @@ def Mosflm(DriverType = None):
 
                 # look for overall cell refinement failure
                 if 'Processing will be aborted' in o:
-                    raise RuntimeError, 'cell refinement failed'
+                    raise BadLatticeError, 'cell refinement failed'
                 
                 # look to store the rms deviations on a per-image basis
                 # this may be used to decide what to do about "inaccurate
@@ -1036,7 +1011,7 @@ def Mosflm(DriverType = None):
                         Science.write(
                             'Integration will be aborted because of this.')
                         
-                        raise RuntimeError, 'cell refinement failed: ' + \
+                        raise BadLatticeError, 'cell refinement failed: ' + \
                               'inaccurate cell parameters'
                     
                 if 'INACCURATE CELL PARAMETERS' in o:
@@ -1124,7 +1099,7 @@ def Mosflm(DriverType = None):
                             Science.write(
                                 'Integration will be aborted because of this.')
                         
-                            raise RuntimeError, 'cell refinement failed: ' + \
+                            raise BadLatticeError, 'cell refinement failed: ' + \
                                   'inaccurate cell parameters'
                         
                         Science.write(
@@ -1157,7 +1132,7 @@ def Mosflm(DriverType = None):
                         Science.write(
                             'Integration will be aborted because of this.')
                         
-                        raise RuntimeError, 'cell refinement failed: ' + \
+                        raise BadLatticeError, 'cell refinement failed: ' + \
                               'unstable cell refinement'
 
                 # other possible problems in the cell refinement - a
@@ -1189,7 +1164,7 @@ def Mosflm(DriverType = None):
                             Science.write(
                                 'Integration will be aborted because of this.')
                         
-                            raise RuntimeError, 'cell refinement failed: ' + \
+                            raise BadLatticeError, 'cell refinement failed: ' + \
                                   'negative mosaic spread'
                         
             # look generally at the RMS deviation range - is this is
@@ -1223,7 +1198,7 @@ def Mosflm(DriverType = None):
                         Science.write(
                             'Integration will be aborted because of this.')
                         
-                        raise RuntimeError, 'cell refinement failed: ' + \
+                        raise BadLatticeError, 'cell refinement failed: ' + \
                               'negative mosaic spread'
                     
             # AFTER that, read the refined parameters
@@ -1405,22 +1380,7 @@ def Mosflm(DriverType = None):
             # something like tP etc. FIXME how to cope when the
             # spacegroup has been explicitly stated?
 
-            lattice_to_spacegroup = {'aP':1,
-                                     'mP':3,
-                                     'mC':5,
-                                     'oP':16,
-                                     'oC':20,
-                                     'oF':22,
-                                     'oI':23,
-                                     'tP':75,
-                                     'tI':79,
-                                     'hP':143,
-                                     'hR':146,
-                                     'cP':195,
-                                     'cF':196,
-                                     'cI':197}
-                                     
-            spacegroup_number = lattice_to_spacegroup[lattice]
+            spacegroup_number = lattice_to_spacegroup(lattice)
 
             images = self.get_matching_images()
 
@@ -1557,7 +1517,7 @@ def Mosflm(DriverType = None):
                 if 'Smoothed value for refined mosaic spread' in o:
                     mosaic = float(o.split()[-1])
                     if mosaic < 0.0:
-                        raise RuntimeError, 'negative mosaic spread'
+                        raise BadLatticeError, 'negative mosaic spread'
 
                 if 'WRITTEN OUTPUT MTZ FILE' in o:
                     self._mosflm_hklout = os.path.join(
@@ -1603,7 +1563,7 @@ def Mosflm(DriverType = None):
                     max_weighted_residual = data['weighted_residual']
             
             if max_weighted_residual > 2.5:
-                raise RuntimeError, 'large weighted residual (%4.2f)' % \
+                raise BadLatticeError, 'large weighted residual (%4.2f)' % \
                       max_weighted_residual
 
             # if we have not processed to a given resolution, fix

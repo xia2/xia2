@@ -112,6 +112,8 @@ from lib.Guff import inherits_from
 from Handlers.Streams import Chatter
 from Handlers.Exception import DPAException
 
+from Schema.Exceptions.BadLatticeError import BadLatticeError
+
 # image header reading functionality
 from Wrappers.XIA.Printheader import Printheader
 
@@ -367,8 +369,16 @@ class Integrater:
                 try:
                     self._integrate_prepare()
 
+                # Should be all specific errors which indicate a known problem
+                
+                except BadLatticeError, e:
+                    Chatter.write('Uh oh! %s' % str(e))
+                    self._intgr_indexer.eliminate()
+                    self._intgr_prepare_done = False
+
                 # FIXME 08/NOV/06 in here I need to have standard exceptions -
                 # sometimes I use runtime errors, others dpa exceptions...
+                # THE FOLLOWING NEED TO BE RETIRED
                 
                 except DPAException, e:
                     # fixme I should trap the correct exception here
@@ -380,6 +390,8 @@ class Integrater:
                     Chatter.write('Doh! %s' % str(e))
                     self._intgr_indexer.eliminate()
                     self._intgr_prepare_done = False
+
+                # END RETIREMENT BLOCK
                     
             # FIXED 01/NOV/06 what happens if the integration decides
             # that the lattice is wrong - this would mean that the indexing
