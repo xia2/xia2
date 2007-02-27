@@ -260,14 +260,14 @@ def Mosflm(DriverType = None):
             self._mosflm_rerun_integration = False
             self._mosflm_hklout = ''
 
-            self._gain = None
+            self._mosflm_gain = None
 
             return
 
         def _estimate_gain(self):
             '''Estimate a GAIN appropriate for reducing this set.'''
 
-            if self._gain:
+            if self._mosflm_gain:
                 return
 
             images = self.get_matching_images()
@@ -285,9 +285,9 @@ def Mosflm(DriverType = None):
                 for i in images[-5:]:
                     gains.append(gain(self.get_image_name(i)))
 
-            self._gain = sum(gains) / len(gains)
+            self._mosflm_gain = sum(gains) / len(gains)
 
-            Chatter.write('Estimate gain of %5.2f' % self._gain)
+            Chatter.write('Estimate gain of %5.2f' % self._mosflm_gain)
             
             return
         
@@ -825,7 +825,7 @@ def Mosflm(DriverType = None):
 
             self.start()
 
-            self.input('gain %5.2f' % self._gain)
+            self.input('gain %5.2f' % self._mosflm_gain)
 
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())
@@ -1446,7 +1446,7 @@ def Mosflm(DriverType = None):
             # in here I need to get the GAIN parameter from the sweep
             # or from somewhere in memory....
 
-            self.input('gain %5.2f' % self._gain)
+            self.input('gain %5.2f' % self._mosflm_gain)
 
             # check for resolution limits
             if self._intgr_reso_high > 0.0:
@@ -1510,7 +1510,7 @@ def Mosflm(DriverType = None):
                             Science.write('GAIN found to be %f' % gain)
 
                             # this should probably override the input
-                            self._gain = gain
+                            self._mosflm_gain = gain
 
                             self._mosflm_rerun_integration = True
 
