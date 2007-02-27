@@ -930,13 +930,15 @@ def Mosflm(DriverType = None):
                 # this may be used to decide what to do about "inaccurate
                 # cell parameters" below...
 
-                if 'Rms positional error (mm) as a function of' in o:
+                if 'Rms positional error (mm) as a function of' in o and False:
                     images = map(int, output[i + 1].split()[1:])
                     rms_values = { }
                     rms_values_last = []
                     j = i + 2
                     while output[j].split():
                         # this does horrid things if 10 or more cycles...
+                        # or if there are two many images to it is
+                        # wrapped over multiple lines (bug 2172.)
                         cycle = int(output[j].replace('Cycle', '').split()[0])
                         record = [output[j][k:k + 6] \
                                   for k in range(11, len(output[j]), 6)]
@@ -964,6 +966,65 @@ def Mosflm(DriverType = None):
                     # for j in range(len(images)):
                     # Chatter.write('- %4d %5.3f' % (images[j],
                     # rms_values_last[j]))
+
+                    if rms_values_last:
+                        rmsd_range = max(rms_values_last), min(rms_values_last)
+                    else:
+                        # there must have been a bigger problem than this!
+                        rmsd_range = 1.0, 1.0
+
+                # new implementation...
+
+                if 'Rms positional error (mm) as a function of' in o and True:
+                    images = []
+                    cycles = []
+                    rms_values = { }
+
+                    j = i + 1
+
+                    while output[j].split():
+                        if 'Image' in output[j]:
+                            for image in map(int, output[j].replace(
+                                'Image', '').split()):
+                                images.append(image)
+                        else:
+                            cycle = int(output.replace(
+                                'Cycle', '').split()[0])
+                            if not cycle in cycles:
+                                cycles.append(cycle)
+                                rms_values[cycle] = []
+                            
+                                record = [output[j][k:k + 6] \
+                                          for k in range(
+                                    11, len(output[j]), 6)]
+
+                                data = []
+                                for r in record:
+                                    if r.strip():
+                                        data.append(r.strip())
+                                record = data
+
+                                try:
+                                    values = map(float, record)
+                                    for v in values:
+                                        rms_values[cycle].append(v)
+                                except ValueError, e:
+                                    Chatter.write(
+                                        'Error parsing %s as floats' % \
+                                        output[j][12:])
+                            
+                        j += 1
+                        
+                    # by now we should have recorded everything so...print!
+                    # Chatter.write('Final RMS deviations per image')
+                    # for j in range(len(images)):
+                    # Chatter.write('- %4d %5.3f' % (images[j],
+                    # rms_values_last[j]))
+                    
+                    if cycles:
+                        rms_values_last = rms_values[max(cycles)]
+                    else:
+                        rms_values_last = None
 
                     if rms_values_last:
                         rmsd_range = max(rms_values_last), min(rms_values_last)
