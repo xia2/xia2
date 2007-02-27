@@ -155,7 +155,6 @@ def Pointless(DriverType = None):
             CCP4DriverInstance.__class__.__init__(self)
 
             pointless_version = "1.1.1.c"
-            pointless_version = "1.1.0.9"
             
             self.set_executable('pointless-%s' % pointless_version)
 
