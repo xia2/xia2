@@ -1562,7 +1562,7 @@ def Mosflm(DriverType = None):
                 if data['weighted_residual'] > max_weighted_residual:
                     max_weighted_residual = data['weighted_residual']
             
-            if max_weighted_residual > 2.5:
+            if max_weighted_residual > 3.0:
                 raise BadLatticeError, 'large weighted residual (%4.2f)' % \
                       max_weighted_residual
 
