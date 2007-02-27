@@ -113,6 +113,7 @@ from Handlers.Streams import Chatter
 from Handlers.Exception import DPAException
 
 from Schema.Exceptions.BadLatticeError import BadLatticeError
+from Schema.Exceptions.IntegrationError import IntegrationError
 
 # image header reading functionality
 from Wrappers.XIA.Printheader import Printheader
@@ -372,7 +373,12 @@ class Integrater:
                 # Should be all specific errors which indicate a known problem
                 
                 except BadLatticeError, e:
-                    Chatter.write('Uh oh! %s' % str(e))
+                    Chatter.write('BadLattice! %s' % str(e))
+                    self._intgr_indexer.eliminate()
+                    self._intgr_prepare_done = False
+
+                except IntegrationError, e:
+                    Chatter.write('Integration! %s' % str(e))
                     self._intgr_indexer.eliminate()
                     self._intgr_prepare_done = False
 

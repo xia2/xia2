@@ -228,6 +228,7 @@ from lib.SymmetryLib import lattice_to_spacegroup
 # exceptions
 
 from Schema.Exceptions.BadLatticeError import BadLatticeError
+from Schema.Exceptions.IntegrationError import IntegrationError
 
 def Mosflm(DriverType = None):
     '''A factory for MosflmWrapper classes.'''
@@ -340,7 +341,7 @@ def Mosflm(DriverType = None):
                 # allow a rerun later on, perhaps? c/f integrating TS01
                 # where this failure is an indication that lattice != oI
                 self._mosflm_cell_ref_images = None
-                raise DPAException, 'cannot cope with more than 3 wedges'
+                raise IntegrationError, 'cannot cope with more than 3 wedges'
 
             phi_width = self.get_header_item('phi_width')
 
