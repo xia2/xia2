@@ -376,23 +376,6 @@ class Integrater:
                     self._intgr_indexer.eliminate()
                     self._intgr_prepare_done = False
 
-                # FIXME 08/NOV/06 in here I need to have standard exceptions -
-                # sometimes I use runtime errors, others dpa exceptions...
-                # THE FOLLOWING NEED TO BE RETIRED
-                
-                except DPAException, e:
-                    # fixme I should trap the correct exception here
-                    Chatter.write('Uh oh! %s' % str(e))
-                    self._intgr_indexer.eliminate()
-                    self._intgr_prepare_done = False
-
-                except RuntimeError, e:
-                    Chatter.write('Doh! %s' % str(e))
-                    self._intgr_indexer.eliminate()
-                    self._intgr_prepare_done = False
-
-                # END RETIREMENT BLOCK
-                    
             # FIXED 01/NOV/06 what happens if the integration decides
             # that the lattice is wrong - this would mean that the indexing
             # would be reperformed, which would in turn mean that the
@@ -416,27 +399,11 @@ class Integrater:
 
                 self._intgr_hklout = self._integrate()
 
-            except RuntimeError, e:
-		if 'negative mosaic spread' in e:
-                    Chatter.write('Doh! %s' % str(e))
-                    self._intgr_indexer.eliminate()
-                    self._intgr_prepare_done = False
-                    self._intgr_done = False
-                elif 'very large variation in pixel deviation' in e:
-                    Chatter.write('Doh! %s' % str(e))
-                    self._intgr_indexer.eliminate()
-                    self._intgr_prepare_done = False
-                    self._intgr_done = False
-                elif 'large weighted residual' in str(e):
-                    Chatter.write('Doh! %s' % str(e))
-                    self._intgr_indexer.eliminate()
-                    self._intgr_prepare_done = False
-                    self._intgr_done = False
-		else:
-		    raise e        
-            
-            # to repeat the integration this should reset the 
-            # self._intgr_prepare_done = False flag
+            except BadLatticeError, e:
+                Chatter.write('Uh oh! %s' % str(e))
+                self._intgr_indexer.eliminate()
+                self._intgr_prepare_done = False
+                self._intgr_done = False
 
         # ok, we are indeed "done"...
         

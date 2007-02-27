@@ -38,6 +38,10 @@ from XDSIntegrateHelpers import _parse_integrate_lp
 
 from Handlers.Streams import Chatter
 
+# exceptions
+
+from Schema.Exceptions.BadLatticeError import BadLatticeError
+
 def XDSIntegrate(DriverType = None):
 
     DriverInstance = DriverFactory.Driver(DriverType)
@@ -195,7 +199,8 @@ def XDSIntegrate(DriverType = None):
                 # there was a very large variation in deviation
                 # FIXME 08/JAN/07 this should raise a BadLatticeException
                 
-                raise RuntimeError, 'very large variation in pixel deviation'
+                raise BadLatticeError, \
+                      'very large variation in pixel deviation'
 
             return
 
