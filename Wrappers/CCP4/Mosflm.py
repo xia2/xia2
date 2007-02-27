@@ -988,30 +988,31 @@ def Mosflm(DriverType = None):
                                 'Image', '').split()):
                                 images.append(image)
                         else:
-                            cycle = int(output.replace(
+                            cycle = int(output[j].replace(
                                 'Cycle', '').split()[0])
+                            
                             if not cycle in cycles:
                                 cycles.append(cycle)
                                 rms_values[cycle] = []
                             
-                                record = [output[j][k:k + 6] \
-                                          for k in range(
-                                    11, len(output[j]), 6)]
+                            record = [output[j][k:k + 6] \
+                                      for k in range(
+                                11, len(output[j]), 6)]
 
-                                data = []
-                                for r in record:
-                                    if r.strip():
-                                        data.append(r.strip())
+                            data = []
+                            for r in record:
+                                if r.strip():
+                                    data.append(r.strip())
                                 record = data
-
-                                try:
-                                    values = map(float, record)
-                                    for v in values:
-                                        rms_values[cycle].append(v)
-                                except ValueError, e:
-                                    Chatter.write(
-                                        'Error parsing %s as floats' % \
-                                        output[j][12:])
+                                    
+                            try:
+                                values = map(float, record)
+                                for v in values:
+                                    rms_values[cycle].append(v)
+                            except ValueError, e:
+                                Chatter.write(
+                                    'Error parsing %s as floats' % \
+                                    output[j][12:])
                             
                         j += 1
                         
