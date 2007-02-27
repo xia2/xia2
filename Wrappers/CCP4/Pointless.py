@@ -461,6 +461,7 @@ def Pointless(DriverType = None):
                                     best_likelihood = likelihood
                                     best_r = r_merge
                                     best_delta = delta
+                                    correct_delta = delta
 
             if best_laue:
                 # the solution pointless gave is probably wrong!
@@ -608,6 +609,7 @@ if __name__ == '__main__':
     p = Pointless()
 
     p.set_hklin(hklin)
+    p.write_log_file('pointless.log')
 
     pointgroup = True
 
