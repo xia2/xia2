@@ -93,7 +93,7 @@
 # set parameter" dictionary and are therefore recycled, in the same way
 # that the GAIN currently works.
 #
-# FIXME 23/AUG/06 If the mosaic spread is refined to a negative number
+# FIXED 23/AUG/06 If the mosaic spread is refined to a negative number
 #                 during the cell refinement, raise an exception asserting  
 #                 that the lattice is wrong. This should eliminate that 
 #                 lattice and all possibilities above it in symmetry from
@@ -122,7 +122,7 @@
 # (Gives minimum spot separation before spots are flagged as overlapping.
 # Suitable parameters will be determined automatically.
 # 
-# FIXME 23/AUG/06 Yet another one, though this may apply more to a higher
+# FIXED 23/AUG/06 Yet another one, though this may apply more to a higher
 #                 level application than this module - there should be an
 #                 "estimate resolution" during the integration, so that
 #                 the final set contains good measurements, good profiles.
@@ -171,7 +171,7 @@
 #                 GAIN (however this could be weak - assess the benefit in
 #                 repeating the integration.)
 #
-# FIXME 06/FEB/07 need to be able to track the autoindex solution number,
+# FIXED 06/FEB/07 need to be able to track the autoindex solution number,
 #                 so in cases where I want an exact solution I can fetch 
 #                 it out from the list of solutions and FORCE mosflm
 #                 to give me the right answer.
