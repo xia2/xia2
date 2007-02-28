@@ -221,7 +221,7 @@ from MosflmHelpers import _happy_integrate_lp, \
 from Modules.GainEstimater import gain
 from Handlers.Files import FileHandler
 
-from lib.Guff import auto_logfiler
+from lib.Guff import auto_logfiler, mean_sd
 from lib.SymmetryLib import lattice_to_spacegroup
 
 # exceptions
@@ -1612,6 +1612,15 @@ def Mosflm(DriverType = None):
             images.sort()
             
             max_weighted_residual = 0.0
+
+            # FIXME bug 2175 this should probably look at the distribution
+            # of values rather than the peak, since this is probably a better
+            # diagnostic of a poor lattice.
+
+            residuals = [parsed_output[i]['weighted_residual'] for i in images]
+
+            Chatter.write('Weighted RMSD ~ %5.2f (%5.2f)' % \
+                          mean_sd(residuals))
             
             for i in images:
                 data = parsed_output[i]
