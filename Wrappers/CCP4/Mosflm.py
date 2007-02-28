@@ -1619,8 +1619,10 @@ def Mosflm(DriverType = None):
 
             residuals = [parsed_output[i]['weighted_residual'] for i in images]
 
-            Chatter.write('Weighted RMSD ~ %5.2f (%5.2f)' % \
-                          mean_sd(residuals))
+            mean, sd = mean_sd(residuals)
+
+            Chatter.write('Weighted RMSD: %.2f (%.2f)' % \
+                          (mean, sd))
             
             for i in images:
                 data = parsed_output[i]
@@ -1628,9 +1630,12 @@ def Mosflm(DriverType = None):
                 if data['weighted_residual'] > max_weighted_residual:
                     max_weighted_residual = data['weighted_residual']
             
-            if max_weighted_residual > 3.0:
+            if max_weighted_residual > 3.0 and False:
                 raise BadLatticeError, 'large weighted residual (%4.2f)' % \
                       max_weighted_residual
+
+            if mean > 2.0:
+                raise BadLatticeError, 'large mean residual (%.2f)' % mean
 
             # if we have not processed to a given resolution, fix
             # the limit for future reference
