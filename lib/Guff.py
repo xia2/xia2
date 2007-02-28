@@ -14,6 +14,7 @@
 
 import os
 import sys
+import sys
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
@@ -59,6 +60,14 @@ def nifty_power_of_ten(num):
         result *= 10
 
     return result
+
+def mean_sd(list_of_numbers):
+    mean = sum(list_of_numbers) / len(list_of_numbers)
+    sd = 0.0
+    for l in list_of_numbers:
+        sd += (l - mean) * (l - mean)
+    sd / = len(list_of_numbers)
+    return (mean, math.sqrt(sd))    
 
 ##### START MESSY CODE #####
 
