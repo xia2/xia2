@@ -66,7 +66,7 @@ def mean_sd(list_of_numbers):
     sd = 0.0
     for l in list_of_numbers:
         sd += (l - mean) * (l - mean)
-    sd / = len(list_of_numbers)
+    sd /= len(list_of_numbers)
     return (mean, math.sqrt(sd))    
 
 ##### START MESSY CODE #####
