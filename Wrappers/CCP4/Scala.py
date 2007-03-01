@@ -129,8 +129,9 @@ def Scala(DriverType = None):
             self._secondary = 6
 
             # this defines how many cycles of
-            # scaling we're allowing before convergence
-            self._cycles = 20
+            # scaling we're allowing before convergence - make this
+            # a much larger number for bug # 2008
+            self._cycles = 100
 
             # less common parameters - see scala manual page:
             # (C line 1800)
