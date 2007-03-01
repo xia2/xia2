@@ -7,7 +7,7 @@
 #
 # 30/OCT/06
 #
-# An empty integrater - this presents the Scaler interface but does 
+# An empty scaler - this presents the Scaler interface but does 
 # nothing, making it ideal for when you have the reduced data already -
 # this will simply return that reduced data...
 #
@@ -47,9 +47,20 @@ class NullScalerImplementation(Scaler):
         so that that information may come from some modification of
         a .xinfo file.'''
 
+        Scaler.__init__(self)
+
         # the following need to be configured:
         # self._scalr_scaled_reflection_files - dictionary containing file
-        #                                       links
+        #                                       links - this will want to
+        #                                       have a structure like:
+        #
+        # ['sca'][WAVELENGTH] = filename - for merged scalepack
+        # ['sca_unmerged'][WAVELENGTH] = filename - for unmerged
+        # ['mtz_merged_free'] = filename - merged cadded + free mtz
+        #
+        # so these are the only formats which there is any value in
+        # transforming to/from.
+        # 
         # self._scalr_statistics - dictionary containing statistics from
         #                          scaling
         # self._scalr_cell - canonical unit cell from data reduction
@@ -91,8 +102,43 @@ class NullScalerImplementation(Scaler):
         # There are other tokens defined but they are not very interesting
         # at the moment...
 
+        return
+
+    def add_scaled_reflection_file(self, type, wavelength = None, filename):
+        '''Add a reflection file keyed by type and optionally wavelength
+        (for e.g. scalepack files).'''
+
+        if not wavelength:
+            self._scalr_scaled_reflection_files[type] = filename
+        else:
+            self._scalr_scaled_reflection_files[type][wavelength] = filename
 
         return
 
-    pass
+    def set_scaler_statistics(self, statistics_dictionary):
+        '''Set the scaling statistics for later return.'''
+
+        # transform from .xinfo format to scaler dictionary
+
+        xinfo_to_internal = {
+            'I_SIGMA':'I/Sigma',
+            'R_MERGE':'Rmerge',
+            'N_REF':'Total observations',
+            'N_REF_UNIQUE':'Total unique'
+            }
+
+        # store statistics
+        
+        self._scalr_statistics = { }
+
+        for token in statistics_dictionary.keys():
+            if token in xinfo_to_internal.keys:
+                self._scalr_statistics[xinfo_to_internal[
+                    token]] = statistics_dictionary[token]
+            else:
+                self._scalr_statistics[token.replace(' ', '_').upper(
+                    )] = statistics_dictionary[token]
+
+        return
+            
 

@@ -1483,6 +1483,10 @@ class CCP4Scaler(Scaler):
         # convert reflection files to .sca format - use mtz2various for this
 
         self._scalr_scaled_reflection_files['sca'] = { }
+
+        # this is confusing as it implicitly iterates over the keys of the
+        # dictionary
+        
         for key in scaled_reflection_files:
             file = scaled_reflection_files[key]
             m2v = self.Mtz2various()
@@ -1537,7 +1541,8 @@ class CCP4Scaler(Scaler):
 
         # convert I's to F's in Truncate
 
-        self._scalr_scaled_reflection_files['mtz'] = { }
+        # 01MAR07 no longer have this...
+        # self._scalr_scaled_reflection_files['mtz'] = { }
         for key in scaled_reflection_files.keys():
             file = scaled_reflection_files[key]
             t = self.Truncate()
@@ -1575,7 +1580,8 @@ class CCP4Scaler(Scaler):
             scaled_reflection_files[key] = hklout
 
             # record the separated reflection file too
-            self._scalr_scaled_reflection_files['mtz'][key] = hklout
+            # 01MAR07 no longer have this
+            # self._scalr_scaled_reflection_files['mtz'][key] = hklout
 
         # standardise the unit cells and relabel each of the columns in
         # each reflection file appending the DNAME to the column name
@@ -1765,6 +1771,10 @@ class CCP4Scaler(Scaler):
             '_free.mtz'))
         
         f.add_free_flag()
+
+        # remove 'mtz_merged' from the dictionary - this is made
+        # redundant by the merged free...
+        del self._scalr_scaled_reflection_files['mtz_merged']
 
         self._scalr_scaled_reflection_files['mtz_merged_free'] = f.get_hklout()
 
