@@ -209,7 +209,7 @@ if __name__ == '__main__':
 
     # original hand
 
-    bp3 = BP3
+    bp3 = BP3()
     
     bp3.set_hklin(nsi.get_scaled_reflections('mtz'))
     bp3.set_hklout('demo_phased.mtz')
@@ -227,7 +227,7 @@ if __name__ == '__main__':
     
     # other hand - spag still P212121
 
-    bp3oh = BP3
+    bp3oh = BP3()
     
     bp3oh.set_hklin(nsi.get_scaled_reflections('mtz'))
     bp3oh.set_hklout('demo_phased_oh.mtz')
