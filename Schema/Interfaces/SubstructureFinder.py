@@ -139,7 +139,7 @@ class SubstructureFinder:
         return self._ssfnd_sites
 
     def substructure_find_set_name(self, name):
-        '''Set a name name.'''
+        '''Set a name.'''
 
         self._ssfnd_name = name
 

@@ -108,12 +108,13 @@ class HyssSubstructureFinder(SubstructureFinder):
     def _substructure_find_prepare(self):
         '''Prepare the data for site location using shelxc.'''
 
-        try:
+        # try:
+        if True:
             shelxc = Shelxc()
             Admin.write('Using shelxc to prepare HA data.')
             self._shelxc_prepare_data()
-        except exceptions.Exception, e:
-            Admin.write('No shelxc? %s' % str(e))
+        # except exceptions.Exception, e:
+        # Admin.write('No shelxc? %s' % str(e))
 
         return
 

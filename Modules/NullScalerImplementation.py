@@ -182,9 +182,32 @@ if __name__ == '__main__':
     nsi = NullScalerImplementation()
 
     nsi.add_scaled_reflection_file('mtz', hklin)
+    nsi.set_scaler_cell((57.74, 76.92, 86.57, 90.00, 90.00, 90.00))
 
-    print nsi.get_scaled_reflections('sca')
+    # print nsi.get_scaled_reflections('sca')
 
+    # run a real test - search for HA sites...
+
+    from HyssSubstructureFinder import HyssSubstructureFinder
+
+    hssf = HyssSubstructureFinder()
+
+    hssf.substructure_find_add_wavelength_info('INFL', 0.97950, -12.1, 5.8)
+    hssf.substructure_find_add_wavelength_info('LREM', 1.00000, -2.5, 0.5)
+    hssf.substructure_find_add_wavelength_info('PEAK', 0.97934, -10.0, 6.9)
+
+    hssf.substructure_find_set_n_sites(5)
+    hssf.substructure_find_set_atom('se')
+    hssf.substructure_find_set_spacegroup('P 21 21 21')
+    hssf.substructure_find_set_scaler(nsi)
+    hssf.substructure_find_set_name('demo')
+
+    hssf.find()
+
+    
+    
+    
+    
     
                                    
     
