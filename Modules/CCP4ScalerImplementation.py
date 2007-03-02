@@ -1782,7 +1782,8 @@ class CCP4Scaler(Scaler):
         # redundant by the merged free...
         del self._scalr_scaled_reflection_files['mtz_merged']
 
-        self._scalr_scaled_reflection_files['mtz_merged_free'] = f.get_hklout()
+        # changed from mtz_merged_free to plain ol' mtz
+        self._scalr_scaled_reflection_files['mtz'] = f.get_hklout()
 
         # have a look for twinning ...
 

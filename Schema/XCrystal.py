@@ -240,6 +240,8 @@ class XCrystal(Object):
         for wavelength in self._wavelengths.keys():
             result += str(self._wavelengths[wavelength])
 
+        # this is now deprecated - be explicit in what you are
+        # asking for...
         reflections_all = self.get_scaled_merged_reflections()
         statistics_all = self._get_scaler().get_scaler_statistics()
 
@@ -502,6 +504,11 @@ class XCrystal(Object):
         merged reflections for this XCrystal.'''
 
         return self._get_scaler().get_scaled_merged_reflections()
+
+    def get_scaled_reflections(self, format):
+        '''Get specific reflection files.'''
+
+        return self._get_scaler().get_scaled_reflections(format)
 
     def _get_scaler(self):
         if self._scaler is None:

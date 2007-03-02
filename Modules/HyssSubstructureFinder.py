@@ -63,8 +63,9 @@ class HyssSubstructureFinder(SubstructureFinder):
         # present => being able to run come kind of mtz2sca to
         # regenerate them...
 
-        scafiles = self._ssfnd_scaler.get_scaled_merged_reflections(
-            )['sca']
+        # scafiles = self._ssfnd_scaler.get_scaled_merged_reflections(
+        # )['sca']
+        scafiles = self._ssfnd_scaler.get_scaled_reflections('sca')
         wavelengths = scafiles.keys()
 
         # do the reflection file stuff - FIXED this should
@@ -132,8 +133,9 @@ class HyssSubstructureFinder(SubstructureFinder):
             hyss.set_cell(self._ssfnd_scaler.get_scaler_cell())
 
         else:
-            hyss.set_hklin(self._ssfnd_scaler.get_scaled_merged_reflections(
-                )['mtz_merged_free'])
+            # hyss.set_hklin(self._ssfnd_scaler.get_scaled_merged_reflections(
+            # )['mtz_merged_free'])
+            hyss.set_hklin(self._ssfnd_scaler.get_scaled_reflections('mtz'))
 
         # set the spacegroup and number of sites
 
