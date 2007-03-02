@@ -222,6 +222,7 @@ if __name__ == '__main__':
     # use only those wavelengths with anomalous difference
     for dname in ['INFL', 'PEAK']:
         a = Abs()
+        a.write_log_file('orig%s.log' % dname)
         a.set_sites(sites)
         a.set_hklin(nsi.get_scaled_reflections('mtz'))
         a.add_dataset(dname)
@@ -231,6 +232,7 @@ if __name__ == '__main__':
             this_votes += 1
 
         a = Abs()
+        a.write_log_file('invr%s.log' % dname)
         a.set_sites(inverted)
         a.set_hklin(nsi.get_scaled_reflections('mtz'))
         a.add_dataset(dname)
