@@ -73,7 +73,7 @@ def Shelxc(DriverType = None):
             80 characters - so it it is longer than this copy the file.'''
 
             if len(file) < 70:
-                return
+                return file
 
             shutil.copyfile(file,
                             os.path.join(self.get_working_directory(),
