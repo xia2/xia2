@@ -28,6 +28,7 @@ class Mtz2Scalepack:
     def __init__(self):
         self._hklin = None
         self._working_directory = os.getcwd()
+        self._hklout = { }
 
         return
 
@@ -75,11 +76,17 @@ class Mtz2Scalepack:
             pname, xname, dname = tuple(d.split('/'))
             m2 = self.Mtz2various()
             m2.set_hklin(self._hklin)
-            m2.set_hklout('%s_%s_scaled_%s.sca' % (pname, xname, dname))
+            m2.set_hklout(os.path.join(
+                self._working_directory,
+                '%s_%s_scaled_%s.sca' % \
+                (pname, xname, dname)))
             m2.set_suffix(dname)
             m2.convert()
 
-        return
+            # record this for external access
+            self._hklout[dname] = m2.get_hklout()
+
+        return self._hklout
 
 if __name__ == '__main__':
     # then run a test...
@@ -91,6 +98,6 @@ if __name__ == '__main__':
     
     m2s = Mtz2Scalepack()
     m2s.set_hklin(hklin)
-    m2s.convert()
+    print m2s.convert()
 
         
