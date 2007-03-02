@@ -197,6 +197,11 @@ from lib.Guff import inherits_from
 
 from Handlers.Streams import Chatter
 
+# file conversion (and merging) jiffies
+
+from Modules.Scalepack2Mtz import Scalepack2Mtz
+from Modules.Mtz2Scalepack import Mtz2Scalepack
+
 class Scaler:
     '''An interface to present scaling functionality in a similar way to the
     integrater interface.'''
@@ -247,6 +252,8 @@ class Scaler:
 
         # admin junk
         self._working_directory = os.getcwd()
+        self._scalr_pname = None
+        self._scalr_xname = None
 
         return
 
@@ -262,6 +269,19 @@ class Scaler:
 
     def get_working_directory(self):
         return self._working_directory 
+
+    def set_scaler_project_info(self, pname, xname):
+        '''Set the project and crystal this scaler is working with.'''
+
+        self._scalr_pname = pname
+        self._scalr_xname = xname
+
+        return
+
+    def get_scaler_project_info(self):
+        '''Get the scaler project and crystal.'''
+
+        return self._scalr_pname, self._scalr_xname
 
     def set_scaler_prepare_done(self, done = True):
         self._scalr_prepare_done = done
@@ -366,6 +386,60 @@ class Scaler:
         # FIXME this result payload probably shouldn't exist...
 
         return self._scalr_result
+
+    def get_scaled_reflections(self, format):
+        '''Get a specific format of scaled reflection files. This may
+        trigger transmogrification of files.'''
+
+        if not format in ['mtz', 'sca', 'sca_unmerged']:
+            raise RuntimeError, 'format %s unknown' % format
+
+        self.scale()
+        
+        if format in self._scalr_scaled_reflection_files.keys():
+            return self._scalr_scaled_reflection_files[format]
+
+        # specific code to handle generation cases
+
+        if format == 'sca_unmerged':
+            raise RuntimeError, 'cannot generate unmerged reflections'
+
+        if format == 'mtz':
+            # generate and return an mtz file - ideally this will be from
+            # merged reflections, though unmerged will do - though this
+            # will need the unit cell information etc. Aha! this is
+            # available from this interface...
+
+            cell = self.get_scaler_cell()
+            spacegroup = self.get_scaler_likely_spacegroups()[0]
+
+            wavelengths = self._scalr_scaled_reflection_files['sca'].keys()
+            project, crystal = self.get_scaler_project_info()
+
+            s2m = Scalepack2Mtz()
+
+            for w in wavelengths:
+                s2m.add_hklin(w, self._scalr_scaled_reflection_files[
+                    'sca'][w])
+            s2m.set_cell(cell)
+            s2m.set_spacegroup(spacegroup)
+            s2m.set_project_info(project, crystal)
+
+            self._scalr_scaled_reflection_files['mtz'] = s2m.convert()
+            return self._scalr_scaled_reflection_files['mtz']
+
+        if format == 'sca':
+            # generate merged scalepack format reflections from the mtz
+            # format
+
+            m2s = Mtz2Scalepack()
+
+            m2s.set_hklin(self._scalr_scaled_reflection_files['mtz'])
+            self._scalr_scaled_reflection_files['sca'] = m2s.convert()
+            return self._scalr_scaled_reflection_files['sca']
+
+        raise RuntimeError, 'cannot possibly reach this point'
+                
 
     def get_scaled_merged_reflections(self):
         '''Return the reflection files and so on.'''
