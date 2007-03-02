@@ -202,12 +202,69 @@ if __name__ == '__main__':
     hssf.substructure_find_set_scaler(nsi)
     hssf.substructure_find_set_name('demo')
 
-    hssf.find()
+    sites = hssf.substructure_find_get_sites()
 
+    from Wrappers.CCP4.BP3 import BP3
+    from lib.SubstructureLib import invert_hand
+
+    # original hand
+
+    bp3 = BP3
     
+    bp3.set_hklin(nsi.get_scaled_reflections('mtz'))
+    bp3.set_hklout('demo_phased.mtz')
+    bp3.set_sites(sites)
     
+    bp3.add_dataset('INFL', -12.1, 5.8)
+    bp3.add_dataset('LREM', -2.5, 0.5)
+    bp3.add_dataset('PEAK', -10.0, 6.9)
+
+    bp3.set_biso(12.0)
+    bp3.set_xname(nsi.get_scaler_project_info()[1])
+    bp3.write_log_file('demo_phased.log')
+
+    bp3.phase()
     
+    # other hand - spag still P212121
+
+    bp3oh = BP3
     
+    bp3oh.set_hklin(nsi.get_scaled_reflections('mtz'))
+    bp3oh.set_hklout('demo_phased_oh.mtz')
+    bp3oh.set_sites(invert_hand(sites))
     
-                                   
+    bp3oh.add_dataset('INFL', -12.1, 5.8)
+    bp3oh.add_dataset('LREM', -2.5, 0.5)
+    bp3oh.add_dataset('PEAK', -10.0, 6.9)
+
+    bp3oh.set_biso(12.0)
+    bp3oh.set_xname(nsi.get_scaler_project_info()[1])
+    bp3oh.write_log_file('demo_phased_oh.log')
+
+    bp3oh.phase()
+    
+    # do some DM
+
+    from Wrappers.CCP4.DM import DM
+
+    # original hand
+
+    dm = DM()
+
+    dm.set_hklin('demo_phased.mtz')
+    dm.set_hklout('demo_dm.mtz')
+    dm.set_solvent(0.500)
+    dm.write_log_file('demo_dm.log')
+    dm.improve_phases()
+    
+    # other hand...
+
+    dmoh = DM()
+
+    dmoh.set_hklin('demo_phased.mtz')
+    dmoh.set_hklout('demo_dm_oh.mtz')
+    dmoh.set_solvent(0.500)
+    dmoh.write_log_file('demo_dm_oh.log')
+    dmoh.improve_phases()
+    
     
