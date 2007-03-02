@@ -86,7 +86,7 @@ def Abs(DriverType = None):
                     if score < 0.01:
                         self._atoms_good = False
                     if score > 0.02:
-                        self._atoms_good = False
+                        self._atoms_good = True
                         
                 if '*correct configuration*' in o:
                     self._correct_hand = True
@@ -94,7 +94,7 @@ def Abs(DriverType = None):
                     if score < 0.01:
                         self._atoms_good = False
                     if score > 0.02:
-                        self._atoms_good = False
+                        self._atoms_good = True
                     
             return self._correct_hand, self._atoms_good
 
