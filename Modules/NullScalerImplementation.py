@@ -205,66 +205,154 @@ if __name__ == '__main__':
     sites = hssf.substructure_find_get_sites()
 
     from Wrappers.CCP4.BP3 import BP3
+    from Wrappers.CCP4.Abs import Abs
+    from Wrappers.CCP4.Reindex import Reindex
+    from Wrappers.CCP4.DM import DM
+    
+    from lib.SymmetryLib import compute_enantiomorph
     from lib.SubstructureLib import invert_hand
 
-    # original hand
+    # decide the hand of the substructure
 
-    bp3 = BP3()
+    this_votes = 0
+    other_votes = 0
+
+    inverted = invert_hand(sites)
+
+    # use only those wavelengths with anomalous difference
+    for dname in ['INFL', 'PEAK']:
+        a = Abs()
+        a.set_sites(sites)
+        a.set_hklin(nsi.get_scaled_reflections('mtz'))
+        a.add_dataset(dname)
+        hand = a.decide_hand()
+
+        if hand[0]:
+            this_votes += 1
+
+        a = Abs()
+        a.set_sites(inverted)
+        a.set_hklin(nsi.get_scaled_reflections('mtz'))
+        a.add_dataset(dname)
+        hand = a.decide_hand()
+
+        if hand[0]:
+            other_votes += 1
+
+    correct_sites = None
+
+    spacegroup = 'P 21 21 21'
+
+    if this_votes > 0 and other_votes == 0:
+        correct_sites = sites
+        print 'sites in correct hand'
+    elif other_votes > 0 and this_votes == 0:
+        print 'sites in inverted hand'
+        correct_sites = inverted
+        spacegroup = compute_enantiomorph(spacegroup)
+
+        # perhaps reindex data to correct spacegroup
+        
+    else:
+        print 'sites handedness uncertain'
+
+
+    if not correct_sites:
+
+        bp3 = BP3()
+        
+        bp3.set_hklin(nsi.get_scaled_reflections('mtz'))
+        bp3.set_hklout('demo_phased.mtz')
+        bp3.set_sites(sites)
+        
+        bp3.add_dataset('INFL', -12.1, 5.8)
+        bp3.add_dataset('LREM', -2.5, 0.5)
+        bp3.add_dataset('PEAK', -10.0, 6.9)
+        
+        bp3.set_biso(12.0)
+        bp3.set_xname(nsi.get_scaler_project_info()[1])
+        bp3.write_log_file('demo_phased.log')
+        
+        bp3.phase()
+
+        enantiomorph = compute_enantiomorph(spacegroup)
+
+        if enantiomorph != spacegroup:
     
-    bp3.set_hklin(nsi.get_scaled_reflections('mtz'))
-    bp3.set_hklout('demo_phased.mtz')
-    bp3.set_sites(sites)
+            spacegroup = enantiomorph
+
+            r = Reindex()
+            r.set_hklin(nsi.get_scaled_reflections('mtz'))
+            r.set_hklout('demo_enantiomorph')
+            r.set_spacegroup(spacegroup)
+            r.reindex()
+
+            hklin = 'demo_enantiomorph.mtz'
+
+        else:
+
+            hklin = nsi.get_scaled_reflections('mtz')
+
+        bp3oh = BP3()
+        
+        bp3oh.set_hklin(hklin)
+        bp3oh.set_hklout('demo_phased_oh.mtz')
+        bp3oh.set_sites(invert_hand(sites))
+        
+        bp3oh.add_dataset('INFL', -12.1, 5.8)
+        bp3oh.add_dataset('LREM', -2.5, 0.5)
+        bp3oh.add_dataset('PEAK', -10.0, 6.9)
+        
+        bp3oh.set_biso(12.0)
+        bp3oh.set_xname(nsi.get_scaler_project_info()[1])
+        bp3oh.write_log_file('demo_phased_oh.log')
+        
+        bp3oh.phase()
+        
+        # do some DM
+        
+        # original hand
+        
+        dm = DM()
+        
+        dm.set_hklin('demo_phased.mtz')
+        dm.set_hklout('demo_dm.mtz')
+        dm.set_solvent(0.500)
+        dm.write_log_file('demo_dm.log')
+        dm.improve_phases()
+        
+        # other hand...
+        
+        dmoh = DM()
+        
+        dmoh.set_hklin('demo_phased_oh.mtz')
+        dmoh.set_hklout('demo_dm_oh.mtz')
+        dmoh.set_solvent(0.500)
+        dmoh.write_log_file('demo_dm_oh.log')
+        dmoh.improve_phases()
     
-    bp3.add_dataset('INFL', -12.1, 5.8)
-    bp3.add_dataset('LREM', -2.5, 0.5)
-    bp3.add_dataset('PEAK', -10.0, 6.9)
+    else:
 
-    bp3.set_biso(12.0)
-    bp3.set_xname(nsi.get_scaler_project_info()[1])
-    bp3.write_log_file('demo_phased.log')
-
-    bp3.phase()
-    
-    # other hand - spag still P212121
-
-    bp3oh = BP3()
-    
-    bp3oh.set_hklin(nsi.get_scaled_reflections('mtz'))
-    bp3oh.set_hklout('demo_phased_oh.mtz')
-    bp3oh.set_sites(invert_hand(sites))
-    
-    bp3oh.add_dataset('INFL', -12.1, 5.8)
-    bp3oh.add_dataset('LREM', -2.5, 0.5)
-    bp3oh.add_dataset('PEAK', -10.0, 6.9)
-
-    bp3oh.set_biso(12.0)
-    bp3oh.set_xname(nsi.get_scaler_project_info()[1])
-    bp3oh.write_log_file('demo_phased_oh.log')
-
-    bp3oh.phase()
-    
-    # do some DM
-
-    from Wrappers.CCP4.DM import DM
-
-    # original hand
-
-    dm = DM()
-
-    dm.set_hklin('demo_phased.mtz')
-    dm.set_hklout('demo_dm.mtz')
-    dm.set_solvent(0.500)
-    dm.write_log_file('demo_dm.log')
-    dm.improve_phases()
-    
-    # other hand...
-
-    dmoh = DM()
-
-    dmoh.set_hklin('demo_phased.mtz')
-    dmoh.set_hklout('demo_dm_oh.mtz')
-    dmoh.set_solvent(0.500)
-    dmoh.write_log_file('demo_dm_oh.log')
-    dmoh.improve_phases()
-    
-    
+        bp3 = BP3()
+        
+        bp3.set_hklin(nsi.get_scaled_reflections('mtz'))
+        bp3.set_hklout('demo_phased.mtz')
+        bp3.set_sites(correct_sites)
+        
+        bp3.add_dataset('INFL', -12.1, 5.8)
+        bp3.add_dataset('LREM', -2.5, 0.5)
+        bp3.add_dataset('PEAK', -10.0, 6.9)
+        
+        bp3.set_biso(12.0)
+        bp3.set_xname(nsi.get_scaler_project_info()[1])
+        bp3.write_log_file('demo_phased.log')
+        
+        bp3.phase()
+        
+        dm = DM()
+        
+        dm.set_hklin('demo_phased.mtz')
+        dm.set_hklout('demo_dm.mtz')
+        dm.set_solvent(0.500)
+        dm.write_log_file('demo_dm.log')
+        dm.improve_phases()
