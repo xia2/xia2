@@ -29,11 +29,6 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Wrappers.CCP4.Mtzdump import Mtzdump
 from Schema.Interfaces.Scaler import Scaler
 
-# file conversion (and merging) jiffies
-
-from Modules.Scalepack2Mtz import Scalepack2Mtz
-from Modules.Mtz2Scalepack import Mtz2Scalepack
-
 class NullScalerImplementation(Scaler):
     '''A null scaler implementation which looks like a real scaler
     but actually does nothing but wrap a couple of reflection files.
@@ -102,16 +97,31 @@ class NullScalerImplementation(Scaler):
         # There are other tokens defined but they are not very interesting
         # at the moment...
 
+        self._scalr_scaled_reflection_files = { }
+
         return
 
-    def add_scaled_reflection_file(self, type, wavelength = None, filename):
-        '''Add a reflection file keyed by type and optionally wavelength
+    def add_scaled_reflection_file(self, format_tuple, filename):
+        '''Add a reflection file keyed by format and optionally wavelength
         (for e.g. scalepack files).'''
 
-        if not wavelength:
-            self._scalr_scaled_reflection_files[type] = filename
+        if type(format_tuple) == type('string'):
+            format_tuple = (format_tuple,)
+
+        if len(format_tuple) == 1:
+            format = format_tuple[0]
+            wavelength = None
         else:
-            self._scalr_scaled_reflection_files[type][wavelength] = filename
+            format = format_tuple[0]
+            wavelength = format_tuple[1]
+        
+        if not wavelength:
+            self._scalr_scaled_reflection_files[format] = filename
+        else:
+            self._scalr_scaled_reflection_files[format][wavelength] = filename
+
+        # hack to allow the scale method to get started
+        self._scalr_integraters['fake!'] = True
 
         return
 
@@ -141,4 +151,40 @@ class NullScalerImplementation(Scaler):
 
         return
             
+    def set_scaler_cell(self, cell):
+        self._scalr_cell = cell
+        return
 
+    def set_scaler_likely_spacegroups(self, likely_spacegroups):
+        self._scalr_likely_spacegroups = likely_spacegroups
+
+        return
+
+    # null methods
+
+    def _scale_prepare(self):
+        pass
+
+    def _scale(self):
+        pass
+
+    # that should be enough...
+
+if __name__ == '__main__':
+
+    # run some tests - these are based on the unit tests for the
+    # Mtz2Scalepack and Scalepack2mtz modules...
+
+    hklin = os.path.join(os.environ['X2TD_ROOT'],
+                         'Test', 'UnitTest', 'Interfaces',
+                         'Scaler', 'Merged', 'TS00_13185_merged_free.mtz')
+
+    nsi = NullScalerImplementation()
+
+    nsi.add_scaled_reflection_file('mtz', hklin)
+
+    print nsi.get_scaled_reflections('sca')
+
+    
+                                   
+    

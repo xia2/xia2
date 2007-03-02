@@ -314,6 +314,12 @@ class CCP4Scaler(Scaler):
             if self._common_dname != dname:
                 self._common_dname = None
 
+        # record the project and crystal in the scaler interface - for
+        # future reference
+
+        self._scalr_pname = self._common_pname
+        self._scalr_xname = self._common_xname
+
         # FIXME 06/NOV/06 and before, need to merge the first reflection
         # file in the "correct" pointgroup, so that the others can be
         # reindexed against this - this will ensure consistent indexing

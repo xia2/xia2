@@ -458,7 +458,7 @@ class Scaler:
         self.scale()
 
         return self._scalr_statistics
-        
+    
     def get_scaler_cell(self):
         '''Return the final unit cell from scaling.'''
 
