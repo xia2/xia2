@@ -87,6 +87,9 @@ class BP3PhaseComputer(PhaseComputer):
         # see if we can get a consensus on the correct hand for the
         # input atoms - if we can then store whether we need to
         # switch to the enantiomorph or no
+
+        # maybe reindex the input reflections to the enantiomorphic
+        # spacegroup
     
         return
 
@@ -95,7 +98,13 @@ class BP3PhaseComputer(PhaseComputer):
     # it should use the "correct" hand if this is "known" - this may involve
     # links to the enantiomorph stuff for spacegroups &c.
 
-    
+    def _phase_compute(self):
+        '''Actually perform the phase calculation.'''
+
+        # decide if we need to refine the sites or if straight phasing
+        # will be ok
+
+        return
 
     pass
 

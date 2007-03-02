@@ -67,9 +67,10 @@ class PhaseCalculator:
         # &c.
         # reflection_file would have to be available somewhere from
         # scaler - or perhaps could be the key name to the scaler
-        # reflection file dictionary
+        # reflection file dictionary - yes this is a better idea.
+        # for instance as a format.
         
-        self._pcr_input_form_factors_etc = { }
+        self._pcr_wave_form_factor_info = { }
         self._pcr_b_factor = 0.0
 
         # a place to store a scaler where much of the raw information
