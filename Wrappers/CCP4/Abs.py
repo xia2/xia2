@@ -41,7 +41,7 @@ def Abs(DriverType = None):
             # need the input columns arranged in data sets
             # assert that these are called F(+)_INFL &c. for
             # wavelength INFL.
-            self._input_datasets = []
+            self._input_dataset = None
 
             self._correct_hand = None
             self._atoms_good = None
@@ -53,14 +53,17 @@ def Abs(DriverType = None):
             self._sites = sites
             return
 
-        def add_dataset(self, dname):
-            self._input_datasets.append(dname)
+        def set_dataset(self, dname):
+            self._input_dataset = dname
             return
 
         def decide_hand(self):
             '''Perform phasing on the input data.'''
 
             self.check_hklin()
+
+            if not self._input_dataset:
+                raise RuntimeError, 'dataset not assigned'
 
             self.start()
 
@@ -69,10 +72,10 @@ def Abs(DriverType = None):
                 self.input('atom %f %f %f' % tuple(site['fractional']))
 
             self.input('resolution 3.0')
-            for dname in self._input_datasets[:1]:
-                labin = 'labin F=F_%s SIGF=SIGF_%s ' + \
-                        'DANO=DANO_%s SIGDANO=SIGDANO_%s'
-                self.input(labin % (dname, dname, dname, dname))
+            dname = self._input_dataset
+            labin = 'labin F=F_%s SIGF=SIGF_%s ' + \
+                    'DANO=DANO_%s SIGDANO=SIGDANO_%s'
+            self.input(labin % (dname, dname, dname, dname))
 
             self.close_wait()
 
@@ -129,7 +132,7 @@ if __name__ == '__main__':
         
         abs.set_hklin(hklin)
         abs.set_sites(sites)
-        abs.add_dataset(dataset)
+        abs.set_dataset(dataset)
 
         print abs.decide_hand()
 
@@ -142,7 +145,7 @@ if __name__ == '__main__':
         
         abs.set_hklin(hklin)
         abs.set_sites(sites_invert)
-        abs.add_dataset(dataset)
+        abs.set_dataset(dataset)
 
         print abs.decide_hand()
     

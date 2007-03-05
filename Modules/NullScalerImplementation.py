@@ -225,7 +225,7 @@ if __name__ == '__main__':
         a.write_log_file('orig%s.log' % dname)
         a.set_sites(sites)
         a.set_hklin(nsi.get_scaled_reflections('mtz'))
-        a.add_dataset(dname)
+        a.set_dataset(dname)
         hand = a.decide_hand()
 
         if hand[0]:
@@ -235,7 +235,7 @@ if __name__ == '__main__':
         a.write_log_file('invr%s.log' % dname)
         a.set_sites(inverted)
         a.set_hklin(nsi.get_scaled_reflections('mtz'))
-        a.add_dataset(dname)
+        a.set_dataset(dname)
         hand = a.decide_hand()
 
         if hand[0]:
