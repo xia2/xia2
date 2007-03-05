@@ -140,6 +140,7 @@ from Handlers.Streams import Chatter, Science
 
 # this was rather complicated - now simpler!
 from lib.SymmetryLib import lauegroup_to_lattice
+from Handlers.Syminfo import Syminfo
 
 def Pointless(DriverType = None):
     '''A factory for PointlessWrapper classes.'''
@@ -242,11 +243,14 @@ def Pointless(DriverType = None):
             # FIXME I manually need to check for errors here....
 
             hklin_spacegroup = ''
+            hklin_lattice = ''
 
             for o in self.get_all_output():
 
                 if 'Spacegroup from HKLIN file' in o:
+
                     hklin_spacegroup = o.split(':')[-1].strip()
+                    hklin_lattice = Syminfo.get_lattice(hklin_spacegroup)
 
                 if 'No alternative indexing possible' in o:
                     # then the XML file will be broken - no worries...
@@ -410,11 +414,29 @@ def Pointless(DriverType = None):
                         else:
                             raise RuntimeError, 'something horribly wrong'
 
+                        if lattice == hklin_lattice:
+                            bias = True
+                        else:
+                            bias = False
+
+                        # Chatter.write(
+                        # 'Reference:   %5.2f %s %4.2f %4.2f'  % \
+                        # (netzc, lattice, r_merge, delta))
+
                     else:
                         # otherwise, have a look at the likelihood - if it is 
                         # within 0.1 of the "correct" answer, have a look at
                         # the NetZc and if it is much better then consider
                         # that the other solution may indeed be correct.
+
+                        if lattice == hklin_lattice:
+                            bias = True
+                        else:
+                            bias = False
+
+                        # Chatter.write(
+                        # 'Alternative: %5.2f %s %4.2f %4.2f' % \
+                        # (netzc, lattice, r_merge, delta))
                     
                         if math.fabs(likelihood - self._totalprob) < 1:
                             if netzc - correct_netzc > 1.0:
@@ -443,9 +465,13 @@ def Pointless(DriverType = None):
                         # for TS01 NATIVE this is around 0.5... require delta
                         # also measurable (e.g. not exactly 0.0)
 
+                        # if this is the same lattice as the input then
+                        # be biased towards it!
+
                         if math.fabs(likelihood - self._totalprob) < 1:
-                            if correct_r / r_merge > 1.5 and \
-                                   correct_delta > 0.1:
+                            if (correct_r / r_merge > 1.5 or \
+                                bias and correct_r / r_merge > 1.25) \
+                                   and correct_delta > 0.1:
                                 if netzc > 0.0:
                                     # this is perhaps more likely?
                                     Science.write(
