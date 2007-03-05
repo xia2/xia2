@@ -541,16 +541,17 @@ def Mosflm(DriverType = None):
                 # so we have to resort to this instead...
                 if 'Refining solution #' in o:
                     spagnum = int(o.split(')')[0].split()[-1])
-                    lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5,
-                                             'oP':16, 'oC':20, 'oF':22,
-                                             'oI':23, 'tP':75, 'tI':79,
-                                             'hP':143, 'hR':146,
-                                             'cP':195, 'cF':196,
-                                             'cI':197}
+                    lattice_to_spacegroup_dict = {'aP':1, 'mP':3, 'mC':5,
+                                                  'oP':16, 'oC':20, 'oF':22,
+                                                  'oI':23, 'tP':75, 'tI':79,
+                                                  'hP':143, 'hR':146,
+                                                  'cP':195, 'cF':196,
+                                                  'cI':197}
 
                     spacegroup_to_lattice = { }
-                    for k in lattice_to_spacegroup.keys():
-                        spacegroup_to_lattice[lattice_to_spacegroup[k]] = k
+                    for k in lattice_to_spacegroup_dict.keys():
+                        spacegroup_to_lattice[
+                            lattice_to_spacegroup_dict[k]] = k
                     self._indxr_lattice = spacegroup_to_lattice[spagnum]
 
                     
