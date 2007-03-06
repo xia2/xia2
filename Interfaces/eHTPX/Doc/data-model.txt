@@ -1,0 +1,226 @@
+Data Model Requirements for e-HTPX / XIA2 
+Graeme Winter
+6/MAR/07
+Version 0.1
+
+Functionality.
+--------------
+
+The xia2 software currently has the capability to reduce X-Ray diffraction
+data from raw diffraction images to properly reduced reflection files 
+with only a limited amount of input. Future versions will extend this 
+functionality but will not be described here.
+
+Input.
+------
+
+The input for xia2 is encapsulated in the .xinfo file, an example of which
+follows in an appendix. The key information here is:
+
+project and crystal id -  which are both short strings (< 20 characters, 
+                          for example) which contain
+                          only a-z, A-Z, 0-9, _. 
+
+sweep definitions - define where the images which have been collected 
+                    can be found. In the web service implementation this 
+                    will be replaced with a URI and the understanding that
+                    the web service may be required to "fetch" the data to
+                    a local disk.
+
+crystal metadata - in particular the sequence and heavy atom information - 
+                   these are optional but may help the data reduction.
+
+wavelength definitions - these describe how the data were measured and are
+                         critical to properly reducing the data.
+
+This defines all of the blocks. Some of the information in here already
+has mmCIF definitions, so here is a mapping from .xinfo to mmCIF:
+
+[some of these may need to be modified]
+
+.xinfo -> mmCIF
+
+ATOM -> atom_type_symbol (e.g. SE for selenium)
+AA_SEQUENCE -> entity_poly_seq
+
+BEGIN WAVELENGTH -> diffrn_radiation_wavelength_id
+WAVELENGTH -> diffrn_radiation_wavelength_wavelength
+F' -> scat_dispersion_real
+F'' -> scat_dospersion_imag
+
+BEAM -> diffrn_detector_element_center
+BEGIN SWEEP -> diffrn_id
+
+Other Changes:
+
+IMAGE + DIRECTORY -> URI e.g. ftp://e-htpx.diamond.ac.uk/data/gw56/16FEB07/XTAL1/SWEEP1/sweep_1_001.img
+
+EPOCH -> date + time [xml schema definitions] 
+
+That should be enough to achieve a reasonably standards compliant XML.
+
+Output.
+-------
+
+There is a lot of output from xia2. Some of this will be already in a 
+standards compliant form e.g. the mmCIF harvesting files, and the 
+MTZ reflection files. However there will be some data which we would like to 
+display as a summary in a report - this should be transformed from the
+log file to a standards compliant XML for return from the service, as these
+definitions may want to be recorded in the portal database as a summary of
+the results. The relevent information is included in an appendix.
+
+Again here is a mapping from these tokens (which can be written out in a 
+structured way) to standard IUCR names:
+
+xia2 -> mmCIF
+
+High resolution limit -> d_res_high
+Low resolution limit -> d_res_low
+
+Completeness -> diff_percent_meas
+Multiplicity -> multiplicity
+I/sigma -> meanI_over_sd_all
+Rmerge -> Rmerge_I_all
+Rmeas(I) -> ***UNDEFINED*** use Rmeas_I_all
+Rmeas(I+/-) -> ***UNDEFINED*** use Rmeas_I_pm
+Rpim(I) -> ***UNDEFINED*** use Rpim_I_all
+Rpim(I+/-) -> ***UNDEFINED*** use Rpim_I_pm
+Wilson B factor -> B_iso_Wilson_estimate
+Partial bias -> mean_fract_bias
+
+Total observations -> number_measured_all
+Total unique -> number_unique_all
+
+For "Anomalous" prefix with anom_
+
+Some of these tokens have more than one number associated with them - 
+this is because the data are divided up into "overall" and the lowest
+and highest resolution bins. For the purposes of this XML we will write
+back only two sets of data, the "overall" and "highest resolution".
+These will need to be contained in two data structures with the same 
+definition but identified differently by e.g.
+
+diffraction_statistics resolution_bin="highest"
+diffraction_statistics resolution_bin="overall"
+
+Appendix: Example .xinfo File.
+------------------------------
+
+BEGIN PROJECT 1VME
+
+BEGIN CRYSTAL 10301
+
+BEGIN AA_SEQUENCE
+
+MPKIWTERIFDDPEIYVLRIDDDRIRYFEAVWEIPEGISYNAYLVKLNGANVLIDGWKGNYAKEFIDALS
+KIVDPKEITHIIVNHTEPDHSGSLPATLKTIGHDVEIIASNFGKRLLEGFYGIKDVTVVKDGEEREIGGK
+KFKFVMTPWLHWPDTMVTYLDGILFSCDVGGGYLLPEILDDSNESVVERYLPHVTKYIVTVIGHYKNYIL
+EGAEKLSSLKIKALLPGHGLIWKKDPQRLLNHYVSVAKGDPKKGKVTVIYDSMYGFVENVMKKAIDSLKE
+KGFTPVVYKFSDEERPAISEILKDIPDSEALIFGVSTYEAEIHPLMRFTLLEIIDKANYEKPVLVFGVHG
+WAPSAERTAGELLKETKFRILSFTEIKGSNMDERKIEEAISLLKKELE
+
+END AA_SEQUENCE
+
+BEGIN HA_INFO
+ATOM SE
+NUMBER_PER_MONOMER 6
+END HA_INFO
+
+BEGIN WAVELENGTH INFL
+WAVELENGTH 0.979029
+F' -11.3
+F'' 3.89
+END WAVELENGTH INFL
+
+BEGIN WAVELENGTH HREM
+WAVELENGTH 0.898407
+F' -1.5
+F'' 3.2
+END WAVELENGTH HREM
+
+BEGIN SWEEP INFL
+WAVELENGTH INFL
+BEAM 157.57 157.38
+IMAGE 10301_1_E1_001.img
+DIRECTORY /panfs/dl/home/gwin/data/1vme/data/jcsg/ssrl1/9_2/20040415/collection/TM0755/10301/
+EPOCH 1
+END SWEEP INFL
+
+BEGIN SWEEP HREM
+WAVELENGTH HREM
+BEAM 157.57 157.38
+IMAGE 10301_1_E2_001.img
+DIRECTORY /panfs/dl/home/gwin/data/1vme/data/jcsg/ssrl1/9_2/20040415/collection/TM0755/10301/
+EPOCH 2
+END SWEEP HREM
+
+BEGIN SWEEP HREM_LR
+WAVELENGTH HREM
+BEAM 157.57 157.38
+IMAGE 10301_2_001.img
+DIRECTORY /panfs/dl/home/gwin/data/1vme/data/jcsg/ssrl1/9_2/20040415/collection/TM0755/10301/
+EPOCH 3
+END SWEEP HREM_LR
+
+BEGIN SWEEP HREM_HR
+WAVELENGTH HREM
+BEAM 157.57 157.38
+IMAGE 10301_3_001.img
+DIRECTORY /panfs/dl/home/gwin/data/1vme/data/jcsg/ssrl1/9_2/20040415/collection/TM0755/10301/
+EPOCH 4
+END SWEEP HREM_HR
+
+END CRYSTAL 10301
+END DATASET 1VME
+
+
+Appendix: Example Output.
+-------------------------
+
+For 1VME/10301/HREM
+High resolution limit                    	1.72	5.45	1.72
+Low resolution limit                     	95.78	95.78	1.82
+Completeness                             	99.6	100.0	97.5
+Multiplicity                             	12.4	15.8	5.6
+I/sigma                                  	17.4	43.8	2.3
+Rmerge                                   	0.1	0.06	0.557
+Rmeas(I)                                 	0.107	0.069	0.659
+Rmeas(I+/-)                              	0.107	0.065	0.672
+Rpim(I)                                  	0.027	0.018	0.271
+Rpim(I+/-)                               	0.038	0.023	0.368
+Wilson B factor                          	22.619
+Partial bias                             	-0.011	-0.016	-0.05
+Anomalous completeness                   	99.1	94.6
+Anomalous multiplicity                   	6.2	2.8
+Anomalous correlation                    	0.093	-0.011
+Anomalous slope                          	1.007
+Total observations                       	1221306.0	50898.0	78443.0
+Total unique                             	98113.0	3219.0	13908.0
+
+For 1VME/10301/INFL
+High resolution limit                    	1.72	5.45	1.72
+Low resolution limit                     	95.78	95.78	1.82
+Completeness                             	74.1	97.8	18.7
+Multiplicity                             	6.4	7.0	3.9
+I/sigma                                  	18.7	35.9	2.1
+Rmerge                                   	0.056	0.037	0.575
+Rmeas(I)                                 	0.074	0.064	0.798
+Rmeas(I+/-)                              	0.066	0.043	0.802
+Rpim(I)                                  	0.028	0.024	0.397
+Rpim(I+/-)                               	0.035	0.022	0.557
+Wilson B factor                          	26.409
+Partial bias                             	-0.011	-0.014	-0.028
+Anomalous completeness                   	73.8	18.2
+Anomalous multiplicity                   	3.3	2.0
+Anomalous correlation                    	0.372	0.023
+Anomalous slope                          	1.341
+Total observations                       	467859.0	21828.0	10422.0
+Total unique                             	72922.0	3138.0	2646.0
+
+Assuming spacegroup: P 1 21 1
+Unit cell:
+55.179  95.708  89.928
+90.000  95.444  90.000
+Likely number of molecules in ASU: 2
+Giving solvent fraction:        0.53
