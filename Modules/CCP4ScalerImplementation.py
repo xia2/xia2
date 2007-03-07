@@ -492,8 +492,12 @@ class CCP4Scaler(Scaler):
                 
                 ordered_lattices = lattices_in_order()
                 ordered_lattices.reverse()
+
+                Chatter.write('All lattices: %s' % str(ordered_lattices))
                 
                 possible = pl.get_possible_lattices()
+
+                Chatter.write('Possible lattices: %s' % str(possible))
                 
                 likely = []
                 for l in ordered_lattices:

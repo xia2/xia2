@@ -393,8 +393,10 @@ def Pointless(DriverType = None):
 
                     lattice = lauegroup_to_lattice(lauegroup)
                     if not lattice in self._possible_lattices:
+                        # this is out of date - the likelihood is no
+                        # longer really reliable...
                         if math.fabs(likelihood -
-                                     self._totalprob) < 0.15:
+                                     self._totalprob) < 1.0:
                             self._possible_lattices.append(lattice)
                             self._lattice_to_laue[lattice] = lauegroup
                     
