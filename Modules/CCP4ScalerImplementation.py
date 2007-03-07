@@ -506,6 +506,13 @@ class CCP4Scaler(Scaler):
 
                 original_pointgroup = pl.get_pointgroup()
 
+                # FIXME this does not work quire right...
+                # try this!
+                
+                likely = possible
+
+                correct_lattice = None
+
                 Chatter.write('Possible lattices (pointless):')
                 for lattice in likely:
                     Chatter.write('... %s' % lattice)
@@ -547,6 +554,10 @@ class CCP4Scaler(Scaler):
                             '... will reprocess accordingly')
                         
                         need_to_return = True
+
+                        correct_lattice = lattice
+
+                        break
 
             if rerun_pointless:
                 pl.set_correct_lattice(correct_lattice)
