@@ -489,6 +489,7 @@ class CCP4Scaler(Scaler):
             if indexer:
                 # FIXED 05/DEC/06 this needs to really be run
                 # in order of decreasing pointgroup...
+                # uhh nope!
                 
                 ordered_lattices = lattices_in_order()
                 ordered_lattices.reverse()
@@ -552,6 +553,13 @@ class CCP4Scaler(Scaler):
                             'Accepted lattice %s ...' % lattice)
                         Chatter.write(
                             '... will reprocess accordingly')
+
+                        # reset the integrater - need to find
+                        # a way to do this by magic (FIXME)
+                        self._sweep_information[epoch][
+                            'integrater'].set_integrater_prepare_done(False)
+                        self._sweep_information[epoch][
+                            'integrater'].set_integrater_done(False)
                         
                         need_to_return = True
 
