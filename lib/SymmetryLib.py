@@ -189,9 +189,12 @@ def lattices_in_order():
 
     spacegroup_to_lattice = { }
 
+    # FIXME this should = lattice!
+
     for lattice in lattices:
         spacegroup_to_lattice[lattice_to_spacegroup(lattice)
-                              ] = lattice_to_spacegroup(lattice)
+                              ] = lattice
+    # lattice_to_spacegroup(lattice)
 
     spacegroups = spacegroup_to_lattice.keys()
     spacegroups.sort()
