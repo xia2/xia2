@@ -631,7 +631,9 @@ def Mosflm(DriverType = None):
             as False.'''
 
             # generate the gain if necessary
-            self._estimate_gain()
+            # bug 2199 remove this it only makes things less
+            # reliable...
+            # self._estimate_gain()
 
             self.reset()
             auto_logfiler(self)
@@ -829,7 +831,8 @@ def Mosflm(DriverType = None):
 
             self.start()
 
-            self.input('gain %5.2f' % self._mosflm_gain)
+            if self._mosflm_gain:
+                self.input('gain %5.2f' % self._mosflm_gain)
 
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())
@@ -1503,7 +1506,8 @@ def Mosflm(DriverType = None):
             # in here I need to get the GAIN parameter from the sweep
             # or from somewhere in memory....
 
-            self.input('gain %5.2f' % self._mosflm_gain)
+            if self._mosflm_gain:
+                self.input('gain %5.2f' % self._mosflm_gain)
 
             # check for resolution limits
             if self._intgr_reso_high > 0.0:
