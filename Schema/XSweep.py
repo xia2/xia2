@@ -197,6 +197,9 @@ class XSweep(Object):
         if not wavelength.__class__.__name__ == 'XWavelength':
             pass
 
+        # FIXME bug 2221 if DIRECTORY starts with ~/ or ~graeme (say) need to
+        # interpret this properly - e.g. map it to a full PATH.
+
         self._name = name
         self._wavelength = wavelength
         self._directory = directory
