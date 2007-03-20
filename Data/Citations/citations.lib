@@ -83,6 +83,20 @@ doi = {10.1107/S0907444905036693},
 url = {http://dx.doi.org/10.1107/S0907444905036693},
 }
 </citation>
+<citation program="mosflm">
+@article{Leslie:ba5082,
+author = "Leslie, Andrew G. W.",
+title = "{The integration of macromolecular diffraction data}",
+journal = "Acta Crystallographica Section D",
+year = "2006",
+volume = "62",
+number = "1",
+pages = "48--57",
+month = "Jan",
+doi = {10.1107/S0907444905039107},
+url = {http://dx.doi.org/10.1107/S0907444905039107},
+}
+</citation>
 </citations>
 
  
