@@ -87,6 +87,9 @@ class _Citations:
 
         contents = { }
 
+        # default values
+        contents['volume'] = ''
+
         for token in bibtex.split('\n'):
             if '=' in token:
                 name, value = tuple(token.split('='))
