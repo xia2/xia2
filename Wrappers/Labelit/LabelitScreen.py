@@ -112,6 +112,7 @@ from Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
 
 from lib.Guff import auto_logfiler
 from Handlers.Streams import Chatter
+from Handlers.Citations import Citations
 
 def LabelitScreen(DriverType = None):
     '''Factory for LabelitScreen wrapper classes, with the specified
@@ -247,6 +248,11 @@ def LabelitScreen(DriverType = None):
         def _index(self):
             '''Actually index the diffraction pattern. Note well that
             this is not going to compute the matrix...'''
+
+            # acknowledge this program
+
+            Citations.cite('labelit')
+            Citations.cite('distl')
 
             self.reset()
 

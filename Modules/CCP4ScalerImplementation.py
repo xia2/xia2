@@ -132,6 +132,7 @@ from Wrappers.CCP4.Sfcheck import Sfcheck as _Sfcheck
 
 from Handlers.Streams import Chatter
 from Handlers.Files import FileHandler
+from Handlers.Citations import Citations
 
 # jiffys
 from lib.Guff import is_mtz_file, nifty_power_of_ten, auto_logfiler
@@ -257,6 +258,12 @@ class CCP4Scaler(Scaler):
         data. This should sort together the reflection files, ensure that
         they are correctly indexed (via pointless) and generally tidy
         things up.'''
+
+        # acknowledge all of the programs we are about to use...
+
+        Citations.cite('pointless')
+        Citations.cite('scala')
+        Citations.cite('ccp4')
 
         # ---------- GATHER ----------
 

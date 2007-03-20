@@ -25,6 +25,7 @@ sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 from Handlers.CommandLine import CommandLine
 from Handlers.Streams import Chatter
 from Handlers.Files import cleanup
+from Handlers.Citations import Citations
 
 from XIA2Version import Version
 
@@ -87,6 +88,19 @@ def xia2():
 
     # delete all of the temporary mtz files...
     cleanup()
+
+    # tell the user which programs were used...
+    Chatter.write('XIA2 used...')
+    for citation in Citations.get_citations_acta():
+        Chatter.write(citation)
+
+    # and write the bibtex versions
+    out = open('xia-citations.bib', 'w')
+
+    for citation in Citations.get_citations():
+        out.write('%s\n' % citation)
+
+    out.close()
     
     return
 

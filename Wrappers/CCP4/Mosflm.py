@@ -210,6 +210,7 @@ from Schema.Interfaces.Integrater import Integrater
 # output streams &c.
 
 from Handlers.Streams import Admin, Science, Status, Chatter
+from Handlers.Citations import Citations
 
 # helpers
 
@@ -405,6 +406,8 @@ def Mosflm(DriverType = None):
                             
         def _index(self):
             '''Implement the indexer interface.'''
+
+            Citations.cite('mosflm')
 
             self.reset()
 
@@ -644,6 +647,9 @@ def Mosflm(DriverType = None):
         def _integrate(self):
             '''Implement the integrater interface.'''
 
+            # cite the program
+            Citations.cite('mosflm')
+
             # FIXME in here I want to be able to work "fast" or "slow"
             # if fast, ignore cell refinement (i.e. to get the pointless
             # output quickly.) 30/OCT/06 decide that this is is not
@@ -676,7 +682,7 @@ def Mosflm(DriverType = None):
             self._mosflm_rerun_integration = False
 
             wd = self.get_working_directory()
-
+ 
             # if not fast:
             # self.reset()
             # auto_logfiler(self)
