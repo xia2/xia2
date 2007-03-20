@@ -46,7 +46,7 @@ class _FileHandler:
                                     '%s.log' % f.replace(' ', '_'))
             shutil.copyfile(self._log_files[f],
                             filename)
-            out.write('Copied log file %s to %s' % \
+            out.write('Copied log file %s to %s\n' % \
                       (self._log_files[f],
                        filename))
 
