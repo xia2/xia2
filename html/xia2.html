@@ -408,10 +408,14 @@ END PROJECT TS01
 
     <p>Changes since 0.2.5</p>
     <ul>
-      <!-- <li>Support PATH including tilde on UNIX systems.</li> -->
       <li>GAIN estimation temporarily removed.</li>
       <li>Pointgroup evaluation fixed - found a major gremlin in there</li>
+      <li>Allow environment variables and tilde in DIRECTORY token:
+	<pre>DIRECTORY $DATA/example or ~/data or %DATA%/example (win32)</pre>
+      </li>
     </ul>
+
+
 
     <p>Changes since 0.2.4</p>
 
@@ -535,7 +539,7 @@ END PROJECT TS01
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Mon Mar 19 13:46:37 GMT Standard Time 2007
+Last modified: Tue Mar 20 11:23:44 GMT Standard Time 2007
 <!-- hhmts end -->
   </body>
 </html>
