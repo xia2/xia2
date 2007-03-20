@@ -1,0 +1,88 @@
+<citations>
+<citation program="xds">
+@article{Kabsch:wi0022,
+author = "Kabsch, W.",
+title = "{Automatic indexing of rotation diffraction patterns}",
+journal = "Journal of Applied Crystallography",
+year = "1988",
+volume = "21",
+number = "1",
+pages = "67--72",
+month = "Feb",
+doi = {10.1107/S0021889887009737},
+url = {http://dx.doi.org/10.1107/S0021889887009737},
+}
+</citation>
+<citation program="xds">
+@article{Kabsch:wi0031,
+author = "Kabsch, W.",
+title = "{Evaluation of single-crystal X-ray diffraction data from a position-sensitive detector}",
+journal = "Journal of Applied Crystallography",
+year = "1988",
+volume = "21",
+number = "6",
+pages = "916--924",
+month = "Dec",
+doi = {10.1107/S0021889888007903},
+url = {http://dx.doi.org/10.1107/S0021889888007903},
+}
+</citation>
+<citation program="xds">
+@article{Kabsch:wi0124,
+author = "Kabsch, W.",
+title = "{Automatic processing of rotation diffraction data from crystals of initially unknown symmetry and cell constants}",
+journal = "Journal of Applied Crystallography",
+year = "1993",
+volume = "26",
+number = "6",
+pages = "795--800",
+month = "Dec",
+doi = {10.1107/S0021889893005588},
+url = {http://dx.doi.org/10.1107/S0021889893005588},
+}
+</citation>
+<citation program="labelit">
+@article{Sauter:dd5008,
+author = "Sauter, Nicholas K. and Grosse-Kunstleve, Ralf W. and Adams, Paul D.",
+title = "{Robust indexing for automatic data collection}",
+journal = "Journal of Applied Crystallography",
+year = "2004",
+volume = "37",
+number = "3",
+pages = "399--409",
+month = "Jun",
+doi = {10.1107/S0021889804005874},
+url = {http://dx.doi.org/10.1107/S0021889804005874},
+}
+</citation>
+<citation program="d*TREK">
+@article{Pflugrath:ba0030,
+author = "Pflugrath, J. W.",
+title = "{The finer things in X-ray diffraction data collection}",
+journal = "Acta Crystallographica Section D",
+year = "1999",
+volume = "55",
+number = "10",
+pages = "1718--1725",
+month = "Oct",
+doi = {10.1107/S090744499900935X},
+url = {http://dx.doi.org/10.1107/S090744499900935X},
+}
+</citation>
+<citation program="pointless">
+@article{Evans:ba5084,
+author = "Evans, Philip",
+title = "{Scaling and assessment of data quality}",
+journal = "Acta Crystallographica Section D",
+year = "2006",
+volume = "62",
+number = "1",
+pages = "72--82",
+month = "Jan",
+doi = {10.1107/S0907444905036693},
+url = {http://dx.doi.org/10.1107/S0907444905036693},
+}
+</citation>
+</citations>
+
+ 
