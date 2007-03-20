@@ -41,6 +41,26 @@ doi = {10.1107/S0021889893005588},
 url = {http://dx.doi.org/10.1107/S0021889893005588},
 }
 </citation>
+<citation program="ccp4">
+@article{bailey1994csp,
+  title={{The CCP4 suite: programs for protein crystallography}},
+  author={Bailey, S.},
+  journal={Acta Crystallogr. D},
+  volume={50},
+  pages={760--763},
+  year={1994}
+}
+</citation>
+<citation program="distl">
+@article{zhang2006adi,
+  title={{Automated diffraction image analysis and spot searching for high-throughput crystal screening}},
+  author={Zhang, Z. and Sauter, N.K. and van den Bedem, H. and Snell, G. and Deacon, A.M.},
+  journal={J. Appl. Cryst},
+  volume={39},
+  pages={112--119},
+  year={2006}
+}
+</citation>
 <citation program="labelit">
 @article{Sauter:dd5008,
 author = "Sauter, Nicholas K. and Grosse-Kunstleve, Ralf W. and Adams, Paul D.",
@@ -95,6 +115,33 @@ pages = "48--57",
 month = "Jan",
 doi = {10.1107/S0907444905039107},
 url = {http://dx.doi.org/10.1107/S0907444905039107},
+}
+</citation>
+<citation program="denzo">
+@article{otwinowski1997pxr,
+  title={{Processing of X-ray diffraction data in oscillation mode}},
+  author={Otwinowski, Z. and Minor, W.},
+  journal={Methods Enzymol},
+  volume={276},
+  pages={307--326},
+  year={1997}
+}
+</citation>
+<citation program="mosflm">
+@article{leslie1992rcm,
+  title={{Recent changes to the MOSFLM package for processing film and image plate data}},
+  author={Leslie, AGW},
+  journal={Joint CCP4 and ESFEACMB Newsletter on Protein Crystallography},
+  volume={26},
+  year={1992}
+}
+</citation>
+<citation program="scala">
+@article{evans1997smd,
+  title={{Scaling of MAD data}},
+  author={Evans, P.R.},
+  journal={Proceedings of CCP4 Study Weekend},
+  year={1997}
 }
 </citation>
 </citations>
