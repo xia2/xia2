@@ -164,6 +164,7 @@ global_integration_parameters = _global_integration_parameters()
 
 from Experts.FindImages import image2template, find_matching_images, \
      template_directory_number2image, image2template_directory
+from Experts.Filenames import expand_path
 
 # image header reading functionality
 from Wrappers.XIA.Printheader import Printheader
@@ -202,9 +203,10 @@ class XSweep(Object):
 
         self._name = name
         self._wavelength = wavelength
-        self._directory = directory
+        self._directory = expand_path(directory)
         self._image = image
-        self._integrated_reflection_file = integrated_reflection_file
+        self._integrated_reflection_file = expand_path(
+            integrated_reflection_file)
         self._epoch = epoch
 
         # to allow first, last image for processing to be
