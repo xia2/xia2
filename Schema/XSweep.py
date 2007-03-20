@@ -201,12 +201,15 @@ class XSweep(Object):
         # FIXME bug 2221 if DIRECTORY starts with ~/ or ~graeme (say) need to
         # interpret this properly - e.g. map it to a full PATH.
 
+        directory = expand_path(directory)
+        integrated_reflection_file = expand_path(
+            integrated_reflection_file)
+
         self._name = name
         self._wavelength = wavelength
-        self._directory = expand_path(directory)
+        self._directory = directory
         self._image = image
-        self._integrated_reflection_file = expand_path(
-            integrated_reflection_file)
+        self._integrated_reflection_file = integrated_reflection_file
         self._epoch = epoch
 
         # to allow first, last image for processing to be

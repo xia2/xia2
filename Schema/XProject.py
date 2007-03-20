@@ -48,12 +48,12 @@ class XProject(Object):
 
         self._crystals = { }
         if xinfo_file:
-            try:
-                self.setup_from_xinfo_file(xinfo_file)
-            except exceptions.Exception, e:
-                # there was an error in this .xinfo file...
-                raise RuntimeError, 'Error "%s" parsing .xinfo file:\n%s' % \
-                      (str(e), open(xinfo_file, 'r').read())
+            #try:
+            self.setup_from_xinfo_file(xinfo_file)
+            #except exceptions.Exception, e:
+            # there was an error in this .xinfo file...
+            #raise RuntimeError, 'Error "%s" parsing .xinfo file:\n%s' % \
+            # (str(e), open(xinfo_file, 'r').read())
         else:
             self._name = None
 

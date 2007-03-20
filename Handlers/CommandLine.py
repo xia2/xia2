@@ -110,11 +110,11 @@ class _CommandLine(Object):
             raise RuntimeError, '%s (%s)' % \
                   (self._help_resolution_limit(), str(e))
 
-        try:
-            self._read_xinfo()
-        except exceptions.Exception, e:
-            raise RuntimeError, '%s (%s)' % \
-                  (self._help_xinfo(), str(e))
+        # try:
+        self._read_xinfo()
+        # except exceptions.Exception, e:
+        # raise RuntimeError, '%s (%s)' % \
+        # (self._help_xinfo(), str(e))
 
         return
 
@@ -347,6 +347,7 @@ class _CommandLine(Object):
             raise RuntimeError, 'negative index'
 
         self._xinfo = XProject(sys.argv[index + 1])
+            
         return
 
     def _help_xinfo(self):

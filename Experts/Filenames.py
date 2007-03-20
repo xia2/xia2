@@ -49,11 +49,15 @@ def windows_environment_vars_to_unix(token):
 def expand_path(path):
     '''Expand the input to give a full path.'''
 
+    if path is None:
+        return None
+
     if os.name == 'nt':
         return os.path.expandvars(os.path.expanduser(
             windows_environment_vars_to_unix(path)))
     else:
         return os.path.expandvars(os.path.expanduser(path))
+            
 
 if __name__ == '__main__':
 
