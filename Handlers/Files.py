@@ -64,7 +64,9 @@ class _FileHandler:
             self._log_file_keys.append(tag)
 
     def record_temporary_file(self, filename):
-        self._temporary_files.append(filename)
+        # allow for file overwrites etc.
+        if not filename in self._temporary_files:
+            self._temporary_files.append(filename)
         return
 
 FileHandler = _FileHandler()
