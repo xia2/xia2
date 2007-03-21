@@ -90,7 +90,15 @@ def xia2():
     cleanup()
 
     # tell the user which programs were used...
-    Chatter.write('XIA2 used...')
+
+    used = ''
+    for program in Citations.get_programs():
+        used += ' %s' % program
+
+    Chatter.write('XIA2 used... %s' % used)
+    Chatter.write(
+        'Here are the appropriate citations (BIBTeX in xia-citations.bib.)')
+
     for citation in Citations.get_citations_acta():
         Chatter.write(citation)
 

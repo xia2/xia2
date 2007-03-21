@@ -47,6 +47,13 @@ class _Citations:
 
         return
 
+    def get_programs(self):
+        '''Get a list of all of the programs which have been cited.'''
+        
+        result = [c for c in self._cited]
+        result.sort()
+        return result
+
     def get_citations(self):
         '''Get a list of bibtex records of citations.'''
 
@@ -117,3 +124,5 @@ if __name__ == '__main__':
 
     for citation in Citations.get_citations_acta():
         print citation
+
+    print Citations.get_programs()
