@@ -63,8 +63,14 @@ class _Stream:
             return None
         
         for r in record.split('\n'):
-            result = self._file.write('[%s]  %s\n' % (self._prefix, r.strip()))
-        self._file.flush()
+            if self._prefix:
+                result = self._file.write('[%s]  %s\n' %
+                                          (self._prefix, r.strip()))
+            else:
+                result = self._file.write('%s\n' %
+                                          (r.strip()))
+
+            self._file.flush()
 
         if self._otherstream and forward:
             self._otherstream.write(record)
@@ -91,7 +97,7 @@ Science = _Stream('xia-science', 'SCI-')
 Admin = _Stream('xia-admin', 'ADMN')
 Status = _Stream('xia-status', 'STAT')
 Chatter = _Stream('xia2', 'XIA2')
-Stdout = _Stream(None, 'XIA2')
+Stdout = _Stream(None, None)
 
 Science.join(Chatter)
 Admin.join(Chatter)
