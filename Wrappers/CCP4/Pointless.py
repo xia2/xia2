@@ -139,7 +139,7 @@ from Decorators.DecoratorFactory import DecoratorFactory
 from Handlers.Streams import Chatter, Science
 
 # this was rather complicated - now simpler!
-from lib.SymmetryLib import lauegroup_to_lattice
+from lib.SymmetryLib import lauegroup_to_lattice, spacegroup_name_xHM_to_old
 from Handlers.Syminfo import Syminfo
 
 def Pointless(DriverType = None):
@@ -250,8 +250,9 @@ def Pointless(DriverType = None):
                 if 'Spacegroup from HKLIN file' in o:
 
                     # hklin_spacegroup = o.split(':')[-1].strip()
-                    hklin_spacegroup = o.replace(
-                        'Spacegroup from HKLIN file :', '').strip()
+                    hklin_spacegroup = spacegroup_name_xHM_to_old(
+                        o.replace(
+                        'Spacegroup from HKLIN file :', '').strip())
                     hklin_lattice = Syminfo.get_lattice(hklin_spacegroup)
 
                 if 'No alternative indexing possible' in o:

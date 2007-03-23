@@ -60,6 +60,35 @@ def lattice_to_spacegroup(lattice):
     
     return _lattice_to_spacegroup[lattice]
 
+def spacegroup_name_xHM_to_old(xHM):
+    '''Convert to an old name.'''
+
+    # generate mapping table
+
+    mapping = { }
+    current_old = ''
+    current_xHM = ''
+
+    for line in open(syminfo, 'r').readlines():
+        if line[0] == '#':
+            continue
+
+        if 'symbol old' in line:
+            current_old = line.split('\'')[1]
+
+        if 'symbol xHM' in line:
+            current_xHM = line.split('\'')[1]
+
+        if 'end_spacegroup' in line:            
+            mapping[current_xHM] = current_old
+
+    xHM = xHM.upper()
+
+    if not xHM in mapping.keys():
+        raise RuntimeError, 'spacegroup %s unknown' % xHM
+
+    return mapping[xHM]
+    
 def spacegroup_name_old_to_xHM(old):
     '''Convert from old to xHM name.'''
 
