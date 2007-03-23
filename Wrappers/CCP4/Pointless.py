@@ -249,7 +249,9 @@ def Pointless(DriverType = None):
 
                 if 'Spacegroup from HKLIN file' in o:
 
-                    hklin_spacegroup = o.split(':')[-1].strip()
+                    # hklin_spacegroup = o.split(':')[-1].strip()
+                    hklin_spacegroup = o.replace(
+                        'Spacegroup from HKLIN file :', '').strip()
                     hklin_lattice = Syminfo.get_lattice(hklin_spacegroup)
 
                 if 'No alternative indexing possible' in o:
