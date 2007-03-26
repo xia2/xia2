@@ -150,7 +150,7 @@ def print_sweeps():
         sweeps.sort()
         for s in sweeps:
 
-            if len(s.get_images()) < 25:
+            if len(s.get_images()) < 5:
                 continue
 
             wavelength = s.get_wavelength()
@@ -229,7 +229,7 @@ def print_sweeps():
         # this should sort on exposure epoch ...?
         sweeps.sort()
         for s in sweeps:
-            if len(s.get_images()) < 25:
+            if len(s.get_images()) < 5:
                 continue
 
             j += 1

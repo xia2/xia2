@@ -1523,6 +1523,11 @@ def Mosflm(DriverType = None):
             self.input('postref fix all')
             self.input('separation close')
 
+            # FIXME this is a horrible hack - I at least need to 
+            # sand box this ... 
+            if self.get_header_item('detector') == 'raxis':
+                self.input('adcoffset 0')
+
             if not self._intgr_wedge:
                 self.set_integrater_wedge(min(images),
                                           max(images))
