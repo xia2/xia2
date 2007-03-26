@@ -109,7 +109,7 @@ if __name__ == '__main__':
 
     import time
 
-    project = 'demo%f' % time.time()
+    project = 'demo%d' % int(time.time())
 
     BioXHitDBInterface.create_project(project, os.getcwd())
     BioXHitDBInterface.create_job('foo')
