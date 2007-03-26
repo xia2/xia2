@@ -84,6 +84,9 @@ def _parse_mosflm_integration_output(integration_output_list):
         
         if 'Pixel size of' in record:
             pixel_size = float(record.replace('mm', ' ').split()[3])
+
+        if 'Pixel size in the' in record:
+            pixel_size = float(record.replace('mm', ' ').split()[-1])
         
         if 'Processing Image' in record:
             current_image = int(record.split()[2])
