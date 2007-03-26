@@ -67,21 +67,23 @@ class _BioXHitDBInterfaceReal:
         job_id = result[0]
 
         for f in input_files:
-            self._connection.AddInputFile(job, job_id, f)
+            self._connection.AddInputFile(project, job_id, f)
 
         for f in output_files:
-            self._connection.AddOutputFile(job, job_id, f)
+            self._connection.AddOutputFile(project, job_id, f)
 
         if log_file:
-            self._connection.SetLogFile(job, job_id, log_file)
+            self._connection.SetLogfile(project, job_id, log_file)
 
         # set the job name in here...
+        # want to set TITLE, TASKNAME, STATUS
+
+        self._connection.SetData(self._project, job_id, 'TASKNAME', job)
 
         return
 
     def __del__(self):
         self._connection.HandlerDisconnect()
-
 
 
 class _BioXHitDBInterfaceFake:
@@ -123,6 +125,6 @@ if __name__ == '__main__':
     project = 'demo%d' % int(time.time())
 
     BioXHitDBInterface.create_project(project, os.getcwd())
-    BioXHitDBInterface.create_job('foo')
+    BioXHitDBInterface.create_job('foo', log_file = 'arse.log')
 
     
