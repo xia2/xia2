@@ -45,6 +45,7 @@ class _BioXHitDBInterfaceReal:
 
         self._project = project
 
+
     def create_job(self, job,
                    input_files = [],
                    output_files = [],
@@ -74,7 +75,7 @@ class _BioXHitDBInterfaceReal:
         if log_file:
             self._connection.SetLogFile(job, job_id, log_file)
 
-        self._connection.SetData(self._project, job_id, 'name', job)
+        # set the job name in here...
 
         return
 
