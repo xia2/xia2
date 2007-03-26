@@ -27,19 +27,19 @@ def check(key, value):
     potential_scalers = ['ccp4', 'xscale']
 
     if key == 'indexer':
-        if not value in potential_indexers
+        if not value in potential_indexers:
             raise RuntimeError, 'indexer %s unknown' % value
         if not value in allowed_indexers:
             raise RuntimeError, 'indexer %s not supported yet' % value
 
     if key == 'integrater':
-        if not value in potential_integraters
+        if not value in potential_integraters:
             raise RuntimeError, 'integrater %s unknown' % value
         if not value in allowed_integraters:
             raise RuntimeError, 'integrater %s not supported yet' % value        
 
     if key == 'scaler':
-        if not value in potential_scalers
+        if not value in potential_scalers:
             raise RuntimeError, 'scaler %s unknown' % value
         if not value in allowed_scalers:
             raise RuntimeError, 'scaler %s not supported yet' % value
