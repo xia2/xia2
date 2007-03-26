@@ -27,6 +27,8 @@ class _BioXHitDBInterfaceReal:
         self._connection = dbClientAPI.handlerconnection()
         self._connection.DbRegister(self._user, 'dummy', True)
 
+        self._project = None
+
         return
 
     def create_project(self, project, directory):
@@ -41,19 +43,25 @@ class _BioXHitDBInterfaceReal:
         if not status == 'OK':
             raise RuntimeError, 'failed to create project %s' % project
 
+        self._project = project
+
     def create_job(self, job,
                    input_files = [],
                    output_files = [],
                    log_file = None):
         '''Create a job within this project.'''
 
-        result = self._connection.NewRecord(job)
+        if not self._project:
+            raise RuntimeError, 'no current project'
+
+        result = self._connection.NewRecord(self._project)
         
         status = result[0]
         result = result[1:]
 
         if not status == 'OK':
-            raise RuntimeError, 'error creating job %s' % job
+            raise RuntimeError, 'error creating job in project %s' % \
+                  self._project
 
         job_id = result[0]
 
@@ -65,6 +73,8 @@ class _BioXHitDBInterfaceReal:
 
         if log_file:
             self._connection.SetLogFile(job, job_id, log_file)
+
+        self._connection.SetData(self._project, job_id, 'name', job)
 
         return
 
