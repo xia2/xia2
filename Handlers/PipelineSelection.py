@@ -16,17 +16,33 @@ import sys
 def check(key, value):
     '''Check that this thing is allowed to have this value.'''
 
-    if key == 'indexer':
-        if not value in ['xds', 'mosflm', 'labelit']:
-            raise RuntimeError, 'indexer %s unknown' % value
+    # this should be current!
+
+    allowed_indexers = ['mosflm', 'labelit']
+    allowed_integraters = ['mosflm']
+    allowed_scalers = ['ccp4']
+
+    potential_indexers = ['mosflm', 'labelit', 'xds']
+    potential_integraters = ['mosflm', 'xds']
+    potential_scalers = ['ccp4', 'xscale']
 
     if key == 'indexer':
-        if not value in ['xds', 'mosflm']:
+        if not value in potential_indexers
+            raise RuntimeError, 'indexer %s unknown' % value
+        if not value in allowed_indexers:
+            raise RuntimeError, 'indexer %s not supported yet' % value
+
+    if key == 'integrater':
+        if not value in potential_integraters
             raise RuntimeError, 'integrater %s unknown' % value
+        if not value in allowed_integraters:
+            raise RuntimeError, 'integrater %s not supported yet' % value        
 
     if key == 'scaler':
-        if not value in ['xds', 'ccp4']:
+        if not value in potential_scalers
             raise RuntimeError, 'scaler %s unknown' % value
+        if not value in allowed_scalers:
+            raise RuntimeError, 'scaler %s not supported yet' % value
 
     return
 
@@ -93,7 +109,7 @@ def parse_preferences(file, preferences):
         if line[0] == '!' or line[0] == '#':
             continue
 
-        check_value(line.split(':')[0], line.split(':')[1])
+        check(line.split(':')[0], line.split(':')[1])
 
         preferences[line.split(':')[0]] = line.split(':')[1]
 
