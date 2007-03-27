@@ -786,8 +786,10 @@ class CCP4Scaler(Scaler):
         
         s.set_hklout(hklout)
 
-        # we will want to delete this one exit
-        FileHandler.record_temporary_file(hklout)
+        # we will want to delete this one exit - actually in this case
+        # we don't really as it is helpful to keep this for
+        # repeating the scaling...
+        # FileHandler.record_temporary_file(hklout)
 
         for epoch in epochs:
             s.add_hklin(self._sweep_information[epoch]['hklin'])
