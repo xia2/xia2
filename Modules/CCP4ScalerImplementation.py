@@ -1567,13 +1567,15 @@ class CCP4Scaler(Scaler):
         # this will delete the mtz files which have been made 
 
         # and record the unmerged scalepack files in the file dictionary
+        # BUG FIXME this is only right for MAD data... but that should now
+        # be fixed...
 
         self._scalr_scaled_reflection_files['sca_unmerged'] = { }
         for key in scaled_reflection_files:
             file = scaled_reflection_files[key]
             scalepack = os.path.join(os.path.split(file)[0],
                                      os.path.split(file)[1].replace(
-                '_scaled_', '_unmerged_').replace('.mtz', '.sca'))
+                '_scaled', '_unmerged').replace('.mtz', '.sca'))
             self._scalr_scaled_reflection_files['sca_unmerged'][
                 key] = scalepack
 
