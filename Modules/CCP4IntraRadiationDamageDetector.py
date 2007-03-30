@@ -138,6 +138,9 @@ class CCP4IntraRadiationDamageDetector:
         bfactor_info = { }
         rmerge_info = { }
 
+        bfactors = { }
+        rmerges = { } 
+
         for key in loggraph.keys():
 
             if 'Analysis against Batch' in key:
@@ -148,6 +151,8 @@ class CCP4IntraRadiationDamageDetector:
                 for j in range(len(rmerge_info[dataset]['1_N_batch'])):
                     batch = int(rmerge_info[dataset]['2_Batch_number'][j])
                     rmerge = float(rmerge_info[dataset]['9_Rmerge'][j])
+
+                    rmerges[batch] = rmerge
 
             damaged = False
             damage_batch = 0
@@ -161,18 +166,17 @@ class CCP4IntraRadiationDamageDetector:
                     batch = int(bfactor_info[dataset]['4_Batch'][j])
                     bfactor = float(bfactor_info[dataset]['5_Bfactor'][j])
 
-                    if bfactor < -10.0:
-                        damaged = True
-                        damage_batch = batch
-                        break
+                    bfactors[batch] = bfactor
 
-                if damaged:
-                    Chatter.write(
-                        '%s appears to be radiation damaged (batch %d)' % \
-                        (dataset, damage_batch))
-                else:
-                    Chatter.write(
-                        '%s appears to be ok' % dataset)
+        batches = rmerges.keys()
+        batches.sort()
+
+        for b in batches:
+
+            Chatter.write('%d %f %f' % (b, rmerges[b], bfactors[b]))
+
+
+
 
 
 if __name__ == '__main__':
