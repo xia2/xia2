@@ -96,7 +96,7 @@ class _Stream:
 Science = _Stream('xia-science', 'SCI-')
 Admin = _Stream('xia-admin', 'ADMN')
 Status = _Stream('xia-status', 'STAT')
-Chatter = _Stream('xia2', 'XIA2')
+Chatter = _Stream('xia2', None)
 Stdout = _Stream(None, None)
 
 Science.join(Chatter)
