@@ -136,8 +136,18 @@ class CCP4IntraRadiationDamageDetector:
         loggraph = sc.parse_ccp4_loggraph()
 
         bfactor_info = { }
+        rmerge_info = { }
 
         for key in loggraph.keys():
+
+            if 'Analysis against batch' in key:
+                dataset = key.split(',')[-1].strip()
+                rmerge_info[dataset] = transpose_loggraph(
+                    loggraph[key])
+
+                for j in range(len(rmerge_info[dataset]['1_N'])):
+                    batch = int(rmerge_info[dataset]['2_BATCH'][j])
+                    rmerge = float(rmerge_info[dataset]['9_Rmerge'][j])
 
             damaged = False
             damage_batch = 0
