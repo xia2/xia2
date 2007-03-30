@@ -140,13 +140,13 @@ class CCP4IntraRadiationDamageDetector:
 
         for key in loggraph.keys():
 
-            if 'Analysis against batch' in key:
+            if 'Analysis against Batch' in key:
                 dataset = key.split(',')[-1].strip()
                 rmerge_info[dataset] = transpose_loggraph(
                     loggraph[key])
 
-                for j in range(len(rmerge_info[dataset]['1_N'])):
-                    batch = int(rmerge_info[dataset]['2_BATCH'][j])
+                for j in range(len(rmerge_info[dataset]['1_N_batch'])):
+                    batch = int(rmerge_info[dataset]['2_Batch_number'][j])
                     rmerge = float(rmerge_info[dataset]['9_Rmerge'][j])
 
             damaged = False
