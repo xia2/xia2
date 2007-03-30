@@ -1430,7 +1430,7 @@ class CCP4Scaler(Scaler):
                                    (self._common_pname, self._common_xname)))
         
         # FIXME this needs to be set only is we have f', f'' values
-        # for the wavelength
+        # for the wavelength or multiple wavelengths...
         
         sc.set_anomalous()
         sc.set_tails()
@@ -1448,6 +1448,49 @@ class CCP4Scaler(Scaler):
         # loggraph output, and therefore need some transformation &
         # massaging to be useful.
 
+        # look for the B factor vs. batch / rotation range graphs for
+        # radiation damage analysis...
+        #
+        # FIXME pull all of this out and move it to ccp4 intra radiation
+        # damage module - though this will need to me moved earlier
+        # and also look at R merges etc.
+
+        bfactor_info = { }
+
+        for key in loggraph.keys():
+
+            damaged = False
+            damage_batch = 0
+            
+            if 'Scales v rotation range' in key:
+                # then this contains Bfactor information...
+                dataset = key.split(',')[-1].strip()
+                bfactor_info[dataset] = transpose_loggraph(
+                    loggraph[key])
+
+                # perform some analysis on this information -
+                # this could be fiddly...
+                # FIXME this needs to be moved to the CCP4
+                # intra radiation damage analysis tool...
+                # look at Bfactor and Rmerge.
+
+                for j in range(len(bfactor_info[dataset]['1_N'])):
+                    batch = int(bfactor_info[dataset]['4_Batch'][j])
+                    bfactor = float(bfactor_info[dataset]['5_Bfactor'][j])
+
+                    if bfactor < -10.0:
+                        damaged = True
+                        damage_batch = batch
+                        break
+
+                if damaged:
+                    Chatter.write(
+                        '%s appears to be radiation damaged (batch %d)' % \
+                        (dataset, damage_batch))
+                else:
+                    Chatter.write(
+                        '%s appears to be ok' % dataset)
+                    
         # look for the standard deviation graphs - see FIXME 31/OCT/06
 
         standard_deviation_info = { }
