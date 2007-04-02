@@ -160,6 +160,11 @@ class Integrater:
         self._intgr_xname = None
         self._intgr_dname = None
         self._intgr_epoch = 0
+
+        # FIXME adding this link may remove the need for many other
+        # explicit pieces of information as they can be directly
+        # linked to...
+        self._intgr_sweep = None
         
         return
 
@@ -169,12 +174,19 @@ class Integrater:
     def _integrate_prepare(self):
         raise RuntimeError, 'overload me'
 
+    def set_integrater_sweep(self, sweep):
+        self._intgr_sweep = sweep
+        return
+
+    def get_integrater_sweep(self):
+        return self._intgr_sweep
+
     def set_integrater_sweep_name(self, sweep_name):
-        self._intgr_sweep = sweep_name
+        self._intgr_sweep_name = sweep_name
         return
 
     def get_integrater_sweep_name(self):
-        return self._intgr_sweep
+        return self._intgr_sweep_name
 
     def set_integrater_prepare_done(self, done = True):
         self._intgr_prepare_done = done

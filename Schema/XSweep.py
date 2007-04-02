@@ -214,6 +214,7 @@ class XSweep(Object):
         self._epoch = epoch
 
         self._epoch_to_image = { }
+        self._image_to_epoch = { }
 
         # to allow first, last image for processing to be
         # set... c/f integrater interface
@@ -300,6 +301,7 @@ class XSweep(Object):
                     
                     header = ph.readheader()
                     self._epoch_to_image[header['epoch']] = j
+                    self._image_to_epoch[j] = header['epoch']
 
                 end_t = time.time()
 
@@ -369,6 +371,15 @@ class XSweep(Object):
                                                self._directory,
                                                number)
 
+    def get_epoch(self, image):
+        '''Get the exposure epoch for this image.'''
+
+        return self._image_to_epoch.get(image, 0)
+
+    def get_image_to_epoch(self):
+        '''Get the image to epoch mapping table.'''
+        return copy.deepcopy(self._image_to_epoch)
+    
     def __str__(self):
         return self.__repr__()
 

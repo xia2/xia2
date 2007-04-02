@@ -278,6 +278,9 @@ class CCP4Scaler(Scaler):
 
         self._sweep_information = { }
 
+        # FIXME 2/APR/07 added epoch to this... for radiation damage
+        # analysis - though this could be NULL...
+
         for epoch in self._scalr_integraters.keys():
             intgr = self._scalr_integraters[epoch]
             pname, xname, dname = intgr.get_integrater_project_info()
@@ -288,7 +291,9 @@ class CCP4Scaler(Scaler):
                 'dname':dname,
                 'batches':intgr.get_integrater_batches(),
                 'integrater':intgr,
-                'header':intgr.get_header()}
+                'header':intgr.get_header(),
+                'image_to_epoch':intgr.get_integrater_sweep(
+                ).get_image_to_epoch()}
             
         # next check through the reflection files that they are all MTZ
         # format - if not raise an exception.
