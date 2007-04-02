@@ -303,9 +303,6 @@ class XSweep(Object):
                     self._epoch_to_image[header['epoch']] = j
                     self._image_to_epoch[j] = header['epoch']
 
-                    # FIXME hacking
-                    print j, header['epoch']
-
                 end_t = time.time()
 
                 epochs = self._epoch_to_image.keys()
