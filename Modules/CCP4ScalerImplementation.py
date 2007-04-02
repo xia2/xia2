@@ -292,8 +292,10 @@ class CCP4Scaler(Scaler):
                 'batches':intgr.get_integrater_batches(),
                 'integrater':intgr,
                 'header':intgr.get_header(),
-                'image_to_epoch':intgr.get_integrater_sweep(
-                ).get_image_to_epoch()}
+                'image_to_epoch':intgr.get_integrater_sweep(                
+                ).get_image_to_epoch(),
+                'batch_offset':0
+                }
             
         # next check through the reflection files that they are all MTZ
         # format - if not raise an exception.
@@ -763,6 +765,11 @@ class CCP4Scaler(Scaler):
 
             # we will want to delete this one exit
             FileHandler.record_temporary_file(hklout)
+
+            # record this for future reference - will be needed in the
+            # radiation damage analysis...
+            self._sweep_information[epoch][
+                'batch_offset'] = counter * max_batches
 
             rb.set_hklin(hklin)
             rb.set_first_batch(counter * max_batches + 1)

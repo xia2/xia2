@@ -294,14 +294,17 @@ class XSweep(Object):
 
                 start_t = time.time()
 
-                ph = Printheader()
                 
                 for j in images:
+                    ph = Printheader()
                     ph.set_image(self.get_image_name(j))
-                    
                     header = ph.readheader()
+                    
                     self._epoch_to_image[header['epoch']] = j
                     self._image_to_epoch[j] = header['epoch']
+
+                    # FIXME hacking
+                    print j, header['epoch']
 
                 end_t = time.time()
 
