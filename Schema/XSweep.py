@@ -83,6 +83,7 @@ import os
 import math
 import exceptions
 import copy
+import time
 
 # we all inherit from Object
 from Object import Object
@@ -290,6 +291,8 @@ class XSweep(Object):
                 else:
                     images = self._images
 
+                start_t = time.time()
+
                 ph = Printheader()
                 
                 for j in images:
@@ -298,8 +301,12 @@ class XSweep(Object):
                     header = ph.readheader()
                     self._epoch_to_image[header['epoch']] = j
 
+                end_t = time.time()
+
                 epochs = self._epoch_to_image.keys()
 
+                Chatter.write('Reading %d headers took %ds' % \
+                              (len(images), int(end_t - start_t)))
                 Chatter.write('Exposure epoch for sweep %s: %d %d' % \
                               (self._template, min(epochs), max(epochs)))
             
