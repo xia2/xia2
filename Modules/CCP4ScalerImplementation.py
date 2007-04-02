@@ -1423,7 +1423,7 @@ class CCP4Scaler(Scaler):
         # deciding what the "standard" wavelength/dataset is, then
         # combining everything appropriately...
 
-        # Chatter.write(str(self._sweep_information))
+        Chatter.write(str(self._sweep_information))
 
         for epoch in epochs:
             input = self._sweep_information[epoch]
