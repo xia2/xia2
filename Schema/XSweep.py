@@ -212,6 +212,8 @@ class XSweep(Object):
         self._integrated_reflection_file = integrated_reflection_file
         self._epoch = epoch
 
+        self._epoch_to_image = { }
+
         # to allow first, last image for processing to be
         # set... c/f integrater interface
         self._frames_to_process = frames_to_process
@@ -268,6 +270,38 @@ class XSweep(Object):
                     Chatter.write(format % (name, header['wavelength'],
                                             wavelength.get_wavelength()))
 
+
+            # also in here look at the image headers to see if we can
+            # construct a mapping between exposure epoch and image ...
+
+            if header.has_key('epoch'):
+                # then we can do something interesting in here - note
+                # well that this will require reading the headers of
+                # every image to be processed!
+
+                images = []
+
+                if self._frames_to_process:
+                    start, end = self._frames_to_process
+                    for j in self._images:
+                        if j >= start and j <= end:
+                            images.append(j)
+
+                else:
+                    images = self._images
+
+                ph = Printheader()
+                
+                for j in images:
+                    ph.set_image(self.get_image_name(j))
+                    
+                    header = ph.readheader()
+                    self._epoch_to_image[header['epoch']] = j
+
+                epochs = self._epoch_to_image.keys()
+
+                Chatter.write('Exposure epoch for sweep %s: %d %d' % \
+                              (self._template, min(epochs), max(epochs)))
             
         else:
 
@@ -320,6 +354,13 @@ class XSweep(Object):
         self._distance = distance
         
         return
+
+    def get_image_name(self, number):
+        '''Convert an image number into a name.'''
+
+        return template_directory_number2image(self._template,
+                                               self._directory,
+                                               number)
 
     def __str__(self):
         return self.__repr__()
