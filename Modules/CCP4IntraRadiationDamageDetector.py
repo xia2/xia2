@@ -185,31 +185,62 @@ if __name__ == '__main__':
     # see this by the high rmerge vs. batch and also
     # large bfactors...
 
-    irdd = CCP4IntraRadiationDamageDetector()
-
-    irdd.set_hklin(os.path.join(os.environ['X2TD_ROOT'],
-                                'Test', 'UnitTest', 'Modules',
-                                'IntraRadiationDamage',
-                                'TS00_13185_sorted.mtz'))
-
-    sweep_information = {1: {'batches': (1, 360),
-                             'dname': 'INFL',
-                             'hklin': 'C:\\Ccp4Temp\\friday\\13185\\scale\\TS00_13185_INFL_0.mtz',
-                             'pname': 'TS00',
-                             'xname': '13185'},
-                         2: {'batches': (1001, 1360),
-                             'dname': 'LREM',
-                             'hklin': 'C:\\Ccp4Temp\\friday\\13185\\scale\\TS00_13185_LREM_1.mtz',
-                             'pname': 'TS00',
-                             'xname': '13185'},
-                         3: {'batches': (2001, 2400),
-                             'dname': 'PEAK',
-                             'hklin': 'C:\\Ccp4Temp\\friday\\13185\\scale\\TS00_13185_PEAK_2.mtz',
-                             'pname': 'TS00',
-                             'xname': '13185'}}
+    use_TS00 = False
+    use_TS03 = True
     
-    irdd.set_sweep_information(sweep_information)
 
-    irdd.analyse()
+    if use_TS00:
+        
+        irdd = CCP4IntraRadiationDamageDetector()
+        
+        irdd.set_hklin(os.path.join(os.environ['X2TD_ROOT'],
+                                    'Test', 'UnitTest', 'Modules',
+                                    'IntraRadiationDamage',
+                                    'TS00_13185_sorted.mtz'))
+        
+        sweep_information = {
+            1: {'batches': (1, 360),
+                'dname': 'INFL',
+                'pname': 'TS00',
+                'xname': '13185'},
+            2: {'batches': (1001, 1360),
+                'dname': 'LREM',
+                'pname': 'TS00',
+                'xname': '13185'},
+            3: {'batches': (2001, 2400),
+                'dname': 'PEAK',
+                'pname': 'TS00',
+                'xname': '13185'}}
+        
+        irdd.set_sweep_information(sweep_information)
+        
+        irdd.analyse()
 
-    
+    if use_TS03:
+
+        sweep_information = {
+            1: {'batches': (1, 90),
+                'dname': 'INFL',
+                'pname': 'TS03',
+                'xname': '12287'},
+            2: {'batches': (101, 190),
+                'dname': 'LREM',
+                'pname': 'TS03',
+                'xname': '12287'},
+            3: {'batches': (201, 290),
+                'dname': 'PEAK',
+                'pname': 'TS03',
+                'xname': '12287'}}
+        
+        
+        irdd = CCP4IntraRadiationDamageDetector()
+        
+        irdd.set_hklin(os.path.join(os.environ['X2TD_ROOT'],
+                                    'Test', 'UnitTest', 'Modules',
+                                    'InterRadiationDamage',
+                                    'TS03_12287_sorted.mtz'))
+        
+        irdd.set_sweep_information(sweep_information)
+        
+        irdd.analyse()
+
