@@ -1430,7 +1430,11 @@ class CCP4Scaler(Scaler):
         # deciding what the "standard" wavelength/dataset is, then
         # combining everything appropriately...
 
-        Chatter.write(str(self._sweep_information))
+        # record this for ease of access in development - FIXME this
+        # needs removing!
+        open(os.path.join(
+            self.get_working_directory(),
+            'sweep_info.xia'), 'w').write(str(self._sweep_information))
 
         for epoch in epochs:
             input = self._sweep_information[epoch]
