@@ -56,6 +56,86 @@ from Wrappers.CCP4.Scala import Scala as _Scala
 from Handlers.Streams import Chatter
 from lib.Guff import auto_logfiler, transpose_loggraph
 
+############## CALCULATIONS #################
+
+def meansd(values):
+    mean = sum(values) / len(values)
+    sd = math.sqrt(sum([(v - mean) * (v - mean) for v in values])/len(values))
+    return mean, sd
+        
+def bin(values, width):
+    if len(values) % width:
+        raise RuntimeError, 'num values not multiple of width'
+
+    result = []
+    for j in range(len(values) / width):
+        block = values[j * width:(j + 1) * width]
+        result.append((meansd([b[0] for b in block])[0],
+                       meansd([b[1] for b in block])))
+            
+    return result
+
+def chisq(data, model):
+    '''Compute a chi^2 value for data vs. model.'''
+
+
+    result = sum([((data[j][1][0] - model[j]) / data[j][1][1] *
+                   (data[j][1][0] - model[j]) / data[j][1][1])
+                  for j in range(len(data))])
+
+    return result
+
+def fit(data):
+    '''Return an ML linear fit to data.'''
+
+    # two interesting cases....
+
+    if len(data) == 0:
+        return 0.0, 0.0
+
+    if len(data) == 1:
+        return data[0][1][0], 0.0
+
+    # the rest...
+    
+    delta = sum([1.0 / (d[1][1] * d[1][1]) for d in data]) * \
+            sum([(d[0] * d[0]) / (d[1][1] * d[1][1]) for d in data]) - \
+            (sum([d[0] / (d[1][1] * d[1][1]) for d in data]) *
+             sum([d[0] / (d[1][1] * d[1][1]) for d in data]))
+    a = sum([(d[0] * d[0]) / (d[1][1] * d[1][1]) for d in data]) * \
+        sum([d[1][0] / (d[1][1] * d[1][1]) for d in data]) - \
+        sum([d[0] / (d[1][1] * d[1][1]) for d in data]) * \
+        sum([(d[0] * d[1][0]) / (d[1][1] * d[1][1]) for d in data])
+    b = sum([1.0 / (d[1][1] * d[1][1]) for d in data]) * \
+        sum([(d[0] * d[1][0]) / (d[1][1] * d[1][1]) for d in data]) - \
+        (sum([d[0] / (d[1][1] * d[1][1]) for d in data]) * \
+         sum([d[1][0] / (d[1][1] * d[1][1]) for d in data]))
+
+    return a / delta, b / delta
+
+def run():
+    
+    data = [map(float, line.split()) for line in open(
+        'reordered.txt', 'r').readlines()]
+    
+    updata = [(d[0] - data[0][0], -1 * d[1] * d[2]) for d in data]
+    
+    binned = bin(updata, 10)
+    
+    for j in range(1, len(binned)):
+        basis = binned[:j]
+        _a, _b = fit(basis)
+        model = [_a + _b * b[0] for b in basis]
+        chi = chisq(basis, model) / j
+
+        b = binned[j]
+        
+        print '%d %.1f %.4f %.4f %.4f' % (10 * j, b[0], b[1][0], b[1][1], chi)
+
+
+##################### END OF CALCULATIONS ###################
+
+
 class CCP4IntraRadiationDamageDetector:
     '''A class to inspect data for radiation damage within sweeps.'''
 
