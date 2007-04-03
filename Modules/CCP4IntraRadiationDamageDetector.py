@@ -59,11 +59,18 @@ from lib.Guff import auto_logfiler, transpose_loggraph
 ############## CALCULATIONS #################
 
 def meansd(values):
+    '''Compute the mean and standard deviation of a list of values.'''
     mean = sum(values) / len(values)
     sd = math.sqrt(sum([(v - mean) * (v - mean) for v in values])/len(values))
     return mean, sd
+
+# FIXME these need to be tidied up to take a generalised
+# list of values
         
 def bin(values, width):
+    '''Bin values in bins of given width, computing the error
+    (standard deviation) in the bin on the Y values. This is
+    messy...'''
     if len(values) % width:
         raise RuntimeError, 'num values not multiple of width'
 
@@ -76,8 +83,9 @@ def bin(values, width):
     return result
 
 def chisq(data, model):
-    '''Compute a chi^2 value for data vs. model.'''
-
+    '''Compute a chi^2 value for data vs. model. Data should be
+    a list of points with errors, model should be a list of
+    values with no errors.'''
 
     result = sum([((data[j][1][0] - model[j]) / data[j][1][1] *
                    (data[j][1][0] - model[j]) / data[j][1][1])
@@ -86,9 +94,12 @@ def chisq(data, model):
     return result
 
 def fit(data):
-    '''Return an ML linear fit to data.'''
+    '''Return an ML linear fit to data. This will fit
+    y = a + bx and return a, b. Input is a list of
+    (x, (y, sy)) where sy is the error on the y value.'''
 
-    # two interesting cases....
+    # two interesting cases.... have to provide default
+    # results from these
 
     if len(data) == 0:
         return 0.0, 0.0
@@ -96,7 +107,13 @@ def fit(data):
     if len(data) == 1:
         return data[0][1][0], 0.0
 
-    # the rest...
+    # the rest... these can give meaningful values
+    # equations from P104 of
+    # "Data reduction and error analysis in the physical sciences"
+    # 0-07-911243-9.
+
+    # fixme need to tidy this up to use cleaner sum calculations
+    # than the full and painful below.
     
     delta = sum([1.0 / (d[1][1] * d[1][1]) for d in data]) * \
             sum([(d[0] * d[0]) / (d[1][1] * d[1][1]) for d in data]) - \
@@ -114,6 +131,10 @@ def fit(data):
     return a / delta, b / delta
 
 def run():
+    '''Call all of the above to perform a chi-squared analysis.
+    Assumption is that the data change linearly, and that any
+    non-linear behaviour is an indication of significant radiation
+    damage.'''
     
     data = [map(float, line.split()) for line in open(
         'reordered.txt', 'r').readlines()]
