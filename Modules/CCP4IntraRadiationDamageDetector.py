@@ -322,10 +322,29 @@ class CCP4IntraRadiationDamageDetector:
                     (e, analysis_dict[e][0], analysis_dict[e][1]))
             rd_epoch = decide_rd_limit(analysis_data)
             Chatter.write('Radiation damage found at epoch %f' % rd_epoch)
-        else:
+
+            rd_log = open(os.path.join(self.get_working_directory(),
+                                       'rd_info.log'), 'w')
+                                       
+
             for b in batches:
-                Chatter.write('%d 0 %f %f' % \
-                              (b, rmerges[b], bfactors[b]))
+                if batch_to_epoch[b] < rd_epoch:
+                    rd_log.write('I %d %d %f %f\n' % \
+                                 (b, batch_to_epoch[b],
+                                  rmerges[b], bfactors[b]))
+                else:
+                    rd_log.write('X %d %d %f %f\n' % \
+                                 (b, batch_to_epoch[b],
+                                  rmerges[b], bfactors[b]))
+
+            rd_log.close()
+
+        else:
+            # FIXME need to handle this some how...
+            
+            pass
+
+        
 
 
 
