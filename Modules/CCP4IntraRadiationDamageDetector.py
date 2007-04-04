@@ -130,6 +130,32 @@ def fit(data):
 
     return a / delta, b / delta
 
+def decide_rd_limit(data):
+    '''Decide the radiation damage limit for a list of measurements
+    as tuples (epoch, r, b).'''
+
+    # convert to the form we want to deal with...
+    updata = [(d[0], -1 * d[1] * d[2]) for d in data]
+
+    binned = bin(updata, 10)
+
+    bin_tops = []
+    for j in range(len(data)):
+        if (j + 1) % 10:
+            bin_tops.append(data[j])
+    
+    for j in range(1, len(binned)):
+        basis = binned[:j]
+        _a, _b = fit(basis)
+        model = [_a + _b * b[0] for b in basis]
+        chi = chisq(basis, model) / j
+
+        if chi > 2.0:
+            return bin_tops[j]
+
+    # by default use all data...
+    return data[-1][0] + 1
+
 def run():
     '''Call all of the above to perform a chi-squared analysis.
     Assumption is that the data change linearly, and that any
@@ -284,9 +310,17 @@ class CCP4IntraRadiationDamageDetector:
         batches.sort()
 
         if batch_to_epoch:
+            analysis_data = []
+            analysis_dict = { }
             for b in batches:
-                Chatter.write('%d %d %f %f' % \
-                              (b, batch_to_epoch[b], rmerges[b], bfactors[b]))
+                analysis_dict[batch_to_epoch[b]] = (rmerges[b], bfactors[b])
+            epochs = analysis_dict.keys()
+            epochs.sort()
+            for e in epochs:
+                analysis_data.append(
+                    (e, analysis_dict[e][0], analysis_dict[e][1]))
+                rd_epoch = decide_rd_limit(analysis_data)
+            Chatter.write('Radiation damage found at epoch %f' % rd_epoch)
         else:
             for b in batches:
                 Chatter.write('%d 0 %f %f' % \
