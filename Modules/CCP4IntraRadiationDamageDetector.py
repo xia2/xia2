@@ -140,19 +140,15 @@ def decide_rd_limit(data):
 
     binned = bin(updata, 10)
 
-    bin_tops = []
-    for j in range(len(data)):
-        if (j + 1) % 10:
-            bin_tops.append(data[j][0])
-    
     for j in range(1, len(binned)):
         basis = binned[:j]
         _a, _b = fit(basis)
         model = [_a + _b * b[0] for b in basis]
         chi = chisq(basis, model) / j
 
+        b = binned[j]
         if chi > 2.0:
-            return bin_tops[j]
+            return data[10 * j][0]
 
     # by default use all data...
     return data[-1][0] + 1
