@@ -72,7 +72,8 @@ def bin(values, width):
     (standard deviation) in the bin on the Y values. This is
     messy...'''
     if len(values) % width:
-        raise RuntimeError, 'num values not multiple of width'
+        raise RuntimeError, 'num values not multiple of width (%d %d)' % \
+              (len(values), width)
 
     result = []
     for j in range(len(values) / width):
@@ -142,7 +143,7 @@ def decide_rd_limit(data):
     bin_tops = []
     for j in range(len(data)):
         if (j + 1) % 10:
-            bin_tops.append(data[j])
+            bin_tops.append(data[j][0])
     
     for j in range(1, len(binned)):
         basis = binned[:j]
@@ -319,7 +320,7 @@ class CCP4IntraRadiationDamageDetector:
             for e in epochs:
                 analysis_data.append(
                     (e, analysis_dict[e][0], analysis_dict[e][1]))
-                rd_epoch = decide_rd_limit(analysis_data)
+            rd_epoch = decide_rd_limit(analysis_data)
             Chatter.write('Radiation damage found at epoch %f' % rd_epoch)
         else:
             for b in batches:
