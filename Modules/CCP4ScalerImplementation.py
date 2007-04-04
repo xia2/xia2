@@ -143,6 +143,7 @@ from CCP4ScalerImplementationHelpers import _resolution_estimate, \
      _prepare_pointless_hklin, _fraction_difference
 
 from CCP4InterRadiationDamageDetector import CCP4InterRadiationDamageDetector
+from CCP4IntraRadiationDamageDetector import CCP4IntraRadiationDamageDetector
 
 class CCP4Scaler(Scaler):
     '''An implementation of the Scaler interface using CCP4 programs.'''
@@ -1436,6 +1437,14 @@ class CCP4Scaler(Scaler):
             self.get_working_directory(),
             'sweep_info.xia'), 'w').write(str(self._sweep_information))
 
+        # perform the radiation damage analysis
+
+        ird = CCP4IntraRadiationDamageDetector()
+        ird.set_working_directory(self.get_working_directory())
+        ird.set_hklin(self._prepared_reflections)
+        ird.set_sweep_information(self._sweep_information)
+        ird.analyse()
+        
         for epoch in epochs:
             input = self._sweep_information[epoch]
             start, end = (min(input['batches']), max(input['batches']))
