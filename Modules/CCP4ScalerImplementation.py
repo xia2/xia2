@@ -1186,6 +1186,14 @@ class CCP4Scaler(Scaler):
 
         # ---------- INITIAL SCALING ----------
 
+        # perform the radiation damage analysis
+
+        ird = CCP4IntraRadiationDamageDetector()
+        ird.set_working_directory(self.get_working_directory())
+        ird.set_hklin(self._prepared_reflections)
+        ird.set_sweep_information(self._sweep_information)
+        ird.analyse()
+
         sc = self.Scala()
         sc.set_hklin(self._prepared_reflections)
 
@@ -1436,14 +1444,6 @@ class CCP4Scaler(Scaler):
         open(os.path.join(
             self.get_working_directory(),
             'sweep_info.xia'), 'w').write(str(self._sweep_information))
-
-        # perform the radiation damage analysis
-
-        ird = CCP4IntraRadiationDamageDetector()
-        ird.set_working_directory(self.get_working_directory())
-        ird.set_hklin(self._prepared_reflections)
-        ird.set_sweep_information(self._sweep_information)
-        ird.analyse()
         
         for epoch in epochs:
             input = self._sweep_information[epoch]
