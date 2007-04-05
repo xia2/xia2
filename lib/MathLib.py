@@ -32,6 +32,9 @@ def linear_fit_ml(X, Y, S):
     # 0-07-911243-9.
 
     num = range(len(X))
+
+    for j in num:
+        print X[j], Y[j], S[j]
     
     inv_s_sq = sum([1.0 / (S[j] * S[j]) for j in num])
     x_sq_over_s_sq = sum([(X[j] * X[j]) / (S[j] * S[j]) for j in num])

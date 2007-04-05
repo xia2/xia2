@@ -352,8 +352,10 @@ class CCP4IntraRadiationDamageDetector:
         '''Decide the radiation damage limit for a list of measurements
         as tuples (epoch, r, b).'''
         
+        start_t = data[0][0]
+        
         # convert to the form we want to deal with...
-        updata = [(d[0], -1 * d[1] * d[2]) for d in data]
+        updata = [(d[0] - start_t, -1 * d[1] * d[2]) for d in data]
         
         binned = bin(updata, 10)
 
