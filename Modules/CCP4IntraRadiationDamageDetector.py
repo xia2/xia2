@@ -131,28 +131,6 @@ def fit(data):
 
     return a / delta, b / delta
 
-def decide_rd_limit(data):
-    '''Decide the radiation damage limit for a list of measurements
-    as tuples (epoch, r, b).'''
-
-    # convert to the form we want to deal with...
-    updata = [(d[0], -1 * d[1] * d[2]) for d in data]
-
-    binned = bin(updata, 10)
-
-    for j in range(1, len(binned)):
-        basis = binned[:j]
-        _a, _b = fit(basis)
-        model = [_a + _b * b[0] for b in basis]
-        chi = chisq(basis, model) / j
-
-        b = binned[j]
-        if chi > 2.0:
-            return data[10 * j][0]
-
-    # by default use all data...
-    return data[-1][0] + 1
-
 def run():
     '''Call all of the above to perform a chi-squared analysis.
     Assumption is that the data change linearly, and that any
@@ -316,7 +294,7 @@ class CCP4IntraRadiationDamageDetector:
             for e in epochs:
                 analysis_data.append(
                     (e, analysis_dict[e][0], analysis_dict[e][1]))
-            rd_epoch = decide_rd_limit(analysis_data)
+            rd_epoch = self.decide_rd_limit(analysis_data)
             Chatter.write('Radiation damage found at epoch %f' % rd_epoch)
 
             rd_log = open(os.path.join(self.get_working_directory(),
@@ -341,8 +319,40 @@ class CCP4IntraRadiationDamageDetector:
             pass
 
         
+    def decide_rd_limit(self, data):
+        '''Decide the radiation damage limit for a list of measurements
+        as tuples (epoch, r, b).'''
+        
+        # convert to the form we want to deal with...
+        updata = [(d[0], -1 * d[1] * d[2]) for d in data]
+        
+        binned = bin(updata, 10)
+        
+        epoch = -1
 
+        chi_log = open(os.path.join(self.get_working_directory(),
+                                    'rd_chi.log'), 'w')
+                                    
+        for j in range(1, len(binned)):
+            basis = binned[:j]
+            _a, _b = fit(basis)
+            model = [_a + _b * b[0] for b in basis]
+            chi = chisq(basis, model) / j
+            
+            chi_log.write('%f %f %f %f\n' %
+                          (b[0], b[1][0], b[1][1], chi))
 
+            b = binned[j]
+            if chi > 2.0 and epoch == -1:
+                epoch = data[10 * j][0]
+
+        chi_log.close()
+        # by default use all data...
+
+        if epoch == -1:
+            epoch = data[-1][0] + 1
+            
+        return epoch
 
 
 if __name__ == '__main__':
