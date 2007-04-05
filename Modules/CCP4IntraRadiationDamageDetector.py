@@ -327,6 +327,9 @@ class CCP4IntraRadiationDamageDetector:
         updata = [(d[0], -1 * d[1] * d[2]) for d in data]
         
         binned = bin(updata, 10)
+
+        for b in binned:
+            print b
         
         epoch = -1
 
@@ -339,10 +342,10 @@ class CCP4IntraRadiationDamageDetector:
             model = [_a + _b * b[0] for b in basis]
             chi = chisq(basis, model) / j
             
+            b = binned[j]
             chi_log.write('%f %f %f %f\n' %
                           (b[0], b[1][0], b[1][1], chi))
 
-            b = binned[j]
             if chi > 2.0 and epoch == -1:
                 epoch = data[10 * j][0]
 
