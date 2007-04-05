@@ -62,6 +62,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Wrappers.CCP4.Scala import Scala as _Scala
 from Handlers.Streams import Chatter
 from lib.Guff import auto_logfiler, transpose_loggraph
+from lib.MathLib import linear_fit_ml
 
 ############## CALCULATIONS #################
 
@@ -110,6 +111,15 @@ def chisq(data, model):
 # of come kind...
 
 def fit(data):
+    '''Call linear_fit_ml to do this.'''
+
+    X = [d[0] for d in data]
+    Y = [d[1][0] for d in data]
+    S = [d[1][1] for d in data]
+
+    return linear_fit_ml(X, Y, S)
+
+def _fit(data):
     '''Return an ML linear fit to data. This will fit
     y = a + bx and return a, b. Input is a list of
     (x, (y, sy)) where sy is the error on the y value.'''
