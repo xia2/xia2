@@ -103,6 +103,12 @@ def chisq(data, model):
 
     return result
 
+
+# FIXME clean up the input to this to be there lists or arrays -
+# x, y, sigy values. This will make it much clearer what is going
+# on. Also call it ml_linear_fit and move it to a stats library
+# of come kind...
+
 def fit(data):
     '''Return an ML linear fit to data. This will fit
     y = a + bx and return a, b. Input is a list of
@@ -124,6 +130,10 @@ def fit(data):
 
     # fixme need to tidy this up to use cleaner sum calculations
     # than the full and painful below.
+
+    # the following quantities are used in reality:
+    # sum_inv_sig_sq, sum_x_sq_over_sig_sq, sum_x_over_sig_sq,
+    # sum_y_over_sig_sq, sum_xy_over_sig_sq
     
     delta = sum([1.0 / (d[1][1] * d[1][1]) for d in data]) * \
             sum([(d[0] * d[0]) / (d[1][1] * d[1][1]) for d in data]) - \
