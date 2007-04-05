@@ -361,7 +361,8 @@ class CCP4IntraRadiationDamageDetector:
 
         for b in binned:
             # have a minimum "error" of 0.1 A^2 Rmerges .
-            if b[1][1] < 0.1:
+            if b[1][1] < 0.1 and False:
+                # can't do this is a list!
                 b[1][1] = 0.1
         
         epoch = -1
