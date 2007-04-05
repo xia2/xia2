@@ -13,7 +13,12 @@
 #  - if B factor < -10 is "damaged" [pre]
 #  - if R merge > ??? is "damaged" [gw]
 #
-# Second of these is more interesting for MAD data...
+# Second of these is more interesting for MAD data... however both provide 
+# interesting information. The current implementation therefore looks
+# at the product of these as a function of exposure epoch, and looks for 
+# the point at which the behaviour becomes significantly non-linear.
+# 
+# 
 #
 # Input:
 # 
@@ -26,7 +31,9 @@
 #
 # Output:
 # 
-# List of "allowed" batches to use for different wavelengths.
+# List of "allowed" batches to use for different wavelengths. This should
+# in fact return a dictionary of data sets for uses in different contexts,
+# for example "all data", "best data", "refinement data".
 # 
 # Notes:
 # 
@@ -71,7 +78,9 @@ def bin(values, width):
     '''Bin values in bins of given width, computing the error
     (standard deviation) in the bin on the Y values. This is
     messy...'''
-    if len(values) % width:
+
+    # do not really want to warn about this...
+    if len(values) % width and False:
         raise RuntimeError, 'num values not multiple of width (%d %d)' % \
               (len(values), width)
 
