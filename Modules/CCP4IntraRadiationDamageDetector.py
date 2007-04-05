@@ -360,7 +360,9 @@ class CCP4IntraRadiationDamageDetector:
         binned = bin(updata, 10)
 
         for b in binned:
-            print b
+            # have a minimum "error" of 0.1 A^2 Rmerges .
+            if b[1][1] < 0.1:
+                b[1][1] = 0.1
         
         epoch = -1
 
