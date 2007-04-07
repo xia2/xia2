@@ -89,7 +89,7 @@ def bin(values, width):
     for j in range(len(values) / width):
         block = values[j * width:(j + 1) * width]
         mean, sd = meansd([b[1] for b in block])
-        if sd < 0.1:
+        if sd < 0.05:
             sd = 0.05
         result.append((meansd([b[0] for b in block])[0],
                        (mean, sd)))
