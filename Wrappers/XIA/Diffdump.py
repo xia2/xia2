@@ -221,8 +221,12 @@ def Diffdump(DriverType = None):
                             self._header['epoch'] = self._epoch(d.strip())
                             self._header['date'] = self._date(d.strip())
                         else:
-                            self._header['epoch'] = 0.0
-                            self._header['date'] = ''
+                            self._header['epoch'] = float(
+                                os.stat(self._image)[8])
+                            self._header['date'] = time.ctime(
+                                self._header['epoch'])
+                            # self._header['epoch'] = 0.0
+                            # self._header['date'] = ''
                     except exceptions.Exception, e:
                         # this is badly formed....
                         # so perhaps read the file creation date?
@@ -231,7 +235,7 @@ def Diffdump(DriverType = None):
                         self._header['epoch'] = float(
                             os.stat(self._image)[8])
                         self._header['date'] = time.ctime(
-                            self._header['eopch'])
+                            self._header['epoch'])
                         # self._header['epoch'] = 0.0
                         # self._header['date'] = ''
 
