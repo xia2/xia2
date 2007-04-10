@@ -444,20 +444,20 @@ class CCP4Scaler(Scaler):
             # correspond to those rescribed in the indexers belonging to the
             # parent integraters.
             
-            # at this stage (see FIXME from 25/SEP/06) I need to run pointless
+            # at this stage (see FIXED from 25/SEP/06) I need to run pointless
             # to assess the likely pointgroup. This, unfortunately, will need
             # to tie into the .xinfo hierarchy, as the crystal lattice
             # management takes place in there...
             # also need to make sure that the results from each sweep match
             # up...
 
-            # FIXME 27/OCT/06 need a hook in here to the integrater->indexer
+            # FIXED 27/OCT/06 need a hook in here to the integrater->indexer
             # to inspect the lattices which have ben contemplated (read tested)
             # because it is quite possible that pointless will come up with
             # a solution which has already been eliminated in the data
             # reduction (e.g. TS01 native being reindexed to I222.)
 
-            # FIXME 06/NOV/06 first run through this with the reference ignored
+            # FIXED 06/NOV/06 first run through this with the reference ignored
             # to get the reflections reindexed into the correct pointgroup
 
         # ---------- REINDEX ALL DATA TO CORRECT POINTGROUP ----------
@@ -522,8 +522,8 @@ class CCP4Scaler(Scaler):
 
                 original_pointgroup = pl.get_pointgroup()
 
-                # FIXME this does not work quire right...
-                # try this!
+                # FIXED this does not work quire right...
+                # try this! This now appears to work as expected...
                 
                 likely = possible
 
@@ -571,6 +571,11 @@ class CCP4Scaler(Scaler):
 
                         # reset the integrater - need to find
                         # a way to do this by magic (FIXME)
+                        # This should be a new bug, which should
+                        # add the "dated" stuff to the integrater so if
+                        # the indexer is newer it will reintegrate...
+                        # Bug number: 2264.
+                        
                         self._sweep_information[epoch][
                             'integrater'].set_integrater_prepare_done(False)
                         self._sweep_information[epoch][
@@ -631,7 +636,7 @@ class CCP4Scaler(Scaler):
             self._scalr_prepare_done = False
             return
 
-        # FIXME 06/NOV/06 need to run this again - this time with the
+        # FIXED 06/NOV/06 need to run this again - this time with the
         # reference file... messy but perhaps effective?
 
         if len(self._sweep_information.keys()) > 1:
@@ -809,10 +814,11 @@ class CCP4Scaler(Scaler):
 
         s.sort()
 
-        # FIXME 16/NOV/06 perhaps in here I should consider running
+        # FIXED 16/NOV/06 perhaps in here I should consider running
         # pointless again, this time to decide the correct spacegroup
         # and setting - this should then reset to the correct indexing
-        # and reassign the spacegroup (or it's enantiomorph.)
+        # and reassign the spacegroup (or it's enantiomorph.) I think
+        # that this is now done.
 
         # note well that this is going to use the current pointgroup so
         # any reindexing is to get into the standard setting for the
@@ -846,7 +852,7 @@ class CCP4Scaler(Scaler):
         # calling entity. Note well that I also want to write in
         # here the spacegroup enantiomorphs.
 
-        # FIXME 21/NOV/06 need now to get this from the pointless output...
+        # FIXED 21/NOV/06 need now to get this from the pointless output...
 
         self._scalr_likely_spacegroups = p.get_likely_spacegroups()
 
@@ -1176,7 +1182,7 @@ class CCP4Scaler(Scaler):
         epochs = self._sweep_information.keys()
         epochs.sort()
 
-        # FIXME in here I need to implement "proper" scaling...
+        # FIXED in here I need to implement "proper" scaling...
         # this will need to do things like imposing a sensible
         # resolution limit on the data, deciding on the appropriate
         # scaling parameters. The former is best done by analysing
@@ -1193,6 +1199,18 @@ class CCP4Scaler(Scaler):
         ird.set_hklin(self._prepared_reflections)
         ird.set_sweep_information(self._sweep_information)
         ird.analyse()
+
+        # FIXME 10/APR/07 -
+        # This should probably return a dictionary of new sweep information
+        # blocks which should be considered in sequence and completely
+        # reduced to provide *named* radiation damage treatment options -
+        # alternative is always to reduce radiation damage wherever
+        # possible...
+        #
+        # This will mean that the sweep information for each sample will
+        # need to be duplicated for "include all data" and "manage radiation
+        # damage" data if appropriate. This will be a huge loop here perhaps?
+        # what about resolution limit changes, and so on??!
 
         sc = self.Scala()
         sc.set_hklin(self._prepared_reflections)
