@@ -18,8 +18,18 @@
 # at the product of these as a function of exposure epoch, and looks for 
 # the point at which the behaviour becomes significantly non-linear.
 # 
-# 
+# The definition of "significantly non linear" is a little complex, and
+# goes a little like this:
 #
+# q = R * B * -1
+#
+# b, db = mean_sd(bin(q)) - sd gives spread in values, minimum 0.05
+#
+# for i in b:
+#   fit (ML) straight line to b(i)
+#   compute chi_sq for this straight line - if "reduced chi_sq" > 2
+#     then the straight line is not a good model - ergo bin(i) is damaged.
+# 
 # Input:
 # 
 # Dictionary of lists of B factor, R merge vs. batch. Will need to balance
