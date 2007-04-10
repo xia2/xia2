@@ -221,12 +221,23 @@ def Printheader(DriverType = None):
                             self._header['epoch'] = self._epoch(d.strip())
                             self._header['date'] = self._date(d.strip())
                         else:
-                            self._header['epoch'] = 0.0
-                            self._header['date'] = ''
+                            self._header['epoch'] = float(
+                                os.stat(self._image)[8])
+                            self._header['date'] = time.ctime(
+                                self._header['epoch'])
+                            # self._header['epoch'] = 0.0
+                            # self._header['date'] = ''
                     except exceptions.Exception, e:
                         # this is badly formed....
-                        self._header['epoch'] = 0.0
-                        self._header['date'] = ''
+                        # so perhaps read the file creation date?
+                        # time.ctime(os.stat(filename)[8]) -> date
+                        # os.stat(filename)[8] -> epoch
+                        self._header['epoch'] = float(
+                            os.stat(self._image)[8])
+                        self._header['date'] = time.ctime(
+                            self._header['epoch'])
+                        # self._header['epoch'] = 0.0
+                        # self._header['date'] = ''
 
                 if 'Exposure time' in o:
                     self._header['exposure_time'] = float(l2[0])
