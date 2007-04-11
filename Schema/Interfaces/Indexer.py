@@ -275,7 +275,8 @@ class Indexer:
         # results - not sure if this helps, since this will only
         # be called when the images aren't set...
         
-        self._indxr_done = False
+        # self._indxr_done = False
+        self.set_indexer_done(False)
 
         return 
 
@@ -289,7 +290,8 @@ class Indexer:
         # will mean that the next "get" will cause the indexing to be rerun.
 
         self._indxr_helper.eliminate()
-        self._indxr_done = False
+        self.set_indexer_done(False)
+        # self._indxr_done = False
 
         return
 
@@ -306,7 +308,8 @@ class Indexer:
 
         while not self._indxr_done:
             while not self._indxr_prepare_done:
-                self._indxr_prepare_done = True
+                self.set_indexer_prepare_done(True)
+                # self._indxr_prepare_done = True
                 self._index_prepare()
                 
             # if there is already a list of "known" spacegroups, select the
@@ -318,7 +321,8 @@ class Indexer:
             # and if different to the selected one then this should be
             # reimposed and rerun.
             
-            self._indxr_done = True
+            # self._indxr_done = True
+            self.set_indexer_done(True)
 
             if not self._indxr_helper:
 
@@ -349,7 +353,8 @@ class Indexer:
                     # self._indxr_input_lattice = solution[0]
                     # self._indxr_input_cell = solution[1]
                     # result = self._index()
-                    self._indxr_done = False
+                    self.set_indexer_done(False)
+                    # self._indxr_done = False
 
             else:
                 # rerun autoindexing with the best known current solution
@@ -400,7 +405,8 @@ class Indexer:
 
         # reset the indexer - we need to rerun to get updated
         # results
-        self._indxr_done = False
+        self.set_indexer_done(False)
+        # self._indxr_done = False
         
         return
 
@@ -413,7 +419,8 @@ class Indexer:
 
         # reset the indexer - we need to rerun to get updated
         # results
-        self._indxr_done = False
+        self.set_indexer_done(False)
+        # self._indxr_done = False
 
         return
 
@@ -430,7 +437,8 @@ class Indexer:
 
         # reset the indexer - we need to rerun to get updated
         # results
-        self._indxr_done = False
+        self.set_indexer_done(False)
+        # self._indxr_done = False
 
         return
 
@@ -546,7 +554,8 @@ class Indexer:
 
         while self._indxr_helper.get()[0] != asserted_lattice:
             self._indxr_helper.eliminate()
-            self._indxr_done = False
+            self.set_indexer_done(False)
+            # self._indxr_done = False
 
         # ok by now everything should be ready for the recycling...
 
