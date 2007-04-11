@@ -254,7 +254,8 @@ class Integrater:
 
         Chatter.write('Sweep epoch: %d' % self._intgr_epoch)
         
-        self._intgr_done = False
+        # self._intgr_done = False
+        self.set_integrater_done(False)
         
         return
 
@@ -270,7 +271,8 @@ class Integrater:
 
         self._intgr_reso_high = min(dmin, dmax)
         self._intgr_reso_low = max(dmin, dmax)
-        self._intgr_done = False
+        self.set_integrater_done(False)
+        # self._intgr_done = False
 
         return
 
@@ -279,7 +281,8 @@ class Integrater:
 
         self._intgr_reso_high = dmin
 
-        self._intgr_done = False
+        self.set_integrater_done(False)
+        # self._intgr_done = False
         return
 
     def set_integrater_parameter(self, program, parameter, value):
@@ -315,7 +318,8 @@ class Integrater:
 
         # Chatter.write('Setting integration parameters: %s' % str(parameters))
         
-        self._intgr_done = False
+        self.set_integrater_done(False)
+        # self._intgr_done = False
 
         return
 
@@ -356,8 +360,10 @@ class Integrater:
         self._intgr_indexer = indexer
 
         # Chatter.write('Resetting integration flags')
-        self._intgr_done = False
-        self._intgr_prepare_done = False
+        self.set_integrater_prepare_done(False)
+        self.set_integrater_done(False)
+        # self._intgr_done = False
+        # self._intgr_prepare_done = False
         return
 
     def integrate(self):
@@ -371,7 +377,8 @@ class Integrater:
 
             while not self._intgr_prepare_done:
                 Chatter.write('Preparing to do some integration...')
-                self._intgr_prepare_done = True
+                # self._intgr_prepare_done = True
+                self.set_integrater_prepare_done(True)
 
                 # if this raises an exception, then perhaps the autoindexing
                 # solution has too high symmetry. if this the case, then
@@ -386,12 +393,15 @@ class Integrater:
                 except BadLatticeError, e:
                     Chatter.write('BadLattice! %s' % str(e))
                     self._intgr_indexer.eliminate()
-                    self._intgr_prepare_done = False
+                    self.set_integrater_prepare_done(False)
+                    # self._intgr_prepare_done = False
 
                 except IntegrationError, e:
                     Chatter.write('Integration! %s' % str(e))
                     self._intgr_indexer.eliminate()
-                    self._intgr_prepare_done = False
+                    # self._intgr_prepare_done = False
+                    self.set_integrater_prepare_done(False)
+                    
 
             # FIXED 01/NOV/06 what happens if the integration decides
             # that the lattice is wrong - this would mean that the indexing
@@ -407,7 +417,8 @@ class Integrater:
             Chatter.write('Doing some integration...')
             
             # assert that it is indeed done
-            self._intgr_done = True
+            self.set_integrater_done(True)
+            # self._intgr_done = True
             
             # but it may not be - if the integrate itself decides something
             # needs redoing
@@ -419,8 +430,10 @@ class Integrater:
             except BadLatticeError, e:
                 Chatter.write('Uh oh! %s' % str(e))
                 self._intgr_indexer.eliminate()
-                self._intgr_prepare_done = False
-                self._intgr_done = False
+                self.set_integrater_prepare_done(False)
+                self.set_integrater_done(False)
+                # self._intgr_prepare_done = False
+                # self._intgr_done = False
 
         # ok, we are indeed "done"...
         
