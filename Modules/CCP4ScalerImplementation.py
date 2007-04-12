@@ -458,45 +458,22 @@ class CCP4Scaler(Scaler):
             rerun_pointless = False
             
             if indexer:
-                # FIXED 05/DEC/06 this needs to really be run
-                # in order of decreasing pointgroup...
-                # uhh nope!
-                
-                ordered_lattices = lattices_in_order()
-                ordered_lattices.reverse()
-
-                # Chatter.write('All lattices: %s' % str(ordered_lattices))
-                
                 possible = pl.get_possible_lattices()
-
-                # Chatter.write('Possible lattices: %s' % str(possible))
                 
-                likely = []
-                for l in ordered_lattices:
-                    if l in possible:
-                        likely.append(l)
-
-                original_pointgroup = pl.get_pointgroup()
-
-                # FIXED this does not work quire right...
-                # try this! This now appears to work as expected...
-                
-                likely = possible
-
                 correct_lattice = None
 
                 Chatter.write('Possible lattices (pointless):')
-                for lattice in likely:
-                    Chatter.write('... %s' % lattice)
+                lattices = ''
+                for lattice in possible:
+                    lattices += '%s ' % lattice
+                Chatter.write(lattices)
                     
-                for lattice in likely:
+                for lattice in possible:
                     state = indexer.set_indexer_asserted_lattice(lattice)
                     if state == 'correct':
                             
-                        # pointless and indexing agree
                         Chatter.write(
                             'Agreed lattice %s' % lattice)
-
                         correct_lattice = lattice
                         
                         break
@@ -534,7 +511,8 @@ class CCP4Scaler(Scaler):
                         # now the integrater done check goes back to
                         # the indexer, too.
 
-                        if True:
+                        bug2264_fixed = False
+                        if not bug2264_fixed:
                             self._sweep_information[epoch][
                                 'integrater'].set_integrater_prepare_done(
                                 False)
@@ -736,8 +714,9 @@ class CCP4Scaler(Scaler):
 
             # record this for future reference - will be needed in the
             # radiation damage analysis...
+            first_batch = min(self._sweep_information[epoch]['batches'])
             self._sweep_information[epoch][
-                'batch_offset'] = counter * max_batches
+                'batch_offset'] = counter * max_batches - first_batch + 1
 
             rb.set_hklin(hklin)
             rb.set_first_batch(counter * max_batches + 1)
