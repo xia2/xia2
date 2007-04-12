@@ -368,7 +368,10 @@ class CCP4Scaler(Scaler):
                 hklin, self._sweep_information[epoch]['header'].get(
                 'phi_width', 0.0)))
 
-            # write a pointless log file...
+            # FIXME BIG TIME this one needs to interface to the
+            # indexer as below to ensure that this is all handled
+            # properly... Bug # 2269
+            
             pl.decide_pointgroup()
         
             Chatter.write('Pointless analysis of %s' % pl.get_hklin())
