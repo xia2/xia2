@@ -19,7 +19,7 @@
 #                 but needs to be connected to the Indexer to ensure that
 #                 an eliminated pointgroup is not selected.
 # 
-# FIXME 27/SEP/06 need to define a reference wavelength for the anomalous
+# ----- 27/SEP/06 need to define a reference wavelength for the anomalous
 #                 dispersive differences. This is best assigned at this 
 #                 level as the wavelength with the smallest |f'| + |f''|
 #                 or something:
@@ -42,7 +42,7 @@
 #                 (4)  eliminate badly radiation damaged data in different
 #                      sweeps.
 #
-# FIXME 01/NOV/06 should probably sort together all data for a particular
+# ----- 01/NOV/06 should probably sort together all data for a particular
 #                 wavelength before running pointless - this will probably
 #                 give better statistics from that program.
 #  
@@ -80,8 +80,10 @@
 #                 nasty things to happen, since the spread really is larger
 #                 than the errors. This is systematic! E.g. TS03.
 # 
-# FIXME 28/NOV/06 implement 0-dose extrapolation if apropriate (i.e.
+# ----- 28/NOV/06 implement 0-dose extrapolation if apropriate (i.e.
 #                 multiplicity > say 6 and radiation damage detected)
+#                 [(1) does not work with MAD
+#                  (2) Phil E says no!]
 #
 # FIXME 28/NOV/06 implement feedback to the indexing from the pointgroup
 #                 determination. See FIXME's in Scaler, Indexer, Integrater
@@ -109,10 +111,6 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
-# this is no longer needed FIXME 13/DEC/06
-if not os.path.join(os.environ['XIA2_ROOT'],'lib') in sys.path:
-    sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'lib'))
-
 # the interface definition that this will conform to 
 from Schema.Interfaces.Scaler import Scaler
 
@@ -129,6 +127,8 @@ from Wrappers.CCP4.Cad import Cad as _Cad
 from Wrappers.CCP4.Freerflag import Freerflag as _Freerflag
 from Wrappers.CCP4.Pointless import Pointless as _Pointless
 from Wrappers.CCP4.Sfcheck import Sfcheck as _Sfcheck
+
+from Wrappers.CCP4.CCP4Factory import CCP4Factory
 
 from Handlers.Streams import Chatter
 from Handlers.Files import FileHandler
@@ -162,97 +162,50 @@ class CCP4Scaler(Scaler):
         self._common_xname = None
         self._common_dname = None
 
+        self._factory = CCP4Factory()
+
+        return
+
+    # This is overloaded from the Scaler interface...
+    def set_working_directory(self, working_directory):
+        self._working_directory = working_directory
+        self._factory.set_working_directory(working_directory)
         return
 
     # factory methods...
 
     def Scala(self):
-        '''Create a Scala wrapper from _Scala - set the working directory
-        and log file stuff as a part of this...'''
-        scala = _Scala()
-        scala.set_working_directory(self.get_working_directory())
-        auto_logfiler(scala)
-        return scala
+        return self._factory.Scala()
 
     def Sortmtz(self):
-        '''Create a Sortmtz wrapper from _Sortmtz - set the working directory
-        and log file stuff as a part of this...'''
-        sortmtz = _Sortmtz()
-        sortmtz.set_working_directory(self.get_working_directory())
-        auto_logfiler(sortmtz)
-        return sortmtz
+        return self._factory.Sortmtz()
 
     def Mtzdump(self):
-        '''Create a Mtzdump wrapper from _Mtzdump - set the working directory
-        and log file stuff as a part of this...'''
-        mtzdump = _Mtzdump()
-        mtzdump.set_working_directory(self.get_working_directory())
-        auto_logfiler(mtzdump)
-        return mtzdump
+        return self._factory.Mtzdump()
 
     def Truncate(self):
-        '''Create a Truncate wrapper from _Truncate - set the working directory
-        and log file stuff as a part of this...'''
-        truncate = _Truncate()
-        truncate.set_working_directory(self.get_working_directory())
-        auto_logfiler(truncate)
-        return truncate
+        return self._factory.Truncate()
 
     def Rebatch(self):
-        '''Create a Rebatch wrapper from _Rebatch - set the working directory
-        and log file stuff as a part of this...'''
-        rebatch = _Rebatch()
-        rebatch.set_working_directory(self.get_working_directory())
-        auto_logfiler(rebatch)
-        return rebatch
+        return self._factory.Rebatch()
 
     def Reindex(self):
-        '''Create a Reindex wrapper from _Reindex - set the working directory
-        and log file stuff as a part of this...'''
-        reindex = _Reindex()
-        reindex.set_working_directory(self.get_working_directory())
-        auto_logfiler(reindex)
-        return reindex
+        return self._factory.Reindex()
 
     def Mtz2various(self):
-        '''Create a Mtz2various wrapper from _Mtz2various - set the working
-        directory and log file stuff as a part of this...'''
-        mtz2various = _Mtz2various()
-        mtz2various.set_working_directory(self.get_working_directory())
-        auto_logfiler(mtz2various)
-        return mtz2various
+        return self._factory.Mtz2various()
 
     def Cad(self):
-        '''Create a Cad wrapper from _Cad - set the working directory
-        and log file stuff as a part of this...'''
-        cad = _Cad()
-        cad.set_working_directory(self.get_working_directory())
-        auto_logfiler(cad)
-        return cad
+        return self._factory.Cad()
 
     def Freerflag(self):
-        '''Create a Freerflag wrapper from _Freerflag - set the working
-        directory and log file stuff as a part of this...'''
-        freerflag = _Freerflag()
-        freerflag.set_working_directory(self.get_working_directory())
-        auto_logfiler(freerflag)
-        return freerflag
+        return self._factory.Freerflag()
 
     def Pointless(self):
-        '''Create a Pointless wrapper from _Pointless - set the
-        working directory and log file stuff as a part of this...'''
-        pointless = _Pointless()
-        pointless.set_working_directory(self.get_working_directory())
-        auto_logfiler(pointless)
-        return pointless
+        return self._factory.Pointless()
 
     def Sfcheck(self):
-        '''Create a Sfcheck wrapper from _Sfcheck - set the
-        working directory and log file stuff as a part of this...'''
-        sfcheck = _Sfcheck()
-        sfcheck.set_working_directory(self.get_working_directory())
-        auto_logfiler(sfcheck)
-        return sfcheck
+        return self._factory.Sfcheck()
 
     def _scale_prepare(self):
         '''Perform all of the preparation required to deliver the scaled
