@@ -533,11 +533,13 @@ class CCP4Scaler(Scaler):
                         # Bug number: 2264. This should not be needed
                         # now the integrater done check goes back to
                         # the indexer, too.
-                        
-                        self._sweep_information[epoch][
-                            'integrater'].set_integrater_prepare_done(False)
-                        self._sweep_information[epoch][
-                            'integrater'].set_integrater_done(False)
+
+                        if True:
+                            self._sweep_information[epoch][
+                                'integrater'].set_integrater_prepare_done(
+                                False)
+                            self._sweep_information[epoch][
+                                'integrater'].set_integrater_done(False)
                         
                         need_to_return = True
 

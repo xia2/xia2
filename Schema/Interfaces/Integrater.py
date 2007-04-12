@@ -211,6 +211,7 @@ class Integrater:
     def get_integrater_done(self):
 
         if not self.get_integrater_indexer().get_indexer_done():
+            Chatter.write('Resetting integrater as indexer updated.')
             self.set_integrater_prepare_done(False)
             self.set_integrater_done(False)
         return self._intgr_done
@@ -460,11 +461,15 @@ class Integrater:
         # it has and everything is happy, just return the reflections,
         # else repeat the calculations.
 
-        if not self._intgr_done:
-            self.integrate()
+        # if not self._intgr_done:
+
+        self.integrate()
+
         return self._intgr_hklout
             
     def get_integrater_batches(self):
-        if not self._intgr_done:
-            self.integrate()
+        # if not self._intgr_done:
+
+        self.integrate()
+        
         return self._intgr_batches_out

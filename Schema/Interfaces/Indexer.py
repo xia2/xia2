@@ -554,6 +554,7 @@ class Indexer:
 
         while self._indxr_helper.get()[0] != asserted_lattice:
             self._indxr_helper.eliminate()
+            # self.eliminate()
             self.set_indexer_done(False)
             # self._indxr_done = False
 
