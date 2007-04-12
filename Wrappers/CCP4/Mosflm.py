@@ -1559,6 +1559,14 @@ def Mosflm(DriverType = None):
             integrated_images_first = 1.0e6
             integrated_images_last = -1.0e6
 
+            # look for major errors
+
+            for i in range(len(output)):
+                o = output[i]
+                if 'LWBAT: error in ccp4_lwbat' in o:
+                    raise RuntimeError, 'serious mosflm error - inspect %s' % \
+                          self.get_log_file()
+
             for i in range(len(output)):
                 o = output[i]
 
