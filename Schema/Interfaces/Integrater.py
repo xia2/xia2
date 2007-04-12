@@ -197,9 +197,22 @@ class Integrater:
         return
 
     def get_integrater_prepare_done(self):
+
+        # if the indexer is not up-to-date then this can't possibly
+        # be - feedback from scaling, this implements - likewise
+        # below in next method.
+        
+        if not self.get_integrater_indexer().get_indexer_done():
+            self.set_integrater_prepare_done(False)
+            self.set_integrater_done(False)
+            
         return self._intgr_prepare_done
 
     def get_integrater_done(self):
+
+        if not self.get_integrater_indexer().get_indexer_done():
+            self.set_integrater_prepare_done(False)
+            self.set_integrater_done(False)
         return self._intgr_done
 
     def set_integrater_project_info(self,

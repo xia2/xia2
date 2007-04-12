@@ -530,7 +530,9 @@ class CCP4Scaler(Scaler):
                         # This should be a new bug, which should
                         # add the "dated" stuff to the integrater so if
                         # the indexer is newer it will reintegrate...
-                        # Bug number: 2264.
+                        # Bug number: 2264. This should not be needed
+                        # now the integrater done check goes back to
+                        # the indexer, too.
                         
                         self._sweep_information[epoch][
                             'integrater'].set_integrater_prepare_done(False)

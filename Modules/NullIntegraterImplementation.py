@@ -59,6 +59,13 @@ class NullIntegrater(FrameProcessor,
     def get_working_directory(self):
         return self._working_directory
 
+    # overload these methods from the interface to provide a workaround
+    def get_integrater_prepare_done(self):
+        return self._intgr_prepare_done
+
+    def get_integrater_done(self):
+        return self._intgr_done    
+
     # "real" methods
 
     def _integrate_prepare(self):
