@@ -295,7 +295,7 @@ class CCP4Scaler(Scaler):
 
         if len(self._sweep_information.keys()) > 1:
 
-            # ---------- GENERATE REFERENCE SET ----------
+            # ---------- PREPARE REFERENCE SET ----------
 
             # pointless it, sort it, quick scale it
 
@@ -546,7 +546,7 @@ class CCP4Scaler(Scaler):
                         correct_lattice = lattice
 
                         break
-
+                    
             if rerun_pointless:
                 pl.set_correct_lattice(correct_lattice)
                 pl.decide_pointgroup()
@@ -567,6 +567,8 @@ class CCP4Scaler(Scaler):
 
             if overall_pointgroup != pointgroup:
                 Chatter.write('Uh oh - non uniform pointgroups!')
+
+                raise RuntimeError, 'non uniform pointgroups'
 
                 # FIXME 05/DEC/06 need to raise an exception here...
 
