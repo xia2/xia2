@@ -20,7 +20,7 @@ import sys
 import os
 import time
 
-sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
+sys.path.append(os.environ['XIA2_ROOT'])
 
 from Handlers.CommandLine import CommandLine
 from Handlers.Streams import Chatter

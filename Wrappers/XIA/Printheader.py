@@ -56,7 +56,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
 from Driver.DriverFactory import DriverFactory
-from Handlers.CommandLine import CommandLine
+# from Handlers.CommandLine import CommandLine
 
 class _HeaderCache:
     '''A cache for image headers.'''
@@ -230,7 +230,8 @@ def Printheader(DriverType = None):
                             self._header['epoch'] = self._epoch(d.strip())
                             self._header['date'] = self._date(d.strip())
                         else:
-                            if CommandLine.get_trust_timestamp():
+                            if False:
+                                # if CommandLine.get_trust_timestamp():
                                 self._header['epoch'] = float(
                                     os.stat(self._image)[8])
                                 self._header['date'] = time.ctime(

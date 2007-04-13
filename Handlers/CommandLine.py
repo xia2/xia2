@@ -53,7 +53,6 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Schema.Object import Object
 from Experts.FindImages import image2template_directory
-
 from Schema.XProject import XProject
 
 class _CommandLine(Object):
@@ -63,6 +62,11 @@ class _CommandLine(Object):
         '''Initialise all of the information from the command line.'''
 
         Object.__init__(self)
+
+        return
+
+    def setup(self):
+        '''Set everything up...'''
 
         try:
             self._read_beam()
@@ -392,6 +396,7 @@ class _CommandLine(Object):
         return self._trust_timestamps
 
 CommandLine = _CommandLine()
+CommandLine.setup()
 
 if __name__ == '__main__':
     print CommandLine.get_beam()
