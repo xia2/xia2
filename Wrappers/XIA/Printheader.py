@@ -119,7 +119,7 @@ def Printheader(DriverType = None):
             if datestring == 'N/A':
                 # we don't have the date!
                 # set default to 0-epoch
-                return datetime.datetime(1970, 1, 1, 1, 0, 0).timetuple()
+                return datetime.datetime(1970, 0, 0, 0, 0, 0).timetuple()
 
             try:
                 struct_time = time.strptime(datestring)
@@ -213,6 +213,8 @@ def Printheader(DriverType = None):
                 if 'Image type' in o:
                     self._header['detector'] = l[1].strip()
                     detector = self._header['detector']
+
+                # FIXME in here need to check a trust file timestamp flag
 
                 if 'Exposure epoch' in o or 'Collection date' in o:
                     try:
