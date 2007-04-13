@@ -110,11 +110,18 @@ class _CommandLine(Object):
             raise RuntimeError, '%s (%s)' % \
                   (self._help_resolution_limit(), str(e))
 
-        # try:
-        self._read_xinfo()
-        # except exceptions.Exception, e:
-        # raise RuntimeError, '%s (%s)' % \
-        # (self._help_xinfo(), str(e))
+        # FIXME why is this commented out??! - uncomment this though may
+        # want to explain exactly what is wrong...
+
+        try:
+            self._read_xinfo()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_xinfo(), str(e))
+
+        # things which are single token flags...
+
+        self._read_trust_timestamps()
 
         return
 
@@ -372,6 +379,17 @@ class _CommandLine(Object):
     def get_spacegroup(self):
         raise RuntimeError, 'this needs to be implemented'
 
+    def _read_trust_timestamps(self):
+
+        if '-trust_timestamps' in sys.argv:
+            self._trust_timestamps = True
+        else:
+            self._trust_timestamps = False
+
+        return
+
+    def get_trust_timestamps(self):
+        return self._trust_timestamps
 
 CommandLine = _CommandLine()
 
