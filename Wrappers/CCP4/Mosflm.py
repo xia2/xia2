@@ -934,7 +934,24 @@ def Mosflm(DriverType = None):
 
                 # look for overall cell refinement failure
                 if 'Processing will be aborted' in o:
-                    raise BadLatticeError, 'cell refinement failed'
+
+                    # perhaps try this with more images?
+                    
+                    if len(self._mosflm_cell_ref_images) <= 3:
+                        # set this up to be more images
+                        new_cell_ref_images = self._refine_select_images(
+                            len(self._mosflm_cell_ref_images) + 1,
+                            mosaic)
+                        self._mosflm_cell_ref_images = new_cell_ref_images
+
+                        self.set_integrater_prepare_done(False)
+
+                        Science.write(
+                            'Repeating cell refinement with more data.')
+
+                        return
+                    else:
+                        raise BadLatticeError, 'cell refinement failed'
                 
                 # look to store the rms deviations on a per-image basis
                 # this may be used to decide what to do about "inaccurate
