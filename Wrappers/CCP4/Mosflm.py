@@ -374,8 +374,9 @@ def Mosflm(DriverType = None):
             if num_wedges == 2:
                 ideal_last = int(90.0 / phi_width) + min_images
                 if ideal_last in images:
-                    cell_ref_images.append((images[ideal_last - min_images],
-                                            images[ideal_last]))
+                    cell_ref_images.append(
+                        (images[ideal_last - min_images + 1],
+                         images[ideal_last]))
                 else:
                     # there aren't 90 degrees of images
                     cell_ref_images.append((images[-min_images],
