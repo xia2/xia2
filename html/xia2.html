@@ -414,6 +414,12 @@ END PROJECT TS01
       <li>Perform radiation damage analysis using R merge and B factor
 	as a function of <i>time</i> - note that this is not <i>batch.</i>
 	This is likely to have interesting side-effects.</li>
+      <li>If time of data collection not recorded in header <i>but</i>
+	the time stamp for the images are correct (e.g. you have not moved
+	them since collection) then the command line flag
+	<pre>-trust_timestamps</pre> can be used, which will use the 
+	time stamps on the image files to analyse things like radiation
+	damage.</li>
     </ul>
 
     <p>Changes since 0.2.5</p>
@@ -556,7 +562,7 @@ END PROJECT TS01
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Wed Apr 04 16:08:28 GMT Standard Time 2007
+Last modified: Fri Apr 13 10:17:59 BST 2007
 <!-- hhmts end -->
   </body>
 </html>
