@@ -98,6 +98,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
 from Handlers.Streams import Chatter
+from Handlers.Files import FileHandler
 from Handlers.Environment import Environment
 
 # helper class definitions
@@ -205,6 +206,11 @@ class XSweep(Object):
         directory = expand_path(directory)
         integrated_reflection_file = expand_path(
             integrated_reflection_file)
+
+        # bug # 2274 - maybe migrate the data to a local disk (this
+        # will depend if el user has added -migrate_data to the cl)
+
+        directory = FileHandler.migrate(directory)
 
         self._name = name
         self._wavelength = wavelength

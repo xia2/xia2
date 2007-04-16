@@ -395,6 +395,18 @@ class _CommandLine(Object):
     def get_trust_timestamps(self):
         return self._trust_timestamps
 
+    def _read_migrate_data(self):
+
+        if '-migrate_data' in sys.argv:
+            self._migrate_data = True
+        else:
+            self._migrate_data = False
+
+        return
+
+    def get_migrate_data(self):
+        return self._migrate_data
+
 CommandLine = _CommandLine()
 CommandLine.setup()
 
