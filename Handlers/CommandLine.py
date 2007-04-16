@@ -126,6 +126,7 @@ class _CommandLine(Object):
         # things which are single token flags...
 
         self._read_trust_timestamps()
+        self._read_migrate_data()
 
         return
 
