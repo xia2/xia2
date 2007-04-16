@@ -68,6 +68,11 @@ class _CommandLine(Object):
     def setup(self):
         '''Set everything up...'''
 
+        # things which are single token flags...
+
+        self._read_trust_timestamps()
+        self._read_migrate_data()
+
         try:
             self._read_beam()
         except:
@@ -122,11 +127,6 @@ class _CommandLine(Object):
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
                   (self._help_xinfo(), str(e))
-
-        # things which are single token flags...
-
-        self._read_trust_timestamps()
-        self._read_migrate_data()
 
         return
 
