@@ -80,7 +80,7 @@ class _FileHandler:
                 out.write('Failed to delete: %s (%s)\n' % \
                           (f, str(e)))
 
-        for f in self._data_migrate,keys():
+        for f in self._data_migrate.keys():
             d = self._data_migrate[f]
             shutil.rmtree(d)
             out.write('Removed directory %s' % d)
