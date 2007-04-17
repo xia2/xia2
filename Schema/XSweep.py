@@ -404,6 +404,16 @@ class XSweep(Object):
             repr += 'INTEGRATED REFLECTION FILE %s\n' % \
                     self._integrated_reflection_file
             
+        if self._header:
+            # print some header information
+            if self._header.has_key('detector'):
+                repr += 'DETECTOR %s' % self._header['detector']
+            if self._header.has_key('exposure_time'):
+                repr += 'EXPOSURE_TIME %f' % self._header['exposure_time']
+            if self._header.has_key('phi_start'):
+                repr += 'PHI RANGE %.2f %.2f' % \
+                        (self._header['phi_start'], self._header['phi_end'])
+
         if self._frames_to_process:
             frames = self._frames_to_process
             repr += 'IMAGES (USER) %d to %d\n' % (frames[0],
@@ -413,7 +423,7 @@ class XSweep(Object):
                                                max(self._images))
 
         else:
-            repr += 'IMAGES UNKNOWN\n'
+            repr += 'IMAGES UNKNOWN\n'            
 
         # add some stuff to implement the actual processing implicitly
 
