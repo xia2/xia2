@@ -75,3 +75,23 @@ class XDSScaler(Scaler):
         return
 
     
+
+    # This will have to work as follows...
+    #
+    # PREPARE:
+    # 
+    # For all integraters - get INTEGRATE.HKL, run CORRECT, COMBAT,
+    # POINTLESS, get any appropriate reindexing operator, perhaps
+    # eliminate lattices, reget INTEGRATE.HKL, rerun CORRECT, store for
+    # reference in SCALE.
+    # 
+    # SCALE:
+    # 
+    # Scale together all data, run results of XSCALE through COMBAT,
+    # merge with SCALA, decide resolution limits from merging statistics,
+    # feedback? Perhaps. Also include a POINTLESS run in here to get the 
+    # best idea of the spacegroup from the updated CORRECT run, perhaps.
+    # This should output merged MTZ and unmerged scalepack. Rest can be
+    # derived by the scaler interface.
+    # 
+    
