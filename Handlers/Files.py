@@ -58,15 +58,27 @@ class _FileHandler:
         # retaining timestamps etc.
 
         migrated = 0
+        migrated_dir = 0
         for f in os.listdir(directory):
             # copy over only files....
             if os.path.isfile(os.path.join(directory, f)):
                 shutil.copy2(os.path.join(directory, f),
                              self._data_migrate[directory])
                 migrated += 1
+            elif os.path.isdir(os.path.join(directory, f)):
+                shutil.copytree(os.path.join(directory, f),
+                                self._data_migrate[directory])
+                migrated_dir += 1
+                
 
         Chatter.write('Migrated %d files from %s to %s' % \
                       (migrated, directory, self._data_migrate[directory]))
+
+        if migrated_dir > 0:
+            Chatter.write('Migrated %d directories from %s to %s' % \
+                          (migrated_dir, directory,
+                           self._data_migrate[directory]))
+
 
         return self._data_migrate[directory]
         
