@@ -67,7 +67,8 @@ class _FileHandler:
                 migrated += 1
             elif os.path.isdir(os.path.join(directory, f)):
                 shutil.copytree(os.path.join(directory, f),
-                                self._data_migrate[directory])
+                                os.path.join(self._data_migrate[directory],
+                                             f))
                 migrated_dir += 1
                 
 
