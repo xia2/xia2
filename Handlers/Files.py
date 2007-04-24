@@ -33,8 +33,10 @@ class _FileHandler:
         self._log_files = { }
         self._log_file_keys = []
 
-        # for data migration to local disk, bug # 2274
+        # for putting the reflection files somewhere nice...
+        self._data_files = []
         
+        # for data migration to local disk, bug # 2274
         self._data_migrate = { }
 
     def migrate(self, directory):
@@ -112,6 +114,15 @@ class _FileHandler:
                       (self._log_files[f],
                        filename))
 
+        # copy the data files
+        data_directory = Environment.generate_directory('DataFiles')
+        for f in self._data_files:
+            filename = os.path.join(data_directory,
+                                    os.path.split(f)[-1])
+            shutil.copyfile(f, filename)
+            out.write('Copied data file %s to %s\n' % \
+                      (f, filename))
+
         out.close()
         return
 
@@ -124,6 +135,12 @@ class _FileHandler:
         self._log_files[tag] = filename
         if not tag in self._log_file_keys:
             self._log_file_keys.append(tag)
+
+    def record_data_file(self, filename):
+        '''Record a data file.'''
+        if not filename in self._data_files:
+            self._data_files.append(filename)
+        return
 
     def record_temporary_file(self, filename):
         # allow for file overwrites etc.

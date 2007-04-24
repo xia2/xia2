@@ -71,6 +71,8 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Wrappers.CCP4.Scala import Scala as _Scala
 from Handlers.Streams import Chatter
+from Handlers.Files import FileHandler
+
 from lib.Guff import auto_logfiler, transpose_loggraph
 from lib.MathLib import linear_fit_ml
 
@@ -278,6 +280,7 @@ class CCP4IntraRadiationDamageDetector:
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    'xia2_rd_analyse.mtz'))
+        FileHandler.record_temporary_file(sc.get_hklout())
 
         # fixme need to check if anomalous
         

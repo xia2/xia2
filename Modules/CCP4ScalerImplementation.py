@@ -1607,6 +1607,8 @@ class CCP4Scaler(Scaler):
                 '_scaled', '_unmerged').replace('.mtz', '.sca'))
             self._scalr_scaled_reflection_files['sca_unmerged'][
                 key] = scalepack
+            FileHandler.record_data_file(scalepack)
+
 
         # convert I's to F's in Truncate
 
@@ -1848,8 +1850,10 @@ class CCP4Scaler(Scaler):
         # changed from mtz_merged_free to plain ol' mtz
         self._scalr_scaled_reflection_files['mtz'] = f.get_hklout()
 
-        # have a look for twinning ...
+        # record this for future reference
+        FileHandler.record_data_file(f.get_hklout())
 
+        # have a look for twinning ...
         sfc = self.Sfcheck()
         sfc.set_hklin(f.get_hklout())
         sfc.analyse()
