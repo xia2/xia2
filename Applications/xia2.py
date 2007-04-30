@@ -19,10 +19,11 @@
 import sys
 import os
 import time
+import exceptions
+import traceback
 
 sys.path.append(os.environ['XIA2_ROOT'])
 
-from Handlers.CommandLine import CommandLine
 from Handlers.Streams import Chatter
 from Handlers.Files import cleanup
 from Handlers.Citations import Citations
@@ -74,6 +75,8 @@ def xia2():
 
     start_time = time.time()
 
+    from Handlers.CommandLine import CommandLine
+    
     if not CommandLine.get_xinfo():
         raise RuntimeError, 'xinfo not defined'
     
@@ -116,6 +119,11 @@ if __name__ == '__main__':
 
     check_environment()
     check()
-    xia2()
+
+    try:
+        xia2()
+    except exceptions.Exception, e:
+        traceback.print_exc(file = open('xia2.error', 'w'))
+        Chatter.write('Error: %s' % str(e))
 
     
