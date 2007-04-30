@@ -35,6 +35,8 @@ def _parse_integrate_lp(filename):
 
     oscillation_range = 0.0
 
+    block_images = []
+
     for i in range(len(file_contents)):
 
         # check for the header contents - this is basically a duplicate
@@ -47,20 +49,32 @@ def _parse_integrate_lp(filename):
             list = file_contents[i].split()
             block_start_finish = (int(list[3]), int(list[5]))
 
+            block_images = [j for j in range(int(list[3]), int(list[5]) + 1)]
+
         # look for explicitly per-image information
         if 'IMAGE IER  SCALE' in file_contents[i]:
             j = i + 1
             while len(file_contents[j].strip()):
                 list = file_contents[j].split()
                 image = int(list[0])
+                status = int(list[1])
                 scale = float(list[2])
                 overloads = int(list[4])
                 strong = int(list[6])
                 rejected = int(list[7])
-                per_image_stats[image] = {'scale':scale,
-                                          'overloads':overloads,
-                                          'strong':strong,
-                                          'rejected':rejected}
+
+                if status == 0:
+
+                    # trap e.g. missing images - need to be able to
+                    # record this somewhere...
+                
+                    per_image_stats[image] = {'scale':scale,
+                                              'overloads':overloads,
+                                              'strong':strong,
+                                              'rejected':rejected}
+
+                else:
+                    block_images.remove(image)
 
                 j += 1
 
@@ -69,34 +83,39 @@ def _parse_integrate_lp(filename):
 
         if 'CRYSTAL MOSAICITY (DEGREES)' in file_contents[i]:
             mosaic = float(file_contents[i].split()[3])
-            for image in range(block_start_finish[0],
-                               block_start_finish[1] + 1):
+            # for image in range(block_start_finish[0],
+            # block_start_finish[1] + 1):
+            for image in block_images:
                 per_image_stats[image]['mosaic'] = mosaic
 
         if 'OF SPOT    POSITION (PIXELS)' in file_contents[i]:
             rmsd_pixel = float(file_contents[i].split()[-1])
-            for image in range(block_start_finish[0],
-                               block_start_finish[1] + 1):
+            # for image in range(block_start_finish[0],
+            # block_start_finish[1] + 1):
+            for image in block_images:
                 per_image_stats[image]['rmsd_pixel'] = rmsd_pixel
 
         if 'OF SPINDLE POSITION (DEGREES)' in file_contents[i]:
             rmsd_phi = float(file_contents[i].split()[-1])
-            for image in range(block_start_finish[0],
-                               block_start_finish[1] + 1):
+            # for image in range(block_start_finish[0],
+            # block_start_finish[1] + 1):
+            for image in block_images:                
                 per_image_stats[image]['rmsd_phi'] = \
                                                    rmsd_phi / oscillation_range
 
         # want to convert this to mm in some standard setting!
         if 'DETECTOR COORDINATES (PIXELS) OF DIRECT BEAM' in file_contents[i]:
             beam = map(float, file_contents[i].split()[-2:])
-            for image in range(block_start_finish[0],
-                               block_start_finish[1] + 1):
+            # for image in range(block_start_finish[0],
+            # block_start_finish[1] + 1):
+            for image in block_images:            
                 per_image_stats[image]['beam'] = beam
             
         if 'CRYSTAL TO DETECTOR DISTANCE (mm)' in file_contents[i]:
             distance = float(file_contents[i].split()[-1])
-            for image in range(block_start_finish[0],
-                               block_start_finish[1] + 1):
+            # for image in range(block_start_finish[0],
+            # block_start_finish[1] + 1):
+            for image in block_images:                
                 per_image_stats[image]['distance'] = distance
             
 

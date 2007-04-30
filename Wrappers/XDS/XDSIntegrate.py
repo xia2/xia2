@@ -186,21 +186,29 @@ def XDSIntegrate(DriverType = None):
             images = stats.keys()
             images.sort()
 
-            standard_deviations_spot_positions = [stats[i]['rmsd_pixel'] \
-                                                  for i in images]
+            # these may not be present if only a couple of the
+            # images were integrated...
 
-            low, high = min(standard_deviations_spot_positions), \
-                        max(standard_deviations_spot_positions)          
+            try:
 
-            Chatter.write('Standard Deviation in pixel range: %f %f' % \
-                          (low, high))
+                standard_deviations_spot_positions = [stats[i]['rmsd_pixel'] \
+                                                      for i in images]
 
-            if (high - low) / (0.5 * (high + low)) > 0.5:
-                # there was a very large variation in deviation
-                # FIXME 08/JAN/07 this should raise a BadLatticeException
+                low, high = min(standard_deviations_spot_positions), \
+                            max(standard_deviations_spot_positions)          
+
+                Chatter.write('Standard Deviation in pixel range: %f %f' % \
+                              (low, high))
+
+                if (high - low) / (0.5 * (high + low)) > 0.5:
+                    # there was a very large variation in deviation
+                    # FIXME 08/JAN/07 this should raise a BadLatticeException
                 
-                raise BadLatticeError, \
-                      'very large variation in pixel deviation'
+                    raise BadLatticeError, \
+                          'very large variation in pixel deviation'
+
+            except KeyError, e:
+                Chatter.write('Refinement not performed...')
 
             return
 
