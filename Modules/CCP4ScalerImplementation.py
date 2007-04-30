@@ -1159,9 +1159,11 @@ class CCP4Scaler(Scaler):
         # generate a name for the "scales" file - this will be used for
         # recycling the scaling parameters to compute appropriate
         # sd correction parameters
+        
+        # scales_file = os.path.join(self.get_working_directory(),
+        # '%s.scales' % self._common_xname)
 
-        scales_file = os.path.join(self.get_working_directory(),
-                                   '%s.scales' % self._common_xname)
+        scales_file = '%s.scales' % self._common_xname
 
         sc.set_new_scales_file(scales_file)
 
@@ -1386,8 +1388,10 @@ class CCP4Scaler(Scaler):
 
         sc.set_hklin(self._prepared_reflections)
 
-        scales_file = os.path.join(self.get_working_directory(),
-                                   '%s_final.scales' % self._common_xname)
+        # scales_file = os.path.join(self.get_working_directory(),
+        # '%s_final.scales' % self._common_xname)
+
+        scales_file = '%s_final.scales' % self._common_xname
 
         sc.set_new_scales_file(scales_file)
 
