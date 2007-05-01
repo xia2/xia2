@@ -143,7 +143,9 @@ from CCP4ScalerImplementationHelpers import _resolution_estimate, \
      _prepare_pointless_hklin, _fraction_difference
 
 from CCP4InterRadiationDamageDetector import CCP4InterRadiationDamageDetector
-from CCP4IntraRadiationDamageDetector import CCP4IntraRadiationDamageDetector
+
+# See FIXME_X0001 below...
+# from CCP4IntraRadiationDamageDetector import CCP4IntraRadiationDamageDetector
 
 class CCP4Scaler(Scaler):
     '''An implementation of the Scaler interface using CCP4 programs.'''
@@ -1135,11 +1137,15 @@ class CCP4Scaler(Scaler):
 
         # perform the radiation damage analysis
 
-        ird = CCP4IntraRadiationDamageDetector()
-        ird.set_working_directory(self.get_working_directory())
-        ird.set_hklin(self._prepared_reflections)
-        ird.set_sweep_information(self._sweep_information)
-        ird.analyse()
+        # only do this after 1/JUN deadline is reached - this should not
+        # be a part of 0.2.5.x c/f bug # 2059. FIXME this will need
+        # to be reinstated. FIXME_X0001
+
+        # ird = CCP4IntraRadiationDamageDetector()
+        # ird.set_working_directory(self.get_working_directory())
+        # ird.set_hklin(self._prepared_reflections)
+        # ird.set_sweep_information(self._sweep_information)
+        # ird.analyse()
 
         # FIXME 10/APR/07 -
         # This should probably return a dictionary of new sweep information
