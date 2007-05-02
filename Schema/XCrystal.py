@@ -206,6 +206,9 @@ class XCrystal(Object):
 
         self._name = name
 
+        # separate out the anomalous pairs or merge them together?
+        self._anomalous = False
+
         # FIXME check that project is an XProject
         self._project = project
 
@@ -393,6 +396,9 @@ class XCrystal(Object):
         # FIXED I need to decide how to implement this...
         # do so from the dictionary...
 
+        # bug # 2326 - need to decide when we're anomalous
+        self._anomalous = True
+
         atom = ha_info_dict['atom']
 
         if self._ha_info.has_key(atom):
@@ -427,6 +433,13 @@ class XCrystal(Object):
 
         self._wavelengths[xwavelength.get_name()] = xwavelength
 
+        # bug # 2326 - need to decide when we're anomalous
+        if len(self._wavelengths.keys()) > 1:
+            self._anomalous = True
+
+        if xwavelength.get_f_pr() != 0.0 or xwavelength.get_f_prpr() != 0.0:
+            self._anomalous = True
+            
         return
 
     def _get_integraters(self):
@@ -522,6 +535,9 @@ class XCrystal(Object):
             # which will wrap this information
 
             self._scaler = Scaler()
+
+            if self._anomalous:
+                self._scaler.set_scaler_anomalous(True)
 
             # set up a sensible working directory
             self._scaler.set_working_directory(

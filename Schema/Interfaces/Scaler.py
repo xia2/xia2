@@ -250,6 +250,9 @@ class Scaler:
         self._scalr_likely_spacegroups = []
         self._scalr_unlikely_spacegroups = []
 
+        # do we want anomalous pairs separating?
+        self._scalr_anomalous = False
+
         # admin junk
         self._working_directory = os.getcwd()
         self._scalr_pname = None
@@ -290,6 +293,13 @@ class Scaler:
     def set_scaler_done(self, done = True):
         self._scalr_done = done
         return
+
+    def set_scaler_anomalous(self, anomalous):
+        self._scalr_anomalous = anomalous
+        return
+
+    def get_scaler_anomalous(self):
+        return self._scalr_anomalous
 
     def scaler_reset(self):
         self._scalr_done = False

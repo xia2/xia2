@@ -42,10 +42,18 @@ def Truncate(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
+
+            self._anomalous = False
+            self._nres = 0
+
             self.set_executable('truncate')
 
             self._b_factor = 0.0
 
+            return
+
+        def set_anomalous(self, anomalous):
+            self._anomalous = anomalous
             return
 
         def truncate(self):
@@ -59,6 +67,14 @@ def Truncate(DriverType = None):
             # write the harvest files in the local directory, not
             # in $HARVESTHOME.
             self.input('usecwd')
+
+            if self._anomalous:
+                self.input('anomalous yes')
+            else:
+                self.input('anomalous no')
+
+            if self._nres:
+                self.input('nres %d' % self._nres)
 
             self.close_wait()
 
