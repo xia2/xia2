@@ -513,7 +513,7 @@ class CCP4Scaler(Scaler):
                         # now the integrater done check goes back to
                         # the indexer, too.
 
-                        bug2264_fixed = False
+                        bug2264_fixed = True
                         if not bug2264_fixed:
                             self._sweep_information[epoch][
                                 'integrater'].set_integrater_prepare_done(

@@ -387,9 +387,12 @@ class Integrater:
         # FIXME could the repeated integration needed in Mosflm be entirely
         # handled from here??? Apparently yes!
 
-        while not self._intgr_done:
+        # while not self._intgr_done:
+        while not self.get_integrater_done():
 
-            while not self._intgr_prepare_done:
+            # while not self._intgr_prepare_done:
+            while not self.get_integrater_prepare_done():
+
                 Chatter.write('Preparing to do some integration...')
                 # self._intgr_prepare_done = True
                 self.set_integrater_prepare_done(True)
