@@ -9,7 +9,7 @@
 # all of the input and output, delegating the actual processing to an
 # implementation of this interfacing.
 # 
-# The following are considered critical:
+# The following are considered critical: 
 # 
 # Input:
 # An implementation of the indexer class.
