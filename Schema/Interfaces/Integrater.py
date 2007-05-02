@@ -174,6 +174,23 @@ class Integrater:
     def _integrate_prepare(self):
         raise RuntimeError, 'overload me'
 
+    def _integrater_reset(self):
+        '''Reset the integrater, e.g. if the autoindexing solution
+        has changed.'''
+
+        # reset the status flags
+        self.set_integrater_prepare_done(False)
+        self.set_integrater_done(False)        
+
+        # reset the "knowledge" from the data
+        # note well - if we have set a resolution limit
+        # externally then this will have to be respected...
+        self._intgr_reso_high = 0.0
+        self._intgr_reso_low = 0.0
+        self._intgr_hklout = None
+
+        self._intgr_program_parameters = { }
+    
     def set_integrater_sweep(self, sweep):
         self._intgr_sweep = sweep
         return
@@ -203,8 +220,7 @@ class Integrater:
         # below in next method.
         
         if not self.get_integrater_indexer().get_indexer_done():
-            self.set_integrater_prepare_done(False)
-            self.set_integrater_done(False)
+            self._integrater_reset()
             
         return self._intgr_prepare_done
 
@@ -212,8 +228,8 @@ class Integrater:
 
         if not self.get_integrater_indexer().get_indexer_done():
             Chatter.write('Resetting integrater as indexer updated.')
-            self.set_integrater_prepare_done(False)
-            self.set_integrater_done(False)
+            self._integrater_reset()
+            
         return self._intgr_done
 
     def set_integrater_project_info(self,
