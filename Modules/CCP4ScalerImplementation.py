@@ -574,8 +574,8 @@ class CCP4Scaler(Scaler):
         # re-reduce the data then allow for this...
 
         if need_to_return:
-            self._scalr_done = False
-            self._scalr_prepare_done = False
+            self.set_scaler_done(False)
+            self.set_scaler_prepare_done(False)
             return
 
         # FIXED 06/NOV/06 need to run this again - this time with the
@@ -1308,8 +1308,8 @@ class CCP4Scaler(Scaler):
 
                 # we need to rerun both the scaling and the preparation -
                 # this may trigger reintegration as well...
-                self._scalr_done = False
-                self._scalr_prepare_done = False
+                self.set_scaler_done(False)
+                self.set_scaler_prepare_done(False)
 
             # note well that this spacing (0.075A) is designed to ensure that
             # integration shouldn't be repeated once it has been repeated
@@ -1327,15 +1327,15 @@ class CCP4Scaler(Scaler):
 
                 # we need to rerun both the scaling and the preparation -
                 # this may trigger reintegration as well...
-                self._scalr_done = False
-                self._scalr_prepare_done = False
+                self.set_scaler_done(False)
+                self.set_scaler_prepare_done(False)
 
             if resolution_limits[dname] < best_resolution:
                 best_resolution = resolution_limits[dname]
 
         # if we need to redo the scaling, return to allow this to happen
 
-        if not self._scalr_done:
+        if not self.get_scaler_done():
             return
 
         # and also radiation damage stuff...
