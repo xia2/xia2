@@ -172,10 +172,12 @@ def Scala(DriverType = None):
             return
 
         def add_run(self, start, end,
-                    pname = None, xname = None, dname = None):
-            '''Add another run to the run table.'''
+                    pname = None, xname = None, dname = None,
+                    exclude = False):
+            '''Add another run to the run table, optionally not including
+            it in the scaling - for solution to bug 2229.'''
 
-            self._runs.append((start, end, pname, xname, dname))
+            self._runs.append((start, end, pname, xname, dname, exclude))
             return
 
         def add_sd_correction(self, set, sdfac, sdadd, sdb = 0.0):
@@ -422,7 +424,12 @@ def Scala(DriverType = None):
                 run_number += 1
                 self.input('run %d batch %d to %d' % (run_number,
                                                       run[0], run[1]))
-            
+                if run[5]:
+                    # we want this run excluding from the scaling...
+                    self.input('exclude run %d batch %d to %d' % \
+                               (run_number,
+                                run[0], run[1]))
+                    
             # put in the pname, xname, dname stuff
             run_number = 0
             for run in self._runs:
