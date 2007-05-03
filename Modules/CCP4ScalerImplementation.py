@@ -985,14 +985,14 @@ class CCP4Scaler(Scaler):
                     i_tot = 0.0
                     s_tot = 1.0
 
-                # FIXME should this really measure the errors in terms
+                # FIXED should this really measure the errors in terms
                 # of total numbers of reflections, or just flatten the
                 # graph???
 
+                # FIXME still need to do this...
                 # TEST! Solve the structures and work out what is better...
 
-                # bugger! trying to minimise difference between this and
-                # 1.0!
+                # trying to minimise difference between this and 1.0!
                 
                 s_full -= 1.0
                 s_partial -= 1.0
@@ -1690,6 +1690,54 @@ class CCP4Scaler(Scaler):
                 key] = scalepack
             FileHandler.record_data_file(scalepack)
 
+        # finally repeat the merging again (!) but keeping the
+        # wavelengths separate to generate the statistics on a
+        # per-wavelength basis - note that we do not want the
+        # reflection files here... bug# 2229
+
+        for key in self._scalr_statistics:
+            pname, xname, dname = key
+
+            sc = self.Scala()
+            sc.set_hklin(self._prepared_reflections)
+            sc.set_scales_file(scales_file)
+
+            sc.add_sd_correction('full', 1.0, sdadd_full, sdb_full)
+            sc.add_sd_correction('partial', 1.0, sdadd_partial, sdb_partial)
+        
+            for epoch in epochs:
+                input = self._sweep_information[epoch]
+                start, end = (min(input['batches']), max(input['batches']))
+                if dname == input['dname']:
+                    sc.add_run(start, end, pname = input['pname'],
+                               xname = input['xname'],
+                               dname = input['dname'],
+                               exclude = False)
+                else:
+                    sc.add_run(start, end, pname = input['pname'],
+                               xname = input['xname'],
+                               dname = input['dname'],
+                               exclude = True)                    
+
+                # set the resolution limit to what we decided above...
+                # by the time we get this far this should have been what
+                # was used...
+                sc.set_resolution(resolution_limits[dname])
+
+            sc.set_hklout(os.path.join(self.get_working_directory(),
+                                           'temp.mtz'))
+                
+            if self.get_scaler_anomalous():
+                sc.set_anomalous()
+                
+            sc.set_tails()
+            sc.scale()
+            stats = sc.get_summary()
+
+            # this should just work ... by magic!
+            self._scalr_statistics[key] = stats[key]
+
+        # end bug # 2229 stuff
 
         # convert I's to F's in Truncate
 
