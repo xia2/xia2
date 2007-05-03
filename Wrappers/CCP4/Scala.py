@@ -173,11 +173,12 @@ def Scala(DriverType = None):
 
         def add_run(self, start, end,
                     pname = None, xname = None, dname = None,
-                    exclude = False):
+                    exclude = False, resolution = 0.0):
             '''Add another run to the run table, optionally not including
             it in the scaling - for solution to bug 2229.'''
 
-            self._runs.append((start, end, pname, xname, dname, exclude))
+            self._runs.append((start, end, pname, xname, dname,
+                               exclude, resolution))
             return
 
         def add_sd_correction(self, set, sdfac, sdadd, sdb = 0.0):
@@ -429,6 +430,11 @@ def Scala(DriverType = None):
                     self.input('exclude run %d batch %d to %d' % \
                                (run_number,
                                 run[0], run[1]))
+                if run[6] != 0.0:
+                    # also want to impose a resolution limit for this
+                    # run... this is to support quick mode - bug # 2040
+                    self.input('resolution run %d high %f' % \
+                               (run_number, run[6]))
                     
             # put in the pname, xname, dname stuff
             run_number = 0

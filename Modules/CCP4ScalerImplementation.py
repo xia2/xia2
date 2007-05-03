@@ -1498,9 +1498,20 @@ class CCP4Scaler(Scaler):
         for epoch in epochs:
             input = self._sweep_information[epoch]
             start, end = (min(input['batches']), max(input['batches']))
+
+            # bug # 2040 - if going quickly then the resolution limits
+            # won't have been set correctly in the reflection files...
+
+            if CommandLine.get_quick():
+                run_resolution_limit = resolution_limits[input['dname']]
+            else:
+                run_resolution_limit = 0.0
+
             sc.add_run(start, end, pname = input['pname'],
                        xname = input['xname'],
-                       dname = input['dname'])
+                       dname = input['dname'],
+                       exclude = False,
+                       resolution = run_resolution_limit)
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled.mtz' % \
@@ -1676,10 +1687,18 @@ class CCP4Scaler(Scaler):
         for epoch in epochs:
             input = self._sweep_information[epoch]
             start, end = (min(input['batches']), max(input['batches']))
+
+            if CommandLine.get_quick():
+                run_resolution_limit = resolution_limits[input['dname']]
+            else:
+                run_resolution_limit = 0.0
+
             sc.add_run(start, end, pname = input['pname'],
                        xname = input['xname'],
-                       dname = input['dname'])
-
+                       dname = input['dname'],
+                       exclude = False,
+                       resolution = run_resolution_limit)
+            
         sc.set_hklout(os.path.join(self.get_working_directory(), 'temp.mtz'))
         sc.set_scalepack(os.path.join(self.get_working_directory(),
                                       '%s_%s_unmerged.sca' % \
