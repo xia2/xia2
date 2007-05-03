@@ -211,7 +211,6 @@ from Schema.Interfaces.Integrater import Integrater
 
 from Handlers.Streams import Admin, Science, Status, Chatter
 from Handlers.Citations import Citations
-from Handlers.CommandLine import CommandLine
 
 # helpers
 
@@ -234,6 +233,8 @@ from Schema.Exceptions.IndexingError import IndexingError
 
 def Mosflm(DriverType = None):
     '''A factory for MosflmWrapper classes.'''
+
+    from Handlers.CommandLine import CommandLine
 
     DriverInstance = DriverFactory.Driver(DriverType)
     CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, 'ccp4')
@@ -696,7 +697,7 @@ def Mosflm(DriverType = None):
 
             # FIXME now ignoring the "fast" directive...
 
-            if self._mosflm_rerun_integration:
+            if self._mosflm_rerun_integration and not CommandLine.get_quick():
                 # make sure that this is run again...
                 Chatter.write('Need to rerun the integration...')
                 self.set_integrater_done(False)
@@ -1612,7 +1613,8 @@ def Mosflm(DriverType = None):
                             # this should probably override the input
                             self._mosflm_gain = gain
 
-                            self._mosflm_rerun_integration = True
+                            if not CommandLine.get_quick():
+                                self._mosflm_rerun_integration = True
 
                 if 'Smoothed value for refined mosaic spread' in o:
                     mosaic = float(o.split()[-1])

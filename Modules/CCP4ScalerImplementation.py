@@ -133,7 +133,6 @@ from Wrappers.CCP4.CCP4Factory import CCP4Factory
 from Handlers.Streams import Chatter
 from Handlers.Files import FileHandler
 from Handlers.Citations import Citations
-from Handlers.CommandLine import CommandLine
 
 # jiffys
 from lib.Guff import is_mtz_file, nifty_power_of_ten, auto_logfiler
@@ -1181,6 +1180,9 @@ class CCP4Scaler(Scaler):
         '''Perform all of the operations required to deliver the scaled
         data.'''
 
+        # this needs to be imported here to prevent circular references...
+        from Handlers.CommandLine import CommandLine
+
         # then perform some scaling - including any parameter fiddling
         # which is required.
         
@@ -1346,7 +1348,7 @@ class CCP4Scaler(Scaler):
 
         self._scalr_highest_resolution = highest_resolution
 
-        Chatter.write('Scaler highest resolution set to %f' % \
+        Chatter.write('Scaler highest resolution set to %5.2f' % \
                       self.get_scaler_highest_resolution())
 
         # Ok, now we have the resolution limit stuff, need to work through
@@ -1366,7 +1368,7 @@ class CCP4Scaler(Scaler):
             dmin = intgr.get_integrater_high_resolution()
 
             # compare this against the resolution limit computed above
-            if dmin == 0.0:
+            if dmin == 0.0 and not CommandLine.get_quick():
                 intgr.set_integrater_high_resolution(
                     resolution_limits[dname])
 
