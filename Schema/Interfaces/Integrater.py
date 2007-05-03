@@ -219,14 +219,16 @@ class Integrater:
         # be - feedback from scaling, this implements - likewise
         # below in next method.
         
-        if not self.get_integrater_indexer().get_indexer_done():
+        if not self.get_integrater_indexer().get_indexer_done() \
+               and self._intgr_prepare_done:
             self._integrater_reset()
             
         return self._intgr_prepare_done
 
     def get_integrater_done(self):
 
-        if not self.get_integrater_indexer().get_indexer_done():
+        if not self.get_integrater_indexer().get_indexer_done() \
+               and self._intgr_done:
             Chatter.write('Resetting integrater as indexer updated.')
             self._integrater_reset()
             
