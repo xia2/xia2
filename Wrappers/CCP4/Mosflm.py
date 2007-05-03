@@ -1612,9 +1612,7 @@ def Mosflm(DriverType = None):
 
                             # this should probably override the input
                             self._mosflm_gain = gain
-
-                            if not CommandLine.get_quick():
-                                self._mosflm_rerun_integration = True
+                            self._mosflm_rerun_integration = True
 
                 if 'Smoothed value for refined mosaic spread' in o:
                     mosaic = float(o.split()[-1])

@@ -286,7 +286,6 @@ class Integrater:
 
         Chatter.write('Sweep epoch: %d' % self._intgr_epoch)
         
-        # self._intgr_done = False
         self.set_integrater_done(False)
         
         return
@@ -304,7 +303,6 @@ class Integrater:
         self._intgr_reso_high = min(dmin, dmax)
         self._intgr_reso_low = max(dmin, dmax)
         self.set_integrater_done(False)
-        # self._intgr_done = False
 
         return
 
@@ -314,7 +312,6 @@ class Integrater:
         self._intgr_reso_high = dmin
 
         self.set_integrater_done(False)
-        # self._intgr_done = False
         return
 
     def set_integrater_parameter(self, program, parameter, value):
@@ -348,10 +345,7 @@ class Integrater:
 
         self._intgr_program_parameters = parameters
 
-        # Chatter.write('Setting integration parameters: %s' % str(parameters))
-        
         self.set_integrater_done(False)
-        # self._intgr_done = False
 
         return
 
@@ -391,28 +385,22 @@ class Integrater:
 
         self._intgr_indexer = indexer
 
-        # Chatter.write('Resetting integration flags')
         self.set_integrater_prepare_done(False)
         self.set_integrater_done(False)
-        # self._intgr_done = False
-        # self._intgr_prepare_done = False
         return
 
     def integrate(self):
         '''Actually perform integration until we think we are done...'''
 
-        # FIXME 20/OCT/06 need to be sure that this will work correctly...
-        # FIXME could the repeated integration needed in Mosflm be entirely
+        # FIXED 20/OCT/06 need to be sure that this will work correctly...
+        # FIXED could the repeated integration needed in Mosflm be entirely
         # handled from here??? Apparently yes!
 
-        # while not self._intgr_done:
         while not self.get_integrater_done():
 
-            # while not self._intgr_prepare_done:
             while not self.get_integrater_prepare_done():
 
                 Chatter.write('Preparing to do some integration...')
-                # self._intgr_prepare_done = True
                 self.set_integrater_prepare_done(True)
 
                 # if this raises an exception, then perhaps the autoindexing
@@ -429,12 +417,10 @@ class Integrater:
                     Chatter.write('BadLattice! %s' % str(e))
                     self._intgr_indexer.eliminate()
                     self.set_integrater_prepare_done(False)
-                    # self._intgr_prepare_done = False
 
                 except IntegrationError, e:
                     Chatter.write('Integration! %s' % str(e))
                     self._intgr_indexer.eliminate()
-                    # self._intgr_prepare_done = False
                     self.set_integrater_prepare_done(False)
                     
 
@@ -467,8 +453,6 @@ class Integrater:
                 self._intgr_indexer.eliminate()
                 self.set_integrater_prepare_done(False)
                 self.set_integrater_done(False)
-                # self._intgr_prepare_done = False
-                # self._intgr_done = False
 
         # ok, we are indeed "done"...
         
