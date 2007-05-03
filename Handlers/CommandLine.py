@@ -71,6 +71,7 @@ class _CommandLine(Object):
         # things which are single token flags...
 
         self._read_trust_timestamps()
+        self._read_quick()
         self._read_migrate_data()
 
         try:
@@ -390,6 +391,18 @@ class _CommandLine(Object):
             self._trust_timestamps = True
         else:
             self._trust_timestamps = False
+
+        return
+
+    def get_trust_timestamps(self):
+        return self._trust_timestamps
+
+    def _read_quick(self):
+
+        if '-quick' in sys.argv:
+            self._quick = True
+        else:
+            self._quick = False
 
         return
 
