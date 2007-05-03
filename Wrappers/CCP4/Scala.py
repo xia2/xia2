@@ -700,7 +700,8 @@ def Scala(DriverType = None):
                             # hack for bug # 2229 - to cope when
                             # all data for a dataset is not included 
 
-                            if key and not 'Infinity' in line:
+                            if key and not 'Infinity' in line \
+                                   and not 'NaN' in line:
                                 summary[scala_names_to_standard[
                                     key]] = map(float, line[40:].split())
                         i += 1
