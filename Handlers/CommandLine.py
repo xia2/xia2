@@ -406,8 +406,8 @@ class _CommandLine(Object):
 
         return
 
-    def get_trust_timestamps(self):
-        return self._trust_timestamps
+    def get_quick(self):
+        return self._quick
 
     def _read_migrate_data(self):
 
