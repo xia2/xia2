@@ -133,6 +133,7 @@ from Wrappers.CCP4.CCP4Factory import CCP4Factory
 from Handlers.Streams import Chatter
 from Handlers.Files import FileHandler
 from Handlers.Citations import Citations
+from Handlers.CommandLine import CommandLine
 
 # jiffys
 from lib.Guff import is_mtz_file, nifty_power_of_ten, auto_logfiler
@@ -1383,6 +1384,9 @@ class CCP4Scaler(Scaler):
                 # this should save us from the "infinate loop"
                 pass
 
+            elif CommandLine.get_quick():
+                Chatter.write('Quick, so not resetting resolution limits')
+
             else:
                 # ok it is worth rereducing the data
                 intgr.set_integrater_high_resolution(
@@ -1419,21 +1423,35 @@ class CCP4Scaler(Scaler):
 
         # perform some analysis of these results
 
-        # ---------- SD CORRECTION PARAMETER LOOP ----------
+        # bug 2040 - want to perhaps be quick? if so, do not bother
+        # with this and instead just set these parameters to
+        # the default values
 
-        # first "fix" the sd add parameters to match up the sd curve from
-        # the fulls and partials, and minimise RMS[N (scatter / sigma - 1)]
+        if CommandLine.get_quick():
+            Chatter.write('Quick, so not optimising error parameters')
+            sdadd_full = 0.02
+            sdb_full = 0.0
+            sdadd_partial = 0.02
+            sdb_partial = 0.0
 
-        Chatter.write('Optimising error parameters')
+        else:
 
-        sdadd_full, sdb_full, sdadd_partial, sdb_partial = \
-                    self._refine_sd_parameters(scales_file)
+            # ---------- SD CORRECTION PARAMETER LOOP ----------
+            
+            # first "fix" the sd add parameters to match up the sd curve from
+            # the fulls and partials, and minimise RMS[N (scatter / sigma - 1)]
+            
+            Chatter.write('Optimising error parameters')
+            
+            sdadd_full, sdb_full, sdadd_partial, sdb_partial = \
+                        self._refine_sd_parameters(scales_file)
 
-        # remove the old scales file
-        try:
-            os.remove(os.path.join(self.get_working_directory(), scales_file))
-        except:
-            Chatter.write('Error removing %s' % scales_file)
+            # remove the old scales file
+            try:
+                os.remove(os.path.join(self.get_working_directory(),
+                                       scales_file))
+            except:
+                Chatter.write('Error removing %s' % scales_file)
 
         # then try tweaking the sdB parameter in a range say 0-20
         # starting at 0 and working until the RMS stops going down

@@ -211,6 +211,7 @@ from Schema.Interfaces.Integrater import Integrater
 
 from Handlers.Streams import Admin, Science, Status, Chatter
 from Handlers.Citations import Citations
+from Handlers.CommandLine import CommandLine
 
 # helpers
 
@@ -1680,14 +1681,6 @@ def Mosflm(DriverType = None):
             if mean > 2.0:
                 raise BadLatticeError, 'large mean residual (%.2f)' % mean
 
-            # if we have not processed to a given resolution, fix
-            # the limit for future reference
-
-            if not self._intgr_reso_high:
-                resolution = decide_integration_resolution_limit(output)
-                self.set_integrater_high_resolution(resolution)
-                Chatter.write('Set resolution limit: %5.2f' % resolution)
-                
             Chatter.write('Integration status per image (60/record):')
             for chunk in [spot_status[i:i + 60] \
                           for i in range(0, len(spot_status), 60)]:
@@ -1697,6 +1690,18 @@ def Mosflm(DriverType = None):
             Chatter.write(
                 '"O" => overloaded  "#" => many bad  "." => blank') 
 
+            # if we have not processed to a given resolution, fix
+            # the limit for future reference
+
+            # bug # 2040 - this is one place where we could cut out the
+            # middle-man and make things quicker, by not resetting the
+            # resolution limit...
+
+            if not self._intgr_reso_high and not CommandLine.get_quick():
+                resolution = decide_integration_resolution_limit(output)
+                self.set_integrater_high_resolution(resolution)
+                Chatter.write('Set resolution limit: %5.2f' % resolution)
+                
             return self._mosflm_hklout
     
     return MosflmWrapper()
