@@ -696,7 +696,11 @@ def Scala(DriverType = None):
                     while not '=====' in line:
                         if len(line) > 40:
                             key = line[:40].strip()
-                            if key:
+                            
+                            # hack for bug # 2229 - to cope when
+                            # all data for a dataset is not included 
+
+                            if key and not 'Infinity' in line:
                                 summary[scala_names_to_standard[
                                     key]] = map(float, line[40:].split())
                         i += 1
