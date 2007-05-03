@@ -164,6 +164,7 @@ def Pointless(DriverType = None):
             self._pointgroup = None
             self._spacegroup = None
             self._reindex_matrix = None
+            self._reindex_operator = None
             self._confidence = 0.0
             self._hklref = None
 
