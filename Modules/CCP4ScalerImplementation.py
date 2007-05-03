@@ -309,7 +309,7 @@ class CCP4Scaler(Scaler):
             epochs.sort()
             first = epochs[0]
 
-            # FIXME in here I need to consider if the reflection file is
+            # FIXED in here I need to consider if the reflection file is
             # huge - and if it is, do something sensible like take only
             # the first 90 degrees of data or something... use the image
             # header to make this decision...
@@ -325,10 +325,61 @@ class CCP4Scaler(Scaler):
 
             # FIXME BIG TIME this one needs to interface to the
             # indexer as below to ensure that this is all handled
-            # properly... Bug # 2269
+            # properly... Bug # 2269 the code which follows is copied
+            # from the main preparation place... but should probably
+            # be moved to a helper routine!
+
+            indexer = self._sweep_information[epoch][
+                'integrater'].get_integrater_indexer()
+
+            # flag to record whether I need to do some rerunning
+            rerun_pointless = False
             
-            pl.decide_pointgroup()
-        
+            if indexer:
+                possible = pl.get_possible_lattices()
+                
+                correct_lattice = None
+
+                Chatter.write('Possible lattices (pointless):')
+                lattices = ''
+                for lattice in possible:
+                    lattices += '%s ' % lattice
+                Chatter.write(lattices)
+                    
+                for lattice in possible:
+                    state = indexer.set_indexer_asserted_lattice(lattice)
+                    if state == 'correct':
+                            
+                        Chatter.write(
+                            'Agreed lattice %s' % lattice)
+                        correct_lattice = lattice
+                        
+                        break
+                    
+                    elif state == 'impossible':
+                        Chatter.write(
+                            'Rejected lattice %s' % lattice)
+                        
+                        rerun_pointless = True
+                        
+                        continue
+                    
+                    elif state == 'possible':
+                        Chatter.write(
+                            'Accepted lattice %s ...' % lattice)
+                        Chatter.write(
+                            '... will reprocess accordingly')
+
+                        need_to_return = True
+
+                        correct_lattice = lattice
+
+                        break
+                    
+            if rerun_pointless:
+                pl.set_correct_lattice(correct_lattice)
+                pl.decide_pointgroup()
+
             Chatter.write('Pointless analysis of %s' % pl.get_hklin())
 
             # FIXME here - do I need to contemplate reindexing
