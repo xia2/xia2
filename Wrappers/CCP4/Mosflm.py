@@ -645,6 +645,17 @@ def Mosflm(DriverType = None):
             auto_logfiler(self)
             self._mosflm_refine_cell()
 
+            # also look for the images we want to integrate... since this
+            # is part of the preparation and was causing fun with
+            # bug # 2040 - going quickly! this resets the integration done
+            # flag...
+
+            if not self._intgr_wedge:
+                images = self.get_matching_images()
+                self.set_integrater_wedge(min(images),
+                                          max(images))
+            
+
             return
 
         def _integrate(self):
@@ -1469,8 +1480,6 @@ def Mosflm(DriverType = None):
 
             spacegroup_number = lattice_to_spacegroup(lattice)
 
-            images = self.get_matching_images()
-
             f = open(os.path.join(self.get_working_directory(),
                                   'xiaintegrate.mat'), 'w')
             for m in matrix:
@@ -1479,8 +1488,7 @@ def Mosflm(DriverType = None):
 
             # then start the integration
 
-            task = 'Integrate frames %d to %d' % (min(images),
-                                                  max(images))
+            task = 'Integrate frames %d to %d' % self._intgr_wedge
 
             self.set_task(task)
 
@@ -1548,10 +1556,6 @@ def Mosflm(DriverType = None):
             # sand box this ... 
             if self.get_header_item('detector') == 'raxis':
                 self.input('adcoffset 0')
-
-            if not self._intgr_wedge:
-                self.set_integrater_wedge(min(images),
-                                          max(images))
 
             self.input('process %d %d' % self._intgr_wedge)
                 

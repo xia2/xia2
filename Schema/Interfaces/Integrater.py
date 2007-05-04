@@ -439,7 +439,6 @@ class Integrater:
             
             # assert that it is indeed done
             self.set_integrater_done(True)
-            # self._intgr_done = True
             
             # but it may not be - if the integrate itself decides something
             # needs redoing
