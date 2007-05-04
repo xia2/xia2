@@ -271,6 +271,10 @@ def Mosflm(DriverType = None):
         def _estimate_gain(self):
             '''Estimate a GAIN appropriate for reducing this set.'''
 
+            # pass this in from the frameprocessor interface - bug # 2333
+            if self.get_gain():
+                self._mosflm_gain = self.get_gain()
+
             if self._mosflm_gain:
                 return
 
@@ -640,6 +644,11 @@ def Mosflm(DriverType = None):
             # bug 2199 remove this it only makes things less
             # reliable...
             # self._estimate_gain()
+
+            # instead read from FP interface if known... bug # 2333
+
+            if not self._mosflm_gain and self.get_gain():
+                self._mosflm_gain = self.get_gain()
 
             self.reset()
             auto_logfiler(self)

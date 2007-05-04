@@ -186,6 +186,7 @@ class XSweep(Object):
                  beam = None,
                  distance = None,
                  resolution = None,
+                 gain = 0.0,
                  frames_to_process = None,
                  epoch = 0):
         '''Create a new sweep named name, belonging to XWavelength object
@@ -367,6 +368,7 @@ class XSweep(Object):
 
         self._beam = beam
         self._distance = distance
+        self._gain = gain
         
         return
 
@@ -453,6 +455,9 @@ class XSweep(Object):
 
     def get_distance(self):
         return self._distance
+
+    def get_gain(self):
+        return self._gain
 
     def get_name(self):
         return self._name
@@ -548,6 +553,13 @@ class XSweep(Object):
             self._integrater.set_integrater_project_info(project_id,
                                                          crystal_id,
                                                          wavelength_id)
+
+            # see if we have any useful detector parameters to pass
+            # on
+
+            if self.get_gain():
+                # this is assuming that an Integrater is also a FrameProcessor
+                self._integrater.set_gain(self.get_gain())
 
             # look to see if there are any global integration parameters
             # we can set...

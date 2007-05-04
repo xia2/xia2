@@ -147,6 +147,7 @@ class XProject(Object):
                             sweep_info.get('INTEGRATED_REFLECTION_FILE'),
                             beam = sweep_info.get('beam'),
                             distance = sweep_info.get('distance'),
+                            gain = float(sweep_info.get('GAIN', 0.0)),
                             frames_to_process = sweep_info.get('start_end'),
                             epoch = sweep_info.get('epoch', 0))
                 

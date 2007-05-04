@@ -55,6 +55,8 @@ class FrameProcessor:
         self._fp_distance_prov = None
         self._fp_beam_prov = None
 
+        self._fp_gain = 0.0
+
         self._fp_header = { }
 
         # see FIXME for 06/SEP/06
@@ -103,6 +105,13 @@ class FrameProcessor:
 
     def get_distance(self):
         return self._fp_distance
+
+    def set_gain(self, gain):
+        self._fp_gain = gain
+        return
+
+    def get_gain(self):
+        return self._fp_gain
 
     def get_distance_prov(self):
         return self._fp_distance_prov
