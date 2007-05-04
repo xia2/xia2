@@ -211,6 +211,7 @@ from Schema.Interfaces.Integrater import Integrater
 
 from Handlers.Streams import Admin, Science, Status, Chatter
 from Handlers.Citations import Citations
+from Handlers.Flags import Flags
 
 # helpers
 
@@ -233,8 +234,6 @@ from Schema.Exceptions.IndexingError import IndexingError
 
 def Mosflm(DriverType = None):
     '''A factory for MosflmWrapper classes.'''
-
-    from Handlers.CommandLine import CommandLine
 
     DriverInstance = DriverFactory.Driver(DriverType)
     CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, 'ccp4')
@@ -717,7 +716,7 @@ def Mosflm(DriverType = None):
 
             # FIXME now ignoring the "fast" directive...
 
-            if self._mosflm_rerun_integration and not CommandLine.get_quick():
+            if self._mosflm_rerun_integration and not Flags.get_quick():
                 # make sure that this is run again...
                 Chatter.write('Need to rerun the integration...')
                 self.set_integrater_done(False)
@@ -1710,7 +1709,7 @@ def Mosflm(DriverType = None):
             # middle-man and make things quicker, by not resetting the
             # resolution limit...
 
-            if not self._intgr_reso_high and not CommandLine.get_quick():
+            if not self._intgr_reso_high and not Flags.get_quick():
                 resolution = decide_integration_resolution_limit(output)
                 self.set_integrater_high_resolution(resolution)
                 Chatter.write('Set resolution limit: %5.2f' % resolution)

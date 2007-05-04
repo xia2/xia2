@@ -56,18 +56,10 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
 from Driver.DriverFactory import DriverFactory
+from Handlers.Flags import Flags
 
-_trust_timestamps = None
-
-def get_trust_timestamps():
-    
-    global _trust_timestamps
-
-    if _trust_timestamps is None:
-        from Handlers.CommandLine import CommandLine
-        _trust_timestamps = CommandLine.get_trust_timestamp()
-
-    return _trust_timestamps
+def get_trust_timestamps():    
+    return Flags.get_trust_timestamp()
 
 class _HeaderCache:
     '''A cache for image headers.'''

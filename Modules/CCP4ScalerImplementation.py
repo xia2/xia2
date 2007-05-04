@@ -133,6 +133,7 @@ from Wrappers.CCP4.CCP4Factory import CCP4Factory
 from Handlers.Streams import Chatter
 from Handlers.Files import FileHandler
 from Handlers.Citations import Citations
+from Handlers.Flags import Flags        
 
 # jiffys
 from lib.Guff import is_mtz_file, nifty_power_of_ten, auto_logfiler
@@ -1180,9 +1181,6 @@ class CCP4Scaler(Scaler):
         '''Perform all of the operations required to deliver the scaled
         data.'''
 
-        # this needs to be imported here to prevent circular references...
-        from Handlers.CommandLine import CommandLine
-
         # then perform some scaling - including any parameter fiddling
         # which is required.
         
@@ -1368,7 +1366,7 @@ class CCP4Scaler(Scaler):
             dmin = intgr.get_integrater_high_resolution()
 
             # compare this against the resolution limit computed above
-            if dmin == 0.0 and not CommandLine.get_quick():
+            if dmin == 0.0 and not Flags.get_quick():
                 intgr.set_integrater_high_resolution(
                     resolution_limits[dname])
 
@@ -1386,7 +1384,7 @@ class CCP4Scaler(Scaler):
                 # this should save us from the "infinate loop"
                 pass
 
-            elif CommandLine.get_quick():
+            elif Flags.get_quick():
                 Chatter.write('Quick, so not resetting resolution limits')
 
             else:
@@ -1429,7 +1427,7 @@ class CCP4Scaler(Scaler):
         # with this and instead just set these parameters to
         # the default values
 
-        if CommandLine.get_quick():
+        if Flags.get_quick():
             Chatter.write('Quick, so not optimising error parameters')
             sdadd_full = 0.02
             sdb_full = 0.0
@@ -1504,7 +1502,7 @@ class CCP4Scaler(Scaler):
             # bug # 2040 - if going quickly then the resolution limits
             # won't have been set correctly in the reflection files...
 
-            if CommandLine.get_quick():
+            if Flags.get_quick():
                 run_resolution_limit = resolution_limits[input['dname']]
             else:
                 run_resolution_limit = 0.0
@@ -1690,7 +1688,7 @@ class CCP4Scaler(Scaler):
             input = self._sweep_information[epoch]
             start, end = (min(input['batches']), max(input['batches']))
 
-            if CommandLine.get_quick():
+            if Flags.get_quick():
                 run_resolution_limit = resolution_limits[input['dname']]
             else:
                 run_resolution_limit = 0.0

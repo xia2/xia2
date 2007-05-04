@@ -54,6 +54,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Schema.Object import Object
 from Experts.FindImages import image2template_directory
 from Schema.XProject import XProject
+from Handlers.Flags import Flags
 
 class _CommandLine(Object):
     '''A class to represent the command line input.'''
@@ -388,38 +389,21 @@ class _CommandLine(Object):
     def _read_trust_timestamps(self):
 
         if '-trust_timestamps' in sys.argv:
-            self._trust_timestamps = True
-        else:
-            self._trust_timestamps = False
-
+            Flags.set_trust_timestamps(True)
         return
-
-    def get_trust_timestamps(self):
-        return self._trust_timestamps
 
     def _read_quick(self):
 
         if '-quick' in sys.argv:
-            self._quick = True
-        else:
-            self._quick = False
-
+            Flags.set_quick(True)
         return
-
-    def get_quick(self):
-        return self._quick
 
     def _read_migrate_data(self):
 
         if '-migrate_data' in sys.argv:
-            self._migrate_data = True
-        else:
-            self._migrate_data = False
-
+            Flags.set_migrate_data(True)
         return
 
-    def get_migrate_data(self):
-        return self._migrate_data
 
 CommandLine = _CommandLine()
 CommandLine.setup()

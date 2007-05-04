@@ -22,6 +22,7 @@ import tempfile
 
 from Environment import Environment
 from Handlers.Streams import Chatter
+from Handlers.Flags import Flags
 
 class _FileHandler:
     '''A singleton class to manage files.'''
@@ -42,10 +43,7 @@ class _FileHandler:
     def migrate(self, directory):
         '''Migrate (or not) data to a local directory.'''
 
-        # import this here to cope with race conditions at startup
-        from Handlers.CommandLine import CommandLine
-
-        if not CommandLine.get_migrate_data():
+        if not Flags.get_migrate_data():
             # we will not migrate this data
             return directory
 
