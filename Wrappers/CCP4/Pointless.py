@@ -155,6 +155,8 @@ def Pointless(DriverType = None):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
 
+            # include this when it is working....
+            # pointless_version = "1.1.2"
             pointless_version = "1.1.1.d"
             
             self.set_executable('pointless-%s' % pointless_version)
