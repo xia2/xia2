@@ -1,0 +1,1 @@
+best -f q210-2x -i2s 3.000000 -t 1.000000 -C 0.990000 -R 2.000000 -r 1.980000 -e none -M 0.100000 -T 600.000000 -w 0.100000 -S 100.000000 -dna best.stf -mos bestfile.dat bestfile.par image_1.hkl image_2.hkl
