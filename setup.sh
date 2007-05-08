@@ -18,5 +18,6 @@ elif [ "$platform" = "Linux" ]; then
 fi
 
 export PATH=${PATH}:${XIA2_ROOT}/Applications
+export besthome=${XIA2_ROOT}/binaries/best
 
 

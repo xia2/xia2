@@ -17,6 +17,6 @@ else
 endif
 
 setenv PATH ${PATH}:${XIA2_ROOT}/Applications
-
+setenv besthome ${XIA2_ROOT}/binaries/best
 
 
