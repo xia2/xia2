@@ -117,8 +117,13 @@ def xia2():
 
 if __name__ == '__main__':
 
-    check_environment()
-    check()
+    try:
+        check_environment()
+        check()
+    except exceptions.Exception, e:
+        traceback.print_exc(file = open('xia2.error', 'w'))
+        Chatter.write('Error: %s' % str(e))
+        Chatter.write('Do you have Python 2.4 installed?')
 
     try:
         xia2()
