@@ -414,7 +414,8 @@ def Mosflm(DriverType = None):
                     lattice = self.get_integrater_indexer().get_indexer_lattice()
                     spacegroup_number = lattice_to_spacegroup(lattice)
 
-                    Chatter.write('Less than 45 degrees so using 30 images!')
+                    Chatter.write('Less than 45 degrees so using %d images!' %
+                                  min(30, len(images)))
                         
                     if len(images) <= 30:
                         # use all 30 images for cell refinement
