@@ -258,7 +258,7 @@ def Mosflm(DriverType = None):
 
             # local parameters used in cell refinement
             self._mosflm_cell_ref_images = None
-
+            
             # local parameters used in integration
             self._mosflm_rerun_integration = False
             self._mosflm_hklout = ''
@@ -394,8 +394,37 @@ def Mosflm(DriverType = None):
                                             images[ideal_middle - 1]))
                 else:
                     # there aren't 45 degrees of images
-                    raise RuntimeError, \
-                          'not enough data to do 3 wedge cell refinement'
+                    # bug # 2344 - we may be trying to reduce data from
+                    # a partial data set, in which case it is important to
+                    # give this a proper go... now Mosflm can take
+                    # up to 30 frames for postrefinement and I have
+                    # found that 3 x 10 is better than 2 x 15, so
+                    # if this is all you have, then go ahead. Now,
+                    # if the spacegroup is less than 75 then it is
+                    # likely that the refined cell parameters may not
+                    # be perfect, but they will probably be good enough,
+                    # so allow for a little slack (like say up to 0.2A
+                    # or 1% or something...)
+                    # raise RuntimeError, \
+                    # 'not enough data to do 3 wedge cell refinement'
+
+                    lattice = self.get_integrater_indexer().get_indexer_lattice()
+                    spacegroup_number = lattice_to_spacegroup(lattice)
+
+                    Chatter.write('Less than 45 degrees so using 30 images!')
+                        
+                    if len(images) <= 30:
+                        # use all 30 images for cell refinement
+                        cell_ref_images = [(min(images), max(images))]
+
+                    else:
+                        # set this to first ten, middle ten and last ten images
+                        middle = len(images) / 2
+                        cell_ref_images = [(images[0], images[9]),
+                                           (images[middle - 4], images[middle + 5]),
+                                           (images[-10], images[-1])]
+
+                        return cell_ref_images
 
                 ideal_last = int(90.0 / phi_width) + min_images
 
