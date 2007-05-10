@@ -365,7 +365,10 @@ def Mosflm(DriverType = None):
 
             images = self.get_matching_images()
 
-            if len(images) < num_wedges * min_images:
+            # bug # 2344 - does this every really help, other than
+            # being totally literal? if num_wedges == 3 then this
+            # will probably just end up using all images...
+            if len(images) < num_wedges * min_images and num_wedges == 2:
                 raise RuntimeError, 'not enough images to refine unit cell'
 
             cell_ref_images = []
