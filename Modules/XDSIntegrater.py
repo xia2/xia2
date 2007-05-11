@@ -29,6 +29,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Wrappers.XDS.XDSDefpix import XDSDefpix as _Defpix
 from Wrappers.XDS.XDSIntegrate import XDSIntegrate as _Integrate
+from Wrappers.XDS.XDSCorrect import XDSCorrect as _Correct
 
 # helper functions
 
@@ -99,6 +100,17 @@ class XDSIntegrater(FrameProcessor,
 
     def Integrate(self):
         integrate = _Integrate()
+        integrate.set_working_directory(self.get_working_directory())
+
+        integrate.setup_from_image(self.get_image_name(
+            self._intgr_wedge[0]))
+
+        auto_logfiler(integrate)
+
+        return integrate
+
+    def Correct(self):
+        integrate = _Correct()
         integrate.set_working_directory(self.get_working_directory())
 
         integrate.setup_from_image(self.get_image_name(
@@ -230,6 +242,18 @@ class XDSIntegrater(FrameProcessor,
 
         integrate.run()
 
+        # then run correct..
+
+        correct = self.Correct()
+
+        correct.set_data_range(self._intgr_wedge[0],
+                               self._intgr_wedge[1])
+
+        
+        correct.run()
+
+
+
         return
 
 if __name__ == '__main__':
@@ -241,25 +265,9 @@ if __name__ == '__main__':
 
     xi = XDSIntegrater()
 
-    directory = os.path.join(os.environ['XIA2_ROOT'],
-                             'Data', 'Test', 'Images')
+    directory = os.path.join('/data', 'graeme', 'insulin', 'demo')
 
-    # to test with a full data set - need to define another
-    # environment variable for this...
+    xi.setup_from_image(os.path.join(directory, 'insulin_1_001.img'))
 
-    if False:
-    
-        directory = os.path.join('/data','graeme','12287')
-        
-        directory = os.path.join('/Volumes','Arthur', 'JCSG Data',
-                                 '1vr9', 'data', 'jcsg', 'als1',
-                                 '8.2.1', '20050121', 'collection',
-                                 'TM0892', '12847')
-        
-        xi.setup_from_image(os.path.join(directory, '12847_4_001.img'))
-
-    xi.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
-
-    xi.set_beam((108.9, 105.0))
 
     xi.integrate()

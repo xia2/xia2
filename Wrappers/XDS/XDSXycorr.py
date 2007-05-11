@@ -10,6 +10,7 @@
 
 import os
 import sys
+import shutil
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -144,6 +145,12 @@ def XDSXycorr(DriverType = None):
             xds_inp.write('ORGX=%f ORGY=%f\n' % \
                           tuple(self._org))
             xds_inp.close()
+
+            # copy the input file...
+            shutil.copyfile(os.path.join(self.get_working_directory(),
+                                         'XDS.INP'),
+                            os.path.join(self.get_working_directory(),
+                                         'XYCORR.INP'))
             
             # write the input data files...
 

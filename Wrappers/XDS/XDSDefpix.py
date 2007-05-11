@@ -10,6 +10,7 @@
 
 import os
 import sys
+import shutil
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -128,6 +129,13 @@ def XDSDefpix(DriverType = None):
             xds_inp.write('DATA_RANGE=%d %d\n' % self._data_range)
             xds_inp.close()
             
+
+            # copy the input file...
+            shutil.copyfile(os.path.join(self.get_working_directory(),
+                                         'XDS.INP'),
+                            os.path.join(self.get_working_directory(),
+                                         'DEFPIX.INP'))
+
             # write the input data files...
 
             for file in self._input_data_files_list:
