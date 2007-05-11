@@ -57,7 +57,8 @@ def _parse_idxref_lp(lp_file_lines):
         if 'CRYSTAL MOSAICITY' in line:
             mosaic = float(line.split()[-1])
 
-        # get the lattice character information
+        # get the lattice character information - coding around the
+        # non-standard possibility of mI.
         
         if 'CHARACTER  LATTICE     OF FIT      a      b      c' in line:
             j = i + 1
@@ -65,6 +66,12 @@ def _parse_idxref_lp(lp_file_lines):
                 record = lp_file_lines[j].split()
                 character = int(record[0])
                 lattice = record[1]
+
+                # FIXME need to do something properly about this...
+                # bug # 2355
+                
+                if lattice == 'mI':
+                    lattice = 'mC'
                 fit = float(record[2])
                 cell = tuple(map(float, record[3:9]))
                 reindex_card = tuple(map(int, record[9:]))

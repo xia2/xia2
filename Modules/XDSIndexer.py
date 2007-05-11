@@ -316,7 +316,7 @@ class XDSIndexer(FrameProcessor,
 
         return
         
-if __name__ == '__main__':
+if __name__ == '__main_old__':
 
     # run a demo test
 
@@ -341,3 +341,19 @@ if __name__ == '__main__':
     print 'Mosaic: %6.2f' % xi.get_indexer_mosaic()
 
 
+if __name__ == '__main__':
+
+    xi = XDSIndexer()
+
+    directory = os.path.join('/data', 'graeme', 'insulin', 'demo')
+
+    xi.setup_from_image(os.path.join(directory, 'insulin_1_001.img'))
+
+    xi.index()
+    
+    print 'Refined beam is: %6.2f %6.2f' % xi.get_indexer_beam()
+    print 'Distance:        %6.2f' % xi.get_indexer_distance()
+    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % xi.get_indexer_cell()
+    print 'Lattice: %s' % xi.get_indexer_lattice()
+    print 'Mosaic: %6.2f' % xi.get_indexer_mosaic()
+    
