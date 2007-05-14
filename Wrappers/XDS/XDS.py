@@ -48,6 +48,8 @@ def _xds_version(xds_output_list):
     for line in xds_output_list:
         if 'XDS VERSION' in line:
             return line.split('XDS VERSION')[1].split(')')[0].strip()
+        if 'XDS' in line and 'VERSION' in line:
+            return line.split('(VERSION')[1].split(')')[0].strip()
 
     raise RuntimeError, 'XDS version not found'
 
@@ -56,7 +58,7 @@ def xds_check_version_supported(xds_output_list):
 
     xds_version = _xds_version(xds_output_list)
 
-    supported_versions = ['June 2006', 'August 18, 2006']
+    supported_versions = ['June 2006', 'August 18, 2006', 'May 8, 2007']
 
     if not xds_version in supported_versions:
         raise RuntimeError, 'XDS version "%s" not supported' % xds_version
