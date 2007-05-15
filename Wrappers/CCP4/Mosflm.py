@@ -1726,7 +1726,11 @@ def Mosflm(DriverType = None):
             if mean > 2.0:
                 raise BadLatticeError, 'large mean residual (%.2f)' % mean
 
-            Chatter.write('Integration status per image (60/record):')
+            if len(spot_status) > 60:
+                Chatter.write('Integration status per image (60/record):')
+            else:
+                Chatter.write('Integration status per image:')
+
             for chunk in [spot_status[i:i + 60] \
                           for i in range(0, len(spot_status), 60)]:
                 Chatter.write(chunk)
