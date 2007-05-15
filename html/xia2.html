@@ -421,6 +421,17 @@ END PROJECT TS01
       <li>Now include the latest Mosflm binaries in the extras package - 
 	these are often better than those in the CCP4 distribution,
 	as they come directly from Harry Powell's web page.</li>
+      <li>Added -ehtpx_xml_out option which will write out marked
+	up metadata about the data reduction, for inclusion in the
+	e-HTPX data reduction portal and, perhaps, other automated
+	systems. Usage:
+	<pre>
+xia2 -ehtpx_xml_out project.xml
+	</pre>
+      </li>
+      <li>If data are very incomplete (e.g. < 50% complete) then don't 
+	try to refine the error parameters. This is both incorrect and a 
+	waste of time.</li>
     </ul>
 
     <p>Changes since 0.2.5.1 - big changes in <b>bold</b></p>
@@ -601,7 +612,7 @@ END PROJECT TS01
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Tue May 15 11:42:10 GMT Standard Time 2007
+Last modified: Tue May 15 15:18:13 GMT Standard Time 2007
 <!-- hhmts end -->
   </body>
 </html>
