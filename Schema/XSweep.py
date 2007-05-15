@@ -413,8 +413,8 @@ class XSweep(Object):
             if self._header.has_key('exposure_time'):
                 repr += 'EXPOSURE TIME %f\n' % self._header['exposure_time']
             if self._header.has_key('phi_start'):
-                repr += 'PHI RANGE %.2f %.2f\n' % \
-                        (self._header['phi_start'], self._header['phi_end'])
+                repr += 'PHI WIDTH %.2f\n' % \
+                        (self._header['phi_start'] - self._header['phi_end'])
 
         if self._frames_to_process:
             frames = self._frames_to_process
