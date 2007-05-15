@@ -38,6 +38,10 @@
 # 
 #             At the moment the amount of feedback between the phasing
 #             and the rest of the data reduction is non existent.
+# 
+# 15/MAY/07 - FIXME need to add flag -ehtpx_xml_out which will enable 
+#             writing of e-HTPX xml for the data reduction portal. This
+#             should be provided the path on which to write the file.
 
 import sys
 import os
