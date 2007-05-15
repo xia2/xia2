@@ -48,6 +48,16 @@ def check_environment():
             raise RuntimeError, '%s not defined - is CCP4 set up?'
         Chatter.write('%s => %s' % (k, os.environ[k]))
 
+    try:
+        if os.name == 'nt':
+            hostname = os.environ['COMPUTERNAME'].split('.')[0]
+        else:
+            hostname = os.environ['HOSTNAME'].split('.')[0]
+
+        Chatter.write('Host: %s' % hostname)
+    except KeyError, e:
+        pass
+
     return
 
 if not os.environ.has_key('XIA2_ROOT'):
