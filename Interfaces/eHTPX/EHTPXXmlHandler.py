@@ -11,10 +11,11 @@
 # 15th May 2007
 
 class _EHTPXXmlHandler:
-    def __init__(self, project):
+
+    def __init__(self):
         self._crystals = []
         self._per_crystal_data = {}
-        self._project = project
+        self._project = None
 
         self._name_map = {
             'High resolution limit':'d-res-high',
@@ -33,18 +34,20 @@ class _EHTPXXmlHandler:
         
         return
 
-    
+    def set_project(self, project):
+        self._project = project
+        return
 
     def add_crystal(self, crystal):
         if not crystal in self._crystals:
             self._crystals.append(crystal)
 
             self._per_crystal_data[crystal] = {
-                stats:{},
-                cell:{},
-                log_files:[],
-                deposition_files:[],
-                reflection_files:[]
+                'stats':{},
+                'cell':{},
+                'log_files':[],
+                'deposition_files':[],
+                'reflection_files':[]
                 }
 
         return
@@ -59,21 +62,27 @@ class _EHTPXXmlHandler:
             'spacegroup_list'] = spacegroup_list
         return        
 
-    def set_crystal_reflection_file(self, crystal, reflection_file):
-        self._per_crystal_data[crystal]['reflection_files'].append(
-            reflection_file)
+    def add_crystal_reflection_file(self, crystal, reflection_file):
+        if not reflection_file in self._per_crystal_data[crystal][
+            'reflection_files']:
+            self._per_crystal_data[crystal]['reflection_files'].append(
+                reflection_file)
 
         return
     
-    def set_crystal_log_file(self, crystal, log_file):
-        self._per_crystal_data[crystal]['log_files'].append(
-            log_file)
+    def add_crystal_log_file(self, crystal, log_file):
+        if not log_file in self._per_crystal_data[crystal][
+            'log_files']:
+            self._per_crystal_data[crystal]['log_files'].append(
+                log_file)
 
         return
     
-    def set_crystal_deposition_file(self, crystal, deposition_file):
-        self._per_crystal_data[crystal]['deposition_files'].append(
-            deposition_file)
+    def add_crystal_deposition_file(self, crystal, deposition_file):
+        if not deposition_file in self._per_crystal_data[crystal][
+            'deposition_files']:
+            self._per_crystal_data[crystal]['deposition_files'].append(
+                deposition_file)
 
         return
 
@@ -90,11 +99,11 @@ class _EHTPXXmlHandler:
                        crystal)
             fout.write('<unit-cell-information>')
 
-            cell_info = self._crystals[crystal]['cell']
+            cell_info = self._per_crystal_data[crystal]['cell']
 
             for s in cell_info['spacegroup_list']:
                 fout.write(
-                    '<space-group-name-H-M>%s</space-group-name-H-M' % \
+                    '<space-group-name-H-M>%s</space-group-name-H-M>' % \
                     s)
 
             fout.write('<length-a>%f</length-a>' % cell_info['cell'][0])
@@ -106,11 +115,11 @@ class _EHTPXXmlHandler:
     
             fout.write('</unit-cell-information>')
 
-            for f in self._crystals[crystal]['reflection_files']:
+            for f in self._per_crystal_data[crystal]['reflection_files']:
                 fout.write('<reflection-file>%s</reflection-file>' % f)
-            for f in self._crystals[crystal]['log_files']:
+            for f in self._per_crystal_data[crystal]['log_files']:
                 fout.write('<log-file>%s</log-file>' % f)
-            for f in self._crystals[crystal]['deposition_files']:
+            for f in self._per_crystal_data[crystal]['deposition_files']:
                 fout.write('<deposition-file>%s</deposition-file>' % f)
 
 
@@ -119,11 +128,15 @@ class _EHTPXXmlHandler:
                 dataset, resolution_bin = k.split(':')
 
                 fout.write('<dataset>%s</dataset>' % dataset)
-                fout.write('<resolution-bin>%s</resolution-bin' % \
+                fout.write('<resolution-bin>%s</resolution-bin>' % \
                            resolution_bin)
 
                 for stat in self._per_crystal_data[crystal][
                     'stats'][k].keys():
+                    
+                    if not self._name_map.has_key(stat):
+                        continue
+                    
                     name = self._name_map[stat]
                     datum = self._per_crystal_data[crystal][
                         'stats'][k][stat]
@@ -139,3 +152,8 @@ class _EHTPXXmlHandler:
 
         return
     
+EHTPXXmlHandler = _EHTPXXmlHandler()
+
+if __name__ == '__main__':
+    EHTPXXmlHandler.set_project('test')
+    EHTPXXmlHandler.write_xml('test.xml')

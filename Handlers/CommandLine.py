@@ -134,6 +134,12 @@ class _CommandLine(Object):
             raise RuntimeError, '%s (%s)' % \
                   (self._help_xinfo(), str(e))
 
+        try:
+            self._read_ehtpx_xml_out()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_ehtpx_xml_out(), str(e))
+
         return
 
     # command line parsers, getters and help functions.
@@ -374,6 +380,27 @@ class _CommandLine(Object):
     def get_xinfo(self):
         '''Return the XProject.'''
         return self._xinfo
+
+    def _read_ehtpx_xml_out(self):
+        try:
+            index = sys.argv.index('-ehtpx_xml_out')
+        except ValueError, e:
+            self._ehtpx_xml_out = None
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        self._ehtpx_xml_out = sys.argv[index + 1]
+            
+        return
+
+    def _help_ehtpx_xml_out(self):
+        return '-ehtpx_xml_out project.xml'
+
+    def get_ehtpx_xml_out(self):
+        '''Return the ehtpx xml out file.'''
+        return self._ehtpx_xml_out
     
     def get_template(self):
         return self._default_template

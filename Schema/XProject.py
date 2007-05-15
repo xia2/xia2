@@ -36,8 +36,12 @@ from Schema.XWavelength import XWavelength
 from Handlers.XInfo import XInfo
 
 # output stream
-
 from Handlers.Streams import Chatter
+
+# XML Marked up output for e-HTPX
+if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
+    sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'Interfaces'))
+from eHTPX.EHTPXXmlHandler import EHTPXXmlHandler
 
 class XProject(Object):
     '''A versioning object representation of a complete project. This
@@ -61,6 +65,9 @@ class XProject(Object):
 
     def __repr__(self):
         result = 'Project: %s\n' % self._name
+
+        EHTPXXmlHandler.set_project(self._name)
+
         for crystal in self._crystals.keys():
             result += str(self._crystals[crystal])
         return result[:-1]

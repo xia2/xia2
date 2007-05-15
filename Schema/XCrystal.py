@@ -81,6 +81,11 @@ from Modules.SubstructureFinderFactory import SubstructureFinder
 
 from NMolLib import compute_nmol, compute_solvent
 
+# XML Marked up output for e-HTPX
+if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
+    sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'Interfaces'))
+from eHTPX.EHTPXXmlHandler import EHTPXXmlHandler
+
 def sort_o_dict(dict, metric):
     '''A generic sorter for dictionaries - will return the keys in
     the correct order for sorting by the input metric.'''
@@ -238,6 +243,9 @@ class XCrystal(Object):
 
     def __repr__(self):
         result = 'Crystal: %s\n' % self._name
+
+        EHTPXXmlHandler.add_crystal(self._name)
+        
         if self._aa_sequence:
             result += 'Sequence: %s\n' % self._aa_sequence.get_sequence()
         for wavelength in self._wavelengths.keys():
@@ -281,6 +289,9 @@ class XCrystal(Object):
                 if k in available:
                     stats.append(k)
 
+            save_stats_overall = { }
+            save_stats_high = { }
+
             for s in stats:
                 if type(statistics_all[key][s]) == type(0.0):
                     result += '%s: %f\n' % (s.ljust(40),
@@ -293,6 +304,18 @@ class XCrystal(Object):
                     for value in statistics_all[key][s]:
                         result += '\t%s' % str(value)
                     result += '\n'
+
+                    save_stats_overall[s] = statistics_all[key][s][0]
+                    save_stats_high[s] = statistics_all[key][s][-1]
+
+            EHTPXXmlHandler.set_crystal_statistics(xname,
+                                                   '%s:overall' % dname,
+                                                   save_stats_overall)
+
+            EHTPXXmlHandler.set_crystal_statistics(xname,
+                                                   '%s:high' % dname,
+                                                   save_stats_high)
+                    
             result += '\n'
 
         # then print out some "derived" information based on the
@@ -301,6 +324,9 @@ class XCrystal(Object):
 
         cell = self._get_scaler().get_scaler_cell()
         spacegroups = self._get_scaler().get_scaler_likely_spacegroups()
+
+        EHTPXXmlHandler.set_crystal_cell(xname, cell, spacegroups)
+        
         spacegroup = spacegroups[0]
         resolution = self._get_scaler().get_scaler_highest_resolution()
 
@@ -350,9 +376,14 @@ class XCrystal(Object):
                     for wavelength in reflections.keys():
                         result += 'Scaled reflections (%s): %s\n' % \
                                   (wavelength, reflections[wavelength])
+                        EHTPXXmlHandler.add_crystal_reflection_file(
+                            xname, reflections[wavelength])
+                    
                 else:
                     result += 'Scaled reflections: %s\n' % \
                               str(reflections)
+                    EHTPXXmlHandler.add_crystal_reflection_file(
+                        xname, reflections)
 
         # and now some site information... maybe
         if self._ha_info and False:

@@ -30,6 +30,11 @@ from Handlers.Citations import Citations
 
 from XIA2Version import Version
 
+# XML Marked up output for e-HTPX
+if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
+    sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'Interfaces'))
+from eHTPX.EHTPXXmlHandler import EHTPXXmlHandler
+
 def check_environment():
     '''Check the environment we are running in...'''
 
@@ -102,8 +107,11 @@ def xia2():
     # delete all of the temporary mtz files...
     cleanup()
 
-    # tell the user which programs were used...
+    # write out the e-htpx XML, perhaps
+    if CommandLine.get_ehtpx_xml_out():
+        EHTPXXmlHandler.write_xml(CommandLine.get_ehtpx_xml_out())
 
+    # tell the user which programs were used...
     used = ''
     for program in Citations.get_programs():
         used += ' %s' % program
