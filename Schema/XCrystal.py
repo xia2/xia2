@@ -348,10 +348,10 @@ class XCrystal(Object):
 
                 if type(reflections) == type({}):
                     for wavelength in reflections.keys():
-                        result += 'Scaled & merged reflections (%s): %s\n' % \
+                        result += 'Scaled reflections (%s): %s\n' % \
                                   (wavelength, reflections[wavelength])
                 else:
-                    result += 'Scaled & merged reflections: %s\n' % \
+                    result += 'Scaled reflections: %s\n' % \
                               str(reflections)
 
         # and now some site information... maybe
