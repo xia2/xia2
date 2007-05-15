@@ -336,7 +336,7 @@ def Scala(DriverType = None):
 
             self.start()
             # for the harvesting information
-            self.input('usecwd')
+            # self.input('usecwd')
             self.input('run 1 all')
             self.input('scales constant')
             self.input('initial unity')
@@ -413,7 +413,7 @@ def Scala(DriverType = None):
 
             self.start()
             # for the harvesting information
-            self.input('usecwd')
+            # self.input('usecwd')
                 
             # fixme this works ok for UC1 but won't handle anything
             # more sophisticated FIXME FIXME 27/OCT/06 how is this
