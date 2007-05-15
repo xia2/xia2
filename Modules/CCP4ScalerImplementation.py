@@ -2023,12 +2023,12 @@ class CCP4Scaler(Scaler):
         f = self.Freerflag()
 
         # changed this to not assume that the file is called _merged.mtz
+        hklout = os.path.join(self.get_working_directory(),
+                              '%s_%s_free.mtz' % (self._common_pname,
+                                                  self._common_xname))
 
         f.set_hklin(self._scalr_scaled_reflection_files['mtz_merged'])
-        f.set_hklout(
-            self._scalr_scaled_reflection_files['mtz_merged'].replace(
-            '.mtz',
-            '_free.mtz'))
+        f.set_hklout(hklout)
         
         f.add_free_flag()
 
