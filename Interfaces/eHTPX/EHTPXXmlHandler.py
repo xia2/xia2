@@ -146,7 +146,7 @@ class _EHTPXXmlHandler:
             
             fout.write('</per-crystal-results>')
 
-        fout.write('<DiffractionDataReduction>')
+        fout.write('</DiffractionDataReduction>')
 
         fout.close()
 
