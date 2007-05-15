@@ -255,6 +255,8 @@ def XDSIdxref(DriverType = None):
             self._idxref_data = _parse_idxref_lp(lp)
 
             for j in range(1, 45):
+                if not self._idxref_data.has_key(j):
+                    continue
                 data = self._idxref_data[j]
                 lattice = data['lattice']
                 fit = data['fit']

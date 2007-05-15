@@ -58,7 +58,8 @@ def _parse_idxref_lp(lp_file_lines):
             mosaic = float(line.split()[-1])
 
         # get the lattice character information - coding around the
-        # non-standard possibility of mI.
+        # non-standard possibility of mI, by simply ignoring it!
+        # bug # 2355
         
         if 'CHARACTER  LATTICE     OF FIT      a      b      c' in line:
             j = i + 1
@@ -71,12 +72,14 @@ def _parse_idxref_lp(lp_file_lines):
                 # bug # 2355
                 
                 if lattice == 'mI':
-                    lattice = 'mC'
+                    j += 1
+                    continue
+                
                 fit = float(record[2])
                 cell = tuple(map(float, record[3:9]))
                 reindex_card = tuple(map(int, record[9:]))
                 constrained_cell = ApplyLattice(lattice, cell)[0]
-
+                
                 lattice_character_info[character] = {
                     'lattice':lattice,
                     'fit':fit,
