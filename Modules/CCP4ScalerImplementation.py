@@ -1427,8 +1427,25 @@ class CCP4Scaler(Scaler):
         # with this and instead just set these parameters to
         # the default values
 
+        # data still contains the summary information - for bug # 2357
+        # see if the completeness appears to be > 50 % overall and if
+        # not, do not refine sd parameters...
+
+        average_completeness = 0.0
+
+        for k in data.keys():
+            average_completeness += data[k]['Completeness'][0]
+        average_completeness /= len(data.keys())
+
         if Flags.get_quick():
             Chatter.write('Quick, so not optimising error parameters')
+            sdadd_full = 0.02
+            sdb_full = 0.0
+            sdadd_partial = 0.02
+            sdb_partial = 0.0
+
+        elif average_completeness < 50.0:
+            Chatter.write('Incomplete data, so not refining error parameters')
             sdadd_full = 0.02
             sdb_full = 0.0
             sdadd_partial = 0.02
