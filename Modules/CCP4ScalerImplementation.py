@@ -2064,7 +2064,11 @@ class CCP4Scaler(Scaler):
             crd.set_working_directory(self.get_working_directory())
 
             crd.set_hklin(f.get_hklout())
-            crd.set_hklout(f.get_hklout().replace('merged_free', 'scaleit'))
+            
+            hklout = os.path.join(self.get_working_directory(), 'temp.mtz')
+            FileHandler.record_temporary_file(hklout)
+            
+            crd.set_hklout(hklout)
 
             status = crd.detect()
 
