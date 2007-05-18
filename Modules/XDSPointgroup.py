@@ -8,8 +8,9 @@
 # 8th January 2007
 # 
 # A pointgroup determination module for XDS, which will run the results of
-# CORRECT in P1 into Combat then Pointless.
-# 
+# CORRECT in P1 into Combat then Pointless. Nope, this will run CORRECT
+# with whatever spacegroup was used for integration... Test this on the
+# results from BA0296!
 
 import os
 import sys
@@ -125,8 +126,9 @@ if __name__ == '__main__':
 
     xp = XDSPointgroup()
 
-    directory = os.path.join('/data','graeme','12287')
-    xp.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
+    directory = os.path.join('/data', 'graeme', 'insulin', 'demo')
+
+    xp.setup_from_image(os.path.join(directory, 'insulin_1_001.img'))
     xp.set_hklin('INTEGRATE.HKL')
 
     xp.run()
