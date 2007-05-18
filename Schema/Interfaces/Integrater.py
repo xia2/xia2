@@ -106,6 +106,11 @@
 #
 #                 examples for these are 1VK8 (TS02) 1VPJ (TS03) and BA0296.
 #  
+#                 This brings the need to move the reindexing operations in
+#                 to the Integrater interfacem and therefore we need to add
+#                 an extra "method" to this for integrater finish - think of
+#                 it as the opposite to integrate prepare. Have also done this
+#                 for the Indexer.
 
 import os
 import sys
