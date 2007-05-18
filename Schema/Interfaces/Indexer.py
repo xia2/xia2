@@ -207,6 +207,7 @@ class Indexer:
         # job management parameters
         self._indxr_done = False
         self._indxr_prepare_done = False
+        self._indxr_finish_done = False
         
         # output items
         self._indxr_lattice = None
@@ -240,6 +241,10 @@ class Indexer:
     def _index_prepare(self):
         raise RuntimeError, 'overload me'
 
+    def _index_finish(self):
+        # raise RuntimeError, 'overload me'
+        pass
+
     def _index_select_images(self):
         '''This is something the implementation needs to implement.
         For instance, Labelit & Mosflm work well with 2 frames 90
@@ -247,38 +252,37 @@ class Indexer:
 
         raise RuntimeError, 'overload me'
 
+    # these need to cascade, as if the preparation is set as not
+    # done the indexing clearly is not done, etc.
+
     def set_indexer_prepare_done(self, done = True):
         self._indxr_prepare_done = done
+
+        if not done:
+            self.set_indexer_done(done)
+
         return
         
     def set_indexer_done(self, done = True):
         self._indxr_done = done
+
+        if not done:
+            self.set_indexer_finish_done(done)
+
         return
 
+    def set_indexer_finish_done(self, done = True):
+        self._indxr_finish_done = done
+        return
+        
     def get_indexer_prepare_done(self):
         return self._indxr_prepare_done
 
     def get_indexer_done(self):
         return self._indxr_done
 
-    # FIXME 28/NOV/06 this is obsolete and should be removed
-    
-    def no_longer_index_select_images(self):
-        '''Call the local implementation...'''
-
-        # FIXME 03/NOV/06 this should be replaced with a call to something
-        # like _index_prepare in a similar way to _integrate_prepare...
-
-        self._index_select_images()
-
-        # reset the indexer - we need to rerun to get updated
-        # results - not sure if this helps, since this will only
-        # be called when the images aren't set...
-        
-        # self._indxr_done = False
-        self.set_indexer_done(False)
-
-        return 
+    def get_indexer_finish_done(self):
+        return self._indxr_finish_done
 
     def eliminate(self):
         '''Eliminate the current solution for autoindexing.'''
@@ -295,100 +299,97 @@ class Indexer:
 
         return
 
-    def _index(self):
-        '''This is what the implementation needs to implement.'''
-
-        raise RuntimeError, 'overload me'
-
     def index(self):
 
         # FIXME this should be moved to _index_prepare - and also the
         # flags for self._indxr_done, self._indxr_prepare_done
         # should be used, and this should be while loop-ified...
 
-        while not self._indxr_done:
-            while not self._indxr_prepare_done:
-                self.set_indexer_prepare_done(True)
-                # self._indxr_prepare_done = True
-                self._index_prepare()
+        while not self.get_indexer_finish_done():
+            while not self.get_indexer_done():
+                while not self.get_indexer_prepare_done():
+                    self.set_indexer_prepare_done(True)
+                    self._index_prepare()
                 
-            # if there is already a list of "known" spacegroups, select the
-            # highest and try to index with this...
+                # if there is already a list of "known" spacegroups, select the
+                # highest and try to index with this...
 
-            # FIXME this needs to check the indexer helper...
-            # if the index helper does not exist, then it should be created
-            # and populated here, perhaps? then the highest solution picked
-            # and if different to the selected one then this should be
-            # reimposed and rerun.
-            
-            # self._indxr_done = True
-            self.set_indexer_done(True)
-
-            if not self._indxr_helper:
-
-                result = self._index()
-
-                if not self._indxr_done:
-                    Science.write('Looks like indexing failed - try again!')
-                    continue
-
-                solutions = { }
-                for k in self._indxr_other_lattice_cell.keys():
-                    solutions[k] = self._indxr_other_lattice_cell[k]['cell']
-
-                self._indxr_helper = _IndexerHelper(solutions)
-
-                solution = self._indxr_helper.get()
-        
-                # compare these against the final solution, if different then
-                # rerun indexing - oh - no longer need to do this explicitly
-                # since I can just set the indxr_done flag to False...
-
-                # 07/FEB/06 only do this if there was no target cell
-
-                if self._indxr_lattice != solution[0] and \
-                       not self._indxr_input_cell:
-                    Science.write('Rerunning indexing with target lattice %s' \
-                                  % solution[0])
-                    # self._indxr_input_lattice = solution[0]
-                    # self._indxr_input_cell = solution[1]
-                    # result = self._index()
-                    self.set_indexer_done(False)
-                    # self._indxr_done = False
-
-            else:
-                # rerun autoindexing with the best known current solution
-            
-                solution = self._indxr_helper.get()
-                self._indxr_input_lattice = solution[0]
-                self._indxr_input_cell = solution[1]
-                result = self._index()
-            
+                # FIXME this needs to check the indexer helper...
+                # if the index helper does not exist, then it should be created
+                # and populated here, perhaps? then the highest solution picked
+                # and if different to the selected one then this should be
+                # reimposed and rerun.
+                
                 # self._indxr_done = True
+                self.set_indexer_done(True)
 
-        Science.write('All possible indexing solutions:')
-        for l in self._indxr_helper.repr():
-            Science.write(l)
+                if not self._indxr_helper:
 
-        # FIXME 23/OCT/06 at this stage I need to look at the list of
-        # reasonable solutions and try to figure out if the indexing
-        # program has picked the highest - if not, then constrain the
-        # unit cell (need to implement this somewhere, sure it's
-        # around!) then rerun the autoindexing (perhaps?) with this
-        # new target - this means that we are always working from the
-        # top downwards with these things. Once we decide somewhere
-        # else (e.g. in cell refinement) that this cell is not appropriate
-        # then we can eliminate it from the list, select the next
-        # lower symmetry solution and continue. This solution is a
-        # general one, so may be implemented in the general indexer
-        # interface rather than in specific code...
+                    result = self._index()
 
-        # write about this
+                    if not self._indxr_done:
+                        Science.write(
+                            'Looks like indexing failed - try again!')
+                        continue
 
-        Science.write('Indexing solution:')
-        Science.write('%s %s' % (self._indxr_lattice,
-                                 '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-                                 self._indxr_cell))
+                    solutions = { }
+                    for k in self._indxr_other_lattice_cell.keys():
+                        solutions[k] = self._indxr_other_lattice_cell[k][
+                            'cell']
+
+                    self._indxr_helper = _IndexerHelper(solutions)
+
+                    solution = self._indxr_helper.get()
+        
+                    # compare these against the final solution, if different
+                    # rerun indexing - no longer need to do this explicitly
+                    # since I can just set the indxr_done flag to False...
+                    
+                    # 07/FEB/06 only do this if there was no target cell
+
+                    if self._indxr_lattice != solution[0] and \
+                           not self._indxr_input_cell:
+                        Science.write(
+                            'Rerunning indexing with target lattice %s' \
+                            % solution[0])
+                        self.set_indexer_done(False)
+
+                else:
+                    # rerun autoindexing with the best known current solution
+            
+                    solution = self._indxr_helper.get()
+                    self._indxr_input_lattice = solution[0]
+                    self._indxr_input_cell = solution[1]
+                    result = self._index()
+            
+            Science.write('All possible indexing solutions:')
+            for l in self._indxr_helper.repr():
+                Science.write(l)
+
+            # FIXME 23/OCT/06 at this stage I need to look at the list of
+            # reasonable solutions and try to figure out if the indexing
+            # program has picked the highest - if not, then constrain the
+            # unit cell (need to implement this somewhere, sure it's
+            # around!) then rerun the autoindexing (perhaps?) with this
+            # new target - this means that we are always working from the
+            # top downwards with these things. Once we decide somewhere
+            # else (e.g. in cell refinement) that this cell isn't good
+            # then we can eliminate it from the list, select the next
+            # lower symmetry solution and continue. This solution is a
+            # general one, so may be implemented in the general indexer
+            # interface rather than in specific code...
+
+            # write about this
+
+            Science.write('Indexing solution:')
+            Science.write('%s %s' % (self._indxr_lattice,
+                                     '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+                                     self._indxr_cell))
+
+            # do the finishing???
+
+            self.set_indexer_finish_done(True)
+            self._index_finish()
         
         return result
 
