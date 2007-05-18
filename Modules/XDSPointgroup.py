@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# XDSIntegrater.py
+# XDSPointgroup.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
@@ -119,8 +119,8 @@ class XDSPointgroup(FrameProcessor):
         pointless.decide_pointgroup()
 
         print pointless.get_pointgroup()
-        
-        
+        print pointless.get_reindex_operator()
+        print pointless.get_reindex_matrix()        
 
 if __name__ == '__main__':
 

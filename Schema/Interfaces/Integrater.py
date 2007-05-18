@@ -96,7 +96,16 @@
 #  
 # FIXED 28/NOV/06 need to enable the connection between the Scaler and the
 #                 Indexer to pass back and forth (discuss) pointgroup options.
-# 
+#
+# FIXME 18/MAY/07 need to be able to support feedback of options to the XDS 
+#                 correct step, viz:
+#                 (i)   reindex operator
+#                 (ii)  pointgroup (e.g. spacegroup number, in consultation
+#                       with the indexer)
+#                 (iii) lattice, again in consultation with the indexer.
+#
+#                 examples for these are 1VK8 (TS02) 1VPJ (TS03) and BA0296.
+#  
 
 import os
 import sys
@@ -165,6 +174,27 @@ class Integrater:
         # explicit pieces of information as they can be directly
         # linked to...
         self._intgr_sweep = None
+
+        # Towards FIXME for 18/MAY/07 - need to also be able to store
+        # reindexing matrix or operator, which will be provided by the
+        # scaling stage (perhaps) and should be applied to the reflections
+        # returned by the integrater. Should also be able to assign the
+        # spacegroup in this circumstance (e.g. 75 for P4, ignoring screw
+        # axes) as this will affect the indexing. This would also help
+        # Mosflm as the Rsym values from the integration wouuld be more
+        # meaningful if the pointgroup, not just the lattice, is corect.
+        # Note that this is mostly to allow the inclusion of the XDS CORRECT
+        # stage in the integrater...
+
+        # all of these will be the result of feedback from a later
+        # scaling step... the anomalous flag is needed to allow CORRECT
+        # to separate, or not, the anomalous pairs.
+        
+        self._intgr_spacegroup_number = 0
+        self._intgr_reindex_operator = None
+        self._intgr_reindex_matrix = None
+        self._intgr_anomalous = None
+        
         
         return
 
@@ -483,3 +513,56 @@ class Integrater:
         self.integrate()
         
         return self._intgr_batches_out
+
+    # additional methods needed from FIXME of 18/MAY/07...
+    # these are to do with inclusion of XDS, and therefore
+    # more detailed feedback from scaling to CORRECT.
+    # this information may be ignored by e.g. Mosflm which does
+    # not care...
+
+    def set_integrater_anomalous(self, anomalous):
+        self._intgr_anomalous = anomalous
+        return
+
+    def get_integrater_anomalous(self):
+        return self._intgr_anomalous
+
+    # these methods which follow should probably be respected by
+    # the Mosflm implementation of integrater
+
+    def set_integrater_spacegroup_number(self, spacegroup_number):
+
+        # check that this is compatible with the indexer's current
+        # lattice, and if not raise an exception
+        
+        self._intgr_spacegroup_number = spacegroup_number
+        return
+
+    def get_integrater_spacegroup_number(self):
+        return self._intgr_spacegroup_number
+        
+    def set_integrater_reindex_operator(self, reindex_operator):
+        self._intgr_reindex_operator = reindex_operator
+        return
+
+    def get_integrater_reindex_operator(self):
+        return self._intgr_reindex_operator
+        
+    def set_integrater_reindex_matrix(self, reindex_matrix):
+
+        # this is a sequence of 9 integers e.g. 1 0 0 0 1 0 0 0 1
+        # which could come from e.g. pointless...
+
+        # this is to ensure that the results from integration are
+        # in a standard setting, and so it may be necessary that
+        # the Mosflm implementation respects this through a call
+        # to reindex. Note well that this is closely tied with the
+        # pointgroup (set spacegroup number) above.
+        
+        self._intgr_reindex_matrix = reindex_matrix
+        return
+
+    def get_integrater_reindex_matrix(self):
+        return self._intgr_reindex_matrix
+        
+    # end additional methods 18/MAY/07
