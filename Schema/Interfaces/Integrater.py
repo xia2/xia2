@@ -99,7 +99,7 @@
 #
 # FIXME 18/MAY/07 need to be able to support feedback of options to the XDS 
 #                 correct step, viz:
-#                 (i)   reindex operator
+#                 (i)   reindex operator & matrix (both should be set)
 #                 (ii)  pointgroup (e.g. spacegroup number, in consultation
 #                       with the indexer)
 #                 (iii) lattice, again in consultation with the indexer.
@@ -107,7 +107,7 @@
 #                 examples for these are 1VK8 (TS02) 1VPJ (TS03) and BA0296.
 #  
 #                 This brings the need to move the reindexing operations in
-#                 to the Integrater interfacem and therefore we need to add
+#                 to the Integrater interface and therefore we need to add
 #                 an extra "method" to this for integrater finish - think of
 #                 it as the opposite to integrate prepare. Have also done this
 #                 for the Indexer.
@@ -561,7 +561,11 @@ class Integrater:
     def set_integrater_spacegroup_number(self, spacegroup_number):
 
         # check that this is compatible with the indexer's current
-        # lattice, and if not raise an exception
+        # lattice, and if not raise an exception - or indeed should
+        # this handle the eliminate guff?
+
+        # this should also include a list of allowed spacegroup
+        # numbers as they should, at best, define a point group.
         
         self._intgr_spacegroup_number = spacegroup_number
         return

@@ -24,4 +24,9 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 # the interface definition that this will conform to 
 from Schema.Interfaces.Integrater import Integrater
 
+# Wrappers that this will use...
+from Wrappers.CCP4.Mosflm import Mosflm
+from Wrappers.CCP4.Reindex import Reindex
+
+
 
