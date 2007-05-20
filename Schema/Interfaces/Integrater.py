@@ -166,6 +166,8 @@ class Integrater:
 
         self._intgr_done = False
         self._intgr_prepare_done = False
+        self._intgr_finish_done = False
+
         self._intgr_hklout = None
 
         # a place to store the project, crystal, wavelength, sweep information
@@ -199,15 +201,18 @@ class Integrater:
         self._intgr_reindex_operator = None
         self._intgr_reindex_matrix = None
         self._intgr_anomalous = None
-        
-        
+                
         return
+
+    def _integrate_prepare(self):
+        raise RuntimeError, 'overload me'
 
     def _integrate(self):
         raise RuntimeError, 'overload me'
 
-    def _integrate_prepare(self):
-        raise RuntimeError, 'overload me'
+    def _integrate_finish(self):
+        # raise RuntimeError, 'overload me'
+        pass
 
     def _integrater_reset(self):
         '''Reset the integrater, e.g. if the autoindexing solution
@@ -216,6 +221,7 @@ class Integrater:
         # reset the status flags
         self.set_integrater_prepare_done(False)
         self.set_integrater_done(False)        
+        self.set_integrater_finish_done(False)        
 
         # reset the "knowledge" from the data
         # note well - if we have set a resolution limit
@@ -248,6 +254,10 @@ class Integrater:
         self._intgr_done = done
         return
 
+    def set_integrater_finish_done(self, done = True):
+        self._intgr_finish_done = done
+        return
+
     def get_integrater_prepare_done(self):
 
         # if the indexer is not up-to-date then this can't possibly
@@ -259,21 +269,26 @@ class Integrater:
         
         if not self.get_integrater_indexer().get_indexer_done() \
                and self._intgr_prepare_done:
+            Chatter.write('Resetting integrater as indexer updated.')
             self._integrater_reset()
             
         return self._intgr_prepare_done
 
     def get_integrater_done(self):
+        # should also check if prepare is up-to-date here...
+        # the indexer check will be performed via cascade...
+        if not self.get_integrater_prepare_done():
+            self._intgr_done = False
 
-        if not self.get_integrater_indexer():
-            return self._intgr_done
-            
-        if not self.get_integrater_indexer().get_indexer_done() \
-               and self._intgr_done:
-            Chatter.write('Resetting integrater as indexer updated.')
-            self._integrater_reset()
-            
         return self._intgr_done
+
+    def get_integrater_finish_done(self):
+        # check integrater done
+
+        if not self.get_integrater_done():
+            self._intgr_finish_done = False
+
+        return self._intgr_finish_done
 
     def set_integrater_project_info(self,
                                     project_name,
@@ -437,65 +452,73 @@ class Integrater:
         # FIXED could the repeated integration needed in Mosflm be entirely
         # handled from here??? Apparently yes!
 
-        while not self.get_integrater_done():
+        while not self.get_integrater_finish_done():
+            while not self.get_integrater_done():
 
-            while not self.get_integrater_prepare_done():
+                while not self.get_integrater_prepare_done():
 
-                Chatter.write('Preparing to do some integration...')
-                self.set_integrater_prepare_done(True)
+                    Chatter.write('Preparing to do some integration...')
+                    self.set_integrater_prepare_done(True)
 
-                # if this raises an exception, then perhaps the autoindexing
-                # solution has too high symmetry. if this the case, then
-                # perform a self._intgr_indexer.eliminate() - this should
-                # reset the indexing system
+                    # if this raises an exception, perhaps the autoindexing
+                    # solution has too high symmetry. if this the case, then
+                    # perform a self._intgr_indexer.eliminate() - this should
+                    # reset the indexing system
 
-                try:
-                    self._integrate_prepare()
+                    try:
+                        self._integrate_prepare()
 
-                # Should be all specific errors which indicate a known problem
+                        # Should be all specific errors which indicate
+                        # a known problem
                 
-                except BadLatticeError, e:
-                    Chatter.write('BadLattice! %s' % str(e))
-                    self._intgr_indexer.eliminate()
-                    self.set_integrater_prepare_done(False)
+                    except BadLatticeError, e:
+                        Chatter.write('BadLattice! %s' % str(e))
+                        self._intgr_indexer.eliminate()
+                        self.set_integrater_prepare_done(False)
 
-                except IntegrationError, e:
-                    Chatter.write('Integration! %s' % str(e))
-                    self._intgr_indexer.eliminate()
-                    self.set_integrater_prepare_done(False)
+                    except IntegrationError, e:
+                        Chatter.write('Integration! %s' % str(e))
+                        self._intgr_indexer.eliminate()
+                        self.set_integrater_prepare_done(False)
                     
 
-            # FIXED 01/NOV/06 what happens if the integration decides
-            # that the lattice is wrong - this would mean that the indexing
-            # would be reperformed, which would in turn mean that the
-            # preparation may need to be repeated...
+                # FIXED 01/NOV/06 what happens if the integration decides
+                # that the lattice is wrong - this would mean that the indexing
+                # would be reperformed, which would in turn mean that the
+                # preparation may need to be repeated...
 
-            # aha - move the preparation "loop" inside the integration loop,
-            # so that this can be implemented (this case could then reset the
-            # intgr_prepare_done flag to False. DONE!
+                # aha - move the preparation "loop" inside integration loop,
+                # so this can be implemented (this case could then reset the
+                # intgr_prepare_done flag to False. DONE!
 
-            # assert: this needs to behave exactly as it did before.
+                # assert: this needs to behave exactly as it did before.
 
-            Chatter.write('Doing some integration...')
+                Chatter.write('Doing some integration...')
             
-            # assert that it is indeed done
-            self.set_integrater_done(True)
+                # assert that it is indeed done
+                self.set_integrater_done(True)
             
-            # but it may not be - if the integrate itself decides something
-            # needs redoing
+                # but it may not be - if the integrate itself decides something
+                # needs redoing
 
-	    try:
+                try:
 
-                self._intgr_hklout = self._integrate()
+                    self._intgr_hklout = self._integrate()
 
-            except BadLatticeError, e:
-                Chatter.write('Uh oh! %s' % str(e))
-                self._intgr_indexer.eliminate()
-                self.set_integrater_prepare_done(False)
-                self.set_integrater_done(False)
+                except BadLatticeError, e:
+                    Chatter.write('Uh oh! %s' % str(e))
+                    self._intgr_indexer.eliminate()
+                    self.set_integrater_prepare_done(False)
+                    self.set_integrater_done(False)
+
+            # next the finish step - this may perform the reindexing (e.g.
+            # with CCP4/Mosflm) or CORRECT in XDS.
+
+            self.set_integrater_finish_done(True)
+            self._integrate_finish()
 
         # ok, we are indeed "done"...
-        
+            
         return self._intgr_hklout
     
     def get_integrater_indexer(self):
