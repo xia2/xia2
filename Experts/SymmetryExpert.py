@@ -121,7 +121,7 @@ def compose_symops(a, b):
 
     mat_c = _multiply_symmetry_matrix(mat_a, mat_b)
     mat2symop = Mat2symop()
-    return mat2symop.convert(mat_c)
+    return mat2symop.convert(mat_c).strip()
 
 if __name__ == '__main__':
 
