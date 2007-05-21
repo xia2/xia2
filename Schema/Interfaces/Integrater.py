@@ -211,8 +211,7 @@ class Integrater:
         raise RuntimeError, 'overload me'
 
     def _integrate_finish(self):
-        # raise RuntimeError, 'overload me'
-        pass
+        raise RuntimeError, 'overload me'
 
     def _integrater_reset(self):
         '''Reset the integrater, e.g. if the autoindexing solution

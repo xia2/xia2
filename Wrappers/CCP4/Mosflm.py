@@ -232,6 +232,11 @@ from Schema.Exceptions.BadLatticeError import BadLatticeError
 from Schema.Exceptions.IntegrationError import IntegrationError
 from Schema.Exceptions.IndexingError import IndexingError
 
+# other classes which are necessary to implement the integrater
+# interface (e.g. new version, with reindexing as the finish...)
+
+from Wrappers.CCP4.Reindex import Reindex
+
 def Mosflm(DriverType = None):
     '''A factory for MosflmWrapper classes.'''
 
@@ -738,29 +743,45 @@ def Mosflm(DriverType = None):
 
             wd = self.get_working_directory()
  
-            # if not fast:
-            # self.reset()
-            # auto_logfiler(self)
-            # self._mosflm_refine_cell()
-                
             self.reset()
-            auto_logfiler(self)
-            hklout = self._mosflm_integrate()
 
-            # FIXME now ignoring the "fast" directive...
+            auto_logfiler(self)
+            self._intgr_hklout = self._mosflm_integrate()
 
             if self._mosflm_rerun_integration and not Flags.get_quick():
                 # make sure that this is run again...
                 Chatter.write('Need to rerun the integration...')
                 self.set_integrater_done(False)
 
-            # if self._mosflm_rerun_integration and not fast:
-            # FIXME this needs to be passed to the admin stream
-            # print 'Rerunning integration...'
-            # self.reset()
-            # auto_logfiler(self)
-            # hklout = self._mosflm_integrate()
+            return self._intgr_hklout
 
+        def _integrate_finish(self):
+            '''Finish the integration - if necessary performing reindexing
+            based on the pointgroup and the reindexing operator.'''
+
+            # check if we need to perform any reindexing...
+
+            if self._intgr_reindex_operator is None:
+                return self._intgr_hklout
+
+            hklin = self._intgr_hklout
+            reindex = Reindex()
+            reindex.set_working_directory(self.get_working_directory())
+            auto_logfiler(reindex)
+
+            reindex.set_operator(self._intgr_reindex_operator())
+
+            if self._intgr_spacegroup_number:
+                reindex.set_spacegroup(self._intgr_spacegroup_number)
+
+            hklout = '%s_reindex.mtz' % hklin[:-4]
+
+            reindex.set_hklin(hklin)
+            reindex.set_hklout(hklout)
+
+            reindex.reindex()
+
+            self._intgr_hklout = hklout
             return hklout
 
         def _mosflm_refine_cell(self):
