@@ -134,6 +134,7 @@ from Handlers.Streams import Chatter
 from Handlers.Files import FileHandler
 from Handlers.Citations import Citations
 from Handlers.Flags import Flags        
+from Handlers.Syminfo import Syminfo
 
 # jiffys
 from lib.Guff import is_mtz_file, nifty_power_of_ten, auto_logfiler
@@ -332,8 +333,8 @@ class CCP4Scaler(Scaler):
             # from the main preparation place... but should probably
             # be moved to a helper routine!
 
-            indexer = self._sweep_information[epoch][
-                'integrater'].get_integrater_indexer()
+            integrater = self._sweep_information[epoch]['integrater']
+            indexer = integrater.get_integrater_indexer()
 
             # flag to record whether I need to do some rerunning
             rerun_pointless = False
@@ -403,15 +404,24 @@ class CCP4Scaler(Scaler):
                 os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
 
             # we will want to delete this one exit
-            FileHandler.record_temporary_file(hklout)
+            # FileHandler.record_temporary_file(hklout)
+
+            # tell the integrater about this - may not be too much
+            # of a problem...
+
+            integrater.set_integrater_reindex_operator(reindex_op)
+            integrater.set_integrater_spacegroup_number(
+                Syminfo.spacegroup_name_to_number(pointgroup))
+            
+            hklout = integrater.get_integrater_reflections()
             
             # perform a reindexing operation
-            ri = self.Reindex()
-            ri.set_hklin(hklin)
-            ri.set_hklout(hklout)
-            ri.set_spacegroup(pointgroup)
-            ri.set_operator(reindex_op)
-            ri.reindex()
+            # ri = self.Reindex()
+            # ri.set_hklin(hklin)
+            # ri.set_hklout(hklout)
+            # ri.set_spacegroup(pointgroup)
+            # ri.set_operator(reindex_op)
+            # ri.reindex()
         
             # next sort this reflection file
             
@@ -611,15 +621,21 @@ class CCP4Scaler(Scaler):
 
             Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
+            integrater.set_integrater_reindex_operator(reindex_op)
+            integrater.set_integrater_spacegroup_number(
+                Syminfo.spacegroup_name_to_number(pointgroup))
+            
+            hklout = integrater.get_integrater_reflections()
+
             # perform a reindexing operation
-            ri = self.Reindex()
-            ri.set_hklin(hklin)
+            # ri = self.Reindex()
+            # ri.set_hklin(hklin)
 
             # hklout was defined above...
-            ri.set_hklout(hklout)
-            ri.set_spacegroup(pointgroup)
-            ri.set_operator(reindex_op)
-            ri.reindex()
+            # ri.set_hklout(hklout)
+            # ri.set_spacegroup(pointgroup)
+            # ri.set_operator(reindex_op)
+            # ri.reindex()
 
             # record the change in reflection file...
             self._sweep_information[epoch]['hklin'] = hklout

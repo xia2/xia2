@@ -764,6 +764,24 @@ def Mosflm(DriverType = None):
             if self._intgr_reindex_operator is None:
                 return self._intgr_hklout
 
+            # if the current indexer spacegroup is equal to the
+            # given spacegroup and the reindexing operation is
+            # identity then the result is ... no!
+
+            if self._intgr_reindex_operator == 'h,k,l' and \
+               self._intgr_spacegroup_number == 0:
+                return self._intgr_hklout
+
+            if self._intgr_reindex_operator == 'h,k,l' and \
+                   self._intgr_spacegroup_number == lattice_to_spacegroup(
+                self.get_integrater_indexer().get_indexer_lattice()):
+                Chatter.write('No reindexing as settings are correct.')
+                return self._intgr_hklout  
+
+            Chatter.write('Reindexing required: Spacegroup %d (%s)' % \
+                          (self._intgr_spacegroup_number,
+                           self._intgr_reindex_operator))
+
             hklin = self._intgr_hklout
             reindex = Reindex()
             reindex.set_working_directory(self.get_working_directory())
