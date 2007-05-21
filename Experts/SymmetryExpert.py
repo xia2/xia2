@@ -107,7 +107,7 @@ def compose_matrices_rt(mat_a, mat_b):
 def compose_matrices_r(mat_a, mat_b):
     '''Compose symmetry matrix applying b then a.'''
             
-    mat_c = _multiply_symmetry_matrix(mat_a),
+    mat_c = _multiply_symmetry_matrix(mat_a,
                                       mat_b)
 
     return mat_c
