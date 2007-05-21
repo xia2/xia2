@@ -31,6 +31,7 @@ from Wrappers.CCP4.Reindex import Reindex
 from Handlers.Streams import Chatter
 
 from lib.Guff import auto_logfiler
+from lib.SymmetryLib import lattice_to_spacegroup
 
 class NullIntegrater(FrameProcessor,
                      Integrater):
