@@ -95,7 +95,7 @@ def rt_to_r(rt):
 
     return result
 
-def compose_matrices(a, b):
+def compose_matrices_rt(mat_a, mat_b):
     '''Compose symmetry matrix files for XDS. These are 12 element
     matrices...'''
             
@@ -103,6 +103,14 @@ def compose_matrices(a, b):
                                       rt_to_r(mat_b))
 
     return r_to_rt(mat_c)
+
+def compose_matrices_r(mat_a, mat_b):
+    '''Compose symmetry matrix applying b then a.'''
+            
+    mat_c = _multiply_symmetry_matrix(mat_a),
+                                      mat_b)
+
+    return mat_c
 
 def compose_symops(a, b):
     '''Compose operation c, which is applying b then a.'''

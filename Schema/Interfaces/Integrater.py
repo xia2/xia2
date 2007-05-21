@@ -115,6 +115,7 @@
 import os
 import sys
 import exceptions
+import math
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
@@ -130,6 +131,9 @@ from Schema.Exceptions.IntegrationError import IntegrationError
 
 # image header reading functionality
 from Wrappers.XIA.Printheader import Printheader
+
+# symmetry operator management functionality
+from Experts.SymmetryExpert import compose_matrices_r, compose_symops
 
 class Integrater:
     '''An interface to present integration functionality in a similar
@@ -573,7 +577,22 @@ class Integrater:
         return self._intgr_spacegroup_number
         
     def set_integrater_reindex_operator(self, reindex_operator):
-        self._intgr_reindex_operator = reindex_operator
+        '''Assign a symmetry operator to the reflections - note
+        that this is cumulative...'''
+
+        reindex_operator = reindex_operator.lower()
+
+        if reindex_operator != 'h,k,l':
+            self.set_integrater_finish_done(False)
+
+        if self._intgr_reindex_operator is None:
+            self._intgr_reindex_operator = reindex_operator
+        else:
+            
+            # need to compose the two operations...
+            self._intgr_reindex_operator = compose_symops(
+                reindex_operator, self._intgr_reindex_operator)
+            
         return
 
     def get_integrater_reindex_operator(self):
@@ -589,8 +608,31 @@ class Integrater:
         # the Mosflm implementation respects this through a call
         # to reindex. Note well that this is closely tied with the
         # pointgroup (set spacegroup number) above.
-        
-        self._intgr_reindex_matrix = reindex_matrix
+
+        # check to see if this is an identity...
+
+        identity = True
+
+        for i in range(3):
+            for j in range(3):
+                if i == j:
+                    if math.fabs(reindex_matrix(3 * i + j) - 1) > 0.01:
+                        identity = False
+                else:
+                    if math.fabs(reindex_matrix(3 * i + j)) > 0.01:
+                        identity = False
+                        
+        if not identity:
+            self.set_integrater_finish_done(False)
+
+        if self._intgr_reindex_matrix is None:
+            self._intgr_reindex_matrix = reindex_matrix
+
+        else:
+            # compose the two operations
+            self._intgr_reindex_matrix = compose_matrices_r(
+                reindex_matrix, self._intgr_reindex_matrix)
+            
         return
 
     def get_integrater_reindex_matrix(self):
