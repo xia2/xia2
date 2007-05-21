@@ -517,8 +517,8 @@ class CCP4Scaler(Scaler):
 
             # check this against the records in the indexer
 
-            indexer = self._sweep_information[epoch][
-                'integrater'].get_integrater_indexer()
+            integrater = self._sweep_information[epoch]['integrater']
+            indexer = integrater.get_integrater_indexer()
 
             # flag to record whether I need to do some rerunning
             rerun_pointless = False
