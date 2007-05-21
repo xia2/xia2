@@ -68,11 +68,17 @@ def Mat2symop(DriverType = None):
             self.check_for_errors()
             
             operation = None
-            
-            for line in self.get_all_output():
+
+            output = self.get_all_output()
+            for j in range(len(output)):
+                line = output[j].strip()
+
                 if 'OPERATION' in line:
                     operation = line.replace('OPERATION', '').replace(
                         ' ', '')
+                    # check it is not on next line...
+                    if operation == '':
+                        operation = output[j + 1].replace(' ', '')
 
             # convert to H,K,L from X,Y,Z
 
