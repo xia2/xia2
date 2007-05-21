@@ -571,7 +571,11 @@ class Integrater:
         # numbers as they should, at best, define a point group.
 
         Chatter.write('Set spacegroup as %d' % spacegroup_number)
-        
+
+        # FIXME need to check against the indexer that this is
+        # appropriate...
+
+        self.set_integrater_finish_done(False)        
         self._intgr_spacegroup_number = spacegroup_number
         return
 

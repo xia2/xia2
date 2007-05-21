@@ -771,6 +771,7 @@ def Mosflm(DriverType = None):
 
             if self._intgr_reindex_operator == 'h,k,l' and \
                self._intgr_spacegroup_number == 0:
+                Chatter.write('No reindexing as no spacegroup set.')
                 return self._mosflm_hklout
 
             if self._intgr_reindex_operator == 'h,k,l' and \
