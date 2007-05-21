@@ -428,7 +428,7 @@ class CCP4Scaler(Scaler):
             hklin = hklout
             hklout = os.path.join(
                 self.get_working_directory(),
-                os.path.split(hklin)[-1].replace('_rdx.mtz', '_ref_srt.mtz'))
+                '%s_ref_srt.mtz' % os.path.split(hklin)[-1][:-4])
             
             # we will want to delete this one exit
             FileHandler.record_temporary_file(hklout)
