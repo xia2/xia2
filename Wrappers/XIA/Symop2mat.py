@@ -54,11 +54,15 @@ def Symop2mat(DriverType = None):
             self.close_wait()
             self.check_for_errors()
             
-            matrix = None
-            
-            for line in self.get_all_output():
-                if 'REIDX=' in line:
-                    matrix = map(int, line.split()[1:])
+            matrix = []
+
+            output = self.get_all_output()
+            for j in range(len(output)):
+                line = output[j]
+                if 'The matrix' in line:
+                    for k in range(3):
+                        for token in output[j + k + 1].split():
+                            matrix.append(int(float(token)))
                     
             return matrix
 
