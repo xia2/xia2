@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Symop2mat.py
 # 
-#   Copyright (C) 2006 CCLRC, Graeme Winter
+#   Copyright (C) 2007 CCLRC, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.# 
