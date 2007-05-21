@@ -747,6 +747,7 @@ def Mosflm(DriverType = None):
 
             auto_logfiler(self)
             self._intgr_hklout = self._mosflm_integrate()
+            self._mosflm_hklout = self._intgr_hklout
 
             if self._mosflm_rerun_integration and not Flags.get_quick():
                 # make sure that this is run again...
@@ -762,7 +763,7 @@ def Mosflm(DriverType = None):
             # check if we need to perform any reindexing...
 
             if self._intgr_reindex_operator is None:
-                return self._intgr_hklout
+                return self._mosflm_hklout
 
             # if the current indexer spacegroup is equal to the
             # given spacegroup and the reindexing operation is
@@ -770,19 +771,19 @@ def Mosflm(DriverType = None):
 
             if self._intgr_reindex_operator == 'h,k,l' and \
                self._intgr_spacegroup_number == 0:
-                return self._intgr_hklout
+                return self._mosflm_hklout
 
             if self._intgr_reindex_operator == 'h,k,l' and \
                    self._intgr_spacegroup_number == lattice_to_spacegroup(
                 self.get_integrater_indexer().get_indexer_lattice()):
                 Chatter.write('No reindexing as settings are correct.')
-                return self._intgr_hklout  
+                return self._mosflm_hklout  
 
             Chatter.write('Reindexing required: Spacegroup %d (%s)' % \
                           (self._intgr_spacegroup_number,
                            self._intgr_reindex_operator))
 
-            hklin = self._intgr_hklout
+            hklin = self._mosflm_hklout
             reindex = Reindex()
             reindex.set_working_directory(self.get_working_directory())
             auto_logfiler(reindex)

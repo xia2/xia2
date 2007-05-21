@@ -692,13 +692,21 @@ class CCP4Scaler(Scaler):
                 Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
                 # perform a reindexing operation
-                ri = self.Reindex()
-                ri.set_hklin(hklin)
-                ri.set_hklout(hklout)
-                ri.set_spacegroup(pointgroup)
-                ri.set_operator(reindex_op)
-                ri.reindex()
+                # ri = self.Reindex()
+                # ri.set_hklin(hklin)
+                # ri.set_hklout(hklout)
+                # ri.set_spacegroup(pointgroup)
+                # ri.set_operator(reindex_op)
+                # ri.reindex()
 
+                integrater = self._sweep_information[spoch]['integrater']
+                
+                integrater.set_integrater_reindex_operator(reindex_op)
+                integrater.set_integrater_spacegroup_number(
+                    Syminfo.spacegroup_name_to_number(pointgroup))
+                
+                hklout = integrater.get_integrater_reflections()
+                
                 # record the change in reflection file...
                 self._sweep_information[epoch]['hklin'] = hklout
 

@@ -27,8 +27,11 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Schema.Interfaces.Integrater import Integrater
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 from Wrappers.CCP4.Mtzutils import Mtzutils
+from Wrappers.CCP4.Mtzdump import Mtzdump
 from Wrappers.CCP4.Reindex import Reindex
+
 from Handlers.Streams import Chatter
+from Handlers.Syminfo import Syminfo
 
 from lib.Guff import auto_logfiler
 from lib.SymmetryLib import lattice_to_spacegroup
@@ -52,6 +55,8 @@ class NullIntegrater(FrameProcessor,
         # FIXME - this is also generally true... need to add
         # this to the .xinfo file...
 
+        self._null_integrater_spacegroup = None
+
         return
 
     def set_working_directory(self, working_directory):
@@ -71,8 +76,26 @@ class NullIntegrater(FrameProcessor,
     # "real" methods
 
     def _integrate_prepare(self):
-        '''Do nothing!'''
-        pass
+        '''Learn about the reflection file.'''
+
+        md = Mtzdump()
+
+        md.set_working_directory(self.get_working_directory())
+        auto_logfiler(md)
+        md.set_hklin(self._intgr_hklout_orig)
+        
+        md.dump()
+        datasets = md.get_datasets()
+    
+        for d in datasets:
+            info = md.get_dataset_info(d)
+            spacegroup = Syminfo.spacegroup_name_to_number(
+                info['spacegroup'])
+            if self._null_integrater_spacegroup is None:
+                self._null_integrater_spacegroup = spacegroup
+            else:
+                if self._null_integrater_spacegroup != spacegroup:
+                    raise RuntimeError, 'null integrater spacegroup error'
 
     def _integrate(self):
         '''Do nothing - except return a pointer to the reflections...'''
