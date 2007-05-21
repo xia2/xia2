@@ -56,6 +56,7 @@ class NullIntegrater(FrameProcessor,
         # this to the .xinfo file...
 
         self._null_integrater_spacegroup = None
+        self._null_integrater_hklout = None
 
         return
 
@@ -137,6 +138,8 @@ class NullIntegrater(FrameProcessor,
             mu.edit()
 
             self._intgr_hklout = hklout
+            
+        self._null_integrater_hklout = self._intgr_hklout
 
         return self._intgr_hklout
 
@@ -147,27 +150,13 @@ class NullIntegrater(FrameProcessor,
         # check if we need to perform any reindexing...
         
         if self._intgr_reindex_operator is None:
-            return self._intgr_hklout
+            return self._null_integrater_hklout
 
-        # if the current indexer spacegroup is equal to the
-        # given spacegroup and the reindexing operation is
-        # identity then the result is ... no!
-
-        if self._intgr_reindex_operator == 'h,k,l' and \
-               self._intgr_spacegroup_number == 0:
-            return self._intgr_hklout
-
-        if self._intgr_reindex_operator == 'h,k,l' and \
-               self._intgr_spacegroup_number == \
-               self._null_integrater_spacegroup:
-            Chatter.write('No reindexing as settings are correct.')
-            return self._intgr_hklout  
-
-        Chatter.write('Reindexing required: Spacegroup %d (%s)' % \
+        Chatter.write('Reindexing to spacegroup %d (%s)' % \
                       (self._intgr_spacegroup_number,
                        self._intgr_reindex_operator))
 
-        hklin = self._intgr_hklout
+        hklin = self._null_integrater_hklout
         reindex = Reindex()
         reindex.set_working_directory(self.get_working_directory())
         auto_logfiler(reindex)

@@ -1854,7 +1854,7 @@ class CCP4Scaler(Scaler):
                     Chatter.write('%d reflections in dataset %s' % \
                                   (reflections, d))
 
-                    # FIXME 08/DEC/08 cell axis differences now in 1% range,
+                    # FIXED 08/DEC/06 cell axis differences now in 1% range,
                     # keep angles as 0.5 degrees
 
                     if _fraction_difference(

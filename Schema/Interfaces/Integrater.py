@@ -124,7 +124,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from lib.Guff import inherits_from
-from Handlers.Streams import Chatter
+from Handlers.Streams import Chatter, Debug
 
 from Schema.Exceptions.BadLatticeError import BadLatticeError
 from Schema.Exceptions.IntegrationError import IntegrationError
@@ -570,7 +570,7 @@ class Integrater:
         # this should also include a list of allowed spacegroup
         # numbers as they should, at best, define a point group.
 
-        Chatter.write('Set spacegroup as %d' % spacegroup_number)
+        Debug.write('Set spacegroup as %d' % spacegroup_number)
 
         # FIXME need to check against the indexer that this is
         # appropriate...
@@ -599,8 +599,8 @@ class Integrater:
 
             old = self._intgr_reindex_operator
             new = compose_symops(reindex_operator, old)
-            Chatter.write('Composing %s and %s -> %s' % \
-                          (old, reindex_operator, new))
+            Debug.write('Composing %s and %s -> %s' % \
+                        (old, reindex_operator, new))
             self._intgr_reindex_operator = new
 
         return
