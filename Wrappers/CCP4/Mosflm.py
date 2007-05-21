@@ -787,7 +787,7 @@ def Mosflm(DriverType = None):
             reindex.set_working_directory(self.get_working_directory())
             auto_logfiler(reindex)
 
-            reindex.set_operator(self._intgr_reindex_operator())
+            reindex.set_operator(self._intgr_reindex_operator)
 
             if self._intgr_spacegroup_number:
                 reindex.set_spacegroup(self._intgr_spacegroup_number)
