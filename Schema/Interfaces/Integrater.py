@@ -569,6 +569,8 @@ class Integrater:
 
         # this should also include a list of allowed spacegroup
         # numbers as they should, at best, define a point group.
+
+        Chatter.write('Set spacegroup as %d' % spacegroup_number)
         
         self._intgr_spacegroup_number = spacegroup_number
         return
