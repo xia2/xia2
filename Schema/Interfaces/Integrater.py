@@ -590,9 +590,13 @@ class Integrater:
         else:
             
             # need to compose the two operations...
-            self._intgr_reindex_operator = compose_symops(
-                reindex_operator, self._intgr_reindex_operator)
-            
+
+            old = self._intgr_reindex_operator
+            new = compose_symops(reindex_operator, old)
+            Chatter.write('Composing %s and %s -> %s' % \
+                          (old, reindex_operator, new))
+            self._intgr_reindex_operator = new
+
         return
 
     def get_integrater_reindex_operator(self):
