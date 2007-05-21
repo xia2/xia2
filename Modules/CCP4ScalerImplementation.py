@@ -192,6 +192,9 @@ class CCP4Scaler(Scaler):
     def Rebatch(self):
         return self._factory.Rebatch()
 
+    def Reindex(self):
+        return self._factory.Reindex()
+
     def Mtz2various(self):
         return self._factory.Mtz2various()
 
