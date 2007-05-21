@@ -27,6 +27,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Schema.Interfaces.Integrater import Integrater
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 from Wrappers.CCP4.Mtzutils import Mtzutils
+from Wrappers.CCP4.Reindex import Reindex
 from Handlers.Streams import Chatter
 
 from lib.Guff import auto_logfiler
@@ -114,6 +115,53 @@ class NullIntegrater(FrameProcessor,
             self._intgr_hklout = hklout
 
         return self._intgr_hklout
+
+    def _integrate_finish(self):
+        '''Finish the integration - if necessary performing reindexing
+        based on the pointgroup and the reindexing operator.'''
+        
+        # check if we need to perform any reindexing...
+        
+        if self._intgr_reindex_operator is None:
+            return self._intgr_hklout
+
+        # if the current indexer spacegroup is equal to the
+        # given spacegroup and the reindexing operation is
+        # identity then the result is ... no!
+        
+        if self._intgr_reindex_operator == 'h,k,l' and \
+               self._intgr_spacegroup_number == 0:
+            return self._intgr_hklout
+
+        if self._intgr_reindex_operator == 'h,k,l' and \
+               self._intgr_spacegroup_number == lattice_to_spacegroup(
+            self.get_integrater_indexer().get_indexer_lattice()):
+            Chatter.write('No reindexing as settings are correct.')
+            return self._intgr_hklout  
+
+        Chatter.write('Reindexing required: Spacegroup %d (%s)' % \
+                      (self._intgr_spacegroup_number,
+                       self._intgr_reindex_operator))
+
+        hklin = self._intgr_hklout
+        reindex = Reindex()
+        reindex.set_working_directory(self.get_working_directory())
+        auto_logfiler(reindex)
+        
+        reindex.set_operator(self._intgr_reindex_operator())
+        
+        if self._intgr_spacegroup_number:
+            reindex.set_spacegroup(self._intgr_spacegroup_number)
+            
+        hklout = '%s_reindex.mtz' % hklin[:-4]
+
+        reindex.set_hklin(hklin)
+        reindex.set_hklout(hklout)
+        
+        reindex.reindex()
+        
+        self._intgr_hklout = hklout
+        return hklout
 
 
     
