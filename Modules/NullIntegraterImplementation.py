@@ -158,8 +158,8 @@ class NullIntegrater(FrameProcessor,
             return self._intgr_hklout
 
         if self._intgr_reindex_operator == 'h,k,l' and \
-               self._intgr_spacegroup_number == lattice_to_spacegroup(
-            self.get_integrater_indexer().get_indexer_lattice()):
+               self._intgr_spacegroup_number == \
+               self._null_integrater_spacegroup:
             Chatter.write('No reindexing as settings are correct.')
             return self._intgr_hklout  
 

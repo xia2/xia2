@@ -699,7 +699,7 @@ class CCP4Scaler(Scaler):
                 # ri.set_operator(reindex_op)
                 # ri.reindex()
 
-                integrater = self._sweep_information[spoch]['integrater']
+                integrater = self._sweep_information[epoch]['integrater']
                 
                 integrater.set_integrater_reindex_operator(reindex_op)
                 integrater.set_integrater_spacegroup_number(
