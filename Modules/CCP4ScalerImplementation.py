@@ -588,7 +588,7 @@ class CCP4Scaler(Scaler):
                     'integrater'].get_integrater_reflections()
                 hklout = os.path.join(
                     self.get_working_directory(),
-                    os.path.split(hklin)[-1].replace('_rdx.mtz', '_rdx2.mtz'))
+                    '%s_rdx2.mtz' % os.path.split(hklin)[-1][:-4])
                 pl.set_hklin(_prepare_pointless_hklin(
                     self.get_working_directory(),
                     hklin, self._sweep_information[epoch]['header'].get(
