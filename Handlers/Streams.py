@@ -93,11 +93,12 @@ class _Stream:
 # FIXME 23/NOV/06 now write a xia2.txt from chatter and rename that
 # output stream Stdout... then copy everything there!
 
-Science = _Stream('xia-science', 'SCI-')
-Admin = _Stream('xia-admin', 'ADMN')
-Status = _Stream('xia-status', 'STAT')
+Science = _Stream('xia2-science', 'SCI-')
+Admin = _Stream('xia2-admin', 'ADMN')
+Status = _Stream('xia2-status', 'STAT')
 Chatter = _Stream('xia2', None)
 Stdout = _Stream(None, None)
+Debug = _Stream('xia2-debug', None)
 
 Science.join(Chatter)
 Admin.join(Chatter)
@@ -110,6 +111,7 @@ def streams_off():
     Science.off()
     Admin.off()
     Status.off()
+    Debug.off()
     return
 
 if __name__ == '__main__':
