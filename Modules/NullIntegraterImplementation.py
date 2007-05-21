@@ -152,7 +152,7 @@ class NullIntegrater(FrameProcessor,
         # if the current indexer spacegroup is equal to the
         # given spacegroup and the reindexing operation is
         # identity then the result is ... no!
-        
+
         if self._intgr_reindex_operator == 'h,k,l' and \
                self._intgr_spacegroup_number == 0:
             return self._intgr_hklout
