@@ -580,7 +580,7 @@ class Integrater:
         '''Assign a symmetry operator to the reflections - note
         that this is cumulative...'''
 
-        reindex_operator = reindex_operator.lower()
+        reindex_operator = reindex_operator.lower().strip()
 
         if reindex_operator != 'h,k,l':
             self.set_integrater_finish_done(False)
