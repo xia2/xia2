@@ -121,7 +121,6 @@ from Wrappers.CCP4.Sortmtz import Sortmtz as _Sortmtz
 from Wrappers.CCP4.Mtzdump import Mtzdump as _Mtzdump
 from Wrappers.CCP4.Truncate import Truncate as _Truncate
 from Wrappers.CCP4.Rebatch import Rebatch as _Rebatch
-from Wrappers.CCP4.Reindex import Reindex as _Reindex
 from Wrappers.CCP4.Mtz2various import Mtz2various as _Mtz2various
 from Wrappers.CCP4.Cad import Cad as _Cad
 from Wrappers.CCP4.Freerflag import Freerflag as _Freerflag
@@ -193,9 +192,6 @@ class CCP4Scaler(Scaler):
     def Rebatch(self):
         return self._factory.Rebatch()
 
-    def Reindex(self):
-        return self._factory.Reindex()
-
     def Mtz2various(self):
         return self._factory.Mtz2various()
 
@@ -243,7 +239,6 @@ class CCP4Scaler(Scaler):
             intgr = self._scalr_integraters[epoch]
             pname, xname, dname = intgr.get_integrater_project_info()
             self._sweep_information[epoch] = {
-                'hklin':intgr.get_integrater_reflections(),
                 'pname':pname,
                 'xname':xname,
                 'dname':dname,
@@ -262,10 +257,12 @@ class CCP4Scaler(Scaler):
         epochs = self._sweep_information.keys()
 
         for epoch in epochs:
-            if not is_mtz_file(self._sweep_information[epoch]['hklin']):
+            if not is_mtz_file(self._sweep_information[epoch][
+                'integrater'].get_integrater_reflections()):
                 raise RuntimeError, \
                       'input file %s not MTZ format' % \
-                      self._sweep_information[epoch]['hklin']
+                      self._sweep_information[epoch][
+                    'integrater'].get_integrater_reflections()
 
         self._common_pname = self._sweep_information[epochs[0]]['pname']
         self._common_xname = self._sweep_information[epochs[0]]['xname']
@@ -311,13 +308,11 @@ class CCP4Scaler(Scaler):
             epochs.sort()
             first = epochs[0]
 
-            # FIXED in here I need to consider if the reflection file is
-            # huge - and if it is, do something sensible like take only
-            # the first 90 degrees of data or something... use the image
-            # header to make this decision...
-
-            hklin = self._sweep_information[first]['hklin']
+            hklin = self._sweep_information[first][
+                'integrater'].get_integrater_reflections()
             header = self._sweep_information[first]['header']
+
+            # prepare pointless hklin makes something much smaller...
 
             pl = self.Pointless()
             pl.set_hklin(_prepare_pointless_hklin(
@@ -326,12 +321,6 @@ class CCP4Scaler(Scaler):
                 'phi_width', 0.0)))
 
             pl.decide_pointgroup()
-
-            # FIXME BIG TIME this one needs to interface to the
-            # indexer as below to ensure that this is all handled
-            # properly... Bug # 2269 the code which follows is copied
-            # from the main preparation place... but should probably
-            # be moved to a helper routine!
 
             integrater = self._sweep_information[epoch]['integrater']
             indexer = integrater.get_integrater_indexer()
@@ -386,15 +375,7 @@ class CCP4Scaler(Scaler):
 
             Chatter.write('Pointless analysis of %s' % pl.get_hklin())
 
-            # FIXME here - do I need to contemplate reindexing
-            # the reflections? if not, don't bother - could be an
-            # expensive waste of time for large reflection files
-            # (think Ed Mitchell data...)
-            
-            # get the correct pointgroup
             pointgroup = pl.get_pointgroup()
-            
-            # and reindexing operation
             reindex_op = pl.get_reindex_operator()
         
             Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
@@ -413,19 +394,7 @@ class CCP4Scaler(Scaler):
             integrater.set_integrater_spacegroup_number(
                 Syminfo.spacegroup_name_to_number(pointgroup))
             
-            hklout = integrater.get_integrater_reflections()
-            
-            # perform a reindexing operation
-            # ri = self.Reindex()
-            # ri.set_hklin(hklin)
-            # ri.set_hklout(hklout)
-            # ri.set_spacegroup(pointgroup)
-            # ri.set_operator(reindex_op)
-            # ri.reindex()
-        
-            # next sort this reflection file
-            
-            hklin = hklout
+            hklin = integrater.get_integrater_reflections()
             hklout = os.path.join(
                 self.get_working_directory(),
                 '%s_ref_srt.mtz' % os.path.split(hklin)[-1][:-4])
@@ -501,7 +470,8 @@ class CCP4Scaler(Scaler):
             # which can then be used to pass around this information.
             
             pl = self.Pointless()
-            hklin = self._sweep_information[epoch]['hklin']
+            hklin = self._sweep_information[epoch][
+                'integrater'].get_integrater_reflections()
             hklout = os.path.join(
                 self.get_working_directory(),
                 os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
@@ -568,25 +538,7 @@ class CCP4Scaler(Scaler):
                         Chatter.write(
                             '... will reprocess accordingly')
 
-                        # reset the integrater - need to find
-                        # a way to do this by magic (FIXME)
-                        # This should be a new bug, which should
-                        # add the "dated" stuff to the integrater so if
-                        # the indexer is newer it will reintegrate...
-                        # Bug number: 2264. This should not be needed
-                        # now the integrater done check goes back to
-                        # the indexer, too.
-
-                        bug2264_fixed = True
-                        if not bug2264_fixed:
-                            self._sweep_information[epoch][
-                                'integrater'].set_integrater_prepare_done(
-                                False)
-                            self._sweep_information[epoch][
-                                'integrater'].set_integrater_done(False)
-                        
                         need_to_return = True
-
                         correct_lattice = lattice
 
                         break
@@ -595,51 +547,23 @@ class CCP4Scaler(Scaler):
                 pl.set_correct_lattice(correct_lattice)
                 pl.decide_pointgroup()
 
-
             Chatter.write('Pointless analysis of %s' % pl.get_hklin())
 
-            # FIXME here - do I need to contemplate reindexing
-            # the reflections? if not, don't bother - could be an
-            # expensive waste of time for large reflection files
-            # (think Ed Mitchell data...)
-
-            # get the correct pointgroup
+            # get the correct pointgroup etc.
             pointgroup = pl.get_pointgroup()
+            reindex_op = pl.get_reindex_operator()
 
             if not overall_pointgroup:
                 overall_pointgroup = pointgroup
-
             if overall_pointgroup != pointgroup:
-                Chatter.write('Uh oh - non uniform pointgroups!')
-
                 raise RuntimeError, 'non uniform pointgroups'
-
-                # FIXME 05/DEC/06 need to raise an exception here...
-
-            # and reindexing operation
-            reindex_op = pl.get_reindex_operator()
-
+            
             Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
             integrater.set_integrater_reindex_operator(reindex_op)
             integrater.set_integrater_spacegroup_number(
                 Syminfo.spacegroup_name_to_number(pointgroup))
             
-            hklout = integrater.get_integrater_reflections()
-
-            # perform a reindexing operation
-            # ri = self.Reindex()
-            # ri.set_hklin(hklin)
-
-            # hklout was defined above...
-            # ri.set_hklout(hklout)
-            # ri.set_spacegroup(pointgroup)
-            # ri.set_operator(reindex_op)
-            # ri.reindex()
-
-            # record the change in reflection file...
-            self._sweep_information[epoch]['hklin'] = hklout
-
         # if the pointgroup comparison above results in a need to
         # re-reduce the data then allow for this...
 
@@ -657,7 +581,8 @@ class CCP4Scaler(Scaler):
             
             for epoch in self._sweep_information.keys():
                 pl = self.Pointless()
-                hklin = self._sweep_information[epoch]['hklin']
+                hklin = self._sweep_information[epoch][
+                    'integrater'].get_integrater_reflections()
                 hklout = os.path.join(
                     self.get_working_directory(),
                     os.path.split(hklin)[-1].replace('_rdx.mtz', '_rdx2.mtz'))
@@ -678,26 +603,19 @@ class CCP4Scaler(Scaler):
 
                 Chatter.write('Pointless analysis of %s' % pl.get_hklin())
                 
-                # FIXME here - do I need to contemplate reindexing
+                # FIXED here - do I need to contemplate reindexing
                 # the reflections? if not, don't bother - could be an
                 # expensive waste of time for large reflection files
-                # (think Ed Mitchell data...)
+                # (think Ed Mitchell data...) - delegated to the Integrater
+                # to manage...
                 
-                # get the correct pointgroup
+                # get the correct pointgroup etc
                 pointgroup = pl.get_pointgroup()
-
-                # and reindexing operation
                 reindex_op = pl.get_reindex_operator()
                 
                 Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
-                # perform a reindexing operation
-                # ri = self.Reindex()
-                # ri.set_hklin(hklin)
-                # ri.set_hklout(hklout)
-                # ri.set_spacegroup(pointgroup)
-                # ri.set_operator(reindex_op)
-                # ri.reindex()
+                # apply this...
 
                 integrater = self._sweep_information[epoch]['integrater']
                 
@@ -705,11 +623,6 @@ class CCP4Scaler(Scaler):
                 integrater.set_integrater_spacegroup_number(
                     Syminfo.spacegroup_name_to_number(pointgroup))
                 
-                hklout = integrater.get_integrater_reflections()
-                
-                # record the change in reflection file...
-                self._sweep_information[epoch]['hklin'] = hklout
-
         # ---------- SORT TOGETHER DATA ----------
             
         max_batches = 0
@@ -719,7 +632,8 @@ class CCP4Scaler(Scaler):
             # keep a count of the maximum number of batches in a block -
             # this will be used to make rebatch work below.
 
-            hklin = self._sweep_information[epoch]['hklin']
+            hklin = self._sweep_information[epoch][
+                'integrater'].get_integrater_reflections()
 
             md = self.Mtzdump()
             md.set_hklin(hklin)
@@ -779,7 +693,8 @@ class CCP4Scaler(Scaler):
         for epoch in epochs:
             rb = self.Rebatch()
 
-            hklin = self._sweep_information[epoch]['hklin']
+            hklin = self._sweep_information[epoch][
+                'integrater'].get_integrater_reflections()
 
             pname = self._sweep_information[epoch]['pname']
             xname = self._sweep_information[epoch]['xname']
