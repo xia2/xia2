@@ -7,7 +7,6 @@ Handlers/Doc/CommandLine.pdf -text
 Handlers/Doc/Decision.pdf -text
 Handlers/Doc/Syminfo.pdf -text
 Handlers/Doc/Xinfo.pdf -text
-Modules/CCP4IntegraterImplementation.py -text svneol=unset#application/octet-stream
 Modules/Doc/CCP4ScalerImplementation.pdf -text
 Modules/Doc/Indexer.pdf -text
 Modules/Doc/IndexerFactory.pdf -text
