@@ -438,16 +438,16 @@ xia2 -ehtpx_xml_out project.xml
       <li>Harvesting (deposition) files now in subdirectory of Harvest
 	rather than being spread around the place. These will have 
 	names Harvest/DepositFiles/PROJECT/WAVELENGTH.scala etc.</li>
-      <li>Have now fixed xia2setup so it works much more sensibly - 
-        the decision about when a new sweep starts was a little broken,
-        now more sensible.</li>
+      <li><b>Have now fixed xia2setup so it works much more sensibly - 
+	  the decision about when a new sweep starts was a little broken
+	  (rounding errors issue) now fixed!</b></li>
     </ul>
 
     <p>Changes since 0.2.5.1 - big changes in <b>bold</b></p>
     <ul>
       <li><b>Process data as native if no heavy atom information, only one 
-	wavelength specified and no anomalous scattering form factors
-	provided. Otherwise separate anomalous pairs for scaling.</b></li>
+	  wavelength specified and no anomalous scattering form factors
+	  provided. Otherwise separate anomalous pairs for scaling.</b></li>
       <li><b>Added a -quick option to the xia2 command line, which will
 	  cut out many of the data reduction optimisation steps (not 
 	  refine detector parameters, resolution or scaling parameters)
@@ -621,7 +621,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Tue May 15 16:29:58 GMT Standard Time 2007
+Last modified: Tue May 22 20:02:04 GMT Standard Time 2007
 <!-- hhmts end -->
   </body>
 </html>
