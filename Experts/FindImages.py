@@ -207,15 +207,20 @@ def headers2sweeps(header_dict):
         # next frame in the sweep. otherwise it is the first frame in
         # a new sweep.
 
-        Debug.write('Phi range for %d: %f (from %f)' % \
-                    (i, header['phi_start'], current_sweep['phi_end']))
-        # FIXME the code in here probably needs to be inspected
-        # some more...
-        if math.fabs(header['wavelength'] -
-                     current_sweep['wavelength']) < 0.0001 and \
-           math.fabs(header['distance'] -
-                     current_sweep['distance']) < 0.01 and \
-           (math.fabs(header['phi_start'] - current_sweep['phi_end']) % 360.0) < 0.01:
+        delta_lambda = math.fabs(
+            header['wavelength'] - current_sweep['wavelength'])
+        delta_distance = math.fabs(
+            header['distance'] - current_sweep['distance'])
+        delta_phi = math.fabs(
+            header['phi_start'] - current_sweep['phi_end']) % 360.0
+
+        Debug.write('Image %d %f %f %f' % \
+                    (i, delta_lambda, delta_distance,
+                     min(delta_phi, 360.0 - delta_phi)))
+
+        if delta_lambda 0.0001 and \
+               delta_distance < 0.01 and \
+               min(delta_phi, 360.0 - delta_phi) < 0.01:
             # this is another image in the sweep
             Debug.write('Image %d belongs to the sweep' % i)
             current_sweep['images'].append(i)
