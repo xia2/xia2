@@ -25,11 +25,20 @@
 # 
 # 
 
+import sys
 import os
 import re
 import string
 import math
 import copy
+
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
+
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
+
+from Handlers.Streams import Debug
 
 def image2template(filename):
     '''Return a template to match this filename.'''
@@ -198,16 +207,21 @@ def headers2sweeps(header_dict):
         # next frame in the sweep. otherwise it is the first frame in
         # a new sweep.
 
+        Debug.write('Phi range for %d: %f (from %f)' % \
+                    (i, header['phi_start'], current_sweep['phi_end']))
+
         if math.fabs(header['wavelength'] -
                      current_sweep['wavelength']) < 0.0001 and \
            math.fabs(header['distance'] -
                      current_sweep['distance']) < 0.01 and \
            ((header['phi_start'] - current_sweep['phi_end']) % 360.0) < 0.01:
             # this is another image in the sweep
+            Debug.write('Image %d belongs to the sweep' % i)
             current_sweep['images'].append(i)
             current_sweep['phi_end'] = header['phi_end']
             current_sweep['collect_end'] = header['epoch']
         else:
+            Debug.write('Image %d starts a new sweep' % i)
             sweeps.append(current_sweep)
             current_sweep = header_dict[i]
             current_sweep['images'] = [i]

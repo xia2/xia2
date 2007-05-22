@@ -241,6 +241,8 @@ def print_sweeps():
             print 'DIRECTORY %s' % s.get_directory()
             print 'IMAGE %s' % os.path.split(s.imagename(min(
                 s.get_images())))[-1]
+            print 'START_END %d %d' % (min(s.get_images()),
+                                       max(s.get_images()))
             print 'EPOCH %d' % int(s.get_collect()[0])
             cl_beam = CommandLine.get_beam()
             if cl_beam[0] or cl_beam[1]:
