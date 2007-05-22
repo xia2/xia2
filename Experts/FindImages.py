@@ -218,7 +218,7 @@ def headers2sweeps(header_dict):
                     (i, delta_lambda, delta_distance,
                      min(delta_phi, 360.0 - delta_phi)))
 
-        if delta_lambda 0.0001 and \
+        if delta_lambda < 0.0001 and \
                delta_distance < 0.01 and \
                min(delta_phi, 360.0 - delta_phi) < 0.01:
             # this is another image in the sweep
