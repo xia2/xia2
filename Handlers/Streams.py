@@ -111,7 +111,6 @@ def streams_off():
     Science.off()
     Admin.off()
     Status.off()
-    Debug.off()
     return
 
 if __name__ == '__main__':
