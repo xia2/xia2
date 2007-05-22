@@ -209,12 +209,13 @@ def headers2sweeps(header_dict):
 
         Debug.write('Phi range for %d: %f (from %f)' % \
                     (i, header['phi_start'], current_sweep['phi_end']))
-
+        # FIXME the code in here probably needs to be inspected
+        # some more...
         if math.fabs(header['wavelength'] -
                      current_sweep['wavelength']) < 0.0001 and \
            math.fabs(header['distance'] -
                      current_sweep['distance']) < 0.01 and \
-           math.fabs((header['phi_start'] - current_sweep['phi_end']) % 360.0) < 0.01:
+           (math.fabs(header['phi_start'] - current_sweep['phi_end']) % 360.0) < 0.01:
             # this is another image in the sweep
             Debug.write('Image %d belongs to the sweep' % i)
             current_sweep['images'].append(i)
