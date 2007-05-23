@@ -67,6 +67,8 @@ def XDSCorrect(DriverType = None):
             self._cell = None
             self._spacegroup_number = None
 
+            self._reindex_matrix = None
+
             self._input_data_files = { }
             self._output_data_files = { }
 
@@ -98,6 +100,12 @@ def XDSCorrect(DriverType = None):
 
         def set_cell(self, cell):
             self._cell = cell
+            return
+
+        def set_reindex_matrix(self, reindex_matrix):
+            if not len(reindex_matrix) == 12:
+                raise RuntimeError, 'reindex matrix must be 12 numbers'
+            self._reindex_matrix = reindex_matrix
             return
 
         def set_input_data_file(self, name, data):
@@ -193,6 +201,10 @@ def XDSCorrect(DriverType = None):
                 xds_inp.write('UNIT_CELL_CONSTANTS=')
                 xds_inp.write('%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f\n' % \
                               self._cell)
+            if self._reindex_matrix:
+                xds_inp.write('REIDX=%d %d %d %d %d %d %d %d %d %d %d %d' % \
+                              map(int, self._reindex_matrix))
+                
 
             xds_inp.close()
             

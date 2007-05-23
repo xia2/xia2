@@ -35,6 +35,7 @@ from Wrappers.XDS.XDSCorrect import XDSCorrect as _Correct
 
 from Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
 from Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
+from Experts.SymmetryExpert import r_to_rt
 
 # interfaces that this must implement to be an integrater
 
@@ -242,19 +243,32 @@ class XDSIntegrater(FrameProcessor,
 
         integrate.run()
 
+        return
+
+    def _integrate_finish(self):
+        '''Finish off the integration by running correct.'''
+
         # then run correct..
 
         correct = self.Correct()
 
         correct.set_data_range(self._intgr_wedge[0],
                                self._intgr_wedge[1])
+        
+        if self.get_integrater_spacegroup_number():
+            correct.set_spacegroup_number(
+                self.get_integrater_spacegroup_number())
 
+        if self.get_integrater_reindex_matrix():
+            correct.set_reindex_matrix(
+                r_to_rt(self.get_integrater_reindex_matrix_rt()))
         
         correct.run()
 
-
-
-        return
+        # should get some interesting stuff from the XDS correct file
+        # here, for instance the resolution range to use in integration
+        # (which should be fed back if not fast) and so on...
+        
 
 if __name__ == '__main__':
 
