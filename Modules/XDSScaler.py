@@ -77,6 +77,7 @@ from Wrappers.CCP4.Pointless import Pointless as _Pointless
 from lib.Guff import auto_logfiler
 from Handlers.Citations import Citations
 from Handlers.Syminfo import Syminfo
+from Handlers.Streams import Chatter
 
 class XDSScaler(Scaler):
     '''An implementation of the xia2 Scaler interface implemented with
@@ -292,7 +293,7 @@ class XDSScaler(Scaler):
                 Chatter.write(lattices)
 
                 for lattice in possible:
-                    state = indexer.set_indexer_asserted_lattice(lattice)
+                    state = indxr.set_indexer_asserted_lattice(lattice)
                     if state == 'correct':
                             
                         Chatter.write(
@@ -322,13 +323,13 @@ class XDSScaler(Scaler):
                         break
                     
                 if rerun_pointless:
-                    pl.set_correct_lattice(correct_lattice)
-                    pl.decide_pointgroup()
+                    pointless.set_correct_lattice(correct_lattice)
+                    pointless.decide_pointgroup()
 
-            Chatter.write('Pointless analysis of %s' % pl.get_hklin())
+            Chatter.write('Pointless analysis of %s' % pointless.get_hklin())
 
-            pointgroup = pl.get_pointgroup()
-            reindex_op = pl.get_reindex_operator()
+            pointgroup = pointless.get_pointgroup()
+            reindex_op = pointless.get_reindex_operator()
             self._spacegroup = Syminfo.spacegroup_name_to_number(pointgroup)
             
             Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
