@@ -173,6 +173,11 @@ class XDSIntegrater(FrameProcessor,
 
         if not self._intgr_indexer.get_indexer_payload('xds_files'):
             self.set_integrater_indexer(XDSIndexer())
+            # set the indexer up as per the frameprocessor interface...
+            # this would usually happen within the IndexerFactory.
+            self.get_integrater_indexer().setup_from_image(
+                self.get_image_name(
+                self._indxr_images[0][0]))
             
             # now copy information from the old indexer to the new
             # one - lattice, cell, distance etc.
