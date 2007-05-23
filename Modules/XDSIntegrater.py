@@ -178,7 +178,7 @@ class XDSIntegrater(FrameProcessor,
             # one - lattice, cell, distance etc.
 
             self._intgr_indexer.set_indexer_input_cell(cell)
-            self._intgr_indexer.set_indexer_input_latice(lattice)
+            self._intgr_indexer.set_indexer_input_lattice(lattice)
             self._intgr_indexer.set_distance(distance)
             self._intgr_indexer.set_beam(beam)
 
