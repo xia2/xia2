@@ -90,6 +90,13 @@ class XDSScaler(Scaler):
         self._common_xname = None
         self._common_dname = None
 
+        # spacegroup and unit cell information - these will be
+        # derived from an average of all of the sweeps which are
+        # passed in
+        
+        self._spacegroup = None
+        self._cell = None
+
         return    
 
     # program factory - this will provide configured wrappers
@@ -158,6 +165,7 @@ class XDSScaler(Scaler):
         # don't wish to rebatch the reflections prior to scaling.
         # FIXME need to think about what I will do about the radiation
         # damage analysis in here...
+        
         self._sweep_information = { }
 
         for epoch in self._scalr_integraters.keys():
@@ -211,6 +219,8 @@ class XDSScaler(Scaler):
 
         if len(self._sweep_information.keys()) > 1:
             # need to generate a reference reflection file
+
+            raise RuntimeError, 'can\'t do multi sweep yet!'
 
             # convert the XDS_ASCII for this sweep to mtz
             
@@ -322,42 +332,61 @@ class XDSScaler(Scaler):
             
             self._sweep_information[epoch]['prepared_reflections'] = hklout
 
-        return
+        # finally work through all of the reflection files we have
+        # been given and compute the correct spacegroup and an
+        # average unit cell...
 
+        return
 
     def _scale(self):
         '''Actually scale all of the data together.'''
 
-        pass
-    
-    
+        epochs = self._sweep_information.keys()
 
-    # This will have to work as follows...
-    #
-    # PREPARE:
-    # 
-    # For all integraters - get INTEGRATE.HKL, run CORRECT, COMBAT,
-    # POINTLESS, get any appropriate reindexing operator, perhaps
-    # eliminate lattices, reget INTEGRATE.HKL, rerun CORRECT, store for
-    # reference in SCALE.
-    #
-    # 23/MAY/07 this is now wrong! The reindexing and correct step etc.
-    # will be done by the integrater as this has the appropriate
-    # information - this will, however, feedback *what* reindexing etc.
-    # needs to be done, including getting the indexing setting correct.
-    #
-    # This will therefore have to get the pointers to the XDS_ASCII files
-    # for each sweep then copy them into the appropriate working directory
-    # in here as say WAVENAME_SWEEPNAME.HKL. These will then be fed in to
-    # the pointgroup determination etc.
-    # 
-    # SCALE:
-    # 
-    # Scale together all data, run results of XSCALE through COMBAT,
-    # merge with SCALA, decide resolution limits from merging statistics,
-    # feedback? Perhaps. Also include a POINTLESS run in here to get the 
-    # best idea of the spacegroup from the updated CORRECT run, perhaps.
-    # This should output merged MTZ and unmerged scalepack. Rest can be
-    # derived by the scaler interface.
-    # 
-    
+        xscale = self.XScale()
+
+        for epoch in epochs:
+
+            # get the prepared reflections
+            reflections = self._sweep_information[epoch][
+                'prepared_reflections']
+            
+            # and the get wavelength that this belongs to
+            dname = self._sweep_information[epoch]['dname']
+
+            # and the resolution range for the reflections
+            intgr = self._sweep_information[epoch]['integrater']
+            resolution = intgr.get_integrater_resolution()
+            
+            xscale.add_reflection_file(reflections, dname, resolution)
+
+        # set the global properties of the sample
+        xscale.set_crystal(self._scalr_xname)
+        xscale.set_anomalout(self._scalr_anomalous)
+
+        xscale.set_spacegroup(self._spacegroup)
+        xscale.set_cell(self._cell)
+
+        # do the scaling keeping the reflections unmerged
+
+        # now get the reflection files out and merge them with scala
+
+        # get the resolution limits out
+
+        # for each integrater set the resolution limit where Mn(I/sigma) ~ 2
+        # but only of the resolution limit is noticeably lower than the
+        # integrated resolution limit (used 0.075A difference before)
+        # and if this is the case, return as we want the integration to
+        # be repeated, after resetting the "done" flags.
+
+        # get the merging statistics for each data set
+        
+        # transform to unmerged scalepack with Scala as well
+
+        # next transform to F's from I's
+
+        # and cad together into a single data set
+
+        # so then we're done...
+
+        return
