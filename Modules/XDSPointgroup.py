@@ -31,6 +31,7 @@ from Wrappers.CCP4.Scala import Scala as _Scala
 from Wrappers.CCP4.Sortmtz import Sortmtz as _Sortmtz
 
 from lib.Guff import auto_logfiler
+from lib.Guff import is_mtz_file
 from Handlers.Streams import Chatter
 
 class XDSPointgroup:
@@ -117,27 +118,38 @@ class XDSPointgroup:
         reference_mtz = None
 
         if self._hklref:
-            combat = self.Combat()
-            combat.set_hklin(self._hklin)
-            ref_mtz = os.path.join(self.get_working_directory(),
-                                   'xds-pointgroup-reference-unsorted.mtz')
-            combat.set_hklout(ref_mtz)
-            combat.run()
+            # check if it is MTZ format or XDS_ASCII - if it is the latter
+            # need to generate a merged MTZ reflection file...
 
-            sortmtz = self.Sortmtz()
-            sortmtz.add_hklin(ref_mtz)
-            ref_mtz = os.path.join(self.get_working_directory(),
-                                   'xds-pointgroup-reference-sorted.mtz')
-            sortmtz.set_hklout(ref_mtz)
-            sortmtz.sort()
-            
-            scala = self.Scala()
-            
-            scala.set_hklin(ref_mtz)
-            reference_mtz = os.path.join(self.get_working_directory(),
-                                         'xds-pointgroup-reference.mtz')
-            scala.set_hklout(reference_mtz)
-            scala.quick_scale()
+            if is_mtz_file(self._hklref):
+                reference_mtz = self._hklref
+
+            else:
+
+                # FIXME in here I probably need to include a pointless
+                # run as well...
+                
+                combat = self.Combat()
+                combat.set_hklin(self._hklin)
+                ref_mtz = os.path.join(self.get_working_directory(),
+                                       'xds-pointgroup-reference-unsorted.mtz')
+                combat.set_hklout(ref_mtz)
+                combat.run()
+                
+                sortmtz = self.Sortmtz()
+                sortmtz.add_hklin(ref_mtz)
+                ref_mtz = os.path.join(self.get_working_directory(),
+                                       'xds-pointgroup-reference-sorted.mtz')
+                sortmtz.set_hklout(ref_mtz)
+                sortmtz.sort()
+                
+                scala = self.Scala()
+                
+                scala.set_hklin(ref_mtz)
+                reference_mtz = os.path.join(self.get_working_directory(),
+                                             'xds-pointgroup-reference.mtz')
+                scala.set_hklout(reference_mtz)
+                scala.quick_scale()
 
             pointless = self.Pointless()
             pointless.set_hklin(temp_mtz)
