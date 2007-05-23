@@ -337,11 +337,11 @@ class XDSScaler(Scaler):
             # next pass this reindexing operator back to the source
             # of the reflections
 
-            integrater.set_integrater_reindex_operator(reindex_op)
-            integrater.set_integrater_spacegroup_number(
+            intgr.set_integrater_reindex_operator(reindex_op)
+            intgr.set_integrater_spacegroup_number(
                 Syminfo.spacegroup_name_to_number(pointgroup))
             
-            hklin = integrater.get_integrater_reflections()
+            hklin = intgr.get_integrater_reflections()
             dname = self._sweep_information[epoch]['dname']
             hklout = os.path.join(self.get_working_directory(),
                                   '%s_%s.HKL' % (dname, sname))
@@ -389,7 +389,7 @@ class XDSScaler(Scaler):
 
         # set the global properties of the sample
         xscale.set_crystal(self._scalr_xname)
-        xscale.set_anomalout(self._scalr_anomalous)
+        xscale.set_anomalous(self._scalr_anomalous)
 
         xscale.set_spacegroup(self._spacegroup)
         xscale.set_cell(self._cell)
