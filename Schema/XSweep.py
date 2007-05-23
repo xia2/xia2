@@ -554,6 +554,8 @@ class XSweep(Object):
                                                          crystal_id,
                                                          wavelength_id)
 
+            self._integrater.set_integrater_sweep_name(self._name)
+
             # see if we have any useful detector parameters to pass
             # on
 
