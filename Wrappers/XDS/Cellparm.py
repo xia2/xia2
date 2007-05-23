@@ -1,0 +1,107 @@
+#!/usr/bin/env python
+# Cellparm.py
+#   Copyright (C) 2006 CCLRC, Graeme Winter
+#
+#   This code is distributed under the BSD license, a copy of which is 
+#   included in the root directory of this package.
+#
+# A wrapper for the XDS jiffy program CELLPARM for computing average unit
+# cell parameters, from the results of multiple CORRECT runs for input into
+# a single XSCALE run.
+#
+
+import os
+import sys
+
+if not os.environ.has_key('XIA2CORE_ROOT'):
+    raise RuntimeError, 'XIA2CORE_ROOT not defined'
+
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
+
+if not os.path.join(os.environ['XIA2CORE_ROOT'],
+                    'Python') in sys.path:
+    sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
+                                 'Python'))
+    
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
+
+from Driver.DriverFactory import DriverFactory
+
+def Cellparm(DriverType = None):
+
+    DriverInstance = DriverFactory.Driver(DriverType)
+
+    class CellparmWrapper(DriverInstance.__class__):
+        '''A wrapper for wrapping CELLPARM.'''
+
+        def __init__(self):
+
+            # set up the object ancestors...
+
+            DriverInstance.__class__.__init__(self)
+
+            self.set_executable('cellparm')
+
+            # input parameters
+            self._cells = []
+            self._n_refs = []
+
+            return
+
+        def add_cell(self, cell, n_ref):
+            '''Add a unit cell which belongs to n_ref reflections.'''
+
+            self._cells.append(cell)
+            self._n_refs.append(n_ref)
+
+            return
+
+        def get_cell(self):
+            '''Compute an average cell.'''
+
+            if len(self._cells) < 1:
+                raise RuntimeError, 'no input unit cell parameters'
+
+            cellparm_inp = open(os.path.join(
+                self.get_working_directory(), 'CELLPARM.INP'), 'w')
+
+            for j in range(len(self._cells)):
+                cell = self._cells[j]
+                n_ref = self._n_refs[j]
+                cellparm_inp.write('UNIT_CELL_CONSTANTS=')
+                cellparm_inp.write(
+                    '%.3f %.3f %.3f %.3f %.3f %.3f WEIGHT=%d\n' % \
+                    (cell[0], cell[1], cell[2], cell[3], cell[4], cell[5],
+                     n_ref))
+
+            cellparm_inp.close()
+
+            self.start()
+
+            self.close_wait()
+
+            # FIXME need to look for errors in here
+
+            cellparm_lp = open(os.path.join(
+                self.get_working_directory(), 'CELLPARM.LP'), 'r')
+            data = cellparm_lp.readlines()
+
+            return map(float, data[-1].split()[:6])
+            
+    return CellparmWrapper()
+
+if __name__ == '__main__':
+    cellparm = Cellparm()
+
+    cellparm.add_cell(
+        (64.585, 30.911, 34.886, 90.000, 105.822, 90.000), 284516)
+
+    cellparm.add_cell(
+        (64.584, 30.932, 34.879, 90.000, 105.832, 90.000), 32106)
+
+    cellparm.add_cell(
+        (64.658, 30.972, 34.918, 90.000, 105.823, 90.000), 1966)
+
+    print cellparm.get_cell()
