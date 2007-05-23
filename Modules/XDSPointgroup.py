@@ -11,6 +11,10 @@
 # CORRECT in P1 into Combat then Pointless. Nope, this will run CORRECT
 # with whatever spacegroup was used for integration... Test this on the
 # results from BA0296!
+#
+# 23/MAY/07 - now make it so that this works from the results of CORRECT
+#             rather than from INTEGRATE.HKL...
+# 
 
 import os
 import sys
@@ -21,34 +25,33 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
-from Wrappers.XDS.XDSCorrect import XDSCorrect as _Correct
 from Wrappers.CCP4.Pointless import Pointless as _Pointless
 from Wrappers.CCP4.Combat import Combat as _Combat
-from Schema.Interfaces.FrameProcessor import FrameProcessor
-
+from Wrappers.CCP4.Scala import Scala as _Scala
+from Wrappers.CCP4.Sortmtz import Sortmtz as _Sortmtz
 
 from lib.Guff import auto_logfiler
 from Handlers.Streams import Chatter
 
-class XDSPointgroup(FrameProcessor):
+class XDSPointgroup:
     '''A class to allow determination of pointgroups from the results
-    of XDS INTEGRATE. This should be run prior to correct.'''
+    of XDS CORRECT.'''
 
     def __init__(self):
         '''Set up and check all programs are available.'''
 
-        FrameProcessor.__init__(self)
-        
         self._hklin = None
+        self._hklref = None
+        
         self._working_directory = os.getcwd()
         
         self._pointless_results = None
 
         # check the programs
 
-        x = _Correct()
         c = _Combat()
         p = _Pointless()
+        s = _Scala()
 
         return
 
@@ -69,23 +72,26 @@ class XDSPointgroup(FrameProcessor):
         self._hklref = hklref
         return
 
-    def Correct(self):
-        correct = _Correct()
-        correct.set_working_directory(self.get_working_directory())
-
-        correct.setup_from_image(self.get_image_name(
-            self.get_matching_images()[0]))
-
-        auto_logfiler(correct)
-
-        return correct
-
     def Combat(self):
         combat = _Combat()
         combat.set_working_directory(self.get_working_directory())
         auto_logfiler(combat)
 
         return combat
+
+    def Sortmtz(self):
+        sortmtz = _Sortmtz()
+        sortmtz.set_working_directory(self.get_working_directory())
+        auto_logfiler(sortmtz)
+
+        return sortmtz
+
+    def Scala(self):
+        scala = _Scala()
+        scala.set_working_directory(self.get_working_directory())
+        auto_logfiler(scala)
+
+        return scala
 
     def Pointless(self):
         pointless = _Pointless()
@@ -95,40 +101,66 @@ class XDSPointgroup(FrameProcessor):
         return pointless
 
     def run(self):
-        '''INTEGRATE.HKL + [combat] -> MTZ + [pointless] -> pointgroup.'''
-
-        correct = self.Correct()
-
-        # correct.set_spacegroup_number(1)
-        correct.set_integrate_hkl(self._hklin)
-
-        correct.set_data_range(min(self.get_matching_images()),
-                               max(self.get_matching_images()))
-
-        correct.run()
+        '''XDS_ASCII.HKL + [combat] -> MTZ + [pointless] -> pointgroup.'''
 
         combat = self.Combat()
-        combat.set_hklin(correct.get_xds_ascii_hkl())
+        combat.set_hklin(self._hklin)
         temp_mtz = os.path.join(self.get_working_directory(),
                                 'xds-pointgroup-temp.mtz')
         combat.set_hklout(temp_mtz)
         combat.run()
 
-        pointless = self.Pointless()
-        pointless.set_hklin(temp_mtz)
-        pointless.decide_pointgroup()
+        # if HKLREF assume that the reference file is also from XDS
+        # CORRECT and therefore convert with COMBAT to MTZ, SORT and
+        # quickly SCALE to give the reference data set.
 
+        reference_mtz = None
+
+        if self._hklref:
+            combat = self.Combat()
+            combat.set_hklin(self._hklin)
+            ref_mtz = os.path.join(self.get_working_directory(),
+                                   'xds-pointgroup-reference-unsorted.mtz')
+            combat.set_hklout(ref_mtz)
+            combat.run()
+
+            sortmtz = self.Sortmtz()
+            sortmtz.add_hklin(ref_mtz)
+            ref_mtz = os.path.join(self.get_working_directory(),
+                                   'xds-pointgroup-reference-sorted.mtz')
+            sortmtz.set_hklout(ref_mtz)
+            sortmtz.sort()
+            
+            scala = self.Scala()
+            
+            scala.set_hklin(ref_mtz)
+            reference_mtz = os.path.join(self.get_working_directory(),
+                                         'xds-pointgroup-reference.mtz')
+            scala.set_hklout(reference_mtz)
+            scala.quick_scale()
+
+            pointless = self.Pointless()
+            pointless.set_hklin(temp_mtz)
+            pointless.set_hklref(reference_mtz)
+            pointless.decide_pointgroup()
+            
+        else:
+            pointless = self.Pointless()
+            pointless.set_hklin(temp_mtz)
+            pointless.decide_pointgroup()
+            
         print pointless.get_pointgroup()
         print pointless.get_reindex_operator()
         print pointless.get_reindex_matrix()        
+    
 
 if __name__ == '__main__':
 
     xp = XDSPointgroup()
+    xp.set_hklin('XDS_ASCII.HKL')
+    xp.run()
 
-    directory = os.path.join('/data', 'graeme', 'insulin', 'demo')
-
-    xp.setup_from_image(os.path.join(directory, 'insulin_1_001.img'))
-    xp.set_hklin('INTEGRATE.HKL')
-
+    xp = XDSPointgroup()
+    xp.set_hklin('XDS_ASCII.HKL')
+    xp.set_hklref('XDS_ASCII.HKL')
     xp.run()

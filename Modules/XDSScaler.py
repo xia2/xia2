@@ -57,6 +57,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 # the interface definition that this will conform to 
 from Schema.Interfaces.Scaler import Scaler
+from Modules.XDSPointgroup import XDSPointgroup
 
 class XDSScaler(Scaler):
     '''An implementation of the xia2 Scaler interface implemented with
@@ -72,9 +73,7 @@ class XDSScaler(Scaler):
         self._common_xname = None
         self._common_dname = None
 
-        return
-
-    
+        return    
 
     # This will have to work as follows...
     #
@@ -84,6 +83,16 @@ class XDSScaler(Scaler):
     # POINTLESS, get any appropriate reindexing operator, perhaps
     # eliminate lattices, reget INTEGRATE.HKL, rerun CORRECT, store for
     # reference in SCALE.
+    #
+    # 23/MAY/07 this is now wrong! The reindexing and correct step etc.
+    # will be done by the integrater as this has the appropriate
+    # information - this will, however, feedback *what* reindexing etc.
+    # needs to be done, including getting the indexing setting correct.
+    #
+    # This will therefore have to get the pointers to the XDS_ASCII files
+    # for each sweep then copy them into the appropriate working directory
+    # in here as say WAVENAME_SWEEPNAME.HKL. These will then be fed in to
+    # the pointgroup determination etc.
     # 
     # SCALE:
     # 
