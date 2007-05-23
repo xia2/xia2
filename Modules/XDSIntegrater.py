@@ -178,6 +178,8 @@ class XDSIntegrater(FrameProcessor,
             self.get_integrater_indexer().setup_from_image(
                 self.get_image_name(
                 self._intgr_wedge[0]))
+            self.get_integrater_indexer().set_working_directory(
+                self.get_working_directory())
             
             # now copy information from the old indexer to the new
             # one - lattice, cell, distance etc.
@@ -190,7 +192,7 @@ class XDSIntegrater(FrameProcessor,
             # re-get the unit cell &c. and check that the indexing
             # worked correctly
             cell = self._intgr_indexer.get_indexer_cell()
-            lattice = self._indgr_indexer.get_indexer_lattice()
+            lattice = self._intgr_indexer.get_indexer_lattice()
 
         # copy the data across
         self._data_files = self._intgr_indexer.get_indexer_payload(
@@ -287,7 +289,7 @@ class XDSIntegrater(FrameProcessor,
         # here, for instance the resolution range to use in integration
         # (which should be fed back if not fast) and so on...
 
-        self._intgr_reflections = os.path.join(
+        self._intgr_hklout = os.path.join(
             self.get_working_directory(),
             'XDS_ASCII.HKL')
 
@@ -306,7 +308,7 @@ class XDSIntegrater(FrameProcessor,
         self._intgr_cell = correct.get_result('cell')
         self._intgr_n_ref = correct.get_result('n_ref')
 
-        return self._intgr_reflections
+        return self._intgr_hklout
             
         
 
