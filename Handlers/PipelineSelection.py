@@ -109,9 +109,9 @@ def parse_preferences(file, preferences):
         if line[0] == '!' or line[0] == '#':
             continue
 
-        check(line.split(':')[0], line.split(':')[1])
+        check(line.split(':')[0].strip(), line.split(':')[1].strip())
 
-        preferences[line.split(':')[0]] = line.split(':')[1]
+        preferences[line.split(':')[0].strip()] = line.split(':')[1].strip()
 
     return preferences
 
