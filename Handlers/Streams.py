@@ -98,7 +98,7 @@ Admin = _Stream('xia2-admin', 'ADMN')
 Status = _Stream('xia2-status', 'STAT')
 Chatter = _Stream('xia2', None)
 Stdout = _Stream(None, None)
-Debug = _Stream('xia2-debug', None)
+Debug = _Stream('xia2-debug', 'debug: ')
 
 Science.join(Chatter)
 Admin.join(Chatter)
