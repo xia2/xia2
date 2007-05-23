@@ -33,6 +33,7 @@ from Handlers.PipelineSelection import get_preferences, add_preference
 # other odds and ends
 
 from Exceptions.NotAvailableError import NotAvailableError
+from Handlers.Streams import Admin
 
 def Scaler():
     '''Create a Scaler implementation.'''
