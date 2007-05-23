@@ -355,10 +355,9 @@ class XDSScaler(Scaler):
         cellparm = self.Cellparm()
 
         for epoch in self._sweep_information.keys():
-            cell = self._sweep_information[epoch].get_integrater(
-                ).get_integrater_cell()
-            n_ref = self._sweep_information[epoch].get_integrater(
-                ).get_integrater_n_ref()
+            integrater = self._sweep_information[epoch]['integrater']
+            cell = integrater.get_integrater_cell()
+            n_ref = integrater.get_integrater_n_ref()
             cellparm.add_cell(cell, n_ref)
 
         self._cell = cellparm.get_cell()
