@@ -175,6 +175,11 @@ class XDSIndexer(FrameProcessor,
         '''Prepare to do autoindexing - in XDS terms this will mean
         calling xycorr, init and colspot on the input images.'''
 
+        # set myself up as per the frameprocessor interface...
+        self.setup_from_image(self.get_image_name(
+            self._indxr_images[0][0]))
+        
+
         # decide on images to work with
 
         if self._indxr_images == []:
