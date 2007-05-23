@@ -59,6 +59,7 @@ from Schema.Object import Object
 from Experts.FindImages import image2template_directory
 from Schema.XProject import XProject
 from Handlers.Flags import Flags
+from Handlers.Streams import Chatter, Debug
 
 class _CommandLine(Object):
     '''A class to represent the command line input.'''
@@ -427,6 +428,14 @@ class _CommandLine(Object):
 
         if '-quick' in sys.argv:
             Flags.set_quick(True)
+        return
+
+    def _read_debug(self):
+
+        if '-debug' in sys.argv:
+            # join the debug stream to the main output
+            Debug.join(Chatter)
+            Debug.write('Debugging output switched on')
         return
 
     def _read_migrate_data(self):
