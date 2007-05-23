@@ -85,6 +85,8 @@ def XDSIntegrate(DriverType = None):
 
             self._output_data_files_list = ['FRAME.pck']
 
+            self._refined_xparm = False
+
             # note well - INTEGRATE.HKL is not included in this list
             # because it is likely to be very large - this is treated
             # separately...
@@ -107,6 +109,9 @@ def XDSIntegrate(DriverType = None):
 
         # this needs setting up from setup_from_image in FrameProcessor
 
+        def set_refined_xparm(self):
+            self._refined_xparm = True
+
         def set_data_range(self, start, end):
             self._data_range = (start, end)
 
@@ -122,6 +127,12 @@ def XDSIntegrate(DriverType = None):
             xds_inp.write('JOB=INTEGRATE\n')
             xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
                           self._parallel) 
+
+            if self._refined_xparm:
+                # allow only for crystal movement
+                xds_inp.write('REFINE(INTEGRATE)=ORIENTATION\n')
+            else:
+                xds_inp.write('REFINE(INTEGRATE)=ALL\n')
             
             for record in header:
                 xds_inp.write('%s\n' % record)

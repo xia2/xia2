@@ -221,8 +221,6 @@ class XDSIntegrater(FrameProcessor,
         for file in ['BKGPIX.pck',
                      'ABS.pck']:
             self._data_files[file] = defpix.get_output_data_file(file)
-        
-
 
         integrate = self.Integrate()
 
@@ -243,9 +241,18 @@ class XDSIntegrater(FrameProcessor,
                      'Y-CORRECTIONS.pck',
                      'BLANK.pck',
                      'BKGPIX.pck',
-                     'GAIN.pck',
-                     'XPARM.XDS']:
+                     'GAIN.pck']:
             integrate.set_input_data_file(file, self._data_files[file])
+
+        # use the refined parameters for integration?
+        if self._data_files.has_key('GXPARM.XDS'):
+            Chatter.write('Using globally refined parameters')
+            integrate.set_input_data_file(
+                'XPARM.XDS', self._data_files['GXPARM.XDS'])
+            integrate.set_refined_xparm()
+        else:
+            integrate.set_input_data_file(
+                'XPARM.XDS', self._data_files['XPARM.XDS'])
 
         integrate.run()
 
@@ -287,6 +294,8 @@ class XDSIntegrater(FrameProcessor,
             Chatter.write('Set resolution limit: %5.2f' % resolution)
 
         # FIXME perhaps I should also feedback the GXPARM file here??
+        for file in ['GXPARM.XDS']:
+            self._data_files[file] = correct.get_output_data_file(file)
 
         return self._intgr_reflections
             
