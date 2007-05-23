@@ -327,11 +327,11 @@ class CCP4Scaler(Scaler):
 
             integrater = self._sweep_information[epoch]['integrater']
             indexer = integrater.get_integrater_indexer()
-
-            # flag to record whether I need to do some rerunning
-            rerun_pointless = False
             
             if indexer:
+                # flag to record whether I need to do some rerunning
+                rerun_pointless = False
+                
                 possible = pl.get_possible_lattices()
                 
                 correct_lattice = None
@@ -372,9 +372,9 @@ class CCP4Scaler(Scaler):
 
                         break
                     
-            if rerun_pointless:
-                pl.set_correct_lattice(correct_lattice)
-                pl.decide_pointgroup()
+                if rerun_pointless:
+                    pl.set_correct_lattice(correct_lattice)
+                    pl.decide_pointgroup()
 
             Chatter.write('Pointless analysis of %s' % pl.get_hklin())
 
