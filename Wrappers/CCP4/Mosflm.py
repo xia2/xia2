@@ -1702,6 +1702,9 @@ def Mosflm(DriverType = None):
                     Science.write('Integration output: %s' % \
                                   self._mosflm_hklout)
 
+                if 'Number of Reflections' in o:
+                    self._intgr_n_ref = int(o.split()[-1])
+
                 if 'MOSFLM HAS TERMINATED EARLY' in o:
                     Chatter.write('Mosflm has failed in integration')
                     message = 'The input was:\n\n'

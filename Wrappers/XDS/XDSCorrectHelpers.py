@@ -105,6 +105,9 @@ def _parse_correct_lp(filename):
             cell_esd = map(float, file_contents[i].split()[-6:])
             postrefinement_stats['cell_esd'] = cell_esd
 
+        if 'REFLECTIONS ACCEPTED' in file_contents[i]:
+            postrefinement_stats['n_ref'] = int(file_contents[i].split()[0])
+
         # look for I/sigma (resolution) information...
         if 'RESOLUTION RANGE  I/Sigma  Chi^2  R-FACTOR  R-FACTOR' in \
            file_contents[i]:

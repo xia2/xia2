@@ -183,9 +183,11 @@ class Integrater:
 
         # places to store refined values of the cell parameters etc - this
         # is more for returning that for use, as it is assumed that the
-        # implementation will handle that...
+        # implementation will handle that... also add the total number of
+        # reflections...
 
         self._intgr_cell = None
+        self._intgr_n_ref = None
 
         # FIXME adding this link may remove the need for many other
         # explicit pieces of information as they can be directly
@@ -268,10 +270,16 @@ class Integrater:
         return
 
     def get_integrater_cell(self):
-        '''Get the selected unit cell.'''
+        '''Get the (post) refined unit cell.'''
 
         self.integrate()
         return self._intgr_cell
+
+    def get_integrater_n_ref(self):
+        '''Get the number of reflections in the data set.'''
+
+        self.integrate()
+        return self._intgr_n_ref
 
     def get_integrater_prepare_done(self):
 

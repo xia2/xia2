@@ -336,6 +336,8 @@ class XDSScaler(Scaler):
         # been given and compute the correct spacegroup and an
         # average unit cell...
 
+        # hmm shouldn't this really use CELLPARM if we are using XDS??
+
         return
 
     def _scale(self):

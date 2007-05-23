@@ -299,6 +299,7 @@ class XDSIntegrater(FrameProcessor,
 
         # record the postrefined cell parameters
         self._intgr_cell = correct.get_result('cell')
+        self._intgr_n_ref = correct.get_result('n_ref')
 
         return self._intgr_reflections
             
