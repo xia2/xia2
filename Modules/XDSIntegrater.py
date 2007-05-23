@@ -297,6 +297,9 @@ class XDSIntegrater(FrameProcessor,
         for file in ['GXPARM.XDS']:
             self._data_files[file] = correct.get_output_data_file(file)
 
+        # record the postrefined cell parameters
+        self._intgr_cell = correct.get_result('cell')
+
         return self._intgr_reflections
             
         

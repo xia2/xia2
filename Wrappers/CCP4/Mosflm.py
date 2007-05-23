@@ -1381,7 +1381,11 @@ def Mosflm(DriverType = None):
                 # this to Chatter too...
                 
                 if 'Refined cell' in o:
+                    # feed these back to the indexer
                     indxr._indxr_cell = tuple(map(float, o.split()[-6:]))
+
+                    # record the refined cell parameters for getting later
+                    self._intgr_cell = tuple(map(float, o.split()[-6:]))
                     
                 # FIXME do I need this? I think that the refined distance
                 # is passed in as an integration parameter (see below)

@@ -181,6 +181,12 @@ class Integrater:
         self._intgr_dname = None
         self._intgr_epoch = 0
 
+        # places to store refined values of the cell parameters etc - this
+        # is more for returning that for use, as it is assumed that the
+        # implementation will handle that...
+
+        self._intgr_cell = None
+
         # FIXME adding this link may remove the need for many other
         # explicit pieces of information as they can be directly
         # linked to...
@@ -260,6 +266,12 @@ class Integrater:
     def set_integrater_finish_done(self, done = True):
         self._intgr_finish_done = done
         return
+
+    def get_integrater_cell(self):
+        '''Get the selected unit cell.'''
+
+        self.integrate()
+        return self._intgr_cell
 
     def get_integrater_prepare_done(self):
 
