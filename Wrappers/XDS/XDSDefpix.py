@@ -56,7 +56,8 @@ def XDSDefpix(DriverType = None):
             # generic bits
 
             self._data_range = (0, 0)
-            self._resolution_range = (0, 0)
+            self._resolution_high = 0.0
+            self._resolution_low = 1000.0
 
             self._input_data_files = { }
             self._output_data_files = { }
@@ -72,6 +73,9 @@ def XDSDefpix(DriverType = None):
             return
 
         # getter and setter for input / output data
+
+        def set_resolution_high(self, resolution_high):
+            self._resolution_high = resolution_high
 
         def set_input_data_file(self, name, data):
             self._input_data_files[name] = data
@@ -127,6 +131,12 @@ def XDSDefpix(DriverType = None):
                 xds_inp.write(record)
 
             xds_inp.write('DATA_RANGE=%d %d\n' % self._data_range)
+
+            # include the resolution range, perhaps
+            if self._resolution_high > 0.0:
+                xds_inp.write('INCLUDE_RESOLUTION_RANGE=%.2f %.2f' % \
+                              (self._resolution_low, self._resolution_high))
+            
             xds_inp.close()
             
 

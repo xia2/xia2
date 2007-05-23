@@ -39,6 +39,9 @@ from XDS import header_to_xds, xds_check_version_supported
 from XDSIdxrefHelpers import _parse_idxref_lp, _parse_idxref_lp_distance_etc
 from Experts.LatticeExpert import SortLattices
 
+# global flags
+from Handlers.Flags import Flags
+
 def XDSIdxref(DriverType = None):
 
     DriverInstance = DriverFactory.Driver(DriverType)
@@ -56,7 +59,13 @@ def XDSIdxref(DriverType = None):
 
             # now set myself up...
             
-            self.set_executable('xds')
+            
+            self._parallel = Flags.get_parallel()
+
+            if self._parallel < 1:
+                self.set_executable('xds')
+            else:
+                self.set_executable('xds_par')
 
             # generic bits
 
@@ -153,6 +162,8 @@ def XDSIdxref(DriverType = None):
 
             # what are we doing?
             xds_inp.write('JOB=IDXREF\n')
+            xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
+                          self._parallel) 
             
             # FIXME this needs to be calculated from the beam centre...
             

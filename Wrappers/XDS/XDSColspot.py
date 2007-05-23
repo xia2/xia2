@@ -34,6 +34,9 @@ from Schema.Interfaces.FrameProcessor import FrameProcessor
 # generic helper stuff
 from XDS import header_to_xds, xds_check_version_supported
 
+# global flags
+from Handlers.Flags import Flags
+
 def XDSColspot(DriverType = None):
 
     DriverInstance = DriverFactory.Driver(DriverType)
@@ -51,7 +54,12 @@ def XDSColspot(DriverType = None):
 
             # now set myself up...
             
-            self.set_executable('xds')
+            self._parallel = Flags.get_parallel()
+
+            if self._parallel < 1:
+                self.set_executable('xds')
+            else:
+                self.set_executable('xds_par')
 
             # generic bits
 
@@ -103,6 +111,8 @@ def XDSColspot(DriverType = None):
 
             # what are we doing?
             xds_inp.write('JOB=COLSPOT\n')
+            xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
+                          self._parallel) 
             
             for record in header:
                 xds_inp.write('%s\n' % record)

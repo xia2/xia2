@@ -36,6 +36,12 @@ from Schema.Interfaces.FrameProcessor import FrameProcessor
 # generic helper stuff
 from XDS import header_to_xds, xds_check_version_supported
 
+# specific helper stuff
+from XDSCorrectHelpers import _parse_correct_lp
+
+# global flags
+from Handlers.Flags import Flags
+
 def XDSCorrect(DriverType = None):
 
     DriverInstance = DriverFactory.Driver(DriverType)
@@ -52,8 +58,13 @@ def XDSCorrect(DriverType = None):
             FrameProcessor.__init__(self)
 
             # now set myself up...
-            
-            self.set_executable('xds')
+
+            self._parallel = Flags.get_parallel()
+
+            if self._parallel < 1:
+                self.set_executable('xds')
+            else:
+                self.set_executable('xds_par')
 
             # generic bits
 
@@ -89,6 +100,7 @@ def XDSCorrect(DriverType = None):
 
             # out
             self._xds_ascii_hkl = None
+            self._results = None
 
             return
 
@@ -137,6 +149,15 @@ def XDSCorrect(DriverType = None):
         def set_background_range(self, start, end):
             self._background_range = (start, end)
 
+        def get_result(self, name):
+            if not self._results:
+                raise RuntimeError, 'no results'
+
+            if not self._results.has_key(name):
+                raise RuntimeError, 'result name "%s" unknown' % name
+
+            return self._results[name]
+
         def run(self):
             '''Run correct.'''
 
@@ -153,6 +174,8 @@ def XDSCorrect(DriverType = None):
 
             # what are we doing?
             xds_inp.write('JOB=CORRECT\n')
+            xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
+                          self._parallel) 
             
             for record in header:
                 xds_inp.write('%s\n' % record)
@@ -240,6 +263,12 @@ def XDSCorrect(DriverType = None):
 
             self._xds_ascii_hkl = os.path.join(
                 self.get_working_directory(), 'XDS_ASCII.HKL')
+
+            # do some parsing of the correct output...
+
+            self._results = _parse_correct_lp(os.path.join(
+                self.get_working_directory(),
+                'CORRECT.LP'))
 
             return
 

@@ -37,6 +37,8 @@ from XDS import header_to_xds, xds_check_version_supported
 # specific helper stuff
 from XDSIntegrateHelpers import _parse_integrate_lp
 
+# global flags etc.
+from Handlers.Flags import Flags
 from Handlers.Streams import Chatter
 
 # exceptions
@@ -58,14 +60,18 @@ def XDSIntegrate(DriverType = None):
             DriverInstance.__class__.__init__(self)
             FrameProcessor.__init__(self)
 
-            # now set myself up...
+            # now set myself up...            
             
-            self.set_executable('xds')
+            self._parallel = Flags.get_parallel()
+
+            if self._parallel < 1:
+                self.set_executable('xds')
+            else:
+                self.set_executable('xds_par')
 
             # generic bits
 
             self._data_range = (0, 0)
-            self._resolution_range = (0, 0)
 
             self._input_data_files = { }
             self._output_data_files = { }
@@ -114,6 +120,8 @@ def XDSIntegrate(DriverType = None):
 
             # what are we doing?
             xds_inp.write('JOB=INTEGRATE\n')
+            xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
+                          self._parallel) 
             
             for record in header:
                 xds_inp.write('%s\n' % record)

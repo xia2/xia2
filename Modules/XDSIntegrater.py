@@ -51,6 +51,7 @@ from Modules.XDSIndexer import XDSIndexer
 
 from lib.Guff import auto_logfiler
 from Handlers.Streams import Chatter
+from Handlers.Flags import Flags
 
 class XDSIntegrater(FrameProcessor,
                     Integrater):
@@ -124,8 +125,9 @@ class XDSIntegrater(FrameProcessor,
     # now some real functions, which do useful things
 
     def _integrate_prepare(self):
-        '''Prepare for integration - in XDS terms this will mean running
-        DEFPIX to analyse the background etc.'''
+        '''Prepare for integration - in XDS terms this may mean rerunning
+        IDXREF to get the XPARM etc. DEFPIX is considered part of the full
+        integration as it is resolution dependent.'''
 
         # decide what images we are going to process, if not already
         # specified
@@ -189,6 +191,12 @@ class XDSIntegrater(FrameProcessor,
         self._data_files = self._intgr_indexer.get_indexer_payload(
             'xds_files')
             
+        return
+
+    def _integrate(self):
+        '''Actually do the integration - in XDS terms this will mean running
+        DEFPIX and INTEGRATE to measure all the reflections.'''
+
         first_image_in_wedge = self.get_image_name(self._intgr_wedge[0])
 
         defpix = self.Defpix()
@@ -204,6 +212,9 @@ class XDSIntegrater(FrameProcessor,
         defpix.set_data_range(self._intgr_wedge[0],
                               self._intgr_wedge[1])
 
+        if self._intgr_reso_high > 0.0:
+            defpix.set_resolution_high(self._intgr_reso_high)
+
         defpix.run()
 
         # and gather the result files
@@ -212,11 +223,6 @@ class XDSIntegrater(FrameProcessor,
             self._data_files[file] = defpix.get_output_data_file(file)
         
 
-        return
-
-    def _integrate(self):
-        '''Actually do the integration - in XDS terms this will mean running
-        INTEGRATE to measure all the reflections.'''
 
         integrate = self.Integrate()
 
@@ -268,6 +274,22 @@ class XDSIntegrater(FrameProcessor,
         # should get some interesting stuff from the XDS correct file
         # here, for instance the resolution range to use in integration
         # (which should be fed back if not fast) and so on...
+
+        self._intgr_reflections = os.path.join(
+            self.get_working_directory(),
+            'XDS_ASCII.HKL')
+
+        # look at the resolution limit...
+        resolution = correct.get_result('resolution_estimate')
+
+        if not self._intgr_reso_high and not Flags.get_quick():
+            self.set_integrater_high_resolution(resolution)
+            Chatter.write('Set resolution limit: %5.2f' % resolution)
+
+        # FIXME perhaps I should also feedback the GXPARM file here??
+
+        return self._intgr_reflections
+            
         
 
 if __name__ == '__main__':

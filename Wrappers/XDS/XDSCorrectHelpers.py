@@ -34,6 +34,41 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 # helper methods/functions - these can be used externally for the purposes
 # of testing...
 
+def _resolution_estimate(ordered_pair_list, cutoff):
+    '''Come up with a linearly interpolated estimate of resolution at
+    cutoff cutoff from input data [(resolution, i_sigma)].'''
+
+    x = []
+    y = []
+
+    for o in ordered_pair_list:
+        x.append(o[0])
+        y.append(o[1])
+
+    if max(y) < cutoff:
+        # there is no point where this exceeds the resolution
+        # cutoff
+        return -1.0
+
+    # this means that there is a place where the resolution cutof
+    # can be reached - get there by working backwards
+
+    x.reverse()
+    y.reverse()
+
+    if y[0] >= cutoff:
+        # this exceeds the resolution limit requested
+        return x[0]
+
+    j = 0
+    while y[j] < cutoff:
+        j += 1
+
+    resolution = x[j] + (cutoff - y[j]) * (x[j - 1] - x[j]) / \
+                 (y[j - 1] - y[j])
+
+    return resolution
+
 def _parse_correct_lp(filename):
     '''Parse the contents of the CORRECT.LP file pointed to by filename.'''
 
@@ -62,7 +97,6 @@ def _parse_correct_lp(filename):
             distance = float(file_contents[i].split()[-1])
             postrefinement_stats['distance'] = distance
         
-
         if 'UNIT CELL PARAMETERS' in file_contents[i]:
             cell = map(float, file_contents[i].split()[-6:])
             postrefinement_stats['cell'] = cell
@@ -70,6 +104,19 @@ def _parse_correct_lp(filename):
         if 'E.D.D. OF CELL PARAMETERS' in file_contents[i]:
             cell_esd = map(float, file_contents[i].split()[-6:])
             postrefinement_stats['cell_esd'] = cell_esd
+
+        # look for I/sigma (resolution) information...
+        if 'RESOLUTION RANGE  I/Sigma  Chi^2  R-FACTOR  R-FACTOR' in \
+           file_contents[i]:
+            resolution_info = []
+            j = i + 3
+            while not '-----' in file_contents[j]:
+                l = file_contents[j].split()
+                resolution_info.append((float(l[1]),float(l[2])))
+                j += 1
+
+            resolution = _resolution_estimate(resolution_info, 1.0)
+            postrefinement_stats['resolution_estimate'] = resolution
 
     return postrefinement_stats
 
