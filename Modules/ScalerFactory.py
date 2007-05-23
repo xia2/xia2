@@ -24,7 +24,7 @@ sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 # scaler implementations
 
 from CCP4ScalerImplementation import CCP4Scaler
-from XDSScaler import XDScaler
+from XDSScaler import XDSScaler
 
 # selection stuff
 
@@ -46,21 +46,23 @@ def Scaler():
 
     if not scaler and \
        (not preselection or preselection == 'xds'):
-        try scaler = XDSScaler()
-        Admin.write('Using XDS Scaler')
-    except NotAvailableError, e:
-        if preselection == 'xds':
-            raise RuntimeError, 'preselected scaler xds not available'
+        try:
+            scaler = XDSScaler()
+            Admin.write('Using XDS Scaler')
+        except NotAvailableError, e:
+            if preselection == 'xds':
+                raise RuntimeError, 'preselected scaler xds not available'
         pass
 
     if not scaler and \
        (not preselection or preselection == 'ccp4'):
-        try scaler = CCP4Scaler()
-        Admin.write('Using CCP4 Scaler')
-    except NotAvailableError, e:
-        if preselection == 'ccp4':
-            raise RuntimeError, 'preselected scaler ccp4 not available'
-        pass
+        try:
+            scaler = CCP4Scaler()
+            Admin.write('Using CCP4 Scaler')
+        except NotAvailableError, e:
+            if preselection == 'ccp4':
+                raise RuntimeError, 'preselected scaler ccp4 not available'
+            pass
 
     return scaler
 
