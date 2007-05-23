@@ -18,6 +18,7 @@ class _Flags:
         self._quick = False
         self._migrate_data = False
         self._trust_timestaps = False
+        self._parallel = 0
 
         return
 
@@ -41,6 +42,13 @@ class _Flags:
 
     def get_trust_timestamps(self):
         return self._trust_timestamps
+
+    def set_parallel(self, parallel):
+        self._parallel = parallel
+        return
+
+    def get_parallel(self):
+        return self._parallel
 
 Flags = _Flags()
 

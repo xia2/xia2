@@ -78,6 +78,7 @@ class _CommandLine(Object):
 
         self._read_trust_timestamps()
         self._read_quick()
+        self._read_debug()
         self._read_migrate_data()
 
         try:
@@ -140,6 +141,12 @@ class _CommandLine(Object):
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
                   (self._help_ehtpx_xml_out(), str(e))
+
+        try:
+            self._read_parallel()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_parallel(), str(e))
 
         return
 
@@ -381,6 +388,22 @@ class _CommandLine(Object):
     def get_xinfo(self):
         '''Return the XProject.'''
         return self._xinfo
+
+    def _read_parallel(self):
+        try:
+            index = sys.argv.index('-parallel')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_parallel(int(sys.argv[index + 1]))
+            
+        return
+
+    def _help_parallel(self):
+        return '-parallel N'
 
     def _read_ehtpx_xml_out(self):
         try:
