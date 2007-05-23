@@ -29,6 +29,8 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Driver.DriverFactory import DriverFactory
 from XScaleHelpers import generate_resolution_shells_str
 
+from Handlers.Flags import Flags
+
 def XScale(DriverType = None):
 
     DriverInstance = DriverFactory.Driver(DriverType)
@@ -42,7 +44,11 @@ def XScale(DriverType = None):
             DriverInstance.__class__.__init__(self)
 
             # now set myself up...
-            self.set_executable('xscale')
+            self._parallel = Flags.get_parallel()
+            if self._parallel <= 1:
+                self.set_executable('xscale')
+            else:
+                self.set_executable('xscale_par')
 
             # overall information
             self._resolution_shells = ''
@@ -142,6 +148,8 @@ def XScale(DriverType = None):
 
             # header information
 
+            xscale_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
+                             self._parallel)
             xscale_inp.write('RESOLUTION_SHELLS=%s\n' % \
                              self._resolution_shells)
             xscale_inp.write('SPACE_GROUP_NUMBER=%d\n' % \

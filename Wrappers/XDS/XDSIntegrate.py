@@ -64,7 +64,7 @@ def XDSIntegrate(DriverType = None):
             
             self._parallel = Flags.get_parallel()
 
-            if self._parallel < 1:
+            if self._parallel <= 1:
                 self.set_executable('xds')
             else:
                 self.set_executable('xds_par')
