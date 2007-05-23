@@ -177,7 +177,7 @@ class XDSIntegrater(FrameProcessor,
             # this would usually happen within the IndexerFactory.
             self.get_integrater_indexer().setup_from_image(
                 self.get_image_name(
-                self._intgr_images[0]))
+                self._intgr_wedge[0]))
             
             # now copy information from the old indexer to the new
             # one - lattice, cell, distance etc.
