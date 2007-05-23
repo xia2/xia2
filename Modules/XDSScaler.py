@@ -78,7 +78,6 @@ from lib.Guff import auto_logfiler
 from Handlers.Citations import Citations
 from Handlers.Syminfo import Syminfo
 
-
 class XDSScaler(Scaler):
     '''An implementation of the xia2 Scaler interface implemented with
     xds and xscale, possibly with some help from a couple of CCP4
@@ -91,7 +90,6 @@ class XDSScaler(Scaler):
 
         self._common_pname = None
         self._common_xname = None
-        self._common_dname = None
 
         # spacegroup and unit cell information - these will be
         # derived from an average of all of the sweeps which are
@@ -396,6 +394,8 @@ class XDSScaler(Scaler):
         xscale.set_cell(self._cell)
 
         # do the scaling keeping the reflections unmerged
+
+        xscale.run()
 
         # now get the reflection files out and merge them with scala
 

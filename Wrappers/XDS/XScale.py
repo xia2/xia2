@@ -160,12 +160,12 @@ def XScale(DriverType = None):
 
             # now information about the wavelengths
             for wave in self._transposed_input_keys:
+                xscale_inp.write(
+                    'OUTPUT_FILE=%s.hkl ' % wave)
                 if self._anomalous:
-                    xscale_inp.write(
-                        'OUTPUT_FILE=%s.hkl FRIEDEL\'S_LAW=FALSE\n' % wave)
+                    xscale_inp.write('FRIEDEL\'S_LAW=FALSE MERGE=FALSE\n')
                 else:
-                    xscale_inp.write(
-                        'OUTPUT_FILE=%s.hkl FRIEDEL\'S_LAW=TRUE\n' % wave)
+                    xscale_inp.write('FRIEDEL\'S_LAW=TRUE MERGE=FALSE\n')
                     
                 for j in range(len(self._transposed_input[wave]['hkl'])):
                     

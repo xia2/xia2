@@ -85,7 +85,7 @@ def Integrater():
     integrater = None
     preselection = get_preferences().get('integrater')
 
-    if False and not integrater and \
+    if not integrater and \
            (not preselection or preselection == 'xds'):
         try:
             integrater = XDSIntegrater()
