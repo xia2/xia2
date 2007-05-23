@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # XDSScaler.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
+#   Copyright (C) 2007 CCLRC, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
@@ -10,7 +10,8 @@
 # This will provide the Scaler interface using just XDS - a hybrid including
 # pointless &c. will be developed at a later stage.
 #
-# This will run XDS CORRECT and XSCALE.
+# This will run XSCALE, and feed back to the XDSIntegrater and also run a
+# few other jiffys.
 #
 # Process (based on CCP4 Scaler)
 # 
@@ -64,6 +65,7 @@ from Modules.XDSPointgroup import XDSPointgroup
 # program wrappers that we will need
 
 from Wrappers.XDS.XScale import XScale as _XScale
+from Wrappers.XDS.Cellparm import Cellparm as _Cellparm
 
 from Wrappers.CCP4.Scala import Scala as _Scala
 from Wrappers.CCP4.Truncate import Truncate as _Truncate
@@ -74,6 +76,7 @@ from Wrappers.CCP4.Pointless import Pointless as _Pointless
 # random odds and sods
 from lib.Guff import auto_logfiler
 from Handlers.Citations import Citations
+from Handlers.Syminfo import Syminfo
 
 
 class XDSScaler(Scaler):
@@ -109,6 +112,14 @@ class XDSScaler(Scaler):
         xscale.set_working_directory(self.get_working_directory())
         auto_logfiler(xscale)
         return xscale
+
+    def Cellparm(self):
+        '''Create a Cellparm wrapper from _Cellparm - set the working directory
+        and log file stuff as a part of this...'''
+        cellparm = _Cellparm()
+        cellparm.set_working_directory(self.get_working_directory())
+        auto_logfiler(cellparm)
+        return cellparm
 
     def Sortmtz(self):
         '''Create a Sortmtz wrapper from _Sortmtz - set the working directory
@@ -185,6 +196,8 @@ class XDSScaler(Scaler):
 
         epochs = self._sweep_information.keys()
 
+        self._first_epoch = min(epochs)
+
         for epoch in epochs:
             # check that this is XDS_ASCII format...
             # self._sweep_information[epoch][
@@ -227,6 +240,9 @@ class XDSScaler(Scaler):
             # run it through pointless interacting with the
             # Indexer which belongs to this sweep
 
+            # record this spacegroup for future reference...
+            # self._spacegroup = Syminfo.spacegroup_name_to_number(pointgroup)
+
             # quickly scale it to a standard reference setting
 
             # next for all integraters reindex to the correct
@@ -241,7 +257,7 @@ class XDSScaler(Scaler):
         else:
             # convert the XDS_ASCII for this sweep to mtz
 
-            epoch = self._sweep_information.keys()[0]
+            epoch = self._first_epoch
             intgr = self._sweep_information[epoch]['integrater']
             sname = intgr.get_integrater_sweep_name()
 
@@ -315,6 +331,7 @@ class XDSScaler(Scaler):
 
             pointgroup = pl.get_pointgroup()
             reindex_op = pl.get_reindex_operator()
+            self._spacegroup = Syminfo.spacegroup_name_to_number(pointgroup)
             
             Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
             
@@ -334,9 +351,18 @@ class XDSScaler(Scaler):
 
         # finally work through all of the reflection files we have
         # been given and compute the correct spacegroup and an
-        # average unit cell...
+        # average unit cell... using CELLPARM
 
-        # hmm shouldn't this really use CELLPARM if we are using XDS??
+        cellparm = self.Cellparm()
+
+        for epoch in self._sweep_information.keys():
+            cell = self._sweep_information[epoch].get_integrater(
+                ).get_integrater_cell()
+            n_ref = self._sweep_information[epoch].get_integrater(
+                ).get_integrater_n_ref()
+            cellparm.add_cell(cell, n_ref)
+
+        self._cell = cellparm.get_cell()
 
         return
 
