@@ -389,7 +389,13 @@ class Integrater:
         '''Set high resolution limit.'''
 
         self._intgr_reso_high = dmin
+        self.set_integrater_done(False)
+        return
 
+    def set_integrater_low_resolution(self, dmax):
+        '''Set low resolution limit.'''
+
+        self._intgr_reso_low = dmax
         self.set_integrater_done(False)
         return
 
