@@ -33,6 +33,7 @@ from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
 from XDS import header_to_xds, xds_check_version_supported
+from Handlers.Streams import Debug
 
 # global flags
 from Handlers.Flags import Flags
@@ -131,10 +132,16 @@ def XDSColspot(DriverType = None):
                 # softlink....
 
                 try:
+                    Debug.write('Linking %s to %s' % (
+                        self.get_directory(),
+                        os.path.join(self.get_working_directory(),
+                                     'xds-image-directory')))
+                                
                     os.symlink(self.get_directory(),
-                               'xds-image-directory')
+                               os.path.join(self.get_working_directory(),
+                                            'xds-image-directory'))
                 except OSError, e:
-                    pass
+                    Debug.write('Error linking: %s' % str(e))
                 
                 name_template = os.path.join('xds-image-directory',
                                              self.get_template().replace(
@@ -172,7 +179,8 @@ def XDSColspot(DriverType = None):
 
             # tidy up...
             try:
-                os.remove('xds-image-directory')
+                os.remove(os.path.join(self.get_working_directory(),
+                                       'xds-image-directory'))
             except OSError, e:
                 pass
             
