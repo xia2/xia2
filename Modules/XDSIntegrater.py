@@ -52,6 +52,7 @@ from Modules.XDSIndexer import XDSIndexer
 from lib.Guff import auto_logfiler
 from Handlers.Streams import Chatter
 from Handlers.Flags import Flags
+from Handlers.Files import FileHandler
 
 class XDSIntegrater(FrameProcessor,
                     Integrater):

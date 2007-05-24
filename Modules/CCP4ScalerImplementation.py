@@ -1671,7 +1671,6 @@ class CCP4Scaler(Scaler):
         sc.scale()
 
         # this will delete the mtz files which have been made 
-
         # and record the unmerged scalepack files in the file dictionary
         # BUG FIXME this is only right for MAD data... but that should now
         # be fixed...

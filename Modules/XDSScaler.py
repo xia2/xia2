@@ -467,6 +467,7 @@ class XDSScaler(Scaler):
 
             epoch = self._first_epoch
             intgr = self._sweep_information[epoch]['integrater']
+            indxr = intgr.get_integrater_indexer()
             sname = intgr.get_integrater_sweep_name()
 
             hklout = os.path.join(self.get_working_directory(),
@@ -631,13 +632,17 @@ class XDSScaler(Scaler):
             scala.set_onlymerge()
             scala.merge()
 
-            scaled_reflection_files[
-                wavelength] = hklout
+            FileHandler.record_log_file('%s %s %s merge' % \
+                                        (self._common_pname,
+                                         self._common_xname,
+                                         wavelength),
+                                        scala.get_log_file())
+
+            scaled_reflection_files[wavelength] = hklout
 
             # get the resolution limits out -> statistics dictionary
 
             stats_id = (self._scalr_pname, self._scalr_xname, wavelength)
-            
             self._scalr_statistics[stats_id] = scala.get_summary()[stats_id]
 
             loggraph = scala.parse_ccp4_loggraph()
