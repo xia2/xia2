@@ -49,6 +49,7 @@
 import os
 import sys
 import math
+import shutil
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
@@ -77,7 +78,7 @@ from Wrappers.CCP4.Pointless import Pointless as _Pointless
 from lib.Guff import auto_logfiler
 from Handlers.Citations import Citations
 from Handlers.Syminfo import Syminfo
-from Handlers.Streams import Chatter
+from Handlers.Streams import Chatter, Debug
 
 class XDSScaler(Scaler):
     '''An implementation of the xia2 Scaler interface implemented with
@@ -345,8 +346,16 @@ class XDSScaler(Scaler):
             dname = self._sweep_information[epoch]['dname']
             hklout = os.path.join(self.get_working_directory(),
                                   '%s_%s.HKL' % (dname, sname))
-            
-            self._sweep_information[epoch]['prepared_reflections'] = hklout
+
+            # and copy the reflection file to the local
+            # directory
+
+            Debug.write('Copying %s to %s' % (hklin, hklout))
+            shutil.copyfile(hklin, hklout)
+
+            # record just the local file name...
+            self._sweep_information[epoch][
+                'prepared_reflections'] = os.path.split(hklout)[-1]
 
         # finally work through all of the reflection files we have
         # been given and compute the correct spacegroup and an
@@ -383,14 +392,16 @@ class XDSScaler(Scaler):
             # and the resolution range for the reflections
             intgr = self._sweep_information[epoch]['integrater']
             resolution = intgr.get_integrater_resolution()
-            
+        
             xscale.add_reflection_file(reflections, dname, resolution)
 
         # set the global properties of the sample
         xscale.set_crystal(self._scalr_xname)
         xscale.set_anomalous(self._scalr_anomalous)
 
-        xscale.set_spacegroup(self._spacegroup)
+        # FIXME have to make sure that this is recorded
+        # as a number...
+        xscale.set_spacegroup_number(self._spacegroup)
         xscale.set_cell(self._cell)
 
         # do the scaling keeping the reflections unmerged

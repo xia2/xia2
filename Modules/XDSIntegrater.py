@@ -303,6 +303,15 @@ class XDSIntegrater(FrameProcessor,
         if not self._intgr_reso_high and not Flags.get_quick():
             self.set_integrater_high_resolution(resolution)
             Chatter.write('Set resolution limit: %5.2f' % resolution)
+        elif Flags.get_quick():
+            # ok we are going quickly but we will want the resolution
+            # limit later on, so just record it without using the
+            # setter which will reset me!
+            self._intgr_reso_high = resolution
+            Chatter.write(
+                'Set resolution limit: %5.2f (quick, so no rerun)' % \
+                resolution)
+            
 
         # FIXME perhaps I should also feedback the GXPARM file here??
         for file in ['GXPARM.XDS']:
