@@ -542,6 +542,10 @@ class XDSScaler(Scaler):
             n_ref = integrater.get_integrater_n_ref()
             cellparm.add_cell(cell, n_ref)
 
+        # note well that this may be invalidated by later reindexing
+        # to achieve a standard setting for the reflections (e.g.
+        # P 2 21 21 -> P 21 21 2)
+
         self._cell = cellparm.get_cell()
         self._scalr_cell = cell
 
@@ -635,6 +639,30 @@ class XDSScaler(Scaler):
 
                 Debug.write('Reindexing for wavelength %s (%s)' % \
                             (wavelength, reindex_operator))
+
+                hklin = hklout
+                hklout = os.path.join(self.get_working_directory(),
+                                      '%s_reindex.mtz' % wavelength)
+                FileHandler.record_temporary_file(hklout)
+                                
+                reindex = self.Reindex()
+                reindex.set_hklin(hklin)
+                reindex.set_hklout(hklout)
+                reindex.set_spacegroup(spacegroups[0])
+                reindex.set_operator(reindex_operator)
+                reindex.reindex()
+
+                # FIXME if reindexing to put this in a standard setting
+                # then I probably need to think about resetting
+                # self._scalr_cell - I should probably also think about
+                # setting up the correct spacegroups by a quick reindex
+                # call anyway...
+
+                self._cell = reindex.get_cell()
+                self._scalr_cell = reindex.get_cell()
+            else:
+                Debug.write('Reindexing %s to set spacegroup to %s' % \
+                            (wavelength, spacegroups[0]))
 
                 hklin = hklout
                 hklout = os.path.join(self.get_working_directory(),
