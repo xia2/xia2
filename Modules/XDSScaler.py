@@ -76,7 +76,7 @@ from Wrappers.CCP4.Sortmtz import Sortmtz as _Sortmtz
 from Wrappers.CCP4.Pointless import Pointless as _Pointless
 
 # random odds and sods - the resolution estimate should be somewhere better
-from lib.Guff import auto_logfiler, transpose_loggraph
+from lib.Guff import auto_logfiler, transpose_loggraph, is_mtz_file
 from Handlers.Citations import Citations
 from Handlers.Syminfo import Syminfo
 from Handlers.Streams import Chatter, Debug
@@ -192,6 +192,87 @@ class XDSScaler(Scaler):
         auto_logfiler(truncate)
         return truncate
 
+    def _pointless_indexer_jiffy(self, hklin, indexer):
+        '''A jiffy to centralise the interactions between pointless
+        (in the blue corner) and the Indexer, in the red corner.'''
+
+        # check to see if HKLIN is MTZ format, and if not, render it
+        # so!
+
+        if not is_mtz_file(hklin):
+
+            hklout = os.path.join(self.get_working_directory(),
+                                  '%s-combat.mtz' % sname)
+        
+            FileHandler.record_temporary_file(hklout)
+            
+            combat = self.Combat()
+            combat.set_hklin(hklin)
+            combat.set_hklout(hklout)
+            combat.run()
+
+            hklin = hklout
+
+        pointless = self.Pointless()
+        pointless.set_hklin(hklin)
+        pointless.decide_pointgroup()
+        
+        if indexer:
+            rerun_pointless = False
+
+            possible = pointless.get_possible_lattices()
+
+            correct_lattice = None
+
+            Chatter.write('Possible lattices (pointless):')
+            lattices = ''
+            for lattice in possible:
+                lattices += '%s ' % lattice
+            Chatter.write(lattices)
+
+            for lattice in possible:
+                state = indexer.set_indexer_asserted_lattice(lattice)
+                if state == 'correct':
+                            
+                    Chatter.write(
+                        'Agreed lattice %s' % lattice)
+                    correct_lattice = lattice
+                    
+                    break
+                
+                elif state == 'impossible':
+                    Chatter.write(
+                        'Rejected lattice %s' % lattice)
+                    
+                    rerun_pointless = True
+                    
+                    continue
+                
+                elif state == 'possible':
+                    Chatter.write(
+                        'Accepted lattice %s ...' % lattice)
+                    Chatter.write(
+                        '... will reprocess accordingly')
+                    
+                    need_to_return = True
+                    
+                    correct_lattice = lattice
+                    
+                    break
+                    
+            if rerun_pointless:
+                pointless.set_correct_lattice(correct_lattice)
+                pointless.decide_pointgroup()
+
+        Chatter.write('Pointless analysis of %s' % pointless.get_hklin())
+
+        pointgroup = pointless.get_pointgroup()
+        reindex_op = pointless.get_reindex_operator()
+        
+        Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+
+        return pointgroup, reindex_op, need_to_return
+
     def _scale_prepare(self):
         '''Prepare the data for scaling - this will reindex it the
         reflections to the correct pointgroup and setting, for instance,
@@ -261,30 +342,126 @@ class XDSScaler(Scaler):
         # a merged reference reflection file to check that the
         # setting for all reflection files is the same...
 
+        need_to_return = False
+
         if len(self._sweep_information.keys()) > 1:
-            # need to generate a reference reflection file
+            # need to generate a reference reflection file - generate this
+            # from the reflections in self._first_epoch
 
-            raise RuntimeError, 'can\'t do multi sweep yet!'
+            intgr = self._sweep_information[self._first_epoch]['integrater']
 
-            # convert the XDS_ASCII for this sweep to mtz
+            hklin = intgr.get_integrater_reflections()
+            indxr = intgr.get_integrater_indexer()
             
-            # run it through pointless interacting with the
-            # Indexer which belongs to this sweep
+            pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
+                hklin, indxr)
 
-            # record this spacegroup for future reference...
-            # self._spacegroup = Syminfo.spacegroup_name_to_number(pointgroup)
+            if ntr:
+                need_to_return = True
+            
+            self._spacegroup = Syminfo.spacegroup_name_to_number(pointgroup)
+            
+            # next pass this reindexing operator back to the source
+            # of the reflections
 
-            # quickly scale it to a standard reference setting
+            intgr.set_integrater_reindex_operator(reindex_op)
+            intgr.set_integrater_spacegroup_number(
+                Syminfo.spacegroup_name_to_number(pointgroup)) 
+           
+            hklin = intgr.get_integrater_reflections()
 
-            # next for all integraters reindex to the correct
-            # pointgroup - again interacting with the indexer
+            hklout = os.path.join(self.get_working_directory(),
+                                  'xds-pointgroup-reference-unsorted.mtz')
+            FileHandler.record_temporary_file(hklout)
 
-            # now for all reflection files calculate the reindexing
-            # operation needed to reset to the correct setting
+            combat = self.Combat()
+            combat.set_hklin(hklin)
+            combat.set_hklout(hklout)
+            combat.run()
 
-            # regather all of the reflection files which we have prepared
-            # and copy them to the working directory for scaling
-            pass
+            hklin = hklout
+            
+            hklout = os.path.join(self.get_working_directory(),
+                                  'xds-pointgroup-reference-sorted.mtz')
+            FileHandler.record_temporary_file(hklout)
+
+            sortmtz = self.Sortmtz()
+            sortmtz.add_hklin(hklin)
+            sortmtz.set_hklout(hklout)
+            sortmtz.sort()
+
+            hklin = hklout
+
+            reference_mtz = os.path.join(self.get_working_directory(),
+                                         'xds-pointgroup-reference.mtz')
+            FileHandler.record_temporary_file(reference_mtz)            
+
+            scala = self.Scala()            
+            scala.set_hklin(hklin)
+            scala.set_hklout(reference_mtz)
+            scala.quick_scale()            
+
+            for epoch in self._sweep_information.keys():
+
+                intgr = self._sweep_information[epoch]['integrater']
+                hklin = intgr.get_integrater_reflections()
+                indexer = intgr.get_integrater_indeexer()
+
+                pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
+                    hklin, indxr)
+
+                if ntr:
+                    need_to_return = True
+            
+                intgr.set_integrater_reindex_operator(reindex_op)
+                intgr.set_integrater_spacegroup_number(
+                    Syminfo.spacegroup_name_to_number(pointgroup))
+                
+                # convert the XDS_ASCII for this sweep to mtz - on the next
+                # get this should be in the correct setting...
+
+                hklin = intgr.get_integrater_reflections()
+                hklout = os.path.join(self.get_working_directory(),
+                                      'xds-pointgroup-unsorted.mtz')
+                FileHandler.record_temporary_file(hklout)
+                
+                combat = self.Combat()
+                combat.set_hklin(hklin)
+                combat.set_hklout(hklout)
+                combat.run()
+
+                pointless = self.Pointless()
+                pointless.set_hklin(temp_mtz)
+                pointless.set_hklref(reference_mtz)
+                pointless.decide_pointgroup()
+
+                pointgroup = pointless.get_pointgroup()
+                reindex_op = pointless.get_reindex_operator()
+
+                # this should send back enough information that this
+                # is in the correct pointgroup (from the call above) and
+                # also in the correct setting, from the interaction
+                # with the reference set...
+                
+                intgr.set_integrater_reindex_operator(reindex_op)
+                intgr.set_integrater_spacegroup_number(
+                    Syminfo.spacegroup_name_to_number(pointgroup))
+
+                # and copy the reflection file to the local directory
+
+                dname = self._sweep_information[epoch]['dname']
+                sname = intgr.get_integrater_sweep_name()
+                hklin = intgr.get_integrater_reflections()
+                hklout = os.path.join(self.get_working_directory(),
+                                      '%s_%s.HKL' % (dname, sname))
+
+                Debug.write('Copying %s to %s' % (hklin, hklout))
+                shutil.copyfile(hklin, hklout)
+                
+                # record just the local file name...
+                self._sweep_information[epoch][
+                    'prepared_reflections'] = os.path.split(hklout)[-1]
+
         else:
             # convert the XDS_ASCII for this sweep to mtz
 
@@ -294,6 +471,7 @@ class XDSScaler(Scaler):
 
             hklout = os.path.join(self.get_working_directory(),
                                   '%s-combat.mtz' % sname)
+            FileHandler.record_temporary_file(hklout)
 
             combat = self.Combat()
             combat.set_hklin(intgr.get_integrater_reflections())
@@ -305,66 +483,10 @@ class XDSScaler(Scaler):
 
             hklin = hklout 
 
-            pointless = self.Pointless()
-            pointless.set_hklin(hklin)
-            pointless.decide_pointgroup()
+            pointgroup, reindex_op = self._pointless_indexer_jiffy(hklin,
+                                                                   indxr)
 
-            indxr = intgr.get_integrater_indexer()
-
-            if indxr:
-                rerun_pointless = False
-
-                possible = pointless.get_possible_lattices()
-
-                correct_lattice = None
-
-                Chatter.write('Possible lattices (pointless):')
-                lattices = ''
-                for lattice in possible:
-                    lattices += '%s ' % lattice
-                Chatter.write(lattices)
-
-                for lattice in possible:
-                    state = indxr.set_indexer_asserted_lattice(lattice)
-                    if state == 'correct':
-                            
-                        Chatter.write(
-                            'Agreed lattice %s' % lattice)
-                        correct_lattice = lattice
-                        
-                        break
-                    
-                    elif state == 'impossible':
-                        Chatter.write(
-                            'Rejected lattice %s' % lattice)
-                        
-                        rerun_pointless = True
-                        
-                        continue
-                    
-                    elif state == 'possible':
-                        Chatter.write(
-                            'Accepted lattice %s ...' % lattice)
-                        Chatter.write(
-                            '... will reprocess accordingly')
-
-                        need_to_return = True
-
-                        correct_lattice = lattice
-
-                        break
-                    
-                if rerun_pointless:
-                    pointless.set_correct_lattice(correct_lattice)
-                    pointless.decide_pointgroup()
-
-            Chatter.write('Pointless analysis of %s' % pointless.get_hklin())
-
-            pointgroup = pointless.get_pointgroup()
-            reindex_op = pointless.get_reindex_operator()
             self._spacegroup = Syminfo.spacegroup_name_to_number(pointgroup)
-            
-            Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
             
             # next pass this reindexing operator back to the source
             # of the reflections
@@ -387,6 +509,11 @@ class XDSScaler(Scaler):
             # record just the local file name...
             self._sweep_information[epoch][
                 'prepared_reflections'] = os.path.split(hklout)[-1]
+
+        if need_to_return:
+            self.set_scaler_done(False)
+            self.set_scaler_prepare_done(False)
+            return
 
         # finally work through all of the reflection files we have
         # been given and compute the correct spacegroup and an
