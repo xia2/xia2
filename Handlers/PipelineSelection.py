@@ -106,7 +106,7 @@ def parse_preferences(file, preferences):
         line = line.lower()
 
         # ignore comment lines    
-        if line[0] == '!' or line[0] == '#':
+        if line[0] == '!' or line[0] == '#' or not line.split():
             continue
 
         check(line.split(':')[0].strip(), line.split(':')[1].strip())

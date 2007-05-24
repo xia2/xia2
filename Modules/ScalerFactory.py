@@ -46,16 +46,6 @@ def Scaler():
     preselection = get_preferences().get('scaler')
 
     if not scaler and \
-       (not preselection or preselection == 'xds'):
-        try:
-            scaler = XDSScaler()
-            Admin.write('Using XDS Scaler')
-        except NotAvailableError, e:
-            if preselection == 'xds':
-                raise RuntimeError, 'preselected scaler xds not available'
-        pass
-
-    if not scaler and \
        (not preselection or preselection == 'ccp4'):
         try:
             scaler = CCP4Scaler()
@@ -64,6 +54,16 @@ def Scaler():
             if preselection == 'ccp4':
                 raise RuntimeError, 'preselected scaler ccp4 not available'
             pass
+
+    if not scaler and \
+       (not preselection or preselection == 'xds'):
+        try:
+            scaler = XDSScaler()
+            Admin.write('Using XDS Scaler')
+        except NotAvailableError, e:
+            if preselection == 'xds':
+                raise RuntimeError, 'preselected scaler xds not available'
+        pass
 
     return scaler
 

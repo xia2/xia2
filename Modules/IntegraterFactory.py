@@ -85,6 +85,17 @@ def Integrater():
     integrater = None
     preselection = get_preferences().get('integrater')
 
+    if not integrater and (not preselection or preselection == 'mosflm'):
+        try:
+            integrater = Mosflm.Mosflm()
+            Admin.write('Using Mosflm Integrater')
+            add_preference('scaler', 'ccp4')
+        except NotAvailableError, e:
+            if preselection == 'mosflm':
+                raise RuntimeError, \
+                      'preselected integrater xds not available'
+            pass
+            
     if not integrater and \
            (not preselection or preselection == 'xds'):
         try:
@@ -93,17 +104,6 @@ def Integrater():
             add_preference('scaler', 'xds')
         except NotAvailableError, e:
             if preselection == 'xds':
-                raise RuntimeError, \
-                      'preselected integrater xds not available'
-            pass
-            
-    if not integrater and (not preselection or preselection == 'mosflm'):
-        try:
-            integrater = Mosflm.Mosflm()
-            Admin.write('Using Mosflm Integrater')
-            add_preference('scaler', 'ccp4')
-        except NotAvailableError, e:
-            if preselection == 'mosflm':
                 raise RuntimeError, \
                       'preselected integrater xds not available'
             pass
