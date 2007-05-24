@@ -76,6 +76,10 @@ class XDSIntegrater(FrameProcessor,
         # place to store working data
         self._data_files = { }
 
+        # set a low resolution limit (which isn't really used...)
+        self.set_integrater_low_resolution(100.0)
+        
+
         return
 
     # admin functions
