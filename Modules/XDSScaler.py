@@ -7,9 +7,7 @@
 #
 # 2nd January 2007
 #
-# This will provide the Scaler interface using just XDS - a hybrid including
-# pointless &c. will be developed at a later stage.
-#
+# This will provide the Scaler interface using XDS, pointless & CCP4 programs.
 # This will run XSCALE, and feed back to the XDSIntegrater and also run a
 # few other jiffys.
 #
@@ -71,6 +69,7 @@ from Wrappers.XDS.Cellparm import Cellparm as _Cellparm
 from Wrappers.CCP4.Scala import Scala as _Scala
 from Wrappers.CCP4.Truncate import Truncate as _Truncate
 from Wrappers.CCP4.Combat import Combat as _Combat
+from Wrappers.CCP4.Sfcheck import Sfcheck as _Sfcheck
 from Wrappers.CCP4.Cad import Cad as _Cad
 from Wrappers.CCP4.Freerflag import Freerflag as _Freerflag
 from Wrappers.CCP4.Sortmtz import Sortmtz as _Sortmtz
@@ -152,6 +151,14 @@ class XDSScaler(Scaler):
         combat.set_working_directory(self.get_working_directory())
         auto_logfiler(combat)
         return combat
+
+    def Sfcheck(self):
+        '''Create a Sfcheck wrapper from _Sfcheck - set the working directory
+        and log file stuff as a part of this...'''
+        sfcheck = _Sfcheck()
+        sfcheck.set_working_directory(self.get_working_directory())
+        auto_logfiler(sfcheck)
+        return sfcheck
 
     def Cad(self):
         '''Create a Cad wrapper from _Cad - set the working directory
@@ -394,6 +401,7 @@ class XDSScaler(Scaler):
             cellparm.add_cell(cell, n_ref)
 
         self._cell = cellparm.get_cell()
+        self._scalr_cell = cell
 
         return
 
@@ -442,6 +450,8 @@ class XDSScaler(Scaler):
         scaled_reflection_files = { }
 
         self._scalr_statistics = { }
+
+        self._scalr_likely_spacegroups = []
         
         for wavelength in wavelength_names:
             # convert the reflections to MTZ format with combat
@@ -455,6 +465,19 @@ class XDSScaler(Scaler):
             combat.set_project_info(self._scalr_pname, self._scalr_xname,
                                     wavelength)
             combat.run()
+
+            # have a look at guessing the correct spacegroup - as
+            # we should already be indexed in the correct pointgroup
+
+            pointless = self.Pointless()
+            pointless.set_hklin(hklout)
+            pointless.decide_spacegroup()
+
+            spacegroups = pointless.get_likely_spacegroups()
+
+            for s in spacegroups:
+                if not s in self._scalr_likely_spacegroups:
+                    self._scalr_likely_spacegroups.append(s)
 
             # then sort them
 
@@ -485,7 +508,9 @@ class XDSScaler(Scaler):
                 wavelength] = hklout
 
             # get the resolution limits out -> statistics dictionary
-            self._scalr_statistics[wavelength] = scala.get_summary()
+            self._scalr_statistics[(self._scalr_pname,
+                                    self._scalr_xname,
+                                    wavelength)] = scala.get_summary()
 
             loggraph = scala.parse_ccp4_loggraph()
             
@@ -516,6 +541,8 @@ class XDSScaler(Scaler):
 
         # next work though the epochs of integraters setting the resolution
         # limit by the value from the wavelength recorded above
+
+        best_resolution = 100.0
 
         for epoch in self._sweep_information.keys():
             intgr = self._sweep_information[epoch]['integrater']
@@ -555,7 +582,9 @@ class XDSScaler(Scaler):
 
         if not self.get_scaler_done():
             return
-            
+
+        self._scalr_highest_resolution = best_resolution
+           
         # next transform to F's from I's
 
         for wavelength in scaled_reflection_files.keys():
@@ -563,7 +592,7 @@ class XDSScaler(Scaler):
             hklin = scaled_reflection_files[wavelength]
             
             truncate = self.Truncate()
-            truncate.set_hklin(file)
+            truncate.set_hklin(hklin)
 
             if self.get_scaler_anomalous():
                 truncate.set_anomalous(True)
@@ -579,10 +608,10 @@ class XDSScaler(Scaler):
             hklout = os.path.join(self.get_working_directory(),
                                   '%s_truncated.mtz' % wavelength)
 
-            t.set_hklout(hklout)
-            t.truncate()
+            truncate.set_hklout(hklout)
+            truncate.truncate()
 
-            b_factor = t.get_b_factor()
+            b_factor = truncate.get_b_factor()
 
             # record the b factor somewhere (hopefully) useful...
 
@@ -594,7 +623,9 @@ class XDSScaler(Scaler):
             scaled_reflection_files[wavelength] = hklout
             
         # and cad together into a single data set - recalling that we already
-        # have a standard unit cell...
+        # have a standard unit cell... and remembering where the files go...
+
+        self._scalr_scaled_reflection_files = { }
 
         if len(scaled_reflection_files.keys()) > 1:
 
