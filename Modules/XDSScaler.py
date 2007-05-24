@@ -440,6 +440,8 @@ class XDSScaler(Scaler):
         # these are per wavelength
         resolution_limits = { } 
         scaled_reflection_files = { }
+
+        self._scalr_statistics = { }
         
         for wavelength in wavelength_names:
             # convert the reflections to MTZ format with combat
@@ -483,7 +485,7 @@ class XDSScaler(Scaler):
                 wavelength] = hklout
 
             # get the resolution limits out -> statistics dictionary
-            self._scalr_stastics[wavelength] = scala.get_summary()
+            self._scalr_statistics[wavelength] = scala.get_summary()
 
             loggraph = scala.parse_ccp4_loggraph()
             
