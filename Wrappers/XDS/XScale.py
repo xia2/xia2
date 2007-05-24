@@ -10,6 +10,7 @@
 
 import os
 import sys
+import copy
 import math
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
@@ -66,6 +67,9 @@ def XScale(DriverType = None):
             self._transposed_input = { }
             self._transposed_input_keys = []
 
+            # output
+            self._output_reflection_files = { }
+
             # decisions about the scaling
             self._crystal = None
             self._zero_dose = False
@@ -91,6 +95,12 @@ def XScale(DriverType = None):
         def set_anomalous(self, anomalous = True):
             self._anomalous = anomalous
             return
+
+        def get_output_reflection_files(self):
+            '''Get a dictionary of output reflection files keyed by
+            wavelength name.'''
+
+            return copy.deepcopy(self._output_reflection_files)
 
         def _transform_input_files(self):
             '''Transform the input files to an order we can manage.'''
@@ -160,6 +170,10 @@ def XScale(DriverType = None):
 
             # now information about the wavelengths
             for wave in self._transposed_input_keys:
+
+                self._output_reflection_files[wave] = os.path.join(
+                    self.get_working_directory(), '%s.HKL' % wave)
+                
                 xscale_inp.write(
                     'OUTPUT_FILE=%s.HKL ' % wave)
                 if self._anomalous:

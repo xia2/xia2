@@ -1604,7 +1604,7 @@ class CCP4Scaler(Scaler):
         
         self._scalr_statistics = data
 
-        # FIXME this is not correct for multi-wavelength data...
+        # FIXED this is not correct for multi-wavelength data...
         # it should be now!
 
         scaled_reflection_files = sc.get_scaled_reflection_files()

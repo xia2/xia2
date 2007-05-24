@@ -251,6 +251,10 @@ class Scalepack2Mtz:
 
         FileHandler.record_temporary_file(hklout)
 
+        # FIXME in here I need to know if we are wanting anomalous
+        # pairs separated or merged, though it probably doesn't
+        # matter too much...
+
         sc = self.Scala()
         sc.set_hklin(hklin)
         sc.set_hklout(hklout)

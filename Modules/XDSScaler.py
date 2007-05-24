@@ -71,14 +71,22 @@ from Wrappers.XDS.Cellparm import Cellparm as _Cellparm
 from Wrappers.CCP4.Scala import Scala as _Scala
 from Wrappers.CCP4.Truncate import Truncate as _Truncate
 from Wrappers.CCP4.Combat import Combat as _Combat
+from Wrappers.CCP4.Cad import Cad as _Cad
+from Wrappers.CCP4.Freerflag import Freerflag as _Freerflag
 from Wrappers.CCP4.Sortmtz import Sortmtz as _Sortmtz
 from Wrappers.CCP4.Pointless import Pointless as _Pointless
 
-# random odds and sods
-from lib.Guff import auto_logfiler
+# random odds and sods - the resolution estimate should be somewhere better
+from lib.Guff import auto_logfiler, transpose_loggraph
 from Handlers.Citations import Citations
 from Handlers.Syminfo import Syminfo
 from Handlers.Streams import Chatter, Debug
+from Handlers.Flags import Flags
+from Handlers.Files import FileHandler
+
+# stuff I have nicked from the CCP4 Scaler implementation
+from CCP4ScalerImplementationHelpers import _resolution_estimate
+from CCP4InterRadiationDamageDetector import CCP4InterRadiationDamageDetector
 
 class XDSScaler(Scaler):
     '''An implementation of the xia2 Scaler interface implemented with
@@ -144,6 +152,22 @@ class XDSScaler(Scaler):
         combat.set_working_directory(self.get_working_directory())
         auto_logfiler(combat)
         return combat
+
+    def Cad(self):
+        '''Create a Cad wrapper from _Cad - set the working directory
+        and log file stuff as a part of this...'''
+        cad = _Cad()
+        cad.set_working_directory(self.get_working_directory())
+        auto_logfiler(cad)
+        return cad
+
+    def Freerflag(self):
+        '''Create a Freerflag wrapper from _Freerflag - set the working
+        directory and log file stuff as a part of this...'''
+        freerflag = _Freerflag()
+        freerflag.set_working_directory(self.get_working_directory())
+        auto_logfiler(freerflag)
+        return freerflag
 
     def Scala(self):
         '''Create a Scala wrapper from _Scala - set the working directory
@@ -410,7 +434,76 @@ class XDSScaler(Scaler):
 
         # now get the reflection files out and merge them with scala
 
-        # get the resolution limits out
+        output_files = xscale.get_output_reflection_files()
+        wavelength_names = output_files.keys()
+
+        # these are per wavelength
+        resolution_limits = { } 
+        scaled_reflection_files = { }
+        
+        for wavelength in wavelength_names:
+            # convert the reflections to MTZ format with combat
+            # - setting the pname, xname, dname
+            hklout = os.path.join(self.get_working_directory(),
+                                  '%s_combat.mtz' % wavelength)
+
+            combat = self.Combat()
+            combat.set_hklin(output_files[wavelength])
+            combat.set_hklout(hklout)
+            combat.set_project_info(self._scalr_pname, self._scalr_xname,
+                                    wavelength)
+            combat.run()
+
+            # then sort them
+
+            hklin = hklout
+            hklout = os.path.join(self.get_working_directory(),
+                                  '%s_sort.mtz' % wavelength)
+
+            sortmtz = self.Sortmtz()
+            sortmtz.add_hklin(hklin)
+            sortmtz.set_hklout(hklout)
+            sortmtz.sort()
+
+            # then merge them in Scala - FIXME want also to convert them
+            # to unmerged polish format...
+
+            hklin = hklout
+            hklout = os.path.join(self.get_working_directory(),
+                                  '%s_scaled.mtz' % wavelength)
+
+            scala = self.Scala()
+            scala.set_hklin(hklin)
+            scala.set_hklout(hklout)
+            scala.set_anomalous(self._scalr_anomalous)
+            scala.set_onlymerge()
+            scala.merge()
+
+            scaled_reflection_files[
+                wavelength] = hklout
+
+            # get the resolution limits out -> statistics dictionary
+            self._scalr_stastics[wavelength] = scala.get_summary()
+
+            loggraph = scala.parse_ccp4_loggraph()
+            
+            for key in loggraph.keys():
+                if 'Analysis against resolution' in key:
+                    dataset = key.split(',')[-1].strip()
+                    resolution_info[dataset] = transpose_loggraph(
+                        loggraph[key])
+                    resolution_points = []
+                    resol_ranges = resolution_info[dataset]['3_Dmin(A)']
+                    mn_i_sigma_values = resolution_info[dataset]['13_Mn(I/sd)']
+                    for i in range(len(resol_ranges)):
+                        dmin = float(resol_ranges[i])
+                        i_sigma = float(mn_i_sigma_values[i])
+                        resolution_points.append((dmin, i_sigma))
+
+                    resolution = _resolution_estimate(
+                        resolution_points, 2.0)
+                    resolution_limits[wavelength] = resolution
+            
 
         # for each integrater set the resolution limit where Mn(I/sigma) ~ 2
         # but only of the resolution limit is noticeably lower than the
@@ -418,14 +511,180 @@ class XDSScaler(Scaler):
         # and if this is the case, return as we want the integration to
         # be repeated, after resetting the "done" flags.
 
-        # get the merging statistics for each data set
-        
-        # transform to unmerged scalepack with Scala as well
+        # so...
 
+        # next work though the epochs of integraters setting the resolution
+        # limit by the value from the wavelength recorded above
+
+        for epoch in self._sweep_information.keys():
+            intgr = self._sweep_information[epoch]['integrater']
+            dname = self._sweep_information[epoch]['dname']
+            dmin = intgr.get_integrater_high_resolution()
+
+            # compare this against the resolution limit computed above
+            if dmin == 0.0 and not Flags.get_quick():
+                intgr.set_integrater_high_resolution(
+                    resolution_limits[dname])
+
+                self.set_scaler_done(False)
+                self.set_scaler_prepare_done(False)
+
+            # note well that this spacing (0.075A) is designed to ensure that
+            # integration shouldn't be repeated once it has been repeated
+            # once...
+            
+            elif dmin > resolution_limits[dname] - 0.075:
+                pass
+
+            elif Flags.get_quick():
+                # that is we would reprocess if we weren't in a hurry
+                Chatter.write('Quick, so not resetting resolution limits')
+
+            else:
+                intgr.set_integrater_high_resolution(
+                    resolution_limits[dname])
+
+                self.set_scaler_done(False)
+                self.set_scaler_prepare_done(False)
+
+            if resolution_limits[dname] < best_resolution:
+                best_resolution = resolution_limits[dname]
+
+        # if we need to redo the scaling, return to allow this to happen
+
+        if not self.get_scaler_done():
+            return
+            
         # next transform to F's from I's
 
-        # and cad together into a single data set
+        for wavelength in scaled_reflection_files.keys():
 
-        # so then we're done...
+            hklin = scaled_reflection_files[wavelength]
+            
+            truncate = self.Truncate()
+            truncate.set_hklin(file)
+
+            if self.get_scaler_anomalous():
+                truncate.set_anomalous(True)
+            else:
+                truncate.set_anomalous(False)
+                
+            FileHandler.record_log_file('%s %s %s truncate' % \
+                                        (self._common_pname,
+                                         self._common_xname,
+                                         wavelength),
+                                        truncate.get_log_file())
+            
+            hklout = os.path.join(self.get_working_directory(),
+                                  '%s_truncated.mtz' % wavelength)
+
+            t.set_hklout(hklout)
+            t.truncate()
+
+            b_factor = t.get_b_factor()
+
+            # record the b factor somewhere (hopefully) useful...
+
+            self._scalr_statistics[
+                (self._common_pname, self._common_xname, wavelength)
+                ]['Wilson B factor'] = [b_factor]
+            
+            # and record the reflection file..
+            scaled_reflection_files[wavelength] = hklout
+            
+        # and cad together into a single data set - recalling that we already
+        # have a standard unit cell...
+
+        if len(scaled_reflection_files.keys()) > 1:
+
+            c = self.Cad()
+            for wavelength in scaled_reflection_files.keys():
+                c.add_hklin(scaled_reflection_files[wavelength])
+        
+            hklout = os.path.join(self.get_working_directory(),
+                                  '%s_%s_merged.mtz' % (self._common_pname,
+                                                        self._common_xname))
+
+            Chatter.write('Merging all data sets to %s' % hklout)
+
+            c.set_hklout(hklout)
+            c.merge()
+            
+            self._scalr_scaled_reflection_files['mtz_merged'] = hklout
+
+        else:
+
+            # we don't need to explicitly merge it, since that's just
+            # silly ;o)
+
+            # however this doesn't allow for the renaming below in the free
+            # flag adding step! Doh!
+            
+            self._scalr_scaled_reflection_files[
+                'mtz_merged'] = scaled_reflection_files[
+                scaled_reflection_files.keys()[0]]
+
+        # finally add a FreeR column, and record the new merged reflection
+        # file with the free column added.
+
+        f = self.Freerflag()
+
+        # changed this to not assume that the file is called _merged.mtz
+        hklout = os.path.join(self.get_working_directory(),
+                              '%s_%s_free.mtz' % (self._common_pname,
+                                                  self._common_xname))
+
+        f.set_hklin(self._scalr_scaled_reflection_files['mtz_merged'])
+        f.set_hklout(hklout)
+        
+        f.add_free_flag()
+
+        # remove 'mtz_merged' from the dictionary - this is made
+        # redundant by the merged free...
+        del self._scalr_scaled_reflection_files['mtz_merged']
+
+        # changed from mtz_merged_free to plain ol' mtz
+        self._scalr_scaled_reflection_files['mtz'] = f.get_hklout()
+
+        # record this for future reference
+        FileHandler.record_data_file(f.get_hklout())
+
+        # have a look for twinning ...
+        sfc = self.Sfcheck()
+        sfc.set_hklin(f.get_hklout())
+        sfc.analyse()
+        twinning_score = sfc.get_twinning()
+
+        Chatter.write('Overall twinning score: %4.2f' % twinning_score)
+        if twinning_score > 1.9:
+            Chatter.write('Your data do not appear to be twinned')
+        elif twinning_score < 1.6:
+            Chatter.write('Your data appear to be twinned')
+        else:
+            Chatter.write('Not sure what this means (1.6 < score < 1.9)')
+
+        # next have a look for radiation damage... if more than one wavelength
+
+        if len(scaled_reflection_files.keys()) > 1:
+            crd = CCP4InterRadiationDamageDetector()
+
+            crd.set_working_directory(self.get_working_directory())
+
+            crd.set_hklin(f.get_hklout())
+            
+            hklout = os.path.join(self.get_working_directory(), 'temp.mtz')
+            FileHandler.record_temporary_file(hklout)
+            
+            crd.set_hklout(hklout)
+
+            status = crd.detect()
+
+            Chatter.write('')
+            Chatter.write('Inter-wavelength radiation damage analysis.')
+            for s in status:
+                Chatter.write('%s %s' % s)
+            Chatter.write('')
+        
 
         return
+
