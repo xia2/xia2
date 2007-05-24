@@ -213,8 +213,8 @@ class XDSScaler(Scaler):
         if not is_mtz_file(hklin):
 
             hklout = os.path.join(self.get_working_directory(),
-                                  '%s-combat.mtz' % sname)
-        
+                                  'temp-combat.mtz')
+
             FileHandler.record_temporary_file(hklout)
             
             combat = self.Combat()
