@@ -95,7 +95,7 @@ def XScale(DriverType = None):
         def _transform_input_files(self):
             '''Transform the input files to an order we can manage.'''
 
-            for j in range(len(self._input_reflection_file)):
+            for j in range(len(self._input_reflection_files)):
                 hkl = self._input_reflection_files[j]
                 wave = self._input_reflection_wavelength_names[j]
                 resol = self._input_resolution_ranges[j]
