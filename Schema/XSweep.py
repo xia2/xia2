@@ -97,7 +97,7 @@ if not os.environ.has_key('XIA2CORE_ROOT'):
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
-from Handlers.Streams import Chatter
+from Handlers.Streams import Chatter, Debug
 from Handlers.Files import FileHandler
 from Handlers.Environment import Environment
 
@@ -314,10 +314,10 @@ class XSweep(Object):
 
                 epochs = self._epoch_to_image.keys()
 
-                Chatter.write('Reading %d headers took %ds' % \
-                              (len(images), int(end_t - start_t)))
-                Chatter.write('Exposure epoch for sweep %s: %d %d' % \
-                              (self._template, min(epochs), max(epochs)))
+                Debug.write('Reading %d headers took %ds' % \
+                            (len(images), int(end_t - start_t)))
+                Debug.write('Exposure epoch for sweep %s: %d %d' % \
+                            (self._template, min(epochs), max(epochs)))
             
         else:
 
