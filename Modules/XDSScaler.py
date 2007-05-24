@@ -492,11 +492,10 @@ class XDSScaler(Scaler):
             for key in loggraph.keys():
                 if 'Analysis against resolution' in key:
                     dataset = key.split(',')[-1].strip()
-                    resolution_info[dataset] = transpose_loggraph(
-                        loggraph[key])
+                    resolution_info = transpose_loggraph(loggraph[key])
                     resolution_points = []
-                    resol_ranges = resolution_info[dataset]['3_Dmin(A)']
-                    mn_i_sigma_values = resolution_info[dataset]['13_Mn(I/sd)']
+                    resol_ranges = resolution_info['3_Dmin(A)']
+                    mn_i_sigma_values = resolution_info['13_Mn(I/sd)']
                     for i in range(len(resol_ranges)):
                         dmin = float(resol_ranges[i])
                         i_sigma = float(mn_i_sigma_values[i])
