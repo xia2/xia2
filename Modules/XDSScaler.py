@@ -508,9 +508,10 @@ class XDSScaler(Scaler):
                 wavelength] = hklout
 
             # get the resolution limits out -> statistics dictionary
-            self._scalr_statistics[(self._scalr_pname,
-                                    self._scalr_xname,
-                                    wavelength)] = scala.get_summary()
+
+            stats_id = (self._scalr_pname, self._scalr_xname, wavelength)
+            
+            self._scalr_statistics[stats_id] = scala.get_summary()[stats_id]
 
             loggraph = scala.parse_ccp4_loggraph()
             
