@@ -60,6 +60,7 @@ from Experts.FindImages import image2template_directory
 from Schema.XProject import XProject
 from Handlers.Flags import Flags
 from Handlers.Streams import Chatter, Debug
+from Handlers.PipelineSelection import add_preference
 
 class _CommandLine(Object):
     '''A class to represent the command line input.'''
@@ -78,6 +79,8 @@ class _CommandLine(Object):
 
         self._read_trust_timestamps()
         self._read_quick()
+        self._read_2d()
+        self._read_3d()
         self._read_debug()
         self._read_migrate_data()
 
@@ -451,6 +454,20 @@ class _CommandLine(Object):
 
         if '-quick' in sys.argv:
             Flags.set_quick(True)
+        return
+
+    def _read_2d(self):
+
+        if '-2d' in sys.argv:
+            add_preference('integrater', 'mosflm')
+            add_preference('scaler', 'ccp4')
+        return
+
+    def _read_3d(self):
+
+        if '-3d' in sys.argv:
+            add_preference('integrater', 'xds')
+            add_preference('scaler', 'xds')
         return
 
     def _read_debug(self):
