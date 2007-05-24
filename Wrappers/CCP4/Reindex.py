@@ -48,6 +48,9 @@ def Reindex(DriverType = None):
             # this should be of the form e.g. k, l, h
             self._operator = None
 
+            # results
+            self._cell = None
+
         def set_spacegroup(self, spacegroup):
             '''Set the spacegroup to reindex the reflections to.'''
 
@@ -59,6 +62,9 @@ def Reindex(DriverType = None):
 
             self._operator = operator
             return
+
+        def get_cell(self):
+            return self._cell
 
         def check_reindex_errors(self):
             '''Check the standard output for standard reindex errors.'''
@@ -100,6 +106,10 @@ def Reindex(DriverType = None):
                     pass
 
                 raise e
+
+            for o in self.get_all_output():
+                if 'New unit cell determined from reindexing:' in o:
+                    self._cell = map(float, o.split()[-6:])
 
             return self.get_ccp4_status()
 
