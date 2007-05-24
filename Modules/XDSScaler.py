@@ -69,6 +69,7 @@ from Wrappers.XDS.Cellparm import Cellparm as _Cellparm
 from Wrappers.CCP4.Scala import Scala as _Scala
 from Wrappers.CCP4.Truncate import Truncate as _Truncate
 from Wrappers.CCP4.Combat import Combat as _Combat
+from Wrappers.CCP4.Reindex import Reindex as _Reindex
 from Wrappers.CCP4.Sfcheck import Sfcheck as _Sfcheck
 from Wrappers.CCP4.Cad import Cad as _Cad
 from Wrappers.CCP4.Freerflag import Freerflag as _Freerflag
@@ -152,6 +153,14 @@ class XDSScaler(Scaler):
         auto_logfiler(combat)
         return combat
 
+    def Reindex(self):
+        '''Create a Reindex wrapper from _Reindex - set the working directory
+        and log file stuff as a part of this...'''
+        reindex = _Reindex()
+        reindex.set_working_directory(self.get_working_directory())
+        auto_logfiler(reindex)
+        return reindex
+
     def Sfcheck(self):
         '''Create a Sfcheck wrapper from _Sfcheck - set the working directory
         and log file stuff as a part of this...'''
@@ -198,6 +207,8 @@ class XDSScaler(Scaler):
 
         # check to see if HKLIN is MTZ format, and if not, render it
         # so!
+
+        need_to_return = False
 
         if not is_mtz_file(hklin):
 
@@ -484,8 +495,11 @@ class XDSScaler(Scaler):
 
             hklin = hklout 
 
-            pointgroup, reindex_op = self._pointless_indexer_jiffy(hklin,
-                                                                   indxr)
+            pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
+                hklin, indxr)
+
+            if ntr:
+                need_to_return = True
 
             self._spacegroup = Syminfo.spacegroup_name_to_number(pointgroup)
             
@@ -580,12 +594,15 @@ class XDSScaler(Scaler):
         self._scalr_statistics = { }
 
         self._scalr_likely_spacegroups = []
+
+        global_reindex_operator = None
         
         for wavelength in wavelength_names:
             # convert the reflections to MTZ format with combat
             # - setting the pname, xname, dname
             hklout = os.path.join(self.get_working_directory(),
                                   '%s_combat.mtz' % wavelength)
+            FileHandler.record_temporary_file(hklout)
 
             combat = self.Combat()
             combat.set_hklin(output_files[wavelength])
@@ -603,6 +620,33 @@ class XDSScaler(Scaler):
 
             spacegroups = pointless.get_likely_spacegroups()
 
+            # this may be necessary to get the results in the correct
+            # setting for the spacegroup - note well that this should be
+            # the same for all data sets...?
+            reindex_operator = pointless.get_spacegroup_reindex_operator()
+
+            if global_reindex_operator == None:
+                global_reindex_operator = reindex_operator
+
+            if not reindex_operator == global_reindex_operator:
+                raise RuntimeError, 'non uniform reindexing operations'
+                
+            if reindex_operator != 'h,k,l':
+
+                Debug.write('Reindexing for wavelength %s (%s)' % \
+                            (wavelength, reindex_operator))
+
+                hklin = hklout
+                hklout = os.path.join(self.get_working_directory(),
+                                      '%s_reindex.mtz' % wavelength)
+                FileHandler.record_temporary_file(hklout)
+                                
+                reindex = self.Reindex()
+                reindex.set_hklin(hklin)
+                reindex.set_hklout(hklout)
+                reindex.set_spacegroup(spacegroups[0])
+                reindex.reindex()
+
             for s in spacegroups:
                 if not s in self._scalr_likely_spacegroups:
                     self._scalr_likely_spacegroups.append(s)
@@ -612,6 +656,7 @@ class XDSScaler(Scaler):
             hklin = hklout
             hklout = os.path.join(self.get_working_directory(),
                                   '%s_sort.mtz' % wavelength)
+            FileHandler.record_temporary_file(hklout)
 
             sortmtz = self.Sortmtz()
             sortmtz.add_hklin(hklin)
