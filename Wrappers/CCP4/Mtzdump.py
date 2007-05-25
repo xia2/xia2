@@ -81,7 +81,7 @@ def Mtzdump(DriverType = None):
                 line = output[i][:-1]
 
                 if 'Batch number:' in line:
-                    batch = int(output[i + 1])
+                    batch = int(output[i + 1].split()[0])
                     if not batch in batches:
                         batches.append(batch)
                 
