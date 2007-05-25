@@ -835,18 +835,37 @@ class XDSScaler(Scaler):
 
         if len(scaled_reflection_files.keys()) > 1:
 
-            c = self.Cad()
+            # for each reflection file I need to (1) ensure that the
+            # spacegroup is uniformly set and (2) ensure that
+            # the column names are appropriately relabelled.
+
+            reflection_files = { }
+
             for wavelength in scaled_reflection_files.keys():
-                c.add_hklin(scaled_reflection_files[wavelength])
-        
+                cad = self.Cad()
+                cad.add_hklin(scaled_reflection_files[wavelength])
+                cad.set_hklout(os.path.join(
+                    self.get_working_directory(),
+                    'cad-tmp-%s.mtz' % wavelength))
+                cad.set_new_suffix(wavelength)
+                cad.update()
+
+                reflection_files[wavelength] = cad.get_hklout()
+                FileHandler.record_temporary_file(cad.get_hklout())
+                
+            # now merge the reflection files together...
             hklout = os.path.join(self.get_working_directory(),
                                   '%s_%s_merged.mtz' % (self._common_pname,
                                                         self._common_xname))
+            FileHandler.record_temporary_file(hklout)
 
             Chatter.write('Merging all data sets to %s' % hklout)
 
-            c.set_hklout(hklout)
-            c.merge()
+            cad = self.Cad()
+            for wavelength in reflection_files.keys():
+                cad.add_hklin(reflection_files[wavelength])
+            cad.set_hklout(hklout)
+            cad.merge()
             
             self._scalr_scaled_reflection_files['mtz_merged'] = hklout
 
