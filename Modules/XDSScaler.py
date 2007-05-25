@@ -442,7 +442,7 @@ class XDSScaler(Scaler):
                 combat.run()
 
                 pointless = self.Pointless()
-                pointless.set_hklin(temp_mtz)
+                pointless.set_hklin(hklout)
                 pointless.set_hklref(reference_mtz)
                 pointless.decide_pointgroup()
 
