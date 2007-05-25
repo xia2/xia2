@@ -70,6 +70,8 @@ from Wrappers.CCP4.Scala import Scala as _Scala
 from Wrappers.CCP4.Truncate import Truncate as _Truncate
 from Wrappers.CCP4.Combat import Combat as _Combat
 from Wrappers.CCP4.Reindex import Reindex as _Reindex
+from Wrappers.CCP4.Rebatch import Rebatch as _Rebatch
+from Wrappers.CCP4.Mtzdump import Mtzdump as _Mtzdump
 from Wrappers.CCP4.Sfcheck import Sfcheck as _Sfcheck
 from Wrappers.CCP4.Cad import Cad as _Cad
 from Wrappers.CCP4.Freerflag import Freerflag as _Freerflag
@@ -78,6 +80,7 @@ from Wrappers.CCP4.Pointless import Pointless as _Pointless
 
 # random odds and sods - the resolution estimate should be somewhere better
 from lib.Guff import auto_logfiler, transpose_loggraph, is_mtz_file
+from lib.Guff import nifty_power_of_ten
 from Handlers.Citations import Citations
 from Handlers.Syminfo import Syminfo
 from Handlers.Streams import Chatter, Debug
@@ -160,6 +163,22 @@ class XDSScaler(Scaler):
         reindex.set_working_directory(self.get_working_directory())
         auto_logfiler(reindex)
         return reindex
+
+    def Rebatch(self):
+        '''Create a Rebatch wrapper from _Rebatch - set the working directory
+        and log file stuff as a part of this...'''
+        rebatch = _Rebatch()
+        rebatch.set_working_directory(self.get_working_directory())
+        auto_logfiler(rebatch)
+        return rebatch
+
+    def Mtzdump(self):
+        '''Create a Mtzdump wrapper from _Mtzdump - set the working directory
+        and log file stuff as a part of this...'''
+        mtzdump = _Mtzdump()
+        mtzdump.set_working_directory(self.get_working_directory())
+        auto_logfiler(mtzdump)
+        return mtzdump
 
     def Sfcheck(self):
         '''Create a Sfcheck wrapper from _Sfcheck - set the working directory
@@ -597,9 +616,15 @@ class XDSScaler(Scaler):
 
         self._scalr_statistics = { }
 
-        self._scalr_likely_spacegroups = []
+        # FIXED in here I need to get the spacegroup and reindexing
+        # operator to put the reflections in the standard setting from
+        # all reflections merged together rather than from each
+        # wavelength separately. I will therefore need to include the
+        # rebatch-and-sort-together shuffle from CCP4 scaler
+        # implementation.
 
-        global_reindex_operator = None
+        max_batches = 0
+        mtz_dict = { } 
         
         for wavelength in wavelength_names:
             # convert the reflections to MTZ format with combat
@@ -615,26 +640,89 @@ class XDSScaler(Scaler):
                                     wavelength)
             combat.run()
 
-            # have a look at guessing the correct spacegroup - as
-            # we should already be indexed in the correct pointgroup
+            hklin = hklout
+            mtz_dict[wavelength] = hklout
 
-            pointless = self.Pointless()
-            pointless.set_hklin(hklout)
-            pointless.decide_spacegroup()
+            md = self.Mtzdump()
+            md.set_hklin(hklin)
+            md.dump()
 
-            spacegroups = pointless.get_likely_spacegroups()
+            Chatter.write('Getting batches from %s' % hklin)
+            batches = md.get_batches()
+            Chatter.write('=> %d to %d' % (min(batches),
+                                           max(batches)))
 
-            # this may be necessary to get the results in the correct
-            # setting for the spacegroup - note well that this should be
-            # the same for all data sets...?
-            reindex_operator = pointless.get_spacegroup_reindex_operator()
+            # FIXME here check that this matches up with the input,
+            # if we have both sources of batch information
+            if 1 + max(batches) - min(batches) > max_batches:
+                max_batches = max(batches) - min(batches) + 1
+            
+        Chatter.write('Biggest sweep has %d batches' % max_batches)
+        max_batches = nifty_power_of_ten(max_batches)
+    
+        counter = 0
 
-            if global_reindex_operator == None:
-                global_reindex_operator = reindex_operator
+        for wavelength in wavelength_names:
+            hklin = mtz_dict[wavelength]
+            hklout = os.path.join(self.get_working_directory(),
+                                  '%s_rebatch.mtz' % wavelength)
+            rebatch = self.Rebatch()
 
-            if not reindex_operator == global_reindex_operator:
-                raise RuntimeError, 'non uniform reindexing operations'
-                
+            # we will want to delete this one exit
+            FileHandler.record_temporary_file(hklout)
+            rebatch.set_hklin(hklin)
+            rebatch.set_first_batch(counter * max_batches + 1)
+            rebatch.set_hklout(hklout)
+            rebatch.rebatch()
+
+            mtz_dict[wavelength] = hklout
+
+            counter += 1
+
+        # then sort the files together, making sure that the resulting
+        # reflection file looks right. Only sorting here to put all
+        # of the reflections in a single file...
+
+        s = self.Sortmtz()
+
+        hklout = os.path.join(self.get_working_directory(),
+                              '%s_%s_sorted.mtz' % \
+                              (self._common_pname, self._common_xname))
+        
+        s.set_hklout(hklout)
+
+        FileHandler.record_temporary_file(hklout)
+
+        for wavelength in wavelength_names:
+            s.add_hklin(mtz_dict[wavelength])
+
+        s.sort()
+
+        pointless = self.Pointless()
+        pointless.set_hklin(hklout)
+        pointless.decide_spacegroup()
+
+        # get one spacegroup and so on which will be used for
+        # all of the reflection files...
+        
+        spacegroups = pointless.get_likely_spacegroups()
+        reindex_operator = pointless.get_spacegroup_reindex_operator()
+        self._scalr_likely_spacegroups = spacegroups
+       
+        for wavelength in wavelength_names:
+            # convert the reflections to MTZ format with combat
+            # - setting the pname, xname, dname
+            hklout = os.path.join(self.get_working_directory(),
+                                  '%s_combat.mtz' % wavelength)
+            FileHandler.record_temporary_file(hklout)
+
+            combat = self.Combat()
+            combat.set_hklin(output_files[wavelength])
+            combat.set_hklout(hklout)
+            combat.set_project_info(self._scalr_pname, self._scalr_xname,
+                                    wavelength)
+            combat.run()
+
             if reindex_operator != 'h,k,l':
 
                 Debug.write('Reindexing for wavelength %s (%s)' % \
@@ -652,14 +740,13 @@ class XDSScaler(Scaler):
                 reindex.set_operator(reindex_operator)
                 reindex.reindex()
 
-                # FIXME if reindexing to put this in a standard setting
-                # then I probably need to think about resetting
-                # self._scalr_cell - I should probably also think about
-                # setting up the correct spacegroups by a quick reindex
-                # call anyway...
-
+                # ASSERTION - this should be the same for all wavelengths
+                # as they all had the same input cell and all have the
+                # same reindexing...
+                
                 self._cell = reindex.get_cell()
                 self._scalr_cell = reindex.get_cell()
+                
             else:
                 Debug.write('Reindexing %s to set spacegroup to %s' % \
                             (wavelength, spacegroups[0]))
@@ -674,10 +761,6 @@ class XDSScaler(Scaler):
                 reindex.set_hklout(hklout)
                 reindex.set_spacegroup(spacegroups[0])
                 reindex.reindex()
-
-            for s in spacegroups:
-                if not s in self._scalr_likely_spacegroups:
-                    self._scalr_likely_spacegroups.append(s)
 
             # then sort them
 
