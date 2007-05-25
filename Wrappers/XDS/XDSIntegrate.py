@@ -128,11 +128,11 @@ def XDSIntegrate(DriverType = None):
             xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
                           self._parallel) 
 
-            fixed_2401 = False
+            fixed_2401 = True
 
             if self._refined_xparm and fixed_2401:
                 # allow only for crystal movement
-                xds_inp.write('REFINE(INTEGRATE)=ORIENTATION\n')
+                xds_inp.write('REFINE(INTEGRATE)=CELL ORIENTATION\n')
             else:
                 xds_inp.write('REFINE(INTEGRATE)=ALL\n')
             

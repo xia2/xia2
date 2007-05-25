@@ -258,8 +258,8 @@ class XDSIntegrater(FrameProcessor,
 
         # use the refined parameters for integration?
 
-        fixed_2401 = False
-        
+        fixed_2401 = True
+       
         if self._data_files.has_key('GXPARM.XDS') and fixed_2401:
             Chatter.write('Using globally refined parameters')
             integrate.set_input_data_file(
