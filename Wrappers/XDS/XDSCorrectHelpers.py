@@ -118,7 +118,9 @@ def _parse_correct_lp(filename):
                 resolution_info.append((float(l[1]),float(l[2])))
                 j += 1
 
-            resolution = _resolution_estimate(resolution_info, 1.0)
+            # bug # 2409 - this seems a little harsh set as 1.0 so
+            # set this to 0.75
+            resolution = _resolution_estimate(resolution_info, 0.75)
             postrefinement_stats['resolution_estimate'] = resolution
 
     return postrefinement_stats
