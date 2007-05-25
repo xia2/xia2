@@ -286,6 +286,11 @@ class XDSIntegrater(FrameProcessor,
         if self.get_integrater_spacegroup_number():
             correct.set_spacegroup_number(
                 self.get_integrater_spacegroup_number())
+            # FIXME bug 2406 - need to have the unit cell set as
+            # well as the spacegroup...
+            if not self._intgr_cell:
+                raise RuntimeError, 'no unit cell to recycle'
+            correct.set_cell(self._intgr_cell)
 
         if self.get_integrater_reindex_matrix():
             correct.set_reindex_matrix(

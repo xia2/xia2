@@ -226,6 +226,8 @@ def XDSCorrect(DriverType = None):
             xds_inp.write('FRIEDEL\'S_LAW=FALSE\n')
 
             if self._spacegroup_number:
+                if not self._cell:
+                    raise RuntimeError, 'cannot set spacegroup without unit cell'
                 xds_inp.write('SPACE_GROUP_NUMBER=%d\n' % \
                               self._spacegroup_number)
             if self._cell:
