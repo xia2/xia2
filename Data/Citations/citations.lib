@@ -1,4 +1,18 @@
 <citations>
+<citation program="lepage-cell-reduction">
+@article{LePage:a21775,
+author = "Le Page, Y.",
+title = "{The derivation of the axes of the conventional unit cell from the dimensions of the Buerger-reduced cell}",
+journal = "Journal of Applied Crystallography",
+year = "1982",
+volume = "15",
+number = "3",
+pages = "255--259",
+month = "Jun",
+doi = {10.1107/S0021889882011959},
+url = {http://dx.doi.org/10.1107/S0021889882011959},
+}
+</citation>
 <citation program="xds">
 @article{Kabsch:wi0022,
 author = "Kabsch, W.",
