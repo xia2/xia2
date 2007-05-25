@@ -227,13 +227,15 @@ def XDSCorrect(DriverType = None):
 
             if self._spacegroup_number:
                 if not self._cell:
-                    raise RuntimeError, 'cannot set spacegroup without unit cell'
+                    raise RuntimeError, \
+                          'cannot set spacegroup without unit cell'
+                
                 xds_inp.write('SPACE_GROUP_NUMBER=%d\n' % \
                               self._spacegroup_number)
             if self._cell:
                 xds_inp.write('UNIT_CELL_CONSTANTS=')
                 xds_inp.write('%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f\n' % \
-                              self._cell)
+                              tuple(self._cell))
             if self._reindex_matrix:
                 xds_inp.write('REIDX=%d %d %d %d %d %d %d %d %d %d %d %d' % \
                               map(int, self._reindex_matrix))
