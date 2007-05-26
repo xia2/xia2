@@ -95,6 +95,12 @@ def _parse_integrate_lp(filename):
             for image in block_images:
                 per_image_stats[image]['rmsd_pixel'] = rmsd_pixel
 
+        if 'UNIT CELL PARAMETERS' in file_contents[i]:
+            unit_cell = tuple(map(float, file_contents[i].split()[-6:]))
+            for image in block_images:
+                per_image_stats[image]['unit_cell'] = unit_cell
+            
+
         if 'OF SPINDLE POSITION (DEGREES)' in file_contents[i]:
             rmsd_phi = float(file_contents[i].split()[-1])
             # for image in range(block_start_finish[0],

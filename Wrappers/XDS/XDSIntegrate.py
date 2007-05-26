@@ -11,6 +11,7 @@
 import os
 import sys
 import shutil
+import math
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -236,9 +237,38 @@ def XDSIntegrate(DriverType = None):
                 Chatter.write('Standard Deviation in pixel range: %f %f' % \
                               (low, high))
 
+                # next look for variations in the unit cell parameters
+                unit_cells = [stats[i]['unit_cell'] for i in images]
+
+                # compute average
+                uc_mean = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+                for uc in unit_cells:
+                    for j in range(6):
+                        uc_mean[j] += uc[j]
+
+                for j in range(6):
+                    uc_mean[j] /= len(unit_cells)
+
+                max_rel_dev = 0.0
+
+                for uc in unit_cells:
+                    for j in range(6):
+                        if (math.fabs(uc[j] - uc_mean[j]) / \
+                            uc_mean[j]) > max_rel_dev:
+                            max_rel_dev = math.fabs(uc[j] - uc_mean[j]) / \
+                                          uc_mean[j]
+
+                Chatter.write('Maximum relative deviation in cell: %.3f' % \
+                              max_rel_dev)                
+
                 if (high - low) / (0.5 * (high + low)) > 0.5:
                     # there was a very large variation in deviation
                     # FIXME 08/JAN/07 this should raise a BadLatticeException
+
+                    # FIXME 26/MAY/07 this should also look for large
+                    # variations in the unit cell parameters...
+                    # need to have both to distinguish TS01 NAT and TS02.
                 
                     raise BadLatticeError, \
                           'very large variation in pixel deviation'
