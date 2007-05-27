@@ -212,6 +212,17 @@ def XDSIntegrate(DriverType = None):
             self._integrate_hkl = os.path.join(self.get_working_directory(),
                                                'INTEGRATE.HKL')
 
+            # look through integrate.lp for some useful information
+            # to help with the analysis
+
+            space_group_number = 0
+
+            for o in open(os.path.join(
+                self.get_working_directory(),
+                'INTEGRATE.LP')).readlines():
+                if 'SPACE_GROUP_NUMBER' in o:
+                    space_group_number = int(o.split()[-1])
+
             stats = _parse_integrate_lp(os.path.join(
                 self.get_working_directory(),
                 'INTEGRATE.LP'))
@@ -262,15 +273,19 @@ def XDSIntegrate(DriverType = None):
                 Chatter.write('Maximum relative deviation in cell: %.3f' % \
                               max_rel_dev)                
 
-                if (high - low) / (0.5 * (high + low)) > 0.5:
+                # change - make this only a problem if not triclinic.
+
+                if (high - low) / (0.5 * (high + low)) > 0.5 and \
+                       space_group_number > 1:
                     # there was a very large variation in deviation
                     # FIXME 08/JAN/07 this should raise a BadLatticeException
 
                     # FIXME 26/MAY/07 this should also look for large
                     # variations in the unit cell parameters...
                     # need to have both to distinguish TS01 NAT and TS02.
+                    # This doesn't really help...
                 
-                    raise BadLatticeError, \
+                    raises BadLatticeError, \
                           'very large variation in pixel deviation'
 
             except KeyError, e:
