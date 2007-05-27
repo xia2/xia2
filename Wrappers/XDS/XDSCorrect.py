@@ -261,6 +261,10 @@ def XDSCorrect(DriverType = None):
 
             xds_check_version_supported(self.get_all_output())
 
+            # look for errors
+            # like this perhaps
+            #   !!! ERROR !!! ILLEGAL SPACE GROUP NUMBER OR UNIT CELL
+
             # tidy up...
             try:
                 os.remove(os.path.join(self.get_working_directory(),

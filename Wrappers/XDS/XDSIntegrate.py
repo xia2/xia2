@@ -196,6 +196,10 @@ def XDSIntegrate(DriverType = None):
 
             xds_check_version_supported(self.get_all_output())
 
+            # look for errors
+            # like this perhaps - what the hell does this mean?
+            #   !!! ERROR !!! "STRONGHKL": ASSERT VIOLATION
+
             # tidy up...
             try:
                 os.remove(os.path.join(self.get_working_directory(),
