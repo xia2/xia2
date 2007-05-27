@@ -285,7 +285,7 @@ def XDSIntegrate(DriverType = None):
                     # need to have both to distinguish TS01 NAT and TS02.
                     # This doesn't really help...
                 
-                    raises BadLatticeError, \
+                    raise BadLatticeError, \
                           'very large variation in pixel deviation'
 
             except KeyError, e:
