@@ -29,6 +29,14 @@
 
 import os
 import sys
+import exceptions
+
+class XDSException(exceptions.Exception):
+    def __init__(self, value):
+        self.value = value
+        return
+    def __str__(self):
+        return str(self.value)
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -62,6 +70,17 @@ def xds_check_version_supported(xds_output_list):
 
     if not xds_version in supported_versions:
         raise RuntimeError, 'XDS version "%s" not supported' % xds_version
+
+    return
+
+def xds_error(xds_output_list):
+    '''Check for errors in XDS output and raise an exception if one is
+    found.'''
+    
+    for line in xds_output_list:
+        if '!!!' in line and 'ERROR' in line:
+            error = line.split('!!!')[2].strip()
+            raise XDSException, error
 
     return
 
