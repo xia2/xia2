@@ -73,7 +73,7 @@ def xds_check_version_supported(xds_output_list):
 
     return
 
-def xds_error(xds_output_list):
+def xds_check_error(xds_output_list):
     '''Check for errors in XDS output and raise an exception if one is
     found.'''
     
