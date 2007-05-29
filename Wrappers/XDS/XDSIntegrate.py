@@ -33,7 +33,7 @@ from Driver.DriverFactory import DriverFactory
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
-from XDS import header_to_xds, xds_check_version_supported
+from XDS import header_to_xds, xds_check_version_supported, xds_check_error
 
 # specific helper stuff
 from XDSIntegrateHelpers import _parse_integrate_lp
@@ -195,6 +195,7 @@ def XDSIntegrate(DriverType = None):
             self.close_wait()
 
             xds_check_version_supported(self.get_all_output())
+            xds_check_error(self.get_all_output())
 
             # look for errors
             # like this perhaps - what the hell does this mean?

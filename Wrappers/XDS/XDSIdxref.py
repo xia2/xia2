@@ -33,7 +33,7 @@ from Driver.DriverFactory import DriverFactory
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
-from XDS import header_to_xds, xds_check_version_supported
+from XDS import header_to_xds, xds_check_version_supported, xds_check_error
 from Handlers.Streams import Debug
 
 # specific helper stuff
@@ -259,6 +259,7 @@ def XDSIdxref(DriverType = None):
             self.close_wait()
 
             xds_check_version_supported(self.get_all_output())
+            xds_check_error(self.get_all_output())
 
             # tidy up...
             try:
