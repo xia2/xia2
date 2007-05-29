@@ -79,7 +79,7 @@ def xds_check_error(xds_output_list):
     
     for line in xds_output_list:
         if '!!!' in line and 'ERROR' in line:
-            error = line.split('!!!')[2].strip()
+            error = '[XDS] %s' % line.split('!!!')[2].strip().lower()
             raise XDSException, error
 
     return
