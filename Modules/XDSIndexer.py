@@ -313,6 +313,7 @@ class XDSIndexer(FrameProcessor,
                 # unit cell, and they are the same, well ignore it
                 if 'insufficient percentage (< 70%)' in str(e) and \
                    original_cell:
+                    done = idxref.run(ignore_errors = True)                    
                     lattice, cell, mosaic = \
                              idxref.get_indexing_solution()
                     # compare solutions

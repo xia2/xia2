@@ -153,7 +153,7 @@ def XDSIdxref(DriverType = None):
         def set_background_range(self, start, end):
             self._background_range = (start, end)
 
-        def run(self):
+        def run(self, ignore_errors = False):
             '''Run idxref.'''
 
             header = header_to_xds(self.get_header())
@@ -259,7 +259,8 @@ def XDSIdxref(DriverType = None):
             self.close_wait()
 
             xds_check_version_supported(self.get_all_output())
-            xds_check_error(self.get_all_output())
+            if not ignore_errors:
+                xds_check_error(self.get_all_output())
 
             # tidy up...
             try:
