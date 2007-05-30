@@ -153,9 +153,10 @@ class XDSIndexer(FrameProcessor,
 
         else:
             # work on the assumption that this is a full sweep of images
-            # so I can use two blocks...
+            # so I can use two blocks... of 5 degrees - perhaps this should
+            # be three blocks? testing with 5 degrees, used to be 3.
 
-            block_size = int(3.0 / phi_width)
+            block_size = int(5.0 / phi_width)
 
             self.add_indexer_image_wedge((images[0], images[block_size] - 1))
 
