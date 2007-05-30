@@ -186,6 +186,8 @@ def XDSIdxref(DriverType = None):
                                      'cF':196,
                                      'cI':197}
 
+            # FIXME this looks like a potential bug - what will
+            # happen if the input lattice has not been set??
             if self._indxr_input_cell:
                 self._cell = self._indxr_input_cell
             if self._indxr_input_lattice:
@@ -289,6 +291,16 @@ def XDSIdxref(DriverType = None):
                 # only consider indexing solutions with goodness of fit < 30
 
                 if fit < 30.0:
+                    # bug 2417 - if we have an input lattice then we
+                    # don't want to include anything higher symmetry
+                    # in the results table...
+
+                    if self._symm:
+                        if lattice_to_spacegroup[lattice] > self._symm:
+                            Debug.write('Ignoring solution with lattice %s' % \
+                                        lattice)
+                            continue
+                    
                     if self._indexing_solutions.has_key(lattice):
                         if self._indexing_solutions[lattice][
                             'goodness'] < fit:
