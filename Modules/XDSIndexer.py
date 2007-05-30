@@ -284,9 +284,9 @@ class XDSIndexer(FrameProcessor,
         if self._indxr_input_lattice and self._indxr_input_cell:
             idxref.set_indexer_input_lattice(self._indxr_input_lattice)
             idxref.set_indexer_input_cell(self._indxr_input_cell)
-            self._original_cell = self._indxr_input_cell
+            original_cell = self._indxr_input_cell
         else:
-            self._original_cell = None
+            _original_cell = None
 
         # FIXED need to set the beam centre here - this needs to come
         # from the input .xinfo object or header, and be converted
@@ -316,11 +316,16 @@ class XDSIndexer(FrameProcessor,
                     lattice, cell, mosaic = \
                              idxref.get_indexing_solution()
                     # compare solutions
-                    for j in range(6):
+                    for j in range(3):
+                        # allow two percent variation in unit cell length
                         if math.fabs((cell[j] - original_cell[j]) / \
                                      original_cell[j]) > 0.02:
                             Chatter.write('XDS unhappy and solution wrong')
                             raise e
+                        # and two degree difference in angle
+                        if math.fabs(cell[j + 3] - original_cell[j + 3]) > 2.0:
+                            Chatter.write('XDS unhappy and solution wrong')
+                            raise e                        
                     Chatter.write('XDS unhappy but solution ok')
                 else:
                     raise e
