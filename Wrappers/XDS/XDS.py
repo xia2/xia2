@@ -38,6 +38,11 @@ class XDSException(exceptions.Exception):
     def __str__(self):
         return str(self.value)
 
+class XDSIndexException(XDSException):
+    def __init__(self, value):
+        XDSException.__init__(self, value)
+        return
+
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
