@@ -93,8 +93,8 @@ def Truncate(DriverType = None):
 
             for line in self.get_all_output():
                 if 'Least squares straight line gives' in line:
-                    list = line.split()
-                    self._b_factor = float(list[7])
+                    list = line.replace('=', ' ').split()
+                    self._b_factor = float(list[6])
 
             return
 
