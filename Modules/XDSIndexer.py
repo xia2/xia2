@@ -35,6 +35,7 @@ from Wrappers.XDS.XDSIdxref import XDSIdxref as _Idxref
 
 from Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
 from Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
+from Wrappers.XDS.XDS import XDSException
 
 # interfaces that this must implement to be an indexer
 
@@ -161,9 +162,14 @@ class XDSIndexer(FrameProcessor,
             self.add_indexer_image_wedge((images[0], images[block_size] - 1))
 
             if int(90.0 / phi_width) + block_size in images:
-                self.add_indexer_image_wedge((int(90.0 / phi_width),
+                # assume we can add a wedge around 45 degrees as well...
+                self.add_indexer_image_wedge((int(45.0 / phi_width) + 1,
+                                              int(45.0 / phi_width) +
+                                              block_size))
+                self.add_indexer_image_wedge((int(90.0 / phi_width) + 1,
                                               int(90.0 / phi_width) +
                                               block_size))
+                
             else:
                 self.add_indexer_image_wedge((images[- block_size],
                                               images[-1]))
@@ -278,6 +284,9 @@ class XDSIndexer(FrameProcessor,
         if self._indxr_input_lattice and self._indxr_input_cell:
             idxref.set_indexer_input_lattice(self._indxr_input_lattice)
             idxref.set_indexer_input_cell(self._indxr_input_cell)
+            self._original_cell = self._indxr_input_cell
+        else:
+            self._original_cell = None
 
         # FIXED need to set the beam centre here - this needs to come
         # from the input .xinfo object or header, and be converted
@@ -296,7 +305,25 @@ class XDSIndexer(FrameProcessor,
         done = False
 
         while not done:
-            done = idxref.run()
+            try:
+                done = idxref.run()
+            except XDSException, e:
+                # inspect this - if we have complaints about not
+                # enough reflections indexed, and we have a target
+                # unit cell, and they are the same, well ignore it
+                if 'insufficient percentage (< 70%)' in str(e) and \
+                   original_cell:
+                    lattice, cell, mosaic = \
+                             idxref.get_indexing_solution()
+                    # compare solutions
+                    for j in range(6):
+                        if math.fabs((cell[j] - original_cell[j]) / \
+                                     original_cell[j]) > 0.02:
+                            Chatter.write('XDS unhappy and solution wrong')
+                            raise e
+                    Chatter.write('XDS unhappy but solution ok')
+                else:
+                    raise e
 
         for file in ['SPOT.XDS',
                      'XPARM.XDS']:
