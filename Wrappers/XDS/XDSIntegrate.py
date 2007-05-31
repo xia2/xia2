@@ -143,7 +143,9 @@ def XDSIntegrate(DriverType = None):
 
             if self._refined_xparm and fixed_2401:
                 # allow only for crystal movement
-                xds_inp.write('REFINE(INTEGRATE)=ORIENTATION CELL\n')
+                # xds_inp.write('REFINE(INTEGRATE)=ORIENTATION CELL\n')
+                # in fact allow for nothing...
+                xds_inp.write('REFINE(INTEGRATE)=!\n')                
             else:
                 # bug 2420 - have found for some examples that the
                 # refinement is unstable - perhaps some of this is

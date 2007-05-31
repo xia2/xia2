@@ -29,6 +29,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Driver.DriverFactory import DriverFactory
 from XScaleHelpers import generate_resolution_shells_str
+from XDS import xds_check_error
 
 from Handlers.Flags import Flags
 
@@ -207,6 +208,7 @@ def XScale(DriverType = None):
             self.close_wait()
 
             # now look at XSCALE.LP
+            xds_check_error(self.get_all_output())
 
             return
 
