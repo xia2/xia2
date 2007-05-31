@@ -275,7 +275,7 @@ class XDSIntegrater(FrameProcessor,
 
         integrate.run()
 
-        self._integrate_parameters = integrate_get_updates()
+        self._integrate_parameters = integrate.get_updates()
 
         return
 
