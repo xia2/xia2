@@ -133,9 +133,12 @@ def XDSIntegrate(DriverType = None):
 
             if self._refined_xparm and fixed_2401:
                 # allow only for crystal movement
-                xds_inp.write('REFINE(INTEGRATE)=CELL ORIENTATION\n')
+                xds_inp.write('REFINE(INTEGRATE)=ORIENTATION CELL\n')
             else:
-                xds_inp.write('REFINE(INTEGRATE)=ALL\n')
+                # bug 2420 - have found for some examples that the
+                # refinement is unstable - perhaps some of this is
+                # best postrefined? was ALL
+                xds_inp.write('REFINE(INTEGRATE)=ORIENTATION CELL\n')
             
             for record in header:
                 xds_inp.write('%s\n' % record)

@@ -177,6 +177,11 @@ def XDSCorrect(DriverType = None):
             xds_inp.write('JOB=CORRECT\n')
             xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
                           self._parallel) 
+
+            # postrefine everything to give better values to the
+            # next INTEGRATE run
+            xds_inp.write(
+                'REFINE(CORRECT)=DISTANCE BEAM AXIS ORIENTATION CELL\n')
             
             for record in header:
                 xds_inp.write('%s\n' % record)
