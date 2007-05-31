@@ -12,6 +12,7 @@ import os
 import sys
 import shutil
 import math
+import copy
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -36,7 +37,8 @@ from Schema.Interfaces.FrameProcessor import FrameProcessor
 from XDS import header_to_xds, xds_check_version_supported, xds_check_error
 
 # specific helper stuff
-from XDSIntegrateHelpers import _parse_integrate_lp
+from XDSIntegrateHelpers import _parse_integrate_lp, \
+     _parse_integrate_lp_updates
 
 # global flags etc.
 from Handlers.Flags import Flags
@@ -88,6 +90,8 @@ def XDSIntegrate(DriverType = None):
 
             self._refined_xparm = False
 
+            self._updates = { }
+
             # note well - INTEGRATE.HKL is not included in this list
             # because it is likely to be very large - this is treated
             # separately...
@@ -116,6 +120,12 @@ def XDSIntegrate(DriverType = None):
         def set_data_range(self, start, end):
             self._data_range = (start, end)
 
+        def set_updates(self, updates):
+            self._updates = updates
+
+        def get_updates(self):
+            return copy.deepcopy(self._updates)
+
         def run(self):
             '''Run integrate.'''
 
@@ -139,6 +149,29 @@ def XDSIntegrate(DriverType = None):
                 # refinement is unstable - perhaps some of this is
                 # best postrefined? was ALL
                 xds_inp.write('REFINE(INTEGRATE)=ORIENTATION CELL\n')
+
+            # check for updated input parameters
+            if self._updates.has_key('BEAM_DIVERGENCE') and \
+                   self._updates.has_key('BEAM_DIVERGENCE_E.S.D.'):
+                xds_inp.write(
+                    'BEAM_DIVERGENCE=%f BEAM_DIVERGENCE_E.S.D.=%f\n' % \
+                    (self._updates['BEAM_DIVERGENCE'],
+                     self._updates['BEAM_DIVERGENCE_E.S.D.']))
+                Debug.write(
+                    'BEAM_DIVERGENCE=%f BEAM_DIVERGENCE_E.S.D.=%f' % \
+                    (self._updates['BEAM_DIVERGENCE'],
+                     self._updates['BEAM_DIVERGENCE_E.S.D.']))
+                
+            if self._updates.has_key('REFLECTING_RANGE') and \
+                   self._updates.has_key('REFLECTING_RANGE_E.S.D.'):
+                xds_inp.write(
+                    'REFLECTING_RANGE=%f REFLECTING_RANGE_E.S.D.=%f\n' % \
+                    (self._updates['REFLECTING_RANGE'],
+                     self._updates['REFLECTING_RANGE_E.S.D.']))
+                Debug.write(
+                    'REFLECTING_RANGE=%f REFLECTING_RANGE_E.S.D.=%f' % \
+                    (self._updates['REFLECTING_RANGE'],
+                     self._updates['REFLECTING_RANGE_E.S.D.']))
             
             for record in header:
                 xds_inp.write('%s\n' % record)
@@ -232,6 +265,10 @@ def XDSIntegrate(DriverType = None):
                     space_group_number = int(o.split()[-1])
 
             stats = _parse_integrate_lp(os.path.join(
+                self.get_working_directory(),
+                'INTEGRATE.LP'))
+
+            self._updates = _parse_integrate_lp_updates(os.path.join(
                 self.get_working_directory(),
                 'INTEGRATE.LP'))
 

@@ -21,6 +21,29 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Handlers.Streams import Admin, Science, Status, Chatter
 
+def _parse_integrate_lp_updates(filename):
+    '''Parse the integrate.lp file to get the values for any updated
+    parameters.'''
+ 
+    if not os.path.split(filename)[-1] == 'INTEGRATE.LP':
+        raise RuntimeError, 'input filename not INTEGRATE.LP'
+
+    file_contents = open(filename, 'r').readlines()
+
+    updates = { }
+    
+    for i in range(len(file_contents)):
+        if ' ***** SUGGESTED VALUES FOR INPUT PARAMETERS *****' in \
+           file_contents[i]:
+            beam_parms = file_contents[i + 1].replace('=', '').split()
+            reflecting_parms = file_contents[i + 2].replace('=', '').split()
+            updates[beam_parms[0]] = float(beam_parms[1])
+            updates[beam_parms[2]] = float(beam_parms[3])
+            updates[reflecting_parms[0]] = float(reflecting_parms[1])
+            updates[reflecting_parms[2]] = float(reflecting_parms[3])
+            
+    return updates
+
 def _parse_integrate_lp(filename):
     '''Parse the contents of the INTEGRATE.LP file pointed to by filename.'''
 

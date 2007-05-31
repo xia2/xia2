@@ -80,6 +80,8 @@ class XDSIntegrater(FrameProcessor,
         # set a low resolution limit (which isn't really used...)
         self.set_integrater_low_resolution(20.0)
         
+        # internal parameters to pass around
+        self._integrate_parameters = { } 
 
         return
 
@@ -117,15 +119,15 @@ class XDSIntegrater(FrameProcessor,
         return integrate
 
     def Correct(self):
-        integrate = _Correct()
-        integrate.set_working_directory(self.get_working_directory())
+        correct = _Correct()
+        correct.set_working_directory(self.get_working_directory())
 
-        integrate.setup_from_image(self.get_image_name(
+        correct.setup_from_image(self.get_image_name(
             self._intgr_wedge[0]))
 
-        auto_logfiler(integrate)
-
-        return integrate
+        auto_logfiler(correct)
+        
+        return correct
 
     # now some real functions, which do useful things
 
@@ -236,6 +238,8 @@ class XDSIntegrater(FrameProcessor,
 
         integrate = self.Integrate()
 
+        integrate.set_updates(self._integrate_parameters)
+
         # decide what images we are going to process, if not already
         # specified
 
@@ -270,6 +274,8 @@ class XDSIntegrater(FrameProcessor,
                 'XPARM.XDS', self._data_files['XPARM.XDS'])
 
         integrate.run()
+
+        self._integrate_parameters = integrate_get_updates()
 
         return
 
