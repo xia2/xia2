@@ -139,6 +139,9 @@ def XDSIntegrate(DriverType = None):
             xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
                           self._parallel) 
 
+            # write out lots of output
+            xds_inp.write('TEST=2\n')
+
             fixed_2401 = True
 
             if self._refined_xparm and fixed_2401:
