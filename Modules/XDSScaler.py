@@ -909,7 +909,7 @@ class XDSScaler(Scaler):
                 ]['Wilson B factor'] = [b_factor]
             
             # look for the second moment information...
-            moments = t.get_moments()
+            moments = truncate.get_moments()
             # for j in range(len(moments['MomentZ2'])):
             # pass
 
