@@ -133,7 +133,7 @@ def XScale(DriverType = None):
             if len(self._input_resolution_ranges) == 0:
                 raise RuntimeError, 'cannot generate resolution ranges'
 
-            dmin = 20.0
+            dmin = 40.0
             dmax = 0.0
 
             for r in self._input_resolution_ranges:

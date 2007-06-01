@@ -58,7 +58,7 @@ def XDSDefpix(DriverType = None):
 
             self._data_range = (0, 0)
             self._resolution_high = 0.0
-            self._resolution_low = 20.0
+            self._resolution_low = 40.0
 
             self._input_data_files = { }
             self._output_data_files = { }
