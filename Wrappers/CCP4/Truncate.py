@@ -29,6 +29,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
 
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
+from lib.Guff import transpose_loggraph
 
 def Truncate(DriverType = None):
     '''A factory for TruncateWrapper classes.'''
@@ -49,6 +50,7 @@ def Truncate(DriverType = None):
             self.set_executable('truncate')
 
             self._b_factor = 0.0
+            self._moments = None
 
             return
 
@@ -96,9 +98,21 @@ def Truncate(DriverType = None):
                     list = line.replace('=', ' ').split()
                     self._b_factor = float(list[6])
 
+            results = self.parse_ccp4_loggraph()
+            moments = transpose_loggraph(
+                results['Acentric Moments of E for k = 1,3,4,6,8'])
+            
+            # keys we want in this are "Resln_Range" "1/resol^2" and
+            # MomentZ2. The last of these should be around two, but is
+            # likely to be a little different to this.
+            self._moments = moments
+            
             return
 
         def get_b_factor(self):
             return self._b_factor
+
+        def get_moments(self):
+            return self._moments
 
     return TruncateWrapper()

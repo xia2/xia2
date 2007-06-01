@@ -1771,6 +1771,11 @@ class CCP4Scaler(Scaler):
 
             b_factor = t.get_b_factor()
 
+            # look for the second moment information...
+            moments = t.get_moments()
+            # for j in range(len(moments['MomentZ2'])):
+            # pass
+
             # record the b factor somewhere (hopefully) useful...
 
             self._scalr_statistics[

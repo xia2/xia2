@@ -908,6 +908,11 @@ class XDSScaler(Scaler):
                 (self._common_pname, self._common_xname, wavelength)
                 ]['Wilson B factor'] = [b_factor]
             
+            # look for the second moment information...
+            moments = t.get_moments()
+            # for j in range(len(moments['MomentZ2'])):
+            # pass
+
             # and record the reflection file..
             scaled_reflection_files[wavelength] = hklout
             
