@@ -333,7 +333,6 @@ class XDSIntegrater(FrameProcessor,
                 'Set resolution limit: %5.2f (quick, so no rerun)' % \
                 resolution)
             
-
         # FIXME perhaps I should also feedback the GXPARM file here??
         for file in ['GXPARM.XDS']:
             self._data_files[file] = correct.get_output_data_file(file)
@@ -341,6 +340,27 @@ class XDSIntegrater(FrameProcessor,
         # record the postrefined cell parameters
         self._intgr_cell = correct.get_result('cell')
         self._intgr_n_ref = correct.get_result('n_ref')
+
+        if not Flags.get_quick():
+            # check for alien reflections and perhaps recycle - removing them
+            if len(correct.get_remove()) > 0:
+                remove_hkl = open(os.path.join(
+                    self.get_working_directory(),
+                    'REMOVE.HKL'), 'a')
+                for remove in correct.get_remove():
+                    remove_hkl.write('%d %d %d\n' % remove)
+
+                remove_hkl.close()
+                Chatter.write('Wrote %d reflections to REMOVE.HKL' % \
+                              len(correct.get_remove()))
+                
+                # we want to rerun the finishing step so...
+                self.set_integrater_finish_done(False)
+
+        else:
+            Chatter.write(
+                'Going quickly so not removing %d outlier reflections...' % \
+                len(correct.get_remove()))
 
         return self._intgr_hklout
             

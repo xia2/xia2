@@ -106,6 +106,7 @@ def XDSCorrect(DriverType = None):
             # out
             self._xds_ascii_hkl = None
             self._results = None
+            self._remove = []
 
             return
 
@@ -148,6 +149,9 @@ def XDSCorrect(DriverType = None):
         def set_remove_hkl(self, remove_hkl):
             self._remove_hkl = remove_hkl
             return
+
+        def get_remove(self):
+            return self._remove
 
         def get_xds_ascii_hkl(self):
             return self._xds_ascii_hkl
@@ -238,6 +242,7 @@ def XDSCorrect(DriverType = None):
                 xds_inp.write(record)
 
             xds_inp.write('DATA_RANGE=%d %d\n' % self._data_range)
+            # xds_inp.write('MINIMUM_ZETA=0.1\n')
             # include the resolution range, perhaps
             if self._resolution_high > 0.0:
                 xds_inp.write('INCLUDE_RESOLUTION_RANGE=%.2f %.2f\n' % \
@@ -314,6 +319,15 @@ def XDSCorrect(DriverType = None):
             self._results = _parse_correct_lp(os.path.join(
                 self.get_working_directory(),
                 'CORRECT.LP'))
+
+            # get the reflections to remove...
+            for line in open(os.path.join(
+                self.get_working_directory(),
+                'CORRECT.LP'), 'r').readlines():
+                if '"alien"' in line:
+                    h, k, l = tuple(map(int, line.split()[:3]))
+                    if not (h, k, l) in self._remove:
+                        self._remove.append((h, k, l))
 
             return
 

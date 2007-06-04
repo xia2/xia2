@@ -216,7 +216,8 @@ def XDSIntegrate(DriverType = None):
                 xds_inp.write(record)
 
             xds_inp.write('DATA_RANGE=%d %d\n' % self._data_range)
-
+            # xds_inp.write('MINIMUM_ZETA=0.1\n')
+            
             xds_inp.close()
 
             # copy the input file...
