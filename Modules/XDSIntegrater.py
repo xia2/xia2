@@ -289,6 +289,9 @@ class XDSIntegrater(FrameProcessor,
         correct.set_data_range(self._intgr_wedge[0],
                                self._intgr_wedge[1])
         
+        if self._intgr_reso_high > 0.0:
+            correct.set_resolution_high(self._intgr_reso_high)
+
         if self.get_integrater_spacegroup_number():
             correct.set_spacegroup_number(
                 self.get_integrater_spacegroup_number())

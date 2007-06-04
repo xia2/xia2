@@ -73,6 +73,8 @@ def XDSCorrect(DriverType = None):
             self._spot_range = []
             self._background_range = (0, 0)
             self._resolution_range = (0, 0)
+            self._resolution_high = 0.0
+            self._resolution_low = 40.0
 
             # specific information
 
@@ -120,6 +122,9 @@ def XDSCorrect(DriverType = None):
                 raise RuntimeError, 'reindex matrix must be 12 numbers'
             self._reindex_matrix = reindex_matrix
             return
+
+        def set_resolution_high(self, resolution_high):
+            self._resolution_high = resolution_high
 
         def set_input_data_file(self, name, data):
             self._input_data_files[name] = data
@@ -221,6 +226,11 @@ def XDSCorrect(DriverType = None):
                 xds_inp.write(record)
 
             xds_inp.write('DATA_RANGE=%d %d\n' % self._data_range)
+            # include the resolution range, perhaps
+            if self._resolution_high > 0.0:
+                xds_inp.write('INCLUDE_RESOLUTION_RANGE=%.2f %.2f' % \
+                              (self._resolution_low, self._resolution_high))
+
             # for spot_range in self._spot_range:
             # xds_inp.write('SPOT_RANGE=%d %d\n' % spot_range)
             # xds_inp.write('BACKGROUND_RANGE=%d %d\n' % \
