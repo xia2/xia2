@@ -155,6 +155,8 @@ class XProject(Object):
                             beam = sweep_info.get('beam'),
                             distance = sweep_info.get('distance'),
                             gain = float(sweep_info.get('GAIN', 0.0)),
+                            polarization = float(sweep_info.get(
+                            'POLARIZATION', 0.0)),
                             frames_to_process = sweep_info.get('start_end'),
                             epoch = sweep_info.get('epoch', 0))
                 

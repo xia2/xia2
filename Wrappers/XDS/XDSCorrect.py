@@ -81,6 +81,8 @@ def XDSCorrect(DriverType = None):
             self._cell = None
             self._spacegroup_number = None
 
+            self._polarization = 0.0
+
             self._reindex_matrix = None
 
             self._input_data_files = { }
@@ -116,6 +118,12 @@ def XDSCorrect(DriverType = None):
         def set_cell(self, cell):
             self._cell = cell
             return
+
+        def set_polarization(self, polarization):
+            if polarization > 1.0 or polarization < 0.0:
+                raise RuntimeError, 'bad value for polarization: %.2f' % \
+                      polarization
+            self._polarization = polarization
 
         def set_reindex_matrix(self, reindex_matrix):
             if not len(reindex_matrix) == 12:
@@ -187,6 +195,10 @@ def XDSCorrect(DriverType = None):
             # next INTEGRATE run
             xds_inp.write(
                 'REFINE(CORRECT)=DISTANCE BEAM AXIS ORIENTATION CELL\n')
+
+            if self._polarization > 0.0:
+                xds_inp.write('FRACTION_OF_POLARIZATION=%.2f\n' % \
+                              self._polarization)
             
             for record in header:
                 xds_inp.write('%s\n' % record)

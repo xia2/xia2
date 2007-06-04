@@ -292,6 +292,9 @@ class XDSIntegrater(FrameProcessor,
         if self._intgr_reso_high > 0.0:
             correct.set_resolution_high(self._intgr_reso_high)
 
+        if self.get_polarization() > 0.0:
+            correct.set_polarization(self.get_polarization())
+
         if self.get_integrater_spacegroup_number():
             correct.set_spacegroup_number(
                 self.get_integrater_spacegroup_number())

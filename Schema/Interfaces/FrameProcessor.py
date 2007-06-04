@@ -56,6 +56,7 @@ class FrameProcessor:
         self._fp_beam_prov = None
 
         self._fp_gain = 0.0
+        self._fp_polarization = 0.0        
 
         self._fp_header = { }
 
@@ -112,6 +113,13 @@ class FrameProcessor:
 
     def get_gain(self):
         return self._fp_gain
+
+    def set_polarization(self, polarization):
+        self._fp_polarization = polarization
+        return
+
+    def get_polarization(self):
+        return self._fp_polarization
 
     def get_distance_prov(self):
         return self._fp_distance_prov

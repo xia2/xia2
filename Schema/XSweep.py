@@ -187,6 +187,7 @@ class XSweep(Object):
                  distance = None,
                  resolution = None,
                  gain = 0.0,
+                 polarization = 0.0,
                  frames_to_process = None,
                  epoch = 0):
         '''Create a new sweep named name, belonging to XWavelength object
@@ -369,6 +370,7 @@ class XSweep(Object):
         self._beam = beam
         self._distance = distance
         self._gain = gain
+        self._polarization = polarization
         
         return
 
@@ -458,6 +460,9 @@ class XSweep(Object):
 
     def get_gain(self):
         return self._gain
+
+    def get_polarization(self):
+        return self._polarization
 
     def get_name(self):
         return self._name
@@ -562,6 +567,10 @@ class XSweep(Object):
             if self.get_gain():
                 # this is assuming that an Integrater is also a FrameProcessor
                 self._integrater.set_gain(self.get_gain())
+
+            if self.get_polarization():
+                self._integrater.set_polarization(self.get_polarization())
+                
 
             # look to see if there are any global integration parameters
             # we can set...
