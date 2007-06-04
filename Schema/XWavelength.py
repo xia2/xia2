@@ -107,7 +107,8 @@ class XWavelength(Object):
     def add_sweep(self, name, directory = None, image = None,
                   integrated_reflection_file = None,
                   beam = None, distance = None, resolution = None,
-                  gain = 0.0, frames_to_process = None, epoch = 0):
+                  gain = 0.0, polarization = 0.0,
+                  frames_to_process = None, epoch = 0):
         '''Add a sweep to this wavelength.'''
 
         self._sweeps.append(XSweep(name, self,
@@ -119,6 +120,7 @@ class XWavelength(Object):
                                    distance = distance,
                                    resolution = resolution,
                                    gain = gain,
+                                   polarization = polarization,
                                    frames_to_process = frames_to_process,
                                    epoch = epoch))
 
