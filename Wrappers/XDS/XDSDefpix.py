@@ -142,7 +142,7 @@ def XDSDefpix(DriverType = None):
 
             # include the resolution range, perhaps
             if self._resolution_high > 0.0:
-                xds_inp.write('INCLUDE_RESOLUTION_RANGE=%.2f %.2f' % \
+                xds_inp.write('INCLUDE_RESOLUTION_RANGE=%.2f %.2f\n' % \
                               (self._resolution_low, self._resolution_high))
             
             xds_inp.close()

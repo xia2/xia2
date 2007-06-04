@@ -228,7 +228,7 @@ def XDSCorrect(DriverType = None):
             xds_inp.write('DATA_RANGE=%d %d\n' % self._data_range)
             # include the resolution range, perhaps
             if self._resolution_high > 0.0:
-                xds_inp.write('INCLUDE_RESOLUTION_RANGE=%.2f %.2f' % \
+                xds_inp.write('INCLUDE_RESOLUTION_RANGE=%.2f %.2f\n' % \
                               (self._resolution_low, self._resolution_high))
 
             # for spot_range in self._spot_range:
