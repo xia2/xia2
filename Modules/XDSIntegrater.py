@@ -337,6 +337,10 @@ class XDSIntegrater(FrameProcessor,
         
         correct.run()
 
+        if self._intgr_reso_high == 0.0:
+            # get the "correct" resolution from ... correct
+            self._intgr_reso_high = correct.get_result('highest_resolution')
+
         # should get some interesting stuff from the XDS correct file
         # here, for instance the resolution range to use in integration
         # (which should be fed back if not fast) and so on...

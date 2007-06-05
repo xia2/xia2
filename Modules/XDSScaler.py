@@ -640,6 +640,11 @@ class XDSScaler(Scaler):
             # and the resolution range for the reflections
             intgr = self._sweep_information[epoch]['integrater']
             resolution = intgr.get_integrater_resolution()
+
+            if resolution == 0:
+                raise RuntimeError, 'zero resolution for %s' % \
+                      self._sweep_information[epoch][
+                    'integrater'].get_integrater_sweep_name()
         
             xscale.add_reflection_file(reflections, dname, resolution)
 

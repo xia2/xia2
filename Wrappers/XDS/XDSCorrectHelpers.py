@@ -123,6 +123,11 @@ def _parse_correct_lp(filename):
             resolution = _resolution_estimate(resolution_info, 0.75)
             postrefinement_stats['resolution_estimate'] = resolution
 
+            # also recover the highest resolution limit of the data
+            j += 1
+            postrefinement_stats['highest_resolution'] = float(
+                file_contents[j].split()[1])
+
     return postrefinement_stats
 
 if __name__ == '__main__':
