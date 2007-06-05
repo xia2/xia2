@@ -136,11 +136,11 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
 
+from Handlers.Syminfo import Syminfo
 from Handlers.Streams import Chatter, Science
 
 # this was rather complicated - now simpler!
 from lib.SymmetryLib import lauegroup_to_lattice, spacegroup_name_xHM_to_old
-from Handlers.Syminfo import Syminfo
 
 def Pointless(DriverType = None):
     '''A factory for PointlessWrapper classes.'''
@@ -179,6 +179,10 @@ def Pointless(DriverType = None):
 
             # all "likely" spacegroups...
             self._likely_spacegroups = []
+
+            # and unit cell information
+            self._cell_info = { }
+            self._cell = None
 
         def set_hklref(self, hklref):
             self._hklref = hklref
@@ -554,6 +558,9 @@ def Pointless(DriverType = None):
             self.add_command_line('xmlout')
             self.add_command_line('pointless.xml')
 
+            self.add_command_line('hklout')
+            self.add_command_line('pointless.mtz')
+
             self.start()
 
             self.input('lauegroup hklin')
@@ -596,6 +603,64 @@ def Pointless(DriverType = None):
                     # this is jolly likely!
                     self._likely_spacegroups.append(name)
 
+            # now parse the output looking for the unit cell information -
+            # this should look familiar from mtzdump
+
+            output = self.get_all_output()
+            length = len(output)
+            
+            a = 0.0
+            b = 0.0
+            c = 0.0
+            alpha = 0.0
+            beta = 0.0
+            gamma = 0.0
+
+            self._cell_info['datasets'] = []
+            self._cell_info['dataset_info'] = { }
+
+            for i in range(length):
+
+                line = output[i][:-1]
+
+                if 'Dataset ID, ' in line:
+
+                    block = 0
+                    while output[block * 5 + i + 2].strip():
+                        dataset_number = int(
+                            output[5 * block + i + 2].split()[0])
+                        project = output[5 * block + i + 2][10:].strip()
+                        crystal = output[5 * block + i + 3][10:].strip()
+                        dataset = output[5 * block + i + 4][10:].strip()
+                        cell = map(float, output[5 * block + i + 5].strip(
+                            ).split())
+                        wavelength = float(output[5 * block + i + 6].strip())
+                        
+                        dataset_id = '%s/%s/%s' % \
+                                     (project, crystal, dataset)
+                        
+                        self._cell_info['datasets'].append(dataset_id)
+                        self._cell_info['dataset_info'][dataset_id] = { }
+                        self._cell_info['dataset_info'][
+                            dataset_id]['wavelength'] = wavelength
+                        self._cell_info['dataset_info'][
+                            dataset_id]['cell'] = cell
+                        self._cell_info['dataset_info'][
+                            dataset_id]['id'] = dataset_number
+                        block += 1
+
+            for dataset in self._cell_info['datasets']:
+                cell = self._cell_info['dataset_info'][dataset]['cell']
+                a += cell[0]
+                b += cell[1]
+                c += cell[2]
+                alpha += cell[3]
+                beta += cell[4]
+                gamma += cell[5]
+
+            n = len(self._cell_info['datasets'])
+            self._cell = (a / n, b / n, c / n, alpha / n, beta / n, gamma / n)
+
             return 'ok'
 
         def get_reindex_matrix(self):
@@ -609,6 +674,9 @@ def Pointless(DriverType = None):
 
         def get_spacegroup(self):
             return self._spacegroup
+
+        def get_cell(self):
+            return self._cell
 
         def get_spacegroup_reindex_operator(self):
             return self._spacegroup_reindex_operator
@@ -644,7 +712,7 @@ if __name__ == '__main__':
     p.set_hklin(hklin)
     p.write_log_file('pointless.log')
 
-    pointgroup = True
+    pointgroup = False
 
     if pointgroup:
         p.decide_pointgroup()
@@ -660,3 +728,4 @@ if __name__ == '__main__':
         
         print 'Correct spacegroup: %s' % p.get_spacegroup()
         print 'Reindex operator: %s' % p.get_spacegroup_reindex_operator()
+        print 'Cell: %.2f %.2f %.2f %.2f %.2f %.2f' % p.get_cell()
