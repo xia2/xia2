@@ -362,6 +362,7 @@ class XDSIntegrater(FrameProcessor,
 
                 correct_remove = correct.get_remove()
                 current_remove = []
+                final_remove = []
                 
                 # first ensure that there are no duplicate entries...
                 if os.path.exists(os.path.join(
@@ -374,7 +375,6 @@ class XDSIntegrater(FrameProcessor,
                         if not hkl in current_remove:
                             current_remove.append(hkl)
 
-                    final_remove = []
                     for c in correct_remove:
                         if c in current_remove:
                             continue
