@@ -45,7 +45,7 @@ from Schema.Interfaces.FrameProcessor import FrameProcessor
 # odds and sods that are needed
 
 from lib.Guff import auto_logfiler
-from Handlers.Streams import Chatter
+from Handlers.Streams import Chatter, Debug
 
 class XDSIndexer(FrameProcessor,
                  Indexer):
@@ -134,7 +134,7 @@ class XDSIndexer(FrameProcessor,
         phi_width = self.get_header_item('phi_width')
         
         if phi_width == 0.0:
-            Chatter.write('Phi width 0.0? Assuming 1.0!')
+            Debug.write('Phi width 0.0? Assuming 1.0!')
             phi_width = 1.0
 
         images = self.get_matching_images()
@@ -313,7 +313,7 @@ class XDSIndexer(FrameProcessor,
                 # unit cell, and they are the same, well ignore it
 
                 if 'solution is inaccurate' in str(e):
-                    Chatter.write(
+                    Debug.write(
                         'XDS complains solution inaccurate - ignoring')
                     done = idxref.run(ignore_errors = True)
                 elif 'insufficient percentage (< 70%)' in str(e) and \
@@ -326,13 +326,16 @@ class XDSIndexer(FrameProcessor,
                         # allow two percent variation in unit cell length
                         if math.fabs((cell[j] - original_cell[j]) / \
                                      original_cell[j]) > 0.02:
-                            Chatter.write('XDS unhappy and solution wrong')
+                            Debug.write('XDS unhappy and solution wrong')
                             raise e
                         # and two degree difference in angle
                         if math.fabs(cell[j + 3] - original_cell[j + 3]) > 2.0:
-                            Chatter.write('XDS unhappy and solution wrong')
+                            Debug.write('XDS unhappy and solution wrong')
                             raise e                        
-                    Chatter.write('XDS unhappy but solution ok')
+                    Debug.write('XDS unhappy but solution ok')
+                elif 'insufficient percentage (< 70%)' in str(e):
+                    done = idxref.run(ignore_errors = True)                    
+                    Debug.write('XDS unhappy but solution probably ok')
                 else:
                     raise e
 
