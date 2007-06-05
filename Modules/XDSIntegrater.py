@@ -344,18 +344,53 @@ class XDSIntegrater(FrameProcessor,
         if not Flags.get_quick():
             # check for alien reflections and perhaps recycle - removing them
             if len(correct.get_remove()) > 0:
+
+                correct_remove = correct.get_remove()
+
+                # first ensure that there are no duplicate entries...
+                if os.path.exists(os.path.join(
+                    self.get_working_directory(),
+                    'REMOVE.HKL')):
+                    current_remove = []
+                    for l in open(os.path.join(
+                        self.get_working_directory(),
+                        'REMOVE.HKL'), 'r').readlines():
+                        hkl = tuple(map(int, l.split()[:3]))
+                        if not hkl in current_remove:
+                        current_remove.append(hkl)
+
+                    final_remove = []
+                    for c in correct_remove:
+                        if c in current_remove:
+                            continue
+                        final_remove.append(c)
+
+                    Chatter.write(
+                        '%d alien reflections are already removed' % \
+                        (len(correct_remove) - len(final_remove)))
+                
                 remove_hkl = open(os.path.join(
                     self.get_working_directory(),
-                    'REMOVE.HKL'), 'a')
-                for remove in correct.get_remove():
+                    'REMOVE.HKL'), 'w')
+
+                # write in the old reflections
+                for remove in current_remove:
                     remove_hkl.write('%d %d %d\n' % remove)
+                Chatter.write('Wrote %d old reflections to REMOVE.HKL' % \
+                              len(current_remove))
+
+                # and the new reflections
+                for remove in final_remove:
+                    remove_hkl.write('%d %d %d\n' % remove)
+                Chatter.write('Wrote %d new reflections to REMOVE.HKL' % \
+                              len(final_remove))
 
                 remove_hkl.close()
-                Chatter.write('Wrote %d reflections to REMOVE.HKL' % \
-                              len(correct.get_remove()))
                 
                 # we want to rerun the finishing step so...
-                self.set_integrater_finish_done(False)
+                # unless we have added no new reflections
+                if len(final_remove):                
+                    self.set_integrater_finish_done(False)
 
         else:
             Chatter.write(
