@@ -40,7 +40,7 @@ from Handlers.Streams import Debug
 from XDSIdxrefHelpers import _parse_idxref_lp, _parse_idxref_lp_distance_etc
 from Experts.LatticeExpert import SortLattices
 
-# global flags
+# global flags 
 from Handlers.Flags import Flags
 
 def XDSIdxref(DriverType = None):
@@ -338,15 +338,23 @@ def XDSIdxref(DriverType = None):
 
                 # select the solution which matches the input unit cell
 
+                Debug.write(
+                    'Target unit cell: %.2f %.2f %.2f %.2f %.2f %.2f' % \
+                    self._cell)
+
                 for l in list:
                     if lattice_to_spacegroup[l[0]] == self._symm:
                         # this should be the correct solution...
                         # check the unit cell...
                         cell = l[1]
+                        cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % cell
+                        Debug.write(
+                            'Chosen unit cell: %s' % cell_str)
 
                         for j in range(6):
                             if math.fabs(cell[j] - self._cell[j]) > 5:
-                                raise RuntimeError, 'bad unit cell in idxref'
+                                raise RuntimeError, \
+                                      'bad unit cell [%d] in idxref' % j
 
                         self._indxr_lattice = l[0]
                         self._indxr_cell = l[1]
