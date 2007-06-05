@@ -771,16 +771,19 @@ class XDSScaler(Scaler):
             # actually this should not be hard as it should only
             # ever be a permutation.... which means that it can
             # only really happen when you have an orthorhombic
-            # spacegroup, right???
+            # spacegroup, right??? - just hacked pointless to give
+            # this instead...
+
+            self._cell = pointless.get_cell()
+            self._scalr_cell = pointless.get_cell()
+            self._spacegroup = spacegroups[0]
+            self._reindex_matrix = reindex_matrix
             
-            # self._cell = the magical reindexed cell
-            # self._scalr_cell = 
-            # self._spacegroup or whatever = whatever
-            # self._reindex_matrix = reindex_matrix
+            # now reset 'n' return as everything else will be acted on
+            # further up...
 
-            # then reset the flag saying that the scaling is finished...
-
-            # then return....
+            self.set_scaler_done(False)
+            return
        
         for wavelength in wavelength_names:
             # convert the reflections to MTZ format with combat
