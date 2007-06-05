@@ -145,6 +145,7 @@ if __name__ == '__main__':
 
     try:
         xia2()
+        Chatter.write('Status: normal termination')
     except exceptions.Exception, e:
         traceback.print_exc(file = open('xia2.error', 'w'))
         Chatter.write('Error: %s' % str(e))
