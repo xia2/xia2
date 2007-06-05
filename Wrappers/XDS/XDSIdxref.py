@@ -34,6 +34,7 @@ from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
 from XDS import header_to_xds, xds_check_version_supported, xds_check_error
+from XDS import XDSException
 from Handlers.Streams import Debug
 
 # specific helper stuff
@@ -262,7 +263,14 @@ def XDSIdxref(DriverType = None):
 
             xds_check_version_supported(self.get_all_output())
             if not ignore_errors:
-                xds_check_error(self.get_all_output())
+                try:
+                    xds_check_error(self.get_all_output())
+                except XDSException, e:
+                    if 'solution is inaccurate' in str(e):
+                        Chatter.write(
+                            'XDS complains solution inaccurate - ignoring')
+                    else:
+                        raise XDSException, e
 
             # tidy up...
             try:
