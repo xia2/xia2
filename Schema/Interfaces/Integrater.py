@@ -629,7 +629,13 @@ class Integrater:
                         (old, reindex_operator, new))
             self._intgr_reindex_operator = new
 
+        # allow a callback in case something wants to update itself...
+        self._set_integrater_reindex_operator_callback()
+
         return
+
+    def _set_integrater_reindex_operator_callback(self):
+        pass
 
     def get_integrater_reindex_operator(self):
         return self._intgr_reindex_operator
@@ -668,8 +674,14 @@ class Integrater:
             # compose the two operations
             self._intgr_reindex_matrix = compose_matrices_r(
                 reindex_matrix, self._intgr_reindex_matrix)
-            
+
+        # allow a callback in case something wants to update itself...
+        self._set_integrater_reindex_matrix_callback()
+
         return
+
+    def _set_integrater_reindex_matrix_callback(self):
+        pass
 
     def get_integrater_reindex_matrix(self):
         return self._intgr_reindex_matrix

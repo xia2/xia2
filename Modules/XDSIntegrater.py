@@ -94,6 +94,18 @@ class XDSIntegrater(FrameProcessor,
     def get_working_directory(self):
         return self._working_directory 
 
+    def _set_integrater_reindex_matrix_callback(self):
+        '''If a REMOVE.HKL file exists in the working
+        directory, remove it...'''
+        if os.path.exists(os.path.join(
+            self.get_working_directory(),
+            'REMOVE.HKL')):
+            os.remove(os.path.join(
+                self.get_working_directory(),
+                'REMOVE.HKL'))
+            Debug.write('Deleting REMOVE.HKL as reindex op set.')
+        return
+
     # factory functions
 
     def Defpix(self):
