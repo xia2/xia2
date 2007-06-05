@@ -516,7 +516,7 @@ class XDSScaler(Scaler):
                 # transfer this information back to the indexers
                 for epoch in self._sweep_information.keys():
                     integrater = self._sweep_information[
-                        epoch].get_integrater()
+                        epoch]['integrater']
                     indexer = integrater.get_integrater_indexer()
                     sname = integrater.get_integrater_sweep_name()
 
