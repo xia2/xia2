@@ -193,8 +193,8 @@ def XDSIdxref(DriverType = None):
             if self._indxr_input_lattice:
                 self._symm = lattice_to_spacegroup[self._indxr_input_lattice]
 
-            xds_inp.write('SPACE_GROUP_NUMBER=%d\n' % self._symm)
             if self._cell:
+                xds_inp.write('SPACE_GROUP_NUMBER=%d\n' % self._symm)
                 cell_format = '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f'
                 xds_inp.write('UNIT_CELL_CONSTANTS=%s\n' % \
                               cell_format % self._cell)
