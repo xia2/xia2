@@ -286,7 +286,7 @@ class XDSIndexer(FrameProcessor,
             idxref.set_indexer_input_cell(self._indxr_input_cell)
             original_cell = self._indxr_input_cell
         else:
-            _original_cell = None
+            original_cell = None
 
         # FIXED need to set the beam centre here - this needs to come
         # from the input .xinfo object or header, and be converted
@@ -317,7 +317,7 @@ class XDSIndexer(FrameProcessor,
                         'XDS complains solution inaccurate - ignoring')
                     done = idxref.run(ignore_errors = True)
                 elif 'insufficient percentage (< 70%)' in str(e) and \
-                   original_cell:
+                         original_cell:
                     done = idxref.run(ignore_errors = True)                    
                     lattice, cell, mosaic = \
                              idxref.get_indexing_solution()
