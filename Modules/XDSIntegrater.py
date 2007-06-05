@@ -361,12 +361,12 @@ class XDSIntegrater(FrameProcessor,
             if len(correct.get_remove()) > 0:
 
                 correct_remove = correct.get_remove()
-
+                current_remove = []
+                
                 # first ensure that there are no duplicate entries...
                 if os.path.exists(os.path.join(
                     self.get_working_directory(),
                     'REMOVE.HKL')):
-                    current_remove = []
                     for l in open(os.path.join(
                         self.get_working_directory(),
                         'REMOVE.HKL'), 'r').readlines():
