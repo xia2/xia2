@@ -87,6 +87,7 @@ from Handlers.Syminfo import Syminfo
 from Handlers.Streams import Chatter, Debug
 from Handlers.Flags import Flags
 from Handlers.Files import FileHandler
+from Experts.SymmetryExpert import r_to_rt
 
 # stuff I have nicked from the CCP4 Scaler implementation
 from CCP4ScalerImplementationHelpers import _resolution_estimate
@@ -111,6 +112,8 @@ class XDSScaler(Scaler):
         
         self._spacegroup = None
         self._cell = None
+
+        self._reindex_matrix = None
 
         return    
 
@@ -621,6 +624,10 @@ class XDSScaler(Scaler):
 
         xscale = self.XScale()
 
+        if self._reindex_matrix:
+            xscale.set_reindex_matrix(
+                r_to_rt(self.get_integrater_reindex_matrix_rt()))
+
         for epoch in epochs:
 
             # get the prepared reflections
@@ -751,7 +758,29 @@ class XDSScaler(Scaler):
         
         spacegroups = pointless.get_likely_spacegroups()
         reindex_operator = pointless.get_spacegroup_reindex_operator()
+        reindex_matrix = pointless.get_reindex_matrix()
         self._scalr_likely_spacegroups = spacegroups
+
+        if reindex_operator != 'h,k,l':
+            # that means that we have only to record the correct reindexing
+            # matrix and return - the next pass through the proper scaling
+            # procedure will pick up the reindexing operator and give
+            # sensible results...
+
+            # compute the correct unit cell - somehow
+            # actually this should not be hard as it should only
+            # ever be a permutation.... which means that it can
+            # only really happen when you have an orthorhombic
+            # spacegroup, right???
+            
+            # self._cell = the magical reindexed cell
+            # self._scalr_cell = 
+            # self._spacegroup or whatever = whatever
+            # self._reindex_matrix = reindex_matrix
+
+            # then reset the flag saying that the scaling is finished...
+
+            # then return....
        
         for wavelength in wavelength_names:
             # convert the reflections to MTZ format with combat
@@ -771,9 +800,20 @@ class XDSScaler(Scaler):
             # reflections transformed with combat as there is no U matrix
             # so will need in that case to perform the reindexing in
             # XSCALE. This should be straightforward I would think...
+            # More straightforward alternative - reindex the reflection
+            # files at the very end, though this could prejudice the
+            # generation of unmerged polish reflection files (hmmm....)
+            # as I can't reindex those.... nope will definately be better
+            # to be able to send the reindex operator back to XSCALE.
+            # OK this is now being handled above - if this happens
+            # it is an exceptional condition...
 
             if reindex_operator != 'h,k,l':
 
+                if True:
+                    raise RuntimeError, \
+                          'reindex operator != h,k,l impossible here'
+                
                 Debug.write('Reindexing for wavelength %s (%s)' % \
                             (wavelength, reindex_operator))
 
