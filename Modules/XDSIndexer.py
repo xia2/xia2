@@ -311,6 +311,12 @@ class XDSIndexer(FrameProcessor,
                 # inspect this - if we have complaints about not
                 # enough reflections indexed, and we have a target
                 # unit cell, and they are the same, well ignore it
+
+                if 'solution is inaccurate' in str(e):
+                    Chatter.write(
+                        'XDS complains solution inaccurate - ignoring')
+                    done = idxref.run(ignore_errors = True)                    
+
                 if 'insufficient percentage (< 70%)' in str(e) and \
                    original_cell:
                     done = idxref.run(ignore_errors = True)                    

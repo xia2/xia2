@@ -263,14 +263,7 @@ def XDSIdxref(DriverType = None):
 
             xds_check_version_supported(self.get_all_output())
             if not ignore_errors:
-                try:
-                    xds_check_error(self.get_all_output())
-                except XDSException, e:
-                    if 'solution is inaccurate' in str(e):
-                        Chatter.write(
-                            'XDS complains solution inaccurate - ignoring')
-                    else:
-                        raise XDSException, e
+                xds_check_error(self.get_all_output())
 
             # tidy up...
             try:
