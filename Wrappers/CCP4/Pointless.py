@@ -241,7 +241,6 @@ def Pointless(DriverType = None):
             # check for errors
             self.check_for_errors()
 
-            
             # check the CCP4 status - oh, there isn't one!
             # FIXME I manually need to check for errors here....
 
@@ -606,7 +605,6 @@ def Pointless(DriverType = None):
             return self._reindex_operator
 
         def get_pointgroup(self):
-            # FIXED on 22/AUG/06 this was spacegroup
             return self._pointgroup
 
         def get_spacegroup(self):
