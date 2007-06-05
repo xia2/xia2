@@ -81,6 +81,7 @@ from Wrappers.CCP4.Pointless import Pointless as _Pointless
 # random odds and sods - the resolution estimate should be somewhere better
 from lib.Guff import auto_logfiler, transpose_loggraph, is_mtz_file
 from lib.Guff import nifty_power_of_ten
+from lib.SymmetryLib import lattices_in_order
 from Handlers.Citations import Citations
 from Handlers.Syminfo import Syminfo
 from Handlers.Streams import Chatter, Debug
@@ -431,6 +432,8 @@ class XDSScaler(Scaler):
             scala.set_hklout(reference_mtz)
             scala.quick_scale()            
 
+            lattices = []
+
             for epoch in self._sweep_information.keys():
 
                 intgr = self._sweep_information[epoch]['integrater']
@@ -439,6 +442,11 @@ class XDSScaler(Scaler):
 
                 pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
                     hklin, indxr)
+
+                lattice = Syminfo.get_lattice(pointgroup)
+
+                if not lattice in lattices:
+                    lattices.append(lattice)
 
                 if ntr:
                     need_to_return = True
@@ -492,6 +500,42 @@ class XDSScaler(Scaler):
                 self._sweep_information[epoch][
                     'prepared_reflections'] = os.path.split(hklout)[-1]
 
+            # bug # 2433 - need to ensure that all of the lattice
+            # conclusions were the same...
+            
+            if len(lattices) > 1:
+                ordered_lattices = []
+                for l in SymmetryLib.lattices_in_order():
+                    if l in lattices:
+                        ordered_lattices.append(l)
+
+                correct_lattice = ordered_lattices[0]
+                Chatter.write('Correct lattice asserted to be %s' % \
+                              correct_lattice)
+
+                # transfer this information back to the indexers
+                for epoch in self._sweep_information.keys():
+                    integrater = self._sweep_information[
+                        epoch].get_integrater()
+                    indexer = integrater.get_integrater_indexer()
+                    sname = integrater.get_integrater_sweep_name()
+
+                    if not indexer:
+                        continue
+                    
+                    state = indexer.set_indexer_asserted_lattice(
+                        correct_lattice)
+                    if state == 'correct':
+                        Chatter.write('Lattice %s ok for sweep %s' % \
+                                      (correct_lattice, sname))
+                    elif state == 'impossible':
+                        raise RuntimeError, 'Lattice %s impossible for %s' \
+                              (correct_lattice, sname)
+                    elif state == 'possible':
+                        Chatter.write('Lattice %s assigned for sweep %s' % \
+                                      (correct_lattice, sname))
+                        need_to_return = True
+                
         else:
             # convert the XDS_ASCII for this sweep to mtz
 
