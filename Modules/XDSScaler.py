@@ -767,6 +767,11 @@ class XDSScaler(Scaler):
                                     wavelength)
             combat.run()
 
+            # FIXME in here bug # 2437 - reindex cannot handle reindexing
+            # reflections transformed with combat as there is no U matrix
+            # so will need in that case to perform the reindexing in
+            # XSCALE. This should be straightforward I would think...
+
             if reindex_operator != 'h,k,l':
 
                 Debug.write('Reindexing for wavelength %s (%s)' % \
