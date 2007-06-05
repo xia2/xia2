@@ -129,6 +129,12 @@ def XScale(DriverType = None):
             self._cell = cell
             return
 
+        def set_reindex_matrix(self, reindex_matrix):
+            if not len(reindex_matrix) == 12:
+                raise RuntimeError, 'reindex matrix must be 12 numbers'
+            self._reindex_matrix = reindex_matrix
+            return
+
         def _generate_resolution_shells(self):
             if len(self._input_resolution_ranges) == 0:
                 raise RuntimeError, 'cannot generate resolution ranges'
@@ -168,6 +174,9 @@ def XScale(DriverType = None):
             xscale_inp.write('UNIT_CELL_CONSTANTS=')
             xscale_inp.write('%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f\n' % \
                              tuple(self._cell))
+            if self._reindex_matrix:
+                xds_inp.write('REIDX=%d %d %d %d %d %d %d %d %d %d %d %d' % \
+                              map(int, self._reindex_matrix))
 
             # now information about the wavelengths
             for wave in self._transposed_input_keys:
