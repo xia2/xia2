@@ -505,7 +505,7 @@ class XDSScaler(Scaler):
             
             if len(lattices) > 1:
                 ordered_lattices = []
-                for l in SymmetryLib.lattices_in_order():
+                for l in lattices_in_order():
                     if l in lattices:
                         ordered_lattices.append(l)
 
