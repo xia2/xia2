@@ -357,7 +357,7 @@ class XDSIntegrater(FrameProcessor,
                         'REMOVE.HKL'), 'r').readlines():
                         hkl = tuple(map(int, l.split()[:3]))
                         if not hkl in current_remove:
-                        current_remove.append(hkl)
+                            current_remove.append(hkl)
 
                     final_remove = []
                     for c in correct_remove:
