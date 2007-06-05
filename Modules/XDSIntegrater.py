@@ -191,7 +191,13 @@ class XDSIntegrater(FrameProcessor,
             # now copy information from the old indexer to the new
             # one - lattice, cell, distance etc.
 
-            self._intgr_indexer.set_indexer_input_cell(cell)
+            # bug # 2434 - providing the correct target cell
+            # may be screwing things up - perhaps it would
+            # be best to allow XDS just to index with a free
+            # cell but target lattice??
+            # self._intgr_indexer.set_indexer_input_cell(cell)
+            input_cell = cell
+
             self._intgr_indexer.set_indexer_input_lattice(lattice)
             self._intgr_indexer.set_distance(distance)
             self._intgr_indexer.set_beam(beam)
@@ -200,6 +206,15 @@ class XDSIntegrater(FrameProcessor,
             # worked correctly
             cell = self._intgr_indexer.get_indexer_cell()
             lattice = self._intgr_indexer.get_indexer_lattice()
+
+            # then in here check that the target unit cell corresponds
+            # to the unit cell I wanted as input...? now for this I
+            # should probably compute the unit cell volume rather
+            # than comparing the cell axes as they may have been
+            # switched around...
+
+            # FIXME comparison needed
+
 
         # copy the data across
         self._data_files = self._intgr_indexer.get_indexer_payload(
