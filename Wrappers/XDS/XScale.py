@@ -146,7 +146,7 @@ def XScale(DriverType = None):
                 if max(r) > dmax:
                     dmax = max(r)
 
-                if min(r) < dmin:
+                if min(r) < dmin and min(r) > 0.0:
                     dmin = min(r)
 
             self._resolution_shells = generate_resolution_shells_str(
