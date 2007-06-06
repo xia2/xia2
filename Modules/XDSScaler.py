@@ -610,6 +610,13 @@ class XDSScaler(Scaler):
             integrater = self._sweep_information[epoch]['integrater']
             cell = integrater.get_integrater_cell()
             n_ref = integrater.get_integrater_n_ref()
+            
+            Debug.write('Cell for %s: %.2f %.2f %.2f %.2f %.2f %.2f' % \
+                        (integrater.get_integrater_sweep_name(),
+                         cell[0], cell[1], cell[2],
+                         cell[3], cell[4], cell[5]))
+            Debug.write('=> %d reflections' % n_ref)
+            
             cellparm.add_cell(cell, n_ref)
 
         # note well that this may be invalidated by later reindexing

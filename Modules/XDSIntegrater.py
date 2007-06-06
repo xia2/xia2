@@ -233,6 +233,11 @@ class XDSIntegrater(FrameProcessor,
         # copy the data across
         self._data_files = self._intgr_indexer.get_indexer_payload(
             'xds_files')
+
+        # if we have just done this then the parameters from postrefinement
+        # must be out of date...
+        Debug.write('Deleting postrefinement results')
+        del(self._data_files['GXPARM.XDS'])
             
         return
 
