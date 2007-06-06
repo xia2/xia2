@@ -246,7 +246,7 @@ class XDSIntegrater(FrameProcessor,
 
         Debug.write('Files available at the end of XDS integrate prepare:')
         for f in self._data_files.keys():
-            Debug.Write('%s' % f)
+            Debug.write('%s' % f)
 
         return
 
