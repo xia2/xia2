@@ -396,7 +396,7 @@ class XDSIntegrater(FrameProcessor,
                             continue
                         final_remove.append(c)
 
-                    Chatter.write(
+                    Debug.write(
                         '%d alien reflections are already removed' % \
                         (len(correct_remove) - len(final_remove)))
                 
@@ -407,14 +407,14 @@ class XDSIntegrater(FrameProcessor,
                 # write in the old reflections
                 for remove in current_remove:
                     remove_hkl.write('%d %d %d\n' % remove)
-                Chatter.write('Wrote %d old reflections to REMOVE.HKL' % \
-                              len(current_remove))
+                Debug.write('Wrote %d old reflections to REMOVE.HKL' % \
+                            len(current_remove))
 
                 # and the new reflections
                 for remove in final_remove:
                     remove_hkl.write('%d %d %d\n' % remove)
-                Chatter.write('Wrote %d new reflections to REMOVE.HKL' % \
-                              len(final_remove))
+                Debug.write('Wrote %d new reflections to REMOVE.HKL' % \
+                            len(final_remove))
 
                 remove_hkl.close()
                 
