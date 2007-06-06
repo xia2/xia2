@@ -90,7 +90,6 @@ detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('marccd', 4096, 73):'mar 300',
                   ('marccd', 4096, 79):'mar 325',
                   ('marccd', 3072, 73):'mar 225',
-                  ('marccd', 3072, 0):'mar 225',
                   ('marccd', 2048, 79):'mar 165',
                   ('marccd', 2048, 64):'mar 135',
                   ('mar', 2300, 150):'mar 345',
@@ -280,9 +279,12 @@ def Printheader(DriverType = None):
                 if 'Pixel Size' in o:
                     image = l[1].replace('mm', '')
                     x, y = image.replace('(', '').replace(')', '').split(',')
-                    self._header['pixel'] = \
-                                          (float(x) * fudge[detector]['pixel'],
-                                           float(y) * fudge[detector]['pixel'])
+                    if detector == 'marccd' and math.fabs(float(x)) < 1.0:
+                        self._header['pixel'] = (float(x), float(y))
+                    else:
+                        self._header['pixel'] = (
+                            float(x) * fudge[detector]['pixel'],
+                            float(y) * fudge[detector]['pixel'])
                 
                 if 'Angle range' in o:
                     phi = map(float, l[1].split('->'))
@@ -361,3 +363,5 @@ if __name__ == '__main__':
                   (header['phi_start'], header['phi_end'])
             print 'Wavelength: %6.4f    Distance:   %6.2f' % \
                   (header['wavelength'], header['distance'])
+            print 'Pixel size: %f %f' % header['pixel']
+            print 'Detector class: %s' % header['detector_class']
