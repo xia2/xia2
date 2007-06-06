@@ -389,7 +389,7 @@ class XDSScaler(Scaler):
 
                 intgr = self._sweep_information[epoch]['integrater']
                 hklin = intgr.get_integrater_reflections()
-                indexer = intgr.get_integrater_indexer()
+                indxr = intgr.get_integrater_indexer()
 
                 pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
                     hklin, indxr)
@@ -516,7 +516,7 @@ class XDSScaler(Scaler):
 
                 intgr = self._sweep_information[epoch]['integrater']
                 hklin = intgr.get_integrater_reflections()
-                indexer = intgr.get_integrater_indexer()
+                indxr = intgr.get_integrater_indexer()
 
                 pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
                     hklin, indxr)
