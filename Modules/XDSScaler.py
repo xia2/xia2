@@ -384,7 +384,7 @@ class XDSScaler(Scaler):
 
         need_to_return = False
 
-        if len(self._sweep_information.kets()) > 1:
+        if len(self._sweep_information.keys()) > 1:
             for epoch in self._sweep_information.keys():
 
                 intgr = self._sweep_information[epoch]['integrater']
