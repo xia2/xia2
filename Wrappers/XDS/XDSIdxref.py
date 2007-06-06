@@ -353,9 +353,12 @@ def XDSIdxref(DriverType = None):
                             'Chosen unit cell: %s' % cell_str)
 
                         for j in range(6):
-                            if math.fabs(cell[j] - self._cell[j]) > 5:
+                            if math.fabs(cell[j] - self._cell[j]) > 5 \
+                                   and False:
                                 raise RuntimeError, \
                                       'bad unit cell [%d] in idxref' % j
+
+                        Debug.write('Removed the check in here...')
 
                         self._indxr_lattice = l[0]
                         self._indxr_cell = l[1]
