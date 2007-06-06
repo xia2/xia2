@@ -56,6 +56,7 @@ def XScale(DriverType = None):
             self._resolution_shells = ''
             self._cell = None
             self._spacegroup_number = None
+            self._reindex_matrix = None
 
             # input reflections information - including grouping information
             # in the same way as the .xinfo files - through the wavelength
