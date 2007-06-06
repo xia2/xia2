@@ -376,11 +376,82 @@ class XDSScaler(Scaler):
         self._scalr_pname = self._common_pname
         self._scalr_xname = self._common_xname
 
+        # if there is more than one sweep then compare the lattices
+        # and eliminate all but the lowest symmetry examples if
+        # there are more than one...
+
+        # begin CAP code - this will deal only with the lattices...
+
+        need_to_return = False
+
+        if len(self._sweep_information.kets()) > 1:
+            for epoch in self._sweep_information.keys():
+
+                intgr = self._sweep_information[epoch]['integrater']
+                hklin = intgr.get_integrater_reflections()
+                indexer = intgr.get_integrater_indexer()
+
+                pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
+                    hklin, indxr)
+
+                lattice = Syminfo.get_lattice(pointgroup)
+
+                if not lattice in lattices:
+                    lattices.append(lattice)
+
+                if ntr:
+                    need_to_return = True
+            
+            # bug # 2433 - need to ensure that all of the lattice
+            # conclusions were the same...
+            
+            if len(lattices) > 1:
+                ordered_lattices = []
+                for l in lattices_in_order():
+                    if l in lattices:
+                        ordered_lattices.append(l)
+
+                correct_lattice = ordered_lattices[0]
+                Chatter.write('Correct lattice asserted to be %s' % \
+                              correct_lattice)
+
+                # transfer this information back to the indexers
+                for epoch in self._sweep_information.keys():
+                    integrater = self._sweep_information[
+                        epoch]['integrater']
+                    indexer = integrater.get_integrater_indexer()
+                    sname = integrater.get_integrater_sweep_name()
+
+                    if not indexer:
+                        continue
+                    
+                    state = indexer.set_indexer_asserted_lattice(
+                        correct_lattice)
+                    if state == 'correct':
+                        Chatter.write('Lattice %s ok for sweep %s' % \
+                                      (correct_lattice, sname))
+                    elif state == 'impossible':
+                        raise RuntimeError, 'Lattice %s impossible for %s' \
+                              (correct_lattice, sname)
+                    elif state == 'possible':
+                        Chatter.write('Lattice %s assigned for sweep %s' % \
+                                      (correct_lattice, sname))
+                        need_to_return = True
+
+        if need_to_return:
+            self.set_scaler_done(False)
+            self.set_scaler_prepare_done(False)
+            return
+
+
+        # end CAP code
+        
         # next if there is more than one sweep then generate
         # a merged reference reflection file to check that the
         # setting for all reflection files is the same...
 
-        need_to_return = False
+        # if we get to here then all data was processed with the same
+        # lattice
 
         if len(self._sweep_information.keys()) > 1:
             # need to generate a reference reflection file - generate this
@@ -450,11 +521,6 @@ class XDSScaler(Scaler):
                 pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
                     hklin, indxr)
 
-                lattice = Syminfo.get_lattice(pointgroup)
-
-                if not lattice in lattices:
-                    lattices.append(lattice)
-
                 if ntr:
                     need_to_return = True
             
@@ -507,42 +573,6 @@ class XDSScaler(Scaler):
                 self._sweep_information[epoch][
                     'prepared_reflections'] = os.path.split(hklout)[-1]
 
-            # bug # 2433 - need to ensure that all of the lattice
-            # conclusions were the same...
-            
-            if len(lattices) > 1:
-                ordered_lattices = []
-                for l in lattices_in_order():
-                    if l in lattices:
-                        ordered_lattices.append(l)
-
-                correct_lattice = ordered_lattices[0]
-                Chatter.write('Correct lattice asserted to be %s' % \
-                              correct_lattice)
-
-                # transfer this information back to the indexers
-                for epoch in self._sweep_information.keys():
-                    integrater = self._sweep_information[
-                        epoch]['integrater']
-                    indexer = integrater.get_integrater_indexer()
-                    sname = integrater.get_integrater_sweep_name()
-
-                    if not indexer:
-                        continue
-                    
-                    state = indexer.set_indexer_asserted_lattice(
-                        correct_lattice)
-                    if state == 'correct':
-                        Chatter.write('Lattice %s ok for sweep %s' % \
-                                      (correct_lattice, sname))
-                    elif state == 'impossible':
-                        raise RuntimeError, 'Lattice %s impossible for %s' \
-                              (correct_lattice, sname)
-                    elif state == 'possible':
-                        Chatter.write('Lattice %s assigned for sweep %s' % \
-                                      (correct_lattice, sname))
-                        need_to_return = True
-                
         else:
             # convert the XDS_ASCII for this sweep to mtz
 
