@@ -225,6 +225,11 @@ class Integrater:
     def _integrate_finish(self):
         raise RuntimeError, 'overload me'
 
+    def _integrater_reset_callback(self):
+        '''Overload this if you have other things which need to be reset.'''
+        pass
+    
+
     def _integrater_reset(self):
         '''Reset the integrater, e.g. if the autoindexing solution
         has changed.'''
@@ -242,6 +247,9 @@ class Integrater:
         self._intgr_hklout = None
 
         self._intgr_program_parameters = { }
+
+        # also call back to a user defined function
+        self._integrater_reset_callback()
     
     def set_integrater_sweep(self, sweep):
         self._intgr_sweep = sweep
