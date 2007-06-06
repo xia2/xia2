@@ -337,6 +337,10 @@ class XDSScaler(Scaler):
                 'header':intgr.get_header(),
                 }
 
+            Debug.write('For EPOCH %s have:' % str(epoch))
+            Debug.write('ID = %s/%s/%s' % (pname, xname, dname))
+            Debug.write('SWEEP = %s' % intgr.get_integrater_sweep_name())
+
         # next work through all of the reflection files and make sure that
         # they are XDS_ASCII format...
 
@@ -615,6 +619,9 @@ class XDSScaler(Scaler):
         self._cell = cellparm.get_cell()
         self._scalr_cell = cell
 
+        Debug.write('Determined unit cell: %.2f %.2f %.2f %.2f %.2f %.2f' % \
+                    tuple(self._cell))
+
         return
 
     def _scale(self):
@@ -625,6 +632,9 @@ class XDSScaler(Scaler):
         xscale = self.XScale()
 
         if self._reindex_matrix:
+            Debug.write('Setting REIDX: %d %d %d %d %d %d %d %d %d' % \
+                        self._reindex_matrix)
+                        
             xscale.set_reindex_matrix(
                 r_to_rt(self.get_integrater_reindex_matrix_rt()))
 
@@ -641,7 +651,7 @@ class XDSScaler(Scaler):
             intgr = self._sweep_information[epoch]['integrater']
             resolution = intgr.get_integrater_resolution()
 
-            if resolution == 0:
+            if resolution == 0.0:
                 raise RuntimeError, 'zero resolution for %s' % \
                       self._sweep_information[epoch][
                     'integrater'].get_integrater_sweep_name()
@@ -766,6 +776,8 @@ class XDSScaler(Scaler):
         reindex_matrix = pointless.get_reindex_matrix()
         self._scalr_likely_spacegroups = spacegroups
 
+        Debug.write('Reindex operator: %s' % reindex_operator)
+
         if reindex_operator != 'h,k,l':
             # that means that we have only to record the correct reindexing
             # matrix and return - the next pass through the proper scaling
@@ -783,12 +795,27 @@ class XDSScaler(Scaler):
             self._scalr_cell = pointless.get_cell()
             self._spacegroup = spacegroups[0]
             self._reindex_matrix = reindex_matrix
+
+            Debug.write('Determined correct REIDX: %s' % \
+                        str(self._reindex_matrix))
+            Debug.write('Assigning spacegroup: %s' % self._spacegroup)
+            Debug.write('Unit cell: %.2f %.2f %.2f %.2f %.2f %.2f' % \
+                        tuple(self._cell))
             
             # now reset 'n' return as everything else will be acted on
             # further up...
 
             self.set_scaler_done(False)
             return
+
+        else:
+            if self._reindex_matrix:
+                Debug.write('Determined no further reindexing needed')
+                Debug.write('Used REIDX: %s' % \
+                            str(self._reindex_matrix))
+            else:
+                Debug.write('Determined no reindexing required')
+                
        
         for wavelength in wavelength_names:
             # convert the reflections to MTZ format with combat

@@ -191,6 +191,8 @@ class XDSIntegrater(FrameProcessor,
         # create one...
 
         if not self._intgr_indexer.get_indexer_payload('xds_files'):
+            Debug.write('Generating an XDS indexer')
+            
             self.set_integrater_indexer(XDSIndexer())
             # set the indexer up as per the frameprocessor interface...
             # this would usually happen within the IndexerFactory.
@@ -254,6 +256,8 @@ class XDSIntegrater(FrameProcessor,
                               self._intgr_wedge[1])
 
         if self._intgr_reso_high > 0.0:
+            Debug.write('Setting resolution limit in DEFPIX to %.2f' % \
+                        self._intgr_reso_high)
             defpix.set_resolution_high(self._intgr_reso_high)
 
         defpix.run()
@@ -292,7 +296,7 @@ class XDSIntegrater(FrameProcessor,
         fixed_2401 = True
        
         if self._data_files.has_key('GXPARM.XDS') and fixed_2401:
-            Chatter.write('Using globally refined parameters')
+            Debug.write('Using globally refined parameters')
             integrate.set_input_data_file(
                 'XPARM.XDS', self._data_files['GXPARM.XDS'])
             integrate.set_refined_xparm()
@@ -317,6 +321,8 @@ class XDSIntegrater(FrameProcessor,
                                self._intgr_wedge[1])
         
         if self._intgr_reso_high > 0.0:
+            Debug.write('Using resolution limit: %.2f' % \
+                        self._intgr_reso_high)
             correct.set_resolution_high(self._intgr_reso_high)
 
         if self.get_polarization() > 0.0:
@@ -325,8 +331,10 @@ class XDSIntegrater(FrameProcessor,
         if self.get_integrater_spacegroup_number():
             correct.set_spacegroup_number(
                 self.get_integrater_spacegroup_number())
+
             # FIXME bug 2406 - need to have the unit cell set as
             # well as the spacegroup...
+            
             if not self._intgr_cell:
                 raise RuntimeError, 'no unit cell to recycle'
             correct.set_cell(self._intgr_cell)
@@ -339,6 +347,9 @@ class XDSIntegrater(FrameProcessor,
 
         if self._intgr_reso_high == 0.0:
             # get the "correct" resolution from ... correct
+            
+            Debug.write('Setting integrater resolution to %.2f' % \
+                        correct.get_result('highest_resolution'))
             self._intgr_reso_high = correct.get_result('highest_resolution')
 
         # should get some interesting stuff from the XDS correct file
