@@ -18,6 +18,7 @@
 import os
 import sys
 import math
+import copy
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
@@ -150,12 +151,14 @@ class XDSIntegrater(FrameProcessor,
         IDXREF to get the XPARM etc. DEFPIX is considered part of the full
         integration as it is resolution dependent.'''
 
-        # decide what images we are going to process, if not already
-        # specified
 
         # set a low resolution limit (which isn't really used...)
+        # this should perhaps be done more intelligently from an
+        # analysis of the spot list or something...?
         self.set_integrater_low_resolution(40.0)
 
+        # decide what images we are going to process, if not already
+        # specified
         if not self._intgr_wedge:
             images = self.get_matching_images()
             self.set_integrater_wedge(min(images),
@@ -238,8 +241,12 @@ class XDSIntegrater(FrameProcessor,
             # FIXME comparison needed
 
         # copy the data across
-        self._data_files = self._intgr_indexer.get_indexer_payload(
-            'xds_files')
+        self._data_files = copy.deepcopy(
+            self._intgr_indexer.get_indexer_payload('xds_files'))
+
+        Debug.write('Files available at the end of XDS integrate prepare:')
+        for f in self._data_files.keys():
+            Debug.Write('%s' % f)
 
         return
 
