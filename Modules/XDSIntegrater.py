@@ -76,9 +76,6 @@ class XDSIntegrater(FrameProcessor,
 
         # place to store working data
         self._data_files = { }
-
-        # set a low resolution limit (which isn't really used...)
-        self.set_integrater_low_resolution(40.0)
         
         # internal parameters to pass around
         self._integrate_parameters = { } 
@@ -143,6 +140,11 @@ class XDSIntegrater(FrameProcessor,
 
     # now some real functions, which do useful things
 
+    def _integrater_reset_callback(self):
+        '''Delete all results on a reset.'''
+        Debug.write('Deleting all stored results.')
+        self._data_files = { } 
+
     def _integrate_prepare(self):
         '''Prepare for integration - in XDS terms this may mean rerunning
         IDXREF to get the XPARM etc. DEFPIX is considered part of the full
@@ -150,6 +152,9 @@ class XDSIntegrater(FrameProcessor,
 
         # decide what images we are going to process, if not already
         # specified
+
+        # set a low resolution limit (which isn't really used...)
+        self.set_integrater_low_resolution(40.0)
 
         if not self._intgr_wedge:
             images = self.get_matching_images()
@@ -218,6 +223,9 @@ class XDSIntegrater(FrameProcessor,
 
             # re-get the unit cell &c. and check that the indexing
             # worked correctly
+
+            Debug.write('Rerunning indexing with XDS')
+            
             cell = self._intgr_indexer.get_indexer_cell()
             lattice = self._intgr_indexer.get_indexer_lattice()
 
@@ -229,17 +237,10 @@ class XDSIntegrater(FrameProcessor,
 
             # FIXME comparison needed
 
-
         # copy the data across
         self._data_files = self._intgr_indexer.get_indexer_payload(
             'xds_files')
 
-        # if we have just done this then the parameters from postrefinement
-        # must be out of date...
-        if self._data_files.has_key('GXRARM.XDS'):
-            Debug.write('Deleting postrefinement results')
-            del(self._data_files['GXPARM.XDS'])
-            
         return
 
     def _integrate(self):
