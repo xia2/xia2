@@ -200,6 +200,13 @@ class XDSIntegrater(FrameProcessor,
 
         if not self._intgr_indexer.get_indexer_payload('xds_files'):
             Debug.write('Generating an XDS indexer')
+
+            # note to self for the future - this set will reset the
+            # integrater prepare done flag - this means that we will
+            # go through this routine all over again. However this
+            # is not a problem as all that will happen is that the
+            # results will be re-got, no additional processing will
+            # be performed...
             
             self.set_integrater_indexer(XDSIndexer())
             # set the indexer up as per the frameprocessor interface...
