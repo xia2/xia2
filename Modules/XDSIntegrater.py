@@ -144,7 +144,9 @@ class XDSIntegrater(FrameProcessor,
     def _integrater_reset_callback(self):
         '''Delete all results on a reset.'''
         Debug.write('Deleting all stored results.')
-        self._data_files = { } 
+        self._data_files = { }
+        self._integrate_parameters = { }
+        return
 
     def _integrate_prepare(self):
         '''Prepare for integration - in XDS terms this may mean rerunning
@@ -290,7 +292,8 @@ class XDSIntegrater(FrameProcessor,
 
         integrate = self.Integrate()
 
-        integrate.set_updates(self._integrate_parameters)
+        if self._integrate_parameters:
+            integrate.set_updates(self._integrate_parameters)
 
         # decide what images we are going to process, if not already
         # specified
