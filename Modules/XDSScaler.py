@@ -385,6 +385,9 @@ class XDSScaler(Scaler):
         need_to_return = False
 
         if len(self._sweep_information.keys()) > 1:
+
+            lattices = []
+
             for epoch in self._sweep_information.keys():
 
                 intgr = self._sweep_information[epoch]['integrater']
@@ -509,8 +512,6 @@ class XDSScaler(Scaler):
             scala.set_hklin(hklin)
             scala.set_hklout(reference_mtz)
             scala.quick_scale()            
-
-            lattices = []
 
             for epoch in self._sweep_information.keys():
 
