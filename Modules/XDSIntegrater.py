@@ -236,8 +236,9 @@ class XDSIntegrater(FrameProcessor,
 
         # if we have just done this then the parameters from postrefinement
         # must be out of date...
-        Debug.write('Deleting postrefinement results')
-        del(self._data_files['GXPARM.XDS'])
+        if self._data_files.has_key('GXRARM.XDS'):
+            Debug.write('Deleting postrefinement results')
+            del(self._data_files['GXPARM.XDS'])
             
         return
 
