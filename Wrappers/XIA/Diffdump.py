@@ -80,6 +80,8 @@ HeaderCache = _HeaderCache()
 
 # FIXME this does not include all MAR, RAXIS detectors
 
+# at the ESRF this is already corrected so 3072 marccd 0 -> mar 225
+
 detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('adsc', 1502, 163):'adsc q4 2x2 binned',
                   ('adsc', 4096, 51):'adsc q210',
@@ -89,6 +91,7 @@ detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('marccd', 4096, 73):'mar 300',
                   ('marccd', 4096, 79):'mar 325',
                   ('marccd', 3072, 73):'mar 225',
+                  ('marccd', 3072, 0):'mar 225',
                   ('marccd', 2048, 79):'mar 165',
                   ('marccd', 2048, 64):'mar 135',
                   ('mar', 2300, 150):'mar 345',
