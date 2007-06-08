@@ -658,57 +658,17 @@ class Integrater:
                         (old, reindex_operator, new))
             self._intgr_reindex_operator = new
 
+        self._intgr_reindex_matrix = symop_to_mat(
+            self._intgr_reindex_operator)
+
         # allow a callback in case something wants to update itself...
         self._set_integrater_reindex_operator_callback()
 
         return
 
-    def _set_integrater_reindex_operator_callback(self):
-        pass
-
     def get_integrater_reindex_operator(self):
         return self._intgr_reindex_operator
         
-    def set_integrater_reindex_matrix(self, reindex_matrix):
-
-        # this is a sequence of 9 integers e.g. 1 0 0 0 1 0 0 0 1
-        # which could come from e.g. pointless...
-
-        # this is to ensure that the results from integration are
-        # in a standard setting, and so it may be necessary that
-        # the Mosflm implementation respects this through a call
-        # to reindex. Note well that this is closely tied with the
-        # pointgroup (set spacegroup number) above.
-
-        # check to see if this is an identity...
-
-        identity = True
-
-        for i in range(3):
-            for j in range(3):
-                if i == j:
-                    if math.fabs(reindex_matrix(3 * i + j) - 1) > 0.01:
-                        identity = False
-                else:
-                    if math.fabs(reindex_matrix(3 * i + j)) > 0.01:
-                        identity = False
-                        
-        if not identity:
-            self.set_integrater_finish_done(False)
-
-        if self._intgr_reindex_matrix is None:
-            self._intgr_reindex_matrix = reindex_matrix
-
-        else:
-            # compose the two operations
-            self._intgr_reindex_matrix = compose_matrices_r(
-                reindex_matrix, self._intgr_reindex_matrix)
-
-        # allow a callback in case something wants to update itself...
-        self._set_integrater_reindex_matrix_callback()
-
-        return
-
     def _set_integrater_reindex_matrix_callback(self):
         pass
 
