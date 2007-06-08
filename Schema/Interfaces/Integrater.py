@@ -637,6 +637,9 @@ class Integrater:
     def get_integrater_spacegroup_number(self):
         return self._intgr_spacegroup_number
         
+    def _set_integrater_reindex_operator_callback(self):
+        pass
+
     def set_integrater_reindex_operator(self, reindex_operator):
         '''Assign a symmetry operator to the reflections - note
         that this is cumulative...'''
@@ -669,9 +672,6 @@ class Integrater:
     def get_integrater_reindex_operator(self):
         return self._intgr_reindex_operator
         
-    def _set_integrater_reindex_matrix_callback(self):
-        pass
-
     def get_integrater_reindex_matrix(self):
         return self._intgr_reindex_matrix
         
