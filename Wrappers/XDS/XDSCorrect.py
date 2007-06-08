@@ -270,7 +270,7 @@ def XDSCorrect(DriverType = None):
                               tuple(self._cell))
             if self._reindex_matrix:
                 xds_inp.write('REIDX=%d %d %d %d %d %d %d %d %d %d %d %d' % \
-                              map(int, self._reindex_matrix))
+                              tuple(map(int, self._reindex_matrix)))
                 
 
             xds_inp.close()
