@@ -125,7 +125,7 @@ def compose_symops(a, b):
 
 def symop_to_mat(symop):
     symop2mat = Symop2mat()
-    return sumop2mat.convert(symop)
+    return symop2mat.convert(symop)
 
 if __name__ == '__main__':
 
