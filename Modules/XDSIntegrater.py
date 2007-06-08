@@ -365,7 +365,7 @@ class XDSIntegrater(FrameProcessor,
 
         if self.get_integrater_reindex_matrix():
             correct.set_reindex_matrix(
-                r_to_rt(self.get_integrater_reindex_matrix_rt()))
+                r_to_rt(self.get_integrater_reindex_matrix()))
         
         correct.run()
 
