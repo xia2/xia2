@@ -680,7 +680,7 @@ class XDSScaler(Scaler):
                         self._reindex_matrix)
                         
             xscale.set_reindex_matrix(
-                r_to_rt(_reindex_matrix))
+                r_to_rt(self._reindex_matrix))
 
         for epoch in epochs:
 
