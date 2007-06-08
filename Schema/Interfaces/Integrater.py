@@ -218,18 +218,18 @@ class Integrater:
         return
 
     def _intgr_check_reindex_uniform(self):
-        if not self._reindex_operator and not self._reindex_matrix:
+        if not self._intgr_reindex_operator and not self._intgr_reindex_matrix:
             return
 
-        if self._reindex_operator and not self._reindex_matrix:
+        if self._intgr_reindex_operator and not self._intgr_reindex_matrix:
             raise RuntimeError, 'non uniform reindex instructions'
 
-        if not self._reindex_operator and self._reindex_matrix:
+        if not self._intgr_reindex_operator and self._intgr_reindex_matrix:
             raise RuntimeError, 'non uniform reindex instructions'
 
-        matrix = symop_to_mat(self._reindex_operator)
+        matrix = symop_to_mat(self._intgr_reindex_operator)
 
-        if matrix != self._reindex_matrix:
+        if matrix != self._intgr_reindex_matrix:
             raise RuntimeError, 'non uniform reindex instructions'
 
         return
