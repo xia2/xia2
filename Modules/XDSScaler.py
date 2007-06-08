@@ -87,11 +87,13 @@ from Handlers.Syminfo import Syminfo
 from Handlers.Streams import Chatter, Debug
 from Handlers.Flags import Flags
 from Handlers.Files import FileHandler
-from Experts.SymmetryExpert import r_to_rt
+from Experts.SymmetryExpert import r_to_rt, symop_to_mat
 
 # stuff I have nicked from the CCP4 Scaler implementation
 from CCP4ScalerImplementationHelpers import _resolution_estimate
 from CCP4InterRadiationDamageDetector import CCP4InterRadiationDamageDetector
+
+
 
 class XDSScaler(Scaler):
     '''An implementation of the xia2 Scaler interface implemented with
@@ -477,6 +479,8 @@ class XDSScaler(Scaler):
             # of the reflections
 
             intgr.set_integrater_reindex_operator(reindex_op)
+            intgr.set_integrater_reindex_matrix(
+                symop_to_mat(reindex_op))
             intgr.set_integrater_spacegroup_number(
                 Syminfo.spacegroup_name_to_number(pointgroup)) 
            

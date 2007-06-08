@@ -123,6 +123,10 @@ def compose_symops(a, b):
     mat2symop = Mat2symop()
     return mat2symop.convert(mat_c).strip()
 
+def symop_to_mat(symop):
+    symop2mat = Symop2mat()
+    return sumop2mat.convert(symop)
+
 if __name__ == '__main__':
 
     a = [1, 2, 3, 4, 5, 6, 7, 8, 9]
