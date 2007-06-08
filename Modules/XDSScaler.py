@@ -530,6 +530,8 @@ class XDSScaler(Scaler):
                     need_to_return = True
             
                 intgr.set_integrater_reindex_operator(reindex_op)
+                intgr.set_integrater_reindex_matrix(
+                    symop_to_mat(reindex_op))
                 intgr.set_integrater_spacegroup_number(
                     Syminfo.spacegroup_name_to_number(pointgroup))
                 
