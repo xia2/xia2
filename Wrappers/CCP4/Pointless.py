@@ -590,6 +590,8 @@ def Pointless(DriverType = None):
                 'SpacegroupName')[0].childNodes[0].data.strip()
             self._spacegroup_reindex_operator = sg_node.getElementsByTagName(
                 'ReindexOperator')[0].childNodes[0].data.strip()
+            self._spacegroup_reindex_matrix = map(float, index.getElementsByTagName(
+                'ReindexMatrix')[0].childNodes[0].data.split())
 
             # get a list of "equally likely" spacegroups
 
@@ -680,6 +682,9 @@ def Pointless(DriverType = None):
 
         def get_spacegroup_reindex_operator(self):
             return self._spacegroup_reindex_operator
+
+        def get_spacegroup_reindex_matrix(self):
+            return self._spacegroup_reindex_matrix
 
         def get_likely_spacegroups(self):
             return self._likely_spacegroups
