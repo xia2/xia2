@@ -134,6 +134,7 @@ from Wrappers.XIA.Printheader import Printheader
 
 # symmetry operator management functionality
 from Experts.SymmetryExpert import compose_matrices_r, compose_symops
+from Experts.SymmetryExpert import symop_to_mat
 
 class Integrater:
     '''An interface to present integration functionality in a similar
@@ -214,6 +215,23 @@ class Integrater:
         self._intgr_reindex_matrix = None
         self._intgr_anomalous = None
                 
+        return
+
+    def _intgr_check_reindex_uniform(self):
+        if not self._reindex_operator and not self._reindex_matrix:
+            return
+
+        if self._reindex_operator and not self._reindex_matrix:
+            raise RuntimeError, 'non uniform reindex instructions'
+
+        if not self._reindex_operator and self._reindex_matrix:
+            raise RuntimeError, 'non uniform reindex instructions'
+
+        matrix = symop_to_mat(self._reindex_operator)
+
+        if matrix != self._reindex_matrix:
+            raise RuntimeError, 'non uniform reindex instructions'
+
         return
 
     def _integrate_prepare(self):
@@ -503,6 +521,7 @@ class Integrater:
                     # reset the indexing system
 
                     try:
+                        self._intgr_check_reindex_uniform()
                         self._integrate_prepare()
 
                         # Should be all specific errors which indicate
@@ -540,6 +559,7 @@ class Integrater:
 
                 try:
 
+                    self._intgr_check_reindex_uniform()
                     self._intgr_hklout = self._integrate()
 
                 except BadLatticeError, e:
@@ -552,6 +572,7 @@ class Integrater:
             # with CCP4/Mosflm) or CORRECT in XDS.
 
             self.set_integrater_finish_done(True)
+            self._intgr_check_reindex_uniform()
             self._integrate_finish()
 
         # ok, we are indeed "done"...
