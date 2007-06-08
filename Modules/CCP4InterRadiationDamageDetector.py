@@ -139,7 +139,7 @@ class CCP4InterRadiationDamageDetector:
                 status.append((name, '%5.1f %4.2f (damaged%s)' % \
                                (b, r, misindexed)))
             else:
-                status.append((name, '%5.1f %4.2f (ok%)' % \
+                status.append((name, '%5.1f %4.2f (ok%s)' % \
                                (b, r, misindexed)))
 
         return status
