@@ -811,7 +811,7 @@ class XDSScaler(Scaler):
         
         spacegroups = pointless.get_likely_spacegroups()
         reindex_operator = pointless.get_spacegroup_reindex_operator()
-        reindex_matrix = pointless.get_reindex_matrix()
+        reindex_matrix = pointless.get_spacegroup_reindex_matrix()
         self._scalr_likely_spacegroups = spacegroups
 
         Debug.write('Reindex operator: %s' % reindex_operator)
@@ -831,7 +831,7 @@ class XDSScaler(Scaler):
 
             self._cell = pointless.get_cell()
             self._scalr_cell = pointless.get_cell()
-            self._spacegroup = spacegroups[0]
+            self._spacegroup = Syminfo.spacegroup_name_to_number(spacegroups[0])
             self._reindex_matrix = reindex_matrix
 
             Debug.write('Determined correct REIDX: %s' % \
