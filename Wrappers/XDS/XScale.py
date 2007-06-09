@@ -176,8 +176,9 @@ def XScale(DriverType = None):
             xscale_inp.write('%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f\n' % \
                              tuple(self._cell))
             if self._reindex_matrix:
-                xds_inp.write('REIDX=%d %d %d %d %d %d %d %d %d %d %d %d' % \
-                              tuple(map(int, self._reindex_matrix)))
+                xscale_inp.write(
+                    'REIDX=%d %d %d %d %d %d %d %d %d %d %d %d' % \
+                    tuple(map(int, self._reindex_matrix)))
 
             # now information about the wavelengths
             for wave in self._transposed_input_keys:
