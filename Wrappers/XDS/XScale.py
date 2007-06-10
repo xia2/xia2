@@ -177,7 +177,7 @@ def XScale(DriverType = None):
                              tuple(self._cell))
             if self._reindex_matrix:
                 xscale_inp.write(
-                    'REIDX=%d %d %d %d %d %d %d %d %d %d %d %d' % \
+                    'REIDX=%d %d %d %d %d %d %d %d %d %d %d %d\n' % \
                     tuple(map(int, self._reindex_matrix)))
 
             # now information about the wavelengths
