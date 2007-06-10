@@ -666,6 +666,9 @@ class XDSScaler(Scaler):
         Debug.write('Determined unit cell: %.2f %.2f %.2f %.2f %.2f %.2f' % \
                     tuple(self._cell))
 
+        Debug.write('Resetting reindex matrix (as cell reset)')
+        self._reindex_matrix = None
+
         return
 
     def _scale(self):
