@@ -11,7 +11,10 @@
 import os
 import sys
 
-from lib.SubStructureLib import invert_hand
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
+
+from lib.SubstructureLib import invert_hand
 from lib.SymmetryLib import compute_enantiomorph
 
 from Mtz2Scalepack import Mtz2Scalepack
@@ -20,11 +23,7 @@ class HAPhaserClass:
 
     def __init__(self):
 
-        # save system path, load input then restore path
-        path = sys.path
-        sys.path = os.getcwd()
-        import hap_input
-        sys.path = path
+        hap_input = __import__('hap_input')
 
         # next get the stuff we want from it
 

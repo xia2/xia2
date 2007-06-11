@@ -8,10 +8,6 @@
 import os
 import sys
 
-# wrappers this will use
-if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
-    sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
-
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
@@ -19,6 +15,7 @@ from Wrappers.Shelx.Shelxc import Shelxc
 from Wrappers.Shelx.Shelxd import Shelxd
 from Wrappers.Shelx.Shelxe import Shelxe
 from Wrappers.CCP4.F2mtz import F2mtz
+from Wrappers.CCP4.Cad import Cad
 
 # interface that this will implement
 from HAPhaserClass import HAPhaserClass
@@ -76,15 +73,23 @@ class ShelxPhaserClass(HAPhaserClass):
         shelxe.set_solvent(self._input_dict['solvent'])
         shelxe.phase()
 
+        f = F2mtz()
+        f.write_log_file('f2mtz.log')        
         f.set_hklin('strawman.phs')
-        f.set_hklout('strawman.mtz')
+        f.set_hklout('tmp_strawman.mtz')
         f.set_cell(self._cell)
         f.set_symmetry(self._spacegroup)
         f.f2mtz()
 
+        c = Cad()
+        c.write_log_file('cad.log')
+        c.add_hklin('tmp_strawman.mtz')
+        c.set_hklout('strawman.mtz')
+        c.update()
+
         # phase in enantiomorph spacegroup if enantiomorphic possible
 
-        if compute_spacegroup_enantiomorph(self._spacegroup) == \
+        if self.compute_spacegroup_enantiomorph(self._spacegroup) == \
            self._spacegroup:
 
             shelxe = Shelxe()
@@ -94,11 +99,19 @@ class ShelxPhaserClass(HAPhaserClass):
             shelxe.set_enantiomorph()
             shelxe.phase()
 
+            f = F2mtz()
             f.set_hklin('strawman_i.phs')
-            f.set_hklout('strawman_i.mtz')
+            f.write_log_file('f2mtz_i.log')        
+            f.set_hklout('tmp_strawman_i.mtz')
             f.set_cell(self._cell)
             f.set_symmetry(self._spacegroup)
             f.f2mtz()
+
+            c = Cad()
+            c.write_log_file('cad_i.log')
+            c.add_hklin('tmp_strawman_i.mtz')
+            c.set_hklout('strawman_i.mtz')
+            c.update()
             
         return
 
