@@ -378,8 +378,10 @@ class XDSScaler(Scaler):
         # and eliminate all but the lowest symmetry examples if
         # there are more than one...
 
-        # begin CAP code - this will deal only with the lattices...
-
+        # -------------------------------------------------
+        # Ensure that the integration lattices are the same
+        # -------------------------------------------------
+        
         need_to_return = False
 
         if len(self._sweep_information.keys()) > 1:
@@ -439,20 +441,24 @@ class XDSScaler(Scaler):
                                       (correct_lattice, sname))
                         need_to_return = True
 
+        # if one or more of them was not in the lowest lattice,
+        # need to return here to allow reprocessing
+
         if need_to_return:
             self.set_scaler_done(False)
             self.set_scaler_prepare_done(False)
             return
 
-
-        # end CAP code
-        
         # next if there is more than one sweep then generate
         # a merged reference reflection file to check that the
         # setting for all reflection files is the same...
 
         # if we get to here then all data was processed with the same
         # lattice
+
+        # ----------------------------------------------------------
+        # next ensure that all sweeps are set in the correct setting
+        # ----------------------------------------------------------
 
         if len(self._sweep_information.keys()) > 1:
             # need to generate a reference reflection file - generate this
@@ -475,8 +481,6 @@ class XDSScaler(Scaler):
             # of the reflections
 
             intgr.set_integrater_reindex_operator(reindex_op)
-            # intgr.set_integrater_reindex_matrix(
-            # symop_to_mat(reindex_op))
             intgr.set_integrater_spacegroup_number(
                 Syminfo.spacegroup_name_to_number(pointgroup)) 
            
@@ -652,17 +656,10 @@ class XDSScaler(Scaler):
             
             cellparm.add_cell(cell, n_ref)
 
-        # note well that this may be invalidated by later reindexing
-        # to achieve a standard setting for the reflections (e.g.
-        # P 2 21 21 -> P 21 21 2)
-
         self._scalr_cell = cellparm.get_cell()
 
         Debug.write('Determined unit cell: %.2f %.2f %.2f %.2f %.2f %.2f' % \
                     tuple(self._scalr_cell))
-
-        Debug.write('Resetting reindex matrix (as cell reset)')
-        self._reindex_matrix = None
 
         return
 
@@ -673,15 +670,6 @@ class XDSScaler(Scaler):
 
         xscale = self.XScale()
 
-        if self._reindex_matrix:
-            Debug.write('Setting REIDX: %d %d %d %d %d %d %d %d %d' % \
-                        self._reindex_matrix)
-                        
-            xscale.set_reindex_matrix(
-                r_to_rt(self._reindex_matrix))
-
-        # FIXME have to make sure that this is recorded
-        # as a number...
         xscale.set_spacegroup_number(self._spacegroup)
         xscale.set_cell(self._scalr_cell)
 
@@ -725,7 +713,7 @@ class XDSScaler(Scaler):
 
         # these are per wavelength
         resolution_limits = { } 
-        scaled_reflection_files = { }
+        self._scaled_ref_files = { }
 
         self._scalr_statistics = { }
 
@@ -820,59 +808,21 @@ class XDSScaler(Scaler):
         
         spacegroups = pointless.get_likely_spacegroups()
         reindex_operator = pointless.get_spacegroup_reindex_operator()
-        reindex_matrix = tuple(pointless.get_spacegroup_reindex_matrix())
+
+        # save these for later - we will reindex the merged
+        # data after scaling
+
         self._scalr_likely_spacegroups = spacegroups
+        self._scalr_reindex_operator = reindex_operator
 
         Debug.write('Reindex operator: %s' % reindex_operator)
+        Debug.write('Will save this for later')
 
-        if reindex_operator != 'h,k,l':
-            # that means that we have only to record the correct reindexing
-            # matrix and return - the next pass through the proper scaling
-            # procedure will pick up the reindexing operator and give
-            # sensible results...
-
-            # compute the correct unit cell - somehow
-            # actually this should not be hard as it should only
-            # ever be a permutation.... which means that it can
-            # only really happen when you have an orthorhombic
-            # spacegroup, right??? - just hacked pointless to give
-            # this instead...
-
-            self._scalr_cell = pointless.get_cell()
-            self._spacegroup = Syminfo.spacegroup_name_to_number(
-                spacegroups[0])
-
-            if self._reindex_matrix:
-                new_reindex_matrix = compose_matrices_r(
-                    reindex_matrix, self._reindex_matrix)
-                self._reindex_matrix = tuple(new_reindex_matrix)
-            else:
-                self._reindex_matrix = tuple(reindex_matrix)
-
-            Debug.write('Determined correct REIDX: %s' % \
-                        str(self._reindex_matrix))
-            Debug.write('Assigning spacegroup: %s' % self._spacegroup)
-            Debug.write('Unit cell: %.2f %.2f %.2f %.2f %.2f %.2f' % \
-                        tuple(self._scalr_cell))
-            
-            # now reset 'n' return as everything else will be acted on
-            # further up...
-
-            self.set_scaler_done(False)
-            return
-
-        else:
-            if self._reindex_matrix:
-                Debug.write('Determined no further reindexing needed')
-                Debug.write('Used REIDX: %s' % \
-                            str(self._reindex_matrix))
-            else:
-                Debug.write('Determined no reindexing required')
-                
-       
         for wavelength in wavelength_names:
+
             # convert the reflections to MTZ format with combat
             # - setting the pname, xname, dname
+
             hklout = os.path.join(self.get_working_directory(),
                                   '%s_combat.mtz' % wavelength)
             FileHandler.record_temporary_file(hklout)
@@ -883,62 +833,6 @@ class XDSScaler(Scaler):
             combat.set_project_info(self._scalr_pname, self._scalr_xname,
                                     wavelength)
             combat.run()
-
-            # FIXME in here bug # 2437 - reindex cannot handle reindexing
-            # reflections transformed with combat as there is no U matrix
-            # so will need in that case to perform the reindexing in
-            # XSCALE. This should be straightforward I would think...
-            # More straightforward alternative - reindex the reflection
-            # files at the very end, though this could prejudice the
-            # generation of unmerged polish reflection files (hmmm....)
-            # as I can't reindex those.... nope will definately be better
-            # to be able to send the reindex operator back to XSCALE.
-            # OK this is now being handled above - if this happens
-            # it is an exceptional condition...
-
-            if reindex_operator != 'h,k,l':
-
-                if True:
-                    raise RuntimeError, \
-                          'reindex operator != h,k,l impossible here'
-                
-                Debug.write('Reindexing for wavelength %s (%s)' % \
-                            (wavelength, reindex_operator))
-
-                hklin = hklout
-                hklout = os.path.join(self.get_working_directory(),
-                                      '%s_reindex.mtz' % wavelength)
-                FileHandler.record_temporary_file(hklout)
-                                
-                reindex = self.Reindex()
-                reindex.set_hklin(hklin)
-                reindex.set_hklout(hklout)
-                reindex.set_spacegroup(spacegroups[0])
-                reindex.set_operator(reindex_operator)
-                reindex.reindex()
-
-                # ASSERTION - this should be the same for all wavelengths
-                # as they all had the same input cell and all have the
-                # same reindexing...
-                
-                self._scalr_cell = reindex.get_cell()
-                
-            else:
-                Debug.write('Reindexing %s to set spacegroup to %s' % \
-                            (wavelength, spacegroups[0]))
-
-                hklin = hklout
-                hklout = os.path.join(self.get_working_directory(),
-                                      '%s_reindex.mtz' % wavelength)
-                FileHandler.record_temporary_file(hklout)
-                                
-                reindex = self.Reindex()
-                reindex.set_hklin(hklin)
-                reindex.set_hklout(hklout)
-                reindex.set_spacegroup(spacegroups[0])
-                reindex.reindex()
-
-            # then sort them
 
             hklin = hklout
             hklout = os.path.join(self.get_working_directory(),
@@ -951,7 +845,8 @@ class XDSScaler(Scaler):
             sortmtz.sort()
 
             # then merge them in Scala - FIXME want also to convert them
-            # to unmerged polish format...
+            # to unmerged polish format... though can't do this for
+            # the moment as we can't reindex the unmerged reflections
 
             hklin = hklout
             hklout = os.path.join(self.get_working_directory(),
@@ -970,7 +865,7 @@ class XDSScaler(Scaler):
                                          wavelength),
                                         scala.get_log_file())
 
-            scaled_reflection_files[wavelength] = hklout
+            self._scaled_ref_files[wavelength] = hklout
 
             # get the resolution limits out -> statistics dictionary
 
@@ -1043,18 +938,35 @@ class XDSScaler(Scaler):
             if resolution_limits[dname] < best_resolution:
                 best_resolution = resolution_limits[dname]
 
-        # if we need to redo the scaling, return to allow this to happen
-
-        if not self.get_scaler_done():
-            return
-
         self._scalr_highest_resolution = best_resolution
-           
+                   
+        return
+
+    def _scale_finish(self):
+        
         # next transform to F's from I's
 
-        for wavelength in scaled_reflection_files.keys():
+        for wavelength in self._scaled_ref_files.keys():
 
-            hklin = scaled_reflection_files[wavelength]
+            hklin = self._scaled_ref_files[wavelength]
+
+            # perhaps reindex first?
+            if self._scalr_reindex_operator != 'h,k,l':
+
+                hklout = os.path.join(self.get_working_directory(),
+                                      '%s_reindexed.mtz' % wavelength)
+                FileHandler.record_temporary_file(hklout)
+
+                Debug.write('Reindexing operator = %s' % \
+                            self._scalr_reindex_operator)
+                
+                reindex = self.Reindex()
+                reindex.set_hklin(hklin)
+                reindex.set_spacegroup(self._scalr_likely_spacegroups[0])
+                reindex.set_operator(self._scalr_reindex_operator)
+                reindex.set_hklout(hklout)
+                reindex.reindex()
+                hklin = hklout
             
             truncate = self.Truncate()
             truncate.set_hklin(hklin)
@@ -1090,14 +1002,14 @@ class XDSScaler(Scaler):
             # pass
 
             # and record the reflection file..
-            scaled_reflection_files[wavelength] = hklout
+            self._scaled_ref_files[wavelength] = hklout
             
         # and cad together into a single data set - recalling that we already
         # have a standard unit cell... and remembering where the files go...
 
         self._scalr_scaled_reflection_files = { }
 
-        if len(scaled_reflection_files.keys()) > 1:
+        if len(self._scaled_ref_files.keys()) > 1:
 
             # for each reflection file I need to (1) ensure that the
             # spacegroup is uniformly set and (2) ensure that
@@ -1105,9 +1017,9 @@ class XDSScaler(Scaler):
 
             reflection_files = { }
 
-            for wavelength in scaled_reflection_files.keys():
+            for wavelength in self._scaled_ref_files.keys():
                 cad = self.Cad()
-                cad.add_hklin(scaled_reflection_files[wavelength])
+                cad.add_hklin(self._scaled_ref_files[wavelength])
                 cad.set_hklout(os.path.join(
                     self.get_working_directory(),
                     'cad-tmp-%s.mtz' % wavelength))
@@ -1142,8 +1054,8 @@ class XDSScaler(Scaler):
             # flag adding step! Doh!
             
             self._scalr_scaled_reflection_files[
-                'mtz_merged'] = scaled_reflection_files[
-                scaled_reflection_files.keys()[0]]
+                'mtz_merged'] = self._scaled_ref_files[
+                self._scaled_ref_files.keys()[0]]
 
         # finally add a FreeR column, and record the new merged reflection
         # file with the free column added.
@@ -1186,7 +1098,7 @@ class XDSScaler(Scaler):
 
         # next have a look for radiation damage... if more than one wavelength
 
-        if len(scaled_reflection_files.keys()) > 1:
+        if len(self._scaled_ref_files.keys()) > 1:
             crd = CCP4InterRadiationDamageDetector()
 
             crd.set_working_directory(self.get_working_directory())
