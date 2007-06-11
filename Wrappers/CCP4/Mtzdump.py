@@ -48,6 +48,7 @@ def Mtzdump(DriverType = None):
 
             self._batches = None
             self._reflections = 0
+            self._resolution_range = (0, 0)
 
         def dump(self):
             '''Actually print the contents of the mtz file header.'''
@@ -94,6 +95,11 @@ def Mtzdump(DriverType = None):
                     # then the column types are in two lines time...
                     types = output[i + 2].strip().split()
                     self._header['column_types'] = types
+
+                if 'Resolution Range' in line:
+                    self._resolution_range = tuple(
+                        map(float, output[i + 2].replace('-', ' ').split(
+                        '(')[1].split()[:2]))
 
                 if 'Space group' in line:
                     self._header['spacegroup'] = line.split('\'')[1].strip()
@@ -144,6 +150,9 @@ def Mtzdump(DriverType = None):
                 results.append((self._header['column_labels'][i],
                                 self._header['column_types'][i]))
             return results
+
+        def get_resolution_range(self):
+            return self._resolution_range
                 
         def get_datasets(self):
             '''Return a list of available datasets.'''
@@ -211,5 +220,6 @@ if __name__ == '__main__':
               (info['spacegroup'], info['wavelength'],
                info['cell'][0], info['cell'][1], info['cell'][2],
                info['cell'][1], info['cell'][4], info['cell'][5])
+    print m.get_resolution_range()
 
 
