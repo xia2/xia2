@@ -12,6 +12,7 @@
 
 import sys
 import os
+import shutil
 
 if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
