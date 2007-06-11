@@ -266,6 +266,9 @@ class Scaler:
     def _scale(self):
         raise RuntimeError, 'overload me'
 
+    def _scale_finish(self):
+        pass
+
     def set_working_directory(self, working_directory):
         self._working_directory = working_directory
         return
@@ -294,6 +297,10 @@ class Scaler:
         self._scalr_done = done
         return
 
+    def set_scaler_finish_done(self, done = True):
+        self._scalr_finish_done = done
+        return
+
     def set_scaler_anomalous(self, anomalous):
         self._scalr_anomalous = anomalous
         return
@@ -304,6 +311,7 @@ class Scaler:
     def scaler_reset(self):
         self._scalr_done = False
         self._scalr_prepare_done = False
+        self._scalr_finish_done = False
         self._scalr_result = None
         return
 
@@ -312,6 +320,9 @@ class Scaler:
 
     def get_scaler_done(self):
         return self._scalr_done
+
+    def get_scaler_finish_done(self):
+        return self._scalr_finish_done
 
     def add_scaler_integrater(self, integrater):
         '''Add an integrater to this scaler, to provide the input.'''
@@ -374,27 +385,24 @@ class Scaler:
         # self._scalr_done = False
         # self._scalr_prepare_done = False
 
-        while not self._scalr_done:
-            while not self._scalr_prepare_done:
+        while not self.get_scaler_finish_done():
+            while not self.get_scaler_done():
+                while not self.get_scaler_prepare_done():
 
-                Chatter.write('Preparing to do some scaling...')
+                    Chatter.write('Preparing to do some scaling...')
                  
-                # assert that it will be done correctly
-                self._scalr_prepare_done = True
+                    self._scalr_prepare_done = True
+                    self._scale_prepare()
 
-                # this method may tell us otherwise
-                self._scale_prepare()
-
-            Chatter.write('Doing some scaling...')
+                Chatter.write('Doing some scaling...')
             
-            # assert that the scaling will be done correctly
-            self._scalr_done = True
-
-            # this method may correct us on this matter
-            self._scalr_result = self._scale()
+                self._scalr_done = True
+                self._scalr_result = self._scale()
+            
+            self._scalr_finish_done = True
+            self._scale_finish()
 
         # FIXME this result payload probably shouldn't exist...
-
         return self._scalr_result
 
     def get_scaled_reflections(self, format):
