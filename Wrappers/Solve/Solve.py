@@ -5,7 +5,7 @@
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
 #
-# A wrapper for the phasing program SOLVE (Tom terwilliger)
+# A wrapper for the phasing program SOLVE (Tom Terwilliger)
 #
 # 11th June 207
 # 
@@ -90,14 +90,15 @@ def Solve(DriverType = None):
                                       'wavelength':wavelength,
                                       'fp':fp,
                                       'fpp':fpp})
-            
             return
 
         def run(self):
             if not self._hklin:
                 raise RuntimeError, 'no HKLIN set'
 
-            self.input('logfile aolve.logfile')
+            self.start()
+
+            self.input('logfile solve.logfile')
             self.input('resolution %f %f' % \
                        (self._resolution_low,
                         self._resolution_high))
@@ -131,6 +132,8 @@ def Solve(DriverType = None):
 
             # need to get some interesting stuff out here...
 
+            return
+            
 
     return SolveWrapper()
 

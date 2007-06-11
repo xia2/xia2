@@ -47,6 +47,8 @@ class HAPhaserClass:
 
         self._cell = self._input_dict['cell']
         self._spacegroup = self._input_dict['spacegroup']
+        self._nres = self._input_dict['nres']
+        self._solvent = self._input_dict['solvent']
 
         m2s = Mtz2Scalepack()
         m2s.set_hklin(self._mtz_file)
