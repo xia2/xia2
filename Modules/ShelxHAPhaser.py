@@ -24,7 +24,6 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
-
 from Wrappers.Shelx.Shelxc import Shelxc
 from Wrappers.Shelx.Shelxd import Shelxd
 from Wrappers.Shelx.Shelxe import Shelxe
