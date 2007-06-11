@@ -87,7 +87,8 @@ from Handlers.Syminfo import Syminfo
 from Handlers.Streams import Chatter, Debug
 from Handlers.Flags import Flags
 from Handlers.Files import FileHandler
-from Experts.SymmetryExpert import r_to_rt, symop_to_mat
+from Experts.SymmetryExpert import r_to_rt, rt_to_r,
+from Experts.SymmetryExpert import symop_to_mat, compose_matrices_r
 
 # stuff I have nicked from the CCP4 Scaler implementation
 from CCP4ScalerImplementationHelpers import _resolution_estimate
@@ -840,8 +841,15 @@ class XDSScaler(Scaler):
 
             self._cell = pointless.get_cell()
             self._scalr_cell = pointless.get_cell()
-            self._spacegroup = Syminfo.spacegroup_name_to_number(spacegroups[0])
-            self._reindex_matrix = reindex_matrix
+            self._spacegroup = Syminfo.spacegroup_name_to_number(
+                spacegroups[0])
+
+            if self._reindex_matrix:
+                new_reindex_matrix = compose_matrices_r(
+                    reindex_matrix, self._reindex_matrix)
+                self._reindex_matrix = new_reindex_matrix
+            else:
+                self._reindex_matrix = reindex_matrix
 
             Debug.write('Determined correct REIDX: %s' % \
                         str(self._reindex_matrix))
