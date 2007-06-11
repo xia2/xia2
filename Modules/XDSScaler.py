@@ -87,7 +87,7 @@ from Handlers.Syminfo import Syminfo
 from Handlers.Streams import Chatter, Debug
 from Handlers.Flags import Flags
 from Handlers.Files import FileHandler
-from Experts.SymmetryExpert import r_to_rt, rt_to_r,
+from Experts.SymmetryExpert import r_to_rt, rt_to_r
 from Experts.SymmetryExpert import symop_to_mat, compose_matrices_r
 
 # stuff I have nicked from the CCP4 Scaler implementation
