@@ -96,6 +96,12 @@ def Solve(DriverType = None):
             if not self._hklin:
                 raise RuntimeError, 'no HKLIN set'
 
+            hklin = os.path.join(
+                self.get_working_directory(),
+                os.path.split(self._hklin)[-1])
+
+            shutil.copyfile(self._hklin, hklin)
+
             self.start()
 
             self.input('logfile solve.logfile')
@@ -111,7 +117,7 @@ def Solve(DriverType = None):
                     'labin FPH%d=F_%s SIGFPH%d=SIGF_%s DPH%d=DANO_%s SIGDPH%d=SIGDANO_%s' % \
                     (number, name, number, name, number, name, number, name))
 
-            self.input('hklin %s' % self._hklin)
+            self.input('hklin %s' % os.path.split(hklin)[-1])
             self.input('mad_atom %s' % self._atom)
         
             for j in range(len(self._wavelengths)):
