@@ -163,7 +163,6 @@ class CCP4Scaler(Scaler):
         self._prepared_reflections = None
         self._common_pname = None
         self._common_xname = None
-        self._common_dname = None
 
         self._factory = CCP4Factory()
 
@@ -269,7 +268,6 @@ class CCP4Scaler(Scaler):
 
         self._common_pname = self._sweep_information[epochs[0]]['pname']
         self._common_xname = self._sweep_information[epochs[0]]['xname']
-        self._common_dname = self._sweep_information[epochs[0]]['dname']
 
         # FIXME the checks in here need to be moved to an earlier
         # stage in the processing
@@ -282,9 +280,6 @@ class CCP4Scaler(Scaler):
             if self._common_xname != xname:
                 raise RuntimeError, \
                       'all data for scaling must come from one crystal'
-            dname = self._sweep_information[epoch]['dname']
-            if self._common_dname != dname:
-                self._common_dname = None
 
         # record the project and crystal in the scaler interface - for
         # future reference

@@ -114,7 +114,6 @@ class XDSScaler(Scaler):
         # passed in
         
         self._spacegroup = None
-        self._cell = None
 
         self._reindex_matrix = None
 
@@ -359,7 +358,6 @@ class XDSScaler(Scaler):
 
         self._common_pname = self._sweep_information[epochs[0]]['pname']
         self._common_xname = self._sweep_information[epochs[0]]['xname']
-        self._common_dname = self._sweep_information[epochs[0]]['dname']
         
         for epoch in epochs:
             pname = self._sweep_information[epoch]['pname']
@@ -369,9 +367,6 @@ class XDSScaler(Scaler):
             if self._common_xname != xname:
                 raise RuntimeError, \
                       'all data for scaling must come from one crystal'
-            dname = self._sweep_information[epoch]['dname']
-            if self._common_dname != dname:
-                self._common_dname = None
 
         # record the project and crystal in the scaler interface - for
         # future reference
@@ -661,11 +656,10 @@ class XDSScaler(Scaler):
         # to achieve a standard setting for the reflections (e.g.
         # P 2 21 21 -> P 21 21 2)
 
-        self._cell = cellparm.get_cell()
-        self._scalr_cell = cell
+        self._scalr_cell = cellparm.get_cell()
 
         Debug.write('Determined unit cell: %.2f %.2f %.2f %.2f %.2f %.2f' % \
-                    tuple(self._cell))
+                    tuple(self._scalr_cell))
 
         Debug.write('Resetting reindex matrix (as cell reset)')
         self._reindex_matrix = None
@@ -685,6 +679,16 @@ class XDSScaler(Scaler):
                         
             xscale.set_reindex_matrix(
                 r_to_rt(self._reindex_matrix))
+
+        # FIXME have to make sure that this is recorded
+        # as a number...
+        xscale.set_spacegroup_number(self._spacegroup)
+        xscale.set_cell(self._scalr_cell)
+
+        Debug.write('Set CELL: %.2f %.2f %.2f %.2f %.2f %.2f' % \
+                    tuple(self._scalr_cell))
+        Debug.write('Set SPACEGROUP_NUMBER: %d' % \
+                    self._spacegroup)
 
         for epoch in epochs:
 
@@ -709,11 +713,6 @@ class XDSScaler(Scaler):
         # set the global properties of the sample
         xscale.set_crystal(self._scalr_xname)
         xscale.set_anomalous(self._scalr_anomalous)
-
-        # FIXME have to make sure that this is recorded
-        # as a number...
-        xscale.set_spacegroup_number(self._spacegroup)
-        xscale.set_cell(self._cell)
 
         # do the scaling keeping the reflections unmerged
 
@@ -839,7 +838,6 @@ class XDSScaler(Scaler):
             # spacegroup, right??? - just hacked pointless to give
             # this instead...
 
-            self._cell = pointless.get_cell()
             self._scalr_cell = pointless.get_cell()
             self._spacegroup = Syminfo.spacegroup_name_to_number(
                 spacegroups[0])
@@ -855,7 +853,7 @@ class XDSScaler(Scaler):
                         str(self._reindex_matrix))
             Debug.write('Assigning spacegroup: %s' % self._spacegroup)
             Debug.write('Unit cell: %.2f %.2f %.2f %.2f %.2f %.2f' % \
-                        tuple(self._cell))
+                        tuple(self._scalr_cell))
             
             # now reset 'n' return as everything else will be acted on
             # further up...
@@ -923,7 +921,6 @@ class XDSScaler(Scaler):
                 # as they all had the same input cell and all have the
                 # same reindexing...
                 
-                self._cell = reindex.get_cell()
                 self._scalr_cell = reindex.get_cell()
                 
             else:
