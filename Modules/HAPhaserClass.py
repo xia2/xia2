@@ -48,6 +48,8 @@ class HAPhaserClass:
         self._cell = self._input_dict['cell']
         self._spacegroup = self._input_dict['spacegroup']
         self._nres = self._input_dict['nres']
+        self._n_sites = self._input_dict['n_sites']
+        self._atom = self._input_dict['atom']
         self._solvent = self._input_dict['solvent']
 
         m2s = Mtz2Scalepack()

@@ -47,7 +47,7 @@ class SolveResolvePhaserClass(HAPhaserClass):
         # need to get the resolution range from the mtz file...
 
         mtzdump = Mtzdump()
-        mtzdump.set_hklin(self._hklin)
+        mtzdump.set_hklin(self._mtz_file)
         mtzdump.dump()
         resolution_range = mtzdump.get_resolution_range()
         solve.set_resolution_high(min(resolution_range))
@@ -55,13 +55,13 @@ class SolveResolvePhaserClass(HAPhaserClass):
                 
         # then run
 
-        solve.close_wait()
+        solve.run()
 
         # then run resolve
 
         resolve = Resolve()
         resolve.set_solvent(self._solvent) 
-        resolve.close_wait()
+        resolve.run()
         
         return
 
