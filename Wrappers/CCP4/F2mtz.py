@@ -43,7 +43,7 @@ def F2mtz(DriverType = None):
             self._cell = cell
 
         def set_symmetry(self, symmetry):
-            self._symmetry = symmetry
+            self._symmetry = symmetry.replace(' ', '')
 
         def f2mtz(self):
             self.check_hklin()
