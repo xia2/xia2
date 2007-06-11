@@ -67,8 +67,8 @@ class SolveResolvePhaserClass(HAPhaserClass):
 
         
 if __name__ == '__main__':
-    spc = ShelxPhaserClass()
-    spc.phase()
+    srpc = SolveResolvePhaserClass()
+    srpc.phase()
 
     
         
