@@ -12,6 +12,7 @@
 
 import os
 import sys
+import math
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -64,6 +65,24 @@ def Cellparm(DriverType = None):
             if len(self._cells) < 1:
                 raise RuntimeError, 'no input unit cell parameters'
 
+            # check that the input cells are reasonably uniform -
+            # be really relaxed and allow 5% variation!
+
+            average_cell = self._cells[0]
+            number_cells = 1
+
+            for j in range(1, len(self._cells)):
+                cell = self._cells[j]
+                for k in range(6):
+                    average = average_cell[k] / number_cells
+                    if math.fabs((cell[k] - average) / average) > 0.05:
+                        raise RuntimeError, 'incompatible unit cells'
+
+                # it was ok to remember for later on..
+                for k in range(6):
+                    average_cell[k] += cell[k]
+                number_cells += 1
+            
             cellparm_inp = open(os.path.join(
                 self.get_working_directory(), 'CELLPARM.INP'), 'w')
 
