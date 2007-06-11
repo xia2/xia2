@@ -74,6 +74,14 @@ class Mtz2Scalepack:
 
         for d in datasets:
             pname, xname, dname = tuple(d.split('/'))
+
+            # this will look for I(+) etc columns.
+            # possible problem warning - what happens if
+            # this is given a reflection file
+            # 
+            # (1) without I's only F's?
+            # (2) not separated anomalous pairs???
+            
             m2 = self.Mtz2various()
             m2.set_hklin(self._hklin)
             m2.set_hklout(os.path.join(
