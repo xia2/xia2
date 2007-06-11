@@ -13,7 +13,6 @@
 import os
 import sys
 import math
-import copy
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -69,7 +68,7 @@ def Cellparm(DriverType = None):
             # check that the input cells are reasonably uniform -
             # be really relaxed and allow 5% variation!
 
-            average_cell = copy.deepcopy(self._cells[0])
+            average_cell = [self._cells[0][j] for j in range(6)]
             number_cells = 1
 
             for j in range(1, len(self._cells)):
