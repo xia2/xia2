@@ -88,7 +88,7 @@
 #                 has been pushed by the new improved Labelit which screws 
 #                 up on the beam centre selection...
 # 
-# FIXME 28/NOV/06 need to provide connnections so that the Indexer can 
+# FIXED 28/NOV/06 need to provide connnections so that the Indexer can 
 #                 "discuss" with the scaler what the most suitable lattice
 #                 is, e.g. including the pointgroup determination.
 #                 Implement this through something like
@@ -140,50 +140,39 @@ class _IndexerHelper:
     '''A class to manage autoindexing results in a useful way, to ensure
     that the indexing solutions are properly managed, c/f TS01:1VR9.'''
 
-    # FIXME 28/NOV/06 need to add a method in here to handle the
-    # lattice assertions...
-
     def __init__(self, lattice_cell_dict):
         '''Initialise myself from a dictionary keyed by crystal lattice
         classes (e.g. tP) containing unit cells for these lattices.'''
 
-        # transform them into a list
+        # transform them into a list, then sort the solutions and
+        # store the sorted version
 
-        list = [(k, lattice_cell_dict[k]) for k in lattice_cell_dict.keys()]
-
-        # sort them on the symmetry, highest first
-
-        self._sorted_list = SortLattices(list)
+        lattices = [(k, lattice_cell_dict[k])
+                    for k in lattice_cell_dict.keys()]
+        
+        self._sorted_list = SortLattices(lattices)
 
         return
 
     def get(self):
         '''Get the highest currently allowed lattice.'''
-
         return self._sorted_list[0]
 
     def get_all(self):
         '''Return a list of all allowed lattices, as [(lattice, cell)].'''
-
         return self._sorted_list
 
     def repr(self):
         '''Return a string representation.'''
 
-        result = []
-
-        for l in self._sorted_list:
-            result.append('%s %s' % (l[0],
-                                     '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-                                     l[1]))
-
-        return result
+        return ['%s %s' % (l[0], '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % l[1])
+                for l in self._sorted_list]
 
     def eliminate(self):
         '''Eliminate the highest currently allowed lattice.'''
 
         if len(self._sorted_list) <= 1:
-            raise RuntimeError, 'not enough lattices'
+            raise RuntimeError, 'cannot eliminate only solution'
 
         Science.write('Eliminating indexing solution %s' % self.repr()[0])
 
@@ -199,7 +188,7 @@ class Indexer:
 
     def __init__(self):
 
-        # (optional) input gubbinzes
+        # (optional) input parameters
         self._indxr_images = []
         self._indxr_input_lattice = None
         self._indxr_input_cell = None
@@ -208,20 +197,23 @@ class Indexer:
         self._indxr_done = False
         self._indxr_prepare_done = False
         self._indxr_finish_done = False
-        
-        # output items
+
+        # the helper to manage the solutions table
+        self._indxr_helper = None
+
+        # output items - best solution
         self._indxr_lattice = None
         self._indxr_cell = None
 
-        # other possible indexing solutions - see 23/OCT/06 FIXME
-        # has keys for each entry of cell, goodness for goodness of fit.
+        # a place to store other plausible solutions - used
+        # for populating the helper in the main index() method
         self._indxr_other_lattice_cell = { }
 
-        self._indxr_helper = None
-
+        # refined experimental parameters
         self._indxr_mosaic = None
         self._indxr_refined_beam = None
         self._indxr_refined_distance = None
+        self._indxr_resolution_estimate = 0.0
 
         # error information
         self._indxr_error = None
@@ -230,36 +222,37 @@ class Indexer:
         # can store things in
         self._indxr_payload = { }
 
-        # an idea of the resolution of the data
-        self._indxr_resolution_estimate = 0.0
-
         return
 
-    def _index(self):
-        raise RuntimeError, 'overload me'
+    # ----------------------------------------------------------------
+    # These are functions which will want to be overloaded for the
+    # actual implementation - preparation may do things like gathering
+    # spots on the images, index to perform the actual autoindexing
+    # and then finish to do any finishing up you want... see the
+    # method index() below for how these are used
+    # ----------------------------------------------------------------
 
     def _index_prepare(self):
+        '''Prepare to index, e.g. finding spots on the images.'''
+        raise RuntimeError, 'overload me'
+
+    def _index(self):
+        '''Actually perform the autoindexing calculations.'''
         raise RuntimeError, 'overload me'
 
     def _index_finish(self):
-        # raise RuntimeError, 'overload me'
+        '''This may be a no-op if you have no use for it...'''
         pass
 
-    def _index_select_images(self):
-        '''This is something the implementation needs to implement.
-        For instance, Labelit & Mosflm work well with 2 frames 90
-        degrees separated, d*TREK & XDS with a couple of wedges.'''
-
-        raise RuntimeError, 'overload me'
-
-    # these need to cascade, as if the preparation is set as not
-    # done the indexing clearly is not done, etc.
+    # setters and getters of the status of the tasks - note that
+    # these will cascade, so setting an early task not done will
+    # set later tasks not done.
 
     def set_indexer_prepare_done(self, done = True):
         self._indxr_prepare_done = done
 
         if not done:
-            self.set_indexer_done(done)
+            self.set_indexer_done(False)
 
         return
         
@@ -267,7 +260,7 @@ class Indexer:
         self._indxr_done = done
 
         if not done:
-            self.set_indexer_finish_done(done)
+            self.set_indexer_finish_done(False)
 
         return
 
@@ -284,43 +277,43 @@ class Indexer:
     def get_indexer_finish_done(self):
         return self._indxr_finish_done
 
+    # ----------------------------------------------------------
+    # "real" methods which actually do something interesting -
+    # eliminate() will remove a solution from the indexing table
+    # and reset the done, such that the next get() will return
+    # the next solution down.
+    # ----------------------------------------------------------
+
     def eliminate(self):
         '''Eliminate the current solution for autoindexing.'''
 
         if not self._indxr_helper:
             raise RuntimeError, 'no indexing done yet'
 
-        # remove the top indexing solution and reset the "done" flag - this
-        # will mean that the next "get" will cause the indexing to be rerun.
-
         self._indxr_helper.eliminate()
         self.set_indexer_done(False)
-        # self._indxr_done = False
 
         return
 
     def index(self):
 
-        # FIXME this should be moved to _index_prepare - and also the
-        # flags for self._indxr_done, self._indxr_prepare_done
-        # should be used, and this should be while loop-ified...
-
         while not self.get_indexer_finish_done():
             while not self.get_indexer_done():
                 while not self.get_indexer_prepare_done():
+
+                    # --------------
+                    # call prepare()
+                    # --------------
+
                     self.set_indexer_prepare_done(True)
                     self._index_prepare()
-                
-                # if there is already a list of "known" spacegroups, select the
-                # highest and try to index with this...
 
-                # FIXME this needs to check the indexer helper...
-                # if the index helper does not exist, then it should be created
-                # and populated here, perhaps? then the highest solution picked
-                # and if different to the selected one then this should be
-                # reimposed and rerun.
-                
-                # self._indxr_done = True
+                # --------------------------------------------
+                # then do the proper indexing - using the best
+                # solution already stored if available (c/f
+                # eliminate above)
+                # --------------------------------------------
+
                 self.set_indexer_done(True)
 
                 if not self._indxr_helper:
@@ -337,21 +330,20 @@ class Indexer:
                         solutions[k] = self._indxr_other_lattice_cell[k][
                             'cell']
 
+                    # create a helper for the indexer to manage solutions
                     self._indxr_helper = _IndexerHelper(solutions)
 
                     solution = self._indxr_helper.get()
         
                     # compare these against the final solution, if different
-                    # rerun indexing - no longer need to do this explicitly
-                    # since I can just set the indxr_done flag to False...
-                    
-                    # 07/FEB/06 only do this if there was no target cell
+                    # reject solution and return - correct solution will
+                    # be used next cycle
 
                     if self._indxr_lattice != solution[0] and \
                            not self._indxr_input_cell:
                         Science.write(
-                            'Rerunning indexing with target lattice %s' \
-                            % solution[0])
+                            'Rerunning indexing with target lattice %s' % \
+                            solution[0])
                         self.set_indexer_done(False)
 
                 else:
@@ -362,11 +354,16 @@ class Indexer:
                     self._indxr_input_cell = solution[1]
                     result = self._index()
             
+            # next finish up...
+
+            self.set_indexer_finish_done(True)
+            self._index_finish()
+        
             Science.write('All possible indexing solutions:')
             for l in self._indxr_helper.repr():
                 Science.write(l)
-
-            # FIXME 23/OCT/06 at this stage I need to look at the list of
+                
+            # FIXED 23/OCT/06 at this stage I need to look at the list of
             # reasonable solutions and try to figure out if the indexing
             # program has picked the highest - if not, then constrain the
             # unit cell (need to implement this somewhere, sure it's
@@ -378,22 +375,16 @@ class Indexer:
             # lower symmetry solution and continue. This solution is a
             # general one, so may be implemented in the general indexer
             # interface rather than in specific code...
-
-            # write about this
-
+            
             Science.write('Indexing solution:')
             Science.write('%s %s' % (self._indxr_lattice,
                                      '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
                                      self._indxr_cell))
-
-            # do the finishing???
-
-            self.set_indexer_finish_done(True)
-            self._index_finish()
         
-        return result
+        return 
 
-    # setter methods for the input
+    # setter methods for the input - most of these will reset the
+    # indexer in one way or another
 
     def add_indexer_image_wedge(self, image):
         '''Add some images for autoindexing (optional) input is a 2-tuple
@@ -404,10 +395,7 @@ class Indexer:
         if type(image) == type(1):
             self._indxr_images.append((image, image))
 
-        # reset the indexer - we need to rerun to get updated
-        # results
-        self.set_indexer_done(False)
-        # self._indxr_done = False
+        self.set_indexer_prepare_done(False)
         
         return
 
@@ -417,11 +405,7 @@ class Indexer:
         format for the lattice. This will be say tP.'''
 
         self._indxr_input_lattice = lattice
-
-        # reset the indexer - we need to rerun to get updated
-        # results
         self.set_indexer_done(False)
-        # self._indxr_done = False
 
         return
 
@@ -435,89 +419,66 @@ class Indexer:
             raise RuntimeError, 'cell must be a 6-tuple of floats'
 
         self._indxr_input_cell = tuple(map(float, cell))
-
-        # reset the indexer - we need to rerun to get updated
-        # results
         self.set_indexer_done(False)
-        # self._indxr_done = False
 
         return
 
-    # getter methods for the output
+    # getter methods for the output - all of these will call index()
+    # which will guarantee that the results are up to date (recall
+    # while structure above)
+    
     def get_indexer_cell(self):
         '''Get the selected unit cell.'''
 
-        # if not already run, run
-        if not self._indxr_done:
-            self.index()
-
+        self.index()
         return self._indxr_cell
 
     def get_indexer_lattice(self):
         '''Get the selected lattice as tP form.'''
 
-        # if not already run, run
-        if not self._indxr_done:
-            self.index()
-
+        self.index()
         return self._indxr_lattice
 
     def get_indexer_mosaic(self):
         '''Get the estimated mosaic spread in degrees.'''
 
-        # if not already run, run
-        if not self._indxr_done:
-            self.index()
-
+        self.index()
         return self._indxr_mosaic
 
     def get_indexer_distance(self):
         '''Get the refined distance.'''
 
-        # if not already run, run
-        if not self._indxr_done:
-            self.index()
-
+        self.index()
         return self._indxr_refined_distance
 
     def set_indexer_beam(self, beam):
         '''Set the beam centre.'''
 
         self._indxr_refined_beam = beam
-        
+        return
 
     def get_indexer_beam(self):
         '''Get the refined beam.'''
 
-        # if not already run, run
-        if not self._indxr_done:
-            self.index()
-
+        self.index()
         return self._indxr_refined_beam
 
     def get_indexer_payload(self, this):
         '''Attempt to get something from the indexer payload.'''
 
-        # if not already run, run
-        if not self._indxr_done:
-            self.index()
-
+        self.index()
         return self._indxr_payload.get(this, None)
 
     def get_indexer_resolution(self):
         '''Get an estimate of the diffracting resolution.'''
 
-        # if not already run, run
-        if not self._indxr_done:
-            self.index()
-
+        self.index()
         return self._indxr_resolution_estimate       
 
     def set_indexer_payload(self, this, value):
         '''Set something in the payload.'''
         
         self._indxr_payload[this] = value
-        
         return
 
     # new method to handle interaction with the pointgroup determination
@@ -536,12 +497,7 @@ class Indexer:
 
         all_lattices = self._indxr_helper.get_all()
 
-        lattices = []
-
-        for l in all_lattices:
-            lattices.append(l[0])
-
-        if not asserted_lattice in lattices:
+        if not asserted_lattice in [l[0] for l in all_lattices]:
             return 'impossible'
 
         # check if this is the top one - if so we don't need to
@@ -555,12 +511,8 @@ class Indexer:
 
         while self._indxr_helper.get()[0] != asserted_lattice:
             self._indxr_helper.eliminate()
-            # self.eliminate()
             self.set_indexer_done(False)
-            # self._indxr_done = False
-
-        # ok by now everything should be ready for the recycling...
 
         return 'possible'
 
-    # end of interface
+    
