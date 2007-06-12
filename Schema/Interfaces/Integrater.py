@@ -130,7 +130,7 @@ from Schema.Exceptions.BadLatticeError import BadLatticeError
 from Schema.Exceptions.IntegrationError import IntegrationError
 
 # image header reading functionality
-from Wrappers.XIA.Printheader import Printheader
+from Wrappers.XIA.Diffdump import Diffdump
 
 # symmetry operator management functionality
 from Experts.SymmetryExpert import compose_matrices_r, compose_symops
@@ -380,9 +380,9 @@ class Integrater:
         # NULL, in which case too bad!
 
         first_image_in_wedge = self.get_image_name(start)
-        ph = Printheader()
-        ph.set_image(first_image_in_wedge)
-        header = ph.readheader()
+        dd = Diffdump()
+        dd.set_image(first_image_in_wedge)
+        header = dd.readheader()
 
         # only update the epoch if we (1) have a new value
         # and (2) do not have a user supplied value...
