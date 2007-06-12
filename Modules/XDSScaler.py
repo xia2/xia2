@@ -963,6 +963,13 @@ class XDSScaler(Scaler):
                 reindex.set_hklout(hklout)
                 reindex.reindex()
                 hklin = hklout
+
+                # record the updated cell parameters...
+                # they should be the same in all files so...
+                Debug.write(
+                    'Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f' % \
+                    tuple(reindex.get_cell()))
+                self._scalr_cell = tuple(reindex.get_cell())
             
             truncate = self.Truncate()
             truncate.set_hklin(hklin)
