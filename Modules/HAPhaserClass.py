@@ -10,6 +10,7 @@
 
 import os
 import sys
+import imp
 
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
@@ -25,7 +26,9 @@ class HAPhaserClass:
 
     def __init__(self):
 
-        hap_input = __import__('hap_input')
+        f, path, desc = imp.find_module('hap_input', [os.getcwd()])
+        hap_input = imp.load_module('hap_input', f, path, desc)
+        f.close()
 
         # next get the stuff we want from it
 
