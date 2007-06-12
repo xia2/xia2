@@ -209,6 +209,72 @@ class CCP4Scaler(Scaler):
     def Sfcheck(self):
         return self._factory.Sfcheck()
 
+    def _pointless_indexer_jiffy(self, hklin, indexer):
+        '''A jiffy to centralise the interactions between pointless
+        (in the blue corner) and the Indexer, in the red corner.'''
+
+        need_to_return = False
+
+        pointless = self.Pointless()
+        pointless.set_hklin(hklin)
+        pointless.decide_pointgroup()
+        
+        if indexer:
+            rerun_pointless = False
+
+            possible = pointless.get_possible_lattices()
+
+            correct_lattice = None
+
+            Chatter.write('Possible lattices (pointless):')
+            lattices = ''
+            for lattice in possible:
+                lattices += '%s ' % lattice
+            Chatter.write(lattices)
+
+            for lattice in possible:
+                state = indexer.set_indexer_asserted_lattice(lattice)
+                if state == 'correct':
+                            
+                    Chatter.write(
+                        'Agreed lattice %s' % lattice)
+                    correct_lattice = lattice
+                    
+                    break
+                
+                elif state == 'impossible':
+                    Chatter.write(
+                        'Rejected lattice %s' % lattice)
+                    
+                    rerun_pointless = True
+                    
+                    continue
+                
+                elif state == 'possible':
+                    Chatter.write(
+                        'Accepted lattice %s ...' % lattice)
+                    Chatter.write(
+                        '... will reprocess accordingly')
+                    
+                    need_to_return = True
+                    
+                    correct_lattice = lattice
+                    
+                    break
+                    
+            if rerun_pointless:
+                pointless.set_correct_lattice(correct_lattice)
+                pointless.decide_pointgroup()
+
+        Chatter.write('Pointless analysis of %s' % pointless.get_hklin())
+
+        pointgroup = pointless.get_pointgroup()
+        reindex_op = pointless.get_reindex_operator()
+        
+        Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+
+        return pointgroup, reindex_op, need_to_return
+
     def _scale_prepare(self):
         '''Perform all of the preparation required to deliver the scaled
         data. This should sort together the reflection files, ensure that
@@ -286,6 +352,78 @@ class CCP4Scaler(Scaler):
 
         self._scalr_pname = self._common_pname
         self._scalr_xname = self._common_xname
+
+        # ------------------------------------------------------------
+        # FIXME ensure that the lattices are all the same - and if not
+        # eliminate() them down until they are...
+        # ------------------------------------------------------------
+
+        need_to_return = False
+
+        if len(self._sweep_information.keys()) > 1:
+
+            lattices = []
+
+            for epoch in self._sweep_information.keys():
+
+                intgr = self._sweep_information[epoch]['integrater']
+                hklin = intgr.get_integrater_reflections()
+                indxr = intgr.get_integrater_indexer()
+
+                pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
+                    hklin, indxr)
+
+                lattice = Syminfo.get_lattice(pointgroup)
+
+                if not lattice in lattices:
+                    lattices.append(lattice)
+
+                if ntr:
+                    need_to_return = True
+            
+            # bug # 2433 - need to ensure that all of the lattice
+            # conclusions were the same...
+            
+            if len(lattices) > 1:
+                ordered_lattices = []
+                for l in lattices_in_order():
+                    if l in lattices:
+                        ordered_lattices.append(l)
+
+                correct_lattice = ordered_lattices[0]
+                Chatter.write('Correct lattice asserted to be %s' % \
+                              correct_lattice)
+
+                # transfer this information back to the indexers
+                for epoch in self._sweep_information.keys():
+                    integrater = self._sweep_information[
+                        epoch]['integrater']
+                    indexer = integrater.get_integrater_indexer()
+                    sname = integrater.get_integrater_sweep_name()
+
+                    if not indexer:
+                        continue
+                    
+                    state = indexer.set_indexer_asserted_lattice(
+                        correct_lattice)
+                    if state == 'correct':
+                        Chatter.write('Lattice %s ok for sweep %s' % \
+                                      (correct_lattice, sname))
+                    elif state == 'impossible':
+                        raise RuntimeError, 'Lattice %s impossible for %s' \
+                              (correct_lattice, sname)
+                    elif state == 'possible':
+                        Chatter.write('Lattice %s assigned for sweep %s' % \
+                                      (correct_lattice, sname))
+                        need_to_return = True
+
+        # if one or more of them was not in the lowest lattice,
+        # need to return here to allow reprocessing
+
+        if need_to_return:
+            self.set_scaler_done(False)
+            self.set_scaler_prepare_done(False)
+            return
 
         # FIXME 06/NOV/06 and before, need to merge the first reflection
         # file in the "correct" pointgroup, so that the others can be
