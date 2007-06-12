@@ -150,17 +150,18 @@ class Integrater:
         self._intgr_reso_high = 0.0
         self._intgr_reso_low = 0.0
 
+        # anomalous separation may be important for e.g. CORRECT.
+        self._intgr_anomalous = None
+
         # required parameters 
         self._intgr_wedge = None
-
-        # logging parameters
-        self._intgr_sweep_name = None
 
         # implementation dependent parameters - these should be keyed by
         # say 'mosflm':{'yscale':0.9999} etc.
         self._intgr_program_parameters = { }
 
         # the same, but for export to other instances of this interface
+        # via the .xinfo hierarchy
         self._intgr_export_program_parameters = { }
 
         # batches to integrate, batches which were integrated - this is
@@ -169,70 +170,47 @@ class Integrater:
         # or just record the images which were integrated...
         self._intgr_batches_out = [0, 0]
 
+        # flags which control how the execution is performed
+        # in the main integrate() method below.
         self._intgr_done = False
         self._intgr_prepare_done = False
         self._intgr_finish_done = False
 
+        # the output reflections
         self._intgr_hklout = None
 
         # a place to store the project, crystal, wavelength, sweep information
         # to interface with the scaling...
+        self._intgr_epoch = 0
         self._intgr_pname = None
         self._intgr_xname = None
         self._intgr_dname = None
-        self._intgr_epoch = 0
+        self._intgr_sweep = None
+        self._intgr_sweep_name = None
 
-        # places to store refined values of the cell parameters etc - this
-        # is more for returning that for use, as it is assumed that the
-        # implementation will handle that... also add the total number of
-        # reflections...
-
+        # results - refined cell and number of reflections
         self._intgr_cell = None
         self._intgr_n_ref = None
 
-        # FIXME adding this link may remove the need for many other
-        # explicit pieces of information as they can be directly
-        # linked to...
-        self._intgr_sweep = None
-
-        # Towards FIXME for 18/MAY/07 - need to also be able to store
-        # reindexing matrix or operator, which will be provided by the
-        # scaling stage (perhaps) and should be applied to the reflections
-        # returned by the integrater. Should also be able to assign the
-        # spacegroup in this circumstance (e.g. 75 for P4, ignoring screw
-        # axes) as this will affect the indexing. This would also help
-        # Mosflm as the Rsym values from the integration wouuld be more
-        # meaningful if the pointgroup, not just the lattice, is corect.
-        # Note that this is mostly to allow the inclusion of the XDS CORRECT
-        # stage in the integrater...
-
-        # all of these will be the result of feedback from a later
-        # scaling step... the anomalous flag is needed to allow CORRECT
-        # to separate, or not, the anomalous pairs.
-        
+        # reindexing operations etc. these will come from feedback
+        # from the scaling to ensure that the setting is uniform
         self._intgr_spacegroup_number = 0
         self._intgr_reindex_operator = None
         self._intgr_reindex_matrix = None
-        self._intgr_anomalous = None
                 
         return
 
-    def _intgr_check_reindex_uniform(self):
-        if not self._intgr_reindex_operator and not self._intgr_reindex_matrix:
-            return
-
-        if self._intgr_reindex_operator and not self._intgr_reindex_matrix:
-            raise RuntimeError, 'non uniform reindex instructions'
-
-        if not self._intgr_reindex_operator and self._intgr_reindex_matrix:
-            raise RuntimeError, 'non uniform reindex instructions'
-
-        matrix = symop_to_mat(self._intgr_reindex_operator)
-
-        if matrix != self._intgr_reindex_matrix:
-            raise RuntimeError, 'non uniform reindex instructions'
-
-        return
+    # ------------------------------------------------------------------
+    # These methods need to be overloaded by the actual implementation - 
+    # they are all called from within the main integrate() method. The
+    # roles of each of these could be as follows -
+    #
+    # prepare - prerefine the unit cell
+    # integrate - measure the intensities of all reflections
+    # finish - reindex these to the correct setting
+    #
+    # though this is just one interpretation...
+    # ------------------------------------------------------------------
 
     def _integrate_prepare(self):
         raise RuntimeError, 'overload me'
@@ -243,10 +221,9 @@ class Integrater:
     def _integrate_finish(self):
         raise RuntimeError, 'overload me'
 
-    def _integrater_reset_callback(self):
-        '''Overload this if you have other things which need to be reset.'''
-        pass
-    
+    # ------------------------------------
+    # end methods which MUST be overloaded
+    # ------------------------------------
 
     def _integrater_reset(self):
         '''Reset the integrater, e.g. if the autoindexing solution
@@ -263,37 +240,56 @@ class Integrater:
         self._intgr_reso_high = 0.0
         self._intgr_reso_low = 0.0
         self._intgr_hklout = None
-
         self._intgr_program_parameters = { }
 
-        # also call back to a user defined function
         self._integrater_reset_callback()
+        return
     
     def set_integrater_sweep(self, sweep):
         self._intgr_sweep = sweep
+        self._integrater_reset()
         return
 
     def get_integrater_sweep(self):
         return self._intgr_sweep
 
-    def set_integrater_sweep_name(self, sweep_name):
-        self._intgr_sweep_name = sweep_name
-        return
-
-    def get_integrater_sweep_name(self):
-        return self._intgr_sweep_name
+    # setters and getters for the "done"-ness of different operations
+    # note that this cascades
 
     def set_integrater_prepare_done(self, done = True):
         self._intgr_prepare_done = done
+        if not done:
+            self.set_integrater_done(False)
         return
         
     def set_integrater_done(self, done = True):
         self._intgr_done = done
+        if not done:
+            self.set_integrater_finish_done(False)
         return
 
     def set_integrater_finish_done(self, done = True):
         self._intgr_finish_done = done
         return
+
+    def get_integrater_prepare_done(self):
+        if not self.get_integrater_indexer():
+            return self._intgr_prepare_done
+        
+        if not self.get_integrater_indexer().get_indexer_done() \
+               and self._intgr_prepare_done:
+            Chatter.write('Resetting integrater as indexer updated.')
+            self._integrater_reset()
+            
+        return self._intgr_prepare_done
+
+    def get_integrater_done(self):
+        return self._intgr_done
+
+    def get_integrater_finish_done(self):
+        return self._intgr_finish_done
+
+    # end job control stuff - next getters for results
 
     def get_integrater_cell(self):
         '''Get the (post) refined unit cell.'''
@@ -307,37 +303,14 @@ class Integrater:
         self.integrate()
         return self._intgr_n_ref
 
-    def get_integrater_prepare_done(self):
+    # getters and setters of administrative information
 
-        # if the indexer is not up-to-date then this can't possibly
-        # be - feedback from scaling, this implements - likewise
-        # below in next method.
+    def set_integrater_sweep_name(self, sweep_name):
+        self._intgr_sweep_name = sweep_name
+        return
 
-        if not self.get_integrater_indexer():
-            return self._intgr_prepare_done
-        
-        if not self.get_integrater_indexer().get_indexer_done() \
-               and self._intgr_prepare_done:
-            Chatter.write('Resetting integrater as indexer updated.')
-            self._integrater_reset()
-            
-        return self._intgr_prepare_done
-
-    def get_integrater_done(self):
-        # should also check if prepare is up-to-date here...
-        # the indexer check will be performed via cascade...
-        if not self.get_integrater_prepare_done():
-            self._intgr_done = False
-
-        return self._intgr_done
-
-    def get_integrater_finish_done(self):
-        # check integrater done
-
-        if not self.get_integrater_done():
-            self._intgr_finish_done = False
-
-        return self._intgr_finish_done
+    def get_integrater_sweep_name(self):
+        return self._intgr_sweep_name
 
     def set_integrater_project_info(self,
                                     project_name,
@@ -347,11 +320,6 @@ class Integrater:
         both into the reflection files (if possible) or to the scaling stages
         for dataset administration.'''
 
-        # for mosflm, pname & dname can be used as part of the harvesting
-        # interface, and should therefore end up in the mtz file?
-        # add this as harvest pname [pname] dname [dname] and three separate
-        # keywords...
-        
         self._intgr_pname = project_name
         self._intgr_xname = crystal_name
         self._intgr_dname = dataset_name
@@ -373,19 +341,13 @@ class Integrater:
         
         self._intgr_wedge = (start, end)
 
-        # FIXME update the epoch of the start of data collection
-        # in here...
-        # this will involve - get full file name from start, get header
-        # from full file name, parse & pull out start date. this may be
-        # NULL, in which case too bad!
+        # get the epoch for the sweep if not already defined
 
         first_image_in_wedge = self.get_image_name(start)
         dd = Diffdump()
         dd.set_image(first_image_in_wedge)
         header = dd.readheader()
 
-        # only update the epoch if we (1) have a new value
-        # and (2) do not have a user supplied value...
         if header['epoch'] > 0 and self._intgr_epoch == 0:
             self._intgr_epoch = int(header['epoch'])
 
@@ -425,6 +387,9 @@ class Integrater:
         self.set_integrater_done(False)
         return
 
+    # getters and setters for program specific parameters
+    # => values kept in dictionary
+
     def set_integrater_parameter(self, program, parameter, value):
         '''Set an arbitrary parameter for the program specified to
         use in integration, e.g. the YSCALE or GAIN values in Mosflm.'''
@@ -455,7 +420,6 @@ class Integrater:
         '''Set all parameters and values.'''
 
         self._intgr_program_parameters = parameters
-
         self.set_integrater_done(False)
 
         return
@@ -489,23 +453,16 @@ class Integrater:
     def set_integrater_indexer(self, indexer):
         '''Set the indexer implementation to use for this integration.'''
 
-        # check that this indexer implements the Indexer interface
         if not inherits_from(indexer.__class__, 'Indexer'):
             raise RuntimeError, 'input %s is not an Indexer implementation' % \
                   indexer.__name__
 
         self._intgr_indexer = indexer
-
         self.set_integrater_prepare_done(False)
-        self.set_integrater_done(False)
         return
 
     def integrate(self):
         '''Actually perform integration until we think we are done...'''
-
-        # FIXED 20/OCT/06 need to be sure that this will work correctly...
-        # FIXED could the repeated integration needed in Mosflm be entirely
-        # handled from here??? Apparently yes!
 
         while not self.get_integrater_finish_done():
             while not self.get_integrater_done():
@@ -521,12 +478,8 @@ class Integrater:
                     # reset the indexing system
 
                     try:
-                        self._intgr_check_reindex_uniform()
                         self._integrate_prepare()
 
-                        # Should be all specific errors which indicate
-                        # a known problem
-                
                     except BadLatticeError, e:
                         Chatter.write('BadLattice! %s' % str(e))
                         self._intgr_indexer.eliminate()
@@ -538,28 +491,13 @@ class Integrater:
                         self.set_integrater_prepare_done(False)
                     
 
-                # FIXED 01/NOV/06 what happens if the integration decides
-                # that the lattice is wrong - this would mean that the indexing
-                # would be reperformed, which would in turn mean that the
-                # preparation may need to be repeated...
-
-                # aha - move the preparation "loop" inside integration loop,
-                # so this can be implemented (this case could then reset the
-                # intgr_prepare_done flag to False. DONE!
-
-                # assert: this needs to behave exactly as it did before.
-
                 Chatter.write('Doing some integration...')
             
-                # assert that it is indeed done
+
                 self.set_integrater_done(True)
-            
-                # but it may not be - if the integrate itself decides something
-                # needs redoing
 
                 try:
 
-                    self._intgr_check_reindex_uniform()
                     self._intgr_hklout = self._integrate()
 
                 except BadLatticeError, e:
@@ -568,43 +506,24 @@ class Integrater:
                     self.set_integrater_prepare_done(False)
                     self.set_integrater_done(False)
 
-            # next the finish step - this may perform the reindexing (e.g.
-            # with CCP4/Mosflm) or CORRECT in XDS.
-
             self.set_integrater_finish_done(True)
-            self._intgr_check_reindex_uniform()
             self._integrate_finish()
 
-        # ok, we are indeed "done"...
-            
         return self._intgr_hklout
     
     def get_integrater_indexer(self):
         return self._intgr_indexer
 
     def get_integrater_reflections(self):
-        # in here check if integration has already been performed, if
-        # it has and everything is happy, just return the reflections,
-        # else repeat the calculations.
-
-        # if not self._intgr_done:
-
         self.integrate()
-
         return self._intgr_hklout
             
     def get_integrater_batches(self):
-        # if not self._intgr_done:
-
-        self.integrate()
-        
+        self.integrate()        
         return self._intgr_batches_out
 
-    # additional methods needed from FIXME of 18/MAY/07...
-    # these are to do with inclusion of XDS, and therefore
-    # more detailed feedback from scaling to CORRECT.
-    # this information may be ignored by e.g. Mosflm which does
-    # not care...
+    # Should anomalous pairs be treated separately? Implementations
+    # of Integrater are free to ignore this.
 
     def set_integrater_anomalous(self, anomalous):
         self._intgr_anomalous = anomalous
@@ -617,54 +536,56 @@ class Integrater:
     # the Mosflm implementation of integrater
 
     def set_integrater_spacegroup_number(self, spacegroup_number):
-
-        # check that this is compatible with the indexer's current
-        # lattice, and if not raise an exception - or indeed should
-        # this handle the eliminate guff?
-
-        # this should also include a list of allowed spacegroup
-        # numbers as they should, at best, define a point group.
+        # FIXME check that this is appropriate with what the
+        # indexer things is currently correct. Also - should this
+        # really just refer to a point group??
 
         Debug.write('Set spacegroup as %d' % spacegroup_number)
 
-        # FIXME need to check against the indexer that this is
-        # appropriate...
-
-        self.set_integrater_finish_done(False)        
         self._intgr_spacegroup_number = spacegroup_number
+        self.set_integrater_finish_done(False)        
+
         return
 
     def get_integrater_spacegroup_number(self):
         return self._intgr_spacegroup_number
         
-    def _set_integrater_reindex_operator_callback(self):
-        pass
-
     def set_integrater_reindex_operator(self, reindex_operator):
         '''Assign a symmetry operator to the reflections - note
         that this is cumulative...'''
 
         reindex_operator = reindex_operator.lower().strip()
 
-        if reindex_operator != 'h,k,l':
-            self.set_integrater_finish_done(False)
+        # see if we really need to do anything
+        if reindex_operator == 'h,k,l' and \
+           self._intgr_reindex_operator is None:
+            return
+
+        if reindex_operator == 'h,k,l' and \
+           self._intgr_reindex_operator == 'h,k,l':
+            return
+
+        # ok we need to do something - either just record the new
+        # operation or compose it with the existing operation
+
+        self.set_integrater_finish_done(False)
 
         if self._intgr_reindex_operator is None:
             self._intgr_reindex_operator = reindex_operator
-        else:
             
-            # need to compose the two operations...
-
-            old = self._intgr_reindex_operator
-            new = compose_symops(reindex_operator, old)
+        else:            
+            old_operator = self._intgr_reindex_operator
+            self._intgr_reindex_operator = compose_symops(
+                reindex_operator, old_operator)
+            
             Debug.write('Composing %s and %s -> %s' % \
-                        (old, reindex_operator, new))
-            self._intgr_reindex_operator = new
+                        (old_operator, reindex_operator,
+                         self._intgr_reindex_operator))
 
+        # convert this to a 3x3 matrix form for e.g. XDS CORRECT
         self._intgr_reindex_matrix = symop_to_mat(
             self._intgr_reindex_operator)
 
-        # allow a callback in case something wants to update itself...
         self._set_integrater_reindex_operator_callback()
 
         return
@@ -675,4 +596,16 @@ class Integrater:
     def get_integrater_reindex_matrix(self):
         return self._intgr_reindex_matrix
         
-    # end additional methods 18/MAY/07
+    # ------------------------------------------------
+    # callback methods - overloading these is optional
+    # ------------------------------------------------
+    
+    def _integrater_reset_callback(self):
+        '''Overload this if you have other things which need to be reset.'''
+        pass
+    
+    def _set_integrater_reindex_operator_callback(self):
+        pass
+
+
+
