@@ -524,9 +524,10 @@ def Scala(DriverType = None):
                 
                 status = self.get_ccp4_status()                
 
+                Debug.write('Scala status: %s' % status)
+
                 if 'Error' in status:
-                    raise RuntimeError, 'Scala error: %s' % \
-                          status.replace('*', '').strip()
+                    raise RuntimeError, 'Scala error: %s' % status
 
             except RuntimeError, e:
                 try:
@@ -637,6 +638,13 @@ def Scala(DriverType = None):
                 self.check_for_errors()
                 self.check_ccp4_errors()
                 self.check_scala_errors()
+
+                status = self.get_ccp4_status()                
+
+                Debug.write('Scala status: %s' % status)
+
+                if 'Error' in status:
+                    raise RuntimeError, 'Scala error: %s' % status
 
             except RuntimeError, e:
                 try:
