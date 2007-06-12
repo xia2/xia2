@@ -122,6 +122,15 @@ def Solve(DriverType = None):
             self.input('mad_atom %s' % self._atom)
         
             for j in range(len(self._wavelengths)):
+
+                if j == 0 and self._sites:
+                    # write the sites in too...
+                    sites = self._sites['sites']
+                    self.input('atomname %s' % sites[0]['atom'])
+                    for site in sites:
+                        self._input('xyz %s %s %s' % \
+                                    site['fractional'])
+                
                 number = j + 1
                 self.input('lambda %d' % number)
                 self.input('wavelength %f' % \
@@ -132,9 +141,14 @@ def Solve(DriverType = None):
             self.input('nres %d' % self._nres)
             self.input('nanomalous %d' % self._n_sites)
 
+            if self._sites:
+                self.input('analyze_solve')
+                
             self.input('scale_mad')
             self.input('analyze_mad')
+
             self.input('solve')
+
             self.close_wait()
 
             # need to get some interesting stuff out here...
