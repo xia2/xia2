@@ -56,18 +56,17 @@ class HAPhaserClass:
             # check that they agree, and if not do a reindex
             # to make them agree...
             if self._input_dict['spacegroup'] != \
-               info['spacegroup']
-            hklout = os.path.join(os.getcwd(), 'phasing_in.mtz')
+               info['spacegroup']:
+                hklout = os.path.join(os.getcwd(), 'phasing_in.mtz')
             
-            reindex = Reindex()
-            reindex.set_hklin(self._mtz_file)
-            reindex.set_hklout(hklout)
-            reindex.set_spacegroup(self._input_dict['spacegroup'])
-            reindex.reindex()
+                reindex = Reindex()
+                reindex.set_hklin(self._mtz_file)
+                reindex.set_hklout(hklout)
+                reindex.set_spacegroup(self._input_dict['spacegroup'])
+                reindex.reindex()
+                
+                self._mtz_file = hklout
             
-            self._mtz_file = hklout
-            
-
         # check that the MTZ file has F columns etc. as well
         # as I's...
 
