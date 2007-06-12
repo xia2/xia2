@@ -77,6 +77,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
+from Handlers.Streams import Debug
 
 def Scala(DriverType = None):
     '''A factory for ScalaWrapper classes.'''
