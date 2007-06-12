@@ -101,7 +101,8 @@ def Solve(DriverType = None):
                 self.get_working_directory(),
                 os.path.split(self._hklin)[-1])
 
-            shutil.copyfile(self._hklin, hklin)
+            if self._hklin != hklin:
+                shutil.copyfile(self._hklin, hklin)
 
             self.start()
 

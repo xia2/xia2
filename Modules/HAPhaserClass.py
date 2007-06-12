@@ -21,6 +21,7 @@ from lib.SymmetryLib import compute_enantiomorph
 from Mtz2Scalepack import Mtz2Scalepack
 
 from Wrappers.CCP4.Mtzdump import Mtzdump
+from Wrappers.CCP4.Reindex import Reindex
 
 class HAPhaserClass:
 
@@ -51,6 +52,21 @@ class HAPhaserClass:
             self._input_dict['cell'] = info['cell']
         if not self._input_dict.has_key('spacegroup'):
             self._input_dict['spacegroup'] = info['spacegroup']
+        else:
+            # check that they agree, and if not do a reindex
+            # to make them agree...
+            if self._input_dict['spacegroup'] != \
+               info['spacegroup']
+            hklout = os.path.join(os.getcwd(), 'phasing_in.mtz')
+            
+            reindex = Reindex()
+            reindex.set_hklin(self._mtz_file)
+            reindex.set_hklout(hklout)
+            reindex.set_spacegroup(self._input_dict['spacegroup'])
+            reindex.reindex()
+            
+            self._mtz_file = hklout
+            
 
         # check that the MTZ file has F columns etc. as well
         # as I's...
