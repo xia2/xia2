@@ -645,7 +645,7 @@ def Scala(DriverType = None):
                 Debug.write('Scala status: %s' % status)
 
                 if 'Error' in status:
-                    raise RuntimeError, 'Scala error: %s' % status
+                    raise RuntimeError, '[SCALA] %s' % status
 
             except RuntimeError, e:
                 try:
