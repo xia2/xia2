@@ -521,6 +521,12 @@ def Scala(DriverType = None):
                 self.check_for_errors()
                 self.check_ccp4_errors()
                 self.check_scala_errors()
+                
+                status = self.get_ccp4_status()                
+
+                if 'Error' in status:
+                    raise RuntimeError, 'Scala error: %s' % \
+                          status.replace('*', '').strip()
 
             except RuntimeError, e:
                 try:
