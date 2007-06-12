@@ -33,6 +33,7 @@ class SolveResolvePhaserClass(HAPhaserClass):
     def phase(self):
 
         solve = Solve()
+        solve.write_log_file('solve.log')
         solve.set_hklin(self._mtz_file)
         for name in self._scalepack_files.keys():
             wavelength = self._input_dict[name]['wavelength']
@@ -60,6 +61,7 @@ class SolveResolvePhaserClass(HAPhaserClass):
         # then run resolve
 
         resolve = Resolve()
+        resolve.write_log_file('resolve.log')
         resolve.set_solvent(self._solvent) 
         resolve.run()
         

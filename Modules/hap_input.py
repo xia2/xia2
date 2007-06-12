@@ -5,9 +5,7 @@ input_file = os.path.join(os.environ['X2TD_ROOT'],
                           'Test', 'UnitTest', 'Interfaces',
                           'Scaler', 'Merged', 'TS00_13185_merged_free.mtz')
 
-input_dict = {'cell':(57.746, 76.931, 86.582, 90.00, 90.00, 90.00),
-              'spacegroup':'P 21 21 21',
-              'INFL':{'wavelength':0.97950,
+input_dict = {'INFL':{'wavelength':0.97950,
                       'fp':-12.0,
                       'fpp':5.8},
               'LREM':{'wavelength':1.00000,

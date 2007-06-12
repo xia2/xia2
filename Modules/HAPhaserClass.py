@@ -19,6 +19,8 @@ from lib.SymmetryLib import compute_enantiomorph
 
 from Mtz2Scalepack import Mtz2Scalepack
 
+from Wrappers.CCP4.Mtzdump import Mtzdump
+
 class HAPhaserClass:
 
     def __init__(self):
@@ -30,17 +32,22 @@ class HAPhaserClass:
         self._input_dict = hap_input.input_dict
         self._mtz_file = hap_input.input_file
 
+        md = Mtzdump()
+        md.set_hklin(self._mtz_file)
+        md.dump()
+
+        # assume that the cell and symmetry for all
+        # sets are identical, ergo the first results
+        # are adequate...
+        
+        datasets = md.get_datasets()
+        info = md.get_dataset_info(datasets[0])
+
         # check we have enough input...
         if not self._input_dict.has_key('cell'):
-            raise RuntimeError, 'cell not available'
+            self._input_dict['cell'] = info['cell']
         if not self._input_dict.has_key('spacegroup'):
-            raise RuntimeError, 'spacegroup not available'
-        if not self._input_dict.has_key('n_sites'):
-            raise RuntimeError, 'n_sites not available'
-        if not self._input_dict.has_key('atom'):
-            raise RuntimeError, 'atom not available'
-        if not self._input_dict.has_key('solvent'):
-            raise RuntimeError, 'solvent not available'
+            self._input_dict['spacegroup'] = info['spacegroup']
 
         # check that the MTZ file has F columns etc. as well
         # as I's...
