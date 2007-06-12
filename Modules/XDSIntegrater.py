@@ -434,7 +434,10 @@ class XDSIntegrater(FrameProcessor,
                     Debug.write(
                         '%d alien reflections are already removed' % \
                         (len(correct_remove) - len(final_remove)))
-                
+                else:
+                    # we want to remove all of the new dodgy reflections
+                    final_remove = correct_remove
+                    
                 remove_hkl = open(os.path.join(
                     self.get_working_directory(),
                     'REMOVE.HKL'), 'w')
