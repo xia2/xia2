@@ -123,16 +123,17 @@ def Solve(DriverType = None):
         
             for j in range(len(self._wavelengths)):
 
+                number = j + 1
+                self.input('lambda %d' % number)
+
                 if j == 0 and self._sites:
                     # write the sites in too...
                     sites = self._sites['sites']
                     self.input('atomname %s' % sites[0]['atom'])
                     for site in sites:
-                        self._input('xyz %s %s %s' % \
-                                    site['fractional'])
+                        self.input('xyz %s %s %s' % \
+                                   site['fractional'])
                 
-                number = j + 1
-                self.input('lambda %d' % number)
                 self.input('wavelength %f' % \
                            self._wavelengths[j]['wavelength'])
                 self.input('fprimv_mad %f' % self._wavelengths[j]['fp'])
