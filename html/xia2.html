@@ -233,22 +233,22 @@ xia2setup -atom se -project foo -crystal bar \
 
     <h1>Download</h1>
 
-    <p>The current version, 0.2.5.2 can be obtained by following these 
+    <p>The current version, 0.2.6.0 can be obtained by following these 
       links:</p>
 
     <ul>
-      <li><a href="xia2-0.2.5.2.zip">Windows (as .zip file)</a></li>
-      <li><a href="xia2-0.2.5.2.tar.bz2">Unix (as .tar.bz2 file)</a></li>
-      <li><a href="xia2-0.2.5.2.tar.gz">Unix (as .tar.gz file)</a></li>
+      <li><a href="xia2-0.2.6.0.zip">Windows (as .zip file)</a></li>
+      <li><a href="xia2-0.2.6.0.tar.bz2">Unix (as .tar.bz2 file)</a></li>
+      <li><a href="xia2-0.2.6.0.tar.gz">Unix (as .tar.gz file)</a></li>
     </ul>
 
     <p>In addition you can download these which include updated versions
       of software which are available from the prerelease web pages:</p>
 
     <ul>
-      <li><a href="xia2-0.2.5.2-extra.zip">Windows (as .zip file)</a></li>
-      <li><a href="xia2-0.2.5.2-extra.tar.bz2">Unix (as .tar.bz2 file)</a></li>
-      <li><a href="xia2-0.2.5.2-extra.tar.gz">Unix (as .tar.gz file)</a></li>
+      <li><a href="xia2-0.2.6.0-extra.zip">Windows (as .zip file)</a></li>
+      <li><a href="xia2-0.2.6.0-extra.tar.bz2">Unix (as .tar.bz2 file)</a></li>
+      <li><a href="xia2-0.2.6.0-extra.tar.gz">Unix (as .tar.gz file)</a></li>
     </ul>
 
     <p>The second of these is licensed as per the CCP4 standard license.
@@ -265,8 +265,8 @@ xia2setup -atom se -project foo -crystal bar \
     <p>Since everything is precompiled, the only requirement is to unpack the
       directory somewhere and edit the directory setup.bat, setup.csh or
       setup.sh appropriately, for instance setting XIA2_HOME as 
-      /opt/px/xia/xia-0.2.5.2 if you unpacked the tarball in /opt/px/xia.
-      Note that this includes the xia-0.2.5.2 directory!</p>
+      /opt/px/xia/xia-0.2.6.0 if you unpacked the tarball in /opt/px/xia.
+      Note that this includes the xia-0.2.6.0 directory!</p>
 
     <p>All that is then needed is to source this setup file and the application
       xia2 should be available. Apologies to those (t)csh users out there
@@ -405,7 +405,7 @@ END PROJECT TS01
     <p>This is a particularly complex example, but it illustrates the 
       capability of the system well. There are data from two cystals, one 
       native and the other selenomethionated. The native set is measured in 
-      two sweeps. Currently (version 0.2.5.2) no attempt is made to combine 
+      two sweeps. Currently (version 0.2.6.0) no attempt is made to combine 
       data from multiple crystals, however this is on the to-do list.</p>
     
     <h1>Release Notes</h1>
@@ -442,7 +442,9 @@ xia2 -ehtpx_xml_out project.xml
 	  the decision about when a new sweep starts was a little broken
 	  (rounding errors issue) now fixed!</b></li>
       <li>Added -parallel flag to work when using XDS for data reduction.</li>
-      <li><b>Added XDS support!</b></li>
+      <li><b>Added XDS support!</b> This is however much less mature than
+	the support for Mosflm/CCP4. It is also worth noting that this 
+	relies on many CCP4 tools.</li>
       <li>Added selection of the "pipeline" to use through a command line 
 	option, either -2d for mosflm/ccp4 or -3d for xds/xscale though 
 	the latter still uses a number of CCP4 programs.</li>
@@ -626,7 +628,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Thu May 24 13:52:42 BST 2007
+Last modified: Tue Jun 12 09:42:10 GMT Standard Time 2007
 <!-- hhmts end -->
   </body>
 </html>
