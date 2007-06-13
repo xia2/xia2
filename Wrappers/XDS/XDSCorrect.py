@@ -326,8 +326,9 @@ def XDSCorrect(DriverType = None):
                 'CORRECT.LP'), 'r').readlines():
                 if '"alien"' in line:
                     h, k, l = tuple(map(int, line.split()[:3]))
-                    if not (h, k, l) in self._remove:
-                        self._remove.append((h, k, l))
+                    z = float(line.split()[4])
+                    if not (h, k, l, z) in self._remove:
+                        self._remove.append((h, k, l, z))
 
             return
 
