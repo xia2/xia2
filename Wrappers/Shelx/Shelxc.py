@@ -75,9 +75,11 @@ def Shelxc(DriverType = None):
             if len(file) < 70:
                 return file
 
-            shutil.copyfile(file,
-                            os.path.join(self.get_working_directory(),
-                                         os.path.split(file)[-1]))
+            # only copy if file is not already in working directory
+            if os.path.split()[0] != self.get_working_directory():
+                shutil.copyfile(
+                    file, os.path.join(self.get_working_directory(),
+                                       os.path.split(file)[-1]))
             return os.path.split(file)[-1]
 
         def set_cell(self, cell):
