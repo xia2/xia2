@@ -453,12 +453,12 @@ class CCP4Scaler(Scaler):
             pl = self.Pointless()
             pl.set_hklin(_prepare_pointless_hklin(
                 self.get_working_directory(),
-                hklin, self._sweep_information[epoch]['header'].get(
+                hklin, self._sweep_information[first]['header'].get(
                 'phi_width', 0.0)))
 
             pl.decide_pointgroup()
 
-            integrater = self._sweep_information[epoch]['integrater']
+            integrater = self._sweep_information[first]['integrater']
             indexer = integrater.get_integrater_indexer()
             
             if indexer:
@@ -515,13 +515,6 @@ class CCP4Scaler(Scaler):
             reindex_op = pl.get_reindex_operator()
         
             Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
-
-            hklout = os.path.join(
-                self.get_working_directory(),
-                os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
-
-            # we will want to delete this one exit
-            # FileHandler.record_temporary_file(hklout)
 
             # tell the integrater about this - may not be too much
             # of a problem...
