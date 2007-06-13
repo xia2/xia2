@@ -76,7 +76,7 @@ def Shelxc(DriverType = None):
                 return file
 
             # only copy if file is not already in working directory
-            if os.path.split()[0] != self.get_working_directory():
+            if os.path.split(file)[0] != self.get_working_directory():
                 shutil.copyfile(
                     file, os.path.join(self.get_working_directory(),
                                        os.path.split(file)[-1]))
