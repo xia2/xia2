@@ -79,6 +79,7 @@ class _CommandLine(Object):
 
         self._read_trust_timestamps()
         self._read_quick()
+        self._read_always_refine()
         self._read_2d()
         self._read_3d()
         self._read_debug()
@@ -476,6 +477,12 @@ class _CommandLine(Object):
 
         if '-quick' in sys.argv:
             Flags.set_quick(True)
+        return
+
+    def _read_always_refine(self):
+
+        if '-always_refine' in sys.argv:
+            Flags.set_always_refine(True)
         return
 
     def _read_2d(self):

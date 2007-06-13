@@ -19,7 +19,10 @@ class _Flags:
         self._migrate_data = False
         self._trust_timestaps = False
         self._parallel = 0
+
+        # these are development parameters for the XDS implementation
         self._z_min = 0.0
+        self._always_refine = False
 
         return
 
@@ -57,6 +60,13 @@ class _Flags:
 
     def get_z_min(self):
         return self._z_min
+
+    def set_always_refine(self, always_refine):
+        self._always_refine = always_refine
+        return
+
+    def get_always_refine(self):
+        return self._always_refine
 
 Flags = _Flags()
 
