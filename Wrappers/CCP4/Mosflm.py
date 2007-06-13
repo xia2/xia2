@@ -760,9 +760,13 @@ def Mosflm(DriverType = None):
             '''Finish the integration - if necessary performing reindexing
             based on the pointgroup and the reindexing operator.'''
 
-            # check if we need to perform any reindexing...
+            # check if we need to perform any reindexing... this will
+            # be the case if we have no reindexing operator and we
+            # are also in the correct pointgroup.
 
-            if self._intgr_reindex_operator is None:
+            if self._intgr_reindex_operator is None and \
+               self._intgr_spacegroup_number == lattice_to_spacegroup(
+                self.get_integrater_indexer().get_indexer_lattice()):
                 return self._mosflm_hklout
 
             Chatter.write('Reindexing to spacegroup %d (%s)' % \
