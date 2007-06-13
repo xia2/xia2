@@ -119,8 +119,8 @@ def _parse_correct_lp(filename):
                 j += 1
 
             # bug # 2409 - this seems a little harsh set as 1.0 so
-            # set this to 0.75
-            resolution = _resolution_estimate(resolution_info, 0.75)
+            # set this to 0.75 - even then 0.5 may be better..
+            resolution = _resolution_estimate(resolution_info, 0.5)
             postrefinement_stats['resolution_estimate'] = resolution
 
             # also recover the highest resolution limit of the data
