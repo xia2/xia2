@@ -392,7 +392,7 @@ class XDSIntegrater(FrameProcessor,
         resolution = correct.get_result('resolution_estimate')
 
         if self.get_integrater_high_resolution():
-            if resolution - self.get_integrater_high_resolution < 0.075:
+            if resolution - self.get_integrater_high_resolution() < 0.075:
                 
                 # ignore this new resolution limit - this is similar to what
                 # was done for the Mosflm implementation...
