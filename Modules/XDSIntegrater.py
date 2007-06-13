@@ -422,9 +422,11 @@ class XDSIntegrater(FrameProcessor,
                     for l in open(os.path.join(
                         self.get_working_directory(),
                         'REMOVE.HKL'), 'r').readlines():
-                        hkl = tuple(map(int, l.split()[:3]))
-                        if not hkl in current_remove:
-                            current_remove.append(hkl)
+                        h, k, l = map(int, l.split()[:3])
+                        z = float(l.split()[3])
+                        
+                        if not (h, k, l, z) in current_remove:
+                            current_remove.append((h, k, l, z))
 
                     for c in correct_remove:
                         if c in current_remove:
