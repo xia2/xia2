@@ -89,7 +89,7 @@ class XDSIndexer(FrameProcessor,
         xycorr.setup_from_image(self.get_image_name(
             self._indxr_images[0][0]))
 
-        auto_logfiler(xycorr)
+        auto_logfiler(xycorr, 'XYCORR')
 
         return xycorr
 
@@ -100,7 +100,7 @@ class XDSIndexer(FrameProcessor,
         init.setup_from_image(self.get_image_name(
             self._indxr_images[0][0]))
 
-        auto_logfiler(init)
+        auto_logfiler(init, 'INIT')
 
         return init
 
@@ -111,7 +111,7 @@ class XDSIndexer(FrameProcessor,
         colspot.setup_from_image(self.get_image_name(
             self._indxr_images[0][0]))
 
-        auto_logfiler(colspot)
+        auto_logfiler(colspot, 'COLSPOT')
 
         return colspot
 
@@ -122,7 +122,7 @@ class XDSIndexer(FrameProcessor,
         idxref.setup_from_image(self.get_image_name(
             self._indxr_images[0][0]))
 
-        auto_logfiler(idxref)
+        auto_logfiler(idxref, 'IDXREF')
 
         return idxref
 

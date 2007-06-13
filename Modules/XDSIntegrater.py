@@ -113,7 +113,7 @@ class XDSIntegrater(FrameProcessor,
         defpix.setup_from_image(self.get_image_name(
             self._intgr_wedge[0]))
 
-        auto_logfiler(defpix)
+        auto_logfiler(defpix, 'DEFPIX')
 
         return defpix
 
@@ -124,7 +124,7 @@ class XDSIntegrater(FrameProcessor,
         integrate.setup_from_image(self.get_image_name(
             self._intgr_wedge[0]))
 
-        auto_logfiler(integrate)
+        auto_logfiler(integrate, 'INTEGRATE')
 
         return integrate
 
@@ -135,7 +135,7 @@ class XDSIntegrater(FrameProcessor,
         correct.setup_from_image(self.get_image_name(
             self._intgr_wedge[0]))
 
-        auto_logfiler(correct)
+        auto_logfiler(correct, 'CORRECT')
         
         return correct
 
@@ -442,17 +442,33 @@ class XDSIntegrater(FrameProcessor,
                     self.get_working_directory(),
                     'REMOVE.HKL'), 'w')
 
+                z_min = Flags.get_z_min()
+                rejected = 0
+
                 # write in the old reflections
                 for remove in current_remove:
-                    remove_hkl.write('%d %d %d\n' % remove)
+                    z = remove[3]
+                    if z >= z_min:
+                        remove_hkl.write('%d %d %d %f\n' % remove)
+                    else:
+                        rejected += 1
                 Debug.write('Wrote %d old reflections to REMOVE.HKL' % \
                             len(current_remove))
+                Debug.write('Rejected %d as z < %f' % \
+                            (rejected, z_min))
 
                 # and the new reflections
+                rejected = 0
                 for remove in final_remove:
-                    remove_hkl.write('%d %d %d\n' % remove)
+                    z = remove[3]
+                    if z >= z_min:
+                        remove_hkl.write('%d %d %d %f\n' % remove)
+                    else:
+                        rejected += 1
                 Debug.write('Wrote %d new reflections to REMOVE.HKL' % \
                             len(final_remove))
+                Debug.write('Rejected %d as z < %f' % \
+                            (rejected, z_min))
 
                 remove_hkl.close()
                 
