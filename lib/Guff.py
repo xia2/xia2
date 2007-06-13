@@ -78,7 +78,7 @@ def _get_number():
 
 ###### END MESSY CODE ######
 
-def auto_logfiler(DriverInstance):
+def auto_logfiler(DriverInstance, extra = None):
     '''Create a "sensible" log file for this program wrapper & connect it.'''
 
     working_directory = DriverInstance.get_working_directory()
@@ -91,9 +91,13 @@ def auto_logfiler(DriverInstance):
     if executable[-4:] == '.exe':
         executable = executable[:-4]
 
-    logfile = os.path.join(working_directory,
-                           '%d_%s.log' % (number, executable))
-
+    if extra:
+        logfile = os.path.join(working_directory,
+                               '%d_%s_%s.log' % (number, executable, extra))
+    else:
+        logfile = os.path.join(working_directory,
+                               '%d_%s.log' % (number, executable))
+    
     Chatter.write('Logfile: %s -> %s' % (executable,
                                          logfile))
 
