@@ -22,7 +22,7 @@ if not os.environ.has_key('XIA2CORE_ROOT'):
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
-from Handlers.Streams import Chatter
+from Handlers.Streams import Chatter, Debug
 
 def inherits_from(this_class,
                   base_class_name):
@@ -98,8 +98,8 @@ def auto_logfiler(DriverInstance, extra = None):
         logfile = os.path.join(working_directory,
                                '%d_%s.log' % (number, executable))
     
-    Chatter.write('Logfile: %s -> %s' % (executable,
-                                         logfile))
+    Debug.write('Logfile: %s -> %s' % (executable,
+                                       logfile))
 
     DriverInstance.write_log_file(logfile)
 
