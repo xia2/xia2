@@ -187,6 +187,9 @@ def LabelitScreen(DriverType = None):
                 out.write('beam_search_scope = %f\n' % \
                           self._beam_search_scope)
 
+            # presume that we won't be using more than four
+            # images...
+            out.write('wedgelimit = 4\n')
 
             # new feature - index on the spot centre of mass, not the
             # highest pixel (should improve the RMS deviation reports.)
@@ -242,6 +245,7 @@ def LabelitScreen(DriverType = None):
                 phi_width = 1.0
 
             if int(90.0 / phi_width) in images:
+                self.add_indexer_image_wedge(int(45.0 / phi_width))
                 self.add_indexer_image_wedge(int(90.0 / phi_width))
             else:
                 self.add_indexer_image_wedge(images[-1])
@@ -267,8 +271,8 @@ def LabelitScreen(DriverType = None):
                     
             _images.sort()
 
-            if len(_images) > 2:
-                raise RuntimeError, 'cannot use more than 2 images'
+            if len(_images) > 4:
+                raise RuntimeError, 'cannot use more than 4 images'
 
             auto_logfiler(self)
 
