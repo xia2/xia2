@@ -278,10 +278,10 @@ class XDSIntegrater(FrameProcessor,
         defpix.set_data_range(self._intgr_wedge[0],
                               self._intgr_wedge[1])
 
-        if self._intgr_reso_high > 0.0:
+        if self.get_integrater_high_resolution() > 0.0:
             Debug.write('Setting resolution limit in DEFPIX to %.2f' % \
-                        self._intgr_reso_high)
-            defpix.set_resolution_high(self._intgr_reso_high)
+                        self.get_integrater_high_resolution())
+            defpix.set_resolution_high(self.get_integrater_high_resolution())
 
         defpix.run()
 
@@ -330,6 +330,10 @@ class XDSIntegrater(FrameProcessor,
 
         integrate.run()
 
+        # should the existence of these require that I rerun the
+        # integration or can we assume that the application of a
+        # sensible resolution limit will achieve this??
+
         self._integrate_parameters = integrate.get_updates()
 
         return
@@ -337,17 +341,15 @@ class XDSIntegrater(FrameProcessor,
     def _integrate_finish(self):
         '''Finish off the integration by running correct.'''
 
-        # then run correct..
-
         correct = self.Correct()
 
         correct.set_data_range(self._intgr_wedge[0],
                                self._intgr_wedge[1])
         
-        if self._intgr_reso_high > 0.0:
+        if self.get_integrater_high_resolution() > 0.0:
             Debug.write('Using resolution limit: %.2f' % \
-                        self._intgr_reso_high)
-            correct.set_resolution_high(self._intgr_reso_high)
+                        self.get_integrater_high_resolution())
+            correct.set_resolution_high(self.get_integrater_high_resolution())
 
         if self.get_polarization() > 0.0:
             correct.set_polarization(self.get_polarization())
@@ -355,10 +357,6 @@ class XDSIntegrater(FrameProcessor,
         if self.get_integrater_spacegroup_number():
             correct.set_spacegroup_number(
                 self.get_integrater_spacegroup_number())
-
-            # FIXME bug 2406 - need to have the unit cell set as
-            # well as the spacegroup...
-            
             if not self._intgr_cell:
                 raise RuntimeError, 'no unit cell to recycle'
             correct.set_cell(self._intgr_cell)
@@ -369,12 +367,18 @@ class XDSIntegrater(FrameProcessor,
         
         correct.run()
 
-        if self._intgr_reso_high == 0.0:
+        if self.get_integrater_high_resolution() == 0.0:
             # get the "correct" resolution from ... correct
             
             Debug.write('Setting integrater resolution to %.2f' % \
                         correct.get_result('highest_resolution'))
-            self._intgr_reso_high = correct.get_result('highest_resolution')
+            if not Flags.get_quick():
+                self.set_integrater_high_resolution(
+                    correct.get_result('highest_resolution'))
+            else:
+                # just record it for future reference
+                self._intgr_reso_high = correct.get_result(
+                    'highest_resolution')                                     
 
         # should get some interesting stuff from the XDS correct file
         # here, for instance the resolution range to use in integration
@@ -387,13 +391,12 @@ class XDSIntegrater(FrameProcessor,
         # look at the resolution limit...
         resolution = correct.get_result('resolution_estimate')
 
-        if not self._intgr_reso_high and not Flags.get_quick():
+        if resolution > self.get_integrater_high_resolution() and \
+               not Flags.get_quick():
             self.set_integrater_high_resolution(resolution)
             Chatter.write('Set resolution limit: %5.2f' % resolution)
         elif Flags.get_quick():
-            # ok we are going quickly but we will want the resolution
-            # limit later on, so just record it without using the
-            # setter which will reset me!
+            # just record it for future reference
             self._intgr_reso_high = resolution
             Chatter.write(
                 'Set resolution limit: %5.2f (quick, so no rerun)' % \
