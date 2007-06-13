@@ -209,7 +209,10 @@ def LabelitScreen(DriverType = None):
             for o in output:
                 if 'No_Indexing_Solution' in o:
                     raise RuntimeError, 'indexing failed: %s' % \
-                          o.split(':')
+                          o.split(':')[-1].strip()
+                if 'InputFileError' in o:
+                    raise RuntimeError, 'indexing failed: %s' % \
+                          o.split(':')[-1].strip()
 
             return
 
