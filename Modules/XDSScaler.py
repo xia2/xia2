@@ -885,7 +885,9 @@ class XDSScaler(Scaler):
                     resolution = _resolution_estimate(
                         resolution_points, 2.0)
                     resolution_limits[wavelength] = resolution
-            
+
+                    Debug.write('Resolution for %s: %.2f' % \
+                                (dataset, resolution))
 
         # for each integrater set the resolution limit where Mn(I/sigma) ~ 2
         # but only of the resolution limit is noticeably lower than the
@@ -903,12 +905,21 @@ class XDSScaler(Scaler):
         for epoch in self._sweep_information.keys():
             intgr = self._sweep_information[epoch]['integrater']
             dname = self._sweep_information[epoch]['dname']
+            sname = intgr.get_integrater_sweep_name()
             dmin = intgr.get_integrater_high_resolution()
+
+            Debug.write('For sweep %s existing resolution limit is %.2f' % \
+                        (sname, dmin))
+            Debug.write('Resolution estimated to be: %.2f' % \
+                        resolution_limits[dname])
 
             # compare this against the resolution limit computed above
             if dmin == 0.0 and not Flags.get_quick():
                 intgr.set_integrater_high_resolution(
                     resolution_limits[dname])
+
+                Debug.write('Setting resolution limit to %.2f' % \
+                            resolution_limits[dname])
 
                 self.set_scaler_done(False)
                 self.set_scaler_prepare_done(False)
@@ -927,6 +938,9 @@ class XDSScaler(Scaler):
             else:
                 intgr.set_integrater_high_resolution(
                     resolution_limits[dname])
+
+                Debug.write('Setting resolution limit to %.2f' % \
+                            resolution_limits[dname])
 
                 self.set_scaler_done(False)
                 self.set_scaler_prepare_done(False)
