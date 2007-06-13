@@ -19,6 +19,7 @@ class _Flags:
         self._migrate_data = False
         self._trust_timestaps = False
         self._parallel = 0
+        self._z_min = 0.0
 
         return
 
@@ -49,6 +50,13 @@ class _Flags:
 
     def get_parallel(self):
         return self._parallel
+
+    def set_z_min(self, z_min):
+        self._z_min = z_min
+        return
+
+    def get_z_min(self):
+        return self._z_min
 
 Flags = _Flags()
 

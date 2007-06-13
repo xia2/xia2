@@ -151,6 +151,12 @@ class _CommandLine(Object):
             raise RuntimeError, '%s (%s)' % \
                   (self._help_parallel(), str(e))
 
+        try:
+            self._read_z_min()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_z_min(), str(e))
+
         return
 
     # command line parsers, getters and help functions.
@@ -407,6 +413,22 @@ class _CommandLine(Object):
 
     def _help_parallel(self):
         return '-parallel N'
+
+    def _read_z_min(self):
+        try:
+            index = sys.argv.index('-z_min')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_z_min(float(sys.argv[index + 1]))
+            
+        return
+
+    def _help_z_min(self):
+        return '-z_min N'
 
     def _read_ehtpx_xml_out(self):
         try:
