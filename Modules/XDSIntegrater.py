@@ -490,7 +490,7 @@ class XDSIntegrater(FrameProcessor,
                 
                 # we want to rerun the finishing step so...
                 # unless we have added no new reflections
-                if len(used):                
+                if used:                
                     self.set_integrater_finish_done(False)
 
         else:
