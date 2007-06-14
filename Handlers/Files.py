@@ -22,7 +22,7 @@ import tempfile
 import time
 
 from Environment import Environment
-from Handlers.Streams import Chatter
+from Handlers.Streams import Chatter, Debug
 from Handlers.Flags import Flags
 
 class _FileHandler:
