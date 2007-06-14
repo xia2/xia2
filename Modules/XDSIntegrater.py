@@ -473,9 +473,11 @@ class XDSIntegrater(FrameProcessor,
 
                 # and the new reflections
                 rejected = 0
+                used = 0
                 for remove in final_remove:
                     z = remove[3]
                     if z >= z_min:
+                        used += 1
                         remove_hkl.write('%d %d %d %f\n' % remove)
                     else:
                         rejected += 1
@@ -488,7 +490,7 @@ class XDSIntegrater(FrameProcessor,
                 
                 # we want to rerun the finishing step so...
                 # unless we have added no new reflections
-                if len(final_remove):                
+                if len(used):                
                     self.set_integrater_finish_done(False)
 
         else:

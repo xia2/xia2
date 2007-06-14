@@ -71,6 +71,7 @@ def XScale(DriverType = None):
 
             # output
             self._output_reflection_files = { }
+            self._remove = []
 
             # decisions about the scaling
             self._crystal = None
@@ -85,6 +86,9 @@ def XScale(DriverType = None):
             self._input_reflection_wavelength_names.append(wavelength)
             self._input_resolution_ranges.append(resolution)
             return
+
+        def get_remove(self):
+            return self._remove
 
         def set_crystal(self, crystal):
             self._crystal = crystal
@@ -220,6 +224,17 @@ def XScale(DriverType = None):
 
             # now look at XSCALE.LP
             xds_check_error(self.get_all_output())
+
+            # get the outlier reflections...
+            for line in open(os.path.join(
+                self.get_working_directory(),
+                'XSCALE.LP'), 'r').readlines():
+                if '"alien"' in line:
+                    h, k, l = tuple(map(int, line.split()[:3]))
+                    z = float(line.split()[4])
+                    if not (h, k, l, z) in self._remove:
+                        self._remove.append((h, k, l, z))
+            
 
             return
 

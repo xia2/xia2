@@ -657,6 +657,15 @@ class XDSScaler(Scaler):
         Debug.write('Determined unit cell: %.2f %.2f %.2f %.2f %.2f %.2f' % \
                     tuple(self._scalr_cell))
 
+        if os.path.exists(os.path.join(
+            self.get_working_directory(),
+            'REMOVE.HKL')):
+            os.remove(os.path.join(
+                self.get_working_directory(),
+                'REMOVE.HKL'))
+            
+            Debug.write('Deleting REMOVE.HKL at end of scale prepare.')
+
         return
 
     def _scale(self):
@@ -701,6 +710,83 @@ class XDSScaler(Scaler):
         # do the scaling keeping the reflections unmerged
 
         xscale.run()
+
+        # check for outlier reflections and if a number are found
+        # then iterate (that is, rerun XSCALE, rejecting these outliers)
+
+        if not Flags.get_quick():
+            if len(xscale.get_remove()) > 0:
+
+                xscale_remove = xscale.get_remove()
+                current_remove = []
+                final_remove = []
+                
+                # first ensure that there are no duplicate entries...
+                if os.path.exists(os.path.join(
+                    self.get_working_directory(),
+                    'REMOVE.HKL')):
+                    for line in open(os.path.join(
+                        self.get_working_directory(),
+                        'REMOVE.HKL'), 'r').readlines():
+                        h, k, l = map(int, line.split()[:3])
+                        z = float(line.split()[3])
+                        
+                        if not (h, k, l, z) in current_remove:
+                            current_remove.append((h, k, l, z))
+
+                    for c in xscale_remove:
+                        if c in current_remove:
+                            continue
+                        final_remove.append(c)
+
+                    Debug.write(
+                        '%d alien reflections are already removed' % \
+                        (len(xscale_remove) - len(final_remove)))
+                else:
+                    # we want to remove all of the new dodgy reflections
+                    final_remove = xscale_remove
+                    
+                remove_hkl = open(os.path.join(
+                    self.get_working_directory(),
+                    'REMOVE.HKL'), 'w')
+
+                z_min = Flags.get_z_min()
+                rejected = 0
+
+                # write in the old reflections
+                for remove in current_remove:
+                    z = remove[3]
+                    if z >= z_min:
+                        remove_hkl.write('%d %d %d %f\n' % remove)
+                    else:
+                        rejected += 1
+                Debug.write('Wrote %d old reflections to REMOVE.HKL' % \
+                            len(current_remove))
+                Debug.write('Rejected %d as z < %f' % \
+                            (rejected, z_min))
+
+                # and the new reflections
+                rejected = 0
+                used = 0
+                for remove in final_remove:
+                    z = remove[3]
+                    if z >= z_min:
+                        used += 1
+                        remove_hkl.write('%d %d %d %f\n' % remove)
+                    else:
+                        rejected += 1
+                Debug.write('Wrote %d new reflections to REMOVE.HKL' % \
+                            len(final_remove))
+                Debug.write('Rejected %d as z < %f' % \
+                            (rejected, z_min))
+
+                remove_hkl.close()
+                
+                # we want to rerun the finishing step so...
+                # unless we have added no new reflections
+                if used:                
+                    self.set_scaler_done(False)
+            
 
         # now get the reflection files out and merge them with scala
 
