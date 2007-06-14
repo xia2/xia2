@@ -22,11 +22,18 @@ import sys
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
+
 sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                              'Python'))
 
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
+
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
+from Handlers.Streams import Debug
 
 def Combat(DriverType = None):
     '''A factory for CombatWrapper classes.'''
@@ -53,6 +60,21 @@ def Combat(DriverType = None):
             self._cell = None
 
             return
+
+        def _find_largest_negative_intensity_xds(self):
+            '''Find the largest negative intensity in the reflection
+            file - this will be used to define a scale factor.'''
+
+            imin = 0.0
+
+            for record in open(self.get_hklin(), 'r').readlines():
+                if record[0] == '!':
+                    continue
+                i = float(record.split()[3])
+                if i < imin:
+                    imin = i
+
+            return imin
 
         def set_project_info(self, pname, xname, dname):
             self._pname = pname
@@ -102,7 +124,18 @@ def Combat(DriverType = None):
             self.start()
             self.input('input %s' % format)
             if format == 'XDSASCII':
-                self.input('scale 0.02')
+
+                # determine the appropriate scale factor
+                imin = self._find_largest_negative_intensity_xds()
+
+                Debug.write('Imin found to be %f' % imin)
+                
+                scale = 1.0
+                while imin * scale < -999999.0:
+                    scale *= 0.1
+
+                Debug.write('Determined scale factor of %f' % scale)                    
+                self.input('scale %s' % scale)
                 
             if self._pname and self._xname and self._dname:
                 self.input('pname %s' % self._pname)
@@ -139,26 +172,34 @@ if __name__ == '__main__':
 
     # test XDS_ASCII
     try:
+        if len(sys.argv) > 1:
+            hklin = sys.argv[1]
+        else:
+            hklin = 'XDS_ASCII.HKL'
+        
         c = Combat()
-        c.set_hklin('XDS_ASCII.HKL')
+        c.write_log_file('combat-debug.log')
+        c.set_hklin(hklin)
         c.set_hklout('temp.mtz')
         c.run()
     except RuntimeError, e:
         print e
 
-    # test unmerged polish
+    if False:
 
-    c = Combat()
-
-    hklin = os.path.join(os.environ['X2TD_ROOT'],
-                         'Test', 'UnitTest', 'Interfaces',
-                         'Scaler', 'Unmerged', 'TS00_13185_unmerged_INFL.sca')
-
-    c.set_hklin(hklin)
-    c.set_project_information('TS00', '13185', 'INFL')
-    c.set_spacegroup('P212121')
-    c.set_cell((57.74, 73.93, 86.57, 90.00, 90.00, 90.00))
-    c.set_hklout('TS00_13185_unmerged_INFL.mtz')
-    c.run()
+        # test unmerged polish
+        
+        c = Combat()
+        
+        hklin = os.path.join(os.environ['X2TD_ROOT'],
+                             'Test', 'UnitTest', 'Interfaces',
+                             'Scaler', 'Unmerged', 'TS00_13185_unmerged_INFL.sca')
+        
+        c.set_hklin(hklin)
+        c.set_project_information('TS00', '13185', 'INFL')
+        c.set_spacegroup('P212121')
+        c.set_cell((57.74, 73.93, 86.57, 90.00, 90.00, 90.00))
+        c.set_hklout('TS00_13185_unmerged_INFL.mtz')
+        c.run()
 
     
