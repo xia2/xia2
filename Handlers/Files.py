@@ -19,6 +19,7 @@ import sys
 import exceptions
 import shutil
 import tempfile
+import time
 
 from Environment import Environment
 from Handlers.Streams import Chatter
@@ -57,6 +58,8 @@ class _FileHandler:
         # copy all files in source directory to new directory
         # retaining timestamps etc.
 
+        start_time = time.time()
+
         migrated = 0
         migrated_dir = 0
         for f in os.listdir(directory):
@@ -72,14 +75,19 @@ class _FileHandler:
                 migrated_dir += 1
                 
 
-        Chatter.write('Migrated %d files from %s to %s' % \
-                      (migrated, directory, self._data_migrate[directory]))
+        Debug.write('Migrated %d files from %s to %s' % \
+                    (migrated, directory, self._data_migrate[directory]))
 
         if migrated_dir > 0:
-            Chatter.write('Migrated %d directories from %s to %s' % \
-                          (migrated_dir, directory,
-                           self._data_migrate[directory]))
+            Debug.write('Migrated %d directories from %s to %s' % \
+                        (migrated_dir, directory,
+                         self._data_migrate[directory]))
 
+        end_time = time.time()
+        duration = end_time - start_time
+        
+        Debug.write('Migration took %s' % \
+                    time.strftime("%Hh %Mm %Ss", time.gmtime(duration)))
 
         return self._data_migrate[directory]
         
