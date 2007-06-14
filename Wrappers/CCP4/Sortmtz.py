@@ -125,6 +125,8 @@ def Sortmtz(DriverType = None):
                 
                 # ccp4 specific errors
                 self.check_ccp4_errors()
+                if 'Error' self.get_ccp4_status():
+                    raise RuntimeError, '[SORTMTZ] %s' % status
                 
                 # sortmtz specific errors
                 self.check_sortmtz_errors()
