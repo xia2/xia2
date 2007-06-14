@@ -195,7 +195,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from lib.Guff import inherits_from
 
-from Handlers.Streams import Chatter
+from Handlers.Streams import Chatter, Debug
 
 # file conversion (and merging) jiffies
 
@@ -309,19 +309,40 @@ class Scaler:
         return self._scalr_anomalous
 
     def scaler_reset(self):
+
+        Debug.write('Scaler reset')
+        
         self._scalr_done = False
         self._scalr_prepare_done = False
         self._scalr_finish_done = False
         self._scalr_result = None
         return
 
+    # getters of the status - note how the gets cascade to ensure that
+    # everything is up-to-date...
+
     def get_scaler_prepare_done(self):
+
+        # this should perhaps iterate over all of the integraters
+        # as well??? FIXME need to make a proper decision about this...
+        
         return self._scalr_prepare_done
 
     def get_scaler_done(self):
+
+        if not self.get_scaler_prepare_done():
+            Debug.write('Resetting Scaler done as prepare not done')
+            self.set_scaler_done(False)
+        
         return self._scalr_done
 
     def get_scaler_finish_done(self):
+
+        if not self.get_scaler_done():
+            Debug.write(
+                'Resetting scaler finish done as scaling not done')
+            self.set_scaler_finish_done(False)
+        
         return self._scalr_finish_done
 
     def add_scaler_integrater(self, integrater):
@@ -462,38 +483,26 @@ class Scaler:
     def get_scaled_merged_reflections(self):
         '''Return the reflection files and so on.'''
 
-        # change 07/FEB/07
-        # if not self._scalr_done:
         self.scale()
-
         return self._scalr_scaled_reflection_files
 
     def get_scaler_statistics(self):
         '''Return the overall scaling statistics.'''
 
-        # change 07/FEB/07
-        # if not self._scalr_done:
         self.scale()
-
         return self._scalr_statistics
     
     def get_scaler_cell(self):
         '''Return the final unit cell from scaling.'''
 
-        # change 07/FEB/07
-        # if not self._scalr_done:
         self.scale()
-
         return self._scalr_cell
 
     def get_scaler_likely_spacegroups(self):
         '''Return a list of likely spacegroups - you should try using
         the first in this list first.'''
 
-        # change 07/FEB/07
-        # if not self._scalr_done:
         self.scale()
-
         return self._scalr_likely_spacegroups
 
     def get_scaler_unlikely_spacegroups(self):
@@ -501,21 +510,13 @@ class Scaler:
         the likely ones first. These are spacegroups in the correct
         pointgroup but with systematic absences which dont match up.'''
 
-        # is this method useful???
-
-        # change 07/FEB/07
-        # if not self._scalr_done:
         self.scale()
-
         return self._scalr_unlikely_spacegroups
 
     def get_scaler_highest_resolution(self):
         '''Get the highest resolution achieved by the crystal.'''
 
-        # change 07/FEB/07
-        # if not self._scalr_done:
         self.scale()
-
         return self._scalr_highest_resolution
 
 

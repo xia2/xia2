@@ -272,21 +272,35 @@ class Integrater:
         self._intgr_finish_done = done
         return
 
+    # getters of the status - note how these cascade the get to ensure
+    # that everything is up-to-date...
+
     def get_integrater_prepare_done(self):
         if not self.get_integrater_indexer():
             return self._intgr_prepare_done
         
         if not self.get_integrater_indexer().get_indexer_done() \
                and self._intgr_prepare_done:
-            Chatter.write('Resetting integrater as indexer updated.')
+            Debug.write('Resetting integrater as indexer updated.')
             self._integrater_reset()
             
         return self._intgr_prepare_done
 
     def get_integrater_done(self):
+
+        if not self.get_integrater_prepare_done():
+            Debug.write('Resetting integrater done as prepare not done')
+            self.set_integrater_done(False)
+        
         return self._intgr_done
 
     def get_integrater_finish_done(self):
+
+        if not self.get_integrater_done():
+            Debug.write(
+                'Resetting integrater finish done as integrate not done')
+            self.set_integrater_finish_done(False)
+        
         return self._intgr_finish_done
 
     # end job control stuff - next getters for results

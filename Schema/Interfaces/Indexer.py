@@ -132,7 +132,7 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
-from Handlers.Streams import Science
+from Handlers.Streams import Science, Debug
 
 from Experts.LatticeExpert import SortLattices
 
@@ -267,14 +267,29 @@ class Indexer:
     def set_indexer_finish_done(self, done = True):
         self._indxr_finish_done = done
         return
+
+    # getters of the status - note well that these need to cascade
+    # the status... note that for the prepare get there is no previous
+    # step we could cascade to...
         
     def get_indexer_prepare_done(self):
         return self._indxr_prepare_done
 
     def get_indexer_done(self):
+
+        if not self.get_indexer_prepare_done():
+            Debug.write('Resetting indexer done as prepare not done')
+            self.set_indexer_done(False)
+        
         return self._indxr_done
 
     def get_indexer_finish_done(self):
+
+        if not self.get_indexer_done():
+            Debug.write(
+                'Resetting indexer finish done as index not done')
+            self.set_indexer_finish_done(False)
+        
         return self._indxr_finish_done
 
     # ----------------------------------------------------------

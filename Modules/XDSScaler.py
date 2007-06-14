@@ -94,8 +94,6 @@ from Experts.SymmetryExpert import symop_to_mat, compose_matrices_r
 from CCP4ScalerImplementationHelpers import _resolution_estimate
 from CCP4InterRadiationDamageDetector import CCP4InterRadiationDamageDetector
 
-
-
 class XDSScaler(Scaler):
     '''An implementation of the xia2 Scaler interface implemented with
     xds and xscale, possibly with some help from a couple of CCP4
