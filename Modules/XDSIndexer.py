@@ -287,6 +287,7 @@ class XDSIndexer(FrameProcessor,
             original_cell = self._indxr_input_cell
         elif self._indxr_input_lattice:
             idxref.set_indexer_input_lattice(self._indxr_input_lattice)
+            original_cell = None
         else:
             original_cell = None
 
