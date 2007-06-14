@@ -341,6 +341,7 @@ def Scala(DriverType = None):
             self.input('run 1 all')
             self.input('scales constant')
             self.input('initial unity')
+            self.input('sdcorrection both noadjust 1.0 0.0 0.0')
 
             # if project name etc set. merging => only one run
             if self._pname and self._xname and self._dname:
