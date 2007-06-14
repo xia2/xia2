@@ -34,8 +34,13 @@ def Shelxe(DriverType = None):
 
             self._name = None
             self._solvent = 0.0
-
             self._enantiomorph = False
+
+            # output information
+            self._contrast = []
+            self._connectivity = []
+            self._pf_cc = 0.0
+            self._map_cc = []
 
         def set_solvent(self, solvent):
             self._solvent = solvent
@@ -65,10 +70,26 @@ def Shelxe(DriverType = None):
             self.close_wait()
 
             output = self.get_all_output()
-
             # analyse the output
 
+            for o in output:
+                if '<wt>' in o and 'dens.mod.' in o:
+                    contrast = float(o.split()[5].replace(',', ''))
+                    connectivity = float(o.split()[8])
+
+                    self._contrast.append(contrast)
+                    self._connectivity.append(connectivity)
+
+                if '<mapCC>' in o:
+                    self._map_cc = map(float, o.split()[1:])
+
+                if 'Pseudo-free CC' in o:
+                    self._pf_cc = float(o.split()[-2])
+
             return
+
+        def get_pf_cc(self):
+            return self._pf_cc
 
     return ShelxeWrapper()
 
