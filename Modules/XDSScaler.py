@@ -763,7 +763,7 @@ class XDSScaler(Scaler):
                     else:
                         rejected += 1
                 Debug.write('Wrote %d old reflections to REMOVE.HKL' % \
-                            len(current_remove))
+                            (len(current_remove) - rejected))
                 Debug.write('Rejected %d as z < %f' % \
                             (rejected, z_min))
 
@@ -778,7 +778,7 @@ class XDSScaler(Scaler):
                     else:
                         rejected += 1
                 Debug.write('Wrote %d new reflections to REMOVE.HKL' % \
-                            len(final_remove))
+                            (len(final_remove) - rejected))
                 Debug.write('Rejected %d as z < %f' % \
                             (rejected, z_min))
 
