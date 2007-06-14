@@ -705,6 +705,10 @@ class XDSScaler(Scaler):
         xscale.set_crystal(self._scalr_xname)
         xscale.set_anomalous(self._scalr_anomalous)
 
+        if Flags.get_zero_dose():
+            Debug.write('Switching on zero-dose extrapolation')
+            xscale.set_zero_dose()
+
         # do the scaling keeping the reflections unmerged
 
         xscale.run()
