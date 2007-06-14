@@ -84,6 +84,7 @@ class _CommandLine(Object):
         self._read_3d()
         self._read_debug()
         self._read_migrate_data()
+        self._read_zero_dose()
 
         try:
             self._read_beam()
@@ -477,6 +478,12 @@ class _CommandLine(Object):
 
         if '-quick' in sys.argv:
             Flags.set_quick(True)
+        return
+
+    def _read_zero_dose(self):
+
+        if '-zero_dose' in sys.argv:
+            Flags.set_zero_dose(True)
         return
 
     def _read_always_refine(self):
