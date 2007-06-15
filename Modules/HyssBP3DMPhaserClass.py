@@ -67,6 +67,8 @@ class HyssBP3DMPhaserClass(HAPhaserClass):
 
         # find sites
 
+        Chatter.write('Finding HA sites')
+
         hyss = Hyss()
         hyss.write_log_file('hyss.log')
         hyss.set_hklin(hklf3_in)
@@ -77,9 +79,10 @@ class HyssBP3DMPhaserClass(HAPhaserClass):
         hyss.set_atom(self._input_dict['atom'])
         hyss.find_substructure()
         sites = hyss.get_sites()
-        sites_oh = invert_sites(sites)
+        sites_oh = invert_hand(sites)
 
-        # guess the B factor
+        Chatter.write('Estimating B factor')
+
         wilson = Wilson()
         wilson.set_log_file('wilson.log')
         wilson.set_hklin(self._mtz_file)
@@ -91,6 +94,8 @@ class HyssBP3DMPhaserClass(HAPhaserClass):
         Chater.write('Wilson B factor estimated as: %.2f' % b_factor)
 
         # phase
+
+        Chatter.write('Computing MAD phases')
 
         bp3 = BP3()
         bp3.write_log_file('bp3.log')
@@ -107,6 +112,8 @@ class HyssBP3DMPhaserClass(HAPhaserClass):
         
         # density modify
 
+        Chatter.write('Performing density modification')
+
         dm = DM()
         dm.write_log_file('dm.log')
         dm.set_hklin('bp3.mtz')
@@ -116,8 +123,12 @@ class HyssBP3DMPhaserClass(HAPhaserClass):
 
         if self.compute_spacegroup_enantiomorph(self._spacegroup) == \
            self._spacegroup:
+
+            Chatter.write('Testing other hand')
             
             # phase on other hand
+
+            Chatter.write('Computing MAD phases (oh)')
 
             bp3 = BP3()
             bp3.write_log_file('bp3_oh.log')
@@ -134,6 +145,8 @@ class HyssBP3DMPhaserClass(HAPhaserClass):
         
             # density modify
             
+            Chatter.write('Performing density modification (oh)')
+
             dm = DM()
             dm.write_log_file('dm_oh.log')
             dm.set_hklin('bp3_oh.mtz')
