@@ -84,7 +84,7 @@ class HyssBP3DMPhaserClass(HAPhaserClass):
         Chatter.write('Estimating B factor')
 
         wilson = Wilson()
-        wilson.set_log_file('wilson.log')
+        wilson.write_log_file('wilson.log')
         wilson.set_hklin(self._mtz_file)
         wilson.set_nres(self._nres)
         wilson.set_dataset(self._scalepack_files.keys()[0])
