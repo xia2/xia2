@@ -21,7 +21,7 @@ from Wrappers.CCP4.Mtzdump import Mtzdump
 # interface that this will implement
 from HAPhaserClass import HAPhaserClass
 
-class SolveResolvePhaserClass(HAPhaserClass):
+class HyssSolveResolvePhaserClass(HAPhaserClass):
 
     def __init__(self):
         HAPhaserClass.__init__(self)
@@ -113,8 +113,8 @@ class SolveResolvePhaserClass(HAPhaserClass):
 
         
 if __name__ == '__main__':
-    srpc = SolveResolvePhaserClass()
-    srpc.phase()
+    hsrpc = HyssSolveResolvePhaserClass()
+    hsrpc.phase()
 
     
         
