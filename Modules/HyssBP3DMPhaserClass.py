@@ -91,7 +91,7 @@ class HyssBP3DMPhaserClass(HAPhaserClass):
         wilson.compute_b()
         b_factor = wilson.get_b_factor()
 
-        Chater.write('Wilson B factor estimated as: %.2f' % b_factor)
+        Chatter.write('Wilson B factor estimated as: %.2f' % b_factor)
 
         # phase
 
@@ -107,7 +107,7 @@ class HyssBP3DMPhaserClass(HAPhaserClass):
             fpp = self._input_dict[name]['fpp']
             bp3.add_dataset(name, fp, fpp)
         bp3.set_biso(b_factor)
-        bp3.set_name('strawman')
+        bp3.set_xname('strawman')
         bp3.phase()
         
         # density modify
@@ -140,7 +140,7 @@ class HyssBP3DMPhaserClass(HAPhaserClass):
                 fpp = self._input_dict[name]['fpp']
                 bp3.add_dataset(name, fp, fpp)
             bp3.set_biso(b_factor)
-            bp3.set_name('strawman_oh')
+            bp3.set_xname('strawman_oh')
             bp3.phase()
         
             # density modify
