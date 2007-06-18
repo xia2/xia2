@@ -121,6 +121,9 @@ def ami():
     if not nmol is None:
         _ami.set_nmol(nmol)
 
+    if not nres is None:
+        _ami.set_nres(nres)
+
     if not solv is None:
         _ami.set_solvent(solv)
 
@@ -136,7 +139,7 @@ def ami():
 
     return
 
-is __name__ == '__main__':
+if __name__ == '__main__':
     ami()
 
     
