@@ -137,6 +137,9 @@ def ami():
 
     _ami.write_log_file('ami.log')
 
+    for line in _ami.get_log_file():
+        sys.stdout.write(line)
+
     return
 
 if __name__ == '__main__':
