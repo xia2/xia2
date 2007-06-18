@@ -65,6 +65,9 @@ class AnalyseMyIntensities:
 
         self._factory = CCP4Factory()
 
+        # working space
+        self._resolution = 0.0
+
         # places to store the merging statistics etc.
         self._merging_statistics = { }
         self._merging_statistics_keys = []
@@ -75,6 +78,8 @@ class AnalyseMyIntensities:
         
         self._sfcheck_statistics = { }
         self._sfcheck_statistics_keys = []
+
+        self._huge_log_file = []
 
         return
 
@@ -87,6 +92,12 @@ class AnalyseMyIntensities:
 
     def get_working_directory(self):
         return self._working_directory 
+
+    def write_log_file(self, filename):
+        fout = open(filename, 'w')
+        for o in self._hige_log_file:
+            fout.write(o)
+        fout.close()
 
     # input functions
 
@@ -126,6 +137,33 @@ class AnalyseMyIntensities:
     def set_anomalous(self, anomalous):
         self._anomalous = anomalous
         return
+
+    def _get_solvent(self):
+        '''Get the solvent content, either from an mol/asu guess or
+        from the solvent content if available.'''
+
+        if self._nmol == 0 and self._nres == 0 and self._solvent == 0:
+            raise RuntimeError, 'no solvent content information available'
+
+        if self._solvent:
+            return self._solvent
+
+        # else try and compute an estimate
+
+        if not self._nmol:
+
+            self._nmol = compute_nmol(
+                self._cell[0], self._cell[1], self._cell[2],
+                self._cell[3], self._cell[4], self._cell[3],
+                self._average_sg, self._resolution, self._nres)
+
+        self._solvent = compute_solvent(
+            self._cell[0], self._cell[1], self._cell[2],
+            self._cell[3], self._cell[4], self._cell[3],
+            self._average_sg, self._nmol, self._nres)
+        
+        reurn self._solvent
+        
 
     def convert_to_mtz(self):
         '''Convert all HKLIN to MTZ format, storing merging statistics
@@ -180,38 +218,291 @@ class AnalyseMyIntensities:
             else:
                 raise RuntimeError, 'file %s unrecognised' % hklin
 
-        self._hklin_list = mtz_in
+        # next work through this list and apply reindexing operators
+        # etc if set...
+
+        if not self._symm and not self._reindex:
+
+            # build up the average unit cell here
+            cell_a = 0.0
+            cell_b = 0.0
+            cell_c = 0.0
+            cell_alpga = 0.0
+            cell_beta = 0.0
+            cell_gamma = 0.0
+            n_input = 0
+            sg = None
+
+            for hklin in mtz_in:
+                mtzdump = self._factory.Mtzdump()
+                mtzdump.set_hklin(hklin)
+                mtzdump.dump()
+
+                datasets = mtzdump.get_datasets()
+                if len(datasets) > 1:
+                    raise RuntimeError, 'more than one dataset in %s' % hklin
+                info = mtzdump.get_dataset_info(datasets[0])
+
+                resolution = min(mtzdump.get_resolution_range())
+                if resolution < self._resolution or self._resolution == 0:
+                    self._resolution = resolution
+
+                if not sg:
+                    sg = info['spacegroup']
+                else:
+                    if sg != info['spacegroup']:
+                        raise RuntimeError, 'inconsistent spacegroup'
+
+                # check that this u/c is in agreement with the others -
+                # allow 10% grace (!)
+
+                if n_input == 0:
+                    cell_a = info['cell'][0]
+                    cell_b = info['cell'][1]
+                    cell_c = info['cell'][2]
+                    cell_alpha = info['cell'][3]
+                    cell_beta = info['cell'][4]
+                    cell_gamma = info['cell'][5]
+                    n_input += 1
+                else:
+                    if math.fabs(n_input * cell[0] - cell_a) / \
+                       cell_a > 0.1:
+                        raise RuntimeError, 'inconsistent unit cell'
+                    if math.fabs(n_input * cell[1] - cell_b) / \
+                       cell_b > 0.1:
+                        raise RuntimeError, 'inconsistent unit cell'
+                    if math.fabs(n_input * cell[2] - cell_c) / \
+                       cell_c > 0.1:
+                        raise RuntimeError, 'inconsistent unit cell'
+                    if math.fabs(n_input * cell[3] - cell_alpha) / \
+                       cell_alpha > 0.1:
+                        raise RuntimeError, 'inconsistent unit cell'
+                    if math.fabs(n_input * cell[4] - cell_beta) / \
+                       cell_beta > 0.1:
+                        raise RuntimeError, 'inconsistent unit cell'
+                    if math.fabs(n_input * cell[5] - cell_gamma) / \
+                       cell_gamma > 0.1:
+                        raise RuntimeError, 'inconsistent unit cell'
+
+                    cell_a += info['cell'][0]
+                    cell_b += info['cell'][1]
+                    cell_c += info['cell'][2]
+                    cell_alpha += info['cell'][3]
+                    cell_beta += info['cell'][4]
+                    cell_gamma += info['cell'][5]
+                    n_input += 1
+
+            cell_a /= n_input
+            cell_b /= n_input
+            cell_c /= n_input
+            cell_alpha /= n_input
+            cell_beta /= n_input
+            cell_gamma /= n_input
+            
+            self._average_cell = (cell_a, cell_b, cell_c,
+                                  cell_alpha, cell_beta, cell_gamma)
+            self._average_sg = sg
+            
+            self._hklin_list = mtz_in
+        else:
+            hklin_list = []
+
+            for j in range(len(mtz_in)):
+                hklin = mtz_in[j]
+                hklout = os.path.join(
+                    self.get_working_directory(),
+                    'AMI_HKLIN%d_reindex.mtz' % j)
+                    
+                reindex = self._factory.Reindex()
+                reindex.set_hklin(hklin)
+                if self._symm:
+                    reindex.set_spacegroup(self._symm)
+                if self._reindex:
+                    reindex.set_operator(self._reindex)
+                reindex.reindex()
+
+                hklin_list.append(hklout)
+
+            # build up the average unit cell here
+            
+            cell_a = 0.0
+            cell_b = 0.0
+            cell_c = 0.0
+            cell_alpga = 0.0
+            cell_beta = 0.0
+            cell_gamma = 0.0
+            n_input = 0
+            sg = None
+
+            for hklin in hklin_list:
+                mtzdump = self._factory.Mtzdump()
+                mtzdump.set_hklin(hklin)
+                mtzdump.dump()
+
+                resolution = min(mtzdump.get_resolution_range())
+                if resolution < self._resolution or self._resolution == 0:
+                    self._resolution = resolution
+
+                datasets = mtzdump.get_datasets()
+                if len(datasets) > 1:
+                    raise RuntimeError, 'more than one dataset in %s' % hklin
+                info = mtzdump.get_dataset_info(datasets[0])
+
+                if not sg:
+                    sg = info['spacegroup']
+                else:
+                    if sg != info['spacegroup']:
+                        raise RuntimeError, 'inconsistent spacegroup'
+
+                # check that this u/c is in agreement with the others -
+                # allow 10% grace (!)
+
+                if n_input == 0:
+                    cell_a = info['cell'][0]
+                    cell_b = info['cell'][1]
+                    cell_c = info['cell'][2]
+                    cell_alpha = info['cell'][3]
+                    cell_beta = info['cell'][4]
+                    cell_gamma = info['cell'][5]
+                    n_input += 1
+                else:
+                    if math.fabs(n_input * cell[0] - cell_a) / \
+                       cell_a > 0.1:
+                        raise RuntimeError, 'inconsistent unit cell'
+                    if math.fabs(n_input * cell[1] - cell_b) / \
+                       cell_b > 0.1:
+                        raise RuntimeError, 'inconsistent unit cell'
+                    if math.fabs(n_input * cell[2] - cell_c) / \
+                       cell_c > 0.1:
+                        raise RuntimeError, 'inconsistent unit cell'
+                    if math.fabs(n_input * cell[3] - cell_alpha) / \
+                       cell_alpha > 0.1:
+                        raise RuntimeError, 'inconsistent unit cell'
+                    if math.fabs(n_input * cell[4] - cell_beta) / \
+                       cell_beta > 0.1:
+                        raise RuntimeError, 'inconsistent unit cell'
+                    if math.fabs(n_input * cell[5] - cell_gamma) / \
+                       cell_gamma > 0.1:
+                        raise RuntimeError, 'inconsistent unit cell'
+
+                    cell_a += info['cell'][0]
+                    cell_b += info['cell'][1]
+                    cell_c += info['cell'][2]
+                    cell_alpha += info['cell'][3]
+                    cell_beta += info['cell'][4]
+                    cell_gamma += info['cell'][5]
+                    n_input += 1
+
+            cell_a /= n_input
+            cell_b /= n_input
+            cell_c /= n_input
+            cell_alpha /= n_input
+            cell_beta /= n_input
+            cell_gamma /= n_input
+            
+            self._average_cell = (cell_a, cell_b, cell_c,
+                                  cell_alpha, cell_beta, cell_gamma)
+            self._average_sg = sg
+
+            self._hklin_list = hklin_list
 
         return
 
     def analyse_input_hklin(self):
         '''Analyse all converted input reflection files.'''
 
+        j = 0
         for hklin in self._hklin_list:
+
+            hklout = os.path.join(
+                self.get_working_directory(),
+                'TRUNCATE%d.mtz' % j)
 
             # run truncate
 
-            # then sfcheck
+            truncate = self._factory.Truncate()
+            truncate.set_hklin(hklin)
+            truncate.set_hklout(hklout)
+            truncate.truncate()
+
+            for o in truncate.get_all_output():
+                self._huge_log_file.append(o)
+
+            s = truncate.parse_ccp4_loggraph()
+            
+            k = (j, self._project_info[j])
+            self._truncate_statistics[k] = s
+            self._truncate_statistics_keys.append(k)
+
+            self._truncate_hklout.append(hklout)
+
+            j += 1
+
+        for hklin in self._truncate_hklout:
+
+            # run sfcheck
+
+            sfcheck = self._factory.Sfcheck()
+            sfcheck.set_hklin(hklin)
+            sfcheck.analyse()
+
+            for o in sfcheck.get_all_output():
+                self._huge_log_file.append(o)
 
             # then whatever else for the analysis
 
-            # then store the truncated reflections
-
-            pass
 
         return
 
     def merge_analyse(self):
         '''Merge and analyse all of the data sets together, now.'''
 
-        # compute "average" unit cell
+        cad_hklin = []
 
-        # then set this unit cell for all hklin and also update the
-        # column names, perhaps
+        for j in range(len(self._truncate_hklout)):
+            hklin = self._truncate_hklout[j]
+            hklout = os.path.join(
+                self.get_working_directory(),
+                'CAD%d.mtz' % j)
 
-        # then merge the reflection files together
+            cad_hklin.append(hklout)
+
+            cad = self._factory.Cad()
+            cad.add_hklin(hklin)
+            cad.set_hklout(hklout)
+            if self._project_info[j]:
+                cad.set_new_suffix(self._project_info[j][2])
+
+            if self._cell:
+                cad.set_new_cell(self._cell)
+            else:
+                cad.set_new_cell(self._average_cell)
+
+            cad.update()
+
+        # now merge them together...
+        
+        cad = self._factory.Cad()
+        for hklin in cad_hklin:
+            cad.add_hklin(hklin)
+        cad.set_hklout(self._hklout)
+
+        cad.merge()
 
         # then run scaleit to look at the scaling statistics
+
+        hklout = os.path.join(
+            self.get_working_directory(), 'SCALEIT.mtz')
+
+        scaleit = self._factory.Scaleit()
+
+        scaleit.set_hklin(self._hklout)
+        scaleit.set_hklout(hklout)
+
+        scaleit.scaleit()
+
+        for o in scaleit.get_all_output():
+            self._huge_log_file.append(o)
 
         return
     
@@ -230,3 +521,5 @@ if __name__ == '__main__':
     ami.add_hklin(lrem, project_info = ('AMI', 'TEST', 'LREM'))
 
     ami.convert_to_mtz()
+
+    ami.write_log_file('ami.log')

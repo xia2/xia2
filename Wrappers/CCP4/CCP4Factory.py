@@ -34,6 +34,7 @@ from Wrappers.CCP4.F2mtz import F2mtz as _F2mtz
 from Wrappers.CCP4.Freerflag import Freerflag as _Freerflag
 from Wrappers.CCP4.Pointless import Pointless as _Pointless
 from Wrappers.CCP4.Sfcheck import Sfcheck as _Sfcheck
+from Wrappers.CCP4.Matthews_coef import Matthews_coef as _Matthews_coef
 
 from lib.Guff import auto_logfiler
 
@@ -157,4 +158,12 @@ class CCP4Factory:
         sfcheck.set_working_directory(self.get_working_directory())
         auto_logfiler(sfcheck)
         return sfcheck
+    
+    def Matthews_coef(self):
+        '''Create a Matthews_coef wrapper from _Matthews_coef - set the
+        working directory and log file stuff as a part of this...'''
+        matthews_coef = _Matthews_coef()
+        matthews_coef.set_working_directory(self.get_working_directory())
+        auto_logfiler(matthews_coef)
+        return matthews_coef
     
