@@ -24,6 +24,12 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Wrappers.CCP4.CCP4Factory import CCP4Factory
 
+
+from Modules.Scalepack2Mtz import Scalepack2Mtz
+from Modules.Mtz2Scalepack import Mtz2Scalepack
+
+
+
 class AnalyseMyIntensities:
     '''A class to use for intensity analysis. This will gather intensities
     (merged or unmerged) from multiple data sets and merge them together
@@ -37,6 +43,7 @@ class AnalyseMyIntensities:
         self._nmol = 0
         self._cell = None
         self._symm = None
+        self._reindex = None
 
         self._working_directory = os.getcwd()
 
@@ -84,4 +91,9 @@ class AnalyseMyIntensities:
         self._symm = symm
         return
 
+    def set_reindex(self, reindex):
+        self._reindex = reindex
+        return
+
+    
     

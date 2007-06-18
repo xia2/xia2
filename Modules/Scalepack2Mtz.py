@@ -297,6 +297,65 @@ class Scalepack2Mtz:
 
     # merge method
 
+    def scalepack_to_mtz(self, scalepack, hklout,
+                         anomalous, spacegroup, cell, project_info):
+        '''Convert a scalepack file to MTZ, maybe merging.'''
+
+        # inspect to see if it is merged
+        merged = self._decide_is_merged(scalepack)
+        
+        if merged:
+            s2m = self.Scalepack2mtz()        
+            s2m.set_hklin(scalepack)
+            s2m.set_hklout(hklout)
+            s2m.set_spacegroup(spacegroup)
+            s2m.set_cell(cell)
+            s2m.set_project_info(project_info)
+            s2m.convert()
+
+            return hklout
+            
+        else:
+
+            hklout_c = os.path.join(
+                self.get_working_directory(), 'cad-tmp.mtz')
+            
+            FileHandler.record_temporary_file(hklout_c)
+            
+            c = self.Combat()
+            c.set_hklin(scalepack)
+            c.set_hklout(hklout_c)
+            c.set_spacegroup(spacegroup)
+            c.set_cell(cell)
+            c.set_project_info(project_info)
+            c.run()
+        
+            hklin = hklout_c
+            hklout_s = os.path.join(
+                self.get_working_directory(), 'sortmtz-tmp.mtz')
+                                  
+            FileHandler.record_temporary_file(hklout_s)
+
+            s = self.Sortmtz()
+            s.set_hklin(hklin)
+            s.set_hklout(hklout)
+            s.sort()
+            
+            hklin = hklout_s
+
+            sc = self.Scala()
+            sc.set_hklin(hklin)
+            sc.set_hklout(hklout)
+            sc.set_project_info(project_info)
+            sc.set_anomalous(anomalous)
+            sc.set_onlymerge()
+            sc.merge()
+
+            # gather and make available for return the merging statistics...
+
+            return hklout
+            
+
     def convert(self):
         '''Transmogrify the input scalepack files to mtz.'''
 
