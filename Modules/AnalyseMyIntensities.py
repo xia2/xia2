@@ -45,6 +45,8 @@ from Modules.XDS2Mtz import XDS2Mtz
 from lib.Guff import is_mtz_file, is_xds_file, is_scalepack_file
 from lib.NMolLib import compute_nmol, compute_solvent
 
+from Handlers.Streams import Chatter, Debug
+
 class AnalyseMyIntensities:
     '''A class to use for intensity analysis. This will gather intensities
     (merged or unmerged) from multiple data sets and merge them together
@@ -99,6 +101,9 @@ class AnalyseMyIntensities:
         for o in self._huge_log_file:
             fout.write(o)
         fout.close()
+
+    def get_log_file(self):
+        return self._huge_log_file
 
     # input functions
 
@@ -187,8 +192,12 @@ class AnalyseMyIntensities:
             
             if is_mtz_file(hklin):
                 mtz_in.append(hklin)
+
+                Chatter.write('Including MTZ file: %s' % hklin)
                 
             elif is_xds_file(hklin):
+
+                Chatter.write('Converting XDS file: %s' % hklin)
 
                 hklout = os.path.join(
                     self.get_working_directory(),
@@ -208,6 +217,8 @@ class AnalyseMyIntensities:
                 mtz_in.append(hklout)
                 
             elif is_scalepack_file(hklin):
+
+                Chatter.write('Converting SCALEPACK file: %s' % hklin)
 
                 hklout = os.path.join(
                     self.get_working_directory(),
@@ -233,6 +244,7 @@ class AnalyseMyIntensities:
         # etc if set...
 
         if not self._symm and not self._reindex:
+            Chatter.write('Determining unit cell')
 
             # build up the average unit cell here
             cell_a = 0.0
@@ -314,16 +326,23 @@ class AnalyseMyIntensities:
                                   cell_alpha, cell_beta, cell_gamma)
             self._average_sg = sg
             
+            Chatter.write(
+                'Determined unit cell: %.2f %.2f %.2f %.2f %.2f %.2f' % \
+                self._average_cell)
+
             self._hklin_list = mtz_in
         else:
             hklin_list = []
 
             for j in range(len(mtz_in)):
+
                 hklin = mtz_in[j]
                 hklout = os.path.join(
                     self.get_working_directory(),
                     'AMI_HKLIN%d_reindex.mtz' % j)
                     
+                Chatter.write('Reindexing %s' % hklin)
+                
                 reindex = self._factory.Reindex()
                 reindex.set_hklin(hklin)
                 if self._symm:
@@ -336,6 +355,8 @@ class AnalyseMyIntensities:
 
             # build up the average unit cell here
             
+            Chatter.write('Determining unit cell')
+
             cell_a = 0.0
             cell_b = 0.0
             cell_c = 0.0
@@ -415,6 +436,9 @@ class AnalyseMyIntensities:
                                   cell_alpha, cell_beta, cell_gamma)
             self._average_sg = sg
 
+            Chatter.write(
+                'Determined unit cell: %.2f %.2f %.2f %.2f %.2f %.2f' % \
+                self._average_cell)
             self._hklin_list = hklin_list
 
         return
@@ -430,6 +454,8 @@ class AnalyseMyIntensities:
                 'TRUNCATE%d.mtz' % j)
 
             # run truncate
+
+            Chatter.write('Truncating %s' % hklin)
 
             truncate = self._factory.Truncate()
             truncate.set_hklin(hklin)
@@ -455,6 +481,8 @@ class AnalyseMyIntensities:
 
             # run sfcheck
 
+            Chatter.write('Sfchecking %s' % hklin)
+
             sfcheck = self._factory.Sfcheck()
             sfcheck.set_hklin(hklin)
             sfcheck.analyse()
@@ -471,6 +499,8 @@ class AnalyseMyIntensities:
         '''Merge and analyse all of the data sets together, now.'''
 
         cad_hklin = []
+
+        Chatter.write('Merging all reflection files together')
 
         for j in range(len(self._truncate_hklout)):
             hklin = self._truncate_hklout[j]
@@ -503,6 +533,8 @@ class AnalyseMyIntensities:
         cad.merge()
 
         # then run scaleit to look at the scaling statistics
+
+        Chatter.write('Running scaleit analysis')
 
         hklout = os.path.join(
             self.get_working_directory(), 'SCALEIT.mtz')
