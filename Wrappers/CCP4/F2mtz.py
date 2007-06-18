@@ -38,6 +38,15 @@ def F2mtz(DriverType = None):
 
             self._cell = None
             self._symmetry = None
+            self._pname = None
+            self._xname = None
+            self._dname = None
+
+        def set_project_info(self, pname, xname, dname):
+            self._pname = pname
+            self._xname = xname
+            self._dname = dname
+            return
 
         def set_cell(self, cell):
             self._cell = cell
@@ -60,6 +69,10 @@ def F2mtz(DriverType = None):
                            os.path.split(self.getHklout())[-1]))
 
             self.start()
+
+            if self._pname and self._xname and self._dname:
+                self.input('name prohect %s crystal %s dataset %s' % \
+                           (self._pname, self._xname, self._dname))
 
             self.input('cell %f %f %f %f %f %f' % \
                        tuple(map(float, self._cell)))
@@ -88,6 +101,10 @@ def F2mtz(DriverType = None):
 
             self.start()
 
+            if self._pname and self._xname and self._dname:
+                self.input('name prohect %s crystal %s dataset %s' % \
+                           (self._pname, self._xname, self._dname))
+
             self.input('cell %f %f %f %f %f %f' % \
                        tuple(map(float, self._cell)))
             self.input('symmetry %s' % self._symmetry)
@@ -114,6 +131,10 @@ def F2mtz(DriverType = None):
                            os.path.split(self.getHklout())[-1]))
 
             self.start()
+
+            if self._pname and self._xname and self._dname:
+                self.input('name prohect %s crystal %s dataset %s' % \
+                           (self._pname, self._xname, self._dname))
 
             self.input('cell %f %f %f %f %f %f' % \
                        tuple(map(float, self._cell)))
