@@ -541,7 +541,9 @@ class AnalyseMyIntensities:
             cad.add_hklin(hklin)
             cad.set_hklout(hklout)
             if self._project_info[j]:
-                cad.set_new_suffix(self._project_info[j][2])
+                pname, xname, dname = self._project_info[j]
+                cad.set_project_info(pname, xname, dname)
+                cad.set_new_suffix(dname)
 
             if self._cell:
                 cad.set_new_cell(self._cell)

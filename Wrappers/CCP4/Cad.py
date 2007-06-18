@@ -59,11 +59,21 @@ def Cad(DriverType = None):
             self._new_cell_parameters = None
             self._new_column_suffix = None
 
+            self._pname = None
+            self._xname = None
+            self._dname = None
+
             return
 
         def add_hklin(self, hklin):
             '''Add a reflection file to the list to be sorted together.'''
             self._hklin_files.append(hklin)
+            return
+
+        def set_project_info(self, pname, xname, dname):
+            self._pname = pname
+            self._xname = xname
+            self._dname = dname
             return
 
         def set_new_suffix(self, suffix):
@@ -199,6 +209,14 @@ def Cad(DriverType = None):
             self.add_command_line('hklin1')
             self.add_command_line(hklin)
             self.start()
+
+            dataset_id = dataset_ids[0]
+
+            if self._pname and self._xname and self._dname:
+                self.input('drename file_number 1 %d %s %s' % \
+                           (dataset_id, self._xname, self._dname))
+                self.input('dpname file_number 1 %d %s' % \
+                           (dataset_id, self._pname))
             
             column_counter = 0
             labin_command = 'labin file_number 1' 
