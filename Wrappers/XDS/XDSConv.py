@@ -114,7 +114,7 @@ def XDSConv(DriverType = None):
                 
                 shutil.copyfile(
                     self._input_file,
-                    os.path.join(self.get_working_directory().
+                    os.path.join(self.get_working_directory(),
                                  os.path.split(self._input_file)[-1]))
                 
                 self._input_file = os.path.split(self._input_file)[-1]
