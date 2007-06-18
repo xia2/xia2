@@ -298,7 +298,7 @@ class Scalepack2Mtz:
     # merge method
 
     def scalepack_to_mtz(self, scalepack, hklout,
-                         anomalous, spacegroup, cell, project_info):
+                         anomalous, spacegroup, cell, project_info = None):
         '''Convert a scalepack file to MTZ, maybe merging.'''
 
         # inspect to see if it is merged
@@ -310,10 +310,11 @@ class Scalepack2Mtz:
             s2m.set_hklout(hklout)
             s2m.set_spacegroup(spacegroup)
             s2m.set_cell(cell)
-            s2m.set_project_info(project_info)
+            if project_info:
+                s2m.set_project_info(project_info)
             s2m.convert()
 
-            return hklout
+            return 
             
         else:
 
@@ -327,7 +328,8 @@ class Scalepack2Mtz:
             c.set_hklout(hklout_c)
             c.set_spacegroup(spacegroup)
             c.set_cell(cell)
-            c.set_project_info(project_info)
+            if project_info:
+                c.set_project_info(project_info)
             c.run()
         
             hklin = hklout_c
@@ -346,14 +348,16 @@ class Scalepack2Mtz:
             sc = self.Scala()
             sc.set_hklin(hklin)
             sc.set_hklout(hklout)
-            sc.set_project_info(project_info)
+            if project_info:
+                sc.set_project_info(project_info)
             sc.set_anomalous(anomalous)
             sc.set_onlymerge()
             sc.merge()
 
-            # gather and make available for return the merging statistics...
+            result = {'symmary':sc.get_summary(),
+                      'loggraphs':sc.parse_ccp4_loggraph()}
 
-            return hklout
+            return result
             
 
     def convert(self):

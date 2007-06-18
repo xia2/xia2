@@ -130,7 +130,7 @@ class XDS2Mtz:
             cad.set_hklout(hklout)
             cad.update()
             
-            return hklout
+            return 
 
         else:
 
@@ -147,7 +147,8 @@ class XDS2Mtz:
             if cell:
                 c.set_cell(cell)
             if project_info:
-                c.set_project_info(project_info)
+                pname, xname, dname = project_info
+                c.set_project_info(pname, xname, dname)
             c.run()
         
             hklin = hklout_c
@@ -172,10 +173,11 @@ class XDS2Mtz:
             sc.set_onlymerge()
             sc.merge()
 
-            # gather and make available for return the merging statistics...
+            result = {'symmary':sc.get_summary(),
+                      'loggraphs':sc.parse_ccp4_loggraph()}
 
-            return hklout
-            
+            return result
+           
 
 if __name__ == '__main__':
 
