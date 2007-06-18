@@ -318,7 +318,7 @@ class Scalepack2Mtz:
         else:
 
             hklout_c = os.path.join(
-                self.get_working_directory(), 'cad-tmp.mtz')
+                self.get_working_directory(), 'combat-tmp.mtz')
             
             FileHandler.record_temporary_file(hklout_c)
             

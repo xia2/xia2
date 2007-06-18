@@ -41,7 +41,7 @@ def XDSConv(DriverType = None):
 
             self._input_file = None
             self._cell = None
-            self._symm = None
+            self._symmetry = None
             self._output_file = None
 
             return
@@ -54,8 +54,14 @@ def XDSConv(DriverType = None):
             self._cell = cell
             return
 
-        def set_symm(self, symm):
-            self._symm = symm
+        def get_cell(self):
+            return self._cell
+
+        def get_symmetry(self):
+            return self._symmetry
+
+        def set_symmetry(self, symmetry):
+            self._symmetry = symmetry
             return
 
         def set_output_file(self, output_file):
@@ -118,8 +124,8 @@ def XDSConv(DriverType = None):
             if not self._cell:
                 self._cell = header['cell']
 
-            if not self._spacegroup:
-                self._spacegroup = header['spacegroup']
+            if not self._symmetry:
+                self._symmetry = header['spacegroup']
 
             self._resolution = header['resolution_range']
             self._resolution.sort()
@@ -128,7 +134,7 @@ def XDSConv(DriverType = None):
             inp = open(os.path.join(
                 self.get_working_directory(), 'XDSCONV.INP'), 'w')
 
-            inp.write('SPACE_GROUP_NUMBER=%d\n' % self._spacegroup)
+            inp.write('SPACE_GROUP_NUMBER=%d\n' % self._symmetry)
 
             inp.write(
                 'UNIT_CELL_CONSTANTS= %.2f %.2f %.2f %.2f %.2f %.2f\n' % \
