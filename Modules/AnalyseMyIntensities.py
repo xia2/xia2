@@ -65,9 +65,16 @@ class AnalyseMyIntensities:
 
         self._factory = CCP4Factory()
 
-        # places to store the merging statistics
+        # places to store the merging statistics etc.
         self._merging_statistics = { }
         self._merging_statistics_keys = []
+        
+        self._truncate_statistics = { }
+        self._truncate_statistics_keys = []
+        self._truncate_hklout = []
+        
+        self._sfcheck_statistics = { }
+        self._sfcheck_statistics_keys = []
 
         return
 
@@ -177,6 +184,36 @@ class AnalyseMyIntensities:
 
         return
 
+    def analyse_input_hklin(self):
+        '''Analyse all converted input reflection files.'''
+
+        for hklin in self._hklin_list:
+
+            # run truncate
+
+            # then sfcheck
+
+            # then whatever else for the analysis
+
+            # then store the truncated reflections
+
+            pass
+
+        return
+
+    def merge_analyse(self):
+        '''Merge and analyse all of the data sets together, now.'''
+
+        # compute "average" unit cell
+
+        # then set this unit cell for all hklin and also update the
+        # column names, perhaps
+
+        # then merge the reflection files together
+
+        # then run scaleit to look at the scaling statistics
+
+        return
     
             
 if __name__ == '__main__':
