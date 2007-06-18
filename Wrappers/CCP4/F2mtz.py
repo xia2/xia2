@@ -45,6 +45,60 @@ def F2mtz(DriverType = None):
         def set_symmetry(self, symmetry):
             self._symmetry = symmetry.replace(' ', '')
 
+        def xdsconv_anom2mtz(self):
+            self.check_hklin()
+            self.check_hklout()
+
+            if self._symmetry is None:
+                raise RuntimeError, 'symmetry not set'
+
+            if self._cell is None:
+                raise RuntimeError, 'cell not set'
+
+            self.set_task('Converting reflections to mtz %s => %s' % \
+                          (os.path.split(self.getHklin())[-1],
+                           os.path.split(self.getHklout())[-1]))
+
+            self.start()
+
+            self.input('cell %f %f %f %f %f %f' % \
+                       tuple(map(float, self._cell)))
+            self.input('symmetry %s' % self._symmetry)
+            self.input(
+                'labout H K L IMEAN SIGIMEAN I(+) SIGI(+) I(-) SIGI(-)') 
+            self.input('CTYPOUT H H H J Q K M K M')
+            
+            self.close_wait()
+
+            return self.get_ccp4_status()
+
+        def xdsconv_nat2mtz(self):
+            self.check_hklin()
+            self.check_hklout()
+
+            if self._symmetry is None:
+                raise RuntimeError, 'symmetry not set'
+
+            if self._cell is None:
+                raise RuntimeError, 'cell not set'
+
+            self.set_task('Converting reflections to mtz %s => %s' % \
+                          (os.path.split(self.getHklin())[-1],
+                           os.path.split(self.getHklout())[-1]))
+
+            self.start()
+
+            self.input('cell %f %f %f %f %f %f' % \
+                       tuple(map(float, self._cell)))
+            self.input('symmetry %s' % self._symmetry)
+            self.input(
+                'labout H K L IMEAN SIGIMEAN')
+            self.input('CTYPOUT H H H J Q')
+            
+            self.close_wait()
+
+            return self.get_ccp4_status()
+
         def f2mtz(self):
             self.check_hklin()
             self.check_hklout()
