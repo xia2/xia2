@@ -52,8 +52,11 @@ def F2mtz(DriverType = None):
             self._cell = cell
 
         def set_symmetry(self, symmetry):
-            self._symmetry = symmetry.replace(' ', '')
-
+            if type(symmetry) == type('str'):
+                self._symmetry = symmetry.replace(' ', '')
+            else:
+                self._symmetry = str(symmetry)
+                
         def xdsconv_anom2mtz(self):
             self.check_hklin()
             self.check_hklout()

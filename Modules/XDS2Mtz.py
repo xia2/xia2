@@ -126,7 +126,7 @@ class XDS2Mtz:
                 f2mtz.xdsconv_nat2mtz()
 
             cad = self._factory.Cad()
-            cad.set_hklin(hklout_f)
+            cad.add_hklin(hklout_f)
             cad.set_hklout(hklout)
             cad.update()
             
@@ -158,7 +158,7 @@ class XDS2Mtz:
 
             s = self._factory.Sortmtz()
             s.set_hklin(hklin)
-            s.set_hklout(hklout_a)
+            s.set_hklout(hklout_s)
             s.sort()
             
             hklin = hklout_s
@@ -189,6 +189,10 @@ if __name__ == '__main__':
 
     xds2mtz.xds_to_mtz(os.path.join(unmerged_data, 'TS03_INFL_ANOM.hkl'),
                        'unmerged_anom.mtz', True)
+    xds2mtz.xds_to_mtz(os.path.join(merged_data, 'TS03_INFL_ANOM.hkl'),
+                       'merged_anom.mtz', True)
+    xds2mtz.xds_to_mtz(os.path.join(merged_data, 'TS03_INFL_NAT.hkl'),
+                       'merged_.nat.mtz', True)
                        
     
         

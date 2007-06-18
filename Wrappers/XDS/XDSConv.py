@@ -38,6 +38,7 @@ def XDSConv(DriverType = None):
 
         def __init__(self):
             DriverInstance.__class__.__init__(self)
+            self.set_executable('xdsconv')
 
             self._input_file = None
             self._cell = None
@@ -119,7 +120,7 @@ def XDSConv(DriverType = None):
                 
                 self._input_file = os.path.split(self._input_file)[-1]
 
-            header = parse_xds_ascii(self._input_file)
+            header = self.parse_xds_ascii(self._input_file)
 
             if not self._cell:
                 self._cell = header['cell']
@@ -127,7 +128,10 @@ def XDSConv(DriverType = None):
             if not self._symmetry:
                 self._symmetry = header['spacegroup']
 
-            self._resolution = header['resolution_range']
+            if header.has_key('resolution_range'):
+                self._resolution = header['resolution_range']
+            else:
+                self._resolution = [100.0, 0.1]
             self._resolution.sort()
             self._resolution.reverse()
 
@@ -150,7 +154,7 @@ def XDSConv(DriverType = None):
             inp.close()
 
             self.start()
-            self.close_wair()
+            self.close_wait()
 
             # should really parse the output
 
