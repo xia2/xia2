@@ -145,7 +145,7 @@ class AnalyseMyIntensities:
                                        project_info = self._project_info[j])
 
                 if s:
-                    k = (j, self._project_info[i])
+                    k = (j, self._project_info[j])
                     self._merging_statistics[j] = s
                     self._merging_statistucs_keys.append(k)
 
@@ -164,7 +164,7 @@ class AnalyseMyIntensities:
                                                    self._project_info[j])
 
                 if s:
-                    k = (j, self._project_info[i])
+                    k = (j, self._project_info[j])
                     self._merging_statistics[j] = s
                     self._merging_statistucs_keys.append(k)
                 

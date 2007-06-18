@@ -168,7 +168,8 @@ class XDS2Mtz:
             sc.set_hklin(hklin)
             sc.set_hklout(hklout)
             if project_info:
-                sc.set_project_info(project_info)
+                pname, xname, dnme = project_info
+                sc.set_project_info(pname, xname, dname)
             sc.set_anomalous(anomalous)
             sc.set_onlymerge()
             sc.merge()
