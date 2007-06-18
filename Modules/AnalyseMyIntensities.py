@@ -147,7 +147,7 @@ class AnalyseMyIntensities:
                 if s:
                     k = (j, self._project_info[j])
                     self._merging_statistics[j] = s
-                    self._merging_statistucs_keys.append(k)
+                    self._merging_statistics_keys.append(k)
 
                 mtz_in.append(hklout)
                 
@@ -166,7 +166,7 @@ class AnalyseMyIntensities:
                 if s:
                     k = (j, self._project_info[j])
                     self._merging_statistics[j] = s
-                    self._merging_statistucs_keys.append(k)
+                    self._merging_statistics_keys.append(k)
                 
                 mtz_in.append(hklout)
 
