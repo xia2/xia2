@@ -31,18 +31,18 @@ def ami():
 
     # print a banner
 
-    sys.stdout.write(
-        '###############################################################\n')
-    sys.stdout.write(
-        '###############################################################\n')
-    sys.stdout.write(
-        '###############################################################\n')
-    sys.stdout.write(
-        '### CCP4 6.0: AMI       version %7s                ###\n' \
+    Chatter.write(
+        '###############################################################')
+    Chatter.write(
+        '###############################################################')
+    Chatter.write(
+        '###############################################################')
+    Chatter.write(
+        '### CCP4 6.0: AMI       version %7s                ###' \
         % Version)
-    sys.stdout.write(
-        '###############################################################\n')
-    sys.stdout.write('Run time / date: %s\n' % time.asctime())
+    Chatter.write(
+        '###############################################################')
+    Chatter.write('Run time / date: %s' % time.asctime())
 
     arguments = sys.argv
 
@@ -162,13 +162,15 @@ def ami():
     _ami.convert_to_mtz()
     _ami.analyse_input_hklin()
     _ami.merge_analyse()
-    _ami._get_solvent()
+    solvent = _ami._get_solvent()
+
+    Chatter.write('Solvent fraction estimated as %s' % solvent)
 
     _ami.write_log_file('ami.log')
 
     if verb:
         for line in _ami.get_log_file():
-            sys.stdout.write(line)
+            Chatter.write(line[:-1])
 
     return
 

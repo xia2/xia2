@@ -111,6 +111,9 @@ class AnalyseMyIntensities:
         self._hklin_list.append(hklin)
         if project_info:
             self._project_info.append(project_info)
+            pname, xname, dname = project_info
+            Chatter.write('Storing %s/%s/%s with %s' % \
+                          (pname, xname, dname, hklin))
         else:
             # try to get this from the reflection file
             mtzdump = self._factory.Mtzdump()
