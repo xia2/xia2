@@ -266,22 +266,22 @@ class AnalyseMyIntensities:
                     cell_gamma = info['cell'][5]
                     n_input += 1
                 else:
-                    if math.fabs(n_input * cell[0] - cell_a) / \
+                    if math.fabs(n_input * info['cell'][0] - cell_a) / \
                        cell_a > 0.1:
                         raise RuntimeError, 'inconsistent unit cell'
-                    if math.fabs(n_input * cell[1] - cell_b) / \
+                    if math.fabs(n_input * info['cell'][1] - cell_b) / \
                        cell_b > 0.1:
                         raise RuntimeError, 'inconsistent unit cell'
-                    if math.fabs(n_input * cell[2] - cell_c) / \
+                    if math.fabs(n_input * info['cell'][2] - cell_c) / \
                        cell_c > 0.1:
                         raise RuntimeError, 'inconsistent unit cell'
-                    if math.fabs(n_input * cell[3] - cell_alpha) / \
+                    if math.fabs(n_input * info['cell'][3] - cell_alpha) / \
                        cell_alpha > 0.1:
                         raise RuntimeError, 'inconsistent unit cell'
-                    if math.fabs(n_input * cell[4] - cell_beta) / \
+                    if math.fabs(n_input * info['cell'][4] - cell_beta) / \
                        cell_beta > 0.1:
                         raise RuntimeError, 'inconsistent unit cell'
-                    if math.fabs(n_input * cell[5] - cell_gamma) / \
+                    if math.fabs(n_input * info['cell'][5] - cell_gamma) / \
                        cell_gamma > 0.1:
                         raise RuntimeError, 'inconsistent unit cell'
 
@@ -367,22 +367,22 @@ class AnalyseMyIntensities:
                     cell_gamma = info['cell'][5]
                     n_input += 1
                 else:
-                    if math.fabs(n_input * cell[0] - cell_a) / \
+                    if math.fabs(n_input * info['cell'][0] - cell_a) / \
                        cell_a > 0.1:
                         raise RuntimeError, 'inconsistent unit cell'
-                    if math.fabs(n_input * cell[1] - cell_b) / \
+                    if math.fabs(n_input * info['cell'][1] - cell_b) / \
                        cell_b > 0.1:
                         raise RuntimeError, 'inconsistent unit cell'
-                    if math.fabs(n_input * cell[2] - cell_c) / \
+                    if math.fabs(n_input * info['cell'][2] - cell_c) / \
                        cell_c > 0.1:
                         raise RuntimeError, 'inconsistent unit cell'
-                    if math.fabs(n_input * cell[3] - cell_alpha) / \
+                    if math.fabs(n_input * info['cell'][3] - cell_alpha) / \
                        cell_alpha > 0.1:
                         raise RuntimeError, 'inconsistent unit cell'
-                    if math.fabs(n_input * cell[4] - cell_beta) / \
+                    if math.fabs(n_input * info['cell'][4] - cell_beta) / \
                        cell_beta > 0.1:
                         raise RuntimeError, 'inconsistent unit cell'
-                    if math.fabs(n_input * cell[5] - cell_gamma) / \
+                    if math.fabs(n_input * info['cell'][5] - cell_gamma) / \
                        cell_gamma > 0.1:
                         raise RuntimeError, 'inconsistent unit cell'
 
@@ -520,7 +520,13 @@ if __name__ == '__main__':
 
     ami.add_hklin(infl, project_info = ('AMI', 'TEST', 'INFL'))
     ami.add_hklin(lrem, project_info = ('AMI', 'TEST', 'LREM'))
+    ami.set_hklout('out.mtz')
+
+    ami.set_nres(180)
 
     ami.convert_to_mtz()
+    ami.analyse_input_hklin()
+    ami.merge_analyse()
+    ami._get_solvent()
 
     ami.write_log_file('ami.log')
