@@ -96,7 +96,7 @@ class AnalyseMyIntensities:
 
     def write_log_file(self, filename):
         fout = open(filename, 'w')
-        for o in self._hige_log_file:
+        for o in self._huge_log_file:
             fout.write(o)
         fout.close()
 
@@ -151,17 +151,27 @@ class AnalyseMyIntensities:
 
         # else try and compute an estimate
 
+        if self._cell:
+            cell = self._cell
+        else:
+            cell = self._average_cell
+
+        if self._symm:
+            symm = self._symm
+        else:
+            symm = self._average_sg
+
         if not self._nmol:
 
             self._nmol = compute_nmol(
-                self._cell[0], self._cell[1], self._cell[2],
-                self._cell[3], self._cell[4], self._cell[3],
-                self._average_sg, self._resolution, self._nres)
+                cell[0], cell[1], cell[2],
+                cell[3], cell[4], cell[3],
+                symm, self._resolution, self._nres)
 
         self._solvent = compute_solvent(
-            self._cell[0], self._cell[1], self._cell[2],
-            self._cell[3], self._cell[4], self._cell[3],
-            self._average_sg, self._nmol, self._nres)
+            cell[0], cell[1], cell[2],
+            cell[3], cell[4], cell[3],
+            symm, self._nmol, self._nres)
         
         return self._solvent
         
@@ -424,6 +434,8 @@ class AnalyseMyIntensities:
             truncate = self._factory.Truncate()
             truncate.set_hklin(hklin)
             truncate.set_hklout(hklout)
+            if self._anomalous:
+                truncate.set_anomalous(True)
             truncate.truncate()
 
             for o in truncate.get_all_output():
@@ -520,6 +532,8 @@ if __name__ == '__main__':
 
     ami.add_hklin(infl, project_info = ('AMI', 'TEST', 'INFL'))
     ami.add_hklin(lrem, project_info = ('AMI', 'TEST', 'LREM'))
+
+    ami.set_anomalous(True)
     ami.set_hklout('out.mtz')
 
     ami.set_nres(180)
