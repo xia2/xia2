@@ -29,6 +29,7 @@ from Wrappers.CCP4.Rebatch import Rebatch as _Rebatch
 from Wrappers.CCP4.Reindex import Reindex as _Reindex
 from Wrappers.CCP4.Mtz2various import Mtz2various as _Mtz2various
 from Wrappers.CCP4.Cad import Cad as _Cad
+from Wrappers.CCP4.F2mtz import F2mtz as _F2mtz
 from Wrappers.CCP4.Freerflag import Freerflag as _Freerflag
 from Wrappers.CCP4.Pointless import Pointless as _Pointless
 from Wrappers.CCP4.Sfcheck import Sfcheck as _Sfcheck
@@ -115,6 +116,14 @@ class CCP4Factory:
         cad.set_working_directory(self.get_working_directory())
         auto_logfiler(cad)
         return cad
+
+    def F2mtz(self):
+        '''Create a F2mtz wrapper from _F2mtz - set the working directory
+        and log file stuff as a part of this...'''
+        f2mtz = _F2mtz()
+        f2mtz.set_working_directory(self.get_working_directory())
+        auto_logfiler(f2mtz)
+        return f2mtz
 
     def Freerflag(self):
         '''Create a Freerflag wrapper from _Freerflag - set the working
