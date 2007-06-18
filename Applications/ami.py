@@ -119,9 +119,9 @@ def ami():
             value = a.split()[1].lower()
 
             if value in ['true', 'on', 'y']:
-                anom = True
+                verb = True
             elif value in ['false', 'off', 'n']:
-                anom = False
+                verb = False
             else:
                 raise RuntimeError, 'value %s unknown for verbose' % \
                       a.split()[1]

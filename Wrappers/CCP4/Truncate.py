@@ -52,6 +52,12 @@ def Truncate(DriverType = None):
             self._b_factor = 0.0
             self._moments = None
 
+            self._wilson_fit_grad = 0.0
+            self._wilson_fit_grad_sd = 0.0
+            self._wilson_fit_m = 0.0
+            self._wilson_fit_m_sd = 0.0
+            self._wilson_fit_range = None
+            
             return
 
         def set_anomalous(self, anomalous):
@@ -98,6 +104,18 @@ def Truncate(DriverType = None):
                     list = line.replace('=', ' ').split()
                     self._b_factor = float(list[6])
 
+                if 'LSQ Line Gradient' in line:
+                    self._wilson_fit_grad = float(line.split()[-1])
+                if 'Uncertainty in Gradient' in line:
+                    self._wilson_fit_grad_sd = float(line.split()[-1])
+                if 'X Intercept' in line:
+                    self._wilson_fit_m = float(line.split()[-1])
+                if 'Uncertainty in Intercept' in line:
+                    self._wilson_fit_m_sd = float(line.split()[-1])
+                if 'Resolution range' in line:
+                    self._wilson_fit_range = map(float, line.split()[-2:])
+                    
+                    
             results = self.parse_ccp4_loggraph()
             moments = transpose_loggraph(
                 results['Acentric Moments of E for k = 1,3,4,6,8'])
@@ -111,6 +129,13 @@ def Truncate(DriverType = None):
 
         def get_b_factor(self):
             return self._b_factor
+
+        def get_wilson_fit(self):
+            return self._wilson_fit_grad, self._wilson_fit_grad_sd, \
+                   self._wilson_fit_m, self._wilson_fit_m_sd
+
+        def get_wilson_fit_range(self):
+            return self._wilson_fit_range
 
         def get_moments(self):
             return self._moments

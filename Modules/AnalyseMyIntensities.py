@@ -483,6 +483,14 @@ class AnalyseMyIntensities:
                 truncate.set_anomalous(True)
             truncate.truncate()
 
+            # look at the wilson plot fit stats -
+            # y = A e ^ - m x
+            m, dm, A, da = truncate.get_wilson_fit()
+            dmax, dmin = truncate.get_wilson_fit_range()
+
+            Chatter.write('Over range %.2f %.2f get dm / m = %.3f' % \
+                          (dmax, dmin, math.fabs(dm / m)))
+
             for o in truncate.get_all_output():
                 self._huge_log_file.append(o)
 
