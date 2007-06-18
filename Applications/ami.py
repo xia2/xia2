@@ -53,6 +53,7 @@ def ami():
     nres = None
     rein = None
     anom = None
+    verb = False
 
     while True:
         try:
@@ -96,6 +97,17 @@ def ami():
             else:
                 raise RuntimeError, 'value %s unknown for anomalous' % \
                       a.split()[1]
+
+        elif command == 'verb':
+            value = a.split()[1].lower()
+
+            if value in ['true', 'on', 'y']:
+                anom = True
+            elif value in ['false', 'off', 'n']:
+                anom = False
+            else:
+                raise RuntimeError, 'value %s unknown for verbose' % \
+                      a.split()[1]
             
         elif command == 'rein':
             rein = a.split()[1]
@@ -137,8 +149,9 @@ def ami():
 
     _ami.write_log_file('ami.log')
 
-    for line in _ami.get_log_file():
-        sys.stdout.write(line)
+    if verb:
+        for line in _ami.get_log_file():
+            sys.stdout.write(line)
 
     return
 

@@ -109,7 +109,22 @@ class AnalyseMyIntensities:
 
     def add_hklin(self, hklin, project_info = None):
         self._hklin_list.append(hklin)
-        self._project_info.append(project_info)
+        if project_info:
+            self._project_info.append(project_info)
+        else:
+            # try to get this from the reflection file
+            mtzdump = self._factory.Mtzdump()
+            mtzdump.set_hklin(hklin)
+            mtzdump.dump()
+            
+            datasets = mtzdump.get_datasets()
+            if len(datasets) > 1:
+                raise RuntimeError, 'more than one dataset in %s' % hklin
+            pname, xname, dname = datasets[0].split('/')
+            Chatter.write('Found %s in %s' % \
+                          (datasets[0], hklin))
+            self._project_info.append((pname, xname, dname))
+            
         return
 
     def set_hklout(self, hklout):
@@ -261,7 +276,7 @@ class AnalyseMyIntensities:
                 mtzdump.set_hklin(hklin)
                 mtzdump.dump()
 
-                datasets = mtzdump.get_datasets()
+                datasets = mtzdump.get_datasets() 
                 if len(datasets) > 1:
                     raise RuntimeError, 'more than one dataset in %s' % hklin
                 info = mtzdump.get_dataset_info(datasets[0])
