@@ -52,7 +52,7 @@ def is_mtz_file(filename):
 def is_xds_file(filename):
     '''Check to see if a file looks like XDS_ASCII format.'''
 
-    first_token = open(filename, 'r').readline().split()[1]
+    first_token = open(filename, 'r').readline().split()[0]
 
     if first_token == '!FORMAT=XDS_ASCII':
         return True
