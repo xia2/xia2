@@ -55,8 +55,8 @@ class XDS2Mtz:
         if not '!FORMAT=XDS_ASCII' in first_record[0]:
             raise RuntimeError, 'file "%s" not XDS_ASCII' % file
 
-        for token in file_record:
-            if 'MERGED' in token:
+        for token in first_record:
+            if 'MERGE' in token:
                 is_merged = token.split('=')[-1].lower()
                 if is_merged == 'false':
                     return False
@@ -65,7 +65,6 @@ class XDS2Mtz:
                 else:
                     raise RuntimeError, 'unrecognised MERGE token  "%s"' % \
                           token
-        
 
         raise RuntimeError, 'cannot find MERGE token'
 
@@ -140,7 +139,7 @@ class XDS2Mtz:
             
             FileHandler.record_temporary_file(hklout_c)
             
-            c = self.Combat()
+            c = self._factory.Combat()
             c.set_hklin(xds)
             c.set_hklout(hklout_c)
             if spacegroup:
@@ -157,14 +156,14 @@ class XDS2Mtz:
                                   
             FileHandler.record_temporary_file(hklout_s)
 
-            s = self.Sortmtz()
+            s = self._factory.Sortmtz()
             s.set_hklin(hklin)
-            s.set_hklout(hklout)
+            s.set_hklout(hklout_a)
             s.sort()
             
             hklin = hklout_s
 
-            sc = self.Scala()
+            sc = self._factory.Scala()
             sc.set_hklin(hklin)
             sc.set_hklout(hklout)
             if project_info:
@@ -178,7 +177,19 @@ class XDS2Mtz:
             return hklout
             
 
-# ned to add some tests here....        
-                
+if __name__ == '__main__':
+
+    unmerged_data = os.path.join(os.environ['XIA2_ROOT'],
+                                 'Data', 'Test', 'AMI', 'xds_unmerged')
+
+    merged_data = os.path.join(os.environ['XIA2_ROOT'],
+                               'Data', 'Test', 'AMI', 'xds_merged')
+
+    xds2mtz = XDS2Mtz()
+
+    xds2mtz.xds_to_mtz(os.path.join(unmerged_data, 'TS03_INFL_ANOM.hkl'),
+                       'unmerged_anom.mtz', True)
+                       
+    
         
         
