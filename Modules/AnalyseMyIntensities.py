@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # AnalyseMyIntensities.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
+#   Copyright (C) 2007 CCLRC, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
@@ -360,6 +360,7 @@ class AnalyseMyIntensities:
                 
                 reindex = self._factory.Reindex()
                 reindex.set_hklin(hklin)
+                reindex.set_hklout(hklout)
                 if self._symmetry:
                     reindex.set_spacegroup(self._symmetry)
                 if self._reindex:

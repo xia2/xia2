@@ -24,8 +24,25 @@ from Handlers.Citations import Citations
 
 from Modules.AnalyseMyIntensities import AnalyseMyIntensities
 
+from XIA2Version import Version
+
 def ami():
     '''Perform the analysis via AnalyseMyIntensities.'''
+
+    # print a banner
+
+    sys.stdout.write(
+        '###############################################################\n')
+    sys.stdout.write(
+        '###############################################################\n')
+    sys.stdout.write(
+        '###############################################################\n')
+    sys.stdout.write(
+        '### CCP4 6.0: AMI       version %7s                ###\n' \
+        % Version)
+    sys.stdout.write(
+        '###############################################################\n')
+    sys.stdout.write('Run time / date: %s\n' % time.asctime())
 
     arguments = sys.argv
 
