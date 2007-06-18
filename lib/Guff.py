@@ -49,6 +49,21 @@ def is_mtz_file(filename):
 
     return False
 
+def is_xds_file(filename):
+    '''Check to see if a file looks like XDS_ASCII format.'''
+
+    first_token = open(filename, 'r').readline().split()[1]
+
+    if first_token == '!FORMAT=XDS_ASCII':
+        return True
+
+    return False
+
+def is_scalepack_file(filename):
+    '''Determine if a file looks like scalepack format.'''
+
+    return True
+
 def nifty_power_of_ten(num):
     '''Return 10^n: 10^n > num; 10^(n-1) <= num.'''
 
