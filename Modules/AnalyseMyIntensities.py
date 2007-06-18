@@ -43,6 +43,7 @@ from Modules.Mtz2Scalepack import Mtz2Scalepack
 from Modules.XDS2Mtz import XDS2Mtz
 
 from lib.Guff import is_mtz_file, is_xds_file, is_scalepack_file
+from lib.NMolLib import compute_nmol, compute_solvent
 
 class AnalyseMyIntensities:
     '''A class to use for intensity analysis. This will gather intensities
@@ -162,7 +163,7 @@ class AnalyseMyIntensities:
             self._cell[3], self._cell[4], self._cell[3],
             self._average_sg, self._nmol, self._nres)
         
-        reurn self._solvent
+        return self._solvent
         
 
     def convert_to_mtz(self):
