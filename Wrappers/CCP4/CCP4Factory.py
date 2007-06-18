@@ -22,6 +22,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 # the wrappers that this will use - these are renamed so that the internal
 # factory version can be used...
 from Wrappers.CCP4.Scala import Scala as _Scala
+from Wrappers.CCP4.Scaleit import Scaleit as _Scaleit
 from Wrappers.CCP4.Sortmtz import Sortmtz as _Sortmtz
 from Wrappers.CCP4.Mtzdump import Mtzdump as _Mtzdump
 from Wrappers.CCP4.Truncate import Truncate as _Truncate
@@ -62,6 +63,14 @@ class CCP4Factory:
         scala.set_working_directory(self.get_working_directory())
         auto_logfiler(scala)
         return scala
+
+    def Scaleit(self):
+        '''Create a Scaleit wrapper from _Scaleit - set the working directory
+        and log file stuff as a part of this...'''
+        scaleit = _Scaleit()
+        scaleit.set_working_directory(self.get_working_directory())
+        auto_logfiler(scaleit)
+        return scaleit
 
     def Sortmtz(self):
         '''Create a Sortmtz wrapper from _Sortmtz - set the working directory
