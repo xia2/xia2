@@ -60,7 +60,7 @@ class AnalyseMyIntensities:
         self._nres = 0
         self._nmol = 0
         self._cell = None
-        self._symm = None
+        self._symmetry = None
         self._reindex = None
         self._anomalous = False
 
@@ -147,8 +147,8 @@ class AnalyseMyIntensities:
         self._cell = cell
         return
 
-    def set_symm(self, symm):
-        self._symm = symm
+    def set_symmetry(self, symmetry):
+        self._symmetry = symmetry
         return
 
     def set_reindex(self, reindex):
@@ -176,22 +176,22 @@ class AnalyseMyIntensities:
         else:
             cell = self._average_cell
 
-        if self._symm:
-            symm = self._symm
+        if self._symmetry:
+            symmetry = self._symmetry
         else:
-            symm = self._average_sg
+            symmetry = self._average_sg
 
         if not self._nmol:
 
             self._nmol = compute_nmol(
                 cell[0], cell[1], cell[2],
                 cell[3], cell[4], cell[3],
-                symm, self._resolution, self._nres)
+                symmetry, self._resolution, self._nres)
 
         self._solvent = compute_solvent(
             cell[0], cell[1], cell[2],
             cell[3], cell[4], cell[3],
-            symm, self._nmol, self._nres)
+            symmetry, self._nmol, self._nres)
         
         return self._solvent
         
@@ -220,7 +220,7 @@ class AnalyseMyIntensities:
 
                 xds2mtz = XDS2Mtz()
                 s = xds2mtz.xds_to_mtz(hklin, hklout, self._anomalous,
-                                       spacegroup = self._symm,
+                                       spacegroup = self._symmetry,
                                        cell = self._cell,
                                        project_info = self._project_info[j])
 
@@ -242,7 +242,7 @@ class AnalyseMyIntensities:
                 scalepack2mtz = Scalepack2Mtz()
                 s = scalepack2mtz.scalepack_to_mtz(hklin, hklout,
                                                    self._anomalous,
-                                                   self._symm, self._cell,
+                                                   self._symmetry, self._cell,
                                                    self._project_info[j])
 
                 if s:
@@ -258,7 +258,7 @@ class AnalyseMyIntensities:
         # next work through this list and apply reindexing operators
         # etc if set...
 
-        if not self._symm and not self._reindex:
+        if not self._symmetry and not self._reindex:
             Chatter.write('Determining unit cell')
 
             # build up the average unit cell here
@@ -360,8 +360,8 @@ class AnalyseMyIntensities:
                 
                 reindex = self._factory.Reindex()
                 reindex.set_hklin(hklin)
-                if self._symm:
-                    reindex.set_spacegroup(self._symm)
+                if self._symmetry:
+                    reindex.set_spacegroup(self._symmetry)
                 if self._reindex:
                     reindex.set_operator(self._reindex)
                 reindex.reindex()
