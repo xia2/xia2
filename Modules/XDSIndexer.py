@@ -46,6 +46,7 @@ from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 from lib.Guff import auto_logfiler
 from Handlers.Streams import Chatter, Debug
+from Handlers.Flags import Flags
 
 class XDSIndexer(FrameProcessor,
                  Indexer):
