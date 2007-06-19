@@ -292,6 +292,13 @@ def Pointless(DriverType = None):
             xml_file = os.path.join(self.get_working_directory(),
                                     'pointless.xml')
 
+            # catch the case sometimes on ppc mac where pointless adds
+            # an extra .xml on the end...
+            
+            if not os.path.exists(xml_file) and \
+               os.path.exists('%s.xml' % xml_file):
+                xml_file = '%s.xml' % xml_file
+
             if not self._hklref:
 
                 dom = xml.dom.minidom.parse(xml_file)
