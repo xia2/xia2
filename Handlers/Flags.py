@@ -25,6 +25,8 @@ class _Flags:
         self._always_refine = False
         self._zero_dose = False
 
+        self._relax = False
+
         return
 
     def set_quick(self, quick):
@@ -33,6 +35,13 @@ class _Flags:
 
     def get_quick(self):
         return self._quick
+
+    def set_relax(self, relax):
+        self._relax = relax
+        return
+
+    def get_relax(self):
+        return self._relax
 
     def set_migrate_data(self, migrate_data):
         self._migrate_data = migrate_data

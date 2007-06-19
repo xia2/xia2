@@ -328,11 +328,13 @@ class XDSIndexer(FrameProcessor,
                     for j in range(3):
                         # allow two percent variation in unit cell length
                         if math.fabs((cell[j] - original_cell[j]) / \
-                                     original_cell[j]) > 0.02:
+                                     original_cell[j]) > 0.02 and \
+                                     not Flags.get_relax():
                             Debug.write('XDS unhappy and solution wrong')
                             raise e
                         # and two degree difference in angle
-                        if math.fabs(cell[j + 3] - original_cell[j + 3]) > 2.0:
+                        if math.fabs(cell[j + 3] - original_cell[j + 3]) \
+                               > 2.0 and not Flags.get_relax():
                             Debug.write('XDS unhappy and solution wrong')
                             raise e                        
                     Debug.write('XDS unhappy but solution ok')

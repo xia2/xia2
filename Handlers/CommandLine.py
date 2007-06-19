@@ -79,6 +79,7 @@ class _CommandLine(Object):
 
         self._read_trust_timestamps()
         self._read_quick()
+        self._read_relax()
         self._read_always_refine()
         self._read_2d()
         self._read_3d()
@@ -478,6 +479,12 @@ class _CommandLine(Object):
 
         if '-quick' in sys.argv:
             Flags.set_quick(True)
+        return
+
+    def _read_relax(self):
+
+        if '-relax' in sys.argv:
+            Flags.set_relax(True)
         return
 
     def _read_zero_dose(self):

@@ -226,7 +226,11 @@ class XDSIntegrater(FrameProcessor,
             # may be screwing things up - perhaps it would
             # be best to allow XDS just to index with a free
             # cell but target lattice??
-            # self._intgr_indexer.set_indexer_input_cell(cell)
+            if Flags.get_relax():
+                Debug.write(
+                    'Inputting target cell: %.2f %.2f %.2f %.2f %.2f %.2f' % \
+                    cell)
+                self._intgr_indexer.set_indexer_input_cell(cell)
             input_cell = cell
 
             self._intgr_indexer.set_indexer_input_lattice(lattice)
