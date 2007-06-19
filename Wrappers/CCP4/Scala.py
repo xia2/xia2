@@ -311,7 +311,6 @@ def Scala(DriverType = None):
                 if 'Scaling has failed to converge' in line:
                     raise RuntimeError, 'scaling not converged'
 
-
             return
 
         def merge(self):
@@ -338,7 +337,8 @@ def Scala(DriverType = None):
             self.start()
             # for the harvesting information
             # self.input('usecwd')
-            self.input('run 1 all')
+            self.input('run 1 batch 1 to 10000')
+            # self.input('run 1 all')
             self.input('scales constant')
             self.input('initial unity')
             self.input('sdcorrection both noadjust 1.0 0.0 0.0')
@@ -366,6 +366,11 @@ def Scala(DriverType = None):
                 self.check_ccp4_errors()
                 self.check_scala_errors()
 
+                status = self.get_ccp4_status()
+
+                if 'Error' in status:
+                    raise RuntimeError, '[SCALA] %s' % status
+                    
             except RuntimeError, e:
                 try:
                     os.remove(self.get_hklout())
