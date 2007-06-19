@@ -209,7 +209,7 @@ class AnalyseMyIntensities:
 
         for j in range(len(self._hklin_list)):
             hklin = self._hklin_list[j]
-            
+
             if is_mtz_file(hklin):
                 mtz_in.append(hklin)
 
@@ -361,7 +361,7 @@ class AnalyseMyIntensities:
                     self.get_working_directory(),
                     'AMI_HKLIN%d_reindex.mtz' % j)
                     
-                Chatter.write('Reindexing %s' % hklin)
+                Chatter.write('Reindexing %s' % os.path.split(hklin)[-1])
                 
                 reindex = self._factory.Reindex()
                 reindex.set_hklin(hklin)
@@ -476,7 +476,11 @@ class AnalyseMyIntensities:
 
             # run truncate
 
-            Chatter.write('Truncating %s' % hklin)
+            if not self._project_info[j]:
+                Chatter.write('Truncating %s' % os.path.split(hklin)[-1])
+            else:
+                pname, xname, dname = self._project_info[j]
+                Chatter.write('Truncating %s/%s/%s' % (pname, xname, dname))
 
             truncate = self._factory.Truncate()
             truncate.set_hklin(hklin)
@@ -490,8 +494,15 @@ class AnalyseMyIntensities:
             m, dm, A, da = truncate.get_wilson_fit()
             dmax, dmin = truncate.get_wilson_fit_range()
 
-            Chatter.write('Over range %.2f %.2f get dm / m = %.3f' % \
-                          (dmax, dmin, math.fabs(dm / m)))
+            if dm / m < 0.1:
+                Chatter.write(
+                    'Over range %.2f %.2f get dm / m = %.3f: Wilson OK!' % \
+                    (dmax, dmin, math.fabs(dm / m)))
+            else:
+                Chatter.write(
+                    'Over range %.2f %.2f get dm / m = %.3f: Wilson BAD!' % \
+                    (dmax, dmin, math.fabs(dm / m)))
+                
 
             for o in truncate.get_all_output():
                 self._huge_log_file.append(o)
@@ -506,11 +517,17 @@ class AnalyseMyIntensities:
 
             j += 1
 
+        j = 0
+
         for hklin in self._truncate_hklout:
 
             # run sfcheck
 
-            Chatter.write('Sfchecking %s' % hklin)
+            if not self._project_info[j]:
+                Chatter.write('Sfchecking %s' % os.path.split(hklin)[-1])
+            else:
+                pname, xname, dname = self._project_info[j]
+                Chatter.write('Sfchecking %s/%s/%s' % (pname, xname, dname))
 
             sfcheck = self._factory.Sfcheck()
             sfcheck.set_hklin(hklin)
@@ -518,7 +535,16 @@ class AnalyseMyIntensities:
 
             twinning_score = sfcheck.get_twinning()
 
-            Chatter.write('Twinning score: %.2f' % twinning_score)
+            if math.fabs(twinning_score - 1.5) < 0.2:
+                Chatter.write('<I^2>/<I>^2 score: %.2f (twinned)' % \
+                              twinning_score)
+            elif twinning_score > 2.5:
+                Chatter.write('<I^2>/<I>^2 score: %.2f (nasty)' % \
+                              twinning_score)
+            else:
+                Chatter.write('<I^2>/<I>^2 score: %.2f (ok)' % \
+                              twinning_score)
+                
 
             for o in sfcheck.get_all_output():
                 self._huge_log_file.append(o)
