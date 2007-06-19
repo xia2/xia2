@@ -330,7 +330,8 @@ class Scalepack2Mtz:
             c.set_spacegroup(spacegroup)
             c.set_cell(cell)
             if project_info:
-                c.set_project_info(project_info)
+                pname, xname, dname = project_info
+                c.set_project_info(pname, xname, dname)
             c.run()
         
             hklin = hklout_c
