@@ -191,6 +191,8 @@ class AnalyseMyIntensities:
                 cell[3], cell[4], cell[3],
                 symmetry, self._resolution, self._nres)
 
+            Chatter.write('Estimated %d molecules / ASU' % self._nmol)
+
         self._solvent = compute_solvent(
             cell[0], cell[1], cell[2],
             cell[3], cell[4], cell[3],
