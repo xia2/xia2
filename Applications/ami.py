@@ -81,6 +81,9 @@ def ami():
         if not a.strip():
             continue
 
+        if a[0] == '#' or a[0] == '!':
+            continue
+
         if a.lower() == 'end':
             break
 
