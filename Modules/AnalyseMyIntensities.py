@@ -575,6 +575,25 @@ class AnalyseMyIntensities:
 
         scaleit.scaleit()
 
+        statistics = scaleit.get_statistics()
+
+        wavelengths = statistics['mapping']
+        b_factors = statistics['b_factor']
+
+        derivatives = wavelengths.keys()
+        derivatives.sort()
+
+        status = []
+
+        for j in derivatives:
+            name = b_factors[j]['dname']
+            b = b_factors[j]['b']
+            r = b_factors[j]['r']
+
+            Chatter.write('%s %5.2f %4.2f' % (name, b, r))
+
+        return status
+
         for o in scaleit.get_all_output():
             self._huge_log_file.append(o)
 
