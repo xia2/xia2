@@ -342,7 +342,7 @@ class Scalepack2Mtz:
 
             s = self.Sortmtz()
             s.set_hklin(hklin)
-            s.set_hklout(hklout)
+            s.set_hklout(hklout_s)
             s.sort()
             
             hklin = hklout_s
