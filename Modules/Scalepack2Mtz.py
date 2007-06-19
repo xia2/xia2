@@ -311,7 +311,8 @@ class Scalepack2Mtz:
             s2m.set_spacegroup(spacegroup)
             s2m.set_cell(cell)
             if project_info:
-                s2m.set_project_info(project_info)
+                pname, xname, dname = project_info
+                s2m.set_project_info(pname, xname, dname)
             s2m.convert()
 
             return 

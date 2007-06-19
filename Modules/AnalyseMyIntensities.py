@@ -514,6 +514,10 @@ class AnalyseMyIntensities:
             sfcheck.set_hklin(hklin)
             sfcheck.analyse()
 
+            twinning_score = sfcheck.get_twinning()
+
+            Chatter.write('Twinning score: %.2f' % twinning_score)
+
             for o in sfcheck.get_all_output():
                 self._huge_log_file.append(o)
 
@@ -572,6 +576,7 @@ class AnalyseMyIntensities:
 
         scaleit.set_hklin(self._hklout)
         scaleit.set_hklout(hklout)
+        scaleit.set_anomalous(self._anomalous)
 
         scaleit.scaleit()
 
@@ -583,16 +588,19 @@ class AnalyseMyIntensities:
         derivatives = wavelengths.keys()
         derivatives.sort()
 
-        status = []
+        for j in derivatives[:1]:
+            name = b_factors[j]['dname']
+            b = b_factors[j]['b']
+            r = b_factors[j]['r']
 
-        for j in derivatives:
+            Chatter.write('%s %5.2f %4.2f (reference)' % (name, b, r))
+
+        for j in derivatives[1:]:
             name = b_factors[j]['dname']
             b = b_factors[j]['b']
             r = b_factors[j]['r']
 
             Chatter.write('%s %5.2f %4.2f' % (name, b, r))
-
-        return status
 
         for o in scaleit.get_all_output():
             self._huge_log_file.append(o)

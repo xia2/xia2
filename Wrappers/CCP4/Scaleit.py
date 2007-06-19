@@ -50,6 +50,12 @@ def Scaleit(DriverType = None):
 
             self._statistics = { }
 
+            self._anomalous = False
+
+            return
+
+        def set_anomalous(self, anomalous):
+            self._anomalous = anomalous
             return
 
         def find_columns(self):
@@ -76,20 +82,30 @@ def Scaleit(DriverType = None):
             j = 0
             groups = 0
 
-            # assert that the columns for F, SIGF, DANO, SIGDANO for a particular
-            # group will appear in that order
+            # assert that the columns for F, SIGF, DANO, SIGDANO for a
+            # particular group will appear in that order if anomalous,
+            # F, SIGF if not anomalous
 
             while j < len(column_info):
                 c = column_info[j]
                 name = c[0]
                 type = c[1]
 
-                if type == 'F' and name.split('_')[0] == 'F':
+                if type == 'F' and name.split('_')[0] == 'F' and \
+                       self._anomalous:
                     groups += 1
                     for i in range(4):
                         columns.append(column_info[i + j][0])
 
                     j += 4
+                    
+                elif type == 'F' and name.split('_')[0] == 'F' and \
+                       not self._anomalous:
+                    groups += 1
+                    for i in range(2):
+                        columns.append(column_info[i + j][0])
+
+                    j += 2          
                 else:
                     j += 1
                 
@@ -128,13 +144,18 @@ def Scaleit(DriverType = None):
             labin = 'labin FP=%s SIGFP=%s' % \
                     (self._columns[0], self._columns[1])
 
-            groups = len(self._columns) / 4
+            if self._anomalous:
+                groups = len(self._columns) / 4
+            else:
+                groups = len(self._columns) / 2                
 
             for j in range(groups):
                 labin += ' FPH%d=%s' % (j + 1, self._columns[4 * j])
                 labin += ' SIGFPH%d=%s' % (j + 1, self._columns[4 * j + 1])
-                labin += ' DPH%d=%s' % (j + 1, self._columns[4 * j + 2])
-                labin += ' SIGDPH%d=%s' % (j + 1, self._columns[4 * j + 3])
+
+                if self._anomalous:
+                    labin += ' DPH%d=%s' % (j + 1, self._columns[4 * j + 2])
+                    labin += ' SIGDPH%d=%s' % (j + 1, self._columns[4 * j + 3])
 
             self.input(labin)
 
