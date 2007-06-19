@@ -518,6 +518,12 @@ class XSweep(Object):
         # changed the indexer will need to be updated...
         #
         # I need to think very hard about how this will work...
+
+            if self._frames_to_process:
+                frames = self._frames_to_process
+                self._indexer.set_frame_wedge(frames[0],
+                                              frames[1])
+
             
         return self._indexer
 

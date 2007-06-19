@@ -63,6 +63,9 @@ class FrameProcessor:
         # see FIXME for 06/SEP/06
         self._fp_xsweep = None
 
+        # also need to keep track of allowed images in here
+        self._fp_wedge = None
+
         # if image has been specified, construct much of this information
         # from the image
 
@@ -74,6 +77,18 @@ class FrameProcessor:
     def set_template(self, template):
         self._fp_template = template
         return
+
+    def set_frame_wedge(self, start, end):
+        '''Set the allowed range of images for processing.'''
+        self._fp_wedge = start, end
+        if self._fp_matching_images:
+            images = []
+            for j in self._fp_matching_images:
+                if j < start or j > end:
+                    continue
+                images.append(j)
+            self._fp_matching_images = images
+        return      
 
     def get_template(self):
         return self._fp_template
@@ -187,6 +202,17 @@ class FrameProcessor:
         self._fp_directory = directory
 
         self._fp_matching_images = find_matching_images(template, directory)
+
+        # trim this down to only allowed images...
+        if self._fp_wedge:
+            start, end = self._fp_wedge
+            images = []
+            for j in self._fp_matching_images:
+                if j < start or j > end:
+                    continue
+                images.append(j)
+            self._fp_matching_images = images
+            
 
         # read the image header
         ph = Printheader()

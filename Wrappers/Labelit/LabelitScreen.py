@@ -111,7 +111,7 @@ from Wrappers.Labelit.LabelitMosflmScript import LabelitMosflmScript
 from Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
 
 from lib.Guff import auto_logfiler
-from Handlers.Streams import Chatter
+from Handlers.Streams import Chatter, Debug
 from Handlers.Citations import Citations
 
 def LabelitScreen(DriverType = None):
@@ -235,6 +235,8 @@ def LabelitScreen(DriverType = None):
             phi_width = self.get_header_item('phi_width')
             images = self.get_matching_images()
 
+            Debug.write('Selected image %s' % images[0])
+
             self.add_indexer_image_wedge(images[0])
 
             # FIXME what to do if phi_width is recorded as zero?
@@ -245,9 +247,12 @@ def LabelitScreen(DriverType = None):
                 phi_width = 1.0
 
             if int(90.0 / phi_width) in images:
+                Debug.write('Selected image %s' % int(45.0 / phi_width))
+                Debug.write('Selected image %s' % int(90.0 / phi_width))
                 self.add_indexer_image_wedge(int(45.0 / phi_width))
                 self.add_indexer_image_wedge(int(90.0 / phi_width))
             else:
+                Debug.write('Selected image %s' % images[-1])
                 self.add_indexer_image_wedge(images[-1])
 
             return
