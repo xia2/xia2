@@ -78,6 +78,9 @@ def ami():
         except EOFError, e:
             break
 
+        if not a.strip():
+            continue
+
         if a.lower() == 'end':
             break
 
