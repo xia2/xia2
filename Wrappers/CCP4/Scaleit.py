@@ -195,6 +195,8 @@ def Scaleit(DriverType = None):
                 line = output[j]
 
                 if 'APPLICATION OF SCALES AND ANALYSIS OF DIFFERENCES' in line:
+                    current_derivative = -1
+                
                     while not 'SUMMARY_END' in line:
                         list = line.split()
                         if 'Derivative' in list:
@@ -202,8 +204,14 @@ def Scaleit(DriverType = None):
                                 self._statistics['b_factor'] = { }
                             self._statistics['b_factor'][int(list[1])] = {
                                 'scale':float(list[2]),
-                                'b':float(list[3]),
-                                'dname':self._statistics['mapping'][int(list[1])]}
+                                'b11':float(list[3]),
+                                'dname':self._statistics[
+                                'mapping'][int(list[1])]}
+                            current_derivative = int(list[1])
+
+                        if 'The equivalent isotropic' in line:
+                            self._statistics['b_factor'][
+                                current_derivative]['b'] = float(list[-1])
 
                         j += 1
                         line = output[j]
