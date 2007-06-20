@@ -19,17 +19,8 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
+from Handlers.Streams import Chatter
 
-def normalize(angle):
-    '''Find the nearest 10 degree angle to this angle...'''
-    
-    a = angle / 10.0
-
-    n = int(a)
-    if a - n > 0.5:
-        n += 1
-        
-    return 10.0 * n
 
 def Polarrfn(DriverType = None):
     '''A factory for PolarrfnWrapper classes.'''
@@ -99,8 +90,7 @@ def Polarrfn(DriverType = None):
                             current_peak = int(line.split()[-1])
                             peaks[current_peak] = []
                         elif ['1', '1'] == line.split()[:2]:
-                            peak = map(normalize,
-                                       map(float, line.split()[2:5]))
+                            peak = map(float, line.split()[6:9])
                             peak.append(float(line.split()[5]))
                             peaks[current_peak].append(peak)
 
@@ -114,11 +104,23 @@ def Polarrfn(DriverType = None):
             if 0 in numbers:
                 numbers.remove(0)
 
+            unique = { }
+            keys = []
+
             for n in numbers:
                 for p in peaks[n]:
-                    print '%2d %5.1f %5.1f %5.1f %5.1f' % \
-                          (n, p[0], p[1], p[2], p[3])
+                    key = p[0], p[1], p[2]
+                    if unique.has_key(key):
+                        continue
+                    unique[key] = p[3]
+                    keys.append(key)
 
+            Chatter.write('... Omega  Phi  Kappa Height')
+
+            for k in keys:
+
+                Chatter.write('... %5.1f %5.1f %5.1f %5.1f' % \
+                              (k[0], k[1], k[2], unique[k]))
 
             return
 

@@ -210,6 +210,13 @@ class AnalyseMyIntensities:
         '''Convert all HKLIN to MTZ format, storing merging statistics
         if available.'''
 
+        hashes = '################################' + \
+                 '###############################'
+        
+        Chatter.write(hashes)
+        Chatter.write('### Gathering data')
+        Chatter.write(hashes)
+        
         mtz_in = []
 
         for j in range(len(self._hklin_list)):
@@ -472,6 +479,13 @@ class AnalyseMyIntensities:
     def analyse_input_hklin(self):
         '''Analyse all converted input reflection files.'''
 
+        hashes = '################################' + \
+                 '###############################'
+        
+        Chatter.write(hashes)
+        Chatter.write('### Individual analysis')
+        Chatter.write(hashes)
+        
         j = 0
         for hklin in self._hklin_list:
 
@@ -561,6 +575,29 @@ class AnalyseMyIntensities:
 
             # then whatever else for the analysis
 
+            Chatter.write('Analysing self-rotation function')
+
+            hklout = os.path.join(
+                self.get_working_directory(),
+                'ECALC%d.mtz' % j)
+
+            ecalc = self._factory.Ecalc()
+            ecalc.set_hklin(hklin)
+            ecalc.set_hklout(hklout)
+            ecalc.ecalc()
+
+            for o in ecalc.get_all_output():
+                self._huge_log_file.append(o)
+
+            hklin = hklout
+
+            polarrfn = self._factory.Polarrfn()
+            polarrfn.set_hklin(hklin)
+            polarrfn.set_labin('E', 'SIGE')
+            polarrfn.polarrfn()
+            
+            for o in polarrfn.get_all_output():
+                self._huge_log_file.append(o)
 
         return
 
@@ -568,6 +605,14 @@ class AnalyseMyIntensities:
         '''Merge and analyse all of the data sets together, now.'''
 
         cad_hklin = []
+
+        hashes = '################################' + \
+                 '###############################'
+        
+        Chatter.write(hashes)
+        Chatter.write('### Combined analysis')
+        Chatter.write(hashes)
+                
 
         Chatter.write('Merging all reflection files together')
 

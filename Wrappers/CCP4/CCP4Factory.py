@@ -30,6 +30,8 @@ from Wrappers.CCP4.Rebatch import Rebatch as _Rebatch
 from Wrappers.CCP4.Reindex import Reindex as _Reindex
 from Wrappers.CCP4.Mtz2various import Mtz2various as _Mtz2various
 from Wrappers.CCP4.Cad import Cad as _Cad
+from Wrappers.CCP4.Ecalc import Ecalc as _Ecalc
+from Wrappers.CCP4.Polarrfn import Polarrfn as _Polarrfn
 from Wrappers.CCP4.Combat import Combat as _Combat
 from Wrappers.CCP4.F2mtz import F2mtz as _F2mtz
 from Wrappers.CCP4.Freerflag import Freerflag as _Freerflag
@@ -127,6 +129,22 @@ class CCP4Factory:
         cad.set_working_directory(self.get_working_directory())
         auto_logfiler(cad)
         return cad
+
+    def Ecalc(self):
+        '''Create a Ecalc wrapper from _Ecalc - set the working directory
+        and log file stuff as a part of this...'''
+        ecalc = _Ecalc()
+        ecalc.set_working_directory(self.get_working_directory())
+        auto_logfiler(ecalc)
+        return ecalc
+
+    def Polarrfn(self):
+        '''Create a Polarrfn wrapper from _Polarrfn - set the working directory
+        and log file stuff as a part of this...'''
+        polarrfn = _Polarrfn()
+        polarrfn.set_working_directory(self.get_working_directory())
+        auto_logfiler(polarrfn)
+        return polarrfn
 
     def Combat(self):
         '''Create a Combat wrapper from _Combat - set the working directory
