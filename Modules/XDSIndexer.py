@@ -147,10 +147,7 @@ class XDSIndexer(FrameProcessor,
             # work on the assumption that this is a reference pair
         
             self.add_indexer_image_wedge(images[0])
-            
-            if int(90.0 / phi_width) in images:
-                self.add_indexer_image_wedge(int(90.0 / phi_width))
-            else:
+            if len(images) > 1:
                 self.add_indexer_image_wedge(images[-1])
 
         else:
@@ -160,10 +157,21 @@ class XDSIndexer(FrameProcessor,
 
             block_size = int(5.0 / phi_width)
 
+            Debug.write('Adding images for indexer: %d -> %d' % \
+                        (images[0], images[block_size] - 1))
+
             self.add_indexer_image_wedge((images[0], images[block_size] - 1))
 
             if int(90.0 / phi_width) + block_size in images:
                 # assume we can add a wedge around 45 degrees as well...
+                Debug.write('Adding images for indexer: %d -> %d' % \
+                            (int(45.0 / phi_width) + 1,
+                             int(45.0 / phi_width) +
+                             block_size))
+                Debug.write('Adding images for indexer: %d -> %d' % \
+                            (int(90.0 / phi_width) + 1,
+                             int(90.0 / phi_width) +
+                             block_size))
                 self.add_indexer_image_wedge((int(45.0 / phi_width) + 1,
                                               int(45.0 / phi_width) +
                                               block_size))
@@ -172,6 +180,8 @@ class XDSIndexer(FrameProcessor,
                                               block_size))
                 
             else:
+                Debug.write('Adding images for indexer: %d -> %d' % \
+                            (images[- block_size], images[-1]))
                 self.add_indexer_image_wedge((images[- block_size],
                                               images[-1]))
             

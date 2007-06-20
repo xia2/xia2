@@ -16,7 +16,7 @@
 # 
 # Template, directory. Template in the form ### not ???
 # Distance (mm), wavelength (ang), beam centre (mm, mm),
-# image header information [general c/f printheader output]
+# image header information [general c/f diffdump output]
 # 
 # FIXME 06/SEP/06 Need to be able to interface to the XSweep
 #                 object in here, to allow all of this information
@@ -34,7 +34,9 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Experts.FindImages import image2template_directory, \
      template_directory_number2image, image2image, find_matching_images
-from Wrappers.XIA.Printheader import Printheader
+from Wrappers.XIA.Diffdump import Diffdump
+
+from Handlers.Streams import Debug
 
 class FrameProcessor:
     '''A class to handle the information needed to process X-Ray
@@ -81,13 +83,48 @@ class FrameProcessor:
     def set_frame_wedge(self, start, end):
         '''Set the allowed range of images for processing.'''
         self._fp_wedge = start, end
-        if self._fp_matching_images:
+        
+        if self._fp_matching_images:    
             images = []
             for j in self._fp_matching_images:
                 if j < start or j > end:
                     continue
                 images.append(j)
             self._fp_matching_images = images
+
+            # reload the header information as well - this will be
+            # for the old wedge...
+
+            # read the image header
+            dd = Diffdump()
+            dd.set_image(self.get_image_name(start))
+            self._fp_header = dd.readheader()
+
+            # print this to the debug channel
+            Debug.write('Latest header information for image %d:' % start)
+            keys = self._fp_header.keys()
+            keys.sort()
+            for k in keys:
+                Debug.write('%s = %s' % (k, str(self._fp_header[k])))
+            
+            # populate wavelength, beam etc from this
+
+            if self._fp_wavelength_prov is None or \
+                            self._fp_wavelength_prov == 'header':
+                self._fp_wavelength = self._fp_header['wavelength']
+                self._fp_wavelength_prov = 'header'
+                
+            if self._fp_distance_prov is None or \
+                            self._fp_distance_prov == 'header':
+                self._fp_distance = self._fp_header['distance']
+                self._fp_distance_prov = 'header'
+                
+            if self._fp_beam_prov is None or \
+                            self._fp_beam_prov == 'header':               
+                self._fp_beam = tuple(map(float, self._fp_header['beam']))
+                self._fp_beam_prov = 'header'
+            
+            
         return      
 
     def get_frame_wedge(self):
@@ -216,11 +253,10 @@ class FrameProcessor:
                 images.append(j)
             self._fp_matching_images = images
             
-
         # read the image header
-        ph = Printheader()
-        ph.set_image(image)
-        self._fp_header = ph.readheader()
+        dd = Diffdump()
+        dd.set_image(image)
+        self._fp_header = dd.readheader()
 
         # populate wavelength, beam etc from this
         if self._fp_wavelength_prov is None:

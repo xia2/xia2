@@ -512,17 +512,16 @@ class XSweep(Object):
                                                 self.get_name(),
                                                 'index']))
 
+            if self._frames_to_process:
+                frames = self._frames_to_process
+                self._indexer.set_frame_wedge(frames[0],
+                                              frames[1])
 
         # FIXME in here I should probably check that the indexer
         # is up-to-date with respect to the crystal &c. if this has
         # changed the indexer will need to be updated...
         #
-        # I need to think very hard about how this will work...
-
-            if self._frames_to_process:
-                frames = self._frames_to_process
-                self._indexer.set_frame_wedge(frames[0],
-                                              frames[1])
+        # I need to think very hard about how this will work..
 
             
         return self._indexer
@@ -593,6 +592,8 @@ class XSweep(Object):
                 frames = self._frames_to_process
                 self._integrater.set_integrater_wedge(frames[0],
                                                       frames[1])
+                self._integrater.set_frame_wedge(frames[0],
+                                                 frames[1])
 
         return self._integrater
 
