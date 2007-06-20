@@ -2137,6 +2137,9 @@ class CCP4Scaler(Scaler):
 
             crd.set_hklin(f.get_hklout())
             
+            if self.get_scaler_anomalous():
+                crd.set_anomalous(True)
+                
             hklout = os.path.join(self.get_working_directory(), 'temp.mtz')
             FileHandler.record_temporary_file(hklout)
             

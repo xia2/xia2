@@ -51,11 +51,16 @@ class CCP4InterRadiationDamageDetector:
         self._working_directory = os.getcwd()
         self._hklin = None
         self._hklout = None
+        self._anomalous = False
 
         return
 
     def set_hklin(self, hklin):
         self._hklin = hklin
+        return
+
+    def set_anomalous(self, anomalous):
+        self._anomalous = anomalous
         return
     
     def get_hklin(self):
@@ -107,6 +112,9 @@ class CCP4InterRadiationDamageDetector:
         scaleit = Scaleit()
         scaleit.set_working_directory(self.get_working_directory())
         auto_logfiler(scaleit)
+
+        if self._anomalous:
+            scaleit.set_anomalous(True)
 
         scaleit.set_hklin(self.get_hklin())
         scaleit.set_hklout(self.get_hklout())

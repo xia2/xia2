@@ -58,6 +58,7 @@ def Scaleit(DriverType = None):
             self._anomalous = anomalous
             return
 
+
         def find_columns(self):
             '''Identify columns to use with scaleit.'''
 
@@ -150,12 +151,15 @@ def Scaleit(DriverType = None):
                 groups = len(self._columns) / 2                
 
             for j in range(groups):
-                labin += ' FPH%d=%s' % (j + 1, self._columns[4 * j])
-                labin += ' SIGFPH%d=%s' % (j + 1, self._columns[4 * j + 1])
 
                 if self._anomalous:
+                    labin += ' FPH%d=%s' % (j + 1, self._columns[4 * j])
+                    labin += ' SIGFPH%d=%s' % (j + 1, self._columns[4 * j + 1])
                     labin += ' DPH%d=%s' % (j + 1, self._columns[4 * j + 2])
                     labin += ' SIGDPH%d=%s' % (j + 1, self._columns[4 * j + 3])
+                else:
+                    labin += ' FPH%d=%s' % (j + 1, self._columns[2 * j])
+                    labin += ' SIGFPH%d=%s' % (j + 1, self._columns[2 * j + 1])
 
             self.input(labin)
 
