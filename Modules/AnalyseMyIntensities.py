@@ -115,6 +115,11 @@ class AnalyseMyIntensities:
             Chatter.write('Storing %s/%s/%s with %s' % \
                           (pname, xname, dname, hklin))
         else:
+
+            if not is_mtz_file(hklin):
+                raise RuntimeError, 'hklin %s not MTZ and no project info' % \
+                      hklin
+
             # try to get this from the reflection file
             mtzdump = self._factory.Mtzdump()
             mtzdump.set_hklin(hklin)
