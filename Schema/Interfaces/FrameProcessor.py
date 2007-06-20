@@ -90,6 +90,9 @@ class FrameProcessor:
             self._fp_matching_images = images
         return      
 
+    def get_frame_wedge(self):
+        return self._fp_wedge
+
     def get_template(self):
         return self._fp_template
 

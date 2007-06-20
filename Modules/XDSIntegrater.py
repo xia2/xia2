@@ -175,6 +175,12 @@ class XDSIntegrater(FrameProcessor,
             self._intgr_indexer.setup_from_image(self.get_image_name(
                 self._intgr_wedge[0]))
 
+            if self.get_frame_wedge():
+                wedge = self.get_frame_wedge()
+                Debug.write('Propogating wedge limit: %d %d' % wedge)
+                self._intgr_indexer.set_frame_wedge(wedge[0],
+                                                    wedge[1])
+
             # this needs to be set up from the contents of the
             # Integrater frame processer - wavelength &c.
 
@@ -218,6 +224,13 @@ class XDSIntegrater(FrameProcessor,
                 self._intgr_wedge[0]))
             self.get_integrater_indexer().set_working_directory(
                 self.get_working_directory())
+
+            if self.get_frame_wedge():
+                wedge = self.get_frame_wedge()
+                Debug.write('Propogating wedge limit: %d %d' % wedge)
+                self._intgr_indexer.set_frame_wedge(wedge[0],
+                                                    wedge[1])
+
             
             # now copy information from the old indexer to the new
             # one - lattice, cell, distance etc.

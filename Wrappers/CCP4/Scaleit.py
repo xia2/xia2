@@ -208,7 +208,7 @@ def Scaleit(DriverType = None):
                                 self._statistics['b_factor'] = { }
                             self._statistics['b_factor'][int(list[1])] = {
                                 'scale':float(list[2]),
-                                'b11':float(list[3]),
+                                'b':float(list[3]),
                                 'dname':self._statistics[
                                 'mapping'][int(list[1])]}
                             current_derivative = int(list[1])
