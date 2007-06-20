@@ -584,6 +584,10 @@ def Pointless(DriverType = None):
             xml_file = os.path.join(self.get_working_directory(),
                                     'pointless.xml')
 
+            if not os.path.exists(xml_file) and \
+               os.path.exists('%s.xml' % xml_file):
+                xml_file = '%s.xml' % xml_file
+
             dom = xml.dom.minidom.parse(xml_file)
             
             sg_list = dom.getElementsByTagName('SpacegroupList')[0]
