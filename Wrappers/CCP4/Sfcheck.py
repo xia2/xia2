@@ -11,7 +11,10 @@
 # reduced reflections to detect e.g. twinning amongst other things.
 # 
 # This will do:
-# 
+#
+# Second moment analysis
+# Determination of "optical" resolution
+# Analysis of Eigenvalues
 # 
 
 import os
@@ -73,17 +76,26 @@ def Sfcheck(DriverType = None):
             self.close_wait()
 
             for o in self.get_all_output():
-                if 'Ratio of Eigen values' in o:
-                    self._anisotropic_eigenvalues = map(float,
-                                                        o.split()[-3:])
 
                 if 'Perfect twinning test' in o:
                     self._twinning_test = float(o.split()[-1])
 
+                if 'Optical Resolution:' in o:
+                    self._optical_resolution = float(o.split()[-1])
+
+                if 'Ratio of Eigen values' in o:
+                    self._anisotropic_eigenvalues = tuple(map(float,
+                                                              o.split()[-3:]))
                 
 
         def get_twinning(self):
             return self._twinning_test
+
+        def get_optical_resolution(self):
+            return self._optical_resolution
+
+        def get_anisotropic_eigenvalues(self):
+            return self._anisotropic_eigenvalues
 
     return SfcheckWrapper()
 
@@ -98,3 +110,5 @@ if __name__ == '__main__':
     s.analyse()
 
     print s.get_twinning()
+    print s.get_optical_resolution()
+    print s.get_anisotropic_eigenvalues()

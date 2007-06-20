@@ -539,15 +539,20 @@ class AnalyseMyIntensities:
             sfcheck.analyse()
 
             twinning_score = sfcheck.get_twinning()
+            optical_resolution = sfcheck.get_optical_resolution()
+            eigenvalues = sfcheck.get_anisotropic_eigenvalues()
+
+            Chatter.write('Optical resolution: %.2f' % optical_resolution)
+            Chatter.write('Eigenvalue ratios:  %.3f %.3f %.3f' % eigenvalues)
 
             if math.fabs(twinning_score - 1.5) < 0.2:
-                Chatter.write('<I^2>/<I>^2 score: %.2f (twinned)' % \
+                Chatter.write('<I^2>/<I>^2 score:  %.2f (twinned)' % \
                               twinning_score)
             elif twinning_score > 2.5:
-                Chatter.write('<I^2>/<I>^2 score: %.2f (nasty)' % \
+                Chatter.write('<I^2>/<I>^2 score:  %.2f (nasty)' % \
                               twinning_score)
             else:
-                Chatter.write('<I^2>/<I>^2 score: %.2f (ok)' % \
+                Chatter.write('<I^2>/<I>^2 score:  %.2f (ok)' % \
                               twinning_score)
                 
 
