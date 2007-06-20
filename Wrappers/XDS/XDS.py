@@ -8,7 +8,7 @@
 # This module is a generic wrapper for the basic components needed to make
 # XDS run, including writing the generic header information. This will 
 # include the writing of the information from the image header, for instance,
-# and should support all image types defined in the Printheader dictionary.
+# and should support all image types defined in the Diffdump dictionary.
 # That is:
 # 
 # detector_class = {('adsc', 2304, 81):'adsc q4',
@@ -90,7 +90,7 @@ def xds_check_error(xds_output_list):
     return
 
 def header_to_xds(header, synchrotron = True):
-    '''A function to take an input header dictionary from Printheader
+    '''A function to take an input header dictionary from Diffdump
     and generate a list of records to start XDS - see Doc/INP.txt.'''
 
     # --------- mapping tables -------------
@@ -238,13 +238,13 @@ def beam_centre_xds_to_mosflm(px, py, header):
     return y, x
 
 if __name__ == '__main__':
-    from Wrappers.XIA.Printheader import Printheader
+    from Wrappers.XIA.Diffdump import Diffdump
 
-    ph = Printheader()
+    dd = Diffdump()
 
     directory = os.path.join(os.environ['XIA2_ROOT'],
                              'Data', 'Test', 'Images')
 
-    ph.set_image(os.path.join(directory, '12287_1_E1_001.img'))
-    for record in header_to_xds(ph.readheader()):
+    dd.set_image(os.path.join(directory, '12287_1_E1_001.img'))
+    for record in header_to_xds(dd.readheader()):
         print record

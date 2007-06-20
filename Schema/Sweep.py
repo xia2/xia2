@@ -35,7 +35,7 @@ from Experts.FindImages import image2template, find_matching_images, \
 from Schema.Object import Object
 
 # image header reading functionality
-from Wrappers.XIA.Printheader import Printheader
+from Wrappers.XIA.Diffdump import Diffdump
 
 def SweepFactory(template, directory, beam = None):
     '''A factory which will return a list of sweep objects which match
@@ -54,9 +54,9 @@ def SweepFactory(template, directory, beam = None):
         image = template_directory_number2image(template,
                                                 directory,
                                                 i)
-        ph = Printheader()
-        ph.set_image(image)
-        headers[i] = ph.readheader()
+        dd = Diffdump()
+        dd.set_image(image)
+        headers[i] = dd.readheader()
 
     sweep_ids = headers2sweep_ids(headers)
 
@@ -159,10 +159,10 @@ class Sweep(Object):
         t = time.time()
 
         for i in self._images:
-            ph = Printheader()            
+            dd = Diffdump()            
             image = self.imagename(i)
-            ph.set_image(image)
-            header = ph.readheader()
+            dd.set_image(image)
+            header = dd.readheader()
             self._headers[i] = header
 
         self.write('reading %d headers took %s s' % (len(self._images),

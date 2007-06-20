@@ -169,7 +169,7 @@ from Experts.FindImages import image2template, find_matching_images, \
 from Experts.Filenames import expand_path
 
 # image header reading functionality
-from Wrappers.XIA.Printheader import Printheader
+from Wrappers.XIA.Diffdump import Diffdump
 
 # access to factory classes
 import Modules.IndexerFactory as IndexerFactory
@@ -243,9 +243,9 @@ class XSweep(Object):
             #   against wavelength.getWavelength() I guess to make
             #   sure that the plumbing is all sound.
 
-            ph = Printheader()
-            ph.set_image(os.path.join(directory, image))
-            header = ph.readheader()
+            dd = Diffdump()
+            dd.set_image(os.path.join(directory, image))
+            header = dd.readheader()
 
             # check that they match by closer than 0.0001A, if wavelength
             # is not None
@@ -304,9 +304,9 @@ class XSweep(Object):
 
                 
                 for j in images:
-                    ph = Printheader()
-                    ph.set_image(self.get_image_name(j))
-                    header = ph.readheader()
+                    dd = Diffdump()
+                    dd.set_image(self.get_image_name(j))
+                    header = dd.readheader()
                     
                     self._epoch_to_image[header['epoch']] = j
                     self._image_to_epoch[j] = header['epoch']

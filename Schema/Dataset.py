@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # 12th June 2006
 # 
@@ -41,7 +39,7 @@ from Schema.Object import Object
 from Modules.IndexerFactory import Indexer
 
 # image header reading functionality
-from Wrappers.XIA.Printheader import Printheader
+from Wrappers.XIA.Diffdump import Diffdump
 
 class Dataset(Object):
     '''A class to represent a data set. In this implementation this is a
@@ -70,7 +68,7 @@ class Dataset(Object):
         self._images = find_matching_images(self._template,
                                             self._directory)
 
-        # this will be populated by the Printheader class if we're
+        # this will be populated by the Diffdump class if we're
         # not in a hurry (e.g. we can take our time.)
         # FIXME need to implement a "hurry" mechanism...
 
@@ -130,16 +128,15 @@ class Dataset(Object):
 
         self._headers = { }
         
-        ph = Printheader()
+        dd = Diffdump()
 
         t = time.time()
         
         for i in self._images:
-            image = template_directory_number2image(self._template,
-                                                    self._directory,
-                                                    i)
-            ph.setImage(image)
-            header = ph.readheader()
+            image = template_directory_number2image(
+                self._template, self._directory, i)
+            dd.setImage(image)
+            header = dd.readheader()
             self._headers[i] = header
 
         self.write('reading %d headers took %s s' % (len(self._images),
