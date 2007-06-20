@@ -70,6 +70,7 @@ def ami():
     nres = None
     rein = None
     anom = None
+    rotf = None
     verb = False
 
     while True:
@@ -118,7 +119,19 @@ def ami():
             elif value in ['false', 'off', 'n']:
                 anom = False
             else:
-                raise RuntimeError, 'value %s unknown for anomalous' % \
+                raise RuntimeError, 'value %s unknown for anomalous: ' % \
+                      a.split()[1]
+
+        elif command == 'rotf':
+            value = a.split()[1].lower()
+
+            if value in ['true', 'on', 'y']:
+                rotf = True
+            elif value in ['false', 'off', 'n']:
+                rotf = False
+            else:
+                raise RuntimeError, \
+                      'value %s unknown for self rotation search: ' % \
                       a.split()[1]
 
         elif command == 'verb':
@@ -129,7 +142,7 @@ def ami():
             elif value in ['false', 'off', 'n']:
                 verb = False
             else:
-                raise RuntimeError, 'value %s unknown for verbose' % \
+                raise RuntimeError, 'value %s unknown for verbose: ' % \
                       a.split()[1]
             
         elif command == 'rein':
@@ -146,6 +159,9 @@ def ami():
 
     if not anom is None:
         _ami.set_anomalous(anom)
+
+    if not rotf is None:
+        _ami.set_rotation_function(rotf)
 
     if not cell is None:
         _ami.set_cell(cell)

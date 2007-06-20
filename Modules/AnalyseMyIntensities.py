@@ -63,6 +63,7 @@ class AnalyseMyIntensities:
         self._symmetry = None
         self._reindex = None
         self._anomalous = False
+        self._rotation_function = False
 
         self._working_directory = os.getcwd()
 
@@ -165,6 +166,10 @@ class AnalyseMyIntensities:
 
     def set_anomalous(self, anomalous):
         self._anomalous = anomalous
+        return
+
+    def set_rotation_function(self, rotation_function):
+        self._rotation_function = rotation_function
         return
 
     def _get_solvent(self):
@@ -574,6 +579,9 @@ class AnalyseMyIntensities:
                 self._huge_log_file.append(o)
 
             # then whatever else for the analysis
+
+            if not self._rotation_function:
+                continue
 
             Chatter.write('Analysing self-rotation function')
 
