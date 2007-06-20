@@ -30,6 +30,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
 from lib.Guff import transpose_loggraph
+from Handlers.Streams import Chatter
 
 def Truncate(DriverType = None):
     '''A factory for TruncateWrapper classes.'''
@@ -102,10 +103,17 @@ def Truncate(DriverType = None):
             for line in self.get_all_output():
                 if 'Least squares straight line gives' in line:
                     list = line.replace('=', ' ').split()
-                    self._b_factor = float(list[6])
+                    if not '***' in list[6]:
+                        self._b_factor = float(list[6])
+                    else:
+                        Debug.write('no B factor available')
 
                 if 'LSQ Line Gradient' in line:
                     self._wilson_fit_grad = float(line.split()[-1])
+                    if self._wilson_fit_grad > 0:
+                        raise RuntimeError, \
+                              'wilson plot gradient positive: %.2f' % \
+                              self._wilson_fit_grad
                 if 'Uncertainty in Gradient' in line:
                     self._wilson_fit_grad_sd = float(line.split()[-1])
                 if 'X Intercept' in line:
