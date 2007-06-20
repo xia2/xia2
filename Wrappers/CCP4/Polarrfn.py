@@ -60,9 +60,9 @@ def Polarrfn(DriverType = None):
                                                       self._labin_sigf))
             self.input('noprint')
 
-            # look for peaks 1/3 the size of the origin peak
+            # look for peaks 2/3 the size of the origin peak
             
-            self.input('find 33 100')
+            self.input('find 66 100')
 
             self.close_wait()
 
