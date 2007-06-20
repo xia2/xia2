@@ -139,7 +139,7 @@ def Scaleit(DriverType = None):
             self.input('converge ncyc 4')
             self.input('converge abs 0.001')
             self.input('converge tolr -7')
-            self.input('refine isotropic wilson')
+            self.input('refine anisotropic wilson')
             self.input('auto')
 
             labin = 'labin FP=%s SIGFP=%s' % \
