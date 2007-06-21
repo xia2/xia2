@@ -146,7 +146,7 @@ def XDSIntegrate(DriverType = None):
 
             if self._refined_xparm and fixed_2401:
                 # allow only for crystal movement
-                if Flags.get_always_refine():
+                if Flags.get_refine():
                     Debug.write('Refining ORIENTATION CELL')
                     xds_inp.write('REFINE(INTEGRATE)=ORIENTATION CELL\n')
                 else:

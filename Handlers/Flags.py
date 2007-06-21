@@ -22,7 +22,7 @@ class _Flags:
 
         # these are development parameters for the XDS implementation
         self._z_min = 0.0
-        self._always_refine = False
+        self._refine = True
         self._zero_dose = False
 
         self._relax = False
@@ -71,12 +71,12 @@ class _Flags:
     def get_z_min(self):
         return self._z_min
 
-    def set_always_refine(self, always_refine):
-        self._always_refine = always_refine
+    def set_refine(self, refine):
+        self._refine = refine
         return
 
-    def get_always_refine(self):
-        return self._always_refine
+    def get_refine(self):
+        return self._refine
 
     def set_zero_dose(self, zero_dose):
         self._zero_dose = zero_dose
