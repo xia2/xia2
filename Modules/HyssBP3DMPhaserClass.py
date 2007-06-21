@@ -150,7 +150,7 @@ class HyssBP3DMPhaserClass(HAPhaserClass):
             dm = DM()
             dm.write_log_file('dm_oh.log')
             dm.set_hklin('bp3_oh.mtz')
-            dm.set_hklout('dm.mtz')
+            dm.set_hklout('dm_oh.mtz')
             dm.set_solvent(self._solvent)
             dm.improve_phases()
             
