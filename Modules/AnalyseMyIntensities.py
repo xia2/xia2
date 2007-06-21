@@ -581,6 +581,7 @@ class AnalyseMyIntensities:
             # then whatever else for the analysis
 
             if not self._rotation_function:
+                j += 1
                 continue
 
             Chatter.write('Analysing self-rotation function')
@@ -606,6 +607,8 @@ class AnalyseMyIntensities:
             
             for o in polarrfn.get_all_output():
                 self._huge_log_file.append(o)
+
+            j += 1
 
         return
 
