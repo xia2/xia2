@@ -30,7 +30,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
 from lib.Guff import transpose_loggraph
-from Handlers.Streams import Chatter
+from Handlers.Streams import Chatter, Debug
 
 def Truncate(DriverType = None):
     '''A factory for TruncateWrapper classes.'''
