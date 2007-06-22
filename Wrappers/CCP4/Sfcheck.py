@@ -56,6 +56,7 @@ def Sfcheck(DriverType = None):
             self._b_factor = None
             self._twinning_test = None
             self._anisotropic_eigenvalues = None
+            self._anisotropic_eigenvalues_reliable = True
             self._pseudo_translation = False
 
             return
@@ -87,6 +88,9 @@ def Sfcheck(DriverType = None):
                     self._anisotropic_eigenvalues = tuple(map(float,
                                                               o.split()[-3:]))
                 
+                if 'WARNING: program: "anisoscl" is terminated' in o:
+                    self._anisotropic_eigenvalues_reliable = False
+
 
         def get_twinning(self):
             return self._twinning_test
@@ -96,6 +100,9 @@ def Sfcheck(DriverType = None):
 
         def get_anisotropic_eigenvalues(self):
             return self._anisotropic_eigenvalues
+
+        def get_anisotropic_eigenvalues_reliable(self):
+            return self._anisotropic_eigenvalues_reliable
 
     return SfcheckWrapper()
 
