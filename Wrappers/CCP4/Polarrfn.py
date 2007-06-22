@@ -10,6 +10,7 @@
 
 import sys
 import os
+import math
 
 if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
@@ -21,6 +22,11 @@ from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
 from Handlers.Streams import Chatter
 
+from Experts.SymmetryExpert import gen_rot_mat_euler, symop_to_mat
+from Handlers.Syminfo import Syminfo
+
+def matrix_diff(a, b):
+    return sum([(a[i] - b[i]) * (a[i] - b[i]) for i in range(9)])
 
 def Polarrfn(DriverType = None):
     '''A factory for PolarrfnWrapper classes.'''
@@ -57,7 +63,7 @@ def Polarrfn(DriverType = None):
 
             self.start()
 
-            self.input('self 20')
+            self.input('self 20 4')
             self.input('resolution 15 3')
             self.input('crystal file 1')
             self.input('labin file 1 F=%s SIGF=%s' % (self._labin_f,
@@ -77,10 +83,18 @@ def Polarrfn(DriverType = None):
             j = 0
 
             peaks = { }
+
+            symops = { } 
             
             while j < len(self.get_all_output()):
 
                 line = output[j]
+
+                if 'Space group =' in line:
+                    operations = Syminfo.get_symops(
+                        int(line.replace(')', '').split()[-1]))
+                    for op in operations:
+                        symops[tuple(symop_to_mat(op))] = op
 
                 current_peak = 0
 
@@ -91,10 +105,16 @@ def Polarrfn(DriverType = None):
                         if ['Peak'] == line.split()[:1]:
                             current_peak = int(line.split()[-1])
                             peaks[current_peak] = []
-                        elif ['1', '1'] == line.split()[:2]:
-                            peak = map(float, line.split()[6:9])
-                            peak.append(float(line.split()[5]))
-                            peaks[current_peak].append(peak)
+                        else:
+                            try:
+                                a = int(line.split()[0])
+                                b = int(line.split()[1])
+                                if a == 1 and b == 1:
+                                    peak = map(float, line.split()[2:5])
+                                    peak.append(float(line.split()[5]))
+                                    peaks[current_peak].append(peak)
+                            except:
+                                pass
 
 
                         j += 1
@@ -113,16 +133,41 @@ def Polarrfn(DriverType = None):
                 for p in peaks[n]:
                     key = p[0], p[1], p[2]
                     if unique.has_key(key):
-                        continue
+                        if unique[key] > p[3]:
+                            continue
+                        
                     unique[key] = p[3]
-                    keys.append(key)
+                    if not key in keys:
+                        keys.append(key)
 
-            Chatter.write('... Omega  Phi  Kappa Height')
+            Chatter.write('... Alpha Beta  Gamma Height (matching symop)')
 
             for k in keys:
 
-                Chatter.write('... %5.1f %5.1f %5.1f %5.1f' % \
-                              (k[0], k[1], k[2], unique[k]))
+                # in here compute a matrix for this rotation
+                # compare it to the matrices derived from the
+                # symmetry operations - if it matches, record
+                # the symop, else don't.
+
+                matrix = gen_rot_mat_euler(k[2], k[1], k[0])
+
+                matstr = '[%.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f]' % \
+                         tuple(matrix)
+
+                symop = ''
+
+                for mat in symops.keys():
+                    diff = matrix_diff(list(mat), matrix)
+                    if diff < 0.1:
+                        symop = symops[mat]
+
+
+                if symop:
+                    Chatter.write('... %5.1f %5.1f %5.1f %5.1f  (%s)' % \
+                                  (k[0], k[1], k[2], unique[k], symop))
+                else:
+                    Chatter.write('... %5.1f %5.1f %5.1f %5.1f' % \
+                                  (k[0], k[1], k[2], unique[k]))
 
             return
 
