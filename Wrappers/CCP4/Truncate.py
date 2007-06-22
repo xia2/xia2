@@ -110,10 +110,17 @@ def Truncate(DriverType = None):
 
                 if 'LSQ Line Gradient' in line:
                     self._wilson_fit_grad = float(line.split()[-1])
-                    if self._wilson_fit_grad > 0:
+                    resol_width = max(self._wilson_fit_range) - \
+                                  min(self._wilson_fit_range)
+                    if self._wilson_fit_grad > 0 and resol_width > 1.0:
                         raise RuntimeError, \
                               'wilson plot gradient positive: %.2f' % \
                               self._wilson_fit_grad
+                    elif self._wilson_fit_grad > 0:
+                        Debug.write(
+                            'Positive gradient but not much wilson plot')
+                        
+                        
                 if 'Uncertainty in Gradient' in line:
                     self._wilson_fit_grad_sd = float(line.split()[-1])
                 if 'X Intercept' in line:
