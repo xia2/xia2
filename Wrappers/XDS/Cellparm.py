@@ -30,6 +30,8 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Driver.DriverFactory import DriverFactory
 
+from Handlers.Flags import Flags
+
 def Cellparm(DriverType = None):
 
     DriverInstance = DriverFactory.Driver(DriverType)
@@ -75,8 +77,12 @@ def Cellparm(DriverType = None):
                 cell = self._cells[j]
                 for k in range(6):
                     average = average_cell[k] / number_cells
-                    if math.fabs((cell[k] - average) / average) > 0.05:
+                    if math.fabs((cell[k] - average) / average) > 0.05 \
+                           and not Flags.get_relax():
                         raise RuntimeError, 'incompatible unit cells'
+                    average = average_cell[k] / number_cells
+                    if math.fabs((cell[k] - average) / average) > 0.2:
+                        raise RuntimeError, 'very incompatible unit cells'
 
                 # it was ok to remember for later on..
                 for k in range(6):
