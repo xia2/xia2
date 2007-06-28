@@ -133,6 +133,36 @@ def xia2():
     
     return
 
+def help():
+    '''Print out some help for xia2.'''
+
+    sys.stdout.write('\nCommand-line options to xia2:\n')
+    sys.stdout.write('[-parallel 4] (say, for XDS usage)\n')
+    sys.stdout.write('[-ehtpx_xml_out foo.xml]\n')
+    sys.stdout.write('[-quick]\n')
+    sys.stdout.write('[-migrate_data]\n')
+    sys.stdout.write('[-2d] or [-3d]\n')
+    sys.stdout.write('-xinfo foo.xinfo\n\n')
+
+    sys.stdout.write('Deprecated command-line options to xia2:\n')
+    sys.stdout.write('[-lattice mP] (say)\n')
+    sys.stdout.write('[-resolution 2.4] (say)\n')
+    sys.stdout.write('[-atom se] (say) - this is for xia2setup\n')
+    sys.stdout.write('[-project foo] (say) - this is for xia2setup\n')
+    sys.stdout.write('[-crystal bar] (say) - this is for xia2setup\n\n')
+    
+    sys.stdout.write('Develper options - do not use these ...\n')
+    sys.stdout.write(
+        '[-z_min 50] (minimum Z value for rejecting reflections)\n')
+    sys.stdout.write('[-trust_timestamps]\n')
+    sys.stdout.write('[-debug]\n')
+    sys.stdout.write('[-relax]\n')
+    sys.stdout.write('[-zero_dose]\n')
+    sys.stdout.write('[-norefine]\n\n')
+
+    sys.stdout.write('Sensible command line:\n')
+    sys.stdout.write('xia2 (-2d|-3d) -xinfo foo.xinfo\n')
+
 if __name__ == '__main__':
 
     try:
@@ -142,6 +172,10 @@ if __name__ == '__main__':
         traceback.print_exc(file = open('xia2.error', 'w'))
         Chatter.write('Error: %s' % str(e))
         Chatter.write('Do you have Python 2.4 installed?')
+
+    if len(sys.argv) < 2 or '-help' in sys.argv:
+        help()
+        sys.exit()
 
     try:
         xia2()
