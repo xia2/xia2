@@ -57,7 +57,11 @@
 #                 to this. Finally, should provide a user input to allow the
 #                 spacegroup to be assigned (and perhaps number of molecules
 #                 in the ASU?) from the .xinfo file...
-# 
+#
+# FIXME 28/JUN/07 need to be able to pass in a reference reflection file
+#                 for determining the correct setting and also to provide
+#                 the FreeR column. This should probably be enforced as an
+#                 MTZ file.
 
 import os
 import sys
@@ -232,8 +236,12 @@ class XCrystal(Object):
         self._scaler = None
         self._substructure_finder = None
 
-        # things to help the great passing on of information
+        # things to store input reflections which are used to define
+        # the setting... this will be passed into the Scaler if
+        # defined...
+        self._reference_reflection_file = None
 
+        # things to help the great passing on of information
         self._scaled_merged_reflections = None
 
         # derived information
@@ -398,6 +406,19 @@ class XCrystal(Object):
 
     def __str__(self):
         return self.__repr__()
+
+
+    def set_reference_reflection_file(self, reference_reflection_file):
+        '''Set a reference reflection file to use to standardise the
+        setting, FreeR etc.'''
+
+        # check here it is an MTZ file
+
+        self._reference_reflection_file = reference_reflection_file
+        return
+
+    def get_reference_reflection_file(self):
+        return self._reference_reflection_file
 
     def set_scaled_merged_reflections(self, scaled_merged_reflections):
         self._scaled_merged_reflections = scaled_merged_reflections
@@ -574,6 +595,11 @@ class XCrystal(Object):
             self._scaler.set_working_directory(
                 Environment.generate_directory([self._name,
                                                 'scale']))
+
+            # set the reference reflection file, if we have one...
+            if self._reference_reflection_file:
+                self._scaler.set_scaler_reference_reflection_file(
+                    self._reference_reflection_file)                    
 
             # gather up all of the integraters we can find...
 

@@ -183,6 +183,11 @@
 #                 that an implementation only partially populates the
 #                 reflection file dictionary the rest can be generated if
 #                 they are asked for... this could be complex.
+# 
+# FIXME 28/JUN/07 need to be able to take in a reference reflection file
+#                 in here too to provide the correct setting, spacegroup
+#                 and FreeR column. c/f changes to XCrystal.
+# 
 
 import os
 import sys
@@ -221,6 +226,8 @@ class Scaler:
         # get_integrater_epoch() - measurement of first frame
 
         self.scaler_reset()
+
+        self._scalr_reference_reflection_file = None
         
         # places to hold the output
 
@@ -288,6 +295,13 @@ class Scaler:
         '''Get the scaler project and crystal.'''
 
         return self._scalr_pname, self._scalr_xname
+
+    def set_scaler_reference_reflection_file(self, reference_reflection_file):
+        self._scalr_reference_reflection_file = reference_reflection_file
+        return
+
+    def get_scaler_reference_reflection_file(self):
+        return self._scalr_reference_reflection_file
 
     def set_scaler_prepare_done(self, done = True):
         self._scalr_prepare_done = done

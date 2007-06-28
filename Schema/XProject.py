@@ -116,6 +116,10 @@ class XProject(Object):
                 xc.set_scaled_merged_reflections(
                     crystals[crystal]['scaled_merged_reflections'])
 
+            if crystals[crystal].has_key('reference_reflection_file'):
+                xc.set_reference_reflection_file(
+                    crystals[crystal]['reference_reflection_file'])
+
             for wavelength in crystals[crystal]['wavelengths'].keys():
                 # FIXME 29/NOV/06 in here need to be able to cope with
                 # no wavelength information - this should default to the

@@ -396,6 +396,13 @@ class XInfo:
                     record.replace('SCALED_MERGED_REFLECTION_FILE',
                                    '').strip()
 
+            if 'REFERENCE_REFLECTION_FILE' in record:
+                self._crystals[
+                    'reference_reflection_file'] = \
+                    record.replace('REFERENCE_REFLECTION_FILE',
+                                   '').strip()
+
+
 if __name__ == '__main__':
     import os
 
