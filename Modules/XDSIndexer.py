@@ -298,7 +298,7 @@ class XDSIndexer(FrameProcessor,
             dd.set_image(self.get_image_name(starting_frame))
             starting_angle = dd.readheader()['phi_start']
 
-            idxref.set_starting_frame(starting_image)
+            idxref.set_starting_frame(starting_frame)
             idxref.set_starting_angle(starting_angle)
             
             idxref.add_spot_range(block[0], block[1])
