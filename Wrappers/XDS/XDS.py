@@ -164,7 +164,7 @@ def header_to_xds(header, synchrotron = True):
     else:
         result.append('TRUSTED_REGION=0.0 0.99')
 
-    result.append('NX=%d NY=%d QX=%6.4f QY=%6.4f' % \
+    result.append('NX=%d NY=%d QX=%6.6f QY=%6.6f' % \
                   (width, height, qx, qy))
 
     result.append('DETECTOR_DISTANCE=%7.3f' % header['distance'])
@@ -243,9 +243,15 @@ if __name__ == '__main__':
 
     dd = Diffdump()
 
-    directory = os.path.join(os.environ['XIA2_ROOT'],
-                             'Data', 'Test', 'Images')
+    if len(sys.argv) < 2:
 
-    dd.set_image(os.path.join(directory, '12287_1_E1_001.img'))
+        directory = os.path.join(os.environ['XIA2_ROOT'],
+                                 'Data', 'Test', 'Images')
+
+        dd.set_image(os.path.join(directory, '12287_1_E1_001.img'))
+
+    else:
+        dd.set_image(sys.argv[1])
+        
     for record in header_to_xds(dd.readheader()):
         print record
