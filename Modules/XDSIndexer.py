@@ -31,6 +31,8 @@ from Wrappers.XDS.XDSInit import XDSInit as _Init
 from Wrappers.XDS.XDSColspot import XDSColspot as _Colspot
 from Wrappers.XDS.XDSIdxref import XDSIdxref as _Idxref
 
+from Wrappers.XIA.Diffdump import Diffdump
+
 # helper functions
 
 from Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
@@ -277,6 +279,8 @@ class XDSIndexer(FrameProcessor,
 
         idxref = self.Idxref()
 
+        
+
         for file in ['SPOT.XDS']:
             idxref.set_input_data_file(file, self._data_files[file])
             
@@ -285,7 +289,21 @@ class XDSIndexer(FrameProcessor,
         idxref.set_background_range(self._indxr_images[0][0],
                                     self._indxr_images[0][1])
 
-        for block in self._indxr_images:
+        # set the phi start etc correctly
+
+        for block in self._indxr_images[:1]:
+            starting_frame = block[0]
+            
+            dd = Diffdump()
+            dd.set_image(self.get_image_name(starting_frame))
+            starting_angle = dd.readheader()['phi_start']
+
+            idxref.set_starting_frame(starting_image)
+            idxref.set_starting_angle(starting_angle)
+            
+            idxref.add_spot_range(block[0], block[1])
+
+        for block in self._indxr_images[1:]:
             idxref.add_spot_range(block[0], block[1])
 
         # FIXME need to also be able to pass in the known unit

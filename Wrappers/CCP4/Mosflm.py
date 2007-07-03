@@ -183,6 +183,10 @@
 #                 On the next pass the correct solution should be selected 
 #                 and everything should be peachy. On this correct solution
 #                 the recorded solution number should be reset to 0.
+#
+# FIXME 29/JUN/07 add functionality just to use this as a replacement for
+#                 Diffdump in highly extreme circumstances - note well that
+#                 this could be very slow...
 
 import os
 import sys
@@ -271,6 +275,12 @@ def Mosflm(DriverType = None):
             self._mosflm_gain = None
 
             return
+
+        def diffdump(self, image):
+            '''Run a diffdump style dump to check the parameters in the
+            image header...'''
+
+            pass
 
         def _estimate_gain(self):
             '''Estimate a GAIN appropriate for reducing this set.'''
