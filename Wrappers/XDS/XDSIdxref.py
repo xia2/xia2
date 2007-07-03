@@ -78,6 +78,9 @@ def XDSIdxref(DriverType = None):
 
             self._org = [0.0, 0.0]
 
+            self._starting_angle = 0.0
+            self._starting_frame = 0
+
             self._cell = None
             self._symm = 0
 
@@ -106,6 +109,12 @@ def XDSIdxref(DriverType = None):
             return
 
         # getter and setter for input / output data
+
+        def set_starting_frame(self, starting_frame):
+            self._starting_frame = starting_frame
+
+        def set_starting_angle(self, starting_angle):
+            self._starting_angle = starting_angle
 
         def set_indexer_input_lattice(self, lattice):
             self._indxr_input_lattice = lattice
@@ -171,6 +180,12 @@ def XDSIdxref(DriverType = None):
             
             xds_inp.write('ORGX=%f ORGY=%f\n' % \
                           tuple(self._org))
+
+            if self._starting_frame and self._starting_angle:
+                xds_inp.write('STARTING_FRAME=%d\n' % \
+                              self._starting_frame)
+                xds_inp.write('STARTING_ANGLE=%f\n' % \
+                              self._starting_angle)
 
             lattice_to_spacegroup = {'aP':1,
                                      'mP':3,
