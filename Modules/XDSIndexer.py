@@ -281,11 +281,11 @@ class XDSIndexer(FrameProcessor,
 
         # propogate the values from the frame processor interface...
 
-        if self._indxr_distance:
-            idxref.set_distance(self._indxr_distance)
+        if self.get_distance():
+            idxref.set_distance(self.get_distance())
 
-        if self._indxr_wavelength:
-            idxref.set_wavelength(self._indxr_wavelength)
+        if self.get_wavelength():
+            idxref.set_wavelength(self.get_wavelength())
 
         for file in ['SPOT.XDS']:
             idxref.set_input_data_file(file, self._data_files[file])
