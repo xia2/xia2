@@ -792,6 +792,18 @@ class XDSScaler(Scaler):
 
         # now get the reflection files out and merge them with scala
 
+        # in here I need to unpack and copy the reflection files to separate
+        # out the reflections from each sweep. This will mean that I can
+        # get the original batch numbers (well nearly) from COMBAT which
+        # *therefore* means that I can reorder the Rmerge values from
+        # scala in order of collected batch, as per the analysis in
+        # CCP4 Scaler and in the intra radiation damage analysis. However,
+        # this will mean that I have to add in some additional batch
+        # information to ensure that the scaling works correctly, and probably
+        # add in the wavelength information as well...
+
+        # bug # 2461
+
         output_files = xscale.get_output_reflection_files()
         wavelength_names = output_files.keys()
 
