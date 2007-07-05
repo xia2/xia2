@@ -84,6 +84,10 @@ def XDSIdxref(DriverType = None):
             self._cell = None
             self._symm = 0
 
+            # input if available from outside, e.g. xinfo file
+            self._distance = 0.0
+            self._wavelength = 0.0
+
             # results
 
             self._refined_beam = (0, 0)
@@ -109,6 +113,14 @@ def XDSIdxref(DriverType = None):
             return
 
         # getter and setter for input / output data
+
+        def set_distance(self, distance):
+            self._distance = distance
+            return
+
+        def set_wavelength(self, wavelength):
+            self._wavelength = wavelength
+            return
 
         def set_starting_frame(self, starting_frame):
             self._starting_frame = starting_frame
@@ -166,7 +178,21 @@ def XDSIdxref(DriverType = None):
         def run(self, ignore_errors = False):
             '''Run idxref.'''
 
-            header = header_to_xds(self.get_header())
+            image_header = self.get_header()
+
+            # crank through the header dictionary and replace incorrect
+            # information with updated values through the indexer
+            # interface if available...
+
+            # need to add distance, wavelength - that should be enough...
+
+            if self._distance:
+                image_header['distance'] = self._distance
+
+            if self._wavelength:
+                image_header['wavelength'] = self._wavelength
+
+            header = header_to_xds(image_header)
 
             xds_inp = open(os.path.join(self.get_working_directory(),
                                         'XDS.INP'), 'w')
@@ -392,7 +418,6 @@ def XDSIdxref(DriverType = None):
                 self._cell = sorted_list[0][1]
 
                 return False
-
             
             # get the refined distance &c.
 
