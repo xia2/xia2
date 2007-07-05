@@ -113,6 +113,12 @@ class XDSIntegrater(FrameProcessor,
         defpix.setup_from_image(self.get_image_name(
             self._intgr_wedge[0]))
 
+        if self.get_distance():
+            defpix.set_distance(self.get_distance())
+
+        if self.get_wavelength():
+            defpix.set_wavelength(self.get_wavelength())
+
         auto_logfiler(defpix, 'DEFPIX')
 
         return defpix
@@ -123,6 +129,12 @@ class XDSIntegrater(FrameProcessor,
 
         integrate.setup_from_image(self.get_image_name(
             self._intgr_wedge[0]))
+
+        if self.get_distance():
+            integrate.set_distance(self.get_distance())
+
+        if self.get_wavelength():
+            integrate.set_wavelength(self.get_wavelength())
 
         auto_logfiler(integrate, 'INTEGRATE')
 
@@ -135,6 +147,12 @@ class XDSIntegrater(FrameProcessor,
         correct.setup_from_image(self.get_image_name(
             self._intgr_wedge[0]))
 
+        if self.get_distance():
+            correct.set_distance(self.get_distance())
+
+        if self.get_wavelength():
+            correct.set_wavelength(self.get_wavelength())
+            
         auto_logfiler(correct, 'CORRECT')
         
         return correct

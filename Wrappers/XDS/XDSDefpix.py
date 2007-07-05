@@ -93,7 +93,21 @@ def XDSDefpix(DriverType = None):
         def run(self):
             '''Run defpix.'''
 
-            header = header_to_xds(self.get_header())
+            image_header = self.get_header()
+
+            # crank through the header dictionary and replace incorrect
+            # information with updated values through the indexer
+            # interface if available...
+
+            # need to add distance, wavelength - that should be enough...
+
+            if self.get_distance():
+                image_header['distance'] = self.get_distance()
+
+            if self.get_wavelength():
+                image_header['wavelength'] = self.get_wavelength()
+
+            header = header_to_xds(image_header)
 
             xds_inp = open(os.path.join(self.get_working_directory(),
                                         'XDS.INP'), 'w')
