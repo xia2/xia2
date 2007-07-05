@@ -209,6 +209,12 @@ class XDSIndexer(FrameProcessor,
 
         xycorr = self.Xycorr()
 
+        if self.get_distance():
+            xycorr.set_distance(self.get_distance())
+
+        if self.get_wavelength():
+            xycorr.set_wavelength(self.get_wavelength())
+
         xycorr.set_data_range(first, last)
         xycorr.set_background_range(self._indxr_images[0][0],
                                     self._indxr_images[0][1])
@@ -226,6 +232,12 @@ class XDSIndexer(FrameProcessor,
         # next start to process these - then init
 
         init = self.Init()
+
+        if self.get_distance():
+            init.set_distance(self.get_distance())
+
+        if self.get_wavelength():
+            init.set_wavelength(self.get_wavelength())
 
         for file in ['X-CORRECTIONS.pck',
                      'Y-CORRECTIONS.pck']:
@@ -248,6 +260,12 @@ class XDSIndexer(FrameProcessor,
         # next start to process these - then colspot
 
         colspot = self.Colspot()
+
+        if self.get_distance():
+            colspot.set_distance(self.get_distance())
+
+        if self.get_wavelength():
+            colspot.set_wavelength(self.get_wavelength())
 
         for file in ['X-CORRECTIONS.pck',
                      'Y-CORRECTIONS.pck',
