@@ -292,6 +292,9 @@ class XDSIntegrater(FrameProcessor,
         for f in self._data_files.keys():
             Debug.write('%s' % f)
 
+        # copy the distance too...
+        self.set_distance(self._intgr_indexer.get_indexer_distance())
+
         return
 
     def _integrate(self):

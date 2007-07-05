@@ -73,6 +73,10 @@ def IntegraterForXSweep(xsweep):
     if xsweep.get_wavelength_value():
         integrater.set_wavelength(xsweep.get_wavelength_value())
 
+    # likewise the distance...
+    if xsweep.get_distance():
+        integrater.set_distance(xsweep.get_distance())
+
     integrater.set_integrater_sweep(xsweep)
 
     return integrater
