@@ -323,6 +323,9 @@ class XDSScaler(Scaler):
         
         self._sweep_information = { }
 
+        # FIXME in here I want to record the batch number to
+        # epoch mapping as per the CCP4 Scaler implementation.
+
         for epoch in self._scalr_integraters.keys():
             intgr = self._scalr_integraters[epoch]
             pname, xname, dname = intgr.get_integrater_project_info()
