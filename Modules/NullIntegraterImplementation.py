@@ -148,10 +148,11 @@ class NullIntegrater(FrameProcessor,
         based on the pointgroup and the reindexing operator.'''
         
         # check if we need to perform any reindexing...
-        
-        if self._intgr_reindex_operator is None:
-            return self._null_integrater_hklout
 
+        if not self._intgr_spacegroup_number and \
+           not self._intgr_reindex_operator:
+            return self._intgr_hklout
+        
         Chatter.write('Reindexing to spacegroup %d (%s)' % \
                       (self._intgr_spacegroup_number,
                        self._intgr_reindex_operator))
