@@ -172,6 +172,88 @@ class AnalyseMyIntensities:
         self._rotation_function = rotation_function
         return
 
+    def compute_average_cell(self, hklin_list):
+        cell_a = 0.0
+        cell_b = 0.0
+        cell_c = 0.0
+        cell_alpga = 0.0
+        cell_beta = 0.0
+        cell_gamma = 0.0
+        n_input = 0
+        sg = None
+        
+        for hklin in hklin_list:
+            mtzdump = self._factory.Mtzdump()
+            mtzdump.set_hklin(hklin)
+            mtzdump.dump()
+            
+            resolution = min(mtzdump.get_resolution_range())
+            if resolution < self._resolution or self._resolution == 0:
+                self._resolution = resolution
+
+            datasets = mtzdump.get_datasets()
+            reflections = mtzdump.get_reflections()
+            if len(datasets) > 1:
+                raise RuntimeError, 'more than one dataset in %s' % hklin
+            info = mtzdump.get_dataset_info(datasets[0])
+
+            if not sg:
+                sg = info['spacegroup']
+            else:
+                if sg != info['spacegroup']:
+                    raise RuntimeError, 'inconsistent spacegroup'
+
+            # check that this u/c is in agreement with the others -
+            # allow 10% grace (!)
+
+            if n_input == 0:
+                cell_a = info['cell'][0] * reflections
+                cell_b = info['cell'][1] * reflections
+                cell_c = info['cell'][2] * reflections
+                cell_alpha = info['cell'][3] * reflections
+                cell_beta = info['cell'][4] * reflections
+                cell_gamma = info['cell'][5] * reflections
+                n_input += reflections
+            else:
+                if math.fabs(n_input * info['cell'][0] - cell_a) / \
+                       cell_a > 0.1:
+                    raise RuntimeError, 'inconsistent unit cell'
+                if math.fabs(n_input * info['cell'][1] - cell_b) / \
+                       cell_b > 0.1:
+                    raise RuntimeError, 'inconsistent unit cell'
+                if math.fabs(n_input * info['cell'][2] - cell_c) / \
+                       cell_c > 0.1:
+                    raise RuntimeError, 'inconsistent unit cell'
+                if math.fabs(n_input * info['cell'][3] - cell_alpha) / \
+                       cell_alpha > 0.1:
+                    raise RuntimeError, 'inconsistent unit cell'
+                if math.fabs(n_input * info['cell'][4] - cell_beta) / \
+                       cell_beta > 0.1:
+                    raise RuntimeError, 'inconsistent unit cell'
+                if math.fabs(n_input * info['cell'][5] - cell_gamma) / \
+                       cell_gamma > 0.1:
+                    raise RuntimeError, 'inconsistent unit cell'
+                
+                cell_a += info['cell'][0] * reflections
+                cell_b += info['cell'][1] * reflections
+                cell_c += info['cell'][2] * reflections
+                cell_alpha += info['cell'][3] * reflections
+                cell_beta += info['cell'][4] * reflections
+                cell_gamma += info['cell'][5] * reflections
+                n_input += reflections
+
+        cell_a /= n_input
+        cell_b /= n_input
+        cell_c /= n_input
+        cell_alpha /= n_input
+        cell_beta /= n_input
+        cell_gamma /= n_input
+        
+        average_cell = (cell_a, cell_b, cell_c,
+                        cell_alpha, cell_beta, cell_gamma)
+
+        return average_cell, sg        
+    
     def _get_solvent(self):
         '''Get the solvent content, either from an mol/asu guess or
         from the solvent content if available.'''
@@ -283,86 +365,9 @@ class AnalyseMyIntensities:
         if not self._symmetry and not self._reindex:
             Chatter.write('Determining unit cell')
 
-            # build up the average unit cell here
-            cell_a = 0.0
-            cell_b = 0.0
-            cell_c = 0.0
-            cell_alpga = 0.0
-            cell_beta = 0.0
-            cell_gamma = 0.0
-            n_input = 0
-            sg = None
+            self._average_cell, self._average_sg = self.compute_average_cell(
+                mtz_in)
 
-            for hklin in mtz_in:
-                mtzdump = self._factory.Mtzdump()
-                mtzdump.set_hklin(hklin)
-                mtzdump.dump()
-
-                datasets = mtzdump.get_datasets() 
-                if len(datasets) > 1:
-                    raise RuntimeError, 'more than one dataset in %s' % hklin
-                info = mtzdump.get_dataset_info(datasets[0])
-
-                resolution = min(mtzdump.get_resolution_range())
-                if resolution < self._resolution or self._resolution == 0:
-                    self._resolution = resolution
-
-                if not sg:
-                    sg = info['spacegroup']
-                else:
-                    if sg != info['spacegroup']:
-                        raise RuntimeError, 'inconsistent spacegroup'
-
-                # check that this u/c is in agreement with the others -
-                # allow 10% grace (!)
-
-                if n_input == 0:
-                    cell_a = info['cell'][0]
-                    cell_b = info['cell'][1]
-                    cell_c = info['cell'][2]
-                    cell_alpha = info['cell'][3]
-                    cell_beta = info['cell'][4]
-                    cell_gamma = info['cell'][5]
-                    n_input += 1
-                else:
-                    if math.fabs(n_input * info['cell'][0] - cell_a) / \
-                       cell_a > 0.1:
-                        raise RuntimeError, 'inconsistent unit cell'
-                    if math.fabs(n_input * info['cell'][1] - cell_b) / \
-                       cell_b > 0.1:
-                        raise RuntimeError, 'inconsistent unit cell'
-                    if math.fabs(n_input * info['cell'][2] - cell_c) / \
-                       cell_c > 0.1:
-                        raise RuntimeError, 'inconsistent unit cell'
-                    if math.fabs(n_input * info['cell'][3] - cell_alpha) / \
-                       cell_alpha > 0.1:
-                        raise RuntimeError, 'inconsistent unit cell'
-                    if math.fabs(n_input * info['cell'][4] - cell_beta) / \
-                       cell_beta > 0.1:
-                        raise RuntimeError, 'inconsistent unit cell'
-                    if math.fabs(n_input * info['cell'][5] - cell_gamma) / \
-                       cell_gamma > 0.1:
-                        raise RuntimeError, 'inconsistent unit cell'
-
-                    cell_a += info['cell'][0]
-                    cell_b += info['cell'][1]
-                    cell_c += info['cell'][2]
-                    cell_alpha += info['cell'][3]
-                    cell_beta += info['cell'][4]
-                    cell_gamma += info['cell'][5]
-                    n_input += 1
-
-            cell_a /= n_input
-            cell_b /= n_input
-            cell_c /= n_input
-            cell_alpha /= n_input
-            cell_beta /= n_input
-            cell_gamma /= n_input
-            
-            self._average_cell = (cell_a, cell_b, cell_c,
-                                  cell_alpha, cell_beta, cell_gamma)
-            self._average_sg = sg
-            
             Chatter.write(
                 'Determined unit cell: %.2f %.2f %.2f %.2f %.2f %.2f' % \
                 self._average_cell)
@@ -395,84 +400,8 @@ class AnalyseMyIntensities:
             
             Chatter.write('Determining unit cell')
 
-            cell_a = 0.0
-            cell_b = 0.0
-            cell_c = 0.0
-            cell_alpga = 0.0
-            cell_beta = 0.0
-            cell_gamma = 0.0
-            n_input = 0
-            sg = None
-
-            for hklin in hklin_list:
-                mtzdump = self._factory.Mtzdump()
-                mtzdump.set_hklin(hklin)
-                mtzdump.dump()
-
-                resolution = min(mtzdump.get_resolution_range())
-                if resolution < self._resolution or self._resolution == 0:
-                    self._resolution = resolution
-
-                datasets = mtzdump.get_datasets()
-                if len(datasets) > 1:
-                    raise RuntimeError, 'more than one dataset in %s' % hklin
-                info = mtzdump.get_dataset_info(datasets[0])
-
-                if not sg:
-                    sg = info['spacegroup']
-                else:
-                    if sg != info['spacegroup']:
-                        raise RuntimeError, 'inconsistent spacegroup'
-
-                # check that this u/c is in agreement with the others -
-                # allow 10% grace (!)
-
-                if n_input == 0:
-                    cell_a = info['cell'][0]
-                    cell_b = info['cell'][1]
-                    cell_c = info['cell'][2]
-                    cell_alpha = info['cell'][3]
-                    cell_beta = info['cell'][4]
-                    cell_gamma = info['cell'][5]
-                    n_input += 1
-                else:
-                    if math.fabs(n_input * info['cell'][0] - cell_a) / \
-                       cell_a > 0.1:
-                        raise RuntimeError, 'inconsistent unit cell'
-                    if math.fabs(n_input * info['cell'][1] - cell_b) / \
-                       cell_b > 0.1:
-                        raise RuntimeError, 'inconsistent unit cell'
-                    if math.fabs(n_input * info['cell'][2] - cell_c) / \
-                       cell_c > 0.1:
-                        raise RuntimeError, 'inconsistent unit cell'
-                    if math.fabs(n_input * info['cell'][3] - cell_alpha) / \
-                       cell_alpha > 0.1:
-                        raise RuntimeError, 'inconsistent unit cell'
-                    if math.fabs(n_input * info['cell'][4] - cell_beta) / \
-                       cell_beta > 0.1:
-                        raise RuntimeError, 'inconsistent unit cell'
-                    if math.fabs(n_input * info['cell'][5] - cell_gamma) / \
-                       cell_gamma > 0.1:
-                        raise RuntimeError, 'inconsistent unit cell'
-
-                    cell_a += info['cell'][0]
-                    cell_b += info['cell'][1]
-                    cell_c += info['cell'][2]
-                    cell_alpha += info['cell'][3]
-                    cell_beta += info['cell'][4]
-                    cell_gamma += info['cell'][5]
-                    n_input += 1
-
-            cell_a /= n_input
-            cell_b /= n_input
-            cell_c /= n_input
-            cell_alpha /= n_input
-            cell_beta /= n_input
-            cell_gamma /= n_input
-            
-            self._average_cell = (cell_a, cell_b, cell_c,
-                                  cell_alpha, cell_beta, cell_gamma)
-            self._average_sg = sg
+            self._average_cell, self._average_sg = self.compute_average_cell(
+                hklin_list)
 
             Chatter.write(
                 'Determined unit cell: %.2f %.2f %.2f %.2f %.2f %.2f' % \
@@ -517,6 +446,10 @@ class AnalyseMyIntensities:
             # y = A e ^ - m x
             m, dm, A, da = truncate.get_wilson_fit()
             dmax, dmin = truncate.get_wilson_fit_range()
+
+            # in here I also need to get and store the truncate B
+            # factor etc. so that they can be recovered by the calling
+            # program
 
             if dm / m < 0.1:
                 Chatter.write(
