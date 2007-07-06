@@ -336,7 +336,15 @@ class XDSScaler(Scaler):
                 'integrater':intgr,
                 'prepared_reflections':None,
                 'header':intgr.get_header(),
+                'batches':intgr.get_integrater_batches(),
+                'image_to_epoch':intgr.get_integrater_sweep(                
+                ).get_image_to_epoch(),
+                'batch_offset':0                
                 }
+
+            # what are these used for?
+            # pname / xname / dname - dataset identifiers
+            # image to epoch / batch offset / batches - for RD analysis
 
             Debug.write('For EPOCH %s have:' % str(epoch))
             Debug.write('ID = %s/%s/%s' % (pname, xname, dname))

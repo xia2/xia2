@@ -493,9 +493,6 @@ class CCP4Scaler(Scaler):
                 if ntr:
                     need_to_return = True
 
-            # FIXME should this not do the eliminater thing as per the
-            # XDS Scaler..?
-
             if not overall_pointgroup:
                 overall_pointgroup = pointgroup
             if overall_pointgroup != pointgroup:
@@ -1181,11 +1178,6 @@ class CCP4Scaler(Scaler):
 
         resolution_limits = { }
 
-        # FIXME 10/NOV/06 after talking to Steve Prince I suspect I should
-        # not be "massaging" the resolution information... remove this!
-
-        massage_resolution = False
-
         highest_resolution = 100.0
 
         # check in here that there is actually some data to scale..!
@@ -1211,17 +1203,10 @@ class CCP4Scaler(Scaler):
             # gather up an "average" best resolution and perhaps use this
             # where it seems appropriate e.g. TS03 INFL, LREM.
 
-            if massage_resolution:
-                resolution = 0.05 * nint(20.0 * resolution)
-                
             resolution_limits[dataset] = resolution
 
             if resolution < highest_resolution:
                 highest_resolution = resolution
-
-            if resolution - highest_resolution < 0.051 and massage_resolution:
-                # why not use this, to be tidy?
-                resolution_limits[dataset] = highest_resolution
 
             Chatter.write('Resolution limit for %s: %5.2f' % \
                           (dataset, resolution_limits[dataset]))
@@ -1820,7 +1805,8 @@ class CCP4Scaler(Scaler):
                 self._tmp_scaled_refl_files.keys()[0]]
 
         # finally add a FreeR column, and record the new merged reflection
-        # file with the free column added.
+        # file with the free column added. FIXME this may need to be
+        # copied from a user-supplied reference reflection file...
 
         f = self._factory.Freerflag()
 
