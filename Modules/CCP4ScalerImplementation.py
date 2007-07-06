@@ -104,6 +104,7 @@
 import os
 import sys
 import math
+import copy
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
@@ -113,19 +114,6 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 # the interface definition that this will conform to 
 from Schema.Interfaces.Scaler import Scaler
-
-# the wrappers that this will use - these are renamed so that the internal
-# factory version can be used...
-from Wrappers.CCP4.Scala import Scala as _Scala
-from Wrappers.CCP4.Sortmtz import Sortmtz as _Sortmtz
-from Wrappers.CCP4.Mtzdump import Mtzdump as _Mtzdump
-from Wrappers.CCP4.Truncate import Truncate as _Truncate
-from Wrappers.CCP4.Rebatch import Rebatch as _Rebatch
-from Wrappers.CCP4.Mtz2various import Mtz2various as _Mtz2various
-from Wrappers.CCP4.Cad import Cad as _Cad
-from Wrappers.CCP4.Freerflag import Freerflag as _Freerflag
-from Wrappers.CCP4.Pointless import Pointless as _Pointless
-from Wrappers.CCP4.Sfcheck import Sfcheck as _Sfcheck
 
 from Wrappers.CCP4.CCP4Factory import CCP4Factory
 
@@ -141,9 +129,12 @@ from lib.Guff import transpose_loggraph, nint
 from lib.SymmetryLib import lattices_in_order
 
 from CCP4ScalerImplementationHelpers import _resolution_estimate, \
-     _prepare_pointless_hklin, _fraction_difference
+     _prepare_pointless_hklin, _fraction_difference, \
+     CCP4ScalerImplementationHelper
 
 from CCP4InterRadiationDamageDetector import CCP4InterRadiationDamageDetector
+
+from AnalyseMyIntensities import AnalyseMyIntensities
 
 # See FIXME_X0001 below...
 # from CCP4IntraRadiationDamageDetector import CCP4IntraRadiationDamageDetector
@@ -155,16 +146,18 @@ class CCP4Scaler(Scaler):
         Scaler.__init__(self)
 
         self._sweep_information = { }
-
+        self._tmp_scaled_refl_files = { }
+        
         # hacky... this is to pass information from prepare to scale
         # and could probably be handled better (they used to be
         # all in just the scale() method)
-        
+
         self._prepared_reflections = None
         self._common_pname = None
         self._common_xname = None
 
         self._factory = CCP4Factory()
+        self._helper = CCP4ScalerImplementationHelper()
 
         return
 
@@ -172,108 +165,11 @@ class CCP4Scaler(Scaler):
     def set_working_directory(self, working_directory):
         self._working_directory = working_directory
         self._factory.set_working_directory(working_directory)
+        self._helper.set_working_directory(working_directory)        
         return
 
-    # factory methods...
-
-    def Scala(self):
-        return self._factory.Scala()
-
-    def Sortmtz(self):
-        return self._factory.Sortmtz()
-
-    def Mtzdump(self):
-        return self._factory.Mtzdump()
-
-    def Truncate(self):
-        return self._factory.Truncate()
-
-    def Rebatch(self):
-        return self._factory.Rebatch()
-
-    def Reindex(self):
-        return self._factory.Reindex()
-
-    def Mtz2various(self):
-        return self._factory.Mtz2various()
-
-    def Cad(self):
-        return self._factory.Cad()
-
-    def Freerflag(self):
-        return self._factory.Freerflag()
-
-    def Pointless(self):
-        return self._factory.Pointless()
-
-    def Sfcheck(self):
-        return self._factory.Sfcheck()
-
     def _pointless_indexer_jiffy(self, hklin, indexer):
-        '''A jiffy to centralise the interactions between pointless
-        (in the blue corner) and the Indexer, in the red corner.'''
-
-        need_to_return = False
-
-        pointless = self.Pointless()
-        pointless.set_hklin(hklin)
-        pointless.decide_pointgroup()
-        
-        if indexer:
-            rerun_pointless = False
-
-            possible = pointless.get_possible_lattices()
-
-            correct_lattice = None
-
-            Chatter.write('Possible lattices (pointless):')
-            lattices = ''
-            for lattice in possible:
-                lattices += '%s ' % lattice
-            Chatter.write(lattices)
-
-            for lattice in possible:
-                state = indexer.set_indexer_asserted_lattice(lattice)
-                if state == 'correct':
-                            
-                    Chatter.write(
-                        'Agreed lattice %s' % lattice)
-                    correct_lattice = lattice
-                    
-                    break
-                
-                elif state == 'impossible':
-                    Chatter.write(
-                        'Rejected lattice %s' % lattice)
-                    
-                    rerun_pointless = True
-                    
-                    continue
-                
-                elif state == 'possible':
-                    Chatter.write(
-                        'Accepted lattice %s ...' % lattice)
-                    Chatter.write(
-                        '... will reprocess accordingly')
-                    
-                    need_to_return = True
-                    
-                    correct_lattice = lattice
-                    
-                    break
-                    
-            if rerun_pointless:
-                pointless.set_correct_lattice(correct_lattice)
-                pointless.decide_pointgroup()
-
-        Chatter.write('Pointless analysis of %s' % pointless.get_hklin())
-
-        pointgroup = pointless.get_pointgroup()
-        reindex_op = pointless.get_reindex_operator()
-        
-        Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
-
-        return pointgroup, reindex_op, need_to_return
+        return self._helper.pointless_indexer_jiffy(hklin, indexer)
 
     def _scale_prepare(self):
         '''Perform all of the preparation required to deliver the scaled
@@ -444,80 +340,39 @@ class CCP4Scaler(Scaler):
             epochs.sort()
             first = epochs[0]
 
+            Chatter.write('Preparing reference data set from first sweep')
+
             hklin = self._sweep_information[first][
                 'integrater'].get_integrater_reflections()
             header = self._sweep_information[first]['header']
 
             # prepare pointless hklin makes something much smaller...
 
-            pl = self.Pointless()
-            pl.set_hklin(_prepare_pointless_hklin(
+            pointless_hklin = _prepare_pointless_hklin(
                 self.get_working_directory(),
                 hklin, self._sweep_information[first]['header'].get(
-                'phi_width', 0.0)))
+                'phi_width', 0.0))
 
+            pl = self._factory.Pointless()
+            pl.set_hklin(pointless_hklin)
             pl.decide_pointgroup()
-
-            integrater = self._sweep_information[first]['integrater']
-            indexer = integrater.get_integrater_indexer()
-            
-            if indexer:
-                # flag to record whether I need to do some rerunning
-                rerun_pointless = False
-                
-                possible = pl.get_possible_lattices()
-                
-                correct_lattice = None
-
-                Chatter.write('Possible lattices (pointless):')
-                lattices = ''
-                for lattice in possible:
-                    lattices += '%s ' % lattice
-                Chatter.write(lattices)
-                    
-                for lattice in possible:
-                    state = indexer.set_indexer_asserted_lattice(lattice)
-                    if state == 'correct':
-                            
-                        Chatter.write(
-                            'Agreed lattice %s' % lattice)
-                        correct_lattice = lattice
-                        
-                        break
-                    
-                    elif state == 'impossible':
-                        Chatter.write(
-                            'Rejected lattice %s' % lattice)
-                        
-                        rerun_pointless = True
-                        
-                        continue
-                    
-                    elif state == 'possible':
-                        Chatter.write(
-                            'Accepted lattice %s ...' % lattice)
-                        Chatter.write(
-                            '... will reprocess accordingly')
-
-                        need_to_return = True
-
-                        correct_lattice = lattice
-
-                        break
-                    
-                if rerun_pointless:
-                    pl.set_correct_lattice(correct_lattice)
-                    pl.decide_pointgroup()
-
-            Chatter.write('Pointless analysis of %s' % pl.get_hklin())
 
             pointgroup = pl.get_pointgroup()
             reindex_op = pl.get_reindex_operator()
-        
-            Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
-            # tell the integrater about this - may not be too much
-            # of a problem...
+            integrater = self._sweep_information[first]['integrater']
+            indexer = integrater.get_integrater_indexer()
+
+            # FIXME in here may be getting the reference reflection file
+            # from an external source, in which case I will want to do
+            # something cunning in here...
+            
+            if indexer:
+                
+                pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
+                    pointless_hklin, indexer)
+
+            Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
             integrater.set_integrater_reindex_operator(reindex_op)
             integrater.set_integrater_spacegroup_number(
@@ -531,7 +386,7 @@ class CCP4Scaler(Scaler):
             # we will want to delete this one exit
             FileHandler.record_temporary_file(hklout)
 
-            s = self.Sortmtz()
+            s = self._factory.Sortmtz()
             s.set_hklout(hklout)
             s.add_hklin(hklin)
             s.sort()
@@ -550,7 +405,7 @@ class CCP4Scaler(Scaler):
                           os.path.split(hklin)[-1])
             Chatter.write('to give indexing standard')
 
-            qsc = self.Scala()
+            qsc = self._factory.Scala()
             qsc.set_hklin(hklin)
             qsc.set_hklout(self._reference)
             qsc.quick_scale()
@@ -598,7 +453,7 @@ class CCP4Scaler(Scaler):
             # adding a pointer to the Integrater into the sweep_information
             # which can then be used to pass around this information.
             
-            pl = self.Pointless()
+            pl = self._factory.Pointless()
             hklin = self._sweep_information[epoch][
                 'integrater'].get_integrater_reflections()
             hklout = os.path.join(
@@ -709,7 +564,7 @@ class CCP4Scaler(Scaler):
             # ---------- REINDEX TO CORRECT (REFERENCE) SETTING ----------
             
             for epoch in self._sweep_information.keys():
-                pl = self.Pointless()
+                pl = self._factory.Pointless()
                 hklin = self._sweep_information[epoch][
                     'integrater'].get_integrater_reflections()
                 hklout = os.path.join(
@@ -764,7 +619,7 @@ class CCP4Scaler(Scaler):
             hklin = self._sweep_information[epoch][
                 'integrater'].get_integrater_reflections()
 
-            md = self.Mtzdump()
+            md = self._factory.Mtzdump()
             md.set_hklin(hklin)
             md.dump()
 
@@ -820,7 +675,7 @@ class CCP4Scaler(Scaler):
         counter = 0
 
         for epoch in epochs:
-            rb = self.Rebatch()
+            rb = self._factory.Rebatch()
 
             hklin = self._sweep_information[epoch][
                 'integrater'].get_integrater_reflections()
@@ -860,7 +715,7 @@ class CCP4Scaler(Scaler):
         # then sort the files together, making sure that the resulting
         # reflection file looks right.
 
-        s = self.Sortmtz()
+        s = self._factory.Sortmtz()
 
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s_sorted.mtz' % \
@@ -897,7 +752,7 @@ class CCP4Scaler(Scaler):
 
         # if it's a huge SAD data set then do it! else don't...
 
-        p = self.Pointless()
+        p = self._factory.Pointless()
         if len(self._sweep_information.keys()) > 1:
             p.set_hklin(hklin)
         else:
@@ -944,7 +799,7 @@ class CCP4Scaler(Scaler):
 
         # then run reindex to set the correct spacegroup
         
-        ri = self.Reindex()
+        ri = self._factory.Reindex()
         ri.set_hklin(hklin)
         ri.set_hklout(hklout)
         ri.set_spacegroup(spacegroup)
@@ -956,7 +811,7 @@ class CCP4Scaler(Scaler):
         
         # then resort the reflections (one last time!)
 
-        s = self.Sortmtz()
+        s = self._factory.Sortmtz()
 
         temp = hklin
         hklin = hklout
@@ -982,7 +837,7 @@ class CCP4Scaler(Scaler):
         epochs = self._sweep_information.keys()
         epochs.sort()
 
-        sc = self.Scala()
+        sc = self._factory.Scala()
         sc.set_hklin(self._prepared_reflections)
         sc.set_scales_file(scales_file)
 
@@ -1289,7 +1144,7 @@ class CCP4Scaler(Scaler):
         # damage" data if appropriate. This will be a huge loop here perhaps?
         # what about resolution limit changes, and so on??!
 
-        sc = self.Scala()
+        sc = self._factory.Scala()
         sc.set_hklin(self._prepared_reflections)
 
         # generate a name for the "scales" file - this will be used for
@@ -1550,7 +1405,7 @@ class CCP4Scaler(Scaler):
         # tight loop - initially just rerun the scaling with all of the
         # "right" parameters...
         
-        sc = self.Scala()
+        sc = self._factory.Scala()
 
         FileHandler.record_log_file('%s %s scala' % (self._common_pname,
                                                      self._common_xname),
@@ -1733,7 +1588,8 @@ class CCP4Scaler(Scaler):
         # FIXED this is not correct for multi-wavelength data...
         # it should be now!
 
-        scaled_reflection_files = sc.get_scaled_reflection_files()
+        self._tmp_scaled_refl_files = copy.deepcopy(
+            sc.get_scaled_reflection_files())
         self._scalr_scaled_reflection_files = { }
         
         # compute a "standard unit cell" - FIXME perhaps - looks like
@@ -1747,9 +1603,9 @@ class CCP4Scaler(Scaler):
         # this is confusing as it implicitly iterates over the keys of the
         # dictionary
         
-        for key in scaled_reflection_files:
-            file = scaled_reflection_files[key]
-            m2v = self.Mtz2various()
+        for key in self._tmp_scaled_refl_files:
+            file = self._tmp_scaled_refl_files[key]
+            m2v = self._factory.Mtz2various()
             m2v.set_hklin(file)
             m2v.set_hklout('%s.sca' % file[:-4])
             m2v.convert()
@@ -1762,7 +1618,7 @@ class CCP4Scaler(Scaler):
         # in here rerun scala recycling the final scales and writing out
         # unmerged reflection files in scalepack format
 
-        sc = self.Scala()
+        sc = self._factory.Scala()
         sc.set_hklin(self._prepared_reflections)
         sc.set_scales_file(scales_file)
 
@@ -1802,8 +1658,8 @@ class CCP4Scaler(Scaler):
         # be fixed...
 
         self._scalr_scaled_reflection_files['sca_unmerged'] = { }
-        for key in scaled_reflection_files:
-            file = scaled_reflection_files[key]
+        for key in self._tmp_scaled_refl_files:
+            file = self._tmp_scaled_refl_files[key]
             scalepack = os.path.join(os.path.split(file)[0],
                                      os.path.split(file)[1].replace(
                 '_scaled', '_unmerged').replace('.mtz', '.sca'))
@@ -1819,7 +1675,7 @@ class CCP4Scaler(Scaler):
         for key in self._scalr_statistics:
             pname, xname, dname = key
 
-            sc = self.Scala()
+            sc = self._factory.Scala()
             sc.set_hklin(self._prepared_reflections)
             sc.set_scales_file(scales_file)
 
@@ -1860,13 +1716,13 @@ class CCP4Scaler(Scaler):
 
         # end bug # 2229 stuff
 
+        # plug in AMI here, then
+
         # convert I's to F's in Truncate
 
-        # 01MAR07 no longer have this...
-        # self._scalr_scaled_reflection_files['mtz'] = { }
-        for key in scaled_reflection_files.keys():
-            file = scaled_reflection_files[key]
-            t = self.Truncate()
+        for key in self._tmp_scaled_refl_files.keys():
+            file = self._tmp_scaled_refl_files[key]
+            t = self._factory.Truncate()
             t.set_hklin(file)
 
             # bug # 2326
@@ -1909,7 +1765,7 @@ class CCP4Scaler(Scaler):
                 ]['Wilson B factor'] = [b_factor]
 
             # replace old with the new version which has F's in it 
-            scaled_reflection_files[key] = hklout
+            self._tmp_scaled_refl_files[key] = hklout
 
             # record the separated reflection file too
             # 01MAR07 no longer have this
@@ -1942,97 +1798,12 @@ class CCP4Scaler(Scaler):
         # cell values and so on, because then I can take into account the
         # spread of wavelength values. See bug # 1757.
 
-        for key in scaled_reflection_files.keys():
-            hklin = scaled_reflection_files[key]
-            md = self.Mtzdump()
-            md.set_hklin(hklin)
-            md.dump()
-            datasets = md.get_datasets()
-            reflections = md.get_reflections()
+        ami = AnalyseMyIntensities()
+        ami.set_working_directory(self.get_working_directory())
 
-            # ASSERT at this stage there should be exactly one dataset
-            # in each reflection file - however we won't make that
-            # assumption here as that could get us into trouble later on
-
-            if average_cell_nref == 0:
-                # this is the first data set - take these as read
-                for d in datasets:
-                    info = md.get_dataset_info(d)
-                    cell = info['cell']
-
-                    Chatter.write('%d reflections in dataset %s' % \
-                                  (reflections, d))
-                    
-                    average_cell_nref += reflections
-                    average_cell_a += cell[0] * reflections
-                    average_cell_b += cell[1] * reflections
-                    average_cell_c += cell[2] * reflections
-                    average_cell_alpha += cell[3] * reflections
-                    average_cell_beta += cell[4] * reflections
-                    average_cell_gamma += cell[5] * reflections
-
-            else:
-                # as above, but also check that the unit cell parameters
-                # are reasonably compatible with the current running average
-                for d in datasets:
-                    info = md.get_dataset_info(d)
-                    cell = info['cell']
-
-                    # check the cell - allow 0.5A, 0.5 degrees - this
-                    # is shockingly wide!
-
-                    Chatter.write('%d reflections in dataset %s' % \
-                                  (reflections, d))
-
-                    # FIXED 08/DEC/06 cell axis differences now in 1% range,
-                    # keep angles as 0.5 degrees
-
-                    if _fraction_difference(
-                        cell[0],
-                        average_cell_a / average_cell_nref) > 0.01:
-                        raise RuntimeError, \
-                              'incompatible unit cell for set %s' % d
-                    if _fraction_difference(
-                        cell[1],
-                        average_cell_b / average_cell_nref) > 0.01:
-                        raise RuntimeError, \
-                              'incompatible unit cell for set %s' % d
-                    if _fraction_difference(
-                        cell[2],
-                        average_cell_c / average_cell_nref) > 0.01:
-                        raise RuntimeError, \
-                              'incompatible unit cell for set %s' % d
-
-                    if math.fabs(cell[3] -
-                                 (average_cell_alpha /
-                                  average_cell_nref)) > 0.5:
-                        raise RuntimeError, \
-                              'incompatible unit cell for set %s' % d
-                    if math.fabs(cell[4] -
-                                 (average_cell_beta /
-                                  average_cell_nref)) > 0.5:
-                        raise RuntimeError, \
-                              'incompatible unit cell for set %s' % d
-                    if math.fabs(cell[5] -
-                                 (average_cell_gamma /
-                                  average_cell_nref)) > 0.5:
-                        raise RuntimeError, \
-                              'incompatible unit cell for set %s' % d
-
-                    average_cell_nref += reflections
-                    average_cell_a += cell[0] * reflections
-                    average_cell_b += cell[1] * reflections
-                    average_cell_c += cell[2] * reflections
-                    average_cell_alpha += cell[3] * reflections
-                    average_cell_beta += cell[4] * reflections
-                    average_cell_gamma += cell[5] * reflections
-
-        average_unit_cell = (average_cell_a / average_cell_nref,
-                             average_cell_b / average_cell_nref,
-                             average_cell_c / average_cell_nref,
-                             average_cell_alpha / average_cell_nref,
-                             average_cell_beta / average_cell_nref,
-                             average_cell_gamma / average_cell_nref)
+        average_unit_cell, ignore_sg = ami.compute_average_cell(
+            [self._tmp_scaled_refl_files[key] for key in
+             self._tmp_scaled_refl_files.keys()])
 
         Chatter.write('Computed average unit cell (will use in all files)')
         Chatter.write('%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
@@ -2040,30 +1811,30 @@ class CCP4Scaler(Scaler):
 
         self._scalr_cell = average_unit_cell
 
-        for key in scaled_reflection_files.keys():
-            file = scaled_reflection_files[key]
+        for key in self._tmp_scaled_refl_files.keys():
+            file = self._tmp_scaled_refl_files[key]
             
             hklout = '%s_cad.mtz' % file[:-4]
             FileHandler.record_temporary_file(hklout)
 
-            c = self.Cad()
+            c = self._factory.Cad()
             c.add_hklin(file)
             c.set_new_suffix(key)
             c.set_new_cell(average_unit_cell)
             c.set_hklout(hklout)
             c.update()
             
-            scaled_reflection_files[key] = hklout
+            self._tmp_scaled_refl_files[key] = hklout
 
         # merge all columns into a single uber-reflection-file
         # FIXME this is only worth doing if there are more
         # than one scaled reflection file...
 
-        if len(scaled_reflection_files.keys()) > 1:
+        if len(self._tmp_scaled_refl_files.keys()) > 1:
 
-            c = self.Cad()
-            for key in scaled_reflection_files.keys():
-                file = scaled_reflection_files[key]
+            c = self._factory.Cad()
+            for key in self._tmp_scaled_refl_files.keys():
+                file = self._tmp_scaled_refl_files[key]
                 c.add_hklin(file)
         
             hklout = os.path.join(self.get_working_directory(),
@@ -2086,13 +1857,13 @@ class CCP4Scaler(Scaler):
             # flag adding step! Doh!
             
             self._scalr_scaled_reflection_files[
-                'mtz_merged'] = scaled_reflection_files[
-                scaled_reflection_files.keys()[0]]
+                'mtz_merged'] = self._tmp_scaled_refl_files[
+                self._tmp_scaled_refl_files.keys()[0]]
 
         # finally add a FreeR column, and record the new merged reflection
         # file with the free column added.
 
-        f = self.Freerflag()
+        f = self._factory.Freerflag()
 
         # changed this to not assume that the file is called _merged.mtz
         hklout = os.path.join(self.get_working_directory(),
@@ -2115,7 +1886,7 @@ class CCP4Scaler(Scaler):
         FileHandler.record_data_file(f.get_hklout())
 
         # have a look for twinning ...
-        sfc = self.Sfcheck()
+        sfc = self._factory.Sfcheck()
         sfc.set_hklin(f.get_hklout())
         sfc.analyse()
         twinning_score = sfc.get_twinning()
@@ -2130,7 +1901,7 @@ class CCP4Scaler(Scaler):
 
         # next have a look for radiation damage... if more than one wavelength
 
-        if len(scaled_reflection_files.keys()) > 1:
+        if len(self._tmp_scaled_refl_files.keys()) > 1:
             crd = CCP4InterRadiationDamageDetector()
 
             crd.set_working_directory(self.get_working_directory())

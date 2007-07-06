@@ -4,8 +4,6 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # 3rd November 2006
 # 
@@ -20,8 +18,10 @@ import math
 from Wrappers.CCP4.Mtzdump import Mtzdump
 from Wrappers.CCP4.Rebatch import Rebatch
 from lib.Guff import auto_logfiler
-from Handlers.Streams import Chatter
+from Handlers.Streams import Chatter, Debug
 from Handlers.Files import FileHandler
+
+############ JIFFY FUNCTIONS #################
 
 def _resolution_estimate(ordered_pair_list, cutoff):
     '''Come up with a linearly interpolated estimate of resolution at
@@ -111,3 +111,95 @@ def _fraction_difference(value, reference):
 
     return math.fabs((value - reference) / reference)
 
+from Wrappers.CCP4.Pointless import Pointless as _Pointless
+
+############### HELPER CLASS #########################
+
+class CCP4ScalerImplementationHelper:
+    '''A class to help the CCP4 Scaler implementation along a little.'''
+
+    def __init__(self):
+        self._working_directory = os.getcwd()
+        return
+
+    def set_working_directory(self, working_directory):
+        self._working_directory = working_directory
+        return
+
+    def get_working_directory(self):
+        return self._working_directory 
+
+    def Pointless(self):
+        '''Create a Pointless wrapper from _Pointless - and set the
+        working directory and log file stuff as a part of this...'''
+        pointless = _Pointless()
+        pointless.set_working_directory(self.get_working_directory())
+        auto_logfiler(pointless)
+        return pointless
+
+    def pointless_indexer_jiffy(self, hklin, indexer):
+        '''A jiffy to centralise the interactions between pointless
+        (in the blue corner) and the Indexer, in the red corner.'''
+
+        need_to_return = False
+
+        pointless = self.Pointless()
+        pointless.set_hklin(hklin)
+        pointless.decide_pointgroup()
+        
+        if indexer:
+            rerun_pointless = False
+
+            possible = pointless.get_possible_lattices()
+
+            correct_lattice = None
+
+            Chatter.write('Possible lattices (pointless):')
+            lattices = ''
+            for lattice in possible:
+                lattices += '%s ' % lattice
+            Chatter.write(lattices)
+
+            for lattice in possible:
+                state = indexer.set_indexer_asserted_lattice(lattice)
+                if state == 'correct':
+                            
+                    Chatter.write(
+                        'Agreed lattice %s' % lattice)
+                    correct_lattice = lattice
+                    
+                    break
+                
+                elif state == 'impossible':
+                    Chatter.write(
+                        'Rejected lattice %s' % lattice)
+                    
+                    rerun_pointless = True
+                    
+                    continue
+                
+                elif state == 'possible':
+                    Chatter.write(
+                        'Accepted lattice %s ...' % lattice)
+                    Chatter.write(
+                        '... will reprocess accordingly')
+                    
+                    need_to_return = True
+                    
+                    correct_lattice = lattice
+                    
+                    break
+                    
+            if rerun_pointless:
+                pointless.set_correct_lattice(correct_lattice)
+                pointless.decide_pointgroup()
+
+        Chatter.write('Pointless analysis of %s' % pointless.get_hklin())
+
+        pointgroup = pointless.get_pointgroup()
+        reindex_op = pointless.get_reindex_operator()
+        
+        Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+
+        return pointgroup, reindex_op, need_to_return
+        
