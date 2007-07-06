@@ -372,6 +372,10 @@ class CCP4Scaler(Scaler):
                 pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
                     pointless_hklin, indexer)
 
+                if ntr:
+                    need_to_return = True
+
+
             Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
             integrater.set_integrater_reindex_operator(reindex_op)
@@ -469,6 +473,10 @@ class CCP4Scaler(Scaler):
 
             pl.decide_pointgroup()
 
+            # get the correct pointgroup etc.
+            pointgroup = pl.get_pointgroup()
+            reindex_op = pl.get_reindex_operator()
+
             # check this against the records in the indexer
 
             integrater = self._sweep_information[epoch]['integrater']
@@ -478,64 +486,15 @@ class CCP4Scaler(Scaler):
             rerun_pointless = False
             
             if indexer:
-                possible = pl.get_possible_lattices()
-                
-                correct_lattice = None
 
-                Chatter.write('Possible lattices (pointless):')
-                lattices = ''
-                for lattice in possible:
-                    lattices += '%s ' % lattice
-                Chatter.write(lattices)
-                    
-                for lattice in possible:
-                    state = indexer.set_indexer_asserted_lattice(lattice)
-                    if state == 'correct':
-                            
-                        Chatter.write(
-                            'Agreed lattice %s' % lattice)
-                        correct_lattice = lattice
-                        
-                        break
-                    
-                    elif state == 'impossible':
+                pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
+                    hklin, indxr)
 
-                        # pointless wants something where no indexing
-                        # solution exists...
-                        Chatter.write(
-                            'Rejected lattice %s' % lattice)
-                        
-                        # this means that I will need to rerun pointless
-                        # with a lower symmetry target...
+                if ntr:
+                    need_to_return = True
 
-                        rerun_pointless = True
-                        
-                        continue
-                    
-                    elif state == 'possible':
-                        # then this is a possible indexing solution
-                        # but is not the highest symmetry - need to
-                        # return...
-                        
-                        Chatter.write(
-                            'Accepted lattice %s ...' % lattice)
-                        Chatter.write(
-                            '... will reprocess accordingly')
-
-                        need_to_return = True
-                        correct_lattice = lattice
-
-                        break
-                    
-            if rerun_pointless:
-                pl.set_correct_lattice(correct_lattice)
-                pl.decide_pointgroup()
-
-            Chatter.write('Pointless analysis of %s' % pl.get_hklin())
-
-            # get the correct pointgroup etc.
-            pointgroup = pl.get_pointgroup()
-            reindex_op = pl.get_reindex_operator()
+            # FIXME should this not do the eliminater thing as per the
+            # XDS Scaler..?
 
             if not overall_pointgroup:
                 overall_pointgroup = pointgroup
