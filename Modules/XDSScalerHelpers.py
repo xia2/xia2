@@ -56,8 +56,9 @@ def split_xscale_ascii_file(xds_ascii_file, prefix):
 
         for k in keys:
 
-            # FIXME in here I should check that this line is appropriate
-            # for this file, though it probably won't matter too much
+            if 'ISET' in line and \
+               int(line.split('ISET=')[1].split()[0]) != k:
+                continue
             
             files[k].write(line)
 
@@ -81,6 +82,9 @@ def split_xscale_ascii_file(xds_ascii_file, prefix):
 
 if __name__ == '__main__':
 
-    for f in sys.argv[1:]:
-        print split_xscale_ascii_file(f, 'demo')
+    input_file = os.path.join(
+        os.environ['X2TD_ROOT'], 'Test', 'UnitTest',
+        'Modules', 'XDSScalerHelpers', '1VR9_NAT.HKL')
+    split_xscale_ascii_file(input_file, 'SCALED_')
+
 
