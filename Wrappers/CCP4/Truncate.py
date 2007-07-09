@@ -48,6 +48,9 @@ def Truncate(DriverType = None):
             self._anomalous = False
             self._nres = 0
 
+            # should we do wilson scaling?
+            self._wilson = True
+
             self.set_executable('truncate')
 
             self._b_factor = 0.0
@@ -64,6 +67,11 @@ def Truncate(DriverType = None):
         def set_anomalous(self, anomalous):
             self._anomalous = anomalous
             return
+
+        def set_wilson(self, wilson):
+            '''Set the use of Wilson scaling - if you set this to False
+            Wilson scaling will be switched off...'''
+            self._wilson = wilson
 
         def truncate(self):
             '''Actually perform the truncation procedure.'''
@@ -85,6 +93,9 @@ def Truncate(DriverType = None):
 
             if self._nres:
                 self.input('nres %d' % self._nres)
+
+            if not self._wilson:
+                self.input('scale 1')
 
             self.close_wait()
 
