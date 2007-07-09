@@ -418,7 +418,7 @@ class AnalyseMyIntensities:
 
                 resolution = self._hklin_stats[hklin]
                 del(self._hklin_stats[hklin])
-                self._hklin_stats[hklout] = {'resolution':resolution}
+                self._hklin_stats[hklout] = resolution
 
             # build up the average unit cell here
             
@@ -449,7 +449,7 @@ class AnalyseMyIntensities:
 
             hklout = os.path.join(
                 self.get_working_directory(),
-                'TRUNCATE%d.mtz' % j)
+                    'TRUNCATE%d.mtz' % j)
 
             # run truncate
 
