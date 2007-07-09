@@ -29,6 +29,7 @@
 import os
 import sys
 import math
+import copy
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
@@ -497,6 +498,8 @@ class AnalyseMyIntensities:
             
             k = (j, self._project_info[j])
             self._truncate_statistics[k] = s
+            self._truncate_statistics[k][
+                'Wilson B factor'] = truncate.get_b_factor()
             self._truncate_statistics_keys.append(k)
 
             self._truncate_hklout.append(hklout)
@@ -671,6 +674,9 @@ class AnalyseMyIntensities:
             self._huge_log_file.append(o)
 
         return
+
+    def get_truncate_statistics(self):
+        return copy.deepcopy(self._truncate_statistics)
     
             
 if __name__ == '__main__':
