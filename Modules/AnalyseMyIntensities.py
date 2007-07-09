@@ -65,6 +65,8 @@ class AnalyseMyIntensities:
         self._anomalous = False
         self._rotation_function = False
 
+        self._hklin_stats = { } 
+
         self._working_directory = os.getcwd()
 
         self._factory = CCP4Factory()
@@ -360,7 +362,19 @@ class AnalyseMyIntensities:
                 raise RuntimeError, 'file %s unrecognised' % hklin
 
         # next work through this list and apply reindexing operators
-        # etc if set...
+        # etc if set... also store resolution limits via a quick
+        # mtzdump.
+
+        for hklin in mtz_in:
+            mtzdump = self._factory.Mtzdump()
+            mtzdump.set_hklin(hklin)
+            mtzdump.dump()
+
+            resolution = min(mtzdump.get_resolution_range())
+
+            Chatter.write('Resolution for %s: %.2f' % (hklin, resolution))
+
+            self._hklin_stats[hklin] = {'resolution':resolution}
 
         if not self._symmetry and not self._reindex:
             Chatter.write('Determining unit cell')
@@ -395,6 +409,10 @@ class AnalyseMyIntensities:
                 reindex.reindex()
 
                 hklin_list.append(hklout)
+
+                resolution = self._hklin_stats[hklin]
+                del(self._hklin_stats[hklin])
+                self._hklin_stats[hklout] = {'resolution':resolution}
 
             # build up the average unit cell here
             
@@ -435,11 +453,17 @@ class AnalyseMyIntensities:
                 pname, xname, dname = self._project_info[j]
                 Chatter.write('Truncating %s/%s/%s' % (pname, xname, dname))
 
+            resolution = self._hklin_stats[hklin]['resolution']
+
             truncate = self._factory.Truncate()
             truncate.set_hklin(hklin)
             truncate.set_hklout(hklout)
             if self._anomalous:
                 truncate.set_anomalous(True)
+            if resolution > 3.4:
+                Chatter.write(
+                    'Switching off Wilson scaling as data low resolution')
+                truncate.set_wilson(False)
             truncate.truncate()
 
             # look at the wilson plot fit stats -
