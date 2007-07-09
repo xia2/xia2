@@ -434,6 +434,7 @@ class Scaler:
                 self._scalr_done = True
                 self._scalr_result = self._scale()
             
+            Chatter.write('Finishing the scaling...')
             self._scalr_finish_done = True
             self._scale_finish()
 
