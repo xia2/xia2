@@ -380,7 +380,8 @@ class AnalyseMyIntensities:
 
             Chatter.write('Resolution for %s: %.2f' % (hklin, resolution))
 
-            self._hklin_stats[hklin] = {'resolution':resolution}
+            self._hklin_stats[os.path.split(hklin)[-1]] = {
+                'resolution':resolution}
 
         if not self._symmetry and not self._reindex:
             Chatter.write('Determining unit cell')
@@ -416,9 +417,9 @@ class AnalyseMyIntensities:
 
                 hklin_list.append(hklout)
 
-                resolution = self._hklin_stats[hklin]
-                del(self._hklin_stats[hklin])
-                self._hklin_stats[hklout] = resolution
+                resolution = self._hklin_stats[os.path.split(hklin)[-1]]
+                del(self._hklin_stats[os.path.split(hklin)[-1]])
+                self._hklin_stats[os.path.split(hklout)[-1]] = resolution
 
             # build up the average unit cell here
             
@@ -459,7 +460,8 @@ class AnalyseMyIntensities:
                 pname, xname, dname = self._project_info[j]
                 Chatter.write('Truncating %s/%s/%s' % (pname, xname, dname))
 
-            resolution = self._hklin_stats[hklin]['resolution']
+            resolution = self._hklin_stats[os.path.split(hklin)[-1]][
+                'resolution']
 
             truncate = self._factory.Truncate()
             truncate.set_hklin(hklin)

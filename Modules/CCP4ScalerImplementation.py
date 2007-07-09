@@ -147,6 +147,7 @@ class CCP4Scaler(Scaler):
 
         self._sweep_information = { }
         self._tmp_scaled_refl_files = { }
+        self._wavelengths_in_order = []
         
         # hacky... this is to pass information from prepare to scale
         # and could probably be handled better (they used to be
@@ -1569,6 +1570,8 @@ class CCP4Scaler(Scaler):
 
         sc.add_sd_correction('full', 1.0, sdadd_full, sdb_full)
         sc.add_sd_correction('partial', 1.0, sdadd_partial, sdb_partial)
+
+        self._wavelengths_in_order = []
         
         for epoch in epochs:
             input = self._sweep_information[epoch]
@@ -1584,6 +1587,8 @@ class CCP4Scaler(Scaler):
                        dname = input['dname'],
                        exclude = False,
                        resolution = run_resolution_limit)
+            if not input['dname'] in self._wavelengths_in_order:
+                self._wavelengths_in_order.append(input['dname'])
             
         sc.set_hklout(os.path.join(self.get_working_directory(), 'temp.mtz'))
         sc.set_scalepack(os.path.join(self.get_working_directory(),
@@ -1661,17 +1666,44 @@ class CCP4Scaler(Scaler):
 
         # end bug # 2229 stuff
 
-        # plug in AMI here, then
-
-        Chatter.write('TMP R FILES: %s' % str(self._tmp_scaled_refl_files))
-
         return
 
     def _scale_finish(self):
-        '''Finish off the scaling...'''
+        '''Finish off the scaling, this time using AMI.'''
 
-        Chatter.write('TMP R FILES (FIN): %s' % \
-                      str(self._tmp_scaled_refl_files))
+        ami = AnalyseMyIntensities()
+        ami.set_working_directory(self.get_working_directory())
+
+        for wavelength in self._wavelengths_in_order:
+            hklin = self._tmp_scaled_refl_files[wavelength]
+            ami.add_hklin(hklin)
+
+        if self.get_scaler_anomalous():
+            ami.set_anomalous(True)
+
+        hklout = os.path.join(self.get_working_directory(),
+                              '%s_%s_free.mtz' % (self._common_pname,
+                                                  self._common_xname))
+
+        ami.set_hklout(hklout)
+
+        ami.analyse_input_hklin()
+        ami.merge_analyse()
+
+        # get the results out...
+
+        truncate_statistics = ami.get_truncate_statistics()
+
+        for k in truncate_statistics.keys():
+            j, project_info = k
+            self._scalr_statistics[project_info][
+                'Wilson B factor'] = truncate_statistics[k]['Wilson B factor']
+
+        return
+
+    def _scale_finish_old(self):
+        '''Finish off the scaling... This needs to be replaced with a
+        call to AMI.'''
 
         # convert I's to F's in Truncate
 
@@ -1786,6 +1818,10 @@ class CCP4Scaler(Scaler):
         # than one scaled reflection file...
 
         if len(self._tmp_scaled_refl_files.keys()) > 1:
+
+            # FIXME these need to be added in in epoch
+            # order (to make the radiation damage analysis
+            # meaningful...)
 
             c = self._factory.Cad()
             for key in self._tmp_scaled_refl_files.keys():
