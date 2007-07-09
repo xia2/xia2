@@ -47,6 +47,7 @@ from lib.Guff import is_mtz_file, is_xds_file, is_scalepack_file
 from lib.NMolLib import compute_nmol, compute_solvent
 
 from Handlers.Streams import Chatter, Debug
+from Handlers.Files import FileHandler
 
 class AnalyseMyIntensities:
     '''A class to use for intensity analysis. This will gather intensities
@@ -460,6 +461,8 @@ class AnalyseMyIntensities:
                 pname, xname, dname = self._project_info[j]
                 Chatter.write('Truncating %s/%s/%s' % (pname, xname, dname))
 
+            Chatter.write('HKLIN STATS: %s' % str(self._hklin_stats))
+                
             resolution = self._hklin_stats[os.path.split(hklin)[-1]][
                 'resolution']
 
@@ -473,6 +476,10 @@ class AnalyseMyIntensities:
                     'Switching off Wilson scaling as data low resolution')
                 truncate.set_wilson(False)
             truncate.truncate()
+
+            FileHandler.record_log_file('%s %s %s truncate' % \
+                                        self._project_info[j],
+                                        truncate.get_log_file())
 
             # look at the wilson plot fit stats -
             # y = A e ^ - m x

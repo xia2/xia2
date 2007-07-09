@@ -1668,7 +1668,7 @@ class CCP4Scaler(Scaler):
 
         return
 
-    def _scale_finish(self):
+    def _scale_finish_ami(self):
         '''Finish off the scaling, this time using AMI.'''
 
         ami = AnalyseMyIntensities()
@@ -1699,9 +1699,11 @@ class CCP4Scaler(Scaler):
             self._scalr_statistics[project_info][
                 'Wilson B factor'] = truncate_statistics[k]['Wilson B factor']
 
+        FileHandler.record_data_file(hklout)
+
         return
 
-    def _scale_finish_old(self):
+    def _scale_finish(self):
         '''Finish off the scaling... This needs to be replaced with a
         call to AMI.'''
 
