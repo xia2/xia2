@@ -489,7 +489,7 @@ class CCP4Scaler(Scaler):
             if indexer:
 
                 pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
-                    hklin, indxr)
+                    hklin, indexer)
 
                 if ntr:
                     need_to_return = True
