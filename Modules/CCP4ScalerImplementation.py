@@ -1214,7 +1214,7 @@ class CCP4Scaler(Scaler):
         self._scalr_highest_resolution = highest_resolution
 
         Chatter.write('Scaler highest resolution set to %5.2f' % \
-                      self.get_scaler_highest_resolution())
+                      highest_resolution)
 
         # Ok, now we have the resolution limit stuff, need to work through
         # all of the integraters which belong to this set and if the
@@ -1270,6 +1270,7 @@ class CCP4Scaler(Scaler):
         # if we need to redo the scaling, return to allow this to happen
 
         if not self.get_scaler_done():
+            Chatter.write('Returning as scaling not finished...')
             return
 
         # and also radiation damage stuff...
@@ -1661,6 +1662,16 @@ class CCP4Scaler(Scaler):
         # end bug # 2229 stuff
 
         # plug in AMI here, then
+
+        Chatter.write('TMP R FILES: %s' % str(self._tmp_scaled_refl_files))
+
+        return
+
+    def _scale_finish(self):
+        '''Finish off the scaling...'''
+
+        Chatter.write('TMP R FILES (FIN): %s' % \
+                      str(self._tmp_scaled_refl_files))
 
         # convert I's to F's in Truncate
 

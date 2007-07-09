@@ -175,6 +175,11 @@ class AnalyseMyIntensities:
         return
 
     def compute_average_cell(self, hklin_list):
+
+        if len(hklin_list) == 0:
+            raise RuntimeError, \
+                  'no input reflection files to compute cell from'
+        
         cell_a = 0.0
         cell_b = 0.0
         cell_c = 0.0
