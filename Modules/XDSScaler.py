@@ -217,7 +217,7 @@ class XDSScaler(Scaler):
         return pointgroup, reindex_op, need_to_return
 
 
-    def _refine_sd_parameters_remerge(self, sdadd_f, sdb_f):
+    def _refine_sd_parameters_remerge(self, scales_file, sdadd_f, sdb_f):
         '''Actually compute the RMS deviation from scatter / sigma = 1.0
         from unity.'''
         
@@ -226,6 +226,7 @@ class XDSScaler(Scaler):
 
         sc = self._factory.Scala()
         sc.set_hklin(self._prepared_reflections)
+        sc.set_scales_file(scales_file)
 
         sc.add_sd_correction('both', 1.0, sdadd_f, sdb_f)
         
@@ -291,7 +292,7 @@ class XDSScaler(Scaler):
 
         return math.sqrt(score_full)
 
-    def _refine_sd_parameters(self):
+    def _refine_sd_parameters(self, scales_file):
         '''To some repeated merging (it is assumed that the data have
         already ben scaled) to determine appropriate values of
         sd_add, sd_fac, sd_b for fulls only. FIXME at some point
@@ -328,7 +329,7 @@ class XDSScaler(Scaler):
         while sdadd_full < max_sdadd_full:
             
             rms_full = self._refine_sd_parameters_remerge(
-                sdadd_full, sdb_full)
+                scales_file, sdadd_full, sdb_full)
 
             Chatter.write('Tested SdAdd %4.2f: %4.2f' % \
                           (sdadd_full, rms_full))
@@ -354,7 +355,7 @@ class XDSScaler(Scaler):
         while sdb_full < max_sdb_full:
 
             rms_full = self._refine_sd_parameters_remerge(
-                best_sdadd_full, sdb_full)
+                scales_file, best_sdadd_full, sdb_full)
 
             Chatter.write('Tested SdB %4.1f: %4.2f' % \
                           (sdb_full, rms_full))
@@ -379,7 +380,7 @@ class XDSScaler(Scaler):
         while sdadd_full < max_sdadd_full:
             
             rms_full = self._refine_sd_parameters_remerge(
-                sdadd_full, best_sdb_full)
+                scales_file, sdadd_full, best_sdb_full)
 
             Chatter.write('Tested SdAdd %4.2f: %4.2f' % \
                           (sdadd_full, rms_full))
@@ -1138,6 +1139,9 @@ class XDSScaler(Scaler):
         sc = self._factory.Scala()
         sc.set_hklin(self._prepared_reflections)
 
+        scales_file = '%s.scales' % self._common_xname
+        sc.set_new_scales_file(scales_file)        
+
         for epoch in epochs:
             input = self._sweep_information[epoch]
             start, end = (min(input['batches']), max(input['batches']))
@@ -1151,7 +1155,6 @@ class XDSScaler(Scaler):
         
         if self.get_scaler_anomalous():
             sc.set_anomalous()
-        sc.set_onlymerge()
 
         sc.multi_merge()
 
@@ -1266,8 +1269,6 @@ class XDSScaler(Scaler):
             Chatter.write('Returning as scaling not finished...')
             return
 
-        # STARTS HERE
-
         batch_info = { }
         
         for key in loggraph.keys():
@@ -1303,7 +1304,13 @@ class XDSScaler(Scaler):
             
             Chatter.write('Optimising error parameters')
             
-            sdadd_full, sdb_full = self._refine_sd_parameters()
+            sdadd_full, sdb_full = self._refine_sd_parameters(scales_file)
+
+            try:
+                os.remove(os.path.join(self.get_working_directory(),
+                                       scales_file))
+            except:
+                Chatter.write('Error removing %s' % scales_file)
 
         # then try tweaking the sdB parameter in a range say 0-20
         # starting at 0 and working until the RMS stops going down
@@ -1317,6 +1324,8 @@ class XDSScaler(Scaler):
         # tight loop - initially just rerun the scaling with all of the
         # "right" parameters...
         
+        scales_file = '%s_final.scales' % self._common_xname
+
         sc = self._factory.Scala()
 
         FileHandler.record_log_file('%s %s scala' % (self._common_pname,
@@ -1324,9 +1333,8 @@ class XDSScaler(Scaler):
                                     sc.get_log_file())
 
         sc.set_resolution(best_resolution)
-
         sc.set_hklin(self._prepared_reflections)
-
+        sc.set_new_scales_file(scales_file)
         sc.add_sd_correction('both', 1.0, sdadd_full, sdb_full)
 
         for epoch in epochs:
@@ -1450,7 +1458,7 @@ class XDSScaler(Scaler):
 
             sc = self._factory.Scala()
             sc.set_hklin(self._prepared_reflections)
-
+            sc.set_scales_file(scales_file)
             sc.add_sd_correction('both', 1.0, sdadd_full, sdb_full)
         
             for epoch in epochs:

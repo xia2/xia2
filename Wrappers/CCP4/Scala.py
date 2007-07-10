@@ -614,6 +614,10 @@ def Scala(DriverType = None):
             self.check_hklin()
             self.check_hklout()
 
+            if self._new_scales_file:
+                self.add_command_line('SCALES')
+                self.add_command_line(self._new_scales_file)
+
             if not self._scalepack:
                 self.set_task('Scaling reflections from %s => %s' % \
                              (os.path.split(self.get_hklin())[-1],
@@ -677,8 +681,13 @@ def Scala(DriverType = None):
             else:
                 self.input('anomalous off')
 
+            # FIXME this is probably not ready to be used yet...
             if self._scalepack:
                 self.input('output polish unmerged')
+
+            if self._scales_file:
+                self.input('onlymerge')
+                self.input('restore %s' % self._scales_file)
 
             self.close_wait()
 
