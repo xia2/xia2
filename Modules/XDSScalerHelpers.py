@@ -127,8 +127,11 @@ class XDSScalerHelper:
         for line in open(xds_ascii_file, 'r').readlines():
             if line[0] == '!':
                 continue
-
-            k = int(line.split()[-1])
+            
+            # FIXME this will not be correct if zero-dose correction
+            # has been used as this applies an additional record at 
+            # the end... though it should always be #9
+            k = int(line.split()[9])
             files[k].write(line)
         
 
