@@ -48,6 +48,7 @@ import os
 import sys
 import math
 import shutil
+import copy
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
