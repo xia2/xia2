@@ -1526,7 +1526,7 @@ class XDSScaler(Scaler):
         if self.get_scaler_anomalous():
             sc.set_anomalous()
 
-        sc.scale()
+        sc.multi_merge()
 
         data = sc.get_summary()
 
