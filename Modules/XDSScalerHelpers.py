@@ -69,6 +69,27 @@ class XDSScalerHelper:
 
         return file_map
 
+    def parse_xscale_ascii_wavelength(self, xds_ascii_file):
+        
+        wavelength_dict = { } 
+        
+        for line in open(xds_ascii_file, 'r').readlines():
+            if not line[0] == '!':
+                break
+
+            if 'ISET' in line and 'X-RAY_WAVELENGTH' in line:
+                set = int(line.split()[2].strip())
+                wavelength = float(line.split('=')[2].split()[0])
+
+                wavelength_dict[set] = wavelength
+
+                Debug.write('Set %d wavelength %f' % (set, wavelength))
+
+        if len(wavelength_dict.keys()) > 1:
+            raise RuntimeError, 'more than one wavelength found'
+
+        return wavelength_dict[wavelength_dict.keys()[0]]
+
     def split_xscale_ascii_file(self, xds_ascii_file, prefix):
         '''Split the output of XSCALE to separate reflection files for
         each run. The output files will be called ${prefix}${input_file}.'''
@@ -120,6 +141,41 @@ class XDSScalerHelper:
 
         return return_map
 
+    def split_and_convert_xscale_output(self, input_file, prefix,
+                                        project_info):
+        '''Split (as per method above) then convert files to MTZ
+        format via combat. The latter step will add the
+        pname / xname / dname things from the dictionary supplied.'''
+
+        data_map = self.split_xscale_ascii_file(input_file, prefix)
+
+        for token in data_map.keys():
+
+            if not project_info.has_key(token):
+                raise RuntimeError, 'project info for %s not available' % \
+                      token
+            
+            hklin = os.path.join(self.get_working_directory(),
+                                 data_map[token])
+            hklout = os.path.join(self.get_working_directory(),
+                                  '%s.mtz' % hklin[:-4])
+
+            wavelength = self.parse_xscale_ascii_wavelength(hklin)
+
+            pname, xname, dname = project_info[token]
+            
+            c = self.Combat()
+            c.set_hklin(hklin)
+            c.set_hklout(hklout)
+            c.set_project_info(pname, xname, dname)
+            if wavelength > 0.0:
+                c.set_wavelength(wavelength)
+            
+            c.run()
+
+            data_map[token] = hklout
+
+        return data_map
 
 if __name__ == '__main__':
 
@@ -128,6 +184,9 @@ if __name__ == '__main__':
     input_file = os.path.join(
         os.environ['X2TD_ROOT'], 'Test', 'UnitTest',
         'Modules', 'XDSScalerHelpers', '1VR9_NAT.HKL')
-    xsh.split_xscale_ascii_file(input_file, 'SCALED_')
+    project_info = {'NATIVE_NATIVE_HR.HKL':('JCSG', '1VR9', 'NATIVE'),
+                    'NATIVE_NATIVE_LR.HKL':('JCSG', '1VR9', 'NATIVE')}
+    print xsh.split_and_convert_xscale_output(input_file, 'SCALED_',
+                                              project_info)
 
 
