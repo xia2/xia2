@@ -68,17 +68,7 @@ from Modules.XDSScalerHelpers import XDSScalerHelper
 from Wrappers.XDS.XScale import XScale as _XScale
 from Wrappers.XDS.Cellparm import Cellparm as _Cellparm
 
-from Wrappers.CCP4.Scala import Scala as _Scala
-from Wrappers.CCP4.Truncate import Truncate as _Truncate
-from Wrappers.CCP4.Combat import Combat as _Combat
-from Wrappers.CCP4.Reindex import Reindex as _Reindex
-from Wrappers.CCP4.Rebatch import Rebatch as _Rebatch
-from Wrappers.CCP4.Mtzdump import Mtzdump as _Mtzdump
-from Wrappers.CCP4.Sfcheck import Sfcheck as _Sfcheck
-from Wrappers.CCP4.Cad import Cad as _Cad
-from Wrappers.CCP4.Freerflag import Freerflag as _Freerflag
-from Wrappers.CCP4.Sortmtz import Sortmtz as _Sortmtz
-from Wrappers.CCP4.Pointless import Pointless as _Pointless
+from Wrappers.CCP4.CCP4Factory import CCP4Factory
 
 # random odds and sods - the resolution estimate should be somewhere better
 from lib.Guff import auto_logfiler, transpose_loggraph, is_mtz_file
@@ -114,8 +104,15 @@ class XDSScaler(Scaler):
         # passed in
         
         self._spacegroup = None
-
+        self._factory = CCP4Factory()
+    
         return    
+
+    # This is overloaded from the Scaler interface...
+    def set_working_directory(self, working_directory):
+        self._working_directory = working_directory
+        self._factory.set_working_directory(working_directory)
+        return
 
     # program factory - this will provide configured wrappers
     # for the programs we need...
@@ -136,94 +133,6 @@ class XDSScaler(Scaler):
         auto_logfiler(cellparm)
         return cellparm
 
-    def Sortmtz(self):
-        '''Create a Sortmtz wrapper from _Sortmtz - set the working directory
-        and log file stuff as a part of this...'''
-        sortmtz = _Sortmtz()
-        sortmtz.set_working_directory(self.get_working_directory())
-        auto_logfiler(sortmtz)
-        return sortmtz
-
-    def Pointless(self):
-        '''Create a Pointless wrapper from _Pointless - and set the
-        working directory and log file stuff as a part of this...'''
-        pointless = _Pointless()
-        pointless.set_working_directory(self.get_working_directory())
-        auto_logfiler(pointless)
-        return pointless
-
-    def Combat(self):
-        '''Create a Combat wrapper from _Combat - set the working directory
-        and log file stuff as a part of this...'''
-        combat = _Combat()
-        combat.set_working_directory(self.get_working_directory())
-        auto_logfiler(combat)
-        return combat
-
-    def Reindex(self):
-        '''Create a Reindex wrapper from _Reindex - set the working directory
-        and log file stuff as a part of this...'''
-        reindex = _Reindex()
-        reindex.set_working_directory(self.get_working_directory())
-        auto_logfiler(reindex)
-        return reindex
-
-    def Rebatch(self):
-        '''Create a Rebatch wrapper from _Rebatch - set the working directory
-        and log file stuff as a part of this...'''
-        rebatch = _Rebatch()
-        rebatch.set_working_directory(self.get_working_directory())
-        auto_logfiler(rebatch)
-        return rebatch
-
-    def Mtzdump(self):
-        '''Create a Mtzdump wrapper from _Mtzdump - set the working directory
-        and log file stuff as a part of this...'''
-        mtzdump = _Mtzdump()
-        mtzdump.set_working_directory(self.get_working_directory())
-        auto_logfiler(mtzdump)
-        return mtzdump
-
-    def Sfcheck(self):
-        '''Create a Sfcheck wrapper from _Sfcheck - set the working directory
-        and log file stuff as a part of this...'''
-        sfcheck = _Sfcheck()
-        sfcheck.set_working_directory(self.get_working_directory())
-        auto_logfiler(sfcheck)
-        return sfcheck
-
-    def Cad(self):
-        '''Create a Cad wrapper from _Cad - set the working directory
-        and log file stuff as a part of this...'''
-        cad = _Cad()
-        cad.set_working_directory(self.get_working_directory())
-        auto_logfiler(cad)
-        return cad
-
-    def Freerflag(self):
-        '''Create a Freerflag wrapper from _Freerflag - set the working
-        directory and log file stuff as a part of this...'''
-        freerflag = _Freerflag()
-        freerflag.set_working_directory(self.get_working_directory())
-        auto_logfiler(freerflag)
-        return freerflag
-
-    def Scala(self):
-        '''Create a Scala wrapper from _Scala - set the working directory
-        and log file stuff as a part of this...'''
-        scala = _Scala()
-        scala.set_working_directory(self.get_working_directory())
-        auto_logfiler(scala)
-        return scala
-
-    def Truncate(self):
-        '''Create a Truncate wrapper from _Truncate - set the working directory
-        and log file stuff as a part of this...'''
-        truncate = _Truncate()
-        truncate.set_working_directory(self.get_working_directory())
-        auto_logfiler(truncate)
-        return truncate
-
     def _pointless_indexer_jiffy(self, hklin, indexer):
         '''A jiffy to centralise the interactions between pointless
         (in the blue corner) and the Indexer, in the red corner.'''
@@ -240,14 +149,14 @@ class XDSScaler(Scaler):
 
             FileHandler.record_temporary_file(hklout)
             
-            combat = self.Combat()
+            combat = self._factory.Combat()
             combat.set_hklin(hklin)
             combat.set_hklout(hklout)
             combat.run()
 
             hklin = hklout
 
-        pointless = self.Pointless()
+        pointless = self._factory.Pointless()
         pointless.set_hklin(hklin)
         pointless.decide_pointgroup()
         
@@ -315,7 +224,7 @@ class XDSScaler(Scaler):
         epochs = self._sweep_information.keys()
         epochs.sort()
 
-        sc = self.Scala()
+        sc = self._factory.Scala()
         sc.set_hklin(self._prepared_reflections)
 
         sc.add_sd_correction('both', 1.0, sdadd_f, sdb_f)
@@ -683,7 +592,7 @@ class XDSScaler(Scaler):
                                   'xds-pointgroup-reference-unsorted.mtz')
             FileHandler.record_temporary_file(hklout)
 
-            combat = self.Combat()
+            combat = self._factory.Combat()
             combat.set_hklin(hklin)
             combat.set_hklout(hklout)
             combat.run()
@@ -694,7 +603,7 @@ class XDSScaler(Scaler):
                                   'xds-pointgroup-reference-sorted.mtz')
             FileHandler.record_temporary_file(hklout)
 
-            sortmtz = self.Sortmtz()
+            sortmtz = self._factory.Sortmtz()
             sortmtz.add_hklin(hklin)
             sortmtz.set_hklout(hklout)
             sortmtz.sort()
@@ -705,7 +614,7 @@ class XDSScaler(Scaler):
                                          'xds-pointgroup-reference.mtz')
             FileHandler.record_temporary_file(reference_mtz)            
 
-            scala = self.Scala()            
+            scala = self._factory.Scala()            
             scala.set_hklin(hklin)
             scala.set_hklout(reference_mtz)
             scala.quick_scale()            
@@ -734,12 +643,12 @@ class XDSScaler(Scaler):
                                       'xds-pointgroup-unsorted.mtz')
                 FileHandler.record_temporary_file(hklout)
                 
-                combat = self.Combat()
+                combat = self._factory.Combat()
                 combat.set_hklin(hklin)
                 combat.set_hklout(hklout)
                 combat.run()
 
-                pointless = self.Pointless()
+                pointless = self._factory.Pointless()
                 pointless.set_hklin(hklout)
                 pointless.set_hklref(reference_mtz)
                 pointless.decide_pointgroup()
@@ -783,7 +692,7 @@ class XDSScaler(Scaler):
                                   '%s-combat.mtz' % sname)
             FileHandler.record_temporary_file(hklout)
 
-            combat = self.Combat()
+            combat = self._factory.Combat()
             combat.set_hklin(intgr.get_integrater_reflections())
             combat.set_hklout(hklout)
             combat.run()
@@ -1090,7 +999,7 @@ class XDSScaler(Scaler):
 
             hklin = self._sweep_information[epoch]['scaled_reflections']
 
-            md = self.Mtzdump()
+            md = self._factory.Mtzdump()
             md.set_hklin(hklin)
             md.dump()
 
@@ -1146,7 +1055,7 @@ class XDSScaler(Scaler):
         counter = 0
 
         for epoch in epochs:
-            rb = self.Rebatch()
+            rb = self._factory.Rebatch()
 
             hklin = self._sweep_information[epoch]['scaled_reflections']
 
@@ -1185,7 +1094,7 @@ class XDSScaler(Scaler):
         # then sort the files together, making sure that the resulting
         # reflection file looks right.
 
-        s = self.Sortmtz()
+        s = self._factory.Sortmtz()
 
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s_sorted.mtz' % \
@@ -1203,7 +1112,7 @@ class XDSScaler(Scaler):
         # figure out the correct reindexing operator using this reflection
         # file
 
-        pointless = self.Pointless()
+        pointless = self._factory.Pointless()
         pointless.set_hklin(hklout)
         pointless.decide_spacegroup()
 
@@ -1226,7 +1135,7 @@ class XDSScaler(Scaler):
         # to get the setting right - in which case I will be able to
         # write out unmerged reflection files later on...
 
-        sc = self.Scala()
+        sc = self._factory.Scala()
         sc.set_hklin(self._prepared_reflections)
 
         for epoch in epochs:
@@ -1408,7 +1317,7 @@ class XDSScaler(Scaler):
         # tight loop - initially just rerun the scaling with all of the
         # "right" parameters...
         
-        sc = self.Scala()
+        sc = self._factory.Scala()
 
         FileHandler.record_log_file('%s %s scala' % (self._common_pname,
                                                      self._common_xname),
@@ -1523,7 +1432,7 @@ class XDSScaler(Scaler):
         
         for key in self._tmp_scaled_refl_files:
             file = self._tmp_scaled_refl_files[key]
-            m2v = self.Mtz2various()
+            m2v = self._factory.Mtz2various()
             m2v.set_hklin(file)
             m2v.set_hklout('%s.sca' % file[:-4])
             m2v.convert()
@@ -1539,7 +1448,7 @@ class XDSScaler(Scaler):
         for key in self._scalr_statistics:
             pname, xname, dname = key
 
-            sc = self.Scala()
+            sc = self._factory.Scala()
             sc.set_hklin(self._prepared_reflections)
 
             sc.add_sd_correction('both', 1.0, sdadd_full, sdb_full)
@@ -1600,7 +1509,7 @@ class XDSScaler(Scaler):
                 Debug.write('Reindexing operator = %s' % \
                             self._scalr_reindex_operator)
                 
-                reindex = self.Reindex()
+                reindex = self._factory.Reindex()
                 reindex.set_hklin(hklin)
                 reindex.set_spacegroup(self._scalr_likely_spacegroups[0])
                 reindex.set_operator(self._scalr_reindex_operator)
@@ -1615,7 +1524,7 @@ class XDSScaler(Scaler):
                     tuple(reindex.get_cell()))
                 self._scalr_cell = tuple(reindex.get_cell())
             
-            truncate = self.Truncate()
+            truncate = self._factory.Truncate()
             truncate.set_hklin(hklin)
 
             if self.get_scaler_anomalous():
@@ -1665,7 +1574,7 @@ class XDSScaler(Scaler):
             reflection_files = { }
 
             for wavelength in self._tmp_scaled_refl_files.keys():
-                cad = self.Cad()
+                cad = self._factory.Cad()
                 cad.add_hklin(self._tmp_scaled_refl_files[wavelength])
                 cad.set_hklout(os.path.join(
                     self.get_working_directory(),
@@ -1684,7 +1593,7 @@ class XDSScaler(Scaler):
 
             Chatter.write('Merging all data sets to %s' % hklout)
 
-            cad = self.Cad()
+            cad = self._factory.Cad()
             for wavelength in reflection_files.keys():
                 cad.add_hklin(reflection_files[wavelength])
             cad.set_hklout(hklout)
@@ -1707,7 +1616,7 @@ class XDSScaler(Scaler):
         # finally add a FreeR column, and record the new merged reflection
         # file with the free column added.
 
-        f = self.Freerflag()
+        f = self._factory.Freerflag()
 
         # changed this to not assume that the file is called _merged.mtz
         hklout = os.path.join(self.get_working_directory(),
@@ -1730,7 +1639,7 @@ class XDSScaler(Scaler):
         FileHandler.record_data_file(f.get_hklout())
 
         # have a look for twinning ...
-        sfc = self.Sfcheck()
+        sfc = self._factory.Sfcheck()
         sfc.set_hklin(f.get_hklout())
         sfc.analyse()
         twinning_score = sfc.get_twinning()
