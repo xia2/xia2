@@ -1124,7 +1124,7 @@ class XDSScaler(Scaler):
             hklin = output_files[wavelength]
 
             xsh = XDSScalerHelper()
-            xsh.set_workking_directory(self.get_working_directory())
+            xsh.set_working_directory(self.get_working_directory())
 
             ref = xsh.split_and_convert_xscale_output(
                 hklin, 'SCALED_', project_info)
