@@ -60,6 +60,7 @@ from Schema.Interfaces.Scaler import Scaler
 
 # other tools that this will need
 from Modules.XDSPointgroup import XDSPointgroup
+from Modules.XDSScalerHelpers import XDSScalerHelper
 
 # program wrappers that we will need
 
@@ -305,6 +306,267 @@ class XDSScaler(Scaler):
 
         return pointgroup, reindex_op, need_to_return
 
+
+    def _refine_sd_parameters_remerge(self, sdadd_f, sdb_f, sdadd_p, sdb_p):
+        '''Actually compute the RMS deviation from scatter / sigma = 1.0
+        from unity.'''
+        
+        epochs = self._sweep_information.keys()
+        epochs.sort()
+
+        sc = self._factory.Scala()
+        sc.set_hklin(self._prepared_reflections)
+
+        sc.add_sd_correction('full', 1.0, sdadd_f, sdb_f)
+        sc.add_sd_correction('partial', 1.0, sdadd_p, sdb_p)
+        
+        for epoch in epochs:
+            input = self._sweep_information[epoch]
+            start, end = (min(input['batches']), max(input['batches']))
+            sc.add_run(start, end, pname = input['pname'],
+                       xname = input['xname'],
+                       dname = input['dname'])
+
+        sc.set_hklout(os.path.join(self.get_working_directory(), 'temp.mtz'))
+
+        if self.get_scaler_anomalous():
+            sc.set_anomalous()
+        sc.set_onlymerge()
+        sc.multi_merge()
+        
+        loggraph = sc.parse_ccp4_loggraph()
+
+        standard_deviation_info = { }
+
+        for key in loggraph.keys():
+            if 'standard deviation v. Intensity' in key:
+                dataset = key.split(',')[-1].strip()
+                standard_deviation_info[dataset] = transpose_loggraph(
+                    loggraph[key])
+
+        # compute an RMS sigma...
+
+        score_full = 0.0
+        ref_count_full = 0
+
+        score_partial = 0.0
+        ref_count_partial = 0
+
+        for dataset in standard_deviation_info.keys():
+            info = standard_deviation_info[dataset]
+
+            # need to consider partials separately to fulls in assigning
+            # the error correction parameters
+            
+            for j in range(len(info['1_Range'])):
+                n_full = int(info['5_Number'][j])
+                I_full = float(info['4_Irms'][j])
+                s_full = float(info['7_SigmaFull'][j])
+
+                n_partial = int(info['9_Number'][j])
+                I_partial = float(info['8_Irms'][j])
+                s_partial = float(info['11_SigmaPartial'][j])
+                
+                n_tot = n_full + n_partial
+
+                # trap case where we have no reflections in a higher
+                # intensity bin (one may ask why they are being printed
+                # by Scala, then?)
+
+                if n_tot:
+                    i_tot = ((n_full * I_full) +
+                             (n_partial * I_partial)) / n_tot
+                    s_tot = ((n_full * s_full) +
+                             (n_partial * s_partial)) / n_tot
+                else:
+                    i_tot = 0.0
+                    s_tot = 1.0
+
+                # FIXED should this really measure the errors in terms
+                # of total numbers of reflections, or just flatten the
+                # graph???
+
+                # FIXME still need to do this...
+                # TEST! Solve the structures and work out what is better...
+
+                # trying to minimise difference between this and 1.0!
+                
+                s_full -= 1.0
+                s_partial -= 1.0
+
+                # don't try uniform weighting...
+
+                # if n_full > 0:
+                # n_full = 1
+                # if n_partial > 0:
+                # n_partial = 1
+
+                # end don't try uniform weighting...
+
+                score_full += s_full * s_full * n_full
+                ref_count_full += n_full
+
+                score_partial += s_partial * s_partial * n_partial
+                ref_count_partial += n_partial
+
+            # compute the scores...
+
+            if ref_count_full > 0:
+                score_full /= ref_count_full
+
+            if ref_count_partial > 0:
+                score_partial /= ref_count_partial
+
+        return math.sqrt(score_full), \
+               math.sqrt(score_partial)
+
+    def _refine_sd_parameters(self):
+        '''To some repeated merging (it is assumed that the data have
+        already ben scaled) to determine appropriate values of
+        sd_add, sd_fac, sd_b for fulls, partials. FIXME at some point
+        this should probably be for each run as well...'''
+
+        if False:
+            return (0.0, 0.0, 0.0, 0.0)
+
+        best_sdadd_full = 0.0
+        best_sdadd_partial = 0.0
+        best_sdb_full = 0.0
+        best_sdb_partial = 0.0
+
+        max_sdadd_full = 0.1
+        max_sdadd_partial = 0.1
+        max_sdb_full = 20.0
+        max_sdb_partial = 20.0
+
+        step_sdadd_full = 0.01
+        step_sdadd_partial = 0.01
+        step_sdb_full = 2.0
+
+        sdadd_full = 0.0
+        sdadd_partial = 0.0
+        sdb_full = 0.0
+        sdb_partial = 0.0
+
+        best_rms_full = 1.0e9
+        best_rms_partial = 1.0e9
+
+        # compute sd_add first...
+
+        # FIXME I need to assess whether this route is appropriate, or
+        # whether I would be better off following some kind of mimisation
+        # procedure...
+
+        # perhaps the following would be more use:
+        # 
+        # refine SdB based on "flatness" of the curve - flatten it out
+        # refine SdAdd afterwards to work on the gradient
+
+        while sdadd_full < max_sdadd_full:
+            
+            sdadd_partial = sdadd_full
+
+            rms_full, rms_partial = self._refine_sd_parameters_remerge(
+                sdadd_full, sdb_full, sdadd_partial, sdb_partial)
+
+            Chatter.write('Tested SdAdd %4.2f: %4.2f %4.2f' % \
+                          (sdadd_full, rms_full, rms_partial))
+
+            if rms_full < best_rms_full:
+                best_sdadd_full = sdadd_full
+                best_rms_full = rms_full
+
+            if rms_partial < best_rms_partial:
+                best_sdadd_partial = sdadd_partial
+                best_rms_partial = rms_partial
+
+            # check to see if we're going uphill again...
+            # FIXME in here I have to allow for the scores being
+            # exactly zero as an alternative - i.e. there are
+            # no reflections which are full, for instance.
+
+            if rms_full > best_rms_full and rms_partial > best_rms_partial:
+                break
+
+            sdadd_full += step_sdadd_full
+
+        best_rms_full = 1.0e9
+        best_rms_partial = 1.0e9
+
+        # then compute sdb ...
+
+        while sdb_full < max_sdb_full:
+
+            sdb_partial = sdb_full
+
+            rms_full, rms_partial = self._refine_sd_parameters_remerge(
+                best_sdadd_full, sdb_full,
+                best_sdadd_partial, sdb_partial)
+
+            Chatter.write('Tested SdB %4.1f: %4.2f %4.2f' % \
+                          (sdb_full, rms_full, rms_partial))
+
+            if rms_full < best_rms_full:
+                best_sdb_full = sdb_full
+                best_rms_full = rms_full
+
+            if rms_partial < best_rms_partial:
+                best_sdb_partial = sdb_partial
+                best_rms_partial = rms_partial
+
+            # check to see if we're going uphill again...
+
+            if rms_full > best_rms_full and rms_partial > best_rms_partial:
+                break
+
+            sdb_full += step_sdb_full
+
+        # now we have good parameters for the SdB try rerefining the
+        # SdAdd...
+
+        sdadd_full = 0.0
+        best_rms_full = 1.0e9
+        best_rms_partial = 1.0e9
+        
+        while sdadd_full < max_sdadd_full:
+            
+            sdadd_partial = sdadd_full
+
+            rms_full, rms_partial = self._refine_sd_parameters_remerge(
+                sdadd_full, best_sdb_full,
+                sdadd_partial, best_sdb_partial)
+
+            Chatter.write('Tested SdAdd %4.2f: %4.2f %4.2f' % \
+                          (sdadd_full, rms_full, rms_partial))
+
+            if rms_full < best_rms_full:
+                best_sdadd_full = sdadd_full
+                best_rms_full = rms_full
+
+            if rms_partial < best_rms_partial:
+                best_sdadd_partial = sdadd_partial
+                best_rms_partial = rms_partial
+
+            # check to see if we're going uphill again...
+            # FIXME in here I have to allow for the scores being
+            # exactly zero as an alternative - i.e. there are
+            # no reflections which are full, for instance.
+
+            if rms_full > best_rms_full and rms_partial > best_rms_partial:
+                break
+
+            sdadd_full += step_sdadd_full
+
+        Chatter.write('Optimised SD corrections (A, B) found to be:')
+        Chatter.write('Full:       %4.2f   %4.1f' %
+                      (best_sdadd_full, best_sdb_full))
+        Chatter.write('Partial:    %4.2f   %4.1f' %
+                      (best_sdadd_partial, best_sdb_partial))
+
+
+        return best_sdadd_full, best_sdb_full, \
+               best_sdadd_partial, best_sdb_partial
+
     def _scale_prepare(self):
         '''Prepare the data for scaling - this will reindex it the
         reflections to the correct pointgroup and setting, for instance,
@@ -335,6 +597,7 @@ class XDSScaler(Scaler):
                 'dname':dname,
                 'integrater':intgr,
                 'prepared_reflections':None,
+                'scaled_reflections':None,
                 'header':intgr.get_header(),
                 'batches':intgr.get_integrater_batches(),
                 'image_to_epoch':intgr.get_integrater_sweep(                
@@ -820,7 +1083,7 @@ class XDSScaler(Scaler):
 
         # these are per wavelength
         resolution_limits = { } 
-        self._scaled_ref_files = { }
+        self._tmp_scaled_refl_files = { }
 
         self._scalr_statistics = { }
 
@@ -833,65 +1096,170 @@ class XDSScaler(Scaler):
 
         max_batches = 0
         mtz_dict = { } 
-        
+
+        # FIXME in here want to make use of the helper to ensure that the
+        # pname xname dname stuff is added and also reshuffle the data
+        # into epoch order (which may be fiddly) then merge thus
+        # for radiation damage analysis...
+
+        # create the mapping table from reflection file name (the end
+        # thereof) to pane/xname/dname.
+
+        project_info = { }
+        for epoch in self._sweep_information.keys():
+            pname = self._common_pname
+            xname = self._common_xname
+            dname = self._sweep_information[epoch]['dname']
+            reflections = os.path.split(
+                self._sweep_information[epoch]['prepared_reflections'])[-1]
+            project_info[reflections] = (pname, xname, dname)
+
+        # note in here - combat may use different scale factors for each
+        # data set, but the merging by scala will have scales constant
+        # which will assign a different constant scale factor for each
+        # run, which should correct for any differences in factor introduced
+        # here...
+            
         for wavelength in wavelength_names:
-            # convert the reflections to MTZ format with combat
-            # - setting the pname, xname, dname
-            hklout = os.path.join(self.get_working_directory(),
-                                  '%s_combat.mtz' % wavelength)
-            FileHandler.record_temporary_file(hklout)
+            hklin = output_files[wavelength]
 
-            combat = self.Combat()
-            combat.set_hklin(output_files[wavelength])
-            combat.set_hklout(hklout)
-            combat.set_project_info(self._scalr_pname, self._scalr_xname,
-                                    wavelength)
-            combat.run()
+            xsh = XDSScalerHelper()
+            xsh.set_workking_directory(self.get_working_directory())
 
-            hklin = hklout
-            mtz_dict[wavelength] = hklout
+            ref = xsh.split_and_convert_xscale_output(
+                hklin, 'SCALED_', project_info)
+
+            # this loop is working through the reflection files we
+            # have, then looking for the epoch it belongs to (hash
+            # table would be better...) then assigning the scaled
+            # reflection file appropriately...
+
+            for hklout in ref.keys():
+                for epoch in self._sweep_information.keys():
+                    if os.path.split(self._sweep_information[epoch][
+                        'prepared_reflections'])[-1] == \
+                        os.path.split(hklout)[-1]:
+                        if self._sweep_information[epoch][
+                            'scaled_reflections'] != None:
+                            raise RuntimeError, 'duplicate entries'
+                        self._sweep_information[epoch][
+                            'scaled_reflections'] = ref[hklout]
+                     
+
+        # now I have a list of reflection files in MTZ format linked
+        # to the original reflection files from the integrater - which
+        # means I can do the rebatch shuffle prior to merging in Scala.
+        
+        # have defined a new method in the scala wrapper called "multi_merge"
+        # to enable this.
+
+        # first the rebatch / sortmtz shuffle
+        
+        max_batches = 0
+        
+        for epoch in self._sweep_information.keys():
+
+            # keep a count of the maximum number of batches in a block -
+            # this will be used to make rebatch work below.
+
+            hklin = self._sweep_information[epoch]['scaled_reflections']
 
             md = self.Mtzdump()
             md.set_hklin(hklin)
             md.dump()
 
-            Chatter.write('Getting batches from %s' % hklin)
-            batches = md.get_batches()
-            Chatter.write('=> %d to %d' % (min(batches),
-                                           max(batches)))
+            if self._sweep_information[epoch]['batches'] == [0, 0]:
+                # get them from the mtz dump output
+                
+                Chatter.write('Getting batches from %s' % hklin)
+                batches = md.get_batches()
+                self._sweep_information[epoch]['batches'] = [min(batches),
+                                                             max(batches)]
+                Chatter.write('=> %d to %d' % (min(batches),
+                                               max(batches)))
 
             # FIXME here check that this matches up with the input,
             # if we have both sources of batch information
+
+            batches = self._sweep_information[epoch]['batches']
             if 1 + max(batches) - min(batches) > max_batches:
                 max_batches = max(batches) - min(batches) + 1
             
+            # FIXME assert that there will only be one dataset in this
+            # reflection file
+
+            datasets = md.get_datasets()
+
+            Chatter.write('In reflection file %s found:' % hklin)
+            for d in datasets:
+                Chatter.write('... %s' % d)
+            
+            dataset_info = md.get_dataset_info(datasets[0])
+
+            # FIXME should also confirm the batch numbers from this
+            # reflection file...
+
+            # now make the comparison - FIXME this needs to be implemented
+            # FIXME also - if the pname, xname, dname is not defined by
+            # this time, make a note of this so that it can be included
+            # at a later stage.
+
         Chatter.write('Biggest sweep has %d batches' % max_batches)
         max_batches = nifty_power_of_ten(max_batches)
     
+        # then rebatch the files, to make sure that the batch numbers are
+        # in the same order as the epochs of data collection.
+
+        epochs = self._sweep_information.keys()
+        epochs.sort()
+
+        # need to check that the batches are all sensible numbers
+        # so run rebatch on them! note here that we will need new
+        # MTZ files to store the output...
+
         counter = 0
 
-        for wavelength in wavelength_names:
-            hklin = mtz_dict[wavelength]
+        for epoch in epochs:
+            rb = self._factory.Rebatch()
+
+            hklin = self._sweep_information[epoch]['scaled_reflections']
+
+            pname = self._sweep_information[epoch]['pname']
+            xname = self._sweep_information[epoch]['xname']
+            dname = self._sweep_information[epoch]['dname']
+
             hklout = os.path.join(self.get_working_directory(),
-                                  '%s_rebatch.mtz' % wavelength)
-            rebatch = self.Rebatch()
+                                  '%s_%s_%s_%d.mtz' % \
+                                  (pname, xname, dname, counter))
 
             # we will want to delete this one exit
             FileHandler.record_temporary_file(hklout)
-            rebatch.set_hklin(hklin)
-            rebatch.set_first_batch(counter * max_batches + 1)
-            rebatch.set_hklout(hklout)
-            rebatch.rebatch()
 
-            mtz_dict[wavelength] = hklout
+            # record this for future reference - will be needed in the
+            # radiation damage analysis...
+            first_batch = min(self._sweep_information[epoch]['batches'])
+            self._sweep_information[epoch][
+                'batch_offset'] = counter * max_batches - first_batch + 1
+
+            rb.set_hklin(hklin)
+            rb.set_first_batch(counter * max_batches + 1)
+            rb.set_hklout(hklout)
+
+            new_batches = rb.rebatch()
+
+            # update the "input information"
+
+            self._sweep_information[epoch]['hklin'] = hklout
+            self._sweep_information[epoch]['batches'] = new_batches
+
+            # update the counter & recycle
 
             counter += 1
 
         # then sort the files together, making sure that the resulting
-        # reflection file looks right. Only sorting here to put all
-        # of the reflections in a single file...
+        # reflection file looks right.
 
-        s = self.Sortmtz()
+        s = self._factory.Sortmtz()
 
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s_sorted.mtz' % \
@@ -899,12 +1267,15 @@ class XDSScaler(Scaler):
         
         s.set_hklout(hklout)
 
-        FileHandler.record_temporary_file(hklout)
-
-        for wavelength in wavelength_names:
-            s.add_hklin(mtz_dict[wavelength])
+        for epoch in epochs:
+            s.add_hklin(self._sweep_information[epoch]['hklin'])
 
         s.sort()
+
+        self._prepared_reflections = hklout
+
+        # figure out the correct reindexing operator using this reflection
+        # file
 
         pointless = self.Pointless()
         pointless.set_hklin(hklout)
@@ -925,113 +1296,108 @@ class XDSScaler(Scaler):
         Debug.write('Reindex operator: %s' % reindex_operator)
         Debug.write('Will save this for later')
 
-        for wavelength in wavelength_names:
+        # FIXME in here want to use REINDEX on the output of COMBAT
+        # to get the setting right - in which case I will be able to
+        # write out unmerged reflection files later on...
 
-            # convert the reflections to MTZ format with combat
-            # - setting the pname, xname, dname
+        sc = self._factory.Scala()
+        sc.set_hklin(self._prepared_reflections)
 
-            hklout = os.path.join(self.get_working_directory(),
-                                  '%s_combat.mtz' % wavelength)
-            FileHandler.record_temporary_file(hklout)
+        for epoch in epochs:
+            input = self._sweep_information[epoch]
+            start, end = (min(input['batches']), max(input['batches']))
+            sc.add_run(start, end, pname = input['pname'],
+                       xname = input['xname'],
+                       dname = input['dname'])
 
-            combat = self.Combat()
-            combat.set_hklin(output_files[wavelength])
-            combat.set_hklout(hklout)
-            combat.set_project_info(self._scalr_pname, self._scalr_xname,
-                                    wavelength)
-            combat.run()
+        sc.set_hklout(os.path.join(self.get_working_directory(),
+                                   '%s_%s_scaled.mtz' % \
+                                   (self._common_pname, self._common_xname)))
+        
+        if self.get_scaler_anomalous():
+            sc.set_anomalous()
+        sc.set_tails()
+        sc.set_onlymerge()
 
-            hklin = hklout
-            hklout = os.path.join(self.get_working_directory(),
-                                  '%s_sort.mtz' % wavelength)
-            FileHandler.record_temporary_file(hklout)
+        sc.multi_merge()
 
-            sortmtz = self.Sortmtz()
-            sortmtz.add_hklin(hklin)
-            sortmtz.set_hklout(hklout)
-            sortmtz.sort()
+        data = sc.get_summary()
 
-            # then merge them in Scala - FIXME want also to convert them
-            # to unmerged polish format... though can't do this for
-            # the moment as we can't reindex the unmerged reflections
+        loggraph = sc.parse_ccp4_loggraph()
+        
+        resolution_info = { }
 
-            hklin = hklout
-            hklout = os.path.join(self.get_working_directory(),
-                                  '%s_scaled.mtz' % wavelength)
+        for key in loggraph.keys():
+            if 'Analysis against resolution' in key:
+                dataset = key.split(',')[-1].strip()
+                resolution_info[dataset] = transpose_loggraph(
+                    loggraph[key])
 
-            scala = self.Scala()
-            scala.set_hklin(hklin)
-            scala.set_hklout(hklout)
-            scala.set_anomalous(self._scalr_anomalous)
-            scala.set_onlymerge()
-            scala.merge()
+        # next compute resolution limits for each dataset.
 
-            FileHandler.record_log_file('%s %s %s merge' % \
-                                        (self._common_pname,
-                                         self._common_xname,
-                                         wavelength),
-                                        scala.get_log_file())
+        resolution_limits = { }
 
-            self._scaled_ref_files[wavelength] = hklout
+        highest_resolution = 100.0
 
-            # get the resolution limits out -> statistics dictionary
+        # check in here that there is actually some data to scale..!
 
-            stats_id = (self._scalr_pname, self._scalr_xname, wavelength)
-            self._scalr_statistics[stats_id] = scala.get_summary()[stats_id]
+        if len(resolution_info.keys()) == 0:
+            raise RuntimeError, 'no resolution info'
 
-            loggraph = scala.parse_ccp4_loggraph()
-            
-            for key in loggraph.keys():
-                if 'Analysis against resolution' in key:
-                    dataset = key.split(',')[-1].strip()
-                    resolution_info = transpose_loggraph(loggraph[key])
-                    resolution_points = []
-                    resol_ranges = resolution_info['3_Dmin(A)']
-                    mn_i_sigma_values = resolution_info['13_Mn(I/sd)']
-                    for i in range(len(resol_ranges)):
-                        dmin = float(resol_ranges[i])
-                        i_sigma = float(mn_i_sigma_values[i])
-                        resolution_points.append((dmin, i_sigma))
+        for dataset in resolution_info.keys():
+            # transform this to a useful form... [(resol, i/sigma), (resol..)]
+            resolution_points = []
+            resol_ranges = resolution_info[dataset]['3_Dmin(A)']
+            mn_i_sigma_values = resolution_info[dataset]['13_Mn(I/sd)']
+            for i in range(len(resol_ranges)):
+                dmin = float(resol_ranges[i])
+                i_sigma = float(mn_i_sigma_values[i])
+                resolution_points.append((dmin, i_sigma))
 
-                    resolution = _resolution_estimate(
-                        resolution_points, 2.0)
-                    resolution_limits[wavelength] = resolution
+            resolution = _resolution_estimate(
+                resolution_points, 2.0)
 
-                    Debug.write('Resolution for %s: %.2f' % \
-                                (dataset, resolution))
+            # next compute "useful" versions of these resolution limits
+            # want 0.05A steps - in here it would also be useful to
+            # gather up an "average" best resolution and perhaps use this
+            # where it seems appropriate e.g. TS03 INFL, LREM.
 
-        # for each integrater set the resolution limit where Mn(I/sigma) ~ 2
-        # but only of the resolution limit is noticeably lower than the
-        # integrated resolution limit (used 0.075A difference before)
-        # and if this is the case, return as we want the integration to
-        # be repeated, after resetting the "done" flags.
+            resolution_limits[dataset] = resolution
 
-        # so...
+            if resolution < highest_resolution:
+                highest_resolution = resolution
 
-        # next work though the epochs of integraters setting the resolution
-        # limit by the value from the wavelength recorded above
+            Chatter.write('Resolution limit for %s: %5.2f' % \
+                          (dataset, resolution_limits[dataset]))
+
+        self._scalr_highest_resolution = highest_resolution
+
+        Chatter.write('Scaler highest resolution set to %5.2f' % \
+                      highest_resolution)
+
+        # Ok, now we have the resolution limit stuff, need to work through
+        # all of the integraters which belong to this set and if the
+        # resolution defined for a given dataset is found to be lower
+        # than the high resolution limit of the integrater, then reset
+        # that limit, assert that the scaling and preparation is needed and
+        # at the end return.
 
         best_resolution = 100.0
 
-        for epoch in self._sweep_information.keys():
-            intgr = self._sweep_information[epoch]['integrater']
-            dname = self._sweep_information[epoch]['dname']
-            sname = intgr.get_integrater_sweep_name()
-            dmin = intgr.get_integrater_high_resolution()
+        for epoch in self._scalr_integraters.keys():
+            intgr = self._scalr_integraters[epoch]
+            pname, xname, dname = intgr.get_integrater_project_info()
 
-            Debug.write('For sweep %s existing resolution limit is %.2f' % \
-                        (sname, dmin))
-            Debug.write('Resolution estimated to be: %.2f' % \
-                        resolution_limits[dname])
+            # check the resolution limit for this integrater
+            dmin = intgr.get_integrater_high_resolution()
 
             # compare this against the resolution limit computed above
             if dmin == 0.0 and not Flags.get_quick():
                 intgr.set_integrater_high_resolution(
                     resolution_limits[dname])
 
-                Debug.write('Setting resolution limit to %.2f' % \
-                            resolution_limits[dname])
-
+                # we need to rerun both the scaling and the preparation -
+                # this may trigger reintegration as well...
                 self.set_scaler_done(False)
                 self.set_scaler_prepare_done(False)
 
@@ -1040,24 +1406,263 @@ class XDSScaler(Scaler):
             # once...
             
             elif dmin > resolution_limits[dname] - 0.075:
+                # no need to reprocess the data - this is near enough...
+                # this should save us from the "infinate loop"
                 pass
 
             elif Flags.get_quick():
-                # that is we would reprocess if we weren't in a hurry
                 Chatter.write('Quick, so not resetting resolution limits')
 
             else:
+                # ok it is worth rereducing the data
                 intgr.set_integrater_high_resolution(
                     resolution_limits[dname])
 
-                Debug.write('Setting resolution limit to %.2f' % \
-                            resolution_limits[dname])
-
+                # we need to rerun both the scaling and the preparation -
+                # this may trigger reintegration as well...
                 self.set_scaler_done(False)
                 self.set_scaler_prepare_done(False)
 
             if resolution_limits[dname] < best_resolution:
                 best_resolution = resolution_limits[dname]
+
+        # if we need to redo the scaling, return to allow this to happen
+
+        if not self.get_scaler_done():
+            Chatter.write('Returning as scaling not finished...')
+            return
+
+        # STARTS HERE
+
+        batch_info = { }
+        
+        for key in loggraph.keys():
+            if 'Analysis against Batch' in key:
+                dataset = key.split(',')[-1].strip()
+                batch_info[dataset] = transpose_loggraph(
+                    loggraph[key])
+
+        # perform some analysis of these results
+
+        average_completeness = 0.0
+
+        for k in data.keys():
+            average_completeness += data[k]['Completeness'][0]
+        average_completeness /= len(data.keys())
+
+        if Flags.get_quick() or not Flags.get_fiddle_sd():
+            Chatter.write('Not optimising error parameters')
+            sdadd_full = 0.0
+            sdb_full = 0.0
+            sdadd_partial = 0.0
+            sdb_partial = 0.0
+
+        elif average_completeness < 50.0:
+            Chatter.write('Incomplete data, so not refining error parameters')
+            sdadd_full = 0.0
+            sdb_full = 0.0
+            sdadd_partial = 0.0
+            sdb_partial = 0.0
+
+        else:
+
+            # ---------- SD CORRECTION PARAMETER LOOP ----------
+            
+            # first "fix" the sd add parameters to match up the sd curve from
+            # the fulls and partials, and minimise RMS[N (scatter / sigma - 1)]
+            
+            Chatter.write('Optimising error parameters')
+            
+            sdadd_full, sdb_full, sdadd_partial, sdb_partial = \
+                        self._refine_sd_parameters()
+
+        # then try tweaking the sdB parameter in a range say 0-20
+        # starting at 0 and working until the RMS stops going down
+
+        # ---------- FINAL SCALING ----------
+
+        # assert the resolution limits in the integraters - beware, this
+        # means that the reflection files will probably have to be
+        # regenerated (integration restarted!) and so we will have to
+        # build in some "fudge factor" to ensure we don't get stuck in a
+        # tight loop - initially just rerun the scaling with all of the
+        # "right" parameters...
+        
+        sc = self._factory.Scala()
+
+        FileHandler.record_log_file('%s %s scala' % (self._common_pname,
+                                                     self._common_xname),
+                                    sc.get_log_file())
+
+        sc.set_resolution(best_resolution)
+
+        sc.set_hklin(self._prepared_reflections)
+
+        sc.add_sd_correction('full', 1.0, sdadd_full, sdb_full)
+        sc.add_sd_correction('partial', 1.0, sdadd_partial, sdb_partial)
+
+        for epoch in epochs:
+            input = self._sweep_information[epoch]
+            start, end = (min(input['batches']), max(input['batches']))
+
+            if Flags.get_quick():
+                run_resolution_limit = resolution_limits[input['dname']]
+            else:
+                run_resolution_limit = 0.0
+
+            sc.add_run(start, end, pname = input['pname'],
+                       xname = input['xname'],
+                       dname = input['dname'],
+                       exclude = False,
+                       resolution = run_resolution_limit)
+
+        sc.set_hklout(os.path.join(self.get_working_directory(),
+                                   '%s_%s_scaled.mtz' % \
+                                   (self._common_pname, self._common_xname)))
+        
+        if self.get_scaler_anomalous():
+            sc.set_anomalous()
+
+        sc.scale()
+
+        data = sc.get_summary()
+
+        loggraph = sc.parse_ccp4_loggraph()
+
+        # look for the standard deviation graphs - see FIXME 31/OCT/06
+
+        standard_deviation_info = { }
+
+        for key in loggraph.keys():
+            if 'standard deviation v. Intensity' in key:
+                dataset = key.split(',')[-1].strip()
+                standard_deviation_info[dataset] = transpose_loggraph(
+                    loggraph[key])
+
+        # write this in an interesting way...
+
+        for dataset in standard_deviation_info.keys():
+            info = standard_deviation_info[dataset]
+
+            # need to consider partials separately to fulls in assigning
+            # the error correction parameters
+            
+            for j in range(len(info['1_Range'])):
+                n_full = int(info['5_Number'][j])
+                I_full = float(info['4_Irms'][j])
+                s_full = float(info['7_SigmaFull'][j])
+
+                n_part = int(info['9_Number'][j])
+                I_part = float(info['8_Irms'][j])
+                s_part = float(info['11_SigmaPartial'][j])
+                
+                n_tot = n_full + n_part
+
+                i_tot = ((n_full * I_full) + (n_part * I_part)) / n_tot
+                s_tot = ((n_full * s_full) + (n_part * s_part)) / n_tot
+
+        # look also for a sensible resolution limit for this data set -
+        # that is, the place where I/sigma is about two for the highest
+        # resolution data set - this should be a multiple of 0.05 A just
+        # to keep the output tidy...
+
+        resolution_info = { }
+
+        for key in loggraph.keys():
+            if 'Analysis against resolution' in key:
+                dataset = key.split(',')[-1].strip()
+                resolution_info[dataset] = transpose_loggraph(
+                    loggraph[key])
+
+        # and also radiation damage stuff...
+
+        batch_info = { }
+        
+        for key in loggraph.keys():
+            if 'Analysis against Batch' in key:
+                dataset = key.split(',')[-1].strip()
+                batch_info[dataset] = transpose_loggraph(
+                    loggraph[key])
+
+
+        # finally put all of the results "somewhere useful"
+        
+        self._scalr_statistics = data
+
+        # FIXED this is not correct for multi-wavelength data...
+        # it should be now!
+
+        self._tmp_scaled_refl_files = copy.deepcopy(
+            sc.get_scaled_reflection_files())
+
+        self._scalr_scaled_reflection_files = { }
+        
+        # compute a "standard unit cell" - FIXME perhaps - looks like
+        # sortmtz will already assign somehow a standard unit cell -
+        # interesting!
+
+        # convert reflection files to .sca format - use mtz2various for this
+
+        self._scalr_scaled_reflection_files['sca'] = { }
+
+        # this is confusing as it implicitly iterates over the keys of the
+        # dictionary
+        
+        for key in self._tmp_scaled_refl_files:
+            file = self._tmp_scaled_refl_files[key]
+            m2v = self._factory.Mtz2various()
+            m2v.set_hklin(file)
+            m2v.set_hklout('%s.sca' % file[:-4])
+            m2v.convert()
+
+            self._scalr_scaled_reflection_files['sca'][
+                key] = '%s.sca' % file[:-4]
+
+        # finally repeat the merging again (!) but keeping the
+        # wavelengths separate to generate the statistics on a
+        # per-wavelength basis - note that we do not want the
+        # reflection files here... bug# 2229
+
+        for key in self._scalr_statistics:
+            pname, xname, dname = key
+
+            sc = self._factory.Scala()
+            sc.set_hklin(self._prepared_reflections)
+
+            sc.add_sd_correction('full', 1.0, sdadd_full, sdb_full)
+            sc.add_sd_correction('partial', 1.0, sdadd_partial, sdb_partial)
+        
+            for epoch in epochs:
+                input = self._sweep_information[epoch]
+                start, end = (min(input['batches']), max(input['batches']))
+                if dname == input['dname']:
+                    sc.add_run(start, end, pname = input['pname'],
+                               xname = input['xname'],
+                               dname = input['dname'],
+                               exclude = False)
+                else:
+                    sc.add_run(start, end, pname = input['pname'],
+                               xname = input['xname'],
+                               dname = input['dname'],
+                               exclude = True)                    
+
+                # set the resolution limit to what we decided above...
+                # by the time we get this far this should have been what
+                # was used...
+                sc.set_resolution(resolution_limits[dname])
+
+            sc.set_hklout(os.path.join(self.get_working_directory(),
+                                           'temp.mtz'))
+                
+            if self.get_scaler_anomalous():
+                sc.set_anomalous()
+                
+            sc.set_tails()
+            sc.multi_merge()
+            stats = sc.get_summary()
+
+            # this should just work ... by magic!
+            self._scalr_statistics[key] = stats[key]
 
         self._scalr_highest_resolution = best_resolution
                    
@@ -1067,9 +1672,9 @@ class XDSScaler(Scaler):
         
         # next transform to F's from I's
 
-        for wavelength in self._scaled_ref_files.keys():
+        for wavelength in self._tmp_scaled_refl_files.keys():
 
-            hklin = self._scaled_ref_files[wavelength]
+            hklin = self._tmp_scaled_refl_files[wavelength]
 
             # perhaps reindex first?
             if self._scalr_reindex_operator != 'h,k,l':
@@ -1130,14 +1735,14 @@ class XDSScaler(Scaler):
             # pass
 
             # and record the reflection file..
-            self._scaled_ref_files[wavelength] = hklout
+            self._tmp_scaled_refl_files[wavelength] = hklout
             
         # and cad together into a single data set - recalling that we already
         # have a standard unit cell... and remembering where the files go...
 
         self._scalr_scaled_reflection_files = { }
 
-        if len(self._scaled_ref_files.keys()) > 1:
+        if len(self._tmp_scaled_refl_files.keys()) > 1:
 
             # for each reflection file I need to (1) ensure that the
             # spacegroup is uniformly set and (2) ensure that
@@ -1145,9 +1750,9 @@ class XDSScaler(Scaler):
 
             reflection_files = { }
 
-            for wavelength in self._scaled_ref_files.keys():
+            for wavelength in self._tmp_scaled_refl_files.keys():
                 cad = self.Cad()
-                cad.add_hklin(self._scaled_ref_files[wavelength])
+                cad.add_hklin(self._tmp_scaled_refl_files[wavelength])
                 cad.set_hklout(os.path.join(
                     self.get_working_directory(),
                     'cad-tmp-%s.mtz' % wavelength))
@@ -1182,8 +1787,8 @@ class XDSScaler(Scaler):
             # flag adding step! Doh!
             
             self._scalr_scaled_reflection_files[
-                'mtz_merged'] = self._scaled_ref_files[
-                self._scaled_ref_files.keys()[0]]
+                'mtz_merged'] = self._tmp_scaled_refl_files[
+                self._tmp_scaled_refl_files.keys()[0]]
 
         # finally add a FreeR column, and record the new merged reflection
         # file with the free column added.
@@ -1226,7 +1831,7 @@ class XDSScaler(Scaler):
 
         # next have a look for radiation damage... if more than one wavelength
 
-        if len(self._scaled_ref_files.keys()) > 1:
+        if len(self._tmp_scaled_refl_files.keys()) > 1:
             crd = CCP4InterRadiationDamageDetector()
 
             crd.set_working_directory(self.get_working_directory())
