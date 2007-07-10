@@ -607,6 +607,166 @@ def Scala(DriverType = None):
 
             return self.get_ccp4_status()
 
+        def multi_merge(self):
+            '''Merge data from multiple runs - this is very similar to
+            the scaling subroutine...'''
+
+            self.check_hklin()
+            self.check_hklout()
+
+            if not self._scalepack:
+                self.set_task('Scaling reflections from %s => %s' % \
+                             (os.path.split(self.get_hklin())[-1],
+                              os.path.split(self.get_hklout())[-1]))
+            else:
+                self.set_task('Scaling reflections from %s => scalepack %s' % \
+                             (os.path.split(self.get_hklin())[-1],
+                              os.path.split(self._scalepack)[-1]))
+                             
+                self.add_command_line('scalepack')
+                self.add_command_line(self._scalepack)
+
+            self.start()
+
+            run_number = 0
+            for run in self._runs:
+                run_number += 1
+                self.input('run %d batch %d to %d' % (run_number,
+                                                      run[0], run[1]))
+                if run[5]:
+                    # we want this run excluding from the scaling...
+                    self.input('exclude run %d batch %d to %d' % \
+                               (run_number,
+                                run[0], run[1]))
+                if run[6] != 0.0:
+                    # also want to impose a resolution limit for this
+                    # run... this is to support quick mode - bug # 2040
+                    self.input('resolution run %d high %f' % \
+                               (run_number, run[6]))
+                    
+            # put in the pname, xname, dname stuff
+            run_number = 0
+            for run in self._runs:
+                run_number += 1
+                self.input('name run %d project %s crystal %s dataset %s' % \
+                           (run_number, run[2], run[3], run[4]))
+
+            # we are only merging here so the scales command is
+            # dead simple...
+
+            self.input('scales constant')
+
+            if self._resolution:
+                self.input('resolution %f' % self._resolution)
+
+            if self._resolution_by_run != { }:
+                # FIXME 20/NOV/06 this needs implementing somehow...
+                pass
+
+            # I should probably leave in the scope for setting these
+            # parameters in the merging step...
+
+            for key in self._sd_parameters:
+                # the input order for these is sdfac, sdB, sdadd...
+                parameters = self._sd_parameters[key]
+                self.input('sdcorrection %s %f %f %f' % \
+                           (key, parameters[0], parameters[2], parameters[1]))
+
+            if self._anomalous:
+                self.input('anomalous on')
+            else:
+                self.input('anomalous off')
+
+            if self._scalepack:
+                self.input('output polish unmerged')
+
+            self.close_wait()
+
+            # check for errors
+
+            try:
+                self.check_for_errors()
+                self.check_ccp4_errors()
+                self.check_scala_errors()
+                
+                status = self.get_ccp4_status()                
+
+                Debug.write('Scala status: %s' % status)
+
+                if 'Error' in status:
+                    raise RuntimeError, '[SCALA] %s' % status
+
+            except RuntimeError, e:
+                try:
+                    os.remove(self.get_hklout())
+                except:
+                    pass
+
+                if self._scalepack:
+                    try:
+                        os.remove(self._scalepack)
+                    except:
+                        pass
+
+                raise e
+
+            # if we scaled to a scalepack file, delete the
+            # mtz file we created
+
+            if self._scalepack:
+                try:
+                    os.remove(self.get_hklout())
+                except:
+                    pass
+
+            # here get a list of all output files...
+            output = self.get_all_output()
+
+            # want to put these into a dictionary at some stage, keyed
+            # by the data set id. how this is implemented will depend
+            # on the number of datasets...
+
+            # FIXME file names on windows separate out path from
+            # drive with ":"... fixed! split on "Filename:"
+
+            # get a list of dataset names...
+
+            datasets = []
+            for run in self._runs:
+                # cope with case where two runs make one dataset...
+                if not run[4] in datasets:
+                    datasets.append(run[4])
+
+            hklout_files = []
+            hklout_dict = { }
+            
+            for i in range(len(output)):
+                record = output[i]
+                if 'WRITTEN OUTPUT MTZ FILE' in record:
+                    hklout = output[i + 1].split('Filename:')[-1].strip()
+                    if len(datasets) > 1:
+                        dname = hklout.split('_')[-1].replace('.mtz', '')
+                        if not dname in datasets:
+                            raise RuntimeError, 'unknown dataset %s' % dname
+                        hklout_dict[dname] = hklout
+                    elif len(datasets) > 0:
+                        hklout_dict[datasets[0]] = hklout
+                    else:
+                        hklout_dict['only'] = hklout
+                    hklout_files.append(hklout)
+            
+            self._scalr_scaled_reflection_files = hklout_dict
+
+            if self._scalepack:
+                for k in hklout_dict.keys():
+                    try:
+                        os.remove(hklout_dict[k])
+                    except:
+                        pass
+
+
+            return self.get_ccp4_status()
+
         def quick_scale(self):
             '''Perform a quick scaling - to assess data quality & merging.'''
 
