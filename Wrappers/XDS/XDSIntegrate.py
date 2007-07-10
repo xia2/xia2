@@ -316,6 +316,9 @@ def XDSIntegrate(DriverType = None):
                 Chatter.write('Standard Deviation in pixel range: %f %f' % \
                               (low, high))
 
+                # print a one-spot-per-image rendition of this...
+                
+
                 # next look for variations in the unit cell parameters
                 unit_cells = [stats[i]['unit_cell'] for i in images]
 
