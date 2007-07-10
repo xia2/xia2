@@ -308,7 +308,7 @@ class XDSScaler(Scaler):
         return pointgroup, reindex_op, need_to_return
 
 
-    def _refine_sd_parameters_remerge(self, sdadd_f, sdb_f, sdadd_p, sdb_p):
+    def _refine_sd_parameters_remerge(self, sdadd_f, sdb_f):
         '''Actually compute the RMS deviation from scatter / sigma = 1.0
         from unity.'''
         
@@ -319,7 +319,6 @@ class XDSScaler(Scaler):
         sc.set_hklin(self._prepared_reflections)
 
         sc.add_sd_correction('full', 1.0, sdadd_f, sdb_f)
-        sc.add_sd_correction('partial', 1.0, sdadd_p, sdb_p)
         
         for epoch in epochs:
             input = self._sweep_information[epoch]
@@ -350,107 +349,61 @@ class XDSScaler(Scaler):
         score_full = 0.0
         ref_count_full = 0
 
-        score_partial = 0.0
-        ref_count_partial = 0
-
         for dataset in standard_deviation_info.keys():
             info = standard_deviation_info[dataset]
 
-            # need to consider partials separately to fulls in assigning
-            # the error correction parameters
-            
             for j in range(len(info['1_Range'])):
                 n_full = int(info['5_Number'][j])
                 I_full = float(info['4_Irms'][j])
-                s_full = float(info['7_SigmaFull'][j])
+                s_full = float(info['7_Sigma'][j])
 
-                n_partial = int(info['9_Number'][j])
-                I_partial = float(info['8_Irms'][j])
-                s_partial = float(info['11_SigmaPartial'][j])
-                
-                n_tot = n_full + n_partial
+                n_tot = n_full
 
                 # trap case where we have no reflections in a higher
                 # intensity bin (one may ask why they are being printed
                 # by Scala, then?)
 
                 if n_tot:
-                    i_tot = ((n_full * I_full) +
-                             (n_partial * I_partial)) / n_tot
-                    s_tot = ((n_full * s_full) +
-                             (n_partial * s_partial)) / n_tot
+                    i_tot = I_full
+                    s_tot = s_full
                 else:
                     i_tot = 0.0
                     s_tot = 1.0
 
-                # FIXED should this really measure the errors in terms
-                # of total numbers of reflections, or just flatten the
-                # graph???
-
-                # FIXME still need to do this...
-                # TEST! Solve the structures and work out what is better...
-
-                # trying to minimise difference between this and 1.0!
-                
                 s_full -= 1.0
-                s_partial -= 1.0
-
-                # don't try uniform weighting...
-
-                # if n_full > 0:
-                # n_full = 1
-                # if n_partial > 0:
-                # n_partial = 1
-
-                # end don't try uniform weighting...
 
                 score_full += s_full * s_full * n_full
                 ref_count_full += n_full
-
-                score_partial += s_partial * s_partial * n_partial
-                ref_count_partial += n_partial
 
             # compute the scores...
 
             if ref_count_full > 0:
                 score_full /= ref_count_full
 
-            if ref_count_partial > 0:
-                score_partial /= ref_count_partial
-
-        return math.sqrt(score_full), \
-               math.sqrt(score_partial)
+        return math.sqrt(score_full)
 
     def _refine_sd_parameters(self):
         '''To some repeated merging (it is assumed that the data have
         already ben scaled) to determine appropriate values of
-        sd_add, sd_fac, sd_b for fulls, partials. FIXME at some point
+        sd_add, sd_fac, sd_b for fulls only. FIXME at some point
         this should probably be for each run as well...'''
 
         if False:
             return (0.0, 0.0, 0.0, 0.0)
 
         best_sdadd_full = 0.0
-        best_sdadd_partial = 0.0
         best_sdb_full = 0.0
-        best_sdb_partial = 0.0
 
         max_sdadd_full = 0.1
-        max_sdadd_partial = 0.1
         max_sdb_full = 20.0
-        max_sdb_partial = 20.0
 
         step_sdadd_full = 0.01
-        step_sdadd_partial = 0.01
         step_sdb_full = 2.0
 
         sdadd_full = 0.0
-        sdadd_partial = 0.0
         sdb_full = 0.0
-        sdb_partial = 0.0
 
         best_rms_full = 1.0e9
-        best_rms_partial = 1.0e9
 
         # compute sd_add first...
 
@@ -465,59 +418,45 @@ class XDSScaler(Scaler):
 
         while sdadd_full < max_sdadd_full:
             
-            sdadd_partial = sdadd_full
+            rms_full = self._refine_sd_parameters_remerge(
+                sdadd_full, sdb_full)
 
-            rms_full, rms_partial = self._refine_sd_parameters_remerge(
-                sdadd_full, sdb_full, sdadd_partial, sdb_partial)
-
-            Chatter.write('Tested SdAdd %4.2f: %4.2f %4.2f' % \
-                          (sdadd_full, rms_full, rms_partial))
+            Chatter.write('Tested SdAdd %4.2f: %4.2f' % \
+                          (sdadd_full, rms_full))
 
             if rms_full < best_rms_full:
                 best_sdadd_full = sdadd_full
                 best_rms_full = rms_full
-
-            if rms_partial < best_rms_partial:
-                best_sdadd_partial = sdadd_partial
-                best_rms_partial = rms_partial
 
             # check to see if we're going uphill again...
             # FIXME in here I have to allow for the scores being
             # exactly zero as an alternative - i.e. there are
             # no reflections which are full, for instance.
 
-            if rms_full > best_rms_full and rms_partial > best_rms_partial:
+            if rms_full > best_rms_full:
                 break
 
             sdadd_full += step_sdadd_full
 
         best_rms_full = 1.0e9
-        best_rms_partial = 1.0e9
 
         # then compute sdb ...
 
         while sdb_full < max_sdb_full:
 
-            sdb_partial = sdb_full
+            rms_full = self._refine_sd_parameters_remerge(
+                best_sdadd_full, sdb_full)
 
-            rms_full, rms_partial = self._refine_sd_parameters_remerge(
-                best_sdadd_full, sdb_full,
-                best_sdadd_partial, sdb_partial)
-
-            Chatter.write('Tested SdB %4.1f: %4.2f %4.2f' % \
-                          (sdb_full, rms_full, rms_partial))
+            Chatter.write('Tested SdB %4.1f: %4.2f' % \
+                          (sdb_full, rms_full))
 
             if rms_full < best_rms_full:
                 best_sdb_full = sdb_full
                 best_rms_full = rms_full
 
-            if rms_partial < best_rms_partial:
-                best_sdb_partial = sdb_partial
-                best_rms_partial = rms_partial
-
             # check to see if we're going uphill again...
 
-            if rms_full > best_rms_full and rms_partial > best_rms_partial:
+            if rms_full > best_rms_full:
                 break
 
             sdb_full += step_sdb_full
@@ -527,33 +466,20 @@ class XDSScaler(Scaler):
 
         sdadd_full = 0.0
         best_rms_full = 1.0e9
-        best_rms_partial = 1.0e9
         
         while sdadd_full < max_sdadd_full:
             
-            sdadd_partial = sdadd_full
+            rms_full = self._refine_sd_parameters_remerge(
+                sdadd_full, best_sdb_full)
 
-            rms_full, rms_partial = self._refine_sd_parameters_remerge(
-                sdadd_full, best_sdb_full,
-                sdadd_partial, best_sdb_partial)
-
-            Chatter.write('Tested SdAdd %4.2f: %4.2f %4.2f' % \
-                          (sdadd_full, rms_full, rms_partial))
+            Chatter.write('Tested SdAdd %4.2f: %4.2f' % \
+                          (sdadd_full, rms_full))
 
             if rms_full < best_rms_full:
                 best_sdadd_full = sdadd_full
                 best_rms_full = rms_full
 
-            if rms_partial < best_rms_partial:
-                best_sdadd_partial = sdadd_partial
-                best_rms_partial = rms_partial
-
-            # check to see if we're going uphill again...
-            # FIXME in here I have to allow for the scores being
-            # exactly zero as an alternative - i.e. there are
-            # no reflections which are full, for instance.
-
-            if rms_full > best_rms_full and rms_partial > best_rms_partial:
+            if rms_full > best_rms_full:
                 break
 
             sdadd_full += step_sdadd_full
@@ -561,12 +487,8 @@ class XDSScaler(Scaler):
         Chatter.write('Optimised SD corrections (A, B) found to be:')
         Chatter.write('Full:       %4.2f   %4.1f' %
                       (best_sdadd_full, best_sdb_full))
-        Chatter.write('Partial:    %4.2f   %4.1f' %
-                      (best_sdadd_partial, best_sdb_partial))
 
-
-        return best_sdadd_full, best_sdb_full, \
-               best_sdadd_partial, best_sdb_partial
+        return best_sdadd_full, best_sdb_full
 
     def _scale_prepare(self):
         '''Prepare the data for scaling - this will reindex it the
@@ -1457,27 +1379,22 @@ class XDSScaler(Scaler):
             Chatter.write('Not optimising error parameters')
             sdadd_full = 0.0
             sdb_full = 0.0
-            sdadd_partial = 0.0
-            sdb_partial = 0.0
 
         elif average_completeness < 50.0:
             Chatter.write('Incomplete data, so not refining error parameters')
             sdadd_full = 0.0
             sdb_full = 0.0
-            sdadd_partial = 0.0
-            sdb_partial = 0.0
 
         else:
 
             # ---------- SD CORRECTION PARAMETER LOOP ----------
             
             # first "fix" the sd add parameters to match up the sd curve from
-            # the fulls and partials, and minimise RMS[N (scatter / sigma - 1)]
+            # the fulls only, and minimise RMS[N (scatter / sigma - 1)]
             
             Chatter.write('Optimising error parameters')
             
-            sdadd_full, sdb_full, sdadd_partial, sdb_partial = \
-                        self._refine_sd_parameters()
+            sdadd_full, sdb_full = self._refine_sd_parameters()
 
         # then try tweaking the sdB parameter in a range say 0-20
         # starting at 0 and working until the RMS stops going down
@@ -1502,7 +1419,6 @@ class XDSScaler(Scaler):
         sc.set_hklin(self._prepared_reflections)
 
         sc.add_sd_correction('full', 1.0, sdadd_full, sdb_full)
-        sc.add_sd_correction('partial', 1.0, sdadd_partial, sdb_partial)
 
         for epoch in epochs:
             input = self._sweep_information[epoch]
@@ -1547,22 +1463,16 @@ class XDSScaler(Scaler):
         for dataset in standard_deviation_info.keys():
             info = standard_deviation_info[dataset]
 
-            # need to consider partials separately to fulls in assigning
-            # the error correction parameters
-            
             for j in range(len(info['1_Range'])):
                 n_full = int(info['5_Number'][j])
                 I_full = float(info['4_Irms'][j])
-                s_full = float(info['7_SigmaFull'][j])
+                s_full = float(info['7_Sigma'][j])
 
-                n_part = int(info['9_Number'][j])
-                I_part = float(info['8_Irms'][j])
-                s_part = float(info['11_SigmaPartial'][j])
-                
-                n_tot = n_full + n_part
+                i_tot = I_full
+                s_tot = s_full
 
-                i_tot = ((n_full * I_full) + (n_part * I_part)) / n_tot
-                s_tot = ((n_full * s_full) + (n_part * s_part)) / n_tot
+                # FIXME is this useless dead code???
+
 
         # look also for a sensible resolution limit for this data set -
         # that is, the place where I/sigma is about two for the highest
@@ -1633,7 +1543,6 @@ class XDSScaler(Scaler):
             sc.set_hklin(self._prepared_reflections)
 
             sc.add_sd_correction('full', 1.0, sdadd_full, sdb_full)
-            sc.add_sd_correction('partial', 1.0, sdadd_partial, sdb_partial)
         
             for epoch in epochs:
                 input = self._sweep_information[epoch]
