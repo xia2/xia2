@@ -461,8 +461,6 @@ class AnalyseMyIntensities:
                 pname, xname, dname = self._project_info[j]
                 Chatter.write('Truncating %s/%s/%s' % (pname, xname, dname))
 
-            Chatter.write('HKLIN STATS: %s' % str(self._hklin_stats))
-                
             resolution = self._hklin_stats[os.path.split(hklin)[-1]][
                 'resolution']
 
