@@ -314,7 +314,7 @@ class XDSScaler(Scaler):
         epochs = self._sweep_information.keys()
         epochs.sort()
 
-        sc = self._factory.Scala()
+        sc = self.Scala()
         sc.set_hklin(self._prepared_reflections)
 
         sc.add_sd_correction('full', 1.0, sdadd_f, sdb_f)
@@ -1220,7 +1220,7 @@ class XDSScaler(Scaler):
         counter = 0
 
         for epoch in epochs:
-            rb = self._factory.Rebatch()
+            rb = self.Rebatch()
 
             hklin = self._sweep_information[epoch]['scaled_reflections']
 
@@ -1259,7 +1259,7 @@ class XDSScaler(Scaler):
         # then sort the files together, making sure that the resulting
         # reflection file looks right.
 
-        s = self._factory.Sortmtz()
+        s = self.Sortmtz()
 
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s_sorted.mtz' % \
@@ -1300,7 +1300,7 @@ class XDSScaler(Scaler):
         # to get the setting right - in which case I will be able to
         # write out unmerged reflection files later on...
 
-        sc = self._factory.Scala()
+        sc = self.Scala()
         sc.set_hklin(self._prepared_reflections)
 
         for epoch in epochs:
@@ -1488,7 +1488,7 @@ class XDSScaler(Scaler):
         # tight loop - initially just rerun the scaling with all of the
         # "right" parameters...
         
-        sc = self._factory.Scala()
+        sc = self.Scala()
 
         FileHandler.record_log_file('%s %s scala' % (self._common_pname,
                                                      self._common_xname),
@@ -1610,7 +1610,7 @@ class XDSScaler(Scaler):
         
         for key in self._tmp_scaled_refl_files:
             file = self._tmp_scaled_refl_files[key]
-            m2v = self._factory.Mtz2various()
+            m2v = self.Mtz2various()
             m2v.set_hklin(file)
             m2v.set_hklout('%s.sca' % file[:-4])
             m2v.convert()
@@ -1626,7 +1626,7 @@ class XDSScaler(Scaler):
         for key in self._scalr_statistics:
             pname, xname, dname = key
 
-            sc = self._factory.Scala()
+            sc = self.Scala()
             sc.set_hklin(self._prepared_reflections)
 
             sc.add_sd_correction('full', 1.0, sdadd_full, sdb_full)
