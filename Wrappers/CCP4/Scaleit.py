@@ -187,7 +187,12 @@ def Scaleit(DriverType = None):
             self._statistics['mapping'] = { }
 
             for j in range(groups):
-                self._statistics['mapping'][j + 1] = self._columns[4 * j].replace('F_', '')
+                if self._anomalous:
+                    self._statistics['mapping'][
+                        j + 1] = self._columns[4 * j].replace('F_', '')
+                else:
+                    self._statistics['mapping'][
+                        j + 1] = self._columns[2 * j].replace('F_', '')
 
             # now get some interesting information out...
 
