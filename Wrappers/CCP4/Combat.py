@@ -58,6 +58,7 @@ def Combat(DriverType = None):
             # spacegroup and so on set...
             self._spacegroup = None
             self._cell = None
+            self._wavelength = None
 
             return
 
@@ -87,6 +88,9 @@ def Combat(DriverType = None):
 
         def set_spacegroup(self, spacegroup):
             self._spacegroup = spacegroup
+
+        def set_wavelength(self, wavelength):
+            self._wavelength = wavelength
 
         def run(self):
             '''Actually convert to MTZ.'''
@@ -146,6 +150,8 @@ def Combat(DriverType = None):
                 self.input('cell %f %f %f %f %f %f' % self._cell)
             if self._spacegroup:
                 self.input('symmetry %s' % self._spacegroup)
+            if self._wavelength:
+                self.input('wavelength %f' % self._wavelength)
 
             self.close_wait()
 
