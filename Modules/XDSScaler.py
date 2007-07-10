@@ -1120,6 +1120,9 @@ class XDSScaler(Scaler):
         # run, which should correct for any differences in factor introduced
         # here...
             
+        for epoch in self._sweep_information.keys():
+            self._sweep_information[epoch]['scaled_reflections'] = None
+
         for wavelength in wavelength_names:
             hklin = output_files[wavelength]
 
