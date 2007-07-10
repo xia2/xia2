@@ -79,6 +79,7 @@ class _CommandLine(Object):
 
         self._read_trust_timestamps()
         self._read_quick()
+        self._read_fiddle_sd()
         self._read_relax()
         self._read_norefine()
         self._read_2d()
@@ -479,6 +480,12 @@ class _CommandLine(Object):
 
         if '-quick' in sys.argv:
             Flags.set_quick(True)
+        return
+
+    def _read_fiddle_sd(self):
+
+        if '-fiddle_sd' in sys.argv:
+            Flags.set_fiddle_sd(True)
         return
 
     def _read_relax(self):

@@ -16,6 +16,7 @@ class _Flags:
 
     def __init__(self):
         self._quick = False
+        self._fiddle_sd = False
         self._migrate_data = False
         self._trust_timestaps = False
         self._parallel = 0
@@ -35,6 +36,13 @@ class _Flags:
 
     def get_quick(self):
         return self._quick
+
+    def set_fiddle_sd(self, fiddle_sd):
+        self._fiddle_sd = fiddle_sd
+        return
+
+    def get_fiddle_sd(self):
+        return self._fiddle_sd
 
     def set_relax(self, relax):
         self._relax = relax
