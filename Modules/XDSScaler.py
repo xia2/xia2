@@ -1320,7 +1320,6 @@ class XDSScaler(Scaler):
         
         if self.get_scaler_anomalous():
             sc.set_anomalous()
-        sc.set_tails()
         sc.set_onlymerge()
 
         sc.multi_merge()
@@ -1661,7 +1660,6 @@ class XDSScaler(Scaler):
             if self.get_scaler_anomalous():
                 sc.set_anomalous()
                 
-            sc.set_tails()
             sc.multi_merge()
             stats = sc.get_summary()
 
@@ -1675,6 +1673,9 @@ class XDSScaler(Scaler):
     def _scale_finish(self):
         
         # next transform to F's from I's
+
+        if len(self._tmp_scaled_refl_files.keys()) == 0:
+            raise RuntimeError, 'no reflection files stored'
 
         for wavelength in self._tmp_scaled_refl_files.keys():
 
