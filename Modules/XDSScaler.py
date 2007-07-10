@@ -318,7 +318,7 @@ class XDSScaler(Scaler):
         sc = self.Scala()
         sc.set_hklin(self._prepared_reflections)
 
-        sc.add_sd_correction('full', 1.0, sdadd_f, sdb_f)
+        sc.add_sd_correction('both', 1.0, sdadd_f, sdb_f)
         
         for epoch in epochs:
             input = self._sweep_information[epoch]
@@ -1418,7 +1418,7 @@ class XDSScaler(Scaler):
 
         sc.set_hklin(self._prepared_reflections)
 
-        sc.add_sd_correction('full', 1.0, sdadd_full, sdb_full)
+        sc.add_sd_correction('both', 1.0, sdadd_full, sdb_full)
 
         for epoch in epochs:
             input = self._sweep_information[epoch]
@@ -1542,7 +1542,7 @@ class XDSScaler(Scaler):
             sc = self.Scala()
             sc.set_hklin(self._prepared_reflections)
 
-            sc.add_sd_correction('full', 1.0, sdadd_full, sdb_full)
+            sc.add_sd_correction('both', 1.0, sdadd_full, sdb_full)
         
             for epoch in epochs:
                 input = self._sweep_information[epoch]
