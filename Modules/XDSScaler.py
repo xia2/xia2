@@ -248,6 +248,10 @@ class XDSScaler(Scaler):
 
         standard_deviation_info = { }
 
+        # FIXME in here this will take account of all runs separately
+        # and also the "all runs" collection as well - should I
+        # just refine on the all-runs or is it better to exclude this?
+
         for key in loggraph.keys():
             if 'standard deviation v. Intensity' in key:
                 dataset = key.split(',')[-1].strip()
@@ -308,6 +312,8 @@ class XDSScaler(Scaler):
         # be more) to make this useful... FIXME this should rely on an
         # analysis of the actual statistics... allowing 5-times more
         # sdb steps than before too as this is probably most use...
+        # alternatively could scale-down all of the reflected intensity
+        # values in COMBAT...
 
         best_sdadd_full = 0.0
         best_sdb_full = 0.0
