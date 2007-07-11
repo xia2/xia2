@@ -46,7 +46,7 @@ from Wrappers.CCP4.Mosflm import Mosflm
 from Modules.XDSIndexer import XDSIndexer
 
 from Exceptions.NotAvailableError import NotAvailableError
-from Handlers.Streams import Admin
+from Handlers.Streams import Admin, Debug
 from Handlers.PipelineSelection import get_preferences
 
 def IndexerForXSweep(xsweep):
