@@ -301,14 +301,22 @@ class XDSScaler(Scaler):
         if False:
             return (0.0, 0.0, 0.0, 0.0)
 
+        # note to self - the sdB is scaled as the square-root of
+        # intensity, so in this situation needs to be massively
+        # larger to be useful (perhaps this should follow a power law?)
+        # so have inflated the limits by a factor of 100 (should probably
+        # be more) to make this useful... FIXME this should rely on an
+        # analysis of the actual statistics... allowing 5-times more
+        # sdb steps than before too as this is probably most use...
+
         best_sdadd_full = 0.0
         best_sdb_full = 0.0
 
         max_sdadd_full = 0.1
-        max_sdb_full = 20.0
+        max_sdb_full = 10000.0
 
         step_sdadd_full = 0.01
-        step_sdb_full = 2.0
+        step_sdb_full = 200.0
 
         sdadd_full = 0.0
         sdb_full = 0.0
