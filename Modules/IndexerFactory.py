@@ -94,6 +94,8 @@ def IndexerForXSweep(xsweep):
     # that gets it's numbers from the indexer it uses.
 
     if xsweep.get_distance():
+        Debug.write('Indexer factory: Setting distance: %.2f' % \
+                    xsweep.get_distance())
         indexer.set_distance(xsweep.get_distance())
 
     # FIXME more - need to check if we should be indexing in a specific
@@ -103,6 +105,8 @@ def IndexerForXSweep(xsweep):
     # the image header...
 
     if xsweep.get_wavelength_value():
+        Debug.write('Indexer factory: Setting wavelength: %.6f' % \
+                    xsweep.get_wavelength_value())
         indexer.set_wavelength(xsweep.get_wavelength_value())
     
     return indexer

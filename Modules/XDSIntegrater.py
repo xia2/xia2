@@ -183,6 +183,10 @@ class XDSIntegrater(FrameProcessor,
             images = self.get_matching_images()
             self.set_integrater_wedge(min(images),
                                       max(images))
+            
+        Debug.write('XDS INTEGRATE PREPARE:')
+        Debug.write('Wavelength: %.6f' % self.get_wavelength())
+        Debug.write('Distance: %.2f' % self.get_distance())
 
         if not self._intgr_indexer:
             self.set_integrater_indexer(XDSIndexer())

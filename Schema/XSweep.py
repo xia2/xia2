@@ -550,7 +550,8 @@ class XSweep(Object):
 
             else:
                 wavelength_id = self.get_wavelength().get_name()
-                crystal_id = self.get_wavelength().get_crystal().get_name()
+                crystal_id = self.get_wavelength().get_crystal(
+                    ).get_name()
                 project_id = self.get_wavelength().get_crystal(
                     ).get_project().get_name()
 

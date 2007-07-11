@@ -221,6 +221,10 @@ class XDSIndexer(FrameProcessor,
 
         # decide on images to work with
 
+        Debug.write('XDS INDEX PREPARE:')
+        Debug.write('Wavelength: %.6f' % self.get_wavelength())
+        Debug.write('Distance: %.2f' % self.get_distance())
+
         if self._indxr_images == []:
             self._index_select_images()
 

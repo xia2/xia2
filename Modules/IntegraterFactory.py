@@ -22,7 +22,7 @@ sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Wrappers.CCP4 import Mosflm
-from Handlers.Streams import Admin
+from Handlers.Streams import Admin, Debug
 from Handlers.PipelineSelection import get_preferences, add_preference
 
 from Modules.XDSIntegrater import XDSIntegrater
@@ -71,10 +71,14 @@ def IntegraterForXSweep(xsweep):
     # the image header...
 
     if xsweep.get_wavelength_value():
+        Debug.write('Integrater factory: Setting wavelength: %.6f' % \
+                    xsweep.get_wavelength_value())
         integrater.set_wavelength(xsweep.get_wavelength_value())
 
     # likewise the distance...
     if xsweep.get_distance():
+        Debug.write('Integrater factory: Setting distance: %.2f' % \
+                    xsweep.get_distance())
         integrater.set_distance(xsweep.get_distance())
 
     integrater.set_integrater_sweep(xsweep)
