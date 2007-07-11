@@ -268,6 +268,11 @@ class XDSIntegrater(FrameProcessor,
                 self._intgr_indexer.set_indexer_input_cell(cell)
             input_cell = cell
 
+            # propogate the wavelength information...
+            if self.get_wavelength():
+                self._intgr_indexer.set_wavelength(
+                    self.get_wavelength())
+
             self._intgr_indexer.set_indexer_input_lattice(lattice)
             self._intgr_indexer.set_distance(distance)
             self._intgr_indexer.set_beam(beam)
