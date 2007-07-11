@@ -77,6 +77,27 @@ class _Stream:
         
         return result
 
+    def bigbanner(self, comment, forward = True):
+        '''Write a big banner for something.'''
+
+        hashes = '#' * 60
+
+        self.write(hashes, forward)
+        self.write('# %s' % comment, forward)
+        self.write(hashes, forward)
+
+        return
+
+    def smallbanner(self, comment, forward):
+        '''Write a small batter for something, like this:
+        ----- comment ------.'''
+
+        dashes = '-' * 10
+        
+        self.write('%s %s %s' % (dashes, comment, dashes), forward)
+
+        return
+
     def join(self, otherstream):
         '''Join another stream so that all output from this stream goes also
         to that one.'''
