@@ -327,11 +327,6 @@ def XDSIntegrate(DriverType = None):
 
                 # FIXME need to allow for blank images in here etc.
 
-                if len(spot_status) > 60:
-                    Chatter.write('Integration status per image (60/record):')
-                else:
-                    Chatter.write('Integration status per image:')
-
                 status_record = ''
                 for stddev in stddev_pixel:
                     if stddev > 2.5:
@@ -340,6 +335,11 @@ def XDSIntegrate(DriverType = None):
                         status_record += '%'
                     else:
                         status_record += 'o'
+
+                if len(status_record) > 60:
+                    Chatter.write('Integration status per image (60/record):')
+                else:
+                    Chatter.write('Integration status per image:')
 
                 for chunk in [status_record[i:i + 60] \
                               for i in range(0, len(status_record), 60)]:
