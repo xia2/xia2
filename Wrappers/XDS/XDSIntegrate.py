@@ -307,17 +307,47 @@ def XDSIntegrate(DriverType = None):
 
             try:
 
-                standard_deviations_spot_positions = [stats[i]['rmsd_pixel'] \
-                                                      for i in images]
+                stddev_pixel = [stats[i]['rmsd_pixel'] for i in images]
 
-                low, high = min(standard_deviations_spot_positions), \
-                            max(standard_deviations_spot_positions)          
+                # fix to bug # 2501 - remove the extreme values from this
+                # list...
+
+                stddev_pixel = list(set(stddev_pixel))
+                stddev_pixel.sort()
+                stddev_pixel = stddev_pixel[1:-1]
+
+                low, high = min(stddev_pixel), \
+                            max(stddev_pixel)          
 
                 Chatter.write('Standard Deviation in pixel range: %f %f' % \
                               (low, high))
 
                 # print a one-spot-per-image rendition of this...
-                
+                stddev_pixel = [stats[i]['rmsd_pixel'] for i in images]
+
+                # FIXME need to allow for blank images in here etc.
+
+                if len(spot_status) > 60:
+                    Chatter.write('Integration status per image (60/record):')
+                else:
+                    Chatter.write('Integration status per image:')
+
+                status_record = ''
+                for stddev in stddev_pixel:
+                    if stddev > 2.5:
+                        status_record += '!'
+                    elif stddev > 1.0:
+                        status_record += '%'
+                    else:
+                        status_record += 'o'
+
+                for chunk in [status_record[i:i + 60] \
+                              for i in range(0, len(status_record), 60)]:
+                    Chatter.write(chunk)
+                Chatter.write(
+                    '"o" => ok          "%" => iffy rmsd "!" => bad rmsd')
+                Chatter.write(
+                    '"O" => overloaded  "#" => many bad  "." => blank') 
 
                 # next look for variations in the unit cell parameters
                 unit_cells = [stats[i]['unit_cell'] for i in images]
