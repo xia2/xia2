@@ -129,6 +129,7 @@ def header_to_xds(header, synchrotron = True):
         'adsc q315 2x2 binned':True,
         'mar 345':False,
         'mar 300':True,
+        'mar 325':True,
         'mar 225':True,
         'mar 165':False,
         'raxis IV':True}
