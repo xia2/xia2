@@ -101,7 +101,7 @@ def _parse_correct_lp(filename):
             cell = map(float, file_contents[i].split()[-6:])
             postrefinement_stats['cell'] = cell
 
-        if 'E.D.D. OF CELL PARAMETERS' in file_contents[i]:
+        if 'E.S.D. OF CELL PARAMETERS' in file_contents[i]:
             cell_esd = map(float, file_contents[i].split()[-6:])
             postrefinement_stats['cell_esd'] = cell_esd
 
