@@ -388,6 +388,43 @@ class XDSIntegrater(FrameProcessor,
     def _integrate_finish(self):
         '''Finish off the integration by running correct.'''
 
+        # first run the postrefinement etc with spacegroup P1
+        # and the current unit cell - this will be used to
+        # obtain a benchmark rmsd in pixels / phi and also
+        # cell deviations (this is working towards spotting bad
+        # indexing solutions) - only do this if we have no
+        # reindex matrix... and no postrefined cell...
+
+        if not self.get_integrater_reindex_matrix() and not self._intgr_cell:
+            correct = self.Correct()
+
+            correct.set_data_range(self._intgr_wedge[0],
+                                   self._intgr_wedge[1])
+        
+            if self.get_polarization() > 0.0:
+                correct.set_polarization(self.get_polarization())
+
+            correct.set_spacegroup_number(1)
+            correct.set_cell(
+                self._intgr_indexer.get_indexer_cell())
+
+            correct.run()
+
+            cell = correct.get_result('cell')
+            cell_esd = correct.get_result('cell_esd')
+
+            Debug.write('Postrefinement in P1 results:')
+            Debug.write('%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f' % \
+                        tuple(cell))
+            Debug.write('%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f' % \
+                        tuple(cell_esd))
+            Debug.write('Deviations: %.2f pixels %.2f degrees' % \
+                        (correct.get_result('rmsd_pixel'),
+                         correct.get_result('rmsd_phi')))
+            
+        # next run the postrefinement etc with the given
+        # cell / lattice - this will be the assumed result...
+
         correct = self.Correct()
 
         correct.set_data_range(self._intgr_wedge[0],
@@ -465,6 +502,15 @@ class XDSIntegrater(FrameProcessor,
         # record the postrefined cell parameters
         self._intgr_cell = correct.get_result('cell')
         self._intgr_n_ref = correct.get_result('n_ref')
+
+        Debug.write('Postrefinement in "correct" spacegroup results:')
+        Debug.write('%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f' % \
+                    tuple(correct.get_result('cell')))
+        Debug.write('%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f' % \
+                    tuple(correct.get_result('cell_esd')))
+        Debug.write('Deviations: %.2f pixels %.2f degrees' % \
+                    (correct.get_result('rmsd_pixel'),
+                     correct.get_result('rmsd_phi')))
 
         if not Flags.get_quick():
             # check for alien reflections and perhaps recycle - removing them
