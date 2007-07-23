@@ -489,6 +489,12 @@ def Pointless(DriverType = None):
                         # if this is the same lattice as the input then
                         # be biased towards it!
 
+                        # handle the occasional case where the Rmerge
+                        # is calculalated as zero (a bug in pointless,
+                        # where the identity operator is not considered)
+                        if r_merge == 0.0:
+                            continue
+
                         if math.fabs(likelihood - self._totalprob) < 1:
                             if (correct_r / r_merge > 1.5 or \
                                 bias and correct_r / r_merge > 1.25) \

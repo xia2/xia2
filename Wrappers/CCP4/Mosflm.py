@@ -697,6 +697,12 @@ def Mosflm(DriverType = None):
             if not self._mosflm_gain and self.get_gain():
                 self._mosflm_gain = self.get_gain()
 
+            # try performing the cell refinement in P1 first and then
+            # in the correct setting ... not sure how to "insulate" this
+            # from errors in the cell refinement though... if this
+            # phase decided that the results were much worse a
+            # BadLatticeError would have to be raised...
+
             self.reset()
             auto_logfiler(self)
             self._mosflm_refine_cell()
@@ -808,7 +814,7 @@ def Mosflm(DriverType = None):
             self._intgr_hklout = hklout
             return hklout
 
-        def _mosflm_refine_cell(self):
+        def _mosflm_refine_cell(self, set_spacegroup = None):
             '''Perform the refinement of the unit cell. This will populate
             all of the information needed to perform the integration.'''
 
@@ -950,7 +956,17 @@ def Mosflm(DriverType = None):
             self.input('distance %f' % distance)
 
             # FIXED is this the correct form? - it is now.
-            self.input('symmetry %s' % spacegroup_number)
+
+            # want to be able to test cell refinement in P1
+            # as a way of investigating how solid the autoindex
+            # solution is... therefore allow spacegroup to
+            # be explicitly set...
+            
+            if set_spacegroup:
+                self.input('symmetry %s' % set_spacegroup)
+            else:
+                self.input('symmetry %s' % spacegroup_number)
+                
             self.input('mosaic %f' % mosaic)
 
             # note well that the beam centre is coming from indexing so
@@ -1055,7 +1071,9 @@ def Mosflm(DriverType = None):
                 
                 # look to store the rms deviations on a per-image basis
                 # this may be used to decide what to do about "inaccurate
-                # cell parameters" below...
+                # cell parameters" below... may also want to record
+                # them for comparison with cell refinement with a lower
+                # spacegroup for solution elimination purposes...
 
                 if 'Rms positional error (mm) as a function of' in o and False:
                     images = map(int, output[i + 1].split()[1:])
