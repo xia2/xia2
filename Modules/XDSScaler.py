@@ -1523,7 +1523,7 @@ class XDSScaler(Scaler):
 
             # perhaps reindex first?
 
-            # FIXME in here need to check if the spacegroup
+            # FIXED in here need to check if the spacegroup
             # needs assigning e.g. from P 2 2 2 to P 21 21 21
             # bug 2511
             
@@ -1551,8 +1551,24 @@ class XDSScaler(Scaler):
                     tuple(reindex.get_cell()))
                 self._scalr_cell = tuple(reindex.get_cell())
 
+            else:
+                # just assign the spacegroup - note that this may be
+                # a worthless step, but never mind...
 
-            
+                hklout = os.path.join(self.get_working_directory(),
+                                      '%s_reindexed.mtz' % wavelength)
+                FileHandler.record_temporary_file(hklout)
+
+                Debug.write('Setting spacegroup = %s' % \
+                            self._scalr_likely_spacegroups[0])
+                
+                reindex = self._factory.Reindex()
+                reindex.set_hklin(hklin)
+                reindex.set_spacegroup(self._scalr_likely_spacegroups[0])
+                reindex.set_hklout(hklout)
+                reindex.reindex()
+                hklin = hklout
+
             truncate = self._factory.Truncate()
             truncate.set_hklin(hklin)
 
