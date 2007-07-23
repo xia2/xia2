@@ -526,7 +526,7 @@ class XDSIntegrater(FrameProcessor,
                    correct_deviations[1] / p1_deviations[1] > 1.5:
                 Chatter.write(
                 'Eliminating this indexing solution as postrefinement')
-                Chatter.Write(
+                Chatter.write(
                 'deviations rather high relative to triclinic')
                 raise BadLatticeError, \
                       'high relative deviations in postrefinement'
