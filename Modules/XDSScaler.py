@@ -1522,6 +1522,11 @@ class XDSScaler(Scaler):
             hklin = self._tmp_scaled_refl_files[wavelength]
 
             # perhaps reindex first?
+
+            # FIXME in here need to check if the spacegroup
+            # needs assigning e.g. from P 2 2 2 to P 21 21 21
+            # bug 2511
+            
             if self._scalr_reindex_operator != 'h,k,l':
 
                 hklout = os.path.join(self.get_working_directory(),
@@ -1545,6 +1550,8 @@ class XDSScaler(Scaler):
                     'Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f' % \
                     tuple(reindex.get_cell()))
                 self._scalr_cell = tuple(reindex.get_cell())
+
+
             
             truncate = self._factory.Truncate()
             truncate.set_hklin(hklin)
