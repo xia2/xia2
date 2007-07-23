@@ -42,6 +42,7 @@ from Experts.SymmetryExpert import r_to_rt
 
 from Schema.Interfaces.Integrater import Integrater
 from Schema.Interfaces.FrameProcessor import FrameProcessor
+from Schema.Exceptions.BadLatticeError import BadLatticeError
 
 # indexing functionality if not already provided - even if it is
 # we still need to reindex with XDS.
