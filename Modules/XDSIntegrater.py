@@ -425,7 +425,7 @@ class XDSIntegrater(FrameProcessor,
                          correct.get_result('rmsd_phi')))
 
             p1_deviations = (correct.get_result('rmsd_pixel'),
-                             correct.get_result('rmsd_phi')))
+                             correct.get_result('rmsd_phi'))
             
         # next run the postrefinement etc with the given
         # cell / lattice - this will be the assumed result...
@@ -518,7 +518,7 @@ class XDSIntegrater(FrameProcessor,
                      correct.get_result('rmsd_phi')))
 
         correct_deviations = (correct.get_result('rmsd_pixel'),
-                              correct.get_result('rmsd_phi')))
+                              correct.get_result('rmsd_phi'))
 
         if p1_deviations:
             # compare and reject if both > 50% higher
