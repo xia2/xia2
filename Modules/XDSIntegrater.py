@@ -395,6 +395,8 @@ class XDSIntegrater(FrameProcessor,
         # indexing solutions) - only do this if we have no
         # reindex matrix... and no postrefined cell...
 
+        p1_deviations = None
+
         if not self.get_integrater_reindex_matrix() and not self._intgr_cell:
             correct = self.Correct()
 
@@ -421,6 +423,9 @@ class XDSIntegrater(FrameProcessor,
             Debug.write('Deviations: %.2f pixels %.2f degrees' % \
                         (correct.get_result('rmsd_pixel'),
                          correct.get_result('rmsd_phi')))
+
+            p1_deviations = (correct.get_result('rmsd_pixel'),
+                             correct.get_result('rmsd_phi')))
             
         # next run the postrefinement etc with the given
         # cell / lattice - this will be the assumed result...
@@ -511,6 +516,20 @@ class XDSIntegrater(FrameProcessor,
         Debug.write('Deviations: %.2f pixels %.2f degrees' % \
                     (correct.get_result('rmsd_pixel'),
                      correct.get_result('rmsd_phi')))
+
+        correct_deviations = (correct.get_result('rmsd_pixel'),
+                              correct.get_result('rmsd_phi')))
+
+        if p1_deviations:
+            # compare and reject if both > 50% higher
+            if correct_deviations[0] / p1_deviations[0] > 1.5 and \
+                   correct_deviations[1] / p1_deviations[1] > 1.5:
+                Chatter.write(
+                'Eliminating this indexing solution as postrefinement')
+                Chatter.Write(
+                'deviations rather high relative to triclinic')
+                raise BadLatticeError, \
+                      'high relative deviations in postrefinement'
 
         if not Flags.get_quick():
             # check for alien reflections and perhaps recycle - removing them
