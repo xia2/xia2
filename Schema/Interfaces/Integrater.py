@@ -521,7 +521,19 @@ class Integrater:
                     self.set_integrater_done(False)
 
             self.set_integrater_finish_done(True)
-            self._integrate_finish()
+            
+            try:
+                # allow for the fact that postrefinement may be used
+                # to reject the lattice...
+                
+                self._integrate_finish()
+                
+            except BadLatticeError, e:
+                Chatter.write('Uh oh! %s' % str(e))
+                self._intgr_indexer.eliminate()
+                self.set_integrater_prepare_done(False)
+                self.set_integrater_done(False)
+                self.set_integrater_finish_done(False)
 
         return self._intgr_hklout
     

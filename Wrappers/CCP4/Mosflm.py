@@ -1582,6 +1582,11 @@ def Mosflm(DriverType = None):
 
             self.set_task(task)
 
+            summary_file = 'summary_%s.log' % spacegroup_number
+
+            self.add_command_line('SUMMARY')
+            self.add_command_line(summary_file)
+
             self.start()
 
             # if the integrater interface has the project, crystal, dataset
