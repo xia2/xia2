@@ -377,7 +377,7 @@ def XDSIntegrate(DriverType = None):
                 # change - make this only a problem if not triclinic.
 
                 if (high - low) / (0.5 * (high + low)) > 0.5 and \
-                       space_group_number > 1:
+                       space_group_number > 1 and False:
                     # there was a very large variation in deviation
                     # FIXME 08/JAN/07 this should raise a BadLatticeException
 
@@ -385,6 +385,9 @@ def XDSIntegrate(DriverType = None):
                     # variations in the unit cell parameters...
                     # need to have both to distinguish TS01 NAT and TS02.
                     # This doesn't really help...
+
+                    # 23/JUL/07 no longer use this as a metric -
+                    # use the results of postrefinement...
                 
                     raise BadLatticeError, \
                           'very large variation in pixel deviation'
