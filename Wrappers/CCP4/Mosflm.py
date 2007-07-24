@@ -737,7 +737,7 @@ def Mosflm(DriverType = None):
 
                     ratio += rms_deviations[j] / rms_deviations_p1[j]
 
-                Debug.write('Average ratio: %.2f' % (ratio / len(images))
+                Debug.write('Average ratio: %.2f' % (ratio / len(images)))
 
             else:
                 Debug.write('Cell refinement in P1 failed...')
