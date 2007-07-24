@@ -721,7 +721,7 @@ def Mosflm(DriverType = None):
                 for j in range(cri[0], cri[1] + 1):
                     images.append(j)
                     
-            if rms_deviations_p1:
+            if rms_deviations and rms_deviations_p1:
                 Debug.write('Cell refinement comparison:')
                 Debug.write('Image   correct   triclinic')
                 mean = 0.0
