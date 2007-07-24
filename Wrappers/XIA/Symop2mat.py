@@ -62,7 +62,7 @@ def Symop2mat(DriverType = None):
                 if 'The matrix' in line:
                     for k in range(3):
                         for token in output[j + k + 1].split():
-                            matrix.append(int(float(token)))
+                            matrix.append(float(token))
                     
             return matrix
 

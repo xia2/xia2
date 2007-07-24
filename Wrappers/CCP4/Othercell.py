@@ -77,7 +77,7 @@ def Othercell(DriverType = None):
 
             # results storage
 
-            self._spacegroups = []
+            self._lattices = []
             self._distortions = { }
             self._cells = { }
             self._reindex_ops = { } 
@@ -136,10 +136,10 @@ def Othercell(DriverType = None):
                 
                 cell = tuple(map(float, o[11:45].split()))
                 distortion = float(o.split()[-2])
-                operator = o.split()[-1]
+                operator = o.split()[-1][1:-1]
 
-                if not lattice in self._spacegroups:
-                    self._spacegroups.append(lattice)
+                if not lattice in self._lattices:
+                    self._lattices.append(lattice)
                     self._distortions[lattice] = distortion
                     self._cells[lattice] = cell
                     self._reindex_ops[lattice] = operator
@@ -150,13 +150,14 @@ def Othercell(DriverType = None):
                     self._cells[lattice] = cell
                     self._reindex_ops[lattice] = operator
                     
-                       
-            for lattice in self._spacegroups:
-                cell = self._cells[lattice]
-                print '%2s %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-                      (lattice,
-                       cell[0], cell[1], cell[2],
-                       cell[3], cell[4], cell[5])         
+        def get_lattices(self):
+            return self._lattices
+
+        def get_cell(self, lattice):
+            return self._cells[lattice]
+
+        def get_reindex_op(self, lattice):
+            return self._reindex_ops[lattice]
 
             
     return OthercellWrapper()
@@ -170,4 +171,6 @@ if __name__ == '__main__':
 
     o.generate()
 
+    print o.get_cell('aP')
+    print o.get_reindex_op('aP')
                 

@@ -26,10 +26,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
-# jiffy program wrapper to manage the symmetry operators
-from Wrappers.XIA.Symop2mat import Symop2mat
-
-# othercell to handle the other cell parameter calculations
+from Experts.SymmetryExpert import symop_to_mat
 from Wrappers.CCP4.Othercell import Othercell
 
 # jiffies to convert matrix format (messy)
@@ -89,10 +86,10 @@ def matmul(b, a):
 
 # things specific to mosflm matrix files...
 
-def parse_matrix(matrix_file):
+def parse_matrix(matrix_text):
     '''Parse a matrix returning cell, a and u matrix.'''
 
-    tokens = map(float, open(matrix_file, 'r').read().split())
+    tokens = map(float, matrix_text.split())
 
     cell = tokens[21:27]
     a = tokens[0:9]
@@ -100,32 +97,51 @@ def parse_matrix(matrix_file):
 
     return cell, a, u
 
-def print_matrix(cell, a, u):
+def format_matrix(cell, a, u):
     matrix_format = ' %11.8f %11.8f %11.8f\n' + \
                     ' %11.8f %11.8f %11.8f\n' + \
-                    ' %11.8f %11.8f %11.8f'
+                    ' %11.8f %11.8f %11.8f\n'
     
-    cell_format = ' %11.4f %11.4f %11.4f %11.4f %11.4f %11.4f'
+    cell_format = ' %11.4f %11.4f %11.4f %11.4f %11.4f %11.4f\n'
     
-    misset = '       0.000       0.000       0.000'
+    misset = '       0.000       0.000       0.000\n'
 
-    print matrix_format % tuple(a)
-    print misset
-    print matrix_format % tuple(u)
-    print cell_format % tuple(cell)
-    print misset
+    return matrix_format % tuple(a) + misset + matrix_format % tuple(u) + \
+           cell_format % tuple(cell) + misset
 
-if __name__ == '__main__':
-    cell, a, u = parse_matrix('test')
+def transmogrify_matrix(lattice, matrix, target_lattice):
+    '''Transmogrify a matrix for lattice X into a matrix for lattice
+    Y. This should work find for Mosflm... Will also return the new
+    unit cell.'''
 
-    cell = [44.1, 52.6, 117.0, 103.0, 100.4, 90.0]
+    cell, a, u = parse_matrix(matrix)
 
-    op = [0.0, 0.0, -1.0,
-          0.0, -1.0, 0.0,   
-          -0.5, 0.5, 0.0]
+    o = Othercell()
+    o.set_cell(cell)
+    o.set_lattice(lattice[1].lower())
+    o.generate()
+
+    new_cell = o.get_cell(target_lattice)
+    op = symop_to_mat(o.get_reindex_op(target_lattice))
 
     a = matmul(invert(op), a)
     u = matmul(op, u)
 
-    print_matrix(cell, a, u)
+    return format_matrix(new_cell, a, u)
+    
+
+
+if __name__ == '__main__':
+
+    matrix = ''' -0.00417059 -0.00089426 -0.01139821
+ -0.00084328 -0.01388561  0.01379631
+ -0.00121258  0.01273236  0.01424531
+      -0.099       0.451      -0.013
+ -0.94263428 -0.04741397 -0.33044314
+ -0.19059871 -0.73622239  0.64934635
+ -0.27406719  0.67507666  0.68495023
+    228.0796     52.5895     44.1177     90.0000    100.6078     90.0000
+     -0.0985      0.4512     -0.0134'''
+
+    print transmogrify_matrix('mC', matrix, 'aP')
     
