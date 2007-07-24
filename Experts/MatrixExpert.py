@@ -89,7 +89,14 @@ def matmul(b, a):
 def parse_matrix(matrix_text):
     '''Parse a matrix returning cell, a and u matrix.'''
 
-    tokens = map(float, matrix_text.split())
+    # this will need to be able to cope with the times
+    # when the matrix includes columns merging together
+    # (which sucks)
+
+    # therefore parse this manually... or just add
+    # a space before all '-'
+
+    tokens = map(float, matrix_text.replace('-', ' -').split())
 
     cell = tokens[21:27]
     a = tokens[0:9]
