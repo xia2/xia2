@@ -119,6 +119,8 @@ def Othercell(DriverType = None):
                     continue
                 if 'Other cell' in o:
                     continue
+                if 'within angular tolerance' in o:
+                    continue
                 
                 lauegroup = o[:11].strip()
                 if not lauegroup:
