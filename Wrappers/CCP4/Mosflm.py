@@ -729,17 +729,15 @@ def Mosflm(DriverType = None):
             if rms_deviations and rms_deviations_p1:
                 Debug.write('Cell refinement comparison:')
                 Debug.write('Image   correct   triclinic')
-                mean = 0.0
-                mean_p1 = 0.0
+                ratio = 0.0
                 for j in range(len(images)):
-                    Debug.write('. %4d   %.2f   %.2f' % \
+                    Debug.write('. %4d   %.2f     %.2f' % \
                                 (images[j], rms_deviations[j],
                                  rms_deviations_p1[j]))
 
-                    mean += rms_deviations[j]
-                    mean_p1 += rms_deviations_p1[j]
+                    ratio += rms_deviations[j] / rms_deviations_p1[j]
 
-                Debug.write('Average ratio: %.2f' % (mean / mean_p1))
+                Debug.write('Average ratio: %.2f' % (ratio / len(images))
 
             else:
                 Debug.write('Cell refinement in P1 failed...')
