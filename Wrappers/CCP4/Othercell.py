@@ -171,6 +171,8 @@ if __name__ == '__main__':
 
     o.generate()
 
-    print o.get_cell('aP')
-    print o.get_reindex_op('aP')
+    # need to add some checks in here that everything went fine...
+
+    o.get_cell('aP')
+    o.get_reindex_op('aP')
                 
