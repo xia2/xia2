@@ -709,6 +709,11 @@ def Mosflm(DriverType = None):
             auto_logfiler(self)
             rms_deviations = self._mosflm_refine_cell()
 
+            if not self.get_integrater_prepare_done():
+                # cell refinement failed so no point getting the
+                # results of refinement in P1...
+                return
+
             # next test the cell refinement with the correct lattice
             # and P1 and see how the numbers stack up...
 
