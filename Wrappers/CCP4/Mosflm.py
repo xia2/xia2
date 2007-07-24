@@ -814,6 +814,699 @@ def Mosflm(DriverType = None):
             self._intgr_hklout = hklout
             return hklout
 
+
+
+
+        def _mosflm_test_refine_cell(self, set_spacegroup = None):
+            '''Perform the refinement of the unit cell. This will populate
+            all of the information needed to perform the integration.'''
+
+            # note well that this will need the unit cell to be
+            # transformed from a centred to a primitive lattice, perhaps.
+            # yes that is definately the case - the matrix will also
+            # need to be transformed :o(
+
+            # this version will not actually *change* anything in the class.
+
+            # assert that this is called after the initial call to
+            # cell refinement in the correct PG so a lot of this can
+            # be ignored...
+
+            indxr = self.get_integrater_indexer()
+
+            lattice = indxr.get_indexer_lattice()
+            mosaic = indxr.get_indexer_mosaic()
+            cell = indxr.get_indexer_cell()
+            beam = indxr.get_indexer_beam()
+            distance = indxr.get_indexer_distance()
+            matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
+
+            integration_params = indxr.get_indexer_payload(
+                'mosflm_integration_parameters')
+
+            if integration_params:
+                # copy them somewhere useful... into the dictionary?
+                # yes - that way they can be recycled...
+                # after that, zap them because they will be obsolete!
+                if integration_params.has_key('separation'):
+                    self.set_integrater_parameter(
+                        'mosflm', 'separation',
+                        '%f %f' % tuple(integration_params['separation']))
+                if integration_params.has_key('raster'):
+                    self.set_integrater_parameter(
+                        'mosflm', 'raster',
+                        '%d %d %d %d %d' % tuple(integration_params['raster']))
+                    
+            indxr.set_indexer_payload('mosflm_integration_params', None)
+
+            # copy these into myself for later reference, if indexer
+            # is not myself - everything else is copied via the
+            # cell refinement process...
+
+            if indxr != self:
+                self.set_indexer_input_lattice(lattice)
+                self.set_indexer_beam(beam)
+
+
+            # here need to check the LATTICE - which will be
+            # something like tP etc. FIXME how to cope when the
+            # spacegroup has been explicitly stated?
+
+            spacegroup_number = lattice_to_spacegroup(lattice)
+
+	    # FIXME 11/SEP/06 have an example set of data which will
+            #                 make cell refinement "fail" - that is
+            #                 not work very well - 9485/3[1VPX]. Therefore
+	    #                 allow for more image wedges, read output.
+            # 
+            # What we are looking for in the output is:
+            # 
+            # INACCURATE CELL PARAMETERS
+            #
+            # followed by the dodgy cell parameters, along with the 
+            # associated standard errors. Based on these need to decide 
+            # what extra data would be helpful. Will also want to record
+            # these standard deviations to decide if the next run of 
+            # cell refinement makes things better... Turns out that this
+            # example is very low resolution, so don't worry too hard
+            # about it!
+
+            if spacegroup_number >= 75:
+                num_wedges = 1
+            else:
+                num_wedges = 2
+
+            # FIXME 23/OCT/06 should only do this if the images are not
+            # already assigned - for instance, in the case where the cell
+            # refinement fails and more images are added after that failure
+            # need to be able to cope with not changing them at this stage...
+
+            # self._mosflm_cell_ref_images = None
+
+            if not self._mosflm_cell_ref_images:
+                self._mosflm_cell_ref_images = self._refine_select_images(
+                    num_wedges, mosaic)
+
+            # write the matrix file in xiaindex.mat
+
+            f = open(os.path.join(self.get_working_directory(),
+                                  'xiaindex-%s.mat' % lattice), 'w')
+            for m in matrix:
+                f.write(m)
+            f.close()
+
+            # then start the cell refinement
+
+            task = 'Refine cell from %d wedges' % \
+                   len(self._mosflm_cell_ref_images)
+
+            self.set_task(task)
+
+            self.start()
+
+            if self._mosflm_gain:
+                self.input('gain %5.2f' % self._mosflm_gain)
+
+            self.input('template "%s"' % self.get_template())
+            self.input('directory "%s"' % self.get_directory())
+
+            self.input('matrix xiaindex-%s.mat' % lattice)
+            self.input('newmat xiarefine.mat')
+
+            self.input('beam %f %f' % beam)
+            self.input('distance %f' % distance)
+
+            # FIXED is this the correct form? - it is now.
+
+            # want to be able to test cell refinement in P1
+            # as a way of investigating how solid the autoindex
+            # solution is... therefore allow spacegroup to
+            # be explicitly set...
+            
+            if set_spacegroup:
+                self.input('symmetry %s' % set_spacegroup)
+            else:
+                self.input('symmetry %s' % spacegroup_number)
+                
+            self.input('mosaic %f' % mosaic)
+
+            # note well that the beam centre is coming from indexing so
+            # should be already properly handled
+            if self.get_wavelength_prov() == 'user':
+                self.input('wavelength %f' % self.get_wavelength())
+
+            # get all of the stored parameter values
+            parameters = self.get_integrater_parameters('mosflm')
+
+            # FIXME 27/SEP/06:
+            # have to make sure that these are correctly applied -
+            # that is, be sure that these come actually from autoindexing
+            # not somehow from a previous instance of data integration...
+            
+            self.input('!parameters from autoindex run')
+            for p in parameters.keys():
+                self.input('%s %s' % (p, str(parameters[p])))
+
+            # fudge factors to prevent Mosflm from being too fussy
+            self.input('refinement residual 10.0')
+
+            # set up the cell refinement - allowing quite a lot of
+            # refinement for tricky cases (e.g. 7.2 SRS insulin SAD
+            # data collected on MAR IP)
+            self.input('postref multi segments %d repeat 10' % \
+                       len(self._mosflm_cell_ref_images))
+            for cri in self._mosflm_cell_ref_images:
+                self.input('process %d %d' % cri)
+                self.input('go')
+
+            # that should be everything 
+            self.close_wait()
+
+            # get the log file
+            output = self.get_all_output()
+
+            # then look to see if the cell refinement worked ok - if it
+            # didn't then this may indicate that the lattice was wrongly
+            # selected.
+
+            cell_refinement_ok = False
+
+            for o in output:
+                if 'Cell refinement is complete' in o:
+                    cell_refinement_ok = True
+
+            if not cell_refinement_ok:
+                Chatter.write(
+                    'Looks like cell refinement failed - more follows...')
+
+            # how best to handle this, I don't know... could
+            #
+            # (1) raise an exception
+            # (2) try to figure out the solution myself
+            #
+            # probably (1) is better, because this will allow the higher
+            # level of intelligence to sort it out. don't worry too hard
+            # about this in the initial version, since labelit indexing
+            # is pretty damn robust.
+
+            # if it succeeded then populate the indexer output (myself)
+            # with the new information - this can then be used
+            # transparently in the integration.
+
+            # here I need to get the refined distance, mosaic spread, unit
+            # cell and matrix - should also look the yscale and so on, as
+            # well as the final rms deviation in phi and distance
+
+            # FIRST look for errors, and analysis stuff which may be
+            # important...
+
+            rmsd_range = None
+
+            for i in range(len(output)):
+                o = output[i]
+
+                # FIXME 01/NOV/06 dump this stuff from the top (error trapping)
+                # into a trap_cell_refinement_errors method which is called
+                # before the rest of the output is parsed...
+
+                # look for overall cell refinement failure
+                if 'Processing will be aborted' in o:
+
+                    # perhaps try this with more images?
+                    
+                    if len(self._mosflm_cell_ref_images) <= 3:
+                        # set this up to be more images
+                        new_cell_ref_images = self._refine_select_images(
+                            len(self._mosflm_cell_ref_images) + 1,
+                            mosaic)
+                        self._mosflm_cell_ref_images = new_cell_ref_images
+
+                        self.set_integrater_prepare_done(False)
+
+                        Science.write(
+                            'Repeating cell refinement with more data.')
+
+                        return
+                    else:
+                        raise BadLatticeError, 'cell refinement failed'
+                
+                # look to store the rms deviations on a per-image basis
+                # this may be used to decide what to do about "inaccurate
+                # cell parameters" below... may also want to record
+                # them for comparison with cell refinement with a lower
+                # spacegroup for solution elimination purposes...
+
+                if 'Rms positional error (mm) as a function of' in o and False:
+                    images = map(int, output[i + 1].split()[1:])
+                    rms_values = { }
+                    rms_values_last = []
+                    j = i + 2
+                    while output[j].split():
+                        # this does horrid things if 10 or more cycles...
+                        # or if there are two many images to it is
+                        # wrapped over multiple lines (bug 2172.)
+                        cycle = int(output[j].replace('Cycle', '').split()[0])
+                        record = [output[j][k:k + 6] \
+                                  for k in range(11, len(output[j]), 6)]
+
+                        data = []
+                        for r in record:
+                            if r.strip():
+                                data.append(r.strip())
+                        record = data
+
+                        try:
+                            rms_values[cycle] = map(float,
+                                                    record)
+                            rms_values_last = map(float,
+                                                  record)
+                        except ValueError, e:
+                            Chatter.write(
+                                'Error parsing %s as floats' % \
+                                output[j][12:])
+                            
+                        j += 1
+                        
+                    # by now we should have recorded everything so...print!
+                    # Chatter.write('Final RMS deviations per image')
+                    # for j in range(len(images)):
+                    # Chatter.write('- %4d %5.3f' % (images[j],
+                    # rms_values_last[j]))
+
+                    if rms_values_last:
+                        rmsd_range = max(rms_values_last), min(rms_values_last)
+                    else:
+                        # there must have been a bigger problem than this!
+                        rmsd_range = 1.0, 1.0
+
+                # new implementation...
+
+                if 'Rms positional error (mm) as a function of' in o and True:
+                    images = []
+                    cycles = []
+                    rms_values = { }
+
+                    j = i + 1
+
+                    while output[j].split():
+                        if 'Image' in output[j]:
+                            for image in map(int, output[j].replace(
+                                'Image', '').split()):
+                                images.append(image)
+                        else:
+                            cycle = int(output[j].replace(
+                                'Cycle', '').split()[0])
+                            
+                            if not cycle in cycles:
+                                cycles.append(cycle)
+                                rms_values[cycle] = []
+                            
+                            record = [output[j][k:k + 6] \
+                                      for k in range(
+                                11, len(output[j]), 6)]
+
+                            data = []
+                            for r in record:
+                                if r.strip():
+                                    data.append(r.strip())
+                                record = data
+                                    
+                            try:
+                                values = map(float, record)
+                                for v in values:
+                                    rms_values[cycle].append(v)
+                            except ValueError, e:
+                                Chatter.write(
+                                    'Error parsing %s as floats' % \
+                                    output[j][12:])
+                            
+                        j += 1
+                        
+                    # by now we should have recorded everything so...print!
+                    # Chatter.write('Final RMS deviations per image')
+                    # for j in range(len(images)):
+                    # Chatter.write('- %4d %5.3f' % (images[j],
+                    # rms_values_last[j]))
+                    
+                    if cycles:
+                        rms_values_last = rms_values[max(cycles)]
+                    else:
+                        rms_values_last = None
+
+                    if rms_values_last:
+                        rmsd_range = max(rms_values_last), min(rms_values_last)
+                    else:
+                        # there must have been a bigger problem than this!
+                        rmsd_range = 1.0, 1.0
+
+                # look for "error" type problems
+
+                if 'is greater than the maximum allowed' in o and \
+                       'FINAL weighted residual' in o:
+                   
+                    # the weighted residual is too high - this suggests
+                    # a poor indexing solution - jump out and redo
+                    
+                    Science.write('Large weighted residual...')
+                    
+                    if len(self._mosflm_cell_ref_images) < 3:
+                        # set this up to be more images
+                        new_cell_ref_images = self._refine_select_images(
+                            len(self._mosflm_cell_ref_images) + 1,
+                            mosaic)
+                        self._mosflm_cell_ref_images = new_cell_ref_images
+                        
+                        # set a flag to say cell refinement needs rerunning
+                        # c/f Integrator.py
+                        self.set_integrater_prepare_done(False)
+                        
+                        # tell the user what is going on
+
+                        Science.write(
+                            'Repeating cell refinement with more data.')
+
+                        # don't update the indexer - the results could be
+                        # wrong!
+                        
+                        return
+                    
+                    else:
+                        Science.write(
+                            'Integration will be aborted because of this.')
+                        
+                        raise BadLatticeError, 'cell refinement failed: ' + \
+                              'inaccurate cell parameters'
+                    
+                if 'INACCURATE CELL PARAMETERS' in o:
+                    
+                    # get the inaccurate cell parameters in question
+                    parameters = output[i + 3].lower().split()
+
+                    # and the standard deviations - so we can decide
+                    # if it really has failed
+
+                    sd_record = output[i + 5].replace(
+                        'A', ' ').replace(',', ' ').split()
+                    sds = map(float, [sd_record[j] for j in range(1, 12, 2)])
+
+                    Science.write('Standard deviations:')
+                    Science.write('A     %4.2f  B     %4.2f  C     %4.2f' % \
+                                  (tuple(sds[:3])))
+                    Science.write('Alpha %4.2f  Beta  %4.2f  Gamma %4.2f' % \
+                                  (tuple(sds[3:6])))
+                                  
+                    # FIXME 01/NOV/06 this needs to be toned down a little -
+                    # perhaps looking at the relative error in the cell
+                    # parameter, or a weighted "error" of the two combined,
+                    # because this may give rise to an error: TS01 NATIVE LR
+                    # failed in integration with this, because the error
+                    # in a was > 0.1A in 228. Assert perhaps that the error
+                    # should be less than 1.0e-3 * cell axis and less than
+                    # 0.15A?
+
+                    # inspect rmsd_range
+
+                    if rmsd_range is None:
+                        raise RuntimeError, 'no rms deviation information'
+
+                    # interested if max > 2 * min... 2 - 1 / (2 + 1)= 1 / 3
+
+                    large_rmsd_range = False
+
+                    if ((rmsd_range[0] - rmsd_range[1]) /
+                        (rmsd_range[0] + rmsd_range[1])) > 0.3333:
+                        large_rmsd_range = True
+                        Science.write(
+                            'Large range in RMSD variation per image')
+
+                    # and warn about them
+                    Science.write(
+                        'In cell refinement, the following cell parameters')
+                    Science.write(
+                        'have refined poorly:')
+                    for p in parameters:
+                        Science.write('... %s' % p)
+
+                    # decide what to do about this...
+                    # if this is all cell parameters, abort, else
+		    # consider using more data...
+
+                    # see how many wedges we are using - if it's 3 already
+                    # then there is probably something more important
+                    # wrong. If it is fewer than this then try again!
+
+                    if len(self._mosflm_cell_ref_images) < 3:
+                        # set this up to be more images
+                        new_cell_ref_images = self._refine_select_images(
+                            len(self._mosflm_cell_ref_images) + 1,
+                            mosaic)
+                        self._mosflm_cell_ref_images = new_cell_ref_images
+
+                        # set a flag to say cell refinement needs rerunning
+                        # c/f Integrator.py
+                        self.set_integrater_prepare_done(False)
+
+                        # tell the user what is going on
+
+                        Science.write(
+                            'Repeating cell refinement with more data.')
+
+                        # don't update the indexer - the results could be
+                        # wrong!
+
+                        return
+
+                    else:
+                        if large_rmsd_range:
+
+                            Science.write(
+                                'Integration will be aborted because of this.')
+                        
+                            raise BadLatticeError, 'cell refinement failed: ' + \
+                                  'inaccurate cell parameters'
+                        
+                        Science.write(
+                            'However, will continue to integration.')
+                        
+
+		if 'One or more cell parameters has changed by more' in o:
+                    # this is a more severe example of the above problem...
+                    Science.write(
+                        'Cell refinement is unstable...')
+
+                    # so decide what to do about it...
+
+                    if len(self._mosflm_cell_ref_images) <= 3:
+                        # set this up to be more images
+                        new_cell_ref_images = self._refine_select_images(
+                            len(self._mosflm_cell_ref_images) + 1,
+                            mosaic)
+                        self._mosflm_cell_ref_images = new_cell_ref_images
+
+                        self.set_integrater_prepare_done(False)
+
+                        Science.write(
+                            'Repeating cell refinement with more data.')
+
+                        return
+
+                    else:
+
+                        Science.write(
+                            'Integration will be aborted because of this.')
+                        
+                        raise BadLatticeError, 'cell refinement failed: ' + \
+                              'unstable cell refinement'
+
+                # other possible problems in the cell refinement - a
+                # negative mosaic spread, for instance
+
+                if 'Refined mosaic spread (excluding safety factor)' in o:
+                    mosaic = float(o.split()[-1])
+                    if mosaic < 0.0:
+                        Science.write('Negative mosaic spread (%5.2f)' %
+                                      mosaic)
+
+                        if len(self._mosflm_cell_ref_images) <= 3:
+                            # set this up to be more images
+                            new_cell_ref_images = self._refine_select_images(
+                                len(self._mosflm_cell_ref_images) + 1,
+                                mosaic)
+                            self._mosflm_cell_ref_images = new_cell_ref_images
+                            
+                            self.set_integrater_prepare_done(False)
+                            
+                            Science.write(
+                                'Repeating cell refinement with more data.')
+
+                            return
+
+                        else:
+
+                            Science.write(
+                                'Integration will be aborted because of this.')
+                        
+                            raise BadLatticeError, 'cell refinement failed: ' + \
+                                  'negative mosaic spread'
+                        
+            # look generally at the RMS deviation range - is this is
+            # large then there may be something properly wrong...
+            # switch this off for a moment as it may be more appropriate
+            # for this test to look at the results from integration...
+            
+            if rmsd_range and False:
+                
+                if ((rmsd_range[0] - rmsd_range[1]) /
+                    (rmsd_range[0] + rmsd_range[1])) > 0.3333:
+                    Science.write(
+                        'Large range in RMSD variation per image')
+                    
+                    if len(self._mosflm_cell_ref_images) <= 3:
+                        # set this up to be more images
+                        new_cell_ref_images = self._refine_select_images(
+                            len(self._mosflm_cell_ref_images) + 1,
+                            mosaic)
+                        self._mosflm_cell_ref_images = new_cell_ref_images
+                        
+                        self.set_integrater_prepare_done(False)
+                        
+                        Science.write(
+                            'Repeating cell refinement with more data.')
+                        
+                        return
+
+                    else:
+                        
+                        Science.write(
+                            'Integration will be aborted because of this.')
+                        
+                        raise BadLatticeError, 'cell refinement failed: ' + \
+                              'negative mosaic spread'
+                    
+            # AFTER that, read the refined parameters
+            
+            for i in range(len(output)):
+                o = output[i]
+
+                # FIXED for all of these which follow - the refined values
+                # for these parameters should only be stored if the cell
+                # refinement were 100% successful - therefore gather
+                # them up here and store them at the very end (e.g. once
+                # success has been confirmed.) 01/NOV/06
+
+                # FIXME will these get lost if the indexer in question is
+                # not this program...? Find out... would be nice to write
+                # this to Chatter too...
+                
+                if 'Refined cell' in o:
+                    # feed these back to the indexer
+                    indxr._indxr_cell = tuple(map(float, o.split()[-6:]))
+
+                    # record the refined cell parameters for getting later
+                    self._intgr_cell = tuple(map(float, o.split()[-6:]))
+                    
+                # FIXME do I need this? I think that the refined distance
+                # is passed in as an integration parameter (see below)
+                if 'Detector distance as a' in o:
+                    # look through the "cycles" to get the final refined
+                    # distance
+                    j = i + 1
+                    while output[j].strip() != '':
+                        j += 1
+                    distances = map(float, output[j - 1].split()[2:])
+                    distance = 0.0
+                    for d in distances:
+                        distance += d
+                    distance /= len(distances)
+                    indxr._indxr_refined_distance = distance
+
+                if 'YSCALE as a function' in o:
+                    # look through the "cycles" to get the final refined
+                    # yscale value
+                    j = i + 1
+                    while output[j].strip() != '':
+                        j += 1
+                    yscales = map(float, output[j - 1].split()[2:])
+                    yscale = 0.0
+                    for y in yscales:
+                        yscale += y
+                    yscale /= len(yscales)
+
+                    self.set_integrater_parameter('mosflm',
+                                                  'distortion yscale',
+                                                  yscale)
+
+                # next look for the distortion & raster parameters
+                # see FIXME at the top of this file from 16/AUG/06
+
+                if 'Final optimised raster parameters:' in o:
+                    self.set_integrater_parameter('mosflm',
+                                                  'raster',
+                                                  o.split(':')[1].strip())
+
+                if 'Separation parameters updated to' in o:
+                    tokens = o.replace('mm', ' ').split()
+                    self.set_integrater_parameter('mosflm',
+                                                  'separation',
+                                                  '%s %s' % \
+                                                  (tokens[4], tokens[8]))
+                    
+                if 'XCEN    YCEN  XTOFRA' in o:
+                    numbers = output[i + 1].split()
+
+                    # this should probably be done via the FrameProcessor
+                    # interface...
+                    self.set_integrater_parameter('mosflm',
+                                                  'beam',
+                                                  '%s %s' % \
+                                                  (numbers[0], numbers[1]))
+
+                    # FIXME should this go through the FP interface?
+                    # this conflicts with the calculation above
+                    # of the average distance as well...
+                    self.set_integrater_parameter('mosflm',
+                                                  'distance',
+                                                  numbers[3])
+                    
+                    self.set_integrater_parameter('mosflm',
+                                                  'distortion tilt',
+                                                  numbers[5])
+                    self.set_integrater_parameter('mosflm',
+                                                  'distortion twist',
+                                                  numbers[6])
+
+                # FIXME does this work if this mosflm is not
+                # the one being used as an indexer? - probably not -
+                # I will need a getIndexer.setMosaic() or something...
+                if 'Refined mosaic spread' in o:
+                    indxr._indxr_mosaic = float(o.split()[-1])
+
+            # hack... FIXME (maybe?)
+            # self._indxr_done = True
+            self.set_indexer_done(True)
+            
+            # shouldn't need this.. remember that Python deals in pointers!
+            self.set_indexer_payload('mosflm_orientation_matrix', open(
+                os.path.join(self.get_working_directory(),
+                             'xiarefine.mat'), 'r').readlines())
+            indxr.set_indexer_payload('mosflm_orientation_matrix', open(
+                os.path.join(self.get_working_directory(),
+                             'xiarefine.mat'), 'r').readlines())
+
+            return 
+
+
+
+
+
+
+
+
+
+
+
+
+
         def _mosflm_refine_cell(self, set_spacegroup = None):
             '''Perform the refinement of the unit cell. This will populate
             all of the information needed to perform the integration.'''
