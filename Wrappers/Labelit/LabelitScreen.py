@@ -252,6 +252,10 @@ def LabelitScreen(DriverType = None):
                 self.add_indexer_image_wedge(int(45.0 / phi_width))
                 self.add_indexer_image_wedge(int(90.0 / phi_width))
             else:
+                middle = len(images) / 2
+                if len(images) >= 3:
+                    Debug.write('Selected image %s' % images[middle])
+                    self.add_indexer_image_wedge(images[middle])
                 Debug.write('Selected image %s' % images[-1])
                 self.add_indexer_image_wedge(images[-1])
 
