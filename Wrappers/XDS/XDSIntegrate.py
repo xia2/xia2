@@ -44,10 +44,6 @@ from XDSIntegrateHelpers import _parse_integrate_lp, \
 from Handlers.Flags import Flags
 from Handlers.Streams import Chatter, Debug
 
-# exceptions
-
-from Schema.Exceptions.BadLatticeError import BadLatticeError
-
 def XDSIntegrate(DriverType = None):
 
     DriverInstance = DriverFactory.Driver(DriverType)
@@ -373,24 +369,6 @@ def XDSIntegrate(DriverType = None):
 
                 Chatter.write('Maximum relative deviation in cell: %.3f' % \
                               max_rel_dev)                
-
-                # change - make this only a problem if not triclinic.
-
-                if (high - low) / (0.5 * (high + low)) > 0.5 and \
-                       space_group_number > 1 and False:
-                    # there was a very large variation in deviation
-                    # FIXME 08/JAN/07 this should raise a BadLatticeException
-
-                    # FIXME 26/MAY/07 this should also look for large
-                    # variations in the unit cell parameters...
-                    # need to have both to distinguish TS01 NAT and TS02.
-                    # This doesn't really help...
-
-                    # 23/JUL/07 no longer use this as a metric -
-                    # use the results of postrefinement...
-                
-                    raise BadLatticeError, \
-                          'very large variation in pixel deviation'
 
             except KeyError, e:
                 Chatter.write('Refinement not performed...')
