@@ -216,7 +216,10 @@ def LabelitScreen(DriverType = None):
                 if 'InputFileError' in o:
                     raise RuntimeError, 'indexing failed: %s' % \
                           o.split(':')[-1].strip()
-
+                if 'INDEXING UNRELIABLE' in o:
+                    raise RuntimeError, 'indexing failed: %s' % \
+                          o.split(':')[-1].strip()
+                    
             return
 
         def _index_prepare(self):
