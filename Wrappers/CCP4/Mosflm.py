@@ -738,7 +738,7 @@ def Mosflm(DriverType = None):
 
                 Debug.write('Average ratio: %.2f' % (ratio / len(images)))
 
-                if (ratio / len(images)) > 2.0:
+                if (ratio / len(images)) > 1.5:
                     raise BadLatticeError, 'incorrect lattice constraints'
 
             else:
