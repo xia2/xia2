@@ -127,7 +127,6 @@ from lib.Guff import inherits_from
 from Handlers.Streams import Chatter, Debug
 
 from Schema.Exceptions.BadLatticeError import BadLatticeError
-from Schema.Exceptions.IntegrationError import IntegrationError
 
 # image header reading functionality
 from Wrappers.XIA.Diffdump import Diffdump
@@ -499,15 +498,8 @@ class Integrater:
                         self._intgr_indexer.eliminate()
                         self.set_integrater_prepare_done(False)
 
-                    except IntegrationError, e:
-                        Chatter.write('Integration! %s' % str(e))
-                        self._intgr_indexer.eliminate()
-                        self.set_integrater_prepare_done(False)
-                    
-
                 Chatter.write('Doing some integration...')
             
-
                 self.set_integrater_done(True)
 
                 try:
