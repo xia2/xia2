@@ -235,7 +235,6 @@ from Experts.MatrixExpert import transmogrify_matrix
 # exceptions
 
 from Schema.Exceptions.BadLatticeError import BadLatticeError
-from Schema.Exceptions.IntegrationError import IntegrationError
 from Schema.Exceptions.IndexingError import IndexingError
 
 # other classes which are necessary to implement the integrater
@@ -364,7 +363,7 @@ def Mosflm(DriverType = None):
                 # allow a rerun later on, perhaps? c/f integrating TS01
                 # where this failure is an indication that lattice != oI
                 self._mosflm_cell_ref_images = None
-                raise IntegrationError, 'cannot cope with more than 3 wedges'
+                raise RuntimeError, 'cannot cope with more than 3 wedges'
 
             phi_width = self.get_header_item('phi_width')
 
@@ -738,6 +737,9 @@ def Mosflm(DriverType = None):
                     ratio += rms_deviations[j] / rms_deviations_p1[j]
 
                 Debug.write('Average ratio: %.2f' % (ratio / len(images)))
+
+                if (ratio / len(images)) > 2.0:
+                    raise BadLatticeError, 'incorrect lattice constraints'
 
             else:
                 Debug.write('Cell refinement in P1 failed...')
