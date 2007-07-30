@@ -1454,7 +1454,7 @@ def Mosflm(DriverType = None):
                         Science.write('Negative mosaic spread (%5.2f)' %
                                       mosaic)
 
-                        if len(self._mosflm_cell_ref_images) <= 3:
+                        if len(self._mosflm_cell_ref_images) < 3:
                             # set this up to be more images
                             new_cell_ref_images = self._refine_select_images(
                                 len(self._mosflm_cell_ref_images) + 1,
