@@ -339,8 +339,7 @@ def Pointless(DriverType = None):
                         # hklref_pointgroup)
 
                 if hklref_pointgroup == '':
-                    # should raise an exception here
-                    pass
+                    raise RuntimeError, 'error finding HKLREF pointgroup'
 
                 self._pointgroup = hklref_pointgroup
 
@@ -353,26 +352,6 @@ def Pointless(DriverType = None):
                     'ReindexMatrix')[0].childNodes[0].data.split())
                 self._reindex_operator = index.getElementsByTagName(
                     'ReindexOperator')[0].childNodes[0].data.strip()
-
-            # while we're here also inspect the NetZc information (see
-            # FIXME for 23/OCT/06) to make sure that pointless has made
-            # a sensible decision.
-
-            # if it looks like it has not, then the best thing to do
-            # is to select the "correct" Laue group (by my estimation)
-            # and then feed this into pointless through the e.g.
-            # "lauegroup P4/mmm" input record. Have also reported this
-            # to Phil Evans as a bug.
-
-            best_netzc = 0.0
-            best_likelihood = 0.0
-            best_laue = ''
-            best_r = 0.0
-            best_delta = 0.0
-
-            # do not want to do this is we have specified the correct
-            # pointgroup either through the command input or implicitly
-            # through providing a reference set..
             
             if not self._input_laue_group and not self._hklref:
 
@@ -383,11 +362,6 @@ def Pointless(DriverType = None):
                 netzcs = { }
                 likelihoods = { }
                 
-                correct_netzc = 0.0
-                correct_laue = ''
-                correct_r = 0.0
-                correct_delta = 0.0
-
                 for s in scores:
                     number = int(s.getElementsByTagName(
                         'number')[0].childNodes[0].data)
@@ -405,158 +379,14 @@ def Pointless(DriverType = None):
                         'CellDelta')[0].childNodes[0].data)
 
                     # record this as a possible lattice... if it's Z score
-                    # is positive, anyway - no, in fact if it is
-                    # "reasonably likely" e.g. within 0.15 of the most
-                    # likely...
+                    # is positive, anyway
 
                     lattice = lauegroup_to_lattice(lauegroup)
                     if not lattice in self._possible_lattices:
-                        # this is out of date - the likelihood is no
-                        # longer really reliable...
-                        # if math.fabs(likelihood -
-                        # self._totalprob) < 1.0:
                         if netzc > 0.0:
                             self._possible_lattices.append(lattice)
                             self._lattice_to_laue[lattice] = lauegroup
                     
-                    # check to see if this is the "correct" answer - if it
-                    # is (and it should be the first!) then record the NetZc
-                    
-                    if number == 1:
-                        if math.fabs(likelihood -
-                                     self._totalprob) < 0.001 and \
-                                     reindex == self._reindex_operator:
-
-                            correct_netzc = netzc
-                            correct_laue = lauegroup
-                            correct_r = r_merge
-                            correct_delta = delta
-
-                        else:
-                            raise RuntimeError, 'something horribly wrong'
-
-                        if lattice == hklin_lattice:
-                            bias = True
-                        else:
-                            bias = False
-
-                        # Chatter.write(
-                        # 'Reference:   %5.2f %s %4.2f %4.2f'  % \
-                        # (netzc, lattice, r_merge, delta))
-
-                    else:
-                        # otherwise, have a look at the likelihood - if it is 
-                        # within 0.1 of the "correct" answer, have a look at
-                        # the NetZc and if it is much better then consider
-                        # that the other solution may indeed be correct.
-
-                        if lattice == hklin_lattice:
-                            bias = True
-                        else:
-                            bias = False
-
-                        # Chatter.write(
-                        # 'Alternative: %5.2f %s %4.2f %4.2f' % \
-                        # (netzc, lattice, r_merge, delta))
-                    
-                        if math.fabs(likelihood - self._totalprob) < 1:
-                            if netzc - correct_netzc > 1.0:
-                                # this is perhaps more likely?
-                                if netzc > best_netzc:
-                                    Science.write(
-                                        'Found likely solution with ' + \
-                                        'better Z score')
-                                      
-                                    best_netzc = netzc
-                                    best_laue = lauegroup
-                                    best_likelihood = likelihood
-                                    best_r = r_merge
-
-                        # also contemplate different solutions based on
-                        # the Rmerge - for instance (TS01 NATIVE) it may be
-                        # the case that the R merge is a factor of two
-                        # better for a pretty likely solution
-                        # use sqrt(3.0) as a "magic factor" ;o) - oh
-			# this doesn't work very well - use 1.5!
-
-                        # FIXME 08/NOV/06 will have to do better at this
-                        # - the R merge kills the correct solution (and it
-                        # is needed for TS01 NATIVE...) - have to look at
-                        # the cell delta as well - for TS03 LREM this is 0.0,
-                        # for TS01 NATIVE this is around 0.5... require delta
-                        # also measurable (e.g. not exactly 0.0)
-
-                        # if this is the same lattice as the input then
-                        # be biased towards it!
-
-                        # handle the occasional case where the Rmerge
-                        # is calculalated as zero (a bug in pointless,
-                        # where the identity operator is not considered)
-                        if r_merge == 0.0:
-                            continue
-
-                        if math.fabs(likelihood - self._totalprob) < 1:
-                            if (correct_r / r_merge > 1.5 or \
-                                bias and correct_r / r_merge > 1.25) \
-                                   and correct_delta > 0.1:
-                                if netzc > 0.0:
-                                    # this is perhaps more likely?
-                                    Science.write(
-                                        'Found likely solution with ' + \
-                                        'better Rmerge: %4.2f vs. %4.2f' % \
-                                        (r_merge, correct_r))
-                                    Science.write(
-                                        'and cell delta: %4.2f vs. %4.2f' % \
-                                        (delta, correct_delta))
-                                    
-                                    best_netzc = netzc
-                                    best_laue = lauegroup
-                                    best_likelihood = likelihood
-                                    best_r = r_merge
-                                    best_delta = delta
-                                    correct_delta = delta
-
-            if best_laue:
-                # the solution pointless gave is probably wrong!
-                Science.write(
-                    'I disagree with pointless over the correct solution')
-                Science.write(
-                    '%s [%4.2f] vs. %s [%4.2f]' % \
-                    (correct_laue, self._totalprob,
-                     best_laue, best_likelihood))
-                Science.write('NetZc: %5.2f vs. %5.2f' % \
-                              (correct_netzc, best_netzc))
-
-                # remember this!
-                self._input_laue_group = best_laue
-
-                Science.write(
-                    'Re-running with the correct pointgroup asserted')
-                return self.decide_pointgroup()
-
-            # this bit is to figure out the correct spacegroup to
-            # reindex into (see FIXME above for 11/AUG/06)
-            # see FIXME for 22/AUG this should no longer be needed
-            # since the systematic absence stuff is now switched off...
-
-            # spacegroups = []
-
-            # spags = dom.getElementsByTagName('SpacegroupList')[0]
-            
-            # work through these to compute the probable solution
-
-            # for s in spags.getElementsByTagName('Spacegroup'):
-            # name = s.getElementsByTagName(
-            # 'SpacegroupName')[0].childNodes[0].data.strip()
-            # reindex_op = s.getElementsByTagName(
-            # 'ReindexOperator')[0].childNodes[0].data.strip()
-
-            # if reindex_op == self._reindex_operator:
-            # break
-
-            # self._spacegroup = name
-
-
             return 'ok'
 
         def decide_spacegroup(self):
@@ -737,7 +567,7 @@ if __name__ == '__main__':
     p.set_hklin(hklin)
     p.write_log_file('pointless.log')
 
-    pointgroup = False
+    pointgroup = True
 
     if pointgroup:
         p.decide_pointgroup()
@@ -747,6 +577,18 @@ if __name__ == '__main__':
               '%4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f' % \
               tuple(p.get_reindex_matrix())
         print 'Confidence: %f' % p.get_confidence()
+
+        if False:
+
+            p.set_correct_lattice('mC')
+            p.decide_pointgroup()
+            
+            print 'Correct pointgroup: %s' % p.get_pointgroup()
+            print 'Reindexing matrix: ' + \
+                  '%4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f' % \
+                  tuple(p.get_reindex_matrix())
+            print 'Confidence: %f' % p.get_confidence()
+            
 
     else:
         p.decide_spacegroup()
