@@ -345,6 +345,11 @@ class XInfo:
 
                 # populate this with interesting things                
                 while not 'END SWEEP' in record:                
+                    # allow for WAVELENGTH_ID (bug # 2358)
+                    if 'WAVELENGTH_ID' == record.split()[0]:
+                        record = record.replace('WAVELENGTH_ID',
+                                                'WAVELENGTH')
+
                     if 'WAVELENGTH' == record.split()[0]:
                         wavelength = record.replace('WAVELENGTH', '').strip()
                         if not wavelength in self._crystals[crystal][
