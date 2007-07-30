@@ -1385,16 +1385,6 @@ def Mosflm(DriverType = None):
                     if rmsd_range is None:
                         raise RuntimeError, 'no rms deviation information'
 
-                    # interested if max > 2 * min... 2 - 1 / (2 + 1)= 1 / 3
-
-                    large_rmsd_range = False
-
-                    if ((rmsd_range[0] - rmsd_range[1]) /
-                        (rmsd_range[0] + rmsd_range[1])) > 0.3333:
-                        large_rmsd_range = True
-                        Science.write(
-                            'Large range in RMSD variation per image')
-
                     # and warn about them
                     Science.write(
                         'In cell refinement, the following cell parameters')
@@ -1433,14 +1423,6 @@ def Mosflm(DriverType = None):
                         return
 
                     else:
-                        if large_rmsd_range:
-
-                            Science.write(
-                                'Integration will be aborted because of this.')
-                        
-                            raise BadLatticeError, 'cell refinement failed: ' + \
-                                  'inaccurate cell parameters'
-                        
                         Science.write(
                             'However, will continue to integration.')
                         
