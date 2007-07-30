@@ -243,10 +243,6 @@ def _happy_integrate_lp(integrate_lp_stats):
 
         results += status
 
-    if max_weighted_residual > 2.5:
-        raise RuntimeError, 'large weighted residual (%4.2f)' % \
-              max_weighted_residual
-
     return results
 
 def decide_integration_resolution_limit(mosflm_integration_output):
