@@ -1219,8 +1219,6 @@ def Mosflm(DriverType = None):
             # FIRST look for errors, and analysis stuff which may be
             # important...
 
-            rmsd_range = None
-
             rms_values_last = None
             
             for i in range(len(output)):
@@ -1309,12 +1307,6 @@ def Mosflm(DriverType = None):
                     else:
                         rms_values_last = None
 
-                    if rms_values_last:
-                        rmsd_range = max(rms_values_last), min(rms_values_last)
-                    else:
-                        # there must have been a bigger problem than this!
-                        rmsd_range = 1.0, 1.0
-
                 # look for "error" type problems
 
                 if 'is greater than the maximum allowed' in o and \
@@ -1379,11 +1371,6 @@ def Mosflm(DriverType = None):
                     # in a was > 0.1A in 228. Assert perhaps that the error
                     # should be less than 1.0e-3 * cell axis and less than
                     # 0.15A?
-
-                    # inspect rmsd_range
-
-                    if rmsd_range is None:
-                        raise RuntimeError, 'no rms deviation information'
 
                     # and warn about them
                     Science.write(
@@ -1484,45 +1471,10 @@ def Mosflm(DriverType = None):
                             Science.write(
                                 'Integration will be aborted because of this.')
                         
-                            raise BadLatticeError, 'cell refinement failed: ' + \
+                            raise BadLatticeError, \
+                                  'cell refinement failed: ' + \
                                   'negative mosaic spread'
                         
-            # look generally at the RMS deviation range - is this is
-            # large then there may be something properly wrong...
-            # switch this off for a moment as it may be more appropriate
-            # for this test to look at the results from integration...
-            
-            if rmsd_range and False:
-                
-                if ((rmsd_range[0] - rmsd_range[1]) /
-                    (rmsd_range[0] + rmsd_range[1])) > 0.3333:
-                    Science.write(
-                        'Large range in RMSD variation per image')
-                    
-                    if len(self._mosflm_cell_ref_images) <= 3:
-                        # set this up to be more images
-                        new_cell_ref_images = self._refine_select_images(
-                            len(self._mosflm_cell_ref_images) + 1,
-                            mosaic)
-                        self._mosflm_cell_ref_images = new_cell_ref_images
-                        
-                        self.set_integrater_prepare_done(False)
-                        
-                        Science.write(
-                            'Repeating cell refinement with more data.')
-                        
-                        return
-
-                    else:
-                        
-                        Science.write(
-                            'Integration will be aborted because of this.')
-                        
-                        raise BadLatticeError, 'cell refinement failed: ' + \
-                              'negative mosaic spread'
-                    
-            # AFTER that, read the refined parameters
-            
             for i in range(len(output)):
                 o = output[i]
 
@@ -1913,13 +1865,6 @@ def Mosflm(DriverType = None):
                 if data['weighted_residual'] > max_weighted_residual:
                     max_weighted_residual = data['weighted_residual']
             
-            if max_weighted_residual > 3.0 and False:
-                raise BadLatticeError, 'large weighted residual (%4.2f)' % \
-                      max_weighted_residual
-
-            if mean > 2.0:
-                raise BadLatticeError, 'large mean residual (%.2f)' % mean
-
             if len(spot_status) > 60:
                 Chatter.write('Integration status per image (60/record):')
             else:
