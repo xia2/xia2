@@ -46,6 +46,7 @@
 import sys
 import os
 import exceptions
+import traceback
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
@@ -140,6 +141,7 @@ class _CommandLine(Object):
         try:
             self._read_xinfo()
         except exceptions.Exception, e:
+            traceback.print_exc(file = open('xia2-xinfo.error', 'w'))
             raise RuntimeError, '%s (%s)' % \
                   (self._help_xinfo(), str(e))
 
