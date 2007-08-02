@@ -837,9 +837,9 @@ class CCP4Scaler(Scaler):
             for spag in self._scalr_likely_spacegroups:
                 Chatter.write('%s' % spag)
 
-                Chatter.write(
-                    'Reindexing to correct spacegroup setting: %s (%s)' % \
-                    (spacegroup, reindex_operator))
+            Chatter.write(
+                'Reindexing to correct spacegroup setting: %s (%s)' % \
+                (spacegroup, reindex_operator))
 
         else:
 
