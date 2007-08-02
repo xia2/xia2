@@ -157,6 +157,8 @@ class CCP4Scaler(Scaler):
         self._common_pname = None
         self._common_xname = None
 
+        self._reference = None
+
         self._factory = CCP4Factory()
         self._helper = CCP4ScalerImplementationHelper()
 
@@ -327,55 +329,63 @@ class CCP4Scaler(Scaler):
         # reindexed against this - this will ensure consistent indexing
         # in the TS02 case where the unit cell parameters are a bit fiddly.
 
-        if len(self._sweep_information.keys()) > 1:
+        # FIXME 02/AUG/07 if we have a reference reflection file
+        # passed in explicitly then this will have to behave differently.
 
-            # ---------- PREPARE REFERENCE SET ----------
+        if self.get_scaler_reference_reflection_file():
+            self._reference = self.get_scaler_reference_reflection_file()
+            Chatter.write('Using HKLREF %s' % self._reference)
 
-            # pointless it, sort it, quick scale it
+        if len(self._sweep_information.keys()) > 1 and \
+               not self.get_scaler_reference_reflection_file():
 
             # record this as the reference set, feed this to all subsequent
             # pointless runs through HKLREF (FIXED this needs to be added to
             # the pointless interface - set_hklref()!) 
 
+            # ---------- PREPARE REFERENCE SET ----------
+            
+            # pointless it, sort it, quick scale it
+            
             epochs = self._sweep_information.keys()
             epochs.sort()
             first = epochs[0]
-
+            
             Chatter.write('Preparing reference data set from first sweep')
-
+            
             hklin = self._sweep_information[first][
                 'integrater'].get_integrater_reflections()
             header = self._sweep_information[first]['header']
-
+            
             # prepare pointless hklin makes something much smaller...
-
+            
             pointless_hklin = _prepare_pointless_hklin(
                 self.get_working_directory(),
                 hklin, self._sweep_information[first]['header'].get(
                 'phi_width', 0.0))
-
+            
             pl = self._factory.Pointless()
             pl.set_hklin(pointless_hklin)
             pl.decide_pointgroup()
-
+            
             pointgroup = pl.get_pointgroup()
             reindex_op = pl.get_reindex_operator()
-
+            
             integrater = self._sweep_information[first]['integrater']
             indexer = integrater.get_integrater_indexer()
-
+            
             # FIXME in here may be getting the reference reflection file
             # from an external source, in which case I will want to do
             # something cunning in here...
             
             if indexer:
                 
-                pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
+                pointgroup, reindex_op, ntr = \
+                            self._pointless_indexer_jiffy(
                     pointless_hklin, indexer)
 
                 if ntr:
                     need_to_return = True
-
 
             Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
@@ -390,34 +400,35 @@ class CCP4Scaler(Scaler):
             
             # we will want to delete this one exit
             FileHandler.record_temporary_file(hklout)
-
+            
             s = self._factory.Sortmtz()
             s.set_hklout(hklout)
             s.add_hklin(hklin)
             s.sort()
-        
+            
             # now quickly merge the reflections
             
             hklin = hklout
             self._reference = os.path.join(
                 self.get_working_directory(),
-                os.path.split(hklin)[-1].replace('_ref_srt.mtz', '_ref.mtz'))
+                os.path.split(hklin)[-1].replace('_ref_srt.mtz',
+                                                 '_ref.mtz'))
             
             # need to remember this hklout - it will be the reference
             # reflection file for all of the reindexing below...
-
+            
             Chatter.write('Quickly scaling reference data set: %s' % \
                           os.path.split(hklin)[-1])
             Chatter.write('to give indexing standard')
-
+            
             qsc = self._factory.Scala()
             qsc.set_hklin(hklin)
             qsc.set_hklout(self._reference)
             qsc.quick_scale()
-
+            
             # we will want to delete this one exit
             FileHandler.record_temporary_file(qsc.get_hklout())
-
+            
             # for the moment ignore all of the scaling statistics and whatnot!
 
             # then check that the unit cells &c. in these reflection files
@@ -514,10 +525,40 @@ class CCP4Scaler(Scaler):
             return
 
         # FIXED 06/NOV/06 need to run this again - this time with the
-        # reference file... messy but perhaps effective?
+        # reference file... messy but perhaps effective? modded 2/AUG/07
+        # if we have a reference from either outside or from the first
+        # sweep we need to perform the reindex shuffle.
 
-        if len(self._sweep_information.keys()) > 1:
+        if self._reference:
+
+            # run an MTZDUMP on self._reference to get the cell parameters
+            # and lattice (pointgroup)
+
+            md = self._factory.Mtzdump()
+            md.set_hklin(self._reference)
+            md.dump()
+
+            # check that HKLREF is merged... and that it contains only one
+            # dataset
+
+            if md.get_batches():
+                raise RuntimeError, 'reference reflection file %s unmerged' % \
+                      self._reference
+
+            datasets = md.get_datasets()
+
+            if len(datasets) > 1:
+                raise RuntimeError, 'more than one dataset in %s' % \
+                      self._reference
             
+            # then get the unit cell, lattice etc.
+
+            reference_lattice = Syminfo.get_lattice(md.get_spacegroup())
+            reference_cell = md.get_dataset_info(datasets[0])['cell']
+            
+
+            # then compute the pointgroup from this...
+
             # ---------- REINDEX TO CORRECT (REFERENCE) SETTING ----------
             
             for epoch in self._sweep_information.keys():
@@ -542,7 +583,7 @@ class CCP4Scaler(Scaler):
                 # write a pointless log file...
                 pl.decide_pointgroup()
 
-                Chatter.write('Pointless analysis of %s' % pl.get_hklin())
+                Chatter.write('Reindexing analysis of %s' % pl.get_hklin())
                 
                 # FIXED here - do I need to contemplate reindexing
                 # the reflections? if not, don't bother - could be an
@@ -554,7 +595,7 @@ class CCP4Scaler(Scaler):
                 pointgroup = pl.get_pointgroup()
                 reindex_op = pl.get_reindex_operator()
                 
-                Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+                Chatter.write('Operator: %s' % reindex_op)
 
                 # apply this...
 
@@ -563,6 +604,44 @@ class CCP4Scaler(Scaler):
                 integrater.set_integrater_reindex_operator(reindex_op)
                 integrater.set_integrater_spacegroup_number(
                     Syminfo.spacegroup_name_to_number(pointgroup))
+
+                # FIXME in here want to check that the unit cell comes out
+                # isomorphous... that is, check that the pointgroup and
+                # unit cell are about the same as what came out from the
+                # MTZDUMP above.
+
+                md = self._factory.Mtzdump()
+                md.set_hklin(integrater.get_integrater_reflections())
+                md.dump()
+
+                datasets = md.get_datasets()
+                
+                if len(datasets) > 1:
+                    raise RuntimeError, 'more than one dataset in %s' % \
+                          integrater.get_integrater_reflections()
+            
+                # then get the unit cell, lattice etc.
+                
+                lattice = Syminfo.get_lattice(md.get_spacegroup())
+                cell = md.get_dataset_info(datasets[0])['cell']
+
+                if lattice != reference_lattice:
+                    raise RuntimeError, 'lattices differ in %s and %s' % \
+                          (self._reference,
+                           integrater.get_integrater_reflections())
+
+                # check that the cell is isomorphous - that is, it
+                # differs by < 10% from the reference one
+
+                for j in range(6):
+                    if math.fabs((cell[j] - reference_cell[j]) /
+                                 reference_cell[j]) > 0.1:
+                        raise RuntimeError, \
+                              'unit cell parameters differ in %s and %s' % \
+                              (self._reference,
+                               integrater.get_integrater_reflections())
+
+                # ok if we get to here then we are fairly happy
                 
         # ---------- SORT TOGETHER DATA ----------
             
@@ -704,55 +783,81 @@ class CCP4Scaler(Scaler):
         hklin = hklout
         hklout = hklin.replace('sorted.mtz', 'temp.mtz')
 
+        # FIXME in here need to check to see if we have a reference
+        # reflection file - if we do then we will have already
+        # reset the reflections to the correct setting so we don't
+        # need to do anything here but apply the spacegroup.
+
         # note here I am not abbreviating the reflection file as I
         # don't know whether this is a great idea...?  30/NOV/06
 
         # if it's a huge SAD data set then do it! else don't...
 
-        p = self._factory.Pointless()
-        if len(self._sweep_information.keys()) > 1:
-            p.set_hklin(hklin)
-        else:
-            # permit the use of pointless preparation...
-            epoch = self._sweep_information.keys()[0]
-            p.set_hklin(_prepare_pointless_hklin(
-                self.get_working_directory(),
-                hklin, self._sweep_information[epoch]['header'].get(
-                'phi_width', 0.0)))
+        if not self.get_scaler_reference_reflection_file():
 
-        p.decide_spacegroup()
-        spacegroup = p.get_spacegroup()
-        reindex_operator = p.get_spacegroup_reindex_operator()
+            p = self._factory.Pointless()
+            if len(self._sweep_information.keys()) > 1:
+                p.set_hklin(hklin)
+            else:
+                # permit the use of pointless preparation...
+                epoch = self._sweep_information.keys()[0]
+                p.set_hklin(_prepare_pointless_hklin(
+                    self.get_working_directory(),
+                    hklin, self._sweep_information[epoch]['header'].get(
+                    'phi_width', 0.0)))
+
+            p.decide_spacegroup()
+            spacegroup = p.get_spacegroup()
+            reindex_operator = p.get_spacegroup_reindex_operator()
         
-        # Write this spacegroup information back to the storage areas
-        # in the Scaler interface to allow them to be obtained by the
-        # calling entity. Note well that I also want to write in
-        # here the spacegroup enantiomorphs.
+            # Write this spacegroup information back to the storage areas
+            # in the Scaler interface to allow them to be obtained by the
+            # calling entity. Note well that I also want to write in
+            # here the spacegroup enantiomorphs.
+            
+            # FIXED 21/NOV/06 need now to get this from the pointless output...
+            
+            self._scalr_likely_spacegroups = p.get_likely_spacegroups()
 
-        # FIXED 21/NOV/06 need now to get this from the pointless output...
+            # these are generated by the get_likely_spacegroups so we don't
+            # need to be worrying about this - 
 
-        self._scalr_likely_spacegroups = p.get_likely_spacegroups()
+            # also need in here to generate cases like I222/I212121, I23, I213,
+            # as likely cases - however they are probably included in the
+            # likely list...
 
-        # these are generated by the get_likely_spacegroups so we don't need
-        # to be worrying about this - 
+            # and it turns out that this is not really a problem so can just
+            # 'ignore' it -
+            
+            # then consider all other spacegroups for this pointgroup (at least
+            # the ones in "legal" settings) which are not already in the
+            # likely list - these will be considered as the unlikely ones.
+            
+            Chatter.write('Likely spacegroups:')
+            for spag in self._scalr_likely_spacegroups:
+                Chatter.write('%s' % spag)
 
-        # also need in here to generate cases like I222/I212121, I23, I213,
-        # as likely cases - however they are probably included in the
-        # likely list...
+                Chatter.write(
+                    'Reindexing to correct spacegroup setting: %s (%s)' % \
+                    (spacegroup, reindex_operator))
 
-        # and it turns out that this is not really a problem so can just
-        # 'ignore' it -
+        else:
 
-        # then consider all other spacegroups for this pointgroup (at least
-        # the ones in "legal" settings) which are not already in the
-        # likely list - these will be considered as the unlikely ones.
+            # copy the spacegroup from hklref and use this - and set the
+            # reindex operator to 'h,k,l', as we should be reindexed
+            # correctly already.
 
-        Chatter.write('Likely spacegroups:')
-        for spag in self._scalr_likely_spacegroups:
-            Chatter.write('%s' % spag)
+            md = self._factory.Mtzdump()
+            md.set_hklin(self.get_scaler_reference_reflection_file())
+            md.dump()
 
-        Chatter.write('Reindexing to correct spacegroup setting: %s (%s)' % \
-                      (spacegroup, reindex_operator))
+            spacegroup = md.get_spacegroup()
+            reindex_operator = 'h,k,l'
+
+            self._scalr_likely_spacegroups = [spacegroup]
+
+            Chatter.write('Assigning spacegroup %s from reference' % \
+                          spacegroup)
 
         # then run reindex to set the correct spacegroup
         

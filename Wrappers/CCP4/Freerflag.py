@@ -4,17 +4,8 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
 # 5th June 2006
-# 
-# An example of an freerflag CCP4 program wrapper, which can be used as the 
-# base for other wrappers.
-# 
-# Provides:
-# 
-# Nothing
 # 
 
 import os

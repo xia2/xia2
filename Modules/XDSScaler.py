@@ -99,6 +99,8 @@ class XDSScaler(Scaler):
         self._common_pname = None
         self._common_xname = None
 
+        self._reference = None
+
         # spacegroup and unit cell information - these will be
         # derived from an average of all of the sweeps which are
         # passed in
@@ -577,7 +579,12 @@ class XDSScaler(Scaler):
         # next ensure that all sweeps are set in the correct setting
         # ----------------------------------------------------------
 
-        if len(self._sweep_information.keys()) > 1:
+        if self.get_scaler_reference_reflection_file():
+            self._reference = self.get_scaler_reference_reflection_file()
+            Chatter.write('Using HKLREF %s' % self._reference)
+
+        if len(self._sweep_information.keys()) > 1 and \
+               not self.get_scaler_reference_reflection_file():
             # need to generate a reference reflection file - generate this
             # from the reflections in self._first_epoch
 
@@ -625,14 +632,16 @@ class XDSScaler(Scaler):
 
             hklin = hklout
 
-            reference_mtz = os.path.join(self.get_working_directory(),
-                                         'xds-pointgroup-reference.mtz')
-            FileHandler.record_temporary_file(reference_mtz)            
+            self._reference = os.path.join(self.get_working_directory(),
+                                           'xds-pointgroup-reference.mtz')
+            FileHandler.record_temporary_file(self._reference)            
 
             scala = self._factory.Scala()            
             scala.set_hklin(hklin)
-            scala.set_hklout(reference_mtz)
+            scala.set_hklout(self._reference)
             scala.quick_scale()            
+
+        if self._reference:
 
             for epoch in self._sweep_information.keys():
 
@@ -665,7 +674,7 @@ class XDSScaler(Scaler):
 
                 pointless = self._factory.Pointless()
                 pointless.set_hklin(hklout)
-                pointless.set_hklref(reference_mtz)
+                pointless.set_hklref(self._reference)
                 pointless.decide_pointgroup()
 
                 pointgroup = pointless.get_pointgroup()
@@ -1124,18 +1133,32 @@ class XDSScaler(Scaler):
 
         self._prepared_reflections = hklout
 
+        # if we have a reference reflection file then use this for all
+        # of the spacegroup information (remember that we have
+        # reindexed already) else inspect the absences...
+
         # figure out the correct reindexing operator using this reflection
         # file
 
-        pointless = self._factory.Pointless()
-        pointless.set_hklin(hklout)
-        pointless.decide_spacegroup()
+        if self.get_scaler_reference_reflection_file():
+            md = self._factory.Mtzdump()
+            md.set_hklin(self.get_scaler_reference_reflection_file())
+            md.dump()
 
-        # get one spacegroup and so on which will be used for
-        # all of the reflection files...
-        
-        spacegroups = pointless.get_likely_spacegroups()
-        reindex_operator = pointless.get_spacegroup_reindex_operator()
+            spacegroups = [md.get_spacegroup()]
+            reindex_operator = 'h,k,l'
+
+        else:            
+
+            pointless = self._factory.Pointless()
+            pointless.set_hklin(hklout)
+            pointless.decide_spacegroup()
+
+            # get one spacegroup and so on which will be used for
+            # all of the reflection files...
+            
+            spacegroups = pointless.get_likely_spacegroups()
+            reindex_operator = pointless.get_spacegroup_reindex_operator()
 
         # save these for later - we will reindex the merged
         # data after scaling
