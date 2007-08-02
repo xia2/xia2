@@ -139,6 +139,12 @@ class XProject(Object):
                         'Overriding value for wavelength %s to %8.6f' % \
                         (wavelength, float(wave_info['wavelength'])))
 
+                # handle case where user writes f" in place of f''
+
+                if wave_info.has_key('f"') and not \
+                   wave_info.has_key('f\'\''):
+                    wave_info['f\'\''] = wave_info['f"']
+
                 xw = XWavelength(wavelength, xc,
                                  wave_info.get('wavelength', 0.0),
                                  wave_info.get('f\'', 0.0),
