@@ -91,7 +91,7 @@ def Scala(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            self.set_executable('scala')
+            self.set_executable('scala-3.2.33')
 
             # input and output files
             self._scalepack = None
