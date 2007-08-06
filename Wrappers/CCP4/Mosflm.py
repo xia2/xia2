@@ -711,15 +711,6 @@ def Mosflm(DriverType = None):
             # phase decided that the results were much worse a
             # BadLatticeError would have to be raised...
 
-            self.reset()
-            auto_logfiler(self)
-            rms_deviations = self._mosflm_refine_cell()
-
-            if not self.get_integrater_prepare_done():
-                # cell refinement failed so no point getting the
-                # results of refinement in P1...
-                return
-
             # next test the cell refinement with the correct lattice
             # and P1 and see how the numbers stack up...
 
@@ -727,15 +718,27 @@ def Mosflm(DriverType = None):
             auto_logfiler(self)
             rms_deviations_p1 = self._mosflm_test_refine_cell('aP')            
 
+            self.reset()
+            auto_logfiler(self)
+            rms_deviations = self._mosflm_refine_cell()
+
+            if not self.get_integrater_prepare_done():
+                # cell refinement failed so no point getting the
+                # results of refinement in P1... now this is
+                # ignored as it is important we refine the cell
+                # in P1 first...
+                return
+
             # run the cell refinement again with the refined parameters
             # in the correct lattice as this will give a fair comparison
             # with the P1 refinement (see bug # 2539) - would also be
             # interesting to see how much better these are...
+            # no longer need these...
 
-            self.reset()
-            auto_logfiler(self)
-            rms_deviations = self._mosflm_test_refine_cell(
-                self.get_integrater_indexer().get_indexer_lattice())
+            # self.reset()
+            # auto_logfiler(self)
+            # rms_deviations = self._mosflm_test_refine_cell(
+            # self.get_integrater_indexer().get_indexer_lattice())
             
             images = []
             for cri in self._mosflm_cell_ref_images:
