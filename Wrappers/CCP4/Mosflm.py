@@ -727,6 +727,16 @@ def Mosflm(DriverType = None):
             auto_logfiler(self)
             rms_deviations_p1 = self._mosflm_test_refine_cell('aP')            
 
+            # run the cell refinement again with the refined parameters
+            # in the correct lattice as this will give a fair comparison
+            # with the P1 refinement (see bug # 2539) - would also be
+            # interesting to see how much better these are...
+
+            self.reset()
+            auto_logfiler(self)
+            rms_deviations = self._mosflm_test_refine_cell(
+                self.get_integrater_indexer().get_indexer_lattice())
+            
             images = []
             for cri in self._mosflm_cell_ref_images:
                 for j in range(cri[0], cri[1] + 1):
@@ -1811,6 +1821,11 @@ def Mosflm(DriverType = None):
                             self._mosflm_gain = gain
                             self._mosflm_rerun_integration = True
 
+                # FIXME if mosaic spread refines to a negative value
+                # once the lattice has passed the triclinic postrefinement
+                # test then fix this by setting "POSTREF FIX MOSAIC" and
+                # restarting.
+
                 if 'Smoothed value for refined mosaic spread' in o:
                     mosaic = float(o.split()[-1])
                     if mosaic < 0.0:
@@ -1826,6 +1841,10 @@ def Mosflm(DriverType = None):
 
                 if 'Number of Reflections' in o:
                     self._intgr_n_ref = int(o.split()[-1])
+
+                # FIXME check for BGSIG errors - if one is found
+                # analyse the output for a sensible resolution
+                # limit to use for integration...
 
                 if 'MOSFLM HAS TERMINATED EARLY' in o:
                     Chatter.write('Mosflm has failed in integration')

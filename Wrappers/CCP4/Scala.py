@@ -842,6 +842,18 @@ def Scala(DriverType = None):
 
             output = self.get_all_output()
 
+            # look at the scaling to see if it was convergent
+
+            mean_shift = []
+            max_shift = []
+
+            for o in output:
+                if 'Mean and maximum shift/sd' in o:
+                    mean_shift.append(float(o.split()[5]))
+                    max_shift.append(float(o.split()[6]))
+                    
+            # analyse the shifts
+
             return self.get_ccp4_status()
             
         def get_scaled_reflection_files(self):
