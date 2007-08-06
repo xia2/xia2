@@ -711,6 +711,23 @@ def Mosflm(DriverType = None):
             # phase decided that the results were much worse a
             # BadLatticeError would have to be raised...
 
+            # in here need to select the images we are going to be using
+            # before we do anything else...
+
+            if not self._mosflm_cell_ref_images:
+                indxr = self.get_integrater_indexer()
+                lattice = indxr.get_indexer_lattice()
+                mosaic = indxr.get_indexer_mosaic()
+                spacegroup_number = lattice_to_spacegroup(lattice)
+
+                if spacegroup_number >= 75:
+                    num_wedges = 1
+                else:
+                    num_wedges = 2
+            
+                self._mosflm_cell_ref_images = self._refine_select_images(
+                    num_wedges, mosaic)
+
             # next test the cell refinement with the correct lattice
             # and P1 and see how the numbers stack up...
 
