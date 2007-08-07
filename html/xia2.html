@@ -416,6 +416,15 @@ END PROJECT TS01
       <li>Fixed bug where if the distance was read incorrectly from the 
 	image header (or was wrong therein) XDS would get the wrong value
 	even if you had put the correct value in the .xinfo file.</li>
+      <li>Now "unroll" the unmerged reflections from XSCALE and then 
+	merge them in their original sweeps in Scala. This should give
+	a useful Rmerge vs. time plot.</li>
+      <li>Including updated versions of Pointless and Scala.</li>
+      <li>Includes new and more robust handling of pointgroups, lattices
+	and unstable refinement of parameters during integration.</li>
+      <li>Include support for a reference reflection file, which will 
+	ensure that the reflections are indexed in the same way and 
+	with the same spacegroup - useful for mutants.</li>
     </ul>
 
     <p>Changes since 0.2.5.2</p>
@@ -636,7 +645,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Thu Jul 05 10:15:57 GMT Standard Time 2007
+Last modified: Tue Aug 07 15:17:46 GMT Standard Time 2007
 <!-- hhmts end -->
   </body>
 </html>
