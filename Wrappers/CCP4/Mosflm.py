@@ -331,7 +331,7 @@ def Mosflm(DriverType = None):
                 self._index_select_images()
             return
 
-        def _index_select_images(self):
+        def _index_select_images_old(self):
             '''Select correct images based on image headers.'''
 
             # FIXME perhaps this should be somewhere central, because
@@ -352,6 +352,41 @@ def Mosflm(DriverType = None):
             if int(90.0 / phi_width) in images:
                 self.add_indexer_image_wedge(int(90.0 / phi_width))
             else:
+                self.add_indexer_image_wedge(images[-1])
+
+            return
+
+        def _index_select_images(self):
+            '''Select correct images based on image headers.'''
+
+            # FIXME perhaps this should be somewhere central, because
+            # Mosflm will share the same implementation
+
+            phi_width = self.get_header_item('phi_width')
+            images = self.get_matching_images()
+
+            Debug.write('Selected image %s' % images[0])
+
+            self.add_indexer_image_wedge(images[0])
+
+            # FIXME what to do if phi_width is recorded as zero?
+            # perhaps assume that it is 1.0!
+
+            if phi_width == 0.0:
+                Chatter.write('Phi width 0.0? Assuming 1.0!')
+                phi_width = 1.0
+
+            if int(90.0 / phi_width) in images:
+                Debug.write('Selected image %s' % int(45.0 / phi_width))
+                Debug.write('Selected image %s' % int(90.0 / phi_width))
+                self.add_indexer_image_wedge(int(45.0 / phi_width))
+                self.add_indexer_image_wedge(int(90.0 / phi_width))
+            else:
+                middle = len(images) / 2
+                if len(images) >= 3:
+                    Debug.write('Selected image %s' % images[middle])
+                    self.add_indexer_image_wedge(images[middle])
+                Debug.write('Selected image %s' % images[-1])
                 self.add_indexer_image_wedge(images[-1])
 
             return
