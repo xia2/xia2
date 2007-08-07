@@ -1786,7 +1786,7 @@ def Mosflm(DriverType = None):
             self.input('postref fix all')
 
             if self._mosflm_postref_fix_mosaic:
-                self.input('postref fix all')
+                self.input('postref fix mosaic')
                 
             self.input('separation close')
 
