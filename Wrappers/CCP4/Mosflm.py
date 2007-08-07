@@ -236,6 +236,8 @@ from Experts.MatrixExpert import transmogrify_matrix
 
 from Schema.Exceptions.BadLatticeError import BadLatticeError
 from Schema.Exceptions.IndexingError import IndexingError
+from Schema.Exceptions.IntegrationError import IntegrationError
+
 
 # other classes which are necessary to implement the integrater
 # interface (e.g. new version, with reindexing as the finish...)
@@ -277,6 +279,7 @@ def Mosflm(DriverType = None):
             self._mosflm_cell_ref_images = None
             
             # local parameters used in integration
+            self._mosflm_postref_fix_mosaic = False
             self._mosflm_rerun_integration = False
             self._mosflm_hklout = ''
 
@@ -832,12 +835,20 @@ def Mosflm(DriverType = None):
             self._mosflm_rerun_integration = False
 
             wd = self.get_working_directory()
- 
-            self.reset()
 
-            auto_logfiler(self)
-            self._intgr_hklout = self._mosflm_integrate()
-            self._mosflm_hklout = self._intgr_hklout
+            try:
+ 
+                self.reset()
+                auto_logfiler(self)
+                self._intgr_hklout = self._mosflm_integrate()
+                self._mosflm_hklout = self._intgr_hklout
+
+            except IntegrationError, e:
+                if 'negative mosaic spread' in str(e):
+                    Chatter.write(
+                        'Negative mosaic spread - rerunning integration')
+                    self.set_integrater_done(False)
+                    self._mosflm_postref_fix_mosaic = True
 
             if self._mosflm_rerun_integration and not Flags.get_quick():
                 # make sure that this is run again...
@@ -1773,6 +1784,10 @@ def Mosflm(DriverType = None):
 
             # set up the integration
             self.input('postref fix all')
+
+            if self._mosflm_postref_fix_mosaic:
+                self.input('postref fix all')
+                
             self.input('separation close')
 
             # FIXME this is a horrible hack - I at least need to 
@@ -1849,7 +1864,7 @@ def Mosflm(DriverType = None):
                 if 'Smoothed value for refined mosaic spread' in o:
                     mosaic = float(o.split()[-1])
                     if mosaic < 0.0:
-                        raise BadLatticeError, 'negative mosaic spread'
+                        raise IntegrationError, 'negative mosaic spread'
 
                 if 'WRITTEN OUTPUT MTZ FILE' in o:
                     self._mosflm_hklout = os.path.join(
