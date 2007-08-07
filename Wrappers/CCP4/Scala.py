@@ -95,7 +95,7 @@ def Scala(DriverType = None):
             # currently this version of Scala is broken :o(
             # self.set_executable('scala-3.2.33')
             
-            self.set_executable('scala')
+            self.set_executable('scala-3.2.34')
 
             # input and output files
             self._scalepack = None
