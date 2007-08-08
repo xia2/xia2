@@ -30,6 +30,7 @@
 import os
 import sys
 import exceptions
+import math
 
 class XDSException(exceptions.Exception):
     def __init__(self, value):
@@ -54,6 +55,8 @@ if not os.environ.has_key('XIA2_ROOT'):
 
 if not os.path.join(os.environ['XIA2_ROOT']) in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
+
+from Handlers.Streams import Debug
 
 def _xds_version(xds_output_list):
     '''Return the version of XDS which has been run.'''
@@ -90,9 +93,29 @@ def xds_check_error(xds_output_list):
 
     return
 
-def header_to_xds(header, synchrotron = True):
+def header_to_xds(header, synchrotron = None):
     '''A function to take an input header dictionary from Diffdump
     and generate a list of records to start XDS - see Doc/INP.txt.'''
+
+    # decide if we are at a synchrotron if we don't know already...
+    # that is, the wavelength is around either the Copper or Chromium
+    # K-alpha edge and this is an image plate.
+
+    if synchrotron == None:
+
+        if header['detector'] == 'marccd':
+            synchrotron = True
+        elif header['detector'] == 'adsc':
+            synchrotron = True
+        elif math.fabs(header['wavelength'] - 1.5418) < 0.01:
+            Debug.write('Wavelength looks like Cu Ka -> lab source')
+            synchrotron = False
+        elif math.fabs(header['wavelength'] - 2.29) < 0.01:
+            Debug.write('Wavelength looks like Cu Ka -> lab source')
+            synchrotron = False
+        else:
+            synchrotron = True
+
 
     # --------- mapping tables -------------
 
@@ -140,6 +163,12 @@ def header_to_xds(header, synchrotron = True):
         'raxis':'0.0 1.0 0.0',
         'adsc':'1.0 0.0 0.0'}
 
+    detector_to_polarization_plane_normal = {
+        'mar':'0.0 1.0 0.0',
+        'marccd':'0.0 1.0 0.0',        
+        'raxis':'1.0 0.0 0.0',
+        'adsc':'0.0 1.0 0.0'}
+
     # --------- end mapping tables ---------
 
     width, height = tuple(map(int, header['size']))
@@ -168,7 +197,14 @@ def header_to_xds(header, synchrotron = True):
     result.append('NX=%d NY=%d QX=%6.6f QY=%6.6f' % \
                   (width, height, qx, qy))
 
-    result.append('DETECTOR_DISTANCE=%7.3f' % header['distance'])
+    # RAXIS detectors have the distance written negative - why????
+    # this is ONLY for XDS
+
+    if detector != 'raxis':
+        result.append('DETECTOR_DISTANCE=%7.3f' % header['distance'])
+    else:
+        result.append('DETECTOR_DISTANCE=%7.3f' % (-1 * header['distance']))
+        
     result.append('OSCILLATION_RANGE=%4.2f' % (header['phi_end'] -
                                                header['phi_start']))
     result.append('X-RAY_WAVELENGTH=%8.6f' % header['wavelength'])
@@ -179,10 +215,12 @@ def header_to_xds(header, synchrotron = True):
 
     if synchrotron:
         result.append('FRACTION_OF_POLARIZATION=0.95')
-        result.append('POLARIZATION_PLANE_NORMAL= 0.0 1.0 0.0')
+        result.append('POLARIZATION_PLANE_NORMAL=%s' % \
+                      detector_to_polarization_plane_normal[detector])
     else:
         result.append('FRACTION_OF_POLARIZATION=0.5')
-        result.append('POLARIZATION_PLANE_NORMAL= 0.0 1.0 0.0')
+        result.append('POLARIZATION_PLANE_NORMAL=%s' % \
+                      detector_to_polarization_plane_normal[detector])
 
     # FIXME 11/DEC/06 this should depend on the wavelength
     result.append('AIR=0.001')
