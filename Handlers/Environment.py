@@ -43,6 +43,13 @@ class _Environment:
         if not os.environ.has_key('USER'):
 	    os.environ['USER'] = 'xia2'
             
+        # check that BINSORT_SCR exists if set..
+
+        if os.environ.has_key('BINSORT_SCR'):
+            path = os.environ['BINSORT_SCR']
+            if not os.path.exists(path):
+                Chatter.write('Making directory: %s (BINSORT_SCR)' % path)
+                os.makedirs(path)            
 
     def generate_directory(self, path_tuple):
         '''Used for generating working directories.'''
