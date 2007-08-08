@@ -46,11 +46,15 @@ def check_environment():
     for k in xia2_keys:
         if not os.environ.has_key(k):
             raise RuntimeError, '%s not defined - is xia2 set up?'
+        if not os.environ[k] == os.environ[k].strip():
+            raise RuntimeError, 'spaces around "%s"' % os.environ[k]
         Chatter.write('%s => %s' % (k, os.environ[k]))
 
     for k in ccp4_keys:
         if not os.environ.has_key(k):
             raise RuntimeError, '%s not defined - is CCP4 set up?'
+        if not os.environ[k] == os.environ[k].strip():
+            raise RuntimeError, 'spaces around "%s"' % os.environ[k]
         Chatter.write('%s => %s' % (k, os.environ[k]))
 
     try:
