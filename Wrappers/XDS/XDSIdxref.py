@@ -318,9 +318,9 @@ def XDSIdxref(DriverType = None):
                 mosaic = data['mosaic']
                 reidx = data['reidx']
 
-                # only consider indexing solutions with goodness of fit < 30
+                # only consider indexing solutions with goodness of fit < 40
 
-                if fit < 30.0:
+                if fit < 40.0:
                     # bug 2417 - if we have an input lattice then we
                     # don't want to include anything higher symmetry
                     # in the results table...
