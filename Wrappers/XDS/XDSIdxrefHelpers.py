@@ -36,6 +36,8 @@ def _parse_idxref_lp_distance_etc(lp_file_lines):
             beam = tuple(map(float, line.split()[-2:]))
         if 'CRYSTAL TO DETECTOR' in line:
             distance = float(line.split()[-1])
+            if distance < 0:
+                distance *= -1
 
     return beam, distance
 
