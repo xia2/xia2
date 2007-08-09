@@ -222,7 +222,7 @@ def Diffdump(DriverType = None):
                 else:
                     l2 = ''
                 if 'Image type' in o:
-                    self._header['detector'] = l[1].strip()
+                    self._header['detector'] = l[1].strip().lower()
                     detector = self._header['detector']
 
                 # FIXME in here need to check a trust file timestamp flag
@@ -288,6 +288,12 @@ def Diffdump(DriverType = None):
                 
                 if 'Angle range' in o:
                     phi = map(float, l[1].split('->'))
+                    self._header['phi_start'] = phi[0]
+                    self._header['phi_end'] = phi[1]
+                    self._header['phi_width'] = phi[1] - phi[0]
+
+                if 'Oscillation' in o:
+                    phi = map(float, l[1].replace('deg', '').split('->'))
                     self._header['phi_start'] = phi[0]
                     self._header['phi_end'] = phi[1]
                     self._header['phi_width'] = phi[1] - phi[0]

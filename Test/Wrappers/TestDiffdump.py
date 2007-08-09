@@ -52,6 +52,12 @@ class TestDiffractionImage(unittest.TestCase):
         # check that the values are correct
         
         self.assertEqual(nint(header['distance']), 170)
+        self.assertEqual(nint(header['phi_start']), 290)
+        self.assertEqual(nint(header['phi_end']), 291)
+        self.assertEqual(nint(header['phi_width']), 1)
+        self.assertEqual(nint(header['wavelength'] * 10000), 9797)
+        self.assertEqual(nint(header['beam'][0]), 105)
+        self.assertEqual(nint(header['beam'][1]), 109)
         
         return
 
