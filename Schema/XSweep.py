@@ -245,7 +245,11 @@ class XSweep(Object):
 
             dd = Diffdump()
             dd.set_image(os.path.join(directory, image))
-            header = dd.readheader()
+            try:
+                header = dd.readheader()
+            except RuntimeError, e:
+                raise RuntimeError, 'error reading %s: %s' % \
+                      (os.path.join(directory, image), str(e))
 
             # check that they match by closer than 0.0001A, if wavelength
             # is not None
@@ -306,8 +310,11 @@ class XSweep(Object):
                 for j in images:
                     dd = Diffdump()
                     dd.set_image(self.get_image_name(j))
-                    header = dd.readheader()
-                    
+                    try:
+                        header = dd.readheader()
+                    except RuntimeError, e:
+                        raise RuntimeError, 'error reading %s: %s' % \
+                              (self.get_image_name(j), str(e))
                     self._epoch_to_image[header['epoch']] = j
                     self._image_to_epoch[j] = header['epoch']
 
