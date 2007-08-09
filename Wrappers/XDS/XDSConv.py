@@ -107,6 +107,12 @@ def XDSConv(DriverType = None):
             if not self._output_file:
                 raise RuntimeError, 'no output file specified'
 
+            # make the output file link a relative rather than
+            # absolute path... FIXME this is unix specific!
+            if self.get_working_directory() in self._output_file:
+                self._output_file = self._output_file.replace(
+                    self.get_working_directory(), './')
+
             # perhaps move input file to CWD
 
             if len(self._input_file) > 49:

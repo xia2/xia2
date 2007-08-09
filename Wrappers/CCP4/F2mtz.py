@@ -74,7 +74,7 @@ def F2mtz(DriverType = None):
             self.start()
 
             if self._pname and self._xname and self._dname:
-                self.input('name prohect %s crystal %s dataset %s' % \
+                self.input('name project %s crystal %s dataset %s' % \
                            (self._pname, self._xname, self._dname))
 
             self.input('cell %f %f %f %f %f %f' % \

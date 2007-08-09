@@ -25,6 +25,7 @@ from Wrappers.CCP4.CCP4Factory import CCP4Factory
 from Wrappers.XDS.XDSConv import XDSConv
 
 from Handlers.Files import FileHandler
+from Handlers.Syminfo import Syminfo
 
 class XDS2Mtz:
     '''A class to convert XDS reflection files to MTZ format, merging
@@ -89,7 +90,8 @@ class XDS2Mtz:
             xdsconv.set_input_file(xds)
             xdsconv.set_output_file(hklout_x)
             if spacegroup:
-                xdsconv.set_symmetry(spacegroup)
+                xdsconv.set_symmetry(
+                    Syminfo.spacegroup_name_to_number(spacegroup))
             if cell:
                 xdsconv.set_cell(cell)
 
