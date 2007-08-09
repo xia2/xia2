@@ -43,11 +43,11 @@ class TestDiffractionImage(unittest.TestCase):
     def testadsc(self):
         image = os.path.join(os.environ['X2TD_ROOT'],
                              'Test', 'UnitTest', 'Wrappers', 'Diffdump',
-                             '2287_1_E1_001.img')
+                             '12287_1_E1_001.img')
         
         dd = Diffdump()
-        p.set_image(image)
-        header  = p.readheader()
+        dd.set_image(image)
+        header = dd.readheader()
 
         # check that the values are correct
         
