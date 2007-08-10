@@ -19,15 +19,19 @@ import os
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
 
-from Handlers.Streams import Chatter
+# to make a temporary BINSORT_SCR directory
+import tempfile
+
+from Handlers.Streams import Chatter, Debug
 
 class _Environment:
     '''A class to store environmental considerations.'''
 
     def __init__(self):
         self._cwd = os.getcwd()
-
         self._is_setup = False
+        self._setup()
+        return
 
     def _setup(self):
         if self._is_setup:
@@ -45,11 +49,21 @@ class _Environment:
             
         # check that BINSORT_SCR exists if set..
 
-        if os.environ.has_key('BINSORT_SCR'):
-            path = os.environ['BINSORT_SCR']
-            if not os.path.exists(path):
-                Chatter.write('Making directory: %s (BINSORT_SCR)' % path)
-                os.makedirs(path)            
+        if False:
+
+            if os.environ.has_key('BINSORT_SCR'):
+                path = os.environ['BINSORT_SCR']
+                if not os.path.exists(path):
+                    Chatter.write('Making directory: %s (BINSORT_SCR)' % path)
+                    os.makedirs(path)
+
+        # create a random BINSORT_SCR directory
+
+        binsort_scr = tempfile.mkdtemp()
+        os.environ['BINSORT_SCR'] = binsort_scr
+        Debug.write('Created BINSORT_SCR: %s' % binsort_scr)
+
+        return
 
     def generate_directory(self, path_tuple):
         '''Used for generating working directories.'''

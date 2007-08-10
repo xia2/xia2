@@ -27,6 +27,7 @@ sys.path.append(os.environ['XIA2_ROOT'])
 from Handlers.Streams import Chatter
 from Handlers.Files import cleanup
 from Handlers.Citations import Citations
+from Handlers.Environment import Environment
 
 from XIA2Version import Version
 
@@ -40,7 +41,7 @@ def check_environment():
 
     xia2_keys = ['XIA2_ROOT', 'XIA2CORE_ROOT']
 
-    ccp4_keys = ['CCP4', 'CLIBD']
+    ccp4_keys = ['CCP4', 'CLIBD', 'BINSORT_SCR']
 
     Chatter.write('Environment configuration...')
     for k in xia2_keys:
