@@ -425,6 +425,16 @@ END PROJECT TS01
       <li>Include support for a reference reflection file, which will 
 	ensure that the reflections are indexed in the same way and 
 	with the same spacegroup - useful for mutants.</li>
+      <li>Now always use three wedges of images for the cell refinement
+	with Mosflm as this makes the lattice elimination more reliable.
+      </li>
+      <li>If one of the images in a sweep is broken (e.g. corrupted) 
+	xia2 will tell you more helpfully rather than just crashing.</li>
+      <li>Now correctly read distance from Mar 165 images. Thanks to 
+	Francois Remacle for this fix to DiffractionImage.</li>
+      <li>Fixed the use of xia2 -3d with RAXIS IV detectors.</li>
+      <li>Use more images for Mosflm autoindexing (three instead of two)
+	as this gives uniformly better results.</li>
     </ul>
 
     <p>Changes since 0.2.5.2</p>
@@ -645,7 +655,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Tue Aug 07 15:17:46 GMT Standard Time 2007
+Last modified: Fri Aug 10 14:12:25 GMT Standard Time 2007
 <!-- hhmts end -->
   </body>
 </html>
