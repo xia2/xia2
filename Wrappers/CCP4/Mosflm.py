@@ -762,6 +762,14 @@ def Mosflm(DriverType = None):
                     num_wedges = 1
                 else:
                     num_wedges = 2
+
+                # change 10/AUG/07 perhaps I should always be using
+                # three wedges?
+
+                Debug.write(
+                    'Cell refinement: overriding the number of wedges to 3')
+
+                num_wedges = 3
             
                 self._mosflm_cell_ref_images = self._refine_select_images(
                     num_wedges, mosaic)
