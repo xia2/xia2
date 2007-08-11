@@ -413,8 +413,8 @@ def Mosflm(DriverType = None):
             phi_width = self.get_header_item('phi_width')
 
             im_a = int((t_a - phi_start) / phi_width)
-            im_b = int((t_a - phi_start) / phi_width)
-            im_c = int((t_a - phi_start) / phi_width)
+            im_b = int((t_b - phi_start) / phi_width)
+            im_c = int((t_c - phi_start) / phi_width)
 
             im_offset = int(180.0 / phi_width)
 
