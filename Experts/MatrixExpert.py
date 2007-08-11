@@ -146,7 +146,7 @@ def transmogrify_matrix(lattice, matrix, target_lattice):
 
     return format_matrix(new_cell, a, u)
     
-def get_real_space_primative_matrix(lattice, matrix):
+def get_real_space_primitive_matrix(lattice, matrix):
     '''Get the primitive real space vectors for the unit cell and
     lattice type. Note that the resulting matrix will need to be
     scaled by a factor equal to the wavelength in Angstroms.'''
@@ -175,7 +175,19 @@ def get_real_space_primative_matrix(lattice, matrix):
 
     return real_a[0:3], real_a[3:6], real_a[6:9]
 
-if __name__ == '__main__':
+def find_primitive_axes(lattice, matrix):
+    '''From an orientation matrix file, calculate the angles (phi) where
+    the primitive cell axes a, b, c are in the plane of the detector
+    (that is, orthogonal to the direct beam vector.'''
+
+    a, b, c = get_real_space_primitive_matrix(lattice, matrix)
+
+    dtor = 180.0 / (4.0 * math.atan(1.0))
+
+    return (dtor * math.atan(a[2] / a[0]), dtor * math.atan(b[2] / b[0]), \
+            dtor * math.atan(c[2] / c[0]))
+
+if __name__ == '__main_old__':
 
     matrix = ''' -0.00417059 -0.00089426 -0.01139821
  -0.00084328 -0.01388561  0.01379631
@@ -189,7 +201,7 @@ if __name__ == '__main__':
 
     print transmogrify_matrix('mC', matrix, 'aP')
     
-    a, b, c = get_real_space_primative_matrix('mC', matrix)
+    a, b, c = get_real_space_primitive_matrix('mC', matrix)
 
     print math.sqrt(dot(a, a)), math.sqrt(dot(b, b)), math.sqrt(dot(c, c))
 
@@ -201,3 +213,12 @@ if __name__ == '__main__':
 
     print dtor * math.atan(a[2] / a[0]), dtor * math.atan(b[2] / b[0]), \
           dtor * math.atan(c[2] / c[0])
+
+if __name__ == '__main__':
+    if len(sys.argv) < 3:
+        raise RuntimeError, '%s lattice matrix_file' % sys.argv[0]
+
+    print '%.2f %.2f %.2f' % find_primitive_axes(sys.argv[1],
+                                                 open(sys.argv[2], 'r').read())
+
+    
