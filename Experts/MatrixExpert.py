@@ -43,6 +43,16 @@ def vec2mat(vectors):
 
 # generic mathematical calculations for 3-vectors
 
+def rot_y(theta):
+    '''Rotation matrix about Y of theta degrees.'''
+
+    dtor = 180.0 / (4.0 * math.atan(1.0))
+
+    c = math.cos(theta / dtor)
+    s = math.sin(theta / dtor)
+
+    return [c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c]
+
 def dot(a, b):
     return sum([a[j] * b[j] for j in range(3)])
 
@@ -136,7 +146,34 @@ def transmogrify_matrix(lattice, matrix, target_lattice):
 
     return format_matrix(new_cell, a, u)
     
+def get_real_space_primative_matrix(lattice, matrix):
+    '''Get the primitive real space vectors for the unit cell and
+    lattice type. Note that the resulting matrix will need to be
+    scaled by a factor equal to the wavelength in Angstroms.'''
 
+    # parse the orientation matrix 
+    
+    cell, a, u = parse_matrix(matrix)
+
+    # generate other possibilities
+
+    o = Othercell()
+    o.set_cell(cell)
+    o.set_lattice(lattice[1].lower())
+    o.generate()
+
+    # transform the possibly centred cell to the primitive setting
+
+    new_cell = o.get_cell('aP')
+    op = symop_to_mat(o.get_reindex_op('aP'))
+
+    primitive_a = matmul(invert(op), a)
+
+    # then convert to real space
+
+    real_a = invert(primitive_a)
+
+    return real_a[0:3], real_a[3:6], real_a[6:9]
 
 if __name__ == '__main__':
 
@@ -152,3 +189,15 @@ if __name__ == '__main__':
 
     print transmogrify_matrix('mC', matrix, 'aP')
     
+    a, b, c = get_real_space_primative_matrix('mC', matrix)
+
+    print math.sqrt(dot(a, a)), math.sqrt(dot(b, b)), math.sqrt(dot(c, c))
+
+    # to get the phi values am most interested in Ra.Z, Rb.Z, Rc.Z.
+    # this is trivial to calculate:
+    # R(t)x.z = 0 => x_1 sin(t) = x_3 cos(t) => t = atan(x_3 / x_1)
+
+    dtor = 180.0 / (4.0 * math.atan(1.0))
+
+    print dtor * math.atan(a[2] / a[0]), dtor * math.atan(b[2] / b[0]), \
+          dtor * math.atan(c[2] / c[0])
