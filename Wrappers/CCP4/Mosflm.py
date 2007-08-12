@@ -396,6 +396,8 @@ def Mosflm(DriverType = None):
             '''Select a sensible number of wedges at sensible places
             for refining the unit cell.'''
 
+            cell_ref_images = []
+
             indxr = self.get_integrater_indexer()
             lattice = indxr.get_indexer_lattice()
             mosaic = indxr.get_indexer_mosaic()
@@ -428,28 +430,64 @@ def Mosflm(DriverType = None):
             Chatter.write('Axes at %d, %d, %d (+- %d)' % \
                           (im_a, im_b, im_c, im_offset))
 
-            Chatter.write('Wedges of %d images width' % \
-                          max(4, int(2 * mosaic / phi_width)))
+            width = max(4, int(2 * mosaic / phi_width))
+
+            Chatter.write('Wedges of %d images width' %  width)
 
             if (im_a % im_offset) in images:
                 Chatter.write('Images around %d for axis A' % \
                               (im_a % im_offset))
+                if (im_a - width / 2) in images and \
+                       (im_a + width / 2) in images:
+                    cell_ref_images.append(
+                        (im_a - width / 2, im_a + width / 2))
+                elif (im_a - width) in images:
+                    cell_ref_images.append(
+                        (im_a - width, im_a))
+                elif (im_a + width) in images:
+                    cell_ref_images.append(
+                        (im_a, im_a + width))
+                    
             if (im_b % im_offset) in images:
                 Chatter.write('Images around %d for axis B' % \
                               (im_b % im_offset))
+                if (im_b - width / 2) in images and \
+                       (im_b + width / 2) in images:
+                    cell_ref_images.append(
+                        (im_b - width / 2, im_b + width / 2))
+                elif (im_b - width) in images:
+                    cell_ref_images.append(
+                        (im_b - width, im_b))
+                elif (im_b + width) in images:
+                    cell_ref_images.append(
+                        (im_b, im_b + width))
+
             if (im_c % im_offset) in images:
                 Chatter.write('Images around %d for axis C' % \
                               (im_c % im_offset))
+                if (im_c - width / 2) in images and \
+                       (im_c + width / 2) in images:
+                    cell_ref_images.append(
+                        (im_c - width / 2, im_c + width / 2))
+                elif (im_c - width) in images:
+                    cell_ref_images.append(
+                        (im_c - width, im_c))
+                elif (im_c + width) in images:
+                    cell_ref_images.append(
+                        (im_c, im_c + width))
 
-
-
-            return
+            return cell_ref_images
 
         def _refine_select_images(self, num_wedges, mosaic):
             '''Select images for cell refinement based on image headers.'''
 
             # call the intelligent version...
-            self._intelligent_refine_select_images()
+            intelligent = self._intelligent_refine_select_images()
+
+            if intelligent:
+                return intelligent
+
+            Chatter.write('Axis not well represented on images')
             
             # first select the images to use for cell refinement
             # if spacegroup >= 75 use one wedge of 2-3 * mosaic spread, min
