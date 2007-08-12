@@ -431,23 +431,17 @@ def Mosflm(DriverType = None):
             Chatter.write('Wedges of %d images width' % \
                           max(4, int(2 * mosaic / phi_width)))
 
-            if im_a in images:
-                Chatter.write('Images around %d for axis A' % im_a)
-            elif (im_offset + im_a) in images:
-                Chatter.write('Images around %d for axis A' %
-                              (im_a + im_offset))
+            if (im_a % im_offset) in images:
+                Chatter.write('Images around %d for axis A' % \
+                              (im_a % im_offset))
+            if (im_b % im_offset) in images:
+                Chatter.write('Images around %d for axis B' % \
+                              (im_b % im_offset))
+            if (im_c % im_offset) in images:
+                Chatter.write('Images around %d for axis C' % \
+                              (im_c % im_offset))
 
-            if im_b in images:
-                Chatter.write('Images around %d for axis B' % im_b)
-            elif (im_offset + im_b) in images:
-                Chatter.write('Images around %d for axis B' %
-                              (im_b + im_offset))
 
-            if im_c in images:
-                Chatter.write('Images around %d for axis C' % im_c)
-            elif (im_offset + im_c) in images:
-                Chatter.write('Images around %d for axis C' %
-                              (im_c + im_offset))
 
             return
 
