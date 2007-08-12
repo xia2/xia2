@@ -488,10 +488,7 @@ def Mosflm(DriverType = None):
             # call the intelligent version...
             intelligent = self._intelligent_refine_select_images()
 
-            if intelligent:
-                return intelligent
-
-            Chatter.write('Axis not well represented on images')
+            Chatter.write('Adding in images from start etc too...')
             
             # first select the images to use for cell refinement
             # if spacegroup >= 75 use one wedge of 2-3 * mosaic spread, min
@@ -531,7 +528,7 @@ def Mosflm(DriverType = None):
             if len(images) < num_wedges * min_images and num_wedges == 2:
                 raise RuntimeError, 'not enough images to refine unit cell'
 
-            cell_ref_images = []
+            cell_ref_images = intelligent
             cell_ref_images.append((images[0], images[min_images - 1]))
 
             # FIXME 23/OCT/06 need to be able to cope with more than two
