@@ -431,50 +431,54 @@ def Mosflm(DriverType = None):
                           (im_a, im_b, im_c, im_offset))
 
             width = max(4, int(2 * mosaic / phi_width))
+            half_width = width / 2
 
             Chatter.write('Wedges of %d images width' %  width)
 
             if (im_a % im_offset) in images:
                 Chatter.write('Images around %d for axis A' % \
                               (im_a % im_offset))
-                if (im_a - width / 2) in images and \
-                       (im_a + width / 2) in images:
+                if ((im_a % im_offset) - half_width) in images and \
+                       ((im_a % im_offset) + half_width) in images:
                     cell_ref_images.append(
-                        (im_a - width / 2, im_a + width / 2))
-                elif (im_a - width) in images:
+                        ((im_a % im_offset) - half_width,
+                         (im_a % im_offset) + half_width))
+                elif ((im_a % im_offset) - width) in images:
                     cell_ref_images.append(
-                        (im_a - width, im_a))
-                elif (im_a + width) in images:
+                        ((im_a % im_offset) - width, (im_a % im_offset)))
+                elif ((im_a % im_offset) + width) in images:
                     cell_ref_images.append(
-                        (im_a, im_a + width))
+                        ((im_a % im_offset), (im_a % im_offset) + width))
                     
             if (im_b % im_offset) in images:
                 Chatter.write('Images around %d for axis B' % \
                               (im_b % im_offset))
-                if (im_b - width / 2) in images and \
-                       (im_b + width / 2) in images:
+                if ((im_b % im_offset) - half_width) in images and \
+                       ((im_b % im_offset) + half_width) in images:
                     cell_ref_images.append(
-                        (im_b - width / 2, im_b + width / 2))
-                elif (im_b - width) in images:
+                        ((im_b % im_offset) - half_width,
+                         (im_b % im_offset) + half_width))
+                elif ((im_b % im_offset) - width) in images:
                     cell_ref_images.append(
-                        (im_b - width, im_b))
-                elif (im_b + width) in images:
+                        ((im_b % im_offset) - width, (im_b % im_offset)))
+                elif ((im_b % im_offset) + width) in images:
                     cell_ref_images.append(
-                        (im_b, im_b + width))
+                        ((im_b % im_offset), (im_b % im_offset) + width))
 
             if (im_c % im_offset) in images:
                 Chatter.write('Images around %d for axis C' % \
                               (im_c % im_offset))
-                if (im_c - width / 2) in images and \
-                       (im_c + width / 2) in images:
+                if ((im_c % im_offset) - half_width) in images and \
+                       ((im_c % im_offset) + half_width) in images:
                     cell_ref_images.append(
-                        (im_c - width / 2, im_c + width / 2))
-                elif (im_c - width) in images:
+                        ((im_c % im_offset) - half_width,
+                         (im_c % im_offset) + half_width))
+                elif ((im_c % im_offset) - width) in images:
                     cell_ref_images.append(
-                        (im_c - width, im_c))
-                elif (im_c + width) in images:
+                        ((im_c % im_offset) - width, (im_c % im_offset)))
+                elif ((im_c % im_offset) + width) in images:
                     cell_ref_images.append(
-                        (im_c, im_c + width))
+                        ((im_c % im_offset), (im_c % im_offset) + width))
 
             return cell_ref_images
 
