@@ -1385,6 +1385,7 @@ def Mosflm(DriverType = None):
             for o in output:
                 if 'Cell refinement is complete' in o:
                     cell_refinement_ok = True
+                    
 
             if not cell_refinement_ok:
                 Chatter.write(
@@ -1679,6 +1680,21 @@ def Mosflm(DriverType = None):
                 # FIXME will these get lost if the indexer in question is
                 # not this program...? Find out... would be nice to write
                 # this to Chatter too...
+
+                if 'Cell refinement is complete' in o:
+                    j = i + 2
+                    refined_cell = map(float, output[j].split()[2:])
+                    error = map(float, output[j + 1].split()[1:])
+
+                    names = ['A', 'B', 'C', 'Alpha', 'Beta', 'Gamma']
+
+                    Debug.write('Errors in cell parameters (relative %)')
+
+                    for j in range(6):
+                        Debug.write('%s\t%7.3f %5.3f %.3f' % \
+                                    (names[j], refined_cell[j],
+                                     error[j],
+                                     100.0 * error[j] / refined_cell[j]))
                 
                 if 'Refined cell' in o:
                     # feed these back to the indexer
