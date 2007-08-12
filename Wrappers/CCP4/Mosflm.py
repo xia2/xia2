@@ -230,7 +230,8 @@ from Handlers.Files import FileHandler
 from lib.Guff import auto_logfiler, mean_sd
 from lib.SymmetryLib import lattice_to_spacegroup
 
-from Experts.MatrixExpert import transmogrify_matrix, find_primitive_axes
+from Experts.MatrixExpert import transmogrify_matrix, find_primitive_axes, \
+     find_primitive_reciprocal_axes
 
 # exceptions
 
@@ -406,7 +407,8 @@ def Mosflm(DriverType = None):
 
             # this will return the phi angles where the crystal axes
             # a, b, c are in the plane of the detector
-            t_a, t_b, t_c = find_primitive_axes(lattice, input_matrix)
+            t_a, t_b, t_c = find_primitive_reciprocal_axes(
+                lattice, input_matrix)
 
             # next convert these into image numbers
             phi_start = self.get_header_item('phi_start')
@@ -422,6 +424,9 @@ def Mosflm(DriverType = None):
             images = self.get_matching_images()
 
             Chatter.write('Intelligent cell refinement image selection')
+
+            Chatter.write('Axes at %d, %d, %d (+- %d)' % \
+                          (im_a, im_b, im_c, im_offset))
 
             Chatter.write('Wedges of %d images width' % \
                           max(4, int(2 * mosaic / phi_width)))

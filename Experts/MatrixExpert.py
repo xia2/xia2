@@ -175,12 +175,47 @@ def get_real_space_primitive_matrix(lattice, matrix):
 
     return real_a[0:3], real_a[3:6], real_a[6:9]
 
+def get_reciprocal_space_primitive_matrix(lattice, matrix):
+    '''Get the primitive reciprocal space vectors for this matrix.'''
+
+    # parse the orientation matrix 
+    
+    cell, a, u = parse_matrix(matrix)
+
+    # generate other possibilities
+
+    o = Othercell()
+    o.set_cell(cell)
+    o.set_lattice(lattice[1].lower())
+    o.generate()
+
+    # transform the possibly centred cell to the primitive setting
+
+    new_cell = o.get_cell('aP')
+    op = symop_to_mat(o.get_reindex_op('aP'))
+
+    primitive_a = matmul(invert(op), a)
+
+    return mat2vec(primitive_a)
+
 def find_primitive_axes(lattice, matrix):
     '''From an orientation matrix file, calculate the angles (phi) where
     the primitive cell axes a, b, c are in the plane of the detector
     (that is, orthogonal to the direct beam vector.'''
 
     a, b, c = get_real_space_primitive_matrix(lattice, matrix)
+
+    dtor = 180.0 / (4.0 * math.atan(1.0))
+
+    return (dtor * math.atan(a[2] / a[0]), dtor * math.atan(b[2] / b[0]), \
+            dtor * math.atan(c[2] / c[0]))
+
+def find_primitive_reciprocal_axes(lattice, matrix):
+    '''From an orientation matrix file, calculate the angles (phi) where
+    the primitive reciprical space cell axes a, b, c are in the plane of
+    the detector (that is, orthogonal to the direct beam vector.'''
+
+    a, b, c = get_reciprocal_space_primitive_matrix(lattice, matrix)
 
     dtor = 180.0 / (4.0 * math.atan(1.0))
 
@@ -216,9 +251,26 @@ if __name__ == '__main_old__':
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        raise RuntimeError, '%s lattice matrix_file' % sys.argv[0]
 
-    print '%.2f %.2f %.2f' % find_primitive_axes(sys.argv[1],
-                                                 open(sys.argv[2], 'r').read())
+        lattice = 'mC'
 
+        matrix = ''' -0.00417059 -0.00089426 -0.01139821
+ -0.00084328 -0.01388561  0.01379631
+ -0.00121258  0.01273236  0.01424531
+      -0.099       0.451      -0.013
+ -0.94263428 -0.04741397 -0.33044314
+ -0.19059871 -0.73622239  0.64934635
+ -0.27406719  0.67507666  0.68495023
+    228.0796     52.5895     44.1177     90.0000    100.6078     90.0000
+     -0.0985      0.4512     -0.0134'''
+
+    else:
+        lattice = sys.argv[1]
+        matrix = open(sys.argv[2], 'r').read()
+
+    print '%.2f %.2f %.2f' % find_primitive_axes(
+        lattice, matrix)
+
+    print '%.2f %.2f %.2f' % find_primitive_reciprocal_axes(
+        lattice, matrix)
     
