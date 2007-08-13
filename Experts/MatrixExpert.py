@@ -207,8 +207,9 @@ def find_primitive_axes(lattice, matrix):
 
     dtor = 180.0 / (4.0 * math.atan(1.0))
 
-    return (dtor * math.atan(a[2] / a[0]), dtor * math.atan(b[2] / b[0]), \
-            dtor * math.atan(c[2] / c[0]))
+    return (dtor * math.atan( - a[2] / a[0]), \
+            dtor * math.atan( - b[2] / b[0]), \
+            dtor * math.atan( - c[2] / c[0]))
 
 def find_primitive_reciprocal_axes(lattice, matrix):
     '''From an orientation matrix file, calculate the angles (phi) where
@@ -219,8 +220,9 @@ def find_primitive_reciprocal_axes(lattice, matrix):
 
     dtor = 180.0 / (4.0 * math.atan(1.0))
 
-    return (dtor * math.atan(a[2] / a[0]), dtor * math.atan(b[2] / b[0]), \
-            dtor * math.atan(c[2] / c[0]))
+    return (dtor * math.atan( - a[2] / a[0]), \
+            dtor * math.atan( - b[2] / b[0]), \
+            dtor * math.atan( - c[2] / c[0]))
 
 if __name__ == '__main_old__':
 
