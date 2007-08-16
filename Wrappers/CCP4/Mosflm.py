@@ -231,7 +231,7 @@ from lib.Guff import auto_logfiler, mean_sd
 from lib.SymmetryLib import lattice_to_spacegroup
 
 from Experts.MatrixExpert import transmogrify_matrix, find_primitive_axes, \
-     find_primitive_reciprocal_axes
+     find_primitive_reciprocal_axes, get_reciprocal_space_primitive_matrix
 
 # exceptions
 
@@ -244,6 +244,7 @@ from Schema.Exceptions.IntegrationError import IntegrationError
 # interface (e.g. new version, with reindexing as the finish...)
 
 from Wrappers.CCP4.Reindex import Reindex
+from Wrappers.XIA.Diffdump import Diffdump
 
 def Mosflm(DriverType = None):
     '''A factory for MosflmWrapper classes.'''
@@ -294,6 +295,13 @@ def Mosflm(DriverType = None):
 
             pass
 
+        def _mosflm_get_header(self, image):
+            '''Return the header for this image.'''
+            name = self.get_image_name(image)            
+            dd = Diffdump()
+            dd.set_image(name)
+            return dd.readheader()
+
         def _estimate_gain(self):
             '''Estimate a GAIN appropriate for reducing this set.'''
 
@@ -338,7 +346,7 @@ def Mosflm(DriverType = None):
             # FIXME perhaps this should be somewhere central, because
             # LabelitScreen will share the same implementation
 
-            phi_width = self.get_header_item('phi_width')
+            phi_width = self._get_header_item('phi_width')
             images = self.get_matching_images()
 
             # FIXME what to do if phi_width is 0.0? set it
@@ -391,6 +399,177 @@ def Mosflm(DriverType = None):
                 self.add_indexer_image_wedge(images[-1])
 
             return
+
+        def _intelligent_refine_select_images_parallel(self):
+            '''Return wedges around phi points where the reciprocal
+            cell axes are close to being parallel to the detector
+            face. Assumes beam axis (Z) perpendicular to detector face.'''
+
+            indxr = self.get_integrater_indexer()
+            lattice = indxr.get_indexer_lattice()
+            mosaic = indxr.get_indexer_mosaic()
+            matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
+
+            input_matrix = ''
+            for m in matrix:
+                input_matrix += '%s\n' % m
+
+            # compute the primitive triclinic unit cell
+
+            astar, bstar, cstar = get_reciprocal_space_primitive_matrix(
+                lattice, input_matrix)
+
+            # iterate over the possible phi angles recorded in the
+            # headers and find min(|R(p)a.Z|) etc. 
+
+            images = self.get_matching_images()
+            images.sort()
+
+            phi_width = self.get_header_item('phi_width')
+
+            half_width = int(max(2, mosaic / phi_width))
+
+            # looking for minima in axiz.Z => parallel to detector face
+
+            best_dot_a = 1.0e6
+            best_image_a = None
+            best_dot_b = 1.0e6
+            best_image_b = None
+            best_dot_c = 1.0e6
+            best_image_c = None
+
+            # only look at the middle of the images to guarantee that the
+            # complete wedges are available
+
+            for i in images[half_width + 1:- (half_width + 1)]:
+                
+                header = self._mosflm_get_header(i)
+
+                dtor = 180.0 / (4.0 * math.atan(1.0))
+
+                phi = 0.5 * header['phi_width'] + header['phi_start']
+            
+                c = math.cos(phi / dtor)
+                s = math.sin(phi / dtor)
+                
+                dot_a = math.fabs(-s * astar[0] + c * astar[2])
+                dot_b = math.fabs(-s * bstar[0] + c * bstar[2])
+                dot_c = math.fabs(-s * cstar[0] + c * cstar[2])
+
+                if dot_a < best_dot_a:
+                    best_dot_a = dot_a
+                    best_image_a = i
+                if dot_b < best_dot_b:
+                    best_dot_b = dot_b
+                    best_image_b = i
+                if dot_c < best_dot_c:
+                    best_dot_c = dot_c
+                    best_image_c = i
+
+            # next build up wedges around these phi values - ignoring 
+            # the fact that these may overlap... this should be worried
+            # about at a higher level or indeed just ignored...
+
+            wedges = []
+
+            wedges.append((best_image_a - half_width,
+                           best_image_a + half_width))
+            wedges.append((best_image_b - half_width,
+                           best_image_b + half_width))
+            wedges.append((best_image_c - half_width,
+                           best_image_c + half_width))
+
+            Debug.write('Selected images for cell refinement:')
+            for w in wedges:
+                Debug.write('[%d -> %d]' % w)
+
+            return wedges
+
+
+        def _intelligent_refine_select_images_perpendicular(self):
+            '''Return wedges around phi points where the reciprocal
+            cell axes are close to being perpendicular to the detector
+            face. Assumes beam axis (Z) perpendicular to detector face.'''
+
+            indxr = self.get_integrater_indexer()
+            lattice = indxr.get_indexer_lattice()
+            mosaic = indxr.get_indexer_mosaic()
+            matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
+
+            input_matrix = ''
+            for m in matrix:
+                input_matrix += '%s\n' % m
+
+            # compute the primitive triclinic unit cell
+
+            astar, bstar, cstar = get_reciprocal_space_primitive_matrix(
+                lattice, input_matrix)
+
+            # iterate over the possible phi angles recorded in the
+            # headers and find min(|R(p)a.Z|) etc. 
+
+            images = self.get_matching_images()
+            images.sort()
+
+            phi_width = self.get_header_item('phi_width')
+
+            half_width = int(max(2, mosaic / phi_width))
+
+            # looking for minima in axiz.Z => parallel to detector face
+
+            best_dot_a = 0.0
+            best_image_a = None
+            best_dot_b = 0.0
+            best_image_b = None
+            best_dot_c = 0.0
+            best_image_c = None
+
+            # only look at the middle of the images to guarantee that the
+            # complete wedges are available
+
+            for i in images[half_width + 1:- (half_width + 1)]:
+                
+                header = self._mosflm_get_header(i)
+
+                dtor = 180.0 / (4.0 * math.atan(1.0))
+
+                phi = 0.5 * header['phi_width'] + header['phi_start']
+            
+                c = math.cos(phi / dtor)
+                s = math.sin(phi / dtor)
+                
+                dot_a = math.fabs(-s * astar[0] + c * astar[2])
+                dot_b = math.fabs(-s * bstar[0] + c * bstar[2])
+                dot_c = math.fabs(-s * cstar[0] + c * cstar[2])
+
+                if dot_a > best_dot_a:
+                    best_dot_a = dot_a
+                    best_image_a = i
+                if dot_b > best_dot_b:
+                    best_dot_b = dot_b
+                    best_image_b = i
+                if dot_c > best_dot_c:
+                    best_dot_c = dot_c
+                    best_image_c = i
+
+            # next build up wedges around these phi values - ignoring 
+            # the fact that these may overlap... this should be worried
+            # about at a higher level or indeed just ignored...
+
+            wedges = []
+
+            wedges.append((best_image_a - half_width,
+                           best_image_a + half_width))
+            wedges.append((best_image_b - half_width,
+                           best_image_b + half_width))
+            wedges.append((best_image_c - half_width,
+                           best_image_c + half_width))
+
+            Debug.write('Selected images for cell refinement:')
+            for w in wedges:
+                Debug.write('[%d -> %d]' % w)
+
+            return wedges
 
         def _intelligent_refine_select_images(self):
             '''Select a sensible number of wedges at sensible places
@@ -486,9 +665,19 @@ def Mosflm(DriverType = None):
             '''Select images for cell refinement based on image headers.'''
 
             # call the intelligent version...
-            intelligent = self._intelligent_refine_select_images()
 
-            Chatter.write('Adding in images from start etc too...')
+            if True:
+                return self._intelligent_refine_select_images_parallel()
+
+            if False:
+
+                intelligent = []
+                if False:
+                    pass
+
+                intelligent = self._intelligent_refine_select_images()
+
+                Chatter.write('Adding in images from start etc too...')
             
             # first select the images to use for cell refinement
             # if spacegroup >= 75 use one wedge of 2-3 * mosaic spread, min
@@ -528,7 +717,8 @@ def Mosflm(DriverType = None):
             if len(images) < num_wedges * min_images and num_wedges == 2:
                 raise RuntimeError, 'not enough images to refine unit cell'
 
-            cell_ref_images = intelligent
+            # was intelligent
+            cell_ref_images = []
             cell_ref_images.append((images[0], images[min_images - 1]))
 
             # FIXME 23/OCT/06 need to be able to cope with more than two
@@ -862,10 +1052,12 @@ def Mosflm(DriverType = None):
                 # change 10/AUG/07 perhaps I should always be using
                 # three wedges?
 
-                Debug.write(
-                    'Cell refinement: overriding the number of wedges to 3')
+                if False:
 
-                num_wedges = 3
+                    Debug.write(
+                        'Cell refinement: overriding the number of wedges to 3')
+
+                    num_wedges = 3
             
                 self._mosflm_cell_ref_images = self._refine_select_images(
                     num_wedges, mosaic)

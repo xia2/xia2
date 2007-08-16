@@ -25,10 +25,24 @@ class _Flags:
         self._z_min = 0.0
         self._refine = True
         self._zero_dose = False
-
         self._relax = False
 
+
+        # and these for the mosflm implementation
+        self._cellref_mode = 'default'
+
         return
+
+    def set_cellref_mode(self, cellref_mode):
+        if not cellref_mode in ['default', 'parallel', 'orthogonal', 'both']:
+            raise RuntimeError, 'cellref_mode %s unknown' % cellref_mode
+
+        self._cellref_mode = cellref_mode
+
+        return
+
+    def get_cellref_mode(self):
+        return self._cellref_mode
 
     def set_quick(self, quick):
         self._quick = quick

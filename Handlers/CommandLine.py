@@ -163,6 +163,12 @@ class _CommandLine(Object):
             raise RuntimeError, '%s (%s)' % \
                   (self._help_z_min(), str(e))
 
+        try:
+            self._read_cellref_mode()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_cellref_mode(), str(e))
+
         return
 
     # command line parsers, getters and help functions.
@@ -477,6 +483,23 @@ class _CommandLine(Object):
         if '-trust_timestamps' in sys.argv:
             Flags.set_trust_timestamps(True)
         return
+
+    def _read_cellref_mode(self):
+        try:
+            index = sys.argv.index('-cellref_mode')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_cellref_mode(sys.argv[index + 1])
+            
+        return
+
+    def _help_cellref_mode(self):
+        return '-cellref_mode (default|parallel|orthogonal|both)'
+
 
     def _read_quick(self):
 
