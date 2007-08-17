@@ -486,7 +486,7 @@ def Mosflm(DriverType = None):
             return wedges
 
 
-        def _intelligent_refine_select_images_perpendicular(self):
+        def _intelligent_refine_select_images_ortho(self):
             '''Return wedges around phi points where the reciprocal
             cell axes are close to being perpendicular to the detector
             face. Assumes beam axis (Z) perpendicular to detector face.'''
@@ -571,114 +571,25 @@ def Mosflm(DriverType = None):
 
             return wedges
 
-        def _intelligent_refine_select_images(self):
-            '''Select a sensible number of wedges at sensible places
-            for refining the unit cell.'''
-
-            cell_ref_images = []
-
-            indxr = self.get_integrater_indexer()
-            lattice = indxr.get_indexer_lattice()
-            mosaic = indxr.get_indexer_mosaic()
-            matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
-
-            input_matrix = ''
-            for m in matrix:
-                input_matrix += '%s\n' % m
-
-            # this will return the phi angles where the crystal axes
-            # a, b, c are in the plane of the detector
-            t_a, t_b, t_c = find_primitive_reciprocal_axes(
-                lattice, input_matrix)
-
-            # next convert these into image numbers
-            phi_start = self.get_header_item('phi_start')
-            phi_width = self.get_header_item('phi_width')
-
-            im_a = int((t_a - phi_start) / phi_width)
-            im_b = int((t_b - phi_start) / phi_width)
-            im_c = int((t_c - phi_start) / phi_width)
-
-            im_offset = int(180.0 / phi_width)
-
-            # next see if we have them, or theta + 180 in there
-            images = self.get_matching_images()
-
-            Chatter.write('Intelligent cell refinement image selection')
-
-            Chatter.write('Axes at %d, %d, %d (+- %d)' % \
-                          (im_a, im_b, im_c, im_offset))
-
-            width = max(4, int(2 * mosaic / phi_width))
-            half_width = width / 2
-
-            Chatter.write('Wedges of %d images width' %  width)
-
-            if (im_a % im_offset) in images:
-                Chatter.write('Images around %d for axis A' % \
-                              (im_a % im_offset))
-                if ((im_a % im_offset) - half_width) in images and \
-                       ((im_a % im_offset) + half_width) in images:
-                    cell_ref_images.append(
-                        ((im_a % im_offset) - half_width,
-                         (im_a % im_offset) + half_width))
-                elif ((im_a % im_offset) - width) in images:
-                    cell_ref_images.append(
-                        ((im_a % im_offset) - width, (im_a % im_offset)))
-                elif ((im_a % im_offset) + width) in images:
-                    cell_ref_images.append(
-                        ((im_a % im_offset), (im_a % im_offset) + width))
-                    
-            if (im_b % im_offset) in images:
-                Chatter.write('Images around %d for axis B' % \
-                              (im_b % im_offset))
-                if ((im_b % im_offset) - half_width) in images and \
-                       ((im_b % im_offset) + half_width) in images:
-                    cell_ref_images.append(
-                        ((im_b % im_offset) - half_width,
-                         (im_b % im_offset) + half_width))
-                elif ((im_b % im_offset) - width) in images:
-                    cell_ref_images.append(
-                        ((im_b % im_offset) - width, (im_b % im_offset)))
-                elif ((im_b % im_offset) + width) in images:
-                    cell_ref_images.append(
-                        ((im_b % im_offset), (im_b % im_offset) + width))
-
-            if (im_c % im_offset) in images:
-                Chatter.write('Images around %d for axis C' % \
-                              (im_c % im_offset))
-                if ((im_c % im_offset) - half_width) in images and \
-                       ((im_c % im_offset) + half_width) in images:
-                    cell_ref_images.append(
-                        ((im_c % im_offset) - half_width,
-                         (im_c % im_offset) + half_width))
-                elif ((im_c % im_offset) - width) in images:
-                    cell_ref_images.append(
-                        ((im_c % im_offset) - width, (im_c % im_offset)))
-                elif ((im_c % im_offset) + width) in images:
-                    cell_ref_images.append(
-                        ((im_c % im_offset), (im_c % im_offset) + width))
-
-            return cell_ref_images
-
         def _refine_select_images(self, num_wedges, mosaic):
             '''Select images for cell refinement based on image headers.'''
 
             # call the intelligent version...
 
-            if True:
-                return self._intelligent_refine_select_images_parallel()
+            cell_ref_images = []
 
-            if False:
+            cellref_mode = Flags.get_cellref_mode()
 
-                intelligent = []
-                if False:
-                    pass
+            if cellref_mode == 'both' or cellref_mode == 'parallel':
+                for wedge in self._intelligent_refine_select_images_parallel():
+                    cell_ref_images.append(wedge)
+            if cellref_mode == 'both' or cellref_mode == 'orthogonal':
+                for wedge in self._intelligent_refine_select_images_ortho():
+                    cell_ref_images.append(wedge)
+                    
+            if cellref_mode != 'default':
+                return cell_ref_images
 
-                intelligent = self._intelligent_refine_select_images()
-
-                Chatter.write('Adding in images from start etc too...')
-            
             # first select the images to use for cell refinement
             # if spacegroup >= 75 use one wedge of 2-3 * mosaic spread, min
             # 3 images, else use two wedges of this size as near as possible
@@ -717,7 +628,6 @@ def Mosflm(DriverType = None):
             if len(images) < num_wedges * min_images and num_wedges == 2:
                 raise RuntimeError, 'not enough images to refine unit cell'
 
-            # was intelligent
             cell_ref_images = []
             cell_ref_images.append((images[0], images[min_images - 1]))
 
