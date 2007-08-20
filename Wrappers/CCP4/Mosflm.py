@@ -1216,6 +1216,27 @@ def Mosflm(DriverType = None):
             for p in parameters.keys():
                 self.input('%s %s' % (p, str(parameters[p])))
 
+            # compute the detector limits to use for this...
+            # these are w.r.t. the beam centre and are there to
+            # ensure that spots are not predicted off the detector
+            # (see bug # 2551)
+
+            detector_width = self._fp_header['size'][0] * \
+                             self._fp_header['pixel'][0]
+            detector_height = self._fp_header['size'][1] * \
+                              self._fp_header['pixel'][1]
+
+            # fixme this will probably not work well for non-square
+            # detectors...
+
+            lim_x = min(beam[0], detector_width - beam[0])
+            lim_y = min(beam[1], detector_height - beam[1])
+
+            Debug.write('Detector limits: %.1f %.1f' % (lim_x, lim_y))
+
+            self.input('limits xmin 0.0 xmax %.1f ymin 0.0 ymax %.1f' % \
+                       (lim_x, lim_y))            
+
             # fudge factors to prevent Mosflm from being too fussy
             self.input('refinement residual 10.0')
 
@@ -1460,9 +1481,31 @@ def Mosflm(DriverType = None):
             # fudge factors to prevent Mosflm from being too fussy
             self.input('refinement residual 10.0')
 
+            # compute the detector limits to use for this...
+            # these are w.r.t. the beam centre and are there to
+            # ensure that spots are not predicted off the detector
+            # (see bug # 2551)
+
+            detector_width = self._fp_header['size'][0] * \
+                             self._fp_header['pixel'][0]
+            detector_height = self._fp_header['size'][1] * \
+                              self._fp_header['pixel'][1]
+
+            # fixme this will probably not work well for non-square
+            # detectors...
+
+            lim_x = min(beam[0], detector_width - beam[0])
+            lim_y = min(beam[1], detector_height - beam[1])
+
+            Debug.write('Detector limits: %.1f %.1f' % (lim_x, lim_y))
+
+            self.input('limits xmin 0.0 xmax %.1f ymin 0.0 ymax %.1f' % \
+                       (lim_x, lim_y))            
+
             # set up the cell refinement - allowing quite a lot of
             # refinement for tricky cases (e.g. 7.2 SRS insulin SAD
             # data collected on MAR IP)
+
             self.input('postref multi segments %d repeat 10' % \
                        len(self._mosflm_cell_ref_images))
             for cri in self._mosflm_cell_ref_images:
@@ -2041,6 +2084,27 @@ def Mosflm(DriverType = None):
 
             # set up the integration
             self.input('postref fix all')
+
+            # compute the detector limits to use for this...
+            # these are w.r.t. the beam centre and are there to
+            # ensure that spots are not predicted off the detector
+            # (see bug # 2551)
+
+            detector_width = self._fp_header['size'][0] * \
+                             self._fp_header['pixel'][0]
+            detector_height = self._fp_header['size'][1] * \
+                              self._fp_header['pixel'][1]
+
+            # fixme this will probably not work well for non-square
+            # detectors...
+
+            lim_x = min(beam[0], detector_width - beam[0])
+            lim_y = min(beam[1], detector_height - beam[1])
+
+            Debug.write('Detector limits: %.1f %.1f' % (lim_x, lim_y))
+
+            self.input('limits xmin 0.0 xmax %.1f ymin 0.0 ymax %.1f' % \
+                       (lim_x, lim_y))            
 
             if self._mosflm_postref_fix_mosaic:
                 self.input('postref fix mosaic')
