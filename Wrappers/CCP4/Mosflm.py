@@ -1245,6 +1245,9 @@ def Mosflm(DriverType = None):
             # set up the cell refinement - allowing quite a lot of
             # refinement for tricky cases (e.g. 7.2 SRS insulin SAD
             # data collected on MAR IP)
+
+            self._reorder_cell_refinement_images()
+            
             self.input('postref multi segments %d repeat 10' % \
                        len(self._mosflm_cell_ref_images))
 
@@ -1507,6 +1510,8 @@ def Mosflm(DriverType = None):
             # set up the cell refinement - allowing quite a lot of
             # refinement for tricky cases (e.g. 7.2 SRS insulin SAD
             # data collected on MAR IP)
+
+            self._reorder_cell_refinement_images()
 
             self.input('postref multi segments %d repeat 10' % \
                        len(self._mosflm_cell_ref_images))
@@ -2277,6 +2282,22 @@ def Mosflm(DriverType = None):
                 Chatter.write('Set resolution limit: %5.2f' % resolution)
                 
             return self._mosflm_hklout
+
+        def _reorder_cell_refinement_images(self):
+            if not self._mosflm_cell_ref_images:
+                raise RuntimeError, 'no cell refinement images to reorder'
+
+            hashmap = { }
+
+            for m in self._mosflm_cell_ref_images:
+                hashmap[m[0]] = m[1]
+
+            keys = hashymap.keys()
+            keys.sort()
+
+            cell_ref_images = [(k, hasmap[k]) for k in keys]
+            self._mosflm_cell_ref_images = cell_ref_images
+            return
     
     return MosflmWrapper()
 
