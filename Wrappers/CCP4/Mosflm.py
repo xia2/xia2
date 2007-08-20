@@ -2292,7 +2292,7 @@ def Mosflm(DriverType = None):
             for m in self._mosflm_cell_ref_images:
                 hashmap[m[0]] = m[1]
 
-            keys = hashymap.keys()
+            keys = hashmap.keys()
             keys.sort()
 
             cell_ref_images = [(k, hasmap[k]) for k in keys]
