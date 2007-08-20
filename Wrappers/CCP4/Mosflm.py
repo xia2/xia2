@@ -582,10 +582,12 @@ def Mosflm(DriverType = None):
 
             if cellref_mode == 'both' or cellref_mode == 'parallel':
                 for wedge in self._intelligent_refine_select_images_parallel():
-                    cell_ref_images.append(wedge)
+                    if not wedge in cell_ref_images:
+                        cell_ref_images.append(wedge)
             if cellref_mode == 'both' or cellref_mode == 'orthogonal':
                 for wedge in self._intelligent_refine_select_images_ortho():
-                    cell_ref_images.append(wedge)
+                    if not wedge in cell_ref_images:
+                        cell_ref_images.append(wedge)
                     
             if cellref_mode != 'default':
                 return cell_ref_images
