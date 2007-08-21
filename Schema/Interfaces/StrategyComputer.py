@@ -133,6 +133,8 @@ class StrategyComputer:
     def get_strategy(self):
         '''Get the resulting strategy.'''
 
+        self.strategy()
+
         return copy.deepcopy(self._stgcr_strategy)
 
     # flag handling
@@ -147,7 +149,8 @@ class StrategyComputer:
         self._stgcr_done = done
         return
 
-    # working functions to be overloaded
+    # working functions to be overloaded - prepare is e.g. for the integration
+    # of the images, strategy is for the actual strategy calculation.
 
     def _strategy_prepare(self):
         raise RuntimeError, 'overload me'
@@ -161,4 +164,14 @@ class StrategyComputer:
         '''Actually compute the strategy using the _strategy_prepare and
         _strategy functions.'''
 
-        
+        while not self.get_strategy_done():
+            while not self.get_strategy_prepare_done():
+                self.set_strategy_prepare_done(True)
+                self._strategy_prepare()
+
+            self.set_strategy_done(True)
+            self._strategy()
+
+        return
+
+    
