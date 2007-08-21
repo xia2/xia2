@@ -1,0 +1,133 @@
+\documentclass[a4paper, 11pt]{article}
+\begin{document}
+\section{Introduction}
+
+This is where I explain how the BEST strategy implementation will work.
+
+\section{Ideas}
+
+\begin{itemize}
+
+\item{Allow for MAD, SAD, NATIVE data collection.}
+
+\item{Decide what to do based on:
+\begin{itemize}
+\item{Description of the beamline}
+\iten{Number and species of heavy atoms}
+\item{Autoindexing solution}
+\item{Spacegroup if available from a reference reflection file}
+\item{Sequence.}
+}
+
+\item{Decide MAD or SAD based on beamline, predicted $f'$ and $f''$, scan,
+solvent and number of sites per AA residue.}
+
+\end{itemize}
+
+The input should be a little something like this:
+
+\begin{verbatim}
+
+BEGIN PROJECT TS00
+
+BEGIN CRYSTAL 13185
+
+BEGIN AA_SEQUENCE
+
+MHKMWPSDSNDHRVTRRNVIIFSSLLLGSLAILLALLLIRTKDQYYELRDFALGTSVRIV
+VSSQKINPRTIAEAILEDMKRITYKFSFTDERSVVKKINDHPNEWVEVDEETYSLIKAAC
+AFAELTDGAFDPTVGRLLELWGFTGNYENLRVPSREEIEEALKHTGYKNVLFDDKNMRVM
+VKNGVKIDLGGIAKGYALDRARQIALSFDENATGFVEAGGDVRIIGPKFGKYPWVIGVKD
+PRGDDVIDYIYLKSGAVATSGDYERYFVVDGVRYHHILDPSTGYPARGVWSVTIIAEDAT
+TADALSTAGFVMAGKDWRKVVLDFPNMGAHLLIVLEGGAIERSETFKLFERE
+
+END AA_SEQUENCE
+
+BEGIN HA_INFO
+ATOM SE
+NUMBER_PER_MONOMER 5
+END HA_INFO
+
+END CRYSTAL 13185
+
+
+BEGIN CRYSTAL 13186
+
+BEGIN AA_SEQUENCE
+
+MHKMWPSDSNDHRVTRRNVIIFSSLLLGSLAILLALLLIRTKDQYYELRDFALGTSVRIV
+VSSQKINPRTIAEAILEDMKRITYKFSFTDERSVVKKINDHPNEWVEVDEETYSLIKAAC
+AFAELTDGAFDPTVGRLLELWGFTGNYENLRVPSREEIEEALKHTGYKNVLFDDKNMRVM
+VKNGVKIDLGGIAKGYALDRARQIALSFDENATGFVEAGGDVRIIGPKFGKYPWVIGVKD
+PRGDDVIDYIYLKSGAVATSGDYERYFVVDGVRYHHILDPSTGYPARGVWSVTIIAEDAT
+TADALSTAGFVMAGKDWRKVVLDFPNMGAHLLIVLEGGAIERSETFKLFERE
+
+END AA_SEQUENCE
+
+BEGIN HA_INFO
+ATOM SE
+NUMBER_PER_MONOMER 5
+END HA_INFO
+
+END CRYSTAL 13186
+
+END PROJECT TS00
+
+etc...
+
+\end{verbatim}
+
+This would be interpreted to be two crystals from the same selenomethionated
+protein. The first stage would be to collect a couple of reference frames
+from each sample and populate a block something like this:
+
+\begin{verbatim}
+
+BEGIN CRYSTAL 13186
+
+...
+
+SCAN 13186_scan.raw
+
+BEGIN SCREENING_IMAGES
+WAVELENGTH 0.97950
+BEAM 109.0 105.0
+IMAGE 13186_test_001.img
+DIRECTORY /data/jcsg/als1/8.2.1/20050121/collection/TM1553/13186/
+END SCREENING_IMAGES
+
+END CRYSTAL 13186
+
+\end{verbatim}
+
+The screening images should be measured at a distance suitable for the 
+resolution you want (inscribed circle) and should be measured at 
+$0^{\circ}$, $45^{\circ}$ and $90^{\circ}$. If this is a MAD beamline and
+you are interested in a MAD experiment then collect a scan and tell the 
+program about this. The scan, together with the results of the screening,
+will be used to decide what to measure on each sample.
+
+If a number of samples are available then they should be ranked, then the
+weaker samples used to characterise the sample in more detail before collecting
+from the best. They should be ranked on the total data collection time for some
+``standard'' set, which means that the best crystals are those which will 
+give the data in the shortest time, and therefore with the least damage.
+
+If we are doing MAD data collection then measure all wavelengths to the same
+resolution (yes this is a waste). If the beamline can change wavelength 
+quickly and reliably then the ``best'' way to measure the data is in e.g. 10
+degree wedges, else measure data for refinement first away from the edge and
+then measure for phasing. Something like LREM -> INFL -> PEAK. 
+
+If SAD then need to decide from the number of sites, the wavelength and 
+therefore the anomalous scattering form factors how much data will be needed
+to give a successful structure solution. This will also require information
+on the solvent fraction and resolution, as increasing these will improve the
+chances of density modification producing an interpretable map.
+
+Where to draw these lines will be an interesting area of research. Need to 
+probably do some searches of the PDB and also get hold of some SG data.
+
+
+
+\end{document}

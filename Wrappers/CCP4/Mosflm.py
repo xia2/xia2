@@ -287,6 +287,11 @@ def Mosflm(DriverType = None):
 
             self._mosflm_gain = None
 
+            # things to support strategy calculation with BEST
+            self._mosflm_best_parfile = None
+            self._mosflm_best_datfile = None
+            self._mosflm_best_hklfile = None
+
             return
 
         def diffdump(self, image):
@@ -2298,44 +2303,180 @@ def Mosflm(DriverType = None):
             cell_ref_images = [(k, hashmap[k]) for k in keys]
             self._mosflm_cell_ref_images = cell_ref_images
             return
-    
+
+        def generate_best_files(self, indxr, image_list):
+            '''Integrate a list of single images as numbers with the
+            BEST output switched on - this is to support the strategy
+            calculation. Also run an autoindex to get the bestfile.dat
+            file (the radial background) out.'''
+
+            # first autoindex to generate the .dat file
+
+            if not indxr.get_indexer_payload('mosflm_orientation_matrix'):
+                raise RuntimeError, 'indexer has no mosflm orientation'
+
+            lattice = indxr.get_indexer_lattice()
+            mosaic = indxr.get_indexer_mosaic()
+            cell = indxr.get_indexer_cell()
+            beam = indxr.get_indexer_beam()
+            distance = indxr.get_indexer_distance()
+            matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
+
+            integration_params = indxr.get_indexer_payload(
+                'mosflm_integration_parameters')
+            
+            if integration_params:
+                if integration_params.has_key('separation'):
+                    self.set_integrater_parameter(
+                        'mosflm', 'separation',
+                        '%f %f' % tuple(integration_params['separation']))
+                if integration_params.has_key('raster'):
+                    self.set_integrater_parameter(
+                        'mosflm', 'raster',
+                        '%d %d %d %d %d' % tuple(integration_params['raster']))
+                    
+            spacegroup_number = lattice_to_spacegroup(lattice)
+
+            f = open(os.path.join(self.get_working_directory(),
+                                  'xia-best-generate.mat'), 'w')
+            for m in matrix:
+                f.write(m)
+            f.close()
+
+            self.start()
+
+            self.input('template "%s"' % self.get_template())
+            self.input('directory "%s"' % self.get_directory())
+
+            # generate the mask information from the detector class
+            mask = standard_mask(self._fp_header['detector_class'])
+            for m in mask:
+                self.input(m)
+
+            self.input('matrix xia-best-generate.mat')
+
+            self.input('beam %f %f' % beam)
+            self.input('distance %f' % distance)
+            self.input('symmetry %s' % spacegroup_number)
+            self.input('mosaic %f' % mosaic)
+
+            # note well that the beam centre is coming from indexing so
+            # should be already properly handled - likewise the distance
+            if self.get_wavelength_prov() == 'user':
+                self.input('wavelength %f' % self.get_wavelength())
+
+            # get all of the stored parameter values
+            parameters = self.get_integrater_parameters('mosflm')
+            for p in parameters.keys():
+                self.input('%s %s' % (p, str(parameters[p])))
+
+            # in here I need to get the GAIN parameter from the sweep
+            # or from somewhere in memory....
+
+            self.input('best on')
+            for image in image_list:
+                self.input('autoindex dps refine image %d' % image)
+            self.input('go')
+            self.input('best off')
+
+            # that should be everything 
+            self.close_wait()
+
+            # get the log file
+            output = self.get_all_output()
+
+            # then read in the .dat file...
+
+            self._mosflm_best_datfile = open(os.path.join(
+                self.get_working_directory(), 'bestfile.dat'), 'r').read()
+
+            # then integrate to get the .par and .hkl file
+
+            self.start()
+
+            self.input('template "%s"' % self.get_template())
+            self.input('directory "%s"' % self.get_directory())
+
+            # generate the mask information from the detector class
+            mask = standard_mask(self._fp_header['detector_class'])
+            for m in mask:
+                self.input(m)
+
+            self.input('matrix xia-best-generate.mat')
+
+            self.input('beam %f %f' % beam)
+            self.input('distance %f' % distance)
+            self.input('symmetry %s' % spacegroup_number)
+            self.input('mosaic %f' % mosaic)
+
+            # note well that the beam centre is coming from indexing so
+            # should be already properly handled - likewise the distance
+            if self.get_wavelength_prov() == 'user':
+                self.input('wavelength %f' % self.get_wavelength())
+
+            # get all of the stored parameter values
+            parameters = self.get_integrater_parameters('mosflm')
+            for p in parameters.keys():
+                self.input('%s %s' % (p, str(parameters[p])))
+
+            # in here I need to get the GAIN parameter from the sweep
+            # or from somewhere in memory....
+
+            if self._mosflm_gain:
+                self.input('gain %5.2f' % self._mosflm_gain)
+
+            # check for resolution limits
+            if self._intgr_reso_high > 0.0:
+                self.input('resolution %f' % self._intgr_reso_high)
+
+            # set up the integration
+            self.input('postref fix all')
+
+            detector_width = self._fp_header['size'][0] * \
+                             self._fp_header['pixel'][0]
+            detector_height = self._fp_header['size'][1] * \
+                              self._fp_header['pixel'][1]
+
+            lim_x = min(beam[0], detector_width - beam[0])
+            lim_y = min(beam[1], detector_height - beam[1])
+
+            self.input('limits xmin 0.0 xmax %.1f ymin 0.0 ymax %.1f' % \
+                       (lim_x, lim_y))            
+
+            if self._mosflm_postref_fix_mosaic:
+                self.input('postref fix mosaic')
+                
+            self.input('separation close')
+
+            if self.get_header_item('detector') == 'raxis':
+                self.input('adcoffset 0')
+
+            self.input('best on')
+            for image in image_list:
+                self.input('process %d %d' % (image, image))
+                self.input('go')
+            self.input('best off')
+
+            # that should be everything 
+            self.close_wait()
+
+            # get the log file
+            output = self.get_all_output()
+
+            # read the output
+
+            # then read the resulting files into memory
+            # bestfile.par, bestfile.hkl.
+
+            self._mosflm_best_parfile = open(os.path.join(
+                self.get_working_directory(), 'bestfile.par'), 'r').read()
+            self._mosflm_best_hklfile = open(os.path.join(
+                self.get_working_directory(), 'bestfile.hkl'), 'r').read()
+
+            return
+
     return MosflmWrapper()
 
-
-if __name__ == '__main_old__':
-
-    # run a demo test
-
-    if not os.environ.has_key('XIA2_ROOT'):
-        raise RuntimeError, 'XIA2_ROOT not defined'
-
-    m = Mosflm()
-
-    directory = os.path.join(os.environ['XIA2_ROOT'],
-                             'Data', 'Test', 'Images')
-
-    # from Labelit
-    m.set_beam((108.9, 105.0))
-
-    m.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
-
-    # FIXME 16/AUG/06 this should be set automatically - there is no
-    # reason to manually specify the images
-
-    m.add_indexer_image_wedge(1)
-    m.add_indexer_image_wedge(90)
-
-    # m.set_indexer_input_lattice('aP')
-
-    print 'Refined beam is: %6.2f %6.2f' % m.get_indexer_beam()
-    print 'Distance:        %6.2f' % m.get_indexer_distance()
-    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % m.get_indexer_cell()
-    print 'Lattice: %s' % m.get_indexer_lattice()
-    print 'Mosaic: %6.2f' % m.get_indexer_mosaic()
-
-    print 'Matrix:'
-    for l in m.get_indexer_payload('mosflm_orientation_matrix'):
-        print l[:-1]
 
 if __name__ == '__main__':
 
@@ -2375,6 +2516,10 @@ if __name__ == '__main__':
     print 'Matrix:'
     for l in m.get_indexer_payload('mosflm_orientation_matrix'):
         print l[:-1]
+
+    # generate BEST files
+
+    m.generate_best_files(m, [1, 90])
 
 if False:
 
