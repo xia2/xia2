@@ -10,8 +10,6 @@
 # A wrapper for the EMBL strategy program BEST.
 # 
 
-
-
 import os
 import sys
 
@@ -28,47 +26,10 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
 from Driver.DriverFactory import DriverFactory
+from Schema.Interfaces.StrategyComputer import StrategyElement
 
 # class to use to return strategy information - this should probably
 # be moved somewhere more useful like the strategy interface
-
-class StrategyElement:
-    '''An element of a strategy.'''
-
-    def __init__(self, phi_start, phi_width, distance,
-                 images, exposure_time):
-        '''Create a new strategy element.'''
-
-        self._phi_start = phi_start
-        self._phi_width = phi_width
-        self._phi_end = phi_start + images * phi_width
-        self._distance = distance
-        self._exposure_time = exposure_time
-
-        return
-
-    def __repr__(self):
-        return '%6.2f -> %6.2f (%.2f) @ %6.2f mm [%6.2f s]' % \
-               (self._phi_start, self._phi_end, self._phi_width,
-                self._distance, self._exposure_time)
-
-    def get_phi_start(self):
-        return self._phi_start
-
-    def get_phi_width(self):
-        return self._phi_width
-
-    def get_phi_end(self):
-        return self._phi_end
-
-    def get_distance(self):
-        return self._distance
-
-    def get_exposure_time(self):
-        return self._exposure_time
-
-if __name__ == '__main__test_':
-    print StrategyElement(96.0, 1.0, 88.7, 90, 12.2)
 
 def Best(DriverType = None):
     '''A factory for wrappers for the best.'''
