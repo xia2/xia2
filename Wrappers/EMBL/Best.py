@@ -32,7 +32,7 @@ from Schema.Interfaces.StrategyComputer import StrategyElement
 # be moved somewhere more useful like the strategy interface
 
 def Best(DriverType = None):
-    '''A factory for wrappers for the best.'''
+    '''A factory for wrappers for best.'''
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -98,6 +98,9 @@ def Best(DriverType = None):
         def add_hkl_file(self, hkl_file):
             self._hkl_files.append(hkl_file)
             return
+
+        def get_strategy(self):
+            return self._strategy
 
         def compute_strategy(self):
             
