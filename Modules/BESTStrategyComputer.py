@@ -166,7 +166,8 @@ if __name__ == '__main__':
     # native strategy
 
     print 'Strategies:'
-
+    print 'Native:'
+    
     bsc.set_strategy_type('native')
     strategy = bsc.get_strategy()
 
@@ -175,6 +176,8 @@ if __name__ == '__main__':
 
     # MAD strategy
 
+    print 'Mad:'
+
     bsc.set_strategy_type('mad')
     strategy = bsc.get_strategy()
 
@@ -182,6 +185,8 @@ if __name__ == '__main__':
         print s
 
     # SAD strategy
+
+    print 'Sad:'
 
     bsc.set_strategy_type('sad')
     strategy = bsc.get_strategy()
