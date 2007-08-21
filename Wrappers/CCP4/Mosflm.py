@@ -2473,7 +2473,8 @@ def Mosflm(DriverType = None):
             self._mosflm_best_hklfile = open(os.path.join(
                 self.get_working_directory(), 'bestfile.hkl'), 'r').read()
 
-            return
+            return self._mosflm_best_datfile, self._mosflm_best_parfile, \
+                   self._mosflm_best_hklfile
 
     return MosflmWrapper()
 

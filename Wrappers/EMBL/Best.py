@@ -161,7 +161,6 @@ def Best(DriverType = None):
                                             float(list[4])))
                                             
                         i += 1
-                        print self._strategy[-1]
 
     return BestWrapper()
 

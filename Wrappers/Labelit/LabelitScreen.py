@@ -238,6 +238,12 @@ def LabelitScreen(DriverType = None):
             phi_width = self.get_header_item('phi_width')
             images = self.get_matching_images()
 
+            if len(images) < 4:
+                for image in images:
+                    self.add_indexer_image_wedge(image)
+
+                return
+
             Debug.write('Selected image %s' % images[0])
 
             self.add_indexer_image_wedge(images[0])

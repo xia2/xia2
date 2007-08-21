@@ -80,8 +80,8 @@ class StrategyComputer:
         self._stgcr_indexer = None
 
         # flags to control program flow
-        self._stgcr_prepare_done = done
-        self._stgcr_done = done
+        self._stgcr_prepare_done = False
+        self._stgcr_done = False
         
         # strategy requirements - in simple terms MAD/SAD/NATIVE
         # resolution (where I/sigma ~ 2) and complexity.
@@ -107,7 +107,7 @@ class StrategyComputer:
                   indexer.__name__
 
         self._stgcr_indexer = indexer
-        self.set_strategy_computer_prepare_done(False)
+        self.set_strategy_prepare_done(False)
         return
 
     def set_strategy_resolution(self, resolution):
@@ -148,6 +148,16 @@ class StrategyComputer:
     def set_strategy_done(self, done = True):
         self._stgcr_done = done
         return
+
+    def get_strategy_prepare_done(self):
+        return self._stgcr_prepare_done
+
+    def get_strategy_done(self):
+        if not self.get_strategy_prepare_done():
+            self._stgcr_done = False
+        return self._stgcr_done
+
+    
 
     # working functions to be overloaded - prepare is e.g. for the integration
     # of the images, strategy is for the actual strategy calculation.
