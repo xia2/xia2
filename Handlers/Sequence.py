@@ -1,5 +1,12 @@
-
-
+#!/usr/bin/env python
+# Sequence.py
+#   Copyright (C) 2006 CCLRC, Graeme Winter
+#
+#   This code is distributed under the BSD license, a copy of which is 
+#   included in the root directory of this package.
+#
+# Handlers and calculations based on sequences for macromolecular structures.
+# 
 
 import string
 
@@ -42,36 +49,44 @@ def to_short_form(residue_list):
 class Sequence:
     '''A class to represent a sequence'''
 
-    def __init__(self, file):
-        lines = open(file, 'r').readlines()
+    def __init__(self, file = None, seq = None):
 
-        if lines[0].split()[0] == 'HEADER':
-            # this is probably a PDB file
-            self.fromPDB(file)
-            return
+        if seq and file:
+            raise RuntimeError, 'cannot specify file and sequence'
 
-        if lines[0][0] == '>':
-            # then this is probably PIR format
-            # ignore the first two lines and concentrate on the rest
+        if file:
+            lines = open(file, 'r').readlines()
+
+            if lines[0].split()[0] == 'HEADER':
+                self.fromPDB(file)
+                return
+
+            if lines[0][0] == '>':
+                
+                self.sequence = ''
+                
+                for l in lines[2:]:
+                    self.sequence += l
+
+            else:
+                self.sequence = ''
+
+                for l in lines:
+                    self.sequence += l.strip()
+
+            sequence = self.sequence.upper()
 
             self.sequence = ''
+            
+            for s in sequence:
+                if s in string.ascii_uppercase:
+                    self.sequence += s
 
-            for l in lines[2:]:
-                self.sequence += l
+        elif seq:
 
-        else:
-            self.sequence = ''
+            self.sequence = seq.upper()
 
-            for l in lines:
-                self.sequence += l
-
-        sequence = self.sequence.upper()
-
-        self.sequence = ''
-
-        for s in sequence:
-            if s in string.ascii_uppercase:
-                self.sequence += s
+        return
 
     def len(self):
         return len(self.sequence)
@@ -156,16 +171,16 @@ class Sequence:
         return total
 
 if __name__ == '__main__':
-    import sys
 
-    if len(sys.argv) < 2:
-        raise RuntimeError, '%s seq_file' % sys.argv[0]
-
-    for pdb_file in sys.argv[1:]:
-        s = Sequence(pdb_file)
-
-        # print s.len()
-        # print s.weight()
-        print s.seq()
+    sequence = \
+             '''MHKMWPSDSNDHRVTRRNVIIFSSLLLGSLAILLALLLIRTKDQYYELRDFALGTSVRIV
+             VSSQKINPRTIAEAILEDMKRITYKFSFTDERSVVKKINDHPNEWVEVDEETYSLIKAAC
+             AFAELTDGAFDPTVGRLLELWGFTGNYENLRVPSREEIEEALKHTGYKNVLFDDKNMRVM
+             VKNGVKIDLGGIAKGYALDRARQIALSFDENATGFVEAGGDVRIIGPKFGKYPWVIGVKD
+             PRGDDVIDYIYLKSGAVATSGDYERYFVVDGVRYHHILDPSTGYPARGVWSVTIIAEDAT
+             TADALSTAGFVMAGKDWRKVVLDFPNMGAHLLIVLEGGAIERSETFKLFERE'''
+    
+    s = Sequence(seq = sequence)
+    print s.weight()
 
     
