@@ -13,10 +13,11 @@ This is where I explain how the BEST strategy implementation will work.
 \item{Decide what to do based on:
 \begin{itemize}
 \item{Description of the beamline}
-\iten{Number and species of heavy atoms}
+\item{Number and species of heavy atoms}
 \item{Autoindexing solution}
 \item{Spacegroup if available from a reference reflection file}
 \item{Sequence.}
+\end{itemize}
 }
 
 \item{Decide MAD or SAD based on beamline, predicted $f'$ and $f''$, scan,
@@ -128,6 +129,16 @@ chances of density modification producing an interpretable map.
 Where to draw these lines will be an interesting area of research. Need to 
 probably do some searches of the PDB and also get hold of some SG data.
 
+\section{Magic Equations}
 
+\begin{equation}
+\langle \frac{I}{\sigma} \rangle > \frac{1.3 \left( \frac{m}{s} \right) 
+^{\frac{1}{2}}}{f''}
+\end{equation}
+
+Where $m$ is the mass in Daltons of the ASU and $s$ is the number of sites
+in the ASU. $\langle \frac{I}{\sigma} \rangle$ is the mean value over the
+whole resolution range - this will need to be accounted for in the SAD strategy
+calculation (Holton, Private Communication).
 
 \end{document}

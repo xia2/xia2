@@ -33,6 +33,8 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
+from lib.Guff import auto_logfiler
+
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 from Schema.Interfaces.StrategyComputer import StrategyComputer
 from Wrappers.CCP4.Mosflm import Mosflm
@@ -68,6 +70,8 @@ class BESTStrategyComputer(FrameProcessor,
         images = self.get_matching_images()
 
         mosflm = Mosflm()
+        auto_logfiler(mosflm)
+        
         mosflm.setup_from_image(self.get_image_name(images[0]))
         self._dat, self._par, self._hkl = mosflm.generate_best_files(
             self._stgcr_indexer, images)
@@ -96,6 +100,8 @@ class BESTStrategyComputer(FrameProcessor,
                           'strategy.hkl'), 'w').write(self._hkl)
 
         best = Best()
+        auto_logfiler(best)
+        
         best.set_dat_file('strategy.dat')
         best.set_par_file('strategy.par')
         best.add_hkl_file('strategy.hkl')
@@ -109,7 +115,7 @@ class BESTStrategyComputer(FrameProcessor,
             best.set_anomalous(True)
 
         if self._stgcr_strategy_type == 'sad':
-            best.set_redundancy(6.0)
+            best.set_i_over_sig(4.0)
 
         best.compute_strategy()
 
