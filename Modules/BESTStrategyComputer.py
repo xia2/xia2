@@ -140,7 +140,6 @@ class BESTStrategyComputer(FrameProcessor,
 if __name__ == '__main__':
     # then run a test
 
-
     if not os.environ.has_key('XIA2_ROOT'):
         raise RuntimeError, 'XIA2_ROOT not defined'
 
@@ -158,9 +157,28 @@ if __name__ == '__main__':
     bsc.set_strategy_indexer(ls)
     bsc.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 
+    # native strategy
+
+    print 'Strategies:'
+
+    bsc.set_strategy_type('native')
     strategy = bsc.get_strategy()
 
     for s in strategy:
         print s
 
-    
+    # MAD strategy
+
+    bsc.set_strategy_type('mad')
+    strategy = bsc.get_strategy()
+
+    for s in strategy:
+        print s
+
+    # SAD strategy
+
+    bsc.set_strategy_type('sad')
+    strategy = bsc.get_strategy()
+
+    for s in strategy:
+        print s

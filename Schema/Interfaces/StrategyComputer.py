@@ -48,13 +48,14 @@ class StrategyElement:
         self._phi_end = phi_start + images * phi_width
         self._distance = distance
         self._exposure_time = exposure_time
+        self._images = images
 
         return
 
     def __repr__(self):
-        return '%6.2f -> %6.2f (%.2f) @ %6.2f mm [%6.2f s]' % \
+        return '%6.2f -> %6.2f (%.2f x %d) @ %6.2f mm [%6.2f s]' % \
                (self._phi_start, self._phi_end, self._phi_width,
-                self._distance, self._exposure_time)
+                self._images, self._distance, self._exposure_time)
 
     def get_phi_start(self):
         return self._phi_start
@@ -112,6 +113,7 @@ class StrategyComputer:
 
     def set_strategy_resolution(self, resolution):
         self._stgcr_resolution = resolution
+        self.set_strategy_done(False)
         return
 
     def set_strategy_type(self, strategy_type):
@@ -120,6 +122,7 @@ class StrategyComputer:
             raise RuntimeError, 'unknown strategy type "%s"' % \
                   strategy_type            
         self._stgcr_strategy_type = strategy_type.lower()
+        self.set_strategy_done(False)
         return
 
     def set_strategy_complexity(self, strategy_complexity):
@@ -128,6 +131,7 @@ class StrategyComputer:
             raise RuntimeError, 'unknown strategy complexity "%s"' % \
                   strategy_complexity
         self._stgcr_strategy_complexity = strategy_complexity.lower()
+        self.set_strategy_done(False)
         return
 
     def get_strategy(self):
