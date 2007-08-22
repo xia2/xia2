@@ -374,6 +374,142 @@ def Diffdump(DriverType = None):
                     
             return gain
 
+        def parse_output(self, output):
+            '''A test function for diffdump output.'''
+            
+            fudge = {'adsc':{'wavelength':1.0,
+                             'pixel':1.0},
+                     'raxis':{'wavelength':1.0,
+                             'pixel':1.0},
+                     'saturn':{'wavelength':1.0,
+                               'pixel':1.0},
+                     'marccd':{'wavelength':1.0,
+                               'pixel':0.001},
+                     'mar':{'wavelength':1.0,
+                            'pixel':1.0}}
+
+            header = { }
+
+            for o in output:
+                l = o.split(':')
+
+                if len(l) > 1:
+                    l2 = l[1].split()
+                else:
+                    l2 = ''
+                if 'Image type' in o:
+                    header['detector'] = l[1].strip().lower()
+                    detector = header['detector']
+
+                if 'Exposure epoch' in o or 'Collection date' in o:
+                    try:
+                        d = o[o.index(':') + 1:]
+                        if d.strip():
+                            header['epoch'] = self._epoch(d.strip())
+                            header['date'] = self._date(d.strip())
+                        else:
+                            if get_trust_timestamps():
+                                header['epoch'] = float(
+                                    os.stat(self._image)[8])
+                                header['date'] = time.ctime(
+                                    header['epoch'])
+                            else:                                
+                                header['epoch'] = 0.0
+                                header['date'] = ''
+
+                    except exceptions.Exception, e:
+
+                        header['epoch'] = float(
+                            os.stat(self._image)[8])
+                        header['date'] = time.ctime(
+                            header['epoch'])
+                        
+                if 'Exposure time' in o:
+                    header['exposure_time'] = float(l2[0])
+
+                if 'Wavelength' in o:
+                    header['wavelength'] = float(l2[0]) * \
+                                           fudge[detector]['wavelength']
+
+                if 'Distance' in o:
+                    header['distance'] = float(
+                        l[1].replace('mm', '').strip())
+
+                if 'Beam cent' in o:
+                    beam = l[1].replace('(', '').replace(
+                        ')', '').replace('mm', ' ').split(',')
+                    header['beam'] = map(float, beam)
+
+                if 'Image Size' in o:
+                    image = l[1].replace('px', '')
+                    image = image.replace('(', '').replace(')', '').split(',')
+                    header['size'] = map(float, image)
+                
+                if 'Pixel Size' in o:
+                    image = l[1].replace('mm', '')
+                    x, y = image.replace('(', '').replace(')', '').split(',')
+                    if detector == 'marccd' and math.fabs(float(x)) < 1.0:
+                        header['pixel'] = (float(x), float(y))
+                    else:
+                        header['pixel'] = (
+                            float(x) * fudge[detector]['pixel'],
+                            float(y) * fudge[detector]['pixel'])
+                
+                if 'Angle range' in o:
+                    phi = map(float, l[1].split('->'))
+                    header['phi_start'] = phi[0]
+                    header['phi_end'] = phi[1]
+                    header['phi_width'] = phi[1] - phi[0]
+
+                if 'Oscillation' in o:
+                    phi = map(float, l[1].replace('deg', '').split('->'))
+                    header['phi_start'] = phi[0]
+                    header['phi_end'] = phi[1]
+                    header['phi_width'] = phi[1] - phi[0]
+
+                if 'Oscillation range' in o:
+                    phi = map(float, l[1].replace('deg', '').split('->'))
+                    header['phi_start'] = phi[0]
+                    header['phi_end'] = phi[1]
+                    header['phi_width'] = phi[1] - phi[0]
+
+            # check to see if the beam centre needs to be converted
+            # from pixels to mm - e.g. MAR 300 images from APS ID 23
+
+            if header.has_key('beam') and \
+               header.has_key('pixel') and \
+               header.has_key('size'):
+		beam = header['beam']
+		size = header['size']
+                pixel = header['pixel']
+                if math.fabs((beam[0] - 0.5 * size[0]) / size[0]) < 0.25:
+                    new_beam = (beam[0] * pixel[0], beam[1] * pixel[1])
+                    header['beam'] = new_beam
+
+            # FIXME here - if the beam centre is exactly 0.0, 0.0,
+            # then perhaps reset it to the centre of the image?
+            
+            if header.has_key('detector') and \
+               header.has_key('pixel') and \
+               header.has_key('size'):
+                # compute the detector class
+                detector = header['detector']
+                width = int(header['size'][0])
+                pixel = int(1000 * header['pixel'][0])
+
+                key = (detector, width, pixel)
+
+                try:
+                    header['detector_class'] = detector_class[key]
+                except:
+                    print 'unknown key: ', key
+
+            else:
+                header['detector_class'] = 'unknown'
+
+
+            return header
+
     return DiffdumpWrapper()
 
 if __name__ == '__main__':
@@ -407,3 +543,24 @@ if __name__ == '__main__':
             print 'Gain: %f' % gain
             print 'Pixel size: %f %f' % header['pixel']
             print 'Detector class: %s' % header['detector_class']
+
+if __name__ == '__main__test_parsing__':
+
+    dd = Diffdump()
+    
+    dd_out = '''Image type : ADSC
+Collection date : Thu Jul 12 15:09:44 2007
+Exposure time : 4.000000 s
+Detector S/N : 428
+Wavelength : 0.933000 Ang
+Beam center : (95.785004 mm,92.869408 mm)
+Distance to detector : 326.425995 mm
+Image Size : (2304 px, 2304 px)
+Pixel Size : (0.081600 mm, 0.081600 mm)
+Oscillation (phi) : 228.699997 -> 229.000000 deg
+Two Theta value: 0.000000 deg'''
+
+    header = dd.parse_output(dd_out.split('\n'))
+
+    for key in header:
+        print key, header[key]
