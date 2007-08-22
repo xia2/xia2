@@ -432,7 +432,7 @@ def Mosflm(DriverType = None):
 
             phi_width = self.get_header_item('phi_width')
 
-            half_width = int(max(2, mosaic / phi_width))
+            half_width = int(max(1, 0.5 * mosaic / phi_width))
 
             # looking for minima in axiz.Z => parallel to detector face
 
@@ -518,7 +518,7 @@ def Mosflm(DriverType = None):
 
             phi_width = self.get_header_item('phi_width')
 
-            half_width = int(max(2, mosaic / phi_width))
+            half_width = int(max(1, 0.5 * mosaic / phi_width))
 
             # looking for minima in axiz.Z => parallel to detector face
 
@@ -966,16 +966,6 @@ def Mosflm(DriverType = None):
                 else:
                     num_wedges = 2
 
-                # change 10/AUG/07 perhaps I should always be using
-                # three wedges?
-
-                if False:
-
-                    Debug.write(
-                        'Cell refinement: overriding the number of wedges to 3')
-
-                    num_wedges = 3
-            
                 self._mosflm_cell_ref_images = self._refine_select_images(
                     num_wedges, mosaic)
 
@@ -1014,19 +1004,28 @@ def Mosflm(DriverType = None):
                     images.append(j)
                     
             if rms_deviations and rms_deviations_p1:
+                cycles = []
+                j = 1
+                while rms_deviations.has_key(j) and \
+                      rms_deviations_p1.has_key(j):
+                    cycles.append(j)
+                    j += 1
                 Debug.write('Cell refinement comparison:')
                 Debug.write('Image   correct   triclinic')
                 ratio = 0.0
-                for j in range(len(images)):
-                    Debug.write('. %4d   %.2f     %.2f' % \
-                                (images[j], rms_deviations[j],
-                                 rms_deviations_p1[j]))
+                for c in cycles:
+                    Debug.write('Cycle %d' % c)
+                    for j in range(len(images)):
+                        Debug.write('. %4d   %.2f     %.2f' % \
+                                    (images[j], rms_deviations[c][j],
+                                     rms_deviations_p1[c][j]))
+                        
+                        ratio += rms_deviations[c][j] / rms_deviations_p1[c][j]
 
-                    ratio += rms_deviations[j] / rms_deviations_p1[j]
+                Debug.write('Average ratio: %.2f' % \
+                            (ratio / (max(cycles) * len(images))))
 
-                Debug.write('Average ratio: %.2f' % (ratio / len(images)))
-
-                if (ratio / len(images)) > 1.5:
+                if (ratio / (max(cycles) * len(images))) > 1.5:
                     raise BadLatticeError, 'incorrect lattice constraints'
 
             else:
@@ -1314,7 +1313,7 @@ def Mosflm(DriverType = None):
                         
                     rms_values_last = rms_values[max(cycles)]
 
-            return rms_values_last
+            return rms_values
 
         def _mosflm_refine_cell(self, set_spacegroup = None):
             '''Perform the refinement of the unit cell. This will populate
@@ -1945,7 +1944,7 @@ def Mosflm(DriverType = None):
                 os.path.join(self.get_working_directory(),
                              'xiarefine.mat'), 'r').readlines())
 
-            return rms_values_last
+            return rms_values
 
         def _mosflm_integrate(self):
             '''Perform the actual integration, based on the results of the
