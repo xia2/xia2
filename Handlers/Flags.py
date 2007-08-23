@@ -29,7 +29,7 @@ class _Flags:
 
 
         # and these for the mosflm implementation
-        self._cellref_mode = 'default'
+        self._cellref_mode = 'both'
 
         return
 
