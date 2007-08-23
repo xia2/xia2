@@ -261,14 +261,7 @@ def Mosflm(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            if os.environ.has_key('XIA2_TEST'):
-                test = os.environ['XIA2_TEST']
-                if test.lower() == 'on' or test.lower() == 'true':
-                    self.set_executable('ipmosflm-7.0.1')
-                else:
-                    self.set_executable('ipmosflm')
-            else:
-                self.set_executable('ipmosflm')
+	    self.set_executable('ipmosflm-7.0.1')
 
             FrameProcessor.__init__(self)
             Indexer.__init__(self)
