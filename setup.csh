@@ -4,8 +4,8 @@
 
 # FIXME this needs to account for mac_ppc
 
-setenv platform `uname`
-if ( "$platform" == "Linux" ) then
+setenv host_platform `uname`
+if ( "$host_platform" == "Linux" ) then
   setenv PATH ${XIA2_ROOT}/binaries/linux_386:${PATH}
 else
   setenv arch `uname -a | awk '{print $NF}'`
