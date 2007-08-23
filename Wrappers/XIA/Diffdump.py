@@ -221,8 +221,6 @@ def Diffdump(DriverType = None):
                                'pixel':1.0},
                      'marccd':{'wavelength':1.0,
                                'pixel':0.001},
-                     'mar ccd':{'wavelength':1.0,
-                                'pixel':0.001},
                      'mar':{'wavelength':1.0,
                             'pixel':1.0}}
 
@@ -237,6 +235,10 @@ def Diffdump(DriverType = None):
                     if debug:
                         print '! found image type: %s' % l[1].strip().lower()
                     self._header['detector'] = l[1].strip().lower()
+
+                    # correct spelling, perhaps
+                    if self._header['detector'] == 'mar ccd':
+                        self._header['detector'] = 'marccd'
                     detector = self._header['detector']
 
                 # FIXME in here need to check a trust file timestamp flag
