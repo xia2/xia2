@@ -1,6 +1,5 @@
-best -f q315-2x -i2s 3.000000 -t 1.000000 \
--C 0.990000 -R 2.000000 \
--r 1.970000 -e none \
--M 0.100000 -T 2000.000000 \
--w 0.100000 -S 100.000000 \
+best -f q315-2x -i2s 3.0 -t 1.0 \
+-C 0.99 -R 2.0 \
+-e min \
+-plan foo \
 -mos bestfile.dat bestfile.par bestfile_001.hkl bestfile_002.hkl

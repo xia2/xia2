@@ -124,6 +124,11 @@ class BESTStrategyComputer(FrameProcessor,
         return
 
     def guess_detector_name(self):
+
+        # FIXME this needs to check for the pixel size for MAR detectors
+        # as the BEST name has the number of pixels not the detector
+        # diameter...
+        
         class_to_name = {
             'adsc q4':'q4',
             'adsc q4 2x2 binned':'q4-2x',
@@ -135,6 +140,7 @@ class BESTStrategyComputer(FrameProcessor,
             'mar 165':'mar165',
             'mar 225':'mar225',
             'mar 325':'mar325',
+            'mar 345':'mar2300',
             'raxis IV':'raxis'
             }
             
@@ -149,19 +155,30 @@ if __name__ == '__main__':
     if not os.environ.has_key('XIA2_ROOT'):
         raise RuntimeError, 'XIA2_ROOT not defined'
 
-    ls = LabelitScreen()
-
-    directory = os.path.join(os.environ['XIA2_ROOT'],
+    if len(sys.argv) < 2:
+        directory = os.path.join(os.environ['XIA2_ROOT'],
                              'Data', 'Test', 'Images')
+        image = os.path.join(directory, '12287_1_E1_001.img')
+    else:
+        image = sys.argv[1]
 
-    ls.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
+    if True:
 
+        ls = LabelitScreen()
+
+    else:
+
+        ls = Mosflm()
+        ls.set_beam((176.2, 172.7))
+        
+    ls.setup_from_image(image)
+        
     ls.index()
 
     bsc = BESTStrategyComputer()
 
     bsc.set_strategy_indexer(ls)
-    bsc.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
+    bsc.setup_from_image(image)
 
     # native strategy
 
