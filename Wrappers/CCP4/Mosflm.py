@@ -1570,6 +1570,7 @@ def Mosflm(DriverType = None):
             # important...
 
             rms_values_last = None
+            rms_values = None
             
             for i in range(len(output)):
                 o = output[i]
