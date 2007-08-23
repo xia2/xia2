@@ -431,8 +431,9 @@ def Mosflm(DriverType = None):
             images.sort()
 
             phi_width = self.get_header_item('phi_width')
+            phi_start = self.get_header_item('phi_start')
 
-            half_width = int(max(1, 0.5 * mosaic / phi_width))
+            half_width = int(max(2, mosaic / phi_width))
 
             # looking for minima in axiz.Z => parallel to detector face
 
@@ -453,6 +454,10 @@ def Mosflm(DriverType = None):
                 dtor = 180.0 / (4.0 * math.atan(1.0))
 
                 phi = 0.5 * header['phi_width'] + header['phi_start']
+
+                # only consider first 180 degrees
+                if phi > 180.0 + phi_start:
+                    break
             
                 c = math.cos(phi / dtor)
                 s = math.sin(phi / dtor)
@@ -517,8 +522,9 @@ def Mosflm(DriverType = None):
             images.sort()
 
             phi_width = self.get_header_item('phi_width')
+            phi_start = self.get_header_item('phi_start')
 
-            half_width = int(max(1, 0.5 * mosaic / phi_width))
+            half_width = int(max(2, mosaic / phi_width))
 
             # looking for minima in axiz.Z => parallel to detector face
 
@@ -539,6 +545,10 @@ def Mosflm(DriverType = None):
                 dtor = 180.0 / (4.0 * math.atan(1.0))
 
                 phi = 0.5 * header['phi_width'] + header['phi_start']
+
+                # only consider first 180 degrees
+                if phi > 180.0 + phi_start:
+                    break
             
                 c = math.cos(phi / dtor)
                 s = math.sin(phi / dtor)
@@ -1266,6 +1276,7 @@ def Mosflm(DriverType = None):
             output = self.get_all_output()
 
             rms_values_last = None
+            rms_values = None
             
             for i in range(len(output)):
                 o = output[i]
@@ -1570,7 +1581,7 @@ def Mosflm(DriverType = None):
             for i in range(len(output)):
                 o = output[i]
 
-                # FIXME 01/NOV/06 dump this stuff from the top (error trapping)
+                # Fixme 01/NOV/06 dump this stuff from the top (error trapping)
                 # into a trap_cell_refinement_errors method which is called
                 # before the rest of the output is parsed...
 
