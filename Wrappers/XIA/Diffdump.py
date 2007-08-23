@@ -239,6 +239,8 @@ def Diffdump(DriverType = None):
                     # correct spelling, perhaps
                     if self._header['detector'] == 'mar ccd':
                         self._header['detector'] = 'marccd'
+                    if self._header['detector'] == 'mar 345':
+                        self._header['detector'] = 'mar'
                     detector = self._header['detector']
 
                 # FIXME in here need to check a trust file timestamp flag
