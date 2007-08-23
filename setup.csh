@@ -7,13 +7,15 @@
 setenv host_platform `uname`
 if ( "$host_platform" == "Linux" ) then
   setenv PATH ${XIA2_ROOT}/binaries/linux_386:${PATH}
-else
+else if ( "$host_platform" == "Darwin" ) then
   setenv arch `uname -a | awk '{print $NF}'`
   if ( "$arch" == "powerpc" ) then
     setenv PATH ${XIA2_ROOT}/binaries/mac_ppc:${PATH}
   else
     setenv PATH ${XIA2_ROOT}/binaries/mac_386:${PATH}
   endif
+else
+  echo "Platform $host_platform not supported"
 endif
 
 setenv PATH ${PATH}:${XIA2_ROOT}/Applications
