@@ -221,6 +221,8 @@ def Diffdump(DriverType = None):
                                'pixel':1.0},
                      'marccd':{'wavelength':1.0,
                                'pixel':0.001},
+                     'mar ccd':{'wavelength':1.0,
+                                'pixel':0.001},
                      'mar':{'wavelength':1.0,
                             'pixel':1.0}}
 
