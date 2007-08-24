@@ -261,7 +261,9 @@ def Mosflm(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-	    self.set_executable('ipmosflm-7.0.1')
+            # this is still not really ready
+	    # self.set_executable('ipmosflm-7.0.1')
+            self.set_executable('ipmosflm')
 
             FrameProcessor.__init__(self)
             Indexer.__init__(self)
