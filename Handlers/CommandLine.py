@@ -79,6 +79,7 @@ class _CommandLine(Object):
         # things which are single token flags...
 
         self._read_trust_timestamps()
+        self._read_old_mosflm()
         self._read_quick()
         self._read_fiddle_sd()
         self._read_relax()
@@ -162,6 +163,12 @@ class _CommandLine(Object):
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
                   (self._help_z_min(), str(e))
+
+        try:
+            self._read_rejection_threshold()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_rejection_threshold(), str(e))
 
         try:
             self._read_cellref_mode()
@@ -442,6 +449,22 @@ class _CommandLine(Object):
     def _help_z_min(self):
         return '-z_min N'
 
+    def _read_rejection_threshold(self):
+        try:
+            index = sys.argv.index('-rejection_threshold')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_rejection_threshold(float(sys.argv[index + 1]))
+            
+        return
+
+    def _help_rejection_threshold(self):
+        return '-rejection_threshold N'
+
     def _read_ehtpx_xml_out(self):
         try:
             index = sys.argv.index('-ehtpx_xml_out')
@@ -482,6 +505,12 @@ class _CommandLine(Object):
 
         if '-trust_timestamps' in sys.argv:
             Flags.set_trust_timestamps(True)
+        return
+
+    def _read_old_mosflm(self):
+
+        if '-old_mosflm' in sys.argv:
+            Flags.set_old_mosflm(True)
         return
 
     def _read_cellref_mode(self):

@@ -523,8 +523,9 @@ class XDSIntegrater(FrameProcessor,
 
         if p1_deviations:
             # compare and reject if both > 50% higher
-            if correct_deviations[0] / p1_deviations[0] > 1.5 and \
-                   correct_deviations[1] / p1_deviations[1] > 1.5:
+            threshold = Flags.get_rejection_threshold()
+            if correct_deviations[0] / p1_deviations[0] > threshold and \
+                   correct_deviations[1] / p1_deviations[1] > threshold:
                 Chatter.write(
                 'Eliminating this indexing solution as postrefinement')
                 Chatter.write(

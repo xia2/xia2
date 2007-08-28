@@ -27,10 +27,13 @@ class _Flags:
         self._zero_dose = False
         self._relax = False
 
-
         # and these for the mosflm implementation
         self._cellref_mode = 'both'
+        self._old_mosflm = False
 
+        # and these are general rejection criteria
+        self._rejection_threshold = 1.5
+        
         return
 
     def set_cellref_mode(self, cellref_mode):
@@ -79,6 +82,13 @@ class _Flags:
     def get_trust_timestamps(self):
         return self._trust_timestamps
 
+    def set_old_mosflm(self, old_mosflm):
+        self._old_mosflm = old_mosflm
+        return
+
+    def get_old_mosflm(self):
+        return self._old_mosflm
+
     def set_parallel(self, parallel):
         self._parallel = parallel
         return
@@ -92,6 +102,13 @@ class _Flags:
 
     def get_z_min(self):
         return self._z_min
+
+    def set_rejection_threshold(self, rejection_threshold):
+        self._rejection_threshold = rejection_threshold
+        return
+
+    def get_rejection_threshold(self):
+        return self._rejection_threshold
 
     def set_refine(self, refine):
         self._refine = refine

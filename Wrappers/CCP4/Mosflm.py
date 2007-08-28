@@ -261,8 +261,11 @@ def Mosflm(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-	    self.set_executable('ipmosflm-7.0.1')
-
+            if Flags.get_old_mosflm():
+                self.set_executable('ipmosflm')
+            else:
+                self.set_executable('ipmosflm-7.0.1')
+    
             FrameProcessor.__init__(self)
             Indexer.__init__(self)
             Integrater.__init__(self)
@@ -1028,7 +1031,8 @@ def Mosflm(DriverType = None):
                 Debug.write('Average ratio: %.2f' % \
                             (ratio / (max(cycles) * len(images))))
 
-                if (ratio / (max(cycles) * len(images))) > 1.5:
+                if (ratio / (max(cycles) * len(images))) > \
+                       Flags.get_rejection_threshold():
                     raise BadLatticeError, 'incorrect lattice constraints'
 
             else:
