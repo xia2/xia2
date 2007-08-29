@@ -224,6 +224,11 @@ def _happy_integrate_lp(integrate_lp_stats):
 
         # FIXME need to look for "blank" "many bad spots" "overloaded"
 
+        if not data.has_key('weighted_residual'):
+            raise RuntimeError, 'weighted residual missing for frame %d' % i
+        if not data.has_key('rmsd_pixel'):
+            raise RuntimeError, 'rmsd_pixel missing for frame %d' % i
+
         if data['weighted_residual'] < max_weighted_residual:
             max_weighted_residual = data['weighted_residual']
 
