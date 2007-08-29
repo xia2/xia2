@@ -225,14 +225,15 @@ def _happy_integrate_lp(integrate_lp_stats):
         # FIXME need to look for "blank" "many bad spots" "overloaded"
 
         if not data.has_key('weighted_residual'):
-            raise RuntimeError, 'weighted residual missing for frame %d' % i
-        if not data.has_key('rmsd_pixel'):
-            raise RuntimeError, 'rmsd_pixel missing for frame %d' % i
-
-        if data['weighted_residual'] < max_weighted_residual:
+            pass
+        elif data['weighted_residual'] < max_weighted_residual:
             max_weighted_residual = data['weighted_residual']
 
-        if data['rmsd_pixel'] > 2.5:
+        if not data.has_key('rmsd_pixel'):
+            status = '@'
+            Science.write('Image %4d ... abandoned processing',
+                          forward = False)
+        elif data['rmsd_pixel'] > 2.5:
             status = '!'
             Science.write('Image %4d ... very high rmsd (%f)' % \
                           (i, data['rmsd_pixel']), forward = False)
@@ -245,6 +246,7 @@ def _happy_integrate_lp(integrate_lp_stats):
             Science.write('Image %4d ... ok' % i, forward = False)
 
         # also - # bad O overloaded . blank ! problem ? other
+        # @ ABANDONED PROCESSING
 
         results += status
 
