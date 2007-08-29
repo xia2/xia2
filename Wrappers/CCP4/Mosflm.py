@@ -2260,7 +2260,10 @@ def Mosflm(DriverType = None):
             # of values rather than the peak, since this is probably a better
             # diagnostic of a poor lattice.
 
-            residuals = [parsed_output[i]['weighted_residual'] for i in images]
+            residuals = []
+            for i in images:
+                if parsed_output[i].has_key('weighted_residual'):
+                    residuals.append(parsed_output[i]['weighted_residual'])
 
             mean, sd = mean_sd(residuals)
 
@@ -2270,8 +2273,10 @@ def Mosflm(DriverType = None):
             for i in images:
                 data = parsed_output[i]
 
-                if data['weighted_residual'] > max_weighted_residual:
-                    max_weighted_residual = data['weighted_residual']
+                if data.has_key('weighted_residual'):
+
+                    if data['weighted_residual'] > max_weighted_residual:
+                        max_weighted_residual = data['weighted_residual']
             
             if len(spot_status) > 60:
                 Chatter.write('Integration status per image (60/record):')
