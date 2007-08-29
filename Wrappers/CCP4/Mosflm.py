@@ -1252,6 +1252,7 @@ def Mosflm(DriverType = None):
 
             # fudge factors to prevent Mosflm from being too fussy
             self.input('refinement residual 10.0')
+            self.input('refinement include partials')
 
             # set up the cell refinement - allowing quite a lot of
             # refinement for tricky cases (e.g. 7.2 SRS insulin SAD
@@ -1497,6 +1498,7 @@ def Mosflm(DriverType = None):
 
             # fudge factors to prevent Mosflm from being too fussy
             self.input('refinement residual 10.0')
+            self.input('refinement include partials')
 
             # compute the detector limits to use for this...
             # these are w.r.t. the beam centre and are there to
@@ -2081,6 +2083,8 @@ def Mosflm(DriverType = None):
             self.input('distance %f' % distance)
             self.input('symmetry %s' % spacegroup_number)
             self.input('mosaic %f' % mosaic)
+
+            self.input('refinement include partials')
 
             # note well that the beam centre is coming from indexing so
             # should be already properly handled - likewise the distance
