@@ -429,7 +429,7 @@ def Mosflm(DriverType = None):
             phi_width = self.get_header_item('phi_width')
             phi_start = self.get_header_item('phi_start')
 
-            half_width = int(max(2, mosaic / phi_width))
+            half_width = int(max(2, 0.75 * mosaic / phi_width))
 
             # looking for minima in axiz.Z => parallel to detector face
 
@@ -520,7 +520,7 @@ def Mosflm(DriverType = None):
             phi_width = self.get_header_item('phi_width')
             phi_start = self.get_header_item('phi_start')
 
-            half_width = int(max(2, mosaic / phi_width))
+            half_width = int(max(2, 0.75 * mosaic / phi_width))
 
             # looking for minima in axiz.Z => parallel to detector face
 
