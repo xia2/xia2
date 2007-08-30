@@ -171,6 +171,12 @@ class _CommandLine(Object):
                   (self._help_rejection_threshold(), str(e))
 
         try:
+            self._read_i_over_sigma_limit()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_i_over_sigma_limit(), str(e))
+
+        try:
             self._read_cellref_mode()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -464,6 +470,22 @@ class _CommandLine(Object):
 
     def _help_rejection_threshold(self):
         return '-rejection_threshold N'
+
+    def _read_i_over_sigma_limit(self):
+        try:
+            index = sys.argv.index('-i_over_sigma_limit')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_i_over_sigma_limit(float(sys.argv[index + 1]))
+            
+        return
+
+    def _help_i_over_sigma_limit(self):
+        return '-i_over_sigma_limit N'
 
     def _read_ehtpx_xml_out(self):
         try:

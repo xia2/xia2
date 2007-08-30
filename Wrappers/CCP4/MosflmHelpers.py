@@ -184,7 +184,9 @@ def _parse_mosflm_integration_output(integration_output_list):
                     sigma = 0.0
                 resolution_list.append((resolution[j], sigma))
 
-            resolution = _resolution_estimate(resolution_list, 1.0)
+            # this was 1.0 - lowering for testing with broader resolution
+            # limit tests...
+            resolution = _resolution_estimate(resolution_list, 0.5)
             
             per_image_stats[current_image]['resolution'] = resolution
             

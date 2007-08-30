@@ -33,6 +33,7 @@ class _Flags:
 
         # and these are general rejection criteria
         self._rejection_threshold = 1.5
+        self._i_over_sigma_limit = 2.0
         
         return
 
@@ -109,6 +110,13 @@ class _Flags:
 
     def get_rejection_threshold(self):
         return self._rejection_threshold
+
+    def set_i_over_sigma_limit(self, i_over_sigma_limit):
+        self._i_over_sigma_limit = i_over_sigma_limit
+        return
+
+    def get_i_over_sigma_limit(self):
+        return self._i_over_sigma_limit
 
     def set_refine(self, refine):
         self._refine = refine

@@ -1239,7 +1239,7 @@ class XDSScaler(Scaler):
                 resolution_points.append((dmin, i_sigma))
 
             resolution = _resolution_estimate(
-                resolution_points, 2.0)
+                resolution_points, Flags.get_i_over_sigma_limit())
 
             # next compute "useful" versions of these resolution limits
             # want 0.05A steps - in here it would also be useful to
