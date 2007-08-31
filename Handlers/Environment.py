@@ -54,7 +54,7 @@ class _Environment:
             if os.environ.has_key('BINSORT_SCR'):
                 path = os.environ['BINSORT_SCR']
                 if not os.path.exists(path):
-                    Chatter.write('Making directory: %s (BINSORT_SCR)' % path)
+                    Debug.write('Making directory: %s (BINSORT_SCR)' % path)
                     os.makedirs(path)
 
         # create a random BINSORT_SCR directory
@@ -78,10 +78,10 @@ class _Environment:
             path = os.path.join(path, p)
 
         if not os.path.exists(path):
-            Chatter.write('Making directory: %s' % path)
+            Debug.write('Making directory: %s' % path)
             os.makedirs(path)
         else:
-            Chatter.write('Directory exists: %s' % path)
+            Debug.write('Directory exists: %s' % path)
     
 
         return path
