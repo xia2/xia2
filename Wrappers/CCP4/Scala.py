@@ -341,6 +341,7 @@ def Scala(DriverType = None):
             self.start()
             # for the harvesting information
             # self.input('usecwd')
+            self.input('bins 20')
             self.input('run 1 batch 1 to 10000')
             # self.input('run 1 all')
             self.input('scales constant')
@@ -430,6 +431,7 @@ def Scala(DriverType = None):
             # more sophisticated FIXME FIXME 27/OCT/06 how is this
             # still in here???
             # self.input('run 1 all')
+            self.input('bins 20')
 
             run_number = 0
             for run in self._runs:
@@ -635,6 +637,8 @@ def Scala(DriverType = None):
                 self.add_command_line(self._scalepack)
 
             self.start()
+
+            self.input('bins 20')
 
             run_number = 0
             for run in self._runs:
