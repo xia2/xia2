@@ -58,7 +58,7 @@ url = {http://dx.doi.org/10.1107/S0021889893005588},
 <citation program="ccp4">
 @article{bailey1994csp,
   title={{The CCP4 suite: programs for protein crystallography}},
-  author={Bailey, S.},
+  author={},
   journal={Acta Crystallogr. D},
   volume={50},
   pages={760--763},
