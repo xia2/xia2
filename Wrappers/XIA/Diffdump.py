@@ -100,7 +100,8 @@ detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('mar', 2300, 150):'mar 345',
                   ('mar', 3450, 100):'mar 345',
                   ('raxis', 3000, 100):'raxis IV',
-                  ('saturn', 2084, 45):'rigaku saturn'}
+                  ('saturn', 2084, 45):'rigaku saturn',
+                  ('saturn', 1042, 90):'rigaku saturn 2x2 binned'}
 
 def Diffdump(DriverType = None):
     '''A factory for wrappers for the diffdump.'''
