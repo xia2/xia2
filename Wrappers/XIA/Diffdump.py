@@ -243,6 +243,8 @@ def Diffdump(DriverType = None):
                         self._header['detector'] = 'mar'
                     if self._header['detector'] == 'rigaku saturn':
                         self._header['detector'] = 'saturn'
+		    if self._header['detector'] == 'rigaku raxis':
+			self._header['detector'] = 'raxis'
                     detector = self._header['detector']
 
                 # FIXME in here need to check a trust file timestamp flag
