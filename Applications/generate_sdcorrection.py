@@ -52,22 +52,37 @@ if __name__ == '__main__':
     chi_mean = 0.0
     chi_count = 0
 
-    for sdfac_counter in range(10, 40):
+    chi_min = 1000
+    best_sdadd = 0.0
+    best_sdfac = 0.0
+
+    for sdfac_counter in range(10, 20):
         sdfac = 0.1 * sdfac_counter
-        for sdadd_counter in range(0, 40):
+        for sdadd_counter in range(0, 10):
             sdadd = 0.01 * sdadd_counter
 
             for i in indices:
+
+                # this calculation is meaningless with fewer than
+                # two reflections...
+
+                if len(reflections[i]) < 2:
+                    continue
+                
                 I_mean = 0.0
+                sig_I_mean = 0.0
                 sum_w = 0.0
                 for r in reflections[i]:
                     I = r[2]
-                    sig_I = r[3]
+                    sig_I = sdfac * math.sqrt(r[3] * r[3] +
+                                              sdadd * sdadd * I * I)
                     w = 1.0 / sig_I
                     sum_w += w
                     I_mean += I * w
+                    sig_I_mean += w * w
                     
                 I_mean /= sum_w
+                sig_I_mean = math.sqrt(1.0 / sig_I_mean)
 
                 chi_sq = 0.0
                 N = 0
@@ -76,14 +91,43 @@ if __name__ == '__main__':
                     I = r[2]
                     sig_I = sdfac * math.sqrt(r[3] * r[3] +
                                               sdadd * sdadd * I * I)
-            
-                    chi_sq += ((I - I_mean) / sig_I) *  ((I - I_mean) / sig_I)
+
+                    I_others = 0.0
+                    sum_w = 0.0
+                    
+                    for s in reflections[i]:
+                        if id(r) is id(s):
+                            continue
+                        
+                        Is = s[2]
+                        sig_Is = sdfac * math.sqrt(s[3] * s[3] +
+                                                   sdadd * sdadd * Is * Is)
+                        w = 1.0 / sig_Is
+                        sum_w += w
+                        I_others += Is * w
+
+                    I_others /= sum_w
+
+                    # chi_sq = (I - I_others) * (I - I_others) / \
+                    # (sig_I * sig_I + sig_I_mean * sig_I_mean)
+
+                    chi_sq += (I - I_mean) * (I - I_mean) / \
+                              (sig_I_mean * sig_I_mean + sig_I * sig_I)
                     N += 1
 
                 chi_sq /= N
-
+                        
                 if chi_sq > 0:
                     chi_mean += math.fabs(chi_sq - 1.0)
                     chi_count += 1
 
+            if (chi_mean / chi_count) < chi_min:
+                best_sdadd = sdadd
+                best_sdfac = sdfac
+                chi_min = chi_mean / chi_count
+
             print sdfac, sdadd, chi_mean / chi_count
+
+    print 'Best sdadd: %f' % best_sdadd
+    print 'Best sdfac: %f' % best_sdfac
+    
