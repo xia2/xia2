@@ -52,9 +52,9 @@ if __name__ == '__main__':
     chi_mean = 0.0
     chi_count = 0
 
-    for sdfac_counter in range(10, 20):
+    for sdfac_counter in range(10, 40):
         sdfac = 0.1 * sdfac_counter
-        for sdadd_counter in range(0, 10):
+        for sdadd_counter in range(0, 40):
             sdadd = 0.01 * sdadd_counter
 
             for i in indices:
