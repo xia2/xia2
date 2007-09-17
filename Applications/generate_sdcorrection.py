@@ -7,6 +7,25 @@
 
 import math
 import sys
+import os
+
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
+
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
+
+from Wrappers.CCP4.Mtzdump import Mtzdump
+from lib.Guff import is_mtz_file
+
+def parse_mtz(mtz_file):
+    '''Parse an MTZ file via mtzdump.'''
+
+    mtzdump = Mtzdump()
+
+    mtzdump.set_hklin(mtz_file)
+
+    return mtzdump.dump_intensities()
 
 def parse_scalepack(scalepack_file):
     '''Parse the scalepack file into a dictionary keyed by
@@ -44,8 +63,11 @@ def parse_scalepack(scalepack_file):
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         raise RuntimeError, '%s reflections.sca' % sys.argv[0]
-    
-    reflections = parse_scalepack(sys.argv[1])
+
+    if is_mtz_file(sys.argv[1]):    
+        reflections = parse_mtz(sys.argv[1])
+    else:
+        reflections = parse_scalepack(sys.argv[1])
 
     indices = reflections.keys()
 

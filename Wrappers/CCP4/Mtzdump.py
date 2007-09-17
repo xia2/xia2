@@ -50,6 +50,64 @@ def Mtzdump(DriverType = None):
             self._reflections = 0
             self._resolution_range = (0, 0)
 
+            self._intensities = { }
+
+            return
+
+        def dump_intensities(self):
+            '''Actually dump the intensities from the reflection file -
+            useful for reading values from unmerged intensity files.'''
+
+            self.check_hklin()
+
+            self.start()
+            self.input('nref -1')
+            self.close_wait()
+
+            self._intensities = { }
+
+            output = self.get_all_output()
+
+            j = 0
+
+            while j < len(output):
+
+                if 'LIST OF REFLECTIONS' in output[j]:
+
+                    j += 3
+
+                    while not '<B>' in output[j]:
+
+                        record = output[j].split()
+                        for o in output[j + 1].split():
+                            record.append(o)
+                        for o in output[j + 2].split():
+                            record.append(o)
+
+                        pm = int(record[3])
+
+                        J = pm % 2
+
+                        h, k, l = map(int, record[:3])
+
+                        batch = int(record[4])
+
+                        I, sig_I = map(float, record[5:7])
+
+                        key = ((h, k, l), J)
+
+                        if not self._intensities.has_key(key):
+                            self._intensities[key] = []
+
+                        self._intensities[key].append(
+                            ((h, k, l), batch, I, sig_I))
+
+                        j += 3
+                j += 1
+
+
+            return self._intensities
+
         def dump(self):
             '''Actually print the contents of the mtz file header.'''
 
