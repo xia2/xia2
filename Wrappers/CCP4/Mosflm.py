@@ -1218,6 +1218,9 @@ def Mosflm(DriverType = None):
                 
             self.input('mosaic %f' % mosaic)
 
+            if self._mosflm_postref_fix_mosaic:
+                self.input('postref fix mosaic')
+
             # note well that the beam centre is coming from indexing so
             # should be already properly handled
 
@@ -1485,6 +1488,9 @@ def Mosflm(DriverType = None):
                 self.input('symmetry %s' % spacegroup_number)
                 
             self.input('mosaic %f' % mosaic)
+
+            if self._mosflm_postref_fix_mosaic:
+                self.input('postref fix mosaic')
 
             # note well that the beam centre is coming from indexing so
             # should be already properly handled
@@ -1816,17 +1822,39 @@ def Mosflm(DriverType = None):
                         Science.write('Negative mosaic spread (%5.2f)' %
                                       mosaic)
 
+                        # FIXME this needs to be updated to allow for the
+                        # fact that the number of wedges used may be
+                        # fixed as the "cleverly selected" few ...
+
                         if len(self._mosflm_cell_ref_images) < 3:
                             # set this up to be more images
-                            new_cell_ref_images = self._refine_select_images(
-                                len(self._mosflm_cell_ref_images) + 1,
-                                mosaic)
-                            self._mosflm_cell_ref_images = new_cell_ref_images
+                            # erm... only if we are using the old mode
+                            # of image selection...
+
+                            cellref_mode = Flags.get_cellref_mode()
+
+                            if cellref_mode == 'default':
+                                new_cref_images = self._refine_select_images(
+                                    len(self._mosflm_cell_ref_images) + 1,
+                                    mosaic)
+                                self._mosflm_cell_ref_images = new_cref_images
+                            else:
+                                # fix the mosaic spread in postrefinement
+                                # at the value from autoindexing
+                                Debug.write(
+                                    'Mosaic spread refining negative => fix!')
+                                self._mosflm_postref_fix_mosaic = True
+                                
                             
                             self.set_integrater_prepare_done(False)
                             
-                            Science.write(
-                                'Repeating cell refinement with more data.')
+                            if cellref_mode == 'default':
+                                Science.write(
+                                    'Repeating refinement with more data.')
+                            else:
+                                Science.write(
+                                    'Repeating refinement with mosaic fixed.')
+                                
 
                             return
 
