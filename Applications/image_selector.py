@@ -26,6 +26,11 @@ import math
 
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
+    
+if not os.environ['XIA2CORE_ROOT'] in sys.path:
+    sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
+
+from Driver.DriverFactory import DriverFactory
 
 from Experts.MatrixExpert import get_reciprocal_space_primitive_matrix
 
@@ -131,3 +136,118 @@ def find_best_images(lattice, matrix, phi_start, phi_end, phi_width,
 
     return
 
+def MosflmJiffy(DriverType = None):
+
+    DriverInstance = DriverFactory.Driver(DriverType)    
+
+    class MosflmJiffyClass(DriverInstance.__class__):
+        '''A wrapper for mosflm for a specific purpose.'''
+
+        def __init__(self):
+            self.set_executable('ipmosflm')
+
+            self._image_range = None
+            self._commands = None
+            self._wedge_width = None
+            self._num_wedges = 1
+
+            # this will be keyed by the wedge middle images
+            # used for cell refinement and contain sigmas
+            # for a b c alpha beta gamma
+            
+            self._results = { }
+
+        def set_image_range(self, image_range):
+            self._image_range = image_range
+
+        def set_commands(self, command_file):
+            self._commands = []
+            for record in open(command_file, 'r').readlines():
+                if 'process' in record:
+                    continue
+                if 'postref multi' in record:
+                    continue
+                if record.strip() == 'go':
+                    continue
+                self._commands.append(record)
+
+        def set_wedge_width(self, wedge_width):
+            self._wedge_width = wedge_width
+
+        def set_num_wedges(self, num_wedges):
+            self._num_wedges = num_wedges
+
+        def run(self):
+
+            blocks = int((image_range[0] - image_range[1] / self._wedge_width))
+
+            self.start()
+
+            for record in self._commands:
+                self.input(record)
+
+            blocks = []
+
+            for i in range(blocks):
+                if self._num_wedges < 1:
+                    continue
+
+                for j in range(i, blocks):
+                    if self._num_wedges < 2:
+                        continue
+
+                    for k in range(j, blocks):
+                        if self._num_wedges < 3:
+                            continue
+
+                        for l in range(k, blocks):
+                            if self._num_wedges < 4:
+                                continue
+
+                            for m in range(l, blocks):
+                                if self._num_wedges < 5:
+                                    continue
+
+                                for n in range(m, blocks):
+                                    if self._num_wedges < 6:
+                                        continue
+
+                                    blocks.insert(
+                                        0, (n * self._wedge_width,
+                                            (n + 1) * self._wedge_width))
+
+                                blocks.insert(
+                                    0, (m * self._wedge_width,
+                                        (m + 1) * self._wedge_width))
+
+                            blocks.insert(
+                                0, (l * self._wedge_width,
+                                    (l + 1) * self._wedge_width))
+                            
+                        blocks.insert(
+                            0, (k * self._wedge_width,
+                                (k + 1) * self._wedge_width))
+                        
+                    blocks.insert(
+                        0, (j * self._wedge_width,
+                            (j + 1) * self._wedge_width))
+                    
+                blocks.insert(
+                    0, (i * self._wedge_width,
+                        (i + 1) * self._wedge_width))
+
+            self.input('postref multi segments %d' % \
+                       len(blocks))
+
+            for b in blocks:
+                self.input('process %d %d' % b)
+                self.input('go')
+
+            self.close_wait()
+
+            output = self.get_all_output()
+
+            for j in range(len(output)):
+                
+                
+                
