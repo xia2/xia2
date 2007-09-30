@@ -144,6 +144,9 @@ def MosflmJiffy(DriverType = None):
         '''A wrapper for mosflm for a specific purpose.'''
 
         def __init__(self):
+
+            DriverInstance.__class__.__init__(self)
+            
             self.set_executable('ipmosflm')
 
             self._image_range = None
@@ -177,64 +180,23 @@ def MosflmJiffy(DriverType = None):
         def set_num_wedges(self, num_wedges):
             self._num_wedges = num_wedges
 
-        def run(self):
+        def run_batches(self, batches):
+            '''Run mosflm and get the results.'''
 
-            blocks = int((image_range[0] - image_range[1] / self._wedge_width))
+            self._runs += 1
 
+            record = ''
+            for b in batches:
+                record += ' [%d, %d]' % b
+            print record
+
+            if True:
+                return
+            
             self.start()
 
             for record in self._commands:
                 self.input(record)
-
-            blocks = []
-
-            for i in range(blocks):
-                if self._num_wedges < 1:
-                    continue
-
-                for j in range(i, blocks):
-                    if self._num_wedges < 2:
-                        continue
-
-                    for k in range(j, blocks):
-                        if self._num_wedges < 3:
-                            continue
-
-                        for l in range(k, blocks):
-                            if self._num_wedges < 4:
-                                continue
-
-                            for m in range(l, blocks):
-                                if self._num_wedges < 5:
-                                    continue
-
-                                for n in range(m, blocks):
-                                    if self._num_wedges < 6:
-                                        continue
-
-                                    blocks.insert(
-                                        0, (n * self._wedge_width,
-                                            (n + 1) * self._wedge_width))
-
-                                blocks.insert(
-                                    0, (m * self._wedge_width,
-                                        (m + 1) * self._wedge_width))
-
-                            blocks.insert(
-                                0, (l * self._wedge_width,
-                                    (l + 1) * self._wedge_width))
-                            
-                        blocks.insert(
-                            0, (k * self._wedge_width,
-                                (k + 1) * self._wedge_width))
-                        
-                    blocks.insert(
-                        0, (j * self._wedge_width,
-                            (j + 1) * self._wedge_width))
-                    
-                blocks.insert(
-                    0, (i * self._wedge_width,
-                        (i + 1) * self._wedge_width))
 
             self.input('postref multi segments %d' % \
                        len(blocks))
@@ -248,6 +210,107 @@ def MosflmJiffy(DriverType = None):
             output = self.get_all_output()
 
             for j in range(len(output)):
+                pass
+
+        def run(self):
+
+            self._runs = 0
+
+            blocks = int((1 + self._image_range[1] - self._image_range[0]) /
+                         self._wedge_width)
+
+
+            print blocks
+            end = blocks - self._num_wedges + 1
+
+            for i in range(0, end):
+                if self._num_wedges == 1:
+                    w = self._wedge_width
+                    batches = [(i * w, i * w + w)]
+                    self._results[
+                        i, 0, 0, 0, 0, 0] = \
+                        self.run_batches(batches)
+
+                    continue
                 
-                
-                
+                for j in range(i, end + 1):
+                    if self._num_wedges == 2:
+                        w = self._wedge_width
+                        batches = [(i * w, i * w + w),
+                                   (j * w, j * w + w)]
+                        self._results[
+                            i, j, 0, 0, 0, 0] = \
+                            self.run_batches(batches)
+                        continue
+
+                    for k in range(j, end + 2):
+                        if self._num_wedges == 3:
+                            w = self._wedge_width
+                            batches = [(i * w, i * w + w),
+                                       (j * w, j * w + w),
+                                       (k * w, k * w + w)]
+                            
+                            self._results[
+                                i, j, k, 0, 0, 0] = \
+                                self.run_batches(batches)
+                            continue
+
+                        for l in range(k, end + 3):
+                            if self._num_wedges == 4:
+                                w = self._wedge_width
+                                batches = [(i * w, i * w + w),
+                                           (j * w, j * w + w),
+                                           (k * w, k * w + w),
+                                           (l * w, l * w + w)]
+                                
+                                self._results[
+                                    i, j, k, l, 0, 0] = \
+                                    self.run_batches(batches)
+                                continue
+
+                            for m in range(l, end + 4):
+                                if self._num_wedges == 5:
+                                    w = self._wedge_width
+                                    batches = [(i * w, i * w + w),
+                                               (j * w, j * w + w),
+                                               (k * w, k * w + w),
+                                               (l * w, l * w + w),
+                                               (m * w, m * w + w)]
+                                    self._results[
+                                        i, j, k, l, m, 0] = \
+                                        self.run_batches(batches)
+                                    
+                                    continue
+
+                                for n in range(m, end + 5):
+                                    if self._num_wedges == 6:
+                                        w = self._wedge_width
+                                        batches = [(i * w, i * w + w),
+                                                   (j * w, j * w + w),
+                                                   (k * w, k * w + w),
+                                                   (l * w, l * w + w),
+                                                   (m * w, m * w + w),
+                                                   (n * w, n * w + w)]
+                                        
+                                        self._results[
+                                            i, j, k, l, m, n] = \
+                                            self.run_batches(batches)
+
+            print '%d runs' % self._runs
+            
+    return MosflmJiffyClass()
+
+if __name__ == '__main__':
+
+    mj = MosflmJiffy()
+
+    mj.set_image_range((1, 90))
+    mj.set_wedge_width(5)
+    mj.set_num_wedges(6)
+
+    mj.run()
+
+    
+
+                                    
+                                    
