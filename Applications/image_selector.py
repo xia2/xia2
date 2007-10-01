@@ -187,7 +187,7 @@ def MosflmJiffy(DriverType = None):
 
             id = ''
             for b in batches:
-                id += ' [%d, %d]' % b
+                id += ' %d' % ((b[0] + b[1]) / 2)
             
             self.start()
 
@@ -308,12 +308,16 @@ def MosflmJiffy(DriverType = None):
 
 if __name__ == '__main__':
 
+    if len(sys.argv) < 6:
+        raise RuntimeError, '%s start end width nwedge runit' % \
+              sys.argv[0]
+
     mj = MosflmJiffy()
 
-    mj.set_image_range((1, 45))
-    mj.set_wedge_width(5)
-    mj.set_num_wedges(2)
-    mj.set_commands('runit')
+    mj.set_image_range((int(sys.argv[1]), int(sys.argv[2])))
+    mj.set_wedge_width(int(sys.argv[3]))
+    mj.set_num_wedges(int(sys.argv[4]))
+    mj.set_commands(sys.argv[5])
 
     mj.run()
 
