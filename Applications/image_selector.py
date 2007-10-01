@@ -183,6 +183,10 @@ def MosflmJiffy(DriverType = None):
         def run_batches(self, batches):
             '''Run mosflm and get the results.'''
 
+            # clear out the input and output cached
+            # in this object...
+            self.reset()
+
             self._runs += 1
 
             id = ''
