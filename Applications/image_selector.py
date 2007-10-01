@@ -185,13 +185,9 @@ def MosflmJiffy(DriverType = None):
 
             self._runs += 1
 
-            record = ''
+            id = ''
             for b in batches:
-                record += ' [%d, %d]' % b
-            print record
-
-            if True:
-                return
+                id += ' [%d, %d]' % b
             
             self.start()
 
@@ -199,9 +195,9 @@ def MosflmJiffy(DriverType = None):
                 self.input(record)
 
             self.input('postref multi segments %d' % \
-                       len(blocks))
+                       len(batches))
 
-            for b in blocks:
+            for b in batches:
                 self.input('process %d %d' % b)
                 self.input('go')
 
@@ -209,8 +205,17 @@ def MosflmJiffy(DriverType = None):
 
             output = self.get_all_output()
 
+            errors = [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
+
             for j in range(len(output)):
-                pass
+                if 'Cell refinement is complete' in output[j]:
+                    errors = map(float, output[j + 3].split()[1:])
+
+            print '%s %.4f %.4f %.4f %.4f %.4f %.4f' % \
+                  (id, errors[0], errors[1], errors[2],
+                   errors[3], errors[4], errors[5])
+
+            return errors
 
         def run(self):
 
@@ -220,77 +225,78 @@ def MosflmJiffy(DriverType = None):
                          self._wedge_width)
 
 
-            print blocks
+            f = self._image_range[0]
+
             end = blocks - self._num_wedges + 1
 
             for i in range(0, end):
                 if self._num_wedges == 1:
                     w = self._wedge_width
-                    batches = [(i * w, i * w + w)]
+                    batches = [(i * w + f, i * w + w)]
                     self._results[
                         i, 0, 0, 0, 0, 0] = \
                         self.run_batches(batches)
 
                     continue
                 
-                for j in range(i, end + 1):
+                for j in range(i + 1, end + 1):
                     if self._num_wedges == 2:
                         w = self._wedge_width
-                        batches = [(i * w, i * w + w),
-                                   (j * w, j * w + w)]
+                        batches = [(i * w + f, i * w + w),
+                                   (j * w + f, j * w + w)]
                         self._results[
                             i, j, 0, 0, 0, 0] = \
                             self.run_batches(batches)
                         continue
 
-                    for k in range(j, end + 2):
+                    for k in range(j + 1, end + 2):
                         if self._num_wedges == 3:
                             w = self._wedge_width
-                            batches = [(i * w, i * w + w),
-                                       (j * w, j * w + w),
-                                       (k * w, k * w + w)]
+                            batches = [(i * w + f, i * w + w),
+                                       (j * w + f, j * w + w),
+                                       (k * w + f, k * w + w)]
                             
                             self._results[
                                 i, j, k, 0, 0, 0] = \
                                 self.run_batches(batches)
                             continue
 
-                        for l in range(k, end + 3):
+                        for l in range(k + 1, end + 3):
                             if self._num_wedges == 4:
                                 w = self._wedge_width
-                                batches = [(i * w, i * w + w),
-                                           (j * w, j * w + w),
-                                           (k * w, k * w + w),
-                                           (l * w, l * w + w)]
+                                batches = [(i * w + f, i * w + w),
+                                           (j * w + f, j * w + w),
+                                           (k * w + f, k * w + w),
+                                           (l * w + f, l * w + w)]
                                 
                                 self._results[
                                     i, j, k, l, 0, 0] = \
                                     self.run_batches(batches)
                                 continue
 
-                            for m in range(l, end + 4):
+                            for m in range(l + 1, end + 4):
                                 if self._num_wedges == 5:
                                     w = self._wedge_width
-                                    batches = [(i * w, i * w + w),
-                                               (j * w, j * w + w),
-                                               (k * w, k * w + w),
-                                               (l * w, l * w + w),
-                                               (m * w, m * w + w)]
+                                    batches = [(i * w + f, i * w + w),
+                                               (j * w + f, j * w + w),
+                                               (k * w + f, k * w + w),
+                                               (l * w + f, l * w + w),
+                                               (m * w + f, m * w + w)]
                                     self._results[
                                         i, j, k, l, m, 0] = \
                                         self.run_batches(batches)
                                     
                                     continue
 
-                                for n in range(m, end + 5):
+                                for n in range(m + 1, end + 5):
                                     if self._num_wedges == 6:
                                         w = self._wedge_width
-                                        batches = [(i * w, i * w + w),
-                                                   (j * w, j * w + w),
-                                                   (k * w, k * w + w),
-                                                   (l * w, l * w + w),
-                                                   (m * w, m * w + w),
-                                                   (n * w, n * w + w)]
+                                        batches = [(i * w + f, i * w + w),
+                                                   (j * w + f, j * w + w),
+                                                   (k * w + f, k * w + w),
+                                                   (l * w + f, l * w + w),
+                                                   (m * w + f, m * w + w),
+                                                   (n * w + f, n * w + w)]
                                         
                                         self._results[
                                             i, j, k, l, m, n] = \
@@ -304,9 +310,10 @@ if __name__ == '__main__':
 
     mj = MosflmJiffy()
 
-    mj.set_image_range((1, 90))
+    mj.set_image_range((1, 45))
     mj.set_wedge_width(5)
-    mj.set_num_wedges(6)
+    mj.set_num_wedges(2)
+    mj.set_commands('runit')
 
     mj.run()
 
