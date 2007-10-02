@@ -202,23 +202,32 @@ def MosflmJiffy(DriverType = None):
 
             for b in batches:
                 self.input('autoindex dps refine image %d' % b)
+            self.input('mosaic estimate')
             self.input('go')
+
+            self.input('postref fix all')
+            for b in batches:
+                self.input('process %d %d' % (b, b))
+                self.input('go')
 
             self.close_wait()
 
             output = self.get_all_output()
 
-            errors = [-1.0, -1.0]
+            sdr, sdp, sdi = (-1.0, -1.0, -1.0)
 
             for j in range(len(output)):
                 if 'final sd in spot positions is' in output[j]:
                     bits = output[j].replace('mm', '').split()
-                    errors = [float(bits[6]), float(bits[10])]
+                    sdr, sdp = float(bits[6]), float(bits[10])
 
-            print '%s %.4f %.4f' % \
-                  (id, errors[0], errors[1])
+                if 'Final rms residual' in output[j]:
+                    sdi = float(output[j].replace('mm', ' ').split()[3])
 
-            return errors
+            print '%s %.4f %.4f %.4f' % \
+                  (id, sdr, sdp, sdi)
+
+            return (sdi, sdp, sdi)
             
 
         def run_batches_cr(self, batches):
