@@ -153,6 +153,7 @@ def MosflmJiffy(DriverType = None):
             self._commands = None
             self._wedge_width = None
             self._num_wedges = 1
+            self._autoindex = False
 
             # this will be keyed by the wedge middle images
             # used for cell refinement and contain sigmas
@@ -172,6 +173,9 @@ def MosflmJiffy(DriverType = None):
                     continue
                 if record.strip() == 'go':
                     continue
+                if 'autoindex dps' in record:
+                    self._autoindex = True
+                    continue
                 self._commands.append(record)
 
         def set_wedge_width(self, wedge_width):
@@ -180,7 +184,44 @@ def MosflmJiffy(DriverType = None):
         def set_num_wedges(self, num_wedges):
             self._num_wedges = num_wedges
 
-        def run_batches(self, batches):
+        def run_batches_ai(self, batches):
+            '''Run mosflm la la la.'''
+
+            self.reset()
+
+            self._runs += 1
+
+            id = ''
+            for b in batches:
+                id += ' %d' % b
+            
+            self.start()
+
+            for record in self._commands:
+                self.input(record)
+
+            for b in batches:
+                self.input('autoindex dps refine image %d' % b)
+            self.input('go')
+
+            self.close_wait()
+
+            output = self.get_all_output()
+
+            errors = [-1.0, -1.0]
+
+            for j in range(len(output)):
+                if 'final sd in spot positions is' in output[j]:
+                    bits = output[j].replace('mm', '').split()
+                    errors = [float(bits[6]), float(bits[10])]
+
+            print '%s %.4f %.4f' % \
+                  (id, errors[0], errors[1])
+
+            return errors
+            
+
+        def run_batches_cr(self, batches):
             '''Run mosflm and get the results.'''
 
             # clear out the input and output cached
@@ -222,6 +263,65 @@ def MosflmJiffy(DriverType = None):
             return errors
 
         def run(self):
+            if self._autoindex:
+                self.run_ai()
+            else:
+                self.run_cr()
+                
+        def run_ai(self):
+
+            self._runs = 0
+
+            blocks = int((1 + self._image_range[1] - self._image_range[0]) /
+                         self._wedge_width)
+
+            f = self._image_range[0]
+
+            end = blocks - self._num_wedges + 1
+
+            for i in range(0, end):
+                if self._num_wedges == 1:
+                    w = self._wedge_width
+                    batches = [i * w + f]
+                    self._results[
+                        i, 0, 0, 0] = \
+                        self.run_batches_ai(batches)
+
+                    continue
+                
+                for j in range(i + 1, end + 1):
+                    if self._num_wedges == 2:
+                        w = self._wedge_width
+                        batches = [i * w + f, j * w + f]
+                        self._results[
+                            i, j, 0, 0] = \
+                            self.run_batches_ai(batches)
+                        continue
+
+                    for k in range(j + 1, end + 2):
+                        if self._num_wedges == 3:
+                            w = self._wedge_width
+                            batches = [i * w + f, j * w + f, k * w + f]
+                            
+                            self._results[
+                                i, j, k, 0] = \
+                                self.run_batches_ai(batches)
+                            continue
+
+                        for l in range(k + 1, end + 3):
+                            if self._num_wedges == 4:
+                                w = self._wedge_width
+                                batches = [i * w + f, j * w + f,
+                                           k * w + f, l * w + f]
+                                
+                                self._results[
+                                    i, j, k, l] = \
+                                    self.run_batches_cr(batches)
+                                continue
+
+            print '%d runs' % self._runs
+                
+        def run_cr(self):
 
             self._runs = 0
 
@@ -239,7 +339,7 @@ def MosflmJiffy(DriverType = None):
                     batches = [(i * w + f, i * w + w)]
                     self._results[
                         i, 0, 0, 0, 0, 0] = \
-                        self.run_batches(batches)
+                        self.run_batches_cr(batches)
 
                     continue
                 
@@ -250,7 +350,7 @@ def MosflmJiffy(DriverType = None):
                                    (j * w + f, j * w + w)]
                         self._results[
                             i, j, 0, 0, 0, 0] = \
-                            self.run_batches(batches)
+                            self.run_batches_cr(batches)
                         continue
 
                     for k in range(j + 1, end + 2):
@@ -262,7 +362,7 @@ def MosflmJiffy(DriverType = None):
                             
                             self._results[
                                 i, j, k, 0, 0, 0] = \
-                                self.run_batches(batches)
+                                self.run_batches_cr(batches)
                             continue
 
                         for l in range(k + 1, end + 3):
@@ -275,7 +375,7 @@ def MosflmJiffy(DriverType = None):
                                 
                                 self._results[
                                     i, j, k, l, 0, 0] = \
-                                    self.run_batches(batches)
+                                    self.run_batches_cr(batches)
                                 continue
 
                             for m in range(l + 1, end + 4):
@@ -288,7 +388,7 @@ def MosflmJiffy(DriverType = None):
                                                (m * w + f, m * w + w)]
                                     self._results[
                                         i, j, k, l, m, 0] = \
-                                        self.run_batches(batches)
+                                        self.run_batches_cr(batches)
                                     
                                     continue
 
@@ -304,7 +404,7 @@ def MosflmJiffy(DriverType = None):
                                         
                                         self._results[
                                             i, j, k, l, m, n] = \
-                                            self.run_batches(batches)
+                                            self.run_batches_cr(batches)
 
             print '%d runs' % self._runs
             
