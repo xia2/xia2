@@ -32,7 +32,8 @@ if not os.environ['XIA2CORE_ROOT'] in sys.path:
 
 from Driver.DriverFactory import DriverFactory
 
-from Experts.MatrixExpert import get_reciprocal_space_primitive_matrix
+from Experts.MatrixExpert import get_reciprocal_space_primitive_matrix, \
+     dot, mat2vec
 
 def nint(a):
     b = int(a)
@@ -136,6 +137,32 @@ def find_best_images(lattice, matrix, phi_start, phi_end, phi_width,
 
     return
 
+def matrix_diff(new, ref):
+    '''Determine differences between primitive orientation matrices.'''
+
+    na, nb, nc = mat2vec(new)
+    ra, rb, rc = mat2vec(ref)
+
+    # differences in length are (x - xref) / xref and
+    # 1 - (x.xref) / (|x||xref|)
+
+    dna = math.sqrt(dot(na, na))
+    dnb = math.sqrt(dot(nb, nb))
+    dnc = math.sqrt(dot(nc, nc))
+    dra = math.sqrt(dot(ra, ra))
+    drb = math.sqrt(dot(rb, rb))
+    drc = math.sqrt(dot(rc, rc))
+
+    xoffa = (dna - dra) / dra
+    xoffb = (dnb - drb) / drb
+    xoffc = (dnc - drc) / drc
+
+    aoffa = 1.0 - (dot(na, ra) / (dna * dra))
+    aoffb = 1.0 - (dot(nb, rb) / (dnb * drb))
+    aoffc = 1.0 - (dot(nc, rc) / (dnc * drc))
+
+    return xoffa, xoffb, xoffc, aoffa, aoffb, aoffc
+
 def MosflmJiffy(DriverType = None):
 
     DriverInstance = DriverFactory.Driver(DriverType)    
@@ -154,6 +181,7 @@ def MosflmJiffy(DriverType = None):
             self._wedge_width = None
             self._num_wedges = 1
             self._autoindex = False
+            self._reference_mat = 'reference.mat'
 
             # this will be keyed by the wedge middle images
             # used for cell refinement and contain sigmas
@@ -163,6 +191,9 @@ def MosflmJiffy(DriverType = None):
 
         def set_image_range(self, image_range):
             self._image_range = image_range
+
+        def set_reference_mat(self, reference_mat):
+            self._reference_mat = reference_mat
 
         def set_commands(self, command_file):
             self._commands = []
@@ -200,6 +231,11 @@ def MosflmJiffy(DriverType = None):
             for record in self._commands:
                 self.input(record)
 
+            # do all calculations in P1 to assess the accuracy of the
+            # basic autoindex procedure
+            
+            self.input('symm p1')
+            self.input('newmat p1.mat')
             for b in batches:
                 self.input('autoindex dps refine image %d' % b)
             self.input('mosaic estimate')
@@ -214,18 +250,47 @@ def MosflmJiffy(DriverType = None):
 
             output = self.get_all_output()
 
-            sdr, sdp, sdi = (-1.0, -1.0, -1.0)
+            sdr, sdp, sdi = (-1.0, -1.0, [])
+
+            starting = False
 
             for j in range(len(output)):
                 if 'final sd in spot positions is' in output[j]:
                     bits = output[j].replace('mm', '').split()
                     sdr, sdp = float(bits[6]), float(bits[10])
 
-                if 'Final rms residual' in output[j]:
+                if 'Final rms residual' in output[j] and False:
                     sdi = float(output[j].replace('mm', ' ').split()[3])
 
-            print '%s %.4f %.4f %.4f' % \
-                  (id, sdr, sdp, sdi)
+                if 'Processing Image' in output[j]:
+                    starting = True
+
+                # this is not printed out if Mosflm is being run
+                # from Python - bummer!
+                if 'Starting residual=' in output[j] and starting:
+                    sdi.append(
+                        float(output[j].replace(
+                        'Starting residual=', '').replace(
+                        'mm', ' ').split()[0]))
+                    starting = False
+
+            newmat = map(float, open('p1.mat').read().split()[:9])
+            refmat = map(float, open(self._reference_mat).read().split()[:9])
+            newmatcell = map(float,
+                             open('p1.mat').read().split()[21:27])
+            refmatcell = map(float,
+                             open('reference.mat').read().split()[21:27])
+
+            # sdi = matrix_diff(newmat, refmat)
+
+            sdi = [math.fabs(newmatcell[i] - refmatcell[i]) for i in range(6)]
+
+            sdis = ''
+            for s in sdi:
+                sdis += ' %.4f' % s
+
+            print '%s %.4f %.4f %s' % \
+                  (id, sdr, sdp, sdis)
 
             return (sdi, sdp, sdi)
             
@@ -289,6 +354,13 @@ def MosflmJiffy(DriverType = None):
             end = blocks - self._num_wedges + 1
 
             for i in range(0, end):
+
+                # always want the first image to be the first image
+                # so...
+
+                if i > 0:
+                    break
+                
                 if self._num_wedges == 1:
                     w = self._wedge_width
                     batches = [i * w + f]
@@ -422,7 +494,8 @@ def MosflmJiffy(DriverType = None):
 if __name__ == '__main__':
 
     if len(sys.argv) < 6:
-        raise RuntimeError, '%s start end width nwedge runit' % \
+        raise RuntimeError, \
+              '%s start end width nwedge runit [reference.mat]' % \
               sys.argv[0]
 
     mj = MosflmJiffy()
@@ -431,6 +504,9 @@ if __name__ == '__main__':
     mj.set_wedge_width(int(sys.argv[3]))
     mj.set_num_wedges(int(sys.argv[4]))
     mj.set_commands(sys.argv[5])
+
+    if len(sys.argv) == 7:
+        mj.set_reference_mat(sys.argv[6])
 
     mj.run()
 
