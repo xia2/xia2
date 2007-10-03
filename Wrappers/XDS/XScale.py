@@ -12,6 +12,7 @@ import os
 import sys
 import copy
 import math
+import time
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -32,6 +33,7 @@ from XScaleHelpers import generate_resolution_shells_str
 from XDS import xds_check_error
 
 from Handlers.Flags import Flags
+from Handlers.Streams import Debug
 
 def XScale(DriverType = None):
 
@@ -51,6 +53,43 @@ def XScale(DriverType = None):
                 self.set_executable('xscale')
             else:
                 self.set_executable('xscale_par')
+
+            # check the version of the program to ensure that
+            # the program flow is correct...
+            self.start()
+            self.close_wait()
+
+            version_header = self.get_all_output()
+
+            # VERSIONS: I know August 15, 2007 is *after* the
+            # change, and May 8 is before the change, so...
+            # assert: changeover_date = Aug 1, 2007
+
+            self._version = None
+
+            for record in version_header:
+                if 'XSCALE' in record and 'VERSION' in record:
+                    datestr = record.replace(
+                        '(VERSION', '').replace(
+                        ')', '').replace('XSCALE', '').strip()[:20].strip()
+                    Debug.write('Read date as: "%s"' % datestr)
+                    y, m, d = time.strptime(datestr, '%B %d, %Y')[:3]
+
+                    Debug.write('XSCALE Version: %d-%d-%d' % (y, m, d))
+
+                    if y < 2007:
+                        self._version = 'old'
+                    elif m < 8 and y == 2007:
+                        self._version = 'old'
+                    else:
+                        self._version = 'new'
+
+            if not self._version:
+                raise RuntimeError, 'unable to find version string'
+
+            # clean up afterwards
+            self.reset()
+
 
             # overall information
             self._resolution_shells = ''
@@ -192,10 +231,14 @@ def XScale(DriverType = None):
                 
                 xscale_inp.write(
                     'OUTPUT_FILE=%s.HKL ' % wave)
+                if self._version == 'new':
+                    xscale_inp.write('\n')
                 if self._anomalous:
                     xscale_inp.write('FRIEDEL\'S_LAW=FALSE MERGE=FALSE\n')
                 else:
                     xscale_inp.write('FRIEDEL\'S_LAW=TRUE MERGE=FALSE\n')
+                if self._version == 'new':
+                    xscale_inp.write('\n')
                     
                 for j in range(len(self._transposed_input[wave]['hkl'])):
 

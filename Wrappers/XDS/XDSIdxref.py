@@ -306,6 +306,8 @@ def XDSIdxref(DriverType = None):
             lp = open(os.path.join(
                 self.get_working_directory(), 'IDXREF.LP'), 'r').readlines()
 
+            
+
             self._idxref_data = _parse_idxref_lp(lp)
 
             for j in range(1, 45):
