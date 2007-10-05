@@ -187,6 +187,15 @@ def LabelitScreen(DriverType = None):
                 out.write('beam_search_scope = %f\n' % \
                           self._beam_search_scope)
 
+            # check to see if this is an image plate *or* the
+            # wavelength corresponds to Cu KA (1.54A) or Cr KA (2.29 A).
+            # numbers from rigaku americas web page.
+
+            if math.fabs(self.get_wavelength() - 1.54) < 0.01:
+                out.write('distl_profile_bumpiness = 10\n')
+            if math.fabs(self.get_wavelength() - 2.29) < 0.01:
+                out.write('distl_profile_bumpiness = 10\n')
+
             # presume that we won't be using more than four
             # images...
             out.write('wedgelimit = 4\n')
