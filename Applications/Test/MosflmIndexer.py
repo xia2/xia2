@@ -4,6 +4,7 @@
 
 import os
 import sys
+import shutil
 import math
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
@@ -98,30 +99,32 @@ def MosflmIndexer(DriverType = None):
 
             # check here for errors
 
-            cell = tuple(map(float, open('auto.mat').read().split()[21:27]))
+            cell = tuple(map(float, open(
+                os.path.join(self.get_working_directory(),
+                             'auto.mat')).read().split()[21:27]))
             
             return cell
 
     return MosflmIndexerWrapper()
 
-def autoindex(template, directory, beam, images):
+def autoindex(mi_id, template, directory, beam, images):
 
     startdir = os.getcwd()
-    mi_id = 'mindex_%d' % images[0]
-    for image in images[1:]:
-        mi_id += '_%d' % image
 
-    if not os.path.exists(os.path.join(startdir, mi_id)):
-        os.makedirs(os.path.join(startdir, mi_id))
-        
+    jobname = 'R%d' % images[0]
+    for i in images[1:]:
+        jobname += '.%d' % i
+
     mi = MosflmIndexer('cluster.sge')
-    mi.set_name(mi_id)
+    mi.set_name(jobname)
     mi.set_working_directory(os.path.join(startdir, mi_id))
     mi.set_directory(directory)
     mi.set_template(template)
     mi.set_beam(beam)
-    mi.set_images((1, 90))
-    return mi.index()
+    mi.set_images(images)
+    cell = mi.index()
+
+    return cell
 
 if __name__ == '__main__':
 
