@@ -104,9 +104,26 @@ def MosflmIndexer(DriverType = None):
 
     return MosflmIndexerWrapper()
 
+def autoindex(template, directory, beam, images):
+
+    startdir = os.getcwd()
+    launchdir = 'mindex_%d' % images[0]
+    for image in images[1:]:
+        launchdir += '_%d' % image
+    
+    mi = MosflmIndexer('cluster.sge')
+    mi.set_working_directory(os.path.join(startdir, launchdir))
+    mi.set_directory(directory)
+    mi.set_template(template)
+    mi.set_beam(beam)
+    mi.set_images((1, 90))
+    return mi.index()
+
 if __name__ == '__main__':
 
     # run a test...
+
+    from BitsAndBobs import celldiff
 
     mi = MosflmIndexer()
 
@@ -119,4 +136,10 @@ if __name__ == '__main__':
     mi.set_beam(beam)
     mi.set_images((1, 90))
 
-    print '%.2f %.2f %.2f %.2f %.2f %.2f' % mi.index()
+    cd = celldiff(mi.index(), (51.73, 51.85, 158.13, 90.00, 90.05, 90.20))
+
+    if cd[0] > 0.5 or cd[1] > 0.5:
+        raise RuntimeError, 'large autoindex error'
+
+
+    
