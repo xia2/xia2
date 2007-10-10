@@ -107,12 +107,16 @@ def MosflmIndexer(DriverType = None):
 def autoindex(template, directory, beam, images):
 
     startdir = os.getcwd()
-    launchdir = 'mindex_%d' % images[0]
+    mi_id = 'mindex_%d' % images[0]
     for image in images[1:]:
-        launchdir += '_%d' % image
-    
+        mi_id += '_%d' % image
+
+    if not os.path.exists(os.path.join(startdir, mi_id)):
+        os.makedirs(os.path.join(startdir, mi_id))
+        
     mi = MosflmIndexer('cluster.sge')
-    mi.set_working_directory(os.path.join(startdir, launchdir))
+    mi.set_name(mi_id)
+    mi.set_working_directory(os.path.join(startdir, mi_id))
     mi.set_directory(directory)
     mi.set_template(template)
     mi.set_beam(beam)
