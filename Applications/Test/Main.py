@@ -35,15 +35,19 @@ class Launcher(threading.Thread):
 
     def run(self):
 
+        global inq
         global outq
         global tq
 
         if len(self._images) == 2:
             print 'Running %d %d' % self._images
+            print '(%d left...)' % inq.qsize()
         elif len(self._images) == 3:
             print 'Running %d %d %d' % self._images
+            print '(%d left...)' % inq.qsize()
         elif len(self._images) == 4:
             print 'Running %d %d %d %d' % self._images
+            print '(%d left...)' % inq.qsize()
 
         mi_id = self._id
 
@@ -169,5 +173,5 @@ if __name__ == '__main__':
                       (i[0], i[1], i[2], i[3], results[i][0], results[i][1]))
 
     
-
+    print '%d jobs run' % len(images)
     
