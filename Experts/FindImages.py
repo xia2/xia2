@@ -237,9 +237,45 @@ def headers2sweeps(header_dict):
     sweeps.append(current_sweep)
 
     return sweeps
+
+def common_prefix(strings):
+    '''Find a common prefix among the list of strings. May return an empty
+    string. This is O(n^2).'''
+
+    common = strings[0]
+    finished = False
+
+    while not finished:
+
+        finished = True
+        for s in strings:
+            if not common == s[:len(common)]:
+                common = common[:-1]
+                finished = False
+                continue
+            
+    return common
+
+def digest_template(template, images):
+    '''Digest the template and image numbers to copy as much of the
+    common characters in the numbers as possible to the template to
+    give smaller image numbers.'''
+
+    length = template.count('#')
+
+    format = '%%0%dd' % length
+
+    strings = [format % i for i in images]
+
+    prefix = common_prefix(strings)
+
+    if prefix:
+        template = template.replace(len(prefix) * '#', prefix, 1)
+        images = [int(s.replace(prefix, '', 1)) for s in strings]
+
+    return template, images
     
 if __name__ == '__main__':
-
 
     if len(sys.argv) < 2:
         raise RuntimeError, '%s image_001.img' % sys.argv[0]
@@ -252,6 +288,8 @@ if __name__ == '__main__':
     template = image2template(tail)
 
     images = find_matching_images(template, head)
+
+    template, images = digest_template(template, images)
     
     print 'template: %s' % template
     print 'images:   %d to %d' % (min(images), max(images))
