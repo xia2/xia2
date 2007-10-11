@@ -33,7 +33,9 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Experts.FindImages import image2template_directory, \
-     template_directory_number2image, image2image, find_matching_images
+     template_directory_number2image, image2image, find_matching_images, \
+     digest_template
+
 from Wrappers.XIA.Diffdump import Diffdump
 
 from Handlers.Streams import Debug
@@ -268,6 +270,18 @@ class FrameProcessor:
         if self._fp_beam_prov is None:
             self._fp_beam = tuple(map(float, self._fp_header['beam']))
             self._fp_beam_prov = 'header'
+
+        return
+
+    def digest_template(self):
+        '''Strip out common characters from the image list and move them
+        to the template.'''
+
+        template, images = digest_template(self._fp_template,
+                                           self._fp_matching_images)
+
+        self._fp_template = template
+        self._fp_matching_images = images
 
         return
 

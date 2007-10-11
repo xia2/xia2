@@ -949,6 +949,12 @@ def Mosflm(DriverType = None):
             why this is needed to be run again, set self._intgr_prepare_done
             as False.'''
 
+            # before we do anything we perhaps need to shorten the image
+            # numbers so that they fit in the output - this is done
+            # using the frameprocessors digest_template method.
+
+            self.digest_template()
+
             # generate the gain if necessary
             # bug 2199 remove this it only makes things less
             # reliable...
