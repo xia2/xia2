@@ -14,7 +14,7 @@
       email to majordomo@dl.ac.uk with the body "subscribe xia2bb".
       Also, if you are interested in keeping up-to-date with what 
       is going on in xia2 development take a look at the 
-      <a href="http://xia2.blogspot.com>blog</a>.</p>
+      <a href="http://xia2.blogspot.com">blog</a>.</p>
       
     <p>xia2 is a new automated data reduction system designed to work from raw
       diffraction data and a little metadata, and produce usefully reduced
@@ -201,7 +201,7 @@ xia2setup -atom se -project foo -crystal bar \
       <li>MAR CCD detectors</li>
       <li>MAR 345 image plates</li>
       <li>RAXIS IV image plates</li>
-      <li>Rigaku saturn CCDs</li>
+      <li>Rigaku Saturn CCDs (Binned and unbinned)</li>
     </ul>
     
     <p>If you have another detector class which needs support, please get 
@@ -412,6 +412,15 @@ END PROJECT TS01
       data from multiple crystals, however this is on the to-do list.</p>
     
     <h1>Release Notes</h1>
+
+    <p>Changes since 0.2.6.2</p>
+    <ul>
+      <li>Now works for images with long image numbers, as typically 
+	recorded on Rigaku X-Ray sets.</li>
+      <li>Signed off for operation with Rigaku Saturn and RAXIS IV
+	detectors.</li>
+    </ul>
+
 
     <p>Changes since 0.2.6.1</p>
     <ul>
@@ -666,7 +675,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Tue Aug 28 12:24:35 BST 2007
+Last modified: Thu Oct 11 16:19:44 GMT Standard Time 2007
 <!-- hhmts end -->
   </body>
 </html>
