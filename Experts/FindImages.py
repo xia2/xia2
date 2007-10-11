@@ -239,26 +239,19 @@ def headers2sweeps(header_dict):
     return sweeps
     
 if __name__ == '__main__':
-    # run some tests...
 
-    if not os.environ.has_key('XIA2_ROOT'):
-        raise RuntimeError, 'XIA2_ROOT not defined'
 
-    print image2template('foo_bar_1_001.img')
-    print image2template('foo_bar_001.img')
-    print image2template('foo_bar001.img')
-    print image2template('foo_bar.001')
+    if len(sys.argv) < 2:
+        raise RuntimeError, '%s image_001.img' % sys.argv[0]
 
-    print find_matching_images(image2template('12287_1_E1_001.img'),
-                               os.path.join(os.environ['XIA2_ROOT'],
-                                            'Data', 'Test', 'Images'))
+    head, tail = os.path.split(sys.argv[1])
 
+    if not head:
+        head = os.getcwd()
+
+    template = image2template(tail)
+
+    images = find_matching_images(template, head)
     
-    print template_directory_number2image(image2template('12287_1_E1_001.img'),
-                                          os.path.join(os.environ['XIA2_ROOT'],
-                                                       'Data', 'Test',
-                                                       'Images'), 1)
-    print template_directory_number2image(image2template('12287_1_E1_001.img'),
-                                          os.path.join(os.environ['XIA2_ROOT'],
-                                                       'Data', 'Test',
-                                                       'Images'), 1000)
+    print 'template: %s' % template
+    print 'images:   %d to %d' % (min(images), max(images))

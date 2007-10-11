@@ -19,6 +19,25 @@
 # spell for Mosflm.
 #
 # 28/SEP/07
+#
+# Architectural Changes 8/OCT/07
+# ------------------------------
+# 
+# Need to be able to do this faster so... use the cluster driver, define
+# the number of cpu resources we have, allocate storage for the problem
+# and results before we start then queue up and test each option - spawning
+# jobs off to a cluster as part of a test procedure (n.b. this will mean
+# using the class from within the function) then gathering up the results.
+# On a 96 CPU cluster this sould give a ~ 100 fold speed increase as the
+# problem should scale well...
+#
+# Will need a threading module.
+# And a ClusterDriver for SGE (can be handled by XIA2_DRIVERTYPE=cluster.sge)
+# and also a thread-safe storage container.
+# 
+# Existing loops can be used to generate the problem within this class.
+# This will allow extension to include Labelit, Mosflm &c. more simply...
+# Start off with 1D FFT indexing programs - Mosflm, Labelit.
 
 import os
 import sys

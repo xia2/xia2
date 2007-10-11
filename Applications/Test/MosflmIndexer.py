@@ -115,7 +115,7 @@ def autoindex(mi_id, template, directory, beam, images):
     for i in images[1:]:
         jobname += '.%d' % i
 
-    mi = MosflmIndexer('cluster.sge')
+    mi = MosflmIndexer()
     mi.set_name(jobname)
     mi.set_working_directory(os.path.join(startdir, mi_id))
     mi.set_directory(directory)
