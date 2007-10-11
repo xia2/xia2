@@ -51,6 +51,8 @@ class FrameProcessor:
 
         self._fp_matching_images = []
 
+        self._fp_offset = 0
+
         self._fp_wavelength = None
         self._fp_distance = None
         self._fp_beam = None
@@ -134,6 +136,9 @@ class FrameProcessor:
 
     def get_template(self):
         return self._fp_template
+
+    def get_frame_offset(self):
+        return self._fp_offset
 
     def set_directory(self, directory):
         self._fp_directory = directory
@@ -277,11 +282,12 @@ class FrameProcessor:
         '''Strip out common characters from the image list and move them
         to the template.'''
 
-        template, images = digest_template(self._fp_template,
-                                           self._fp_matching_images)
+        template, images, offset = digest_template(self._fp_template,
+                                                   self._fp_matching_images)
 
         self._fp_template = template
         self._fp_matching_images = images
+        self._fp_offset = offset
 
         return
 

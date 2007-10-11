@@ -1279,6 +1279,9 @@ def Mosflm(DriverType = None):
             self.input('postref multi segments %d repeat 10' % \
                        len(self._mosflm_cell_ref_images))
 
+            # FIXME 
+            self.input('postref maxresidual 5.0')
+            
             for cri in self._mosflm_cell_ref_images:
                 self.input('process %d %d' % cri)
                 self.input('go')
@@ -1548,6 +1551,10 @@ def Mosflm(DriverType = None):
 
             self.input('postref multi segments %d repeat 10' % \
                        len(self._mosflm_cell_ref_images))
+
+            # FIXME
+            self.input('postref maxresidual 5.0')
+            
             for cri in self._mosflm_cell_ref_images:
                 self.input('process %d %d' % cri)
                 self.input('go')
@@ -2149,6 +2156,8 @@ def Mosflm(DriverType = None):
 
             # set up the integration
             self.input('postref fix all')
+            # fudge this needs to be fixed. FIXME!
+            self.input('postref maxresidual 5.0')
 
             # compute the detector limits to use for this...
             # these are w.r.t. the beam centre and are there to
@@ -2181,7 +2190,10 @@ def Mosflm(DriverType = None):
             if self.get_header_item('detector') == 'raxis':
                 self.input('adcoffset 0')
 
-            self.input('process %d %d' % self._intgr_wedge)
+            offset = self.get_frame_offset()
+
+            self.input('process %d %d' % (self._intgr_wedge[0] - offset,
+                                          self._intgr_wedge[1] - offset))
                 
             self.input('go')
 

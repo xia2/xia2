@@ -268,12 +268,14 @@ def digest_template(template, images):
     strings = [format % i for i in images]
 
     prefix = common_prefix(strings)
+    offset = 0
 
     if prefix:
+        offset = int(prefix + '0' * (length - len(prefix)))
         template = template.replace(len(prefix) * '#', prefix, 1)
         images = [int(s.replace(prefix, '', 1)) for s in strings]
 
-    return template, images
+    return template, images, offset
     
 if __name__ == '__main__':
 
@@ -289,7 +291,8 @@ if __name__ == '__main__':
 
     images = find_matching_images(template, head)
 
-    template, images = digest_template(template, images)
+    template, images, offset = digest_template(template, images)
     
     print 'template: %s' % template
     print 'images:   %d to %d' % (min(images), max(images))
+    print 'offset:   %d' % offset
