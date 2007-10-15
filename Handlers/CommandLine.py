@@ -419,6 +419,9 @@ class _CommandLine(Object):
     def _help_xinfo(self):
         return '-xinfo example.xinfo'
 
+    def set_xinfo(self, xinfo):
+        self._xinfo = XProject(xinfo)
+
     def get_xinfo(self):
         '''Return the XProject.'''
         return self._xinfo
