@@ -34,7 +34,9 @@ from XIA2Version import Version
 # XML Marked up output for e-HTPX
 if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'Interfaces'))
+
 from eHTPX.EHTPXXmlHandler import EHTPXXmlHandler
+from xia2setup import write_xinfo
 
 def check_environment():
     '''Check the environment we are running in...'''
@@ -98,7 +100,22 @@ def xia2():
     from Handlers.CommandLine import CommandLine
     
     if not CommandLine.get_xinfo():
-        raise RuntimeError, 'xinfo not defined'
+        # write an xinfo file then
+        xinfo = os.path.join(os.getcwd(), 'automatic.xinfo')
+
+        argv = sys.argv
+
+        path = argv.pop()
+
+        while not os.path.exists(path):
+            path = '%s %s' % (argv.pop(), path)
+
+        if not os.path.isabs(path):
+            path = os.path.abspath(path)
+            
+        write_xinfo(xinfo, path)
+
+        CommandLine.set_xinfo(xinfo)
     
     # this actually gets the processing started...
     Chatter.write(str(CommandLine.get_xinfo()))

@@ -11,7 +11,7 @@
 #
 # 18th December 2006
 #
-# 17/JAN/07 FIXME need to add a "calculation of beam centre" stage to this 
+# 17/JAN/07 FIXED need to add a "calculation of beam centre" stage to this 
 #                 process.
 # 
 # 
@@ -133,7 +133,7 @@ def visit(root, directory, files):
         if is_sequence_name(os.path.join(directory, f)):
             parse_sequence(os.path.join(directory, f))
             
-def print_sweeps():
+def print_sweeps(out = sys.stdout):
 
     global known_sweeps, latest_sequence
     
@@ -167,34 +167,34 @@ def print_sweeps():
     if not crystal:
         crystal = 'DEFAULT'
 
-    print 'BEGIN PROJECT %s' % project
-    print 'BEGIN CRYSTAL %s' % crystal
+    out.write('BEGIN PROJECT %s\n' % project)
+    out.write('BEGIN CRYSTAL %s\n' % crystal)
 
-    print ''
+    out.write('\n')
 
     if latest_sequence:
-        print 'BEGIN AA_SEQUENCE'
-        print ''
+        out.write('BEGIN AA_SEQUENCE\n')
+        out.write('\n')
         for sequence_chunk in [latest_sequence[i:i + 60] \
                                for i in range(0, len(latest_sequence), 60)]:
-            print sequence_chunk
-        print ''
-        print 'END AA_SEQUENCE'        
-        print ''
+            out.write('%s\n' % sequence_chunk)
+        out.write('\n')
+        out.write('END AA_SEQUENCE\n')        
+        out.write('\n')
 
     if CommandLine.get_atom_name():
-        print 'BEGIN HA_INFO'
-        print 'ATOM %s' % CommandLine.get_atom_name().lower()
+        out.write('BEGIN HA_INFO\n')
+        out.write('ATOM %s\n' % CommandLine.get_atom_name().lower())
         if CommandLine.get_atom_name().lower() == 'se' and latest_sequence:
             # assume that this is selenomethionine
-            print '! If this is SeMet uncomment next line...'
-            print '!NUMBER_PER_MONOMER %d' % latest_sequence.count('M')
-            print '!NUMBER_TOTAL M'
+            out.write('! If this is SeMet uncomment next line...\n')
+            out.write('!NUMBER_PER_MONOMER %d\n' % latest_sequence.count('M'))
+            out.write('!NUMBER_TOTAL M\n')
         else:
-            print '!NUMBER_PER_MONOMER N'
-            print '!NUMBER_TOTAL M'
-        print 'END HA_INFO'
-        print ''
+            out.write('!NUMBER_PER_MONOMER N\n')
+            out.write('!NUMBER_TOTAL M\n')
+        out.write('END HA_INFO\n')
+        out.write('\n')
     
     for j in range(len(wavelengths)):
 
@@ -214,14 +214,14 @@ def print_sweeps():
                 
         wavelength_map[wavelengths[j]] = name
         
-        print 'BEGIN WAVELENGTH %s' % name
-        print 'WAVELENGTH %f' % wavelengths[j]
+        out.write('BEGIN WAVELENGTH %s\n' % name)
+        out.write('WAVELENGTH %f\n' % wavelengths[j])
         if fp != 0.0 and fpp != 0.0:
-            print 'F\' %5.2f' % fp
-            print 'F\'\' %5.2f' % fpp
+            out.write('F\' %5.2f\n' % fp)
+            out.write('F\'\' %5.2f\n' % fpp)
             
-        print 'END WAVELENGTH %s' % name
-        print ''
+        out.write('END WAVELENGTH %s\n' % name)
+        out.write('\n')
 
     j = 0
     for sweep in sweeplists:
@@ -235,28 +235,57 @@ def print_sweeps():
             j += 1
             name = 'SWEEP%d' % j
 
-            print 'BEGIN SWEEP %s' % name
-            print 'WAVELENGTH %s' % wavelength_map[s.get_wavelength()]
+            out.write('BEGIN SWEEP %s\n' % name)
+            out.write('WAVELENGTH %s\n' % wavelength_map[s.get_wavelength()])
             
-            print 'DIRECTORY %s' % s.get_directory()
-            print 'IMAGE %s' % os.path.split(s.imagename(min(
-                s.get_images())))[-1]
-            print 'START_END %d %d' % (min(s.get_images()),
-                                       max(s.get_images()))
-            print 'EPOCH %d' % int(s.get_collect()[0])
+            out.write('DIRECTORY %s\n' % s.get_directory())
+            out.write('IMAGE %s\n' % os.path.split(s.imagename(min(
+                s.get_images())))[-1])
+            out.write('START_END %d %d\n' % (min(s.get_images()),
+                                             max(s.get_images())))
+            out.write('EPOCH %d\n' % int(s.get_collect()[0]))
             cl_beam = CommandLine.get_beam()
             if cl_beam[0] or cl_beam[1]:
-                print 'BEAM %6.2f %6.2f' % cl_beam
+                out.write('BEAM %6.2f %6.2f\n' % cl_beam)
             else:
-                # print 'BEAM %6.2f %6.2f' % tuple(s.get_beam())
                 beam = compute_beam_centre(s)
-                print 'BEAM %6.2f %6.2f' % tuple(beam)
-            print 'END SWEEP %s' % name
+                if beam:
+                    out.write('BEAM %6.2f %6.2f\n' % tuple(beam))
+            out.write('END SWEEP %s\n' % name)
 
-            print ''
+            out.write('\n')
 
-    print 'END CRYSTAL %s' % crystal
-    print 'END PROJECT %s' % project
+    out.write('END CRYSTAL %s\n' % crystal)
+    out.write('END PROJECT %s\n' % project)
+
+def rummage(path):
+    '''Walk through the directories looking for sweeps.'''
+    os.path.walk(path, visit, os.getcwd())
+    return
+
+def write_xinfo(filename, path):
+    crystal = CommandLine.get_crystal_name()
+
+    if not crystal:
+        crystal = 'DEFAULT'
+
+    if not os.path.isabs(filename):
+        filename = os.path.abspath(filename)
+
+    directory = os.path.join(os.getcwd(), crystal, 'setup')
+
+    try:
+        os.makedirs(directory)
+    except OSError, e:
+        if not 'File exists' in str(e):
+            raise e
+        
+    os.chdir(directory)
+
+    rummage(path)
+    fout = open(filename, 'w')
+    print_sweeps(fout)
+    
 
 if __name__ == '__main__':
 
@@ -272,6 +301,8 @@ if __name__ == '__main__':
     # perhaps move to a new directory...
 
     crystal = CommandLine.get_crystal_name()
+
+    fout = open(os.path.join(os.getcwd(), 'automatic.xinfo'), 'w')
 
     if not crystal:
         crystal = 'DEFAULT'
@@ -292,9 +323,8 @@ if __name__ == '__main__':
     if not os.path.isabs(path):
         path = os.path.abspath(path)
 
-    os.path.walk(path, visit, os.getcwd())
-
-    print_sweeps()
+    rummage(path)
+    print_sweeps(fout)
 
 
 
