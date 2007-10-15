@@ -106,8 +106,12 @@ detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('mar', 2300, 150):'mar 345',
                   ('mar', 3450, 100):'mar 345',
                   ('raxis', 3000, 100):'raxis IV',
-                  ('saturn', 2048, 45):'rigaku saturn',
-                  ('saturn', 1024, 90):'rigaku saturn 2x2 binned'}
+                  ('saturn', 2048, 45):'rigaku saturn 92',
+                  ('saturn', 1024, 90):'rigaku saturn 92 2x2 binned',
+                  ('saturn', 2084, 45):'rigaku saturn 944',
+                  ('saturn', 1042, 90):'rigaku saturn 944 2x2 binned'}
+
+# FIXME get proper specifications for these detectors...
 
 def Diffdump(DriverType = None):
     '''A factory for wrappers for the diffdump.'''
