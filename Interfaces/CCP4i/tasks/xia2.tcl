@@ -6,7 +6,7 @@
 #     A copy of the CCP4 licence can be obtained by writing to the
 #     CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
 #
-#CCP4i_cvs_Id $Id: xia2.tcl,v 1.4 2006/11/17 10:03:00 gwin Exp $
+#CCP4i_cvs_Id $Id: xia2.tcl,v 1.5 2007/10/16 13:07:48 gwin Exp $
 # ======================================================================
 # xia2.tcl --
 #
@@ -124,18 +124,20 @@ proc xia2_update_wavelength_menu { arrayname } {
     upvar #0 $arrayname array
  
     # Initialise the list which will contain all of the items to appear on the menu
-    set wavelength_list {}
+    set wavelength_menu {}
+    set wavelength_alias {}
 
     # Add each of the wavelength names (WAVELENGTH_NAME) to the list
     for { set n 1 }  { $n <= $array(N_WAVELENGTHS) } { incr n } {
-	lappend wavelength_list $array(WAVELENGTH_NAME,$n) 
+	lappend wavelength_menu $array(WAVELENGTH_NAME,$n) 
+	lappend wavelength_alias [string toupper $array(WAVELENGTH_NAME,$n)]
     }
 
     # Update the menu - this will automatically update everywhere that the menu
     # is displayed in the task interface
     UpdateVariableMenu $arrayname initialise 0 \
-	WAVELENGTH_MENU $wavelength_list \
-	WAVELENGTH_ALIAS $wavelength_list
+	WAVELENGTH_MENU $wavelength_menu \
+	WAVELENGTH_ALIAS $wavelength_alias
 }
 
 #-----------------------------------------------------------------------------
@@ -182,10 +184,20 @@ proc Xia2Sweeps { arrayname counter } {
     # Make a "browse" button to allow the user to select directories
     # via the browser
     # This is a custom widget!
+
     set browse [button $line.browse -text "Browse" \
 		    -command "xia2_browse $arrayname $counter"]
     $browse configure -font $configure(FONT_SMALL)
     pack $browse -after $line.e2 -side left
+
+    CreateLine line \
+	message "Optionally specify correct beam coordinates" \
+	label "Beam centre X:" \
+	widget SWEEP_BEAM_X \
+	label "Y:" \
+	widget SWEEP_BEAM_Y \
+	label "(mm)"
+
 }
 
 #--------------------------------------------------------------
