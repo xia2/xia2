@@ -86,6 +86,7 @@ HeaderCache = _HeaderCache()
 # FIXME this does not include all MAR, RAXIS detectors
 
 detector_class = {('adsc', 2304, 81):'adsc q4',
+                  ('adsc', 1152, 163):'adsc q4 2x2 binned',
                   ('adsc', 1502, 163):'adsc q4 2x2 binned',
                   ('adsc', 4096, 51):'adsc q210',
                   ('adsc', 2048, 102):'adsc q210 2x2 binned',
