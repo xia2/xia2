@@ -229,7 +229,10 @@ def print_sweeps(out = sys.stdout):
         # this should sort on exposure epoch ...?
         sweeps.sort()
         for s in sweeps:
-            if len(s.get_images()) < 5:
+
+            # require at least 10 images to represent a sweep...
+            
+            if len(s.get_images()) < 10:
                 continue
 
             j += 1
