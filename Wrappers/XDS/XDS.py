@@ -151,10 +151,11 @@ def header_to_xds(header, synchrotron = None):
         'adsc q315':True,
         'adsc q315 2x2 binned':True,
         'mar 345':False,
-        'mar 300':True,
-        'mar 325':True,
-        'mar 225':True,
-        'mar 165':False,
+        'mar 300 ccd':True,
+        'mar 325 ccd':True,
+        'mar 225 ccd':True,
+        'mar 165 ccd':False,
+        'mar 135 ccd':False,
         'raxis IV':True}
 
     detector_to_rotation_axis = {
