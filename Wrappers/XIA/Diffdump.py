@@ -94,18 +94,18 @@ detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('adsc', 3072, 102):'adsc q315 2x2 binned',
                   ('cbf', 2463, 172):'pilatus 6M',
                   ('mini-cbf', 2463, 172):'pilatus 6M',
-                  ('marccd', 4096, 73):'mar 300',
-                  ('marccd', 4096, 79):'mar 325',
-                  ('marccd', 3072, 73):'mar 225',
-                  ('marccd', 2048, 78):'mar 165',
-                  ('marccd', 2048, 79):'mar 165',
-                  ('marccd', 2048, 64):'mar 135',
-                  ('mar', 4096, 73):'mar 300',
-                  ('mar', 4096, 79):'mar 325',
-                  ('mar', 3072, 73):'mar 225',
-                  ('mar', 2048, 78):'mar 165',
-                  ('mar', 2048, 79):'mar 165',
-                  ('mar', 2048, 64):'mar 135',
+                  ('marccd', 4096, 73):'mar 300 ccd',
+                  ('marccd', 4096, 79):'mar 325 ccd',
+                  ('marccd', 3072, 73):'mar 225 ccd',
+                  ('marccd', 2048, 78):'mar 165 ccd',
+                  ('marccd', 2048, 79):'mar 165 ccd',
+                  ('marccd', 2048, 64):'mar 135 ccd',
+                  ('mar', 4096, 73):'mar 300 ccd',
+                  ('mar', 4096, 79):'mar 325 ccd',
+                  ('mar', 3072, 73):'mar 225 ccd',
+                  ('mar', 2048, 78):'mar 165 ccd',
+                  ('mar', 2048, 79):'mar 165 ccd',
+                  ('mar', 2048, 64):'mar 135 ccd',
                   ('mar', 2300, 150):'mar 345',
                   ('mar', 3450, 100):'mar 345',
                   ('raxis', 3000, 100):'raxis IV',
@@ -382,6 +382,12 @@ def Diffdump(DriverType = None):
                 key = (detector, width, pixel)
 
                 self._header['detector_class'] = detector_class[key]
+
+                # check for mar ccd and perhaps reassign
+
+                if detector == 'mar' and \
+                   'ccd' in self._header['detector_class']:
+                    self._header['detector'] = 'marccd'
 
             else:
                 self._header['detector_class'] = 'unknown'
