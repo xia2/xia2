@@ -138,16 +138,16 @@ def XDSInit(DriverType = None):
                     Debug.write('Linking %s to %s' % (
                         self.get_directory(),
                         os.path.join(self.get_working_directory(),
-                                     'xds-image-directory')))
+                                     '_images')))
 
                                 
                     os.symlink(self.get_directory(),
                                os.path.join(self.get_working_directory(),
-                                            'xds-image-directory'))
+                                            '_images'))
                 except OSError, e:
                     Debug.write('Error linking: %s' % str(e))
                     
-                name_template = os.path.join('xds-image-directory',
+                name_template = os.path.join('_images',
                                              self.get_template().replace(
                     '#', '?'))
                 record = 'NAME_TEMPLATE_OF_DATA_FRAMES=%s\n' % \
@@ -186,7 +186,7 @@ def XDSInit(DriverType = None):
             # tidy up...
             try:
                 os.remove(os.path.join(self.get_working_directory(),
-                                       'xds-image-directory'))
+                                       '_images'))
             except OSError, e:
                 pass
             

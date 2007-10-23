@@ -139,11 +139,11 @@ def XDSXycorr(DriverType = None):
 
                 try:
                     os.symlink(self.get_directory(),
-                               'xds-image-directory')
+                               '_images')
                 except OSError, e:
                     pass
                 
-                name_template = os.path.join('xds-image-directory',
+                name_template = os.path.join('_images',
                                              self.get_template().replace(
                     '#', '?'))
                 record = 'NAME_TEMPLATE_OF_DATA_FRAMES=%s\n' % \
@@ -183,7 +183,7 @@ def XDSXycorr(DriverType = None):
 
             # tidy up...
             try:
-                os.remove('xds-image-directory')
+                os.remove('_images')
             except OSError, e:
                 pass
 
