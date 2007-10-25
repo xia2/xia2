@@ -103,12 +103,16 @@ def xia2():
         # write an xinfo file then
         xinfo = os.path.join(os.getcwd(), 'automatic.xinfo')
 
-        argv = sys.argv
+        argv = sys.argv[1:]
 
         path = argv.pop()
 
         while not os.path.exists(path):
-            path = '%s %s' % (argv.pop(), path)
+            try:
+                path = '%s %s' % (argv.pop(), path)
+            except IndexError, e:
+                raise RuntimeError, 'directory not found in arguments: %s' % \
+                      path
 
         if not os.path.isabs(path):
             path = os.path.abspath(path)

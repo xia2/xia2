@@ -40,6 +40,8 @@ def MosflmIndexer(DriverType = None):
             self._images = []
             self._threshold = 20
 
+            self._p1 = True
+
             # optional input - perhaps we tell the cell
             self._cell = None
 
@@ -70,6 +72,9 @@ def MosflmIndexer(DriverType = None):
         def set_images(self, images):
             self._images = images
             return
+
+        def set_not_p1(self):
+            self._p1 = False
         
         def set_threshold(self, threshold):
             self._threshold = threshold
@@ -91,13 +96,17 @@ def MosflmIndexer(DriverType = None):
                 self.input('autoindex dps refime image %d threshold %f' % \
                            (image, self._threshold))
 
-            self.input('symm p1')
+            if self._p1:
+                self.input('symm p1')
             self.input('newmat auto.mat')
             self.input('go')
 
             self.close_wait()
 
             # check here for errors
+
+            # for o in self.get_all_output():
+            # print o[:-1]
 
             cell = tuple(map(float, open(
                 os.path.join(self.get_working_directory(),
@@ -107,7 +116,7 @@ def MosflmIndexer(DriverType = None):
 
     return MosflmIndexerWrapper()
 
-def autoindex(mi_id, template, directory, beam, images):
+def autoindex(mi_id, template, directory, beam, images, p1 = True):
 
     startdir = os.getcwd()
 
@@ -116,12 +125,14 @@ def autoindex(mi_id, template, directory, beam, images):
         jobname += '.%d' % i
 
     mi = MosflmIndexer()
-    mi.set_name(jobname)
+    # mi.set_name(jobname)
     mi.set_working_directory(os.path.join(startdir, mi_id))
     mi.set_directory(directory)
     mi.set_template(template)
     mi.set_beam(beam)
     mi.set_images(images)
+    if not p1:
+        mi.set_not_p1()
     cell = mi.index()
 
     return cell
