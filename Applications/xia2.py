@@ -168,7 +168,7 @@ def help():
     sys.stdout.write('[-quick]\n')
     sys.stdout.write('[-migrate_data]\n')
     sys.stdout.write('[-2d] or [-3d]\n')
-    sys.stdout.write('-xinfo foo.xinfo\n\n')
+    sys.stdout.write('[-xinfo foo.xinfo] or [/path/to/images]\n\n')
 
     sys.stdout.write('Deprecated command-line options to xia2:\n')
     sys.stdout.write('[-lattice mP] (say)\n')
@@ -186,8 +186,9 @@ def help():
     sys.stdout.write('[-zero_dose]\n')
     sys.stdout.write('[-norefine]\n\n')
 
-    sys.stdout.write('Sensible command line:\n')
+    sys.stdout.write('Sensible command lines:\n')
     sys.stdout.write('xia2 (-2d|-3d) -xinfo foo.xinfo\n')
+    sys.stdout.write('xia2 -project foo -crystal bar (-2d|-3d) /data/path\n')
 
 if __name__ == '__main__':
 
