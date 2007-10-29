@@ -282,13 +282,18 @@ def write_xinfo(filename, path):
     except OSError, e:
         if not 'File exists' in str(e):
             raise e
-        
+
+    # FIXME should I have some exception handling in here...?
+
+    start = os.getcwd()
     os.chdir(directory)
 
     rummage(path)
     fout = open(filename, 'w')
     print_sweeps(fout)
-    
+
+    # change back directory c/f bug # 2693 - important for error files...
+    os.chdir(start)
 
 if __name__ == '__main__':
 
