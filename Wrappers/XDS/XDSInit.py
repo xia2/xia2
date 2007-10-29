@@ -194,7 +194,7 @@ def XDSInit(DriverType = None):
             shutil.copyfile(os.path.join(self.get_working_directory(),
                                          'INIT.LP'),
                             os.path.join(self.get_working_directory(),
-                                         '%d_INIT.LP', % self.get_xpid()))
+                                         '%d_INIT.LP' % self.get_xpid()))
 
             # gather the output files
 

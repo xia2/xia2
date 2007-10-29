@@ -267,7 +267,7 @@ def XDSIntegrate(DriverType = None):
             shutil.copyfile(os.path.join(self.get_working_directory(),
                                          'INTEGRATE.LP'),
                             os.path.join(self.get_working_directory(),
-                                         '%d_INTEGRATE.LP', % self.get_xpid()))
+                                         '%d_INTEGRATE.LP' % self.get_xpid()))
 
             # gather the output files
 

@@ -305,7 +305,7 @@ def XDSIdxref(DriverType = None):
             shutil.copyfile(os.path.join(self.get_working_directory(),
                                          'IDXREF.LP'),
                             os.path.join(self.get_working_directory(),
-                                         '%d_IDXREF.LP', % self.get_xpid()))
+                                         '%d_IDXREF.LP' % self.get_xpid()))
 
             # parse the output
 

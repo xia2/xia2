@@ -323,7 +323,7 @@ def XDSCorrect(DriverType = None):
             shutil.copyfile(os.path.join(self.get_working_directory(),
                                          'CORRECT.LP'),
                             os.path.join(self.get_working_directory(),
-                                         '%d_CORRECT.LP', % self.get_xpid()))
+                                         '%d_CORRECT.LP' % self.get_xpid()))
 
             # gather the output files
 
