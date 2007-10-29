@@ -165,7 +165,7 @@ def XDSXycorr(DriverType = None):
             shutil.copyfile(os.path.join(self.get_working_directory(),
                                          'XDS.INP'),
                             os.path.join(self.get_working_directory(),
-                                         '%d_XYCORR.INP', % self.get_xpid()))
+                                         '%d_XYCORR.INP' % self.get_xpid()))
             
             # write the input data files...
 
