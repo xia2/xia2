@@ -919,7 +919,8 @@ def Scala(DriverType = None):
                             if key and not 'Infinity' in line \
                                    and not 'NaN' in line:
                                 summary[scala_names_to_standard[
-                                    key]] = map(float, line[40:].split())
+                                    key]] = map(float,
+                                                line[40:].split().replace('-', '0.0'))
                         i += 1
                         line = output[i]
                     total_summary[(pname, xname, dname)] = summary
