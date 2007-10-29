@@ -262,8 +262,21 @@ def XScale(DriverType = None):
             '''Actually run XSCALE.'''
                 
             self._write_xscale_inp()
+
+            # copy the input file...
+            shutil.copyfile(os.path.join(self.get_working_directory(),
+                                         'XSCALE.INP'),
+                            os.path.join(self.get_working_directory(),
+                                         '%d_XSCALE.INP' % self.get_xpid()))            
+            
             self.start()
             self.close_wait()
+
+            # copy the LP file
+            shutil.copyfile(os.path.join(self.get_working_directory(),
+                                         'XSCALE.LP'),
+                            os.path.join(self.get_working_directory(),
+                                         '%d_XSCALE.LP', % self.get_xpid()))
 
             # now look at XSCALE.LP
             xds_check_error(self.get_all_output())

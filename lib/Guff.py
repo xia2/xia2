@@ -112,6 +112,8 @@ def auto_logfiler(DriverInstance, extra = None):
     else:
         logfile = os.path.join(working_directory,
                                '%d_%s.log' % (number, executable))
+
+    DriverInstance.set_xpid(number)
     
     Debug.write('Logfile: %s -> %s' % (executable,
                                        logfile))

@@ -165,7 +165,7 @@ def XDSXycorr(DriverType = None):
             shutil.copyfile(os.path.join(self.get_working_directory(),
                                          'XDS.INP'),
                             os.path.join(self.get_working_directory(),
-                                         'XYCORR.INP'))
+                                         '%d_XYCORR.INP', % self.get_xpid()))
             
             # write the input data files...
 
@@ -186,6 +186,12 @@ def XDSXycorr(DriverType = None):
                 os.remove('_images')
             except OSError, e:
                 pass
+
+            # copy the LP file
+            shutil.copyfile(os.path.join(self.get_working_directory(),
+                                         'XYCORR.LP'),
+                            os.path.join(self.get_working_directory(),
+                                         '%d_XYCORR.LP', % self.get_xpid()))
 
             # gather the output files
 

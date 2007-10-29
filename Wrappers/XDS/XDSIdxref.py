@@ -278,7 +278,7 @@ def XDSIdxref(DriverType = None):
             shutil.copyfile(os.path.join(self.get_working_directory(),
                                          'XDS.INP'),
                             os.path.join(self.get_working_directory(),
-                                         'IDXREF.INP'))
+                                         '%d_IDXREF.INP' % self.get_xpid()))
 
             # write the input data files...
 
@@ -300,6 +300,12 @@ def XDSIdxref(DriverType = None):
                                        '_images'))
             except OSError, e:
                 pass
+
+            # copy the LP file
+            shutil.copyfile(os.path.join(self.get_working_directory(),
+                                         'IDXREF.LP'),
+                            os.path.join(self.get_working_directory(),
+                                         '%d_IDXREF.LP', % self.get_xpid()))
 
             # parse the output
 
