@@ -251,6 +251,30 @@ if __name__ == '__main_old__':
     print dtor * math.atan(a[2] / a[0]), dtor * math.atan(b[2] / b[0]), \
           dtor * math.atan(c[2] / c[0])
 
+if __name__ == 'test_junk':
+
+    m = (0.00095924, 0.01043167, 0.00642292,
+         0.00537416, 0.00667498, -0.00892183,
+         -0.01604217, 0.00285989, -0.00260477)
+    
+    m2 = []
+    for k in m:
+        m2.append(k / 0.9795)
+    m = tuple(m2)
+    cell = tuple(invert(m))
+    print '%.4f %.4f %.4f\n%.4f %.4f %.4f\n%.4f %.4f %.4f\n' % cell
+    print math.sqrt(cell[0] * cell[0] + cell[1] * cell[1] + cell[2] * cell[2])
+    print math.sqrt(cell[3] * cell[3] + cell[4] * cell[4] + cell[5] * cell[5])
+    print math.sqrt(cell[6] * cell[6] + cell[7] * cell[7] + cell[8] * cell[8])
+
+    mx = (54.739418, 18.294527, -3.100648,
+          -17.024429, 40.166306, -63.562008,
+          -20.187864, 68.676262, 48.805233)
+    
+    r = (0, 0, -1, 0, 1, 0, -1, 0, 0)
+    
+    print '%.4f %.4f %.4f\n%.4f %.4f %.4f\n%.4f %.4f %.4f\n' % tuple(matmul(r, cell))
+
 if __name__ == '__main__':
     if len(sys.argv) < 3:
 
