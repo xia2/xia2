@@ -251,7 +251,7 @@ if __name__ == '__main_old__':
     print dtor * math.atan(a[2] / a[0]), dtor * math.atan(b[2] / b[0]), \
           dtor * math.atan(c[2] / c[0])
 
-if __name__ == 'test_junk':
+if __name__ == '__mainS__':
 
     m = (0.00095924, 0.01043167, 0.00642292,
          0.00537416, 0.00667498, -0.00892183,
@@ -269,11 +269,27 @@ if __name__ == 'test_junk':
 
     mx = (54.739418, 18.294527, -3.100648,
           -17.024429, 40.166306, -63.562008,
-          -20.187864, 68.676262, 48.805233)
+          20.187864, -68.676262, -48.805233)
     
     r = (0, 0, -1, 0, 1, 0, -1, 0, 0)
+
+    # what have I done here? Inverted the C vector before I started (x -1)
+    # and then multipled by the matrix R which is an inversion of the whole
+    # unit cell across the plane x = z. should probably also factor in the
+    # rotation axis non-alignment in this as well ... what are missetting
+    # angles?
     
     print '%.4f %.4f %.4f\n%.4f %.4f %.4f\n%.4f %.4f %.4f\n' % tuple(matmul(r, cell))
+
+    mx2 = []
+    for k in invert(matmul(r, mx)):
+        mx2.append(k * 0.9795)
+
+    print 9 * '%.7f ' % tuple(mx2)
+
+    print
+
+    print '%.7f %.7f %.7f\n%.7f %.7f %.7f\n%.7f %.7f %.7f\n' % tuple(mx2)
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
