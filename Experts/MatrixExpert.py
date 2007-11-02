@@ -43,6 +43,18 @@ def vec2mat(vectors):
 
 # generic mathematical calculations for 3-vectors
 
+# FIXME cite PRE as the source here for these rotns
+
+def rot_x(theta):
+    '''Rotation matrix about Y of theta degrees.'''
+
+    dtor = 180.0 / (4.0 * math.atan(1.0))
+
+    c = math.cos(theta / dtor)
+    s = math.sin(theta / dtor)
+
+    return [1.0, 0.0, 0.0, 0.0, c, s, 0.0, -s, c]
+
 def rot_y(theta):
     '''Rotation matrix about Y of theta degrees.'''
 
@@ -51,7 +63,59 @@ def rot_y(theta):
     c = math.cos(theta / dtor)
     s = math.sin(theta / dtor)
 
-    return [c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c]
+    return [c, 0.0, -s, 0.0, 1.0, 0.0, s, 0.0, c]
+
+def rot_z(theta):
+    '''Rotation matrix about Y of theta degrees.'''
+
+    dtor = 180.0 / (4.0 * math.atan(1.0))
+
+    c = math.cos(theta / dtor)
+    s = math.sin(theta / dtor)
+
+    return [c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0]
+
+def b_matrix(a, b, c, alpha, beta, gamma):
+    '''Generate a B matric from a unit cell. Cite: Pflugrath in Methods
+    Enzymology 276.'''
+
+    dtor = 180.0 / (4.0 * math.atan(1.0))
+
+    ca = math.cos(alpha / dtor)
+    sa = math.sin(alpha / dtor)
+    cb = math.cos(beta / dtor)
+    sb = math.sin(beta / dtor)
+    cg = math.cos(gamma / dtor)
+    sg = math.sin(gamma / dtor)
+
+    # invert the cell parameters
+    # CITE: International Tables C Section 1.1
+    
+    V = a * b * c * math.sqrt(1 - ca * ca - cb * cb - cg * cg +
+                              2 * ca * cb * cg)
+
+    a_ = b * c * sa / V
+    b_ = a * c * sb / V
+    c_ = a * b * sg / V
+
+    # NOTE well - these angles are in radians
+    
+    alpha_ = math.acos((cb * cg - ca) / (sb * sg))
+    beta_ = math.acos((ca * cg - cb) / (sa * sg))
+    gamma_ = math.acos((ca * cb - cg) / (sa * sb))
+ 
+    ca_ = math.cos(alpha_)
+    sa_ = math.sin(alpha_)
+    cb_ = math.cos(beta_)
+    sb_ = math.sin(beta_)
+    cg_ = math.cos(gamma_)
+    sg_ = math.sin(gamma_)
+   
+    # NEXT construct the B matrix - CITE Pflugrath in Methods E 276
+
+    return [a_, b_ * cg_, c_ * cb_,
+            0.0, b_ * sg_, - c_ * sb_ * ca_,
+            0.0, 0.0, c_ * sb_ * sa_]
 
 def dot(a, b):
     return sum([a[j] * b[j] for j in range(3)])
@@ -251,11 +315,51 @@ if __name__ == '__main_old__':
     print dtor * math.atan(a[2] / a[0]), dtor * math.atan(b[2] / b[0]), \
           dtor * math.atan(c[2] / c[0])
 
-if __name__ == '__mainS__':
+if __name__ == '__main_dtrek__':
+
+    # this lot should end up as a unit test which tests out the
+    # b matrix, cell inversion, rotations and so on - the end
+    # cell should be identical to the beginning one!
+
+    a = 57.8349
+    b = 77.2950
+    c = 86.7453
+    alpha = 90.0
+    beta = 90.0
+    gamma = 90.0
+
+    bmat = b_matrix(a, b, c, alpha, beta, gamma)
+    m = matmul(rot_z(-18.467), matmul(rot_y(-3.227),
+                                      matmul(rot_x(-55.432), bmat)))
+    u = matmul(m, invert(bmat))
+    print '%.6f %.6f %.6f\n%.6f %.6f %.6f\n%.6f %.6f %.6f\n' % tuple(u)
+    rm = invert(m)
+    print '%.6f %.6f %.6f\n%.6f %.6f %.6f\n%.6f %.6f %.6f\n' % tuple(rm)
+
+    cell = transpose(rm)
+    print math.sqrt(cell[0] * cell[0] + cell[1] * cell[1] + cell[2] * cell[2])
+    print math.sqrt(cell[3] * cell[3] + cell[4] * cell[4] + cell[5] * cell[5])
+    print math.sqrt(cell[6] * cell[6] + cell[7] * cell[7] + cell[8] * cell[8])
+    
+    _a, _b, _c = tuple(mat2vec(rm))
+
+    dtor = 180.0 / (4.0 * math.atan(1.0))
+
+    print math.acos(dot(_b, _c) / math.sqrt(dot(_b, _b) * dot(_c, _c))) * dtor
+    print math.acos(dot(_c, _a) / math.sqrt(dot(_a, _a) * dot(_c, _c))) * dtor
+    print math.acos(dot(_a, _b) / math.sqrt(dot(_a, _a) * dot(_b, _b))) * dtor
+    
+
+if __name__ == '__main_xds__':
 
     m = (0.00095924, 0.01043167, 0.00642292,
          0.00537416, 0.00667498, -0.00892183,
          -0.01604217, 0.00285989, -0.00260477)
+
+    # unrefined
+    m = (0.000957550, 0.01040052, 0.00641526,
+         0.00536470, 0.00665505, -0.00891111,
+         -0.01601392, 0.00285135, -0.00260164)
     
     m2 = []
     for k in m:
@@ -267,29 +371,9 @@ if __name__ == '__mainS__':
     print math.sqrt(cell[3] * cell[3] + cell[4] * cell[4] + cell[5] * cell[5])
     print math.sqrt(cell[6] * cell[6] + cell[7] * cell[7] + cell[8] * cell[8])
 
-    mx = (54.739418, 18.294527, -3.100648,
-          -17.024429, 40.166306, -63.562008,
-          20.187864, -68.676262, -48.805233)
-    
-    r = (0, 0, -1, 0, 1, 0, -1, 0, 0)
+    r = (0, 0, 1, 0, 1, 0, -1, 0, 0)
 
-    # what have I done here? Inverted the C vector before I started (x -1)
-    # and then multipled by the matrix R which is an inversion of the whole
-    # unit cell across the plane x = z. should probably also factor in the
-    # rotation axis non-alignment in this as well ... what are missetting
-    # angles?
-    
-    print '%.4f %.4f %.4f\n%.4f %.4f %.4f\n%.4f %.4f %.4f\n' % tuple(matmul(r, cell))
-
-    mx2 = []
-    for k in invert(matmul(r, mx)):
-        mx2.append(k * 0.9795)
-
-    print 9 * '%.7f ' % tuple(mx2)
-
-    print
-
-    print '%.7f %.7f %.7f\n%.7f %.7f %.7f\n%.7f %.7f %.7f\n' % tuple(mx2)
+    print '%.6f %.6f %.6f\n%.6f %.6f %.6f\n%.6f %.6f %.6f\n' % tuple(matmul(r, cell))
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
