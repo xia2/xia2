@@ -12,6 +12,7 @@ if [ "$host_platform" = "Darwin" ]; then
     export PATH=${XIA2_ROOT}/binaries/mac_ppc:${PATH}
   elif [ "$arch" = "i386" ]; then
     export PATH=${XIA2_ROOT}/binaries/mac_386:${PATH}
+    export DYLD_LIBRARY_PATH=${XIA2_ROOT}/binaries/mac_386:${DYLD_LIBRARY_PATH}
   fi
 elif [ "$host_platform" = "Linux" ]; then
   export PATH=${XIA2_ROOT}/binaries/linux_386:${PATH}
