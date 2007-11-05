@@ -454,7 +454,7 @@ def Mosflm(DriverType = None):
                 # only consider first 180 degrees
                 if phi > 180.0 + phi_start:
                     break
-            
+
                 c = math.cos(phi / dtor)
                 s = math.sin(phi / dtor)
                 
