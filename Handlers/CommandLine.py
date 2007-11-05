@@ -78,6 +78,7 @@ class _CommandLine(Object):
 
         # things which are single token flags...
 
+        self._read_debug()
         self._read_trust_timestamps()
         self._read_old_mosflm()
         self._read_quick()
@@ -86,7 +87,6 @@ class _CommandLine(Object):
         self._read_norefine()
         self._read_2d()
         self._read_3d()
-        self._read_debug()
         self._read_migrate_data()
         self._read_zero_dose()
 
@@ -215,6 +215,9 @@ class _CommandLine(Object):
 
         self._beam = (float(beam[0]), float(beam[1]))
 
+        Debug.write('Beam read from command line as %f %f' % \
+                    self._beam)
+
         return
 
     def _help_beam(self):
@@ -248,6 +251,8 @@ class _CommandLine(Object):
 
         self.write('first_last passed in on command line as %d, %d' % \
                    self._first_last)
+
+        Debug.write('First & last image: %d %d' % self._first_last)
 
         return
 
@@ -293,6 +298,11 @@ class _CommandLine(Object):
         self._default_template = template
         self._default_directory = directory
         self._default_image = image
+
+        Debug.write('Interpreted from image %s:' % image)
+        Debug.write('Template %s' % template)
+        Debug.write('Directory %s' % directory)
+        
         return
 
     def _read_lattice_spacegroup(self):
@@ -320,6 +330,9 @@ class _CommandLine(Object):
         # sensible with it... but this will require implementing
         # this for all of the interfaces, which is not yet done...
 
+        Debug.write('Default latice selected as %s' % \
+                    self._default_lattice)
+
         return
 
     def _help_lattice_spacegroup(self):
@@ -338,6 +351,9 @@ class _CommandLine(Object):
             return
 
         self._default_resolution_limit = float(sys.argv[index + 1])
+
+        Debug.write('Default resolution limit %.2f' % \
+                    self._default_resolution_limit)
         
         return
 
@@ -356,6 +372,9 @@ class _CommandLine(Object):
             return
 
         self._default_atom_name = sys.argv[index + 1]
+
+        Debug.write('Heavy atom: %s' % \
+                    self._default_heavy_atom)
         
         return
 
@@ -374,6 +393,8 @@ class _CommandLine(Object):
             return
 
         self._default_project_name = sys.argv[index + 1]
+
+        Debug.write('Project: %s' % self._default_project_name)
         
         return
 
@@ -392,6 +413,7 @@ class _CommandLine(Object):
             return
 
         self._default_crystal_name = sys.argv[index + 1]
+        Debug.write('Crystal: %s' % self._default_crystal_name)
         
         return
 
@@ -410,10 +432,16 @@ class _CommandLine(Object):
             return
 
         if index < 0:
-            raise RuntimeError, 'negative index'
+            raise RuntimeError, 'negative index (no xinfo file name given)'
 
         self._xinfo = XProject(sys.argv[index + 1])
-            
+
+        Debug.write(60 * '-')
+        Debug.write('XINFO file: %s' % sys.argv[index + 1])
+        for record in open(sys.argv[index + 1], 'r').readlines():
+            Debug.write(record)
+        Debug.write(60 * '-')
+
         return
 
     def _help_xinfo(self):
@@ -436,6 +464,7 @@ class _CommandLine(Object):
             raise RuntimeError, 'negative index'
 
         Flags.set_parallel(int(sys.argv[index + 1]))
+        Debug.write('Parallel set to %d' % Flags.get_parallel())
             
         return
 
@@ -452,6 +481,7 @@ class _CommandLine(Object):
             raise RuntimeError, 'negative index'
 
         Flags.set_z_min(float(sys.argv[index + 1]))
+        Debug.write('Z min set to %f' % Flags.get_z_min())
             
         return
 
@@ -468,6 +498,8 @@ class _CommandLine(Object):
             raise RuntimeError, 'negative index'
 
         Flags.set_rejection_threshold(float(sys.argv[index + 1]))
+        Debug.write('Rejection threshold set to %f' % \
+                    Flags.get_rejection_threshold())
             
         return
 
@@ -484,6 +516,8 @@ class _CommandLine(Object):
             raise RuntimeError, 'negative index'
 
         Flags.set_i_over_sigma_limit(float(sys.argv[index + 1]))
+        Debug.write('I/sigma limit set to %f' % \
+                    Flags.get_i_over_sigma_limit())
             
         return
 
@@ -501,6 +535,7 @@ class _CommandLine(Object):
             raise RuntimeError, 'negative index'
 
         self._ehtpx_xml_out = sys.argv[index + 1]
+        Debug.write('e-HTPX XML output set to %s' % sys.argv[index + 1])
             
         return
 
@@ -530,12 +565,14 @@ class _CommandLine(Object):
 
         if '-trust_timestamps' in sys.argv:
             Flags.set_trust_timestamps(True)
+            Debug.write('Trust timestamps on')
         return
 
     def _read_old_mosflm(self):
 
         if '-old_mosflm' in sys.argv:
             Flags.set_old_mosflm(True)
+            Debug.write('Old Mosflm selected')
         return
 
     def _read_cellref_mode(self):
@@ -548,7 +585,9 @@ class _CommandLine(Object):
             raise RuntimeError, 'negative index'
 
         Flags.set_cellref_mode(sys.argv[index + 1])
-            
+        Debug.write('Cell refinement mode (2D) set to %s' % \
+                    Flags.get_cellref_mode())
+
         return
 
     def _help_cellref_mode(self):
@@ -559,30 +598,35 @@ class _CommandLine(Object):
 
         if '-quick' in sys.argv:
             Flags.set_quick(True)
+            Debug.write('Quick mode selected')
         return
 
     def _read_fiddle_sd(self):
 
         if '-fiddle_sd' in sys.argv:
             Flags.set_fiddle_sd(True)
+            Debug.write('[deprecated] Fiddle SD (3D) mode selected')
         return
 
     def _read_relax(self):
 
         if '-relax' in sys.argv:
             Flags.set_relax(True)
+            Debug.write('XDS relax about indexing selected')
         return
 
     def _read_zero_dose(self):
 
         if '-zero_dose' in sys.argv:
             Flags.set_zero_dose(True)
+            Debug.write('Zero-dose mode (XDS/XSCALE) selected')
         return
 
     def _read_norefine(self):
 
         if '-norefine' in sys.argv:
             Flags.set_refine(False)
+            # FIXME what does this do???
         return
 
     def _read_2d(self):
@@ -590,6 +634,7 @@ class _CommandLine(Object):
         if '-2d' in sys.argv:
             add_preference('integrater', 'mosflm')
             add_preference('scaler', 'ccp4')
+            Debug.write('2D pipeline selected')
         return
 
     def _read_3d(self):
@@ -597,6 +642,7 @@ class _CommandLine(Object):
         if '-3d' in sys.argv:
             add_preference('integrater', 'xds')
             add_preference('scaler', 'xds')
+            Debug.write('3D pipeline selected')
         return
 
     def _read_debug(self):
@@ -611,6 +657,7 @@ class _CommandLine(Object):
 
         if '-migrate_data' in sys.argv:
             Flags.set_migrate_data(True)
+            Debug.write('Data migration switched on')
         return
 
 
