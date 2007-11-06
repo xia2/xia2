@@ -13,6 +13,7 @@ import sys
 import copy
 import math
 import time
+import shutil
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
