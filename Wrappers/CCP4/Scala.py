@@ -893,6 +893,7 @@ def Scala(DriverType = None):
                 'Mid-Slope of Anom Normal Probability':'Anomalous slope',
                 'Multiplicity':'Multiplicity',
                 'Rmerge':'Rmerge',
+                'Rmerge in top intensity bin':None,
                 'Rmeas (all I+ & I-)':'Rmeas(I)',
                 'Rmeas (within I+/I-)':'Rmeas(I+/-)',
                 'Rpim (all I+ & I-)':'Rpim(I)',
@@ -920,9 +921,14 @@ def Scala(DriverType = None):
                                    and not 'NaN' in line:
                                 summary[scala_names_to_standard[
                                     key]] = map(float, line[40:].replace(
-                                    ' - ', ' 0.0 ').split())
+                                    ' - ', ' 0.0 ').replace(
+                                    ' -\n', ' 0.0 ').split())
                         i += 1
                         line = output[i]
+                    try:
+                        del(symmary[None])
+                    except KeyError, e:
+                        pass
                     total_summary[(pname, xname, dname)] = summary
 
             return total_summary
