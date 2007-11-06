@@ -926,7 +926,7 @@ def Scala(DriverType = None):
                         i += 1
                         line = output[i]
                     try:
-                        del(symmary[None])
+                        del(summary[None])
                     except KeyError, e:
                         pass
                     total_summary[(pname, xname, dname)] = summary
