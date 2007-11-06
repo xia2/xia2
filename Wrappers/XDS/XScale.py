@@ -88,6 +88,10 @@ def XScale(DriverType = None):
             if not self._version:
                 raise RuntimeError, 'unable to find version string'
 
+            # remove XSCALE.LP...
+            Debug.write('Deleting XSCALE.LP')
+            os.remove('XSCALE.LP')
+
             # clean up afterwards
             self.reset()
 
