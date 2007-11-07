@@ -12,11 +12,12 @@
 # Decide the beam centre.
 # Index the lattce.
 # 
-# To do:
+# Now done...
 # 
 # (1) Implement setting of beam, wavelength, distance via labelit parameter
 #     .py file. [dataset_preferences.py] autoindex_override_beam = (x, y)
 #     distance wavelength etc.
+# 
 # (2) Implement profile bumpiness handling if the detector is an image plate.
 #     (this goes in the same file...) this is distl_profile_bumpiness = 5
 #
@@ -192,9 +193,13 @@ def LabelitScreen(DriverType = None):
             # numbers from rigaku americas web page.
 
             if math.fabs(self.get_wavelength() - 1.54) < 0.01:
+                self.add_command_line('distl_force_binning=True')
                 out.write('distl_profile_bumpiness = 10\n')
+                out.write('distl_binned_image_spot_size=10\n')
             if math.fabs(self.get_wavelength() - 2.29) < 0.01:
+                self.add_command_line('distl_force_binning=True')
                 out.write('distl_profile_bumpiness = 10\n')
+                out.write('distl_binned_image_spot_size=10\n')
 
             # presume that we won't be using more than four
             # images...

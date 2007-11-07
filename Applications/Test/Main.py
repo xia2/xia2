@@ -151,6 +151,7 @@ if __name__ == '__main__':
     # next wait, then gather and print the results
 
     while threading.activeCount() > 1:
+        print '%d threads remaining...' % threading.activeCount()
         time.sleep(1)
 
     results = { }

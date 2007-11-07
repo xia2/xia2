@@ -347,6 +347,11 @@ class XDSIndexer(FrameProcessor,
         if self._indxr_input_lattice and self._indxr_input_cell:
             idxref.set_indexer_input_lattice(self._indxr_input_lattice)
             idxref.set_indexer_input_cell(self._indxr_input_cell)
+
+            Debug.write('Set lattice: %s' % self._indxr_input_lattice)
+            Debug.write('Set cell: %f %f %f %f %f %f' % \
+                        self._indxr_input_cell)
+            
             original_cell = self._indxr_input_cell
         elif self._indxr_input_lattice:
             idxref.set_indexer_input_lattice(self._indxr_input_lattice)
