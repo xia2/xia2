@@ -439,7 +439,8 @@ class _CommandLine(Object):
         Debug.write(60 * '-')
         Debug.write('XINFO file: %s' % sys.argv[index + 1])
         for record in open(sys.argv[index + 1], 'r').readlines():
-            Debug.write(record)
+            # don't want \n on the end...
+            Debug.write(record[:-1])
         Debug.write(60 * '-')
 
         return
