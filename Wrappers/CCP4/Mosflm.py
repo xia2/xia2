@@ -1722,11 +1722,13 @@ def Mosflm(DriverType = None):
                         return
                     
                     else:
-                        Science.write(
-                            'Integration will be aborted because of this.')
+                        # Science.write(
+                        # 'Integration will be aborted because of this.')
                         
-                        raise BadLatticeError, 'cell refinement failed: ' + \
-                              'inaccurate cell parameters'
+                        # raise BadLatticeError, 'cell refinement failed: ' + \
+                        # 'inaccurate cell parameters'
+
+                        Debug.write('Ignoring inaccurate cell parameters')
                     
                 if 'INACCURATE CELL PARAMETERS' in o:
                     
@@ -1820,11 +1822,13 @@ def Mosflm(DriverType = None):
 
                     else:
 
-                        Science.write(
-                            'Integration will be aborted because of this.')
+                        # Science.write(
+                        # 'Integration will be aborted because of this.')
                         
-                        raise BadLatticeError, 'cell refinement failed: ' + \
-                              'unstable cell refinement'
+                        Debug.write('Ignoring unstable cell parameters')
+                        
+                        # raise BadLatticeError, 'cell refinement failed: ' + \
+                        # 'unstable cell refinement'
 
                 # other possible problems in the cell refinement - a
                 # negative mosaic spread, for instance
@@ -1873,12 +1877,15 @@ def Mosflm(DriverType = None):
 
                         else:
 
-                            Science.write(
-                                'Integration will be aborted because of this.')
+                            # Science.write(
+                            # 'Integration will be aborted because of this.')
+                            Debug.write(
+                                'Mosaic spread refining negative => fix!')
+                            self._mosflm_postref_fix_mosaic = True
                         
-                            raise BadLatticeError, \
-                                  'cell refinement failed: ' + \
-                                  'negative mosaic spread'
+                            # raise BadLatticeError, \
+                            # 'cell refinement failed: ' + \
+                            # 'negative mosaic spread'
                         
             for i in range(len(output)):
                 o = output[i]
