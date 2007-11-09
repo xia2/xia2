@@ -1616,7 +1616,8 @@ def Mosflm(DriverType = None):
 
                     # perhaps try this with more images?
                     
-                    if len(self._mosflm_cell_ref_images) <= 3:
+                    if len(self._mosflm_cell_ref_images) < 3 and \
+                           Flags.get_cellref_mode() == 'default':
                         # set this up to be more images
                         new_cell_ref_images = self._refine_select_images(
                             len(self._mosflm_cell_ref_images) + 1,
@@ -1700,7 +1701,8 @@ def Mosflm(DriverType = None):
                     
                     Science.write('Large weighted residual...')
                     
-                    if len(self._mosflm_cell_ref_images) < 3:
+                    if len(self._mosflm_cell_ref_images) < 3 and \
+                           Flags.get_cellref_mode() == 'default':
                         # set this up to be more images
                         new_cell_ref_images = self._refine_select_images(
                             len(self._mosflm_cell_ref_images) + 1,
