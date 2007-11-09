@@ -305,6 +305,11 @@ class XDSIntegrater(FrameProcessor,
         # copy the distance too...
         self.set_distance(self._intgr_indexer.get_indexer_distance())
 
+        # delete things we should not know e.g. the postrefined cell from
+        # CORRECT - c/f bug # 2695
+        self._intgr_cell = None
+        self._intgr_spacegroup_number = None
+        
         return
 
     def _integrate(self):
@@ -443,6 +448,11 @@ class XDSIntegrater(FrameProcessor,
 
         if self.get_polarization() > 0.0:
             correct.set_polarization(self.get_polarization())
+
+        # BUG # 2695 probably comes from here - need to check...
+        # if the pointless interface comes back with a different
+        # crystal setting then the unit cell stored in self._intgr_cell
+        # needs to be set to None...
 
         if self.get_integrater_spacegroup_number():
             correct.set_spacegroup_number(
