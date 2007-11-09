@@ -123,24 +123,29 @@ def header_to_xds(header, synchrotron = None):
         'mar':'MAR345',
         'marccd':'CCDCHESS',
         'raxis':'RAXIS',
+        'saturn':'SATURN',
         'adsc':'ADSC'}
+    
 
     detector_to_overload = {
         'mar':130000,
         'marccd':65000,
         'raxis':1000000,
+        'saturn':1000000,
         'adsc':65000}
 
     detector_to_x_axis = {
         'mar':'1.0 0.0 0.0',
         'marccd':'1.0 0.0 0.0',        
         'raxis':'1.0 0.0 0.0',
+        'saturn':'-1.0 0.0 0.0',
         'adsc':'1.0 0.0 0.0'}
 
     detector_to_y_axis = {
         'mar':'0.0 1.0 0.0',
         'marccd':'0.0 1.0 0.0',        
         'raxis':'0.0 -1.0 0.0',
+        'saturn':'0.0 1.0 0.0',
         'adsc':'0.0 1.0 0.0'}
 
     detector_class_is_square = {
@@ -156,18 +161,24 @@ def header_to_xds(header, synchrotron = None):
         'mar 225 ccd':True,
         'mar 165 ccd':False,
         'mar 135 ccd':False,
+        'rigaku saturn 92 2x2 binned':True,
+        'rigaku saturn 944 2x2 binned':True,
+        'rigaku saturn 92':True,
+        'rigaku saturn 944':True,
         'raxis IV':True}
 
     detector_to_rotation_axis = {
         'mar':'1.0 0.0 0.0',
         'marccd':'1.0 0.0 0.0',        
         'raxis':'0.0 1.0 0.0',
+        'saturn':'0.0 1.0 0.0',
         'adsc':'1.0 0.0 0.0'}
 
     detector_to_polarization_plane_normal = {
         'mar':'0.0 1.0 0.0',
         'marccd':'0.0 1.0 0.0',        
         'raxis':'1.0 0.0 0.0',
+        'saturn':'0.0 1.0 0.0',
         'adsc':'0.0 1.0 0.0'}
 
     # --------- end mapping tables ---------
@@ -199,9 +210,10 @@ def header_to_xds(header, synchrotron = None):
                   (width, height, qx, qy))
 
     # RAXIS detectors have the distance written negative - why????
-    # this is ONLY for XDS
+    # this is ONLY for XDS - SATURN are the same - probably left handed
+    # goniometer rotation on rigaku X-ray sets.
 
-    if detector != 'raxis':
+    if not detector in ['raxis', 'saturn']:
         result.append('DETECTOR_DISTANCE=%7.3f' % header['distance'])
     else:
         result.append('DETECTOR_DISTANCE=%7.3f' % (-1 * header['distance']))
