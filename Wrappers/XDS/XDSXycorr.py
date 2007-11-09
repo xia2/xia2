@@ -32,7 +32,7 @@ from Driver.DriverFactory import DriverFactory
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
-from XDS import header_to_xds, xds_check_version_supported
+from XDS import header_to_xds, xds_check_version_supported, xds_check_error
 
 def XDSXycorr(DriverType = None):
 
@@ -180,6 +180,7 @@ def XDSXycorr(DriverType = None):
             xds_check_version_supported(self.get_all_output())
 
             # check the status 
+            xds_check_error(self.get_all_output())
 
             # tidy up...
             try:
