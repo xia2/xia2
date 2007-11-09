@@ -10,6 +10,7 @@ if [ "$host_platform" = "Darwin" ]; then
   arch=`uname -a | awk '{print $NF}'`
   if [ "$arch" = "powerpc" ]; then
     export PATH=${XIA2_ROOT}/binaries/mac_ppc:${PATH}
+    export DYLD_LIBRARY_PATH=${XIA2_ROOT}/binaries/mac_ppc:${DYLD_LIBRARY_PATH}
   elif [ "$arch" = "i386" ]; then
     export PATH=${XIA2_ROOT}/binaries/mac_386:${PATH}
     export DYLD_LIBRARY_PATH=${XIA2_ROOT}/binaries/mac_386:${DYLD_LIBRARY_PATH}
@@ -20,5 +21,7 @@ fi
 
 export PATH=${PATH}:${XIA2_ROOT}/Applications
 export besthome=${XIA2_ROOT}/binaries/best
+export GFORTRAN_UNBUFFERED_ALL=1
+
 
 
