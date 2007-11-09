@@ -181,7 +181,10 @@ class XDSIndexer(FrameProcessor,
             # so I can use two blocks... of 5 degrees - perhaps this should
             # be three blocks? testing with 5 degrees, used to be 3.
 
-            block_size = int(5.0 / phi_width)
+            # five degree blocks are excessive - especially if we have 0.1
+            # degree oscillations => just use 5 image blocks...
+            
+            block_size = 5
 
             Debug.write('Adding images for indexer: %d -> %d' % \
                         (images[0], images[block_size] - 1))
@@ -234,8 +237,11 @@ class XDSIndexer(FrameProcessor,
         Debug.write('Distance: %.2f' % self.get_distance())
 
         if self._indxr_images == []:
+            # note well that this may reset the "done" flag so
+            # override this...
             self._index_select_images()
-
+            self.set_indexer_prepare_done(True)
+            
         all_images = self.get_matching_images()
 
         first = min(all_images)
