@@ -25,7 +25,7 @@ class _Flags:
         self._z_min = 0.0
         self._refine = True
         self._zero_dose = False
-        self._relax = False
+        self._relax = True
 
         # and these for the mosflm implementation
         self._cellref_mode = 'both'

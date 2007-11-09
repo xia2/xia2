@@ -83,7 +83,7 @@ class _CommandLine(Object):
         self._read_old_mosflm()
         self._read_quick()
         self._read_fiddle_sd()
-        self._read_relax()
+        self._read_no_relax()
         self._read_norefine()
         self._read_2d()
         self._read_3d()
@@ -609,10 +609,10 @@ class _CommandLine(Object):
             Debug.write('[deprecated] Fiddle SD (3D) mode selected')
         return
 
-    def _read_relax(self):
+    def _read_no_relax(self):
 
-        if '-relax' in sys.argv:
-            Flags.set_relax(True)
+        if '-no_relax' in sys.argv:
+            Flags.set_relax(False)
             Debug.write('XDS relax about indexing selected')
         return
 
