@@ -946,16 +946,28 @@ class CCP4Scaler(Scaler):
 
             # need to consider partials separately to fulls in assigning
             # the error correction parameters
-            
+
             for j in range(len(info['1_Range'])):
+
+                # the format of the output changed with versions
+                # 3.3.x I think - cope with this here...
+                # bug # 2714
+                
                 n_full = int(info['5_Number'][j])
                 I_full = float(info['4_Irms'][j])
                 s_full = float(info['7_SigmaFull'][j])
 
-                n_partial = int(info['9_Number'][j])
-                I_partial = float(info['8_Irms'][j])
-                s_partial = float(info['11_SigmaPartial'][j])
-                
+                if info.has_key('9_Number'):
+
+                    n_partial = int(info['9_Number'][j])
+                    I_partial = float(info['8_Irms'][j])
+                    s_partial = float(info['11_SigmaPartial'][j])
+
+                else:
+
+                    n_partial = int(info['12_Number'][j])
+                    I_partial = float(info['11_Irms'][j])
+                    s_partial = float(info['14_SigmaPartial'][j])                
                 n_tot = n_full + n_partial
 
                 # trap case where we have no reflections in a higher
@@ -1594,14 +1606,27 @@ class CCP4Scaler(Scaler):
             # need to consider partials separately to fulls in assigning
             # the error correction parameters
             
-            for j in range(len(info['1_Range'])):
+            for j in range(len(info['1_Range'])):            
+
+                # the format of the output changed with versions
+                # 3.3.x I think - cope with this here...
+                # bug # 2714
+            
                 n_full = int(info['5_Number'][j])
                 I_full = float(info['4_Irms'][j])
                 s_full = float(info['7_SigmaFull'][j])
-
-                n_part = int(info['9_Number'][j])
-                I_part = float(info['8_Irms'][j])
-                s_part = float(info['11_SigmaPartial'][j])
+                
+                if info.has_key('9_Number'):
+                
+                    n_partial = int(info['9_Number'][j])
+                    I_partial = float(info['8_Irms'][j])
+                    s_partial = float(info['11_SigmaPartial'][j])
+                    
+                else:
+                    
+                    n_partial = int(info['12_Number'][j])
+                    I_partial = float(info['11_Irms'][j])
+                    s_partial = float(info['14_SigmaPartial'][j])
                 
                 n_tot = n_full + n_part
 
