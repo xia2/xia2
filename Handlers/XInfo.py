@@ -309,6 +309,10 @@ class XInfo:
                     # else deal with the usual tokens
                     
                     key = record.split()[0].lower()
+
+                    if len(record.split()) == 1:
+                        raise RuntimeError, 'missing value for token %s' % \
+                              record.split()[0]
                     
                     try:
                         value = float(record.split()[1])
