@@ -1775,7 +1775,9 @@ def Mosflm(DriverType = None):
                     # then there is probably something more important
                     # wrong. If it is fewer than this then try again!
 
-                    if len(self._mosflm_cell_ref_images) < 3:
+                    if len(self._mosflm_cell_ref_images) < 3 and \
+                           Flags.get_cellref_mode() == 'default':
+                        
                         # set this up to be more images
                         new_cell_ref_images = self._refine_select_images(
                             len(self._mosflm_cell_ref_images) + 1,
@@ -1881,13 +1883,12 @@ def Mosflm(DriverType = None):
 
                             # Science.write(
                             # 'Integration will be aborted because of this.')
-                            Debug.write(
-                                'Mosaic spread refining negative => fix!')
-                            self._mosflm_postref_fix_mosaic = True
+                            # Debug.write(
+                            # 'Mosaic spread refining negative => fix!')
+                            # self._mosflm_postref_fix_mosaic = True
                         
-                            # raise BadLatticeError, \
-                            # 'cell refinement failed: ' + \
-                            # 'negative mosaic spread'
+                            raise BadLatticeError, 'refinement failed: ' + \
+                                  'negative mosaic spread'
                         
             for i in range(len(output)):
                 o = output[i]
