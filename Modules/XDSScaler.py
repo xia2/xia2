@@ -821,6 +821,8 @@ class XDSScaler(Scaler):
         Debug.write('Set SPACEGROUP_NUMBER: %d' % \
                     self._spacegroup)
 
+        Debug.write('Gathering measurements for scaling')
+        
         for epoch in epochs:
 
             # get the prepared reflections
@@ -838,7 +840,10 @@ class XDSScaler(Scaler):
                 raise RuntimeError, 'zero resolution for %s' % \
                       self._sweep_information[epoch][
                     'integrater'].get_integrater_sweep_name()
-        
+
+            Debug.write('Epoch: %d' % epoch)
+            Debug.write('HKL: %s (%s)' % (reflections, dname))
+
             xscale.add_reflection_file(reflections, dname, resolution)
 
         # set the global properties of the sample
