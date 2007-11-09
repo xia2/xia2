@@ -64,8 +64,10 @@ END AA_SEQUENCE
 
 BEGIN WAVELENGTH NATIVE
 
-! this doesn't have to be here - if it is not included then the values from 
-! the image headers will be used - however if it is there then it should
+! this doesn't have to be here - if it is 
+! not included then the values from 
+! the image headers will be used - however 
+! if it is there then it should
 ! be correct!
 
 WAVELENGTH 0.979000
@@ -80,21 +82,26 @@ BEGIN SWEEP NATIVE
 WAVELENGTH NATIVE
 IMAGE insulin_1_001.img
 
-! you will probably need to change this - this is the only thing which 
-! you will need to change for the demonstration data set
+! you will probably need to change this - 
+! this is the only thing which 
+! you will need to change for the 
+! demonstration data set
 
 DIRECTORY /media/data1/graeme/demo/
 
-! additionally you can add the following information - if it is wrong
-! in the headers
+! additionally you can add the following 
+! information - if it is wrong in the headers
 ! BEAM x y (mm)
 ! DISTANCE z (mm)
 
-! this describes the order in which the sweeps were collected - 
-! it usually comes from the image header if that information is in there
+! this describes the order in which 
+! the sweeps were collected - 
+! it usually comes from the image header 
+! if that information is in there
 ! EPOCH 5
 
-! you can also add this to only reduce a subset of the data 
+! you can also add this to only reduce 
+! a subset of the data 
 ! START_END 1 30 (image numbers)
 
 END SWEEP 
@@ -419,6 +426,16 @@ END PROJECT TS01
 	recorded on Rigaku X-Ray sets.</li>
       <li>Signed off for operation with Rigaku Saturn and RAXIS IV
 	detectors.</li>
+      <li>Now works with no input, e.g.
+	<pre>
+xia2 -project TG6623 -crystal X77788 -atom se /my/images/are/here
+	</pre>
+	However this relies on your image headers being accurate and the
+	images having some kind of recognisable format...
+      </li>
+      <li>Repaired operation on ppc and intel macs - added required libraries
+	to the installation and reset the library paths appropriately.</li>
+      <li>Slightly improved error reporting from xinfo file errors.</li>
     </ul>
 
 
@@ -675,7 +692,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Thu Oct 11 16:19:44 GMT Standard Time 2007
+Last modified: Fri Nov 09 10:51:57 GMT Standard Time 2007
 <!-- hhmts end -->
   </body>
 </html>
