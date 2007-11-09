@@ -374,7 +374,7 @@ class _CommandLine(Object):
         self._default_atom_name = sys.argv[index + 1]
 
         Debug.write('Heavy atom: %s' % \
-                    self._default_heavy_atom)
+                    self._default_atom_name)
         
         return
 
