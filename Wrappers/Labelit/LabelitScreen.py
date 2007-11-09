@@ -317,8 +317,11 @@ def LabelitScreen(DriverType = None):
 
             self.add_command_line('--index_only')
 
+            Debug.write('Indexing from images:')
             for i in _images:
                 self.add_command_line(self.get_image_name(i))
+                Debug.write('%s' % self.get_image_name(i))
+
 
             if self._indxr_input_lattice and False:
                 lattice_to_spacegroup = {'aP':1,
