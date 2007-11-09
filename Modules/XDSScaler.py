@@ -466,6 +466,7 @@ class XDSScaler(Scaler):
         # they are XDS_ASCII format...
 
         epochs = self._sweep_information.keys()
+        epochs.sort()
 
         self._first_epoch = min(epochs)
 
@@ -810,6 +811,7 @@ class XDSScaler(Scaler):
         '''Actually scale all of the data together.'''
 
         epochs = self._sweep_information.keys()
+        epochs.sort()
 
         xscale = self.XScale()
 
