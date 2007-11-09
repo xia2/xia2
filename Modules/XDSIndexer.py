@@ -194,25 +194,25 @@ class XDSIndexer(FrameProcessor,
             if int(90.0 / phi_width) + block_size in images:
                 # assume we can add a wedge around 45 degrees as well...
                 Debug.write('Adding images for indexer: %d -> %d' % \
-                            (int(45.0 / phi_width) + 1,
-                             int(45.0 / phi_width) +
-                             block_size))
+                            (int(45.0 / phi_width) + images[0],
+                             int(45.0 / phi_width) + images[0] +
+                             block_size - 1))
                 Debug.write('Adding images for indexer: %d -> %d' % \
-                            (int(90.0 / phi_width) + 1,
-                             int(90.0 / phi_width) +
-                             block_size))
-                self.add_indexer_image_wedge((int(45.0 / phi_width) + 1,
-                                              int(45.0 / phi_width) +
-                                              block_size))
-                self.add_indexer_image_wedge((int(90.0 / phi_width) + 1,
-                                              int(90.0 / phi_width) +
-                                              block_size))
+                            (int(90.0 / phi_width) + images[0],
+                             int(90.0 / phi_width) + images[0] + 
+                             block_size - 1))
+                self.add_indexer_image_wedge(
+                    (int(45.0 / phi_width) + images[0],
+                     int(45.0 / phi_width) + images[0] + block_size - 1))
+                self.add_indexer_image_wedge(
+                    (int(90.0 / phi_width) + images[0],
+                     int(90.0 / phi_width) + images[0] + block_size - 1))
                 
             else:
 
                 # add some half-way anyway
-                first = (len(images) / 2) - (block_size / 2) + 1
-                last = first + block_size - 1
+                first = (len(images) / 2) - (block_size / 2) + images[0] - 1
+                last = first + block_size + images[0] - 1
 
                 Debug.write('Adding images for indexer: %d -> %d' % \
                             (first, last))

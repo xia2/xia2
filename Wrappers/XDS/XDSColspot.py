@@ -177,7 +177,7 @@ def XDSColspot(DriverType = None):
             shutil.copyfile(os.path.join(self.get_working_directory(),
                                          'XDS.INP'),
                             os.path.join(self.get_working_directory(),
-                                         ' %d_COLSPOT.INP' % self.get_xpid()))
+                                         '%d_COLSPOT.INP' % self.get_xpid()))
             
             # write the input data files...
 
