@@ -1618,15 +1618,15 @@ class CCP4Scaler(Scaler):
                 
                 if info.has_key('9_Number'):
                 
-                    n_partial = int(info['9_Number'][j])
-                    I_partial = float(info['8_Irms'][j])
-                    s_partial = float(info['11_SigmaPartial'][j])
+                    n_part = int(info['9_Number'][j])
+                    I_part = float(info['8_Irms'][j])
+                    s_part = float(info['11_SigmaPartial'][j])
                     
                 else:
                     
-                    n_partial = int(info['12_Number'][j])
-                    I_partial = float(info['11_Irms'][j])
-                    s_partial = float(info['14_SigmaPartial'][j])
+                    n_part = int(info['12_Number'][j])
+                    I_part = float(info['11_Irms'][j])
+                    s_part = float(info['14_SigmaPartial'][j])
                 
                 n_tot = n_full + n_part
 
