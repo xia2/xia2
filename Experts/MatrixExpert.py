@@ -29,6 +29,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Experts.SymmetryExpert import symop_to_mat
 from Wrappers.CCP4.Othercell import Othercell
 from lib.SymmetryLib import lattice_to_spacegroup
+from Handlers.Syminfo import Syminfo
 from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
 
 # jiffies to convert matrix format (messy)
@@ -298,20 +299,30 @@ def mosflm_a_matrix_to_real_space(lattice, matrix):
     corresponds to that defined for imgCIF.'''
 
     # convert the lattice to a spacegroup
-
     spacegroup_number = lattice_to_spacegroup(lattice)
+    spacegroup = Syminfo.spacegroup_name_to_number(spacegroup_number)
 
     # get the a, u, matrices and the unit cell
+    cel, a, u = parse_matrix(matrix)
 
     # use iotbx.latice_symmetry to obtain the reindexing operator to
     # a primative triclinic lattice
+    ls = LatticeSymmetry()
+    ls.set_cell(cell)
+    ls.set_spacegroup(spacegroup)
+    cell, reindex = ls.generate_primative_reindex()
+
+    reindex_matrix = symop2mat(reindex)
 
     # apply this reindex operator to the a matrix to get the primative
     # triclinic cell axes
+    primitive_a = matmul(invert(reindex_matrix), a)    
 
     # convert these to real space
+    real_a = invert(primitive_a)
 
     # convert these to the xia2 reference frame
+    
 
     # return these vectors
 
