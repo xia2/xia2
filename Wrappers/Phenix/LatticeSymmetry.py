@@ -27,6 +27,8 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Driver.DriverFactory import DriverFactory
 
+from Wrappers.XIA.Symop2mat import Symop2mat
+
 def LatticeSymmetry(DriverType = None):
     '''A factory for the LatticeSymmetry wrappers.'''
 
@@ -53,7 +55,7 @@ def LatticeSymmetry(DriverType = None):
             self._spacegroup = spacegroup
             return
 
-        def generate(self):
+        def generate_primative_reindex(self):
             if not self._cell:
                 raise RuntimeError, 'no unit cell specified'
 
@@ -67,11 +69,20 @@ def LatticeSymmetry(DriverType = None):
             self.start()
             self.close_wait()
 
+            # triclinic solution will always come last so use this...
+
+            cell = None
+            reindex = None
+            
             for line in self.get_all_output():
-                print line[:-1]
+                if 'Unit cell:' in line:
+                    cell_text = line.replace('Unit cell: (', '').replace(
+                        ')', '').strip().replace(',', ' ')
+                    cell = tuple(map(float, cell_text.split()))
+                if 'Change of basis:' in line:
+                    reindex = line.replace('Change of basis:', '').strip()
 
-            return
-
+            return cell, reindex.replace('*', '')
 
     return LatticeSymmetryWrapper()
 
@@ -80,8 +91,15 @@ if __name__ == '__main__':
     ls = LatticeSymmetry()
 
     ls.set_cell((90.22, 90.22, 90.22, 90.0, 90.0, 90.0))
-    ls.set_spacegroup('P23')
+    ls.set_spacegroup('F23')
 
-    ls.generate()
+    cell, reindex = ls.generate_primative_reindex()
 
+    s2m = Symop2mat()
+
+    print 'Unit cell: %.2f %.2f %.2f %.2f %.2f %.2f' % cell
+    print 'Reindex: %s' % reindex
+    print 'Matrix: %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f ' % \
+          tuple(s2m.convert(reindex))
+    
     
