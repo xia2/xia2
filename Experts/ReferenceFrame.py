@@ -25,6 +25,7 @@
 # X: the principle goniometer axis
 # Y: defined to give a right handed coordinate system
 # Z: from the sample towards the X-ray source (=> is -X in Cambridge frame)
+#    [the component perpendicular to the rotation axis]
 #
 # (3) XDS frame, as used by xia2.
 #
@@ -40,3 +41,21 @@
 # Z: orthogonal to the detector face and parallel (approximately) to the
 #    direct beam vector - this is defined as 0,0,1 initially and refined
 #
+# This last lot is a mess so I should probably define a robust coordinate
+# frame for the XDS interface and perform the transformations inside the
+# XDS wrappers...
+#
+# Thus, the definitions will be as follows:
+#
+# X: parallel to the detector fast axis
+# Y: parallel to the detector slow axis
+# Z: perpendicular to the face of the detector
+#
+# So the rotation and beam axes may need to be altered... in a detector
+# dependent manner.
+#
+#
+
+
+
+
