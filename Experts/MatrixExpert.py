@@ -340,6 +340,25 @@ def mosflm_a_matrix_to_real_space(wavelength, lattice, matrix):
     bx = mosflm_to_xia2(b)
     cx = mosflm_to_xia2(c)
 
+    # FIXME in here add check that the unit cell lengths are within 1% of
+    # the correct value - if they are not, raise an exception as the wavelength
+    # provided is probably wrong...
+    la = math.sqrt(dot(ax, ax))
+    lb = math.sqrt(dot(bx, bx))
+    lc = math.sqrt(dot(cx, cx))
+
+    if math.fabs(la - cell[0]) / cell[0] > 0.01:
+        raise RuntimeError, 'cell check failed (wavelength != %f)' % \
+              wavelength
+
+    if math.fabs(lb - cell[1]) / cell[1] > 0.01:
+        raise RuntimeError, 'cell check failed (wavelength != %f)' % \
+              wavelength
+
+    if math.fabs(lc - cell[2]) / cell[2] > 0.01:
+        raise RuntimeError, 'cell check failed (wavelength != %f)' % \
+              wavelength
+
     # return these vectors
     return ax, bx, cx
 
