@@ -28,6 +28,8 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Experts.SymmetryExpert import symop_to_mat
 from Wrappers.CCP4.Othercell import Othercell
+from lib.SymmetryLib import lattice_to_spacegroup
+from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
 
 # jiffies to convert matrix format (messy)
 
@@ -287,6 +289,31 @@ def find_primitive_reciprocal_axes(lattice, matrix):
     return (dtor * math.atan( - a[2] / a[0]), \
             dtor * math.atan( - b[2] / b[0]), \
             dtor * math.atan( - c[2] / c[0]))
+
+def mosflm_a_matrix_to_real_space(lattice, matrix):
+    '''Given a Mosflm A matrix and the associated spacegroup (think of this
+    Bravais lattice (which will be converted to a spacegroup for the benefit
+    of the CCTBX program lattice_symmetry) return the real space primative
+    crystal lattice vectors in the xia2 reference frame. This reference frame
+    corresponds to that defined for imgCIF.'''
+
+    # convert the lattice to a spacegroup
+
+    spacegroup_number = lattice_to_spacegroup(lattice)
+
+    # get the a, u, matrices and the unit cell
+
+    # use iotbx.latice_symmetry to obtain the reindexing operator to
+    # a primative triclinic lattice
+
+    # apply this reindex operator to the a matrix to get the primative
+    # triclinic cell axes
+
+    # convert these to real space
+
+    # convert these to the xia2 reference frame
+
+    # return these vectors
 
 if __name__ == '__main_old__':
 
