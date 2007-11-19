@@ -155,11 +155,23 @@ def nint(a):
     '''return the nearest integer to a.'''
 
     i = int(a)
-    if (a - i) > 0.5:
-        i += 1
+
+    if a > 0:
+        if a - i > 0.5:
+            i += 1
+
+    elif a < 0:
+        if a - i < -0.5:
+            i -= 1
 
     return i
 
+if __name__ == '__main__test__':
+    # test out nint
+    tests = [(2.9, 3), (3.1, 3), (-2.9, -3), (-3.1, -3)]
+    for t in tests:
+        if nint(t[0]) != t[1]:
+            raise RuntimeError, 'nint failed for %f' % t[0]
     
 if __name__ == '__main_old__':
     # run a test
