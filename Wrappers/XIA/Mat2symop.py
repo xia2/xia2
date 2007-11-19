@@ -68,18 +68,22 @@ def Mat2symop(DriverType = None):
             # compose the input
 
             matrix_string = ''
+
+            for m in matrix:
+                if nint(m) == 1:
+                    raise RuntimeError, \
+                          'mat2symop error # 2724 - please report'
+
             if len(matrix) == 9:
                 for j in range(9):
-                    matrix_string = '%s %d' % (matrix_string, int(matrix[j]))
+                    matrix_string = '%s %d' % (matrix_string, nint(matrix[j]))
             else:
                 for j in range(12):
                     if j % 4 == 0:
                         continue
-                    matrix_string = '%s %d' % (matrix_string, int(matrix[j]))
+                    matrix_string = '%s %d' % (matrix_string, nint(matrix[j]))
                 
             self.add_command_line(matrix_string)
-
-            print matrix_string
 
             self.start()
             
