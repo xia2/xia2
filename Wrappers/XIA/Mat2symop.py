@@ -30,25 +30,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Driver.DriverFactory import DriverFactory
 
-def nint(a):
-    b = int(a)
-
-    if a > 0:
-        if a - b > 0.5:
-            b += 1
-    elif a < 0:
-        if a - b < -0.5:
-            b -= 1
-
-    return b
-
-if __name__ == '__main__':
-    # test nint
-
-    if nint(-2.9) != -3:
-        raise RuntimeError, 'nint error -2.9'
-    if nint(-3.1) != -3:
-        raise RuntimeError, 'nint error -3.1'
+from lib.Guff import nint
 
 def Mat2symop(DriverType = None):
     '''A factory for mat2symop wrappers.'''
