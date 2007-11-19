@@ -32,6 +32,8 @@ from lib.SymmetryLib import lattice_to_spacegroup
 from Handlers.Syminfo import Syminfo
 from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
 
+from ReferenceFrame import mosflm_to_xia2, xia2_to_mosflm
+
 # jiffies to convert matrix format (messy)
 
 def mat2vec(mat):
@@ -131,6 +133,9 @@ def cross(a, b):
 def vecscl(vector, scale):
     return [vector[j] * scale for j in range(len(vector))]
 
+def matscl(matrix, scale):
+    return [matrix[j] * scale for j in range(len(matrix))]
+
 def invert(matrix):
     vecs = mat2vec(matrix)
     scl = 1.0 / dot(vecs[0], cross(vecs[1], vecs[2]))
@@ -149,7 +154,6 @@ def det(matrix):
     vecs = mat2vec(matrix)
     return dot(vecs[0], cross(vecs[1], vecs[2]))
     
-
 def matmul(b, a):
     avec = mat2vec(transpose(a))
     bvec = mat2vec(b)
@@ -159,6 +163,15 @@ def matmul(b, a):
         for j in range(3):
             result.append(dot(avec[i], bvec[j]))
 
+    return result
+
+def matvecmul(M, v):
+    '''Multiply a vector v by a matrix M -> return M v.'''
+
+    Mvec = mat2vec(transpose(M))
+    result = []
+    for i in range(3):
+        result.append(dot(Mvec[i], v))
     return result
 
 # things specific to mosflm matrix files...
@@ -291,7 +304,7 @@ def find_primitive_reciprocal_axes(lattice, matrix):
             dtor * math.atan( - b[2] / b[0]), \
             dtor * math.atan( - c[2] / c[0]))
 
-def mosflm_a_matrix_to_real_space(lattice, matrix):
+def mosflm_a_matrix_to_real_space(wavelength, lattice, matrix):
     '''Given a Mosflm A matrix and the associated spacegroup (think of this
     Bravais lattice (which will be converted to a spacegroup for the benefit
     of the CCTBX program lattice_symmetry) return the real space primative
@@ -303,7 +316,7 @@ def mosflm_a_matrix_to_real_space(lattice, matrix):
     spacegroup = Syminfo.spacegroup_name_to_number(spacegroup_number)
 
     # get the a, u, matrices and the unit cell
-    cel, a, u = parse_matrix(matrix)
+    cell, a, u = parse_matrix(matrix)
 
     # use iotbx.latice_symmetry to obtain the reindexing operator to
     # a primative triclinic lattice
@@ -312,19 +325,40 @@ def mosflm_a_matrix_to_real_space(lattice, matrix):
     ls.set_spacegroup(spacegroup)
     cell, reindex = ls.generate_primative_reindex()
 
-    reindex_matrix = symop2mat(reindex)
+    reindex_matrix = symop_to_mat(reindex)
 
-    # apply this reindex operator to the a matrix to get the primative
-    # triclinic cell axes
-    primitive_a = matmul(invert(reindex_matrix), a)    
+    # scale the a matrix
+    a = matscl(a, 1.0 / wavelength)
 
-    # convert these to real space
-    real_a = invert(primitive_a)
+    # convert to real space (invert) and apply this reindex operator to the a
+    # matrix to get the primative real space triclinic cell axes
+    real_a = matmul(reindex_matrix, transpose(invert(a)))
 
     # convert these to the xia2 reference frame
-    
+    a, b, c = mat2vec(real_a)
+    ax = mosflm_to_xia2(a)
+    bx = mosflm_to_xia2(b)
+    cx = mosflm_to_xia2(c)
 
     # return these vectors
+    return ax, bx, cx
+
+if __name__ == '__main__':
+    matrix = ''' -0.00417059 -0.00089426 -0.01139821
+ -0.00084328 -0.01388561  0.01379631
+ -0.00121258  0.01273236  0.01424531
+      -0.099       0.451      -0.013
+ -0.94263428 -0.04741397 -0.33044314
+ -0.19059871 -0.73622239  0.64934635
+ -0.27406719  0.67507666  0.68495023
+    228.0796     52.5895     44.1177     90.0000    100.6078     90.0000
+     -0.0985      0.4512     -0.0134'''
+
+    a, b, c = mosflm_a_matrix_to_real_space(0.99187, 'mC', matrix)
+
+    print math.sqrt(dot(a, a))
+    print math.sqrt(dot(b, b))
+    print math.sqrt(dot(c, c))
 
 if __name__ == '__main_old__':
 
@@ -413,7 +447,7 @@ if __name__ == '__main_xds__':
 
     print '%.6f %.6f %.6f\n%.6f %.6f %.6f\n%.6f %.6f %.6f\n' % tuple(matmul(r, cell))
 
-if __name__ == '__main__':
+if __name__ == '__main__j':
     if len(sys.argv) < 3:
 
         lattice = 'mC'
@@ -438,3 +472,12 @@ if __name__ == '__main__':
     print '%.2f %.2f %.2f' % find_primitive_reciprocal_axes(
         lattice, matrix)
     
+if __name__ == '__main__vecmul':
+    M = (0, 1, 0, 1, 0, 0, 0, 0, 1)
+    v = (1, 2, 3)
+
+    print '%f %f %f' % tuple(matvecmul(M, v))
+    
+    M = (2, 0, 0, 0, 2, 0, 0, 0, 2)
+    
+    print '%f %f %f' % tuple(matvecmul(M, v))    
