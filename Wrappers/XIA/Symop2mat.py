@@ -45,6 +45,13 @@ def Symop2mat(DriverType = None):
             return
 
         def convert12(self, symop):
+
+            # first remove any '*' tokens from the
+            # line as these are implied in the definition
+            # see bug # 2723
+
+            symop = symop.replace('*', '')
+            
             self.reset()
             self.add_command_line('OP')
             self.add_command_line(symop)
