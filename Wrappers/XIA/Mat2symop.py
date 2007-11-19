@@ -14,6 +14,7 @@
 
 import os
 import sys
+import math
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -45,6 +46,20 @@ def Mat2symop(DriverType = None):
             return
 
         def convert(self, matrix):
+
+            # multiply all elements of matrix by 6 (equal to the
+            # product of 2, 3 - can't find any elements with a 4
+            # in them...
+
+            matrix = [m * 6.0 for m in matrix]
+
+            # check integerness
+
+            for m in matrix:
+                if math.fabs(m - int(m)) > 0.1:
+                    raise RuntimeError, \
+                          'non multiple of 1/6 in matrix'
+
             self.reset()
             self.add_command_line('MAT')
 
@@ -53,12 +68,12 @@ def Mat2symop(DriverType = None):
             matrix_string = ''
             if len(matrix) == 9:
                 for j in range(9):
-                    matrix_string = '%s %d' % (matrix_string, matrix[j])
+                    matrix_string = '%s %f' % (matrix_string, matrix[j])
             else:
                 for j in range(12):
                     if j % 4 == 0:
                         continue
-                    matrix_string = '%s %d' % (matrix_string, matrix[j])
+                    matrix_string = '%s %f' % (matrix_string, matrix[j])
                 
             self.add_command_line(matrix_string)
             
@@ -85,6 +100,12 @@ def Mat2symop(DriverType = None):
             operation = operation.replace('X', 'H')
             operation = operation.replace('Y', 'K')
             operation = operation.replace('Z', 'L')
+
+            # and convert back to fractions... messy but...
+            operation = operation.replace('6', '')
+            operation = operation.replace('3', '1/M')
+            operation = operation.replace('2', '1/3')
+            operation = operation.replace('M', '2')
                     
             return operation.lower()
 
@@ -93,7 +114,8 @@ def Mat2symop(DriverType = None):
 if __name__ == '__main__':
 
     operations = [[1, 0, 0, 0, 1, 0, 0, 0, 1],
-                  [0, 1, 0, 0, 0, 1, 1, 0, 0]]
+                  [0, 1, 0, 0, 0, 1, 1, 0, 0],
+                  [0, 0.5, -0.5, 0, 0.5, 0.5, 1, 0, 0]]
                   
     mat2symop = Mat2symop()
 
