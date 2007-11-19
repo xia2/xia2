@@ -75,12 +75,15 @@ def LatticeSymmetry(DriverType = None):
             reindex = None
             
             for line in self.get_all_output():
+                # print line[:-1]
                 if 'Unit cell:' in line:
                     cell_text = line.replace('Unit cell: (', '').replace(
                         ')', '').strip().replace(',', ' ')
                     cell = tuple(map(float, cell_text.split()))
-                if 'Change of basis:' in line:
-                    reindex = line.replace('Change of basis:', '').strip()
+                # if 'Change of basis:' in line:
+                # reindex = line.replace('Change of basis:', '').strip()
+                if 'Inverse:' in line:
+                    reindex = line.replace('Inverse:', '').strip()
 
             return cell, reindex.replace('*', '')
 
