@@ -157,6 +157,11 @@ class _Syminfo(Object):
 
         return numbers
 
+    def spacegroup_number_to_name(self, spacegroup_number):
+        '''Return the name of this spacegroup.'''
+
+        return self._symop[spacegroup_number]['name']
+
     def spacegroup_name_to_number(self, spacegroup):
         '''Return the number corresponding to this spacegroup.'''
 
@@ -206,3 +211,4 @@ if __name__ == '__main__':
     
     print Syminfo.get_symops('P22121')
     print Syminfo.get_symops('P212121')
+    print Syminfo.spacegroup_number_to_name(75)
