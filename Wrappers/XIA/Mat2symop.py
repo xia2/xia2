@@ -70,15 +70,17 @@ def Mat2symop(DriverType = None):
             matrix_string = ''
             if len(matrix) == 9:
                 for j in range(9):
-                    matrix_string = '%s %f' % (matrix_string, matrix[j])
+                    matrix_string = '%s %d' % (matrix_string, int(matrix[j]))
             else:
                 for j in range(12):
                     if j % 4 == 0:
                         continue
-                    matrix_string = '%s %f' % (matrix_string, matrix[j])
+                    matrix_string = '%s %d' % (matrix_string, int(matrix[j]))
                 
             self.add_command_line(matrix_string)
-            
+
+            print matrix_string
+
             self.start()
             
             self.close_wait()
@@ -96,6 +98,9 @@ def Mat2symop(DriverType = None):
                     # check it is not on next line...
                     if operation == '':
                         operation = output[j + 1].replace(' ', '')
+
+            if not operation:
+                raise RuntimeError, 'error reading operation'
 
             # convert to H,K,L from X,Y,Z
 
