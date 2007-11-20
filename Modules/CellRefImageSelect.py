@@ -87,7 +87,6 @@ def LabelitIndex(DriverType = None):
             solutions = []
 
             for line in self.get_all_output():
-                print line[:-1]
                 if 'Beam center x' in line:
                     L = line.replace('mm', ' ').split()
                     self._rbeam = (float(L[3]), float(L[6]))
@@ -279,7 +278,7 @@ if __name__ == '__main__':
               65, 70, 75, 80, 85, 90]
 
 
-    directory = os.path.join('media', 'data1', 'graeme', 'jcsg',
+    directory = os.path.join('/media', 'data1', 'graeme', 'jcsg',
                              '1vpj', 'data', 'jcsg', 'als1', '8.2.1',
                              '20040926', 'collection', 'TB0541B', '12287')
 
@@ -292,7 +291,7 @@ if __name__ == '__main__':
                 li = LabelitIndex()
                 li.setup_from_image(image)
                 li.set_beam((109.0,105.0))
-                li.set_images([1,90])
+                li.set_images([i, j, k])
 
                 li.autoindex()
 
