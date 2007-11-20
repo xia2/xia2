@@ -284,14 +284,22 @@ if __name__ == '__main__':
 
     image = os.path.join(directory, '12287_1_E1_001.img')
 
-    for i in images[:-2]:
-        for j in images[i:-1]:
-            for k in images[j:]:
-                
+    r = len(images) - 2
+
+    for i in range(r):
+        for j in range(i + 1, r + 1):
+            for k in range(j + 1, r + 2):
+
+                _i = images[i]
+                _j = images[j]
+                _k = images[k]
+
+                open('current', 'w').write('%d %d %d\n' % (_i, _j, _k))
+
                 li = LabelitIndex()
                 li.setup_from_image(image)
                 li.set_beam((109.0,105.0))
-                li.set_images([i, j, k])
+                li.set_images([_i, _j, _k])
 
                 li.autoindex()
 
