@@ -44,9 +44,12 @@ def LabelitIndex(DriverType = None):
 
             # results
 
+            self._lattice = None
             self._matrix = None
             self._distance = None
             self._rbeam = None
+            self._mosaic = None
+            self._penalties = None
 
             return
 
@@ -89,6 +92,7 @@ def LabelitIndex(DriverType = None):
                     L = line.replace('mm', ' ').split()
                     self._rbeam = (float(L[3]), float(L[6]))
                     self._distance = float(L[9])
+                    self._mosaic = float(L[12].replace('mosaicity=', ''))
                 if ':)' in line:
                     solutions.append(line.replace(':)', '').split())
 
@@ -101,16 +105,35 @@ def LabelitIndex(DriverType = None):
             lms.run()
             self._matrix = lms.get_matrix()
 
+            # get the lattice information etc..
+            self._lattice = solutions[0][6]
+            
+            metric = float(solutions[0][1])
+            rmsd = float(solutions[0][3])
+
+            self._penalties = (metric, rmsd)
+            
+            # cell = tuple(map(float, solutions[7:13]))
+
             return
+
+        def get_lattice(self):
+            return self._lattice
 
         def get_matrix(self):
             return self._matrix
 
         def get_beam(self):
-            return self._beam
+            return self._rbeam
 
         def get_distance(self):
             return self._distance
+
+        def get_mosaic(self):
+            return self._mosaic
+
+        def get_penalties(self):
+            return self._penalties
 
     return LabelitIndexWrapper()
             
@@ -173,6 +196,59 @@ def LabelitMosflmScript(DriverType = None):
 
     return LabelitMosflmScriptWrapper()
 
+def MosflmCellRefine(DriverType = None):
+    DriverInstance = DriverFactory.Driver(DriverType)
+    
+    from Schema.Interfaces.FrameProcessor import FrameProcessor
+
+    class MosflmCellRefineWrapper(DriverInstance.__class__,
+                                  FrameProcessor):
+
+        def __init__(self):
+
+            DriverInstance.__class__.__init__(self)
+            self.set_executable('ipmosflm-7.0.1')
+            FrameProcessor.__init__(self)
+
+            # input
+
+            self._matrix = None
+            self._beam = None
+            self._distance = None
+            self._lattice = None
+            self._wedges = None
+            self._mosaic = None
+            
+            # results
+
+            return
+
+        def set_matrix(self, matrix):
+            self._matrix = matrix
+            return
+
+        def set_beam(self, beam):
+            self._beam = beam
+            return
+
+        def set_distance(self, distance):
+            self._distance = distance
+            return
+
+        def set_lattice(self, lattice):
+            self._lattice = lattice
+            return
+
+        def set_mosaic(self, mosaic):
+            self._mosaic = mosaic
+            return
+
+        def set_wedges(self, wedges):
+            self._wedges = wedges
+            return
+
+    
+
 # one liner around mosflm cell refinement
 
 # ---------------------------------
@@ -199,16 +275,27 @@ def LabelitMosflmScript(DriverType = None):
 
 if __name__ == '__main__':
 
-    li = LabelitIndex()
+    images = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60,
+              65, 70, 75, 80, 85, 90]
 
-    image = os.path.join(os.environ['XIA2_ROOT'], 'Data', 'Test',
-                         'Images', '12287_1_E1_001.img')
 
-    li.setup_from_image(image)
-    li.set_beam((109.0,105.0))
-    li.set_images([1,90])
+    directory = os.path.join('media', 'data1', 'graeme', 'jcsg',
+                             '1vpj', 'data', 'jcsg', 'als1', '8.2.1',
+                             '20040926', 'collection', 'TB0541B', '12287')
 
-    li.autoindex()
+    image = os.path.join(directory, '12287_1_E1_001.img')
 
-    print li.get_matrix()
-    
+    for i in images[:-2]:
+        for j in images[i:-1]:
+            for k in images[j:]:
+                
+                li = LabelitIndex()
+                li.setup_from_image(image)
+                li.set_beam((109.0,105.0))
+                li.set_images([1,90])
+
+                li.autoindex()
+
+                metric, rmsd = li.get_penalties()
+
+                print '%2d %2d %2d %.4f %.4f' % (i, j, k, metric, rmsd)
