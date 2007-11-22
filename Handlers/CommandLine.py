@@ -330,7 +330,7 @@ class _CommandLine(Object):
         # sensible with it... but this will require implementing
         # this for all of the interfaces, which is not yet done...
 
-        Debug.write('Default latice selected as %s' % \
+        Debug.write('Default lattice selected as %s' % \
                     self._default_lattice)
 
         return
