@@ -327,8 +327,10 @@ def XDSIdxref(DriverType = None):
                 reidx = data['reidx']
 
                 # only consider indexing solutions with goodness of fit < 40
+                # or any value (< 200) if we have been provided the
+                # input unit cell... but # 2731
 
-                if fit < 40.0:
+                if fit < 40.0 or (self._cell and fit < 200.0):
                     # bug 2417 - if we have an input lattice then we
                     # don't want to include anything higher symmetry
                     # in the results table...
