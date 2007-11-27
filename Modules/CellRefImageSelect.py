@@ -274,35 +274,73 @@ def MosflmCellRefine(DriverType = None):
 
 if __name__ == '__main__':
 
-    images = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60,
-              65, 70, 75, 80, 85, 90]
+    # assign the image name here... need user input checking
 
+    image = sys.argv[1]
+    count = int(sys.argv[2])
 
-    directory = os.path.join('/media', 'data1', 'graeme', 'jcsg',
-                             '1vpj', 'data', 'jcsg', 'als1', '8.2.1',
-                             '20040926', 'collection', 'TB0541B', '12287')
+    # in here read first image to get the oscillation range
 
-    image = os.path.join(directory, '12287_1_E1_001.img')
+    from Wrappers.XIA.Diffdump import Diffdump
+    from lib.Guff import nint
+
+    dd = Diffdump()
+
+    dd.set_image(image)
+
+    header = dd.readheader()
+
+    phi_width = header['phi_width']
+
+    # then run labelit with three images 0,45,90 ish to get the
+    # beam centre
+
+    _images = [1]
+    if int(90 / phi_width) <= count:
+        _images.append(int(45 / phi_width))
+        _images.append(int(90 / phi_width))
+    else:
+        _images.append(int(0.5 * count))
+        _images.append(count)
+
+    li = LabelitIndex()
+    li.setup_from_image(image)
+    li.set_images(_images)
+    li.autoindex()
+
+    beam = li.get_beam()
+
+    # print '# refined beam: %f %f' % beam
+
+    # then compose the list of images
+
+    images = [1]
+    j = nint(5 / phi_width)
+    while j <= count:
+        images.append(j)
+        j += nint(5 / phi_width)
 
     r = len(images) - 2
 
-    for i in range(r):
+    for i in range(1):
         for j in range(i + 1, r + 1):
             for k in range(j + 1, r + 2):
-
                 _i = images[i]
                 _j = images[j]
                 _k = images[k]
 
-                open('current', 'w').write('%d %d %d\n' % (_i, _j, _k))
-
                 li = LabelitIndex()
                 li.setup_from_image(image)
-                li.set_beam((109.0,105.0))
+                li.set_beam(beam)
                 li.set_images([_i, _j, _k])
 
                 li.autoindex()
-
+            
                 metric, rmsd = li.get_penalties()
 
-                print '%2d %2d %2d %.4f %.4f' % (i, j, k, metric, rmsd)
+                # finally in here put in the image numbers * phi width
+            
+                print '%2d %.2f %.2f %.4f %.4f' % \
+                      (_i, (_j - _i + 1) * phi_width,
+                       (_k - _i + 1) * phi_width,
+                       metric, rmsd)
