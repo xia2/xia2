@@ -772,12 +772,16 @@ def Mosflm(DriverType = None):
             # generally applicable...
 
             # Added printpeaks check which should be interesting...
+
+            min_peaks = 200
+
+            Debug.write('Aiming for at least %d spots...' % min_peaks)
             
             for i in _images:
 
                 p = Printpeaks()
                 p.set_image(self.get_image_name(i))
-                thresh = p.threshold(500)
+                thresh = p.threshold(min_peaks)
 
                 Debug.write('Autoindex threshold for image %d: %d' % \
                             (i, thresh))

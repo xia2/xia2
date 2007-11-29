@@ -110,8 +110,11 @@ def Printpeaks(DriverType = None):
 
             return self._peaks
 
-        def threshold(self, nspots = 500):
-            peaks = self.printpeaks()
+        def threshold(self, nspots):
+            if not self._peaks:
+                peaks = self.printpeaks()
+            else:
+                peaks = self._peaks
             keys = peaks.keys()
             keys.sort()
             keys.reverse()
@@ -147,8 +150,8 @@ if __name__ == '__main__':
             p = Printpeaks()
             p.set_image(image)
 
-            # peaks = p.printpeaks()
-            # printer(peaks)
+            peaks = p.printpeaks()
+            printer(peaks)
 
-            thresh = p.threshold(500)
-            print '500 peak threshold: %f' % thresh
+            thresh = p.threshold(200)
+            print '200 peak threshold: %f' % thresh
