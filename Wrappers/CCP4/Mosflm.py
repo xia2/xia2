@@ -771,21 +771,32 @@ def Mosflm(DriverType = None):
             # better for TS01/LREM - need to make sure that this is 
             # generally applicable...
 
+            # FIXME - gather thresholds for each image and use the minimum
+            # value for all
+
             # Added printpeaks check which should be interesting...
 
             min_peaks = 200
 
             Debug.write('Aiming for at least %d spots...' % min_peaks)
-            
-            for i in _images:
 
+            thresholds = []
+
+            for i in _images:
+                
                 p = Printpeaks()
                 p.set_image(self.get_image_name(i))
                 thresh = p.threshold(min_peaks)
 
                 Debug.write('Autoindex threshold for image %d: %d' % \
                             (i, thresh))
+
+                thresholds.append(thresh)
                 
+            thresh = min(thresholds)
+            
+            for i in _images:
+
                 if self._mosflm_autoindex_sol:
                     self.input(
                         'autoindex dps refine image %d thresh %d solu %d' % \
@@ -805,6 +816,15 @@ def Mosflm(DriverType = None):
             self.close_wait()
 
             output = self.get_all_output()
+
+            for o in output:
+                if 'Final cell (after refinement)' in o:
+                    indxr_cell = tuple(map(float, o.split()[-6:]))
+
+                    if min(list(indxr_cell)) < 10.0:
+                        raise RuntimeError, \
+                              'unrealistic unit cell parameter: %.2fA' % \
+                              min(list(indxr_cell))
 
             intgr_params = { }
 
