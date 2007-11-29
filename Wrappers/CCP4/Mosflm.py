@@ -273,6 +273,7 @@ def Mosflm(DriverType = None):
 
             # local parameters used in autoindexing
             self._mosflm_autoindex_sol = 0
+            self._mosflm_autoindex_thresh = None
 
             # local parameters used in cell refinement
             self._mosflm_cell_ref_images = None
@@ -772,29 +773,36 @@ def Mosflm(DriverType = None):
             # generally applicable...
 
             # FIXME - gather thresholds for each image and use the minimum
-            # value for all
+            # value for all - unless I have a previous example here!
 
             # Added printpeaks check which should be interesting...
 
-            min_peaks = 200
+            if not self._mosflm_autoindex_thresh:
 
-            Debug.write('Aiming for at least %d spots...' % min_peaks)
+                min_peaks = 200
 
-            thresholds = []
+                Debug.write('Aiming for at least %d spots...' % min_peaks)
 
-            for i in _images:
+                thresholds = []
+
+                for i in _images:
                 
-                p = Printpeaks()
-                p.set_image(self.get_image_name(i))
-                thresh = p.threshold(min_peaks)
+                    p = Printpeaks()
+                    p.set_image(self.get_image_name(i))
+                    thresh = p.threshold(min_peaks)
 
-                Debug.write('Autoindex threshold for image %d: %d' % \
-                            (i, thresh))
+                    Debug.write('Autoindex threshold for image %d: %d' % \
+                                (i, thresh))
 
-                thresholds.append(thresh)
+                    thresholds.append(thresh)
                 
-            thresh = min(thresholds)
-            
+                thresh = min(thresholds)
+
+            else:
+                thresh = self._mosflm_autoindex_thresh
+
+            Debug.write('Using autoindex threshold: %d' % thresh)
+
             for i in _images:
 
                 if self._mosflm_autoindex_sol:
@@ -821,10 +829,18 @@ def Mosflm(DriverType = None):
                 if 'Final cell (after refinement)' in o:
                     indxr_cell = tuple(map(float, o.split()[-6:]))
 
-                    if min(list(indxr_cell)) < 10.0:
-                        raise RuntimeError, \
-                              'unrealistic unit cell parameter: %.2fA' % \
-                              min(list(indxr_cell))
+                    if min(list(indxr_cell)) < 10.0 and \
+                       indxr_cell[2] / indxr_cell[0] > 6:
+
+                        Debug.write(
+                            'Unrealistic autoindexing solution: ' + 
+                            '%.2f %.2f %.2f %.2f %.2f %.2f' % indxr_cell)
+
+                        # tweak some parameters and try again...
+                        self._mosflm_autoindex_thresh *= 1.5
+                        self.set_indexer_done(False)
+                        
+                        return
 
             intgr_params = { }
 
