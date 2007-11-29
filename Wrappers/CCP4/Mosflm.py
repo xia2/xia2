@@ -245,6 +245,7 @@ from Schema.Exceptions.IntegrationError import IntegrationError
 
 from Wrappers.CCP4.Reindex import Reindex
 from Wrappers.XIA.Diffdump import Diffdump
+from Wrapers.XIA.Printpeaks import Printpeaks
 
 def Mosflm(DriverType = None):
     '''A factory for MosflmWrapper classes.'''
@@ -769,14 +770,26 @@ def Mosflm(DriverType = None):
 	    # FIXME 25/OCT/06 have found that a threshold of 10 works
             # better for TS01/LREM - need to make sure that this is 
             # generally applicable...
+
+            # Added printpeaks check which should be interesting...
+            
             for i in _images:
+
+                p = Printpeaks()
+                p.set_image(self.get_image_name(i))
+                thresh = p.threshold(500)
+
+                Debug.write('Autoindex threshold for image %d: %d' % \
+                            (i, thresh))
+                
                 if self._mosflm_autoindex_sol:
                     self.input(
-                        'autoindex dps refine image %d thresh 10 solu %d' % \
-                        (i, self._mosflm_autoindex_sol))
+                        'autoindex dps refine image %d thresh %d solu %d' % \
+                        (i, thresh, self._mosflm_autoindex_sol))
                 else:
                     self.input(
-                        'autoindex dps refine image %d thresh 10' % i)
+                        'autoindex dps refine image %d thresh %d' % \
+                        (i, thresh))
 
             # now forget this to prevent weird things happening later on
             if self._mosflm_autoindex_sol:

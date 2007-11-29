@@ -8,6 +8,7 @@
 
 import os
 import sys
+import math
 
 if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
@@ -18,6 +19,9 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Driver.DriverFactory import DriverFactory
 
 # classes to make this work
+
+from Experts.MatrixExpert import rot_x, mosflm_a_matrix_to_real_space, \
+     matvecmul, dot
 
 # something to read the headers 
 
@@ -256,6 +260,114 @@ def MosflmCellRefine(DriverType = None):
 
 # convert this to p1, compute real space unit cell axes in xia2 frame
 
+def compute_something(phi_start, phi_end, phi_width,
+                      wavelength, lattice, matrix):
+
+    # compute the P1 real-space cell axes
+
+    a, b, c = mosflm_a_matrix_to_real_space(wavelength, lattice, matrix)
+
+    # compute rotations of these and find minimum for axis.Z - that is the
+    # Z component of the rotated axis... check workings and definitions!
+
+    phi = phi_start + 0.5 * phi_width
+
+    # initialize search variables
+
+    phi_a = phi_start
+    phi_b = phi_start
+    phi_c = phi_start
+
+    dot_a = 100.0
+    dot_b = 100.0
+    dot_c = 100.0
+
+    while phi < phi_end:
+        RX = rot_x(phi)
+
+        RXa = matvecmul(RX, a)
+        RXb = matvecmul(RX, b)
+        RXc = matvecmul(RX, c)
+
+        if math.fabs(RXa[2]) < dot_a:
+            dot_a = math.fabs(RXa[2])
+            phi_a = phi
+
+        if math.fabs(RXb[2]) < dot_b:
+            dot_b = math.fabs(RXb[2])
+            phi_b = phi
+
+        if math.fabs(RXc[2]) < dot_c:
+            dot_c = math.fabs(RXc[2])
+            phi_c = phi
+            
+        phi += phi_width
+
+    length_a = math.sqrt(dot(a, a))
+    length_b = math.sqrt(dot(b, b))
+    length_c = math.sqrt(dot(c, c))
+
+    pi = 4.0 * math.atan(1.0)
+
+    angle_a = 0.5 * pi - math.acos(dot_a / length_a)
+    angle_b = 0.5 * pi - math.acos(dot_b / length_b)
+    angle_c = 0.5 * pi - math.acos(dot_c / length_c)
+
+    return phi_a, phi_b, phi_c, angle_a, angle_b, angle_c
+
+def compute_something_else(phi_start, phi_end, phi_width,
+                           wavelength, lattice, matrix):
+
+    # compute the P1 real-space cell axes
+
+    a, b, c = mosflm_a_matrix_to_real_space(wavelength, lattice, matrix)
+
+    # compute rotations of these and find minimum for axis.Z - that is the
+    # Z component of the rotated axis... check workings and definitions!
+
+    phi = phi_start + 0.5 * phi_width
+
+    # initialize search variables
+
+    phi_a = phi_start
+    phi_b = phi_start
+    phi_c = phi_start
+
+    dot_a = 0.0
+    dot_b = 0.0
+    dot_c = 0.0
+
+    while phi < phi_end:
+        RX = rot_x(phi)
+
+        RXa = matvecmul(RX, a)
+        RXb = matvecmul(RX, b)
+        RXc = matvecmul(RX, c)
+
+        if math.fabs(RXa[2]) > dot_a:
+            dot_a = math.fabs(RXa[2])
+            phi_a = phi
+
+        if math.fabs(RXb[2]) > dot_b:
+            dot_b = math.fabs(RXb[2])
+            phi_b = phi
+
+        if math.fabs(RXc[2]) > dot_c:
+            dot_c = math.fabs(RXc[2])
+            phi_c = phi
+            
+        phi += phi_width
+
+    length_a = math.sqrt(dot(a, a))
+    length_b = math.sqrt(dot(b, b))
+    length_c = math.sqrt(dot(c, c))
+
+    angle_a = math.acos(dot_a / length_a)
+    angle_b = math.acos(dot_b / length_b)
+    angle_c = math.acos(dot_c / length_c)
+
+    return phi_a, phi_b, phi_c, angle_a, angle_b, angle_c
+
 # for phi in images find when A.X = 0 and maximised and so on
 
 # select some images
@@ -290,15 +402,17 @@ if __name__ == '__main__':
 
     header = dd.readheader()
 
+    phi_start = header['phi_start']
     phi_width = header['phi_width']
+    wavelength = header['wavelength']
 
     # then run labelit with three images 0,45,90 ish to get the
-    # beam centre
+    # beam centre - now 35, 75
 
     _images = [1]
-    if int(90 / phi_width) <= count:
-        _images.append(int(45 / phi_width))
-        _images.append(int(90 / phi_width))
+    if int(90.0 / phi_width) <= count:
+        _images.append(int(35.0 / phi_width))
+        _images.append(int(75.0 / phi_width))
     else:
         _images.append(int(0.5 * count))
         _images.append(count)
@@ -309,6 +423,18 @@ if __name__ == '__main__':
     li.autoindex()
 
     beam = li.get_beam()
+    matrix = li.get_matrix()
+    lattice = li.get_lattice()
+
+    phi_end = phi_start + count * phi_width
+
+    phi_a, phi_b, phi_c, a_a, a_b, a_c = compute_something_else(
+        phi_start, phi_end, phi_width, wavelength, lattice, matrix)
+    
+    print '%.2f %.2f %.2f' % (phi_a, phi_b, phi_c)
+    print '%.2f %.2f %.2f' % (a_a, a_b, a_c)
+
+if __name__ == '__main__old__bits__':
 
     # print '# refined beam: %f %f' % beam
 
