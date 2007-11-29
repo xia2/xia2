@@ -76,6 +76,8 @@ def Printpeaks(DriverType = None):
 
             peaks = []
 
+            self._peaks = { }
+
             for record in output:
 
                 if not 'Peak' in record[:4]:
@@ -108,12 +110,20 @@ def Printpeaks(DriverType = None):
 
             return self._peaks
 
+        def threshold(self, nspots = 500):
+            peaks = self.printpeaks()
+            keys = peaks.keys()
+            keys.sort()
+            keys.reverse()
+            for thresh in keys:
+                if peaks[thresh] > nspots:
+                    return thresh
+            return min(keys)
+
     return PrintpeaksWrapper()
 
 if __name__ == '__main__':
     
-    p = Printpeaks()
-
     def printer(peaks):
         keys = peaks.keys()
         keys.sort()
@@ -124,6 +134,7 @@ if __name__ == '__main__':
                              'Data', 'Test', 'Images')
 
     if len(sys.argv) == 1:
+        p = Printpeaks()
         image = os.path.join(directory, '12287_1_E1_001.img')
         p.set_image(image)
         peaks = p.printpeaks()
@@ -131,7 +142,13 @@ if __name__ == '__main__':
             
     else:
         for image in sys.argv[1:]:
+
+            print image
+            p = Printpeaks()
             p.set_image(image)
 
-            peaks = p.printpeaks()
-            printer(peaks)
+            # peaks = p.printpeaks()
+            # printer(peaks)
+
+            thresh = p.threshold(500)
+            print '500 peak threshold: %f' % thresh
