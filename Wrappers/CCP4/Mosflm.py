@@ -797,7 +797,8 @@ def Mosflm(DriverType = None):
                     thresholds.append(thresh)
                 
                 thresh = min(thresholds)
-
+                self._mosflm_autoindex_thresh = thresh
+                
             else:
                 thresh = self._mosflm_autoindex_thresh
 
