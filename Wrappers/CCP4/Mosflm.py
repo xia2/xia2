@@ -245,7 +245,7 @@ from Schema.Exceptions.IntegrationError import IntegrationError
 
 from Wrappers.CCP4.Reindex import Reindex
 from Wrappers.XIA.Diffdump import Diffdump
-from Wrapers.XIA.Printpeaks import Printpeaks
+from Wrappers.XIA.Printpeaks import Printpeaks
 
 def Mosflm(DriverType = None):
     '''A factory for MosflmWrapper classes.'''
