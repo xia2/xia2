@@ -279,6 +279,7 @@ def Mosflm(DriverType = None):
             self._mosflm_cell_ref_images = None
             
             # local parameters used in integration
+            self._mosflm_refine_profiles = True
             self._mosflm_postref_fix_mosaic = False
             self._mosflm_rerun_integration = False
             self._mosflm_hklout = ''
@@ -2168,6 +2169,9 @@ def Mosflm(DriverType = None):
             # on then this means that the files will all go to the same
             # place - for the moment move this to cwd.
 
+            if not self._mosflm_refine_profiles:
+                self.input('profile nooptimise')
+
             pname, xname, dname = self.get_integrater_project_info()
 
             if pname != None and xname != None and dname != None:
@@ -2342,6 +2346,18 @@ def Mosflm(DriverType = None):
                 # FIXME check for BGSIG errors - if one is found
                 # analyse the output for a sensible resolution
                 # limit to use for integration...
+
+                # NO! if a BGSIG error happened try not refining the
+                # profile and running again...
+                if 'BGSIG too large' in o:
+                    # we have a BGSIG problem - explain, fix the
+                    # problem and rerun
+                    Debug.write(
+                        'BGSIG error detected - try fixing profile...')
+                    self._mosflm_refine_profiles = False
+                    self.set_integrater_done(False)
+
+                    return
 
                 if 'MOSFLM HAS TERMINATED EARLY' in o:
                     Chatter.write('Mosflm has failed in integration')
