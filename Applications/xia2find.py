@@ -37,7 +37,8 @@ sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 from Schema.Sweep import SweepFactory
 from Experts.FindImages import image2template_directory
 
-known_image_extensions = ['img', 'mccd', 'mar2300', 'osc', 'cbf']
+known_image_extensions = ['img', 'mccd', 'mar2300', 'mar1200', 'mar3450',
+                          'osc', 'cbf']
 known_sweeps = { }
 
 def is_image_name(file):
