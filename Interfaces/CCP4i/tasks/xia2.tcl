@@ -6,7 +6,7 @@
 #     A copy of the CCP4 licence can be obtained by writing to the
 #     CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
 #
-#CCP4i_cvs_Id $Id: xia2.tcl,v 1.5 2007/10/16 13:07:48 gwin Exp $
+#CCP4i_cvs_Id $Id: xia2.tcl,v 1.6 2007/12/11 14:24:11 gwin Exp $
 # ======================================================================
 # xia2.tcl --
 #
@@ -58,16 +58,27 @@ proc xia2_task_window { arrayname } {
   CreateTitleLine line TITLE
 
   CreateLine line \
+      label "Use XIA2 to reduce diffraction data (images) to merged structure factor amplitudes"
+
+  CreateLine line \
       message "Set the project name for this run of XIA2" \
       label "Project:" \
       widget PROJECT_NAME \
       message "Set the crystal name for this run" \
       label "Crystal:" \
-      widget XTAL_NAME
+      widget XTAL_NAME \
+      label "These will end up as PNAME/XNAME in the MTZ file..." \
+      -italic
+
 
 #=FILES================================================================
 
   OpenFolder file
+
+  CreateOutputFileLine line \
+      "Optionally enter name of output MTZ file" \
+      "MTZ out:" \
+      HKLOUT DIR_HKLOUT 
 
   # There are no files to be defined here at present
 
@@ -75,6 +86,12 @@ proc xia2_task_window { arrayname } {
 # FOLDER 1: DEFINE WAVELENGTHS 
 
   OpenFolder 1
+
+  CreateLine linef1 label \
+      "Define the wavelengths of data collection first..." \
+      label "These labels will be the MTZ DNAMEs after processing." -italic
+
+
   CreateToggleFrame N_WAVELENGTHS Xia2Wavelengths \
       "Define a wavelength" "Wavelength number" \
       "Add Another Wavelength"  \
@@ -86,6 +103,9 @@ proc xia2_task_window { arrayname } {
 # FOLDER 2: DEFINE SWEEPS
 
   OpenFolder 2
+
+  CreateLine linef2 label \
+      "Then associate the sweeps of diffraction data with them..."
 
   CreateToggleFrame N_SWEEPS Xia2Sweeps \
       "Define a sweep" "Sweep number" \
@@ -101,7 +121,15 @@ proc xia2_task_window { arrayname } {
   OpenFolder 3 closed
 
   CreateLine line \
-      label "Some extra options in here when you're ready..." -italic
+      label "Less commonly used options" -italic
+
+  # FIXME in here need to define a flag for -debug, another for 
+  # -2d (default) or -3d. These will probably need to propogate 
+  # back to the .def file as well as booleans...
+
+  CreateLine line \
+      widget DEBUG label "Include debugging output" \
+      widget THREED label "Run processing with XDS"  
 
 }
 
@@ -112,6 +140,12 @@ proc xia2_run { arrayname } {
 
   # Essentially a placeholder for now
   # Use this to do processing/checking after the user hits "run"
+
+  # check that the output file is set correctly and add this as an
+  # output file...
+
+  set array(OUTPUT_FILES) "HKLOUT" 
+
   return 1
 }
 

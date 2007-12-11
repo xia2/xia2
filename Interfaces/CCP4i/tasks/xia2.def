@@ -6,7 +6,7 @@
 #     A copy of the CCP4 licence can be obtained by writing to the
 #     CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
 #
-#CCP4i_cvs_Id $Id: xia2.def,v 1.3 2007/10/16 13:07:48 gwin Exp $
+#CCP4i_cvs_Id $Id: xia2.def,v 1.4 2007/12/11 14:24:11 gwin Exp $
 #CCP4I VERSION CCP4Interface 1.4.4
 #CCP4I SCRIPT DEF xia2
 #CCP4I DATE  01/07/97 16:05:30
@@ -37,3 +37,11 @@ SWEEP_DIR,0		_text			""
 SWEEP_BEAM_X,0		_real			""
 SWEEP_BEAM_Y,0		_real			""
 
+HKLOUT			_MTZ_file		""
+DIR_HKLOUT	 	_default_dirs          	""
+
+# specialist options - debug or -3d (default is to run
+# without debugging and -2d...)
+
+DEBUG                   _logical                0
+THREED                  _logical                0

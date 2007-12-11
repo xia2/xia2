@@ -6,6 +6,10 @@
   ChangeDirectory $xia2_dir
   AddOutputDir $xia2_dir
 
+# output file will be named [file join $xia2_dir DataFiles \
+# $PROJECT_NAME_$XTAL_NAME_free.mtz] - this will be copied to HKLOUT
+# at the end...
+
 # Write the input file
   set xinfo xia2_$job_params(JOB_ID).xinfo
   set xin "BEGIN PROJECT $PROJECT_NAME\nBEGIN CRYSTAL $XTAL_NAME\n"
@@ -37,11 +41,36 @@
 
 # Then launch the job - with command line "xia2 -2d -xinfo $xinfo"
 
-  set cmd "xia2 -2d -xinfo $xinfo"
+  set cmd "xia2"
+
+  if {$DEBUG} {
+    append cmd " -debug"
+  }
+
+  if {$THREED} {
+    append cmd " -3d"
+  } else {
+    append cmd " -2d"
+  }
+
+  append cmd " -xinfo $xinfo"
 
   set status [Execute $cmd {} program_status report]
 
+  set XIA2HKLOUT [file join $xia2_dir DataFiles \
+    [subst $PROJECT_NAME]_[subst $XTAL_NAME]_free.mtz]
 
-    
+  if {[file exists $XIA2HKLOUT]} {
+    file copy $XIA2HKLOUT $HKLOUT
+    WriteToLog "Copied final MTZ file to $HKLOUT"
+  }
 
+# in here do an ls on the LogFiles directory and record all of these as....
+# log files from the job...
+
+  set logfiles [glob -directory [file join $xia2_dir LogFiles] "*.log"]
+
+  foreach file $logfiles { 
+    AddOutputFile $file "PROJECT"
+  }
 
