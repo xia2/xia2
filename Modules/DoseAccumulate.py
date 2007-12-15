@@ -59,15 +59,19 @@ if __name__ == '__main__':
 
     from Experts.FindImages import find_matching_images, \
          template_directory_number2image, image2template_directory
+    from Handlers.Flags import Flags
 
-    image = sys.argv[1]
+    # just cos we can...
+    Flags.set_trust_timestamp(True)
 
-    template, directory = image2template_directory(image)
-    images = find_matching_images(template, directory)
     image_names = []
-    for i in images:
-        image_names.append(template_directory_number2image(
-            template, directory, i))
+    for image in sys.argv[1:]:
+
+        template, directory = image2template_directory(image)
+        images = find_matching_images(template, directory)
+        for i in images:
+            image_names.append(template_directory_number2image(
+                template, directory, i))
 
     dose = accumulate(image_names)
     epochs = dose.keys()
