@@ -62,7 +62,7 @@ if __name__ == '__main__':
     from Handlers.Flags import Flags
 
     # just cos we can...
-    Flags.set_trust_timestamp(True)
+    Flags.set_trust_timestamps(True)
 
     image_names = []
     for image in sys.argv[1:]:
