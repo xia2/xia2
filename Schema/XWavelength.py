@@ -104,6 +104,16 @@ class XWavelength(Object):
     def get_name(self):
         return self._name
 
+    def get_all_image_names(self):
+        '''Get a full list of all images in this wavelength...'''
+
+        # for RD analysis ...
+
+        result = []
+        for sweep in self._sweeps:
+            result.extend(sweep.get_all_image_names)
+        return result
+
     def add_sweep(self, name, directory = None, image = None,
                   integrated_reflection_file = None,
                   beam = None, distance = None, resolution = None,

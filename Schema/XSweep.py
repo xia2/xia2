@@ -221,6 +221,11 @@ class XSweep(Object):
         self._integrated_reflection_file = integrated_reflection_file
         self._epoch = epoch
 
+        # FIXME in here also need to be able to accumulate the total
+        # dose from all experimental measurements (complex) and provide
+        # a _epoch_to_dose dictionary or some such... may be fiddly as
+        # this will need to parse across multiple templates. c/f Bug # 2798
+
         self._epoch_to_image = { }
         self._image_to_epoch = { }
 
@@ -364,6 +369,7 @@ class XSweep(Object):
 
         #   this means that this module will have to present largely the
         #   same interface as Indexer and Integrater so that the calls
+
         #   can be appropriately forwarded.
 
         # set up the resolution object
@@ -387,6 +393,16 @@ class XSweep(Object):
         return template_directory_number2image(self._template,
                                                self._directory,
                                                number)
+
+    def get_all_image_names(self):
+        '''Get a full list of all images in this sweep...'''
+        result = []
+        for image in self._images:
+            result.append(template_directory_number2image(self._template,
+                                                          self._directory,
+                                                          image))
+        return result
+
 
     def get_epoch(self, image):
         '''Get the exposure epoch for this image.'''

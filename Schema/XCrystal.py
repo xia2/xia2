@@ -502,7 +502,17 @@ class XCrystal(Object):
                 integraters.append(i)
 
         return integraters
-        
+
+    def get_all_image_names(self):
+        '''Get a full list of all images from this crystal...'''
+
+        # for RD analysis ...
+
+        result = []
+        for wavelenth in self._wavelengths:
+            result.extend(wavelength.get_all_image_names)
+        return result
+
     def set_lattice(self, lattice, cell):
         '''Configure the cell - if it is already set, then manage this
         carefully...'''
