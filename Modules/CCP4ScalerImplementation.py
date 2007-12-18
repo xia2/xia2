@@ -133,6 +133,7 @@ from CCP4ScalerImplementationHelpers import _resolution_estimate, \
      CCP4ScalerImplementationHelper
 
 from CCP4InterRadiationDamageDetector import CCP4InterRadiationDamageDetector
+from DoseAccumulator import accumulate
 
 from AnalyseMyIntensities import AnalyseMyIntensities
 
@@ -202,6 +203,12 @@ class CCP4Scaler(Scaler):
         # FIXME 2/APR/07 added epoch to this... for radiation damage
         # analysis - though this could be NULL...
 
+        # changes 18/DEC/07 adding dose information to this as well,
+        # based on image header parsing in DoseAccumulator, which will
+        # hopefully operate from cached values. This will be needed
+        # later on in the "doser" wrapper to add this information to
+        # unmerged MTZ files from Scala.
+
         for epoch in self._scalr_integraters.keys():
             intgr = self._scalr_integraters[epoch]
             pname, xname, dname = intgr.get_integrater_project_info()
@@ -214,9 +221,33 @@ class CCP4Scaler(Scaler):
                 'header':intgr.get_header(),
                 'image_to_epoch':intgr.get_integrater_sweep(                
                 ).get_image_to_epoch(),
+                'image_to_dose':{},
                 'batch_offset':0
                 }
-            
+
+        # gather data for all images which belonged to the parent
+        # crystal - allowing for the fact that things could go wrong
+        # e.g. epoch information not available, exposure times not in
+        # headers etc...
+
+        try:
+            all_images = self.get_scaler_xcrystal().get_all_image_names()
+            dose_information = accumulate(all_images)
+
+            # next copy this into the sweep information
+
+            for epoch in self._sweep_information.keys():
+                for i in self._sweep_information[epoch][
+                    'image_to_epoch'].keys():
+                    e = self._sweep_information[epoch][
+                        'image_to_epoch'][i]
+                    d = dose_information[e]
+                    self._sweep_information[epoch][
+                        'image_to_dose'][i] = d
+
+        except RuntimeError, e:
+            pass
+
         # next check through the reflection files that they are all MTZ
         # format - if not raise an exception.
         # FIXME this should include the conversion to MTZ.

@@ -265,6 +265,9 @@ class Scaler:
         self._scalr_pname = None
         self._scalr_xname = None
 
+        # link to parent xcrystal
+        self._scalr_xcrystal = None
+
         return
 
     def _scale_prepare(self):
@@ -282,6 +285,16 @@ class Scaler:
 
     def get_working_directory(self):
         return self._working_directory 
+
+    # to support radiation damage analysis, for example, include a link
+    # back to the parent crystal
+
+    def set_scaler_xcrystal(self, xcrystal):
+        self._scalr_xcrystal = xcrystal
+        return
+
+    def get_scaler_xcrystal(self):
+        return self._scalr_xcrystal
 
     def set_scaler_project_info(self, pname, xname):
         '''Set the project and crystal this scaler is working with.'''

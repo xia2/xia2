@@ -598,6 +598,11 @@ class XCrystal(Object):
 
             self._scaler = Scaler()
 
+            # put an inverse link in place... to support RD analysis
+            # involved change to Scaler interface definition
+            
+            self._scaler.set_scaler_xcrystal(self)
+
             if self._anomalous:
                 self._scaler.set_scaler_anomalous(True)
 
