@@ -99,6 +99,7 @@ def Scala(DriverType = None):
 
             # input and output files
             self._scalepack = None
+            self._chef_unmerged = False
 
             # scaling parameters
             self._resolution = None
@@ -204,6 +205,14 @@ def Scala(DriverType = None):
             file.'''
 
             self._scalepack = scalepack
+            return
+
+        def set_chef_unmerged(self, chef_unmerged = True):
+            '''Output the measurements in the form suitable for
+            input to chef, that is with SDCORRECTION 1 0 0 and
+            in unmerged MTZ format.'''
+
+            self._chef_unmerged = chef_unmerged
             return
 
         def set_resolution(self, resolution):
@@ -404,6 +413,9 @@ def Scala(DriverType = None):
             self.check_hklin()
             self.check_hklout()
 
+            if self._chef_unmerged and self._scalepack:
+                raise RuntimeError, 'CHEF and scalepack incompatible'
+
             if self._new_scales_file:
                 self.add_command_line('SCALES')
                 self.add_command_line(self._new_scales_file)
@@ -506,11 +518,15 @@ def Scala(DriverType = None):
 
             self.input('cycles %d' % self._cycles)
 
-            for key in self._sd_parameters:
-                # the input order for these is sdfac, sdB, sdadd...
-                parameters = self._sd_parameters[key]
-                self.input('sdcorrection %s %f %f %f' % \
-                           (key, parameters[0], parameters[2], parameters[1]))
+            if not self._chef_unmerged:
+                for key in self._sd_parameters:
+                    # the input order for these is sdfac, sdB, sdadd...
+                    parameters = self._sd_parameters[key]
+                    self.input('sdcorrection %s %f %f %f' % \
+                               (key, parameters[0], parameters[2],
+                                parameters[1]))
+            else:
+                self.input('sdcorrection noadjust both 1.0 0.0 0.0')
 
             if self._anomalous:
                 self.input('anomalous on')
@@ -519,6 +535,8 @@ def Scala(DriverType = None):
 
             if self._scalepack:
                 self.input('output polish unmerged')
+            elif self._chef_unmerged:
+                self.input('output unmerged')
 
             # run using previously determined scales
 

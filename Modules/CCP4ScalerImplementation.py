@@ -1778,6 +1778,62 @@ class CCP4Scaler(Scaler):
                 key] = scalepack
             FileHandler.record_data_file(scalepack)
 
+        # FIXME moving marker - see FIXME below...
+
+        # merge the data yet again, except this time don't merge (!)
+        # just recycle the scales to produce output MTZ files with
+        # sdcorrection = 1 0 noadjust for CHEF to much on...
+        # c/f Bug # 2798
+
+        sc = self._factory.Scala()
+        sc.set_hklin(self._prepared_reflections)
+        sc.set_scales_file(scales_file)
+
+        self._wavelengths_in_order = []
+        
+        for epoch in epochs:
+            input = self._sweep_information[epoch]
+            start, end = (min(input['batches']), max(input['batches']))
+
+            if Flags.get_quick():
+                run_resolution_limit = resolution_limits[input['dname']]
+            else:
+                run_resolution_limit = 0.0
+
+            sc.add_run(start, end, pname = input['pname'],
+                       xname = input['xname'],
+                       dname = input['dname'],
+                       exclude = False,
+                       resolution = run_resolution_limit)
+            if not input['dname'] in self._wavelengths_in_order:
+                self._wavelengths_in_order.append(input['dname'])
+
+        # note well that this will produce multiple reflection files...
+        sc.set_hklout(os.path.join(self.get_working_directory(),
+                                   '%s_%s_chef.mtz' % \
+                                   (self._common_pname,
+                                    self._common_xname)))
+        
+        sc.set_chef_unmerged(True)
+
+        if self.get_scaler_anomalous():
+            sc.set_anomalous()
+        sc.set_tails()
+        sc.scale()
+
+        # next get the files back in MTZ format...
+        reflection_files = sc.get_scaled_reflection_files()
+
+        # and then use doser to add the dose information
+
+
+        # then feed the results to chef - though this should really happen
+        # much earlier in the cycle - FIXME and see FIXME above which
+        # indicates what code should be moved
+
+        
+
+
         # finally repeat the merging again (!) but keeping the
         # wavelengths separate to generate the statistics on a
         # per-wavelength basis - note that we do not want the
