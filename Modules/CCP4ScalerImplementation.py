@@ -133,7 +133,7 @@ from CCP4ScalerImplementationHelpers import _resolution_estimate, \
      CCP4ScalerImplementationHelper
 
 from CCP4InterRadiationDamageDetector import CCP4InterRadiationDamageDetector
-from DoseAccumulator import accumulate
+from DoseAccumulate import accumulate
 
 from AnalyseMyIntensities import AnalyseMyIntensities
 
