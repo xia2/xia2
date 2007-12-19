@@ -120,25 +120,25 @@ def generate_4(start, end, width):
 
 if __name__ == '__main__':
 
-    #template = '12287_1_E1_###.img'
-    #beam = (109.0, 105.0)
-    #directory = '/home/gw56/scratch/data/jcsg/1vpj/data/' + \
-    #            'jcsg/als1/8.2.1/20040926/collection/TB0541B/12287/'
+    template = '12287_1_E1_###.img'
+    beam = (109.0, 105.0)
+    directory = '/home/gw56/scratch/data/jcsg/1vpj/data/' + \
+                'jcsg/als1/8.2.1/20040926/collection/TB0541B/12287/'
 
-    images = generate_3(1, 1100, 1)
+    images = generate_3(1, 90, 1)
 
-    #cell = (51.6924, 51.6986, 157.8512, 90.0399, 89.9713, 89.9465)
+    cell = (51.6924, 51.6986, 157.8512, 90.0399, 89.9713, 89.9465)
 
-    template = 'plat2a3_1_####.img'
-    directory = '/media/data2/graeme/plat'
-    beam = (93.35, 93.87)
-    cell = (90.2346, 90.1967, 90.2473, 90.0073, 90.0314, 89.9910)
+    #template = 'plat2a3_1_####.img'
+    #directory = '/media/data2/graeme/plat'
+    #beam = (93.35, 93.87)
+    #cell = (90.2346, 90.1967, 90.2473, 90.0073, 90.0314, 89.9910)
 
 
     for i in images:
         inq.put(i)
 
-    ncpu = 4
+    ncpu = 50
 
     for j in range(ncpu):
         tq.put('job%d' % j)

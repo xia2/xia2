@@ -509,8 +509,8 @@ class XCrystal(Object):
         # for RD analysis ...
 
         result = []
-        for wavelenth in self._wavelengths:
-            result.extend(wavelength.get_all_image_names)
+        for wavelength in self._wavelengths:
+            result.extend(wavelength.get_all_image_names())
         return result
 
     def set_lattice(self, lattice, cell):

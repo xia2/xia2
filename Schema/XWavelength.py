@@ -111,7 +111,7 @@ class XWavelength(Object):
 
         result = []
         for sweep in self._sweeps:
-            result.extend(sweep.get_all_image_names)
+            result.extend(sweep.get_all_image_names())
         return result
 
     def add_sweep(self, name, directory = None, image = None,
