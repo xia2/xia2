@@ -128,7 +128,7 @@ if __name__ == '__main__':
     e0 = min(epochs)
 
     for e in epochs:
-        print 'batch %d epoch %f dose %f' % \
+        print 'batch %d time %f dose %f' % \
               (batches[e], e - e0, dose[e])
     
 
