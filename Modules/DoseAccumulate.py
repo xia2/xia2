@@ -25,6 +25,21 @@ if not os.environ['XIA2_ROOT'] is sys.path:
 
 from Wrappers.XIA.Diffdump import Diffdump
 
+def epocher(images):
+    '''Get a list of epochs for each image in this list, returning as
+    a list of tuples.'''
+
+    result = []
+    for i in images:
+        dd = Diffdump()
+        dd.set_image(i)
+        header = dd.readheader()
+
+        e = header['epoch']
+        result.append((i, e))
+
+    return result
+
 def accumulate(images):
     '''Accumulate dose as a function of image epoch.'''
 
@@ -57,6 +72,29 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         raise RuntimeError, '%s /path/to/image' % sys.argv[0]
 
+    # FIXME with this I would like to be able to give a first batch
+    # for a template, then print out the batch numbers computed from
+    # the image number and an offset, to enable offline adding
+    # of data with doser to test out development versions of chef.
+
+    # don't worry, be static!
+
+    offsets = {
+        '9172_1_E1_###.img':0,
+        '9172_1_E2_###.img':1000,
+        '9172_2_###.img':2000,
+        '9172_102_###.img':3000,
+        '12287_1_E1_###.img':0,
+        '12287_1_E2_###.img':100,
+        '12287_2_###.img':200,
+        '13185_2_E1_###.img':0,
+        '13185_2_E2_###.img':1000,
+        '13185_3_###.img':2000,
+        'insulin_1_###.img':0
+        }
+        
+    batches = { }
+
     from Experts.FindImages import find_matching_images, \
          template_directory_number2image, image2template_directory
     from Handlers.Flags import Flags
@@ -69,16 +107,29 @@ if __name__ == '__main__':
 
         template, directory = image2template_directory(image)
         images = find_matching_images(template, directory)
+
+        batch_images = []
+
         for i in images:
-            image_names.append(template_directory_number2image(
-                template, directory, i))
+            image = template_directory_number2image(
+                template, directory, i)
+            image_names.append(image)
+            batch_images.append(image)
+
+        epochs = epocher(batch_images)
+        for j in range(len(epochs)):
+            batch = images[j] + offsets[template]
+            batches[epochs[j][1]] = batch
 
     dose = accumulate(image_names)
     epochs = dose.keys()
     epochs.sort()
 
+    e0 = min(epochs)
+
     for e in epochs:
-        print e, dose[e]
+        print 'batch %d epoch %f dose %f' % \
+              (batches[e], e - e0, dose[e])
     
 
                    
