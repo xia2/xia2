@@ -111,6 +111,7 @@ def Othercell(DriverType = None):
             # parse the output of the program...
 
             for o in self.get_all_output():
+
                 if not '[' in o:
                     continue
                 if 'Reindex op' in o:
@@ -124,6 +125,9 @@ def Othercell(DriverType = None):
                 
                 lauegroup = o[:11].strip()
                 if not lauegroup:
+                    continue
+
+                if lauegroup[0] == '[':
                     continue
 
                 modded_lauegroup = ''
@@ -166,12 +170,17 @@ if __name__ == '__main__':
 
     o = Othercell()
 
-    o.set_cell([43.62, 52.27, 116.4, 103, 100.7, 90.03])
-    o.set_lattice('p')
+    # o.set_cell([43.62, 52.27, 116.4, 103, 100.7, 90.03])
+    # o.set_lattice('p')
+
+    o.set_cell([198.61, 198.61, 243.45, 90.00, 90.00, 120.00])
+    o.set_lattice('r')
 
     o.generate()
 
     # need to add some checks in here that everything went fine...
+    # for line in o.get_all_output():
+    # print line[:-1]
 
     o.get_cell('aP')
     o.get_reindex_op('aP')
