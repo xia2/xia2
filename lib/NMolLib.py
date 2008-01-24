@@ -109,7 +109,10 @@ def compute_nmol_from_volume(volume, mass, resolution):
     file.close()
 
     if resolution > resolutions[-1]:
-        raise RuntimeError, 'Resolution outside useful range'
+        # raise RuntimeError, 'Resolution outside useful range'
+        Chatter.write('Resolution lower than %s -> computing for %f' % \
+                      (resolutions[-1], resolution))
+        resolution = resolutions[-1]
     if resolution < resolutions[0]:
         Chatter.write('Resolution higher than peak %f -> %f' % \
                       (resolution, resolutions[0]))
