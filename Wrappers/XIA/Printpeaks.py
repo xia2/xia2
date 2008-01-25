@@ -131,6 +131,8 @@ def Printpeaks(DriverType = None):
                 raise RuntimeError, 'image %s does not exist' % \
                       self._image
 
+            self.add_command_line('-th')
+            self.add_command_line('10')
             self.add_command_line(self._image)
             self.start()
             self.close_wait()
@@ -151,6 +153,8 @@ def Printpeaks(DriverType = None):
 
                 intensity = float(record.split(':')[-1])
                 peaks.append(intensity)
+
+            print len(peaks), max(peaks)
 
             if len(peaks) < 10:
                 return 'blank'
