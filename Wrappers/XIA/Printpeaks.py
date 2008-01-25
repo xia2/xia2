@@ -123,9 +123,46 @@ def Printpeaks(DriverType = None):
                     return thresh
             return min(keys)
 
+        def screen(self):
+            if not self._image:
+                raise RuntimeError, 'image not set'
+
+            if not os.path.exists(self._image):
+                raise RuntimeError, 'image %s does not exist' % \
+                      self._image
+
+            self.add_command_line(self._image)
+            self.start()
+            self.close_wait()
+
+            self.check_for_errors()            
+
+            # results were ok, so get all of the output out
+            output = self.get_all_output()
+
+            peaks = []
+
+            self._peaks = { }
+
+            for record in output:
+
+                if not 'Peak' in record[:4]:
+                    continue
+
+                intensity = float(record.split(':')[-1])
+                peaks.append(intensity)
+
+            if len(peaks) < 10:
+                return 'blank'
+
+            return 'ok'
+            
+
     return PrintpeaksWrapper()
 
 if __name__ == '__main__':
+
+    import time
     
     def printer(peaks):
         keys = peaks.keys()
@@ -144,7 +181,9 @@ if __name__ == '__main__':
         printer(peaks)
             
     else:
-        for image in sys.argv[1:]:
+
+        # for image in sys.argv[1:]:
+        if 1 == 0:
 
             print image
             p = Printpeaks()
@@ -155,3 +194,16 @@ if __name__ == '__main__':
 
             thresh = p.threshold(200)
             print '200 peak threshold: %f' % thresh
+
+        t0 = time.time()
+        count = 0
+        for image in sys.argv[1:]:
+            count += 1
+            p = Printpeaks()
+            p.set_image(image)
+            status = p.screen()
+            print os.path.split(image)[-1], status
+        t1 = time.time()
+
+        print 'Total time: %.1f' % (t1 - t0)
+        print 'Per image: %.3f' % ((t1 - t0) / count)
