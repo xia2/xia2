@@ -265,7 +265,7 @@ def Mosflm(DriverType = None):
             if Flags.get_old_mosflm():
                 self.set_executable('ipmosflm')
             else:
-                self.set_executable('ipmosflm-7.0.1')
+                self.set_executable('ipmosflm-7.0.2')
     
             FrameProcessor.__init__(self)
             Indexer.__init__(self)
