@@ -191,6 +191,7 @@
 import os
 import sys
 import math
+import exceptions
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -780,25 +781,35 @@ def Mosflm(DriverType = None):
 
             if not self._mosflm_autoindex_thresh:
 
-                min_peaks = 200
+                # miniCBF is not currently supported - so use default
+                # I/sigma of 20 for those...
 
-                Debug.write('Aiming for at least %d spots...' % min_peaks)
+                try:
 
-                thresholds = []
+                    min_peaks = 200
 
-                for i in _images:
+                    Debug.write('Aiming for at least %d spots...' % min_peaks)
+
+                    thresholds = []
+                    
+                    for i in _images:
+                        
+                        p = Printpeaks()
+                        p.set_image(self.get_image_name(i))
+                        thresh = p.threshold(min_peaks)
+                        
+                        Debug.write('Autoindex threshold for image %d: %d' % \
+                                    (i, thresh))
+
+                        thresholds.append(thresh)
                 
-                    p = Printpeaks()
-                    p.set_image(self.get_image_name(i))
-                    thresh = p.threshold(min_peaks)
+                    thresh = min(thresholds)
+                    self._mosflm_autoindex_thresh = thresh
 
-                    Debug.write('Autoindex threshold for image %d: %d' % \
-                                (i, thresh))
-
-                    thresholds.append(thresh)
-                
-                thresh = min(thresholds)
-                self._mosflm_autoindex_thresh = thresh
+                except exceptions.Exception, e:
+                    Debug.write('Error computing threshold: %s' % str(e))
+                    Debug.write('Using default of 20.0')
+                    thresh = 20.0
                 
             else:
                 thresh = self._mosflm_autoindex_thresh
