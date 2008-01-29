@@ -135,7 +135,7 @@ def _parse_mosflm_integration_output(integration_output_list):
             per_image_stats[current_image]['overloads'] = overloads
             
         if 'Number of bad spots' in record:
-            bad = int(record.split()[-1])
+            bad = int(record.replace('=', '').split()[-1])
             # FIXME also with the name...
             per_image_stats[current_image]['rejected'] = bad
 
