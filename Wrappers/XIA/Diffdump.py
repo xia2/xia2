@@ -111,10 +111,15 @@ detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('mar', 2300, 150):'mar 345',
                   ('mar', 3450, 100):'mar 345',
                   ('raxis', 3000, 100):'raxis IV',
+                  ('rigaku', 3000, 100):'raxis IV',
                   ('saturn', 2048, 45):'rigaku saturn 92',
                   ('saturn', 1024, 90):'rigaku saturn 92 2x2 binned',
                   ('saturn', 2084, 45):'rigaku saturn 944',
-                  ('saturn', 1042, 90):'rigaku saturn 944 2x2 binned'}
+                  ('saturn', 1042, 90):'rigaku saturn 944 2x2 binned',
+                  ('rigaku', 2048, 45):'rigaku saturn 92',
+                  ('rigaku', 1024, 90):'rigaku saturn 92 2x2 binned',
+                  ('rigaku', 2084, 45):'rigaku saturn 944',
+                  ('rigaku', 1042, 90):'rigaku saturn 944 2x2 binned'}
 
 # FIXME get proper specifications for these detectors...
 
@@ -231,6 +236,8 @@ def Diffdump(DriverType = None):
             
             fudge = {'adsc':{'wavelength':1.0,
                              'pixel':1.0},
+                     'rigaku':{'wavelength':1.0,
+                               'pixel':1.0},
                      'raxis':{'wavelength':1.0,
                              'pixel':1.0},
                      'saturn':{'wavelength':1.0,
@@ -251,7 +258,11 @@ def Diffdump(DriverType = None):
                     l2 = l[1].split()
                 else:
                     l2 = ''
-                if 'Image type' in o:
+
+                # latest version of diffdump prints out manufacturer in
+                # place of image type...
+                    
+                if ('Image type' in o) or ('Manufacturer' in o):
                     if debug:
                         print '! found image type: %s' % l[1].strip().lower()
                     self._header['detector'] = l[1].strip().lower()
