@@ -126,7 +126,6 @@ def header_to_xds(header, synchrotron = None):
         'raxis':'RAXIS',
         'saturn':'SATURN',
         'adsc':'ADSC'}
-    
 
     detector_to_overload = {
         'mar':130000,
