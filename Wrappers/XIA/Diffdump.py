@@ -159,6 +159,13 @@ def Diffdump(DriverType = None):
                 # set default to 0-epoch
                 return datetime.datetime(1970, 0, 0, 0, 0, 0).timetuple()
 
+            # problem here is multiple formats for date strings!
+            # so have to change the structure...
+
+            # FIXME!
+            # pilatus: 2007/Sep/22 21:15:03.229
+            # format: %Y/%b/%d %H:%M:%S
+
             try:
                 struct_time = time.strptime(datestring)
             except:
@@ -305,6 +312,10 @@ def Diffdump(DriverType = None):
                                 self._header['date'] = ''
 
                     except exceptions.Exception, e:
+
+                        if debug:
+                            print '! error interpreting date: %s' % str(e)
+                        
                         # this is badly formed....
                         # so perhaps read the file creation date?
                         # time.ctime(os.stat(filename)[8]) -> date
