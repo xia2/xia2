@@ -606,6 +606,10 @@ def Scala(DriverType = None):
             
             for i in range(len(output)):
                 record = output[i]
+
+                # this is a potential source of problems - if the
+                # wavelength name has a _ in it then we are here stuffed!
+                
                 if 'WRITTEN OUTPUT MTZ FILE' in record:
                     hklout = output[i + 1].split('Filename:')[-1].strip()
                     if len(datasets) > 1:
