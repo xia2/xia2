@@ -167,7 +167,12 @@ def Diffdump(DriverType = None):
             # format: %Y/%b/%d %H:%M:%S
 
             try:
-                struct_time = time.strptime(datestring)
+                if self._header['detector'] == 'dectris':
+                    format = '%Y/%b/%d %H:%M:%S'
+                    datestring = datestring.split('.')[0]
+                    struct_time = time.strptime(datestring, format)
+                else:
+                    struct_time = time.strptime(datestring)
             except:
                 # this may be a mar format date...
                 # MMDDhhmmYYYY.ss - go figure
