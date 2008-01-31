@@ -123,6 +123,7 @@ def header_to_xds(header, synchrotron = None):
     detector_to_detector = {
         'mar':'MAR345',
         'marccd':'CCDCHESS',
+        'dectris':'CBF',
         'raxis':'RAXIS',
         'saturn':'SATURN',
         'adsc':'ADSC'}
@@ -130,6 +131,7 @@ def header_to_xds(header, synchrotron = None):
     detector_to_overload = {
         'mar':130000,
         'marccd':65000,
+        'dectris':1048500,
         'raxis':1000000,
         'saturn':1000000,
         'adsc':65000}
@@ -137,6 +139,7 @@ def header_to_xds(header, synchrotron = None):
     detector_to_x_axis = {
         'mar':'1.0 0.0 0.0',
         'marccd':'1.0 0.0 0.0',        
+        'dectris':'1.0 0.0 0.0',
         'raxis':'1.0 0.0 0.0',
         'saturn':'-1.0 0.0 0.0',
         'adsc':'1.0 0.0 0.0'}
@@ -144,6 +147,7 @@ def header_to_xds(header, synchrotron = None):
     detector_to_y_axis = {
         'mar':'0.0 1.0 0.0',
         'marccd':'0.0 1.0 0.0',        
+        'dectris':'0.0 1.0 0.0',        
         'raxis':'0.0 -1.0 0.0',
         'saturn':'0.0 1.0 0.0',
         'adsc':'0.0 1.0 0.0'}
@@ -162,6 +166,7 @@ def header_to_xds(header, synchrotron = None):
         'mar 225 ccd':True,
         'mar 165 ccd':False,
         'mar 135 ccd':False,
+        'pilatus 6M':True,
         'rigaku saturn 92 2x2 binned':True,
         'rigaku saturn 944 2x2 binned':True,
         'rigaku saturn 92':True,
@@ -171,13 +176,15 @@ def header_to_xds(header, synchrotron = None):
     detector_to_rotation_axis = {
         'mar':'1.0 0.0 0.0',
         'marccd':'1.0 0.0 0.0',        
+        'dectris':'1.0 0.0 0.0',        
         'raxis':'0.0 1.0 0.0',
         'saturn':'0.0 1.0 0.0',
         'adsc':'1.0 0.0 0.0'}
 
     detector_to_polarization_plane_normal = {
         'mar':'0.0 1.0 0.0',
-        'marccd':'0.0 1.0 0.0',        
+        'marccd':'0.0 1.0 0.0',
+        'dectris':'0.0 0.0 1.0',
         'raxis':'1.0 0.0 0.0',
         'saturn':'0.0 1.0 0.0',
         'adsc':'0.0 1.0 0.0'}
@@ -239,6 +246,29 @@ def header_to_xds(header, synchrotron = None):
     # FIXME 11/DEC/06 this should depend on the wavelength
     result.append('AIR=0.001')
 
+    # dead regions of the detector for pilatus 6M
+
+    if header['detector_class'] == 'pilatus 6M':
+
+        result.append('DETECTOR=PILATUS')
+        result.append('SENSOR_THICKNESS=0.32')
+        
+        result.append('UNTRUSTED_RECTANGLE= 488  494     1 2527')
+        result.append('UNTRUSTED_RECTANGLE= 982  988     1 2527')
+        result.append('UNTRUSTED_RECTANGLE=1476 1482     1 2527')
+        result.append('UNTRUSTED_RECTANGLE=1970 1976     1 2527')
+        result.append('UNTRUSTED_RECTANGLE=   1 2463   196  212')
+        result.append('UNTRUSTED_RECTANGLE=   1 2463   408  424')
+        result.append('UNTRUSTED_RECTANGLE=   1 2463   620  636')
+        result.append('UNTRUSTED_RECTANGLE=   1 2463   832  848')
+        result.append('UNTRUSTED_RECTANGLE=   1 2463  1044 1060')
+        result.append('UNTRUSTED_RECTANGLE=   1 2463  1256 1272')
+        result.append('UNTRUSTED_RECTANGLE=   1 2463  1468 1484')
+        result.append('UNTRUSTED_RECTANGLE=   1 2463  1680 1696')
+        result.append('UNTRUSTED_RECTANGLE=   1 2463  1892 1908')
+        result.append('UNTRUSTED_RECTANGLE=   1 2463  2104 2120')
+        result.append('UNTRUSTED_RECTANGLE=   1 2463  2316 2332')
+        
     return result
 
 def beam_centre_mosflm_to_xds(x, y, header):
