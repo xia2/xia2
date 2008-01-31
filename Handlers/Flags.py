@@ -28,7 +28,7 @@ class _Flags:
         self._relax = True
 
         # and these for the mosflm implementation
-        self._cellref_mode = 'default'
+        self._cellref_mode = 'both'
         self._old_mosflm = False
 
         # and these are general rejection criteria
