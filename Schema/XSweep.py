@@ -220,6 +220,7 @@ class XSweep(Object):
         self._image = image
         self._integrated_reflection_file = integrated_reflection_file
         self._epoch = epoch
+        self._header = { } 
 
         # FIXME in here also need to be able to accumulate the total
         # dose from all experimental measurements (complex) and provide
@@ -403,6 +404,8 @@ class XSweep(Object):
                                                           image))
         return result
 
+    def get_header(self):
+        return copy.deepcopy(self._header)
 
     def get_epoch(self, image):
         '''Get the exposure epoch for this image.'''

@@ -70,7 +70,9 @@ def IndexerForXSweep(xsweep):
     # FIXME need to code something in here to make a "good" decision
     # about the correct Indexer to return...
 
-    indexer = Indexer()
+    detector = xsweep.get_header()['detector']
+
+    indexer = Indexer(detector = detector)
 
     if crystal_lattice:
         # this is e.g. ('aP', (1.0, 2.0, 3.0, 90.0, 98.0, 88.0))
@@ -114,7 +116,7 @@ def IndexerForXSweep(xsweep):
 
 # FIXME need to provide framework for input passing
 
-def Indexer():
+def Indexer(detector = None):
     '''Create an instance of Indexer for use with a dataset.'''
 
     # FIXME need to check that these implement indexer
@@ -127,6 +129,9 @@ def Indexer():
 
     if not indexer and (not preselection or preselection == 'labelit'):
         try:
+            if detector == 'dectris':
+                Debug.write('Labelit does not support dectris detectors')
+                raise NotAvailableError, 'Labelit does not support dectris'
             indexer = LabelitScreen()
             Admin.write('Using LabelitScreen Indexer')
         except NotAvailableError, e:

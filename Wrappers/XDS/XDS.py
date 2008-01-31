@@ -117,13 +117,12 @@ def header_to_xds(header, synchrotron = None):
         else:
             synchrotron = True
 
-
     # --------- mapping tables -------------
 
     detector_to_detector = {
         'mar':'MAR345',
         'marccd':'CCDCHESS',
-        'dectris':'CBF',
+        'dectris':'PILATUS',
         'raxis':'RAXIS',
         'saturn':'SATURN',
         'adsc':'ADSC'}
@@ -199,6 +198,8 @@ def header_to_xds(header, synchrotron = None):
 
     result = []
 
+    
+
     result.append('DETECTOR=%s MINIMUM_VALID_PIXEL_VALUE=%d OVERLOAD=%d' % \
                   (detector_to_detector[detector], 0,
                    detector_to_overload[detector]))
@@ -214,8 +215,13 @@ def header_to_xds(header, synchrotron = None):
     else:
         result.append('TRUSTED_REGION=0.0 0.99')
 
-    result.append('NX=%d NY=%d QX=%6.6f QY=%6.6f' % \
-                  (width, height, qx, qy))
+    if detector == 'dectris':
+        # width, height need to be swapped...
+        result.append('NX=%d NY=%d QX=%6.6f QY=%6.6f' % \
+                      (height, width, qx, qy))
+    else:        
+        result.append('NX=%d NY=%d QX=%6.6f QY=%6.6f' % \
+                      (width, height, qx, qy))
 
     # RAXIS detectors have the distance written negative - why????
     # this is ONLY for XDS - SATURN are the same - probably left handed
@@ -250,7 +256,6 @@ def header_to_xds(header, synchrotron = None):
 
     if header['detector_class'] == 'pilatus 6M':
 
-        result.append('DETECTOR=PILATUS')
         result.append('SENSOR_THICKNESS=0.32')
         
         result.append('UNTRUSTED_RECTANGLE= 488  494     1 2527')
