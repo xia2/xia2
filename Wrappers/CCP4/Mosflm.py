@@ -278,6 +278,7 @@ def Mosflm(DriverType = None):
 
             # local parameters used in cell refinement
             self._mosflm_cell_ref_images = None
+            self._mosflm_cell_ref_resolution = None
             
             # local parameters used in integration
             self._mosflm_refine_profiles = True
@@ -1057,6 +1058,14 @@ def Mosflm(DriverType = None):
             # next test the cell refinement with the correct lattice
             # and P1 and see how the numbers stack up...
 
+            # copy the cell refinement resolution in...
+            indxr = self.get_integrater_indexer()
+            self._mosflm_cell_ref_resolution = indxr.get_indexer_resolution()
+
+            Debug.write(
+                'Using resolution limit of %.2f for cell refinement' % \
+                self._mosflm_cell_ref_resolution)
+
             self.reset()
             auto_logfiler(self)
             rms_deviations_p1 = self._mosflm_test_refine_cell('aP')            
@@ -1289,6 +1298,13 @@ def Mosflm(DriverType = None):
             self.input('symmetry %s' % spacegroup_number)
                 
             self.input('mosaic %f' % mosaic)
+
+            # if set, use the resolution for cell refinement - see
+            # bug # 2078...
+            
+            if self._mosflm_cell_ref_resolution:
+                self.input('resolution %f' % \
+                           self._mosflm_cell_ref_resolution)
 
             if self._mosflm_postref_fix_mosaic:
                 self.input('postref fix mosaic')
@@ -1566,6 +1582,13 @@ def Mosflm(DriverType = None):
 
             if self._mosflm_postref_fix_mosaic:
                 self.input('postref fix mosaic')
+
+            # if set, use the resolution for cell refinement - see
+            # bug # 2078...
+            
+            if self._mosflm_cell_ref_resolution:
+                self.input('resolution %f' % \
+                           self._mosflm_cell_ref_resolution)
 
             # note well that the beam centre is coming from indexing so
             # should be already properly handled

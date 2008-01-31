@@ -559,10 +559,11 @@ def LabelitScreen(DriverType = None):
             resolution = 1.0e6
             for i in _images:
                 stats = lsd.get_statistics(self.get_image_name(i))
-                if stats['resol_one'] < resolution:
-                    resolution = stats['resol_one']
-                if stats['resol_two'] < resolution:
-                    resolution = stats['resol_two']
+
+                resol = 0.5 * (stats['resol_one'] + stats['resol_two'])
+                
+                if resol < resolution:
+                    resolution = resol
                     
             self._indxr_resolution_estimate = resolution
                     
