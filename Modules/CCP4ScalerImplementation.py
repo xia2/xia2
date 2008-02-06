@@ -775,6 +775,25 @@ class CCP4Scaler(Scaler):
             self._sweep_information[epoch]['hklin'] = hklout
             self._sweep_information[epoch]['batches'] = new_batches
 
+            # now output a doser input file - just for kicks ;o)
+
+            fout = open(os.path.join(self.get_working_directory(),
+                                     'doser.in'), 'w')
+            for epoch in self._sweep_information.keys():
+                i2d = self._sweep_information[epoch]['image_to_dose']
+                i2e = self._sweep_information[epoch]['image_to_epoch']
+                offset = self._sweep_information[epoch]['batch_offset']
+                images = i2d.keys()
+                images.sort()
+                for i in images:
+                    fout.write('BATCH %d DOSE %f TIME %f\n' % \
+                               (i + offset, i2d[i], i2e[i]))
+
+            fout.close()
+
+            Debug.write('Wrote DOSER information to %s' % \
+                        os.path.join(self.get_working_directory(), 'doser.in'))
+
             # update the counter & recycle
 
             counter += 1
