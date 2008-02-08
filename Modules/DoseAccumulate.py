@@ -92,7 +92,10 @@ if __name__ == '__main__':
         '13185_3_###.img':2000,
         'insulin_1_###.img':0,
 	'thau_hires_1_###.mccd':0,
-	'thau_lores_1_###.mccd':1000
+	'thau_lores_1_###.mccd':1000,
+        '27032_1_E1_###.mccd':0,
+        '27032_1_E2_###.mccd':100,
+        '27032_2_###.mccd':200
         }
         
     batches = { }

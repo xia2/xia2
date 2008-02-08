@@ -38,7 +38,7 @@ from Modules.LabelitBeamCentre import compute_beam_centre
 from Handlers.Streams import streams_off
 
 known_image_extensions = ['img', 'mccd', 'mar2300', 'mar1200',
-                          'mar3450', 'osc', 'cbf']
+                          'mar3450', 'osc', 'cbf', 'mar2000']
 known_sweeps = { }
 
 known_scan_extensions = ['scan']

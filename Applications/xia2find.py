@@ -38,7 +38,7 @@ from Schema.Sweep import SweepFactory
 from Experts.FindImages import image2template_directory
 
 known_image_extensions = ['img', 'mccd', 'mar2300', 'mar1200', 'mar3450',
-                          'osc', 'cbf']
+                          'osc', 'cbf', 'mar2000']]
 known_sweeps = { }
 
 def is_image_name(file):
