@@ -31,6 +31,7 @@ from Wrappers.CCP4.Othercell import Othercell
 from lib.SymmetryLib import lattice_to_spacegroup
 from Handlers.Syminfo import Syminfo
 from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
+from lib.Guff import auto_logfiler
 
 from ReferenceFrame import mosflm_to_xia2, xia2_to_mosflm
 
@@ -214,6 +215,7 @@ def transmogrify_matrix(lattice, matrix, target_lattice):
     cell, a, u = parse_matrix(matrix)
 
     o = Othercell()
+    auto_logfiler(o)
     o.set_cell(cell)
     o.set_lattice(lattice[1].lower())
     o.generate()
@@ -238,6 +240,7 @@ def get_real_space_primitive_matrix(lattice, matrix):
     # generate other possibilities
 
     o = Othercell()
+    auto_logfiler(o)
     o.set_cell(cell)
     o.set_lattice(lattice[1].lower())
     o.generate()
@@ -265,6 +268,7 @@ def get_reciprocal_space_primitive_matrix(lattice, matrix):
     # generate other possibilities
 
     o = Othercell()
+    auto_logfiler(o)
     o.set_cell(cell)
     o.set_lattice(lattice[1].lower())
     o.generate()

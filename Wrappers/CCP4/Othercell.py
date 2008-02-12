@@ -136,7 +136,12 @@ def Othercell(DriverType = None):
                         continue
                     modded_lauegroup += token
 
-                lattice = lauegroup_to_lattice(modded_lauegroup)
+                try:
+                    lattice = lauegroup_to_lattice(modded_lauegroup)
+                except KeyError, e:
+                    # there was some kind of mess made of the othercell
+                    # output - this happens!
+                    continue
                 
                 cell = tuple(map(float, o[11:45].split()))
                 distortion = float(o.split()[-2])
