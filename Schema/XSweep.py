@@ -589,9 +589,7 @@ class XSweep(Object):
 
             self._integrater.set_integrater_project_info(project_id,
                                                          crystal_id,
-                                                         '%s_%s' %
-                                                         (wavelength_id,
-                                                          self.get_name()))
+                                                         wavelength_id)
 
             self._integrater.set_integrater_sweep_name(self._name)
 

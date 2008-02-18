@@ -2217,7 +2217,11 @@ def Mosflm(DriverType = None):
                 self.input('harvest on')
                 self.input('pname %s' % pname)
                 self.input('xname %s' % xname)
-                self.input('dname %s' % dname)
+
+                temp_dname = '%s_%s' % \
+                             (dname, self.get_integrater_sweep_name())
+
+                self.input('dname %s' % temp_dname)
                 # self.input('ucwd')
 
             self.input('template "%s"' % self.get_template())
