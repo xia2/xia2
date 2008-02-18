@@ -231,8 +231,8 @@ from Handlers.Files import FileHandler
 from lib.Guff import auto_logfiler, mean_sd
 from lib.SymmetryLib import lattice_to_spacegroup
 
-from Experts.MatrixExpert import transmogrify_matrix, find_primitive_axes, \
-     find_primitive_reciprocal_axes, get_reciprocal_space_primitive_matrix
+from Experts.MatrixExpert import transmogrify_matrix, \
+     get_reciprocal_space_primitive_matrix
 
 # exceptions
 
@@ -423,7 +423,7 @@ def Mosflm(DriverType = None):
             # compute the primitive triclinic unit cell
 
             astar, bstar, cstar = get_reciprocal_space_primitive_matrix(
-                lattice, input_matrix)
+                lattice, input_matrix, self.get_working_directory())
 
             # iterate over the possible phi angles recorded in the
             # headers and find min(|R(p)a.Z|) etc. 
@@ -514,7 +514,7 @@ def Mosflm(DriverType = None):
             # compute the primitive triclinic unit cell
 
             astar, bstar, cstar = get_reciprocal_space_primitive_matrix(
-                lattice, input_matrix)
+                lattice, input_matrix, self.get_working_directory())
 
             # iterate over the possible phi angles recorded in the
             # headers and find min(|R(p)a.Z|) etc. 
@@ -1270,7 +1270,8 @@ def Mosflm(DriverType = None):
                 input_matrix += '%s\n' % m
 
             new_matrix = transmogrify_matrix(lattice, input_matrix,
-                                             test_lattice)
+                                             test_lattice,
+                                             self.get_working_directory())
 
             spacegroup_number = lattice_to_spacegroup(test_lattice)
 
@@ -2217,7 +2218,7 @@ def Mosflm(DriverType = None):
                 self.input('pname %s' % pname)
                 self.input('xname %s' % xname)
                 self.input('dname %s' % dname)
-                self.input('ucwd')
+                # self.input('ucwd')
 
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())

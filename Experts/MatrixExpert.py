@@ -207,7 +207,7 @@ def format_matrix(cell, a, u):
     return matrix_format % tuple(a) + misset + matrix_format % tuple(u) + \
            cell_format % tuple(cell) + misset
 
-def transmogrify_matrix(lattice, matrix, target_lattice):
+def transmogrify_matrix(lattice, matrix, target_lattice, wd = None):
     '''Transmogrify a matrix for lattice X into a matrix for lattice
     Y. This should work find for Mosflm... Will also return the new
     unit cell.'''
@@ -215,7 +215,11 @@ def transmogrify_matrix(lattice, matrix, target_lattice):
     cell, a, u = parse_matrix(matrix)
 
     o = Othercell()
-    auto_logfiler(o)
+
+    if wd:
+        o.set_working_directory(wd)
+        auto_logfiler(o)
+
     o.set_cell(cell)
     o.set_lattice(lattice[1].lower())
     o.generate()
@@ -228,7 +232,7 @@ def transmogrify_matrix(lattice, matrix, target_lattice):
 
     return format_matrix(new_cell, a, u)
     
-def get_real_space_primitive_matrix(lattice, matrix):
+def get_real_space_primitive_matrix(lattice, matrix, wd = None):
     '''Get the primitive real space vectors for the unit cell and
     lattice type. Note that the resulting matrix will need to be
     scaled by a factor equal to the wavelength in Angstroms.'''
@@ -240,7 +244,11 @@ def get_real_space_primitive_matrix(lattice, matrix):
     # generate other possibilities
 
     o = Othercell()
-    auto_logfiler(o)
+
+    if wd:
+        o.set_working_directory(wd)
+        auto_logfiler(o)
+
     o.set_cell(cell)
     o.set_lattice(lattice[1].lower())
     o.generate()
@@ -258,7 +266,7 @@ def get_real_space_primitive_matrix(lattice, matrix):
 
     return real_a[0:3], real_a[3:6], real_a[6:9]
 
-def get_reciprocal_space_primitive_matrix(lattice, matrix):
+def get_reciprocal_space_primitive_matrix(lattice, matrix, wd = None):
     '''Get the primitive reciprocal space vectors for this matrix.'''
 
     # parse the orientation matrix 
@@ -268,7 +276,11 @@ def get_reciprocal_space_primitive_matrix(lattice, matrix):
     # generate other possibilities
 
     o = Othercell()
-    auto_logfiler(o)
+
+    if wd:
+        o.set_working_directory(wd)
+        auto_logfiler(o)
+
     o.set_cell(cell)
     o.set_lattice(lattice[1].lower())
     o.generate()
@@ -282,12 +294,12 @@ def get_reciprocal_space_primitive_matrix(lattice, matrix):
 
     return mat2vec(primitive_a)
 
-def find_primitive_axes(lattice, matrix):
+def find_primitive_axes(lattice, matrix, wd = None):
     '''From an orientation matrix file, calculate the angles (phi) where
     the primitive cell axes a, b, c are in the plane of the detector
     (that is, orthogonal to the direct beam vector.'''
 
-    a, b, c = get_real_space_primitive_matrix(lattice, matrix)
+    a, b, c = get_real_space_primitive_matrix(lattice, matrix, wd)
 
     dtor = 180.0 / (4.0 * math.atan(1.0))
 
@@ -295,12 +307,12 @@ def find_primitive_axes(lattice, matrix):
             dtor * math.atan( - b[2] / b[0]), \
             dtor * math.atan( - c[2] / c[0]))
 
-def find_primitive_reciprocal_axes(lattice, matrix):
+def find_primitive_reciprocal_axes(lattice, matrix, wd = None):
     '''From an orientation matrix file, calculate the angles (phi) where
     the primitive reciprical space cell axes a, b, c are in the plane of
     the detector (that is, orthogonal to the direct beam vector.'''
 
-    a, b, c = get_reciprocal_space_primitive_matrix(lattice, matrix)
+    a, b, c = get_reciprocal_space_primitive_matrix(lattice, matrix, wd)
 
     dtor = 180.0 / (4.0 * math.atan(1.0))
 
