@@ -138,6 +138,7 @@ from Decorators.DecoratorFactory import DecoratorFactory
 
 from Handlers.Syminfo import Syminfo
 from Handlers.Streams import Chatter, Science
+from Handlers.Flags import Flags
 
 # this was rather complicated - now simpler!
 from lib.SymmetryLib import lauegroup_to_lattice, spacegroup_name_xHM_to_old

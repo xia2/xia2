@@ -54,6 +54,7 @@ from Driver.DriverFactory import DriverFactory
 from Experts.LatticeExpert import ApplyLattice
 from Handlers.Syminfo import Syminfo
 from Handlers.Streams import Chatter
+from Handlers.Flags import Flags
 
 from lib.SymmetryLib import lauegroup_to_lattice
 
