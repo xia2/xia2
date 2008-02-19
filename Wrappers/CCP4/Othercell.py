@@ -70,7 +70,11 @@ def Othercell(DriverType = None):
         def __init__(self):
             DriverInstance.__class__.__init__(self)
 
-            self.set_executable('othercell')
+            if Flags.get_ccp4_61():
+                self.set_executable(os.path.join(
+                    os.environ['CCP4'], 'bin', 'othercell'))
+            else:
+                self.set_executable('othercell')
 
             self._initial_cell = []
             self._initial_lattice_type = None

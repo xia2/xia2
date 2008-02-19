@@ -265,6 +265,9 @@ def Mosflm(DriverType = None):
             CCP4DriverInstance.__class__.__init__(self)
             if Flags.get_old_mosflm():
                 self.set_executable('ipmosflm')
+            elif Flags.get_ccp4_61():
+                self.set_executable(os.path.join(
+                    os.environ['CCP4'], 'bin', 'ipmosflm'))
             else:
                 self.set_executable('ipmosflm-7.0.2')
     

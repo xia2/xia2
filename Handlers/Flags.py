@@ -20,6 +20,7 @@ class _Flags:
         self._migrate_data = False
         self._trust_timestaps = False
         self._parallel = 0
+        self._ccp4_61 = False
 
         # these are development parameters for the XDS implementation
         self._z_min = 0.0
@@ -36,6 +37,13 @@ class _Flags:
         self._i_over_sigma_limit = 2.0
         
         return
+
+    def set_ccp4_61(self, ccp4_61):
+        self._ccp4_61 = ccp4_61
+        return
+
+    def get_ccp4_61(self):
+        return self._ccp4_61
 
     def set_cellref_mode(self, cellref_mode):
         if not cellref_mode in ['default', 'parallel', 'orthogonal', 'both']:

@@ -95,7 +95,11 @@ def Scala(DriverType = None):
             # currently this version of Scala is broken :o(
             # self.set_executable('scala-3.2.33')
             
-            self.set_executable('scala')
+            if Flags.get_ccp4_61():
+                self.set_executable(os.path.join(
+                    os.environ['CCP4'], 'bin', 'scala'))
+            else:
+                self.set_executable('scala')
 
             # input and output files
             self._scalepack = None

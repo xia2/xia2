@@ -158,7 +158,11 @@ def Pointless(DriverType = None):
             # include this when it is working....
             pointless_version = "1.2.10"
             
-            self.set_executable('pointless-%s' % pointless_version)
+            if Flags.get_ccp4_61():
+                self.set_executable(os.path.join(
+                    os.environ['CCP4'], 'bin', 'pointless'))
+            else:
+                self.set_executable('pointless-%s' % pointless_version)
 
             self._input_laue_group = None
 
