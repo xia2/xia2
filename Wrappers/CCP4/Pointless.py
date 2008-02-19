@@ -241,6 +241,7 @@ def Pointless(DriverType = None):
             # absence analysis of the spacegroups.
             
             self.input('systematicabsences off')
+            self.input('setting symmetry-based')
 
             # change 23/OCT/06 if there is an input laue group, use this
             if self._input_laue_group:
@@ -413,6 +414,7 @@ def Pointless(DriverType = None):
             self.start()
 
             self.input('lauegroup hklin')
+            self.input('setting symmetry-based')
 
             self.close_wait()
 

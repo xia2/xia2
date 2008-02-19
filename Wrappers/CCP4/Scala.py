@@ -944,6 +944,19 @@ def Scala(DriverType = None):
                             # hack for bug # 2229 - to cope when
                             # all data for a dataset is not included 
 
+                            if not key:
+                                i += 1
+                                line = output[i]
+                                continue
+
+                            # trap things which have appeared in the
+                            # latest build of scala for ccp4 6.1
+
+                            if not key in scala_names_to_standard.keys():
+                                i += 1
+                                line = output[i]
+                                continue
+
                             if key and not 'Infinity' in line \
                                    and not 'NaN' in line:
                                 summary[scala_names_to_standard[

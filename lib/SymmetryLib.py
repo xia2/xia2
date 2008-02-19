@@ -237,6 +237,12 @@ def lauegroup_to_lattice(lauegroup):
 
     # this has been calculated from the results of Ralf GK's sginfo and a 
     # little fiddling...
+    #
+    # 19/feb/08 added mI record as pointless has started producing this -
+    # why??? this is not a "real" spacegroup... may be able to switch this
+    # off...
+    #                             'I2/m': 'mI',
+    
     
     lauegroup_to_lattice = {'Ammm': 'oA',
                             'C2/m': 'mC',
