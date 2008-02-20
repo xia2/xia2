@@ -144,22 +144,29 @@ class XDSScaler(Scaler):
 
         need_to_return = False
 
-        if not is_mtz_file(hklin):
+        if False:
 
-            hklout = os.path.join(self.get_working_directory(),
-                                  'temp-combat.mtz')
-
-            FileHandler.record_temporary_file(hklout)
-            
-            combat = self._factory.Combat()
-            combat.set_hklin(hklin)
-            combat.set_hklout(hklout)
-            combat.run()
-
-            hklin = hklout
+            if not is_mtz_file(hklin):
+                
+                hklout = os.path.join(self.get_working_directory(),
+                                      'temp-combat.mtz')
+                
+                FileHandler.record_temporary_file(hklout)
+                
+                combat = self._factory.Combat()
+                combat.set_hklin(hklin)
+                combat.set_hklout(hklout)
+                combat.run()
+                
+                hklin = hklout
 
         pointless = self._factory.Pointless()
-        pointless.set_hklin(hklin)
+
+        if is_mtz_file(hklin):
+            pointless.set_hklin(hklin)
+        else:
+            pointless.set_xdsin(hklin)
+            
         pointless.decide_pointgroup()
         
         if indexer:
@@ -624,10 +631,21 @@ class XDSScaler(Scaler):
                                   'xds-pointgroup-reference-unsorted.mtz')
             FileHandler.record_temporary_file(hklout)
 
-            combat = self._factory.Combat()
-            combat.set_hklin(hklin)
-            combat.set_hklout(hklout)
-            combat.run()
+            # now use pointless to handle this conversion
+
+            if False:
+
+                combat = self._factory.Combat()
+                combat.set_hklin(hklin)
+                combat.set_hklout(hklout)
+                combat.run()
+
+            else:
+
+                pointless = self._factory.Pointless()
+                pointless.set_xdsin(hklin)
+                pointless.set_hklout(hklout)
+                pointless.xds_to_mtz()
 
             hklin = hklout
             
@@ -653,7 +671,6 @@ class XDSScaler(Scaler):
 
         if self._reference:
 
-
             for epoch in self._sweep_information.keys():
 
                 intgr = self._sweep_information[epoch]['integrater']
@@ -677,11 +694,22 @@ class XDSScaler(Scaler):
                 hklout = os.path.join(self.get_working_directory(),
                                       'xds-pointgroup-unsorted.mtz')
                 FileHandler.record_temporary_file(hklout)
+
+                # now use pointless to make this conversion
+
+                if False:
                 
-                combat = self._factory.Combat()
-                combat.set_hklin(hklin)
-                combat.set_hklout(hklout)
-                combat.run()
+                    combat = self._factory.Combat()
+                    combat.set_hklin(hklin)
+                    combat.set_hklout(hklout)
+                    combat.run()
+
+                else:
+                    
+                    pointless = self._factory.Pointless()
+                    pointless.set_xdsin(hklin)
+                    pointless.set_hklout(hklout)
+                    pointless.xds_to_mtz()
 
                 pointless = self._factory.Pointless()
                 pointless.set_hklin(hklout)
@@ -727,10 +755,19 @@ class XDSScaler(Scaler):
                                   '%s-combat.mtz' % sname)
             FileHandler.record_temporary_file(hklout)
 
-            combat = self._factory.Combat()
-            combat.set_hklin(intgr.get_integrater_reflections())
-            combat.set_hklout(hklout)
-            combat.run()
+            if False:
+
+                combat = self._factory.Combat()
+                combat.set_hklin(intgr.get_integrater_reflections())
+                combat.set_hklout(hklout)
+                combat.run()
+                
+            else:
+                
+                pointless = self._factory.Pointless()
+                pointless.set_xdsin(intgr.get_integrater_reflections())
+                pointless.set_hklout(hklout)
+                pointless.xds_to_mtz()
 
             # run it through pointless interacting with the
             # Indexer which belongs to this sweep

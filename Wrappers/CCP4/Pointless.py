@@ -137,7 +137,7 @@ from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
 
 from Handlers.Syminfo import Syminfo
-from Handlers.Streams import Chatter, Science
+from Handlers.Streams import Chatter, Science, Debug
 from Handlers.Flags import Flags
 
 # this was rather complicated - now simpler!
@@ -175,6 +175,7 @@ def Pointless(DriverType = None):
             self._spacegroup_reindex_operator = None
             self._confidence = 0.0
             self._hklref = None
+            self._xdsin = None
 
             # space to store all possible solutions, to allow discussion of
             # the correct lattice with the indexer... this should be a
@@ -192,6 +193,10 @@ def Pointless(DriverType = None):
 
         def set_hklref(self, hklref):
             self._hklref = hklref
+            return
+
+        def set_xdsin(self, xdsin):
+            self._xdsin = xdsin
             return
 
         def get_hklref(self):
@@ -218,15 +223,49 @@ def Pointless(DriverType = None):
 
             return
 
+        def xds_to_mtz(self):
+            '''Use pointless to convert XDS file to MTZ.'''
+
+            if not self._xdsin:
+                raise RuntimeError, 'XDSIN not set'
+
+            self.check_hklout()
+
+            # -c for copy - just convert the file to MTZ multirecord
+            self.add_command_line('-c')
+
+            if self._xdsin:
+                self.add_command_line('xdsin')
+                self.add_command_line(self._xdsin)
+
+            self.start()
+
+            self.close_wait()
+
+            # FIXME need to check the status and so on here
+
+            return
+
         def decide_pointgroup(self):
             '''Decide on the correct pointgroup for hklin.'''
 
-            self.check_hklin()
+            if not self._xdsin:
+                self.check_hklin()
+                self.set_task('Computing the correct pointgroup for %s' % \
+                              self.get_hklin())
 
-            self.set_task('Computing the correct pointgroup for %s' % \
-                          self.get_hklin())
+            else:
+                Debug.write('Pointless using XDS input file %s' % \
+                            self._xdsin)
+
+                self.set_task('Computing the correct pointgroup for %s' % \
+                              self.get_xdsin())
 
             # FIXME this should probably be a standard CCP4 keyword
+
+            if self._xdsin:
+                self.add_command_line('xdsin')
+                self.add_command_line(self._xdsin)
 
             self.add_command_line('xmlout')
             self.add_command_line('pointless.xml')
@@ -398,12 +437,24 @@ def Pointless(DriverType = None):
             '''Given data indexed in the correct pointgroup, have a
             guess at the spacegroup.'''
 
-            self.check_hklin()
+            if not self._xdsin:
 
-            self.set_task('Computing the correct spacegroup for %s' % \
-                          self.get_hklin())
+                self.check_hklin()
+                self.set_task('Computing the correct spacegroup for %s' % \
+                              self.get_hklin())
+
+            else:
+                Debug.write('Pointless using XDS input file %s' % \
+                            self._xdsin)
+                self.set_task('Computing the correct spacegroup for %s' % \
+                              self.get_xdsin())
+                
 
             # FIXME this should probably be a standard CCP4 keyword
+
+            if self._xdsin:
+                self.add_command_line('xdsin')
+                self.add_command_line(self._xdsin)
 
             self.add_command_line('xmlout')
             self.add_command_line('pointless.xml')
