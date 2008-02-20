@@ -195,10 +195,6 @@ def Pointless(DriverType = None):
             self._hklref = hklref
             return
 
-        def set_xdsin(self, xdsin):
-            self._xdsin = xdsin
-            return
-
         def get_hklref(self):
             return self._hklref
 
@@ -207,6 +203,13 @@ def Pointless(DriverType = None):
                 raise RuntimeError, 'hklref not defined'
             if not os.path.exists(self._hklref):
                 raise RuntimeError, 'hklref %s does not exist' % self._hklref
+
+        def set_xdsin(self, xdsin):
+            self._xdsin = xdsin
+            return
+
+        def get_xdsin(self):
+            return self._xdsin
 
         def set_correct_lattice(self, lattice):
             '''In a rerunning situation, set the correct lattice, which will

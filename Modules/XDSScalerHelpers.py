@@ -23,6 +23,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Handlers.Streams import Chatter, Debug
 from lib.Guff import auto_logfiler
 from Wrappers.CCP4.Combat import Combat as _Combat
+from Wrappers.CCP4.Pointless import Pointless as _Pointless
 
 class XDSScalerHelper:
     '''A class which contains functions which will help the XDS Scaler
@@ -41,6 +42,14 @@ class XDSScalerHelper:
         combat.set_working_directory(self.get_working_directory())
         auto_logfiler(combat)
         return combat
+
+    def Pointless(self):
+        '''Create a Pointless wrapper from _Pointless - set working directory
+        and log file stuff as a part of this...'''
+        pointless = _Pointless()
+        pointless.set_working_directory(self.get_working_directory())
+        auto_logfiler(pointless)
+        return pointless
 
     def set_working_directory(self, working_directory):
         self._working_directory = working_directory
