@@ -117,6 +117,7 @@
 import os
 import sys
 import math
+import shutil
 
 import xml.dom.minidom
 
@@ -206,10 +207,30 @@ def Pointless(DriverType = None):
 
         def set_xdsin(self, xdsin):
             self._xdsin = xdsin
+
+            # copy this file for debugging purposes - may take up a lot
+            # of disk space so remove before release!
+
+            if False:
+                return
+
+            copyto = os.path.join(self.get_working_directory(), '%s_%s' % \
+                                  (self.get_xpid(), os.path.split(xdsin)[-1]))
+
+            shutil.copyfile(xdsin, copyto)
+
+            Debug.write('Copied XDSIN to %s' % copyto)
+            
             return
 
         def get_xdsin(self):
             return self._xdsin
+
+        def check_xdsin(self):
+            if self._xdsin is None:
+                raise RuntimeError, 'xdsin not defined'
+            if not os.path.exists(self._xdsin):
+                raise RuntimeError, 'xdsin %s does not exist' % self._xdsin
 
         def set_correct_lattice(self, lattice):
             '''In a rerunning situation, set the correct lattice, which will
