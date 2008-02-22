@@ -161,8 +161,14 @@ def Pointless(DriverType = None):
             CCP4DriverInstance.__class__.__init__(self)
 
             # include this when it is working....
-            pointless_version = "1.2.14"
-            
+
+            latest_pointless = False
+
+            if latest_pointless:
+                pointless_version = "1.2.14"
+            else:
+                pointless_version = "1.2.10"
+    
             if Flags.get_ccp4_61():
                 self.set_executable(os.path.join(
                     os.environ['CCP4'], 'bin', 'pointless'))
