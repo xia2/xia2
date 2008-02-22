@@ -228,7 +228,7 @@ def Pointless(DriverType = None):
             ignored = remove_misfits(xdsin, copyto)
 
             Debug.write('Copied XDSIN to %s' % copyto)
-            Debug.write('Removed %d misfits' % ignord)
+            Debug.write('Removed %d misfits' % ignored)
             
             self._xdsin = copyto
             
