@@ -2215,6 +2215,16 @@ def Mosflm(DriverType = None):
             if pname != None and xname != None and dname != None:
                 Chatter.write('Harvesting: %s/%s/%s' % (pname, xname, dname))
 
+                # ensure that the harvest directory exists for this project
+                # and if not, make it as mosflm may barf doing so!
+
+                harvest_dir = os.path.join(os.environ['HARVESTHOME'],
+                                           'DepositFiles', pname)
+
+                if not os.path.exists(harvest_dir):
+                    Debug.write('Creating harvest directory...')
+                    os.makedirs(harvest_dir)
+
                 # harvest file name will be %s.mosflm_run_start_end % dname
             
                 self.input('harvest on')
