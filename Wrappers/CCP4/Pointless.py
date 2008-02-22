@@ -144,6 +144,9 @@ from Handlers.Flags import Flags
 # this was rather complicated - now simpler!
 from lib.SymmetryLib import lauegroup_to_lattice, spacegroup_name_xHM_to_old
 
+# XDS_ASCII meddling things
+from Modules.XDS_ASCII import remove_misfits
+
 def Pointless(DriverType = None):
     '''A factory for PointlessWrapper classes.'''
 
@@ -206,20 +209,28 @@ def Pointless(DriverType = None):
                 raise RuntimeError, 'hklref %s does not exist' % self._hklref
 
         def set_xdsin(self, xdsin):
-            self._xdsin = xdsin
 
             # copy this file for debugging purposes - may take up a lot
             # of disk space so remove before release!
 
             if False:
+                self._xdsin = xdsin
                 return
+
+            # now use this step to remove the misfit reflections
+            # from the XDS_ASCII file.
 
             copyto = os.path.join(self.get_working_directory(), '%s_%s' % \
                                   (self.get_xpid(), os.path.split(xdsin)[-1]))
 
-            shutil.copyfile(xdsin, copyto)
+            # shutil.copyfile(xdsin, copyto)
+
+            ignored = remove_misfits(xdsin, copyto)
 
             Debug.write('Copied XDSIN to %s' % copyto)
+            Debug.write('Removed %d misfits' % ignord)
+            
+            self._xdsin = copyto
             
             return
 
