@@ -161,7 +161,7 @@ def Pointless(DriverType = None):
             CCP4DriverInstance.__class__.__init__(self)
 
             # include this when it is working....
-            pointless_version = "1.2.10"
+            pointless_version = "1.2.14"
             
             if Flags.get_ccp4_61():
                 self.set_executable(os.path.join(
@@ -398,10 +398,30 @@ def Pointless(DriverType = None):
 
                 # if we have provided a HKLREF input then the xml output
                 # is changed...
+
+                # FIXME in here, need to check if there is the legend
+                # "No possible alternative indexing" in the standard
+                # output, as this will mean that the index scores are
+                # not there... c/f oppf1314, with latest pointless build
+                # 1.2.14.
     
                 dom = xml.dom.minidom.parse(xml_file)
-                
-                best = dom.getElementsByTagName('IndexScores')[0]
+
+                try:
+                    best = dom.getElementsByTagName('IndexScores')[0]
+                except IndexError, e:
+                    Debug.write('Reindex not found in xml output')
+
+                    # check for this legend then
+                    found = False
+                    for record in self.get_all_output():
+                        if 'No possible alternative indexing' in record:
+                            found = True
+
+                    if not found:
+                        raise RuntimeError, 'error finding solution'
+
+                    best = None
 
                 hklref_pointgroup = ''
 
@@ -424,13 +444,26 @@ def Pointless(DriverType = None):
 
                 self._confidence = 1.0
                 self._totalprob = 1.0
-                
-                index = best.getElementsByTagName('Index')[0]
 
-                self._reindex_matrix = map(float, index.getElementsByTagName(
-                    'ReindexMatrix')[0].childNodes[0].data.split())
-                self._reindex_operator = index.getElementsByTagName(
-                    'ReindexOperator')[0].childNodes[0].data.strip()
+                if best:
+                
+                    index = best.getElementsByTagName('Index')[0]
+
+                    self._reindex_matrix = map(float, 
+                                               index.getElementsByTagName(
+                        'ReindexMatrix')[0].childNodes[0].data.split())
+                    self._reindex_operator = index.getElementsByTagName(
+                        'ReindexOperator')[0].childNodes[0].data.strip()
+                else:
+
+                    # no alternative indexing is possible so just
+                    # assume the default...
+
+                    self._reindex_matrix = [1.0, 0.0, 0.0,
+                                            0.0, 1.0, 0.0,
+                                            0.0, 0.0, 1.0]
+
+                    self._reindex_operator = 'h,k,l'
             
             if not self._input_laue_group and not self._hklref:
 
