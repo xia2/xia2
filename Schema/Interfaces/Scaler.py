@@ -228,6 +228,7 @@ class Scaler:
         self.scaler_reset()
 
         self._scalr_reference_reflection_file = None
+        self._scalr_freer_file = None
         
         # places to hold the output
 
@@ -315,6 +316,13 @@ class Scaler:
 
     def get_scaler_reference_reflection_file(self):
         return self._scalr_reference_reflection_file
+
+    def set_scaler_freer_file(self, freer_file):
+        self._scalr_freer_file = freer_file
+        return
+
+    def get_scaler_freer_file(self):
+        return self._scalr_freer_file
 
     def set_scaler_prepare_done(self, done = True):
         self._scalr_prepare_done = done

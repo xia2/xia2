@@ -63,11 +63,23 @@ def Cad(DriverType = None):
             self._xname = None
             self._dname = None
 
+            # stuff to specifically copy in the freer column...
+            self._freein = None
+
             return
 
         def add_hklin(self, hklin):
             '''Add a reflection file to the list to be sorted together.'''
             self._hklin_files.append(hklin)
+            return
+
+        def set_freein(self, freein):
+
+            # I guess I should check in here that this file actually
+            # exists...
+            
+            self._freein = freein
+
             return
 
         def set_project_info(self, pname, xname, dname):
@@ -252,6 +264,47 @@ def Cad(DriverType = None):
 
                 self.input(labout_command)
                 
+            self.close_wait()
+
+            try:
+                self.check_for_errors()
+                self.check_ccp4_errors()
+
+            except RuntimeError, e:
+                # something went wrong; remove the output file
+                try:
+                    os.remove(self.get_hklout())
+                except:
+                    pass
+                raise e
+
+            return self.get_ccp4_status()
+
+        def copyfree(self):
+            '''Copy the free column from freein into hklin -> hklout.'''
+
+            if not self._hklin_files:
+                raise RuntimeError, 'no hklin files defined'
+
+            if len(self._hklin_files) > 1:
+                raise RuntimeError, 'can have only one hklin to update'
+            
+            hklin = self._hklin_files[0]
+
+            self.check_hklout()
+            if self._freein is None:
+                raise RuntimeError, 'freein not defined'
+
+            self.add_command_line('hklin1')
+            self.add_command_line(self._freein)
+            self.add_command_line('hklin2')
+            self.add_command_line(hklin)
+            self.start()
+
+
+            self.input('labin file_number 1 E1=FreeR_flag')
+            self.input('labin file_number 2 all')
+
             self.close_wait()
 
             try:

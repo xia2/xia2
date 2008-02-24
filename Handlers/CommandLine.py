@@ -166,6 +166,12 @@ class _CommandLine(Object):
                   (self._help_z_min(), str(e))
 
         try:
+            self._read_freer_file()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_freer_file(), str(e))
+
+        try:
             self._read_rejection_threshold()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -489,6 +495,24 @@ class _CommandLine(Object):
 
     def _help_z_min(self):
         return '-z_min N'
+
+    def _read_freer_file(self):
+        try:
+            index = sys.argv.index('-freer_file')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_freer_file(sys.argv[index + 1])
+        Debug.write('FreeR_flag column taken from %s' %
+                    Flags.get_freer_file())
+            
+        return
+
+    def _help_freer_file(self):
+        return '-freer_file my_freer_file.mtz'
 
     def _read_rejection_threshold(self):
         try:

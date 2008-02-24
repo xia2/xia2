@@ -11,6 +11,8 @@
 # as it will not suffer the problems with circular references that
 # the CommandLine singleton suffers from.
 
+import os
+
 class _Flags:
     '''A singleton to manage boolean flags.'''
 
@@ -21,6 +23,9 @@ class _Flags:
         self._trust_timestaps = False
         self._parallel = 0
         self._ccp4_61 = False
+
+        # File from which to copy the FreeR_flag column
+        self._freer_file = None
 
         # these are development parameters for the XDS implementation
         self._z_min = 0.0
@@ -111,6 +116,31 @@ class _Flags:
 
     def get_z_min(self):
         return self._z_min
+
+    def set_freer_file(self, freer_file):
+
+        # mtzdump this file to make sure that there is a FreeR_flag
+        # column therein...
+
+        freer_file = os.path.abspath(freer_file)
+
+        if not os.path.exists(freer_file):
+            raise RuntimeError, '%s does not exist' % freer_file
+
+        from Wrappers.CCP4.Mtzdump import Mtzdump
+
+        mtzdump = Mtzdump()
+        mtzdump.set_hklin(freer_file)
+        mtzdump.dump()
+        
+        if not 'FreeR_flag' in [t[0] for t in mtzdump.get_columns()]:
+            raise RuntimeError, 'no FreeR_flag column in %s' % freer_file
+
+        self._freer_file = freer_file
+        return
+
+    def get_freer_file(self):
+        return self._freer_file
 
     def set_rejection_threshold(self, rejection_threshold):
         self._rejection_threshold = rejection_threshold

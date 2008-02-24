@@ -119,6 +119,8 @@ class XProject(Object):
             if crystals[crystal].has_key('reference_reflection_file'):
                 xc.set_reference_reflection_file(
                     crystals[crystal]['reference_reflection_file'])
+            if crystals[crystal].has_key('freer_file'):
+                xc.set_freer_file(crystals[crystal]['freer_file'])
 
             for wavelength in crystals[crystal]['wavelengths'].keys():
                 # FIXME 29/NOV/06 in here need to be able to cope with

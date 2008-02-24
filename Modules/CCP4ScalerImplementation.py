@@ -2094,31 +2094,59 @@ class CCP4Scaler(Scaler):
         # file with the free column added. FIXME this may need to be
         # copied from a user-supplied reference reflection file...
 
-        f = self._factory.Freerflag()
+        # ok, this is now being fixed! if Flags.get_freer_file() is not None
+        # then go for it!
 
-        # changed this to not assume that the file is called _merged.mtz
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s_free.mtz' % (self._common_pname,
                                                   self._common_xname))
 
-        f.set_hklin(self._scalr_scaled_reflection_files['mtz_merged'])
-        f.set_hklout(hklout)
+        if self.get_scaler_freer_file():
+            # e.g. via .xinfo file
+            
+            freein = self.get_scaler_freer_file()
         
-        f.add_free_flag()
+            Debug.write('Copying FreeR_flag from %s' % freein)
+
+            c = self._factory.Cad()
+            c.set_freein(freein)
+            c.add_hklin(self._scalr_scaled_reflection_files['mtz_merged'])
+            c.set_hklout(hklout)
+            c.copyfree()
+
+        elif Flags.get_freer_file():
+            # e.g. via -freer_file command line argument
+            
+            freein = Flags.get_freer_file()
+
+            Debug.write('Copying FreeR_flag from %s' % freein)
+
+            c = self._factory.Cad()
+            c.set_freein(freein)
+            c.add_hklin(self._scalr_scaled_reflection_files['mtz_merged'])
+            c.set_hklout(hklout)
+            c.copyfree()
+
+        else:
+
+            f = self._factory.Freerflag()
+            f.set_hklin(self._scalr_scaled_reflection_files['mtz_merged'])
+            f.set_hklout(hklout)
+            f.add_free_flag()
 
         # remove 'mtz_merged' from the dictionary - this is made
         # redundant by the merged free...
         del self._scalr_scaled_reflection_files['mtz_merged']
 
         # changed from mtz_merged_free to plain ol' mtz
-        self._scalr_scaled_reflection_files['mtz'] = f.get_hklout()
+        self._scalr_scaled_reflection_files['mtz'] = hklout
 
         # record this for future reference
-        FileHandler.record_data_file(f.get_hklout())
+        FileHandler.record_data_file(hklout)
 
         # have a look for twinning ...
         sfc = self._factory.Sfcheck()
-        sfc.set_hklin(f.get_hklout())
+        sfc.set_hklin(hklout)
         sfc.analyse()
         twinning_score = sfc.get_twinning()
 
@@ -2137,7 +2165,7 @@ class CCP4Scaler(Scaler):
 
             crd.set_working_directory(self.get_working_directory())
 
-            crd.set_hklin(f.get_hklout())
+            crd.set_hklin(hklout)
             
             if self.get_scaler_anomalous():
                 crd.set_anomalous(True)

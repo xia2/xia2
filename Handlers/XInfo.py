@@ -411,6 +411,10 @@ class XInfo:
                     record.replace('REFERENCE_REFLECTION_FILE',
                                    '').strip()
 
+            if 'FREER_FILE' in record:
+                self._crystals[crystal][
+                    'freer_file'] = record.replace('FREER_FILE', '').strip()
+
 
 if __name__ == '__main__':
     import os

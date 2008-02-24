@@ -238,8 +238,9 @@ class XCrystal(Object):
 
         # things to store input reflections which are used to define
         # the setting... this will be passed into the Scaler if
-        # defined...
+        # defined... likewise the FreeR column file
         self._reference_reflection_file = None
+        self._freer_file = None
 
         # things to help the great passing on of information
         self._scaled_merged_reflections = None
@@ -417,8 +418,17 @@ class XCrystal(Object):
         self._reference_reflection_file = reference_reflection_file
         return
 
+    def set_freer_file(self, freer_file):
+        '''Set a FreeR column file to use to standardise the FreeR column.'''
+
+        self._freer_file = freer_file
+        return
+
     def get_reference_reflection_file(self):
         return self._reference_reflection_file
+
+    def get_freer_file(self):
+        return self._freer_file
 
     def set_scaled_merged_reflections(self, scaled_merged_reflections):
         self._scaled_merged_reflections = scaled_merged_reflections
@@ -616,6 +626,9 @@ class XCrystal(Object):
                 self._scaler.set_scaler_reference_reflection_file(
                     self._reference_reflection_file)                    
 
+            # and FreeR file
+            if self._freer_file:
+                self._scaler.set_scaler_freer_file(self._freer_file)                    
             # gather up all of the integraters we can find...
 
             integraters = self._get_integraters()
