@@ -539,7 +539,7 @@ def Pointless(DriverType = None):
             self.start()
 
             self.input('lauegroup hklin')
-            self.input('setting symmetry-based')
+            # self.input('setting symmetry-based')
 
             self.close_wait()
 
