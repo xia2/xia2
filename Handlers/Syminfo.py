@@ -69,6 +69,7 @@ class _Syminfo(Object):
         self._spacegroup_short_to_long = { }
         self._spacegroup_long_to_short = { }
         self._spacegroup_name_to_number = { }
+        self._spacegroup_name_to_pointgroup = { }
 
         current = 0
 
@@ -85,11 +86,19 @@ class _Syminfo(Object):
                 lattice = self._generate_lattice(lattice_type,
                                                  shortname)
 
+                pointgroup = ''
+                for token in longname.split():
+                    if len(longname.split()) <= 2:
+                        pointgroup += token[0]
+                    elif token[0] != '1':
+                        pointgroup += token[0]
+
                 self._symop[index] = {'index':index,
                                       'lattice_type':lattice_type,
                                       'lattice':lattice,
                                       'name':shortname,
                                       'longname':longname,
+                                      'pointgroup':pointgroup,
                                       'symops':0,
                                       'operations':[]}
 
@@ -105,6 +114,9 @@ class _Syminfo(Object):
                 if not self._spacegroup_short_to_long.has_key(shortname):
                     self._spacegroup_short_to_long[shortname] = longname
 
+                if not self._spacegroup_name_to_pointgroup.has_key(shortname):
+                    self._spacegroup_name_to_pointgroup[shortname] = pointgroup
+
                 current = index
 
             else:
@@ -117,6 +129,14 @@ class _Syminfo(Object):
     def get_syminfo(self, spacegroup_number):
         '''Return the syminfo for spacegroup number.'''
         return copy.deepcopy(self._symop[spacegroup_number])
+
+    def get_pointgroup(self, name):
+        '''Get the pointgroup for this spacegroup, e.g. P422 for P43212.'''
+        
+        if self._spacegroup_long_to_short.has_key(name):
+            name = self._spacegroup_long_to_short[name]
+
+        return self._spacegroup_name_to_pointgroup[name.replace(' ', '')]
 
     def get_lattice(self, name):
         '''Get the lattice for a named spacegroup.'''
@@ -212,3 +232,12 @@ if __name__ == '__main__':
     print Syminfo.get_symops('P22121')
     print Syminfo.get_symops('P212121')
     print Syminfo.spacegroup_number_to_name(75)
+    print Syminfo.get_pointgroup('P43212')
+    print Syminfo.get_pointgroup('C2')
+    print Syminfo.get_pointgroup('P1')
+
+    for number in Syminfo.get_spacegroup_numbers():
+        spag = Syminfo.spacegroup_number_to_name(number)
+        pg = Syminfo.get_pointgroup(spag)
+
+        print '%4d %8s %8s'  % (number, spag, pg)

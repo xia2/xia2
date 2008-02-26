@@ -12,6 +12,15 @@
 # the CommandLine singleton suffers from.
 
 import os
+import sys
+
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
+if not os.environ.has_key('XIA2CORE_ROOT'):
+    raise RuntimeError, 'XIA2CORE_ROOT not defined'
+
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 class _Flags:
     '''A singleton to manage boolean flags.'''
@@ -32,6 +41,12 @@ class _Flags:
         self._refine = True
         self._zero_dose = False
         self._relax = True
+
+        # options to support the -spacegroup flag - the spacegroup is
+        # set from this, the lattice and pointgroup derived from such
+        self._spacegroup = None
+        self._pointgroup = None
+        self._lattice = None
 
         # and these for the mosflm implementation
         self._cellref_mode = 'both'
@@ -55,6 +70,34 @@ class _Flags:
             raise RuntimeError, 'cellref_mode %s unknown' % cellref_mode
 
         self._cellref_mode = cellref_mode
+
+        return
+
+    def set_spacegroup(self, spacegroup):
+        '''A handler for the command-line option -spacegroup - this will
+        set the spacegroup and derive from this the pointgroup and lattice
+        appropriate for such...'''
+
+        from Handlers.Syminfo import Syminfo
+
+        # validate by deriving the pointgroup and lattice...
+
+        pointgroup = Syminfo.get_pointgroup(spacegroup)
+        lattice = Syminfo.get_lattice(spacegroup)
+
+        # assign
+
+        self._spacegroup = spacegroup
+        self._pointgroup = pointgroup
+        self._lattice = lattice
+
+        # debug print
+
+        from Handlers.Streams import Debug
+
+        Debug.write('Derived information from spacegroup flag: %s' % \
+                    spacegroup)
+        Debug.write('Pointgroup: %s  Lattice: %s' % (pointgroup, lattice))
 
         return
 

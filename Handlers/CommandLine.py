@@ -126,12 +126,6 @@ class _CommandLine(Object):
                   (self._help_crystal_name(), str(e))
         
         try:
-            self._read_lattice_spacegroup()
-        except exceptions.Exception, e:
-            raise RuntimeError, '%s (%s)' % \
-                  (self._help_lattice_spacegroup(), str(e))
-
-        try:
             self._read_resolution_limit()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -158,6 +152,12 @@ class _CommandLine(Object):
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
                   (self._help_parallel(), str(e))
+
+        try:
+            self._read_spacegroup()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_spacegroup(), str(e))
 
         try:
             self._read_z_min()
@@ -445,6 +445,22 @@ class _CommandLine(Object):
     def _help_parallel(self):
         return '-parallel N'
 
+    def _read_spacegroup(self):
+        try:
+            index = sys.argv.index('-spacegroup')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_spacegroup(sys.argv[index + 1])
+            
+        return
+
+    def _help_spacegroup(self):
+        return '-spacegroup P43212'
+
     def _read_z_min(self):
         try:
             index = sys.argv.index('-z_min')
@@ -547,9 +563,6 @@ class _CommandLine(Object):
     def get_image(self):
         return self._default_image
 
-    def get_spacegroup(self):
-        raise RuntimeError, 'this needs to be implemented'
-
     def _read_trust_timestamps(self):
 
         if '-trust_timestamps' in sys.argv:
@@ -588,7 +601,6 @@ class _CommandLine(Object):
 
     def _help_cellref_mode(self):
         return '-cellref_mode (default|parallel|orthogonal|both)'
-
 
     def _read_quick(self):
 
