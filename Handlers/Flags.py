@@ -101,6 +101,15 @@ class _Flags:
 
         return
 
+    def get_spacegroup(self):
+        return self._spacegroup
+
+    def get_pointgroup(self):
+        return self._pointgroup
+
+    def get_lattice(self, lattice):
+        return self._lattice
+
     def get_cellref_mode(self):
         return self._cellref_mode
 

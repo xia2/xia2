@@ -229,7 +229,11 @@ class Scaler:
 
         self._scalr_reference_reflection_file = None
         self._scalr_freer_file = None
-        
+
+        # user input to guide spacegroup choices
+        self._scaler_input_spacegroup = None
+        self._scaler_input_pointgroup = None
+                
         # places to hold the output
 
         # this should be a dictionary keyed by datset / format, or
@@ -286,6 +290,24 @@ class Scaler:
 
     def get_working_directory(self):
         return self._working_directory 
+
+    # to support assignment from the command line (or xinfo file) of the
+    # "correct" spacegroup - this will need to be respected by the
+    # Scaler implementations.
+
+    def set_scaler_input_spacegroup(self, spacegroup):
+        self._scalr_input_spacegroup = spacegroup
+        return
+
+    def set_scaler_input_pointgroup(self, pointgroup):
+        self._scalr_input_pointgroup = pointgroup
+        return
+
+    def get_scaler_input_spacegroup(self):
+        return self._scaler_input_spacegroup
+
+    def get_scaler_input_pointgroup(self):
+        return self._scaler_input_pointgroup
 
     # to support radiation damage analysis, for example, include a link
     # back to the parent crystal
