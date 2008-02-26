@@ -192,6 +192,7 @@ class Indexer:
         self._indxr_images = []
         self._indxr_input_lattice = None
         self._indxr_input_cell = None
+        self._indxr_user_input_lattice = False
 
         # job management parameters
         self._indxr_done = False
@@ -305,6 +306,14 @@ class Indexer:
         if not self._indxr_helper:
             raise RuntimeError, 'no indexing done yet'
 
+        # not allowed to eliminate a solution provided by the
+        # user via set_indexer_lattice... - this is determined by
+        # the fact that the set lattice has user = true as
+        # an argument
+
+        if self._indxr_user_input_lattice:
+            raise RuntimeError, 'eliminating user supplied lattice'
+
         self._indxr_helper.eliminate()
         self.set_indexer_done(False)
 
@@ -414,12 +423,16 @@ class Indexer:
         
         return
 
-    def set_indexer_input_lattice(self, lattice):
+    def set_indexer_input_lattice(self, lattice, user = False):
         '''Set the input lattice for this indexing job. Exactly how this
         is handled depends on the implementation. FIXED decide on the
         format for the lattice. This will be say tP.'''
 
         self._indxr_input_lattice = lattice
+
+        if user:
+            self._indxr_user_input_lattice = True
+        
         self.set_indexer_done(False)
 
         return
