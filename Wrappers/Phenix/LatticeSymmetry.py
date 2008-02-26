@@ -29,6 +29,9 @@ from Driver.DriverFactory import DriverFactory
 
 from Wrappers.XIA.Symop2mat import Symop2mat
 
+from lib.SymmetryLib import lauegroup_to_lattice
+from Handlers.Syminfo import Syminfo
+
 def LatticeSymmetry(DriverType = None):
     '''A factory for the LatticeSymmetry wrappers.'''
 
@@ -45,6 +48,13 @@ def LatticeSymmetry(DriverType = None):
             self._cell = None
             self._spacegroup = None
 
+            # following on from the othercell wrapper...
+            
+            self._lattices = []
+            self._distortions = { }
+            self._cells = { }
+            self._reindex_ops = { } 
+
             return
 
         def set_cell(self, cell):
@@ -54,6 +64,100 @@ def LatticeSymmetry(DriverType = None):
         def set_spacegroup(self, spacegroup):
             self._spacegroup = spacegroup
             return
+
+        def set_lattice(self, lattice):
+            lattice_to_spacegroup = {'aP':1,
+                                     'mP':3,
+                                     'mC':5,
+                                     'oP':16,
+                                     'oC':20,
+                                     'oF':22,
+                                     'oI':23,
+                                     'tP':75,
+                                     'tI':79,
+                                     'hP':143,
+                                     'hR':146,
+                                     'cP':195,
+                                     'cF':196,
+                                     'cI':197}
+
+            print lattice
+
+            self._spacegroup = Syminfo.spacegroup_number_to_name(
+                lattice_to_spacegroup[lattice])
+
+            return
+        
+            
+        def generate(self):
+            if not self._cell:
+                raise RuntimeError, 'no unit cell specified'
+
+            if not self._spacegroup:
+                raise RuntimeError, 'no spacegroup specified'
+
+            self.add_command_line('--unit_cell=%f,%f,%f,%f,%f,%f' % \
+                                  tuple(self._cell))
+            self.add_command_line('--space-group=%s' % self._spacegroup)
+
+            self.start()
+            self.close_wait()
+
+            # now wade through all of the options and see which comes
+            # out best for each lattice class... - as defined by the
+            # minimum value of Maximal angular difference
+
+            state = { }
+
+            for o in self.get_all_output():
+                if ':' in o:
+                    count = o.find(':')
+                    left = o[:count]
+                    right = o[count + 1:]
+                    state[left.strip()] = right.strip()
+
+                if 'Maximal angular difference' in o:
+                    # transform & digest results
+
+                    distortion = float(state[
+                        'Maximal angular difference'].split()[0])
+                    cell = map(float, state[
+                        'Symmetry-adapted cell'].replace(
+                        '(', ' ').replace(')', ' ').replace(',', ' ').split())
+
+                    lauegroup = ''
+                    for token in state[
+                        'Conventional setting'].split('(')[0].split():
+                        if token == '1':
+                            continue
+                        lauegroup += token
+
+                    lattice = lauegroup_to_lattice(lauegroup)
+                    # reindex = state['Change of basis']
+                    reindex = state['Inverse']
+
+                    if not lattice in self._lattices:
+                        self._lattices.append(lattice)
+                        self._distortions[lattice] = distortion
+                        self._cells[lattice] = cell
+                        self._reindex_ops[lattice] = reindex
+                    elif distortion < self._distortions[lattice]:
+                        self._distortions[lattice] = distortion
+                        self._cells[lattice] = cell
+                        self._reindex_ops[lattice] = reindex
+
+                    state = { }
+
+            return
+
+        def get_lattices(self):
+            return self._lattices
+
+        def get_cell(self, lattice):
+            return self._cells[lattice]
+
+        def get_reindex_op(self, lattice):
+            return self._reindex_ops[lattice]                        
 
         def generate_primative_reindex(self):
             if not self._cell:

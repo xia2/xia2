@@ -252,6 +252,8 @@ def lauegroup_to_lattice(lauegroup):
                             'Fmmm': 'oF',
                             'H-3': 'hR',
                             'H-3m': 'hR',
+                            'R-3:H': 'hR',
+                            'R-3m:H': 'hR',
                             'I4/m': 'tI',
                             'I4/mmm': 'tI',
                             'Im-3': 'cI',

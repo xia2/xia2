@@ -95,7 +95,9 @@ def Othercell(DriverType = None):
             return
 
         def set_lattice(self, lattice):
-            self._initial_lattice_type = lattice
+            '''Set the full lattice - not just the centering operator!.'''
+            
+            self._initial_lattice_type = lattice[1].lower()
 
             return
 

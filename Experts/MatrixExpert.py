@@ -28,10 +28,12 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Experts.SymmetryExpert import symop_to_mat
 from Wrappers.CCP4.Othercell import Othercell
+from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
 from lib.SymmetryLib import lattice_to_spacegroup
 from Handlers.Syminfo import Syminfo
 from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
 from lib.Guff import auto_logfiler
+from Handlers.Streams import Debug
 
 from ReferenceFrame import mosflm_to_xia2, xia2_to_mosflm
 
@@ -214,14 +216,14 @@ def transmogrify_matrix(lattice, matrix, target_lattice, wd = None):
 
     cell, a, u = parse_matrix(matrix)
 
-    o = Othercell()
+    o = _Othercell()
 
     if wd:
         o.set_working_directory(wd)
         auto_logfiler(o)
 
     o.set_cell(cell)
-    o.set_lattice(lattice[1].lower())
+    o.set_lattice(lattice)
     o.generate()
 
     new_cell = o.get_cell(target_lattice)
@@ -231,6 +233,21 @@ def transmogrify_matrix(lattice, matrix, target_lattice, wd = None):
     u = matmul(op, u)
 
     return format_matrix(new_cell, a, u)
+
+def _Othercell():
+    '''A factory to produce either a wrapper for LaticeSymmetry or
+    OtherCell depending on what is available.'''
+
+    o = None
+
+    try:
+        o = LatticeSymmetry()
+        Debug.write('Using iotbx.lattice_symmetry')
+    except:
+        o = Othercell()
+        Debug.write('Using othercell')
+
+    return o
     
 def get_real_space_primitive_matrix(lattice, matrix, wd = None):
     '''Get the primitive real space vectors for the unit cell and
@@ -243,14 +260,14 @@ def get_real_space_primitive_matrix(lattice, matrix, wd = None):
 
     # generate other possibilities
 
-    o = Othercell()
+    o = _Othercell()
 
     if wd:
         o.set_working_directory(wd)
         auto_logfiler(o)
 
     o.set_cell(cell)
-    o.set_lattice(lattice[1].lower())
+    o.set_lattice(lattice)
     o.generate()
 
     # transform the possibly centred cell to the primitive setting
@@ -275,14 +292,14 @@ def get_reciprocal_space_primitive_matrix(lattice, matrix, wd = None):
 
     # generate other possibilities
 
-    o = Othercell()
+    o = _Othercell()
 
     if wd:
         o.set_working_directory(wd)
         auto_logfiler(o)
 
     o.set_cell(cell)
-    o.set_lattice(lattice[1].lower())
+    o.set_lattice(lattice)
     o.generate()
 
     # transform the possibly centred cell to the primitive setting
@@ -339,7 +356,10 @@ def mosflm_a_matrix_to_real_space(wavelength, lattice, matrix):
     ls = LatticeSymmetry()
     ls.set_cell(cell)
     ls.set_spacegroup(spacegroup)
-    cell, reindex = ls.generate_primative_reindex()
+    # cell, reindex = ls.generate_primative_reindex()
+    ls.generate()
+    cell = ls.get_cell('aP')
+    reindex = ls.get_reindex_op('aP')
 
     reindex_matrix = symop_to_mat(reindex)
 
@@ -359,6 +379,7 @@ def mosflm_a_matrix_to_real_space(wavelength, lattice, matrix):
     # FIXME in here add check that the unit cell lengths are within 1% of
     # the correct value - if they are not, raise an exception as the wavelength
     # provided is probably wrong...
+    
     la = math.sqrt(dot(ax, ax))
     lb = math.sqrt(dot(bx, bx))
     lc = math.sqrt(dot(cx, cx))
