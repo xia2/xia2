@@ -582,14 +582,16 @@ def LabelitScreen(DriverType = None):
                 return copy.deepcopy(
                     self._solutions[max(self._solutions.keys())])
             else:
-                # look through for a solution for this lattice
+                # look through for a solution for this lattice -
+                # FIXME should it delete all other solutions?
+                # c/f eliminate.
                 for s in self._solutions.keys():
                     if self._solutions[s]['lattice'] == \
                        self._indxr_input_lattice:
                         return copy.deepcopy(self._solutions[s])
 
-            raise RuntimeError, 'no solution for lattice %s' % \
-                  self._indxr_input_lattice
+                raise RuntimeError, 'no solution for lattice %s' % \
+                      self._indxr_input_lattice
 
     return LabelitScreenWrapper()
 
