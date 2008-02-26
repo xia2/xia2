@@ -102,7 +102,7 @@ def do_funky(pdb_file_name):
     o = Othercell()
 
     o.set_cell(cell)
-    o.set_lattice(symm[0].lower())
+    o.set_lattice(original_lattice)
     o.generate()
 
     lattices = o.get_possible_lattices()

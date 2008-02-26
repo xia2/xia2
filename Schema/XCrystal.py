@@ -129,7 +129,7 @@ class _lattice_manager(Object):
         
         o = Othercell()
         o.set_cell(index_cell)
-        o.set_lattice(index_lattice[1])
+        o.set_lattice(index_lattice)
 
         o.generate()
 
