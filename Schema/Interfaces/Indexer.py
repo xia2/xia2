@@ -423,16 +423,23 @@ class Indexer:
         
         return
 
-    def set_indexer_input_lattice(self, lattice, user = False):
+    # these relate to propogation of the fact that this is user assigned ->
+    # so if we try to eliminate raise an exception... must be coordinated
+    # with lattice setting below
+
+    def set_indexer_user_input_lattice(self, user):
+        self._indxr_user_input_lattice = user
+        return
+
+    def get_indexer_user_input_lattice(self):
+        return self._indxr_user_input_lattice
+
+    def set_indexer_input_lattice(self, lattice):
         '''Set the input lattice for this indexing job. Exactly how this
         is handled depends on the implementation. FIXED decide on the
         format for the lattice. This will be say tP.'''
 
         self._indxr_input_lattice = lattice
-
-        if user:
-            self._indxr_user_input_lattice = True
-        
         self.set_indexer_done(False)
 
         return
