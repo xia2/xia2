@@ -350,6 +350,9 @@ class XDSIndexer(FrameProcessor,
         # cell and lattice if already available e.g. from
         # the helper... indirectly
 
+        if self._indxr_user_input_lattice:
+            idxref.set_indexer_user_input_lattice(True)
+
         if self._indxr_input_lattice and self._indxr_input_cell:
             idxref.set_indexer_input_lattice(self._indxr_input_lattice)
             idxref.set_indexer_input_cell(self._indxr_input_cell)

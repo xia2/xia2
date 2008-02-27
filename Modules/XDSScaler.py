@@ -615,7 +615,13 @@ class XDSScaler(Scaler):
 
             if ntr:
                 need_to_return = True
-            
+
+            # 27/FEB/08 to support user assignment of pointgroups
+            if self._scalr_input_pointgroup:
+                Chatter.write('Using input pointgroup: %s' % \
+                              self._scalr_input_pointgroup)
+                pointgroup = self._scalr_input_pointgroup
+
             self._spacegroup = Syminfo.spacegroup_name_to_number(pointgroup)
             
             # next pass this reindexing operator back to the source
@@ -683,6 +689,12 @@ class XDSScaler(Scaler):
                 if ntr:
                     need_to_return = True
             
+                # 27/FEB/08 to support user assignment of pointgroups
+                if self._scalr_input_pointgroup:
+                    Chatter.write('Using input pointgroup: %s' % \
+                                  self._scalr_input_pointgroup)
+                    pointgroup = self._scalr_input_pointgroup
+                    
                 intgr.set_integrater_reindex_operator(reindex_op)
                 intgr.set_integrater_spacegroup_number(
                     Syminfo.spacegroup_name_to_number(pointgroup))
@@ -722,7 +734,8 @@ class XDSScaler(Scaler):
                 # this should send back enough information that this
                 # is in the correct pointgroup (from the call above) and
                 # also in the correct setting, from the interaction
-                # with the reference set...
+                # with the reference set... - though I guess that the
+                # spacegroup number should not have changed, right?
                 
                 intgr.set_integrater_reindex_operator(reindex_op)
                 intgr.set_integrater_spacegroup_number(
@@ -779,6 +792,12 @@ class XDSScaler(Scaler):
 
             if ntr:
                 need_to_return = True
+
+            # 27/FEB/08 to support user assignment of pointgroups
+            if self._scalr_input_pointgroup:
+                Chatter.write('Using input pointgroup: %s' % \
+                              self._scalr_input_pointgroup)
+                pointgroup = self._scalr_input_pointgroup
 
             self._spacegroup = Syminfo.spacegroup_name_to_number(pointgroup)
             
@@ -1214,8 +1233,15 @@ class XDSScaler(Scaler):
             spacegroups = pointless.get_likely_spacegroups()
             reindex_operator = pointless.get_spacegroup_reindex_operator()
 
+            if self._scalr_input_spacegroup:
+                Chatter.write('Assigning user input spacegroup: %s' % \
+                              self._scalr_input_spacegroup)
+                spacegroups = [self._scalr_input_spacegroup]
+                reindex_operator = 'h,k,l'
+
         # save these for later - we will reindex the merged
-        # data after scaling
+        # data after scaling - the first of these will be used
+        # as correct so spacegroup assignment should just work...
 
         self._scalr_likely_spacegroups = spacegroups
         self._scalr_reindex_operator = reindex_operator

@@ -120,6 +120,10 @@ def XDSIdxref(DriverType = None):
             self._indxr_input_lattice = lattice
             return
 
+        def set_indexer_user_input_lattice(self, user):
+            self._indxr_user_input_lattice = user
+            return
+
         def set_indexer_input_cell(self, cell):
             if not type(cell) == type(()):
                 raise RuntimeError, 'cell must be a 6-tuple de floats'
@@ -311,8 +315,6 @@ def XDSIdxref(DriverType = None):
 
             lp = open(os.path.join(
                 self.get_working_directory(), 'IDXREF.LP'), 'r').readlines()
-
-            
 
             self._idxref_data = _parse_idxref_lp(lp)
 
