@@ -870,6 +870,19 @@ def Mosflm(DriverType = None):
                 self._indxr_other_lattice_cell = _parse_mosflm_index_output(
                     output)
 
+                # Change 27/FEB/08 to support user assigned spacegroups
+                if self._indxr_user_input_lattice:
+                    lattice_to_spacegroup_dict = {
+                        'aP':1, 'mP':3, 'mC':5, 'oP':16, 'oC':20, 'oF':22,
+                        'oI':23, 'tP':75, 'tI':79, 'hP':143, 'hR':146,
+                        'cP':195, 'cF':196, 'cI':197}
+                    for k in self._indxr_other_lattice_cell.keys():
+                        if lattice_to_spacegroup_dict[k] > \
+                               lattice_to_spacegroup_dict[
+                            self._indxr_input_lattice]:
+                            del(self._indxr_other_lattice_cell[k])
+                    
+
                 # check that the selected unit cell matches - and if
                 # not raise a "horrible" exception
 
