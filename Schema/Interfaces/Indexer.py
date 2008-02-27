@@ -444,6 +444,9 @@ class Indexer:
 
         return
 
+    def get_indexer_input_lattice(self):
+        return self._indxr_input_lattice
+
     def set_indexer_input_cell(self, cell):
         '''Set the input unit cell (optional.)'''
 

@@ -226,6 +226,9 @@ class XDSIntegrater(FrameProcessor,
         beam = self._intgr_indexer.get_indexer_beam()
         distance = self._intgr_indexer.get_indexer_distance()
 
+        # check if the lattice was user assigned...
+        user_assigned = self._intgr_indexer.get_indexer_user_input_lattice()
+
         # check that the indexer is an XDS indexer - if not then
         # create one...
 
@@ -242,6 +245,7 @@ class XDSIntegrater(FrameProcessor,
             self.set_integrater_indexer(XDSIndexer())
             # set the indexer up as per the frameprocessor interface...
             # this would usually happen within the IndexerFactory.
+
             self.get_integrater_indexer().setup_from_image(
                 self.get_image_name(
                 self._intgr_wedge[0]))
@@ -275,6 +279,12 @@ class XDSIntegrater(FrameProcessor,
                     self.get_wavelength())
 
             self._intgr_indexer.set_indexer_input_lattice(lattice)
+
+            if user_assigned:
+                Debug.write('Assigning the user given lattice: %s' % \
+                            lattice)
+                self._intgr_indexer.set_indexer_user_input_lattice(True)
+
             self._intgr_indexer.set_distance(distance)
             self._intgr_indexer.set_beam(beam)
 
