@@ -415,6 +415,12 @@ class XInfo:
                 self._crystals[crystal][
                     'freer_file'] = record.replace('FREER_FILE', '').strip()
 
+            # user assigned spacegroup
+            if 'USER_SPACEGROUP' in record:
+                self._crystals[crystal][
+                    'user_spacegroup'] = record.replace(
+                    'USER_SPACEGROUP', '').strip()
+
 
 if __name__ == '__main__':
     import os

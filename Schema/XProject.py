@@ -34,6 +34,7 @@ from Schema.XWavelength import XWavelength
 # .xinfo parser
 
 from Handlers.XInfo import XInfo
+from Handlers.Flags import Flags
 
 # output stream
 from Handlers.Streams import Chatter
@@ -122,6 +123,10 @@ class XProject(Object):
             if crystals[crystal].has_key('freer_file'):
                 xc.set_freer_file(crystals[crystal]['freer_file'])
 
+            # user assigned spacegroup
+            if crystals[crystal].has_key('user_spacegroup'):
+                xc.set_user_spacegroup(crystals[crystal]['user_spacegroup'])
+
             for wavelength in crystals[crystal]['wavelengths'].keys():
                 # FIXME 29/NOV/06 in here need to be able to cope with
                 # no wavelength information - this should default to the
@@ -155,6 +160,15 @@ class XProject(Object):
                 # in here I also need to look and see if we have
                 # been given any scaled reflection files...
 
+                # check to see if we have a user supplied lattice...
+                if crystals[crystal].has_key('user_spacegroup'):
+                    lattice = Syminfo.get_lattice(
+                        crystals[crystal]['user_spacegroup'])
+                elif Flags.get_lattice():
+                    lattice = Flags.get_lattice()
+                else:
+                    lattice = None
+                    
                 for sweep_name in crystals[crystal]['sweeps'].keys():
                     sweep_info = crystals[crystal]['sweeps'][sweep_name]
                     if sweep_info['wavelength'] == wavelength:
@@ -170,6 +184,7 @@ class XProject(Object):
                             polarization = float(sweep_info.get(
                             'POLARIZATION', 0.0)),
                             frames_to_process = sweep_info.get('start_end'),
+                            user_lattice = lattice,
                             epoch = sweep_info.get('epoch', 0))
                 
                 xc.add_wavelength(xw)

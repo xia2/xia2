@@ -82,7 +82,7 @@ from Wrappers.CCP4.Othercell import Othercell
 from Handlers.Environment import Environment
 from Modules.ScalerFactory import Scaler
 from Modules.SubstructureFinderFactory import SubstructureFinder
-
+from Handlers.Syminfo import Syminfo
 from NMolLib import compute_nmol, compute_solvent
 
 # XML Marked up output for e-HTPX
@@ -241,6 +241,7 @@ class XCrystal(Object):
         # defined... likewise the FreeR column file
         self._reference_reflection_file = None
         self._freer_file = None
+        self._user_spacegroup = None
 
         # things to help the great passing on of information
         self._scaled_merged_reflections = None
@@ -424,6 +425,15 @@ class XCrystal(Object):
         self._freer_file = freer_file
         return
 
+    def set_user_spacegroup(self, user_spacegroup):
+        '''Set a user assigned spacegroup - which needs to be propogated.'''
+
+        self._user_spacegroup = user_spacegroup
+        return
+
+    def get_user_spacegroup(self):
+        return self._user_spacegroup
+
     def get_reference_reflection_file(self):
         return self._reference_reflection_file
 
@@ -512,6 +522,15 @@ class XCrystal(Object):
                 integraters.append(i)
 
         return integraters
+
+    def _get_indexers(self):
+        indexers = []
+
+        for wave in self._wavelengths.keys():
+            for i in self._wavelengths[wave]._get_indexers():
+                indexers.append(i)
+
+        return indexers
 
     def get_all_image_names(self):
         '''Get a full list of all images from this crystal...'''
@@ -628,8 +647,17 @@ class XCrystal(Object):
 
             # and FreeR file
             if self._freer_file:
-                self._scaler.set_scaler_freer_file(self._freer_file)                    
-            # gather up all of the integraters we can find...
+                self._scaler.set_scaler_freer_file(self._freer_file)
+                
+            # and spacegroup information
+            if self._user_spacegroup:
+                # compute the lattice and pointgroup from this...
+                
+                pointgroup = Syminfo.get_pointgroup(self._user_spacegroup)
+                
+                self._scaler.set_scaler_input_spacegroup(
+                    self._user_spacegroup)
+                self._scaler.set_scaler_input_pointgroup(pointgroup)
 
             integraters = self._get_integraters()
 

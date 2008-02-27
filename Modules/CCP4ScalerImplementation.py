@@ -398,6 +398,8 @@ class CCP4Scaler(Scaler):
             pl = self._factory.Pointless()
             pl.set_hklin(pointless_hklin)
             pl.decide_pointgroup()
+
+            # FIXME this does not appear to be really used...
             
             pointgroup = pl.get_pointgroup()
             reindex_op = pl.get_reindex_operator()
@@ -410,6 +412,10 @@ class CCP4Scaler(Scaler):
             # something cunning in here...
             
             if indexer:
+
+                # this should explode if the pointgroup is incompatible
+                # with the lattice, right? through eliminate if the
+                # lattice is user-assigned
                 
                 pointgroup, reindex_op, ntr = \
                             self._pointless_indexer_jiffy(
@@ -418,7 +424,18 @@ class CCP4Scaler(Scaler):
                 if ntr:
                     need_to_return = True
 
+            # FIXME_ABQ
+            # compare pointgroup to the one which was given by the user,
+            # forcing it to be so if necessary?
+
             Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+
+            # OK, let's see what we can see. 
+
+            if self._scalr_input_pointgroup:
+                Chatter.write('Using input pointgroup: %s' % \
+                              self._scalr_input_pointgroup)
+                pointgroup = self._scalr_input_pointgroup
 
             integrater.set_integrater_reindex_operator(reindex_op)
             integrater.set_integrater_spacegroup_number(
@@ -536,6 +553,17 @@ class CCP4Scaler(Scaler):
                 if ntr:
                     need_to_return = True
 
+            # FIXME_ABQ
+            # compare pointgroup to the one which was given by the user,
+            # forcing it to be so if necessary?
+
+            # OK, let's see what we can see. 
+
+            if self._scalr_input_pointgroup:
+                Chatter.write('Using input pointgroup: %s' % \
+                              self._scalr_input_pointgroup)
+                pointgroup = self._scalr_input_pointgroup
+
             if not overall_pointgroup:
                 overall_pointgroup = pointgroup
             if overall_pointgroup != pointgroup:
@@ -587,7 +615,6 @@ class CCP4Scaler(Scaler):
             reference_lattice = Syminfo.get_lattice(md.get_spacegroup())
             reference_cell = md.get_dataset_info(datasets[0])['cell']
             
-
             # then compute the pointgroup from this...
 
             # ---------- REINDEX TO CORRECT (REFERENCE) SETTING ----------
@@ -622,7 +649,9 @@ class CCP4Scaler(Scaler):
                 # (think Ed Mitchell data...) - delegated to the Integrater
                 # to manage...
                 
-                # get the correct pointgroup etc
+                # get the correct pointgroup etc - though the pointgroup
+                # should not be used and should the same as is already set...
+                # right??
                 pointgroup = pl.get_pointgroup()
                 reindex_op = pl.get_reindex_operator()
                 
@@ -857,18 +886,40 @@ class CCP4Scaler(Scaler):
                     hklin, self._sweep_information[epoch]['header'].get(
                     'phi_width', 0.0)))
 
-            p.decide_spacegroup()
-            spacegroup = p.get_spacegroup()
-            reindex_operator = p.get_spacegroup_reindex_operator()
-        
+            if self._scalr_input_spacegroup:
+                Chatter.write('Assigning user input spacegroup: %s' % \
+                              self._scalr_input_spacegroup)
+
+                p.decide_spacegroup()
+                spacegroup = p.get_spacegroup()
+                reindex_operator = p.get_spacegroup_reindex_operator()
+
+                Chatter.write('Pointless thought %s (reindex as %s)' % \
+                              (spacegroup, reindex_operator))
+
+                spacegroup = self._scalr_input_spacegroup
+                reindex_operator = 'h,k,l'
+
+            else:
+                p.decide_spacegroup()
+                spacegroup = p.get_spacegroup()
+                reindex_operator = p.get_spacegroup_reindex_operator()
+
+                Chatter.write('Pointless thought %s (reindex as %s)' % \
+                              (spacegroup, reindex_operator))
+                
             # Write this spacegroup information back to the storage areas
             # in the Scaler interface to allow them to be obtained by the
             # calling entity. Note well that I also want to write in
             # here the spacegroup enantiomorphs.
             
-            # FIXED 21/NOV/06 need now to get this from the pointless output...
+            # FIXED 21/NOV/06 need now to get this from the pointless
+            # output...
             
-            self._scalr_likely_spacegroups = p.get_likely_spacegroups()
+            if self._scalr_input_spacegroup:
+                self._scalr_likely_spacegroups = [self._scalr_input_spacegroup]
+            else:
+                self._scalr_likely_spacegroups = p.get_likely_spacegroups()
 
             # these are generated by the get_likely_spacegroups so we don't
             # need to be worrying about this - 

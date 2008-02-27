@@ -118,7 +118,8 @@ class XWavelength(Object):
                   integrated_reflection_file = None,
                   beam = None, distance = None, resolution = None,
                   gain = 0.0, polarization = 0.0,
-                  frames_to_process = None, epoch = 0):
+                  frames_to_process = None, user_lattice = None,
+                  epoch = 0):
         '''Add a sweep to this wavelength.'''
 
         self._sweeps.append(XSweep(name, self,
@@ -132,6 +133,7 @@ class XWavelength(Object):
                                    gain = gain,
                                    polarization = polarization,
                                    frames_to_process = frames_to_process,
+                                   user_lattice = user_lattice,
                                    epoch = epoch))
 
         return
@@ -145,4 +147,11 @@ class XWavelength(Object):
             integraters.append(s._get_integrater())
 
         return integraters
+    
+    def _get_indexers(self):
+        indexers = []
+        for s in self._sweeps:
+            indexers.append(s._get_indexer())
+
+        return indexers
     

@@ -107,7 +107,7 @@ class _Flags:
     def get_pointgroup(self):
         return self._pointgroup
 
-    def get_lattice(self, lattice):
+    def get_lattice(self):
         return self._lattice
 
     def get_cellref_mode(self):

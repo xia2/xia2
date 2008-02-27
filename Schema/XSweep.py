@@ -189,6 +189,7 @@ class XSweep(Object):
                  gain = 0.0,
                  polarization = 0.0,
                  frames_to_process = None,
+                 user_lattice = None,
                  epoch = 0):
         '''Create a new sweep named name, belonging to XWavelength object
         wavelength, representing the images in directory starting with image,
@@ -220,6 +221,7 @@ class XSweep(Object):
         self._image = image
         self._integrated_reflection_file = integrated_reflection_file
         self._epoch = epoch
+        self._user_lattice = user_lattice
         self._header = { } 
 
         # FIXME in here also need to be able to accumulate the total
@@ -518,6 +520,11 @@ class XSweep(Object):
             # keep "pure" interfaces to the programs for reuse, then
             # wrap in XStyle.
             self._indexer = IndexerFactory.IndexerForXSweep(self)
+
+            # set the user supplied lattice if there is one
+            if self._user_lattice:
+                self._indexer.set_indexer_input_lattice(self._user_lattice)
+                self._indexer.set_indexer_user_input_lattice(True)
 
             # set the working directory for this, based on the hierarchy
             # defined herein...
