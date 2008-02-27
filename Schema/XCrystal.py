@@ -83,6 +83,7 @@ from Handlers.Environment import Environment
 from Modules.ScalerFactory import Scaler
 from Modules.SubstructureFinderFactory import SubstructureFinder
 from Handlers.Syminfo import Syminfo
+from Handlers.Flags import Flags
 from NMolLib import compute_nmol, compute_solvent
 
 # XML Marked up output for e-HTPX
@@ -658,6 +659,13 @@ class XCrystal(Object):
                 self._scaler.set_scaler_input_spacegroup(
                     self._user_spacegroup)
                 self._scaler.set_scaler_input_pointgroup(pointgroup)
+
+            elif Flags.get_spacegroup():
+                self._scaler.set_scaler_input_spacegroup(
+                    Flags.get_spacegroup())
+                self._scaler.set_scaler_input_pointgroup(
+                    Flags.get_pointgroup())
+                
 
             integraters = self._get_integraters()
 

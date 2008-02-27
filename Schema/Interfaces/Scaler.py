@@ -231,8 +231,8 @@ class Scaler:
         self._scalr_freer_file = None
 
         # user input to guide spacegroup choices
-        self._scaler_input_spacegroup = None
-        self._scaler_input_pointgroup = None
+        self._scalr_input_spacegroup = None
+        self._scalr_input_pointgroup = None
                 
         # places to hold the output
 
