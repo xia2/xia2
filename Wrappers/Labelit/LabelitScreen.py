@@ -508,7 +508,7 @@ def LabelitScreen(DriverType = None):
                 l = o.split()
                 if l:
 
-                    if self._indxr_input_lattice:
+                    if self._indxr_user_input_lattice:
                         if lattice_to_spacegroup[l[6]] > \
                            lattice_to_spacegroup[self._indxr_input_lattice]:
                             Debug.write('Ignoring solution: %s' % l[6])
