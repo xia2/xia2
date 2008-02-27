@@ -35,6 +35,7 @@ from Schema.XWavelength import XWavelength
 
 from Handlers.XInfo import XInfo
 from Handlers.Flags import Flags
+from Handlers.Syminfo import Syminfo
 
 # output stream
 from Handlers.Streams import Chatter
