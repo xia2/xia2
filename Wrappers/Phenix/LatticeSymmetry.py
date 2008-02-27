@@ -81,8 +81,6 @@ def LatticeSymmetry(DriverType = None):
                                      'cF':196,
                                      'cI':197}
 
-            print lattice
-
             self._spacegroup = Syminfo.spacegroup_number_to_name(
                 lattice_to_spacegroup[lattice])
 
