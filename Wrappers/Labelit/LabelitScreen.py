@@ -493,11 +493,28 @@ def LabelitScreen(DriverType = None):
             # FIXME need to check the value of the RMSD and raise an
             # exception if the P1 solution has an RMSD > 1.0...
 
+            # Change 27/FEB/08 to support user assigned spacegroups
+            # (euugh!) have to "ignore" solutions with higher symmetry
+            # otherwise the rest of xia will override us. Bummer.
+
+            lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5, 'oP':16,
+                                     'oC':20, 'oF':22, 'oI':23, 'tP':75,
+                                     'tI':79, 'hP':143, 'hR':146, 'cP':195,
+                                     'cF':196, 'cI':197}
+
             for i in range(counter + 1, len(output)):
                 o = output[i][3:]
                 smiley = output[i][:3]
                 l = o.split()
                 if l:
+
+                    if self._indxr_input_lattice:
+                        if lattice_to_spacegroup[l[6]] > \
+                           lattice_to_spacegroup[self._indxr_input_lattice]:
+                            Debug.write('Ignoring solution: %s' % l[6])
+                            continue
+
+                    
                     self._solutions[int(l[0])] = {'number':int(l[0]),
                                                   'mosaic':self._mosaic,
                                                   'metric':float(l[1]),
@@ -585,10 +602,13 @@ def LabelitScreen(DriverType = None):
                 # look through for a solution for this lattice -
                 # FIXME should it delete all other solutions?
                 # c/f eliminate.
+                
                 for s in self._solutions.keys():
                     if self._solutions[s]['lattice'] == \
                        self._indxr_input_lattice:
                         return copy.deepcopy(self._solutions[s])
+                    else:
+                        del(self._solutions[s])
 
                 raise RuntimeError, 'no solution for lattice %s' % \
                       self._indxr_input_lattice
