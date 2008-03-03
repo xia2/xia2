@@ -162,10 +162,10 @@ def Pointless(DriverType = None):
 
             # include this when it is working....
 
-            latest_pointless = False
+            latest_pointless = True
 
             if latest_pointless:
-                pointless_version = "1.2.14"
+                pointless_version = "1.2.16"
             else:
                 pointless_version = "1.2.10"
     
