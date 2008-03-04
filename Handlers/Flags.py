@@ -55,6 +55,11 @@ class _Flags:
         # and these are general rejection criteria
         self._rejection_threshold = 1.5
         self._i_over_sigma_limit = 2.0
+
+        # check environment settings
+        if os.environ.has_key('XIA2_CCP4_61'):
+            self._ccp4_61 = True
+        
         
         return
 
