@@ -149,7 +149,7 @@ def Indexer(detector = None):
                 raise RuntimeError, 'preselected indexer mosflm not available'
             pass
 
-    if False and not indexer and (not preselection or preselection == 'xds'):
+    if not indexer and (not preselection or preselection == 'xds'):
         try:
             indexer = XDSIndexer()
             Admin.write('Using XDS Indexer')
