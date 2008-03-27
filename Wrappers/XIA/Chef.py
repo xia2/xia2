@@ -119,6 +119,9 @@ def Chef(DriverType = None):
 
             # FIXME should check the status here...
 
+            for record in self.get_all_output():
+                print record[:-1]
+
             results = self.parse_ccp4_loggraph()
             rd = transpose_loggraph(
                 results['Cumulative RD analysis'])
