@@ -101,10 +101,7 @@ def Chef(DriverType = None):
 
             self.start()
 
-            p_line = 'print'
-            if self._p_crd:
-                p_line += ' rdc'
-            self.input(p_line)
+            self.input('print rdcu comp')
 
             if self._anomalous:
                 self.input('anomalous on')
@@ -120,14 +117,33 @@ def Chef(DriverType = None):
 
             self.close_wait()
 
-            for l in self.get_all_output():
-                print l[:-1]
+            # FIXME should check the status here...
 
             results = self.parse_ccp4_loggraph()
             rd = transpose_loggraph(
                 results['Cumulative RD analysis'])
 
-            print rd
+            keys = rd.keys()
+            keys.sort()
+
+            resolutions = { }
+
+            for k in keys:
+                ident = int(k.split('_')[0])
+
+                if ident > 2:
+                    resolution = float(k.split('_')[1])
+
+                    resolutions[ident] = resolution
+
+            ids = resolutions.keys()
+            ids.sort()
+
+            for ident in ids:
+                key = '%d_%.4f' % (ident, resolutions[ident])
+                use = rd[key]
+
+                print ident, resolutions[ident], use
 
             return
         
@@ -150,7 +166,7 @@ if __name__ == '__main__':
     chef.set_anomalous(True)
     chef.set_width(30)
     chef.set_max(1400)
-    chef.set_resolution(1.8)
+    chef.set_resolution(1.6)
     chef.set_labin('DOSE')
 
     chef.run()
