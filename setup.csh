@@ -16,8 +16,6 @@ else if ( "$host_platform" == "Darwin" ) then
     setenv PATH ${XIA2_ROOT}/binaries/mac_386:${PATH}
     setenv DYLD_LIBRARY_PATH ${XIA2_ROOT}/binaries/mac_386:${DYLD_LIBRARY_PATH}
   endif
-else
-  echo "Platform $host_platform not supported"
 endif
 
 setenv PATH ${PATH}:${XIA2_ROOT}/Applications
