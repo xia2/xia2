@@ -105,6 +105,7 @@ import os
 import sys
 import math
 import copy
+import shutil
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
@@ -1902,8 +1903,9 @@ class CCP4Scaler(Scaler):
         # much earlier in the cycle - FIXME and see FIXME above which
         # indicates what code should be moved
 
-        
-
+        # FIXME ALSO need to copy the harvest information in this cycle
+        # as this is where we get the right harvest files for each
+        # wavelength...
 
         # finally repeat the merging again (!) but keeping the
         # wavelengths separate to generate the statistics on a
@@ -1912,6 +1914,13 @@ class CCP4Scaler(Scaler):
 
         for key in self._scalr_statistics:
             pname, xname, dname = key
+
+            # we need to copy the harvest file we are generating from this
+            # to allow storage of proper stats...
+
+            harvest_copy = os.path.join(os.environ['HARVESTHOME'],
+                                        'DepositFiles', pname,
+                                        '%s.scala' % dname)
 
             sc = self._factory.Scala()
             sc.set_hklin(self._prepared_reflections)
@@ -1952,8 +1961,28 @@ class CCP4Scaler(Scaler):
             # this should just work ... by magic!
             self._scalr_statistics[key] = stats[key]
 
+            # now copy the harvest file
+
+            shutil.copyfile(harvest_copy, '%s.keep' % harvest_copy)
+
+            Debug.write('Copying %s to %s' % \
+                        (harvest_copy, '%s.keep' % harvest_copy))
+
         # end bug # 2229 stuff
 
+        # now move the .keep harvest files back
+
+        for key in self._scalr_statistics:
+            pname, xname, dname = key
+
+            harvest_copy = os.path.join(os.environ['HARVESTHOME'],
+                                        'DepositFiles', pname,
+                                        '%s.scala' % dname)
+
+            shutil.move('%s.keep' % harvest_copy, harvest_copy)
+            Debug.write('Moving %s to %s' % \
+                        ('%s.keep' % harvest_copy, harvest_copy))
+            
         return
 
     def _scale_finish_ami(self):
