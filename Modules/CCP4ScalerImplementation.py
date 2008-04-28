@@ -1720,7 +1720,10 @@ class CCP4Scaler(Scaler):
             
                 n_full = int(info['5_Number'][j])
                 I_full = float(info['4_Irms'][j])
-                s_full = float(info['7_SigmaFull'][j])
+                if n_full > 0:
+                    s_full = float(info['7_SigmaFull'][j])
+                else:
+                    s_full = 0.0
                 
                 if info.has_key('9_Number'):
                 
