@@ -23,12 +23,12 @@ sys.path.append(os.environ['XIA2_ROOT'])
 from Experts.MatrixExpert import mosflm_a_matrix_to_real_space
 from Experts.MatrixExpert import dot, rot_x, matvecmul
 
-def compute(matrix, lattice, phi_start, phi_width, start, end):
+def compute(matrix, lattice, wavelength, phi_start, phi_width, start, end):
     '''Compute the relative dot products (e.g. cos(p)) between the direct
     beam in the xia2 frame (0, 0, 1) and the primative unit cell axes in
     real space.'''
 
-    a, b, c = mosflm_a_matrix_to_real_space(1.0, lattice, matrix)
+    a, b, c = mosflm_a_matrix_to_real_space(wavelength, lattice, matrix)
 
     _a = math.sqrt(dot(a, a))
     _b = math.sqrt(dot(b, b))
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     228.0796     52.5895     44.1177     90.0000    100.6078     90.0000
      -0.0985      0.4512     -0.0134'''
 
-        compute(matrix, 'mC', 0.0, 1.0, 1, 180)
+        compute(matrix, 'mC', 1.0, 0.0, 1.0, 1, 180)
 
     elif len(sys.argv) == 7:
 
@@ -65,11 +65,12 @@ if __name__ == '__main__':
         # matrix phi_start phi_width start end lattice
 
         matrix = open(sys.argv[1], 'r').read()
-        phi_start = float(sys.argv[2])
-        phi_width = float(sys.argv[3])
-        start = int(sys.argv[4])
-        end = int(sys.argv[5])
-        lattice = sys.argv[6]
+        wavelength = float(sys.argv[2])
+        phi_start = float(sys.argv[3])
+        phi_width = float(sys.argv[4])
+        start = int(sys.argv[5])
+        end = int(sys.argv[6])
+        lattice = sys.argv[7]
 
         compute(matrix, lattice, phi_start, phi_width, start, end)
 
