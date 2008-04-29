@@ -42,7 +42,7 @@ def compute(matrix, lattice, wavelength, phi_start, phi_width, start, end):
         bX = matvecmul(rot, b)[2] / _b
         cX = matvecmul(rot, c)[2] / _c
 
-        print '%.2f %.3f %.3f %.3f' % (phi, aX, bX, cX)
+        print '%.2f %d %.3f %.3f %.3f' % (phi, j, aX, bX, cX)
 
 if __name__ == '__main__':
     if len(sys.argv) == 19:
@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
         compute(matrix, 'mC', 1.0, 0.0, 1.0, 1, 180)
 
-    elif len(sys.argv) == 7:
+    elif len(sys.argv) == 8:
 
         # parse command line of:
         # matrix phi_start phi_width start end lattice
@@ -72,7 +72,7 @@ if __name__ == '__main__':
         end = int(sys.argv[6])
         lattice = sys.argv[7]
 
-        compute(matrix, lattice, phi_start, phi_width, start, end)
+        compute(matrix, lattice, wavelength, phi_start, phi_width, start, end)
 
     else:
 
