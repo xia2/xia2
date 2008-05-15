@@ -269,11 +269,15 @@ def LabelitScreen(DriverType = None):
                 Chatter.write('Phi width 0.0? Assuming 1.0!')
                 phi_width = 1.0
 
-            if int(90.0 / phi_width) in images:
-                Debug.write('Selected image %s' % int(45.0 / phi_width))
-                Debug.write('Selected image %s' % int(90.0 / phi_width))
-                self.add_indexer_image_wedge(int(45.0 / phi_width))
-                self.add_indexer_image_wedge(int(90.0 / phi_width))
+            offset = images[0] - 1
+
+            if offset + int(90.0 / phi_width) in images:
+                Debug.write('Selected image %s' % offset +
+                            int(45.0 / phi_width))
+                Debug.write('Selected image %s' % offset +
+                            int(90.0 / phi_width))
+                self.add_indexer_image_wedge(offset + int(45.0 / phi_width))
+                self.add_indexer_image_wedge(offset + int(90.0 / phi_width))
             else:
                 middle = len(images) / 2
                 if len(images) >= 3:
