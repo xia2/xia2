@@ -272,10 +272,10 @@ def LabelitScreen(DriverType = None):
             offset = images[0] - 1
 
             if offset + int(90.0 / phi_width) in images:
-                Debug.write('Selected image %s' % offset +
-                            int(45.0 / phi_width))
-                Debug.write('Selected image %s' % offset +
-                            int(90.0 / phi_width))
+                Debug.write('Selected image %s' % (offset +
+                                                   int(45.0 / phi_width)))
+                Debug.write('Selected image %s' % (offset +
+                                                   int(90.0 / phi_width)))
                 self.add_indexer_image_wedge(offset + int(45.0 / phi_width))
                 self.add_indexer_image_wedge(offset + int(90.0 / phi_width))
             else:
