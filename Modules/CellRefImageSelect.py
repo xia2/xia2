@@ -101,6 +101,9 @@ def LabelitIndex(DriverType = None):
 
             # run labelit.mosflm_script N to get the right matrix file
 
+            # in this case I want to autoindex in P1 so that would be
+            # solution 1, right?
+
             solution = int(solutions[0][0])
 
             lms = LabelitMosflmScript()
@@ -210,7 +213,7 @@ def MosflmCellRefine(DriverType = None):
         def __init__(self):
 
             DriverInstance.__class__.__init__(self)
-            self.set_executable('ipmosflm-7.0.1')
+            self.set_executable('ipmosflm-7.0.3')
             FrameProcessor.__init__(self)
 
             # input
@@ -227,6 +230,10 @@ def MosflmCellRefine(DriverType = None):
             return
 
         def set_matrix(self, matrix):
+
+            # this is the matrix as a string, so what I need to do here
+            # is to write this to an input file then store that
+            
             self._matrix = matrix
             return
 
@@ -250,6 +257,71 @@ def MosflmCellRefine(DriverType = None):
             self._wedges = wedges
             return
 
+        def refine(self):
+            '''Do the cell refinement and record the r.m.s. deviations
+            in a, b, c, alpha, beta, gamma - these are returned. Assert:
+            autoindexing solution will already be for P1.'''
+
+
+            if not self._wedges
+                raise RuntimeError, 'wedges must be assigned already'
+
+            open(os.path.join(self.get_working_directory(),
+                              'test-xiaindex-%s.mat' % lattice),
+                 'w').write(self._matrix)
+
+            self.start()
+
+            self.input('template "%s"' % self.get_template())
+            self.input('directory "%s"' % self.get_directory())
+
+            self.input('matrix test-xiaindex-%s.mat' % lattice)
+            self.input('newmat test-xiarefine.mat')
+
+            self.input('beam %f %f' % beam)
+            self.input('distance %f' % distance)
+
+            self.input('symmetry %s' % spacegroup_number)
+                
+            self.input('mosaic %f' % mosaic)
+
+            # will need to also get the resolution limit for cell
+            # refinement from the autoindexing answers...
+            
+            self.input('resolution %f' % self._resolution)
+
+            # fudge factors to prevent Mosflm from being too fussy
+            self.input('refinement residual 10.0')
+            self.input('refinement include partials')
+
+            self.input('postref multi segments %d repeat 10' % \
+                       len(self._wedges))
+
+            # FIXME 
+            self.input('postref maxresidual 5.0')
+            
+            for cri in self._wedges:
+                self.input('process %d %d' % cri)
+                self.input('go')
+
+            # that should be everything 
+            self.close_wait()
+
+            # get the log file
+            output = self.get_all_output()
+
+            
+            for i in range(len(output)):
+                o = output[i]
+
+                print o[:-1]
+
+            raise RuntimeError, 'need to review the output'
+
+            return rms_values
+            
+def yah_whatever():
+    
     
 
 # one liner around mosflm cell refinement

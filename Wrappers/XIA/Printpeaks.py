@@ -160,7 +160,42 @@ def Printpeaks(DriverType = None):
                 return 'blank'
 
             return 'ok'
-            
+        
+        def getpeaks(self):
+            '''Just get the list of peaks out, as (x, y, i).'''
+
+            if not self._image:
+                raise RuntimeError, 'image not set'
+
+            if not os.path.exists(self._image):
+                raise RuntimeError, 'image %s does not exist' % \
+                      self._image
+
+            self.add_command_line(self._image)
+            self.start()
+            self.close_wait()
+
+            self.check_for_errors()            
+
+            # results were ok, so get all of the output out
+            output = self.get_all_output()
+
+            peaks = []
+
+            for record in output:
+
+                if not 'Peak' in record[:4]:
+                    continue
+
+                lst = record.split(':')
+
+                x = float(lst[1].split()[0])
+                y = float(lst[2].split()[0])
+                i = float(lst[4])
+                
+                peaks.append((x, y, i))
+
+            return peaks
 
     return PrintpeaksWrapper()
 
