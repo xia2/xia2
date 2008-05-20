@@ -247,6 +247,7 @@ from Schema.Exceptions.IntegrationError import IntegrationError
 from Wrappers.CCP4.Reindex import Reindex
 from Wrappers.XIA.Diffdump import Diffdump
 from Wrappers.XIA.Printpeaks import Printpeaks
+from Modules.IceId import IceId
 
 def Mosflm(DriverType = None):
     '''A factory for MosflmWrapper classes.'''
@@ -1028,6 +1029,25 @@ def Mosflm(DriverType = None):
             self._indxr_payload['mosflm_orientation_matrix'] = open(
                 os.path.join(self.get_working_directory(),
                              'xiaindex.mat'), 'r').readlines()
+
+            # also look at the images given in input to try to decide if
+            # they are icy...
+
+            ice = []
+            
+            for i in _images:
+
+                icy = IceId()
+                icy.set_image(self.get_image_name(i))
+                icy.set_beam(self._indxr_refined_beam)
+                
+                ice.append(icy.search())
+
+            if sum(ice) / len(ice) > 0.45:
+                self._indxr_ice = 1
+
+                Debug.write('Autoindexing images look icy: %.3f' % \
+                            (sum(ice) / len(ice)))
 
             return
 

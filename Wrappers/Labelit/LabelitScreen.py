@@ -587,6 +587,25 @@ def LabelitScreen(DriverType = None):
                     resolution = resol
                     
             self._indxr_resolution_estimate = resolution
+
+            # also look at the images given in input to try to decide if
+            # they are icy...
+
+            ice = []
+            
+            for i in _images:
+
+                icy = IceId()
+                icy.set_image(self.get_image_name(i))
+                icy.set_beam(self._indxr_refined_beam)
+                
+                ice.append(icy.search())
+
+            if sum(ice) / len(ice) > 0.45:
+                self._indxr_ice = 1
+
+                Debug.write('Autoindexing images look icy: %.3f' % \
+                            (sum(ice) / len(ice)))
                     
             return 'ok'
         

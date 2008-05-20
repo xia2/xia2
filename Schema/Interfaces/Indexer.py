@@ -206,6 +206,9 @@ class Indexer:
         self._indxr_lattice = None
         self._indxr_cell = None
 
+        # an idea of how icy the image is
+        self._indxr_ice = 0
+
         # a place to store other plausible solutions - used
         # for populating the helper in the main index() method
         self._indxr_other_lattice_cell = { }
@@ -482,6 +485,12 @@ class Indexer:
 
         self.index()
         return self._indxr_mosaic
+
+    def get_indexer_ice(self):
+        '''Get an idea of whether this is icy - 0, no - 1, yes.'''
+
+        self.index()
+        return self._indxr_ice
 
     def get_indexer_distance(self):
         '''Get the refined distance.'''
