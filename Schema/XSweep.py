@@ -571,6 +571,12 @@ class XSweep(Object):
             if not self._integrated_reflection_file:
                 self._integrater.set_integrater_indexer(self._get_indexer())
 
+                # copy across "is this be icy" information... n.b. this
+                # could change the order of execution?
+
+                self._integrater.set_integrater_ice(
+                    self._get_indexer().get_indexer_ice())
+
             # set the working directory for this, based on the hierarchy
             # defined herein...
 

@@ -152,6 +152,11 @@ class Integrater:
         # anomalous separation may be important for e.g. CORRECT.
         self._intgr_anomalous = None
 
+        # presence of ice rings - 0 indicates "no" anything else
+        # indicates "yes". FIXME this should be able to identify
+        # different resolution rings.
+        self._intgr_ice = 0
+
         # required parameters 
         self._intgr_wedge = None
 
@@ -479,7 +484,6 @@ class Integrater:
 
         while not self.get_integrater_finish_done():
             while not self.get_integrater_done():
-
                 while not self.get_integrater_prepare_done():
 
                     Chatter.write('Preparing to do some integration...')
@@ -549,6 +553,15 @@ class Integrater:
 
     def get_integrater_anomalous(self):
         return self._intgr_anomalous
+
+    # ice rings
+
+    def set_integrater_ice(self, ice):
+        self._intgr_ice = ice
+        return
+
+    def get_integrater_ice(self):
+        return self._intgr_ice
 
     # these methods which follow should probably be respected by
     # the Mosflm implementation of integrater
