@@ -153,6 +153,9 @@ class XDSIntegrater(FrameProcessor,
 
         if self.get_wavelength():
             correct.set_wavelength(self.get_wavelength())
+
+        if self.get_integrater_ice():
+            correct.set_ice(self.get_integrater_ice())
             
         auto_logfiler(correct, 'CORRECT')
         
