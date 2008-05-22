@@ -1049,6 +1049,11 @@ def Mosflm(DriverType = None):
                 Debug.write('Autoindexing images look icy: %.3f' % \
                             (sum(ice) / len(ice)))
 
+            else:
+                Debug.write('Autoindexing images look ok: %.3f' % \
+                            (sum(ice) / len(ice)))
+                
+
             return
 
         def _integrate_prepare(self):
