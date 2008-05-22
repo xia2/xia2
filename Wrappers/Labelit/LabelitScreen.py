@@ -114,6 +114,7 @@ from Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
 from lib.Guff import auto_logfiler
 from Handlers.Streams import Chatter, Debug
 from Handlers.Citations import Citations
+from Modules.IceId import IceId
 
 def LabelitScreen(DriverType = None):
     '''Factory for LabelitScreen wrapper classes, with the specified
