@@ -92,6 +92,8 @@ def XDSCorrect(DriverType = None):
 
             self._output_data_files_list = ['GXPARM.XDS']
 
+            self._ice = 0
+
             # the following input files are also required:
             # 
             # INTEGRATE.HKL
@@ -118,6 +120,10 @@ def XDSCorrect(DriverType = None):
 
         def set_cell(self, cell):
             self._cell = cell
+            return
+
+        def set_ice(self, ice):
+            self._ice = ice
             return
 
         def set_polarization(self, polarization):
@@ -208,6 +214,19 @@ def XDSCorrect(DriverType = None):
             xds_inp.write('JOB=CORRECT\n')
             xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
                           self._parallel) 
+
+            # check to see if we are excluding ice rings
+            if self._ice != 0:
+                Debug.write('Excluding ice rings')
+                
+                for record in open(os.path.join(
+                    os.environ['XIA2_ROOT'],
+                    'Data', 'Ice','Rings.dat')).readlines():
+                    
+                    resol = tuple(map(float, record.split()[:2]))
+
+                    xds_inp.write('EXCLUDE_RESOLUTION_RANGE= %.2f %.2f' % \
+                                  resol)
 
             # postrefine everything to give better values to the
             # next INTEGRATE run

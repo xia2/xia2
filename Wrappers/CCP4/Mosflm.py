@@ -2277,6 +2277,19 @@ def Mosflm(DriverType = None):
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())
 
+            # check for ice - and if so, exclude (ranges taken from
+            # XDS documentation)
+            if self.get_integrater_ice() != 0:
+
+                Debug.write('Excluding ice rings')
+                
+                for record in open(os.path.join(
+                    os.environ['XIA2_ROOT'],
+                    'Data', 'Ice','Rings.dat')).readlines():
+                    
+                    resol = tuple(map(float, record.split()[:2]))
+                    self.input('resolution exclude %.2f %.2f' % (resol))
+
             # generate the mask information from the detector class
             mask = standard_mask(self._fp_header['detector_class'])
             for m in mask:
