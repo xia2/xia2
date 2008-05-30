@@ -132,9 +132,14 @@ def find_matching_images(template, directory):
     # to turn the template to a regular expression want to replace
     # however many #'s with EXACTLY the same number of [0-9] tokens,
     # e.g. ### -> ([0-9]{3})
+
+    # change 30/may/2008 - now escape the template in this search to cope with
+    # file templates with special characters in them, such as "+" -
+    # fix to a problem reported by Joel B.
     
     length = template.count('#')
-    regexp = re.compile(template.replace('#' * length, '([0-9]{%d})' % length))
+    regexp_text = re.escape(template).replace('\\#' * length, '([0-9]{%d})' % length)
+    regexp = re.compile(regexp_text)
 
     images = []
 
@@ -289,10 +294,12 @@ if __name__ == '__main__':
 
     template = image2template(tail)
 
+    print 'template: %s' % template
+
     images = find_matching_images(template, head)
+
+    print 'images:   %d to %d' % (min(images), max(images))
 
     template, images, offset = digest_template(template, images)
     
-    print 'template: %s' % template
-    print 'images:   %d to %d' % (min(images), max(images))
     print 'offset:   %d' % offset
