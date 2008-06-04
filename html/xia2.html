@@ -411,6 +411,14 @@ END PROJECT TS01
     
     <h1>Release Notes</h1>
 
+    <p>Changes since 0.2.6.4</p>
+    <ul>
+      <li>Now handles complex image names with e.g. + in them correctly.</li>
+      <li>New option for processing <pre>-3dii</pre> added - this will run 
+	the 3D pipeline (XDS, XSCALE) using all images for spot picking and
+	autoindexing - useful for properly tricky cases.</li>
+    </ul>
+
     <p>Changes since 0.2.6.3</p>
     <ul>
       <li>Added possibility to give a reflection file with an existing
@@ -707,7 +715,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Thu Mar 13 08:13:07 GMT 2008
+Last modified: Wed Jun 04 13:45:14 GMT Standard Time 2008
 <!-- hhmts end -->
   </body>
 </html>
