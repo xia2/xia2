@@ -49,8 +49,8 @@ from lib.Guff import auto_logfiler
 from Handlers.Streams import Chatter, Debug
 from Handlers.Flags import Flags
 
-class XDSIndexer(FrameProcessor,
-                 Indexer):
+class XDSIndexerII(FrameProcessor,
+                   Indexer):
     '''An implementation of the Indexer interface using XDS.'''
 
     def __init__(self):
@@ -426,7 +426,8 @@ if __name__ == '__main__':
 
     xi = XDSIndexerII()
 
-    directory = os.path.join('/data', 'graeme', 'insulin', 'demo')
+    directory = os.path.join(os.environ['X2TD_ROOT'], 
+                             'DL', 'insulin', 'images')
 
     xi.setup_from_image(os.path.join(directory, 'insulin_1_001.img'))
 
