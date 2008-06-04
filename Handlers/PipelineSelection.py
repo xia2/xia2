@@ -18,11 +18,11 @@ def check(key, value):
 
     # this should be current!
 
-    allowed_indexers = ['mosflm', 'labelit', 'xds']
+    allowed_indexers = ['mosflm', 'labelit', 'xds', 'xdsii']
     allowed_integraters = ['mosflm', 'xds']
     allowed_scalers = ['ccp4', 'xds']
 
-    potential_indexers = ['mosflm', 'labelit', 'xds']
+    potential_indexers = ['mosflm', 'labelit', 'xds', 'xdsii']
     potential_integraters = ['mosflm', 'xds']
     potential_scalers = ['ccp4', 'xds']
 

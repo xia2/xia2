@@ -88,6 +88,7 @@ class _CommandLine(Object):
         self._read_norefine()
         self._read_2d()
         self._read_3d()
+        self._read_3dii()
         self._read_migrate_data()
         self._read_zero_dose()
 
@@ -651,6 +652,15 @@ class _CommandLine(Object):
             add_preference('integrater', 'xds')
             add_preference('scaler', 'xds')
             Debug.write('3D pipeline selected')
+        return
+
+    def _read_3dii(self):
+
+        if '-3dii' in sys.argv:
+            add_preference('indexer', 'xdsii')
+            add_preference('integrater', 'xds')
+            add_preference('scaler', 'xds')
+            Debug.write('3D II pipeline selected')
         return
 
     def _read_debug(self):
