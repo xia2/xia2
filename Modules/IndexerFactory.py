@@ -44,6 +44,7 @@ sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 from Wrappers.Labelit.LabelitScreen import LabelitScreen
 from Wrappers.CCP4.Mosflm import Mosflm
 from Modules.XDSIndexer import XDSIndexer
+from Modules.XDSIndexerII import XDSIndexerII
 
 from Exceptions.NotAvailableError import NotAvailableError
 from Handlers.Streams import Admin, Debug
@@ -158,6 +159,15 @@ def Indexer(detector = None):
                 raise RuntimeError, 'preselected indexer xds not available'
             pass
 
+    if not indexer and (not preselection or preselection == 'xdsii'):
+        try:
+            indexer = XDSIndexerII()
+            Admin.write('Using XDS II Indexer')
+        except NotAvailableError, e:
+            if preselection:
+                raise RuntimeError, 'preselected indexer xds not available'
+            pass
+
     if not indexer:
         raise RuntimeError, 'no indexer implementations found'
 
@@ -165,13 +175,12 @@ def Indexer(detector = None):
 
 if __name__ == '__main__':
     
-    directory = os.path.join(os.environ['XIA2_ROOT'],
-                             'Data', 'Test', 'Images')
-
+    directory = os.path.join(os.environ['X2TD_ROOT'], 
+                             'DL', 'insulin', 'images')
+    
     i = Indexer()
 
-    i.set_beam((108.9, 105.0))
-    i.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
+    i.setup_from_image(os.path.join(directory, 'insulin_1_001.img'))
 
     print 'Refined beam is: %6.2f %6.2f' % i.get_indexer_beam()
     print 'Distance:        %6.2f' % i.get_indexer_distance()
