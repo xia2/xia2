@@ -25,17 +25,9 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Wrappers.XIA.Diffdump import Diffdump
 from Wrappers.XIA.Printpeaks import Printpeaks
 
+from Modules.Resolution import compute_resolution
+
 # first a couple of jiffy calculation subroutines
-
-def compute_resolution(distance, offset, wavelength):
-    '''Compute the resolution (d spacing) for the provided sample to
-    detector distance, offset on the detector and wavelength. This assumes
-    that the detector is orthogonal to the direct beam.'''
-
-    theta = 0.5 * math.atan(offset / distance)
-    dspacing = 0.5 * wavelength / math.sin(theta)
-
-    return dspacing
 
 def is_ice(dspacing):
     '''Return 1 if this dspacing would place the reflection within a
