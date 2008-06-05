@@ -136,7 +136,7 @@ def sort_resolution(reflections):
     result = []
 
     for r in reflections:
-        result.append((r[2], r[1] / r[1]))
+        result.append((r[2], r[0] / r[1]))
 
     result.sort()
 
@@ -203,8 +203,8 @@ def sph_smooth(reflections, nrefl):
     for j in range(1, q - 1):
         r3 = r2[(j - 1) * nrefl:(j + 1) * nrefl]
         r = r2[j * nrefl][0]
-        h = min(math.fabs(r3[0][0] - r),
-                math.fabs(r3[-1][0] - r))
+        h = 0.5 * min(math.fabs(r3[0][0] - r),
+                      math.fabs(r3[-1][0] - r))
         A = 0
         W = 0
 
