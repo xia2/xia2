@@ -331,6 +331,46 @@ def Scala(DriverType = None):
 
             return
 
+        def sum(self):
+            '''Sum a set of reflections in a sorted mtz file - this will
+            just sum partials to make whole reflections, initially for
+            resolution analysis.'''
+
+            self.check_hklin()
+            self.check_hklout()
+
+            self.start()
+
+            self.input('run 1 all')
+            self.input('scales constant')
+            self.input('output unmerged')
+            self.input('sdcorrection noadjust 1.0 0.0 0.0')
+
+            self.close_wait()
+
+            # check for errors
+
+            try:
+                self.check_for_errors()
+                self.check_ccp4_errors()
+                self.check_scala_errors()
+
+                status = self.get_ccp4_status()
+
+                if 'Error' in status:
+                    raise RuntimeError, '[SCALA] %s' % status
+                    
+            except RuntimeError, e:
+                try:
+                    os.remove(self.get_hklout())
+                except:
+                    pass
+
+                raise e
+
+            return self.get_ccp4_status()
+
+
         def merge(self):
             '''Actually merge the already scaled reflections.'''
 
