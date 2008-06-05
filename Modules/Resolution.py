@@ -130,6 +130,76 @@ def nint(a):
 
     return i
 
+def sort_resolution(reflections):
+    '''Sort the reflections as (resolution, isigma).'''
+
+    result = []
+
+    for r in reflections:
+        result.append((r[2], r[1] / r[1]))
+
+    result.sort()
+
+    return result
+
+def sph_kernel(r, h):
+    '''A cubic spline SPH kernel in one dimension.'''
+
+    if r < 0:
+        raise RuntimeError, 'negative r'
+
+    if h < 0:
+        raise RuntimeError, 'negative h'
+
+    x = r / h
+    k = 13.0 / 12.0
+
+    if x > 2:
+        return 0
+
+    if x > 1:
+        return k * 0.25 * math.pow(2 - x, 3)
+
+    return k * (1 - 1.5 * math.pow(x, 2) + 0.75 * math.pow(x, 3))
+
+def sph_smooth(reflections, nrefl):
+    '''Using an SPH-like scheme, calculate the smoothed distribution of
+    I/sigma across the (nearly) whole resolution range.'''
+
+    # first pass - work out the bin sizes etc.
+
+    nbins = nint((1.0 / nrefl) * len(reflections))
+
+    # first find min, max resolution
+
+    dmin = reflections[0][2]
+    dmax = dmin
+
+    for r in reflections:
+        d = r[2]
+        if d > dmax:
+            dmax = d
+        if d < dmin:
+            dmin = d
+
+    # now divide the region into N bins in 1/d^2 spacing
+
+    smin = 1.0 / (dmax * dmax)
+    smax = 1.0 / (dmin * dmin)
+    sd = (smax - smin)
+
+    # now generate the sorted list of I/sigma values
+
+    r2 = sort_resolution(reflections)
+
+    # now need to calculate a density for each point
+
+    density = []
+
+    for r in r2:
+        pass
+        
+
 def bin_resolution(reflections, nrefl):
     '''Get an average (and quartiles) I/sigma as a function of resolution,
     binned to give equally spaced bins with an average of about nrefl
@@ -217,28 +287,31 @@ if __name__ == '__main__':
               (resol[j][0], resol[j][1], means[j], q25[j], q75[j], count[j])
 
     # then make the same test with the mosflm output
+
+    if False:
     
-    mtz_file = os.path.join(os.environ['X2TD_ROOT'],
-                            'Test', 'UnitTest', 'Modules',
-                            'Resolution', 'resolution_test.mtz')
-    
-    mtz_beam = 94.46, 94.54
-    mtz_distance = 156.88
-    mtz_wavelength = 0.9790
-    mtz_pixel = 0.0816, 0.0816
-
-    # first prepare the reflections
-
-    prepare_mtz(mtz_file, 'temp.mtz')
-
-    # then read & compute
-
-    refl = read_mtz('temp.mtz', mtz_pixel, mtz_distance,
-                    mtz_wavelength, mtz_beam)
-    
-    resol, means, q25, q75, count = bin_resolution(refl, 1000)
-
-    for j in range(len(resol)):
-        print '%6.2f %6.2f %6.2f %6.2f %6.2f %6d' % \
-              (resol[j][0], resol[j][1], means[j], q25[j], q75[j], count[j])
+        mtz_file = os.path.join(os.environ['X2TD_ROOT'],
+                                'Test', 'UnitTest', 'Modules',
+                                'Resolution', 'resolution_test.mtz')
+        
+        mtz_beam = 94.46, 94.54
+        mtz_distance = 156.88
+        mtz_wavelength = 0.9790
+        mtz_pixel = 0.0816, 0.0816
+        
+        # first prepare the reflections
+        
+        prepare_mtz(mtz_file, 'temp.mtz')
+        
+        # then read & compute
+        
+        refl = read_mtz('temp.mtz', mtz_pixel, mtz_distance,
+                        mtz_wavelength, mtz_beam)
+        
+        resol, means, q25, q75, count = bin_resolution(refl, 1000)
+        
+        for j in range(len(resol)):
+            print '%6.2f %6.2f %6.2f %6.2f %6.2f %6d' % \
+                  (resol[j][0], resol[j][1], means[j],
+                   q25[j], q75[j], count[j])
     
