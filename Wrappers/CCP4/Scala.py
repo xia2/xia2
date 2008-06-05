@@ -370,7 +370,6 @@ def Scala(DriverType = None):
 
             return self.get_ccp4_status()
 
-
         def merge(self):
             '''Actually merge the already scaled reflections.'''
 

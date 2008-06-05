@@ -54,6 +54,51 @@ def Mtzdump(DriverType = None):
 
             return
 
+        def dump_mosflm_intensities(self):
+            '''Dump the intensities from a mosflm reflection file as a
+            list - this will include the positions of the reflections
+            in detector coordinates.'''
+
+            self.check_hklin()
+
+            self.start()
+            self.input('nref -1')
+            self.close_wait()
+
+            intensities = [ ]
+
+            output = self.get_all_output()
+
+            j = 0
+
+            while j < len(output):
+
+                if 'LIST OF REFLECTIONS' in output[j]:
+
+                    j += 3
+
+                    while not '<B>' in output[j]:
+
+                        record = output[j].split()
+                        for o in output[j + 1].split():
+                            record.append(o)
+                        for o in output[j + 2].split():
+                            record.append(o)
+
+                        h, k, l = tuple(map(int, record[:3]))
+                        batch = int(record[4])
+                        I, sig_I = tuple(map(float, record[5:7]))
+                        xdet, ydet = tuple(map(float, record[8:10]))
+
+                        intensities.append((h, k, l, I, sig_I,
+                                            batch, xdet, ydet))
+
+                        j += 3
+                j += 1
+
+
+            return intensities
+
         def dump_intensities(self):
             '''Actually dump the intensities from the reflection file -
             useful for reading values from unmerged intensity files.'''
