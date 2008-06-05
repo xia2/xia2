@@ -192,13 +192,31 @@ def sph_smooth(reflections, nrefl):
 
     r2 = sort_resolution(reflections)
 
-    # now need to calculate a density for each point
+    # now to calculate the smoothed I/sigma vs. resolution - this can be
+    # achieved simply by stepping through the sorted list of reflections with
+    # nrefl sized steps...
 
-    density = []
+    q = len(r2) / nrefl
 
-    for r in r2:
-        pass
-        
+    result = []
+
+    for j in range(1, q - 1):
+        r3 = r2[(j - 1) * nrefl:(j + 1) * nrefl]
+        r = r2[j * nrefl][0]
+        h = min(math.fabs(r3[0][0] - r),
+                math.fabs(r3[-1][0] - r))
+        A = 0
+        W = 0
+
+        for _r in r3:
+            d = math.fabs(_r[0] - r)
+            w = sph_kernel(d, h)
+            A += w * _r[1]
+            W += w
+
+        result.append((r, A / W))
+
+    return result
 
 def bin_resolution(reflections, nrefl):
     '''Get an average (and quartiles) I/sigma as a function of resolution,
@@ -285,6 +303,11 @@ if __name__ == '__main__':
     for j in range(len(resol)):
         print '%6.2f %6.2f %6.2f %6.2f %6.2f %6d' % \
               (resol[j][0], resol[j][1], means[j], q25[j], q75[j], count[j])
+
+    sph = sph_smooth(refl, 1000)
+
+    for s in sph:
+        print '%6.2f %6.2f' % s
 
     # then make the same test with the mosflm output
 
