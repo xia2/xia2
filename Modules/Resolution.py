@@ -287,7 +287,7 @@ def sph_inv_to_resolution(sph_inv, isigma):
     isigmas = [si[0] for si in sph_inv]
     resolutions = [si[1] for si in sph_inv]
 
-    if isigma < max(isigmas):
+    if isigma > max(isigmas):
         raise RuntimeError, 'no data stronger than %.2f' % isigma
 
     if isigma < min(isigmas):
