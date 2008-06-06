@@ -300,14 +300,22 @@ if __name__ == '__main__':
     
     resol, means, q25, q75, count = bin_resolution(refl, 1000)
 
-    for j in range(len(resol)):
-        print '%6.2f %6.2f %6.2f %6.2f %6.2f %6d' % \
-              (resol[j][0], resol[j][1], means[j], q25[j], q75[j], count[j])
+    # for j in range(len(resol)):
+    # print '%6.2f %6.2f %6.2f %6.2f %6.2f %6d' % \
+    # (resol[j][0], resol[j][1], means[j], q25[j], q75[j], count[j])
 
-    sph = sph_smooth(refl, 1000)
+    for nrefl in 20, 40, 80, 160, 320, 640, 1200, 2500, 5000:
+        
+        print nrefl
 
-    for s in sph:
-        print '%6.2f %6.2f' % s
+        sph = sph_smooth(refl, nrefl)
+
+        fout = open('resol%d.log' % nrefl, 'w')
+
+        for s in sph:
+            fout.write('%6.2f %6.2f\n' % s)
+
+        fout.close()
 
     # then make the same test with the mosflm output
 
