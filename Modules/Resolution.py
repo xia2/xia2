@@ -218,6 +218,97 @@ def sph_smooth(reflections, nrefl):
 
     return result
 
+def sph_smooth_inv(reflections, nrefl):
+    '''Using an SPH-like scheme, calculate the smoothed distribution of
+    I/sigma across the (nearly) whole resolution range. This one will
+    smooth on the I/sigma treating the resolution as the result (as
+    desired)'''
+
+    # first pass - work out the bin sizes etc.
+
+    nbins = nint((1.0 / nrefl) * len(reflections))
+
+    # first find min, max resolution
+
+    imin = reflections[0][0] / reflections[0][1]
+    imax = imin
+
+    for r in reflections:
+        i = r[0] / r[1]
+        if i > imax:
+            imax = i
+        if i < imin:
+            imin = i
+
+    # now generate the sorted list of I/sigma values
+
+    r2 = sort_resolution(reflections)
+
+    # and invert it!
+
+    inverse = []
+    for r in r2:
+        inverse.append((r[1], r[0]))
+
+    inverse.sort()
+
+    # now to calculate the smoothed I/sigma vs. resolution - this can be
+    # achieved simply by stepping through the sorted list of reflections with
+    # nrefl sized steps...
+
+    q = len(inverse) / nrefl
+
+    result = []
+
+    for j in range(1, q - 1):
+        r3 = inverse[(j - 1) * nrefl:(j + 1) * nrefl]
+        r = inverse[j * nrefl][0]
+        h = 0.5 * min(math.fabs(r3[0][0] - r),
+                      math.fabs(r3[-1][0] - r))
+        A = 0
+        W = 0
+
+        for _r in r3:
+            d = math.fabs(_r[0] - r)
+            w = sph_kernel(d, h)
+            A += w * _r[1]
+            W += w
+
+        result.append((r, A / W))
+
+    return result
+
+def sph_inv_to_resolution(sph_inv, isigma):
+    '''Read in a list of (isigma, resolution) from sph_inverse elsewhere
+    and return a sensible value for the resolution at the required I/sigma.'''
+
+    # first check that this is possible
+
+    isigmas = [si[0] for si in sph_inv]
+    resolutions = [si[1] for si in sph_inv]
+
+    if isigma < max(isigmas):
+        raise RuntimeError, 'no data stronger than %.2f' % isigma
+
+    if isigma < min(isigmas):
+        return min(resolutions)
+
+    # ok, so I will need to accumulate some measurements then - do this
+    # +/- a few points to get an average - I guess that this will need to
+    # allow for varying densities of points... - right now just hack with
+    # all I/sigma values within +- 0.1
+
+    subset = []
+
+    for si in sph_inv:
+        if math.fabs(si[0] - isigma) < 0.1:
+            subset.append(si[1])
+
+    if len(subset) < 3:
+        raise RuntimeError, 'density too low around I/sigma %.2f' % isigma
+
+    return sum(subset) / len(subset)
+
 def bin_resolution(reflections, nrefl):
     '''Get an average (and quartiles) I/sigma as a function of resolution,
     binned to give equally spaced bins with an average of about nrefl
@@ -283,52 +374,46 @@ def bin_resolution(reflections, nrefl):
     
 if __name__ == '__main__':
 
-    # first test XDS file reading etc.
+    if False:
 
-    xds_ascii = os.path.join(os.environ['X2TD_ROOT'],
-                             'Test', 'UnitTest', 'Modules',
-                             'Resolution', 'XDS_ASCII.HKL')
-
-    xds_beam_pixel = 1158.7, 1157.6
-    xds_beam = 94.46, 94.54
-    xds_distance = 156.88
-    xds_wavelength = 0.9790
-    xds_pixel = 0.0816, 0.0816
-
-    refl = read_xds_ascii(xds_ascii, xds_pixel, xds_distance,
-                          xds_wavelength, xds_beam)
-    
-    resol, means, q25, q75, count = bin_resolution(refl, 1000)
-
-    # for j in range(len(resol)):
-    # print '%6.2f %6.2f %6.2f %6.2f %6.2f %6d' % \
-    # (resol[j][0], resol[j][1], means[j], q25[j], q75[j], count[j])
-
-    for nrefl in 20, 40, 80, 160, 320, 640, 1200, 2500, 5000:
+        # first test XDS file reading etc.
         
-        print nrefl
-
-        sph = sph_smooth(refl, nrefl)
-
-        fout = open('resol%d.log' % nrefl, 'w')
-
+        xds_ascii = os.path.join(os.environ['X2TD_ROOT'],
+                                 'Test', 'UnitTest', 'Modules',
+                                 'Resolution', 'XDS_ASCII.HKL')
+        
+        xds_beam_pixel = 1158.7, 1157.6
+        xds_beam = 94.46, 94.54
+        xds_distance = 156.88
+        xds_wavelength = 0.9790
+        xds_pixel = 0.0816, 0.0816
+        
+        refl = read_xds_ascii(xds_ascii, xds_pixel, xds_distance,
+                              xds_wavelength, xds_beam)
+        
+        resol, means, q25, q75, count = bin_resolution(refl, 1000)
+        
+        # for j in range(len(resol)):
+        # print '%6.2f %6.2f %6.2f %6.2f %6.2f %6d' % \
+        # (resol[j][0], resol[j][1], means[j], q25[j], q75[j], count[j])
+        
+        sph = sph_smooth_inv(refl, 1000)
+        
         for s in sph:
-            fout.write('%6.2f %6.2f\n' % s)
-
-        fout.close()
-
+            print '%6.2f %6.2f' % s
+            
     # then make the same test with the mosflm output
 
-    if False:
+    if True:
     
         mtz_file = os.path.join(os.environ['X2TD_ROOT'],
                                 'Test', 'UnitTest', 'Modules',
-                                'Resolution', 'resolution_test.mtz')
+                                'Resolution', 'resolution_test_2.mtz')
         
-        mtz_beam = 94.46, 94.54
-        mtz_distance = 156.88
-        mtz_wavelength = 0.9790
-        mtz_pixel = 0.0816, 0.0816
+        mtz_beam = 112.10, 112.38
+        mtz_distance = 100.10
+        mtz_wavelength = 0.89998
+        mtz_pixel = 0.07324, 0.07324
         
         # first prepare the reflections
         
@@ -341,8 +426,8 @@ if __name__ == '__main__':
         
         resol, means, q25, q75, count = bin_resolution(refl, 1000)
         
-        for j in range(len(resol)):
-            print '%6.2f %6.2f %6.2f %6.2f %6.2f %6d' % \
-                  (resol[j][0], resol[j][1], means[j],
-                   q25[j], q75[j], count[j])
-    
+        sph = sph_smooth_inv(refl, 1000)
+
+        for isigma in 1.0, 2.0, 3.0:
+            resol = sph_inv_to_resolution(sph, isigma)
+            print '%.2f %.2f' % (isigma, resol)
