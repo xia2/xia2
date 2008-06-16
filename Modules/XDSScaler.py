@@ -561,7 +561,7 @@ class XDSScaler(Scaler):
                         Chatter.write('Lattice %s ok for sweep %s' % \
                                       (correct_lattice, sname))
                     elif state == 'impossible':
-                        raise RuntimeError, 'Lattice %s impossible for %s' \
+                        raise RuntimeError, 'Lattice %s impossible for %s' % \
                               (correct_lattice, sname)
                     elif state == 'possible':
                         Chatter.write('Lattice %s assigned for sweep %s' % \
