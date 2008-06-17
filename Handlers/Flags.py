@@ -49,7 +49,7 @@ class _Flags:
         self._lattice = None
 
         # and these for the mosflm implementation
-        self._cellref_mode = 'both'
+        self._cellref_mode = 'new'
         self._old_mosflm = False
 
         # and these are general rejection criteria
@@ -71,7 +71,9 @@ class _Flags:
         return self._ccp4_61
 
     def set_cellref_mode(self, cellref_mode):
-        if not cellref_mode in ['default', 'parallel', 'orthogonal', 'both']:
+        if not cellref_mode in ['default', 'parallel',
+                                'orthogonal', 'both',
+                                'new']:
             raise RuntimeError, 'cellref_mode %s unknown' % cellref_mode
 
         self._cellref_mode = cellref_mode

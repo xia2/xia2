@@ -249,6 +249,10 @@ from Wrappers.XIA.Diffdump import Diffdump
 from Wrappers.XIA.Printpeaks import Printpeaks
 from Modules.IceId import IceId
 
+# cell refinement image helpers
+
+from Modules.CellRefImageSelect import identify_perpendicular_axes
+
 def Mosflm(DriverType = None):
     '''A factory for MosflmWrapper classes.'''
 
@@ -505,6 +509,107 @@ def Mosflm(DriverType = None):
             return wedges
 
 
+        def _new_refine_select_images(self):
+            '''Link function through to identify_perpendicular_axes.'''
+
+            indxr = self.get_integrater_indexer()
+            lattice = indxr.get_indexer_lattice()
+            mosaic = indxr.get_indexer_mosaic()
+            matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
+
+            input_matrix = ''
+            for m in matrix:
+                input_matrix += '%s\n' % m
+
+            # get the list of possible phi ranges
+
+            images = self.get_matching_images()
+            images.sort()
+
+            phi_width = self.get_header_item('phi_width')
+            phi_start = self.get_header_item('phi_start')
+            phi_end = phi_start + phi_width * (len(images) - 1)
+
+            half_width = int(max(2, 0.75 * mosaic / phi_width))
+
+            # find the best image centres to use
+
+            input_matrix = ''
+            for m in matrix:
+                input_matrix += '%s\n' % m
+
+            r = identify_perpendicular_axes(phi_start, phi_end, phi_width,
+                                            self.get_wavelength(), lattice,
+                                            input_matrix)
+
+            Debug.write('CR Image identification:')
+            Debug.write('A: %.2f %.2f %4d' % (r[0], r[3], r[6] + images[0]))
+            Debug.write('B: %.2f %.2f %4d' % (r[1], r[4], r[7] + images[0]))
+            Debug.write('C: %.2f %.2f %4d' % (r[2], r[5], r[8] + images[0]))
+
+            ia, ib, ic = r[-3:]
+
+            ia += images[0]
+            ib += images[0]
+            ic += images[0]
+
+            # now try to construct the wedges around this
+
+            # NB need to consider the case where the wedge is too
+            # small...
+
+            wedges = []
+
+            if (ia - half_width) in images and \
+               (ia + half_width) in images:
+                wedges.append((ia - half_width, ia + half_width))
+            elif ia - half_width < min(images):
+                wedges.append((images[0], images[0] + 2 * half_width))
+            elif ia + half_width > max(images):
+                wedges.append((images[-1] - 2 * half_width, images[-1]))
+            else:
+                raise RuntimeError, 'unexpected conclusion...'
+
+            if (ib - half_width) in images and \
+               (ib + half_width) in images:
+                wedges.append((ib - half_width, ib + half_width))
+            elif ib - half_width < min(images):
+                wedges.append((images[0], images[0] + 2 * half_width))
+            elif ib + half_width > max(images):
+                wedges.append((images[-1] - 2 * half_width, images[-1]))
+            else:
+                raise RuntimeError, 'unexpected conclusion...'
+
+            if (ic - half_width) in images and \
+               (ic + half_width) in images:
+                wedges.append((ic - half_width, ic + half_width))
+            elif ic - half_width < min(images):
+                wedges.append((images[0], images[0] + 2 * half_width))
+            elif ic + half_width > max(images):
+                wedges.append((images[-1] - 2 * half_width, images[-1]))
+            else:
+                raise RuntimeError, 'unexpected conclusion...'
+
+            # now redue these to fewer wedges if appropriate...
+
+            wedges.sort()
+
+            new_wedges = [wedges[0]]
+
+            for j in range(1, len(wedges)):
+                if wedges[j][0] <= new_wedges[-1][1]:
+                    # just extend the end wedge - have to replace
+                    new = (new_wedges[-1][0], wedges[j][1])
+                    new_wedges[-1] = new
+                else:
+                    new_wedges.append(wedges[j])
+
+            Debug.write('Selected images for cell refinement:')
+            for w in new_wedges:
+                Debug.write('[%d -> %d]' % w)
+
+            return new_wedges
+
         def _intelligent_refine_select_images_ortho(self):
             '''Return wedges around phi points where the reciprocal
             cell axes are close to being perpendicular to the detector
@@ -603,6 +708,9 @@ def Mosflm(DriverType = None):
             cell_ref_images = []
 
             cellref_mode = Flags.get_cellref_mode()
+
+            if cellref_mode == 'new':
+                return self._new_refine_select_images()
 
             if cellref_mode == 'both' or cellref_mode == 'parallel':
                 for wedge in self._intelligent_refine_select_images_parallel():

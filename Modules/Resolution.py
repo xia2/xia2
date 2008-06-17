@@ -428,6 +428,6 @@ if __name__ == '__main__':
         
         sph = sph_smooth_inv(refl, 1000)
 
-        for isigma in 1.0, 2.0, 3.0:
+        for isigma in 0.5, 1.0, 2.0, 3.0:
             resol = sph_inv_to_resolution(sph, isigma)
             print '%.2f %.2f' % (isigma, resol)

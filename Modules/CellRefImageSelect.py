@@ -490,6 +490,11 @@ def identify_perpendicular_axes(phi_start, phi_end, phi_width,
 
     i = 0
 
+    # only consider the first 180 degrees of data...
+
+    if phi_end - phi_start > 180:
+        phi_end = phi_start + 180
+
     while phi < phi_end:
         RX = rot_x(phi)
 
