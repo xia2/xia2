@@ -152,6 +152,11 @@ def XDSIntegrate(DriverType = None):
             # write out lots of output
             xds_inp.write('TEST=2\n')
 
+            # hack for the moment for weak diffraction
+            # Debug.write('Setting DELPHI=10.0 in XDS INTEGRATE')
+            # xds_inp.write('DELPHI=10.0\n')
+            
+
             fixed_2401 = True
 
             if self._refined_xparm and fixed_2401:

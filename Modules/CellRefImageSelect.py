@@ -263,7 +263,7 @@ def MosflmCellRefine(DriverType = None):
             autoindexing solution will already be for P1.'''
 
 
-            if not self._wedges
+            if not self._wedges:
                 raise RuntimeError, 'wedges must be assigned already'
 
             open(os.path.join(self.get_working_directory(),
@@ -321,7 +321,7 @@ def MosflmCellRefine(DriverType = None):
             return rms_values
             
 def yah_whatever():
-    
+    pass
     
 
 # one liner around mosflm cell refinement
@@ -456,7 +456,103 @@ def compute_something_else(phi_start, phi_end, phi_width,
 
 # repeat
 
+
+def identify_perpendicular_axes(phi_start, phi_end, phi_width,
+                                wavelength, lattice, matrix):
+    '''Find phi values which present the primitive unit cell axes as
+    near as possible to being perpendicular to the beam vector.'''
+
+    # FIXME should add a test in here that the mosflm orientation matrix
+    # corresponds to the asserted lattice...
+
+    # compute the P1 real-space cell axes
+
+    a, b, c = mosflm_a_matrix_to_real_space(wavelength, lattice, matrix)
+
+    # compute rotations of these and find minimum for axis.Z - that is the
+    # Z component of the rotated axis... check workings and definitions!
+
+    phi = phi_start + 0.5 * phi_width
+
+    # initialize search variables
+
+    phi_a = phi_start
+    phi_b = phi_start
+    phi_c = phi_start
+
+    dot_a = 100.0
+    dot_b = 100.0
+    dot_c = 100.0
+
+    ia = 0
+    ib = 0
+    ic = 0
+
+    i = 0
+
+    while phi < phi_end:
+        RX = rot_x(phi)
+
+        RXa = matvecmul(RX, a)
+        RXb = matvecmul(RX, b)
+        RXc = matvecmul(RX, c)
+
+        if math.fabs(RXa[2]) < dot_a:
+            dot_a = math.fabs(RXa[2])
+            phi_a = phi
+            ia = i
+
+        if math.fabs(RXb[2]) < dot_b:
+            dot_b = math.fabs(RXb[2])
+            phi_b = phi
+            ib = i
+
+        if math.fabs(RXc[2]) < dot_c:
+            dot_c = math.fabs(RXc[2])
+            phi_c = phi
+            ic = i
+
+        phi += phi_width
+        i += 1
+
+    length_a = math.sqrt(dot(a, a))
+    length_b = math.sqrt(dot(b, b))
+    length_c = math.sqrt(dot(c, c))
+
+    rtod = 180.0 / math.pi
+
+    angle_a = math.fabs(90.0 - rtod * math.acos(dot_a / length_a))
+    angle_b = math.fabs(90.0 - rtod * math.acos(dot_b / length_b))
+    angle_c = math.fabs(90.0 - rtod * math.acos(dot_c / length_c))
+
+    # return the closest positions and the angular offset from
+    # perpendicularity...
+
+    return phi_a, phi_b, phi_c, angle_a, angle_b, angle_c, ia, ib, ic
+
 if __name__ == '__main__':
+    matrix = ''' -0.00417059 -0.00089426 -0.01139821
+ -0.00084328 -0.01388561  0.01379631
+ -0.00121258  0.01273236  0.01424531
+      -0.099       0.451      -0.013
+ -0.94263428 -0.04741397 -0.33044314
+ -0.19059871 -0.73622239  0.64934635
+ -0.27406719  0.67507666  0.68495023
+    228.0796     52.5895     44.1177     90.0000    100.6078     90.0000
+     -0.0985      0.4512     -0.0134'''
+
+    phi_start = 161.0
+    phi_width = 0.5
+    phi_end = 251.0
+
+    phi_a, phi_b, phi_c, da, db, dc, ia, ib, ic = identify_perpendicular_axes(
+        phi_start, phi_end, phi_width, 0.99187, 'mC', matrix)
+
+    print 'A: %.2f %.2f %3d' % (phi_a, da, ia + 1)
+    print 'B: %.2f %.2f %3d' % (phi_b, db, ib + 1)
+    print 'C: %.2f %.2f %3d' % (phi_c, dc, ic + 1)
+
+if __name__ == '__main_oldQ__':
 
     # assign the image name here... need user input checking
 
