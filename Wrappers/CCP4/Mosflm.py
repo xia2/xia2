@@ -1534,6 +1534,7 @@ def Mosflm(DriverType = None):
                        (lim_x, lim_y))            
 
             # fudge factors to prevent Mosflm from being too fussy
+            self.input('separation close')
             self.input('refinement residual 10.0')
             self.input('refinement include partials')
 
@@ -1793,6 +1794,7 @@ def Mosflm(DriverType = None):
                 self.input('%s %s' % (p, str(parameters[p])))
 
             # fudge factors to prevent Mosflm from being too fussy
+            self.input('separation close')
             self.input('refinement residual 10.0')
             self.input('refinement include partials')
 
