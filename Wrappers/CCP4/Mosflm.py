@@ -1056,6 +1056,112 @@ def Mosflm(DriverType = None):
 
             return
 
+
+        # METHOD to help cell refinement - if the autoindexing has been done
+        # with another program, it could be helpful to run autoindexing
+        # with Mosflm (not to keep the results, mind) to get these parameters
+        # out - for example raster parameters etc.
+
+        def _mosflm_generate_raster(self, _images):
+            '''Get out the parameters from autoindexing without using the
+            result - this is probably ok as it is quite quick ;o).'''
+
+            # reset the log file tracking and whatnot
+
+            self.reset()
+
+            # have to get the images to use into here somehow - work through
+            # using the first image from each cell refinement wedge? that
+            # would probably hit the spot...
+                    
+            auto_logfiler(self)
+
+            Debug.write('Running mosflm to generate RASTER, SEPARATION')
+            
+            self.start()
+
+            self.input('template "%s"' % self.get_template())
+            self.input('directory "%s"' % self.get_directory())
+            self.input('newmat xiaindex.mat')
+
+            if self.get_beam_prov() == 'user':
+                self.input('beam %f %f' % self.get_beam())
+
+            if self.get_wavelength_prov() == 'user':
+                self.input('wavelength %f' % self.get_wavelength())
+
+            if self.get_distance_prov() == 'user':
+                self.input('distance %f' % self.get_distance())
+
+            # Added printpeaks check which should be interesting...
+
+            if not self._mosflm_autoindex_thresh:
+
+                # miniCBF is not currently supported - so use default
+                # I/sigma of 20 for those...
+
+                try:
+
+                    min_peaks = 200
+                    Debug.write('Aiming for at least %d spots...' % min_peaks)
+                    thresholds = []
+                    
+                    for i in _images:
+                        
+                        p = Printpeaks()
+                        p.set_image(self.get_image_name(i))
+                        thresh = p.threshold(min_peaks)
+                        
+                        Debug.write('Autoindex threshold for image %d: %d' % \
+                                    (i, thresh))
+
+                        thresholds.append(thresh)
+                
+                    thresh = min(thresholds)
+                    self._mosflm_autoindex_thresh = thresh
+
+                except exceptions.Exception, e:
+                    Debug.write('Error computing threshold: %s' % str(e))
+                    Debug.write('Using default of 20.0')
+                    thresh = 20.0
+                
+            else:
+                thresh = self._mosflm_autoindex_thresh
+
+            Debug.write('Using autoindex threshold: %d' % thresh)
+
+            for i in _images:
+
+                self.input(
+                    'autoindex dps refine image %d thresh %d' % \
+                    (i, thresh))
+
+            self.input('mosaic estimate')
+            self.input('go')
+
+            self.close_wait()
+
+            intgr_params = { }
+
+            output = self.get_all_output()
+
+            for o in output:
+
+                # record raster parameters and so on, useful for the
+                # cell refinement etc - this will be added to a
+                # payload dictionary of mosflm integration keywords
+                # look for "measurement box parameters"
+
+                if 'parameters have been set to' in o:
+                    intgr_params['raster'] = map(
+                        int, o.split()[-5:])
+
+                if '(currently SEPARATION' in o:
+                    intgr_params['separation'] = map(
+                        float, o.replace(')', '').split()[-2:])
+                    
+            return intgr_params
+
         def _integrate_prepare(self):
             '''Prepare for integration - note that if there is a reason
             why this is needed to be run again, set self._intgr_prepare_done
@@ -1100,11 +1206,44 @@ def Mosflm(DriverType = None):
                 self._mosflm_cell_ref_images = self._refine_select_images(
                     num_wedges, mosaic)
 
+
+            indxr = self.get_integrater_indexer()
+
+            # in here, check to see if we have the raster parameters and
+            # separation from indexing - if we used a different indexer
+            # we may not, so if this is the case call a function to generate
+            # them...
+
+            if not indxr.get_indexer_payload(
+                'mosflm_integration_parameters'):
+
+                # generate a list of first images
+
+                images = []
+                for cri in self._mosflm_cell_ref_images:
+                    images.append(cri[0])
+
+                images.sort()
+
+                integration_params = self._mosflm_generate_raster(images)
+
+                # copy them over to where they are needed
+
+                if integration_params.has_key('separation'):
+                    self.set_integrater_parameter(
+                        'mosflm', 'separation',
+                        '%f %f' % tuple(integration_params['separation']))
+                if integration_params.has_key('raster'):
+                    self.set_integrater_parameter(
+                        'mosflm', 'raster',
+                        '%d %d %d %d %d' % tuple(integration_params['raster']))
+
+            
             # next test the cell refinement with the correct lattice
             # and P1 and see how the numbers stack up...
 
             # copy the cell refinement resolution in...
-            indxr = self.get_integrater_indexer()
+
             self._mosflm_cell_ref_resolution = indxr.get_indexer_resolution()
 
             Debug.write(
@@ -1533,7 +1672,7 @@ def Mosflm(DriverType = None):
                         'mosflm', 'raster',
                         '%d %d %d %d %d' % tuple(integration_params['raster']))
                     
-            indxr.set_indexer_payload('mosflm_integration_params', None)
+            indxr.set_indexer_payload('mosflm_integration_parameters', None)
 
             # copy these into myself for later reference, if indexer
             # is not myself - everything else is copied via the
@@ -2216,7 +2355,7 @@ def Mosflm(DriverType = None):
                         'mosflm', 'raster',
                         '%d %d %d %d %d' % tuple(integration_params['raster']))
                     
-            indxr.set_indexer_payload('mosflm_integration_params', None)
+            indxr.set_indexer_payload('mosflm_integration_parameters', None)
 
             # here need to check the LATTICE - which will be
             # something like tP etc. FIXME how to cope when the
