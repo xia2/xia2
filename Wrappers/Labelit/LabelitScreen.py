@@ -476,10 +476,10 @@ def LabelitScreen(DriverType = None):
                     y = float(l[5].replace('mm,', ''))
                     
                     self._indxr_refined_beam = (x, y)
-                    self._indxr_refined_distance = float(l[7].replace('mm', ''))
+                    self._indxr_refined_distance = float(
+                        l[7].replace('mm', ''))
 
                     self._mosaic = float(l[10].replace('mosaicity=', ''))
-
 
                 if l[:3] == ['Solution', 'Metric', 'fit']:
                     break

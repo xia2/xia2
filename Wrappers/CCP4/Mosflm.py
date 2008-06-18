@@ -1589,8 +1589,12 @@ def Mosflm(DriverType = None):
             self.input('distance %f' % distance)
 
             self.input('symmetry %s' % spacegroup_number)
-                
-            self.input('mosaic %f' % mosaic)
+
+            # FIXME 18/JUN/08 - it may help to have an overestimate
+            # of the mosaic spread in here as it *may* refine down
+            # better than up...
+            
+            self.input('mosaic %f' % (2.0 * mosaic))
 
             # if set, use the resolution for cell refinement - see
             # bug # 2078...
@@ -1872,7 +1876,11 @@ def Mosflm(DriverType = None):
             else:
                 self.input('symmetry %s' % spacegroup_number)
                 
-            self.input('mosaic %f' % mosaic)
+            # FIXME 18/JUN/08 - it may help to have an overestimate
+            # of the mosaic spread in here as it *may* refine down
+            # better than up...
+            
+            self.input('mosaic %f' % (2.0 * mosaic))
 
             if self._mosflm_postref_fix_mosaic:
                 self.input('postref fix mosaic')
