@@ -1592,9 +1592,11 @@ def Mosflm(DriverType = None):
 
             # FIXME 18/JUN/08 - it may help to have an overestimate
             # of the mosaic spread in here as it *may* refine down
-            # better than up...
-            
-            self.input('mosaic %f' % (2.0 * mosaic))
+            # better than up... - this is not a good idea as it may
+            # also not refine at all! - 12972 # integration failed
+            # Bug # 3103            
+            # self.input('mosaic %f' % (2.0 * mosaic))
+            self.input('mosaic %f' % mosaic)
 
             # if set, use the resolution for cell refinement - see
             # bug # 2078...
@@ -1878,9 +1880,11 @@ def Mosflm(DriverType = None):
                 
             # FIXME 18/JUN/08 - it may help to have an overestimate
             # of the mosaic spread in here as it *may* refine down
-            # better than up...
-            
-            self.input('mosaic %f' % (2.0 * mosaic))
+            # better than up... - this is not a good idea as it may
+            # also not refine at all! - 12972 # integration failed
+            # Bug # 3103
+            # self.input('mosaic %f' % (2.0 * mosaic))
+            self.input('mosaic %f' % mosaic)
 
             if self._mosflm_postref_fix_mosaic:
                 self.input('postref fix mosaic')
@@ -2278,7 +2282,11 @@ def Mosflm(DriverType = None):
                             # Debug.write(
                             # 'Mosaic spread refining negative => fix!')
                             # self._mosflm_postref_fix_mosaic = True
-                        
+
+                            # FIXME - in here want to perhaps consider trying
+                            # to double the mosaic spread and giving it
+                            # another go... may get messy though..!
+                            
                             raise BadLatticeError, 'refinement failed: ' + \
                                   'negative mosaic spread'
                         
