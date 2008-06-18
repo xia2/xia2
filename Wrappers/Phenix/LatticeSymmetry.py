@@ -151,6 +151,9 @@ def LatticeSymmetry(DriverType = None):
         def get_lattices(self):
             return self._lattices
 
+        def get_distortion(self, lattice):
+            return self._distortions[lattice]
+
         def get_cell(self, lattice):
             return self._cells[lattice]
 
