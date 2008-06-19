@@ -25,6 +25,42 @@ from Environment import Environment
 from Handlers.Streams import Chatter, Debug
 from Handlers.Flags import Flags
 
+def get_mosflm_commands(lines_of_input):
+    '''Get the commands which were sent to Mosflm.'''
+
+    result = []
+
+    for line in lines_of_input:
+        if '===>' in line:
+            result.append(line.replace('===>', '').strip())
+        if 'MOSFLM =>' in line:
+            result.append(line.replace('MOSFLM =>', '').strip())
+
+    return result
+
+def get_ccp4_commands(lines_of_input):
+    '''Get the commands which were sent to a CCP4 program.'''
+
+    # first look through for hklin / hklout
+
+    logicals = { }
+
+    for line in lines_of_input:
+        if 'Logical Name:' in line:
+            token = line.split(':')[1].split()[0]
+            value = line.split(':')[-1].strip()
+            logicals[token] = value
+
+    # then look for standard input commands
+
+    script = []
+
+    for line in lines_of_input:
+        if 'Data line---' in line:
+            script.append(line.replace('Data line---', '').strip())
+
+    return script, logicals
+
 class _FileHandler:
     '''A singleton class to manage files.'''
 
@@ -90,6 +126,78 @@ class _FileHandler:
                     time.strftime("%Hh %Mm %Ss", time.gmtime(duration)))
 
         return self._data_migrate[directory]
+
+    def generate_bioxhit_xml(self, target_directory):
+        '''Write a BioXHit XML tracking file "bioxhit.xml" in the
+        target directory.'''
+
+        fout = open(os.path.join(target_directory, 'bioxhit.xml'), 'w')
+
+        fout.write('<?xml version="1.0"?>')
+        fout.write('<BioXHIT_data_tracking>')
+
+        # FIXME need to get the project name from someplace
+        fout.write('<project_name>%s</project_name>' % 'unknown')
+        
+        # now iterate through the "steps"
+        for f in self._log_file_keys:
+            filename = os.path.join(log_directory,
+                                    '%s.log' % f.replace(' ', '_'))
+            original = self._log_files[f]
+
+            step_number = os.path.split(original)[-1].split('_')[0]
+            step_title = f
+            app_name = os.path.split(
+                original)[-1].split('_')[1].replace('.log', '')
+            run_date = time.ctime(os.stat(original)[8])
+
+            # generate the control input - read the input files for this
+
+            if 'mosflm' in app_name:
+                commands = get_mosflm_commands(original)
+                input_files = []
+                output_files = []
+            else:
+                commands, allfiles = get_ccp4_commands(original)
+
+                # parse up the files
+
+                input_files = allfiles['HKLIN']
+
+                for k in allfiles.keys():
+                    if k == 'HKLIN':
+                        continue
+
+                    if 'mtz' in allfiles[k] and not \
+                       allfiles[k] in output_files:
+                        output_files.append(allfiles[k])
+
+            # ok, write the xml block
+
+            fout.write('<step><step_number>%s</strp_number>' % step_number)
+            fout.write('<step_title>%s</step_title>' % step_title)
+            fout.write('<date>%s</date>' % run_date)
+            fout.write('<application_control_file>')
+            for record in commands:
+                fout.write('%s\n' % record)
+            fout.write('</application_control_file>')
+
+            fout.write('<input_files>')
+            for f in input_files:
+                fout.write('<file><file_ref>%s</file_ref></file>' % f)
+            fout.write('</input_files>')
+
+            fout.write('<output_files>')            
+            for f in output_files:
+                fout.write('<file><file_ref>%s</file_ref></file>' % f)
+            fout.write('</output_files>')            
+            fout.write('</step>')
+
+        fout.write('</BioXHIT_data_tracking>')
+        fout.close()
+
+        return
+        
         
     def cleanup(self):
         out = open('xia-files.txt', 'w')
@@ -111,6 +219,10 @@ class _FileHandler:
 
         # copy the log files
         log_directory = Environment.generate_directory('LogFiles')
+
+        # generate bioxhit XML in here...
+        self.generate_bioxhit_xml(log_directory)
+
         for f in self._log_file_keys:
             filename = os.path.join(log_directory,
                                     '%s.log' % f.replace(' ', '_'))
