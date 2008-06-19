@@ -1389,8 +1389,6 @@ def Mosflm(DriverType = None):
                     Debug.write('Mosaic negative even x2 -> BadLattice')
                     
                     self._mosflm_cell_ref_double_mosaic = False
-                    new_mosaic = indxr.get_indexer_mosaic() * 0.5
-                    indxr.set_indexer_mosaic(new_mosaic)
                     raise BadLatticeError, 'negative mosaic spread'
 
                 else:
@@ -1400,9 +1398,7 @@ def Mosflm(DriverType = None):
                     Debug.write('Mosaic negative -> try x2')
 
                     self._mosflm_cell_ref_double_mosaic = True
-                    new_mosaic = indxr.get_indexer_mosaic() * 2
-                    indxr.set_indexer_mosaic(new_mosaic)
-
+                    
                     self.set_integrater_prepare_done(False)
 
                     return
@@ -1635,9 +1631,12 @@ def Mosflm(DriverType = None):
             # of the mosaic spread in here as it *may* refine down
             # better than up... - this is not a good idea as it may
             # also not refine at all! - 12972 # integration failed
-            # Bug # 3103            
-            # self.input('mosaic %f' % (2.0 * mosaic))
-            self.input('mosaic %f' % mosaic)
+
+            # Bug # 3103
+            if self._mosflm_cell_ref_double_mosaic:
+                self.input('mosaic %f' % (2.0 * mosaic))
+            else:
+                self.input('mosaic %f' % mosaic)
 
             # if set, use the resolution for cell refinement - see
             # bug # 2078...
@@ -1923,9 +1922,12 @@ def Mosflm(DriverType = None):
             # of the mosaic spread in here as it *may* refine down
             # better than up... - this is not a good idea as it may
             # also not refine at all! - 12972 # integration failed
+
             # Bug # 3103
-            # self.input('mosaic %f' % (2.0 * mosaic))
-            self.input('mosaic %f' % mosaic)
+            if self._mosflm_cell_ref_double_mosaic:
+                self.input('mosaic %f' % (2.0 * mosaic))
+            else:
+                self.input('mosaic %f' % mosaic)
 
             if self._mosflm_postref_fix_mosaic:
                 self.input('postref fix mosaic')
