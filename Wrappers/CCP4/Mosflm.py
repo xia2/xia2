@@ -237,6 +237,7 @@ from Experts.MatrixExpert import transmogrify_matrix, \
 # exceptions
 
 from Schema.Exceptions.BadLatticeError import BadLatticeError
+from Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
 from Schema.Exceptions.IndexingError import IndexingError
 from Schema.Exceptions.IntegrationError import IntegrationError
 
@@ -287,6 +288,7 @@ def Mosflm(DriverType = None):
             # local parameters used in cell refinement
             self._mosflm_cell_ref_images = None
             self._mosflm_cell_ref_resolution = None
+            self._mosflm_cell_ref_double_mosaic = False
             
             # local parameters used in integration
             self._mosflm_refine_profiles = True
@@ -1314,7 +1316,6 @@ def Mosflm(DriverType = None):
                 self._mosflm_cell_ref_images = self._refine_select_images(
                     num_wedges, mosaic)
 
-
             indxr = self.get_integrater_indexer()
 
             # in here, check to see if we have the raster parameters and
@@ -1345,10 +1346,15 @@ def Mosflm(DriverType = None):
                     self.set_integrater_parameter(
                         'mosflm', 'raster',
                         '%d %d %d %d %d' % tuple(integration_params['raster']))
-
             
             # next test the cell refinement with the correct lattice
             # and P1 and see how the numbers stack up...
+
+            # FIXME in here 19/JUNE/08 - if I get a negative mosaic spread
+            # in here it may be worth doubling the estimated mosaic spread
+            # and having another go. If it fails a second time, then
+            # let the exception through... - this should now raise a
+            # NegativeMosaicError not a BadLatticeError
 
             # copy the cell refinement resolution in...
 
@@ -1358,14 +1364,49 @@ def Mosflm(DriverType = None):
                 'Using resolution limit of %.2f for cell refinement' % \
                 self._mosflm_cell_ref_resolution)
 
-            self.reset()
-            auto_logfiler(self)
-            rms_deviations_p1 = self._mosflm_test_refine_cell('aP')            
+            # now trap NegativeMosaicError exception - once!
 
-            self.reset()
-            auto_logfiler(self)
-            rms_deviations = self._mosflm_refine_cell()
+            try:
 
+                self.reset()
+                auto_logfiler(self)
+                rms_deviations_p1 = self._mosflm_test_refine_cell('aP')                
+                self.reset()
+                auto_logfiler(self)
+                rms_deviations = self._mosflm_refine_cell()
+
+            except NegativeMosaicError, nme:
+
+                # need to handle cases where the mosaic spread refines to
+                # a negative value when the lattice is right - this could
+                # be caused by the starting value being too small so
+                # try doubling - if this fails, reject lattice as duff...
+
+                if self._mosflm_cell_ref_double_mosaic:
+
+                    # reset flag; half mosaic; raise BadLatticeError
+
+                    Debug.write('Mosaic negative even x2 -> BadLattice')
+                    
+                    self._mosflm_cell_ref_double_mosaic = False
+                    new_mosaic = indxr.get_indexer_mosaic() * 0.5
+                    indxr.set_indexer_mosaic(new_mosaic)
+                    raise BadLatticeError, 'negative mosaic spread'
+
+                else:
+
+                    # set flag, double mosaic, return to try again
+
+                    Debug.write('Mosaic negative -> try x2')
+
+                    self._mosflm_cell_ref_double_mosaic = True
+                    new_mosaic = indxr.get_indexer_mosaic() * 2
+                    indxr.set_indexer_mosaic(new_mosaic)
+
+                    self.set_integrater_prepare_done(False)
+
+                    return
+            
             if not self.get_integrater_prepare_done():
                 # cell refinement failed so no point getting the
                 # results of refinement in P1... now this is
@@ -2028,6 +2069,7 @@ def Mosflm(DriverType = None):
                         return
                     else:
                         raise BadLatticeError, 'cell refinement failed'
+                    
                 
                 # look to store the rms deviations on a per-image basis
                 # this may be used to decide what to do about "inaccurate
@@ -2287,8 +2329,10 @@ def Mosflm(DriverType = None):
                             # to double the mosaic spread and giving it
                             # another go... may get messy though..!
                             
-                            raise BadLatticeError, 'refinement failed: ' + \
-                                  'negative mosaic spread'
+                            # raise BadLatticeError, 'refinement failed: ' + \
+                            # 'negative mosaic spread'
+
+                            raise NegativeMosaicError, 'refinement failed'
                         
             for i in range(len(output)):
                 o = output[i]
