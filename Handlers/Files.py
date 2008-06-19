@@ -141,7 +141,7 @@ class _FileHandler:
         
         # now iterate through the "steps"
         for f in self._log_file_keys:
-            filename = os.path.join(log_directory,
+            filename = os.path.join(target_directory,
                                     '%s.log' % f.replace(' ', '_'))
             original = self._log_files[f]
 
@@ -154,15 +154,20 @@ class _FileHandler:
             # generate the control input - read the input files for this
 
             if 'mosflm' in app_name:
-                commands = get_mosflm_commands(original)
+                commands = get_mosflm_commands(
+                    open(original, 'r').readlines())
                 input_files = []
                 output_files = []
             else:
-                commands, allfiles = get_ccp4_commands(original)
+                commands, allfiles = get_ccp4_commands(
+                    open(original, 'r').readlines())
 
                 # parse up the files
 
-                input_files = allfiles['HKLIN']
+                print original
+                print allfiles
+
+                input_files = [allfiles['HKLIN']]
 
                 for k in allfiles.keys():
                     if k == 'HKLIN':
@@ -174,13 +179,13 @@ class _FileHandler:
 
             # ok, write the xml block
 
-            fout.write('<step><step_number>%s</strp_number>' % step_number)
+            fout.write('<step><step_number>%s</step_number>' % step_number)
             fout.write('<step_title>%s</step_title>' % step_title)
             fout.write('<date>%s</date>' % run_date)
-            fout.write('<application_control_file>')
+            fout.write('<application_control_text>')
             for record in commands:
                 fout.write('%s\n' % record)
-            fout.write('</application_control_file>')
+            fout.write('</application_control_text>')
 
             fout.write('<input_files>')
             for f in input_files:
@@ -190,7 +195,10 @@ class _FileHandler:
             fout.write('<output_files>')            
             for f in output_files:
                 fout.write('<file><file_ref>%s</file_ref></file>' % f)
-            fout.write('</output_files>')            
+            fout.write('</output_files>')
+
+            fout.write('<log_file>%s</log_file>' % filename)
+            
             fout.write('</step>')
 
         fout.write('</BioXHIT_data_tracking>')
