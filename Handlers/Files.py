@@ -173,7 +173,10 @@ class _FileHandler:
             # This is correct for the scala, mosflm logfiles etc, but not
             # so for XDS files which end in '.LP'
 
-            if original[-3:] == '.LP':
+            xds_programs = ['INIT', 'COLSPOT', 'IDXREF', 'DEFPIX',
+                            'INTEGRATE', 'CORRECT', 'XSCALE']
+
+            if f.split()[-1] in xds_programs:
                 # this is an XDS (or XSCALE) file
 
                 app_name = 'xds'
