@@ -66,7 +66,7 @@ def _parse_idxref_lp(lp_file_lines):
         if 'CHARACTER  LATTICE     OF FIT      a      b      c' in line:
             j = i + 1
             while lp_file_lines[j].strip() != "":
-                record = lp_file_lines[j].split()
+                record = lp_file_lines[j].replace('*', ' ').split()
                 character = int(record[0])
                 lattice = record[1]
 
