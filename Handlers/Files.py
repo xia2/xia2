@@ -47,11 +47,11 @@ def get_xds_commands(lines_of_input):
     result = []
 
     for l in lines_of_input:
-        if '***' in l:
+        if '*****' in l and not collecting:
             collecting = True
             continue
 
-        if '***********' in l:
+        if '*****' in l:
             break
 
         if collecting:
@@ -175,9 +175,13 @@ class _FileHandler:
 
             xds_programs = ['INIT', 'COLSPOT', 'IDXREF', 'DEFPIX',
                             'INTEGRATE', 'CORRECT', 'XSCALE']
+            useful_xds_programs = ['IDXREF', 'INTEGRATE', 'CORRECT', 'XSCALE']
 
             if f.split()[-1] in xds_programs:
                 # this is an XDS (or XSCALE) file
+
+                if f.split()[-1] not in useful_xds_programs:
+                    continue
 
                 app_name = 'xds'
                 
