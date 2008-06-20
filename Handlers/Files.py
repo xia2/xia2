@@ -51,7 +51,7 @@ def get_xds_commands(lines_of_input):
             collecting = True
             continue
 
-        if '***********' in line:
+        if '***********' in l:
             break
 
         if collecting:
