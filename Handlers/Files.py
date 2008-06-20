@@ -193,7 +193,7 @@ class _FileHandler:
                 output_files = []
 
             elif 'xds' in app_name:
-                commands get_xds_commands(
+                commands = get_xds_commands(
                     open(original, 'r').readlines())
                 input_files = []
                 output_files = []
