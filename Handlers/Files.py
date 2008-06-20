@@ -38,6 +38,28 @@ def get_mosflm_commands(lines_of_input):
 
     return result
 
+def get_xds_commands(lines_of_input):
+    '''Get the command input to XDS - that is, all of the text between
+    the line which goes ***** STEP ***** and **********. Love FORTRAN.'''
+
+    collecting = False
+    
+    result = []
+
+    for l in lines_of_input:
+        if '***' in l:
+            collecting = True
+            continue
+
+        if '***********' in line:
+            break
+
+        if collecting:
+            if l.strip():
+                result.append(l.strip())
+
+    return result
+
 def get_ccp4_commands(lines_of_input):
     '''Get the commands which were sent to a CCP4 program.'''
 
@@ -147,8 +169,19 @@ class _FileHandler:
 
             step_number = os.path.split(original)[-1].split('_')[0]
             step_title = f
-            app_name = os.path.split(
-                original)[-1].split('_')[1].replace('.log', '')
+
+            # This is correct for the scala, mosflm logfiles etc, but not
+            # so for XDS files which end in '.LP'
+
+            if original[-3:] == '.LP':
+                # this is an XDS (or XSCALE) file
+
+                app_name = 'xds'
+                
+            else:
+                app_name = os.path.split(
+                    original)[-1].split('_')[1].replace('.log', '')
+                
             run_date = time.ctime(os.stat(original)[8])
 
             # generate the control input - read the input files for this
@@ -158,6 +191,13 @@ class _FileHandler:
                     open(original, 'r').readlines())
                 input_files = []
                 output_files = []
+
+            elif 'xds' in app_name:
+                commands get_xds_commands(
+                    open(original, 'r').readlines())
+                input_files = []
+                output_files = []
+
             else:
                 commands, allfiles = get_ccp4_commands(
                     open(original, 'r').readlines())

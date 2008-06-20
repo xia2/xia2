@@ -351,6 +351,16 @@ class XDSIntegrater(FrameProcessor,
 
         defpix.run()
 
+        # record the log file -
+
+        pname, xname, dname = self.get_integrater_project_info()
+        sweep = self.get_integrater_sweep_name()
+        FileHandler.record_log_file('%s %s %s %s DEFPIX' % \
+                                    (pname, xname, dname, sweep),
+                                    os.path.join(self.get_working_directory(),
+                                                 'DEFPIX.LP'))
+                                                 
+
         # and gather the result files
         for file in ['BKGPIX.pck',
                      'ABS.pck']:
@@ -396,6 +406,15 @@ class XDSIntegrater(FrameProcessor,
 
         integrate.run()
 
+        # record the log file -
+
+        pname, xname, dname = self.get_integrater_project_info()
+        sweep = self.get_integrater_sweep_name()
+        FileHandler.record_log_file('%s %s %s %s INTEGRATE' % \
+                                    (pname, xname, dname, sweep),
+                                    os.path.join(self.get_working_directory(),
+                                                 'INTEGRATE.LP'))
+
         # should the existence of these require that I rerun the
         # integration or can we assume that the application of a
         # sensible resolution limit will achieve this??
@@ -430,6 +449,16 @@ class XDSIntegrater(FrameProcessor,
                 self._intgr_indexer.get_indexer_cell())
 
             correct.run()
+
+            # record the log file -
+            
+            pname, xname, dname = self.get_integrater_project_info()
+            sweep = self.get_integrater_sweep_name()
+            FileHandler.record_log_file('%s %s %s %s CORRECT' % \
+                                        (pname, xname, dname, sweep),
+                                        os.path.join(
+                self.get_working_directory(),
+                'CORRECT.LP'))
 
             cell = correct.get_result('cell')
             cell_esd = correct.get_result('cell_esd')
@@ -479,6 +508,15 @@ class XDSIntegrater(FrameProcessor,
                 r_to_rt(self.get_integrater_reindex_matrix()))
         
         correct.run()
+
+        # record the log file -
+
+        pname, xname, dname = self.get_integrater_project_info()
+        sweep = self.get_integrater_sweep_name()
+        FileHandler.record_log_file('%s %s %s %s CORRECT' % \
+                                    (pname, xname, dname, sweep),
+                                    os.path.join(self.get_working_directory(),
+                                                 'CORRECT.LP'))
 
         if self.get_integrater_high_resolution() == 0.0:
             # get the "correct" resolution from ... correct

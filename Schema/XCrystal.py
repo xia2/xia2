@@ -253,6 +253,7 @@ class XCrystal(Object):
         return
 
     def __repr__(self):
+
         result = 'Crystal: %s\n' % self._name
 
         EHTPXXmlHandler.add_crystal(self._name)

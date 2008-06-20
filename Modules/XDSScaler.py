@@ -916,6 +916,16 @@ class XDSScaler(Scaler):
 
         xscale.run()
 
+        # record the log file 
+
+        pname = self._scalr_pname
+        xname = self._scalr_xname
+
+        FileHandler.record_log_file('%s %s XSCALE' % \
+                                    (pname, xname),
+                                    os.path.join(self.get_working_directory(),
+                                                 'XSCALE.LP'))
+
         # check for outlier reflections and if a number are found
         # then iterate (that is, rerun XSCALE, rejecting these outliers)
 
