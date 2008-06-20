@@ -89,8 +89,11 @@
 #
 # 0.2.6.4 - bug fix release prior to 0.3.0
 # 
+# 0.2.6.5 - this is not quite going according to plan - have still not hit 
+#           0.3.0 (no chef in there yet) but have fixed some useful bugs.
+# 
 
-VersionNumber = "0.2.6.4"
+VersionNumber = "0.2.6.5"
 Version = "XIA2 %s" % VersionNumber
 CVSTag = "xia2-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2-%s" % VersionNumber
