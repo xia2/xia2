@@ -168,6 +168,7 @@ class _FileHandler:
                 print allfiles
 
                 input_files = [allfiles['HKLIN']]
+                output_files = []
 
                 for k in allfiles.keys():
                     if k == 'HKLIN':
