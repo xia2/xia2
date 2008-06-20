@@ -211,9 +211,6 @@ class _FileHandler:
 
                 # parse up the files
 
-                print original
-                print allfiles
-
                 input_files = [allfiles['HKLIN']]
                 output_files = []
 
