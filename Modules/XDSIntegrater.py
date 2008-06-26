@@ -56,6 +56,8 @@ from Handlers.Streams import Chatter, Debug
 from Handlers.Flags import Flags
 from Handlers.Files import FileHandler
 
+from Experts.SymmetryExpert import lattice_to_spacegroup_number
+
 class XDSIntegrater(FrameProcessor,
                     Integrater):
     '''A class to implement the Integrater interface using *only* XDS
@@ -444,6 +446,9 @@ class XDSIntegrater(FrameProcessor,
             if self.get_polarization() > 0.0:
                 correct.set_polarization(self.get_polarization())
 
+            # FIXME should this be using the correctly transformed
+            # cell or are the results ok without it?!
+
             correct.set_spacegroup_number(1)
             correct.set_cell(
                 self._intgr_indexer.get_indexer_cell())
@@ -503,6 +508,27 @@ class XDSIntegrater(FrameProcessor,
                 raise RuntimeError, 'no unit cell to recycle'
             correct.set_cell(self._intgr_cell)
 
+        # BUG # 3113 - new version of XDS will try and figure the
+        # best spacegroup out from the intensities (and get it wrong!)
+        # unless we set the spacegroup and cell explicitly
+
+        
+        if not self.get_integrater_spacegroup_number():
+            cell = self._intgr_indexer.get_indexer_cell()
+            lattice = self._intgr_indexer.get_indexer_lattice()
+            spacegroup_number = lattice_to_spacegroup_number(lattice)
+
+            # this should not prevent the postrefinement from
+            # working correctly, else what is above would not
+            # work correctly (the postrefinement test)
+
+            correct.set_spacegroup_number(spacegroup_number)
+            correct.set_cell(cell)
+
+            Debug.write('Setting spacegroup to: %d' % spacegroup_number)
+            Debug.write('Setting cell to: %.2f %.2f %.2f %.2f %.2f %.2f' % \
+                        cell)
+            
         if self.get_integrater_reindex_matrix():
             correct.set_reindex_matrix(
                 r_to_rt(self.get_integrater_reindex_matrix()))

@@ -44,6 +44,9 @@ from Experts.LatticeExpert import SortLattices
 # global flags 
 from Handlers.Flags import Flags
 
+# helpful expertise from elsewhere
+from Experts.SymmetryExpert import lattice_to_spacegroup_number
+
 def XDSIdxref(DriverType = None):
 
     DriverInstance = DriverFactory.Driver(DriverType)
@@ -205,27 +208,13 @@ def XDSIdxref(DriverType = None):
                 xds_inp.write('STARTING_ANGLE=%f\n' % \
                               self._starting_angle)
 
-            lattice_to_spacegroup = {'aP':1,
-                                     'mP':3,
-                                     'mC':5,
-                                     'oP':16,
-                                     'oC':20,
-                                     'oF':22,
-                                     'oI':23,
-                                     'tP':75,
-                                     'tI':79,
-                                     'hP':143,
-                                     'hR':146,
-                                     'cP':195,
-                                     'cF':196,
-                                     'cI':197}
-
             # FIXME this looks like a potential bug - what will
             # happen if the input lattice has not been set??
             if self._indxr_input_cell:
                 self._cell = self._indxr_input_cell
             if self._indxr_input_lattice:
-                self._symm = lattice_to_spacegroup[self._indxr_input_lattice]
+                self._symm = lattice_to_spacegroup_number(
+                    self._indxr_input_lattice)
 
             if self._cell:
                 xds_inp.write('SPACE_GROUP_NUMBER=%d\n' % self._symm)
@@ -338,7 +327,7 @@ def XDSIdxref(DriverType = None):
                     # in the results table...
 
                     if self._symm:
-                        if lattice_to_spacegroup[lattice] > self._symm:
+                        if lattice_to_spacegroup_number(lattice) > self._symm:
                             Debug.write('Ignoring solution with lattice %s' % \
                                         lattice)
                             continue
@@ -361,21 +350,6 @@ def XDSIdxref(DriverType = None):
             # with everything done, else select the "top" solution and
             # reindex, resetting the input cell and symmetry.
 
-            lattice_to_spacegroup = {'aP':1,
-                                     'mP':3,
-                                     'mC':5,
-                                     'oP':16,
-                                     'oC':20,
-                                     'oF':22,
-                                     'oI':23,
-                                     'tP':75,
-                                     'tI':79,
-                                     'hP':143,
-                                     'hR':146,
-                                     'cP':195,
-                                     'cF':196,
-                                     'cI':197}
-            
             if self._cell:
 
                 # select the solution which matches the input unit cell
@@ -385,7 +359,7 @@ def XDSIdxref(DriverType = None):
                     self._cell)
 
                 for l in list:
-                    if lattice_to_spacegroup[l[0]] == self._symm:
+                    if lattice_to_spacegroup_number(l[0]) == self._symm:
                         # this should be the correct solution...
                         # check the unit cell...
                         cell = l[1]
@@ -414,7 +388,7 @@ def XDSIdxref(DriverType = None):
                     
                 sorted_list = SortLattices(list)
 
-                self._symm = lattice_to_spacegroup[sorted_list[0][0]]
+                self._symm = lattice_to_spacegroup_number(sorted_list[0][0])
                 self._cell = sorted_list[0][1]
 
                 return False
