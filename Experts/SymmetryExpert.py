@@ -190,7 +190,7 @@ def symop_to_mat(symop):
     symop2mat = Symop2mat()
     return symop2mat.convert(symop)
 
-def lattice_to_spacegroup(lattice):
+def lattice_to_spacegroup_number(lattice):
     '''Return the spacegroup number corresponding to the lowest symmetry
     possible for a given Bravais lattice.'''
 
