@@ -102,7 +102,15 @@ def _parse_correct_lp(filename):
             postrefinement_stats['cell'] = cell
 
         if 'E.S.D. OF CELL PARAMETERS' in file_contents[i]:
-            cell_esd = map(float, file_contents[i].split()[-6:])
+            # bug # 3132 - check that the last token is not
+            # "-1.0E+00-1.0E+00-1.0E+00-1.0E+00-1.0E+00-1.0E+00" -
+            # if it is it means that the refinement didn't
+            # happen (for some reason...)
+
+            if '-1.0E+00-1.0E+00-1.0E+00' in file_contents[i]:
+                cell_esd = [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
+            else:            
+                cell_esd = map(float, file_contents[i].split()[-6:])
             postrefinement_stats['cell_esd'] = cell_esd
 
         if 'REFLECTIONS ACCEPTED' in file_contents[i]:
