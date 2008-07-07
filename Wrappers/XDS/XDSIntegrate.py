@@ -321,7 +321,13 @@ def XDSIntegrate(DriverType = None):
 
                 stddev_pixel = list(set(stddev_pixel))
                 stddev_pixel.sort()
-                stddev_pixel = stddev_pixel[1:-1]
+
+                # only remove the extremes if there are enough values
+                # that this is meaningful... very good data may only have
+                # two values!
+                
+                if len(stddev_pixel) > 4:
+                    stddev_pixel = stddev_pixel[1:-1]
 
                 low, high = min(stddev_pixel), \
                             max(stddev_pixel)          

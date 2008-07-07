@@ -195,8 +195,30 @@ def _happy_integrate_lp(integrate_lp_stats):
 
 
 if __name__ == '__main__':
-    integrate_lp = os.path.join(os.environ['XIA2_ROOT'], 'Wrappers', 'XDS',
-                                'Doc', 'INTEGRATE.LP')
+    if len(sys.argv) > 1:
+        integrate_lp = sys.argv[1]
+    else:
+        integrate_lp = os.path.join(os.environ['XIA2_ROOT'], 'Wrappers', 'XDS',
+                                    'Doc', 'INTEGRATE.LP')
+
     stats = _parse_integrate_lp(integrate_lp)
-    _print_integrate_lp(stats)
-    print _happy_integrate_lp(stats)
+
+    images = stats.keys()
+    images.sort()
+
+    # these may not be present if only a couple of the
+    # images were integrated...
+
+    for i in images:
+        print stats[i]['rmsd_pixel']
+            
+    stddev_pixel = [stats[i]['rmsd_pixel'] for i in images]
+    
+    # fix to bug # 2501 - remove the extreme values from this
+    # list...
+    
+    stddev_pixel = list(set(stddev_pixel))
+    stddev_pixel.sort()
+    stddev_pixel = stddev_pixel[1:-1]
+    
+    print stddev_pixel
