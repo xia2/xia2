@@ -124,8 +124,15 @@ def LatticeSymmetry(DriverType = None):
                         '(', ' ').replace(')', ' ').replace(',', ' ').split())
 
                     lauegroup = ''
-                    for token in state[
-                        'Conventional setting'].split('(')[0].split():
+
+                    # FIXME for more recent versions of cctbx the conventional
+                    # setting I 1 2/m 1 has appeared -> look at the
+                    # 'Symmetry in minimum-lengths cell' instead (equivalent
+                    # to changing lkey here to 'Conventional setting'
+
+                    lkey = 'Symmetry in minimum-lengths cell'
+
+                    for token in state[lkey].split('(')[0].split():
                         if token == '1':
                             continue
                         lauegroup += token
