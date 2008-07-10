@@ -108,6 +108,7 @@ def LatticeSymmetry(DriverType = None):
             state = { }
 
             for o in self.get_all_output():
+                # print o[:-1]
                 if ':' in o:
                     count = o.find(':')
                     left = o[:count]
@@ -119,8 +120,15 @@ def LatticeSymmetry(DriverType = None):
 
                     distortion = float(state[
                         'Maximal angular difference'].split()[0])
+
+                    # this appears to be getting the wrong cell - I want the
+                    # one which corresponds to the correct lattice, yes?!
+                    # cell = map(float, state[
+                    # 'Symmetry-adapted cell'].replace(
+                    # '(', ' ').replace(')', ' ').replace(',', ' ').split())
+
                     cell = map(float, state[
-                        'Symmetry-adapted cell'].replace(
+                        'Unit cell'].replace(
                         '(', ' ').replace(')', ' ').replace(',', ' ').split())
 
                     lauegroup = ''
@@ -194,7 +202,7 @@ def LatticeSymmetry(DriverType = None):
             reindex = None
             
             for line in self.get_all_output():
-                # print line[:-1]
+                print line[:-1]
                 if 'Unit cell:' in line:
                     cell_text = line.replace('Unit cell: (', '').replace(
                         ')', '').strip().replace(',', ' ')
