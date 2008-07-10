@@ -22,7 +22,7 @@ sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
 
-def xia2lattice(cell):
+def xia2lattice(cell, input_lattice = None):
     '''Taking the primitive triclinic unit cell, calculate a list of
     possible lattices and their associated unit cell and distortion
     indices.'''
@@ -36,6 +36,20 @@ def xia2lattice(cell):
 
     lattices = ls.get_lattices()
 
+    if input_lattice:
+        if not input_lattice in lattices:
+            raise RuntimeError, 'no solution found for lattice %s' % \
+                  input_lattice
+        
+        distortion = ls.get_distortion(input_lattice)
+        cell = ls.get_cell(input_lattice)
+
+        cellstr = '%7.2f %7.2f %7.2f %7.2f %7.2f %7.2f' % tuple(cell)
+
+        print '%s %.4f %s' % (input_lattice, distortion, cellstr)
+
+        return
+
     for lattice in lattices:
         distortion = ls.get_distortion(lattice)
         cell = ls.get_cell(lattice)
@@ -48,11 +62,21 @@ def xia2lattice(cell):
 
 if __name__ == '__main__':
 
-    if len(sys.argv) != 7:
-        raise RuntimeError, '%s a b c alpha beta gamma' % sys.argv[0]
+    # change 10/JUL/08 also allow for the unit cell to be passed in on
+    # the standard input and the chosen lattice given on the command line
 
-    cell = tuple(map(float, sys.argv[1:7]))
+    if len(sys.argv) == 2:
+        lattice = sys.argv[1]
+        for record in sys.stdin.readlines():
+            cell = tuple(map(float, record.split()))
+            xia2lattice(cell, input_lattice = lattice)
 
-    xia2lattice(cell)
+    elif len(sys.argv) == 7:
 
+        cell = tuple(map(float, sys.argv[1:7]))
+        xia2lattice(cell)
+
+    else:
+        raise RuntimeError, '%s (lattice|a b c alpha beta gamma)' % \
+              sys.argv[0]
     
