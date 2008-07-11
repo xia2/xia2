@@ -54,7 +54,7 @@ def FindFreeFlag(hklin):
     if len(possibilities) == 0:
         raise RuntimeError, 'no candidate FreeR_flag columns found'
 
-    if len(possibilities) == 0:
+    if len(possibilities) == 1:
         if ctypes[possibilities[0]] != 'I':
             raise RuntimeError, 'FreeR_flag column found (%s): type not I' % \
                   possibilities[0]

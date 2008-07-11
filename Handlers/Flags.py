@@ -186,14 +186,13 @@ class _Flags:
         if not os.path.exists(freer_file):
             raise RuntimeError, '%s does not exist' % freer_file
 
-        from Wrappers.CCP4.Mtzdump import Mtzdump
+        from Modules.FindFreeFlag import FindFreeFlag
+        from Handlers.Streams import Debug
 
-        mtzdump = Mtzdump()
-        mtzdump.set_hklin(freer_file)
-        mtzdump.dump()
-        
-        if not 'FreeR_flag' in [t[0] for t in mtzdump.get_columns()]:
-            raise RuntimeError, 'no FreeR_flag column in %s' % freer_file
+        column = FindFreeFlag(freer_file)
+
+        Debug.write('FreeR_flag column in %s found: %s' % \
+                    (freer_file, column))
 
         self._freer_file = freer_file
         return
