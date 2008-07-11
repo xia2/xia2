@@ -165,6 +165,7 @@ def help():
     sys.stdout.write('\nCommand-line options to xia2:\n')
     sys.stdout.write('[-parallel 4] (say, for XDS usage)\n')
     sys.stdout.write('[-ehtpx_xml_out foo.xml]\n')
+    sys.stdout.write('[-freer_file free.mtz]\n')
     sys.stdout.write('[-quick]\n')
     sys.stdout.write('[-migrate_data]\n')
     sys.stdout.write('[-2d] or [-3d]\n')
