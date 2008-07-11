@@ -148,9 +148,10 @@ def LatticeSymmetry(DriverType = None):
                     # FIXME bug 3157 - there appears to be a bug in
                     # recent versions of cctbx (cf. above) which means
                     # a lauegroup of 'R-3m:R' is given -> correct this
-                    # in the string
+                    # in the string. Also :h as well :o(
 
                     lauegroup = lauegroup.replace(':R', ':H')
+                    lauegroup = lauegroup.replace(':h', ':H')
                     lattice = lauegroup_to_lattice(lauegroup)
                     
                     # reindex = state['Change of basis']
