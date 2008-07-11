@@ -35,10 +35,15 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
 
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
+from Handlers.Streams import Debug
 
 # locally required wrappers
 
 from Mtzdump import Mtzdump
+
+# external functionality
+
+from Modules.FindFreeFlag import FindFreeFlag
 
 def Cad(DriverType = None):
     '''A factory for CadWrapper classes.'''
@@ -65,6 +70,7 @@ def Cad(DriverType = None):
 
             # stuff to specifically copy in the freer column...
             self._freein = None
+            self._freein_column = 'FreeR_flag'
 
             return
 
@@ -76,9 +82,18 @@ def Cad(DriverType = None):
         def set_freein(self, freein):
 
             # I guess I should check in here that this file actually
-            # exists...
+            # exists... - also that it has a sensible FreeR column...
+
+            if not os.path.exists(freein):
+                raise RuntimeError, 'reflection file does not exist: %s' % \
+                      freein
+
+            cname = FindFreeFlag(freein)
+
+            Debug.write('FreeR_flag column identified as %s' % cname)
             
             self._freein = freein
+            self._freein_column = cname
 
             return
 
@@ -294,6 +309,8 @@ def Cad(DriverType = None):
             self.check_hklout()
             if self._freein is None:
                 raise RuntimeError, 'freein not defined'
+            if self._freein_column is None:
+                raise RuntimeError, 'freein column not defined'
 
             self.add_command_line('hklin1')
             self.add_command_line(self._freein)
@@ -301,8 +318,7 @@ def Cad(DriverType = None):
             self.add_command_line(hklin)
             self.start()
 
-
-            self.input('labin file_number 1 E1=FreeR_flag')
+            self.input('labin file_number 1 E1=%s' % self._freein_column)
             self.input('labin file_number 2 all')
 
             self.close_wait()
