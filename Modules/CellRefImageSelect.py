@@ -21,7 +21,7 @@ from Driver.DriverFactory import DriverFactory
 # classes to make this work
 
 from Experts.MatrixExpert import rot_x, mosflm_a_matrix_to_real_space, \
-     matvecmul, dot
+     matvecmul, dot, get_reciprocal_space_primitive_matrix
 
 # something to read the headers 
 
@@ -535,7 +535,118 @@ def identify_perpendicular_axes(phi_start, phi_end, phi_width,
 
     return phi_a, phi_b, phi_c, angle_a, angle_b, angle_c, ia, ib, ic
 
+def identify_perpendicular_reciprocal_axes(phi_start, phi_end, phi_width,
+                                           wavelength, lattice, matrix):
+    '''Find phi values which present the primitive reciprocal unit cell axes as
+    near as possible to being perpendicular to the beam vector.'''
+
+    # FIXME should add a test in here that the mosflm orientation matrix
+    # corresponds to the asserted lattice...
+
+    # find thee P1 reciprocal-space cell axes
+
+    a, b, c = get_reciprocal_space_primitive_matrix(lattice, matrix)
+
+    # compute rotations of these and find minimum for axis.Z - that is the
+    # Z component of the rotated axis... check workings and definitions!
+
+    phi = phi_start + 0.5 * phi_width
+
+    # initialize search variables
+
+    phi_a = phi_start
+    phi_b = phi_start
+    phi_c = phi_start
+
+    dot_a = 100.0
+    dot_b = 100.0
+    dot_c = 100.0
+
+    ia = 0
+    ib = 0
+    ic = 0
+
+    i = 0
+
+    # only consider the first 180 degrees of data...
+
+    if phi_end - phi_start > 180:
+        phi_end = phi_start + 180
+
+    while phi < phi_end:
+        RX = rot_x(phi)
+
+        RXa = matvecmul(RX, a)
+        RXb = matvecmul(RX, b)
+        RXc = matvecmul(RX, c)
+
+        if math.fabs(RXa[2]) < dot_a:
+            dot_a = math.fabs(RXa[2])
+            phi_a = phi
+            ia = i
+
+        if math.fabs(RXb[2]) < dot_b:
+            dot_b = math.fabs(RXb[2])
+            phi_b = phi
+            ib = i
+
+        if math.fabs(RXc[2]) < dot_c:
+            dot_c = math.fabs(RXc[2])
+            phi_c = phi
+            ic = i
+
+        phi += phi_width
+        i += 1
+
+    length_a = math.sqrt(dot(a, a))
+    length_b = math.sqrt(dot(b, b))
+    length_c = math.sqrt(dot(c, c))
+
+    rtod = 180.0 / math.pi
+
+    angle_a = math.fabs(90.0 - rtod * math.acos(dot_a / length_a))
+    angle_b = math.fabs(90.0 - rtod * math.acos(dot_b / length_b))
+    angle_c = math.fabs(90.0 - rtod * math.acos(dot_c / length_c))
+
+    # return the closest positions and the angular offset from
+    # perpendicularity...
+
+    return phi_a, phi_b, phi_c, angle_a, angle_b, angle_c, ia, ib, ic
+
 if __name__ == '__main__':
+    matrix = ''' -0.01546709  0.01093835 -0.01277924
+  0.01523611  0.00277101 -0.01848350
+ -0.00161761 -0.02056986  0.00118104
+       0.000       0.000       0.000
+ -0.71043708  0.34170994 -0.61523448
+  0.69982756  0.25072808 -0.66886233
+ -0.07430034 -0.90574265 -0.41726456
+     47.6590     47.6861     49.6444     62.9615     73.8222     73.5269
+       0.000       0.000       0.000'''
+
+    phi_start = 30.0
+    phi_width = 1.0
+    phi_end = 210.0
+
+    phi_a, phi_b, phi_c, da, db, dc, ia, ib, ic = \
+           identify_perpendicular_axes(
+        phi_start, phi_end, phi_width, 0.97960, 'aP', matrix)
+
+    print 'Real space:'
+    print 'A: %.2f %.2f %3d' % (phi_a, da, ia + 1)
+    print 'B: %.2f %.2f %3d' % (phi_b, db, ib + 1)
+    print 'C: %.2f %.2f %3d' % (phi_c, dc, ic + 1)
+
+    phi_a, phi_b, phi_c, da, db, dc, ia, ib, ic = \
+           identify_perpendicular_reciprocal_axes(
+        phi_start, phi_end, phi_width, 0.97960, 'aP', matrix)
+    
+    print 'Reciprocal space:'
+    print 'A: %.2f %.2f %3d' % (phi_a, da, ia + 1)
+    print 'B: %.2f %.2f %3d' % (phi_b, db, ib + 1)
+    print 'C: %.2f %.2f %3d' % (phi_c, dc, ic + 1)
+
+if __name__ == '__main_C2__':
     matrix = ''' -0.00417059 -0.00089426 -0.01139821
  -0.00084328 -0.01388561  0.01379631
  -0.00121258  0.01273236  0.01424531
@@ -551,6 +662,14 @@ if __name__ == '__main__':
     phi_end = 251.0
 
     phi_a, phi_b, phi_c, da, db, dc, ia, ib, ic = identify_perpendicular_axes(
+        phi_start, phi_end, phi_width, 0.99187, 'mC', matrix)
+
+    print 'A: %.2f %.2f %3d' % (phi_a, da, ia + 1)
+    print 'B: %.2f %.2f %3d' % (phi_b, db, ib + 1)
+    print 'C: %.2f %.2f %3d' % (phi_c, dc, ic + 1)
+
+    phi_a, phi_b, phi_c, da, db, dc, ia, ib, ic = \
+           identify_perpendicular_reciprocal_axes(
         phi_start, phi_end, phi_width, 0.99187, 'mC', matrix)
 
     print 'A: %.2f %.2f %3d' % (phi_a, da, ia + 1)
