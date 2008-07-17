@@ -1594,6 +1594,12 @@ def Mosflm(DriverType = None):
             distance = indxr.get_indexer_distance()
             matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
 
+            # bug # 3174 - if mosaic is very small (here defined to be 
+            # 0.25 x osc_width) then set to this minimum value.
+
+            if mosaic < 0.25 * self.get_header_item('phi_width'):
+                mosaic = 0.25 * self.get_header_item('phi_width')
+
             input_matrix = ''
             for m in matrix:
                 input_matrix += '%s\n' % m
@@ -1798,6 +1804,12 @@ def Mosflm(DriverType = None):
             cell = indxr.get_indexer_cell()
             beam = indxr.get_indexer_beam()
 
+            # bug # 3174 - if mosaic is very small (here defined to be 
+            # 0.25 x osc_width) then set to this minimum value.
+
+            if mosaic < 0.25 * self.get_header_item('phi_width'):
+                mosaic = 0.25 * self.get_header_item('phi_width')
+                
             # check to see if there is a special mosflm beam around!
 
             if indxr.get_indexer_payload('mosflm_beam_centre'):
