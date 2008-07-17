@@ -1342,8 +1342,25 @@ class CCP4Scaler(Scaler):
         # deciding what the "standard" wavelength/dataset is, then
         # combining everything appropriately...
 
+        # while we are here (see bug # 3183) gather any user specified
+        # resolution limits
+
+        user_resolution_limits = { }
+
         for epoch in epochs:
+
             input = self._sweep_information[epoch]
+
+            intgr = input['integrater']
+
+            if intgr.get_integrater_user_resolution():
+                dmin = intgr.get_integrater_high_resolution()
+                
+                if not user_resolution_limits.has_key(input['dname']):
+                    user_resolution_limits[input['dname']] = dmin
+                elif dmin < user_resolution_limits[input['dname']]:
+                    user_resolution_limits[input['dname']] = dmin
+                    
             start, end = (min(input['batches']), max(input['batches']))
             sc.add_run(start, end, pname = input['pname'],
                        xname = input['xname'],
@@ -1410,6 +1427,16 @@ class CCP4Scaler(Scaler):
             raise RuntimeError, 'no resolution info'
 
         for dataset in resolution_info.keys():
+
+            if user_resolution_limits.has_key(dataset):
+                resolution = user_resolution_limits[dataset]
+                resolution_limits[dataset] = resolution
+                if resolution < highest_resolution:
+                    highest_resolution = resolution
+                Chatter.write('Resolution limit for %s: %5.2f' % \
+                              (dataset, resolution))
+                continue
+            
             # transform this to a useful form... [(resol, i/sigma), (resol..)]
             resolution_points = []
             resol_ranges = resolution_info[dataset]['3_Dmin(A)']
@@ -1477,6 +1504,9 @@ class CCP4Scaler(Scaler):
 
             elif Flags.get_quick():
                 Chatter.write('Quick, so not resetting resolution limits')
+
+            elif intgr.get_integrater_user_resolution():
+                Chatter.write('Using user specified resolution limits')
 
             else:
                 # ok it is worth rereducing the data

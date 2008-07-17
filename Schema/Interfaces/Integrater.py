@@ -145,9 +145,10 @@ class Integrater:
         # to get orientation (maybe) and unit cell, lattice (definately)
         self._intgr_indexer = None
 
-        # optional parameters
+        # optional parameters - added user for # 3183
         self._intgr_reso_high = 0.0
         self._intgr_reso_low = 0.0
+        self._intgr_reso_user = False
 
         # anomalous separation may be important for e.g. CORRECT.
         self._intgr_anomalous = None
@@ -241,8 +242,12 @@ class Integrater:
         # reset the "knowledge" from the data
         # note well - if we have set a resolution limit
         # externally then this will have to be respected...
-        self._intgr_reso_high = 0.0
-        self._intgr_reso_low = 0.0
+        # e.g. - added user for # 3183
+        
+        if not self._intgr_reso_user:
+            self._intgr_reso_high = 0.0
+            self._intgr_reso_low = 0.0
+            
         self._intgr_hklout = None
         self._intgr_program_parameters = { }
 
@@ -382,18 +387,36 @@ class Integrater:
     def get_integrater_high_resolution(self):
         return self._intgr_reso_high
 
-    def set_integrater_resolution(self, dmin, dmax):
+    def get_integrater_user_resolution(self):
+        '''Return a boolean: were the resolution limits set by
+        the user? See bug # 3183'''
+        return self._intgr_reso_user
+
+    def set_integrater_resolution(self, dmin, dmax, user = False):
         '''Set both resolution limits.'''
+
+        if self._intgr_reso_user and not user:
+            raise RuntimeError, 'cannot override user set limits'
+
+        if user:
+            self._intgr_reso_user = True
 
         self._intgr_reso_high = min(dmin, dmax)
         self._intgr_reso_low = max(dmin, dmax)
+        
         self.set_integrater_done(False)
 
         return
 
-    def set_integrater_high_resolution(self, dmin):
+    def set_integrater_high_resolution(self, dmin, user = False):
         '''Set high resolution limit.'''
 
+        if self._intgr_reso_user and not user:
+            raise RuntimeError, 'cannot override user set limits'
+
+        if user:
+            self._intgr_reso_user = True
+            
         self._intgr_reso_high = dmin
         self.set_integrater_done(False)
         return
