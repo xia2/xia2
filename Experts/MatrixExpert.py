@@ -31,7 +31,6 @@ from Wrappers.CCP4.Othercell import Othercell
 from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
 from lib.SymmetryLib import lattice_to_spacegroup
 from Handlers.Syminfo import Syminfo
-from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
 from lib.Guff import auto_logfiler
 from Handlers.Streams import Debug
 
@@ -345,18 +344,21 @@ def mosflm_a_matrix_to_real_space(wavelength, lattice, matrix):
     crystal lattice vectors in the xia2 reference frame. This reference frame
     corresponds to that defined for imgCIF.'''
 
-    # convert the lattice to a spacegroup
-    spacegroup_number = lattice_to_spacegroup(lattice)
-    spacegroup = Syminfo.spacegroup_name_to_number(spacegroup_number)
+    # convert the lattice to a spacegroup - not needed, see below
+    # spacegroup_number = lattice_to_spacegroup(lattice)
+    # spacegroup = Syminfo.spacegroup_name_to_number(spacegroup_number)
 
     # get the a, u, matrices and the unit cell
     cell, a, u = parse_matrix(matrix)
 
     # use iotbx.latice_symmetry to obtain the reindexing operator to
-    # a primative triclinic lattice
-    ls = LatticeSymmetry()
+    # a primative triclinic lattice - this should not be specific to
+    # using iotbx - othercell should be optionally supported too...
+    ls = _Othercell()
     ls.set_cell(cell)
-    ls.set_spacegroup(spacegroup)
+    ls.set_lattice(lattice)
+    
+    # ls.set_spacegroup(spacegroup)
     # cell, reindex = ls.generate_primative_reindex()
     ls.generate()
     cell = ls.get_cell('aP')
