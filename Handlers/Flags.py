@@ -48,6 +48,10 @@ class _Flags:
         self._pointgroup = None
         self._lattice = None
 
+        # resolution limit flags
+        self._resolution_low = None
+        self._resolution_high = None
+
         # and these for the mosflm implementation
         self._cellref_mode = 'new'
         self._old_mosflm = False
@@ -80,6 +84,22 @@ class _Flags:
 
         return
 
+    ### SETTING OF RESOLUTION LIMITS #### bug # 3183
+
+    def set_resolution_high(self, resolution):
+        self._resolution_high = resolution
+        return
+
+    def set_resolution_low(self, resolution):
+        self._resolution_low = resolution
+        return    
+
+    def get_resolution_high(self):
+        return self._resolution_high
+
+    def get_resolution_low(self):
+        return self._resolution_low
+    
     def set_spacegroup(self, spacegroup):
         '''A handler for the command-line option -spacegroup - this will
         set the spacegroup and derive from this the pointgroup and lattice

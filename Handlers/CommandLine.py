@@ -161,6 +161,12 @@ class _CommandLine(Object):
                   (self._help_spacegroup(), str(e))
 
         try:
+            self._read_resolution()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_resolution(), str(e))
+
+        try:
             self._read_z_min()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -461,6 +467,32 @@ class _CommandLine(Object):
 
     def _help_spacegroup(self):
         return '-spacegroup P43212'
+
+    def _read_resolution(self):
+        try:
+            index = sys.argv.index('-resolution')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        resolution = sys.argv[index + 1]
+        if ',' in resolution:
+            a, b = map(float, resolution.split(','))
+            dmin = min(a, b)
+            dmax = max(a, b)
+        else:
+            dmin = float(resolution)
+            dmax = None
+
+        Flags.set_resolution_high(dmin)
+        Flags.set_resolution_low(dmax)
+            
+        return
+
+    def _help_resolution(self):
+        return '-resolution high[,low]'
 
     def _read_z_min(self):
         try:
