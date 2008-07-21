@@ -2651,7 +2651,11 @@ def Mosflm(DriverType = None):
 
             # check for resolution limits
             if self._intgr_reso_high > 0.0:
-                self.input('resolution %f' % self._intgr_reso_high)
+                if self._intgr_reso_low:
+                    self.input('resolution %f %f' % (self._intgr_reso_high,
+                                                     self._intgr_reso_low))
+                else:
+                    self.input('resolution %f' % self._intgr_reso_high)
 
             # set up the integration
             self.input('postref fix all')
