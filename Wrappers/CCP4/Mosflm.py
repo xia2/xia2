@@ -1606,6 +1606,7 @@ def Mosflm(DriverType = None):
 
             new_matrix = transmogrify_matrix(lattice, input_matrix,
                                              test_lattice,
+                                             self.get_wavelength(),
                                              self.get_working_directory())
 
             spacegroup_number = lattice_to_spacegroup(test_lattice)

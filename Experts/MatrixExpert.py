@@ -208,7 +208,8 @@ def format_matrix(cell, a, u):
     return matrix_format % tuple(a) + misset + matrix_format % tuple(u) + \
            cell_format % tuple(cell) + misset
 
-def transmogrify_matrix(lattice, matrix, target_lattice, wd = None):
+def transmogrify_matrix(lattice, matrix, target_lattice,
+                        wavelength, wd = None):
     '''Transmogrify a matrix for lattice X into a matrix for lattice
     Y. This should work find for Mosflm... Will also return the new
     unit cell.'''
@@ -228,8 +229,36 @@ def transmogrify_matrix(lattice, matrix, target_lattice, wd = None):
     new_cell = o.get_cell(target_lattice)
     op = symop_to_mat(o.get_reindex_op(target_lattice))
 
+    # HACK! again - bug # 3193
+
+    if 'lattice_symmetry' in o.get_executable():
+        op = transpose(op)
+
     a = matmul(invert(op), a)
     u = matmul(op, u)
+
+    # in here test that the given unit cell corresponds to the
+    # one calculated from the A matrix. 
+
+    anew = matscl(a, 1.0 / wavelength)
+    reala = transpose(invert(anew))
+    _a, _b, _c = mat2vec(reala)
+
+    la = math.sqrt(dot(_a, _a))
+    lb = math.sqrt(dot(_b, _b))
+    lc = math.sqrt(dot(_c, _c))
+
+    if math.fabs(la - new_cell[0]) / new_cell[0] > 0.01:
+        raise RuntimeError, 'cell check failed (wavelength != %f)' % \
+              wavelength
+
+    if math.fabs(lb - new_cell[1]) / new_cell[1] > 0.01:
+        raise RuntimeError, 'cell check failed (wavelength != %f)' % \
+              wavelength
+
+    if math.fabs(lc - new_cell[2]) / new_cell[2] > 0.01:
+        raise RuntimeError, 'cell check failed (wavelength != %f)' % \
+              wavelength    
 
     return format_matrix(new_cell, a, u)
 
@@ -367,7 +396,7 @@ def mosflm_a_matrix_to_real_space(wavelength, lattice, matrix):
 
     # grim hack warning! - this is because for some reason (probably to
     # do with LS getting the inverse operation) othercell is returning
-    # the transpose of the operator or something...
+    # the transpose of the operator or something... FIXME bug # 3193
 
     if 'othercell' in ls.get_executable():
         reindex_matrix = transpose(reindex_matrix)
@@ -434,6 +463,10 @@ if __name__ == '__main__':
     print math.sqrt(dot(a, a))
     print math.sqrt(dot(b, b))
     print math.sqrt(dot(c, c))
+
+    newmat = transmogrify_matrix('oI', matrix, 'aP', 0.979741)
+
+    print newmat
 
 if __name__ == '__main_old__':
 
