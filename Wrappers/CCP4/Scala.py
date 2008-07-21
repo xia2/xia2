@@ -497,7 +497,11 @@ def Scala(DriverType = None):
                 if self._new_scala:
 
                     # the new style, don't even mention the run...
-                    
+
+                    if not run[5]:
+                        self.input('run %d batch %d to %d' % (run_number,
+                                                              run[0], run[1]))
+
                     if run[6] != 0.0 and not run[5]:
                         self.input('resolution run %d high %f' % \
                                    (run_number, run[6]))
@@ -752,6 +756,10 @@ def Scala(DriverType = None):
 
                     # the new style, don't even mention the run...
                     
+                    if not run[5]:
+                        self.input('run %d batch %d to %d' % (run_number,
+                                                              run[0], run[1]))
+
                     if run[6] != 0.0 and not run[5]:
                         self.input('resolution run %d high %f' % \
                                    (run_number, run[6]))
