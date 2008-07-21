@@ -154,9 +154,11 @@ class XProject(Object):
                     wave_info['f\'\''] = wave_info['f"']
 
                 xw = XWavelength(wavelength, xc,
-                                 wave_info.get('wavelength', 0.0),
-                                 wave_info.get('f\'', 0.0),
-                                 wave_info.get('f\'\'', 0.0))
+                                 wavelength = wave_info.get('wavelength', 0.0),
+                                 f_pr = wave_info.get('f\'', 0.0),
+                                 f_prpr = wave_info.get('f\'\'', 0.0),
+                                 dmin = wave_info.get('dmin', 0.0),
+                                 dmax = wave_info.get('dmax', 0.0))
 
                 # in here I also need to look and see if we have
                 # been given any scaled reflection files...
@@ -169,7 +171,14 @@ class XProject(Object):
                     lattice = Flags.get_lattice()
                 else:
                     lattice = None
-                    
+
+                dmin = wave_info.get('dmin', 0.0)
+                dmax = wave_info.get('dmax', 0.0)
+
+                if dmin == 0.0 and dmax == 0.0:
+                    dmin = Flags.get_resolution_high()
+                    dmax = Flags.get_resolution_low()
+
                 for sweep_name in crystals[crystal]['sweeps'].keys():
                     sweep_info = crystals[crystal]['sweeps'][sweep_name]
                     if sweep_info['wavelength'] == wavelength:
@@ -182,6 +191,7 @@ class XProject(Object):
                             beam = sweep_info.get('beam'),
                             distance = sweep_info.get('distance'),
                             gain = float(sweep_info.get('GAIN', 0.0)),
+                            dmin = dmin, dmax = dmax,
                             polarization = float(sweep_info.get(
                             'POLARIZATION', 0.0)),
                             frames_to_process = sweep_info.get('start_end'),

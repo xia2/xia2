@@ -158,6 +158,8 @@ class XSweep(Object):
                  beam = None,
                  distance = None,
                  gain = 0.0,
+                 dmin = 0.0,
+                 dmax = 0.0,
                  polarization = 0.0,
                  frames_to_process = None,
                  user_lattice = None,
@@ -194,6 +196,8 @@ class XSweep(Object):
         self._epoch = epoch
         self._user_lattice = user_lattice
         self._header = { } 
+        self._resolution_high = dmin
+        self._resolution_low = dmax
 
         # FIXME in here also need to be able to accumulate the total
         # dose from all experimental measurements (complex) and provide
@@ -441,6 +445,20 @@ class XSweep(Object):
 
     def get_gain(self):
         return self._gain
+
+    def set_resolution_high(self, resolution_high):
+        self._resolution_high = resolution_high
+        return
+
+    def set_resolution_low(self, resolution_low):
+        self._resolution_low = resolution_low
+        return
+
+    def get_resolution_high(self):
+        return self._resolution_high
+
+    def get_resolution_low(self):
+        return self._resolution_low
 
     def get_polarization(self):
         return self._polarization

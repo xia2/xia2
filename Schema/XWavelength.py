@@ -38,7 +38,7 @@ class XWavelength(Object):
     reduction correspond to an MTZ hierarchy dataset.'''
 
     def __init__(self, name, crystal, wavelength,
-                 f_pr = 0.0, f_prpr = 0.0):
+                 f_pr = 0.0, f_prpr = 0.0, dmin = 0.0, dmax = 0.0):
         '''Create a new wavelength named name, belonging to XCrystal object
         crystal, with wavelength and optionally f_pr, f_prpr assigned.'''
 
@@ -56,6 +56,8 @@ class XWavelength(Object):
         self._wavelength = wavelength
         self._f_pr = f_pr
         self._f_prpr = f_prpr
+        self._resolution_high = dmin
+        self._resolution_low = dmax
         
         # then create space to store things which are contained
         # in here - the sweeps
@@ -131,7 +133,7 @@ class XWavelength(Object):
     def add_sweep(self, name, directory = None, image = None,
                   integrated_reflection_file = None,
                   beam = None, distance = None, 
-                  gain = 0.0, polarization = 0.0,
+                  gain = 0.0, dmin = 0.0, dmax = 0.0, polarization = 0.0,
                   frames_to_process = None, user_lattice = None,
                   epoch = 0):
         '''Add a sweep to this wavelength.'''
@@ -144,6 +146,8 @@ class XWavelength(Object):
                                    beam = beam,
                                    distance = distance,
                                    gain = gain,
+                                   dmin = dmin,
+                                   dmax = dmax,
                                    polarization = polarization,
                                    frames_to_process = frames_to_process,
                                    user_lattice = user_lattice,
