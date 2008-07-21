@@ -387,6 +387,9 @@ class Integrater:
     def get_integrater_high_resolution(self):
         return self._intgr_reso_high
 
+    def get_integrater_low_resolution(self):
+        return self._intgr_reso_low
+
     def get_integrater_user_resolution(self):
         '''Return a boolean: were the resolution limits set by
         the user? See bug # 3183'''
