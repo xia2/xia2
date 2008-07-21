@@ -361,10 +361,17 @@ def mosflm_a_matrix_to_real_space(wavelength, lattice, matrix):
     # ls.set_spacegroup(spacegroup)
     # cell, reindex = ls.generate_primative_reindex()
     ls.generate()
+
     cell = ls.get_cell('aP')
     reindex = ls.get_reindex_op('aP')
-
     reindex_matrix = symop_to_mat(reindex)
+
+    # grim hack warning! - this is because for some reason (probably to
+    # do with LS getting the inverse operation) othercell is returning
+    # the transpose of the operator or something...
+
+    if 'othercell' in ls.get_executable():
+        reindex_matrix = transpose(reindex_matrix)
 
     # scale the a matrix
     a = matscl(a, 1.0 / wavelength)
@@ -375,6 +382,7 @@ def mosflm_a_matrix_to_real_space(wavelength, lattice, matrix):
 
     # convert these to the xia2 reference frame
     a, b, c = mat2vec(real_a)
+
     ax = mosflm_to_xia2(a)
     bx = mosflm_to_xia2(b)
     cx = mosflm_to_xia2(c)
@@ -386,6 +394,13 @@ def mosflm_a_matrix_to_real_space(wavelength, lattice, matrix):
     la = math.sqrt(dot(ax, ax))
     lb = math.sqrt(dot(bx, bx))
     lc = math.sqrt(dot(cx, cx))
+
+    # print out values - the cell may have been reindexed. 
+
+    Debug.write('Reindexed cell lengths: %.3f %.3f %.3f' % \
+                (cell[0], cell[1], cell[2]))
+    Debug.write('Calculated from matrix: %.3f %.3f %.3f' % \
+                (la, lb, lc))
 
     if math.fabs(la - cell[0]) / cell[0] > 0.01:
         raise RuntimeError, 'cell check failed (wavelength != %f)' % \
@@ -403,17 +418,19 @@ def mosflm_a_matrix_to_real_space(wavelength, lattice, matrix):
     return ax, bx, cx
 
 if __name__ == '__main__':
-    matrix = ''' -0.00417059 -0.00089426 -0.01139821
- -0.00084328 -0.01388561  0.01379631
- -0.00121258  0.01273236  0.01424531
-      -0.099       0.451      -0.013
- -0.94263428 -0.04741397 -0.33044314
- -0.19059871 -0.73622239  0.64934635
- -0.27406719  0.67507666  0.68495023
-    228.0796     52.5895     44.1177     90.0000    100.6078     90.0000
-     -0.0985      0.4512     -0.0134'''
 
-    a, b, c = mosflm_a_matrix_to_real_space(0.99187, 'mC', matrix)
+    matrix = '''  0.00935462  0.00605920 -0.00373825
+ -0.01567190 -0.00910857 -0.00231642
+ -0.01308909  0.01523636 0.000101829
+       0.000       0.000       0.000
+  0.41650556  0.32303609 -0.84980633
+ -0.69777617 -0.48560794 -0.52658650
+ -0.58277915  0.81230081  0.02314848
+     43.6220     52.2332    222.7219     90.0000     90.0000     90.0000
+       0.000       0.000       0.000
+'''
+
+    a, b, c = mosflm_a_matrix_to_real_space(0.979741, 'oI', matrix)
 
     print math.sqrt(dot(a, a))
     print math.sqrt(dot(b, b))
