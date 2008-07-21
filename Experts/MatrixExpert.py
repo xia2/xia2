@@ -240,7 +240,6 @@ def _Othercell():
     o = None
 
     try:
-        raise RuntimeError, 'not using iotbx today'
         o = LatticeSymmetry()
         Debug.write('Using iotbx.lattice_symmetry')
     except:
