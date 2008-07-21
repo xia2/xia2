@@ -181,6 +181,9 @@ class XDSIntegrater(FrameProcessor,
         # set a low resolution limit (which isn't really used...)
         # this should perhaps be done more intelligently from an
         # analysis of the spot list or something...?
+
+        Debug.write('Low resolution set to: %s' % \
+                    self.get_integrater_low_resolution())
         
         if not self.get_integrater_low_resolution():
             self.set_integrater_low_resolution(40.0)
@@ -352,6 +355,7 @@ class XDSIntegrater(FrameProcessor,
             Debug.write('Setting resolution limit in DEFPIX to %.2f' % \
                         self.get_integrater_high_resolution())
             defpix.set_resolution_high(self.get_integrater_high_resolution())
+            defpix.set_resolution_low(self.get_integrater_low_resolution())
 
         defpix.run()
 

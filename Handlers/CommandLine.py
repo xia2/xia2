@@ -126,12 +126,6 @@ class _CommandLine(Object):
             raise RuntimeError, '%s (%s)' % \
                   (self._help_crystal_name(), str(e))
         
-        try:
-            self._read_resolution_limit()
-        except exceptions.Exception, e:
-            raise RuntimeError, '%s (%s)' % \
-                  (self._help_resolution_limit(), str(e))
-
         # FIXME why is this commented out??! - uncomment this though may
         # want to explain exactly what is wrong...
 
@@ -318,30 +312,6 @@ class _CommandLine(Object):
         Debug.write('Directory %s' % directory)
         
         return
-
-    def _read_resolution_limit(self):
-        '''Search for resolution limit on the command line - at the
-        moment just the high resolution limit.'''
-
-        try:
-            index = sys.argv.index('-resolution')
-
-        except ValueError, e:
-            self._default_resolution_limit = 0.0
-            return
-
-        self._default_resolution_limit = float(sys.argv[index + 1])
-
-        Debug.write('Default resolution limit %.2f' % \
-                    self._default_resolution_limit)
-        
-        return
-
-    def _help_resolution_limit(self):
-        return '-resolution 1.6'
-
-    def get_resolution_limit(self):
-        return self._default_resolution_limit
 
     def _read_atom_name(self):
         try:

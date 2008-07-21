@@ -310,6 +310,33 @@ class XInfo:
                     
                     key = record.split()[0].lower()
 
+                    if key == 'resolution':
+
+                        lst = record.split()
+
+                        if len(lst) < 2 or len(lst) > 3:
+                            raise RuntimeError, 'resolution dmin [dmax]'
+
+                        if len(lst) == 2:
+                            dmin = float(lst[1])
+                            
+                            self._crystals[crystal]['wavelengths'][
+                                wavelength]['dmin'] = dmin
+
+                        else:
+                            dmin = min(map(float, lst[1:]))
+                            dmax = max(map(float, lst[1:]))
+                            
+                            self._crystals[crystal]['wavelengths'][
+                                wavelength]['dmin'] = dmin
+
+                            self._crystals[crystal]['wavelengths'][
+                                wavelength]['dmax'] = dmax
+                        
+                        i += 1
+                        record = crystal_records[i]
+                        continue
+
                     if len(record.split()) == 1:
                         raise RuntimeError, 'missing value for token %s' % \
                               record.split()[0]

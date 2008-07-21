@@ -78,6 +78,9 @@ def XDSDefpix(DriverType = None):
         def set_resolution_high(self, resolution_high):
             self._resolution_high = resolution_high
 
+        def set_resolution_low(self, resolution_low):
+            self._resolution_low = resolution_low
+
         def set_input_data_file(self, name, data):
             self._input_data_files[name] = data
             return
