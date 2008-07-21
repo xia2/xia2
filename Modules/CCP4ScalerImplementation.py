@@ -1058,7 +1058,7 @@ class CCP4Scaler(Scaler):
                 
                 n_full = int(info['5_Number'][j])
                 I_full = float(info['4_Irms'][j])
-                if n_full > 0:
+                if n_full > 0 and info['7_SigmaFull'][j] != '-':
                     s_full = float(info['7_SigmaFull'][j])
                 else:
                     s_full = 0.0
@@ -1750,7 +1750,7 @@ class CCP4Scaler(Scaler):
             
                 n_full = int(info['5_Number'][j])
                 I_full = float(info['4_Irms'][j])
-                if n_full > 0:
+                if n_full > 0 and info['7_SigmaFull'][j] != '-':
                     s_full = float(info['7_SigmaFull'][j])
                 else:
                     s_full = 0.0
