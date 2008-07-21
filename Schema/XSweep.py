@@ -10,10 +10,7 @@
 # on a sweep, and will also include integration with the rest of the
 # .xinfo hierarchy. 
 # 
-# The following properties are defined for sweep:
-# 
-# resolution
-# 
+
 # The following properties defined elsewhere impact in the definition
 # of the sweep:
 #
@@ -101,33 +98,6 @@ from Handlers.Streams import Chatter, Debug
 from Handlers.Files import FileHandler
 from Handlers.Environment import Environment
 
-# helper class definitions
-# in _resolution, need to think about how a user defined resolution
-# will be handled - should this be a readonly attribute?
-
-class _resolution(Object):
-    '''An object to represent resolution for the XSweep object.'''
-
-    def __init__(self, resolution = None,
-                 o_handle = None,
-                 o_readonly = False):
-        Object.__init__(self, o_handle, o_readonly)
-
-        if not resolution is None:
-            Chatter.write('%s set to %5.2f' % (self.handle(), resolution))
-        self._resolution = resolution
-
-        return
-
-    def get(self):
-        return self._resolution
-
-    def set(self, resolution):
-        self._resolution = resolution
-        Chatter.write('%s set to %5.2f' % (self.handle(), resolution))
-        self.reset()
-        return
-
 # See FIXME Integrater interface definition, 27/SEP/06
 
 class _global_integration_parameters:
@@ -160,6 +130,8 @@ global_integration_parameters = _global_integration_parameters()
 # may be set during processing or by the user. If it is set by the 
 # user then this should be used and not updated. It should also only 
 # be asserted once during processing => only update if currently None.
+# Update 21/JUL/08 - now removed in the process of doing the resolution
+# limits properly.
 
 # Things which are needed to populate this object from the pointer to a
 # single image.
@@ -185,7 +157,6 @@ class XSweep(Object):
                  integrated_reflection_file = None,
                  beam = None,
                  distance = None,
-                 resolution = None,
                  gain = 0.0,
                  polarization = 0.0,
                  frames_to_process = None,
@@ -370,16 +341,9 @@ class XSweep(Object):
         # ).getCrystal().getLattice()
         # self._crystal_lattice = None
 
-        #   this means that this module will have to present largely the
-        #   same interface as Indexer and Integrater so that the calls
-
-        #   can be appropriately forwarded.
-
-        # set up the resolution object
-
-        resolution_handle = '%s RESOLUTION' % name
-        self._resolution = _resolution(resolution = resolution,
-                                       o_handle = resolution_handle)
+        # this means that this module will have to present largely the
+        # same interface as Indexer and Integrater so that the calls
+        # can be appropriately forwarded.
 
         # finally configure the beam if set
 
@@ -462,17 +426,6 @@ class XSweep(Object):
         repr += 'MTZ file: %s\n' % self.get_integrater_reflections()
 
         return repr
-
-    def get_resolution(self):
-        return self._resolution.get()
-
-    def set_resolution(self, resolution):
-        if not self._resolution.get():
-            self._resolution.set(resolution)
-        # else:
-        # Chatter.write('%s already set' % self._resolution.handle())
-
-        return
 
     def get_directory(self):
         return self._directory

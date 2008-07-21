@@ -92,6 +92,20 @@ class XWavelength(Object):
         self._wavelength = wavelength
         return
 
+    def set_resolution_high(self, resolution_high):
+        self._resolution_high = resolution_high
+        return
+
+    def set_resolution_low(self, resolution_low):
+        self._resolution_low = resolution_low
+        return
+
+    def get_resolution_high(self):
+        return self._resolution_high
+
+    def get_resolution_low(self):
+        return self._resolution_low
+
     def get_f_pr(self):
         return self._f_pr
 
@@ -116,7 +130,7 @@ class XWavelength(Object):
 
     def add_sweep(self, name, directory = None, image = None,
                   integrated_reflection_file = None,
-                  beam = None, distance = None, resolution = None,
+                  beam = None, distance = None, 
                   gain = 0.0, polarization = 0.0,
                   frames_to_process = None, user_lattice = None,
                   epoch = 0):
@@ -129,7 +143,6 @@ class XWavelength(Object):
                                    integrated_reflection_file,
                                    beam = beam,
                                    distance = distance,
-                                   resolution = resolution,
                                    gain = gain,
                                    polarization = polarization,
                                    frames_to_process = frames_to_process,
