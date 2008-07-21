@@ -23,6 +23,7 @@ sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Wrappers.CCP4 import Mosflm
 from Handlers.Streams import Admin, Debug
+from Handlers.Flags import Flags
 from Handlers.PipelineSelection import get_preferences, add_preference
 
 from Modules.XDSIntegrater import XDSIntegrater
@@ -61,6 +62,13 @@ def IntegraterForXSweep(xsweep):
         integrater.setup_from_image(os.path.join(xsweep.get_directory(),
                                                  xsweep.get_image()))
         integrater.set_integrater_sweep_name(xsweep.get_name())
+
+    # copy across resolution limits
+    if xsweep.get_resolution_high():
+        integrater.set_integrater_resolution(
+            xsweep.get_resolution_high(),
+            xsweep.get_resolution_low(),
+            user = True)
 
     # check the epoch and perhaps pass this in for future reference
     # (in the scaling)
@@ -118,6 +126,17 @@ def Integrater():
             
     if not integrater:
         raise RuntimeError, 'no integrater implementations found'
+
+    # check to see if resolution limits were passed in through the
+    # command line...
+
+    dmin = Flags.get_resolution_high()
+    dmax = Flags.get_resolution_low()
+
+    if dmin:
+        Debug.write('Adding user-assigned resolution limits:')
+        Debug.write('dmin: %.3f dmax: %.2f' % (dmin, dmax))
+        integrater.set_integrater_resolution(dmin, dmax, user = True)
 
     return integrater
 
