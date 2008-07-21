@@ -181,7 +181,9 @@ class XDSIntegrater(FrameProcessor,
         # set a low resolution limit (which isn't really used...)
         # this should perhaps be done more intelligently from an
         # analysis of the spot list or something...?
-        self.set_integrater_low_resolution(40.0)
+        
+        if not self.get_integrater_low_resolution():
+            self.set_integrater_low_resolution(40.0)
 
         # decide what images we are going to process, if not already
         # specified
@@ -569,18 +571,20 @@ class XDSIntegrater(FrameProcessor,
         resolution = correct.get_result('resolution_estimate')
 
         if self.get_integrater_high_resolution():
-            if resolution - self.get_integrater_high_resolution() < 0.075:
+            if not self.get_integrater_user_resolution():
+                if resolution - self.get_integrater_high_resolution() < 0.075:
                 
-                # ignore this new resolution limit - this is similar to what
-                # was done for the Mosflm implementation...
+                    # ignore this new resolution limit - this is similar to
+                    # what was done for the Mosflm implementation...
 
-                Debug.write('Ignoring slight change in resolution limit')
-                resolution = self.get_integrater_high_resolution()
+                    Debug.write('Ignoring slight change in resolution limit')
+                    resolution = self.get_integrater_high_resolution()
 
         if resolution > self.get_integrater_high_resolution() and \
                not Flags.get_quick():
-            self.set_integrater_high_resolution(resolution)
-            Chatter.write('Set resolution limit: %5.2f' % resolution)
+            if not self.get_integrater_user_resolution():
+                self.set_integrater_high_resolution(resolution)
+                Chatter.write('Set resolution limit: %5.2f' % resolution)
         elif Flags.get_quick():
             # just record it for future reference
             self._intgr_reso_high = resolution
