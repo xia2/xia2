@@ -65,10 +65,21 @@ def IntegraterForXSweep(xsweep):
 
     # copy across resolution limits
     if xsweep.get_resolution_high():
-        integrater.set_integrater_resolution(
-            xsweep.get_resolution_high(),
-            xsweep.get_resolution_low(),
-            user = True)
+
+        dmin = xsweep.get_resolution_high()
+        dmax = xsweep.get_resolution_low()
+
+        if dmin and dmax:
+
+            Debug.write('Assinging resolution limits from XINFO input:')
+            Debug.write('dmin: %.3f dmax: %.2f' % (dmin, dmax))
+            integrater.set_integrater_resolution(dmin, dmax, user = True)
+
+        else:
+
+            Debug.write('Assinging resolution limits from XINFO input:')
+            Debug.write('dmin: %.3f' % dmin)
+            integrater.set_integrater_high_resolution(dmin, user = True)
 
     # check the epoch and perhaps pass this in for future reference
     # (in the scaling)
@@ -135,8 +146,17 @@ def Integrater():
 
     if dmin:
         Debug.write('Adding user-assigned resolution limits:')
-        Debug.write('dmin: %.3f dmax: %.2f' % (dmin, dmax))
-        integrater.set_integrater_resolution(dmin, dmax, user = True)
+
+        if dmax:
+        
+            Debug.write('dmin: %.3f dmax: %.2f' % (dmin, dmax))
+            integrater.set_integrater_resolution(dmin, dmax, user = True)
+
+        else:
+
+            Debug.write('dmin: %.3f' % dmin)
+            integrater.set_integrater_high_resolution(dmin, user = True)
+            
 
     return integrater
 
