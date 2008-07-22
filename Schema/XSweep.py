@@ -384,6 +384,10 @@ class XSweep(Object):
 
         return self._image_to_epoch.get(image, 0)
 
+    def get_reversephi(self):
+        '''Get whether this is a reverse-phi sweep...'''
+        return self._reversephi
+
     def get_image_to_epoch(self):
         '''Get the image to epoch mapping table.'''
         return copy.deepcopy(self._image_to_epoch)

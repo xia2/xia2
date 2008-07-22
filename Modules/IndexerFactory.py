@@ -96,7 +96,7 @@ def IndexerForXSweep(xsweep):
 
     if xsweep.get_reversephi() or Flags.get_reversephi():
         Debug.write('Setting reverse-phi')
-        integrater.set_reversephi()
+        indexer.set_reversephi()
 
     # N.B. This does not need to be done for the integrater, since
     # that gets it's numbers from the indexer it uses.
