@@ -84,6 +84,12 @@ def LatticeSymmetry(DriverType = None):
             self._spacegroup = Syminfo.spacegroup_number_to_name(
                 lattice_to_spacegroup[lattice])
 
+            # bug 22/JUL/08 latest lattice symmetry no longer recognises
+            # the spacegroup H3...
+
+            if self._spacegroup == 'H3':
+                self._spacegroup = 'R3:H'
+
             return
         
             
