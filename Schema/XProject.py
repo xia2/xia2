@@ -189,6 +189,7 @@ class XProject(Object):
                             integrated_reflection_file = \
                             sweep_info.get('INTEGRATED_REFLECTION_FILE'),
                             beam = sweep_info.get('beam'),
+                            reversephi = sweep_info.get('reversephi', False),
                             distance = sweep_info.get('distance'),
                             gain = float(sweep_info.get('GAIN', 0.0)),
                             dmin = dmin, dmax = dmax,

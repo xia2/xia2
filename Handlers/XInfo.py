@@ -407,6 +407,10 @@ class XInfo:
                         self._crystals[crystal]['sweeps'][sweep][
                             'epoch'] = epoch
 
+                    elif 'REVERSEPHI' == record.split()[0]:
+                        self._crystals[crystal]['sweeps'][sweep][
+                            'reversephi'] = True
+
                     elif 'START_END' == record.split()[0]:
                         start_end = map(int, record.split()[1:])
                         if len(start_end) != 2:

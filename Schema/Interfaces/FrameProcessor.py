@@ -56,6 +56,7 @@ class FrameProcessor:
         self._fp_wavelength = None
         self._fp_distance = None
         self._fp_beam = None
+        self._fp_reversephi = False
 
         self._fp_wavelength_prov = None
         self._fp_distance_prov = None
@@ -196,6 +197,13 @@ class FrameProcessor:
 
     def get_beam_prov(self):
         return self._fp_beam_prov
+
+    def set_reversephi(self, reversephi = True):
+        self._fp_reversephi = reversephi
+        return
+
+    def get_reversephi(self):
+        return self._fp_reversephi
 
     def set_header(self, header):
         self._fp_header = header

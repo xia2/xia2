@@ -149,6 +149,10 @@ class XDSIndexer(FrameProcessor,
         if self.get_wavelength():
             idxref.set_wavelength(self.get_wavelength())
 
+        # reverse phi?
+        if self.get_reversephi():
+            idxref.set_reversephi()
+
         auto_logfiler(idxref, 'IDXREF')
 
         return idxref

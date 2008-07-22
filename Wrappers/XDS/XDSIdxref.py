@@ -156,6 +156,10 @@ def XDSIdxref(DriverType = None):
         def get_indexing_solution(self):
             return self._indxr_lattice, self._indxr_cell, self._indxr_mosaic
 
+        def set_reversephi(self, reversephi = True):
+            self._reversephi = reversephi
+            return
+
         # this needs setting up from setup_from_image in FrameProcessor
 
         def set_beam_centre(self, x, y):
@@ -187,7 +191,7 @@ def XDSIdxref(DriverType = None):
             if self.get_wavelength():
                 image_header['wavelength'] = self.get_wavelength()
 
-            header = header_to_xds(image_header)
+            header = header_to_xds(image_header, self._reversephi)
 
             xds_inp = open(os.path.join(self.get_working_directory(),
                                         'XDS.INP'), 'w')

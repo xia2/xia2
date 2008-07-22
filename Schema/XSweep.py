@@ -156,6 +156,7 @@ class XSweep(Object):
                  image = None,
                  integrated_reflection_file = None,
                  beam = None,
+                 reversephi = False,
                  distance = None,
                  gain = 0.0,
                  dmin = 0.0,
@@ -192,6 +193,7 @@ class XSweep(Object):
         self._wavelength = wavelength
         self._directory = directory
         self._image = image
+        self._reversephi = reversephi
         self._integrated_reflection_file = integrated_reflection_file
         self._epoch = epoch
         self._user_lattice = user_lattice

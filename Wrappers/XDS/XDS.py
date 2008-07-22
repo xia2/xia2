@@ -94,7 +94,7 @@ def xds_check_error(xds_output_list):
 
     return
 
-def header_to_xds(header, synchrotron = None):
+def header_to_xds(header, synchrotron = None, reversephi = False):
     '''A function to take an input header dictionary from Diffdump
     and generate a list of records to start XDS - see Doc/INP.txt.'''
 
@@ -172,13 +172,27 @@ def header_to_xds(header, synchrotron = None):
         'rigaku saturn 944':True,
         'raxis IV':True}
 
-    detector_to_rotation_axis = {
-        'mar':'1.0 0.0 0.0',
-        'marccd':'1.0 0.0 0.0',        
-        'dectris':'1.0 0.0 0.0',        
-        'raxis':'0.0 1.0 0.0',
-        'saturn':'0.0 1.0 0.0',
-        'adsc':'1.0 0.0 0.0'}
+    # FIXME not sure if this is correct...
+
+    if reversephi:
+
+        detector_to_rotation_axis = {
+            'mar':'-1.0 0.0 0.0',
+            'marccd':'-1.0 0.0 0.0',        
+            'dectris':'-1.0 0.0 0.0',        
+            'raxis':'0.0 -1.0 0.0',
+            'saturn':'0.0 -1.0 0.0',
+            'adsc':'-1.0 0.0 0.0'}
+
+    else:
+
+        detector_to_rotation_axis = {
+            'mar':'1.0 0.0 0.0',
+            'marccd':'1.0 0.0 0.0',        
+            'dectris':'1.0 0.0 0.0',        
+            'raxis':'0.0 1.0 0.0',
+            'saturn':'0.0 1.0 0.0',
+            'adsc':'1.0 0.0 0.0'}
 
     detector_to_polarization_plane_normal = {
         'mar':'0.0 1.0 0.0',

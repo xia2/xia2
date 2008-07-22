@@ -223,7 +223,7 @@ from Handlers.Flags import Flags
 from MosflmHelpers import _happy_integrate_lp, \
      _parse_mosflm_integration_output, decide_integration_resolution_limit, \
      _parse_mosflm_index_output, standard_mask, \
-     _get_indexing_solution_number
+     _get_indexing_solution_number, detector_class_to_mosflm
 
 from Modules.GainEstimater import gain
 from Handlers.Files import FileHandler
@@ -861,6 +861,11 @@ def Mosflm(DriverType = None):
             auto_logfiler(self)
             self.start()
 
+            if self.get_reversephi():
+                detector = detector_class_to_mosflm(
+                    self.get_header_item('detector_class'))
+                self.input('detector %s reversephi' % detector)
+
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())
             self.input('newmat xiaindex.mat')
@@ -1189,6 +1194,11 @@ def Mosflm(DriverType = None):
             Debug.write('Running mosflm to generate RASTER, SEPARATION')
             
             self.start()
+
+            if self.get_reversephi():
+                detector = detector_class_to_mosflm(
+                    self.get_header_item('detector_class'))
+                self.input('detector %s reversephi' % detector)
 
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())
@@ -1623,6 +1633,11 @@ def Mosflm(DriverType = None):
             if self._mosflm_gain:
                 self.input('gain %5.2f' % self._mosflm_gain)
 
+            if self.get_reversephi():
+                detector = detector_class_to_mosflm(
+                    self.get_header_item('detector_class'))
+                self.input('detector %s reversephi' % detector)
+
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())
 
@@ -1909,6 +1924,11 @@ def Mosflm(DriverType = None):
 
             if self._mosflm_gain:
                 self.input('gain %5.2f' % self._mosflm_gain)
+
+            if self.get_reversephi():
+                detector = detector_class_to_mosflm(
+                    self.get_header_item('detector_class'))
+                self.input('detector %s reversephi' % detector)
 
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())
@@ -2603,6 +2623,11 @@ def Mosflm(DriverType = None):
                 self.input('dname %s' % temp_dname)
                 # self.input('ucwd')
 
+            if self.get_reversephi():
+                detector = detector_class_to_mosflm(
+                    self.get_header_item('detector_class'))
+                self.input('detector %s reversephi' % detector)
+
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())
 
@@ -2930,6 +2955,11 @@ def Mosflm(DriverType = None):
 
             self.start()
 
+            if self.get_reversephi():
+                detector = detector_class_to_mosflm(
+                    self.get_header_item('detector_class'))
+                self.input('detector %s reversephi' % detector)
+
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())
 
@@ -2978,6 +3008,11 @@ def Mosflm(DriverType = None):
             # then integrate to get the .par and .hkl file
 
             self.start()
+
+            if self.get_reversephi():
+                detector = detector_class_to_mosflm(
+                    self.get_header_item('detector_class'))
+                self.input('detector %s reversephi' % detector)
 
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())

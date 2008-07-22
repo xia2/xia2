@@ -48,6 +48,7 @@ from Modules.XDSIndexerII import XDSIndexerII
 
 from Exceptions.NotAvailableError import NotAvailableError
 from Handlers.Streams import Admin, Debug
+from Handlers.Flags import Flags
 from Handlers.PipelineSelection import get_preferences
 
 def IndexerForXSweep(xsweep):
@@ -92,6 +93,9 @@ def IndexerForXSweep(xsweep):
     # latter.
     if xsweep.get_beam():
         indexer.set_beam(xsweep.get_beam())
+
+    if xsweep.get_reversephi() or Flags.get_reversephi():
+        integrater.set_reversephi()
 
     # N.B. This does not need to be done for the integrater, since
     # that gets it's numbers from the indexer it uses.

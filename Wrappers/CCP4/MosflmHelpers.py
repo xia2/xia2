@@ -32,6 +32,24 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Handlers.Streams import Admin, Science, Status, Chatter
 
+def detector_class_to_mosflm(detector_class):
+    '''Get the mosflm detector type from the detector class.'''
+
+    if 'adsc' in detector_class:
+        return 'adsc'
+    if 'mar' in detector_class and 'ccd' in detector_class:
+        return 'marccd'
+    if 'mar' in detector_class:
+        return 'mar'
+    if 'pilatus' in detector_class:
+        return 'pilatus'
+    if 'raxis' in detector_class:
+        return 'raxis4'
+    if 'saturn' in detector_class:
+        return 'saturn'
+
+    raise RuntimeError, 'unknown detector class "%s"' % detector_class
+
 def _resolution_estimate(ordered_pair_list, cutoff):
     '''Come up with a linearly interpolated estimate of resolution at
     cutoff cutoff from input data [(resolution, i_sigma)].'''
