@@ -27,6 +27,7 @@ class _Flags:
 
     def __init__(self):
         self._quick = False
+        self._reversephi = False
         self._fiddle_sd = False
         self._migrate_data = False
         self._trust_timestaps = False
@@ -146,6 +147,13 @@ class _Flags:
 
     def get_quick(self):
         return self._quick
+
+    def set_reversephi(self, reversephi):
+        self._reversephi = reversephi
+        return
+
+    def get_reversephi(self):
+        return self._reversephi
 
     def set_fiddle_sd(self, fiddle_sd):
         self._fiddle_sd = fiddle_sd

@@ -83,6 +83,7 @@ class _CommandLine(Object):
         self._read_ccp4_61()
         self._read_old_mosflm()
         self._read_quick()
+        self._read_reversephi()
         self._read_fiddle_sd()
         self._read_no_relax()
         self._read_norefine()
@@ -610,6 +611,13 @@ class _CommandLine(Object):
         if '-quick' in sys.argv:
             Flags.set_quick(True)
             Debug.write('Quick mode selected')
+        return
+
+    def _read_reversephi(self):
+
+        if '-reversephi' in sys.argv:
+            Flags.set_reversephi(True)
+            Debug.write('Reversephi mode selected')
         return
 
     def _read_fiddle_sd(self):
