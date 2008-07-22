@@ -268,6 +268,9 @@ class XDSIntegrater(FrameProcessor,
                 self._intgr_indexer.set_frame_wedge(wedge[0],
                                                     wedge[1])
 
+            if self.get_reversephi():
+                Debug.write('Propogating reverse-phi...')
+                self._intgr_indexer.set_reversephi()
             
             # now copy information from the old indexer to the new
             # one - lattice, cell, distance etc.

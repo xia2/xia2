@@ -151,6 +151,7 @@ class XDSIndexer(FrameProcessor,
 
         # reverse phi?
         if self.get_reversephi():
+            Debug.write('Setting reversephi for IDXREF')
             idxref.set_reversephi()
 
         auto_logfiler(idxref, 'IDXREF')

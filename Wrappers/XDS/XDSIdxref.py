@@ -87,6 +87,9 @@ def XDSIdxref(DriverType = None):
             self._cell = None
             self._symm = 0
 
+            # options
+            self._reversephi = False
+
             # results
 
             self._refined_beam = (0, 0)
@@ -191,7 +194,7 @@ def XDSIdxref(DriverType = None):
             if self.get_wavelength():
                 image_header['wavelength'] = self.get_wavelength()
 
-            header = header_to_xds(image_header, self._reversephi)
+            header = header_to_xds(image_header, reversephi = self._reversephi)
 
             xds_inp = open(os.path.join(self.get_working_directory(),
                                         'XDS.INP'), 'w')
