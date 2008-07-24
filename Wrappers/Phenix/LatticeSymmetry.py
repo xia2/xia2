@@ -45,6 +45,10 @@ def LatticeSymmetry(DriverType = None):
 
             self.set_executable('iotbx.lattice_symmetry')
 
+            if 'phaser-1.3' in self.get_executable():
+                raise RuntimeError, \
+                      'unsupported version of lattice_symmetry'
+
             self._cell = None
             self._spacegroup = None
 
@@ -102,7 +106,7 @@ def LatticeSymmetry(DriverType = None):
 
             self.add_command_line('--unit_cell=%f,%f,%f,%f,%f,%f' % \
                                   tuple(self._cell))
-            self.add_command_line('--space-group=%s' % self._spacegroup)
+            self.add_command_line('--space_group=%s' % self._spacegroup)
 
             self.start()
             self.close_wait()
@@ -143,7 +147,11 @@ def LatticeSymmetry(DriverType = None):
                     # setting I 1 2/m 1 has appeared -> look at the
                     # 'Symmetry in minimum-lengths cell' instead (equivalent
                     # to changing lkey here to 'Conventional setting'
-
+                    #
+                    # No, can't do this because this now reports the Hall
+                    # symmetry not the Laue group. Will have to cope with
+                    # the I setting instead :o(
+                    
                     lkey = 'Symmetry in minimum-lengths cell'
 
                     for token in state[lkey].split('(')[0].split():
@@ -226,17 +234,10 @@ def LatticeSymmetry(DriverType = None):
 if __name__ == '__main__':
 
     ls = LatticeSymmetry()
-
-    ls.set_cell((90.22, 90.22, 90.22, 90.0, 90.0, 90.0))
-    ls.set_spacegroup('F23')
-
-    cell, reindex = ls.generate_primative_reindex()
-
-    s2m = Symop2mat()
-
-    print 'Unit cell: %.2f %.2f %.2f %.2f %.2f %.2f' % cell
-    print 'Reindex: %s' % reindex
-    print 'Matrix: %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f ' % \
-          tuple(s2m.convert(reindex))
+    ls.set_lattice('cI')
+    ls.set_cell((78.56, 78.56, 78.56, 90.00, 90.00, 90.00))
+    ls.generate()
+    cell = ls.get_cell('aP')
+    print cell
     
-    
+   
