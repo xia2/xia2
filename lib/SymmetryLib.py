@@ -243,7 +243,6 @@ def lauegroup_to_lattice(lauegroup):
     # off...
     #                             'I2/m': 'mI',
     
-    
     lauegroup_to_lattice = {'Ammm': 'oA',
                             'C2/m': 'mC',
                             'Cmmm': 'oC',
