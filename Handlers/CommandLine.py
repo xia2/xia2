@@ -433,6 +433,7 @@ class _CommandLine(Object):
             raise RuntimeError, 'negative index'
 
         Flags.set_spacegroup(sys.argv[index + 1])
+        Debug.write('Spacegroup set to %s' % sys.argv[index + 1])
             
         return
 
@@ -459,6 +460,11 @@ class _CommandLine(Object):
 
         Flags.set_resolution_high(dmin)
         Flags.set_resolution_low(dmax)
+
+        if dmax:
+            Debug.write('Resolution set to %.3f %.3f' % (dmin, dmax))
+        else:
+            Debug.write('Resolution set to %.3f' % dmin)
             
         return
 
@@ -645,7 +651,8 @@ class _CommandLine(Object):
 
         if '-norefine' in sys.argv:
             Flags.set_refine(False)
-            # FIXME what does this do???
+            # FIXME what does this do??? - switch off orientation refinement
+            # in integration
         return
 
     def _read_2d(self):
@@ -670,7 +677,7 @@ class _CommandLine(Object):
             add_preference('indexer', 'xdsii')
             add_preference('integrater', 'xds')
             add_preference('scaler', 'xds')
-            Debug.write('3D II pipeline selected')
+            Debug.write('3D II pipeline (XDS IDXREF all images) selected')
         return
 
     def _read_debug(self):
