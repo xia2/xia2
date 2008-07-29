@@ -1725,6 +1725,11 @@ def Mosflm(DriverType = None):
 
             # FIXME 
             self.input('postref maxresidual 5.0')
+
+            genfile = os.path.join(os.environ['BINSORT_SCR'],
+                                   '%d_mosflm.gen' % self.get_xpid())
+
+            self.input('genfile %s' % genfile)
             
             for cri in self._mosflm_cell_ref_images:
                 self.input('process %d %d' % cri)
@@ -2027,6 +2032,11 @@ def Mosflm(DriverType = None):
             # FIXME
             self.input('postref maxresidual 5.0')
             
+            genfile = os.path.join(os.environ['BINSORT_SCR'],
+                                   '%d_mosflm.gen' % self.get_xpid())
+
+            self.input('genfile %s' % genfile)
+
             for cri in self._mosflm_cell_ref_images:
                 self.input('process %d %d' % cri)
                 self.input('go')
@@ -2719,6 +2729,11 @@ def Mosflm(DriverType = None):
                 self.input('adcoffset 0')
 
             offset = self.get_frame_offset()
+
+            genfile = os.path.join(os.environ['BINSORT_SCR'],
+                                   '%d_mosflm.gen' % self.get_xpid())
+
+            self.input('genfile %s' % genfile)
 
             self.input('process %d %d' % (self._intgr_wedge[0] - offset,
                                           self._intgr_wedge[1] - offset))

@@ -566,6 +566,14 @@ class XDSIntegrater(FrameProcessor,
                 self._intgr_reso_high = correct.get_result(
                     'highest_resolution')                                     
 
+        # FIXME bug # 3205 - if the resolution has been set by the user,
+        # the data will not be reintegrated with the refined orientation
+        # parameters => should check for this here? To be honest, that was
+        # slightly accidental in the past anyway. Really, should store
+        # the results of the unrefined integration, reintegrate with the
+        # refined orientation and see if they are any better - if not,
+        # revert to using the unrefined orientation.
+
         # should get some interesting stuff from the XDS correct file
         # here, for instance the resolution range to use in integration
         # (which should be fed back if not fast) and so on...
