@@ -182,7 +182,7 @@ def print_sweeps(out = sys.stdout):
         out.write('\n')
 
     if Flags.get_freer_file():
-        out.write('FREER_FILE %s\n' Flags.get_freer_file())
+        out.write('FREER_FILE %s\n' % Flags.get_freer_file())
         out.write('\n')
 
     if latest_sequence:
