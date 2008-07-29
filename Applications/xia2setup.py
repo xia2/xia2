@@ -33,6 +33,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Schema.Sweep import SweepFactory
 from Experts.FindImages import image2template_directory
 from Handlers.CommandLine import CommandLine
+from Handlers.Flags import Flags
 from Wrappers.CCP4.Chooch import Chooch
 from Modules.LabelitBeamCentre import compute_beam_centre
 from Handlers.Streams import streams_off
@@ -173,6 +174,17 @@ def print_sweeps(out = sys.stdout):
 
     out.write('\n')
 
+    # check to see if a user spacegroup has been assigned - if it has,
+    # copy it in...
+
+    if Flags.get_spacegroup():
+        out.write('USER_SPACEGROUP %s\n' % Flags.get_spacegroup())
+        out.write('\n')
+
+    if Flags.get_freer_file():
+        out.write('FREER_FILE %s\n' Flags.get_freer_file())
+        out.write('\n')
+
     if latest_sequence:
         out.write('BEGIN AA_SEQUENCE\n')
         out.write('\n')
@@ -216,6 +228,15 @@ def print_sweeps(out = sys.stdout):
         wavelength_map[wavelengths[j]] = name
         
         out.write('BEGIN WAVELENGTH %s\n' % name)
+
+        dmin = Flags.get_resolution_high()
+        dmax = Flags.get_resolution_low()
+
+        if dmin and dmax:
+            out.write('RESOLUTION %f %f\n' % (dmin, dmax))
+        elif dmin:
+            out.write('RESOLUTION %f\n' % dmin)
+                
         out.write('WAVELENGTH %f\n' % wavelengths[j])
         if fp != 0.0 and fpp != 0.0:
             out.write('F\' %5.2f\n' % fp)
@@ -240,6 +261,10 @@ def print_sweeps(out = sys.stdout):
             name = 'SWEEP%d' % j
 
             out.write('BEGIN SWEEP %s\n' % name)
+
+            if Flags.get_reversephi():
+                out.write('REVERSEPHI\n')
+
             out.write('WAVELENGTH %s\n' % wavelength_map[s.get_wavelength()])
             
             out.write('DIRECTORY %s\n' % s.get_directory())
