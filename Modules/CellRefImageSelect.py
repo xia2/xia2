@@ -21,7 +21,9 @@ from Driver.DriverFactory import DriverFactory
 # classes to make this work
 
 from Experts.MatrixExpert import rot_x, mosflm_a_matrix_to_real_space, \
-     matvecmul, dot, get_reciprocal_space_primitive_matrix
+     matvecmul, dot, get_reciprocal_space_primitive_matrix, parse_matrix, \
+     matmul, mat2vec, vec2mat, rot_y, rot_z
+from Experts.ReferenceFrame import mosflm_to_xia2
 
 # something to read the headers 
 
@@ -535,6 +537,85 @@ def identify_perpendicular_axes(phi_start, phi_end, phi_width,
 
     return phi_a, phi_b, phi_c, angle_a, angle_b, angle_c, ia, ib, ic
 
+def identify_parallel_axes(phi_start, phi_end, phi_width,
+                           wavelength, lattice, matrix):
+    '''Find phi values which present the primitive unit cell axes as
+    near as possible to being parallel to the beam vector.'''
+
+    # FIXME should add a test in here that the mosflm orientation matrix
+    # corresponds to the asserted lattice...
+
+    # compute the P1 real-space cell axes
+
+    a, b, c = mosflm_a_matrix_to_real_space(wavelength, lattice, matrix)
+
+    # compute rotations of these and find minimum for axis.Z - that is the
+    # Z component of the rotated axis... check workings and definitions!
+
+    phi = phi_start + 0.5 * phi_width
+
+    # initialize search variables
+
+    phi_a = phi_start
+    phi_b = phi_start
+    phi_c = phi_start
+
+    dot_a = 0.0
+    dot_b = 0.0
+    dot_c = 0.0
+
+    ia = 0
+    ib = 0
+    ic = 0
+
+    i = 0
+
+    # only consider the first 180 degrees of data...
+
+    if phi_end - phi_start > 180:
+        phi_end = phi_start + 180
+
+    while phi < phi_end:
+        RX = rot_x(phi)
+
+        RXa = matvecmul(RX, a)
+        RXb = matvecmul(RX, b)
+        RXc = matvecmul(RX, c)
+
+        if math.fabs(RXa[2]) > dot_a:
+            dot_a = math.fabs(RXa[2])
+            phi_a = phi
+            ia = i
+
+        if math.fabs(RXb[2]) > dot_b:
+            dot_b = math.fabs(RXb[2])
+            phi_b = phi
+            ib = i
+
+        if math.fabs(RXc[2]) > dot_c:
+            dot_c = math.fabs(RXc[2])
+            phi_c = phi
+            ic = i
+
+        phi += phi_width
+        i += 1
+
+    length_a = math.sqrt(dot(a, a))
+    length_b = math.sqrt(dot(b, b))
+    length_c = math.sqrt(dot(c, c))
+
+    rtod = 180.0 / math.pi
+
+    angle_a = math.fabs(90.0 - rtod * math.acos(dot_a / length_a))
+    angle_b = math.fabs(90.0 - rtod * math.acos(dot_b / length_b))
+    angle_c = math.fabs(90.0 - rtod * math.acos(dot_c / length_c))
+
+    # return the closest positions and the angular offset from
+    # perpendicularity...
+
+    return phi_a, phi_b, phi_c, angle_a, angle_b, angle_c, ia, ib, ic
+
+
 def identify_perpendicular_reciprocal_axes(phi_start, phi_end, phi_width,
                                            wavelength, lattice, matrix):
     '''Find phi values which present the primitive reciprocal unit cell axes as
@@ -613,24 +694,392 @@ def identify_perpendicular_reciprocal_axes(phi_start, phi_end, phi_width,
 
     return phi_a, phi_b, phi_c, angle_a, angle_b, angle_c, ia, ib, ic
 
-if __name__ == '__main__':
-    matrix = ''' -0.01546709  0.01093835 -0.01277924
-  0.01523611  0.00277101 -0.01848350
- -0.00161761 -0.02056986  0.00118104
-       0.000       0.000       0.000
- -0.71043708  0.34170994 -0.61523448
-  0.69982756  0.25072808 -0.66886233
- -0.07430034 -0.90574265 -0.41726456
-     47.6590     47.6861     49.6444     62.9615     73.8222     73.5269
-       0.000       0.000       0.000'''
+def identify_parallel_reciprocal_axes(phi_start, phi_end, phi_width,
+                                      wavelength, lattice, matrix):
+    '''Find phi values which present the primitive reciprocal unit cell axes as
+    near as possible to being perpendicular to the beam vector.'''
 
-    phi_start = 30.0
+    # FIXME should add a test in here that the mosflm orientation matrix
+    # corresponds to the asserted lattice...
+
+    # find thee P1 reciprocal-space cell axes
+
+    a, b, c = get_reciprocal_space_primitive_matrix(lattice, matrix)
+
+    # compute rotations of these and find minimum for axis.Z - that is the
+    # Z component of the rotated axis... check workings and definitions!
+
+    phi = phi_start + 0.5 * phi_width
+
+    # initialize search variables
+
+    phi_a = phi_start
+    phi_b = phi_start
+    phi_c = phi_start
+
+    dot_a = 0.0
+    dot_b = 0.0
+    dot_c = 0.0
+
+    ia = 0
+    ib = 0
+    ic = 0
+
+    i = 0
+
+    # only consider the first 180 degrees of data...
+
+    if phi_end - phi_start > 180:
+        phi_end = phi_start + 180
+
+    while phi < phi_end:
+        RX = rot_x(phi)
+
+        RXa = matvecmul(RX, a)
+        RXb = matvecmul(RX, b)
+        RXc = matvecmul(RX, c)
+
+        if math.fabs(RXa[2]) > dot_a:
+            dot_a = math.fabs(RXa[2])
+            phi_a = phi
+            ia = i
+
+        if math.fabs(RXb[2]) > dot_b:
+            dot_b = math.fabs(RXb[2])
+            phi_b = phi
+            ib = i
+
+        if math.fabs(RXc[2]) > dot_c:
+            dot_c = math.fabs(RXc[2])
+            phi_c = phi
+            ic = i
+
+        phi += phi_width
+        i += 1
+
+    length_a = math.sqrt(dot(a, a))
+    length_b = math.sqrt(dot(b, b))
+    length_c = math.sqrt(dot(c, c))
+
+    rtod = 180.0 / math.pi
+
+    angle_a = math.fabs(rtod * math.acos(dot_a / length_a))
+    angle_b = math.fabs(rtod * math.acos(dot_b / length_b))
+    angle_c = math.fabs(rtod * math.acos(dot_c / length_c))
+
+    # return the closest positions and the angular offset from
+    # perpendicularity...
+
+    return phi_a, phi_b, phi_c, angle_a, angle_b, angle_c, ia, ib, ic
+
+#### test code ####
+
+def identify_parallel_reciprocal_axes2(phi_start, phi_end, phi_width,
+                                       wavelength, lattice, matrix):
+    '''Find phi values which present the primitive reciprocal unit cell axes as
+    near as possible to being perpendicular to the beam vector.'''
+
+    # FIXME should add a test in here that the mosflm orientation matrix
+    # corresponds to the asserted lattice...
+
+    # find thee P1 reciprocal-space cell axes - note well am doing this
+    # for the matrix in whatever setting
+
+    cell, A, U = parse_matrix(matrix)
+
+    a, b, c = mat2vec(A)
+
+    # compute rotations of these and find minimum for axis.Z - that is the
+    # Z component of the rotated axis... check workings and definitions!
+
+    phi = phi_start + 0.5 * phi_width
+
+    # initialize search variables
+
+    phi_a = phi_start
+    phi_b = phi_start
+    phi_c = phi_start
+
+    dot_a = 0.0
+    dot_b = 0.0
+    dot_c = 0.0
+
+    ia = 0
+    ib = 0
+    ic = 0
+
+    i = 0
+
+    # only consider the first 180 degrees of data...
+
+    if phi_end - phi_start > 180:
+        phi_end = phi_start + 180
+
+    while phi < phi_end:
+        RX = rot_z(phi)
+
+        RXa = matvecmul(RX, a)
+        RXb = matvecmul(RX, b)
+        RXc = matvecmul(RX, c)
+
+        if math.fabs(RXa[0]) > dot_a:
+            dot_a = math.fabs(RXa[0])
+            phi_a = phi
+            ia = i
+
+        if math.fabs(RXb[0]) > dot_b:
+            dot_b = math.fabs(RXb[0])
+            phi_b = phi
+            ib = i
+
+        if math.fabs(RXc[0]) > dot_c:
+            dot_c = math.fabs(RXc[0])
+            phi_c = phi
+            ic = i
+
+        phi += phi_width
+        i += 1
+
+    length_a = math.sqrt(dot(a, a))
+    length_b = math.sqrt(dot(b, b))
+    length_c = math.sqrt(dot(c, c))
+
+    rtod = 180.0 / math.pi
+
+    angle_a = math.fabs(rtod * math.acos(dot_a / length_a))
+    angle_b = math.fabs(rtod * math.acos(dot_b / length_b))
+    angle_c = math.fabs(rtod * math.acos(dot_c / length_c))
+
+    # return the closest positions and the angular offset from
+    # perpendicularity...
+
+    return phi_a, phi_b, phi_c, angle_a, angle_b, angle_c, ia, ib, ic
+
+#### end test code ####
+
+def write_dot_real_axes(phi_start, phi_end, phi_width,
+                              wavelength, lattice, matrix):
+
+    a, b, c = mosflm_a_matrix_to_real_space(wavelength, lattice, matrix)
+
+    # calculate the cross terms
+    ab = (0.5 * (a[0] + b[0]),
+          0.5 * (a[1] + b[1]),
+          0.5 * (a[2] + b[2]))
+
+    bc = (0.5 * (b[0] + c[0]),
+          0.5 * (b[1] + c[1]),
+          0.5 * (b[2] + c[2]))
+
+    ca = (0.5 * (c[0] + a[0]),
+          0.5 * (c[1] + a[1]),
+          0.5 * (c[2] + a[2]))
+
+    phi = phi_start + 0.5 * phi_width
+    i = 0
+
+    dot_a = 0.0
+    dot_b = 0.0
+    doc_c = 0.0
+
+    dot_ab = 0.0
+    dot_bc = 0.0
+    doc_ca = 0.0
+
+    fout = open('dot_real.txt', 'w')
+
+    while phi < phi_end:
+
+        i += 1
+
+        RX = rot_x(phi)
+
+        RXa = matvecmul(RX, a)
+        RXb = matvecmul(RX, b)
+        RXc = matvecmul(RX, c)
+
+        dot_a = math.fabs(RXa[2])
+        dot_b = math.fabs(RXb[2])
+        dot_c = math.fabs(RXc[2])
+
+        RXab = matvecmul(RX, ab)
+        RXbc = matvecmul(RX, bc)
+        RXca = matvecmul(RX, ca)
+
+        dot_ab = math.fabs(RXab[2])
+        dot_bc = math.fabs(RXbc[2])
+        dot_ca = math.fabs(RXca[2])
+
+        fout.write('%d %.2f %.4f %.4f %.4f %.4f %.4f %.4f\n' %
+                   (i, phi, dot_a, dot_b, dot_c, dot_ab, dot_bc, dot_ca))
+
+        phi += phi_width
+
+    fout.close()
+
+    return
+
+def write_dot_reciprocal_axes(phi_start, phi_end, phi_width,
+                              wavelength, lattice, matrix):
+
+    a, b, c = get_reciprocal_space_primitive_matrix(lattice, matrix)
+
+    # calculate the cross terms
+    ab = (0.5 * (a[0] + b[0]),
+          0.5 * (a[1] + b[1]),
+          0.5 * (a[2] + b[2]))
+
+    bc = (0.5 * (b[0] + c[0]),
+          0.5 * (b[1] + c[1]),
+          0.5 * (b[2] + c[2]))
+
+    ca = (0.5 * (c[0] + a[0]),
+          0.5 * (c[1] + a[1]),
+          0.5 * (c[2] + a[2]))
+
+    phi = phi_start + 0.5 * phi_width
+    i = 0
+
+    dot_a = 0.0
+    dot_b = 0.0
+    doc_c = 0.0
+
+    dot_ab = 0.0
+    dot_bc = 0.0
+    doc_ca = 0.0
+
+    fout = open('dot_recl.txt', 'w')
+
+    while phi < phi_end:
+
+        i += 1
+
+        RX = rot_x(phi)
+
+        RXa = matvecmul(RX, a)
+        RXb = matvecmul(RX, b)
+        RXc = matvecmul(RX, c)
+
+        dot_a = math.fabs(RXa[2])
+        dot_b = math.fabs(RXb[2])
+        dot_c = math.fabs(RXc[2])
+
+        RXab = matvecmul(RX, ab)
+        RXbc = matvecmul(RX, bc)
+        RXca = matvecmul(RX, ca)
+
+        dot_ab = math.fabs(RXab[2])
+        dot_bc = math.fabs(RXbc[2])
+        dot_ca = math.fabs(RXca[2])
+
+        fout.write('%d %.2f %.4f %.4f %.4f %.4f %.4f %.4f\n' %
+                   (i, phi, dot_a, dot_b, dot_c, dot_ab, dot_bc, dot_ca))
+
+        phi += phi_width
+
+    fout.close()
+
+    return
+
+#### new functions ####
+
+def identify_diagonal_maxima(phi_start, phi_end, phi_width,
+                             wavelength, lattice, matrix):
+    '''Find phi rotation values where the diagonals of the matrix
+    [R][U] are maximised - logically this will maximise the derivative
+    of the spot positions as a function of the cell axes.'''
+
+    cell, A, U = parse_matrix(matrix)
+
+    # transform U matrix to xia2 coordinate frame
+
+    u1, u2, u3 = mat2vec(U)
+    ux1 = mosflm_to_xia2(u1)
+    ux2 = mosflm_to_xia2(u2)
+    ux3 = mosflm_to_xia2(u3)
+    UX = vec2mat((ux1, ux2, ux3))
+
+    # print the new U matrix
+    print 'UX Matrix:'
+    print '%.4f %.4f %.4f' % (UX[0], UX[1], UX[2])
+    print '%.4f %.4f %.4f' % (UX[3], UX[4], UX[5])
+    print '%.4f %.4f %.4f' % (UX[6], UX[7], UX[8])
+
+    # set up the rotations
+
+    phi = phi_start + 0.5 * phi_width
+
+    # initialize search variables
+
+    phi_a = phi_start
+    phi_b = phi_start
+    phi_c = phi_start
+
+    ru_a = 0.0
+    ru_b = 0.0
+    ru_c = 0.0
+
+    ia = 0
+    ib = 0
+    ic = 0
+
+    i = 0
+
+    # only consider the first 180 degrees of data...
+
+    if phi_end - phi_start > 180:
+        phi_end = phi_start + 180.0
+
+    while phi < phi_end:
+        RX = rot_x(phi)
+        # RX = rot_y(phi)
+
+        RXU = matmul(RX, UX)
+
+        if math.fabs(RXU[0]) > ru_a:
+            ru_a = math.fabs(RXU[0])
+            phi_a = phi
+            ia = i
+
+        if math.fabs(RXU[4]) > ru_b:
+            ru_b = math.fabs(RXU[4])
+            phi_b = phi
+            ib = i
+
+        if math.fabs(RXU[8]) > ru_c:
+            ru_c = math.fabs(RXU[8])
+            phi_c = phi
+            ic = i
+
+        phi += phi_width
+        i += 1
+
+    # return the closest positions and the angular offset from
+    # perpendicularity...
+
+
+    return phi_a, phi_b, phi_c, ru_a, ru_b, ru_c, ia, ib, ic
+
+#### end functions ####
+
+if __name__ == '__main__':
+    matrix = '''  0.00320799  0.00351671  0.01342237
+  0.01606894 -0.00159450  0.00328371
+  0.00102366  0.01400861 -0.00299579
+       0.146       0.007       0.295
+  0.19539493  0.24201378  0.95039463
+  0.97874063 -0.10973084 -0.17328052
+  0.06234978  0.96404797 -0.25830969
+     65.0648     67.3899     75.5509     90.0000    113.5520     90.0000
+      0.1458      0.0069      0.2949'''
+
+    phi_start = 250.0
     phi_width = 1.0
-    phi_end = 210.0
+    phi_end = 430.0
 
     phi_a, phi_b, phi_c, da, db, dc, ia, ib, ic = \
            identify_perpendicular_axes(
-        phi_start, phi_end, phi_width, 0.97960, 'aP', matrix)
+        phi_start, phi_end, phi_width, 0.979245, 'mP', matrix)
 
     print 'Real space:'
     print 'A: %.2f %.2f %3d' % (phi_a, da, ia + 1)
@@ -639,126 +1088,47 @@ if __name__ == '__main__':
 
     phi_a, phi_b, phi_c, da, db, dc, ia, ib, ic = \
            identify_perpendicular_reciprocal_axes(
-        phi_start, phi_end, phi_width, 0.97960, 'aP', matrix)
+        phi_start, phi_end, phi_width, 0.979245, 'mP', matrix)
     
     print 'Reciprocal space:'
     print 'A: %.2f %.2f %3d' % (phi_a, da, ia + 1)
     print 'B: %.2f %.2f %3d' % (phi_b, db, ib + 1)
     print 'C: %.2f %.2f %3d' % (phi_c, dc, ic + 1)
 
-if __name__ == '__main_C2__':
-    matrix = ''' -0.00417059 -0.00089426 -0.01139821
- -0.00084328 -0.01388561  0.01379631
- -0.00121258  0.01273236  0.01424531
-      -0.099       0.451      -0.013
- -0.94263428 -0.04741397 -0.33044314
- -0.19059871 -0.73622239  0.64934635
- -0.27406719  0.67507666  0.68495023
-    228.0796     52.5895     44.1177     90.0000    100.6078     90.0000
-     -0.0985      0.4512     -0.0134'''
+    phi_a, phi_b, phi_c, da, db, dc, ia, ib, ic = \
+           identify_parallel_axes(
+        phi_start, phi_end, phi_width, 0.979245, 'mP', matrix)
 
-    phi_start = 161.0
-    phi_width = 0.5
-    phi_end = 251.0
-
-    phi_a, phi_b, phi_c, da, db, dc, ia, ib, ic = identify_perpendicular_axes(
-        phi_start, phi_end, phi_width, 0.99187, 'mC', matrix)
-
+    print 'Real space (parallel):'
     print 'A: %.2f %.2f %3d' % (phi_a, da, ia + 1)
     print 'B: %.2f %.2f %3d' % (phi_b, db, ib + 1)
     print 'C: %.2f %.2f %3d' % (phi_c, dc, ic + 1)
 
     phi_a, phi_b, phi_c, da, db, dc, ia, ib, ic = \
-           identify_perpendicular_reciprocal_axes(
-        phi_start, phi_end, phi_width, 0.99187, 'mC', matrix)
-
+           identify_parallel_reciprocal_axes(
+        phi_start, phi_end, phi_width, 0.979245, 'mP', matrix)
+    
+    print 'Reciprocal space (parallel):'
     print 'A: %.2f %.2f %3d' % (phi_a, da, ia + 1)
     print 'B: %.2f %.2f %3d' % (phi_b, db, ib + 1)
     print 'C: %.2f %.2f %3d' % (phi_c, dc, ic + 1)
 
-if __name__ == '__main_oldQ__':
 
-    # assign the image name here... need user input checking
-
-    image = sys.argv[1]
-    count = int(sys.argv[2])
-
-    # in here read first image to get the oscillation range
-
-    from Wrappers.XIA.Diffdump import Diffdump
-    from lib.Guff import nint
-
-    dd = Diffdump()
-
-    dd.set_image(image)
-
-    header = dd.readheader()
-
-    phi_start = header['phi_start']
-    phi_width = header['phi_width']
-    wavelength = header['wavelength']
-
-    # then run labelit with three images 0,45,90 ish to get the
-    # beam centre - now 35, 75
-
-    _images = [1]
-    if int(90.0 / phi_width) <= count:
-        _images.append(int(35.0 / phi_width))
-        _images.append(int(75.0 / phi_width))
-    else:
-        _images.append(int(0.5 * count))
-        _images.append(count)
-
-    li = LabelitIndex()
-    li.setup_from_image(image)
-    li.set_images(_images)
-    li.autoindex()
-
-    beam = li.get_beam()
-    matrix = li.get_matrix()
-    lattice = li.get_lattice()
-
-    phi_end = phi_start + count * phi_width
-
-    phi_a, phi_b, phi_c, a_a, a_b, a_c = compute_something_else(
-        phi_start, phi_end, phi_width, wavelength, lattice, matrix)
+    phi_a, phi_b, phi_c, da, db, dc, ia, ib, ic = \
+           identify_parallel_reciprocal_axes2(
+        phi_start, phi_end, phi_width, 0.979245, 'mP', matrix)
     
-    print '%.2f %.2f %.2f' % (phi_a, phi_b, phi_c)
-    print '%.2f %.2f %.2f' % (a_a, a_b, a_c)
+    print 'Reciprocal space (parallel) 2:'
+    print 'A: %.2f %.2f %3d' % (phi_a, da, ia + 1)
+    print 'B: %.2f %.2f %3d' % (phi_b, db, ib + 1)
+    print 'C: %.2f %.2f %3d' % (phi_c, dc, ic + 1)
 
-if __name__ == '__main__old__bits__':
 
-    # print '# refined beam: %f %f' % beam
-
-    # then compose the list of images
-
-    images = [1]
-    j = nint(5 / phi_width)
-    while j <= count:
-        images.append(j)
-        j += nint(5 / phi_width)
-
-    r = len(images) - 2
-
-    for i in range(1):
-        for j in range(i + 1, r + 1):
-            for k in range(j + 1, r + 2):
-                _i = images[i]
-                _j = images[j]
-                _k = images[k]
-
-                li = LabelitIndex()
-                li.setup_from_image(image)
-                li.set_beam(beam)
-                li.set_images([_i, _j, _k])
-
-                li.autoindex()
-            
-                metric, rmsd = li.get_penalties()
-
-                # finally in here put in the image numbers * phi width
-            
-                print '%2d %.2f %.2f %.4f %.4f' % \
-                      (_i, (_j - _i + 1) * phi_width,
-                       (_k - _i + 1) * phi_width,
-                       metric, rmsd)
+    phi_a, phi_b, phi_c, ru_a, ru_b, ru_c, ia, ib, ic = \
+           identify_diagonal_maxima(
+        phi_start, phi_end, phi_width, 0.979245, 'mP', matrix)
+    
+    print 'Diagonal Maxima:'
+    print 'A: %.2f %.2f %3d' % (phi_a, ru_a, ia + 1)
+    print 'B: %.2f %.2f %3d' % (phi_b, ru_b, ib + 1)
+    print 'C: %.2f %.2f %3d' % (phi_c, ru_c, ic + 1)
