@@ -124,7 +124,7 @@ def Integrater():
         except NotAvailableError, e:
             if preselection == 'mosflm':
                 raise RuntimeError, \
-                      'preselected integrater xds not available'
+                      'preselected integrater mosflm not available'
             pass
             
     if not integrater and \
