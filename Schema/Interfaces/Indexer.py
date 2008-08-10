@@ -218,6 +218,7 @@ class Indexer:
         self._indxr_refined_beam = None
         self._indxr_refined_distance = None
         self._indxr_resolution_estimate = 0.0
+        self._indxr_low_resolution = 0.0
 
         # error information
         self._indxr_error = None
@@ -521,6 +522,12 @@ class Indexer:
 
         self.index()
         return self._indxr_resolution_estimate       
+
+    def get_indexer_low_resolution(self):
+        '''Get an estimate of the low resolution limit of the data.'''
+
+        self.index()
+        return self._indxr_low_resolution
 
     def set_indexer_payload(self, this, value):
         '''Set something in the payload.'''
