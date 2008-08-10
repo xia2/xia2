@@ -395,6 +395,52 @@ class XDSIndexerII(FrameProcessor,
 
         self._indxr_payload['xds_files'] = self._data_files
 
+        # finally read through SPOT.XDS and XPARM.XDS to get an estimate
+        # of the low resolution limit - this should be pretty straightforward
+        # since what I want is the resolution of the lowest resolution indexed
+        # spot..
+
+        # first parse the numbers from the IDXREF XPARM file
+
+        xparm = idxref.get_output_data_file('XPARM.XDS')
+        values = map(float, xparm.split())
+
+        distance = values[14]
+        wavelength = values[6]
+        pixel = values[12], values[13]
+        beam = values[15], values[16]
+        
+        # then work through the spot list to find the lowest resolution spot
+
+        dmax = 0.0
+
+        for record in idxref.get_output_data_file('SPOT.XDS').split('\n'):
+            data = map(float, record.split())
+
+            h, k, l = map(nint, data[4:7])
+
+            if h == 0 and k == 0 and l == 0:
+                # this reflection was not indexed
+                continue
+
+            x = data[0]
+            y = data[1]
+
+            dx = pixel[0] * (x - beam[0])
+            dy = pixel[1] * (y - beam[1])
+
+            d = math.sqrt(dx * dx + dy * dy)
+
+            theta = 0.5 * math.atan(d / distance)
+
+            ds = wavelength / (2.0 * math.sin(theta))
+
+            if ds > dmax:
+                dmax = ds
+
+        Debug.write('Low resolution limit assigned as: %.2f' % dmax)
+        self._indxr_low_resolution = dmax
+
         return
         
 if __name__ == '__main_old__':

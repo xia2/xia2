@@ -177,17 +177,6 @@ class XDSIntegrater(FrameProcessor,
         IDXREF to get the XPARM etc. DEFPIX is considered part of the full
         integration as it is resolution dependent.'''
 
-
-        # set a low resolution limit (which isn't really used...)
-        # this should perhaps be done more intelligently from an
-        # analysis of the spot list or something...?
-
-        Debug.write('Low resolution set to: %s' % \
-                    self.get_integrater_low_resolution())
-        
-        if not self.get_integrater_low_resolution():
-            self.set_integrater_low_resolution(40.0)
-
         # decide what images we are going to process, if not already
         # specified
         if not self._intgr_wedge:
@@ -317,6 +306,18 @@ class XDSIntegrater(FrameProcessor,
 
             # FIXME comparison needed
 
+        # set a low resolution limit (which isn't really used...)
+        # this should perhaps be done more intelligently from an
+        # analysis of the spot list or something...?
+        
+        if not self.get_integrater_low_resolution():
+
+            dmin = self._intgr_indexer.get_indexer_low_resolution()    
+            self.set_integrater_low_resolution(dmin)
+
+            Debug.write('Low resolution set to: %s' % \
+                        self.get_integrater_low_resolution())
+        
         # copy the data across
         self._data_files = copy.deepcopy(
             self._intgr_indexer.get_indexer_payload('xds_files'))
@@ -358,6 +359,12 @@ class XDSIntegrater(FrameProcessor,
             Debug.write('Setting resolution limit in DEFPIX to %.2f' % \
                         self.get_integrater_high_resolution())
             defpix.set_resolution_high(self.get_integrater_high_resolution())
+            defpix.set_resolution_low(self.get_integrater_low_resolution())
+
+        elif self.get_integrater_low_resolution():
+            Debug.write('Setting low resolution limit in DEFPIX to %.2f' % \
+                        self.get_integrater_low_resolution())
+            defpix.set_resolution_high(0.0)
             defpix.set_resolution_low(self.get_integrater_low_resolution())
 
         defpix.run()
