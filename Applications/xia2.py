@@ -41,6 +41,14 @@ from xia2setup import write_xinfo
 def check_environment():
     '''Check the environment we are running in...'''
 
+    version = sys.version_info
+
+    if version[0] < 2:
+        raise RuntimeError, 'Python 1.x not supported'
+
+    if version[0] == 2 and version[1] < 4:
+        raise RuntimeError, 'Python 2.x before 2.4 not supported'
+
     xia2_keys = ['XIA2_ROOT', 'XIA2CORE_ROOT']
 
     ccp4_keys = ['CCP4', 'CLIBD', 'BINSORT_SCR']
