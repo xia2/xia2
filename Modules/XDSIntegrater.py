@@ -508,6 +508,13 @@ class XDSIntegrater(FrameProcessor,
             Debug.write('Using resolution limit: %.2f' % \
                         self.get_integrater_high_resolution())
             correct.set_resolution_high(self.get_integrater_high_resolution())
+            correct.set_resolution_low(self.get_integrater_low_resolution())
+
+        elif self.get_integrater_low_resolution() > 0.0:
+            Debug.write('Using low resolution limit: %.2f' % \
+                        self.get_integrater_low_resolution())
+            correct.set_resolution_high(self.get_integrater_high_resolution())
+            correct.set_resolution_low(self.get_integrater_low_resolution())
 
         if self.get_polarization() > 0.0:
             correct.set_polarization(self.get_polarization())
