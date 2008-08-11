@@ -417,6 +417,9 @@ class XDSIndexerII(FrameProcessor,
         for record in idxref.get_output_data_file('SPOT.XDS').split('\n'):
             data = map(float, record.split())
 
+            if not data:
+                continue
+
             h, k, l = map(nint, data[4:7])
 
             if h == 0 and k == 0 and l == 0:
