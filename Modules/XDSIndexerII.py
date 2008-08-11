@@ -45,7 +45,7 @@ from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # odds and sods that are needed
 
-from lib.Guff import auto_logfiler
+from lib.Guff import auto_logfiler, nint
 from Handlers.Streams import Chatter, Debug
 from Handlers.Flags import Flags
 
