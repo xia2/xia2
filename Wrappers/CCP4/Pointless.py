@@ -86,7 +86,7 @@
 # thing to have. Can this be switched off? Have emailed pre - for the
 # moment just be aware of this!
 # 
-# FIXME 15/AUG/06 pointless is a little over keen with respect to the 
+# FIXED 15/AUG/06 pointless is a little over keen with respect to the 
 #                 pointgroup for the 1VR9 native data. It is therefore
 #                 worth adding an option to try scaling in all of the
 #                 "legal" spacegroups (with +ve score) to check that the
@@ -104,7 +104,7 @@
 #                 a problem with this version of pointless? This is not
 #                 fixed in version 1.1.0.5! :o(
 #
-# FIXME 24/OCT/06 need to plumb this into the indexer solution management
+# FIXED 24/OCT/06 need to plumb this into the indexer solution management
 #                 system so that in the case of 1VR9/TS01 the "correct"
 #                 pointgroup of I222 is not specified, as it has already
 #                 been eliminated at the processing stage.
@@ -168,7 +168,7 @@ def Pointless(DriverType = None):
                 pointless_version = "1.2.16"
             else:
                 pointless_version = "1.2.10"
-    
+                
             if Flags.get_ccp4_61():
                 self.set_executable(os.path.join(
                     os.environ['CCP4'], 'bin', 'pointless'))

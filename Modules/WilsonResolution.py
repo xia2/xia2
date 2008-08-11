@@ -19,3 +19,14 @@
 #
 #
 
+
+
+def sum_partials(hklin, hklout, working):
+    '''Sum partial reflections from HKLIN to HKLOUT using either pointless
+    or sortmtz, scala & mtzdump. Write into reflection file the following:
+
+    h k l batch i sigi phi x y
+
+    where x, y are pixel positions.'''
+
+    

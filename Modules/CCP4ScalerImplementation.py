@@ -1137,6 +1137,10 @@ class CCP4Scaler(Scaler):
         # SdFac that Scala computes and recycling it? It may help
         # the parameter refinement some...
 
+        # FIXME 11/AUG/08 the definition of SdB has now changed to
+        # include Lorentz factors or something, so the values hard
+        # coded for testing in here are no longer appropriate...
+
         # FIXME need an option somewhere to configure this...
         
         if False:
@@ -1147,14 +1151,20 @@ class CCP4Scaler(Scaler):
         best_sdb_full = 0.0
         best_sdb_partial = 0.0
 
+        if Flags.get_ccp4_61():
+            max_sdb_full = 50.0
+            max_sdb_partial = 50.0
+            step_sdb_full = 5.0
+        else:
+            max_sdb_full = 20.0
+            max_sdb_partial = 20.0
+            step_sdb_full = 2.0
+
         max_sdadd_full = 0.1
         max_sdadd_partial = 0.1
-        max_sdb_full = 20.0
-        max_sdb_partial = 20.0
 
         step_sdadd_full = 0.01
         step_sdadd_partial = 0.01
-        step_sdb_full = 2.0
 
         sdadd_full = 0.0
         sdadd_partial = 0.0
