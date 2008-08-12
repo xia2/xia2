@@ -412,6 +412,11 @@ class XDSIntegrater(FrameProcessor,
         # use the refined parameters for integration?
 
         fixed_2401 = True
+
+        # bug # 3264 - currently if the resolution for integration is given
+        # the integration will not be repeated. As a side effect, this means
+        # that GXPARM may not be used, which is not ideal, as it should be
+        # considered.
        
         if self._data_files.has_key('GXPARM.XDS') and fixed_2401:
             Debug.write('Using globally refined parameters')
