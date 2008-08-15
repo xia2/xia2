@@ -1006,8 +1006,8 @@ class CCP4Scaler(Scaler):
         sc.set_hklin(self._prepared_reflections)
         sc.set_scales_file(scales_file)
 
-        sc.add_sd_correction('full', 1.0, sdadd_f, sdb_f)
-        sc.add_sd_correction('partial', 1.0, sdadd_p, sdb_p)
+        sc.add_sd_correction('full', 2.0, sdadd_f, sdb_f)
+        sc.add_sd_correction('partial', 2.0, sdadd_p, sdb_p)
         
         for epoch in epochs:
             input = self._sweep_information[epoch]
@@ -1631,8 +1631,8 @@ class CCP4Scaler(Scaler):
 
         sc.set_new_scales_file(scales_file)
 
-        sc.add_sd_correction('full', 1.0, sdadd_full, sdb_full)
-        sc.add_sd_correction('partial', 1.0, sdadd_partial, sdb_partial)
+        sc.add_sd_correction('full', 2.0, sdadd_full, sdb_full)
+        sc.add_sd_correction('partial', 2.0, sdadd_partial, sdb_partial)
 
         # this will require first sorting out the batches/runs, then
         # deciding what the "standard" wavelength/dataset is, then
@@ -1847,8 +1847,8 @@ class CCP4Scaler(Scaler):
         sc.set_hklin(self._prepared_reflections)
         sc.set_scales_file(scales_file)
 
-        sc.add_sd_correction('full', 1.0, sdadd_full, sdb_full)
-        sc.add_sd_correction('partial', 1.0, sdadd_partial, sdb_partial)
+        sc.add_sd_correction('full', 2.0, sdadd_full, sdb_full)
+        sc.add_sd_correction('partial', 2.0, sdadd_partial, sdb_partial)
 
         self._wavelengths_in_order = []
         
@@ -1972,8 +1972,8 @@ class CCP4Scaler(Scaler):
             sc.set_hklin(self._prepared_reflections)
             sc.set_scales_file(scales_file)
 
-            sc.add_sd_correction('full', 1.0, sdadd_full, sdb_full)
-            sc.add_sd_correction('partial', 1.0, sdadd_partial, sdb_partial)
+            sc.add_sd_correction('full', 2.0, sdadd_full, sdb_full)
+            sc.add_sd_correction('partial', 2.0, sdadd_partial, sdb_partial)
         
             for epoch in epochs:
                 input = self._sweep_information[epoch]

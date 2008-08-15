@@ -593,7 +593,7 @@ def Scala(DriverType = None):
                     # restore old default behaviour
                     
                     self.input(
-                        'sdcorrection fixsdb adjust norefine both 1.0 0.02')
+                        'sdcorrection fixsdb adjust norefine both 2.0 0.02')
                 
                 for key in self._sd_parameters:
                     # the input order for these is sdfac, sdB, sdadd...
@@ -609,7 +609,7 @@ def Scala(DriverType = None):
                                    (key, parameters[0], parameters[2],
                                     parameters[1]))
             else:
-                self.input('sdcorrection noadjust both 1.0 0.0 0.0')
+                self.input('sdcorrection noadjust both 2.0 0.0 0.0')
 
             if self._anomalous:
                 self.input('anomalous on')
@@ -814,7 +814,7 @@ def Scala(DriverType = None):
                 # restore old default behaviour
                     
                 self.input(
-                    'sdcorrection fixsdb adjust norefine both 1.0 0.02')
+                    'sdcorrection fixsdb adjust norefine both 2.0 0.02')
                 
             for key in self._sd_parameters:
                 # the input order for these is sdfac, sdB, sdadd...
