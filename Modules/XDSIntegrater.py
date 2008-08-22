@@ -444,7 +444,7 @@ class XDSIntegrater(FrameProcessor,
         lattice = self._intgr_indexer.get_indexer_lattice()
         if not os.path.exists(os.path.join(
             self.get_working_directory(),
-            'INTEGRATE-$s.HKL' % lattice)):
+            'INTEGRATE-%s.HKL' % lattice)):
             here = self.get_working_directory()
             shutil.copyfile(os.path.join(here, 'INTEGRATE.HKL'),
                             os.path.join(here, 'INTEGRATE-%s.HKL' % lattice))
