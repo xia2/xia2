@@ -19,6 +19,7 @@ import os
 import sys
 import math
 import copy
+import shutil
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
@@ -437,6 +438,16 @@ class XDSIntegrater(FrameProcessor,
                                     (pname, xname, dname, sweep),
                                     os.path.join(self.get_working_directory(),
                                                  'INTEGRATE.LP'))
+
+        # and copy the first pass INTEGRATE.HKL...
+
+        lattice = self._intgr_indexer.get_indexer_lattice()
+        if not os.path.exists(os.path.join(
+            self.get_working_directory(),
+            'INTEGRATE-$s.HKL' % lattice)):
+            here = self.get_working_directory()
+            shutil.copyfile(os.path.join(here, 'INTEGRATE.HKL'),
+                            os.path.join(here, 'INTEGRATE-%s.HKL' % lattice))
 
         # should the existence of these require that I rerun the
         # integration or can we assume that the application of a
