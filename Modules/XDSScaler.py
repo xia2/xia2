@@ -278,7 +278,7 @@ class XDSScaler(Scaler):
             for j in range(len(info['1_Range'])):
                 n_full = int(info['5_Number'][j])
                 I_full = float(info['4_Irms'][j])
-                s_full = float(info['7_Sigma'][j])
+                s_full = float(info['7_SigmaFull'][j])
 
                 n_tot = n_full
 
@@ -1541,7 +1541,7 @@ class XDSScaler(Scaler):
             for j in range(len(info['1_Range'])):
                 n_full = int(info['5_Number'][j])
                 I_full = float(info['4_Irms'][j])
-                s_full = float(info['7_Sigma'][j])
+                s_full = float(info['7_SigmaFull'][j])
 
                 i_tot = I_full
                 s_tot = s_full
