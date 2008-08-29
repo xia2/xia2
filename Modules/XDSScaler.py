@@ -144,22 +144,6 @@ class XDSScaler(Scaler):
 
         need_to_return = False
 
-        if False:
-
-            if not is_mtz_file(hklin):
-                
-                hklout = os.path.join(self.get_working_directory(),
-                                      'temp-combat.mtz')
-                
-                FileHandler.record_temporary_file(hklout)
-                
-                combat = self._factory.Combat()
-                combat.set_hklin(hklin)
-                combat.set_hklout(hklout)
-                combat.run()
-                
-                hklin = hklout
-
         pointless = self._factory.Pointless()
 
         if is_mtz_file(hklin):
@@ -278,7 +262,10 @@ class XDSScaler(Scaler):
             for j in range(len(info['1_Range'])):
                 n_full = int(info['5_Number'][j])
                 I_full = float(info['4_Irms'][j])
-                s_full = float(info['7_SigmaFull'][j])
+                if Flags.get_ccp4_61():
+                    s_full = float(info['7_SigmaFull'][j])
+                else:
+                    s_full = float(info['7_Sigma'][j])                    
 
                 n_tot = n_full
 
@@ -639,19 +626,10 @@ class XDSScaler(Scaler):
 
             # now use pointless to handle this conversion
 
-            if False:
-
-                combat = self._factory.Combat()
-                combat.set_hklin(hklin)
-                combat.set_hklout(hklout)
-                combat.run()
-
-            else:
-
-                pointless = self._factory.Pointless()
-                pointless.set_xdsin(hklin)
-                pointless.set_hklout(hklout)
-                pointless.xds_to_mtz()
+            pointless = self._factory.Pointless()
+            pointless.set_xdsin(hklin)
+            pointless.set_hklout(hklout)
+            pointless.xds_to_mtz()
 
             hklin = hklout
             
@@ -709,20 +687,11 @@ class XDSScaler(Scaler):
 
                 # now use pointless to make this conversion
 
-                if False:
+                pointless = self._factory.Pointless()
+                pointless.set_xdsin(hklin)
+                pointless.set_hklout(hklout)
+                pointless.xds_to_mtz()
                 
-                    combat = self._factory.Combat()
-                    combat.set_hklin(hklin)
-                    combat.set_hklout(hklout)
-                    combat.run()
-
-                else:
-                    
-                    pointless = self._factory.Pointless()
-                    pointless.set_xdsin(hklin)
-                    pointless.set_hklout(hklout)
-                    pointless.xds_to_mtz()
-
                 pointless = self._factory.Pointless()
                 pointless.set_hklin(hklout)
                 pointless.set_hklref(self._reference)
@@ -767,21 +736,12 @@ class XDSScaler(Scaler):
             hklout = os.path.join(self.get_working_directory(),
                                   '%s-combat.mtz' % sname)
             FileHandler.record_temporary_file(hklout)
-
-            if False:
-
-                combat = self._factory.Combat()
-                combat.set_hklin(intgr.get_integrater_reflections())
-                combat.set_hklout(hklout)
-                combat.run()
-                
-            else:
-                
-                pointless = self._factory.Pointless()
-                pointless.set_xdsin(intgr.get_integrater_reflections())
-                pointless.set_hklout(hklout)
-                pointless.xds_to_mtz()
-
+            
+            pointless = self._factory.Pointless()
+            pointless.set_xdsin(intgr.get_integrater_reflections())
+            pointless.set_hklout(hklout)
+            pointless.xds_to_mtz()
+            
             # run it through pointless interacting with the
             # Indexer which belongs to this sweep
 
@@ -1538,16 +1498,21 @@ class XDSScaler(Scaler):
         for dataset in standard_deviation_info.keys():
             info = standard_deviation_info[dataset]
 
+            Debug.write('Standard errors for %s' % dataset)
+
             for j in range(len(info['1_Range'])):
                 n_full = int(info['5_Number'][j])
                 I_full = float(info['4_Irms'][j])
-                s_full = float(info['7_SigmaFull'][j])
+                
+                if Flags.get_ccp4_61():
+                    s_full = float(info['7_SigmaFull'][j])
+                else:
+                    s_full = float(info['7_Sigma'][j])
 
                 i_tot = I_full
                 s_tot = s_full
 
-                # FIXME is this useless dead code???
-
+                Debug.write('%.1f %d %.2f' % (I_full, n_full, s_full))
 
         # look also for a sensible resolution limit for this data set -
         # that is, the place where I/sigma is about two for the highest

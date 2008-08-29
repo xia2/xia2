@@ -175,15 +175,28 @@ class XDSScalerHelper:
             wavelength = self.parse_xscale_ascii_wavelength(hklin)
 
             pname, xname, dname = project_info[token]
+
+            # in here need to replace combat with pointless - which
+            # will require a little juggling...
+
+            if False:
             
-            c = self.Combat()
-            c.set_hklin(hklin)
-            c.set_hklout(hklout)
-            c.set_project_info(pname, xname, dname)
-            if wavelength > 0.0:
-                c.set_wavelength(wavelength)
-            
-            c.run()
+                c = self.Combat()
+                c.set_hklin(hklin)
+                c.set_hklout(hklout)
+                c.set_project_info(pname, xname, dname)
+                if wavelength > 0.0:
+                    c.set_wavelength(wavelength)
+
+                c.run()
+
+            else:
+
+                p = self.Pointless()
+                p.set_xdsin(hklin)
+                p.set_hklout(hklout)
+                p.set_project_info(pname, xname, dname)
+                p.xds_to_mtz()
 
             data_map[token] = hklout
 

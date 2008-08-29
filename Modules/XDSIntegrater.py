@@ -469,6 +469,12 @@ class XDSIntegrater(FrameProcessor,
 
         p1_deviations = None
 
+        # fix for bug # 3264 - if we have not run integration with refined parameters,
+        # make it so...
+        if not self._data_files.has_key('GXPARM.XDS'):
+            Debug.write('Resetting integrater, to ensure refined orientation is used')
+            self.set_integrater_done(False)
+
         if not self.get_integrater_reindex_matrix() and not self._intgr_cell:
             correct = self.Correct()
 

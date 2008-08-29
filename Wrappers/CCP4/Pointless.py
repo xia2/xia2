@@ -160,15 +160,8 @@ def Pointless(DriverType = None):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
 
-            # include this when it is working....
-
-            latest_pointless = True
-
-            if latest_pointless:
-                pointless_version = "1.2.16"
-            else:
-                pointless_version = "1.2.10"
-                
+            pointless_version = "1.2.21"
+    
             if Flags.get_ccp4_61():
                 self.set_executable(os.path.join(
                     os.environ['CCP4'], 'bin', 'pointless'))
@@ -186,6 +179,11 @@ def Pointless(DriverType = None):
             self._confidence = 0.0
             self._hklref = None
             self._xdsin = None
+
+            # pname, xname, dname stuff for when we are copying reflections
+            self._pname = None
+            self._xname = None
+            self._dname = None
 
             # space to store all possible solutions, to allow discussion of
             # the correct lattice with the indexer... this should be a
@@ -208,6 +206,12 @@ def Pointless(DriverType = None):
         def get_hklref(self):
             return self._hklref
 
+        def set_project_info(self, pname, xname, dname):
+            self._pname = pname
+            self._xname = xname
+            self._dname = dname
+            return
+
         def check_hklref(self):
             if self._hklref is None:
                 raise RuntimeError, 'hklref not defined'
@@ -219,7 +223,7 @@ def Pointless(DriverType = None):
             # copy this file for debugging purposes - may take up a lot
             # of disk space so remove before release!
 
-            if False:
+            if True:
                 self._xdsin = xdsin
                 return
 
@@ -275,11 +279,14 @@ def Pointless(DriverType = None):
             # -c for copy - just convert the file to MTZ multirecord
             self.add_command_line('-c')
 
-            if self._xdsin:
-                self.add_command_line('xdsin')
-                self.add_command_line(self._xdsin)
+            self.add_command_line('xdsin')
+            self.add_command_line(self._xdsin)
 
             self.start()
+
+            if self._pname and self._xname and self._dname:
+                self.input('name project %s crystal %s dataset %s' % \
+                           (self._pname, self._xname, self._dname))
 
             self.close_wait()
 
