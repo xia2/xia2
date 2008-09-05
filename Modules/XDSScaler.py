@@ -661,17 +661,24 @@ class XDSScaler(Scaler):
                 hklin = intgr.get_integrater_reflections()
                 indxr = intgr.get_integrater_indexer()
 
-                pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
-                    hklin, indxr)
+                # in here need to consider what to do if the user has
+                # assigned the pointgroup on the command line ...
 
-                if ntr:
-                    need_to_return = True
-            
-                # 27/FEB/08 to support user assignment of pointgroups
-                if self._scalr_input_pointgroup:
+                if not self._scalr_input_pointgroup:
+                    pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
+                        hklin, indxr)
+                    
+                    if ntr:
+                        need_to_return = True
+
+                else:
+                        
+                    # 27/FEB/08 to support user assignment of pointgroups
+                    
                     Chatter.write('Using input pointgroup: %s' % \
                                   self._scalr_input_pointgroup)
                     pointgroup = self._scalr_input_pointgroup
+                    reindex_op = 'h,k,l'
                     
                 intgr.set_integrater_reindex_operator(reindex_op)
                 intgr.set_integrater_spacegroup_number(
