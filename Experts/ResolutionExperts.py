@@ -14,12 +14,10 @@
 import os
 import sys
 import math
+import random
 
 # jiffy functions
 
-import math
-import random
-import sys
 
 def real_to_reciprocal(a, b, c, alpha, beta, gamma):
     '''Convert real cell parameters to reciprocal space.'''
@@ -299,7 +297,35 @@ def model():
         print isigma, za, zb
         sys.stdout.flush()
 
+class ResolutionCell:
+    '''A class to use for calculating the resolution from the unit cell
+    parameters and h, k, l. Cell constants are numbers in real space.'''
+
+    def __init__(self, a, b, c, alpha, beta, gamma):
+        _a, _b, _c, _alpha, _beta, _gamma = real_to_reciprocal(
+            a, b, c, alpha, beta, gamma)
+
+        self._A, self._B, self._C = B(_a, _b, _c, _alpha, _beta, _gamma)
+
+        return
+
+    def resolution(self, h, k, l):
+        s = resolution(h, k, l, self._A, self._B, self._C)
+        return s, 1.0 / math.sqrt(s)
+
 if __name__ == '__main__':
+    rc = ResolutionCell(90.24, 90.24, 45.24, 90.0, 90.0, 120.0)
+
+    for l in range(1, 35):
+        s, r = rc.resolution(0, 0, l)
+        print '%d %.4f %.2f' % (l, s, r)
+
+    for k in range(1, 65):
+        s, r, = rc.resolution(0, k, 0)
+        print '%d %.4f %.2f' % (k, s, r)
+        
+
+if __name__ == '__malin__':
 
     main(open('infl.log', 'r').readlines())
 
