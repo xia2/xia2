@@ -313,6 +313,30 @@ class ResolutionCell:
         s = resolution(h, k, l, self._A, self._B, self._C)
         return s, 1.0 / math.sqrt(s)
 
+class ResolutionGeometry:
+    '''A class for calculating the resolution of a reflection from the
+    position on the detector, wavelength, beam centre and distance.'''
+
+    def __init__(self, distance, wavelength, beam_x, beam_y):
+        self._distance = distance
+        self._wavelength = wavelength
+        self._beam_x = beam_x
+        self._beam_y = beam_y
+        return
+
+    def resolution(self, x, y):
+
+        d = math.sqrt((x - self.beam_x) * (x - self.beam_x) +
+                      (y - self.beam_y) * (y - self.beam_y))
+
+        t = 0.5 * math.atan(d / self._distance)
+
+        r = self._wavelength / (2.0 * math.sin(t))
+
+        s = 1.0 / (r * r)
+
+        return s, r
+
 if __name__ == '__main__':
     rc = ResolutionCell(90.24, 90.24, 45.24, 90.0, 90.0, 120.0)
 
