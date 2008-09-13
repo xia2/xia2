@@ -142,15 +142,23 @@ def resolution(h, k, l, a_, b_, c_):
 
     return dot(d, d)
 
+def nint(a):
+    i = int(a)
+    if a - i >= 0.5:
+        i += 1
+
+    return i
+
 def meansd(values):
-    mean = sum(values) / len(values)
-    sd = 0.0
 
     if len(values) == 0:
         return 0.0, 0.0
 
     if len(values) == 1:
         return values[0], 0.0
+
+    mean = sum(values) / len(values)
+    sd = 0.0
 
     for v in values:
         sd += (v - mean) * (v - mean)
@@ -461,7 +469,7 @@ def bin_o_tron(sisigma):
     bins = {}
 
     for j in range(2000):
-        bins[j] = []
+        bins[j + 1] = []
                  
     for sis in sisigma:
         s, i, sigma = sis
@@ -473,13 +481,86 @@ def bin_o_tron(sisigma):
     result = { }
 
     for j in range(2000):
-        result[0.001 * j] = meansd(bins[j])
+        result[0.001 * (j + 1)] = meansd(bins[j + 1])
 
     return result
+
+def linear(x, y):
+
+    _x = sum(x) / len(x)
+    _y = sum(y) / len(y)
+
+    sumxx = 0.0
+    sumxy = 0.0
+
+    for j in range(len(x)):
+
+        sumxx += (x[j] - _x) * (x[j] - _x)
+        sumxy += (x[j] - _x) * (y[j] - _y)
+
+    m = sumxy / sumxx
+
+    c = _y - _x * m
+
+    return m, c
     
+def digest(bins):
+    '''Digest a list of bins to calculate a sensible resolution limit.'''
+
+    ss = bins.keys()
+
+    ss.sort()
+
+    # first find the area where mean(I/s) ~ sd(I/s) on average - this defines 
+    # the point where the distribution is "Wilson like". Add a fudge factor of
+    # 10% for good measure.
+
+    for j in range(2000):
+        s = ss[j]
+        mean, sd = bins[s]
+
+        if sd > 0.9 * mean:
+            j0 = j
+            s0 = s
+            break
+
+    # now wade through until we get the first point where mean(I/s) ~ 1
+
+    for j in range(j0, 2000):
+        s = ss[j]
+        mean, sd = bins[s]
+
+        if mean <= 1.0:
+            s1 = s
+            j1 = j
+            break
+
+    # now decide if it is appropriate to consider a fit to a Wilson
+    # distribution... FIXME need to make a decision about this
+
+    # then actually do the fit...
+    
+    x = []
+    y = []
+
+    for j in range(j0, j1):
+        s = ss[j]
+        mean, sd = bins[s]
+
+        x.append(s)
+        y.append(math.log10(mean))
+
+    m, c = linear(x, y)
+
+    s = -1.0 * c / m
+    r = 1.0 / math.sqrt(s)
+
+    return s, r
 
 if __name__ == '__main__':
-    xds_integrate_hkl_to_list(sys.argv[1])
+    s, r = digest(bin_o_tron(xds_integrate_hkl_to_list(sys.argv[1])))
+
+    print s, r
 
 if __name__ == '__moon__':
     rc = ResolutionCell(90.24, 90.24, 45.24, 90.0, 90.0, 120.0)
