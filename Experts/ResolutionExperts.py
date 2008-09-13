@@ -146,6 +146,12 @@ def meansd(values):
     mean = sum(values) / len(values)
     sd = 0.0
 
+    if len(values) == 0:
+        return 0.0, 0.0
+
+    if len(values) == 1:
+        return values[0], 0.0
+
     for v in values:
         sd += (v - mean) * (v - mean)
 
@@ -336,7 +342,146 @@ class ResolutionGeometry:
 
         return s, r
 
+def xds_integrate_header_read(xds_hkl):
+    '''Read the contents of an XDS INTEGRATE.HKL file to get the header
+    information, namely the detector origin, cell constants, wavelength
+    and pixel size.'''
+
+    # fixme do I need to calculate the beam centre? probably
+
+    cell = None
+    pixel = None
+    distance = None
+    wavelength = None
+    origin = None
+    beam = None
+
+    for record in open(xds_hkl, 'r').readlines():
+        if not record[0] == '!':
+            break
+
+        lst = record[1:].split()
+
+        if lst[0] == 'UNIT_CELL_CONSTANTS=':
+            cell = tuple(map(float, lst[1:]))
+            continue
+
+        if lst[0] == 'DETECTOR_DISTANCE=':
+            distance = float(lst[-1])
+            continue
+
+        if lst[0] == 'X-RAY_WAVELENGTH=':
+            wavelength = float(lst[-1])
+            continue
+
+        if lst[0] == 'NX=':
+            pixel_x = float(lst[5])
+            pixel_y = float(lst[7])
+            pixel = pixel_x, pixel_y
+            continue
+
+        if lst[0] == 'ORGX=':
+            origin_x = float(lst[1])
+            origin_y = float(lst[3])
+            origin = origin_x, origin_y
+            continue
+
+        if lst[0] == 'INCIDENT_BEAM_DIRECTION=':
+            beam = tuple(map(float, lst[1:]))
+
+    if not pixel:
+        raise RuntimeError, 'pixel size not found'
+    
+    if not cell:
+        raise RuntimeError, 'cell not found'
+    
+    if not origin:
+        raise RuntimeError, 'origin not found'
+
+    if not distance:
+        raise RuntimeError, 'distance not found'
+    
+    if not wavelength:
+        raise RuntimeError, 'wavelength not found'
+
+    if not beam:
+        raise RuntimeError, 'beam vector not found'
+
+    # no calculate the beam centre offset
+
+    beam = (wavelength * beam[0],
+            wavelength * beam[1],
+            wavelength * beam[2])
+
+    q = distance / beam[2]
+
+    delta = beam[0] * q / pixel[0], beam[1] * q / pixel[1]
+
+    origin = (origin[0] + delta[0],
+              origin[1] + delta[1])
+
+    return cell, pixel, origin, distance, wavelength
+
+def xds_integrate_hkl_to_list(xds_hkl):
+    '''Convert the output from XDS INTEGRATE to a list of (s, i, sigma)
+    records. Check the s calculations as an aside.'''
+
+    cell, pixel, origin, distance, wavelength = xds_integrate_header_read(
+        xds_hkl)
+
+    a, b, c, alpha, beta, gamma = cell
+
+    rc = ResolutionCell(a, b, c, alpha, beta, gamma)
+
+    result = []
+
+    for record in open(xds_hkl, 'r').readlines():
+        if record[:1] == '!':
+            continue
+
+        lst = record.split()
+
+        if not lst:
+            continue
+
+        h, k, l = tuple(map(int, lst[:3]))
+
+        i, sigma, x, y = tuple(map(float, lst[3:7]))
+
+        src, rrc = rc.resolution(h, k, l)
+
+        result.append((src, i, sigma))
+
+    return result
+
+def bin_o_tron(sisigma):
+    '''Bin the incoming list of (s, i, sigma) and return a list of bins
+    of width 0.001 in S.'''
+
+    bins = {}
+
+    for j in range(2000):
+        bins[j] = []
+                 
+    for sis in sisigma:
+        s, i, sigma = sis
+
+        qs = nint(1000 * s)
+
+        bins[qs].append((i / sigma))
+
+    result = { }
+
+    for j in range(2000):
+        result[0.001 * j] = meansd(bins[j])
+
+    return result
+    
+
 if __name__ == '__main__':
+    xds_integrate_hkl_to_list(sys.argv[1])
+
+if __name__ == '__moon__':
     rc = ResolutionCell(90.24, 90.24, 45.24, 90.0, 90.0, 120.0)
 
     for l in range(1, 35):
