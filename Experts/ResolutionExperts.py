@@ -503,6 +503,28 @@ def linear(x, y):
     c = _y - _x * m
 
     return m, c
+
+def ice(s):
+    '''Could the reflection with inverse resolution s be in an ice ring?
+    calculated from XDS example input...'''
+
+    if s >= 0.065 and s <= 0.067:
+        return True
+    if s >= 0.073 and s <= 0.075:
+        return True
+    if s >= 0.083 and s <= 0.086:
+        return True
+    if s >= 0.137 and s <= 0.143:
+        return True
+    if s >= 0.192 and s <= 0.203:
+        return True
+    if s >= 0.226 and s <= 0.240:
+        return True
+    if s >= 0.264 and s <= 0.281:
+        return True
+
+    return False
+
     
 def digest(bins):
     '''Digest a list of bins to calculate a sensible resolution limit.'''
@@ -538,13 +560,17 @@ def digest(bins):
     # now decide if it is appropriate to consider a fit to a Wilson
     # distribution... FIXME need to make a decision about this
 
-    # then actually do the fit...
+    # then actually do the fit... excluding ice rings of course
     
     x = []
     y = []
 
     for j in range(j0, j1):
         s = ss[j]
+
+        if ice(s):
+            continue
+        
         mean, sd = bins[s]
 
         x.append(s)
