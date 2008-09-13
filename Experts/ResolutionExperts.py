@@ -18,7 +18,6 @@ import random
 
 # jiffy functions
 
-
 def real_to_reciprocal(a, b, c, alpha, beta, gamma):
     '''Convert real cell parameters to reciprocal space.'''
 
@@ -326,8 +325,8 @@ class ResolutionGeometry:
 
     def resolution(self, x, y):
 
-        d = math.sqrt((x - self.beam_x) * (x - self.beam_x) +
-                      (y - self.beam_y) * (y - self.beam_y))
+        d = math.sqrt((x - self._beam_x) * (x - self._beam_x) +
+                      (y - self._beam_y) * (y - self._beam_y))
 
         t = 0.5 * math.atan(d / self._distance)
 
@@ -347,6 +346,12 @@ if __name__ == '__main__':
     for k in range(1, 65):
         s, r, = rc.resolution(0, k, 0)
         print '%d %.4f %.2f' % (k, s, r)
+
+    rg = ResolutionGeometry(200.0, 0.97975, 109.0, 105.0)
+
+    for xy in [(100, 100), (200, 200)]:
+        s, r = rg.resolution(xy[0], xy[1])
+        print '%.1f %.1f %.4f %.4f' % (xy[0], xy[1], s, r)
         
 
 if __name__ == '__malin__':
