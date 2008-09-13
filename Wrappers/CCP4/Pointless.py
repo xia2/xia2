@@ -268,6 +268,29 @@ def Pointless(DriverType = None):
 
             return
 
+        def sum_mtz(self, summedlist):
+            '''Sum partials in an MTZ file from Mosflm to a text file.'''
+
+            self.check_hklin()
+
+            self.start()
+            self.input('output summedlist %s' % summedlist)
+            self.close_wait()
+
+            # get out the unit cell - we will need this...
+
+            output = self.get_all_output()
+
+            cell = None
+
+            for j in range(len(output)):
+                line = output[j]
+
+                if 'Space group from HKLIN file' in line:
+                    cell = tuple(map(float, output[j + 1].split()[1:]))
+
+            return cell
+
         def xds_to_mtz(self):
             '''Use pointless to convert XDS file to MTZ.'''
 
@@ -686,6 +709,17 @@ def Pointless(DriverType = None):
     return PointlessWrapper()
 
 if __name__ == '__main__':
+    p = Pointless()
+
+    hklin = sys.argv[1]
+
+    p.set_hklin(hklin)
+
+    cell = p.sum_mtz('foo.hkl')
+
+    print cell
+
+if __name__ == '__moon__':
 
     # then run some sort of test
 
