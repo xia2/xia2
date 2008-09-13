@@ -15,6 +15,16 @@ import os
 import sys
 import math
 import random
+import tempfile
+import shutil
+
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
+
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
+
+from Wrappers.CCP4.Pointless import Pointless
 
 # jiffy functions
 
@@ -456,11 +466,55 @@ def xds_integrate_hkl_to_list(xds_hkl):
 
         i, sigma, x, y = tuple(map(float, lst[3:7]))
 
-        src, rrc = rc.resolution(h, k, l)
+        s, r = rc.resolution(h, k, l)
 
-        result.append((src, i, sigma))
+        result.append((s, i, sigma))
 
     return result
+
+def mosflm_mtz_to_list(mtz):
+    '''Run pointless to convert mtz to list of h k l ... and give the
+    unit cell, then convert this to a list as necessary before returning.'''
+
+    hklout = tempfile.mktemp('.hkl', '', os.environ['BINSORT_SCR'])
+
+    p = Pointless()
+    p.set_hklin(mtz)
+    cell = p.sum_mtz(hklout)
+
+    hkl = pointless_summedlist_to_list(hklout, cell)
+
+    os.remove(hklout)
+
+    return hkl
+
+def pointless_summedlist_to_list(summedlist, cell):
+    '''Parse the output of a pointless summedlist to a list of
+    (s, i, sigma) as above, using the unit cell to calculate the
+    resolution of reflections.'''
+
+    a, b, c, alpha, beta, gamma = cell
+
+    rc = ResolutionCell(a, b, c, alpha, beta, gamma)
+
+    result = []
+
+    for record in open(summedlist, 'r').readlines():
+        lst = record.split()
+
+        if not lst:
+            continue
+
+        h, k, l = tuple(map(int, lst[:3]))
+
+        i, sigma = tuple(map(float, lst[4:6]))
+
+        s, r = rc.resolution(h, k, l)
+
+        result.append((s, i, sigma))
+
+    return result
+    
 
 def bin_o_tron(sisigma):
     '''Bin the incoming list of (s, i, sigma) and return a list of bins
@@ -584,7 +638,12 @@ def digest(bins):
     return s, r
 
 if __name__ == '__main__':
-    s, r = digest(bin_o_tron(xds_integrate_hkl_to_list(sys.argv[1])))
+
+    # test what hklin was...
+    s, r = digest(bin_o_tron(mosflm_mtz_to_list(sys.argv[1])))
+
+    # if xds:
+    # s, r = digest(bin_o_tron(xds_integrate_hkl_to_list(sys.argv[1])))
 
     print s, r
 
