@@ -25,6 +25,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
 from Wrappers.CCP4.Pointless import Pointless
+from Handlers.Streams import Debug
 
 # jiffy functions
 
@@ -591,7 +592,7 @@ def digest(bins):
     # the point where the distribution is "Wilson like". Add a fudge factor of
     # 10% for good measure.
 
-    for j in range(2000):
+    for j in range(10, 2000):
         s = ss[j]
         mean, sd = bins[s]
 
@@ -610,6 +611,9 @@ def digest(bins):
             s1 = s
             j1 = j
             break
+
+    Debug.write('Selected resolution range: %.2f to %.2f for Wilson fit' %
+                (1.0 / math.sqrt(s0), 1.0 / math.sqrt(s1)))
 
     # now decide if it is appropriate to consider a fit to a Wilson
     # distribution... FIXME need to make a decision about this
