@@ -301,7 +301,13 @@ class CCP4Scaler(Scaler):
                 hklin = intgr.get_integrater_reflections()
                 indxr = intgr.get_integrater_indexer()
 
-                pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
+                # FIXME in here should check first if the pointgroup is
+                # the one given by the user - if it is not available
+                # despite being possible (i.e. pointless with give a
+                # -ve Z score for a C2 case for an I222 lattice...)
+                # it will be rejected perhaps... we don't want pointgroup.
+
+                this, reindex_op, ntr = self._pointless_indexer_jiffy(
                     hklin, indxr)
 
                 lattice = Syminfo.get_lattice(pointgroup)
