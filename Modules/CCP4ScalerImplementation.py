@@ -307,7 +307,7 @@ class CCP4Scaler(Scaler):
                 # -ve Z score for a C2 case for an I222 lattice...)
                 # it will be rejected perhaps... we don't want pointgroup.
 
-                this, reindex_op, ntr = self._pointless_indexer_jiffy(
+                pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
                     hklin, indxr)
 
                 lattice = Syminfo.get_lattice(pointgroup)
