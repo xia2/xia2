@@ -86,15 +86,21 @@ def is_image_name(file):
 
     return False
 
-def get_sweep(file):
+def get_sweep(f):
 
     global known_sweeps
     
-    if not is_image_name(file):
+    if not is_image_name(f):
         return
 
+    # in here, check the permissions on the file...
+
+    if not os.access(f, os.R_OK):
+        from Handlers.Streams import Debug        
+        Debug.write('No read permission for %s' % f)
+
     try:
-        template, directory = image2template_directory(file)
+        template, directory = image2template_directory(f)
         key = (directory, template)
         if not known_sweeps.has_key(key):
             sweeplist = SweepFactory(template, directory)
