@@ -531,7 +531,8 @@ def bin_o_tron(sisigma):
 
         qs = nint(1000 * s)
 
-        bins[qs].append((i / sigma))
+        if bins.has_key(qs):
+            bins[qs].append((i / sigma))
 
     result = { }
 
