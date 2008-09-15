@@ -422,6 +422,22 @@ END PROJECT TS01
       <li>Now include explicit python version check in xia2 main program.</li>
       <li>High resolution limits for integration now assessed from Wilson
 	plot rather than integration program log output.</li>
+      <li>If no images are given, a more helpful error message is produced
+	than before, viz:
+<pre>
+------------------------------------------
+| No images assigned for crystal DEFAULT |
+------------------------------------------
+</pre>
+      </li>
+      <li>If images are not readable (i.e. a permissions problem) then 
+	warnings will be sent to the debug channel (switch on -debug
+	for more information.)</li>
+      <li>If in automatic mode an image is given in place of a directory,
+	xia2 will now complain in a more helpful way.</li>
+      <li>Resolution limits will now be based on analysis of the reflection
+	files rather than the program output, since this will generally give
+	a more helpful answer...</li>
     </ul>
 
     <p>Changes since 0.2.6.5</p>
@@ -750,7 +766,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Sun Aug 10 15:09:04 BST 2008
+Last modified: Mon Sep 15 14:09:39 BST 2008
 <!-- hhmts end -->
   </body>
 </html>

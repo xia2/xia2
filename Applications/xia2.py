@@ -133,6 +133,24 @@ def xia2():
         write_xinfo(xinfo, path)
 
         CommandLine.set_xinfo(xinfo)
+
+    # check that something useful has been assigned for processing...
+    xtals = CommandLine.get_xinfo().get_crystals()
+
+    no_images = True
+
+    for name in xtals.keys():
+        xtal = xtals[name]
+
+        if not xtal.get_all_image_names():
+            
+            Chatter.write('-----------------------------------' + \
+                          '-' * len(name))
+            Chatter.write('| No images assigned for crystal %s |' % name)
+            Chatter.write('-----------------------------------' + '-' \
+                          * len(name))
+        else:
+            no_images = False
     
     # this actually gets the processing started...
     Chatter.write(str(CommandLine.get_xinfo()))
