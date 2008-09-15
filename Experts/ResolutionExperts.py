@@ -27,6 +27,11 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Wrappers.CCP4.Pointless import Pointless
 from Handlers.Streams import Debug
 
+# global parameters
+
+_scale_bins = 0.01
+_number_bins = 200
+
 # jiffy functions
 
 def real_to_reciprocal(a, b, c, alpha, beta, gamma):
@@ -519,25 +524,31 @@ def pointless_summedlist_to_list(summedlist, cell):
 
 def bin_o_tron(sisigma):
     '''Bin the incoming list of (s, i, sigma) and return a list of bins
-    of width 0.001 in S.'''
+    of width _scale_bins in S.'''
 
     bins = {}
 
-    for j in range(2000):
+    for j in range(_number_bins):
         bins[j + 1] = []
                  
     for sis in sisigma:
         s, i, sigma = sis
 
-        qs = nint(1000 * s)
+        qs = nint(0.5 * _number_bins * s)
 
         if bins.has_key(qs):
             bins[qs].append((i / sigma))
 
     result = { }
 
-    for j in range(2000):
-        result[0.001 * (j + 1)] = meansd(bins[j + 1])
+    for j in range(_number_bins):
+        result[_scale_bins * (j + 1)] = meansd(bins[j + 1])
+        
+        if False:
+            print result[_scale_bins * (j + 1)][0], \
+                  result[_scale_bins * (j + 1)][1], \
+                  len(bins[j + 1])
+        
 
     return result
 
@@ -589,6 +600,12 @@ def digest(bins):
 
     ss.sort()
 
+    for j in range(_number_bins):
+        s = ss[j]
+        mean, sd = bins[s]
+
+        print s, 1.0 / math.sqrt(s), mean, sd
+
     # ok, really the first thing I need to do is see if the reflections
     # fall off the edge of the detector - i.e. this is a close-in low
     # resolution set with I/sig >> 1 at the edge...
@@ -596,7 +613,7 @@ def digest(bins):
     _mean = []
     _s = []
 
-    for j in range(2000):
+    for j in range(_number_bins):
         s = ss[j]
         mean, sd = bins[s]
 
@@ -612,9 +629,9 @@ def digest(bins):
 
     # first find the area where mean(I/s) ~ sd(I/s) on average - this defines 
     # the point where the distribution is "Wilson like". Add a fudge factor of
-    # 10% for good measure.
+    # 10% for good measure. Start a little way off the beginning e.g. at 10A.
 
-    for j in range(10, 2000):
+    for j in range(nint(0.01 * _number_bins), _number_bins):
         s = ss[j]
         mean, sd = bins[s]
 
@@ -625,7 +642,7 @@ def digest(bins):
 
     # now wade through until we get the first point where mean(I/s) ~ 1
 
-    for j in range(j0, 2000):
+    for j in range(j0, _number_bins):
         s = ss[j]
         mean, sd = bins[s]
 
@@ -666,10 +683,10 @@ def digest(bins):
 if __name__ == '__main__':
 
     # test what hklin was...
-    s, r = digest(bin_o_tron(mosflm_mtz_to_list(sys.argv[1])))
+    # s, r = digest(bin_o_tron(mosflm_mtz_to_list(sys.argv[1])))
 
     # if xds:
-    # s, r = digest(bin_o_tron(xds_integrate_hkl_to_list(sys.argv[1])))
+    s, r = digest(bin_o_tron(xds_integrate_hkl_to_list(sys.argv[1])))
 
     print s, r
 
