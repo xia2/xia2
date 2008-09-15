@@ -124,6 +124,11 @@ def xia2():
 
         if not os.path.isabs(path):
             path = os.path.abspath(path)
+
+        # in here check that this is a directory
+
+        if not os.path.isdir(path):
+            raise RuntimeError, '%s must be a directory' % path
             
         write_xinfo(xinfo, path)
 
