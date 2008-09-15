@@ -620,6 +620,10 @@ class XDSIntegrater(FrameProcessor,
 
         # look at the resolution limit...
         resolution = correct.get_result('resolution_estimate')
+        resolution_old = correct.get_result('resolution_estimate_old')
+
+        Debug.write('Old style resolution limit: %.2f' % resolution_old)
+        Debug.write('New style resolution limit: %.2f' % resolution)
 
         if self.get_integrater_high_resolution():
             if not self.get_integrater_user_resolution():

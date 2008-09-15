@@ -39,6 +39,9 @@ from XDS import header_to_xds, xds_check_version_supported, xds_check_error
 # specific helper stuff
 from XDSCorrectHelpers import _parse_correct_lp
 
+from Experts.ResolutionExperts import xds_integrate_hkl_to_list, \
+     bin_o_tron, digest
+
 # global flags
 from Handlers.Flags import Flags
 from Handlers.Streams import Debug
@@ -361,6 +364,12 @@ def XDSCorrect(DriverType = None):
             self._results = _parse_correct_lp(os.path.join(
                 self.get_working_directory(),
                 'CORRECT.LP'))
+
+            # and calculate the resolution limit from the
+            # output reflection file...
+            s, r = digest(bin_o_tron(xds_integrate_hkl_to_list(
+                os.path.join(self.get_working_directory(), 'XDS_ASCII.HKL'))))
+            self._results['resolution_estimate'] = r
 
             # get the reflections to remove...
             for line in open(os.path.join(
