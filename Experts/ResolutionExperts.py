@@ -588,6 +588,27 @@ def digest(bins):
 
     ss.sort()
 
+    # ok, really the first thing I need to do is see if the reflections
+    # fall off the edge of the detector - i.e. this is a close-in low
+    # resolution set with I/sig >> 1 at the edge...
+
+    _mean = []
+    _s = []
+
+    for j in range(2000):
+        s = ss[j]
+        mean, sd = bins[s]
+
+        if mean > 0.0:
+            _mean.append(mean)
+            _s.append(s)
+
+    if min(_mean) > 1.0:
+        # we have a data set which is all I/sigma > 1.0
+        s = max(_s)
+        r = 1.0 / math.sqrt(s)
+        return s, r
+
     # first find the area where mean(I/s) ~ sd(I/s) on average - this defines 
     # the point where the distribution is "Wilson like". Add a fudge factor of
     # 10% for good measure.
