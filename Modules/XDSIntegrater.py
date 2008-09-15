@@ -607,16 +607,21 @@ class XDSIntegrater(FrameProcessor,
 
         if self.get_integrater_high_resolution() == 0.0:
             # get the "correct" resolution from ... correct
+            # why is this using the highest recorded resolution,
+            # not the estimated resolution limit?? FIXME need to
+            # make sense of all of this...
+
+            # ok this was "highest_resolution" -> "resolution_estimate"
             
             Debug.write('Setting integrater resolution to %.2f' % \
-                        correct.get_result('highest_resolution'))
+                        correct.get_result('resolution_estimate'))
             if not Flags.get_quick():
                 self.set_integrater_high_resolution(
-                    correct.get_result('highest_resolution'))
+                    correct.get_result('resolution_estimate'))
             else:
                 # just record it for future reference
                 self._intgr_reso_high = correct.get_result(
-                    'highest_resolution')                                     
+                    'resolution_estimate')                                     
 
         # FIXME bug # 3205 - if the resolution has been set by the user,
         # the data will not be reintegrated with the refined orientation
@@ -647,6 +652,8 @@ class XDSIntegrater(FrameProcessor,
                 
                     # ignore this new resolution limit - this is similar to
                     # what was done for the Mosflm implementation...
+
+                    # FIXME this should be done in S space.
 
                     Debug.write('Ignoring slight change in resolution limit')
                     resolution = self.get_integrater_high_resolution()
