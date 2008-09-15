@@ -366,9 +366,12 @@ def XDSCorrect(DriverType = None):
                 'CORRECT.LP'))
 
             # and calculate the resolution limit from the
-            # output reflection file...
+            # output reflection file... N.B. assume that INTEGRATE was
+            # run in the same directory as CORRECT is now being -
+            # not very tidy though. FIXME, perhaps?
+            
             s, r = digest(bin_o_tron(xds_integrate_hkl_to_list(
-                os.path.join(self.get_working_directory(), 'XDS_ASCII.HKL'))))
+                os.path.join(self.get_working_directory(), 'INTEGRATE.HKL'))))
             self._results['resolution_estimate'] = r
 
             # get the reflections to remove...
