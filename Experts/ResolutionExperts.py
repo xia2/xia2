@@ -604,7 +604,8 @@ def digest(bins):
         s = ss[j]
         mean, sd = bins[s]
 
-        print s, 1.0 / math.sqrt(s), mean, sd
+        if False:
+            print s, 1.0 / math.sqrt(s), mean, sd
 
     # ok, really the first thing I need to do is see if the reflections
     # fall off the edge of the detector - i.e. this is a close-in low
