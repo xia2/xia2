@@ -622,7 +622,10 @@ def digest(bins):
             _mean.append(mean)
             _s.append(s)
 
-    if min(_mean) > 1.0:
+    # allow a teeny bit of race - ignore the last resolution bin
+    # in this calculation...
+    
+    if min(_mean[:-1]) > 1.0:
         # we have a data set which is all I/sigma > 1.0
         s = max(_s)
         r = 1.0 / math.sqrt(s)
