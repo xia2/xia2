@@ -598,7 +598,7 @@ class XDSIntegrater(FrameProcessor,
 
             lattice = self._intgr_indexer.get_indexer_lattice()
             
-            matrix = r_to_rt(self.get_integrater_reindex_matrix()))
+            matrix = r_to_rt(self.get_integrater_reindex_matrix())
 
             if lattice[1] == 'P':
                 mult = 1
