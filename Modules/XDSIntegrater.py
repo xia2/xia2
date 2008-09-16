@@ -591,8 +591,33 @@ class XDSIntegrater(FrameProcessor,
                         cell)
             
         if self.get_integrater_reindex_matrix():
-            correct.set_reindex_matrix(
-                r_to_rt(self.get_integrater_reindex_matrix()))
+
+            # bug! if the lattice is not primitive the values in this
+            # reindex matrix need to be multiplied by a constant which
+            # depends on the Bravais lattice centering.
+
+            lattice = self._intgr_indexer.get_indexer_lattice()
+            
+            matrix = r_to_rt(self.get_integrater_reindex_matrix()))
+
+            if lattice[1] == 'P':
+                mult = 1
+            elif lattice[1] == 'C' or lattice[1] == 'I':
+                mult = 2
+            elif lattice[1] == 'R':
+                mult = 3
+            elif lattice[1] == 'F':
+                mult = 4
+            else:
+                raise RuntimeError, 'unknown multiplier for lattice %s' % \
+                      lattice
+
+            Debug.write('REIDX multiplier for lattice %s: %d' % \
+                        (lattice, mult))
+            
+            mult_matrix = [mult * m for m in matrix]
+            
+            correct.set_reindex_matrix(mult_matrix)
         
         correct.run()
 
