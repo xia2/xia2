@@ -274,10 +274,21 @@ class XDSScaler(Scaler):
             for j in range(len(info['1_Range'])):
                 n_full = int(info['5_Number'][j])
                 I_full = float(info['4_Irms'][j])
+
+                # if the data are processed in P1 and there are no
+                # duplicates (i.e. ~ 60 degrees, say) then this
+                # may be output as - not a number -> trap for this.
+                
                 if Flags.get_ccp4_61():
-                    s_full = float(info['7_SigmaFull'][j])
+                    if info['7_SigmaFull'][j] == '-':
+                        s_full = 0.0
+                    else:
+                        s_full = float(info['7_SigmaFull'][j])
                 else:
-                    s_full = float(info['7_Sigma'][j])                    
+                    if info['7_Sigma'] == '-':
+                        s_full = 0.0
+                    else:
+                        s_full = float(info['7_Sigma'][j])                    
 
                 n_tot = n_full
 
