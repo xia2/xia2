@@ -458,6 +458,7 @@ class XDSIndexer(FrameProcessor,
         beam = values[15], values[16]
         
         # then work through the spot list to find the lowest resolution spot
+        # that has been indexed (i.e. is not an artefact)
 
         dmax = 0.0
 

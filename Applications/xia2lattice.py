@@ -21,6 +21,7 @@ if not os.environ.has_key('XIA2CORE_ROOT'):
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
+from lib.SymmetryLib import lattice_to_spacegroup
 
 def xia2lattice(cell, input_lattice = None, do_print = True):
     '''Taking the primitive triclinic unit cell, calculate a list of
@@ -58,7 +59,8 @@ def xia2lattice(cell, input_lattice = None, do_print = True):
         cellstr = '%7.2f %7.2f %7.2f %7.2f %7.2f %7.2f' % tuple(cell)
 
         if do_print:
-            print '%s %.4f %s' % (lattice, distortion, cellstr)
+            spacegroup = lattice_to_spacegroup(lattice)
+            print '%s %.4f %s %d' % (lattice, distortion, cellstr, spacegroup)
 
     return
 

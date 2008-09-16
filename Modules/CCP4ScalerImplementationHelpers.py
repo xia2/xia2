@@ -189,6 +189,18 @@ class CCP4ScalerImplementationHelper:
                     correct_lattice = lattice
                     
                     break
+
+            if correct_lattice == None:
+                # this is an odd turn of events which may have been brought
+                # about by the user assigning a lower spacegroup than is
+                # true, which will give it a negative Z score but it may
+                # stull be "true".
+
+                correct_lattice = indexer.get_indexer_lattice()
+                rerun_pointless = True
+                
+                Debug.write(
+                    'No solution found: assuming lattice from indexer')
                     
             if rerun_pointless:
                 pointless.set_correct_lattice(correct_lattice)

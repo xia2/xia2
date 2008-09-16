@@ -140,7 +140,7 @@ class XDSScaler(Scaler):
         (in the blue corner) and the Indexer, in the red corner.'''
 
         # check to see if HKLIN is MTZ format, and if not, render it
-        # so!
+        # so! no need - now pointless will accept input in XDS format.
 
         need_to_return = False
 
@@ -195,7 +195,19 @@ class XDSScaler(Scaler):
                     correct_lattice = lattice
                     
                     break
+
+            if correct_lattice == None:
+                # this is an odd turn of events which may have been brought
+                # about by the user assigning a lower spacegroup than is
+                # true, which will give it a negative Z score but it may
+                # stull be "true".
+
+                correct_lattice = indexer.get_indexer_lattice()
+                rerun_pointless = True
                     
+                Debug.write(
+                    'No solution found: assuming lattice from indexer')
+                
             if rerun_pointless:
                 pointless.set_correct_lattice(correct_lattice)
                 pointless.decide_pointgroup()
