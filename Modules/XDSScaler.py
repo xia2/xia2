@@ -1535,9 +1535,15 @@ class XDSScaler(Scaler):
                 I_full = float(info['4_Irms'][j])
                 
                 if Flags.get_ccp4_61():
-                    s_full = float(info['7_SigmaFull'][j])
+                    if info['7_SigmaFull'][j] == '-':
+                        s_full = 0.0
+                    else:
+                        s_full = float(info['7_SigmaFull'][j])
                 else:
-                    s_full = float(info['7_Sigma'][j])
+                    if info['7_Sigma'] == '-':
+                        s_full = 0.0
+                    else:
+                        s_full = float(info['7_Sigma'][j])                    
 
                 i_tot = I_full
                 s_tot = s_full
