@@ -2106,6 +2106,15 @@ def Mosflm(DriverType = None):
                         new_cell_ref_images = self._refine_select_images(
                             len(self._mosflm_cell_ref_images) + 1,
                             mosaic)
+
+                        old_cell_ref_images = self._mosflm_cell_ref_images
+
+                        # check to see if the old images are the same as the
+                        # new ones - if they are, die
+
+                        if old_cell_ref_images == new_cell_ref_images:
+                            raise BadLatticeError, 'Cell refinement failed'
+                        
                         self._mosflm_cell_ref_images = new_cell_ref_images
 
                         self.set_integrater_prepare_done(False)
@@ -2192,6 +2201,15 @@ def Mosflm(DriverType = None):
                         new_cell_ref_images = self._refine_select_images(
                             len(self._mosflm_cell_ref_images) + 1,
                             mosaic)
+                        
+                        old_cell_ref_images = self._mosflm_cell_ref_images
+
+                        # check to see if the old images are the same as the
+                        # new ones - if they are, die
+
+                        if old_cell_ref_images == new_cell_ref_images:
+                            raise BadLatticeError, 'Cell refinement failed'
+                        
                         self._mosflm_cell_ref_images = new_cell_ref_images
                         
                         # set a flag to say cell refinement needs rerunning
@@ -2267,6 +2285,15 @@ def Mosflm(DriverType = None):
                         new_cell_ref_images = self._refine_select_images(
                             len(self._mosflm_cell_ref_images) + 1,
                             mosaic)
+
+                        old_cell_ref_images = self._mosflm_cell_ref_images
+
+                        # check to see if the old images are the same as the
+                        # new ones - if they are, die
+
+                        if old_cell_ref_images == new_cell_ref_images:
+                            raise BadLatticeError, 'Cell refinement failed'
+                        
                         self._mosflm_cell_ref_images = new_cell_ref_images
 
                         # set a flag to say cell refinement needs rerunning
@@ -2300,6 +2327,15 @@ def Mosflm(DriverType = None):
                         new_cell_ref_images = self._refine_select_images(
                             len(self._mosflm_cell_ref_images) + 1,
                             mosaic)
+
+                        old_cell_ref_images = self._mosflm_cell_ref_images
+
+                        # check to see if the old images are the same as the
+                        # new ones - if they are, die
+
+                        if old_cell_ref_images == new_cell_ref_images:
+                            raise BadLatticeError, 'Cell refinement failed'
+
                         self._mosflm_cell_ref_images = new_cell_ref_images
 
                         self.set_integrater_prepare_done(False)
