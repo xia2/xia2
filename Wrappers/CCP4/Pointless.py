@@ -533,7 +533,13 @@ def Pointless(DriverType = None):
                     if not lattice in self._possible_lattices:
                         if netzc > 0.0:
                             self._possible_lattices.append(lattice)
-                            self._lattice_to_laue[lattice] = lauegroup
+
+                        # do we not always want to have access to the
+                        # solutions, even if they are unlikely - this will
+                        # only be invoked if they are known to
+                        # be right...
+                        
+                        self._lattice_to_laue[lattice] = lauegroup
                     
             return 'ok'
 
