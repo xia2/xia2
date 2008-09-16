@@ -76,7 +76,7 @@ def Sortmtz(DriverType = None):
                 if 'Inconsistent operator orders in input file' in l:
                     raise RuntimeError, 'different sort orders'
 
-        def sort(self):
+        def sort(self, vrset = None):
             '''Actually sort the reflections.'''
             
             # if we have not specified > 1 hklin file via the add method,
@@ -99,6 +99,13 @@ def Sortmtz(DriverType = None):
                               os.path.split(self.get_hklout())[-1]))
                 
             self.start()
+
+            # allow for the fact that large negative reflections may
+            # result from XDS output...
+            
+            if vrset:
+                self.input('VRSET_MAGIC %f' % vrset)
+                
             self.input(self._sort_order)
 
             # multiple mtz files get passed in on the command line...
