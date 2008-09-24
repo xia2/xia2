@@ -548,6 +548,9 @@ class XDSScaler(Scaler):
 
                     reindex_op = 'h,k,l'
                     
+                    intgr.set_integrater_reindex_operator(
+                        reindex_op, compose = False)
+                
                     need_to_return = True
             
             # bug # 2433 - need to ensure that all of the lattice
@@ -632,6 +635,12 @@ class XDSScaler(Scaler):
                 hklin, indxr)
 
             if ntr:
+
+                # Bug # 3373
+                
+                intgr.set_integrater_reindex_operator(
+                    reindex_op, compose = False)
+                reindex_op = 'h,k,l'                
                 need_to_return = True
 
             # 27/FEB/08 to support user assignment of pointgroups
@@ -696,10 +705,16 @@ class XDSScaler(Scaler):
                 # assigned the pointgroup on the command line ...
 
                 if not self._scalr_input_pointgroup:
-                    pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
-                        hklin, indxr)
+                    pointgroup, reindex_op, ntr = \
+                                self._pointless_indexer_jiffy(hklin, indxr)
                     
                     if ntr:
+
+                        # Bug # 3373
+                        
+                        intgr.set_integrater_reindex_operator(
+                            reindex_op, compose = False)
+                        reindex_op = 'h,k,l'                
                         need_to_return = True
 
                 else:
@@ -796,6 +811,8 @@ class XDSScaler(Scaler):
                 # individual pointgroups?? Bug # 3373
                 
                 reindex_op = 'h,k,l'
+                intgr.set_integrater_reindex_operator(
+                    reindex_op, compose = False)
                 
                 need_to_return = True
 

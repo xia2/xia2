@@ -325,6 +325,8 @@ class CCP4Scaler(Scaler):
                     # reindexing to P21.
 
                     reindex_op = 'h,k,l'
+                    intgr.set_integrater_reindex_operator(
+                        reindex_op, compose = False)
                     
                     need_to_return = True
             
@@ -439,6 +441,14 @@ class CCP4Scaler(Scaler):
                     pointless_hklin, indexer)
 
                 if ntr:
+                    
+                    # FIXME bug # 3373
+                    
+                    reindex_op = 'h,k,l'
+                    
+                    integrater.set_integrater_reindex_operator(
+                        reindex_op, compose = False)
+                    
                     need_to_return = True
 
             # FIXME_ABQ
@@ -568,6 +578,13 @@ class CCP4Scaler(Scaler):
                     hklin, indexer)
 
                 if ntr:
+                    
+                    # FIXME bug # 3373
+                    
+                    reindex_op = 'h,k,l'
+                    integrater.set_integrater_reindex_operator(
+                        reindex_op, compose = False)
+
                     need_to_return = True
 
             # FIXME_ABQ
