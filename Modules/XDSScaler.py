@@ -540,6 +540,14 @@ class XDSScaler(Scaler):
                     lattices.append(lattice)
 
                 if ntr:
+
+                    # if we need to return, we should logically reset
+                    # any reindexing operator right? right here all
+                    # we are talking about is the correctness of
+                    # individual pointgroups?? Bug # 3373
+
+                    reindex_op = 'h,k,l'
+                    
                     need_to_return = True
             
             # bug # 2433 - need to ensure that all of the lattice
