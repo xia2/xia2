@@ -223,6 +223,47 @@ class XSweep(Object):
             self._images = find_matching_images(self._template,
                                                 self._directory)
 
+            # FIXME in here check that (1) the list of images is continuous
+            # and (2) that all of the images are readable. This should also
+            # take into account frames_to_process if set. 
+
+            if self._frames_to_process:
+
+                error = False
+                
+                start, end = self._frames_to_process
+                for j in range(start, end + 1):
+                    if not j in self._images:
+                        Debug.write('image %s missing' % \
+                                    self.get_image_name(j))
+                        error = True
+                        continue
+                    if not os.access(self.get_image_name(j), os.R_OK):
+                        Debug.write('image %s unreadable' % \
+                                    self.get_image_name(j))
+                        error = True
+                        continue
+
+                if error:
+                    raise RuntimeError, 'problem with sweep %s' % self._name
+
+            else:
+                start, end = min(self._images), max(self._images)
+                for j in range(start, end + 1):
+                    if not j in self._images:
+                        Debug.write('image %s missing' % \
+                                    self.get_image_name(j))
+                        error = True
+                        continue
+                    if not os.access(self.get_image_name(j), os.R_OK):
+                        Debug.write('image %s unreadable' % \
+                                    self.get_image_name(j))
+                        error = True
+                        continue
+
+                if error:
+                    raise RuntimeError, 'problem with sweep %s' % self._name
+
             # + read the image header information into here?
             #   or don't I need it? it would be useful for checking
             #   against wavelength.getWavelength() I guess to make
