@@ -316,6 +316,16 @@ class CCP4Scaler(Scaler):
                     lattices.append(lattice)
 
                 if ntr:
+
+                    # FIXME bug # 3373 - if there is a need to reindex
+                    # the lattice, I guess that the reindexing operator
+                    # should not be conidered right? This is causing
+                    # problems for TM0343_11636_2d where it seems
+                    # quite capable of processing in C2221 and then
+                    # reindexing to P21.
+
+                    reindex_op = 'h,k,l'
+                    
                     need_to_return = True
             
             # bug # 2433 - need to ensure that all of the lattice
