@@ -1253,7 +1253,7 @@ class XDSScaler(Scaler):
         for epoch in epochs:
             s.add_hklin(self._sweep_information[epoch]['hklin'])
 
-        s.sort(vrset = -9999999.0)
+        s.sort(vrset = -99999999.0)
 
         self._prepared_reflections = hklout
 
