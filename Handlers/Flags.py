@@ -54,7 +54,7 @@ class _Flags:
         self._resolution_high = None
 
         # and these for the mosflm implementation
-        self._cellref_mode = 'new'
+        self._cellref_mode = 'dumb'
         self._old_mosflm = False
 
         # and these are general rejection criteria
@@ -78,7 +78,7 @@ class _Flags:
     def set_cellref_mode(self, cellref_mode):
         if not cellref_mode in ['default', 'parallel',
                                 'orthogonal', 'both',
-                                'new']:
+                                'new', 'dumb']:
             raise RuntimeError, 'cellref_mode %s unknown' % cellref_mode
 
         self._cellref_mode = cellref_mode

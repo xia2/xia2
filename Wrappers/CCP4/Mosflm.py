@@ -704,6 +704,65 @@ def Mosflm(DriverType = None):
 
             return wedges
 
+        def _refine_select_images_dumb(self, mosaic):
+            '''Select images for cell refinement based on image headers.'''
+
+            # this will always use three wedges with spacing 45 degrees
+            # or as close as possible to this...
+
+            cell_ref_images = []
+
+            phi_width = self.get_header_item('phi_width')
+
+            # FIXME what to do if phi_width is 0.0? set it
+            # to 1.0! This should be safe enough... though a warning
+            # would not go amiss...
+
+            if phi_width == 0.0:
+                Chatter.write('Phi width 0.0? Assuming 1.0!')
+                phi_width = 1.0
+            
+            min_images = max(3, int(2 * mosaic / phi_width))
+
+            # mosflm can only run with 30 frames - that is 3 x (9 + 1)
+            # because we include the end points.
+
+            if min_images > 9:
+                min_images = 9
+            
+            # next select what we need from the list...
+
+            images = self.get_matching_images()
+
+            if len(images) < 3 * min_images:
+                cell_ref_images.append((min(images), max(images)))
+                return cell_ref_images
+
+            # add the first wedge of data to use
+
+            cell_ref_images = []
+            cell_ref_images.append((images[0], images[min_images - 1]))
+
+            ideal_last = int(90.0 / phi_width) + min_images
+
+            if ideal_last in images:
+                ideal_middle = int(45.0 / phi_width) - min_images / 2
+                cell_ref_images.append((images[ideal_middle - 1],
+                                        images[ideal_middle - 2 + min_images]))
+                cell_ref_images.append((images[ideal_last - min_images],
+                                        images[ideal_last]))
+
+            else:
+                middle = int((max(images) + min(images) - min_images) / 2)
+                cell_ref_images.append((images[middle - 1],
+                                        images[middle - 2 +  min_images]))
+                cell_ref_images.append((images[-min_images],
+                                        images[-1]))
+                
+
+            return cell_ref_images
+
+
         def _refine_select_images(self, num_wedges, mosaic):
             '''Select images for cell refinement based on image headers.'''
 
@@ -715,6 +774,9 @@ def Mosflm(DriverType = None):
 
             if cellref_mode == 'new':
                 return self._new_refine_select_images()
+
+            if cellref_mode == 'dumb':
+                return self._refine_select_images_dumb(mosaic)
 
             if cellref_mode == 'both' or cellref_mode == 'parallel':
                 for wedge in self._intelligent_refine_select_images_parallel():
@@ -2823,17 +2885,33 @@ def Mosflm(DriverType = None):
                     for j in range(i, i + 10):
                         if output[j].split()[:2] == ['set', 'to']:
                             gain = float(output[j].split()[-1][:-1])
-                            self.set_integrater_parameter('mosflm',
-                                                          'gain',
-                                                          gain)
-                            self.set_integrater_export_parameter('mosflm',
-                                                                 'gain',
-                                                                 gain)
-                            Science.write('GAIN found to be %f' % gain)
 
-                            # this should probably override the input
-                            self._mosflm_gain = gain
-                            self._mosflm_rerun_integration = True
+                            # check that this is not the input
+                            # value... Bug # 3374
+
+                            if self._mosflm_gain:
+                                
+                                if math.fabs(gain - self._mosflm_gain) > 0.02:
+                            
+                                    self.set_integrater_parameter(
+                                        'mosflm', 'gain', gain)
+                                    self.set_integrater_export_parameter(
+                                        'mosflm', 'gain', gain)
+                                    Science.write('GAIN updated to %f' % gain)
+
+                                    self._mosflm_gain = gain
+                                    self._mosflm_rerun_integration = True
+
+                            else:
+
+                                self.set_integrater_parameter(
+                                    'mosflm', 'gain', gain)
+                                self.set_integrater_export_parameter(
+                                    'mosflm', 'gain', gain)
+                                Science.write('GAIN found to be %f' % gain)
+                                
+                                self._mosflm_gain = gain
+                                self._mosflm_rerun_integration = True
 
                 # FIXME if mosaic spread refines to a negative value
                 # once the lattice has passed the triclinic postrefinement

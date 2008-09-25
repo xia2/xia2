@@ -95,9 +95,11 @@
 # 0.2.6.6 - back ported changes to allow for CCP4 6.1, included fixes for
 #           othercell wrapper, added -user_resolution keyword (hopefully)
 # 
+# 0.2.7.0 - many big changes, made much more robust, added checks in for
+#           common failure points, fixed XDS REIDX records, reset reindex
+#           flags if eliminated lattice ...
 
-
-VersionNumber = "0.2.6.6"
+VersionNumber = "0.2.7.0"
 Version = "XIA2 %s" % VersionNumber
 CVSTag = "xia2-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2-%s" % VersionNumber
