@@ -680,7 +680,7 @@ class XDSScaler(Scaler):
             sortmtz = self._factory.Sortmtz()
             sortmtz.add_hklin(hklin)
             sortmtz.set_hklout(hklout)
-            sortmtz.sort(vrset = -9999999.0)
+            sortmtz.sort(vrset = -99999999.0)
 
             hklin = hklout
 
