@@ -183,8 +183,12 @@ def compose_symops(a, b):
     mat_b = symop2mat.convert(b)
 
     mat_c = _multiply_symmetry_matrix(mat_a, mat_b)
+
     mat2symop = Mat2symop()
-    return mat2symop.convert(mat_c).strip()
+    result = mat2symop.convert(mat_c).strip()
+
+    return result
+    
 
 def symop_to_mat(symop):
     symop2mat = Symop2mat()
@@ -217,13 +221,13 @@ def lattice_to_spacegroup_number(lattice):
 
 if __name__ == '__main__':
 
-    a = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    i = [1, 0, 0, 0, 1, 0, 0, 0, 1]
-    j = [0, 1, 0, 0, 0, 1, 1, 0, 0]
-    k = [0, 0, 1, 1, 0, 0, 0, 1, 0]
+    # a = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    # i = [1, 0, 0, 0, 1, 0, 0, 0, 1]
+    # j = [0, 1, 0, 0, 0, 1, 1, 0, 0]
+    # k = [0, 0, 1, 1, 0, 0, 0, 1, 0]
 
-    print compose_symops('h,k,l', 'h,k,l')
-    print compose_symops('k,l,h', 'l,h,k')
-    print compose_symops('k,l,h', '2h,k,l')
+    # print compose_symops('h,k,l', 'h,k,l')
+    # print compose_symops('k,l,h', 'l,h,k')
+    # print compose_symops('k,l,h', '2h,k,l')
 
-    
+    print compose_symops('1/2h+1/2k,-3/2h+1/2k,l', 'h,k,l')

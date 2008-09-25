@@ -118,16 +118,15 @@ def Mat2symop(DriverType = None):
             operation = operation.replace('2', '1/3')
             operation = operation.replace('4', '2/3')
             operation = operation.replace('M', '2')
-                    
+            operation = operation.replace('9', '3/2')
+                                
             return operation.lower()
 
     return Mat2symopWrapper()
 
 if __name__ == '__main__':
 
-    operations = [[1, 0, 0, 0, 1, 0, 0, 0, 1],
-                  [0, 1, 0, 0, 0, 1, 1, 0, 0],
-                  [0, 0.333, -0.666, 0, 0.5, 0.5, 1, 0, 0]]
+    operations = [[0.5, 0.5, 0.0, -1.5, 0.5, 0.0, 0.0, 0.0, 1.0]]
                   
     mat2symop = Mat2symop()
 
