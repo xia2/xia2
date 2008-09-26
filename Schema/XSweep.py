@@ -248,6 +248,9 @@ class XSweep(Object):
                     raise RuntimeError, 'problem with sweep %s' % self._name
 
             else:
+
+                error = False
+                
                 start, end = min(self._images), max(self._images)
                 for j in range(start, end + 1):
                     if not j in self._images:
