@@ -522,7 +522,7 @@ def pointless_summedlist_to_list(summedlist, cell):
     return result
     
 
-def bin_o_tron(sisigma):
+def bin_o_tron0(sisigma):
     '''Bin the incoming list of (s, i, sigma) and return a list of bins
     of width _scale_bins in S.'''
 
@@ -551,6 +551,41 @@ def bin_o_tron(sisigma):
         
 
     return result
+
+def bin_o_tron(sisigma):
+    '''Bin the incoming list of (s, i, sigma) and return a list of bins
+    of width _scale_bins in S.'''
+
+    bins_i = { }
+    bins_s = { }
+
+    for j in range(_number_bins):
+        bins_i[j + 1] = []
+        bins_s[j + 1] = []
+
+    for sis in sisigma:
+        s, i, sigma = sis
+
+        qs = nint(0.5 * _number_bins * s)
+
+        if bins_i.has_key(qs):
+            bins_i[qs].append(i)
+            bins_s[qs].append(sigma)
+
+    result = { }
+
+    for j in range(_number_bins):
+        result[_scale_bins * (j + 1)] = (meansd(bins_i[j + 1])[0] ,
+                                         meansd(bins_s[j + 1])[0])
+
+        if False:
+            print result[_scale_bins * (j + 1)][0], \
+                  result[_scale_bins * (j + 1)][1], \
+                  len(bins[j + 1])
+
+
+    return result
+
 
 def linear(x, y):
 
@@ -690,7 +725,18 @@ if __name__ == '__main__':
     # s, r = digest(bin_o_tron(mosflm_mtz_to_list(sys.argv[1])))
 
     # if xds:
-    s, r = digest(bin_o_tron(xds_integrate_hkl_to_list(sys.argv[1])))
+    bot = bin_o_tron(xds_integrate_hkl_to_list(sys.argv[1]))
+    ss = bot.keys()
+
+    ss.sort()
+
+    for j in range(len(bot)):
+        s = ss[j]
+        mean, sd = bot[s]
+
+        # print s, 1.0 / math.sqrt(s), mean, sd, mean / sd        
+
+    s, r = digest(bot)
 
     print s, r
 
