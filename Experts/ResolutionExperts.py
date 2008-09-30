@@ -30,8 +30,8 @@ from Handlers.Streams import Debug
 
 # global parameters
 
-_scale_bins = 0.01
-_number_bins = 200
+_scale_bins = 0.004
+_number_bins = 500
 
 # jiffy functions
 
@@ -611,19 +611,25 @@ def outlier(sisigma):
         m_p2 = result[k_p2][0]
 
         if result[k][0] > 5 * (0.5 * (m_m1 + m_p1)):
+        # if result[k][0] > 5 * min([m_m2, m_m1, m_p1, m_p2]):
             if not k in outliers:
                 outliers.append(k)
-        
-    # now remove these from the list
+
+    # now remove these from the list - brutal - just excise completely!
 
     sisigma_new = []
+
+    limit = min(outliers)
 
     for sis in sisigma:
         s = sis[0]
         keep = True
-        for o in outliers:
-            if math.fabs(s - o) < 0.004:
-                keep = False
+        # for o in outliers:
+        # if math.fabs(s - o) < 0.004:
+        # keep = False
+
+        if s > limit:
+            keep = False
 
         if keep:
             sisigma_new.append(sis)
