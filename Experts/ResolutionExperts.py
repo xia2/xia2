@@ -641,9 +641,9 @@ def bin_o_tron(sisigma):
     '''Bin the incoming list of (s, i, sigma) and return a list of bins
     of width _scale_bins in S.'''
 
-    # first reject the outliers -
+    # first reject the outliers - nope, let's not...
 
-    sisigma = outlier(sisigma)
+    # sisigma = outlier(sisigma)
 
     bins_i = { }
     bins_s = { }
