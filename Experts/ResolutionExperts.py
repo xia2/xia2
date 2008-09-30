@@ -17,6 +17,7 @@ import math
 import random
 import tempfile
 import shutil
+import time
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
@@ -552,9 +553,91 @@ def bin_o_tron0(sisigma):
 
     return result
 
+def outlier(sisigma):
+    ''' Finely bin the reflections, then look for outlier regions -
+    if these are found, remove the reflections in that region from
+    the list, then return the edited list.'''
+
+    # first bin the measurements
+
+    t0 = time.time()
+
+    bins = {}
+
+    for j in range(500):
+        bins[j + 1] = []
+                 
+    for sis in sisigma:
+        s, i, sigma = sis
+
+        qs = nint(0.5 * 500 * s)
+
+        if bins.has_key(qs):
+            bins[qs].append((i / sigma))
+
+
+    # then look for outliers... first calculate the mean in each bin...
+
+    result = { }
+    keys = []
+
+    fout = open('q.txt', 'w')
+
+    for j in range(500):
+        result[0.004 * (j + 1)] = meansd(bins[j + 1])
+        keys.append(0.004 * (j + 1))
+
+        fout.write('%f %f %f\n' % (0.004 * (j + 1),
+                                   result[0.004 * (j + 1)][0],
+                                   result[0.004 * (j + 1)][1]))
+
+    fout.close()
+                   
+    # then look to see which bins don't fit
+
+    outliers = []
+
+    for j in range(4, 500 - 4):
+        k_m2 = keys[j - 2]
+        k_m1 = keys[j - 1]
+        k_p1 = keys[j + 1]
+        k_p2 = keys[j + 2]
+
+        k = keys[j]
+
+        m_m2 = result[k_m2][0]
+        m_m1 = result[k_m1][0]
+        m_p1 = result[k_p1][0]
+        m_p2 = result[k_p2][0]
+
+        if result[k][0] > 5 * (0.5 * (m_m1 + m_p1)):
+            if not k in outliers:
+                outliers.append(k)
+        
+    # now remove these from the list
+
+    sisigma_new = []
+
+    for sis in sisigma:
+        s = sis[0]
+        keep = True
+        for o in outliers:
+            if math.fabs(s - o) < 0.004:
+                keep = False
+
+        if keep:
+            sisigma_new.append(sis)
+
+    return sisigma_new
+
+
 def bin_o_tron(sisigma):
     '''Bin the incoming list of (s, i, sigma) and return a list of bins
     of width _scale_bins in S.'''
+
+    # first reject the outliers -
+
+    sisigma = outlier(sisigma)
 
     bins_i = { }
     bins_s = { }
@@ -734,7 +817,9 @@ if __name__ == '__main__':
         s = ss[j]
         mean, sd = bot[s]
 
-        # print s, 1.0 / math.sqrt(s), mean, sd, mean / sd        
+        if sd > 0:
+
+            print s, 1.0 / math.sqrt(s), mean, sd, mean / sd
 
     s, r = digest(bot)
 
