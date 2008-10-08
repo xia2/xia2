@@ -209,6 +209,10 @@ def header_to_xds(header, synchrotron = None, reversephi = False):
     qx, qy = tuple(header['pixel'])
 
     detector = header['detector']
+
+    if detector == 'rigaku':
+        detector = 'saturn'
+    
     detector_class = header['detector_class']
 
     result = []
