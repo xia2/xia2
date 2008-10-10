@@ -2195,6 +2195,11 @@ def Mosflm(DriverType = None):
             rms_values_last = None
             rms_values = None
             
+            new_cycle_number = 0
+            new_rms_values = { }
+            new_image_counter = None
+            new_ignore_update = False
+
             for i in range(len(output)):
                 o = output[i]
 
@@ -2239,6 +2244,34 @@ def Mosflm(DriverType = None):
                 # cell parameters" below... may also want to record
                 # them for comparison with cell refinement with a lower
                 # spacegroup for solution elimination purposes...
+
+                # FIXME this output is sometimes mashed - the output
+                # during the actual processing cycles is more reliable,
+                # though perhaps harder to keep track of...
+
+                # the correct way to run this will be to manually track
+                # the cell refinement cycles, and look for
+                # 'Post-refinement will use' as the beginning UNLESS
+                # 'As this is near to the start, repeat integration'
+                # was somewhere just above, in which case the cycle will
+                # not be incremented. 
+
+                if 'Processing Image' in o:
+                    new_image_counter = int(o.split()[2])
+
+                if 'As this is near to the start' in o:
+                    new_ignore_update = True
+
+                if 'Post-refinement will use partials' in o:
+                    if new_ignore_update:
+                        new_ignore_update = False
+                    else:
+                        new_cycle_number += 1
+                        new_rms_values[new_cycle_number] = { }
+
+                if 'Final rms residual' in o:
+                    rv = float(o.replace('mm', ' ').split()[3])
+                    new_rms_values[new_cycle_number][new_image_counter] = rv
 
                 if 'Rms positional error (mm) as a function of' in o and True:
                     images = []
@@ -2287,6 +2320,17 @@ def Mosflm(DriverType = None):
                     # Chatter.write('- %4d %5.3f' % (images[j],
                     # rms_values_last[j]))
                     
+                    # now transform back the new rms residual values
+                    # into the old structure... messy but effective!
+
+                    for cycle in new_rms_values.keys():
+                        images = new_rms_values[cycle].keys()
+                        images.sort()
+                        rms_values[cycle] = []
+                        for i in images:
+                            rms_values[cycle].append(
+                                new_rms_values[cycle][i])
+
                     if cycles:
                         rms_values_last = rms_values[max(cycles)]
                     else:
