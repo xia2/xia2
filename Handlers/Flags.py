@@ -33,6 +33,7 @@ class _Flags:
         self._trust_timestaps = False
         self._parallel = 0
         self._ccp4_61 = False
+        self._batch_scale = False
 
         # File from which to copy the FreeR_flag column
         self._freer_file = None
@@ -74,6 +75,13 @@ class _Flags:
 
     def get_ccp4_61(self):
         return self._ccp4_61
+
+    def set_batch_scale(self, batch_scale):
+        self._batch_scale = batch_scale
+        return
+
+    def get_batch_scale(self):
+        return self._batch_scale
 
     def set_cellref_mode(self, cellref_mode):
         if not cellref_mode in ['default', 'parallel',

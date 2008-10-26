@@ -133,8 +133,11 @@ def Scala(DriverType = None):
             # this is almost certainly wanted
             self._tails = True
 
-            # alternative for this is 'batch'
-            self._mode = 'rotation'
+            # alternative for this is 'batch' err.. no rotation
+            if Flags.get_batch_scale():
+                self._mode = 'batch'
+            else:
+                self._mode = 'rotation'
 
             # these are only relevant for 'rotation' mode scaling
             self._spacing = 5
@@ -567,6 +570,9 @@ def Scala(DriverType = None):
 
                     if self._brotation:
                         scale_command += ' brotation %f' % self._brotation
+                    else:
+                        scale_command += ' brotation spacing %f' % \
+                                         self._spacing
                     
                 else:
                     scale_command += ' bfactor off'

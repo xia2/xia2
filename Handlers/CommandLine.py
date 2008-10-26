@@ -81,6 +81,7 @@ class _CommandLine(Object):
         self._read_debug()
         self._read_trust_timestamps()
         self._read_ccp4_61()
+        self._read_batch_scale()
         self._read_old_mosflm()
         self._read_quick()
         self._read_reversephi()
@@ -585,6 +586,13 @@ class _CommandLine(Object):
         if '-ccp4_61' in sys.argv:
             Flags.set_ccp4_61(True)
             Debug.write('CCP4 6.1 mode on')
+        return
+
+    def _read_batch_scale(self):
+
+        if '-batch_scale' in sys.argv:
+            Flags.set_batch_scale(True)
+            Debug.write('Batch scaling mode on')
         return
 
     def _read_old_mosflm(self):
