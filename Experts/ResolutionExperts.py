@@ -808,7 +808,7 @@ def digest(bins):
 
     return s, r
 
-if __name__ == '__main__':
+if __name__ == '__main__X':
 
     # test what hklin was...
     # s, r = digest(bin_o_tron(mosflm_mtz_to_list(sys.argv[1])))
@@ -849,9 +849,9 @@ if __name__ == '__moon__':
         print '%.1f %.1f %.4f %.4f' % (xy[0], xy[1], s, r)
         
 
-if __name__ == '__malin__':
+if __name__ == '__main__':
 
-    main(open('infl.log', 'r').readlines())
+    main(open(sys.argv[1], 'r').readlines())
 
     # model()
 
