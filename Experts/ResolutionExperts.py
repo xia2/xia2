@@ -26,6 +26,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
 from Wrappers.CCP4.Pointless import Pointless
+from Wrappers.CCP4.Mtzdump import Mtzdump
 from Handlers.Streams import Debug
 
 # global parameters
@@ -296,6 +297,43 @@ def main(mtzdump):
         print 1.0 / math.sqrt(sum(s) / len(s)), c, len(bin), mean, sd, mf / ms
 
         j += binsize
+
+def determine_scaled_resolution(hklin, isigma_limit):
+    '''Determine the scaled and merged resolution limit from an MTZ file
+    from e.g. Scala.'''
+
+    md = Mtzdump()
+    md.set_hklin(hklin)
+    intensities = md.dump_scala_intensities()
+    md.dump()
+    datasets = md.get_datasets()
+
+    if len(datasets) > 1:
+        raise RuntimeError, 'multiple datasets in %s' % hklin
+
+    cell = md.get_dataset_info(datasets[0])['cell']
+
+    # transform cell to vector form
+
+    a, b, c, alpha, beta, gamma = cell
+    as, bs, cs, alphas, betas, gammas = real_to_reciprocal(
+        a, b, c, alpha, beta, gamma)
+    
+    a_, b_, c_ = B(as, bs, cs, alphas, betas, gammas)    
+
+    reflections = []
+
+    for i in intensities:
+        h, k, l = i[:3]
+        s = resolution(h, k, l, a_, b_, c_)
+        _i, _si = i[3], i[4]
+        reflections.append((s, _i, _si))
+
+    reflections.sort()
+
+    s, r = digest(bin_o_tron(reflections), isigma_limit)
+
+    return s, r
 
 def model():
 
@@ -718,7 +756,7 @@ def ice(s):
     return False
 
     
-def digest(bins):
+def digest(bins, isigma_limit = 1.0):
     '''Digest a list of bins to calculate a sensible resolution limit.'''
 
     ss = bins.keys()
@@ -750,7 +788,7 @@ def digest(bins):
     # allow a teeny bit of race - ignore the last resolution bin
     # in this calculation...
     
-    if min(_mean[:-1]) > 1.0:
+    if min(_mean[:-1]) > isigma_limit:
         # we have a data set which is all I/sigma > 1.0
         s = max(_s)
         r = 1.0 / math.sqrt(s)
@@ -806,11 +844,11 @@ def digest(bins):
         x.append(s)
         y.append(math.log10(mean / sd))
 
-        print s, 1.0 / math.sqrt(s), mean / sd
-
     m, c = linear(x, y)
 
-    s = -1.0 * c / m
+    L = math.log10(isigma_limit)
+
+    s = (L - c) / m
     r = 1.0 / math.sqrt(s)
 
     return s, r
@@ -869,4 +907,10 @@ if __name__ == '__main__':
 
     # print cc(a, b)
    
-    print digest(bin_o_tron(mosflm_mtz_to_list(sys.argv[1])))
+    # bot = bin_o_tron(mosflm_mtz_to_list(sys.argv[1]))
+
+    # print digest(bot)
+    # print digest(bot, 3.0)
+
+    print '%.3f %.3f' % determine_scaled_resolution(sys.argv[1],
+                                                    float(sys.argv[2]))
