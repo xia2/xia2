@@ -99,6 +99,45 @@ def Mtzdump(DriverType = None):
 
             return intensities
 
+        def dump_scala_intensities(self):
+            '''Dump the intensities from a scala reflection file as a
+            list - this will not include the positions of the reflections
+            in detector coordinates.'''
+
+            self.check_hklin()
+
+            self.start()
+            self.input('nref -1')
+            self.close_wait()
+
+            intensities = [ ]
+
+            output = self.get_all_output()
+
+            j = 0
+
+            while j < len(output):
+
+                if 'LIST OF REFLECTIONS' in output[j]:
+
+                    j += 3
+
+                    while not '<B>' in output[j]:
+
+                        record = output[j].split()
+
+                        if record:
+
+                            h, k, l = tuple(map(int, record[:3]))
+                            I, sig_I = tuple(map(float, record[3:5]))
+                            
+                            intensities.append((h, k, l, I, sig_I))
+                        
+                        j += 1
+                j += 1
+
+            return intensities
+
         def dump_intensities(self):
             '''Actually dump the intensities from the reflection file -
             useful for reading values from unmerged intensity files.'''
@@ -168,7 +207,11 @@ def Mtzdump(DriverType = None):
             self.check_ccp4_errors()
             
             # if we got this far then everything is probably peachy
-            # so look for interesting information
+            # so look for interesting information - resetting before we
+            # start
+
+            self._header['datasets'] = []
+            self._header['dataset_info'] = { } 
 
             output = self.get_all_output()
 
@@ -225,15 +268,18 @@ def Mtzdump(DriverType = None):
                         
                         dataset_id = '%s/%s/%s' % \
                                      (project, crystal, dataset)
+
+                        if not dataset_id in self._header['datasets']:
                         
-                        self._header['datasets'].append(dataset_id)
-                        self._header['dataset_info'][dataset_id] = { }
-                        self._header['dataset_info'][
-                            dataset_id]['wavelength'] = wavelength
-                        self._header['dataset_info'][dataset_id
-                                                     ]['cell'] = cell
-                        self._header['dataset_info'][dataset_id
-                                                     ]['id'] = dataset_number
+                            self._header['datasets'].append(dataset_id)
+                            self._header['dataset_info'][dataset_id] = { }
+                            self._header['dataset_info'][
+                                dataset_id]['wavelength'] = wavelength
+                            self._header['dataset_info'][
+                                dataset_id]['cell'] = cell
+                            self._header['dataset_info'][
+                                dataset_id]['id'] = dataset_number
+                            
                         block += 1
 
                 if 'No. of reflections used in FILE STATISTICS' in line:
@@ -285,7 +331,7 @@ def Mtzdump(DriverType = None):
 
     return MtzdumpWrapper()
 
-if __name__ == '__main__':
+if __name__ == '__main1__':
 
     # do a quick test
 
@@ -325,4 +371,20 @@ if __name__ == '__main__':
                info['cell'][1], info['cell'][4], info['cell'][5])
     print m.get_resolution_range()
 
+if __name__ == '__main__':
+    m = Mtzdump()
+    m.set_hklin(sys.argv[1])
+    _i = m.dump_scala_intensities()
+    
+    for i in _i:
+        print '%d %d %d %e %e' % i
 
+    m.dump()
+    datasets = m.get_datasets()
+    for d in datasets:
+        print '%s' % d
+        info = m.get_dataset_info(d)
+        print '%s (%6.4fA) %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+              (info['spacegroup'], info['wavelength'],
+               info['cell'][0], info['cell'][1], info['cell'][2],
+               info['cell'][1], info['cell'][4], info['cell'][5])    
