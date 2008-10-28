@@ -664,7 +664,8 @@ def bin_o_tron(sisigma):
     result = { }
 
     for j in range(_number_bins):
-        result[_scale_bins * (j + 1)] = (meansd(bins_i[j + 1])[0] ,
+        msd = meansd(bins_i[j + 1])
+        result[_scale_bins * (j + 1)] = (msd[0], msd[1],
                                          meansd(bins_s[j + 1])[0])
 
         if False:
@@ -726,7 +727,7 @@ def digest(bins):
 
     for j in range(_number_bins):
         s = ss[j]
-        mean, sd = bins[s]
+        mean, sdm, sd = bins[s]
 
         if False:
             print s, 1.0 / math.sqrt(s), mean, sd
@@ -740,10 +741,10 @@ def digest(bins):
 
     for j in range(_number_bins):
         s = ss[j]
-        mean, sd = bins[s]
+        mean, sdm, sd = bins[s]
 
-        if mean > 0.0:
-            _mean.append(mean)
+        if mean > 0:
+            _mean.append(mean / sd)
             _s.append(s)
 
     # allow a teeny bit of race - ignore the last resolution bin
@@ -759,11 +760,13 @@ def digest(bins):
     # the point where the distribution is "Wilson like". Add a fudge factor of
     # 10% for good measure. Start a little way off the beginning e.g. at 10A.
 
+    # panic - fixme - this should be SPREAD not mean error.
+    
     for j in range(nint(0.01 * _number_bins), _number_bins):
         s = ss[j]
-        mean, sd = bins[s]
+        mean, sdm, sd = bins[s]
 
-        if sd > 0.9 * mean:
+        if sdm > 0.9 * mean:
             j0 = j
             s0 = s
             break
@@ -772,15 +775,17 @@ def digest(bins):
 
     for j in range(j0, _number_bins):
         s = ss[j]
-        mean, sd = bins[s]
+        mean, sdm, sd = bins[s]
 
-        if mean <= 1.0:
+        if (mean / sd) <= 1.0:
             s1 = s
             j1 = j
             break
 
     Debug.write('Selected resolution range: %.2f to %.2f for Wilson fit' %
                 (1.0 / math.sqrt(s0), 1.0 / math.sqrt(s1)))
+
+    print 'Range %f %f' % (1.0 / math.sqrt(s0), 1.0 / math.sqrt(s1))
 
     # now decide if it is appropriate to consider a fit to a Wilson
     # distribution... FIXME need to make a decision about this
@@ -796,10 +801,12 @@ def digest(bins):
         if ice(s):
             continue
         
-        mean, sd = bins[s]
+        mean, sdm, sd = bins[s]
 
         x.append(s)
-        y.append(math.log10(mean))
+        y.append(math.log10(mean / sd))
+
+        print s, 1.0 / math.sqrt(s), mean / sd
 
     m, c = linear(x, y)
 
@@ -851,7 +858,7 @@ if __name__ == '__moon__':
 
 if __name__ == '__main__':
 
-    main(open(sys.argv[1], 'r').readlines())
+    # main(open(sys.argv[1], 'r').readlines())
 
     # model()
 
@@ -862,3 +869,4 @@ if __name__ == '__main__':
 
     # print cc(a, b)
    
+    print digest(bin_o_tron(mosflm_mtz_to_list(sys.argv[1])))
