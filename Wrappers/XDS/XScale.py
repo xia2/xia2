@@ -123,6 +123,9 @@ def XScale(DriverType = None):
             self._anomalous = True
             self._merge = False
 
+            # scale factor output
+            self._scale_factor = 1.0
+
             return
 
         def add_reflection_file(self, reflections, wavelength, resolution):
@@ -286,7 +289,7 @@ def XScale(DriverType = None):
             # now look at XSCALE.LP
             xds_check_error(self.get_all_output())
 
-            # get the outlier reflections...
+            # get the outlier reflections... and the overall scale factor
             for line in open(os.path.join(
                 self.get_working_directory(),
                 'XSCALE.LP'), 'r').readlines():
@@ -295,8 +298,13 @@ def XScale(DriverType = None):
                     z = float(line.split()[4])
                     if not (h, k, l, z) in self._remove:
                         self._remove.append((h, k, l, z))
-            
-
+                        
+                if 'FACTOR TO PLACE ALL DATA SETS TO ' in line:
+                    self._scale_factor = float(line.split()[-1])
+                    
             return
+
+        def get_scale_factor(self):
+            return self._scale_factor
 
     return XScaleWrapper()

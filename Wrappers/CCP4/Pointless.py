@@ -160,7 +160,7 @@ def Pointless(DriverType = None):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
 
-            pointless_version = "1.2.21"
+            pointless_version = "1.2.23"
     
             if Flags.get_ccp4_61():
                 self.set_executable(os.path.join(
@@ -198,6 +198,13 @@ def Pointless(DriverType = None):
             # and unit cell information
             self._cell_info = { }
             self._cell = None
+
+            # and scale factors to use in conversion
+            self._scale_factor = 1.0
+
+        def set_scale_factor(self, scale_factor):
+            self._scale_factor = scale_factor
+            return
 
         def set_hklref(self, hklref):
             self._hklref = hklref
@@ -310,6 +317,12 @@ def Pointless(DriverType = None):
             if self._pname and self._xname and self._dname:
                 self.input('name project %s crystal %s dataset %s' % \
                            (self._pname, self._xname, self._dname))
+
+            if self._scale_factor:
+                Debug.write('Scaling intensities by factor %e' % \
+                            self._scale_factor)
+                
+                self.input('multiply %e' % self._scale_factor)
 
             self.close_wait()
 

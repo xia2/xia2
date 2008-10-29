@@ -154,7 +154,7 @@ class XDSScalerHelper:
         return return_map
 
     def split_and_convert_xscale_output(self, input_file, prefix,
-                                        project_info):
+                                        project_info, scale_factor = 1.0):
         '''Split (as per method above) then convert files to MTZ
         format via combat. The latter step will add the
         pname / xname / dname things from the dictionary supplied.'''
@@ -196,6 +196,7 @@ class XDSScalerHelper:
                 p.set_xdsin(hklin)
                 p.set_hklout(hklout)
                 p.set_project_info(pname, xname, dname)
+                p.set_scale_factor(scale_factor)
                 p.xds_to_mtz()
 
             data_map[token] = hklout

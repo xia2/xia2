@@ -939,6 +939,10 @@ class XDSScaler(Scaler):
 
         xscale.run()
 
+        scale_factor = xscale.get_scale_factor()
+
+        Debug.write('XSCALE scale factor found to be: %e' % scale_factor)
+
         # record the log file 
 
         pname = self._scalr_pname
@@ -1110,7 +1114,7 @@ class XDSScaler(Scaler):
             xsh.set_working_directory(self.get_working_directory())
 
             ref = xsh.split_and_convert_xscale_output(
-                hklin, 'SCALED_', project_info)
+                hklin, 'SCALED_', project_info, 1.0 / scale_factor)
 
             # this loop is working through the reflection files we
             # have, then looking for the epoch it belongs to (hash
