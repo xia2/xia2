@@ -277,7 +277,7 @@ def Mosflm(DriverType = None):
                 self.set_executable(os.path.join(
                     os.environ['CCP4'], 'bin', 'ipmosflm'))
             else:
-                self.set_executable('ipmosflm-7.0.3')
+                self.set_executable('ipmosflm-7.0.4')
     
             FrameProcessor.__init__(self)
             Indexer.__init__(self)
