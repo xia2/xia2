@@ -137,6 +137,7 @@ from CCP4InterRadiationDamageDetector import CCP4InterRadiationDamageDetector
 from DoseAccumulate import accumulate
 
 from AnalyseMyIntensities import AnalyseMyIntensities
+from Experts.ResolutionExperts import determine_scaled_resolution
 
 # See FIXME_X0001 below...
 # from CCP4IntraRadiationDamageDetector import CCP4IntraRadiationDamageDetector
@@ -1451,6 +1452,17 @@ class CCP4Scaler(Scaler):
         # the resolution limit is not reasserted.
 
         resolution_info = { }
+
+        # this returns a dictionary of files that I will use to calculate
+        # the resolution limits...
+        
+        reflection_files = sc.get_scaled_reflection_files()
+
+        for key in reflection_files.keys():
+            Debug.write('%s => %s' % (key, reflection_files[key]))
+            resolution = determine_scaled_resolution(reflection_files[key],
+                                                     2.0)[1]
+            Debug.write('New style resolution limit: %.2f' % resolution)
 
         for key in loggraph.keys():
             if 'Analysis against resolution' in key:

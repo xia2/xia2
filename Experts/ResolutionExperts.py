@@ -784,6 +784,7 @@ def digest(bins, isigma_limit = 1.0):
         if mean > 0:
             _mean.append(mean / sd)
             _s.append(s)
+            smax = s
 
     # allow a teeny bit of race - ignore the last resolution bin
     # in this calculation...
@@ -815,7 +816,7 @@ def digest(bins, isigma_limit = 1.0):
         s = ss[j]
         mean, sdm, sd = bins[s]
 
-        if (mean / sd) <= 1.0:
+        if (mean / sd) <= isigma_limit:
             s1 = s
             j1 = j
             break
@@ -849,6 +850,14 @@ def digest(bins, isigma_limit = 1.0):
     L = math.log10(isigma_limit)
 
     s = (L - c) / m
+
+    # logic really - limit the resolution limit estimate to the
+    # highest resolution we have, as we can't predict what will
+    # happen outside the known range.
+
+    if s > smax:
+        s = smax
+
     r = 1.0 / math.sqrt(s)
 
     return s, r

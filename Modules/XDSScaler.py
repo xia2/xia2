@@ -85,6 +85,7 @@ from Experts.SymmetryExpert import symop_to_mat, compose_matrices_r
 # stuff I have nicked from the CCP4 Scaler implementation
 from CCP4ScalerImplementationHelpers import _resolution_estimate
 from CCP4InterRadiationDamageDetector import CCP4InterRadiationDamageDetector
+from Experts.ResolutionExperts import determine_scaled_resolution
 
 class XDSScaler(Scaler):
     '''An implementation of the xia2 Scaler interface implemented with
@@ -1346,6 +1347,14 @@ class XDSScaler(Scaler):
 
         resolution_limits = { }
 
+        reflection_files = sc.get_scaled_reflection_files()
+
+        for key in reflection_files.keys():
+            Debug.write('%s => %s' % (key, reflection_files[key]))
+            resolution = determine_scaled_resolution(reflection_files[key],
+                                                     2.0)[1]
+            Debug.write('New style resolution limit: %.2f' % resolution)
+
         highest_resolution = 100.0
 
         # check in here that there is actually some data to scale..!
@@ -1372,6 +1381,11 @@ class XDSScaler(Scaler):
                 dmin = float(resol_ranges[i])
                 i_sigma = float(mn_i_sigma_values[i])
                 resolution_points.append((dmin, i_sigma))
+
+            # FIXME in here need to look at the reflection files
+            # rather than the scaling statistics to estimate the resolution
+            # limits... see equivalent at this stage in the
+            # CCP4 scaler. XQ
 
             resolution = _resolution_estimate(
                 resolution_points, Flags.get_i_over_sigma_limit())
