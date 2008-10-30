@@ -1492,6 +1492,10 @@ class CCP4Scaler(Scaler):
             resolution = _resolution_estimate(
                 resolution_points, Flags.get_i_over_sigma_limit())
 
+            # FIXME in here want to look at the reflection file to
+            # calculate the resolution limit, not the Scala log
+            # file output... FIXME-DETERMINE-RESOLUTION
+
             # next compute "useful" versions of these resolution limits
             # want 0.05A steps - in here it would also be useful to
             # gather up an "average" best resolution and perhaps use this
