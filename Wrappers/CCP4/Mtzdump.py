@@ -128,7 +128,10 @@ def Mtzdump(DriverType = None):
 
                         if record:
 
-                            h, k, l = tuple(map(int, record[:3]))
+                            h, k, l = tuple(
+                                map(int, [output[j][4 * k + 1:4 * (k + 1) + 1]
+                                          for k in range(3)]))
+                            
                             I, sig_I = tuple(map(float, record[3:5]))
                             
                             intensities.append((h, k, l, I, sig_I))
