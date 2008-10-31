@@ -1349,12 +1349,6 @@ class XDSScaler(Scaler):
 
         reflection_files = sc.get_scaled_reflection_files()
 
-        for key in reflection_files.keys():
-            Debug.write('%s => %s' % (key, reflection_files[key]))
-            resolution = determine_scaled_resolution(reflection_files[key],
-                                                     2.0)[1]
-            Debug.write('New style resolution limit: %.2f' % resolution)
-
         highest_resolution = 100.0
 
         # check in here that there is actually some data to scale..!
@@ -1387,9 +1381,15 @@ class XDSScaler(Scaler):
             # limits... see equivalent at this stage in the
             # CCP4 scaler. XQ
 
-            resolution = _resolution_estimate(
-                resolution_points, Flags.get_i_over_sigma_limit())
+            old_way = False
 
+            if old_way:
+                resolution = _resolution_estimate(
+                    resolution_points, Flags.get_i_over_sigma_limit())
+            else:
+                resolution = determine_scaled_resolution(
+                    reflection_files[dataset], 2.0)[1]
+                
             # next compute "useful" versions of these resolution limits
             # want 0.05A steps - in here it would also be useful to
             # gather up an "average" best resolution and perhaps use this

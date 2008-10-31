@@ -1185,7 +1185,11 @@ class CCP4Scaler(Scaler):
         best_sdb_full = 0.0
         best_sdb_partial = 0.0
 
-        if Flags.get_ccp4_61():
+        # this is not a problem now for the latest-latest Scala build
+        # :o( should really code this into the Scala wrapper and check
+        # the version in there...
+
+        if Flags.get_ccp4_61() and False:
             max_sdb_full = 50.0
             max_sdb_partial = 50.0
             step_sdb_full = 5.0
@@ -1458,12 +1462,6 @@ class CCP4Scaler(Scaler):
         
         reflection_files = sc.get_scaled_reflection_files()
 
-        for key in reflection_files.keys():
-            Debug.write('%s => %s' % (key, reflection_files[key]))
-            resolution = determine_scaled_resolution(reflection_files[key],
-                                                     2.0)[1]
-            Debug.write('New style resolution limit: %.2f' % resolution)
-
         for key in loggraph.keys():
             if 'Analysis against resolution' in key:
                 dataset = key.split(',')[-1].strip()
@@ -1501,8 +1499,14 @@ class CCP4Scaler(Scaler):
                 i_sigma = float(mn_i_sigma_values[i])
                 resolution_points.append((dmin, i_sigma))
 
-            resolution = _resolution_estimate(
-                resolution_points, Flags.get_i_over_sigma_limit())
+            old_way = False
+
+            if old_way:
+                resolution = _resolution_estimate(
+                    resolution_points, Flags.get_i_over_sigma_limit())
+            else:
+                resolution = determine_scaled_resolution(
+                    reflection_files[dataset], 2.0)[1]
 
             # FIXME in here want to look at the reflection file to
             # calculate the resolution limit, not the Scala log
