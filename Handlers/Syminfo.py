@@ -218,7 +218,7 @@ class _Syminfo(Object):
     
 Syminfo = _Syminfo()
     
-if __name__ == '__main__':
+if __name__ == '__main__X':
     # run a couple of tests.
 
     if False:
@@ -241,3 +241,9 @@ if __name__ == '__main__':
         pg = Syminfo.get_pointgroup(spag)
 
         print '%4d %8s %8s'  % (number, spag, pg)
+
+if __name__ == '__main__':
+    for arg in sys.argv[1:]:
+        print arg, Syminfo.get_lattice(int(arg))
+
+    
