@@ -157,6 +157,8 @@ def header_to_xds(header, synchrotron = None, reversephi = False):
         'adsc q4 2x2 binned':True,
         'adsc q210':True,
         'adsc q210 2x2 binned':True,
+        'adsc q270':True,
+        'adsc q270 2x2 binned':True,
         'adsc q315':True,
         'adsc q315 2x2 binned':True,
         'mar 345':False,
