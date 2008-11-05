@@ -213,7 +213,10 @@ def header_to_xds(header, synchrotron = None, reversephi = False):
     detector = header['detector']
 
     if detector == 'rigaku':
-        detector = 'saturn'
+        if 'raxis' in header['detector class']:
+            detector = 'raxis'
+        else:
+            detector = 'saturn'
     
     detector_class = header['detector_class']
 
