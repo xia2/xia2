@@ -483,7 +483,9 @@ class XDSIndexer(FrameProcessor,
 
             d = math.sqrt(dx * dx + dy * dy)
 
-            theta = 0.5 * math.atan(d / distance)
+            # recall that distance is negative for rigaku x-ray sets!
+
+            theta = 0.5 * math.atan(d / math.fabs(distance))
 
             ds = wavelength / (2.0 * math.sin(theta))
 
