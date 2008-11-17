@@ -188,11 +188,15 @@ def compose_symops(a, b):
     result = mat2symop.convert(mat_c).strip()
 
     return result
-    
 
 def symop_to_mat(symop):
     symop2mat = Symop2mat()
     return symop2mat.convert(symop)
+
+def mat_to_symop(mat):
+    mat2symop = Mat2symop()
+    result = mat2symop.convert(mat).strip()
+    return result
 
 def lattice_to_spacegroup_number(lattice):
     '''Return the spacegroup number corresponding to the lowest symmetry

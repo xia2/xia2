@@ -26,7 +26,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
-from Experts.SymmetryExpert import symop_to_mat
+from Experts.SymmetryExpert import symop_to_mat, mat_to_symop
 from Wrappers.CCP4.Othercell import Othercell
 from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
 from lib.SymmetryLib import lattice_to_spacegroup
@@ -445,7 +445,7 @@ def mosflm_a_matrix_to_real_space(wavelength, lattice, matrix):
     # return these vectors
     return ax, bx, cx
 
-if __name__ == '__main__':
+if __name__ == '__main__Q':
 
     matrix = '''  0.00935462  0.00605920 -0.00373825
  -0.01567190 -0.00910857 -0.00231642
@@ -589,3 +589,35 @@ if __name__ == '__main__vecmul':
     M = (2, 0, 0, 0, 2, 0, 0, 0, 2)
     
     print '%f %f %f' % tuple(matvecmul(M, v))    
+
+if __name__ == '__main__':
+    U1 = map(float, '''0.8773    0.3578   -0.3200
+    -0.2248    0.8953    0.3845
+    0.4241   -0.2654    0.8659'''.split())
+
+    U2 = map(float, '''0.3543   -0.8799   -0.3166
+    0.8969    0.2240    0.3813
+    -0.2646   -0.4191    0.8685'''.split())
+
+    R1 = rot_x(55.0)
+
+    print mat_to_symop(matmul(U1, transpose(U1)))
+    print mat_to_symop(matmul(U1, invert(U1)))
+    X1 = mat_to_symop(matmul(U1, invert(U2)))
+
+    sys.path.append(os.path.join(os.environ['XIA2_ROOT'],
+                                 'Handlers'))
+    from Syminfo import Syminfo
+
+    for symop in Syminfo.get_symops(Syminfo.get_pointgroup('P43212')):
+        s2 = symop.replace('X', 'h').replace('Y', 'k').replace('Z', 'l')
+        if s2 == X1:
+            print 'found it! %s' % s2
+    
+
+    # m1 = symop_to_mat(mat_to_symop(matmul(U1, invert(U2))))
+
+    # print matmul(m1, U2)
+    # print U1
+
+    

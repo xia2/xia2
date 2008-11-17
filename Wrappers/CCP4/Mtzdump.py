@@ -46,6 +46,8 @@ def Mtzdump(DriverType = None):
             self._header['datasets'] = []
             self._header['dataset_info'] = { } 
 
+            self._batch_header = { }
+
             self._batches = None
             self._reflections = 0
             self._resolution_range = (0, 0)
@@ -292,6 +294,42 @@ def Mtzdump(DriverType = None):
                     
             # status token has a spare "of mtzdump" to get rid of
             return self.get_ccp4_status().replace('of mtzdump', '').strip()
+
+        def dump_batch_headers(self):
+            '''Actually print the contents of the mtz file batch headers.'''
+
+            self.check_hklin()
+            self.start()
+            self.input('batch')
+            self.close_wait()
+
+            # general errors - SEGV and the like
+            self.check_for_errors()
+            
+            # ccp4 specific errors
+            self.check_ccp4_errors()
+            
+            output = self.get_all_output()
+
+            length = len(output)
+
+            current_batch = None
+            umat = None
+
+            for j in range(length):
+                if 'Batch number:' in output[j]:
+                    current_batch = int(output[j + 1].strip())
+                if 'Standard orientation matrix U' in output[j]:
+                    umat = map(float, output[j][38:].split()) + \
+                           map(float, output[j + 1][38:].split()) + \
+                           map(float, output[j + 2][38:].split())
+
+                    self._batch_header[current_batch] = {'umat': umat}
+
+            return self.get_ccp4_status().replace('of mtzdump', '').strip()
+
+        def get_batch_header(batch):
+            return copy.deepcopy(self._batch_header[batch])
 
         def get_columns(self):
             '''Get a list of the columns and their types as tuples
