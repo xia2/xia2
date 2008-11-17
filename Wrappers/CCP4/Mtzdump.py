@@ -328,7 +328,7 @@ def Mtzdump(DriverType = None):
 
             return self.get_ccp4_status().replace('of mtzdump', '').strip()
 
-        def get_batch_header(batch):
+        def get_batch_header(self, batch):
             return copy.deepcopy(self._batch_header[batch])
 
         def get_columns(self):
@@ -414,18 +414,21 @@ if __name__ == '__main1__':
 
 if __name__ == '__main__':
     m = Mtzdump()
-    m.set_hklin(sys.argv[1])
-    _i = m.dump_scala_intensities()
-    
-    for i in _i:
-        print '%d %d %d %e %e' % i
+
+    hklin = os.path.join(os.environ['X2TD_ROOT'],
+                         'XIA2', 'Mtz', '12287_1_E1_1_10.mtz')
+
+    if len(sys.argv) > 1:
+        m.set_hklin(sys.argv[1])
+    else:
+        m.set_hklin(hklin)
 
     m.dump()
-    datasets = m.get_datasets()
-    for d in datasets:
-        print '%s' % d
-        info = m.get_dataset_info(d)
-        print '%s (%6.4fA) %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-              (info['spacegroup'], info['wavelength'],
-               info['cell'][0], info['cell'][1], info['cell'][2],
-               info['cell'][1], info['cell'][4], info['cell'][5])    
+    m.dump_batch_headers()
+
+    for batch in m.get_batches():
+        print '=== batch %4d ===' % batch
+        print '%.4f %.4f %.4f \n%.4f %.4f %.4f \n%.4f %.4f %.4f ' % \
+              tuple(m.get_batch_header(batch)['umat'])
+
+    
