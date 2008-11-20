@@ -156,6 +156,11 @@ class CCP4Scaler(Scaler):
         # and could probably be handled better (they used to be
         # all in just the scale() method)
 
+        # ok, in here need to keep track of the best scaling model to use
+        # when I come to make that decision - FIXME...
+
+        self._scale_model = None
+
         self._prepared_reflections = None
         self._common_pname = None
         self._common_xname = None
