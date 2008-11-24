@@ -93,6 +93,7 @@ class _CommandLine(Object):
         self._read_3dii()
         self._read_migrate_data()
         self._read_zero_dose()
+        self._read_no_correct()
 
         try:
             self._read_beam()
@@ -653,6 +654,13 @@ class _CommandLine(Object):
         if '-zero_dose' in sys.argv:
             Flags.set_zero_dose(True)
             Debug.write('Zero-dose mode (XDS/XSCALE) selected')
+        return
+
+    def _read_no_correct(self):
+
+        if '-no_correct' in sys.argv:
+            Flags.set_no_correct(True)
+            Debug.write('No-correct mode (XDS/XSCALE) selected')
         return
 
     def _read_norefine(self):

@@ -43,6 +43,7 @@ class _Flags:
         self._refine = True
         self._zero_dose = False
         self._relax = True
+        self._no_correct = False
 
         # options to support the -spacegroup flag - the spacegroup is
         # set from this, the lattice and pointgroup derived from such
@@ -263,6 +264,13 @@ class _Flags:
 
     def get_zero_dose(self):
         return self._zero_dose
+
+    def set_no_correct(self, no_correct):
+        self._no_correct = no_correct
+        return
+
+    def get_no_correct(self):
+        return self._no_correct
 
 Flags = _Flags()
 
