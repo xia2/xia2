@@ -278,6 +278,7 @@ def Pointless(DriverType = None):
         def sum_mtz(self, summedlist):
             '''Sum partials in an MTZ file from Mosflm to a text file.'''
 
+            self.add_command_line('-c')
             self.check_hklin()
 
             self.start()
