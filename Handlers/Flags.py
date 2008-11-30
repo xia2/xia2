@@ -43,7 +43,7 @@ class _Flags:
         self._refine = True
         self._zero_dose = False
         self._relax = True
-        self._no_correct = False
+        self._no_correct = True
 
         # options to support the -spacegroup flag - the spacegroup is
         # set from this, the lattice and pointgroup derived from such
