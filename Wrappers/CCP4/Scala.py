@@ -817,10 +817,11 @@ def Scala(DriverType = None):
             # parameters in the merging step...
 
             if not self._sd_parameters and self._new_scala:
-                # restore old default behaviour
-                    
+                # restore old default behaviour - no have to set no
+                # sdcorrection!
+                
                 self.input(
-                    'sdcorrection fixsdb adjust norefine both 2.0 0.02')
+                    'sdcorrection fixsdb adjust norefine both 1.0 0.0')
                 
             for key in self._sd_parameters:
                 # the input order for these is sdfac, sdB, sdadd...
