@@ -1534,7 +1534,13 @@ class XDSScaler(Scaler):
         sc.set_resolution(best_resolution)
         sc.set_hklin(self._prepared_reflections)
         sc.set_new_scales_file(scales_file)
-        sc.add_sd_correction('both', 1.0, sdadd_full, sdb_full)
+
+        # this is now handled more elegantly by the Scala wrapper
+        
+        if sdadd_full == 0.0 and sdb_full == 0.0:
+            pass
+        else:
+            sc.add_sd_correction('both', 1.0, sdadd_full, sdb_full)
 
         for epoch in epochs:
             input = self._sweep_information[epoch]
