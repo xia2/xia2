@@ -100,6 +100,20 @@
 #                 between sweeps, and is a big and important thing! This could
 #                 be done by looking at the overall Rmerge, or the highest
 #                 resolution shell.
+# 
+# FIXME 02/DEC/08 need to make this more clever with the scaling model - this
+#                 will mean testing it out... at the moment the Scala wrapper
+#                 allows this by setting the secondary, cycles, tails and 
+#                 b_factor can be set, using:
+#
+#                 scala.set_cycles(5)
+#                 scala.set_scaling_parameters('rotation', 5, 4) - spacing, abs
+#                 scala.set_bfactor(bfactor = True, brotation = 20.0)
+#                 scala.set_tails(tails = False) - or True
+# 
+#                 This should not therefore be too hard to implement with the
+#                 proper determination of a scaling model. Do I care about the
+#                 convergence measurement? Should probably return this ...
 
 import os
 import sys
