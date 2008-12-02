@@ -114,6 +114,15 @@
 #                 This should not therefore be too hard to implement with the
 #                 proper determination of a scaling model. Do I care about the
 #                 convergence measurement? Should probably return this ...
+#
+#                 This will be implemented in a determine_best_scale_model
+#                 method. This should work as follows:
+#
+#                 Test individual corrections. If any of them suck, don't use
+#                 them in combinatorials otherwise give them a fair chance.
+#                 Then use the simplest model which is as good as (i.e. within
+#                 3% of, on average) the best model.
+
 
 import os
 import sys
@@ -171,9 +180,18 @@ class CCP4Scaler(Scaler):
         # all in just the scale() method)
 
         # ok, in here need to keep track of the best scaling model to use
-        # when I come to make that decision - FIXME...
+        # when I come to make that decision - FIXME... ok - it looks like
+        # I can code this up in a proper component fashion as the Scala
+        # wrapper provides a decent interface. If all three of the following
+        # are None then this has not been set, else we have already defined
+        # a scaling model so we can crack on and use it. Assert: the
+        # scaling model applies only to actually scaling the data. Assert:
+        # we will be using smoothed rotation scaling over 5 degree intervals.
+        # Assert: the predicted number of cycles is not overly important.
 
-        self._scale_model = None
+        self._scale_model_b = None
+        self._scale_model_secondary = None
+        self._scale_model_tails = None
 
         self._prepared_reflections = None
         self._common_pname = None
