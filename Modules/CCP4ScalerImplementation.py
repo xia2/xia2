@@ -216,6 +216,17 @@ class CCP4Scaler(Scaler):
     def _determine_best_scale_model(self):
         '''Determine the best set of corrections to apply to the data.'''
 
+        # if we have already defined the best scaling model just return
+
+        # this will test out the individual corrections and compare the
+        # results (average Rmerge, convergence rate) with the option of
+        # just running a very simple scaling (scales rotation spacing 5)
+        # to see if they justify their existence.
+
+        # unfortunately this has to be coded as a brute force search of
+        # the corrections (the list can be shortened if any prove to
+        # really suck) which is a shame...
+
         return
 
     def _scale_prepare(self):
