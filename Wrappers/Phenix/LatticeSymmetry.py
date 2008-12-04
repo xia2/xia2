@@ -58,6 +58,7 @@ def LatticeSymmetry(DriverType = None):
             self._distortions = { }
             self._cells = { }
             self._reindex_ops = { } 
+            self._reindex_ops_basis = { } 
 
             return
 
@@ -168,18 +169,19 @@ def LatticeSymmetry(DriverType = None):
                     lauegroup = lauegroup.replace(':h', ':H')
                     lattice = lauegroup_to_lattice(lauegroup)
                     
-                    # reindex = state['Change of basis']
+                    reindex_basis = state['Change of basis']
                     reindex = state['Inverse']
 
                     if not lattice in self._lattices:
                         self._lattices.append(lattice)
                         self._distortions[lattice] = distortion
                         self._cells[lattice] = cell
-                        self._reindex_ops[lattice] = reindex
+                        self._reindex_ops_basis[lattice] = reindex_basis
                     elif distortion < self._distortions[lattice]:
                         self._distortions[lattice] = distortion
                         self._cells[lattice] = cell
                         self._reindex_ops[lattice] = reindex
+                        self._reindex_ops_basis[lattice] = reindex_basis
 
                     state = { }
 
@@ -196,6 +198,9 @@ def LatticeSymmetry(DriverType = None):
 
         def get_reindex_op(self, lattice):
             return self._reindex_ops[lattice]                        
+
+        def get_reindex_op_basis(self, lattice):
+            return self._reindex_ops_basis[lattice]                        
 
         def generate_primative_reindex(self):
             if not self._cell:
