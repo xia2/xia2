@@ -55,12 +55,15 @@ def xia2lattice(cell, input_lattice = None, do_print = True):
     for lattice in lattices:
         distortion = ls.get_distortion(lattice)
         cell = ls.get_cell(lattice)
+        reindex = ls.get_reindex_op_basis(lattice).replace('x', 'H').replace(
+            'y', 'K').replace('z', 'L').replace('*', '')
 
         cellstr = '%7.2f %7.2f %7.2f %7.2f %7.2f %7.2f' % tuple(cell)
 
         if do_print:
             spacegroup = lattice_to_spacegroup(lattice)
-            print '%s %.4f %s %d' % (lattice, distortion, cellstr, spacegroup)
+            print '%s %.4f %s %3d %s' % \
+                  (lattice, distortion, cellstr, spacegroup, reindex)
 
     return
 
