@@ -123,7 +123,6 @@
 #                 Then use the simplest model which is as good as (i.e. within
 #                 3% of, on average) the best model.
 
-
 import os
 import sys
 import math
@@ -213,6 +212,11 @@ class CCP4Scaler(Scaler):
 
     def _pointless_indexer_jiffy(self, hklin, indexer):
         return self._helper.pointless_indexer_jiffy(hklin, indexer)
+
+    def _determine_best_scale_model(self):
+        '''Determine the best set of corrections to apply to the data.'''
+
+        return
 
     def _scale_prepare(self):
         '''Perform all of the preparation required to deliver the scaled
