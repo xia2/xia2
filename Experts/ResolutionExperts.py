@@ -759,6 +759,8 @@ def ice(s):
 def digest(bins, isigma_limit = 1.0):
     '''Digest a list of bins to calculate a sensible resolution limit.'''
 
+    # print 'Debugging! isigma_limit = %f' % isigma_limit
+
     ss = bins.keys()
 
     ss.sort()
@@ -848,6 +850,11 @@ def digest(bins, isigma_limit = 1.0):
     m, c = linear(x, y)
 
     L = math.log10(isigma_limit)
+
+    if False:
+        for isigma in 1.0, 2.0, 3.0, 4.0, 5.0:
+            s = (math.log10(isigma) - c) / m
+            print 'Debugging again... %.1f %.2f' % (isigma, 1.0 / math.sqrt(s))
 
     s = (L - c) / m
 

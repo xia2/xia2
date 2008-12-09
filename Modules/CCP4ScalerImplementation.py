@@ -1558,7 +1558,7 @@ class CCP4Scaler(Scaler):
                     resolution_points, Flags.get_i_over_sigma_limit())
             else:
                 resolution = determine_scaled_resolution(
-                    reflection_files[dataset], 2.0)[1]
+                    reflection_files[dataset], 3.0)[1]
 
             # FIXME in here want to look at the reflection file to
             # calculate the resolution limit, not the Scala log
@@ -1780,6 +1780,15 @@ class CCP4Scaler(Scaler):
         sc.set_tails()
 
         sc.scale()
+
+        # let's take a look at the resolutions once the error corrections
+        # have been applied...
+        
+        for dataset in resolution_info.keys():
+            if False:
+                print dataset
+                determine_scaled_resolution(
+                    reflection_files[dataset], 3.0)[1]
 
         # then gather up all of the resulting reflection files
         # and convert them into the required formats (.sca, .mtz.)
