@@ -1775,7 +1775,7 @@ def Mosflm(DriverType = None):
 
             # fudge factors to prevent Mosflm from being too fussy
             self.input('separation close')
-            self.input('refinement residual 10.0')
+            self.input('refinement residual 12.5')
             self.input('refinement include partials')
 
             # set up the cell refinement - allowing quite a lot of
@@ -2105,7 +2105,7 @@ def Mosflm(DriverType = None):
 
             # fudge factors to prevent Mosflm from being too fussy
             self.input('separation close')
-            self.input('refinement residual 10.0')
+            self.input('refinement residual 12.5')
             self.input('refinement include partials')
 
             # compute the detector limits to use for this...
