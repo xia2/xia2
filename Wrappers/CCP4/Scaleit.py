@@ -58,7 +58,6 @@ def Scaleit(DriverType = None):
             self._anomalous = anomalous
             return
 
-
         def find_columns(self):
             '''Identify columns to use with scaleit.'''
 
@@ -225,8 +224,14 @@ def Scaleit(DriverType = None):
                         j += 1
                         line = output[j]
 
+                if 'acceptable differences are less than' in line and \
+                       groups == 1:
+                    max_difference = float(line.split()[-1])
+                    if max_difference > 0.01:
+                        self._statistics['max_difference'] = max_difference
+
                 if 'THE TOTALS' in line:
-                    r_values.append(float(line.split()[6]))                        
+                    r_values.append(float(line.split()[6]))        
 
                 j += 1
 
@@ -262,9 +267,15 @@ if __name__ == '__main__':
 
     s.set_hklin(hklin)
     s.set_hklout('junk.mtz')
+    s.set_anomalous(True)
 
     print s.find_columns()
 
     s.scaleit()
 
-    print s.get_statistics()['b_factor']
+    stats = s.get_statistics()
+
+    print stats['b_factor']
+
+    if stats.has_key('max_difference'):
+        print stats['max_difference']
