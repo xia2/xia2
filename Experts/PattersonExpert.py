@@ -53,8 +53,10 @@ def anomalous_patterson_jiffy(hklin, symmetry = None,
     if len(datasets) > 1:
         raise RuntimeError, 'more than one dataset for anomalous Patterson'
 
-    if 'DANO_%s' % datasets[0].split('/')[-1] in mtzdump.get_columns():
-        dataset = datasets[0].split('/')[-1]
+    dataset = datasets[0].split('/')[-1]
+    dano = ('DANO_%s' % dataset, 'D')
+    if dano in mtzdump.get_columns():
+        pass
     else:
         dataset = None
 
