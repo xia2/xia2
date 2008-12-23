@@ -32,7 +32,9 @@ from Wrappers.CCP4.Peakmax import Peakmax
 from Wrappers.CCP4.Mapmask import Mapmask
 from Wrappers.CCP4.Scaleit import Scaleit
 
-def anomalous_patterson_jiffy(hklin, symmetry, working_directory, scratch):
+def anomalous_patterson_jiffy(hklin, symmetry = None,
+                              working_directory = os.getcwd(),
+                              scratch = 'patterson-temp'):
     '''Run a Patterson calculation: scaleit -> fft -> mapmask -> peakmax
     with the intention of getting a meaningful list of peaks out. Scratch
     is a temporary name for temporary map files etc.'''
@@ -44,6 +46,9 @@ def anomalous_patterson_jiffy(hklin, symmetry, working_directory, scratch):
     mtzdump.dump()
     dmin, dmax = mtzdump.get_resolution_range()
     datasets = mtzdump.get_datasets()
+
+    if symmetry is None:
+        symmetry = mtzdump.get_spacegroup()
     
     if len(datasets) > 1:
         raise RuntimeError, 'more than one dataset for anomalous Patterson'
