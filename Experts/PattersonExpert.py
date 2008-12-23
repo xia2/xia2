@@ -34,7 +34,9 @@ from Wrappers.CCP4.Scaleit import Scaleit
 
 def anomalous_patterson_jiffy(hklin, symmetry = None,
                               working_directory = os.getcwd(),
-                              scratch = 'patterson-temp'):
+                              scratch = 'patterson-temp',
+                              dmin = None,
+                              dmax = None):
     '''Run a Patterson calculation: scaleit -> fft -> mapmask -> peakmax
     with the intention of getting a meaningful list of peaks out. Scratch
     is a temporary name for temporary map files etc.'''
@@ -44,8 +46,13 @@ def anomalous_patterson_jiffy(hklin, symmetry = None,
     mtzdump = Mtzdump()
     mtzdump.set_hklin(hklin)
     mtzdump.dump()
-    dmin, dmax = mtzdump.get_resolution_range()
+    _dmin, _dmax = mtzdump.get_resolution_range()
     datasets = mtzdump.get_datasets()
+
+    if not dmin:
+        dmin = _dmin
+    if not dmax:
+        dmax = _dmax
 
     if symmetry is None:
         symmetry = mtzdump.get_spacegroup()
@@ -86,17 +93,22 @@ def anomalous_patterson_jiffy(hklin, symmetry = None,
     fft.set_dataset(dataset)
     fft.patterson()
 
-    mapin = mapout
-    mapout = os.path.join(os.environ['CCP4_SCR'], '%s-mapmask.map' % scratch)
-    
-    # cut the map down to the ASU
+    # cut the map down to the ASU - no, maybe not
 
-    mapmask = Mapmask()
-    mapmask.set_working_directory(working_directory)
-    mapmask.set_mapin(mapin)
-    mapmask.set_mapout(mapout)
-    mapmask.set_symmetry(symmetry)
-    mapmask.mask_asu()
+    cut = False
+
+    if cut:
+
+        mapin = mapout
+        mapout = os.path.join(os.environ['CCP4_SCR'],
+                              '%s-mapmask.map' % scratch)
+    
+        mapmask = Mapmask()
+        mapmask.set_working_directory(working_directory)
+        mapmask.set_mapin(mapin)
+        mapmask.set_mapout(mapout)
+        mapmask.set_symmetry(symmetry)
+        mapmask.mask_asu()
 
     mapin = mapout
     xyzout = os.path.join(os.environ['CCP4_SCR'], '%s-peakmax.pdb' % scratch)

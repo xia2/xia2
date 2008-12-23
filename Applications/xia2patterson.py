@@ -27,7 +27,14 @@ if __name__ == '__main__':
     else:
         symmetry = None
 
-    peaks = anomalous_patterson_jiffy(hklin, symmetry)
+    if len(sys.argv) > 4:
+        dmin, dmax = tuple(map(float, sys.argv[3:5]))
+    else:
+        dmin = None
+        dmax = None
+
+    peaks = anomalous_patterson_jiffy(hklin, symmetry,
+                                      dmin = dmin, dmax = dmax)
 
     for p in peaks:
         print '%6.2f %6.2f %6.2f %6.2f' % p
