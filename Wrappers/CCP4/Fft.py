@@ -50,7 +50,7 @@ def Fft(DriverType = None):
 
             return
 
-        def set_resolution(self, dmin, dmax):
+        def set_resolution_range(self, dmin, dmax):
             self._dmin = dmin
             self._dmax = dmax
             return
@@ -101,7 +101,7 @@ if __name__ == '__main__':
     fft.set_hklin(sys.argv[1])
     fft.set_mapout(sys.argv[2])
     fft.set_dataset(sys.argv[3])
-    fft.set_resolution(40, 1.8)
+    fft.set_resolution_range(40, 1.8)
     fft.set_exclude_term(900.0)
 
     print fft.patterson()
