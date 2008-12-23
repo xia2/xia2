@@ -53,6 +53,11 @@ def anomalous_patterson_jiffy(hklin, symmetry = None,
     if len(datasets) > 1:
         raise RuntimeError, 'more than one dataset for anomalous Patterson'
 
+    if 'DANO_%s' % datasets[0].split('/')[-1] in mtzdump.get_columns():
+        dataset = datasets[0].split('/')[-1]
+    else:
+        dataset = None
+
     hklout = os.path.join(os.environ['CCP4_SCR'], '%s-scaleit.mtz' % scratch)
 
     # find the maximum aceptable difference
@@ -76,7 +81,7 @@ def anomalous_patterson_jiffy(hklin, symmetry = None,
     fft.set_mapout(mapout)
     fft.set_resolution_range(dmin, dmax)
     fft.set_exclude_term(max_diff * max_diff)
-    fft.set_dataset(datasets[0].split('/')[-1])
+    fft.set_dataset(dataset)
     fft.patterson()
 
     mapin = mapout
