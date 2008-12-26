@@ -87,6 +87,8 @@ if __name__ == '__main__':
                 reference_peaks.append(
                     tuple(map(float, record.split()[5:8])))
 
+        occs = []
+
         for p in peaks:
             x, y, z, o = p
             for r in reference_peaks:
@@ -96,6 +98,12 @@ if __name__ == '__main__':
                              (y - ry) * (y - ry) +
                              (z - rz) * (z - rz)) < 2:
                     print '%6.2f %6.2f %6.2f %6.2f' % p
+                    occs.append(p[-1])
+
+        if occs:
+            print 'Average peak height: %6.2f' % (sum(occs) / len(occs))
+        else:
+            print 'No matching peaks found'
                              
                 
     
