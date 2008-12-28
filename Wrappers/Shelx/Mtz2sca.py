@@ -107,9 +107,6 @@ def Mtz2sca(DriverType = None):
                     scaout = '%s.sca' % \
                              (os.path.split(self._hklin)[-1][:-4])
                     
-            self.add_command_line(self._hklin)
-            self.add_command_line(scaout)
-
             if self._name:
                 p, P, m, M = self.find_name()
                 self.add_command_line('-p')
@@ -120,6 +117,9 @@ def Mtz2sca(DriverType = None):
                 self.add_command_line(m)
                 self.add_command_line('-M')
                 self.add_command_line(M)
+
+            self.add_command_line(self._hklin)
+            self.add_command_line(scaout)
 
             self.start()
             self.close_wait()
