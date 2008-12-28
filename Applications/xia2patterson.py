@@ -17,6 +17,7 @@ if not os.environ.has_key('XIA2CORE_ROOT'):
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Experts.PattersonExpert import anomalous_patterson_jiffy
+from Wrappers.CCP4.Cad import Cad
 
 if __name__ == '__main__':
 
@@ -68,6 +69,34 @@ if __name__ == '__main__':
     if (dmin and not dmax) or (dmax and not dmin):
         raise RuntimeError, 'only one resolution limit provided'
 
+    # if an input PDB file has been given, extract and use the
+    # unit cell constants for the calculation...
+
+    if reference:
+
+        unit_cell = None
+
+        for record in open(reference, 'r').readlines():
+            if 'CRYST1' in record[:6]:
+                unit_cell = tuple(map(float, record[8:55].split()))
+
+        if not unit_cell:
+            raise RuntimeError, 'CRYST1 record not found in %s' % reference
+
+        if not os.path.isabs(hklin):
+            hklin = os.path.join(os.getcwd(), hklin)
+            
+        hklout = os.path.join(os.environ['CCP4_SCR'], 'x2p-cad.mtz')
+        
+        cad = Cad()
+        cad.set_working_directory(os.environ['CCP4_SCR'])
+        cad.add_hklin(hklin)
+        cad.set_hklout(hklout)
+        cad.set_new_cell(unit_cell)
+        cad.update()    
+    
+        hklin = hklout
+
     peaks = anomalous_patterson_jiffy(hklin, symmetry,
                                       dmin = dmin, dmax = dmax)
 
@@ -101,7 +130,8 @@ if __name__ == '__main__':
                     occs.append(p[-1])
 
         if occs:
-            print 'Average peak height: %6.2f' % (sum(occs) / len(occs))
+            print 'Average peak height: %6.2f (%d)' % \
+                  (sum(occs) / len(occs), len(occs))
         else:
             print 'No matching peaks found'
                              

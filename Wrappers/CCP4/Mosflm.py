@@ -1773,9 +1773,11 @@ def Mosflm(DriverType = None):
             self.input('limits xmin 0.0 xmax %.1f ymin 0.0 ymax %.1f' % \
                        (lim_x, lim_y))            
 
-            # fudge factors to prevent Mosflm from being too fussy
+            # fudge factors to prevent Mosflm from being too fussy - 
+            # FIXME this should probably be resolution / wavelength
+            # dependent...
             self.input('separation close')
-            self.input('refinement residual 12.5')
+            self.input('refinement residual 15.0')
             self.input('refinement include partials')
 
             # set up the cell refinement - allowing quite a lot of
@@ -2105,7 +2107,7 @@ def Mosflm(DriverType = None):
 
             # fudge factors to prevent Mosflm from being too fussy
             self.input('separation close')
-            self.input('refinement residual 12.5')
+            self.input('refinement residual 15')
             self.input('refinement include partials')
 
             # compute the detector limits to use for this...

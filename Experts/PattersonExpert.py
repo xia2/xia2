@@ -27,6 +27,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
 from Wrappers.CCP4.Fft import Fft
+from Wrappers.CCP4.Cad import Cad
 from Wrappers.CCP4.Mtzdump import Mtzdump
 from Wrappers.CCP4.Peakmax import Peakmax
 from Wrappers.CCP4.Mapmask import Mapmask
