@@ -28,6 +28,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Wrappers.XIA.Mat2symop import Mat2symop
 from Wrappers.XIA.Symop2mat import Symop2mat
+from Handlers.Syminfo import Syminfo
 
 def _gen_rot_mat_x(theta_deg):
     '''Compute a matrix (stored as e11 e12 e13 e22 e23...) for a rotation
@@ -221,7 +222,50 @@ def lattice_to_spacegroup_number(lattice):
         raise RuntimeError, 'lattice %s unknown' % lattice
 
     return _lattice_to_spacegroup_number[lattice]
+
+def modulo(m, x):
+    '''Return x modulo m for floating values m, x.'''
+
+    while x < 0:
+        x += m
+    while x > m:
+        x -= m
+
+    return x
     
+def reduce(symops, v):
+    '''Reduce the vector v to the minimal standard i.e. the symmetry
+    related one with x < y < z ideally. x, y, z are fractional
+    coordinates.'''
+
+    from MatrixExpert import matvecmul
+
+    reduced = v
+
+    for s in symops:
+        v2 = matvecmul(s, v)
+
+        v2[0] = modulo(1.0, v2[0])
+        v2[1] = modulo(1.0, v2[1])
+        v2[2] = modulo(1.0, v2[2])
+        
+        if v2[0] > reduced[0]:
+            continue
+        if v2[0] < reduced[0]:
+            reduced = v2
+            continue
+        if v2[1] > reduced[1]:
+            continue
+        if v2[1] < reduced[1]:
+            reduced = v2
+            continue
+        if v2[2] > reduced[2]:
+            continue
+        if v2[2] < reduced[2]:
+            reduced = v2
+            continue
+
+    return reduced
 
 if __name__ == '__main__':
 
@@ -234,4 +278,53 @@ if __name__ == '__main__':
     # print compose_symops('k,l,h', 'l,h,k')
     # print compose_symops('k,l,h', '2h,k,l')
 
-    print compose_symops('1/2h+1/2k,-3/2h+1/2k,l', 'h,k,l')
+    # print compose_symops('1/2h+1/2k,-3/2h+1/2k,l', 'h,k,l')
+
+    # symops = Syminfo.get_symops(sys.argv[1])
+    # cell = tuple(map(float, sys.argv[2:8]))
+
+    symops = [symop_to_mat(s) for s in Syminfo.get_symops(sys.argv[1])]
+
+    # add inverse operations too...
+    inverse = []
+
+    for s in symops:
+        inverse.append([-1 * j for j in s])
+
+    symops += inverse
+    
+    from MatrixExpert import matvecmul, invert
+
+    # pull the SCALE1,2,3 records from the pdb file and
+    # compose the initial transformation matrix
+
+    pdb = sys.argv[2]
+
+    matrix = []
+
+    for record in open(pdb, 'r').readlines():
+        if 'SCALE' in record[:5]:
+            for token in record.split()[1:4]:
+                matrix.append(float(token))
+
+    if len(matrix) != 9:
+        raise RuntimeError, 'broken matrix'
+
+    # compose the inverse transformation matrix
+
+    inverse = invert(matrix)
+
+    for record in sys.stdin.readlines():
+        x, y, z, o = tuple(map(float, record.split()))
+        v = matvecmul(matrix, (x, y, z))
+
+        # reduce this to fractional coordinates
+        
+        v2 = reduce(symops, v)
+
+        # expand this back to orthogonal coordinates
+        
+        x, y, z = matvecmul(inverse, v2)
+        print '%6.2f %6.2f %6.2f %6.2f' % (x, y, z, o)
+                    
+

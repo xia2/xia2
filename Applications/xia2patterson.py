@@ -31,7 +31,7 @@ if __name__ == '__main__':
     # -l low resolution limit
     # -h high resolution limit
     # -r reference pdb
-    #
+    # -z rms
 
     import getopt
 
@@ -42,11 +42,12 @@ if __name__ == '__main__':
     reference = None
     dmin = None
     dmax = None
+    rms = 5.0
 
     if len(sys.argv) < 2:
         raise RuntimeError, '%s hklin [symmetry]' % sys.argv[0]
 
-    optlist, args = getopt.getopt(args, 'm:s:l:h:r:')
+    optlist, args = getopt.getopt(args, 'm:s:l:h:r:z:')
 
     if args:
         raise RuntimeError, 'unknown arguments: %s' % str(args)
@@ -65,6 +66,8 @@ if __name__ == '__main__':
             dmin = float(v)
         elif o == '-l':
             dmax = float(v)
+        elif o == '-z':
+            rms = float(v)
 
     if (dmin and not dmax) or (dmax and not dmin):
         raise RuntimeError, 'only one resolution limit provided'
@@ -98,7 +101,8 @@ if __name__ == '__main__':
         hklin = hklout
 
     peaks = anomalous_patterson_jiffy(hklin, symmetry,
-                                      dmin = dmin, dmax = dmax)
+                                      dmin = dmin, dmax = dmax,
+                                      rms = rms)
 
     if not reference:
 

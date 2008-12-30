@@ -37,7 +37,8 @@ def anomalous_patterson_jiffy(hklin, symmetry = None,
                               working_directory = os.getcwd(),
                               scratch = 'patterson-temp',
                               dmin = None,
-                              dmax = None):
+                              dmax = None,
+                              rms = 5.0):
     '''Run a Patterson calculation: scaleit -> fft -> mapmask -> peakmax
     with the intention of getting a meaningful list of peaks out. Scratch
     is a temporary name for temporary map files etc.'''
@@ -120,7 +121,7 @@ def anomalous_patterson_jiffy(hklin, symmetry = None,
     peakmax.set_working_directory(working_directory)
     peakmax.set_mapin(mapin)
     peakmax.set_xyzout(xyzout)
-    peakmax.set_rms(5.0)
+    peakmax.set_rms(rms)
     peakmax.peaksearch()
 
     # now read the peak list
