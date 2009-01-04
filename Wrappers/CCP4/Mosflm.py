@@ -745,6 +745,11 @@ def Mosflm(DriverType = None):
 
             ideal_last = int(90.0 / phi_width) + min_images
 
+            # FIXME logic in here I think is broken, as the indices may
+            # be large numbers...
+
+            Debug.write(ideal_last, images)
+
             if ideal_last in images:
                 ideal_middle = int(45.0 / phi_width) - min_images / 2
                 cell_ref_images.append((images[ideal_middle - 1],
