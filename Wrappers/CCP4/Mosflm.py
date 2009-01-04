@@ -750,7 +750,7 @@ def Mosflm(DriverType = None):
 
             Debug.write('%s %s' % (str(ideal_last), str(images)))
 
-            if ideal_last in images:
+            if ideal_last < len(images):
                 ideal_middle = int(45.0 / phi_width) - min_images / 2
                 cell_ref_images.append((images[ideal_middle - 1],
                                         images[ideal_middle - 2 + min_images]))
