@@ -759,8 +759,8 @@ def Mosflm(DriverType = None):
 
             else:
                 middle = int((max(images) + min(images) - min_images) / 2)
-                cell_ref_images.append((images[middle - 1],
-                                        images[middle - 2 +  min_images]))
+                cell_ref_images.append((middle - 1,
+                                        middle - 2 + min_images))
                 cell_ref_images.append((images[-min_images],
                                         images[-1]))
                 
