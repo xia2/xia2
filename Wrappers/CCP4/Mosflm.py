@@ -748,7 +748,7 @@ def Mosflm(DriverType = None):
             # FIXME logic in here I think is broken, as the indices may
             # be large numbers...
 
-            Debug.write(ideal_last, images)
+            Debug.write('%s %s' % (str(ideal_last), str(images)))
 
             if ideal_last in images:
                 ideal_middle = int(45.0 / phi_width) - min_images / 2
