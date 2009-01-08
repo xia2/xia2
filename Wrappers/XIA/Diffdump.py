@@ -46,7 +46,7 @@ import exceptions
 if __name__ == '__main__':
     debug = True
 else:
-    debug = False
+    debug = False 
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -232,7 +232,7 @@ def Diffdump(DriverType = None):
             self.start()
             self.close_wait()
 
-            self.check_for_errors()            
+            #self.check_for_errors()            
 
             # results were ok, so get all of the output out
             output = self.get_all_output()

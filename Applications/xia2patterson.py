@@ -127,12 +127,20 @@ if __name__ == '__main__':
             for r in reference_peaks:
                 rx, ry, rz = r
 
-                if math.sqrt((x - rx) * (x - rx) +
-                             (y - ry) * (y - ry) +
-                             (z - rz) * (z - rz)) < 2:
-                    print '%6.2f %6.2f %6.2f %6.2f' % p
-                    occs.append(p[-1])
+                if dmin:
+                    
+                    if math.sqrt((x - rx) * (x - rx) +
+                                 (y - ry) * (y - ry) +
+                                 (z - rz) * (z - rz)) < dmin:
+                        print '%6.2f %6.2f %6.2f %6.2f' % p
+                        occs.append(p[-1])
 
+                else:
+                    if math.sqrt((x - rx) * (x - rx) +
+                                 (y - ry) * (y - ry) +
+                                 (z - rz) * (z - rz)) < 2:
+                        print '%6.2f %6.2f %6.2f %6.2f' % p
+                        occs.append(p[-1])
         if occs:
             print 'Average peak height: %6.2f (%d)' % \
                   (sum(occs) / len(occs), len(occs))
