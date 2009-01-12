@@ -231,8 +231,15 @@ class XDSIndexerII(FrameProcessor,
             init.set_input_data_file(file, self._data_files[file])
 
         init.set_data_range(first, last)
-        init.set_background_range(self._indxr_images[0][0],
-                                  self._indxr_images[0][1])
+        # FIXME want to use a maximum of 5 degrees of data for background
+
+        background = list(self._indxr_images[0])
+        phi_width = self.get_header_item('phi_width')
+
+        if (background[1] - background[0]) * phi_width > 10.0:
+            background[1] = background[0] + nint(5.0 / phi_width) - 1
+        
+        init.set_background_range(background[0], background[1])
         for block in self._indxr_images:
             init.add_spot_range(block[0], block[1])
 
@@ -256,8 +263,17 @@ class XDSIndexerII(FrameProcessor,
             colspot.set_input_data_file(file, self._data_files[file])
 
         colspot.set_data_range(first, last)
-        colspot.set_background_range(self._indxr_images[0][0],
-                                     self._indxr_images[0][1])
+
+        # FIXME want to use a maximum of 5 degrees of data for background
+
+        background = list(self._indxr_images[0])
+        phi_width = self.get_header_item('phi_width')
+
+        if (background[1] - background[0]) * phi_width > 10.0:
+            background[1] = background[0] + nint(5.0 / phi_width) - 1
+        
+        colspot.set_background_range(background[0], background[1])
+        
         for block in self._indxr_images:
             colspot.add_spot_range(block[0], block[1])
 

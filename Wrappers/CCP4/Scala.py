@@ -170,6 +170,9 @@ def Scala(DriverType = None):
             self._project_crystal_dataset = { }
             self._runs = []
 
+            # output of refined value
+            self._sd_factors = { } 
+
             # for adding data on merge - one dname
             self._pname = None
             self._xname = None
@@ -593,7 +596,7 @@ def Scala(DriverType = None):
 
             self.input('cycles %d' % self._cycles)
 
-            if not self._chef_unmerged:
+            if not self._chef_unmerged or True:
 
                 if not self._sd_parameters and self._new_scala:
                     # restore old default behaviour
@@ -714,6 +717,20 @@ def Scala(DriverType = None):
                     else:
                         hklout_dict['only'] = hklout
                     hklout_files.append(hklout)
+
+                # parse out the refined standard deviation factors 
+
+                if 'Run    SdFac       SdB     SdAdd' in record:
+                    j = i + 2
+
+                    while not '=====' in output[j] and \
+                              not 'Layout' in output[j] and \
+                              not 'applet' in output[j]:
+                        lst = output[j].split()
+                        if lst:
+                            self._sd_factors[int(lst[0])] = map(float, lst[1:])
+
+                        j += 1
             
             self._scalr_scaled_reflection_files = hklout_dict
 
@@ -1102,6 +1119,9 @@ def Scala(DriverType = None):
                     total_summary[(pname, xname, dname)] = summary
 
             return total_summary
+
+        def get_sd_factors(self):
+            return self._sd_factors
 
     return ScalaWrapper()
 

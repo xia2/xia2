@@ -1300,10 +1300,46 @@ class XDSScaler(Scaler):
         # as correct so spacegroup assignment should just work...
 
         self._scalr_likely_spacegroups = spacegroups
+        spacegroup = self._scalr_likely_spacegroups[0]
+        
         self._scalr_reindex_operator = reindex_operator
 
-        Debug.write('Reindex operator: %s' % reindex_operator)
-        Debug.write('Will save this for later')
+        # FIXME don't save this for later - apply it now, should be
+        # safe as the measurements should now be on a sensible scale...
+
+        Debug.write('Reindexing the data before merging now...')
+
+        hklin = self._prepared_reflections
+        hklout = os.path.join(self.get_working_directory(),
+                              '%s_%s_reindex.mtz' % \
+                              (self._common_pname, self._common_xname))
+
+        FileHandler.record_temporary_file(hklout)
+        
+        ri = self._factory.Reindex()
+        ri.set_hklin(hklin)
+        ri.set_hklout(hklout)
+        ri.set_spacegroup(spacegroup)
+        ri.set_operator(reindex_operator)
+        ri.reindex()
+
+        # then sort the bloody file again!
+
+        hklin = hklout
+        hklout = os.path.join(self.get_working_directory(),
+                              '%s_%s_sorted.mtz' % \
+                              (self._common_pname, self._common_xname))
+
+        s = self._factory.Sortmtz()        
+        s.set_hklin(hklin)
+        s.set_hklout(hklout)
+ 
+        s.sort(vrset = -99999999.0)
+
+        self._prepared_reflections = hklout
+
+        # Debug.write('Reindex operator: %s' % reindex_operator)
+        # Debug.write('Will save this for later')
 
         # FIXME in here want to use REINDEX on the output of COMBAT
         # to get the setting right - in which case I will be able to
@@ -1709,7 +1745,65 @@ class XDSScaler(Scaler):
             self._scalr_statistics[key] = stats[key]
 
         self._scalr_highest_resolution = best_resolution
-                   
+
+        # also output the unmerged scalepack format files...
+
+        sc = self._factory.Scala()
+        sc.set_resolution(best_resolution)
+        sc.set_hklin(self._prepared_reflections)
+        sc.set_scalepack(os.path.join(self.get_working_directory(),
+                                      '%s_%s_unmerged.sca' % \
+                                      (self._common_pname,
+                                       self._common_xname)))
+
+        # this is now handled more elegantly by the Scala wrapper
+        
+        if sdadd_full == 0.0 and sdb_full == 0.0:
+            pass
+        else:
+            sc.add_sd_correction('both', 1.0, sdadd_full, sdb_full)
+
+        for epoch in epochs:
+            input = self._sweep_information[epoch]
+            start, end = (min(input['batches']), max(input['batches']))
+
+            if Flags.get_quick():
+                run_resolution_limit = resolution_limits[input['dname']]
+            else:
+                run_resolution_limit = 0.0
+
+            sc.add_run(start, end, pname = input['pname'],
+                       xname = input['xname'],
+                       dname = input['dname'],
+                       exclude = False,
+                       resolution = run_resolution_limit)
+
+        sc.set_hklout(os.path.join(self.get_working_directory(),
+                                   '%s_%s_temp.mtz' % \
+                                   (self._common_pname, self._common_xname)))
+        
+        if self.get_scaler_anomalous():
+            sc.set_anomalous()
+
+        sc.multi_merge()
+
+        # mark the temp files for deletion... etc.
+
+        self._scalr_scaled_reflection_files['sca_unmerged'] = { }
+
+        for dataset in sc.get_scaled_reflection_files().keys():
+            hklout = sc.get_scaled_reflection_files()[dataset]
+            FileHandler.record_temporary_file(hklout)
+            
+            # then mark the scalepack files for copying...
+
+            scalepack = os.path.join(os.path.split(hklout)[0],
+                                     os.path.split(hklout)[1].replace(
+                '_temp', '_unmerged').replace('.mtz', '.sca'))
+            self._scalr_scaled_reflection_files['sca_unmerged'][
+                key] = scalepack
+            FileHandler.record_data_file(scalepack)
+                           
         return
 
     def _scale_finish(self):
@@ -1729,7 +1823,7 @@ class XDSScaler(Scaler):
             # needs assigning e.g. from P 2 2 2 to P 21 21 21
             # bug 2511
             
-            if self._scalr_reindex_operator != 'h,k,l':
+            if self._scalr_reindex_operator != 'h,k,l' and False:
 
                 hklout = os.path.join(self.get_working_directory(),
                                       '%s_reindexed.mtz' % wavelength)
@@ -1753,7 +1847,8 @@ class XDSScaler(Scaler):
                     tuple(reindex.get_cell()))
                 self._scalr_cell = tuple(reindex.get_cell())
 
-            else:
+            elif False:
+            
                 # just assign the spacegroup - note that this may be
                 # a worthless step, but never mind...
 
@@ -1770,6 +1865,8 @@ class XDSScaler(Scaler):
                 reindex.set_hklout(hklout)
                 reindex.reindex()
                 hklin = hklout
+
+            Debug.write('Now skipping the post-merge reindex step...')
 
             truncate = self._factory.Truncate()
             truncate.set_hklin(hklin)

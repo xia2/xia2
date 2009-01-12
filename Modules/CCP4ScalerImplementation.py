@@ -1920,6 +1920,17 @@ class CCP4Scaler(Scaler):
                     loggraph[key])
 
 
+        # also look at the standard deviation factors which were used
+
+        sd_factors = sc.get_sd_factors()
+
+        Debug.write('Standard deviation factors')
+
+        for run in sorted(sd_factors.keys()):
+            record = [run] + list(sd_factors[run])
+            Debug.write('Run %d: %.3f %.3f %.3f %.3f %.3f %.3f' % \
+                        tuple(record))
+
         # finally put all of the results "somewhere useful"
         
         self._scalr_statistics = data
@@ -2048,8 +2059,12 @@ class CCP4Scaler(Scaler):
         
         sc.set_chef_unmerged(True)
 
+        sc.add_sd_correction('full', 2.0, sdadd_full, sdb_full)
+        sc.add_sd_correction('partial', 2.0, sdadd_partial, sdb_partial)
+
         if self.get_scaler_anomalous():
             sc.set_anomalous()
+            
         sc.set_tails()
         sc.scale()
 

@@ -712,6 +712,9 @@ class XDSIntegrater(FrameProcessor,
                     (correct.get_result('rmsd_pixel'),
                      correct.get_result('rmsd_phi')))
 
+        Debug.write('Error correction parameters: A=%.3f B=%.3f' % \
+                    correct.get_result('sdcorrection'))
+
         correct_deviations = (correct.get_result('rmsd_pixel'),
                               correct.get_result('rmsd_phi'))
 

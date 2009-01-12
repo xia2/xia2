@@ -136,6 +136,11 @@ def _parse_correct_lp(filename):
             postrefinement_stats['highest_resolution'] = float(
                 file_contents[j].split()[1])
 
+        if 'a          b              INPUT DATA SET' in file_contents[i]:
+            sdcorrection = map(float, file_contents[i + 1].split()[:2])
+            
+            postrefinement_stats['sdcorrection'] = tuple(sdcorrection)
+
     return postrefinement_stats
 
 if __name__ == '__main__':
