@@ -98,8 +98,13 @@
 # 0.2.7.0 - many big changes, made much more robust, added checks in for
 #           common failure points, fixed XDS REIDX records, reset reindex
 #           flags if eliminated lattice ...
+# 
+# 0.2.7.1 - panic ccp4 6.1 non-release
+# 
+# 0.2.7.2 - proper xia2 release - fixed upteen things including output 
+#           polish unmerged for XDS processing
 
-VersionNumber = "0.2.7.0"
+VersionNumber = "0.2.7.2"
 Version = "XIA2 %s" % VersionNumber
 CVSTag = "xia2-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2-%s" % VersionNumber

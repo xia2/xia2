@@ -418,6 +418,13 @@ END PROJECT TS01
       <li>Better determination of resolution limits.</li>
       <li>Correct merging of data from XSCALE (needs to invert the I=F*F
         scale factor...)</li>
+      <li>Fixed output of scalepack unmerged output using 3d pipeline.</li>
+      <li>Use fewer frames for background calculation with 3dii pipeline - 
+	speeds things up a fair amount.</li>
+      <li>Write chef output files with correct SD correction parameters.</li>
+      <li>Print SD correction factors for scala runs - if these are bigger 
+	than about 2 there is something properly wrong. Also print the 
+	same from XDS CORRECT step.</li>
     </ul>
 
     <p>Changes since 0.2.6.6</p>
@@ -781,7 +788,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Wed Sep 24 12:32:32 BST 2008
+Last modified: Mon Jan 12 16:35:47 GMT 2009
 <!-- hhmts end -->
   </body>
 </html>
