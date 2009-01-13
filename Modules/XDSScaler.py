@@ -1327,8 +1327,8 @@ class XDSScaler(Scaler):
         # they should be the same in all files so...
         Debug.write(
             'Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f' % \
-            tuple(reindex.get_cell()))
-        self._scalr_cell = tuple(reindex.get_cell())
+            tuple(ri.get_cell()))
+        self._scalr_cell = tuple(ri.get_cell())
 
         # then sort the bloody file again!
 
