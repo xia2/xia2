@@ -108,6 +108,9 @@ class XDSScaler(Scaler):
         
         self._spacegroup = None
         self._factory = CCP4Factory()
+
+        # junk which may prove to be useful...
+        self._reindexed_cell = None
     
         return    
 
@@ -1324,11 +1327,13 @@ class XDSScaler(Scaler):
         ri.reindex()
 
         # record the updated cell parameters...
-        # they should be the same in all files so...
+        # they should be the same in all files so... aah - if I set
+        # this in here it may break the scaling if the data are also
+        # reindexed! :o(
         Debug.write(
             'Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f' % \
             tuple(ri.get_cell()))
-        self._scalr_cell = tuple(ri.get_cell())
+        self._reindexed_cell = tuple(ri.get_cell())
 
         # then sort the bloody file again!
 
@@ -1815,7 +1820,7 @@ class XDSScaler(Scaler):
 
     def _scale_finish(self):
         
-        # next transform to F's from I's
+        # next transform to F's from I's etc.
 
         if len(self._tmp_scaled_refl_files.keys()) == 0:
             raise RuntimeError, 'no reflection files stored'
@@ -1910,6 +1915,10 @@ class XDSScaler(Scaler):
 
             # and record the reflection file..
             self._tmp_scaled_refl_files[wavelength] = hklout
+
+        # copy across the reindexed unit cell
+
+        self._scalr_cell = self._reindexed_cell
             
         # and cad together into a single data set - recalling that we already
         # have a standard unit cell... and remembering where the files go...
