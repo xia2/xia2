@@ -1323,6 +1323,13 @@ class XDSScaler(Scaler):
         ri.set_operator(reindex_operator)
         ri.reindex()
 
+        # record the updated cell parameters...
+        # they should be the same in all files so...
+        Debug.write(
+            'Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f' % \
+            tuple(reindex.get_cell()))
+        self._scalr_cell = tuple(reindex.get_cell())
+
         # then sort the bloody file again!
 
         hklin = hklout
