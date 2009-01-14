@@ -5,8 +5,8 @@
   </head>
   
   <body>
-    <img src="xia2-new-logo.gif" alt="xia2"></img>
-    <h1>Automated Data Reduction</h1>
+    <h1><img src="xia2-new-logo.gif" alt="xia2"></img>
+    Automated Data Reduction</h1>
 
     <p>New! I have now set up a mailing list for xia2 - xia2bb (at) dl.ac.uk.
       If you would like to subscribe to this - where announcements of new
@@ -42,6 +42,120 @@
       a little complex, but consists only of information you should have 
       to hand anyway - here is a simple example, a more complex example 
       can be found below.</p>
+
+    <h1>Download</h1>
+
+    <p>The current version, 0.2.7.2 can be obtained by following these 
+      links:</p>
+
+    <ul>
+      <li><a href="xia2-0.2.7.2.zip">Windows (as .zip file)</a></li>
+      <li><a href="xia2-0.2.7.2.tar.bz2">Unix (as .tar.bz2 file)</a></li>
+      <li><a href="xia2-0.2.7.2.tar.gz">Unix (as .tar.gz file)</a></li>
+    </ul>
+
+    <p>The second of these is licensed as per the CCP4 standard license.
+      The second tarball should be unpacked in the same place as the first.</p>
+
+    <p>All of the files are the same, simply packed for different platforms.
+      Inside are a number of precompiled jiffy programs and pointless and
+      othercell (also available from the CCP4 
+      <a href="http://www.ccp4.ac.uk/prerelease_page.php">prerelease</a>
+      pages) for convenience.</p>
+
+    <h1>Installation</h1>
+
+    <p>Since everything is precompiled, the only requirement is to unpack the
+      directory somewhere and edit the directory setup.bat, setup.csh or
+      setup.sh appropriately, for instance setting XIA2_HOME as 
+      /opt/px/xia/xia-0.2.6.5 if you unpacked the tarball in /opt/px/xia.
+      Note that this includes the xia-0.2.6.5 directory!</p>
+
+    <p>All that is then needed is to source this setup file and the application
+      xia2 should be available. Apologies to those (t)csh users out there
+      who found that the setup scripts were broken! They are fixed now...</p>
+
+    <h1>Input</h1>
+
+    There are two ways of running xia2 - with and without an input file,
+    an example of which follows below. If you just run
+
+<pre>
+xia2 /my/data/are/here
+</pre>
+
+    xia2 will do something sensible - in this case process all of the data,
+    scale all measurements as if they are from a single crystal and merge
+    the data from each wavelength separately. If only one wavelength is present
+    xia2 will assume that the data are a native data set - to separate 
+    anomalous pairs provide a heavy atom (at this time it doesn't matter 
+    what it is...) i.e.
+
+<pre>
+xia2 -atom se /my/data/are/here
+</pre>
+
+    Other options are (type just xia2 to get this list)
+
+<pre>
+Command-line options to xia2:
+[-2d] or [-3d] or [-3dii]
+[-parallel 4] (say, for XDS usage)
+[-resolution 2.8] (say, applies to all sweeps)
+[-freer_file free.mtz]
+[-quick]
+[-atom se] (say)
+[-reversephi]
+[-migrate_data]
+[-beam x,y]
+</pre>
+
+    Running ths way some assumptions are made:
+
+    <ul>
+      <li>All images are from one crystal only.</li>
+      <li>The scan, if present, was the one used to select the wavelengths 
+	for data collection. If more than one is present, the alphabetically
+	latest one will be used.</li>
+      <li>The sequence file, if present, should be in the one letter form
+	and all comment lines should begin with a character not in A-Z.
+	Again the alphabetically latest sequence file will be used.</li>
+      <li>If the sequence file is provided, and the atom is "se", then
+	xia2setup will assume that you are doing a SeMet experiment
+	and will provide an appropriate number of atoms per monomer - though
+	<b>you will still have to uncomment this</b> to include it,
+	in case it has guessed wrong.</li>
+    </ul>
+
+    <p>If you want to combine data from a number of crystals in the same
+      .xinfo file, then you will need to copy out all text from
+      BEGIN CRYSTAL to END CRYSTAL from one .xinfo file to the other.</p>
+    
+    <p>You should then load automatic.xinfo in your favourite editor, and 
+      check that the sequence looks correct and that the names are sensible
+      as well as checking that the epoch numbers are set correctly and
+      also that the wavelengths and beam centres are correct. If you 
+      provided a heavy atom there is a place to say how many to look for.</p>
+
+    <p>Finally, if you have labelit installed xia2 will run this 
+      to update the beam positions. If this happens, you will see a comment
+      to this effect above the BEAM records in the sweeps.</p>
+
+    The other mechanism for running xia2 is via a <i>xinfo</i> file, which 
+    explains the layout of the data set to xia2 explicitly. This is helpful
+    if you wish to only process a subset of the measurements, or want to
+    process data for an RIP experiment. A simple example of xinfo file
+    follow below, and more complex examples can be found here:
+
+    <ul>
+      <li><a href="NATIVE.xinfo">Native data</a></li>
+      <li><a href="SAD.xinfo">SAD data</a></li>
+      <li><a href="MAD.xinfo">MAD data</a></li>
+    </ul>
+
+    <p>More examples can be found in $DPA_ROOT/examples. Remember - you need 
+      to tell xia2 where to find your data! Answers to frequently asked
+      questions can be found <a href="faq.html">here</a>.</p>
 
     <pre>
 ! This is a demonstration .xinfo file which illustrates how to cope
@@ -111,6 +225,8 @@ END CRYSTAL INSULIN
 END PROJECT DEMONSTRATION
     </pre>
 
+    <h1>Demonstration Data: Cubic Insulin</h1>
+
     <p>This uses test images which are available from the links below. 
       Thanks to John Cowan for providing this test data!</p>
 
@@ -120,73 +236,6 @@ END PROJECT DEMONSTRATION
       <li><a href="demo.tar.gz">Unix (as .tar.gz file)</a></li>
     </ul>
 
-    <p>Here are a couple of templates - for native data from two sweeps, 
-      SAD data from one sweep, MAD data from three wavelengths - all 
-      you need to do is select an appropriate one and add your own
-      information! Please note - if you wish to comment something out
-      from a .xinfo file, simply at a "!" at the beginning 
-      of the appropriate lines.</p>
-
-    <ul>
-      <li><a href="NATIVE.xinfo">Native data</a></li>
-      <li><a href="SAD.xinfo">SAD data</a></li>
-      <li><a href="MAD.xinfo">MAD data</a></li>
-    </ul>
-
-    <p>More examples can be found in $DPA_ROOT/examples. Remember - you need 
-      to tell xia2 where to find your data! Answers to frequently asked
-      questions can be found <a href="faq.html">here</a>.</p>
-
-    <p>To assist in generating the .xinfo file I have written a small
-      program xia2setup, which is passed in the directory where your data
-      are stored, and will write to the standard output an illustrative
-      .xinfo file. This will number the wavelengths and sweeps, and so 
-      will not add sensible information, and will get all of it's information
-      from the image headers, which are sometimes unreliable.</p>
-    
-    <p>The new program is run thus:</p>
-
-    <pre>
-xia2setup -atom se -project foo -crystal bar \
--beam 109,105 /path/to/image/directory > automatic.xinfo
-    </pre>
-
-    <p>This will look for sequence files (.seq) scan files (.scan) and
-      images files (.img, .osc, .mar345, .mccd, .cbf) and make a good
-      guess as to what is going on. If you have a scan file in there and
-      you have chooch installed, then xia2 will have a stab at identifying
-      the different wavelengths. This is a guess and may be wrong. For this
-      to work I have made the following assumptions:</p>
-
-    <ul>
-      <li>All images are from one crystal only.</li>
-      <li>The scan, if present, was the one used to select the wavelengths 
-	for data collection. If more than one is present, the alphabetically
-	latest one will be used.</li>
-      <li>The sequence file, if present, should be in the one letter form
-	and all comment lines should begin with a character not in A-Z.
-	Again the alphabetically latest sequence file will be used.</li>
-      <li>If the sequence file is provided, and the atom is "se", then
-	xia2setup will assume that you are doing a SeMet experiment
-	and will provide an appropriate number of atoms per monomer - though
-	<b>you will still have to uncomment this</b> to include it,
-	in case it has guessed wrong.</li>
-    </ul>
-
-    <p>If you want to combine data from a number of crystals in the same
-      .xinfo file, then you will need to copy out all text from
-      BEGIN CRYSTAL to END CRYSTAL from one .xinfo file to the other.</p>
-    
-    <p>You should then load automatic.xinfo in your favourite editor, and 
-      check that the sequence looks correct and that the names are sensible
-      as well as checking that the epoch numbers are set correctly and
-      also that the wavelengths and beam centres are correct. If you 
-      provided a heavy atom there is a place to say how many to look for.</p>
-
-    <p>Finally, if you have labelit installed xia2setup will run this 
-      to update the beam positions. If this happens, you will see a comment
-      to this effect above the BEAM records in the sweeps.</p>
-    
     <h1>Platforms</h1>
     
     <p>The following platforms are supported (see notes at bottom of page
@@ -241,37 +290,6 @@ xia2setup -atom se -project foo -crystal bar \
       users are reminded that it is their responsibility to have properly
       obtained licenses for this software.</p>
 
-    <h1>Download</h1>
-
-    <p>The current version, 0.2.7.2 can be obtained by following these 
-      links:</p>
-
-    <ul>
-      <li><a href="xia2-0.2.7.2.zip">Windows (as .zip file)</a></li>
-      <li><a href="xia2-0.2.7.2.tar.bz2">Unix (as .tar.bz2 file)</a></li>
-      <li><a href="xia2-0.2.7.2.tar.gz">Unix (as .tar.gz file)</a></li>
-    </ul>
-
-    <p>The second of these is licensed as per the CCP4 standard license.
-      The second tarball should be unpacked in the same place as the first.</p>
-
-    <p>All of the files are the same, simply packed for different platforms.
-      Inside are a number of precompiled jiffy programs and pointless and
-      othercell (also available from the CCP4 
-      <a href="http://www.ccp4.ac.uk/prerelease_page.php">prerelease</a>
-      pages) for convenience.</p>
-
-    <h1>Installation</h1>
-
-    <p>Since everything is precompiled, the only requirement is to unpack the
-      directory somewhere and edit the directory setup.bat, setup.csh or
-      setup.sh appropriately, for instance setting XIA2_HOME as 
-      /opt/px/xia/xia-0.2.6.5 if you unpacked the tarball in /opt/px/xia.
-      Note that this includes the xia-0.2.6.5 directory!</p>
-
-    <p>All that is then needed is to source this setup file and the application
-      xia2 should be available. Apologies to those (t)csh users out there
-      who found that the setup scripts were broken! They are fixed now...</p>
 
     <h1>Usage</h1>
 
@@ -788,7 +806,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Wed Jan 14 10:55:35 GMT 2009
+Last modified: Wed Jan 14 14:00:53 GMT 2009
 <!-- hhmts end -->
   </body>
 </html>
