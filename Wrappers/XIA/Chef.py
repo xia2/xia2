@@ -119,14 +119,17 @@ def Chef(DriverType = None):
 
             # FIXME should check the status here...
 
-            for record in self.get_all_output():
-                print record[:-1]
-
             results = self.parse_ccp4_loggraph()
-            print results
 
+            rd = transpose_loggraph(
+                results['Cumulative RD analysis'])
 
+            dose = rd['1_FIXME_DOSE']
+            overall = rd['2_Overall']
 
+            for j in range(len(dose)):
+                print '%8.0f %5.2f' % (float(dose[j]), float(overall[j]))
+            
 
     return ChefWrapper()
         
