@@ -101,7 +101,7 @@ def Chef(DriverType = None):
 
             self.start()
 
-            self.input('print rdcu comp')
+            self.input('print chi comp')
 
             if self._anomalous:
                 self.input('anomalous on')
@@ -123,33 +123,10 @@ def Chef(DriverType = None):
                 print record[:-1]
 
             results = self.parse_ccp4_loggraph()
-            rd = transpose_loggraph(
-                results['Cumulative RD analysis'])
+            print results
 
-            keys = rd.keys()
-            keys.sort()
 
-            resolutions = { }
 
-            for k in keys:
-                ident = int(k.split('_')[0])
-
-                if ident > 2:
-                    resolution = float(k.split('_')[1])
-
-                    resolutions[ident] = resolution
-
-            ids = resolutions.keys()
-            ids.sort()
-
-            for ident in ids:
-                key = '%d_%.4f' % (ident, resolutions[ident])
-                use = rd[key]
-
-                print ident, resolutions[ident], use
-
-            return
-        
 
     return ChefWrapper()
         
@@ -160,6 +137,7 @@ if __name__ == '__main__':
                           'TestData')
 
     chef = Chef()
+    chef.write_log_file('chef.log')
 
     for hklin in ['TS03_12287_doser_INFL.mtz',
                   'TS03_12287_doser_LREM.mtz',
@@ -169,7 +147,7 @@ if __name__ == '__main__':
     chef.set_anomalous(True)
     chef.set_width(30)
     chef.set_max(1400)
-    chef.set_resolution(1.6)
+    chef.set_resolution(1.8)
     chef.set_labin('DOSE')
 
     chef.run()
