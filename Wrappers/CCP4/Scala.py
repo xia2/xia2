@@ -822,6 +822,7 @@ def Scala(DriverType = None):
             # dead simple...
 
             self.input('scales constant')
+            self.input('exclude sdmin 2.0')
 
             if self._resolution:
                 self.input('resolution %f' % self._resolution)

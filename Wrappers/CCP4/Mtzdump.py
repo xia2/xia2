@@ -52,6 +52,8 @@ def Mtzdump(DriverType = None):
             self._reflections = 0
             self._resolution_range = (0, 0)
 
+            self._column_ranges = { }
+
             self._intensities = { }
 
             return
@@ -200,8 +202,9 @@ def Mtzdump(DriverType = None):
         def dump(self):
             '''Actually print the contents of the mtz file header.'''
 
-            self.check_hklin()
+            self._column_ranges = { }
 
+            self.check_hklin()
             self.start()
             self.close_wait()
 
@@ -290,6 +293,26 @@ def Mtzdump(DriverType = None):
                 if 'No. of reflections used in FILE STATISTICS' in line:
                     self._reflections = int(line.split()[-1])
 
+                if 'OVERALL FILE STATISTICS' in line:
+                    j = i + 6
+
+                    line = output[j][:-1]
+                    
+                    while not 'No. of reflections' in line:
+                        if not line.strip() or '*****' in line:
+                            j += 1
+                            line = output[j][:-1]
+                            continue
+
+                        # cut out the right tokens from the text
+                        mn = float(line[9:16].strip())
+                        mx = float(line[16:24].strip())
+                        col = line.split()[-1]
+                        line = output[j][:-1]
+                        j += 1
+                        
+                        self._column_ranges[col] = (mn, mx)
+                                    
             self._batches = batches
                     
             # status token has a spare "of mtzdump" to get rid of
@@ -363,6 +386,10 @@ def Mtzdump(DriverType = None):
         def get_batches(self):
             '''Get a list of batches found in this reflection file.'''
             return self._batches
+
+        def get_column_range(self, column):
+            '''Get the value ranges for this column.'''
+            return self._column_ranges.get(column, (0.0, 0.0))
 
         def get_reflections(self):
             '''Return the number of reflections found in the reflection

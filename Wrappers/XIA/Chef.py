@@ -38,6 +38,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
 from lib.Guff import transpose_loggraph
+from Wrappers.CCP4.Mtzdump import Mtzdump
 
 def Chef(DriverType = None):
     '''A factory for wrappers for the chef.'''
@@ -154,3 +155,8 @@ if __name__ == '__main__':
     chef.set_labin('DOSE')
 
     chef.run()
+
+    md = Mtzdump()
+    md.set_hklin(os.path.join(source, 'TS03_12287_doser_INFL.mtz'))
+    md.dump()
+    print md.get_column_range('DOSE')
