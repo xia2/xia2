@@ -140,9 +140,10 @@ if __name__ == '__main__':
     source = os.path.join(os.environ['X2TD_ROOT'], 'Test', 'Chef',
                           'TestData')
 
-    # first find the maximum dose...
+    # first find the maximum dose... and minimum resolution range
 
     dmax = 0.0
+    dmin = 100.0
 
     for hklin in ['TS03_12287_doser_INFL.mtz',
                   'TS03_12287_doser_LREM.mtz',
@@ -151,7 +152,8 @@ if __name__ == '__main__':
         md = Mtzdump()
         md.set_hklin(os.path.join(source, hklin))
         md.dump()
-        dmax = max(dmax, max(md.get_column_range('DOSE')))
+        dmax = max(dmax, max(md.get_column_range('DOSE')[:2]))
+        dmin = min(dmin, md.get_column_range('DOSE')[2])
 
     chef = Chef()
     chef.write_log_file('chef.log')
@@ -162,9 +164,9 @@ if __name__ == '__main__':
         chef.add_hklin(os.path.join(source, hklin))
 
     chef.set_anomalous(True)
-    chef.set_width(30)
+    chef.set_width(0.01 * dmax)
     chef.set_max(dmax)
-    chef.set_resolution(1.8)
+    chef.set_resolution(dmin)
     chef.set_labin('DOSE')
 
     chef.run()
