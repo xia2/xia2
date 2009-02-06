@@ -608,6 +608,18 @@ def Scala(DriverType = None):
                     # the input order for these is sdfac, sdB, sdadd...
                     parameters = self._sd_parameters[key]
 
+                    if key == 'both' and parameters == (1.0, 0.0, 0.0):
+                        # use the FIXED default
+                        if self._new_scala:
+                            self.input(
+                                'sdcorrection fixsdb noadjust norefine ' + \
+                            'both 1.0 0.0')
+                        else:
+                            self.input(
+                                'sdcorrection noadjust both 1.0 0.0')
+                            
+                        continue
+
                     if self._new_scala:
                         self.input(
                             'sdcorrection fixsdb adjust norefine %s %f %f %f' % \
@@ -846,6 +858,18 @@ def Scala(DriverType = None):
                 # the input order for these is sdfac, sdB, sdadd...
                 parameters = self._sd_parameters[key]
 
+                if key == 'both' and parameters == (1.0, 0.0, 0.0):
+                    # use the FIXED default
+                    if self._new_scala:
+                        self.input(
+                            'sdcorrection fixsdb noadjust norefine both ' + \
+                            '1.0 0.0')
+                    else:
+                        self.input(
+                            'sdcorrection noadjust both 1.0 0.0')
+                        
+                    continue
+                        
                 if self._new_scala:
                     self.input(
                         'sdcorrection fixsdb adjust norefine %s %f %f %f' % \

@@ -307,11 +307,13 @@ def Mtzdump(DriverType = None):
                         # cut out the right tokens from the text
                         mn = float(line[9:16].strip())
                         mx = float(line[16:24].strip())
+                        dmax = float(line.split()[-4])
+                        dmin = float(line.split()[-3])
                         col = line.split()[-1]
                         line = output[j][:-1]
                         j += 1
                         
-                        self._column_ranges[col] = (mn, mx)
+                        self._column_ranges[col] = (mn, mx, dmin, dmax)
                                     
             self._batches = batches
                     
