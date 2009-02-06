@@ -2353,8 +2353,10 @@ class CCP4Scaler(Scaler):
         # then go for it!
 
         hklout = os.path.join(self.get_working_directory(),
-                              '%s_%s_free.mtz' % (self._common_pname,
-                                                  self._common_xname))
+                              '%s_%s_free_temp.mtz' % (self._common_pname,
+                                                       self._common_xname))
+
+        FileHandler.record_temporary_file(hklout)
 
         if self.get_scaler_freer_file():
             # e.g. via .xinfo file
@@ -2388,6 +2390,18 @@ class CCP4Scaler(Scaler):
             f.set_hklin(self._scalr_scaled_reflection_files['mtz_merged'])
             f.set_hklout(hklout)
             f.add_free_flag()
+
+        # then check that this set are complete
+
+        hklin = hklout
+        hklout = os.path.join(self.get_working_directory(),
+                              '%s_%s_free.mtz' % (self._common_pname,
+                                                  self._common_xname))
+        
+        f = self._factory.Freerflag()
+        f.set_hklin(hklin)
+        f.set_hklout(hklout)
+        f.complete_free_flag()
 
         # remove 'mtz_merged' from the dictionary - this is made
         # redundant by the merged free...

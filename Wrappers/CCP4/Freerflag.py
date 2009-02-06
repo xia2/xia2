@@ -44,6 +44,18 @@ def Freerflag(DriverType = None):
             self.check_ccp4_errors()
             
             return
+
+        def complete_free_flag(self):
+            self.check_hklin()
+            self.check_hklout()
+
+            self.start()
+            self.input('complete FREE=FreeR_flag')
+            self.close_wait()
+            self.check_for_errors()
+            self.check_ccp4_errors()
+            
+            return
         
     return FreerflagWrapper()
 
