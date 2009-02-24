@@ -64,9 +64,9 @@ def real_to_reciprocal(a, b, c, alpha, beta, gamma):
 
     # compute reciprocal lengths
 
-    as = b * c * sa / V
-    bs = c * a * sb / V
-    cs = a * b * sg / V
+    a_s = b * c * sa / V
+    b_s = c * a * sb / V
+    c_s = a * b * sg / V
 
     # compute reciprocal angles
 
@@ -78,7 +78,7 @@ def real_to_reciprocal(a, b, c, alpha, beta, gamma):
     betas = math.acos(cbs) / rtod
     gammas = math.acos(cgs) / rtod
    
-    return as, bs, cs, alphas, betas, gammas
+    return a_s, b_s, c_s, alphas, betas, gammas
 
 def B(a, b, c, alpha, beta, gamma):
     '''Compute a B matrix from reciprocal cell parameters.'''
@@ -242,10 +242,10 @@ def main(mtzdump):
 
     a, b, c, alpha, beta, gamma = cell
 
-    as, bs, cs, alphas, betas, gammas = real_to_reciprocal(
+    a_s, b_s, c_s, alphas, betas, gammas = real_to_reciprocal(
         a, b, c, alpha, beta, gamma)
 
-    a_, b_, c_ = B(as, bs, cs, alphas, betas, gammas)
+    a_, b_, c_ = B(a_s, b_s, c_s, alphas, betas, gammas)
 
     j = 0
 
@@ -316,10 +316,10 @@ def determine_scaled_resolution(hklin, isigma_limit):
     # transform cell to vector form
 
     a, b, c, alpha, beta, gamma = cell
-    as, bs, cs, alphas, betas, gammas = real_to_reciprocal(
+    a_s, b_s, c_s, alphas, betas, gammas = real_to_reciprocal(
         a, b, c, alpha, beta, gamma)
     
-    a_, b_, c_ = B(as, bs, cs, alphas, betas, gammas)    
+    a_, b_, c_ = B(a_s, b_s, c_s, alphas, betas, gammas)    
 
     reflections = []
 
