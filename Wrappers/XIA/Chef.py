@@ -63,6 +63,8 @@ def Chef(DriverType = None):
             self._resolution = 0.0
 
             self._p_crd = True
+
+            self._completeness = { }
             
             return
 
@@ -89,6 +91,12 @@ def Chef(DriverType = None):
         def set_labin(self, labin):
             self._b_labin = labin
             return
+
+        def get_completeness(self, wavelength):
+            return self._completeness[wavelength]
+
+        def get_completeness_datasets(self):
+            return self._completeness.keys()
 
         def run(self):
             '''Actually run chef...'''
@@ -120,6 +128,55 @@ def Chef(DriverType = None):
 
             # FIXME should check the status here...
 
+            # read out the completeness curves...
+
+            output = self.get_all_output()
+
+            all_doses = []
+
+            for j in range(len(output)):
+                record = output[j]
+                if 'Completeness vs. BASELINE' in record:
+                    dataset = record.split()[-1]
+                    completeness = []
+                    k = j + 2
+                    record = output[k]
+                    while not 'Expected' in record and not '$TABLE' in record:
+                        completeness.append((float(record.split()[0]),
+                                             float(record.split()[-1])))
+                        dose = float(record.split()[0])
+
+                        if not dose in all_doses:
+                            all_doses.append(dose)
+
+                        k += 1
+                        record = output[k]
+
+                        
+                    self._completeness[dataset] = completeness
+
+            # now jimmy these..
+
+            for dataset in self._completeness.keys():
+                completeness = self._completeness[dataset]
+                cmax = completeness[-1][1]
+                cnew = []
+
+                # hash this up
+                ctable = { }
+                for c in completeness:
+                    ctable[c[0]] = c[1]
+                
+                for dose in all_doses:
+                    if dose in ctable:
+                        cnew.append((dose, ctable[dose]))
+                    else:
+                        cnew.append((dose, cmax))
+
+                self._completeness[dataset] = cnew
+
+            # done jimmying
+
             results = self.parse_ccp4_loggraph()
 
             rd = transpose_loggraph(
@@ -128,9 +185,10 @@ def Chef(DriverType = None):
             dose = rd['1_FIXME_DOSE']
             overall = rd['2_Overall']
 
-            for j in range(len(dose)):
-                print '%8.0f %5.2f' % (float(dose[j]), float(overall[j]))
-            
+            # for j in range(len(dose)):
+            # print '%8.0f %5.2f' % (float(dose[j]), float(overall[j]))
+
+                
 
     return ChefWrapper()
         
@@ -143,7 +201,7 @@ if __name__ == '__main__':
     # first find the maximum dose... and minimum resolution range
 
     dmax = 0.0
-    dmin = 100.0
+    dmin = 0.0
 
     for hklin in ['TS03_12287_doser_INFL.mtz',
                   'TS03_12287_doser_LREM.mtz',
@@ -153,7 +211,7 @@ if __name__ == '__main__':
         md.set_hklin(os.path.join(source, hklin))
         md.dump()
         dmax = max(dmax, max(md.get_column_range('DOSE')[:2]))
-        dmin = min(dmin, md.get_column_range('DOSE')[2])
+        dmin = max(dmin, md.get_column_range('DOSE')[2])
 
     chef = Chef()
     chef.write_log_file('chef.log')
@@ -164,11 +222,56 @@ if __name__ == '__main__':
         chef.add_hklin(os.path.join(source, hklin))
 
     chef.set_anomalous(True)
-    chef.set_width(0.01 * dmax)
-    chef.set_max(dmax)
+    chef.set_width(5.0)
+    chef.set_max(1400)
     chef.set_resolution(dmin)
     chef.set_labin('DOSE')
 
     chef.run()
 
+    # now gather up the completeness curves to figure out the starting
+    # point for the analysis
 
+    wavelengths = chef.get_completeness_datasets()
+
+    start_min = 1440
+
+    for w in wavelengths:
+        completeness = chef.get_completeness(w)
+        for comp in completeness:
+            d, c = comp
+
+            if c > 0.5:
+                if start_min > d:
+                    start_min = d
+                break
+
+    # now code this up for MAD - want two relatively complete wavelengths...
+    # slightly hacky - add the completeness values together then stop when
+    # this gets to say 1.9... assumes we have an inscribed circle on the
+    # detector... bugger, this is slightly complicated by the fact that the
+    # completeness is not written out beyond the maximum dose. Fudge this.
+
+    total_comp = { }
+
+    for w in wavelengths:
+        completeness = chef.get_completeness(w)
+        for comp in completeness:
+            d, c = comp
+
+            if not d in total_comp:
+                total_comp[d] = 0.0
+
+            total_comp[d] += c
+
+    doses = sorted(total_comp.keys())
+
+    end_min = 0.0
+
+    for d in doses:
+        if total_comp[d] > 1.8:
+            end_min = d
+            break
+
+    print 'Establish the baseline from %f to %f' % (start_min, end_min)
+        
