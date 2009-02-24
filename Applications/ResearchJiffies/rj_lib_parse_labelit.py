@@ -1,10 +1,14 @@
 # odds and sods to parse labelit stuff
 
+import os
+
 def rj_parse_labelit_log(labelit_log):
     beam = None
     lattice = None
     metric = None
     cell = None
+
+    image = open(labelit_log, 'r').readlines()[0].strip()
 
     for record in open(labelit_log, 'r').readlines():
         if 'Beam center x' in record:
@@ -17,22 +21,28 @@ def rj_parse_labelit_log(labelit_log):
             lattice = tokens[7]
             cell = tuple(map(float, tokens[8:14]))
 
+    if not image:
+        raise RuntimeError, 'image not found'
+
+    if not os.path.exists(image):
+        raise RuntimeError, 'image does not exist'
+
     if not beam:
         raise RuntimeError, 'beam centre not found'
 
     if not lattice:
         raise RuntimeError, 'lattice not found'
 
-    return beam, lattice, metric, cell
+    return beam, lattice, metric, cell, image
 
 if __name__ == '__main__':
 
     import sys
     
-    beam, lattice, metric, cell = rj_parse_labelit_log(sys.argv[1])
+    beam, lattice, metric, cell, image = rj_parse_labelit_log(sys.argv[1])
 
     print 'Beam centre: %.2f %.2f' % beam
     print 'Lattice / metric: %s / %.3f' % (lattice, metric)
     print 'Cell: %.2f %.2f %.2f %.2f %.2f %.2f' % cell
-
+    print 'Image: %s' % image
     
