@@ -77,6 +77,10 @@ def no_images(labelit_log):
         output = rj_run_job('labelit.screen --index_only',
                             image_names, [])
         t1 = time.time()
+
+        for record in output:
+            print record[:-1]
+
         times.append((t1 - t0))
         
         b, l, m, c, i = rj_parse_labelit_log(output)
