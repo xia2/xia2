@@ -2,15 +2,18 @@
 
 import os
 
-def rj_parse_labelit_log(labelit_log):
+def rj_parse_labelit_log_file(labelit_log):
+    return rj_parse_labelit_log(open(labelit_log, 'r').readlines())
+
+def rj_parse_labelit_log(labelit_log_lines):
     beam = None
     lattice = None
     metric = None
     cell = None
 
-    image = open(labelit_log, 'r').readlines()[0].strip()
+    image = labelit_log_lines[0].strip()
 
-    for record in open(labelit_log, 'r').readlines():
+    for record in labelit_log_lines:
         if 'Beam center x' in record:
             tokens = record.replace('mm', ' ').split()
             beam = float(tokens[3]), float(tokens[6])
@@ -39,7 +42,7 @@ if __name__ == '__main__':
 
     import sys
     
-    beam, lattice, metric, cell, image = rj_parse_labelit_log(sys.argv[1])
+    beam, lattice, metric, cell, image = rj_parse_labelit_log_file(sys.argv[1])
 
     print 'Beam centre: %.2f %.2f' % beam
     print 'Lattice / metric: %s / %.3f' % (lattice, metric)
