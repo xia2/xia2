@@ -11,7 +11,12 @@ def rj_parse_labelit_log(labelit_log_lines):
     metric = None
     cell = None
 
-    image = labelit_log_lines[0].strip()
+    j = 0
+
+    while 'Non-zero two-theta' in labelit_log_lines[j].strip():
+        j += 1
+    
+    image = labelit_log_lines[j].strip()
 
     for record in labelit_log_lines:
         if 'Beam center x' in record:
