@@ -1771,13 +1771,23 @@ def Mosflm(DriverType = None):
             # fixme this will probably not work well for non-square
             # detectors...
 
-            lim_x = min(beam[0], detector_width - beam[0])
-            lim_y = min(beam[1], detector_height - beam[1])
+            # FIXME 25/FEB/09 - replace this with limits xscan and yscan
+            # which are relative to the detector centre not the direct
+            # beam coordinate...
 
-            Debug.write('Detector limits: %.1f %.1f' % (lim_x, lim_y))
+            # lim_x = min(beam[0], detector_width - beam[0])
+            # lim_y = min(beam[1], detector_height - beam[1])
 
-            self.input('limits xmin 0.0 xmax %.1f ymin 0.0 ymax %.1f' % \
-                       (lim_x, lim_y))            
+            # Debug.write('Detector limits: %.1f %.1f' % (lim_x, lim_y))
+
+            # self.input('limits xmin 0.0 xmax %.1f ymin 0.0 ymax %.1f' % \
+            # (lim_x, lim_y))            
+
+            lim_x = 0.5 * detector_width
+            lim_y = 0.5 * detector_height
+
+            Debug.write('Scanner limits: %.1f %.1f' % (lim_x, lim_y))
+            self.input('limits xscan %f yscan %f' % (lim_x, lim_y))
 
             # fudge factors to prevent Mosflm from being too fussy - 
             # FIXME this should probably be resolution / wavelength
@@ -2129,13 +2139,19 @@ def Mosflm(DriverType = None):
             # fixme this will probably not work well for non-square
             # detectors...
 
-            lim_x = min(beam[0], detector_width - beam[0])
-            lim_y = min(beam[1], detector_height - beam[1])
+            # lim_x = min(beam[0], detector_width - beam[0])
+            # lim_y = min(beam[1], detector_height - beam[1])
 
-            Debug.write('Detector limits: %.1f %.1f' % (lim_x, lim_y))
+            # Debug.write('Detector limits: %.1f %.1f' % (lim_x, lim_y))
 
-            self.input('limits xmin 0.0 xmax %.1f ymin 0.0 ymax %.1f' % \
-                       (lim_x, lim_y))            
+            # self.input('limits xmin 0.0 xmax %.1f ymin 0.0 ymax %.1f' % \
+            # (lim_x, lim_y))            
+
+            lim_x = 0.5 * detector_width
+            lim_y = 0.5 * detector_height
+
+            Debug.write('Scanner limits: %.1f %.1f' % (lim_x, lim_y))
+            self.input('limits xscan %f yscan %f' % (lim_x, lim_y))
 
             # set up the cell refinement - allowing quite a lot of
             # refinement for tricky cases (e.g. 7.2 SRS insulin SAD
@@ -2907,13 +2923,19 @@ def Mosflm(DriverType = None):
             # fixme this will probably not work well for non-square
             # detectors...
 
-            lim_x = min(beam[0], detector_width - beam[0])
-            lim_y = min(beam[1], detector_height - beam[1])
+            # lim_x = min(beam[0], detector_width - beam[0])
+            # lim_y = min(beam[1], detector_height - beam[1])
 
-            Debug.write('Detector limits: %.1f %.1f' % (lim_x, lim_y))
+            # Debug.write('Detector limits: %.1f %.1f' % (lim_x, lim_y))
 
-            self.input('limits xmin 0.0 xmax %.1f ymin 0.0 ymax %.1f' % \
-                       (lim_x, lim_y))            
+            # self.input('limits xmin 0.0 xmax %.1f ymin 0.0 ymax %.1f' % \
+            # (lim_x, lim_y))            
+
+            lim_x = 0.5 * detector_width
+            lim_y = 0.5 * detector_height
+
+            Debug.write('Scanner limits: %.1f %.1f' % (lim_x, lim_y))
+            self.input('limits xscan %f yscan %f' % (lim_x, lim_y))
 
             if self._mosflm_postref_fix_mosaic:
                 self.input('postref fix mosaic')
@@ -3294,11 +3316,17 @@ def Mosflm(DriverType = None):
             detector_height = self._fp_header['size'][1] * \
                               self._fp_header['pixel'][1]
 
-            lim_x = min(beam[0], detector_width - beam[0])
-            lim_y = min(beam[1], detector_height - beam[1])
+            # lim_x = min(beam[0], detector_width - beam[0])
+            # lim_y = min(beam[1], detector_height - beam[1])
 
-            self.input('limits xmin 0.0 xmax %.1f ymin 0.0 ymax %.1f' % \
-                       (lim_x, lim_y))            
+            # self.input('limits xmin 0.0 xmax %.1f ymin 0.0 ymax %.1f' % \
+            # (lim_x, lim_y))            
+
+            lim_x = 0.5 * detector_width
+            lim_y = 0.5 * detector_height
+
+            Debug.write('Scanner limits: %.1f %.1f' % (lim_x, lim_y))
+            self.input('limits xscan %f yscan %f' % (lim_x, lim_y))
 
             if self._mosflm_postref_fix_mosaic:
                 self.input('postref fix mosaic')
