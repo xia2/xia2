@@ -76,11 +76,13 @@ def LabelitMosflmScript(DriverType = None):
                          ).readlines()
             matrix = output[2:11]
 
-            # also check for the beam centre in mosflm land!
+            # also check for the beam centre in mosflm land! - ignoring
+            # SWUNG OUT though I should probably check the two-theta
+            # value too...
 
             for o in output:
                 if 'BEAM' in o[:4]:
-                    self._mosflm_beam = map(float, o.split()[1:])
+                    self._mosflm_beam = map(float, o.split()[-2:])
 
             return matrix
 
