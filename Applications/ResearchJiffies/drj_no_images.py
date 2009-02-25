@@ -34,6 +34,8 @@ def gather(files):
 
         print '%d %.3f %.3f %5.1f' % (j + 1, m, s, t)
 
+    print '%d points' % len(data[1])
+
 if __name__ == '__main__':
     gather(sys.argv[1:])
             
