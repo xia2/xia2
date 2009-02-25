@@ -61,7 +61,7 @@ def no_images(labelit_log):
     fout = open('dataset_preferences.py', 'w')
     fout.write('beam = (%f, %f)\n' % beam)
     fout.write('wedgelimit = 15\n')
-    fout.write('beam_search_scope = 0.0\n')
+    fout.write('beam_search_scope = 1.0\n')
     fout.close()
 
     # now run labelit with 1 - 15 images
@@ -77,9 +77,6 @@ def no_images(labelit_log):
         output = rj_run_job('labelit.screen --index_only',
                             image_names, [])
         t1 = time.time()
-
-        for record in output:
-            print record[:-1]
 
         times.append((t1 - t0))
         
