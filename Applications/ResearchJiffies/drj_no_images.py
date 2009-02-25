@@ -11,11 +11,11 @@ def gather(files):
     time = { }
 
     for j in range(15):
-        data[j] = []
-        time[j] = []
+        data[j + 1] = []
+        time[j + 1] = []
 
     for f in files:
-        records = f.readlines()
+        records = open(f, 'r').readlines()
         if not len(records) == 15:
             continue
 
