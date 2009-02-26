@@ -139,7 +139,8 @@ def XDSXycorr(DriverType = None):
 
                 try:
                     os.symlink(self.get_directory(),
-                               '_images')
+                               os.path.join(self.get_working_directory(),
+                                            '_images'))
                 except OSError, e:
                     pass
                 
