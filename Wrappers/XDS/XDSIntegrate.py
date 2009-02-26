@@ -75,14 +75,14 @@ def XDSIntegrate(DriverType = None):
             self._input_data_files = { }
             self._output_data_files = { }
 
-            self._input_data_files_list = ['X-CORRECTIONS.pck',
-                                           'Y-CORRECTIONS.pck',
-                                           'BLANK.pck',
-                                           'BKGPIX.pck',
-                                           'GAIN.pck',
+            self._input_data_files_list = ['X-CORRECTIONS.cbf',
+                                           'Y-CORRECTIONS.cbf',
+                                           'BLANK.cbf',
+                                           'BKGPIX.cbf',
+                                           'GAIN.cbf',
                                            'XPARM.XDS']
 
-            self._output_data_files_list = ['FRAME.pck']
+            self._output_data_files_list = ['FRAME.cbf']
 
             self._refined_xparm = False
 
@@ -402,11 +402,11 @@ if __name__ == '__main__':
     
     integrate.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 
-    for file in ['X-CORRECTIONS.pck',
-                 'Y-CORRECTIONS.pck',
-                 'BLANK.pck',
-                 'BKGPIX.pck',
-                 'GAIN.pck',
+    for file in ['X-CORRECTIONS.cbf',
+                 'Y-CORRECTIONS.cbf',
+                 'BLANK.cbf',
+                 'BKGPIX.cbf',
+                 'GAIN.cbf',
                  'XPARM.XDS']:
         integrate.set_input_data_file(file, open(file, 'rb').read())
     

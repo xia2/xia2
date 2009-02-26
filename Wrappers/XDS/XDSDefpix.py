@@ -63,13 +63,13 @@ def XDSDefpix(DriverType = None):
             self._input_data_files = { }
             self._output_data_files = { }
 
-            self._input_data_files_list = ['X-CORRECTIONS.pck',
-                                           'Y-CORRECTIONS.pck',
-                                           'BKGINIT.pck',
+            self._input_data_files_list = ['X-CORRECTIONS.cbf',
+                                           'Y-CORRECTIONS.cbf',
+                                           'BKGINIT.cbf',
                                            'XPARM.XDS']
 
-            self._output_data_files_list = ['BKGPIX.pck',
-                                            'ABS.pck']
+            self._output_data_files_list = ['BKGPIX.cbf',
+                                            'ABS.cbf']
 
             return
 
@@ -215,9 +215,9 @@ if __name__ == '__main__':
     
     defpix.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 
-    for file in ['X-CORRECTIONS.pck',
-                 'Y-CORRECTIONS.pck',
-                 'BKGINIT.pck',
+    for file in ['X-CORRECTIONS.cbf',
+                 'Y-CORRECTIONS.cbf',
+                 'BKGINIT.cbf',
                  'XPARM.XDS']:
         defpix.set_input_data_file(file, open(file, 'rb').read())
             

@@ -72,11 +72,11 @@ def XDSColspot(DriverType = None):
             self._input_data_files = { }
             self._output_data_files = { }
 
-            self._input_data_files_list = ['X-CORRECTIONS.pck',
-                                           'Y-CORRECTIONS.pck',
-                                           'BLANK.pck',
-                                           'BKGINIT.pck',
-                                           'GAIN.pck']
+            self._input_data_files_list = ['X-CORRECTIONS.cbf',
+                                           'Y-CORRECTIONS.cbf',
+                                           'BLANK.cbf',
+                                           'BKGINIT.cbf',
+                                           'GAIN.cbf']
 
             self._output_data_files_list = ['SPOT.XDS']
 
@@ -223,11 +223,11 @@ if __name__ == '__main__':
     
     colspot.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 
-    for file in ['X-CORRECTIONS.pck',
-                 'Y-CORRECTIONS.pck',
-                 'BLANK.pck',
-                 'BKGINIT.pck',
-                 'GAIN.pck']:
+    for file in ['X-CORRECTIONS.cbf',
+                 'Y-CORRECTIONS.cbf',
+                 'BLANK.cbf',
+                 'BKGINIT.cbf',
+                 'GAIN.cbf']:
         colspot.set_input_data_file(file, open(file, 'rb').read())
 
     colspot.set_data_range(1, 1)

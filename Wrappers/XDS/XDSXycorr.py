@@ -67,8 +67,8 @@ def XDSXycorr(DriverType = None):
 
             self._input_data_files_list = []
 
-            self._output_data_files_list = ['X-CORRECTIONS.pck',
-                                            'Y-CORRECTIONS.pck']
+            self._output_data_files_list = ['X-CORRECTIONS.cbf',
+                                            'Y-CORRECTIONS.cbf']
 
             return
 

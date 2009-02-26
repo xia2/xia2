@@ -347,9 +347,9 @@ class XDSIntegrater(FrameProcessor,
 
         # pass in the correct data
 
-        for file in ['X-CORRECTIONS.pck',
-                     'Y-CORRECTIONS.pck',
-                     'BKGINIT.pck',
+        for file in ['X-CORRECTIONS.cbf',
+                     'Y-CORRECTIONS.cbf',
+                     'BKGINIT.cbf',
                      'XPARM.XDS']:
             defpix.set_input_data_file(file, self._data_files[file])
 
@@ -381,8 +381,8 @@ class XDSIntegrater(FrameProcessor,
                                                  
 
         # and gather the result files
-        for file in ['BKGPIX.pck',
-                     'ABS.pck']:
+        for file in ['BKGPIX.cbf',
+                     'ABS.cbf']:
             self._data_files[file] = defpix.get_output_data_file(file)
 
         integrate = self.Integrate()
@@ -403,11 +403,11 @@ class XDSIntegrater(FrameProcessor,
         integrate.set_data_range(self._intgr_wedge[0],
                                  self._intgr_wedge[1])
 
-        for file in ['X-CORRECTIONS.pck',
-                     'Y-CORRECTIONS.pck',
-                     'BLANK.pck',
-                     'BKGPIX.pck',
-                     'GAIN.pck']:
+        for file in ['X-CORRECTIONS.cbf',
+                     'Y-CORRECTIONS.cbf',
+                     'BLANK.cbf',
+                     'BKGPIX.cbf',
+                     'GAIN.cbf']:
             integrate.set_input_data_file(file, self._data_files[file])
 
         # use the refined parameters for integration?

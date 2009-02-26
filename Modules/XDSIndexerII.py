@@ -218,16 +218,16 @@ class XDSIndexerII(FrameProcessor,
 
         xycorr.run()
 
-        for file in ['X-CORRECTIONS.pck',
-                     'Y-CORRECTIONS.pck']:
+        for file in ['X-CORRECTIONS.cbf',
+                     'Y-CORRECTIONS.cbf']:
             self._data_files[file] = xycorr.get_output_data_file(file)
 
         # next start to process these - then init
 
         init = self.Init()
 
-        for file in ['X-CORRECTIONS.pck',
-                     'Y-CORRECTIONS.pck']:
+        for file in ['X-CORRECTIONS.cbf',
+                     'Y-CORRECTIONS.cbf']:
             init.set_input_data_file(file, self._data_files[file])
 
         init.set_data_range(first, last)
@@ -245,9 +245,9 @@ class XDSIndexerII(FrameProcessor,
 
         init.run()
 
-        for file in ['BLANK.pck',
-                     'BKGINIT.pck',
-                     'GAIN.pck']:
+        for file in ['BLANK.cbf',
+                     'BKGINIT.cbf',
+                     'GAIN.cbf']:
             self._data_files[file] = init.get_output_data_file(file)
         
 
@@ -255,11 +255,11 @@ class XDSIndexerII(FrameProcessor,
 
         colspot = self.Colspot()
 
-        for file in ['X-CORRECTIONS.pck',
-                     'Y-CORRECTIONS.pck',
-                     'BLANK.pck',
-                     'BKGINIT.pck',
-                     'GAIN.pck']:
+        for file in ['X-CORRECTIONS.cbf',
+                     'Y-CORRECTIONS.cbf',
+                     'BLANK.cbf',
+                     'BKGINIT.cbf',
+                     'GAIN.cbf']:
             colspot.set_input_data_file(file, self._data_files[file])
 
         colspot.set_data_range(first, last)
