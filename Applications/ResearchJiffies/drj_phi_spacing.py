@@ -32,7 +32,7 @@ def gather(files):
 
         for r in records:
             s = r.split()
-            n = nint(s[0])
+            n = nint(float(s[0]))
             m = float(s[1])
 
             data[n].append(m)
