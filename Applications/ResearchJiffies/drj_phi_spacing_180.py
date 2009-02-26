@@ -22,7 +22,7 @@ def nint(a):
 def gather(files):
     data = { }
 
-    for j in range(i90):
+    for j in range(90):
         data[j + 1] = []
 
     for f in files:
