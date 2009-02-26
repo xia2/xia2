@@ -217,7 +217,6 @@ def XDSIntegrate(DriverType = None):
                         self.get_directory(),
                         os.path.join(self.get_working_directory(),
                                      '_images')))
-
                                 
                     os.symlink(self.get_directory(),
                                os.path.join(self.get_working_directory(),
