@@ -17,6 +17,7 @@ from rj_no_images import calculate_images as calculate_images_ai
 from rj_lib_lattice_symmetry import lattice_symmetry
 
 import shutil
+import sys
 import os
 import time
 
@@ -79,6 +80,8 @@ def no_wedges(labelit_log):
             'directory %s' % directory,
             'beam %f %f' % beam]
 
+        commands.append('symm P1')
+
         for image in ai_images:
             commands.append('autoindex dps refine image %d' % image)
 
@@ -96,6 +99,8 @@ def no_wedges(labelit_log):
 
         output = rj_run_job('ipmosflm-7.0.3', [], commands)
 
+        for record in output:
+            print record[:-1]
         cell, mosaic = rj_parse_mosflm_cr_log(output)
 
         # now feed this to the iotbx.lattice_symmetry jiffy
@@ -103,6 +108,9 @@ def no_wedges(labelit_log):
         result = lattice_symmetry(cell)
 
         l = result.keys()[-1]
+
+        print cell
+        print result.keys(), l, lattice
 
         if l != lattice:
             raise RuntimeError, 'cell refinement gave wrong lattice'
