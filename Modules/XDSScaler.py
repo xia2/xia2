@@ -757,6 +757,11 @@ class XDSScaler(Scaler):
                 pointgroup = pointless.get_pointgroup()
                 reindex_op = pointless.get_reindex_operator()
 
+                # for debugging print out the reindexing operations and
+                # what have you...
+
+                Debug.write('Reindex to standard: %s' % reindex_op)
+
                 # this should send back enough information that this
                 # is in the correct pointgroup (from the call above) and
                 # also in the correct setting, from the interaction
