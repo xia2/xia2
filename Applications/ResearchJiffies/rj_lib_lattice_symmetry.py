@@ -11,6 +11,23 @@ sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
 from lib.SymmetryLib import lattice_to_spacegroup
 
+def sort_lattices(lattices):
+    lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5, 
+                             'oP':16, 'oC':20, 'oF':22,
+                             'oI':23, 'tP':75, 'tI':79,
+                             'hP':143, 'hR':146, 'cP':195,
+                             'cF':196, 'cI':197}
+
+    spacegroup_to_lattice = { }
+    for k in lattice_to_spacegroup.keys():
+        spacegroup_to_lattice[lattice_to_spacegroup[k]] = k
+    
+    spacegroups = [lattice_to_spacegroup[l] for l in lattices]
+
+    spacegroups.sort()
+    return [spacegroup_to_lattice[s] for s in spacegroups]
+    
+
 def lattice_symmetry(cell):
     ls = LatticeSymmetry()
 
@@ -21,7 +38,7 @@ def lattice_symmetry(cell):
 
     result = { }
 
-    lattices = ls.get_lattices()
+    lattices = sort_lattices(ls.get_lattices())
 
     for lattice in lattices:
         result[lattice] = {'cell':ls.get_cell(lattice),
@@ -31,9 +48,14 @@ def lattice_symmetry(cell):
 
 if __name__ == '__main__':
 
-    result = lattice_symmetry((44.13, 52.63, 116.86, 77.14, 79.74, 89.85))
+    if len(sys.argv) < 7:
+        cell = (44.13, 52.63, 116.86, 77.14, 79.74, 89.85)
+    else:
+        cell = tuple(map(float, sys.argv[1:7]))
 
-    lattices = result.keys()
+    result = lattice_symmetry(cell)
+
+    lattices = sort_lattices(result.keys())
     lattices.reverse()
 
     for l in lattices:

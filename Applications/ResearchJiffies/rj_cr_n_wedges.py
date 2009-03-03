@@ -14,7 +14,7 @@ from rj_lib_run_job import rj_run_job
 
 from rj_no_images import calculate_images as calculate_images_ai
 
-from rj_lib_lattice_symmetry import lattice_symmetry
+from rj_lib_lattice_symmetry import lattice_symmetry, sort_lattices
 
 import shutil
 import sys
@@ -70,7 +70,7 @@ def no_wedges(labelit_log):
 
     metrics = []
 
-    for count in range(10):
+    for count in range(1, 10):
         result = calculate_images(images, phi, count + 1)
 
         # first autoindex commands
@@ -94,28 +94,22 @@ def no_wedges(labelit_log):
 
         for pair in result:
             commands.append('process %d %d' % pair)
-
-        commands.append('go')
+            commands.append('go')
 
         output = rj_run_job('ipmosflm-7.0.3', [], commands)
 
-        for record in output:
-            print record[:-1]
         cell, mosaic = rj_parse_mosflm_cr_log(output)
 
         # now feed this to the iotbx.lattice_symmetry jiffy
 
         result = lattice_symmetry(cell)
 
-        l = result.keys()[-1]
-
-        print cell
-        print result.keys(), l, lattice
+        l = sort_lattices(result.keys())[-1]
 
         if l != lattice:
             raise RuntimeError, 'cell refinement gave wrong lattice'
         
-        metrics.append(result[l])
+        metrics.append(result[l]['penalty'])
 
     return metrics
 
@@ -126,5 +120,5 @@ if __name__ == '__main__':
     c = 1.0 / (max(metrics) - min(metrics))
     m = min(metrics)
 
-    for j in range(10):
+    for j in range(9):
         print '%2d %.3f' % (j + 1, c * (metrics[j] - m))
