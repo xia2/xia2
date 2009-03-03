@@ -70,7 +70,7 @@ def no_wedges(labelit_log):
 
     metrics = []
 
-    for count in range(1, 10):
+    for count in range(10):
         result = calculate_images(images, phi, count + 1)
 
         # first autoindex commands
@@ -98,18 +98,33 @@ def no_wedges(labelit_log):
 
         output = rj_run_job('ipmosflm-7.0.3', [], commands)
 
-        cell, mosaic = rj_parse_mosflm_cr_log(output)
+        if count > 0:
+            cell, mosaic = rj_parse_mosflm_cr_log(output)
+            result = lattice_symmetry(cell)
 
-        # now feed this to the iotbx.lattice_symmetry jiffy
-
-        result = lattice_symmetry(cell)
-
-        l = sort_lattices(result.keys())[-1]
-
-        if l != lattice:
-            raise RuntimeError, 'cell refinement gave wrong lattice'
+            l = sort_lattices(result.keys())[-1]
+            
+            if l != lattice:
+                raise RuntimeError, 'cell refinement gave wrong lattice'
         
-        metrics.append(result[l]['penalty'])
+            metrics.append(result[l]['penalty'])
+
+        else:
+
+            try:
+                cell, mosaic = rj_parse_mosflm_cr_log(output)
+                result = lattice_symmetry(cell)
+                
+                l = sort_lattices(result.keys())[-1]
+                
+                if l != lattice:
+                    raise RuntimeError, 'cell refinement gave wrong lattice'
+        
+                metrics.append(result[l]['penalty'])
+            except:
+                metrics.append(-1.0)
+
+            
 
     return metrics
 
@@ -117,8 +132,8 @@ if __name__ == '__main__':
 
     metrics = no_wedges(sys.argv[1])
 
-    c = 1.0 / (max(metrics) - min(metrics))
-    m = min(metrics)
+    c = 1.0 / (max(metrics[1:]) - min(metrics[1:]))
+    m = min(metrics[1:])
 
-    for j in range(9):
+    for j in range(10):
         print '%2d %.3f' % (j + 2, c * (metrics[j] - m))
