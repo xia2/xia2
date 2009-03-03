@@ -136,4 +136,4 @@ if __name__ == '__main__':
     m = min(metrics[1:])
 
     for j in range(10):
-        print '%2d %.3f' % (j + 2, c * (metrics[j] - m))
+        print '%2d %.3f' % (j + 1, c * (metrics[j] - m))
