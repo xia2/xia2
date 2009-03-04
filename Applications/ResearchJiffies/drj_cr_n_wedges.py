@@ -9,12 +9,12 @@ def meansd(values):
 def gather(files):
     data = { }
 
-    for j in range(1, 10):
+    for j in range(10):
         data[j + 1] = []
 
     for f in files:
         records = open(f, 'r').readlines()
-        if not len(records) == 9:
+        if not len(records) == 10:
             continue
 
         for r in records:
@@ -24,8 +24,12 @@ def gather(files):
 
             data[n].append(m)
 
-    for j in range(1, 10):
-        m, s = meansd(data[j + 1])
+    for j in range(0, 10):
+        positive_data = []
+        for d in data[j + 1]:
+            if d > 0:
+                positive_data.append(d)
+        m, s = meansd(positive_data)
 
         print '%d %.3f %.3f' % (j + 1, m, s)
 
