@@ -109,7 +109,7 @@ def no_images(labelit_log):
 
 if __name__ == '__main__':
 
-    metrics = no_wedges(sys.argv[1])
+    metrics = no_images(sys.argv[1])
 
     c = 1.0 / (max(metrics) - min(metrics))
     m = min(metrics)
