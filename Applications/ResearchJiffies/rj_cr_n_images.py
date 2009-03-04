@@ -87,7 +87,7 @@ def no_images(labelit_log):
 
         # the cell refinement commands
 
-        commands.append('postref multi segments %d' % (count + 1))
+        commands.append('postref multi segments 3')
 
         for pair in result:
             commands.append('process %d %d' % pair)
@@ -115,4 +115,4 @@ if __name__ == '__main__':
     m = min(metrics)
 
     for j in range(1, 10):
-        print '%2d %.3f' % (j + 1, c * (metrics[j] - m))
+        print '%2d %.3f' % (j + 1, c * (metrics[j - 1] - m))
