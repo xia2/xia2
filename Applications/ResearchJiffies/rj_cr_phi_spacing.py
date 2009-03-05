@@ -108,7 +108,12 @@ def phi_spacing(labelit_log):
 
         output = rj_run_job('ipmosflm-7.0.3', [], commands)
 
-        cell, mosaic = rj_parse_mosflm_cr_log(output)
+        try:
+            cell, mosaic = rj_parse_mosflm_cr_log(output)
+        except RuntimeError, e:
+            for record in output:
+                print record[:-1]
+            raise e
         result = lattice_symmetry(cell)
         
         l = sort_lattices(result.keys())[-1]
