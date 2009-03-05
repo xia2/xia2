@@ -68,7 +68,7 @@ def phi_spacing(labelit_log):
     metrics = []
     spacings = []
 
-    phis = [float(j + 1) for j in range(5, 45)]
+    phis = [float(j + 1) for j in range(10, 45)]
 
     image_numbers = []
 
