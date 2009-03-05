@@ -7,6 +7,8 @@ from rj_lib_parse_labelit import rj_parse_labelit_log_file, \
 
 from rj_lib_find_images import rj_get_phi
 
+from rj_lib_run_job import rj_run_job
+
 def meansd(values):
     mean = sum(values) / len(values)
     var = sum([(v - mean) * (v - mean) for v in values]) / len(values)
