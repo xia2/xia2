@@ -616,7 +616,9 @@ class XDSIntegrater(FrameProcessor,
                         (lattice, mult))
             
             mult_matrix = [mult * m for m in matrix]
-            
+
+            Debug.write('REIDX set to %d %d %d %d %d %d %d %d %d %d %d %d' % \
+                        tuple(mult_matrix))
             correct.set_reindex_matrix(mult_matrix)
         
         correct.run()
