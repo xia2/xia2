@@ -663,7 +663,7 @@ class XDSScaler(Scaler):
                 Syminfo.spacegroup_name_to_number(pointgroup)) 
            
             hklin = intgr.get_integrater_reflections()
-
+ 
             hklout = os.path.join(self.get_working_directory(),
                                   'xds-pointgroup-reference-unsorted.mtz')
             FileHandler.record_temporary_file(hklout)

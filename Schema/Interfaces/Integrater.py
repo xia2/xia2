@@ -273,6 +273,13 @@ class Integrater:
         
     def set_integrater_done(self, done = True):
         self._intgr_done = done
+
+        # FIXME should I remove / reset the reindexing operation here?
+        # probably...!
+
+        if not done:
+            self._intgr_reindex_operator = None
+              
         if not done:
             self.set_integrater_finish_done(False)
         return
@@ -616,11 +623,11 @@ class Integrater:
 
         # see if we really need to do anything
         if reindex_operator == 'h,k,l' and \
-           self._intgr_reindex_operator is None:
+               self._intgr_reindex_operator is None:
             return
 
         if reindex_operator == 'h,k,l' and \
-           self._intgr_reindex_operator == 'h,k,l':
+               self._intgr_reindex_operator == 'h,k,l':
             return
 
         # ok we need to do something - either just record the new
