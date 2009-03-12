@@ -243,7 +243,6 @@ from Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
 from Schema.Exceptions.IndexingError import IndexingError
 from Schema.Exceptions.IntegrationError import IntegrationError
 
-
 # other classes which are necessary to implement the integrater
 # interface (e.g. new version, with reindexing as the finish...)
 
@@ -255,6 +254,31 @@ from Modules.IceId import IceId
 # cell refinement image helpers
 
 from Modules.CellRefImageSelect import identify_perpendicular_axes
+
+# jiffy functions for means, standard deviations and outliers
+
+def meansd(values):
+    mean = sum(values) / len(values)
+    var = sum([(v - mean) * (v - mean) for v in values]) / len(values)
+    return mean, math.sqrt(var)
+
+def remove_outliers(values, limit):
+    result = []
+    outliers = []
+    for j in range(len(values)):
+        scratch = []
+        for k in range(len(values)):
+            if j != k:
+                scratch.append(values[k])
+        m, s = meansd(scratch)
+        if (math.fabs(values[j] - m) / s) <= limit:
+            result.append(values[j])
+        else:
+            outliers.append(values[j])
+
+    return result, outliers
+                
+
 
 def Mosflm(DriverType = None):
     '''A factory for MosflmWrapper classes.'''
@@ -1516,6 +1540,9 @@ def Mosflm(DriverType = None):
                 Debug.write('Cell refinement comparison:')
                 Debug.write('Image   correct   triclinic')
                 ratio = 0.0
+
+                ratios = []
+
                 for c in cycles:
                     Debug.write('Cycle %d' % c)
                     for j in range(len(images)):
@@ -1524,6 +1551,16 @@ def Mosflm(DriverType = None):
                                      rms_deviations_p1[c][j]))
                         
                         ratio += rms_deviations[c][j] / rms_deviations_p1[c][j]
+                        ratios.append(
+                            (rms_deviations[c][j] / rms_deviations_p1[c][j]))
+
+                good, bad = remove_outliers(ratios, 6)
+                m, s = meansd(good)
+                bs = ''
+                for b in bad:
+                    bs += '%.3f ' % b
+                Debug.write('%d outlier ratios: %s' % (len(bad), bs))
+                Debug.write('Of the good: %.3f +- %.3f' % (m, s))
 
                 Debug.write('Average ratio: %.2f' % \
                             (ratio / (max(cycles) * len(images))))
