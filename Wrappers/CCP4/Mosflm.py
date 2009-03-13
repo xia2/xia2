@@ -271,14 +271,12 @@ def remove_outliers(values, limit):
             if j != k:
                 scratch.append(values[k])
         m, s = meansd(scratch)
-        if (math.fabs(values[j] - m) / s) <= limit:
+        if math.fabs(values[j] - m) / s <= limit * s:
             result.append(values[j])
         else:
             outliers.append(values[j])
 
     return result, outliers
-                
-
 
 def Mosflm(DriverType = None):
     '''A factory for MosflmWrapper classes.'''
@@ -1554,13 +1552,19 @@ def Mosflm(DriverType = None):
                         ratios.append(
                             (rms_deviations[c][j] / rms_deviations_p1[c][j]))
 
-                good, bad = remove_outliers(ratios, 6)
-                m, s = meansd(good)
-                bs = ''
-                for b in bad:
-                    bs += '%.3f ' % b
-                Debug.write('%d outlier ratios: %s' % (len(bad), bs))
-                Debug.write('Of the good: %.3f +- %.3f' % (m, s))
+                # fixme in here only run this if lattice != aP
+
+                if self.get_integrater_indexer().get_indexer_lattice() != 'aP':
+                
+                    good, bad = remove_outliers(ratios, 6)
+                    m, s = meansd(good)
+
+                    bs = ''
+                    for b in bad:
+                        bs += '%.3f ' % b
+                        
+                    Debug.write('%d outlier ratios: %s' % (len(bad), bs))
+                    Debug.write('Of the good: %.3f +- %.3f' % (m, s))
 
                 Debug.write('Average ratio: %.2f' % \
                             (ratio / (max(cycles) * len(images))))
