@@ -94,3 +94,30 @@ def _parse_idxref_lp(lp_file_lines):
 
     return lattice_character_info
 
+def _parse_idxref_lp_subtree(lp_file_lines):
+
+    subtrees = { }
+
+    i = 0
+
+    while i < len(lp_file_lines):
+        line = lp_file_lines[i]
+        i += 1
+
+        if line.split() == ['SUBTREE', 'POPULATION']:
+            j = i + 1
+            line = lp_file_lines[j]
+            while line.strip():
+                subtree, population = tuple(map(int, line.split()))
+                subtrees[subtree] = population
+                j += 1
+                line = lp_file_lines[j]
+
+    return subtrees
+
+if __name__ == '__main__':
+
+    st = _parse_idxref_lp_subtree(open(sys.argv[1], 'r').readlines())
+
+    for j in sorted(st):
+        print j, st[j]

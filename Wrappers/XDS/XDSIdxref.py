@@ -38,7 +38,9 @@ from XDS import XDSException
 from Handlers.Streams import Debug
 
 # specific helper stuff
-from XDSIdxrefHelpers import _parse_idxref_lp, _parse_idxref_lp_distance_etc
+from XDSIdxrefHelpers import _parse_idxref_lp, _parse_idxref_lp_distance_etc, \
+     _parse_idxref_lp_subtree
+
 from Experts.LatticeExpert import SortLattices
 
 # global flags 
@@ -313,6 +315,13 @@ def XDSIdxref(DriverType = None):
                 self.get_working_directory(), 'IDXREF.LP'), 'r').readlines()
 
             self._idxref_data = _parse_idxref_lp(lp)
+
+            st = _parse_idxref_lp_subtree(lp)
+
+            if st[2] > st[1] / 10:
+                Debug.write('Look closely at autoindexing solution!')
+                for j in sorted(st):
+                    Debug.write('%2d: %5d' % (j, st[j]))
 
             for j in range(1, 45):
                 if not self._idxref_data.has_key(j):
