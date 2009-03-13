@@ -205,32 +205,7 @@ def XDSIntegrate(DriverType = None):
             record = 'NAME_TEMPLATE_OF_DATA_FRAMES=%s\n' % \
                      name_template
 
-            if len(record) < 80:
-                xds_inp.write(record)
-                
-            else:
-                # else we need to make a softlink, then run, then remove 
-                # softlink....
-
-                try:
-                    Debug.write('Linking %s to %s' % (
-                        self.get_directory(),
-                        os.path.join(self.get_working_directory(),
-                                     '_images')))
-                                
-                    os.symlink(self.get_directory(),
-                               os.path.join(self.get_working_directory(),
-                                            '_images'))
-                except OSError, e:
-                    Debug.write('Error linking: %s' % str(e))
-                
-                name_template = os.path.join('_images',
-                                             self.get_template().replace(
-                    '#', '?'))
-                record = 'NAME_TEMPLATE_OF_DATA_FRAMES=%s\n' % \
-                         name_template
-
-                xds_inp.write(record)
+            xds_inp.write(record)
 
             xds_inp.write('DATA_RANGE=%d %d\n' % self._data_range)
             # xds_inp.write('MINIMUM_ZETA=0.1\n')
@@ -260,13 +235,6 @@ def XDSIntegrate(DriverType = None):
             # like this perhaps - what the hell does this mean?
             #   !!! ERROR !!! "STRONGHKL": ASSERT VIOLATION
 
-            # tidy up...
-            try:
-                os.remove(os.path.join(self.get_working_directory(),
-                                       '_images'))
-            except OSError, e:
-                pass
-            
             # copy the LP file
             shutil.copyfile(os.path.join(self.get_working_directory(),
                                          'INTEGRATE.LP'),
