@@ -285,10 +285,12 @@ def XDSIdxref(DriverType = None):
 
             st = _parse_idxref_lp_subtree(lp)
 
-            if st[2] > st[1] / 10:
-                Debug.write('Look closely at autoindexing solution!')
-                for j in sorted(st):
-                    Debug.write('%2d: %5d' % (j, st[j]))
+            if 2 in st:
+            
+                if st[2] > st[1] / 10:
+                    Debug.write('Look closely at autoindexing solution!')
+                    for j in sorted(st):
+                        Debug.write('%2d: %5d' % (j, st[j]))
 
             for j in range(1, 45):
                 if not self._idxref_data.has_key(j):
