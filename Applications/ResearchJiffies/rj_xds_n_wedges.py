@@ -73,6 +73,7 @@ def no_wedges(xds_inp):
             xds_inp.write('%s\n' % record)
         for pair in result:
             xds_inp.write('SPOT_RANGE= %d %d\n' % pair)
+        xds_inp.close()
 
         output = rj_run_job('xds', [], [])
 
