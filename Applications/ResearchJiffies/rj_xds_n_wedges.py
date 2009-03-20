@@ -27,7 +27,7 @@ def calculate_images(images, phi, number):
 
     # then figure out how to lay out the images
 
-    n = 3 - 1
+    n = nint(5.0 / phi) - 1
     
     result = [(images[0], images[0] + n)]
 

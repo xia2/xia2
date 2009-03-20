@@ -14,7 +14,7 @@ def gather(files):
 
     for f in files:
         records = open(f, 'r').readlines()
-        if not len(records) == 10:
+        if not len(records) == 11:
             continue
 
         for r in records:
