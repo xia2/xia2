@@ -63,6 +63,9 @@ def lattice_test(integrate_lp):
             for record in standard:
                 fout.write('%s\n' % record)
                 
+            for record in records:
+                fout.write('%s\n' % record)
+                
             fout.write('DATA_RANGE= %d %d\n' % (start, end))
             fout.write('OSCILLATION_RANGE= %.2f\n' % phi)
             fout.write(
