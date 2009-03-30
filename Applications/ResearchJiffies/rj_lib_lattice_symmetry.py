@@ -34,7 +34,7 @@ def lattice_spacegroup(lattice):
                              'hP':143, 'hR':146, 'cP':195,
                              'cF':196, 'cI':197}
     
-    return lattice_to_spacegroup(lattice)
+    return lattice_to_spacegroup[lattice]
     
 def lattice_symmetry(cell):
     ls = LatticeSymmetry()

@@ -1,4 +1,5 @@
-from rj_lib_parse_xds import rj_parse_idxref_xds_inp, rj_parse_idxref_lp
+from rj_lib_parse_xds import rj_parse_idxref_xds_inp, rj_parse_idxref_lp, \
+     rj_parse_integrate_lp
 
 from rj_lib_run_job import rj_run_job
 
@@ -65,12 +66,15 @@ def lattice_test(integrate_lp):
             fout.write('DATA_RANGE= %d %d\n' % (start, end))
             fout.write('OSCILLATION_RANGE= %.2f\n' % phi)
             fout.write(
-                'UNIT_CELL_CONSTANTS= %.2f %.2f %.2f %.2f %.2f %.2f\n' c)
-            fout.write('SPACE_GROUP_NUMBER=1\n' % lattice_spacegroup(l))
+                'UNIT_CELL_CONSTANTS= %.2f %.2f %.2f %.2f %.2f %.2f\n' % tuple(c))
+            fout.write('SPACE_GROUP_NUMBER=%d\n' % lattice_spacegroup(l))
 
             fout.close()
             
             output = rj_run_job('xds_par', [], [])
+
+            for record in output:
+                print record[:-1]
             
             # now read out the records I want from CORRECT.LP...
             
