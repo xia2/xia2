@@ -19,7 +19,7 @@ def nint(a):
         i += 1
     return i
 
-def calculate_images(images, phi, number):
+def calculate_images(images, phi, width):
     # first check we have 90 degrees or more of data
 
     if (images[-1] - images[0] + 1) * phi < 90.0:
@@ -27,7 +27,9 @@ def calculate_images(images, phi, number):
 
     # then figure out how to lay out the images
 
-    n = nint(5.0 / phi) - 1
+    number = 3
+
+    n = nint(width / phi) - 1
     
     result = [(images[0], images[0] + n)]
 
@@ -42,7 +44,7 @@ def calculate_images(images, phi, number):
 
     return result
 
-def no_wedges(xds_inp):
+def no_images(xds_inp):
 
     firstlast, phi, records = rj_parse_idxref_xds_inp(
         open(xds_inp, 'r').readlines())
@@ -75,7 +77,6 @@ def no_wedges(xds_inp):
         for pair in result:
             xds_inp.write('SPOT_RANGE= %d %d\n' % pair)
         xds_inp.close()
-
         output = rj_run_job('xds', [], [])
 
         cell = rj_parse_idxref_lp(open('IDXREF.LP', 'r').readlines())
@@ -93,7 +94,7 @@ def no_wedges(xds_inp):
 
 if __name__ == '__main__':
 
-    metrics, score = no_wedges(sys.argv[1])
+    metrics, score = no_images(sys.argv[1])
 
     c = 1.0 / (max(metrics) - min(metrics))
     m = min(metrics)

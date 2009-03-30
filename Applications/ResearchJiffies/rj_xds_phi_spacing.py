@@ -19,30 +19,30 @@ def nint(a):
         i += 1
     return i
 
-def calculate_images(images, phi, number):
+def calculate_images(images, phi, spacing):
+    
     # first check we have 90 degrees or more of data
 
     if (images[-1] - images[0] + 1) * phi < 90.0:
         raise RuntimeError, 'less than 90 degrees of data'
 
+    if phi > 1.01:
+        raise RuntimeError, 'images too wide'
+
     # then figure out how to lay out the images
 
-    n = nint(5.0 / phi) - 1
+    n = nint(6.0 / phi) - 1
+    offset = nint(spacing / phi)
     
     result = [(images[0], images[0] + n)]
-
-    if number == 1:
-        return result
-
-    step = 90.0 / (phi * (number - 1))
-
-    for j in range(1, number):
-        result.append(((images[0] + nint(step * j) - 1 - n),
-                       (images[0] + nint(step * j) - 1)))
+    result.append((nint(images[0] + offset - n),
+                   nint(images[0] + offset)))
+    result.append((nint(images[0] + 2 * offset - n),
+                   nint(images[0] + 2 * offset)))
 
     return result
 
-def no_wedges(xds_inp):
+def phi_spacing(xds_inp):
 
     firstlast, phi, records = rj_parse_idxref_xds_inp(
         open(xds_inp, 'r').readlines())
@@ -65,9 +65,23 @@ def no_wedges(xds_inp):
     score = result[lattice]['penalty']
 
     metrics = []
+    spacings = []
 
-    for count in range(10):
-        result = calculate_images(images, phi, count + 1)
+    phis = [float(j + 1) for j in range(10, 45)]
+
+    image_numbers = []
+
+    for p in phis:
+        result = calculate_images(images, phi, p)
+        if phi * (result[-1][-1] - result[0][0] + 1) > 90.0:
+            continue
+        if not result in image_numbers:
+            image_numbers.append(result)
+            
+    for result in image_numbers:
+
+        spacing = nint(phi * (result[1][0] - result[0][0]))
+        spacings.append(spacing)
 
         xds_inp = open('XDS.INP', 'w')
         for record in records:
@@ -75,7 +89,6 @@ def no_wedges(xds_inp):
         for pair in result:
             xds_inp.write('SPOT_RANGE= %d %d\n' % pair)
         xds_inp.close()
-
         output = rj_run_job('xds', [], [])
 
         cell = rj_parse_idxref_lp(open('IDXREF.LP', 'r').readlines())
@@ -89,16 +102,16 @@ def no_wedges(xds_inp):
 
         metrics.append(result[l]['penalty'])
             
-    return metrics, score
+    return metrics, spacings, score
 
 if __name__ == '__main__':
 
-    metrics, score = no_wedges(sys.argv[1])
+    metrics, spacings, score = phi_spacing(sys.argv[1])
 
     c = 1.0 / (max(metrics) - min(metrics))
     m = min(metrics)
 
-    for j in range(10):
-        print '%2d %.3f' % (j + 1, c * (metrics[j] - m))
+    for j in range(len(spacings)):
+        print '%2d %.3f' % (nint(spacings[j]), c * (metrics[j] - m))
 
     print ' 0 %.3f' % (c * (score - m))

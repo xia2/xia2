@@ -20,7 +20,7 @@ def nint(a):
     return i
 
 def gather(files):
-    data = { }
+    data = {0:[] }
 
     for j in range(45):
         data[j + 1] = []
