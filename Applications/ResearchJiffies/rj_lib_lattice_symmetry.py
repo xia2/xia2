@@ -27,7 +27,15 @@ def sort_lattices(lattices):
     spacegroups.sort()
     return [spacegroup_to_lattice[s] for s in spacegroups]
     
-
+def lattice_spacegroup(lattice):
+    lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5, 
+                             'oP':16, 'oC':20, 'oF':22,
+                             'oI':23, 'tP':75, 'tI':79,
+                             'hP':143, 'hR':146, 'cP':195,
+                             'cF':196, 'cI':197}
+    
+    return lattice_to_spacegroup(lattice)
+    
 def lattice_symmetry(cell):
     ls = LatticeSymmetry()
 
