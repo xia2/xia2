@@ -37,7 +37,7 @@ def lattice_test(integrate_lp, xds_inp_file):
 
     for r in records:
         if not 'NAME_TEMPLATE_OF_DATA_FRAMES' in record:
-            r_new.append(record)
+            r_new.append(r)
         else:
             r_new.append(nt)
 
