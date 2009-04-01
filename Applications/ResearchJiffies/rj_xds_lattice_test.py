@@ -29,9 +29,9 @@ def lattice_test(integrate_lp, xds_inp_file):
 
     for record in open(xds_inp_file, 'r').readlines():
         if 'NAME_TEMPLATE_OF_DATA_FRAMES' in record:
-            nt = record
+            nt = record.strip()
         if 'DETECTOR_DISTANCE' in record:
-            distance = record
+            distance = record.strip()
 
     if not nt:
         raise RuntimeError, 'filename template not found in %s' % xds_inp_file
@@ -60,7 +60,9 @@ def lattice_test(integrate_lp, xds_inp_file):
         'TRUSTED_REGION=0.0 1.41'
         ]
 
-    # first get the list of possible lattices
+    # first get the list of possible lattices - do this by running CORRECT
+    # with all of the images, then looking at the favourite settings for the
+    # P1 result (or something) - meh.
 
     result = lattice_symmetry(cell)
     lattices = sort_lattices(result)
@@ -74,6 +76,9 @@ def lattice_test(integrate_lp, xds_inp_file):
         data[l] = { }
         
         c = result[l]['cell']
+
+        print 'Lattice: %s' % l
+        print 'Cell: %.2f %.2f %.2f %.2f %.2f %.2f' % tuple(c)
 
         # then iterate through the image ranges
 
