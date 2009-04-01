@@ -25,18 +25,24 @@ def lattice_test(integrate_lp, xds_inp_file):
     # out...
 
     nt = None
+    distance = None
 
     for record in open(xds_inp_file, 'r').readlines():
         if 'NAME_TEMPLATE_OF_DATA_FRAMES' in record:
             nt = record
+        if 'DETECTOR_DISTANCE' in record:
+            distance = record
 
     if not nt:
         raise RuntimeError, 'filename template not found in %s' % xds_inp_file
 
-    r_new = []
+    if not distance:
+        raise RuntimeError, 'distance not found in %s' % xds_inp_file
+        
+    r_new = [distance]
 
     for r in records:
-        if not 'NAME_TEMPLATE_OF_DATA_FRAMES' in record:
+        if not 'NAME_TEMPLATE_OF_DATA_FRAMES' in r:
             r_new.append(r)
         else:
             r_new.append(nt)
@@ -98,9 +104,6 @@ def lattice_test(integrate_lp, xds_inp_file):
             
             output = rj_run_job('xds_par', [], [])
 
-            for record in output:
-                print record[:-1]
-            
             # now read out the records I want from CORRECT.LP...
             
             rmsd = None
