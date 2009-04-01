@@ -17,9 +17,31 @@ def nint(a):
         i += 1
     return i
 
-def lattice_test(integrate_lp):
+def lattice_test(integrate_lp, xds_inp_file):
     images, phi, cell, records = rj_parse_integrate_lp(
         open(integrate_lp).readlines())
+
+    # next work through the XDS.INP file to get the proper name template
+    # out...
+
+    nt = None
+
+    for record in open(xds_inp_file, 'r').readlines():
+        if 'NAME_TEMPLATE_OF_DATA_FRAMES' in record:
+            nt = record
+
+    if not nt:
+        raise RuntimeError, 'filename template not found in %s' % xds_inp_file
+
+    r_new = []
+
+    for r in records:
+        if not 'NAME_TEMPLATE_OF_DATA_FRAMES' in record:
+            r_new.append(record)
+        else:
+            r_new.append(nt)
+
+    records = r_new
 
     standard = [
         'JOB=CORRECT',
@@ -107,8 +129,8 @@ def lattice_test(integrate_lp):
 
         print record
 
-if __name__ == '__main__':
-    lattice_test('INTEGRATE.LP')
 
                         
     
+if __name__ == '__main__':
+    lattice_test('INTEGRATE.LP', 'integrate/XDS.INP')
