@@ -54,6 +54,27 @@ def lattice_symmetry(cell):
     
     return result
 
+def constain_lattice(lattice_class, cell):
+    '''Constrain cell to fit lattice class x.'''
+
+    a, b, c, alpha, beta, gamma = cell
+
+    if lattice_class == 'a':
+        return (a, b, c, alpha, beta, gamma)
+    elif lattice_class == 'm':
+        return (a, b, c, 90.0, beta, 90.0)
+    elif lattice_class == 'o':
+        return (a, b, c, 90.0, 90.0, 90.0)
+    elif lattice_class == 't':
+        e = (a + b) / 2.0
+        return (e, e, c, 90.0, 90.0, 90.0)
+    elif lattice_class == 'h':
+        e = (a + b) / 2.0
+        return (e, e, c, 90.0, 90.0, 120.0)
+    elif lattice_class == 'c':
+        e = (a + b + c) / 3.0
+        return (e, e, e, 90.0, 90.0, 90.0)
+
 if __name__ == '__main__':
 
     if len(sys.argv) < 7:

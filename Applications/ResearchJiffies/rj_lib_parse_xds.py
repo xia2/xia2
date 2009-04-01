@@ -1,5 +1,7 @@
 # core for reading XDS input and log files - first IDXREF
 
+from rj_lib_lattice_symmetry import constrain_lattice
+
 def rj_parse_idxref_xds_inp(xds_inp_lines):
     general_records = []
     images = None
@@ -32,6 +34,35 @@ def rj_parse_idxref_lp(xds_lp_lines):
             cell = tuple(map(float, record.split()[-6:]))
 
     return cell
+
+def rj_parse_xds_correct_lp(xds_lp_lines):
+    '''Parse out the happy cell constant, Bravais lattice classes from
+    CORRECT.LP.'''
+
+    # assert: they are in order of increasing penalty, so just take the
+    # first from each lattice class. Also map mI to mC.
+
+    j = 0
+
+    while not 'CHARACTER  LATTICE     OF FIT' in xds_lp_lines[j]:
+        j += 1
+
+    j += 2
+
+    results = { }
+
+    while '*' in xds_lp_lines[j]:
+        lst = xds_lp_lines[j].split()
+        bravais = lst[2]
+        penalty = float(lst[3])
+        cell = constrain_lattice(bravais[0],
+                                 tuple(map(float, lst[4:10])))
+
+        if not bravais in results:
+            results[bravais] = {'cell':cell,
+                                'penalty':penalty}
+
+    return results
 
 def rj_parse_integrate_lp(integrate_lp_lines):
     general_records = []

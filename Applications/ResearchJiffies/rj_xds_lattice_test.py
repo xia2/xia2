@@ -49,6 +49,13 @@ def lattice_test(integrate_lp, xds_inp_file):
 
     records = r_new
 
+    # ok, in here need to rerun XDS with all of the data from all of
+    # the images and the triclinic target cell, then parse out the
+    # solutions from the CORRECT.LP file (applying the cell constants -
+    # done in the parser) and then use *these* as the target, as the
+    # lattice symmetry code (interestingly) does not always give the
+    # right answer...
+
     standard = [
         'JOB=CORRECT',
         'MAXIMUM_NUMBER_OF_PROCESSORS=4',
@@ -63,6 +70,24 @@ def lattice_test(integrate_lp, xds_inp_file):
     # first get the list of possible lattices - do this by running CORRECT
     # with all of the images, then looking at the favourite settings for the
     # P1 result (or something) - meh.
+
+    fout = open('XDS.INP', 'w')
+    
+    for record in standard:
+        fout.write('%s\n' % record)
+        
+    for record in records:
+        fout.write('%s\n' % record)
+        
+    fout.write('DATA_RANGE= %d %d\n' % (start, end))
+    fout.write('OSCILLATION_RANGE= %.2f\n' % phi)
+    fout.write(
+        'UNIT_CELL_CONSTANTS= %.2f %.2f %.2f %.2f %.2f %.2f\n' % tuple(c))
+    fout.write('SPACE_GROUP_NUMBER=%d\n' % lattice_spacegroup(l))
+    
+    fout.close()
+    
+    output = rj_run_job('xds_par', [], [])    
 
     result = lattice_symmetry(cell)
     lattices = sort_lattices(result)
