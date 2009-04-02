@@ -10,12 +10,18 @@ import shutil
 import sys
 import os
 import time
+import math
 
 def nint(a):
     i = int(a)
     if (a - i) > 0.5:
         i += 1
     return i
+
+def meansd(values):
+    mean = sum(values) / len(values)
+    var = sum([(v - mean) * (v - mean) for v in values]) / len(values)
+    return mean, math.sqrt(var)
 
 def lattice_test(integrate_lp, xds_inp_file):
     images, phi, cell, records = rj_parse_integrate_lp(
@@ -170,8 +176,36 @@ def lattice_test(integrate_lp, xds_inp_file):
 
         print record
 
+    # now print out the averages, sd's
+    recordm = 'M'
+    records = 'S'
+    sigma = { }
+    for l in lattices[1:]:
+        values = [(data[l][j]['d'] / data['aP'][j]['d']) for j in range(m)]
+        md, sd = meansd(values)
+        values = [(data[l][j]['p'] / data['aP'][j]['p']) for j in range(m)]
+        mp, sp = meansd(values)
+        recordm += ' %.3f %.3f' % (md, mp)
+        records += ' %.3f %.3f' % (sd, sp)
+        sigma[l] = { }
+        if sd > 0:
+            sigma[l]['d'] = ((md - 1) / sd)
+        else:
+            sigma[l]['d'] = 0.0
+        if sp > 0:
+            sigma[l]['p'] = ((mp - 1) / sp)
+        else:
+            sigma[l]['p'] = 0.0
 
-                        
+                    
+    print recordm
+    print records
+
+    for l in lattices[1:]:
+        d = sigma[l]['d']
+        p = sigma[l]['p']
+        print '%s %.3f %.3f' % (l, d, p)
+
     
 if __name__ == '__main__':
     lattice_test('INTEGRATE.LP', 'integrate/XDS.INP')
