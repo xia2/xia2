@@ -96,7 +96,12 @@ def Scala(DriverType = None):
             self.set_executable('scala')
 
             self.start()
-            self.close_wait()
+            try:
+                self.close_wait()
+            except RuntimeError, e:
+                # this is an expected error - will complain can't
+                # read hklin
+                pass
 
             version_header = self.get_all_output()
             version = -1
@@ -113,6 +118,9 @@ def Scala(DriverType = None):
                 self._new_scala = False
             else:
                 self._new_scala = True
+
+            # clear all the header junk
+            self.reset()
 
             # input and output files
             self._scalepack = None
