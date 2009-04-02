@@ -54,7 +54,7 @@ def lattice_symmetry(cell):
     
     return result
 
-def constain_lattice(lattice_class, cell):
+def constrain_lattice(lattice_class, cell):
     '''Constrain cell to fit lattice class x.'''
 
     a, b, c, alpha, beta, gamma = cell

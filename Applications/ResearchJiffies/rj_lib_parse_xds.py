@@ -54,6 +54,8 @@ def rj_parse_xds_correct_lp(xds_lp_lines):
     while '*' in xds_lp_lines[j]:
         lst = xds_lp_lines[j].split()
         bravais = lst[2]
+        if bravais == 'mI':
+            bravais = 'mC'
         penalty = float(lst[3])
         cell = constrain_lattice(bravais[0],
                                  tuple(map(float, lst[4:10])))
@@ -61,6 +63,7 @@ def rj_parse_xds_correct_lp(xds_lp_lines):
         if not bravais in results:
             results[bravais] = {'cell':cell,
                                 'penalty':penalty}
+        j += 1
 
     return results
 

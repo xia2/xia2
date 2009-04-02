@@ -1,5 +1,5 @@
 from rj_lib_parse_xds import rj_parse_idxref_xds_inp, rj_parse_idxref_lp, \
-     rj_parse_integrate_lp
+     rj_parse_integrate_lp, rj_parse_xds_correct_lp
 
 from rj_lib_run_job import rj_run_job
 
@@ -79,17 +79,25 @@ def lattice_test(integrate_lp, xds_inp_file):
     for record in records:
         fout.write('%s\n' % record)
         
-    fout.write('DATA_RANGE= %d %d\n' % (start, end))
+    fout.write('DATA_RANGE= %d %d\n' % images)
     fout.write('OSCILLATION_RANGE= %.2f\n' % phi)
     fout.write(
-        'UNIT_CELL_CONSTANTS= %.2f %.2f %.2f %.2f %.2f %.2f\n' % tuple(c))
-    fout.write('SPACE_GROUP_NUMBER=%d\n' % lattice_spacegroup(l))
+        'UNIT_CELL_CONSTANTS= %.2f %.2f %.2f %.2f %.2f %.2f\n' % tuple(cell))
+    fout.write('SPACE_GROUP_NUMBER=%d\n' % 1)
     
     fout.close()
     
     output = rj_run_job('xds_par', [], [])    
 
-    result = lattice_symmetry(cell)
+    # read CORRECT.LP to get the right solutions...
+
+    result = rj_parse_xds_correct_lp(open('CORRECT.LP', 'r').readlines())
+
+    for lattice in result:
+        cp = '%.2f %.2f %.2f %.2f %.2f %.2f' % result[lattice]['cell']
+        # print '%s %s' % (lattice, cp)
+
+    # result = lattice_symmetry(cell)
     lattices = sort_lattices(result)
 
     # then iterate through them...
@@ -102,8 +110,8 @@ def lattice_test(integrate_lp, xds_inp_file):
         
         c = result[l]['cell']
 
-        print 'Lattice: %s' % l
-        print 'Cell: %.2f %.2f %.2f %.2f %.2f %.2f' % tuple(c)
+        # print 'Lattice: %s' % l
+        # print 'Cell: %.2f %.2f %.2f %.2f %.2f %.2f' % tuple(c)
 
         # then iterate through the image ranges
 
