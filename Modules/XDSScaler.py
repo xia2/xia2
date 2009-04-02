@@ -283,7 +283,7 @@ class XDSScaler(Scaler):
                 # duplicates (i.e. ~ 60 degrees, say) then this
                 # may be output as - not a number -> trap for this.
                 
-                if Flags.get_ccp4_61():
+                if sc.get_new_scala():
                     if info['7_SigmaFull'][j] == '-':
                         s_full = 0.0
                     else:
@@ -1644,7 +1644,7 @@ class XDSScaler(Scaler):
                 n_full = int(info['5_Number'][j])
                 I_full = float(info['4_Irms'][j])
                 
-                if Flags.get_ccp4_61():
+                if sc.get_new_scala():
                     if info['7_SigmaFull'][j] == '-':
                         s_full = 0.0
                     else:

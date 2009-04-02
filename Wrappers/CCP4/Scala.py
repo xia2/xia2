@@ -93,15 +93,26 @@ def Scala(DriverType = None):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
 
-            # currently this version of Scala is broken :o(
-            # self.set_executable('scala-3.2.33')
-            
-            if Flags.get_ccp4_61():
-                self._new_scala = True
-            else:
-                self._new_scala = False
-                
             self.set_executable('scala')
+
+            self.start()
+            self.close_wait()
+
+            version_header = self.get_all_output()
+            version = -1
+            for record in version_header:
+                if 'Version' in record:
+                    s = record.replace('*', '').split()[-1]
+                    a, b, c = map(int, s.split('.'))
+                    version = a * 10000 + b * 100 + c
+
+            if version == -1:
+                raise RuntimeError, 'Scala version not found'
+
+            if version <= 30225:
+                self._new_scala = False
+            else:
+                self._new_scala = True
 
             # input and output files
             self._scalepack = None
@@ -181,6 +192,9 @@ def Scala(DriverType = None):
             return
 
         # getter and setter methods
+
+        def get_new_scala(self):
+            return self._new_scala
 
         def set_project_info(self, pname, xname, dname):
             '''Only use this for the merge() method.'''
