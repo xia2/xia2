@@ -247,6 +247,7 @@ from Schema.Exceptions.IntegrationError import IntegrationError
 # interface (e.g. new version, with reindexing as the finish...)
 
 from Wrappers.CCP4.Reindex import Reindex
+from Wrappers.CCP4.Sortmtz import Sortmtz
 from Wrappers.XIA.Diffdump import Diffdump
 from Wrappers.XIA.Printpeaks import Printpeaks
 from Modules.IceId import IceId
@@ -3382,6 +3383,9 @@ def Mosflm(DriverType = None):
                 # fudge this needs to be fixed. FIXME!
                 job.input('postref maxresidual 5.0')
 
+                # FIXME somewhere here need to include the pre-refinement
+                # step...
+                
                 # compute the detector limits to use for this...
                 # these are w.r.t. the beam centre and are there to
                 # ensure that spots are not predicted off the detector
@@ -3428,6 +3432,19 @@ def Mosflm(DriverType = None):
 
                 continue
 
+            # ok, at this stage I need to ...
+            #
+            # (i) accumulate the statistics as a function of batch
+            # (ii) mong them into a single block
+            #
+            # This is likely to be a pain in the arse!
+
+            first_integrated_batch = 1.0e6
+            last_integrated_batch = -1.0e6
+
+            all_residuals = []
+            all_spot_status = []
+            
             for j in range(parallel):
 
                 # now wait for them to finish - first wait will really be the
@@ -3546,11 +3563,77 @@ def Mosflm(DriverType = None):
                               'integration failed: reason unknown (log %s)' % \
                               self.get_log_file()
 
+
+                # here
+                # write the report for each image as .*-#$ to Chatter -
+                # detailed report will be written automagically to science...
+
+                parsed_output = _parse_mosflm_integration_output(output)
+                spot_status = _happy_integrate_lp(parsed_output)
+
+                # inspect the output for e.g. very high weighted residuals
+
+                images = parsed_output.keys()
+                images.sort()
+                
+                max_weighted_residual = 0.0
+                
+                residuals = []
+                for i in images:
+                    if parsed_output[i].has_key('weighted_residual'):
+                        residuals.append(parsed_output[i]['weighted_residual'])
+
+                for r in residuals:
+                    all_residuals.append(r)
+
+                for s in spot_status:
+                    all_spot_status.append(s)
+
+            self._intgr_batches_out = (first_integrated_batch,
+                                       last_integrated_batch)
+
+            Chatter.write('Processed batches %d to %d' % \
+                          self._intgr_batches_out)
+
+            spot_status = all_spot_status
+
+            if len(spot_status) > 60:
+                Chatter.write('Integration status per image (60/record):')
+            else:
+                Chatter.write('Integration status per image:')
+
+            for chunk in [spot_status[i:i + 60] \
+                          for i in range(0, len(spot_status), 60)]:
+                Chatter.write(chunk)
+            Chatter.write(
+                '"o" => ok          "%" => iffy rmsd "!" => bad rmsd')
+            Chatter.write(
+                '"O" => overloaded  "#" => many bad  "." => blank') 
+
             # sort together all of the hklout files in hklouts to get the
             # final reflection file...
 
-            return self._mosflm_hklout
+            hklout = os.path.join(self.get_working_directory(),
+                                  'integrate-sorted.mtz')
 
+            sortmtz = Sortmtz()
+            sortmtz.set_hklout(hklout)
+            for hklin in hklouts:
+                sortmtz.add_hklin(hklin)
+            sortmtz.sort()
+
+            self._mosflm_hklout = hklout
+
+            if not self._intgr_reso_high and not Flags.get_quick():
+                s, r = digest(bin_o_tron(mosflm_mtz_to_list(
+                    self._mosflm_hklout)))
+
+                Debug.write('New method resolution limit: %.2f' % r)
+                
+                self.set_integrater_high_resolution(r)
+                Chatter.write('Set resolution limit: %5.2f' % r)
+                
+            return self._mosflm_hklout
         
         def _reorder_cell_refinement_images(self):
             if not self._mosflm_cell_ref_images:
