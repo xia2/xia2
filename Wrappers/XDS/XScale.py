@@ -66,35 +66,7 @@ def XScale(DriverType = None):
             # change, and May 8 is before the change, so...
             # assert: changeover_date = Aug 1, 2007
 
-            self._version = None
-
-            for record in version_header:
-                if 'XSCALE' in record and 'VERSION' in record:
-                    datestr = record.replace(
-                        '(VERSION', '').replace(
-                        ')', '').replace('XSCALE', '').strip()[:20].strip()
-                    Debug.write('Read date as: "%s"' % datestr)
-                    y, m, d = time.strptime(datestr, '%B %d, %Y')[:3]
-
-                    Debug.write('XSCALE Version: %d-%d-%d' % (y, m, d))
-
-                    if y < 2007:
-                        self._version = 'old'
-                    elif m < 8 and y == 2007:
-                        self._version = 'old'
-                    else:
-                        self._version = 'new'
-
-            if not self._version:
-                raise RuntimeError, 'unable to find version string'
-
-            # remove XSCALE.LP...
-            Debug.write('Deleting XSCALE.LP')
-            os.remove('XSCALE.LP')
-
-            # clean up afterwards
-            self.reset()
-
+            self._version = 'new'
 
             # overall information
             self._resolution_shells = ''
@@ -226,6 +198,10 @@ def XScale(DriverType = None):
             xscale_inp.write('UNIT_CELL_CONSTANTS=')
             xscale_inp.write('%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f\n' % \
                              tuple(self._cell))
+
+            # hack to get the poly data set processed - need a weak mode...
+            # xscale_inp.write('MINIMUM_I/SIGMA=2\n')
+
             if self._reindex_matrix:
                 xscale_inp.write(
                     'REIDX=%d %d %d %d %d %d %d %d %d %d %d %d\n' % \
@@ -259,6 +235,10 @@ def XScale(DriverType = None):
                         (self._transposed_input[wave]['hkl'][j],
                          self._transposed_input[wave]['resol'][j][1],
                          self._transposed_input[wave]['resol'][j][0]))
+
+	            # FIXME this needs to be removed before being used again
+           	    # in anger!
+                    # xscale_inp.write('CORRECTIONS=DECAY ABSORPTION\n')
 
                 if self._crystal and self._zero_dose:
                     xscale_inp.write('CRYSTAL_NAME=%s\n' % self._crystal)
