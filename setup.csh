@@ -27,7 +27,6 @@ else if ( "$host_platform" == "Darwin" ) then
 endif
 
 setenv PATH ${PATH}:${XIA2_ROOT}/Applications
-setenv besthome ${XIA2_ROOT}/binaries/best
 
 setenv GFORTRAN_UNBUFFERED_ALL 1
 
