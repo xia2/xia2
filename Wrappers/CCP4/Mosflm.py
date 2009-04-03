@@ -305,6 +305,11 @@ def Mosflm(DriverType = None):
             Indexer.__init__(self)
             Integrater.__init__(self)
 
+            # store the Driver instance used for this for use when working
+            # in parallel - use with DriverFactory.Driver(DriverType)
+
+            self._mosflm_driver_type = DriverType
+
             # local parameters used in autoindexing
             self._mosflm_autoindex_sol = 0
             self._mosflm_autoindex_thresh = None
@@ -3198,6 +3203,355 @@ def Mosflm(DriverType = None):
                 
             return self._mosflm_hklout
 
+        def _mosflm_parallel_integrate(self):
+            '''Perform the integration as before, but this time as a
+            number of parallel Mosflm jobs (hence, in separate directories)
+            and including a step of pre-refinement of the mosaic spread and
+            missets. This will all be kind of explicit and hence probably
+            messy!'''
+
+            if not self.get_integrater_indexer():
+                self.set_integrater_indexer(self)
+
+            indxr = self.get_integrater_indexer()
+
+            lattice = indxr.get_indexer_lattice()
+            spacegroup_number = lattice_to_spacegroup(lattice)
+            mosaic = indxr.get_indexer_mosaic()
+            cell = indxr.get_indexer_cell()
+            beam = indxr.get_indexer_beam()
+            distance = indxr.get_indexer_distance()
+            matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
+
+            # integration parameters - will have to be copied to all
+            # of the running Mosflm instances...
+
+            integration_params = indxr.get_indexer_payload(
+                'mosflm_integration_parameters')
+            
+            if integration_params:
+                if integration_params.has_key('separation'):
+                    self.set_integrater_parameter(
+                        'mosflm', 'separation',
+                        '%f %f' % tuple(integration_params['separation']))
+                if integration_params.has_key('raster'):
+                    self.set_integrater_parameter(
+                        'mosflm', 'raster',
+                        '%d %d %d %d %d' % tuple(integration_params['raster']))
+                    
+            indxr.set_indexer_payload('mosflm_integration_parameters', None)
+            pname, xname, dname = self.get_integrater_project_info()
+
+            # what follows below should (i) be run in separate directories
+            # and (ii) be repeated N=parallel times.
+
+            parallel = Flags.get_parallel()
+
+            if not parallel:
+                raise RuntimeError, 'parallel not set'
+            if parallel < 2:
+                raise RuntimeError, 'parallel not parallel: %s' % parallel
+
+            jobs = []
+            hklouts = []
+            nref = 0
+               
+            # calculate the chunks to use
+            start = self._intgr_wedge[0] - offset
+            end = self._intgr_wedge[1] - offset
+
+            left_images = 1 + end - start
+            left_chunks = parallel
+            chunks = []
+
+            while left_images > 0:
+                size = left_images / left_chunks
+                chunks.append((start, start + size - 1))
+                start += size
+                left_images -= size
+                left_chunks -= 1
+
+            for j in range(parallel):
+
+                # make some working directories, as necessary - chunk-(0:N-1)
+                wd = os.path.join(self.get_working_directory(),
+                                  'chunk-%d' % j)
+                os.makedirs(wd)
+
+                # create the Driver, configure 
+                job = DriverFactory.Driver(self._mosflm_driver_type)
+                job.set_executable(self.get_executable)
+                job.set_working_directory(wd)
+
+                # create the starting point
+                f = open(os.path.join(wd, 'xiaintegrate.mat'), 'w')
+                for m in matrix:
+                    f.write()m
+                f.close()
+
+                job.start()
+
+                if not self._mosflm_refine_profiles:
+                    job.input('profile nooptimise')
+                    
+                # N.B. for harvesting need to append N to dname.
+                    
+                if pname != None and xname != None and dname != None:
+                    Chatter.write('Harvesting: %s/%s/%s_%d' % 
+                                  (pname, xname, dname, j))
+                    
+                    harvest_dir = os.path.join(os.environ['HARVESTHOME'], 
+                                               'DepositFiles', pname)
+
+                    if not os.path.exists(harvest_dir):
+                        Debug.write('Creating harvest directory...')
+                        os.makedirs(harvest_dir)
+
+                    job.input('harvest on')
+                    job.input('pname %s' % pname)
+                    job.input('xname %s' % xname)
+
+                    temp_dname = '%s_%s_%d' % \
+                                 (dname, self.get_integrater_sweep_name(), j)
+
+                    job.input('dname %s' % temp_dname)
+
+                if self.get_reversephi():
+                    detector = detector_class_to_mosflm(
+                        self.get_header_item('detector_class'))
+                    job.input('detector %s reversephi' % detector)
+
+                job.input('template "%s"' % self.get_template())
+                job.input('directory "%s"' % self.get_directory())
+
+                # check for ice - and if so, exclude (ranges taken from
+                # XDS documentation)
+                if job.get_integrater_ice() != 0:
+
+                    Debug.write('Excluding ice rings')
+                    
+                    for record in open(os.path.join(
+                        os.environ['XIA2_ROOT'],
+                        'Data', 'Ice','Rings.dat')).readlines():
+                    
+                        resol = tuple(map(float, record.split()[:2]))
+                        job.input('resolution exclude %.2f %.2f' % (resol))
+
+                # generate the mask information from the detector class
+                mask = standard_mask(self._fp_header['detector_class'])
+                for m in mask:
+                    job.input(m)
+
+                job.input('matrix xiaintegrate.mat')
+
+                job.input('beam %f %f' % beam)
+                job.input('distance %f' % distance)
+                job.input('symmetry %s' % spacegroup_number)
+                job.input('mosaic %f' % mosaic)
+
+                job.input('refinement include partials')
+
+                # note well that the beam centre is coming from indexing so
+                # should be already properly handled - likewise the distance
+                if self.get_wavelength_prov() == 'user':
+                    job.input('wavelength %f' % self.get_wavelength())
+
+                # get all of the stored parameter values
+                parameters = self.get_integrater_parameters('mosflm')
+                for p in parameters.keys():
+                    job.input('%s %s' % (p, str(parameters[p])))
+
+                # in here I need to get the GAIN parameter from the sweep
+                # or from somewhere in memory....
+
+                if self._mosflm_gain:
+                    job.input('gain %5.2f' % self._mosflm_gain)
+
+                # check for resolution limits
+                if self._intgr_reso_high > 0.0:
+                    if self._intgr_reso_low:
+                        job.input('resolution %f %f' % (self._intgr_reso_high,
+                                                         self._intgr_reso_low))
+                    else:
+                        job.input('resolution %f' % self._intgr_reso_high)
+
+                # FIXME in this bit beed to code up the rerefinement section
+
+                # set up the integration
+                job.input('postref fix all')
+                # fudge this needs to be fixed. FIXME!
+                job.input('postref maxresidual 5.0')
+
+                # compute the detector limits to use for this...
+                # these are w.r.t. the beam centre and are there to
+                # ensure that spots are not predicted off the detector
+                # (see bug # 2551)
+                
+                detector_width = self._fp_header['size'][0] * \
+                                 self._fp_header['pixel'][0]
+                detector_height = self._fp_header['size'][1] * \
+                                  self._fp_header['pixel'][1]
+                
+                # fixme this will probably not work well for non-square
+                # detectors...
+
+                lim_x = 0.5 * detector_width
+                lim_y = 0.5 * detector_height
+                
+                Debug.write('Scanner limits: %.1f %.1f' % (lim_x, lim_y))
+                job.input('limits xscan %f yscan %f' % (lim_x, lim_y))
+
+                if self._mosflm_postref_fix_mosaic:
+                    job.input('postref fix mosaic')
+                
+                job.input('separation close')
+
+                # FIXME this is a horrible hack - I at least need to 
+                # sand box this ... 
+                if self.get_header_item('detector') == 'raxis':
+                    job.input('adcoffset 0')
+
+                offset = self.get_frame_offset()
+                genfile = os.path.join(os.environ['BINSORT_SCR'],
+                                       '%d_%d_mosflm.gen' %
+                                       (self.get_xpid(), j))
+
+                job.input('genfile %s' % genfile)
+
+                job.input('process %d %d' % chunks[j])
+                
+                job.input('go')
+
+                # these are now running so ...
+
+                jobs.append(job)
+
+                continue
+
+            for j in range(parallel):
+
+                # now wait for them to finish - first wait will really be the
+                # first one, then all should be finished...
+                jobs[j].close_wait()
+
+                # get the log file
+                output = self.get_all_output()
+                
+                # record a copy of it, perhaps
+                if self.get_integrater_sweep_name():
+                    pname, xname, dname = self.get_integrater_project_info()
+                    FileHandler.record_log_file(
+                        '%s %s %s %s mosflm integrate' % \
+                        (self.get_integrater_sweep_name(),
+                         pname, xname, '%s_%d' % (dname, j)),
+                        self.get_log_file())
+
+                # look for things that we want to know...
+                # that is, the output reflection file name, the updated
+                # value for the gain (if present,) any warnings, errors,
+                # or just interesting facts.
+
+                integrated_images_first = 1.0e6
+                integrated_images_last = -1.0e6
+ 
+                # look for major errors
+
+                for i in range(len(output)):
+                    o = output[i]
+                    if 'LWBAT: error in ccp4_lwbat' in o:
+                        raise RuntimeError, 'serious error - inspect %s' % \
+                              self.get_log_file()
+
+                for i in range(len(output)):
+                    o = output[i]
+
+                    if 'Integrating Image' in o:
+                        batch = int(o.split()[2])
+                        if batch < integrated_images_first:
+                            integrated_images_first = batch
+                        if batch > integrated_images_last:
+                            integrated_images_last = batch
+
+                    if 'ERROR IN DETECTOR GAIN' in o:
+                        # look for the correct gain
+                        for j in range(i, i + 10):
+                            if output[j].split()[:2] == ['set', 'to']:
+                                gain = float(output[j].split()[-1][:-1])
+
+                                # check that this is not the input
+                                # value... Bug # 3374
+
+                                if self._mosflm_gain:
+                                
+                                    if math.fabs(
+                                        gain - self._mosflm_gain) > 0.02:
+                            
+                                        self.set_integrater_parameter(
+                                            'mosflm', 'gain', gain)
+                                        self.set_integrater_export_parameter(
+                                            'mosflm', 'gain', gain)
+                                        Science.write(
+                                            'GAIN updated to %f' % gain)
+
+                                        self._mosflm_gain = gain
+                                        self._mosflm_rerun_integration = True
+
+                                else:
+
+                                    self.set_integrater_parameter(
+                                        'mosflm', 'gain', gain)
+                                    self.set_integrater_export_parameter(
+                                        'mosflm', 'gain', gain)
+                                    Science.write('GAIN found to be %f' % gain)
+                                
+                                    self._mosflm_gain = gain
+                                    self._mosflm_rerun_integration = True
+
+                    # FIXME if mosaic spread refines to a negative value
+                    # once the lattice has passed the triclinic postrefinement
+                    # test then fix this by setting "POSTREF FIX MOSAIC" and
+                    # restarting.
+
+                    if 'Smoothed value for refined mosaic spread' in o:
+                        mosaic = float(o.split()[-1])
+                        if mosaic < 0.0:
+                            raise IntegrationError, 'negative mosaic spread'
+
+                    if 'WRITTEN OUTPUT MTZ FILE' in o:
+                        hklout = os.path.join(
+                            self.get_working_directory(),
+                            output[i + 1].split()[-1])
+
+                        Science.write('Integration output: %s' % hklout)
+                        hklouts.append(hklout)
+
+                    if 'Number of Reflections' in o:
+                        nref += int(o.split()[-1])
+
+                    if 'BGSIG too large' in o:
+                        Debug.write(
+                            'BGSIG error detected - try fixing profile...')
+                        self._mosflm_refine_profiles = False
+                        self.set_integrater_done(False)
+                        
+                        return
+
+                    if 'MOSFLM HAS TERMINATED EARLY' in o:
+                        Chatter.write('Mosflm has failed in integration')
+                        message = 'The input was:\n\n'
+                        for input in self.get_all_input():
+                            message += '  %s' % input
+                        Chatter.write(message)
+                        raise RuntimeError, \
+                              'integration failed: reason unknown (log %s)' % \
+                              self.get_log_file()
+
+            # sort together all of the hklout files in hklouts to get the
+            # final reflection file...
+
+            return self._mosflm_hklout
+
+        
         def _reorder_cell_refinement_images(self):
             if not self._mosflm_cell_ref_images:
                 raise RuntimeError, 'no cell refinement images to reorder'
