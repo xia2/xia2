@@ -1638,7 +1638,12 @@ def Mosflm(DriverType = None):
  
                 self.reset()
                 auto_logfiler(self)
-                self._intgr_hklout = self._mosflm_integrate()
+                if Flags.get_parallel() > 1:
+                    Debug.write('Parallel integration: %d jobs' %
+                                Flags.get_parallel())
+                    self._intgr_hklout = self._mosflm_parallel_integrate()
+                else:
+                    self._intgr_hklout = self._mosflm_integrate()
                 self._mosflm_hklout = self._intgr_hklout
 
             except IntegrationError, e:
@@ -3258,6 +3263,7 @@ def Mosflm(DriverType = None):
             nref = 0
                
             # calculate the chunks to use
+            offset = self.get_frame_offset()
             start = self._intgr_wedge[0] - offset
             end = self._intgr_wedge[1] - offset
 
@@ -3277,17 +3283,18 @@ def Mosflm(DriverType = None):
                 # make some working directories, as necessary - chunk-(0:N-1)
                 wd = os.path.join(self.get_working_directory(),
                                   'chunk-%d' % j)
-                os.makedirs(wd)
+                if not os.path.exists(wd):
+                    os.makedirs(wd)
 
                 # create the Driver, configure 
                 job = DriverFactory.Driver(self._mosflm_driver_type)
-                job.set_executable(self.get_executable)
+                job.set_executable(self.get_executable())
                 job.set_working_directory(wd)
 
                 # create the starting point
                 f = open(os.path.join(wd, 'xiaintegrate.mat'), 'w')
                 for m in matrix:
-                    f.write()m
+                    f.write(m)
                 f.close()
 
                 job.start()
@@ -3327,7 +3334,7 @@ def Mosflm(DriverType = None):
 
                 # check for ice - and if so, exclude (ranges taken from
                 # XDS documentation)
-                if job.get_integrater_ice() != 0:
+                if self.get_integrater_ice() != 0:
 
                     Debug.write('Excluding ice rings')
                     
@@ -3415,7 +3422,6 @@ def Mosflm(DriverType = None):
                 if self.get_header_item('detector') == 'raxis':
                     job.input('adcoffset 0')
 
-                offset = self.get_frame_offset()
                 genfile = os.path.join(os.environ['BINSORT_SCR'],
                                        '%d_%d_mosflm.gen' %
                                        (self.get_xpid(), j))
@@ -3443,16 +3449,17 @@ def Mosflm(DriverType = None):
             last_integrated_batch = -1.0e6
 
             all_residuals = []
-            all_spot_status = []
+            all_spot_status = ''
             
             for j in range(parallel):
+                job = jobs[j]
 
                 # now wait for them to finish - first wait will really be the
                 # first one, then all should be finished...
-                jobs[j].close_wait()
+                job.close_wait()
 
                 # get the log file
-                output = self.get_all_output()
+                output = job.get_all_output()
                 
                 # record a copy of it, perhaps
                 if self.get_integrater_sweep_name():
@@ -3488,6 +3495,10 @@ def Mosflm(DriverType = None):
                             integrated_images_first = batch
                         if batch > integrated_images_last:
                             integrated_images_last = batch
+                        if batch < first_integrated_batch:
+                            first_integrated_batch = batch
+                        if batch > last_integrated_batch:
+                            last_integrated_batch = batch
 
                     if 'ERROR IN DETECTOR GAIN' in o:
                         # look for the correct gain
@@ -3536,7 +3547,7 @@ def Mosflm(DriverType = None):
 
                     if 'WRITTEN OUTPUT MTZ FILE' in o:
                         hklout = os.path.join(
-                            self.get_working_directory(),
+                            job.get_working_directory(),
                             output[i + 1].split()[-1])
 
                         Science.write('Integration output: %s' % hklout)
@@ -3587,7 +3598,7 @@ def Mosflm(DriverType = None):
                     all_residuals.append(r)
 
                 for s in spot_status:
-                    all_spot_status.append(s)
+                    all_spot_status += s
 
             self._intgr_batches_out = (first_integrated_batch,
                                        last_integrated_batch)
@@ -3605,6 +3616,7 @@ def Mosflm(DriverType = None):
             for chunk in [spot_status[i:i + 60] \
                           for i in range(0, len(spot_status), 60)]:
                 Chatter.write(chunk)
+
             Chatter.write(
                 '"o" => ok          "%" => iffy rmsd "!" => bad rmsd')
             Chatter.write(
@@ -3620,6 +3632,7 @@ def Mosflm(DriverType = None):
             sortmtz.set_hklout(hklout)
             for hklin in hklouts:
                 sortmtz.add_hklin(hklin)
+
             sortmtz.sort()
 
             self._mosflm_hklout = hklout
