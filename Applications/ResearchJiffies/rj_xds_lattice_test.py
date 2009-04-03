@@ -204,7 +204,7 @@ def lattice_test(integrate_lp, xds_inp_file):
     for l in lattices[1:]:
         d = sigma[l]['d']
         p = sigma[l]['p']
-        print '%s %.3f %.3f' % (l, d, p)
+        print '= %s %.3f %.3f' % (l, d, p)
 
     
 if __name__ == '__main__':

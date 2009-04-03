@@ -55,17 +55,6 @@ def XScale(DriverType = None):
             else:
                 self.set_executable('xscale_par')
 
-            # check the version of the program to ensure that
-            # the program flow is correct...
-            self.start()
-            self.close_wait()
-
-            version_header = self.get_all_output()
-
-            # VERSIONS: I know August 15, 2007 is *after* the
-            # change, and May 8 is before the change, so...
-            # assert: changeover_date = Aug 1, 2007
-
             self._version = 'new'
 
             # overall information

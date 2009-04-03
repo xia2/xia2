@@ -44,7 +44,7 @@ def rj_parse_xds_correct_lp(xds_lp_lines):
 
     j = 0
 
-    while not 'CHARACTER  LATTICE     OF FIT' in xds_lp_lines[j]:
+    while not 'CHARACTER  LATTICE' in xds_lp_lines[j]:
         j += 1
 
     j += 2
