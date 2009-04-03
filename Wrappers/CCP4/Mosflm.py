@@ -1561,7 +1561,8 @@ def Mosflm(DriverType = None):
 
                 # fixme in here only run this if lattice != aP
 
-                if self.get_integrater_indexer().get_indexer_lattice() != 'aP':
+                if False and self.get_integrater_indexer(
+                    ).get_indexer_lattice() != 'aP':
                 
                     good, bad = remove_outliers(ratios, 6)
                     m, s = meansd(good)
