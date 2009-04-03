@@ -3648,8 +3648,10 @@ def Mosflm(DriverType = None):
             # sort together all of the hklout files in hklouts to get the
             # final reflection file...
 
+            hklouts.sort()
+
             hklout = os.path.join(self.get_working_directory(),
-                                  'integrate-sorted.mtz')
+                                  os.path.split(hklouts[0])[-1])
 
             Debug.write('Sorting data to %s' % hklout)
             for hklin in hklouts:
