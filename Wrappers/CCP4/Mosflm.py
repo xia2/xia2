@@ -3292,6 +3292,8 @@ def Mosflm(DriverType = None):
                 job.set_executable(self.get_executable())
                 job.set_working_directory(wd)
 
+                auto_logfiler(job)
+
                 # create the starting point
                 f = open(os.path.join(wd, 'xiaintegrate.mat'), 'w')
                 for m in matrix:
@@ -3384,16 +3386,11 @@ def Mosflm(DriverType = None):
                     else:
                         job.input('resolution %f' % self._intgr_reso_high)
 
-                # FIXME in this bit beed to code up the rerefinement section
-
                 # set up the integration
                 job.input('postref fix all')
                 # fudge this needs to be fixed. FIXME!
                 job.input('postref maxresidual 5.0')
 
-                # FIXME somewhere here need to include the pre-refinement
-                # step...
-                
                 # compute the detector limits to use for this...
                 # these are w.r.t. the beam centre and are there to
                 # ensure that spots are not predicted off the detector
@@ -3413,6 +3410,20 @@ def Mosflm(DriverType = None):
                 Debug.write('Scanner limits: %.1f %.1f' % (lim_x, lim_y))
                 job.input('limits xscan %f yscan %f' % (lim_x, lim_y))
 
+                # FIXME somewhere here need to include the pre-refinement
+                # step... start with reprocessing first 4 images...
+
+                a, b = chunks[j]
+
+                if b - a > 3:
+                    b = a + 3
+
+                job.input('postref multi segments 1')
+                job.input('process %d %d' % (a, b))
+                job.input('go')
+                
+                job.input('postref nosegment')
+                
                 if self._mosflm_postref_fix_mosaic:
                     job.input('postref fix mosaic')
                 
@@ -3479,7 +3490,7 @@ def Mosflm(DriverType = None):
                         '%s %s %s %s mosflm integrate' % \
                         (self.get_integrater_sweep_name(),
                          pname, xname, '%s_%d' % (dname, j)),
-                        self.get_log_file())
+                        job.get_log_file())
 
                 # look for things that we want to know...
                 # that is, the output reflection file name, the updated
@@ -3638,6 +3649,10 @@ def Mosflm(DriverType = None):
 
             hklout = os.path.join(self.get_working_directory(),
                                   'integrate-sorted.mtz')
+
+            Debug.write('Sorting data to %s' % hklout)
+            for hklin in hklouts:
+                Debug.write('<= %s' % hklin)
 
             sortmtz = Sortmtz()
             sortmtz.set_hklout(hklout)
