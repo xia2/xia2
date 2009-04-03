@@ -204,6 +204,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
+from Background.Background import Background
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
 
@@ -2602,7 +2603,7 @@ def Mosflm(DriverType = None):
 
                             cellref_mode = Flags.get_cellref_mode()
 
-                            if cellref_mode == 'default':
+                            if cellref_mode == 'default': 
                                 new_cref_images = self._refine_select_images(
                                     len(self._mosflm_cell_ref_images) + 1,
                                     mosaic)
@@ -3450,13 +3451,23 @@ def Mosflm(DriverType = None):
 
             all_residuals = []
             all_spot_status = ''
+
+            threads = []
             
             for j in range(parallel):
                 job = jobs[j]
 
                 # now wait for them to finish - first wait will really be the
                 # first one, then all should be finished...
-                job.close_wait()
+
+                thread = Background(job, 'close_wait')
+                thread.start()
+                threads.append(thread)
+
+            for j in range(parallel):
+                thread = threads[j]
+                thread.stop()
+                job = jobs[j]
 
                 # get the log file
                 output = job.get_all_output()
