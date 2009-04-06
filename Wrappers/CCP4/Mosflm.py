@@ -3309,8 +3309,8 @@ def Mosflm(DriverType = None):
                 # N.B. for harvesting need to append N to dname.
                     
                 if pname != None and xname != None and dname != None:
-                    Chatter.write('Harvesting: %s/%s/%s_%d' % 
-                                  (pname, xname, dname, j))
+                    Chatter.write('Harvesting: %s/%s/%s' % 
+                                  (pname, xname, dname))
                     
                     harvest_dir = os.path.join(os.environ['HARVESTHOME'], 
                                                'DepositFiles', pname)
