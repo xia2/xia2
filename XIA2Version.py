@@ -103,8 +103,13 @@
 # 
 # 0.2.7.2 - proper xia2 release - fixed upteen things including output 
 #           polish unmerged for XDS processing
+#
+# 0.2.7.2a - XDS update
+#
+# 0.3.0.0 - major version update - now allows parallel integration with
+#           Mosflm
 
-VersionNumber = "0.2.7.2"
+VersionNumber = "0.3.0.0"
 Version = "XIA2 %s" % VersionNumber
 CVSTag = "xia2-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2-%s" % VersionNumber
