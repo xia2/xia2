@@ -3323,8 +3323,8 @@ def Mosflm(DriverType = None):
                     job.input('pname %s' % pname)
                     job.input('xname %s' % xname)
 
-                    temp_dname = '%s_%s_%d' % \
-                                 (dname, self.get_integrater_sweep_name(), j)
+                    temp_dname = '%s_%s' % \
+                                 (dname, self.get_integrater_sweep_name())
 
                     job.input('dname %s' % temp_dname)
 
