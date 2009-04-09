@@ -29,6 +29,7 @@ import shutil
 import sys
 import os
 import time
+import math
 
 def nint(a):
     i = int(a)
@@ -54,6 +55,11 @@ def calculate_images(images, phi):
                    nint(images[0] + 2 * offset)))
 
     return result
+
+def meansd(values):
+    mean = sum(values) / len(values)
+    var = sum([(v - mean) * (v - mean) for v in values]) / len(values)
+    return mean, math.sqrt(var)
     
 def cr_test(labelit_log):
     
@@ -111,14 +117,21 @@ def cr_test(labelit_log):
 
     # break up by lattice, image and cycle
 
-    for lattice in lattices:
+    for lattice in lattices[:-1]:
         print lattice
+        values = []
         for cycle in rmsds_all[lattice]:
             record = '%3d' % cycle
             for j in range(len(images)):
-                record += ' %.3f' % rmsds_all[lattice][cycle][j]
+                record += ' %.3f' % (rmsds_all[lattice][cycle][j] /
+                                     rmsds_all['aP'][cycle][j])
+                values.append((rmsds_all[lattice][cycle][j] /
+                               rmsds_all['aP'][cycle][j]))
 
             print record
+
+        m, s = meansd(values)
+        print ':: %s %.3f %.3f' % (lattice, m, s)
 
 if __name__ == '__main__':
     cr_test(sys.argv[1])
