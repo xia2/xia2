@@ -121,6 +121,8 @@ def cr_test(labelit_log):
         # print lattice
         values = []
         for cycle in rmsds_all[lattice]:
+            if not cycle in rmsds_all['aP']:
+                continue
             record = '%3d' % cycle
             for j in range(len(images)):
                 record += ' %.3f' % (rmsds_all[lattice][cycle][j] /
