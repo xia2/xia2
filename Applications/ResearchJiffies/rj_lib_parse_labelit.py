@@ -43,6 +43,23 @@ def rj_parse_labelit_log(labelit_log_lines):
 
     return beam, lattice, metric, cell, image
 
+def rj_parse_labelit_log_lattices(labelit_log_lines):
+    lattices = []
+    cells = { }
+
+    j = 0
+
+    for record in labelit_log_lines:
+        if ':)' in record:
+            tokens = record.split()
+            lattice = tokens[7]
+            cell = tuple(map(float, tokens[8:14]))
+            if not lattice in lattices:
+                lattices.append(lattice)
+            cells[lattice] = cell
+
+    return lattices, cells
+
 if __name__ == '__main__':
 
     import sys

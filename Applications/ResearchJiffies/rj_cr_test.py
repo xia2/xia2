@@ -10,7 +10,7 @@
 # this will run with 3 x 4 image wedges at 0, 45, 90 or thereabouts.
 
 from rj_lib_parse_labelit import rj_parse_labelit_log_file, \
-     rj_parse_labelit_log
+     rj_parse_labelit_log, rj_parse_labelit_log_lattices
 
 from rj_lib_parse_mosflm_cr import rj_parse_mosflm_cr_log, \
      rj_parse_mosflm_cr_log_rmsd
@@ -22,7 +22,8 @@ from rj_lib_run_job import rj_run_job
 
 from rj_no_images import calculate_images as calculate_images_ai
 
-from rj_lib_lattice_symmetry import lattice_symmetry, sort_lattices
+from rj_lib_lattice_symmetry import lattice_symmetry, sort_lattices, \
+     lattice_spacegroup
 
 import shutil
 import sys
@@ -57,21 +58,67 @@ def calculate_images(images, phi):
 def cr_test(labelit_log):
     
     beam, lattice, metric, cell, image = rj_parse_labelit_log_file(labelit_log)
+    lattices, cells = rj_parse_labelit_log_lattices(
+        open(labelit_log).readlines())
     template, directory = rj_get_template_directory(image)
     images = rj_find_matching_images(image)
     phi = rj_get_phi(image)
 
     if lattice == 'aP':
         raise RuntimeError, 'triclinic lattices useless'
+
+    wedges = calculate_images(images, phi)
     
     ai_images = calculate_images_ai(images, phi, 3)
 
     # run a quick autoindex (or re-read the labelit log file above) to
     # generate the list of possible unit cell etc.
 
+    rmsds_all = { }
 
     # then loop over these
 
+    for lattice in lattices:
+        commands = [
+            'template %s' % template,
+            'directory %s' % directory,
+            'beam %f %f' % beam]
+
+        commands.append('symm %d' % lattice_spacegroup(lattice))
+        commands.append('cell %f %f %f %f %f %f' % tuple(cells[lattice]))
+
+        for image in ai_images:
+            commands.append('autoindex dps refine image %d' % image)
+
+        commands.append('mosaic estimate')
+        commands.append('go')
+
+        # the cell refinement commands
+
+        commands.append('postref multi segments 3')
+
+        for pair in wedges:
+            commands.append('process %d %d' % pair)
+            commands.append('go')
+
+        output = rj_run_job('ipmosflm-7.0.3', [], commands)
+        
+        images, rmsds = rj_parse_mosflm_cr_log_rmsd(output)
+
+        rmsds_all[lattice] = rmsds
 
     # and finally calculate the RMSD ratios.
 
+    # break up by lattice, image and cycle
+
+    for lattice in lattices:
+        print lattice
+        for cycle in rmsds_all[lattice]:
+            record = '%3d' % cycle
+            for j in range(len(images)):
+                record += ' %.3f' % rmsds_all[lattice][cycle][j]
+
+            print record
+
+if __name__ == '__main__':
+    cr_test(sys.argv[1])
