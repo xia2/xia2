@@ -40,10 +40,10 @@ def calculate_images(images, phi, spacing):
     offset = nint(spacing / phi)
     
     result = [(images[0], images[0] + n)]
-    result.append((nint(images[0] + spacing - n),
-                   nint(images[0] + spacing)))
-    result.append((nint(images[0] + 2 * spacing - n),
-                   nint(images[0] + 2 * spacing)))
+    result.append((nint(images[0] + offset - n),
+                   nint(images[0] + offset)))
+    result.append((nint(images[0] + 2 * offset - n),
+                   nint(images[0] + 2 * offset)))
 
     return result
 
