@@ -118,7 +118,7 @@ def cr_test(labelit_log):
     # break up by lattice, image and cycle
 
     for lattice in lattices[:-1]:
-        print lattice
+        # print lattice
         values = []
         for cycle in rmsds_all[lattice]:
             record = '%3d' % cycle
@@ -128,7 +128,7 @@ def cr_test(labelit_log):
                 values.append((rmsds_all[lattice][cycle][j] /
                                rmsds_all['aP'][cycle][j]))
 
-            print record
+            # print record
 
         m, s = meansd(values)
         print ':: %s %.3f %.3f' % (lattice, m, s)
