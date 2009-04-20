@@ -108,8 +108,10 @@
 #
 # 0.3.0.0 - major version update - now allows parallel integration with
 #           Mosflm
+#
+# 0.3.0.1 - revision to accomodate small molecule data reduction (first pass)
 
-VersionNumber = "0.3.0.0"
+VersionNumber = "0.3.0.1"
 Version = "XIA2 %s" % VersionNumber
 CVSTag = "xia2-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2-%s" % VersionNumber
