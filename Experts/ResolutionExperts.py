@@ -28,13 +28,29 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Wrappers.CCP4.Pointless import Pointless
 from Wrappers.CCP4.Mtzdump import Mtzdump
 from Handlers.Streams import Debug
+from Handlers.Flags import Flags
 
 # global parameters
 
+def nint(a):
+    i = int(a)
+    if a - i >= 0.5:
+        i += 1
+
+    return i
+
 _scale_bins = 0.004
-_number_bins = 500
+_number_bins = nint(2.0 / _scale_bins)
 
 # jiffy functions
+
+def _small_molecule():
+    '''Switch the settings to small molecule mode!'''
+
+    global _scale_bins, _number_bins
+    _scale_bins = 0.04
+    _number_bins = nint(2.0 / _scale_bins)
+    return
 
 def real_to_reciprocal(a, b, c, alpha, beta, gamma):
     '''Convert real cell parameters to reciprocal space.'''
@@ -159,13 +175,6 @@ def resolution(h, k, l, a_, b_, c_):
     d = sum_vv(ha_, sum_vv(kb_, lc_))
 
     return dot(d, d)
-
-def nint(a):
-    i = int(a)
-    if a - i >= 0.5:
-        i += 1
-
-    return i
 
 def meansd(values):
 
@@ -301,6 +310,9 @@ def main(mtzdump):
 def determine_scaled_resolution(hklin, isigma_limit):
     '''Determine the scaled and merged resolution limit from an MTZ file
     from e.g. Scala.'''
+
+    if Flags.get_small_molecule():
+        _small_molecule()
 
     md = Mtzdump()
     md.set_hklin(hklin)

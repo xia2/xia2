@@ -107,6 +107,10 @@ def cr_test(labelit_log):
             commands.append('process %d %d' % pair)
             commands.append('go')
 
+        for c in commands:
+            # print c
+            pass
+
         output = rj_run_job('ipmosflm-7.0.3', [], commands)
         
         images, rmsds = rj_parse_mosflm_cr_log_rmsd(output)
@@ -118,7 +122,7 @@ def cr_test(labelit_log):
     # break up by lattice, image and cycle
 
     for lattice in lattices[:-1]:
-        # print lattice
+        print lattice
         values = []
         for cycle in rmsds_all[lattice]:
             if not cycle in rmsds_all['aP']:
@@ -130,7 +134,7 @@ def cr_test(labelit_log):
                 values.append((rmsds_all[lattice][cycle][j] /
                                rmsds_all['aP'][cycle][j]))
 
-            # print record
+            print record
 
         m, s = meansd(values)
         print ':: %s %.3f %.3f' % (lattice, m, s)

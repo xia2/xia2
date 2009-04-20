@@ -42,9 +42,11 @@ def gather(files):
     for j in range(45):
         m, s = meansd(data[j + 1])
 
-        print '%d %.3f %.3f' % (j + 1, m, s)
+        if s > 0:
 
-    print '%d points' % len(data[6])
+            print '%d %.3f %.3f' % (j + 1, m, s)
+
+    print '%d points' % len(data[10])
 
 if __name__ == '__main__':
     gather(sys.argv[1:])

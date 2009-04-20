@@ -2201,56 +2201,58 @@ class CCP4Scaler(Scaler):
 
         # convert I's to F's in Truncate
 
-        for key in self._tmp_scaled_refl_files.keys():
-            file = self._tmp_scaled_refl_files[key]
-            t = self._factory.Truncate()
-            t.set_hklin(file)
+        if not Flags.get_small_molecule():
 
-            # bug # 2326
-            if self.get_scaler_anomalous():
-                t.set_anomalous(True)
-            else:
-                t.set_anomalous(False)
+            for key in self._tmp_scaled_refl_files.keys():
+                file = self._tmp_scaled_refl_files[key]
+                t = self._factory.Truncate()
+                t.set_hklin(file)
+                
+                # bug # 2326
+                if self.get_scaler_anomalous():
+                    t.set_anomalous(True)
+                else:
+                    t.set_anomalous(False)
 
-            # this is tricksy - need to really just replace the last
-            # instance of this string FIXME 27/OCT/06
+                # this is tricksy - need to really just replace the last
+                # instance of this string FIXME 27/OCT/06
 
-            FileHandler.record_log_file('%s %s %s truncate' % \
-                                        (self._common_pname,
-                                         self._common_xname,
-                                         key),
+                FileHandler.record_log_file('%s %s %s truncate' % \
+                                            (self._common_pname,
+                                             self._common_xname,
+                                             key),
                                         t.get_log_file())
 
-            hklout = ''
-            for path in os.path.split(file)[:-1]:
-                hklout = os.path.join(hklout, path)
-            hklout = os.path.join(hklout, os.path.split(file)[-1].replace(
-                '_scaled', '_truncated'))
+                hklout = ''
+                for path in os.path.split(file)[:-1]:
+                    hklout = os.path.join(hklout, path)
+                hklout = os.path.join(hklout, os.path.split(file)[-1].replace(
+                    '_scaled', '_truncated'))
 
-            FileHandler.record_temporary_file(hklout)
+                FileHandler.record_temporary_file(hklout)
 
-            t.set_hklout(hklout)
-            t.truncate()
+                t.set_hklout(hklout)
+                t.truncate()
 
-            b_factor = t.get_b_factor()
+                b_factor = t.get_b_factor()
 
-            # look for the second moment information...
-            moments = t.get_moments()
-            # for j in range(len(moments['MomentZ2'])):
-            # pass
+                # look for the second moment information...
+                moments = t.get_moments()
+                # for j in range(len(moments['MomentZ2'])):
+                # pass
 
-            # record the b factor somewhere (hopefully) useful...
+                # record the b factor somewhere (hopefully) useful...
 
-            self._scalr_statistics[
-                (self._common_pname, self._common_xname, key)
-                ]['Wilson B factor'] = [b_factor]
+                self._scalr_statistics[
+                    (self._common_pname, self._common_xname, key)
+                    ]['Wilson B factor'] = [b_factor]
 
-            # replace old with the new version which has F's in it 
-            self._tmp_scaled_refl_files[key] = hklout
+                # replace old with the new version which has F's in it 
+                self._tmp_scaled_refl_files[key] = hklout
 
-            # record the separated reflection file too
-            # 01MAR07 no longer have this
-            # self._scalr_scaled_reflection_files['mtz'][key] = hklout
+                # record the separated reflection file too
+                # 01MAR07 no longer have this
+                # self._scalr_scaled_reflection_files['mtz'][key] = hklout
 
         # standardise the unit cells and relabel each of the columns in
         # each reflection file appending the DNAME to the column name
@@ -2414,43 +2416,47 @@ class CCP4Scaler(Scaler):
         FileHandler.record_data_file(hklout)
 
         # have a look for twinning ...
-        sfc = self._factory.Sfcheck()
-        sfc.set_hklin(hklout)
-        sfc.analyse()
-        twinning_score = sfc.get_twinning()
 
-        Chatter.write('Overall twinning score: %4.2f' % twinning_score)
-        if twinning_score > 1.9:
-            Chatter.write('Your data do not appear to be twinned')
-        elif twinning_score < 1.6:
-            Chatter.write('Your data appear to be twinned')
-        else:
-            Chatter.write('Not sure what this means (1.6 < score < 1.9)')
-
-        # next have a look for radiation damage... if more than one wavelength
-
-        if len(self._tmp_scaled_refl_files.keys()) > 1:
-            crd = CCP4InterRadiationDamageDetector()
-
-            crd.set_working_directory(self.get_working_directory())
-
-            crd.set_hklin(hklout)
+        if not Flags.get_small_molecule():
+        
+            sfc = self._factory.Sfcheck()
+            sfc.set_hklin(hklout)
+            sfc.analyse()
+            twinning_score = sfc.get_twinning()
             
-            if self.get_scaler_anomalous():
-                crd.set_anomalous(True)
+            Chatter.write('Overall twinning score: %4.2f' % twinning_score)
+            if twinning_score > 1.9:
+                Chatter.write('Your data do not appear to be twinned')
+            elif twinning_score < 1.6:
+                Chatter.write('Your data appear to be twinned')
+            else:
+                Chatter.write('Not sure what this means (1.6 < score < 1.9)')
+
+            # next have a look for radiation damage...
+            # if more than one wavelength
+            
+            if len(self._tmp_scaled_refl_files.keys()) > 1:
+                crd = CCP4InterRadiationDamageDetector()
                 
-            hklout = os.path.join(self.get_working_directory(), 'temp.mtz')
-            FileHandler.record_temporary_file(hklout)
+                crd.set_working_directory(self.get_working_directory())
+                
+                crd.set_hklin(hklout)
             
-            crd.set_hklout(hklout)
+                if self.get_scaler_anomalous():
+                    crd.set_anomalous(True)
+                
+                hklout = os.path.join(self.get_working_directory(), 'temp.mtz')
+                FileHandler.record_temporary_file(hklout)
+            
+                crd.set_hklout(hklout)
 
-            status = crd.detect()
+                status = crd.detect()
 
-            Chatter.write('')
-            Chatter.write('Inter-wavelength radiation damage analysis.')
-            for s in status:
-                Chatter.write('%s %s' % s)
-            Chatter.write('')
+                Chatter.write('')
+                Chatter.write('Inter-wavelength radiation damage analysis.')
+                for s in status:
+                    Chatter.write('%s %s' % s)
+                Chatter.write('')
         
 
         return
