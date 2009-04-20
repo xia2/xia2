@@ -83,6 +83,7 @@ class _CommandLine(Object):
         self._read_ccp4_61()
         self._read_batch_scale()
         self._read_old_mosflm()
+        self._read_small_molecule()
         self._read_quick()
         self._read_reversephi()
         self._read_fiddle_sd()
@@ -601,6 +602,13 @@ class _CommandLine(Object):
         if '-old_mosflm' in sys.argv:
             Flags.set_old_mosflm(True)
             Debug.write('Old Mosflm selected')
+        return
+
+    def _read_small_molecule(self):
+
+        if '-small_molecule' in sys.argv:
+            Flags.set_small_molecule(True)
+            Debug.write('Small molecule selected')
         return
 
     def _read_cellref_mode(self):

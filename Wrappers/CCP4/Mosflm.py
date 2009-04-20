@@ -415,6 +415,9 @@ def Mosflm(DriverType = None):
         def _index_select_images(self):
             '''Select correct images based on image headers.'''
 
+            if Flags.get_small_molecule():
+                return self._index_select_images_small_molecule()
+
             # FIXME perhaps this should be somewhere central, because
             # Mosflm will share the same implementation
 
@@ -448,6 +451,40 @@ def Mosflm(DriverType = None):
                     self.add_indexer_image_wedge(images[middle])
                 Debug.write('Selected image %s' % images[-1])
                 self.add_indexer_image_wedge(images[-1])
+
+            return
+
+        def _index_select_images_small_molecule(self):
+            '''Select correct images based on image headers. This one is for
+            when you have small molecule data so want more images.'''
+
+            phi_width = self.get_header_item('phi_width')
+            images = self.get_matching_images()
+
+            Debug.write('Selected image %s' % images[0])
+
+            self.add_indexer_image_wedge(images[0])
+
+            # FIXME what to do if phi_width is recorded as zero?
+            # perhaps assume that it is 1.0!
+
+            if phi_width == 0.0:
+                Chatter.write('Phi width 0.0? Assuming 1.0!')
+                phi_width = 1.0
+
+            offset = images[0] - 1
+
+            # add an image every 15 degrees up to 90 degrees
+
+            for j in range(6):
+
+                image_number = offset + int(15 * (j + 1) / phi_width)
+
+                if not image_number in images:
+                    break
+
+                Debug.write('Selected image %s' % image_number)
+                self.add_indexer_image_wedge(image_number)
 
             return
 

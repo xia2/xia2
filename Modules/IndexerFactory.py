@@ -133,6 +133,10 @@ def Indexer(detector = None):
 
     preselection = get_preferences().get('indexer')
 
+    if not preselection:
+        if Flags.get_small_molecule():
+            preselection = 'mosflm'
+
     if not indexer and (not preselection or preselection == 'labelit'):
         try:
             if detector == 'dectris':

@@ -438,6 +438,12 @@ END PROJECT TS01
       <li>Detector limits now correctly specified around the detector centre
 	for Mosflm, rather than the beam centre. Only useful if your beam 
 	centre is a fair way from the image centre...</li>
+      <li>Parallelised integration with Mosflm - divides the sweeps into an 
+        appropriate number of chunks and then sorts together the resulting
+        reflection files.</li>
+      <li>Added a putative 'small molecule' mode, which will autoindex with 
+        Mosflm from a modest number of images, for smaller molecules where
+        Labelit is unhappy with the number of good Bragg reflections.</li>
     </ul>
 
     <p>Changes since 0.2.7.0</p>

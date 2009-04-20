@@ -67,6 +67,8 @@ class _Flags:
         if os.environ.has_key('XIA2_CCP4_61'):
             self._ccp4_61 = True
         
+        # are we working with small molecule data?
+        self._small_molecule = False
         
         return
 
@@ -198,6 +200,13 @@ class _Flags:
 
     def get_old_mosflm(self):
         return self._old_mosflm
+
+    def set_small_molecule(self, small_molecule):
+        self._small_molecule = small_molecule
+        return
+
+    def get_small_molecule(self):
+        return self._small_molecule
 
     def set_parallel(self, parallel):
         self._parallel = parallel
