@@ -3235,13 +3235,16 @@ def Mosflm(DriverType = None):
             if not self._intgr_reso_high and not Flags.get_quick():
                 resolution = decide_integration_resolution_limit(output)
 
-                s, r = digest(bin_o_tron(mosflm_mtz_to_list(
-                    self._mosflm_hklout)))
-
                 Debug.write('Old method resolution limit: %.2f' % resolution)
-                Debug.write('New method resolution limit: %.2f' % r)
                 
-                resolution = r
+                if not Flags.get_small_molecule():
+
+                    s, r = digest(bin_o_tron(mosflm_mtz_to_list(
+                        self._mosflm_hklout)))
+                    
+                    Debug.write('New method resolution limit: %.2f' % r)
+                
+                    resolution = r
                 
                 self.set_integrater_high_resolution(resolution)
                 Chatter.write('Set resolution limit: %5.2f' % resolution)
