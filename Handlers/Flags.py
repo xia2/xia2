@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#/usr/bin/env python
 # Flags.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
@@ -33,7 +33,10 @@ class _Flags:
         self._fiddle_sd = False
         self._migrate_data = False
         self._trust_timestaps = False
-        self._parallel = get_number_cpus()
+	try:
+            self._parallel = get_number_cpus()
+        except:
+            self._parallel = 0
         self._ccp4_61 = False
         self._batch_scale = False
 
