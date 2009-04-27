@@ -22,6 +22,8 @@ if not os.environ.has_key('XIA2CORE_ROOT'):
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
+from Handlers.Environment import get_number_cpus
+
 class _Flags:
     '''A singleton to manage boolean flags.'''
 
@@ -31,7 +33,7 @@ class _Flags:
         self._fiddle_sd = False
         self._migrate_data = False
         self._trust_timestaps = False
-        self._parallel = 0
+        self._parallel = get_number_cpus()
         self._ccp4_61 = False
         self._batch_scale = False
 

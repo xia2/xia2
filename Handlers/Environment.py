@@ -15,9 +15,13 @@
 # 
 
 import os
+import sys
+import subprocess
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 # to make a temporary BINSORT_SCR directory
 import tempfile
@@ -104,6 +108,40 @@ class _Environment:
 
 Environment = _Environment()
 
+# jiffy functions
+
+def get_number_cpus():
+    '''Portably get the number of processor cores available.'''
+
+    # Windows NT derived platforms
+
+    if os.name == 'nt':
+        return int(os.environ['NUMBER_OF_PROCESSORS'])
+    
+    # linux
+
+    if os.path.exists('/proc/cpuinfo'):
+        n_cpu = 0
+
+        for record in open('/proc/cpuinfo', 'r').readlines():
+            if not record.strip():
+                continue
+            if 'processor' in record.split()[0]:
+                n_cpu += 1
+
+        return n_cpu
+
+    # os X
+
+    output = subprocess.Popen(['system_profiler', 'SPHardwareDataType'],
+                              stdout = subprocess.PIPE).communicate()[0]
+    for record in output.split('\n'):
+        if 'Total Number Of Cores' in record:
+            return int(record.split()[-1])
+
+    return -1
+
 if __name__ == '__main__':
 
     print Environment.getenv('HARVESTHOME')
+    print get_number_cpus()
