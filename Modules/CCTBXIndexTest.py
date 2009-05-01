@@ -1,5 +1,10 @@
 from scitbx import matrix
 from cctbx import sgtbx
+from cctbx import crystal
+from cctbx import uctbx
+from cctbx.sgtbx import subgroups
+from cctbx.sgtbx import lattice_symmetry
+from cctbx.sgtbx import bravais_types
 import sys
 import math
 
@@ -167,6 +172,41 @@ if __name__ == '__main__':
     alpha = dtor * B.angle(C)
     beta = dtor * C.angle(A)
     gamma = dtor * A.angle(B)
+
+    uc = uctbx.unit_cell((a, b, c, alpha, beta, gamma))
+    sym = crystal.symmetry(unit_cell = uc,
+                           space_group = sg)
+
+    minop = sym.change_of_basis_op_to_minimum_cell()
+    min_cell = sym.change_basis(minop)
+
+    print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % min_cell.unit_cell().parameters()
+
+    lg = lattice_symmetry.group(min_cell.unit_cell())
+
+    lg_info = sgtbx.space_group_info(group = lg)
+
+    # N.B. these may be in a random order, so will want to perhaps add in
+    # some code which will do some sorting and find the best solution for
+    # each bravais type.
+
+    sgrps = subgroups.subgroups(lg_info).groups_parent_setting()
+
+    # recipe warning! - ok, this is all wrong and I will need to
+    # learn some more before I can get it right. Even so, it is a
+    # useful place to start!
+
+    for subg in sgrps:
+        sprgrp = sgtbx.space_group_info(group = subg).type(
+            ).expand_addl_generators_of_euclidean_normalizer(
+            True, True).build_derived_acentric_group()
+        print sprgrp.type().number()
+        subsym = crystal.symmetry(
+            unit_cell = min_cell.unit_cell(),
+            space_group = sprgrp,
+            assert_is_compatible_unit_cell = False)
+        print subsym.unit_cell().parameters()
+    
 
     print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % tuple(cell)
     print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % (a, b, c, alpha, beta, gamma)
