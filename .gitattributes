@@ -12,6 +12,8 @@ Modules/Doc/Indexer.pdf -text
 Modules/Doc/IndexerFactory.pdf -text
 Modules/Doc/XDSIndexer.pdf -text
 Modules/Doc/XDSIntegrater.pdf -text
+Modules/SPOT.XDS -text svneol=unset#application/octet-stream
+Modules/XPARM.XDS -text svneol=unset#application/octet-stream
 Schema/Doc/Structure.pdf -text
 Schema/Interfaces/Doc/Interfaces.pdf -text
 Wrappers/CCP4/Doc/Chooch.pdf -text
