@@ -150,8 +150,6 @@ if __name__ == '__main__':
     bx = ox + off.elems[0] / px
     by = oy + off.elems[1] / py
 
-    count = 0
-
     for record in open('SPOT.XDS', 'r').readlines():
         l = record.split()
 
@@ -161,14 +159,6 @@ if __name__ == '__main__':
         X, Y, i = map(float, l[:3])
         h, k, l = map(int, l[-3:])
 
-        if h == 0 and k == 0 and l == 0:
-            continue
-
-        count += 1
-
-        if count > 10:
-            break
-
         phi = (i - start) * phi_width + phi_start
 
         X = px * (X - bx)
@@ -176,11 +166,13 @@ if __name__ == '__main__':
 
         # first convert detector position to reciprocal space position
 
-        scale = wavelength * math.sqrt(X * X + Y * Y + d * d)
+        P = matrix.col([X, Y, 0]) + Sd
 
-        x = X / scale
-        y = Y / scale
-        z = d / scale
+        scale = wavelength * math.sqrt(P.dot())
+
+        x = P.elems[0] / scale
+        y = P.elems[1] / scale
+        z = P.elems[2] / scale
 
         Sp = matrix.col([x, y, z]) - S
 
