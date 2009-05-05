@@ -5,11 +5,23 @@ from cctbx import uctbx
 from cctbx.sgtbx import subgroups
 from cctbx.sgtbx import lattice_symmetry
 from cctbx.sgtbx import bravais_types
+from cctbx.crystal.find_best_cell import find_best_cell
 import sys
 import math
+import os
+
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
+if not os.environ.has_key('XIA2CORE_ROOT'):
+    raise RuntimeError, 'XIA2CORE_ROOT not defined'
+
+sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 # read in XPARM.XDS - get the real-space cell vectors, distance, rotation
 # axis and so on...
+
+from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
+from lib.SymmetryLib import lattice_to_spacegroup
 
 def read_xparm(xparm_file):
     '''Parse the XPARM file to a dictionary.'''
@@ -118,6 +130,51 @@ if __name__ == '__main__':
 
     sg = sgtbx.space_group(spacegroup)
 
+    # bung in a quick iotbx.lattice_symmetry() run to get the possible
+    # spacegroups &c.
+
+    print sg.type().hall_symbol()
+            
+    ls = LatticeSymmetry()
+    ls.set_cell(cell)
+    ls.set_spacegroup(sg.type().hall_symbol().strip())
+    ls.generate()
+
+    lattices = ls.get_lattices()
+
+    for lattice in lattices:
+        distortion = ls.get_distortion(lattice)
+        cell = ls.get_cell(lattice)
+        reindex = ls.get_reindex_op_basis(lattice)
+        print lattice, reindex
+        print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % tuple(cell)
+        m = sgtbx.change_of_basis_op(reindex)
+        # print m.c()
+        M = m.c_inv().r().as_rational().as_float().transpose().inverse()
+        # print M
+        Am = matrix.sqr([A[0], A[1], A[2],
+                         B[0], B[1], B[2],
+                         C[0], C[1], C[2]])
+        Amr = Am.inverse()
+
+        # Ap = M * A
+        # Bp = M * B
+        # Cp = M * C
+
+        Amp = (Amr * M).inverse()
+
+        Ap = matrix.col(Amp.elems[0:3])
+        Bp = matrix.col(Amp.elems[3:6])
+        Cp = matrix.col(Amp.elems[6:9])
+
+        rtod = 180.0 / math.pi
+
+        print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % \
+              (math.sqrt(Ap.dot()), math.sqrt(Bp.dot()), math.sqrt(Cp.dot()),
+               rtod * Bp.angle(Cp), rtod * Cp.angle(Ap), rtod * Ap.angle(Bp))
+        
+    raise 1
+
     print 'Old spacegroup'
 
     for smx in sg.smx():
@@ -177,6 +234,10 @@ if __name__ == '__main__':
     sym = crystal.symmetry(unit_cell = uc,
                            space_group = sg)
 
+    best = find_best_cell(sym, angular_tolerance = 3.0)
+    best.symmetry().show_summary()
+    print best.cb_op().c()
+
     minop = sym.change_of_basis_op_to_minimum_cell()
     min_cell = sym.change_basis(minop)
 
@@ -205,7 +266,8 @@ if __name__ == '__main__':
             unit_cell = min_cell.unit_cell(),
             space_group = sprgrp,
             assert_is_compatible_unit_cell = False)
-        print subsym.unit_cell().parameters()
+        print  '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % \
+              subsym.unit_cell().parameters()
     
 
     print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % tuple(cell)
