@@ -192,14 +192,14 @@ if __name__ == '__main__':
               (math.sqrt(Ap.dot()), math.sqrt(Bp.dot()), math.sqrt(Cp.dot()),
                rtod * Bp.angle(Cp), rtod * Cp.angle(Ap), rtod * Ap.angle(Bp))
 
-        break
+        
 
 
     # Now run the same, but using only CCTBX code, not running
     # iotbx.lattice_symmetry - actually, is this worth it? I
     # don't think so as what I have already works ;o)
 
-    raise 1
+    # raise 1
         
     print 'Old spacegroup'
 
