@@ -125,11 +125,15 @@ if __name__ == '__main__':
     C = results['c']
 
     cell = results['cell']
+    cell_original = results['cell']
+    sg_original = results['spacegroup']
     # results['spacegroup'] = 3
     spacegroup = sgtbx.space_group_symbols(results['spacegroup']).hall()
 
     sg = sgtbx.space_group(spacegroup)
-
+    uc = uctbx.unit_cell(cell)
+    sym = crystal.symmetry(unit_cell = uc, space_group = sg)
+    
     # bung in a quick iotbx.lattice_symmetry() run to get the possible
     # spacegroups &c.
 
@@ -149,6 +153,21 @@ if __name__ == '__main__':
         print lattice, reindex
         print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % tuple(cell)
         m = sgtbx.change_of_basis_op(reindex)
+
+        print '%d' % lattice_to_spacegroup(lattice)
+
+        sg_name = sgtbx.space_group_symbols(
+            lattice_to_spacegroup(lattice)).hall()
+
+        print sg_name
+
+        sym_new = crystal.symmetry(unit_cell = uctbx.unit_cell(cell),
+                                   space_group = sgtbx.space_group(sg_name))
+
+        print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % \
+              tuple(sym_new.unit_cell().parameters())
+        print sym_new.space_group().type().number()
+
         # print m.c()
         M = m.c_inv().r().as_rational().as_float().transpose().inverse()
         # print M
@@ -174,6 +193,13 @@ if __name__ == '__main__':
                rtod * Bp.angle(Cp), rtod * Cp.angle(Ap), rtod * Ap.angle(Bp))
 
         break
+
+
+    # Now run the same, but using only CCTBX code, not running
+    # iotbx.lattice_symmetry - actually, is this worth it? I
+    # don't think so as what I have already works ;o)
+
+    raise 1
         
     print 'Old spacegroup'
 
