@@ -172,9 +172,9 @@ if __name__ == '__main__':
         print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % \
               (math.sqrt(Ap.dot()), math.sqrt(Bp.dot()), math.sqrt(Cp.dot()),
                rtod * Bp.angle(Cp), rtod * Cp.angle(Ap), rtod * Ap.angle(Bp))
-        
-    raise 1
 
+        break
+        
     print 'Old spacegroup'
 
     for smx in sg.smx():
