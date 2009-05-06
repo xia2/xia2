@@ -29,6 +29,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
 from Driver.DriverFactory import DriverFactory
+from Diffdump import Diffdump
 
 def Printpeaks(DriverType = None):
     '''A factory for wrappers for the printpeaks.'''
@@ -53,6 +54,53 @@ def Printpeaks(DriverType = None):
             self._image = image
             self._peaks = { }
             return
+
+        def get_maxima(self):
+            '''Run diffdump, printpeaks to get a list of diffraction maxima
+            at their image positions, to allow for further analysis.'''
+
+            if not self._image:
+                raise RuntimeError, 'image not set'
+
+            if not os.path.exists(self._image):
+                raise RuntimeError, 'image %s does not exist' % \
+                      self._image
+
+            dd = Diffdump()
+            dd.set_image(self._image)
+            header = dd.readheader()
+
+            beam = header['beam']
+            pixel = header['pixel']
+
+            self.add_command_line(self._image)
+            self.start()
+            self.close_wait()
+
+            self.check_for_errors()            
+
+            # results were ok, so get all of the output out
+            output = self.get_all_output()
+
+            peaks = []
+
+            for record in output:
+
+                if not 'Peak' in record[:4]:
+                    continue
+                
+                lst = record.replace(':', ' ').split()
+                x = float(lst[4])
+                y = float(lst[6])
+                i = float(lst[-1])
+                x += beam[0]
+                y += beam[1]
+                x /= pixel[0]
+                y /= pixel[1]
+
+                peaks.append((x, y, i))
+
+            return peaks
 
         def printpeaks(self):
             '''Run printpeaks and get the list of peaks out, then decompose
@@ -199,7 +247,7 @@ def Printpeaks(DriverType = None):
 
     return PrintpeaksWrapper()
 
-if __name__ == '__main__':
+if __name__ == '__main-old__':
 
     import time
     
@@ -246,3 +294,15 @@ if __name__ == '__main__':
 
         print 'Total time: %.1f' % (t1 - t0)
         print 'Per image: %.3f' % ((t1 - t0) / count)
+
+if __name__ == '__main__':
+    # run a test of some of the new code...
+
+    p = Printpeaks()
+    p.set_image(sys.argv[1])
+    peaks = p.get_maxima()
+
+    for m in peaks:
+        x, y, i = m
+        if x < 0 or x > 2048 or y < 0 or y > 2048:
+            print '%f %f %f' % m
