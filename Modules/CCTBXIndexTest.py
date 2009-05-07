@@ -10,19 +10,6 @@ import sys
 import math
 import os
 
-if not os.environ.has_key('XIA2_ROOT'):
-    raise RuntimeError, 'XIA2_ROOT not defined'
-if not os.environ.has_key('XIA2CORE_ROOT'):
-    raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
-
-# read in XPARM.XDS - get the real-space cell vectors, distance, rotation
-# axis and so on...
-
-from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
-from lib.SymmetryLib import lattice_to_spacegroup
-
 def read_xparm(xparm_file):
     '''Parse the XPARM file to a dictionary.'''
 
@@ -127,95 +114,16 @@ if __name__ == '__main__':
     cell = results['cell']
     cell_original = results['cell']
     sg_original = results['spacegroup']
-    # results['spacegroup'] = 3
     spacegroup = sgtbx.space_group_symbols(results['spacegroup']).hall()
 
     sg = sgtbx.space_group(spacegroup)
     uc = uctbx.unit_cell(cell)
     sym = crystal.symmetry(unit_cell = uc, space_group = sg)
     
-    # bung in a quick iotbx.lattice_symmetry() run to get the possible
-    # spacegroups &c.
-
-    print sg.type().hall_symbol()
-            
-    # ls = LatticeSymmetry()
-    # ls.set_cell(cell)
-    # ls.set_spacegroup(sg.type().hall_symbol().strip())
-    # ls.generate()
-    #
-    # lattices = ls.get_lattices()
-    #
-    # for lattice in lattices:
-    # distortion = ls.get_distortion(lattice)
-    # cell = ls.get_cell(lattice)
-    # reindex = ls.get_reindex_op_basis(lattice)
-    # print lattice, reindex
-    # print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % tuple(cell)
-    # m = sgtbx.change_of_basis_op(reindex)
-    #
-    # print '%d' % lattice_to_spacegroup(lattice)
-    # 
-    # sg_name = sgtbx.space_group_symbols(
-    # lattice_to_spacegroup(lattice)).hall()
-    # 
-    # print sg_name
-    # 
-    # sym_new = crystal.symmetry(unit_cell = uctbx.unit_cell(cell),
-    # space_group = sgtbx.space_group(sg_name))
-    #    
-    #  print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % \
-    # tuple(sym_new.unit_cell().parameters())
-    # print sym_new.space_group().type().number()
-    #
-    # print m.c()
-    # M = m.c_inv().r().as_rational().as_float().transpose().inverse()
-    # print M
-    # Am = matrix.sqr([A[0], A[1], A[2],
-    # B[0], B[1], B[2],
-    # C[0], C[1], C[2]])
-    # Amr = Am.inverse()
-    # Ap = M * A
-    # Bp = M * B
-    # Cp = M * C
-    # 
-    # Amp = (Amr * M).inverse()
-    
-    # Ap = matrix.col(Amp.elems[0:3])
-    # Bp = matrix.col(Amp.elems[3:6])
-    # Cp = matrix.col(Amp.elems[6:9])
-    
-    # rtod = 180.0 / math.pi
-    
-    # print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % \
-    # (math.sqrt(Ap.dot()), math.sqrt(Bp.dot()), math.sqrt(Cp.dot()),
-    # rtod * Bp.angle(Cp), rtod * Cp.angle(Ap), rtod * Ap.angle(Bp))
-
-    # Now run the same, but using only CCTBX code, not running
-    # iotbx.lattice_symmetry - actually, is this worth it? I
-    # don't think so as what I have already works ;o)
-
-    # raise 1
-        
-    print 'Old spacegroup'
-
-    for smx in sg.smx():
-        print smx
- 
-    for ltr in sg.ltr():
-        print ltr
-
+    # This is how we remove translation elements from the spacegroup
     # sgp = sg.build_derived_group(True, False)
     # print 'Uncentred spacegroup: %d' % sgp.type().number()
     # sg = sgp
-
-    print 'New spacegroup'
-
-    for smx in sg.smx():
-        print smx
-
-    for ltr in sg.ltr():
-        print ltr
 
     wavelength = results['wavelength']
     distance = results['distance']
@@ -251,6 +159,9 @@ if __name__ == '__main__':
     gamma = dtor * A.angle(B)
 
     uc = uctbx.unit_cell((a, b, c, alpha, beta, gamma))
+
+    bmat = matrix.sqr(uc.orthogonalization_matrix())
+    
     sym = crystal.symmetry(unit_cell = uc,
                            space_group = sg)
 
@@ -261,11 +172,10 @@ if __name__ == '__main__':
     minop = sym.change_of_basis_op_to_minimum_cell()
     min_cell = sym.change_basis(minop)
 
-    print 'Minimum %8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % \
-          min_cell.unit_cell().parameters()
+    # this determines the highest symmetry compatable with the unit
+    # cell constants
 
     lg = lattice_symmetry.group(min_cell.unit_cell())
-
     lg_info = sgtbx.space_group_info(group = lg)
 
     # N.B. these may be in a random order, so will want to perhaps add in
@@ -279,45 +189,110 @@ if __name__ == '__main__':
     # useful place to start!
 
     for subg in sgrps:
+
+        # this gets the space group information
+
         sprgrp = sgtbx.space_group_info(group = subg).type(
             ).expand_addl_generators_of_euclidean_normalizer(
             True, True).build_derived_acentric_group()
-        print sprgrp.type().number()
+
+        # this sets up the symmetry (unit cell + spacegroup) object -
+        # N.B. this will not barf if the cell constants are wrong, which
+        # they are!
+
         subsym = crystal.symmetry(
             unit_cell = min_cell.unit_cell(),
             space_group = sprgrp,
             assert_is_compatible_unit_cell = False)
 
+        # much munching to get the right change of basis operation -
+        # first to the right spacegroup / lattice, then to the
+        # best choice of cell dimensions
+
         cb_op_min = subsym.space_group_info().type().cb_op()
         ref_subsym = subsym.change_basis(cb_op_min)
         cb_op_best = ref_subsym.change_of_basis_op_to_best_cell()
         best_subsym = ref_subsym.change_basis(cb_op_best)
+
+        # print a summary of this spacegroup choice
+
+        best_subsym.show_summary()
+
+        # compose these change of basis operations and convert to a
+        # matrix to allow application to the crystal orientation
+        # matrices
+        
         cb_op_all = cb_op_best * cb_op_min
+
+        # surely there must be an easier way to get the transformation
+        # than a matrix like this??
+        
         M = cb_op_all.c_inv().r().as_rational().as_float(
             ).transpose().inverse()
-        print M
-        print  '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % \
-              best_subsym.unit_cell().parameters()
-    
+
+        # now, transform it back to the original (minimal) setting to
+        # see what effect this has had on the primitive cell constants
+
+        equiv_cell = best_subsym.change_basis(
+            best_subsym.change_of_basis_op_to_minimum_cell()).unit_cell()
+        equiv_bmat = matrix.sqr(equiv_cell.orthogonalization_matrix())
+
+        # reconstruct my original real-space A matrix from the vectors in
+        # the XPARM file
+        
         Am = matrix.sqr([A[0], A[1], A[2],
                          B[0], B[1], B[2],
                          C[0], C[1], C[2]])
+
+        # transform it to get the reciprocal space A matrix = [a*, b*, c*]
+        
         Amr = Am.inverse()
-        Ap = M * A
-        Bp = M * B
-        Cp = M * C
+
+        # multiply this by the orthogonalization matrix from the real-space
+        # vectors = reciprocal space orthogonalization matrix inverted
+        # (messy but makes sense)
+
+        U = Amr * bmat
+
+        # now multiply this by the reciprocal space B matrix calculated
+        # from the back-transformed symmetry-happy cell constants
+        
+        Anew = ((U * equiv_bmat.inverse()) * M).inverse()
+
+        # now invert the matrix above again (i.e. the one which was transformed
+        # to the correct setting) to get the transformed cell constants out
+        # for comparison
 
         Amp = (Amr * M).inverse()
-        
+
         Ap = matrix.col(Amp.elems[0:3])
         Bp = matrix.col(Amp.elems[3:6])
         Cp = matrix.col(Amp.elems[6:9])
-        
+
         rtod = 180.0 / math.pi
+
+        # these are the putative symmetry-happy cell vectors computed
+
+        Apn = matrix.col(Anew.elems[0:3])
+        Bpn = matrix.col(Anew.elems[3:6])
+        Cpn = matrix.col(Anew.elems[6:9])
+
+        # OK, so in here want to derive U B = A; impose lattice constraints
+        # on B (i.e. use the correctly transformed cell constants) then
+        # reconstruct a new A. Would be interesting to compute A'A-1 to see
+        # how different they are... Since XDS will "listen" can also write
+        # out the correct unit cell axis to reindex with, for the
+        # higher symmetry.
         
-        print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % \
+        print 'A    %8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % \
               (math.sqrt(Ap.dot()), math.sqrt(Bp.dot()), math.sqrt(Cp.dot()),
                rtod * Bp.angle(Cp), rtod * Cp.angle(Ap), rtod * Ap.angle(Bp))
+        print 'Anwe %8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % \
+              (math.sqrt(Apn.dot()), math.sqrt(Bpn.dot()),
+               math.sqrt(Cpn.dot()), rtod * Bpn.angle(Cpn),
+               rtod * Cpn.angle(Apn), rtod * Apn.angle(Bpn))
+
+    # Ok, so this is back to the original calculations...
 
     print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % tuple(cell)
     print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % (a, b, c, alpha, beta, gamma)
