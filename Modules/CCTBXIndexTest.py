@@ -6,6 +6,7 @@ from cctbx.sgtbx import subgroups
 from cctbx.sgtbx import lattice_symmetry
 from cctbx.sgtbx import bravais_types
 from cctbx.crystal.find_best_cell import find_best_cell
+
 import sys
 import math
 import os
@@ -13,68 +14,43 @@ import os
 def read_xparm(xparm_file):
     '''Parse the XPARM file to a dictionary.'''
 
-    records = open(xparm_file, 'r').readlines()
-
     data = map(float, open(xparm_file, 'r').read().split())
 
-    if not len(data) == 42:
-        raise RuntimeError, 'error parsing %s' % xparm_file
+    assert(len(data) == 42)
 
     starting_frame = int(data[0])
-    phi_start = data[1]
-    phi_width = data[2]
+    phi_start, phi_width = data[1:3]
     axis = data[3:6]
 
     wavelength = data[6]
     beam = data[7:10]
 
-    nx = int(data[10])
-    ny = int(data[11])
-    px = data[12]
-    py = data[13]
+    nx, ny = map(int, data[10:12])
+    px, py = data[12:14]
 
     distance = data[14]
-    ox = data[15]
-    oy = data[16]
+    ox, oy = data[15:17]
 
-    x = data[17:20]
-    y = data[20:23]
+    x, y = data[17:20], data[20:23]
     normal = data[23:26]
 
     spacegroup = int(data[26])
     cell = data[27:33]
 
-    a = data[33:36]
-    b = data[36:39]
-    c = data[39:42]
+    a, b, c = data[33:36], data[36:39], data[39:42]
 
     results = {
         'starting_frame':starting_frame,
-        'phi_start':phi_start,
-        'phi_width':phi_width,
-        'axis':axis,
-        'wavelength':wavelength,
-        'beam':beam,
-        'nx':nx,
-        'ny':ny,
-        'px':px,
-        'py':py,
-        'distance':distance,
-        'ox':ox,
-        'oy':oy,
-        'x':x,
-        'y':y,
-        'normal':normal,
-        'spacegroup':spacegroup,
-        'cell':cell,
-        'a':a,
-        'b':b,
-        'c':c
+        'phi_start':phi_start, 'phi_width':phi_width,
+        'axis':axis, 'wavelength':wavelength, 'beam':beam,
+        'nx':nx, 'ny':ny, 'px':px, 'py':py, 'distance':distance,
+        'ox':ox, 'oy':oy, 'x':x, 'y':y, 'normal':normal,
+        'spacegroup':spacegroup, 'cell':cell, 'a':a, 'b':b, 'c':c
         }
 
     return results
 
-def keep():
+def write_xparm_format():
     
     print '%6d%12.6f%12.6f%12.6f%12.6f%12.6f' % (starting_frame, phi_start,
                                                  phi_width,
@@ -107,10 +83,7 @@ def nint(a):
 if __name__ == '__main__':
     results = read_xparm('XPARM.XDS')
 
-    A = results['a']
-    B = results['b']
-    C = results['c']
-
+    A, B, C = results['a'], results['b'], results['c']
     cell = results['cell']
     cell_original = results['cell']
     sg_original = results['spacegroup']
