@@ -139,61 +139,57 @@ if __name__ == '__main__':
 
     print sg.type().hall_symbol()
             
-    ls = LatticeSymmetry()
-    ls.set_cell(cell)
-    ls.set_spacegroup(sg.type().hall_symbol().strip())
-    ls.generate()
-
-    lattices = ls.get_lattices()
-
-    for lattice in lattices:
-        distortion = ls.get_distortion(lattice)
-        cell = ls.get_cell(lattice)
-        reindex = ls.get_reindex_op_basis(lattice)
-        print lattice, reindex
-        print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % tuple(cell)
-        m = sgtbx.change_of_basis_op(reindex)
-
-        print '%d' % lattice_to_spacegroup(lattice)
-
-        sg_name = sgtbx.space_group_symbols(
-            lattice_to_spacegroup(lattice)).hall()
-
-        print sg_name
-
-        sym_new = crystal.symmetry(unit_cell = uctbx.unit_cell(cell),
-                                   space_group = sgtbx.space_group(sg_name))
-
-        print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % \
-              tuple(sym_new.unit_cell().parameters())
-        print sym_new.space_group().type().number()
-
-        # print m.c()
-        M = m.c_inv().r().as_rational().as_float().transpose().inverse()
-        # print M
-        Am = matrix.sqr([A[0], A[1], A[2],
-                         B[0], B[1], B[2],
-                         C[0], C[1], C[2]])
-        Amr = Am.inverse()
-
-        # Ap = M * A
-        # Bp = M * B
-        # Cp = M * C
-
-        Amp = (Amr * M).inverse()
-
-        Ap = matrix.col(Amp.elems[0:3])
-        Bp = matrix.col(Amp.elems[3:6])
-        Cp = matrix.col(Amp.elems[6:9])
-
-        rtod = 180.0 / math.pi
-
-        print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % \
-              (math.sqrt(Ap.dot()), math.sqrt(Bp.dot()), math.sqrt(Cp.dot()),
-               rtod * Bp.angle(Cp), rtod * Cp.angle(Ap), rtod * Ap.angle(Bp))
-
-        
-
+    # ls = LatticeSymmetry()
+    # ls.set_cell(cell)
+    # ls.set_spacegroup(sg.type().hall_symbol().strip())
+    # ls.generate()
+    #
+    # lattices = ls.get_lattices()
+    #
+    # for lattice in lattices:
+    # distortion = ls.get_distortion(lattice)
+    # cell = ls.get_cell(lattice)
+    # reindex = ls.get_reindex_op_basis(lattice)
+    # print lattice, reindex
+    # print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % tuple(cell)
+    # m = sgtbx.change_of_basis_op(reindex)
+    #
+    # print '%d' % lattice_to_spacegroup(lattice)
+    # 
+    # sg_name = sgtbx.space_group_symbols(
+    # lattice_to_spacegroup(lattice)).hall()
+    # 
+    # print sg_name
+    # 
+    # sym_new = crystal.symmetry(unit_cell = uctbx.unit_cell(cell),
+    # space_group = sgtbx.space_group(sg_name))
+    #    
+    #  print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % \
+    # tuple(sym_new.unit_cell().parameters())
+    # print sym_new.space_group().type().number()
+    #
+    # print m.c()
+    # M = m.c_inv().r().as_rational().as_float().transpose().inverse()
+    # print M
+    # Am = matrix.sqr([A[0], A[1], A[2],
+    # B[0], B[1], B[2],
+    # C[0], C[1], C[2]])
+    # Amr = Am.inverse()
+    # Ap = M * A
+    # Bp = M * B
+    # Cp = M * C
+    # 
+    # Amp = (Amr * M).inverse()
+    
+    # Ap = matrix.col(Amp.elems[0:3])
+    # Bp = matrix.col(Amp.elems[3:6])
+    # Cp = matrix.col(Amp.elems[6:9])
+    
+    # rtod = 180.0 / math.pi
+    
+    # print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % \
+    # (math.sqrt(Ap.dot()), math.sqrt(Bp.dot()), math.sqrt(Cp.dot()),
+    # rtod * Bp.angle(Cp), rtod * Cp.angle(Ap), rtod * Ap.angle(Bp))
 
     # Now run the same, but using only CCTBX code, not running
     # iotbx.lattice_symmetry - actually, is this worth it? I
@@ -209,11 +205,9 @@ if __name__ == '__main__':
     for ltr in sg.ltr():
         print ltr
 
-    sgp = sg.build_derived_group(True, False)
-
-    print 'Uncentred spacegroup: %d' % sgp.type().number()
-
-    sg = sgp
+    # sgp = sg.build_derived_group(True, False)
+    # print 'Uncentred spacegroup: %d' % sgp.type().number()
+    # sg = sgp
 
     print 'New spacegroup'
 
@@ -267,7 +261,8 @@ if __name__ == '__main__':
     minop = sym.change_of_basis_op_to_minimum_cell()
     min_cell = sym.change_basis(minop)
 
-    print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % min_cell.unit_cell().parameters()
+    print 'Minimum %8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % \
+          min_cell.unit_cell().parameters()
 
     lg = lattice_symmetry.group(min_cell.unit_cell())
 
@@ -292,9 +287,37 @@ if __name__ == '__main__':
             unit_cell = min_cell.unit_cell(),
             space_group = sprgrp,
             assert_is_compatible_unit_cell = False)
+
+        cb_op_min = subsym.space_group_info().type().cb_op()
+        ref_subsym = subsym.change_basis(cb_op_min)
+        cb_op_best = ref_subsym.change_of_basis_op_to_best_cell()
+        best_subsym = ref_subsym.change_basis(cb_op_best)
+        cb_op_all = cb_op_best * cb_op_min
+        M = cb_op_all.c_inv().r().as_rational().as_float(
+            ).transpose().inverse()
+        print M
         print  '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % \
-              subsym.unit_cell().parameters()
+              best_subsym.unit_cell().parameters()
     
+        Am = matrix.sqr([A[0], A[1], A[2],
+                         B[0], B[1], B[2],
+                         C[0], C[1], C[2]])
+        Amr = Am.inverse()
+        Ap = M * A
+        Bp = M * B
+        Cp = M * C
+
+        Amp = (Amr * M).inverse()
+        
+        Ap = matrix.col(Amp.elems[0:3])
+        Bp = matrix.col(Amp.elems[3:6])
+        Cp = matrix.col(Amp.elems[6:9])
+        
+        rtod = 180.0 / math.pi
+        
+        print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % \
+              (math.sqrt(Ap.dot()), math.sqrt(Bp.dot()), math.sqrt(Cp.dot()),
+               rtod * Bp.angle(Cp), rtod * Cp.angle(Ap), rtod * Ap.angle(Bp))
 
     print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % tuple(cell)
     print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % (a, b, c, alpha, beta, gamma)
