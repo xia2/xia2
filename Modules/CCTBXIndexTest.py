@@ -269,6 +269,9 @@ if __name__ == '__main__':
 
     print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % tuple(cell)
     print '%8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % (a, b, c, alpha, beta, gamma)
+
+    # get the angular information necessary to transform the image
+    # number in the spot list to a rotation angle
     
     phi_start = results['phi_start']
     phi_width = results['phi_width']
@@ -287,13 +290,14 @@ if __name__ == '__main__':
 
     off = Sd - D
 
+    # FIXME should verify that the offset is confined to the detector
+    # plane - i.e. off.normal = 0
+
     bx = ox + off.elems[0] / px
     by = oy + off.elems[1] / py
 
-    # first gather the average offset (i.e. the RMS) of INDEXED reflections
-
-    sum = 0.0
-    n = 0
+    # now reindex the SPOT.XDS reflection file... recall the structure of the
+    # file is x, y, image, intensity, h, k, l - if not indexed, h, k, l = 0.
 
     for record in open('SPOT.XDS', 'r').readlines():
         l = record.split()
@@ -307,12 +311,15 @@ if __name__ == '__main__':
         if h == 0 and k == 0 and l == 0:
             continue
 
-        phi = (i - start) * phi_width + phi_start
+        # transform coordinates to something physical - i.e. degrees and mm.
 
+        phi = (i - start) * phi_width + phi_start
         X = px * (X - bx)
         Y = py * (Y - by)
 
-        # first convert detector position to reciprocal space position
+        # then convert detector position to reciprocal space position -
+        # first add the crystal to detector beam vector, then scale, then
+        # subtract the beam vector again in reciprocal space...
 
         P = matrix.col([X, Y, 0]) + Sd
 
@@ -324,77 +331,14 @@ if __name__ == '__main__':
 
         Sp = matrix.col([x, y, z]) - S
 
-        hkl = m * Sp.rotate(axis, - 1 * phi / dtor).elems
-
-        sh = math.fabs(hkl[0] - nint(hkl[0]))
-        sk = math.fabs(hkl[1] - nint(hkl[1]))
-        sl = math.fabs(hkl[2] - nint(hkl[2]))
-
-        sum += (sh * sh + sk * sk + sl * sl)
-        n += 1
-
-    rmsd = math.sqrt(sum / n)
-
-    # then look at which ones I should be able to index...
-
-    sum2 = 0.0
-    n2 = 0
-
-    iabs = 0
-        
-    for record in open('SPOT.XDS', 'r').readlines():
-        l = record.split()
-
-        if not l:
-            continue
-
-        X, Y, i = map(float, l[:3])
-        h, k, l = map(int, l[-3:])
-
-        if h == 0 and k == 0 and l == 0:
-            pass
-        else:
-            continue
-
-        phi = (i - start) * phi_width + phi_start
-
-        X = px * (X - bx)
-        Y = py * (Y - by)
-
-        # first convert detector position to reciprocal space position
-
-        P = matrix.col([X, Y, 0]) + Sd
-
-        scale = wavelength * math.sqrt(P.dot())
-
-        x = P.elems[0] / scale
-        y = P.elems[1] / scale
-        z = P.elems[2] / scale
-
-        Sp = matrix.col([x, y, z]) - S
+        # now index the reflection
 
         hkl = m * Sp.rotate(axis, - 1 * phi / dtor).elems
 
-        sh = math.fabs(hkl[0] - nint(hkl[0]))
-        sk = math.fabs(hkl[1] - nint(hkl[1]))
-        sl = math.fabs(hkl[2] - nint(hkl[2]))
+        h = nint(hkl[0])
+        k = nint(hkl[1])
+        l = nint(hkl[2])
 
-        if math.sqrt(sh * sh + sk * sk + sl * sl) < 3.0 * rmsd:
 
-            sum2 += (sh * sh + sk * sk + sl * sl)
-            n2 += 1
-            
-            # print '%4d %4d %4d => %8.4f %8.4f %8.4f' % \
-            # (h, k, l, hkl[0], hkl[1], hkl[2])
 
-            ihkl = tuple(map(nint, hkl))
 
-            if sg.is_sys_absent(ihkl):
-                # print '%d %d %d %d %d %d' % \
-                # (h, k, l, ihkl[0], ihkl[1], ihkl[2])
-                iabs += 1
-
-    print 'Over %d indexed reflections RMSD = %.3f' % (n, rmsd)
-    print 'Over %d unindexed reflections RMSD = %.3f' % (n2,
-                                                         math.sqrt(sum2 / n2))
-    print '%d systematic absences' % iabs
