@@ -45,24 +45,25 @@ import libtbx.load_env
 def check_cctbx_version():
     '''Check that we have the an acceptable CCTBX version.'''
 
-  version = None
-  for tag_file in ["TAG", "cctbx_bundle_TAG"]:
-    tag_path = libtbx.env.under_dist("libtbx", os.path.join("..", tag_file))
-    if (os.path.isfile(tag_path)):
-      try: version = open(tag_path).read().strip()
-      except KeyboardInterrupt: raise
-      except: pass
-      else: break
-  if version is None:
-    version = libtbx.env.command_version_suffix
+    version = None
+    for tag_file in ["TAG", "cctbx_bundle_TAG"]:
+        tag_path = libtbx.env.under_dist("libtbx",
+                                         os.path.join("..", tag_file))
+        if (os.path.isfile(tag_path)):
+            try: version = open(tag_path).read().strip()
+            except KeyboardInterrupt: raise
+            except: pass
+            else: break
+    if version is None:
+        version = libtbx.env.command_version_suffix
 
-  if version is None:
-      # just assume that this is from subversion => probably up-to-date!
-      return
+    if version is None:
+        # just assume that this is from subversion => probably up-to-date!
+        return
 
-  build = int(version.split('_')[-1])
-  if build < 2320:
-      raise RuntimeError, 'cctbx version < 2320 not supported (%s)' % version
+    build = int(version.split('_')[-1])
+    if build < 2320:
+        raise RuntimeError, 'cctbx version < 2320 not supported (%s)' % version
 
 def check_environment():
     '''Check the environment we are running in...'''
