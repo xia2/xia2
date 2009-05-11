@@ -1,2 +1,2 @@
 @echo off
-python %XIA2_ROOT%\Applications\xia2.py %*
+cctbx.python %XIA2_ROOT%\Applications\xia2.py %*

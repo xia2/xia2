@@ -345,6 +345,46 @@ def beam_centre_xds_to_mosflm(px, py, header):
 
     return y, x
 
+def xds_read_xparm(xparm_file):
+    '''Parse the XPARM file to a dictionary.'''
+
+    data = map(float, open(xparm_file, 'r').read().split())
+
+    assert(len(data) == 42)
+
+    starting_frame = int(data[0])
+    phi_start, phi_width = data[1:3]
+    axis = data[3:6]
+
+    wavelength = data[6]
+    beam = data[7:10]
+
+    nx, ny = map(int, data[10:12])
+    px, py = data[12:14]
+
+    distance = data[14]
+    ox, oy = data[15:17]
+
+    x, y = data[17:20], data[20:23]
+    normal = data[23:26]
+
+    spacegroup = int(data[26])
+    cell = data[27:33]
+
+    a, b, c = data[33:36], data[36:39], data[39:42]
+
+    results = {
+        'starting_frame':starting_frame,
+        'phi_start':phi_start, 'phi_width':phi_width,
+        'axis':axis, 'wavelength':wavelength, 'beam':beam,
+        'nx':nx, 'ny':ny, 'px':px, 'py':py, 'distance':distance,
+        'ox':ox, 'oy':oy, 'x':x, 'y':y, 'normal':normal,
+        'spacegroup':spacegroup, 'cell':cell, 'a':a, 'b':b, 'c':c
+        }
+
+    return results
+
+
 if __name__ == '__main__':
     from Wrappers.XIA.Diffdump import Diffdump
 

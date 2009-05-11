@@ -20,7 +20,10 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
+# xia2 stuff...
+
 from Wrappers.XDS.XDS import xds_read_xparm
+from Handlers.Streams import Debug
 from lib.Guff import nint
 
 # cctbx stuff
@@ -50,6 +53,7 @@ def xds_check_indexer_solution(xparm_file,
     # without testing...
 
     if not is_centred(space_group_number):
+        Debug.write('Primititve, so not testing')
         return space_group_number, cell
 
     # right, now need to read through the SPOT.XDS file and index the
@@ -166,7 +170,7 @@ def xds_check_indexer_solution(xparm_file,
     # now, if the number of absences is substantial, need to consider
     # transforming this to a primitive basis
 
-    print 'Absent: %d    Present: %d' % (absent, present)
+    Debug.write('Absent: %d  vs.  Present: %d' % (absent, present))
     
 def is_centred(space_group_number):
     '''Test if space group # corresponds to a centred space group.'''

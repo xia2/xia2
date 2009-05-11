@@ -37,6 +37,7 @@ from Wrappers.XIA.Diffdump import Diffdump
 from Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
 from Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
 from Wrappers.XDS.XDS import XDSException
+from Modules.XDSCheckIndexerSolution import xds_check_indexer_solution
 
 # interfaces that this must implement to be an indexer
 
@@ -459,6 +460,11 @@ class XDSIndexerII(FrameProcessor,
 
         Debug.write('Low resolution limit assigned as: %.2f' % dmax)
         self._indxr_low_resolution = dmax
+
+        # test if this is a valid solution...
+
+        xds_check_indexer_solution(idxref.get_output_data_file('XPARM.XDS'),
+                                   idxref.get_output_data_file('SPOT.XDS'))
 
         return
         
