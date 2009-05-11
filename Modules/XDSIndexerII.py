@@ -463,8 +463,9 @@ class XDSIndexerII(FrameProcessor,
 
         # test if this is a valid solution...
 
-        xds_check_indexer_solution(idxref.get_output_data_file('XPARM.XDS'),
-                                   idxref.get_output_data_file('SPOT.XDS'))
+        xds_check_indexer_solution(
+            os.path.join(self.get_working_directory(), 'XPARM.XDS'),
+            os.path.join(self.get_working_directory(), 'SPOT.XDS'))
 
         return
         
