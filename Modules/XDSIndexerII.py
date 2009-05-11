@@ -397,6 +397,8 @@ class XDSIndexerII(FrameProcessor,
 
             # ok, in here now ask if this solution was sensible!
 
+            lattice, cell, mosaic = idxref.get_indexing_solution()            
+
             lattice2, cell2 = xds_check_indexer_solution(
                 os.path.join(self.get_working_directory(), 'XPARM.XDS'),
                 os.path.join(self.get_working_directory(), 'SPOT.XDS'))
@@ -409,6 +411,8 @@ class XDSIndexerII(FrameProcessor,
                 
                 idxref.set_indexer_input_lattice(lattice2)
                 idxref.set_indexer_input_cell(cell2)
+
+                Debug.write('Detected pseudocentred lattice')
 
                 Debug.write('Set lattice: %s' % lattice2)
                 Debug.write('Set cell: %f %f %f %f %f %f' % \
