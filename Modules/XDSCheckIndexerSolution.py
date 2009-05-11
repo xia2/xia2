@@ -173,7 +173,8 @@ def xds_check_indexer_solution(xparm_file,
     # now, if the number of absences is substantial, need to consider
     # transforming this to a primitive basis
 
-    Debug.write('Absent: %d  vs.  Present: %d' % (absent, present))
+    Debug.write('Absent: %d  vs.  Present: %d Total: %d' % \
+                (absent, present, total))
 
     # now see if this is compatible with a centred lattice or suggests
     # a primitive basis is correct
