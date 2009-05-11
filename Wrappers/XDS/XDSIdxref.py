@@ -114,6 +114,8 @@ def XDSIdxref(DriverType = None):
             self._output_data_files_list = ['SPOT.XDS',
                                             'XPARM.XDS']
 
+            self._index_tree_problem = False
+
             return
 
         # getter and setter for input / output data
@@ -164,6 +166,9 @@ def XDSIdxref(DriverType = None):
         def set_reversephi(self, reversephi = True):
             self._reversephi = reversephi
             return
+
+        def get_index_tree_problem(self):
+            return self._index_tree_problem
 
         # this needs setting up from setup_from_image in FrameProcessor
 
@@ -289,6 +294,7 @@ def XDSIdxref(DriverType = None):
             
                 if st[2] > st[1] / 10:
                     Debug.write('Look closely at autoindexing solution!')
+                    self._index_tree_problem = True
                     for j in sorted(st):
                         Debug.write('%2d: %5d' % (j, st[j]))
 
