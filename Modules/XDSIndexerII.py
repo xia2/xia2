@@ -395,35 +395,6 @@ class XDSIndexerII(FrameProcessor,
                 else:
                     raise e
 
-            # ok, in here now ask if this solution was sensible!
-
-            lattice, cell, mosaic = idxref.get_indexing_solution()            
-
-            lattice2, cell2 = xds_check_indexer_solution(
-                os.path.join(self.get_working_directory(), 'XPARM.XDS'),
-                os.path.join(self.get_working_directory(), 'SPOT.XDS'))
-
-            tree_problem = idxref.get_index_tree_problem()
-
-            if tree_problem and lattice2 != lattice:
-                # hmm.... looks like we don't agree on the correct result...
-                # update the putative correct result as input
-                
-                idxref.set_indexer_input_lattice(lattice2)
-                idxref.set_indexer_input_cell(cell2)
-
-                Debug.write('Detected pseudocentred lattice')
-
-                Debug.write('Set lattice: %s' % lattice2)
-                Debug.write('Set cell: %f %f %f %f %f %f' % \
-                            cell2)
-
-                # then rerun
-                
-                self.set_indexer_done(false)
-                return
-            
-
         for file in ['SPOT.XDS',
                      'XPARM.XDS']:
             self._data_files[file] = idxref.get_output_data_file(file)
@@ -441,6 +412,37 @@ class XDSIndexerII(FrameProcessor,
 
         self._indxr_payload['xds_files'] = self._data_files
 
+        # ok, in here now ask if this solution was sensible!
+
+        lattice = self._indxr_lattice
+        
+        lattice2, cell2 = xds_check_indexer_solution(
+            os.path.join(self.get_working_directory(), 'XPARM.XDS'),
+            os.path.join(self.get_working_directory(), 'SPOT.XDS'))
+        
+        tree_problem = idxref.get_index_tree_problem()
+
+        Debug.write('Centring analysis: %s => %s' % \
+                    (lattice, lattice2))
+
+        if tree_problem and lattice2 != lattice:
+            # hmm.... looks like we don't agree on the correct result...
+            # update the putative correct result as input
+                
+            self.set_indexer_input_lattice(lattice2)
+            self.set_indexer_input_cell(cell2)
+
+            Debug.write('Detected pseudocentred lattice')
+
+            Debug.write('Set lattice: %s' % lattice2)
+            Debug.write('Set cell: %f %f %f %f %f %f' % \
+                        cell2)
+
+            # then rerun
+            
+            self.set_indexer_done(False)
+            return
+            
         # finally read through SPOT.XDS and XPARM.XDS to get an estimate
         # of the low resolution limit - this should be pretty straightforward
         # since what I want is the resolution of the lowest resolution indexed

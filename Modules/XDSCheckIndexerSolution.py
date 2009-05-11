@@ -66,7 +66,7 @@ def xds_check_indexer_solution(xparm_file,
 
     if not is_centred(space_group_number):
         Debug.write('Primititve, so not testing')        
-        return s2l(space_group_number), cell
+        return s2l(space_group_number), tuple(cell)
 
     # right, now need to read through the SPOT.XDS file and index the
     # reflections with the centred basis. Then I need to remove the lattice
@@ -196,7 +196,7 @@ def xds_check_indexer_solution(xparm_file,
     if (absent - 3 * sd) / total < 0.008:
         # everything is peachy
 
-        return s2l(space_group_number), cell
+        return s2l(space_group_number), tuple(cell)
 
     # ok if we are here things are not peachy, so need to calculate the
     # spacegroup number without the translation operators
@@ -204,7 +204,7 @@ def xds_check_indexer_solution(xparm_file,
     sg_new = sg.build_derived_group(True, False)
     space_group_number_primitive = sg_new.type().number()
 
-    return s2l(space_group_number_primitive), cell
+    return s2l(space_group_number_primitive), tuple(cell)
     
 def is_centred(space_group_number):
     '''Test if space group # corresponds to a centred space group.'''
