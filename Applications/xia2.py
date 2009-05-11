@@ -53,8 +53,12 @@ def check_cctbx_version():
       except KeyboardInterrupt: raise
       except: pass
       else: break
-  if (version is None):
+  if version is None:
     version = libtbx.env.command_version_suffix
+
+  if version is None:
+      # just assume that this is from subversion => probably up-to-date!
+      return
 
   build = int(version.split('_')[-1])
   if build < 2320:
