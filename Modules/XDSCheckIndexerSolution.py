@@ -112,7 +112,7 @@ def xds_check_indexer_solution(xparm_file,
     present = 0
     absent = 0
 
-    for record in open('SPOT.XDS', 'r').readlines():
+    for record in open(spot_file, 'r').readlines():
         l = record.split()
 
         if not l:
