@@ -111,6 +111,7 @@ def xds_check_indexer_solution(xparm_file,
 
     present = 0
     absent = 0
+    total = 0
 
     for record in open(spot_file, 'r').readlines():
         l = record.split()
@@ -120,6 +121,8 @@ def xds_check_indexer_solution(xparm_file,
 
         X, Y, i = map(float, l[:3])
         h, k, l = map(int, l[-3:])
+
+        total += 1
 
         # transform coordinates to something physical - i.e. degrees and mm.
 
@@ -171,6 +174,16 @@ def xds_check_indexer_solution(xparm_file,
     # transforming this to a primitive basis
 
     Debug.write('Absent: %d  vs.  Present: %d' % (absent, present))
+
+    # now see if this is compatible with a centred lattice or suggests
+    # a primitive basis is correct
+
+    sd = math.sqrt(absent)
+
+    if (absent - 3 * sd) / total > 0.008:
+        Debug.write('Centred lattice unlikely')
+    else:
+        Debug.write('Centred lattice likely')
     
 def is_centred(space_group_number):
     '''Test if space group # corresponds to a centred space group.'''
