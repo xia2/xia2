@@ -352,6 +352,7 @@ def Diffdump(DriverType = None):
                     beam = l[1].replace('(', '').replace(
                         ')', '').replace('mm', ' ').split(',')
                     self._header['beam'] = map(float, beam)
+                    self._header['raw_beam'] = map(float, beam)
 
                 if 'Image Size' in o:
                     image = l[1].replace('px', '')
