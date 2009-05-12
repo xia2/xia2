@@ -212,9 +212,9 @@ def xds_check_indexer_solution(xparm_file,
 
     rdx = symm.change_of_basis_op_to_best_cell()
     symm_new = symm.change_basis(rdx)
-    cell_new = symm_new.unit_cell().parameters
+    cell_new = symm_new.unit_cell().parameters()
 
-    return s2l(space_group_number_primitive), cell_new
+    return s2l(space_group_number_primitive), tuple(cell_new)
     
 def is_centred(space_group_number):
     '''Test if space group # corresponds to a centred space group.'''
