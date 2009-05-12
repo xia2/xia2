@@ -57,6 +57,7 @@ def mosflm_check_indexer_solution(indexer):
     distance = indexer.get_indexer_distance()
     axis = matrix.col([0, 0, 1])
     beam = indexer.get_indexer_beam()
+    wavelength = indexer.get_wavelength()
 
     space_group_number = l2s(indexer.get_indexer_lattice())
     spacegroup = sgtbx.space_group_symbols(space_group_number).hall()
@@ -100,11 +101,14 @@ def mosflm_check_indexer_solution(indexer):
 
     images.sort()
 
+    images = sorted(indexer.get_matching_images())
+
     # now construct the reciprocal-space peak list
 
     spots_r = []
     
     for i in images:
+        print i
         image = indexer.get_image_name(i)
         dd = Diffdump()
         dd.set_image(image)
@@ -118,8 +122,10 @@ def mosflm_check_indexer_solution(indexer):
 
         for p in peaks:
             x, y, isigma = p
+
             if isigma < 5.0:
-                break
+                continue
+
             xp = pixel[0] * y - beam[0]
             yp = pixel[1] * x - beam[1]
 
@@ -152,13 +158,15 @@ def mosflm_check_indexer_solution(indexer):
 
         ihkl = map(nint, hkl)
 
-        if math.fabs(hkl[0] - ihkl[0]) > 0.1:
+        # print '%6.2f %6.2f %6.2f' % tuple(hkl), '%3d %3d %3d' % tuple(ihkl)
+
+        if math.fabs(hkl[0] - ihkl[0]) > 0.2:
             continue
 
-        if math.fabs(hkl[1] - ihkl[1]) > 0.1:
+        if math.fabs(hkl[1] - ihkl[1]) > 0.2:
             continue
         
-        if math.fabs(hkl[2] - ihkl[2]) > 0.1:
+        if math.fabs(hkl[2] - ihkl[2]) > 0.2:
             continue
 
         # now determine if it is absent
@@ -172,7 +180,9 @@ def mosflm_check_indexer_solution(indexer):
 
     sd = math.sqrt(absent)
 
-    if (absent - 3 * sd) / total < 0.008:
+    print total, present, absent, (absent - 3 * sd) / total
+
+    if (absent - 3 * sd) / total < 0.064:
         return False
 
     # in here need to calcuylate the new orientation matrix for the
