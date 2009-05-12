@@ -26,10 +26,13 @@ from Wrappers.XIA.Printpeaks import Printpeaks
 from Wrappers.XIA.Diffdump import Diffdump
 from Handlers.Streams import Debug
 from lib.Guff import nint
+from Experts.MatrixExpert import format_matrix
 
 # cctbx stuff
 
 from cctbx import sgtbx
+from cctbx import crystal
+from cctbx import uctbx
 from scitbx import matrix
 
 def s2l(spacegroup):
@@ -57,6 +60,7 @@ def mosflm_check_indexer_solution(indexer):
     distance = indexer.get_indexer_distance()
     axis = matrix.col([0, 0, 1])
     beam = indexer.get_indexer_beam()
+    cell = indexer.get_indexer_cell()
     wavelength = indexer.get_wavelength()
 
     space_group_number = l2s(indexer.get_indexer_lattice())
@@ -197,6 +201,50 @@ def mosflm_check_indexer_solution(indexer):
 
     # in here need to calcuylate the new orientation matrix for the
     # primitive basis and reconfigure the indexer - somehow...
+
+    # ok, so the bases are fine, but what I will want to do is reorder them
+    # to give the best primitive choice of unit cell...
+
+    sgp = sg.build_derived_group(True, False)
+    symm = crystal.symmetry(unit_cell = cell,
+                            space_group = sgp)
+
+    rdx = symm.change_of_basis_op_to_best_cell()
+    symm_new = symm.change_basis(rdx)
+
+    # now apply this to the reciprocal-space orientation matrix mi
+
+    # cb_op = sgtbx.change_of_basis_op(rdx)
+    cb_op = rdx
+    R = cb_op.c_inv().r().as_rational().as_float().transpose().inverse()
+    mi_r = mi * R
+
+    # now re-derive the cell constants, just to be sure
+
+    m_r = mi_r.inverse()
+    Ar = matrix.col(m_r.elems[0:3])
+    Br = matrix.col(m_r.elems[3:6])
+    Cr = matrix.col(m_r.elems[6:9])
+
+    a = math.sqrt(Ar.dot())
+    b = math.sqrt(Br.dot())
+    c = math.sqrt(Cr.dot())
+
+    rtod = 180.0 / math.pi
+
+    alpha = rtod * Br.angle(Cr)
+    beta = rtod * Cr.angle(Ar)
+    gamma = rtod * Ar.angle(Br)
+
+    print '%6.3f %6.3f %6.3f %6.3f %6.3f %6.3f' % (a, b, c, alpha, beta, gamma)
+
+    cell = uctbx.unit_cell((a, b, c, alpha, beta, gamma))
+
+    bmat = matrix.sqr(cell.fractionalization_matrix())
+    umat = mi_r * bmat.inverse()
+
+    new_matrix = format_matrix((a, b, c, alpha, beta, gamma),
+                               mi_r.elems, umat.elems)
 
     return True
         
