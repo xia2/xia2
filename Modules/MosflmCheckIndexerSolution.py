@@ -61,6 +61,8 @@ def mosflm_check_indexer_solution(indexer):
 
     space_group_number = l2s(indexer.get_indexer_lattice())
     spacegroup = sgtbx.space_group_symbols(space_group_number).hall()
+    phi = indexer.get_header()['phi_width']
+
     sg = sgtbx.space_group(spacegroup)
 
     if not (sg.n_ltr() - 1):
@@ -101,14 +103,22 @@ def mosflm_check_indexer_solution(indexer):
 
     images.sort()
 
-    images = sorted(indexer.get_matching_images())
+    all_images = indexer.get_matching_images()
 
-    # now construct the reciprocal-space peak list
+    images = [min(all_images)]
+    step = nint(5.0 / phi)
+    next = images[0] + step
+
+    while next in all_images:
+        images.append(next)
+        next += step
+
+    # now construct the reciprocal-space peak list n.b. should
+    # really run this in parallel...
 
     spots_r = []
     
     for i in images:
-        print i
         image = indexer.get_image_name(i)
         dd = Diffdump()
         dd.set_image(image)
@@ -160,13 +170,13 @@ def mosflm_check_indexer_solution(indexer):
 
         # print '%6.2f %6.2f %6.2f' % tuple(hkl), '%3d %3d %3d' % tuple(ihkl)
 
-        if math.fabs(hkl[0] - ihkl[0]) > 0.2:
+        if math.fabs(hkl[0] - ihkl[0]) > 0.1:
             continue
 
-        if math.fabs(hkl[1] - ihkl[1]) > 0.2:
+        if math.fabs(hkl[1] - ihkl[1]) > 0.1:
             continue
         
-        if math.fabs(hkl[2] - ihkl[2]) > 0.2:
+        if math.fabs(hkl[2] - ihkl[2]) > 0.1:
             continue
 
         # now determine if it is absent
@@ -182,7 +192,7 @@ def mosflm_check_indexer_solution(indexer):
 
     print total, present, absent, (absent - 3 * sd) / total
 
-    if (absent - 3 * sd) / total < 0.064:
+    if (absent - 3 * sd) / total < 0.008:
         return False
 
     # in here need to calcuylate the new orientation matrix for the

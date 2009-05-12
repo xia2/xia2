@@ -727,7 +727,7 @@ if __name__ == '__main__':
 
             scale = wavelength * math.sqrt(
                 xp * xp + yp * yp + distance * distance)
-
+            
             X = distance / scale
             X -= 1.0 / wavelength
             Y = - xp / scale
