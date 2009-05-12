@@ -64,7 +64,7 @@ def mosflm_check_indexer_solution(indexer):
 
     if not (sg.n_ltr() - 1):
         # primitive solution - just return ... something
-        return False
+        return None
 
     # FIXME need to raise an exception if this is not available!
     m_matrix = indexer.get_indexer_payload('mosflm_orientation_matrix')
@@ -87,7 +87,9 @@ def mosflm_check_indexer_solution(indexer):
     C = matrix.col(m.elems[6:9])
 
     # now select the images - start with the images that the indexer
-    # used for indexing
+    # used for indexing, though can interrogate the FrameProcessor
+    # interface of the indexer to put together a completely different
+    # list if I like...
     
     images = []
 
@@ -155,7 +157,7 @@ def mosflm_check_indexer_solution(indexer):
 
         if math.fabs(hkl[1] - ihkl[1]) > 0.1:
             continue
-
+        
         if math.fabs(hkl[2] - ihkl[2]) > 0.1:
             continue
 
@@ -178,5 +180,29 @@ def mosflm_check_indexer_solution(indexer):
 
     return True
         
+if __name__ == '__main__':
 
+    # run a test!
+
+    from Modules.IndexerFactory import Indexer
+
+    i = Indexer()
     
+    i.setup_from_image(sys.argv[1])
+
+    print 'Refined beam is: %6.2f %6.2f' % i.get_indexer_beam()
+    print 'Distance:        %6.2f' % i.get_indexer_distance()
+    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % i.get_indexer_cell()
+    print 'Lattice: %s' % i.get_indexer_lattice()
+    print 'Mosaic: %6.2f' % i.get_indexer_mosaic()
+    
+    status = mosflm_check_indexer_solution(i)
+
+    if status is True:
+        print 'putative centred solution came out as wrong'
+
+    elif status is False:
+        print 'putative centred solution came out as right'
+
+    elif status is None:
+        print 'putative solution not centred'
