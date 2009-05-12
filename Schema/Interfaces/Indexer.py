@@ -427,6 +427,9 @@ class Indexer:
         
         return
 
+    def get_indexer_images(self):
+        return self._indxr_images
+
     # these relate to propogation of the fact that this is user assigned ->
     # so if we try to eliminate raise an exception... must be coordinated
     # with lattice setting below
