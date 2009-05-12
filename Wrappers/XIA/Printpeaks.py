@@ -70,7 +70,7 @@ def Printpeaks(DriverType = None):
             dd.set_image(self._image)
             header = dd.readheader()
 
-            beam = header['beam']
+            beam = header['raw_beam']
             pixel = header['pixel']
 
             self.add_command_line(self._image)
