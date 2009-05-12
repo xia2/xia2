@@ -115,6 +115,7 @@ from lib.Guff import auto_logfiler
 from Handlers.Streams import Chatter, Debug
 from Handlers.Citations import Citations
 from Modules.IceId import IceId
+from Modules.MosflmCheckIndexerSolution import mosflm_check_indexer_solution
 
 def LabelitScreen(DriverType = None):
     '''Factory for LabelitScreen wrapper classes, with the specified
@@ -613,6 +614,34 @@ def LabelitScreen(DriverType = None):
                             (sum(ice) / len(ice)))
 
             return 'ok'
+
+        def _index_finish(self):
+            '''Check that the autoindexing gave a convincing result, and
+            if not (i.e. it gave a centred lattice where a primitive one
+            would be correct) pick up the correct solution.'''
+
+            status, lattice, matrix, cell = mosflm_check_indexer_solution(
+                self)
+
+            if status is None:
+
+                # basis is primitive
+
+                return
+
+            if status is False:
+
+                # basis is centred, and passes test
+
+                return
+
+            # ok need to update internals...
+
+            self._indxr_lattice = lattice
+            self._indxr_cell = cell
+            self._indxr_payload['mosflm_orientation_matrix'] = matrix
+
+            return
         
         # things to get results from the indexing
 

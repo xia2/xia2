@@ -71,7 +71,7 @@ def mosflm_check_indexer_solution(indexer):
 
     if not (sg.n_ltr() - 1):
         # primitive solution - just return ... something
-        return None
+        return None, None, None, None
 
     # FIXME need to raise an exception if this is not available!
     m_matrix = indexer.get_indexer_payload('mosflm_orientation_matrix')
@@ -107,15 +107,17 @@ def mosflm_check_indexer_solution(indexer):
 
     images.sort()
 
-    all_images = indexer.get_matching_images()
+    if False:
 
-    images = [min(all_images)]
-    step = nint(5.0 / phi)
-    next = images[0] + step
-
-    while next in all_images:
-        images.append(next)
-        next += step
+        all_images = indexer.get_matching_images()
+        
+        images = [min(all_images)]
+        step = nint(5.0 / phi)
+        next = images[0] + step
+        
+        while next in all_images:
+            images.append(next)
+            next += step
 
     # now construct the reciprocal-space peak list n.b. should
     # really run this in parallel...
@@ -197,7 +199,7 @@ def mosflm_check_indexer_solution(indexer):
     print total, present, absent, (absent - 3 * sd) / total
 
     if (absent - 3 * sd) / total < 0.008:
-        return False
+        return False, None, None, None
 
     # in here need to calcuylate the new orientation matrix for the
     # primitive basis and reconfigure the indexer - somehow...
@@ -206,6 +208,7 @@ def mosflm_check_indexer_solution(indexer):
     # to give the best primitive choice of unit cell...
 
     sgp = sg.build_derived_group(True, False)
+    lattice_p = s2l(sgp.type().number())
     symm = crystal.symmetry(unit_cell = cell,
                             space_group = sgp)
 
@@ -246,7 +249,13 @@ def mosflm_check_indexer_solution(indexer):
     new_matrix = format_matrix((a, b, c, alpha, beta, gamma),
                                mi_r.elems, umat.elems)
 
-    return True
+    # ok - this gives back the right matrix in the right setting - excellent!
+    # now need to apply this back at base to the results of the indexer.
+
+    # N.B. same should be applied to the same calculations for the XDS
+    # version of this.
+
+    return True, lattice_p, new_matrix, (a, b, c, alpha, beta, gamma)
         
 if __name__ == '__main__':
 

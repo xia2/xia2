@@ -29,6 +29,7 @@ from lib.Guff import nint
 # cctbx stuff
 
 from cctbx import sgtbx
+from cctbx import crystal
 from scitbx import matrix
 
 def s2l(spacegroup):
@@ -204,7 +205,16 @@ def xds_check_indexer_solution(xparm_file,
     sg_new = sg.build_derived_group(True, False)
     space_group_number_primitive = sg_new.type().number()
 
-    return s2l(space_group_number_primitive), tuple(cell)
+    # also determine the best setting for the new cell ...
+
+    symm = crystal.symmetry(unit_cell = cell,
+                            space_group = sg_new)
+
+    rdx = symm.change_of_basis_op_to_best_cell()
+    symm_new = symm.change_basis(rdx)
+    cell_new = symm_new.unit_cell().parameters
+
+    return s2l(space_group_number_primitive), cell_new
     
 def is_centred(space_group_number):
     '''Test if space group # corresponds to a centred space group.'''

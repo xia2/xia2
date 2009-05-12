@@ -256,6 +256,7 @@ from Modules.IceId import IceId
 # cell refinement image helpers
 
 from Modules.CellRefImageSelect import identify_perpendicular_axes
+from Modules.MosflmCheckIndexerSolution import mosflm_check_indexer_solution
 
 # jiffy functions for means, standard deviations and outliers
 
@@ -1307,6 +1308,33 @@ def Mosflm(DriverType = None):
 
             return
 
+        def _index_finish(self):
+            '''Check that the autoindexing gave a convincing result, and
+            if not (i.e. it gave a centred lattice where a primitive one
+            would be correct) pick up the correct solution.'''
+
+            status, lattice, matrix, cell = mosflm_check_indexer_solution(
+                self)
+
+            if status is None:
+
+                # basis is primitive
+
+                return
+
+            if status is False:
+
+                # basis is centred, and passes test
+
+                return
+
+            # ok need to update internals...
+
+            self._indxr_lattice = lattice
+            self._indxr_cell = cell
+            self._indxr_payload['mosflm_orientation_matrix'] = matrix
+
+            return
 
         # METHOD to help cell refinement - if the autoindexing has been done
         # with another program, it could be helpful to run autoindexing
