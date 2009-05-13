@@ -243,11 +243,17 @@ def mosflm_check_indexer_solution(indexer):
 
     cell = uctbx.unit_cell((a, b, c, alpha, beta, gamma))
 
+    amat = [wavelength * e for e in mi_r.elems]
     bmat = matrix.sqr(cell.fractionalization_matrix())
     umat = mi_r * bmat.inverse()
 
-    new_matrix = format_matrix((a, b, c, alpha, beta, gamma),
-                               mi_r.elems, umat.elems)
+    # yuk! surely I don't need to do this...
+
+    # I do need to do this, and don't call me shirley!
+
+    new_matrix = ['%s\n' % r for r in \
+                  format_matrix((a, b, c, alpha, beta, gamma),
+                                amat, umat.elems).split('\n')]
 
     # ok - this gives back the right matrix in the right setting - excellent!
     # now need to apply this back at base to the results of the indexer.

@@ -620,6 +620,10 @@ def LabelitScreen(DriverType = None):
             if not (i.e. it gave a centred lattice where a primitive one
             would be correct) pick up the correct solution.'''
 
+            # print out old matrix
+
+            # print self._indxr_payload['mosflm_orientation_matrix']
+            
             status, lattice, matrix, cell = mosflm_check_indexer_solution(
                 self)
 
