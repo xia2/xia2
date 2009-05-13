@@ -442,6 +442,43 @@ class XDSIndexer(FrameProcessor,
 
         self._indxr_payload['xds_files'] = self._data_files
 
+        # I will want this later on to check that the lattice was ok
+        self._idxref_subtree_problem = idxref.get_index_tree_problem()
+
+        return
+
+    def _index_finish(self):
+        '''Perform the indexer post-processing as required.'''
+
+        # ok, in here now ask if this solution was sensible!
+
+        lattice = self._indxr_lattice
+        
+        lattice2, cell2 = xds_check_indexer_solution(
+            os.path.join(self.get_working_directory(), 'XPARM.XDS'),
+            os.path.join(self.get_working_directory(), 'SPOT.XDS'))
+
+        Debug.write('Centring analysis: %s => %s' % \
+                    (lattice, lattice2))
+
+        if self._idxref_subtree_problem and lattice2 != lattice:
+            # hmm.... looks like we don't agree on the correct result...
+            # update the putative correct result as input
+                
+            self.set_indexer_input_lattice(lattice2)
+            self.set_indexer_input_cell(cell2)
+
+            Debug.write('Detected pseudocentred lattice')
+
+            Debug.write('Set lattice: %s' % lattice2)
+            Debug.write('Set cell: %f %f %f %f %f %f' % \
+                        cell2)
+
+            # then rerun
+            
+            self.set_indexer_done(False)
+            return
+            
         # finally read through SPOT.XDS and XPARM.XDS to get an estimate
         # of the low resolution limit - this should be pretty straightforward
         # since what I want is the resolution of the lowest resolution indexed
@@ -449,7 +486,7 @@ class XDSIndexer(FrameProcessor,
 
         # first parse the numbers from the IDXREF XPARM file
 
-        xparm = idxref.get_output_data_file('XPARM.XDS')
+        xparm = self._data_files['XPARM.XDS']
         values = map(float, xparm.split())
 
         distance = values[14]
@@ -458,17 +495,15 @@ class XDSIndexer(FrameProcessor,
         beam = values[15], values[16]
         
         # then work through the spot list to find the lowest resolution spot
-        # that has been indexed (i.e. is not an artefact)
 
         dmax = 0.0
 
-        for record in idxref.get_output_data_file('SPOT.XDS').split('\n'):
-            
+        for record in self._data_files['SPOT.XDS'].split('\n'):
             data = map(float, record.split())
 
             if not data:
                 continue
-            
+
             h, k, l = map(nint, data[4:7])
 
             if h == 0 and k == 0 and l == 0:
@@ -483,9 +518,7 @@ class XDSIndexer(FrameProcessor,
 
             d = math.sqrt(dx * dx + dy * dy)
 
-            # recall that distance is negative for rigaku x-ray sets!
-
-            theta = 0.5 * math.atan(d / math.fabs(distance))
+            theta = 0.5 * math.atan(d / distance)
 
             ds = wavelength / (2.0 * math.sin(theta))
 

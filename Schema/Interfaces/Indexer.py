@@ -168,6 +168,18 @@ class _IndexerHelper:
         return ['%s %s' % (l[0], '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % l[1])
                 for l in self._sorted_list]
 
+    def insert(self, lattice, cell):
+        '''Insert a new solution, e.g. from some postprocessing from
+        the indexer. N.B. this will be re-sorted.'''
+
+        lattices = [(lattice, cell)]
+
+        for l in self._sorted_list:
+            lattices.append(l)
+            
+        self._sorted_list = SortLattices(lattices)
+        return
+
     def eliminate(self):
         '''Eliminate the highest currently allowed lattice.'''
 
@@ -322,6 +334,14 @@ class Indexer:
         self.set_indexer_done(False)
 
         return
+
+    def _indxr_replace(self, lattice, cell):
+        '''Replace the highest symmetry in the solution table with this...
+        Only use this method if you REALLY know what you are doing!'''
+
+        self._indxr_helper.eliminate()
+        self._indxr_helper.insert(lattice, cell)
+        
 
     def index(self):
 

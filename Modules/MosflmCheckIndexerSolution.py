@@ -196,7 +196,7 @@ def mosflm_check_indexer_solution(indexer):
 
     sd = math.sqrt(absent)
 
-    print total, present, absent, (absent - 3 * sd) / total
+    # print total, present, absent, (absent - 3 * sd) / total
 
     if (absent - 3 * sd) / total < 0.008:
         return False, None, None, None
@@ -239,7 +239,8 @@ def mosflm_check_indexer_solution(indexer):
     beta = rtod * Cr.angle(Ar)
     gamma = rtod * Ar.angle(Br)
 
-    print '%6.3f %6.3f %6.3f %6.3f %6.3f %6.3f' % (a, b, c, alpha, beta, gamma)
+    # print '%6.3f %6.3f %6.3f %6.3f %6.3f %6.3f' % \
+    # (a, b, c, alpha, beta, gamma)
 
     cell = uctbx.unit_cell((a, b, c, alpha, beta, gamma))
 

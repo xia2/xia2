@@ -72,6 +72,8 @@ class XDSIndexerII(FrameProcessor,
         # place to store working data
         self._data_files = { }
 
+        self._idxref_subtree_problem = False
+
         return
 
     # admin functions
@@ -412,6 +414,14 @@ class XDSIndexerII(FrameProcessor,
 
         self._indxr_payload['xds_files'] = self._data_files
 
+        # I will want this later on to check that the lattice was ok
+        self._idxref_subtree_problem = idxref.get_index_tree_problem()
+
+        return
+
+    def _index_finish(self):
+        '''Perform the indexer post-processing as required.'''
+
         # ok, in here now ask if this solution was sensible!
 
         lattice = self._indxr_lattice
@@ -419,13 +429,11 @@ class XDSIndexerII(FrameProcessor,
         lattice2, cell2 = xds_check_indexer_solution(
             os.path.join(self.get_working_directory(), 'XPARM.XDS'),
             os.path.join(self.get_working_directory(), 'SPOT.XDS'))
-        
-        tree_problem = idxref.get_index_tree_problem()
 
         Debug.write('Centring analysis: %s => %s' % \
                     (lattice, lattice2))
 
-        if tree_problem and lattice2 != lattice:
+        if self._idxref_subtree_problem and lattice2 != lattice:
             # hmm.... looks like we don't agree on the correct result...
             # update the putative correct result as input
                 
@@ -450,7 +458,7 @@ class XDSIndexerII(FrameProcessor,
 
         # first parse the numbers from the IDXREF XPARM file
 
-        xparm = idxref.get_output_data_file('XPARM.XDS')
+        xparm = self._data_files['XPARM.XDS']
         values = map(float, xparm.split())
 
         distance = values[14]
@@ -462,7 +470,7 @@ class XDSIndexerII(FrameProcessor,
 
         dmax = 0.0
 
-        for record in idxref.get_output_data_file('SPOT.XDS').split('\n'):
+        for record in self._data_files['SPOT.XDS'].split('\n'):
             data = map(float, record.split())
 
             if not data:
@@ -493,6 +501,7 @@ class XDSIndexerII(FrameProcessor,
         self._indxr_low_resolution = dmax
 
         return
+
         
 if __name__ == '__main_old__':
 

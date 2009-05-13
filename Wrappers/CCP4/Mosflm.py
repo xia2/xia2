@@ -1332,6 +1332,12 @@ def Mosflm(DriverType = None):
 
             self._indxr_lattice = lattice
             self._indxr_cell = cell
+
+            Debug.write('Inserting solution: %s ' % lattice + 
+                        '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % cell)
+
+            self._indxr_replace(lattice, cell)
+
             self._indxr_payload['mosflm_orientation_matrix'] = matrix
 
             return
