@@ -437,10 +437,11 @@ class XDSIndexerII(FrameProcessor,
             # hmm.... looks like we don't agree on the correct result...
             # update the putative correct result as input
                 
-            self.set_indexer_input_lattice(lattice2)
-            self.set_indexer_input_cell(cell2)
-
             Debug.write('Detected pseudocentred lattice')
+            Debug.write('Inserting solution: %s ' % lattice + 
+                        '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % cell)
+
+            self._indxr_replace(lattice2, cell2)
 
             Debug.write('Set lattice: %s' % lattice2)
             Debug.write('Set cell: %f %f %f %f %f %f' % \
