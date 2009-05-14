@@ -196,7 +196,8 @@ def mosflm_check_indexer_solution(indexer):
 
     sd = math.sqrt(absent)
 
-    # print total, present, absent, (absent - 3 * sd) / total
+    Debug.write('Counts: %d %d %d %.3f' % \
+                (total, present, absent, (absent - 3 * sd) / total))
 
     if (absent - 3 * sd) / total < 0.008:
         return False, None, None, None
