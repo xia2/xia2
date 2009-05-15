@@ -1721,6 +1721,11 @@ def Mosflm(DriverType = None):
 
             except IntegrationError, e:
                 if 'negative mosaic spread' in str(e):
+                    if self._mosflm_postref_fix_mosaic:
+                        Chatter.write(
+                            'Negative mosaic spread - stopping integration')
+                        raise BadLatticeError, 'negative mosaic spread'
+                        
                     Chatter.write(
                         'Negative mosaic spread - rerunning integration')
                     self.set_integrater_done(False)
