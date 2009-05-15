@@ -123,6 +123,8 @@ def mosflm_check_indexer_solution(indexer):
     # really run this in parallel...
 
     spots_r = []
+
+    spots_r_j =  { }
     
     for i in images:
         image = indexer.get_image_name(i)
@@ -135,6 +137,8 @@ def mosflm_check_indexer_solution(indexer):
         pp = Printpeaks()
         pp.set_image(image)
         peaks = pp.get_maxima()
+
+        spots_r_j[i] = []
 
         for p in peaks:
             x, y, isigma = p
@@ -158,51 +162,55 @@ def mosflm_check_indexer_solution(indexer):
             rtod = 180.0 / math.pi
 
             spots_r.append(S.rotate(axis, - phi / rtod))
+            spots_r_j[i].append(S.rotate(axis, - phi / rtod))
             
     # now reindex the reciprocal space spot list and count - n.b. need
     # to transform the Bravais lattice to an assumed spacegroup and hence
     # to a cctbx spacegroup!
 
-    absent = 0
-    present = 0
-    total = 0
+    lists = [spots_r_j[j] for j in spots_r_j]
+    lists.append(spots_r)
 
-    for spot in spots_r:
-        hkl = (m * spot).elems
-
-        total += 1
-
-        ihkl = map(nint, hkl)
-
-        # print '%6.2f %6.2f %6.2f' % tuple(hkl), '%3d %3d %3d' % tuple(ihkl)
-
-        if math.fabs(hkl[0] - ihkl[0]) > 0.1:
-            continue
-
-        if math.fabs(hkl[1] - ihkl[1]) > 0.1:
-            continue
+    for l in lists:
         
-        if math.fabs(hkl[2] - ihkl[2]) > 0.1:
-            continue
+        absent = 0
+        present = 0
+        total = 0
 
-        # now determine if it is absent
+        for spot in l:
+            hkl = (m * spot).elems
 
-        if sg.is_sys_absent(ihkl):
-            absent += 1
-        else:
-            present += 1
+            total += 1
 
-    # now perform the analysis on these numbers...
+            ihkl = map(nint, hkl)
+            
+            if math.fabs(hkl[0] - ihkl[0]) > 0.1:
+                continue
+            
+            if math.fabs(hkl[1] - ihkl[1]) > 0.1:
+                continue
+            
+            if math.fabs(hkl[2] - ihkl[2]) > 0.1:
+                continue
 
-    sd = math.sqrt(absent)
+            # now determine if it is absent
+            
+            if sg.is_sys_absent(ihkl):
+                absent += 1
+            else:
+                present += 1
 
-    Debug.write('Counts: %d %d %d %.3f' % \
-                (total, present, absent, (absent - 3 * sd) / total))
+        # now perform the analysis on these numbers...
 
-    if (absent - 3 * sd) / total < 0.008:
-        return False, None, None, None
+        sd = math.sqrt(absent)
 
-    # in here need to calcuylate the new orientation matrix for the
+        Debug.write('Counts: %d %d %d %.3f' % \
+                    (total, present, absent, (absent - 3 * sd) / total))
+
+        if (absent - 3 * sd) / total < 0.008:
+            return False, None, None, None
+
+    # in here need to calculate the new orientation matrix for the
     # primitive basis and reconfigure the indexer - somehow...
 
     # ok, so the bases are fine, but what I will want to do is reorder them
