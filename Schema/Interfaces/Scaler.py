@@ -165,7 +165,7 @@
 #                 Method names will need some thinking about! Also want
 #                 the unit cell information.
 # 
-# FIXME 28/NOV/06 also need to plumb this back to the Indexer(s) so that 
+# FIXED 28/NOV/06 also need to plumb this back to the Indexer(s) so that 
 #                 they can discuss what the correct lattice.
 #
 # FIXME 28/NOV/06 should use all of the data for all sweeps within one 
@@ -187,6 +187,10 @@
 # FIXME 28/JUN/07 need to be able to take in a reference reflection file
 #                 in here too to provide the correct setting, spacegroup
 #                 and FreeR column. c/f changes to XCrystal.
+# 
+# FIXME 01/JUN/09 need to be a little smarter about the scaling model to apply
+#                 to the data... so encode the chosen corrections (DLS
+#                 trac ticket #162)
 # 
 
 import os
@@ -218,6 +222,13 @@ class Scaler:
         # key this by the epoch, if available, else will need to
         # do something different.
         self._scalr_integraters = { }
+
+        # the corrections to apply - see trac #162
+        self._scalr_corrections = False
+        self._scalr_correct_decay = None
+        self._scalr_correct_modulation = None
+        self._scalr_correct_absorption = None
+        self._scalr_correct_partiality = None
 
         # integraters have the following methods for pulling interesting
         # information out:
@@ -374,6 +385,25 @@ class Scaler:
         self._scalr_finish_done = False
         self._scalr_result = None
         return
+
+    # getters for the scaling model which was used - first see that the
+    # corrections were applied, then the individual getters for the
+    # separate corrections
+
+    def get_scaler_corrections(self):
+        return self._scalr_corrections
+
+    def get_scaler_correct_decay(self):
+        return self._scalr_correct_decay
+
+    def get_scaler_correct_modulation(self):
+        return self._scalr_correct_modulation
+
+    def get_scaler_correct_absorption(self):
+        return self._scalr_correct_absorption
+
+    def get_scaler_correct_partiality(self):
+        return self._scalr_correct_partiality
 
     # getters of the status - note how the gets cascade to ensure that
     # everything is up-to-date...
