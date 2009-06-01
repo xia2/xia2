@@ -1380,6 +1380,35 @@ class CCP4Scaler(Scaler):
         return best_sdadd_full, best_sdb_full, \
                best_sdadd_partial, best_sdb_partial
 
+    def _determine_best_correction_model(self):
+        '''Determine the best choice of corrections to apply to the
+        data, based on the effect of including the corrections
+        individually.'''
+
+        # perhaps it will look a little like this...?
+        
+        epochs = self._sweep_information.keys()
+        epochs.sort()
+
+        sc = self._factory.Scala()
+        sc.set_hklin(self._prepared_reflections)
+        sc.set_scales_file(scales_file)
+
+        for epoch in epochs:
+            input = self._sweep_information[epoch]
+            start, end = (min(input['batches']), max(input['batches']))
+            sc.add_run(start, end, pname = input['pname'],
+                       xname = input['xname'],
+                       dname = input['dname'])
+
+        sc.set_hklout(os.path.join(self.get_working_directory(), 'temp.mtz'))
+
+        if self.get_scaler_anomalous():
+            sc.set_anomalous()
+        sc.scale()
+
+        # to here!
+
     def _scale(self):
         '''Perform all of the operations required to deliver the scaled
         data.'''
