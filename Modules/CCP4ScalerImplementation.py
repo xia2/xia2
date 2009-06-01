@@ -1781,6 +1781,11 @@ class CCP4Scaler(Scaler):
 
         sc.scale()
 
+        # print out the number of cycles needed for convergence in the
+        # final run... for testing!
+
+        Debug.write('Convergence at: %.1f cycles' % sc.get_convergence())
+
         # let's take a look at the resolutions once the error corrections
         # have been applied...
         

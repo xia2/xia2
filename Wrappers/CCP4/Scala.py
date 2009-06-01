@@ -64,6 +64,7 @@
 
 import os
 import sys
+import math
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -79,6 +80,7 @@ from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
 from Handlers.Streams import Debug
 from Handlers.Flags import Flags
+from Experts.ResolutionExperts import linear
 
 def Scala(DriverType = None):
     '''A factory for ScalaWrapper classes.'''
@@ -341,6 +343,42 @@ def Scala(DriverType = None):
             self._cycles = cycles
 
             return
+
+        def get_convergence(self):
+            '''Get the convergence rate from the program output - will
+            parse for this on demand.'''
+
+            if not self.get_all_output():
+                raise RuntimeError, 'cannot assess convergence'
+
+            max_shifts = []
+
+            for record in self.get_all_output():
+                if 'Mean and maximum shift' in record:
+                    shift = float(record.split()[6])
+                    max_shifts.append(math.log10(shift))
+
+            # now to the fitting of the straight line - surely I should
+            # put this kind of thing somewhere central?! yes, I probably
+            # should and don't call me Shirley!
+
+            x = []
+            y = []
+
+            for j in range(len(max_shifts)):
+                x.append(float(j + 1))
+                y.append(max_shifts[j])
+
+            m, c = linear(x, y)
+
+            # now check that the gradient is negative - if not, raise exception
+
+            if m >= 0:
+                raise RuntimeError, 'positive gradient: divergent'
+
+            x_intercept = (math.log10(0.3) - c) / m
+
+            return x_intercept
 
         def check_scala_errors(self):
             '''Check for Scala specific errors. Raise RuntimeError if
