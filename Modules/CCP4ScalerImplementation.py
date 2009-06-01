@@ -218,14 +218,190 @@ class CCP4Scaler(Scaler):
 
         # if we have already defined the best scaling model just return
 
+        if self._scalr_corrections:
+            return
+
+        Debug.write('Optimising scaling corrections...')
+
+        # central preparation stuff
+
+        epochs = sorted(self._sweep_information.keys())
+
         # this will test out the individual corrections and compare the
         # results (average Rmerge, convergence rate) with the option of
         # just running a very simple scaling (scales rotation spacing 5)
-        # to see if they justify their existence.
+        # to see if they justify their existence. By default the corrections
+        # are "on"...
 
-        # unfortunately this has to be coded as a brute force search of
-        # the corrections (the list can be shortened if any prove to
-        # really suck) which is a shame...
+        partiality = True
+        absorption = True
+        decay = True
+
+        sc_def = self._factory.Scala()
+        sc_def.set_cycles(5)
+        sc_def.set_hklin(self._prepared_reflections)
+        sc_def.set_hklout('temp.mtz')
+        
+        sc_def.set_tails(tails = False)
+        sc_def.set_bfactor(bfactor = False)
+        sc_def.set_scaling_parameters('rotation', secondary = False)
+
+        for epoch in epochs:
+            input = self._sweep_information[epoch]
+            start, end = (min(input['batches']), max(input['batches']))
+
+            sc_def.add_run(start, end, pname = input['pname'],
+                           xname = input['xname'], dname = input['dname'],
+                           exclude = False)
+            
+        if self.get_scaler_anomalous():
+            sc_def.set_anomalous()
+
+        sc_def.scale()
+
+        data_def = sc_def.get_summary()
+
+        # compute average Rmerge, number of cycles to converge - these are
+        # what will form the basis of the comparison
+
+        converge_def = sc_def.get_convergence()
+        rmerges_def = [data_def[k]['Rmerge'][0] for k in data_def]
+        rmerge_def = sum(rmerges_def) / len(rmerges_def)
+
+        # first test the absorption correction...
+
+        sc_tst = self._factory.Scala()
+        sc_tst.set_cycles(5)
+        sc_tst.set_hklin(self._prepared_reflections)
+        sc_tst.set_hklout('temp.mtz')
+        
+        sc_tst.set_tails(tails = False)
+        sc_tst.set_bfactor(bfactor = False)
+        sc_tst.set_scaling_parameters('rotation', secondary = 4)
+
+        for epoch in epochs:
+            input = self._sweep_information[epoch]
+            start, end = (min(input['batches']), max(input['batches']))
+
+            sc_tst.add_run(start, end, pname = input['pname'],
+                           xname = input['xname'], dname = input['dname'],
+                           exclude = False)
+            
+        if self.get_scaler_anomalous():
+            sc_tst.set_anomalous()
+
+        sc_tst.scale()
+
+        data_tst = sc_tst.get_summary()
+
+        # compute average Rmerge, number of cycles to converge - these are
+        # what will form the basis of the comparison
+
+        converge_tst = sc_tst.get_convergence()
+        rmerges_tst = [data_tst[k]['Rmerge'][0] for k in data_tst]
+        rmerge_tst = sum(rmerges_tst) / len(rmerges_tst)
+
+        if ((rmerge_tst - rmerge_def) / rmerge_def) > 0.03:
+            absorption = False
+        if converge_tst - converge_def > 1.0:
+            absorption = False
+
+        # then test the partiality correction...
+
+        sc_tst = self._factory.Scala()
+        sc_tst.set_hklin(self._prepared_reflections)
+        sc_tst.set_hklout('temp.mtz')
+        
+        sc_tst.set_tails(tails = True)
+        sc_tst.set_bfactor(bfactor = False)
+        sc_tst.set_scaling_parameters('rotation', secondary = None)
+
+        for epoch in epochs:
+            input = self._sweep_information[epoch]
+            start, end = (min(input['batches']), max(input['batches']))
+
+            sc_tst.add_run(start, end, pname = input['pname'],
+                           xname = input['xname'], dname = input['dname'],
+                           exclude = False)
+            
+        if self.get_scaler_anomalous():
+            sc_tst.set_anomalous()
+
+        sc_tst.scale()
+
+        data_tst = sc_tst.get_summary()
+
+        # compute average Rmerge, number of cycles to converge - these are
+        # what will form the basis of the comparison
+
+        converge_tst = sc_tst.get_convergence()
+        rmerges_tst = [data_tst[k]['Rmerge'][0] for k in data_tst]
+        rmerge_tst = sum(rmerges_tst) / len(rmerges_tst)
+
+        if ((rmerge_tst - rmerge_def) / rmerge_def) > 0.03:
+            partiality = False
+        if converge_tst - converge_def > 1.0:
+            partiality = False
+
+        # finally test the decay correction
+
+        sc_tst = self._factory.Scala()
+        sc_tst.set_hklin(self._prepared_reflections)
+        sc_tst.set_hklout('temp.mtz')
+        
+        sc_tst.set_tails(tails = False)
+        sc_tst.set_bfactor(bfactor = True)
+        sc_tst.set_scaling_parameters('rotation', secondary = None)
+
+        for epoch in epochs:
+            input = self._sweep_information[epoch]
+            start, end = (min(input['batches']), max(input['batches']))
+
+            sc_tst.add_run(start, end, pname = input['pname'],
+                           xname = input['xname'], dname = input['dname'],
+                           exclude = False)
+            
+        if self.get_scaler_anomalous():
+            sc_tst.set_anomalous()
+
+        sc_tst.scale()
+
+        data_tst = sc_tst.get_summary()
+
+        # compute average Rmerge, number of cycles to converge - these are
+        # what will form the basis of the comparison
+
+        converge_tst = sc_tst.get_convergence()
+        rmerges_tst = [data_tst[k]['Rmerge'][0] for k in data_tst]
+        rmerge_tst = sum(rmerges_tst) / len(rmerges_tst)
+
+        if ((rmerge_tst - rmerge_def) / rmerge_def) > 0.03:
+            decay = False
+        if converge_tst - converge_def > 1.0:
+            decay = False
+
+        # then summarise the choices...
+
+        if absorption:
+            Debug.write('Absorption correction: on')
+        else:
+            Debug.write('Absorption correction: off')
+
+        if partiality:
+            Debug.write('Partiality correction: on')
+        else:
+            Debug.write('Partiality correction: off')
+
+        if decay:
+            Debug.write('Decay correction: on')
+        else:
+            Debug.write('Decay correction: off')
+
+        self._scalr_correct_absorption = absorption
+        self._scalr_correct_partiality = partiality
+        self._scalr_correct_decay = decay
+
+        self._scalr_corrections = True
 
         return
 
@@ -1380,35 +1556,6 @@ class CCP4Scaler(Scaler):
         return best_sdadd_full, best_sdb_full, \
                best_sdadd_partial, best_sdb_partial
 
-    def _determine_best_correction_model(self):
-        '''Determine the best choice of corrections to apply to the
-        data, based on the effect of including the corrections
-        individually.'''
-
-        # perhaps it will look a little like this...?
-        
-        epochs = self._sweep_information.keys()
-        epochs.sort()
-
-        sc = self._factory.Scala()
-        sc.set_hklin(self._prepared_reflections)
-        sc.set_scales_file(scales_file)
-
-        for epoch in epochs:
-            input = self._sweep_information[epoch]
-            start, end = (min(input['batches']), max(input['batches']))
-            sc.add_run(start, end, pname = input['pname'],
-                       xname = input['xname'],
-                       dname = input['dname'])
-
-        sc.set_hklout(os.path.join(self.get_working_directory(), 'temp.mtz'))
-
-        if self.get_scaler_anomalous():
-            sc.set_anomalous()
-        sc.scale()
-
-        # to here!
-
     def _scale(self):
         '''Perform all of the operations required to deliver the scaled
         data.'''
@@ -1418,6 +1565,9 @@ class CCP4Scaler(Scaler):
         
         epochs = self._sweep_information.keys()
         epochs.sort()
+
+        # first decide on a scaling model...
+        self._determine_best_scale_model()
 
         # FIXED in here I need to implement "proper" scaling...
         # this will need to do things like imposing a sensible
