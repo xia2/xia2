@@ -91,7 +91,10 @@ def Scala(DriverType = None):
     class ScalaWrapper(CCP4DriverInstance.__class__):
         '''A wrapper for Scala, using the CCP4-ified Driver.'''
 
-        def __init__(self):
+        def __init__(self,
+                     partiality_correction = None,
+                     absorption_correction = None,
+                     decay_correction = None):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
 
@@ -145,14 +148,20 @@ def Scala(DriverType = None):
             # scaled and just need merging e.g. from XDS/XSCALE.
             self._onlymerge = False
 
-            # this is almost certainly wanted
-            self._bfactor = True
+            # by default, switch this on
+            if decay_correction is None:
+                self._bfactor = True
+            else:
+                self._bfactor = decay_correction
 
             # this will often be wanted
             self._anomalous = False
 
-            # this is almost certainly wanted
-            self._tails = True
+            # by default switch this on too...
+            if partiality_correction is None:
+                self._tails = True
+            else:
+                self._tails = partiality_correction
 
             # alternative for this is 'batch' err.. no rotation
             if Flags.get_batch_scale():
@@ -162,7 +171,13 @@ def Scala(DriverType = None):
 
             # these are only relevant for 'rotation' mode scaling
             self._spacing = 5
-            self._secondary = 6
+
+            if absorption_correction = None:
+                self._secondary = 6
+            elif absorption_correction == True:
+                self._secondary = 6
+            else:
+                self._secondary = 0
 
             # this defines how many cycles of
             # scaling we're allowing before convergence - make this

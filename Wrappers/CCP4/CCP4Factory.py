@@ -58,10 +58,15 @@ class CCP4Factory:
 
     # factory methods...
 
-    def Scala(self):
+    def Scala(self,
+              partiality_correction = None,
+              absorption_correction = None,
+              decay_correction = None):
         '''Create a Scala wrapper from _Scala - set the working directory
         and log file stuff as a part of this...'''
-        scala = _Scala()
+        scala = _Scala(partiality_correction = None,
+                       absorption_correction = None,
+                       decay_correction = None)
         scala.set_working_directory(self.get_working_directory())
         auto_logfiler(scala)
         return scala
