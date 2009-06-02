@@ -247,6 +247,10 @@ class XDSScaler(Scaler):
 
         Debug.write('Optimising scaling corrections...')
 
+        use_decay = False
+        use_modulation = False
+        use_absorption = False
+
         epochs = self._sweep_information.keys()
         epochs.sort()
 
@@ -298,10 +302,208 @@ class XDSScaler(Scaler):
 
         Debug.write('Testing out the correction testing stuff...')
         rmerges = xscale.get_rmerges()
-        for dname in sorted(rmerges):
-            Debug.write('%s %.1f' % (dname, rmerges[dname]))
 
-        raise RuntimeError, 'Arsing fecksicles!'
+        rmerge_def = sum([rmerges[dname] for dname in rmerges])
+
+        # then test adding absorption correction
+
+        xscale = self.XScale()
+
+        xscale.set_spacegroup_number(self._spacegroup)
+        xscale.set_cell(self._scalr_cell)
+
+        for epoch in epochs:
+
+            # get the prepared reflections
+            reflections = self._sweep_information[epoch][
+                'prepared_reflections']
+            
+            # and the get wavelength that this belongs to
+            dname = self._sweep_information[epoch]['dname']
+
+            # and the resolution range for the reflections
+            intgr = self._sweep_information[epoch]['integrater']
+            resolution = intgr.get_integrater_resolution()
+
+            if resolution == 0.0:
+                raise RuntimeError, 'zero resolution for %s' % \
+                      self._sweep_information[epoch][
+                    'integrater'].get_integrater_sweep_name()
+
+            xscale.add_reflection_file(reflections, dname, resolution)
+
+        # set the global properties of the sample - hmm... some of this should
+        # go into the constructor / factory above, right?
+        xscale.set_crystal(self._scalr_xname)
+        xscale.set_anomalous(self._scalr_anomalous)
+
+        if Flags.get_zero_dose():
+            Debug.write('Switching on zero-dose extrapolation')
+            xscale.set_zero_dose()
+
+        # do the scaling keeping the reflections unmerged, and
+        # switch off all of the corrections
+        xscale.set_correct_decay(False)
+        xscale.set_correct_absorption(True)
+        xscale.set_correct_modulation(False)
+
+        xscale.run()
+
+        # now get the R merge values (why didn't I implement this before ..?)
+        # oh. ok, so previously I merged the data with Scala and got the
+        # statistics from there...
+
+        Debug.write('Testing out the correction testing stuff...')
+        rmerges = xscale.get_rmerges()
+
+        rmerge_abs = sum([rmerges[dname] for dname in rmerges])
+
+        # then test modulation correction
+
+        xscale = self.XScale()
+
+        xscale.set_spacegroup_number(self._spacegroup)
+        xscale.set_cell(self._scalr_cell)
+
+        for epoch in epochs:
+
+            # get the prepared reflections
+            reflections = self._sweep_information[epoch][
+                'prepared_reflections']
+            
+            # and the get wavelength that this belongs to
+            dname = self._sweep_information[epoch]['dname']
+
+            # and the resolution range for the reflections
+            intgr = self._sweep_information[epoch]['integrater']
+            resolution = intgr.get_integrater_resolution()
+
+            if resolution == 0.0:
+                raise RuntimeError, 'zero resolution for %s' % \
+                      self._sweep_information[epoch][
+                    'integrater'].get_integrater_sweep_name()
+
+            xscale.add_reflection_file(reflections, dname, resolution)
+
+        # set the global properties of the sample - hmm... some of this should
+        # go into the constructor / factory above, right?
+        xscale.set_crystal(self._scalr_xname)
+        xscale.set_anomalous(self._scalr_anomalous)
+
+        if Flags.get_zero_dose():
+            Debug.write('Switching on zero-dose extrapolation')
+            xscale.set_zero_dose()
+
+        # do the scaling keeping the reflections unmerged, and
+        # switch off all of the corrections
+        xscale.set_correct_decay(False)
+        xscale.set_correct_absorption(False)
+        xscale.set_correct_modulation(True)
+
+        xscale.run()
+
+        # now get the R merge values (why didn't I implement this before ..?)
+        # oh. ok, so previously I merged the data with Scala and got the
+        # statistics from there...
+
+        Debug.write('Testing out the correction testing stuff...')
+        rmerges = xscale.get_rmerges()
+
+        rmerge_mod = sum([rmerges[dname] for dname in rmerges])
+
+        # then try adding decay correction
+
+        xscale = self.XScale()
+
+        xscale.set_spacegroup_number(self._spacegroup)
+        xscale.set_cell(self._scalr_cell)
+
+        for epoch in epochs:
+
+            # get the prepared reflections
+            reflections = self._sweep_information[epoch][
+                'prepared_reflections']
+            
+            # and the get wavelength that this belongs to
+            dname = self._sweep_information[epoch]['dname']
+
+            # and the resolution range for the reflections
+            intgr = self._sweep_information[epoch]['integrater']
+            resolution = intgr.get_integrater_resolution()
+
+            if resolution == 0.0:
+                raise RuntimeError, 'zero resolution for %s' % \
+                      self._sweep_information[epoch][
+                    'integrater'].get_integrater_sweep_name()
+
+            xscale.add_reflection_file(reflections, dname, resolution)
+
+        # set the global properties of the sample - hmm... some of this should
+        # go into the constructor / factory above, right?
+        xscale.set_crystal(self._scalr_xname)
+        xscale.set_anomalous(self._scalr_anomalous)
+
+        if Flags.get_zero_dose():
+            Debug.write('Switching on zero-dose extrapolation')
+            xscale.set_zero_dose()
+
+        # do the scaling keeping the reflections unmerged, and
+        # switch off all of the corrections
+        xscale.set_correct_decay(True)
+        xscale.set_correct_absorption(False)
+        xscale.set_correct_modulation(False)
+
+        xscale.run()
+
+        # now get the R merge values (why didn't I implement this before ..?)
+        # oh. ok, so previously I merged the data with Scala and got the
+        # statistics from there...
+
+        Debug.write('Testing out the correction testing stuff...')
+        rmerges = xscale.get_rmerges()
+
+        rmerge_dec = sum([rmerges[dname] for dname in rmerges])
+
+        # now decide which of these corrections is worth applying...
+        # try doing this by the ones which are apparently giving an
+        # improvement, but really I guess some combinatorial stuff needs
+        # to be considered here...
+
+        if (rmerge_def - rmerge_abs) / rmerge_def > 0.03:
+            use_absorption = True
+
+        if (rmerge_def - rmerge_mod) / rmerge_def > 0.03:
+            use_modulation = True
+
+        if (rmerge_def - rmerge_dec) / rmerge_def > 0.03:
+            use_decay = True
+
+        # then explain what we are using
+
+        if use_absorption:
+            Debug.write('Absorption correction: on')
+        else:
+            Debug.write('Absorption correction: off')
+
+        if use_decay:
+            Debug.write('Decay correction: on')
+        else:
+            Debug.write('Decay correction: off')
+
+        if use_modulation:
+            Debug.write('Modulation correction: on')
+        else:
+            Debug.write('Modulation correction: off')
+    
+        # then save them
+
+        self._scalr_correct_decay = use_decay
+        self._scalr_correct_modulation = use_modulation
+        self._scalr_correct_absorption = use_absorption
+
+        self._scalr_corrections = True
+
+        return
 
     def _refine_sd_parameters_remerge(self, scales_file, sdadd_f, sdb_f):
         '''Actually compute the RMS deviation from scatter / sigma = 1.0
