@@ -975,7 +975,8 @@ class XDSScaler(Scaler):
     def _scale(self):
         '''Actually scale all of the data together.'''
 
-        self._determine_best_scale_model()
+        if Flags.get_smart_scaling():
+            self._determine_best_scale_model()
 
         epochs = self._sweep_information.keys()
         epochs.sort()
