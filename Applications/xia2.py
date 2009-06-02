@@ -225,23 +225,23 @@ def help():
     '''Print out some help for xia2.'''
 
     sys.stdout.write('\nCommand-line options to xia2:\n')
-    sys.stdout.write('[-parallel 4] (say, for XDS usage)\n')
+    sys.stdout.write('[-parallel 4] (automatic)\n')
     sys.stdout.write('[-resolution 2.8] (say, applies to all sweeps)\n')
     sys.stdout.write('[-ehtpx_xml_out foo.xml]\n')
     sys.stdout.write('[-freer_file free.mtz]\n')
+    sys.stdout.write('[-spacegroup C2] (for example)\n')
     sys.stdout.write('[-quick]\n')
     sys.stdout.write('[-reversephi]\n')
     sys.stdout.write('[-migrate_data]\n')
     sys.stdout.write('[-2d] or [-3d] or [-3dii]\n')
     sys.stdout.write('[-xinfo foo.xinfo] or [/path/to/images]\n\n')
-
-    sys.stdout.write('Deprecated command-line options to xia2:\n')
-    sys.stdout.write('[-lattice mP] (say)\n')
-    sys.stdout.write('[-resolution 2.4] (say)\n')
     sys.stdout.write('[-atom se] (say) - this is for xia2setup\n')
     sys.stdout.write('[-project foo] (say) - this is for xia2setup\n')
     sys.stdout.write('[-crystal bar] (say) - this is for xia2setup\n\n')
-    
+
+    sys.stdout.write('Command-lines for testing\n')
+    sys.stdout.write('[-smart_scaling] figure out the "best" scaling model\n')
+
     sys.stdout.write('Develper options - do not use these ...\n')
     sys.stdout.write(
         '[-z_min 50] (minimum Z value for rejecting reflections)\n')
