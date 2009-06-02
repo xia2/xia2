@@ -85,6 +85,7 @@ class _CommandLine(Object):
         self._read_old_mosflm()
         self._read_small_molecule()
         self._read_quick()
+        self._read_smart_scaling()
         self._read_reversephi()
         self._read_fiddle_sd()
         self._read_no_relax()
@@ -634,6 +635,13 @@ class _CommandLine(Object):
         if '-quick' in sys.argv:
             Flags.set_quick(True)
             Debug.write('Quick mode selected')
+        return
+
+    def _read_smart_scaling(self):
+
+        if '-smart_scaling' in sys.argv:
+            Flags.set_smart_scaling(True)
+            Debug.write('Smart scaling mode selected')
         return
 
     def _read_reversephi(self):

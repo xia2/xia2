@@ -29,6 +29,7 @@ class _Flags:
 
     def __init__(self):
         self._quick = False
+        self._smart_scaling = False
         self._reversephi = False
         self._fiddle_sd = False
         self._migrate_data = False
@@ -165,6 +166,13 @@ class _Flags:
 
     def get_quick(self):
         return self._quick
+
+    def set_smart_scaling(self, smart_scaling):
+        self._smart_scaling = smart_scaling
+        return
+
+    def get_smart_scaling(self):
+        return self._smart_scaling
 
     def set_reversephi(self, reversephi):
         self._reversephi = reversephi

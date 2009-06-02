@@ -64,9 +64,9 @@ class CCP4Factory:
               decay_correction = None):
         '''Create a Scala wrapper from _Scala - set the working directory
         and log file stuff as a part of this...'''
-        scala = _Scala(partiality_correction = None,
-                       absorption_correction = None,
-                       decay_correction = None)
+        scala = _Scala(partiality_correction = partiality_correction,
+                       absorption_correction = absorption_correction,
+                       decay_correction = decay_correction)
         scala.set_working_directory(self.get_working_directory())
         auto_logfiler(scala)
         return scala

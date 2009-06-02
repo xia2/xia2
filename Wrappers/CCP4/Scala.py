@@ -82,8 +82,17 @@ from Handlers.Streams import Debug
 from Handlers.Flags import Flags
 from Experts.ResolutionExperts import linear
 
-def Scala(DriverType = None):
+def Scala(DriverType = None,
+          partiality_correction = None,
+          absorption_correction = None,
+          decay_correction = None):
     '''A factory for ScalaWrapper classes.'''
+
+    # Debug.write('Scala factory:')
+    # Debug.write('Partiality %s Absorption %s Decay %s' % \
+    # (partiality_correction,
+    # absorption_correction,
+    # decay_correction))
 
     DriverInstance = DriverFactory.Driver(DriverType)
     CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, 'ccp4')
@@ -91,10 +100,7 @@ def Scala(DriverType = None):
     class ScalaWrapper(CCP4DriverInstance.__class__):
         '''A wrapper for Scala, using the CCP4-ified Driver.'''
 
-        def __init__(self,
-                     partiality_correction = None,
-                     absorption_correction = None,
-                     decay_correction = None):
+        def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
 
@@ -172,7 +178,7 @@ def Scala(DriverType = None):
             # these are only relevant for 'rotation' mode scaling
             self._spacing = 5
 
-            if absorption_correction = None:
+            if absorption_correction == None:
                 self._secondary = 6
             elif absorption_correction == True:
                 self._secondary = 6
@@ -346,7 +352,7 @@ def Scala(DriverType = None):
             if spacing:
                 self._spacing = spacing
 
-            if secondary:
+            if not secondary is None:
                 self._secondary = secondary
 
             return
@@ -660,6 +666,8 @@ def Scala(DriverType = None):
 
                 self.input(scale_command)
 
+            # Debug.write('Scaling command: "%s"' % scale_command)
+                
             # next any 'generic' parameters
 
             if self._resolution:

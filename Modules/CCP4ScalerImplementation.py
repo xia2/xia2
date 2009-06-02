@@ -210,6 +210,25 @@ class CCP4Scaler(Scaler):
         self._helper.set_working_directory(working_directory)        
         return
 
+    # this is an overload from the factory
+
+    def _updated_scala(self):
+        
+        if not self._scalr_corrections:
+            # Debug.write('Scala factory: default scala')
+            return self._factory.Scala()
+
+        # Debug.write('Scala factory: modified scala')
+        # Debug.write('Partiality %s Absorption %s Decay %s' % \
+        # (self._scalr_correct_partiality,
+        # self._scalr_correct_absorption,
+        # self._scalr_correct_decay))
+        
+        return self._factory.Scala(
+            partiality_correction = self._scalr_correct_partiality,
+            absorption_correction = self._scalr_correct_absorption,
+            decay_correction = self._scalr_correct_decay)
+
     def _pointless_indexer_jiffy(self, hklin, indexer):
         return self._helper.pointless_indexer_jiffy(hklin, indexer)
 
@@ -237,7 +256,7 @@ class CCP4Scaler(Scaler):
         absorption = True
         decay = True
 
-        sc_def = self._factory.Scala()
+        sc_def = self._updated_scala()
         sc_def.set_cycles(5)
         sc_def.set_hklin(self._prepared_reflections)
         sc_def.set_hklout('temp.mtz')
@@ -270,14 +289,14 @@ class CCP4Scaler(Scaler):
 
         # first test the absorption correction...
 
-        sc_tst = self._factory.Scala()
+        sc_tst = self._updated_scala()
         sc_tst.set_cycles(5)
         sc_tst.set_hklin(self._prepared_reflections)
         sc_tst.set_hklout('temp.mtz')
         
         sc_tst.set_tails(tails = False)
         sc_tst.set_bfactor(bfactor = False)
-        sc_tst.set_scaling_parameters('rotation', secondary = 4)
+        sc_tst.set_scaling_parameters('rotation', secondary = 6)
 
         for epoch in epochs:
             input = self._sweep_information[epoch]
@@ -308,13 +327,13 @@ class CCP4Scaler(Scaler):
 
         # then test the partiality correction...
 
-        sc_tst = self._factory.Scala()
+        sc_tst = self._updated_scala()
         sc_tst.set_hklin(self._prepared_reflections)
         sc_tst.set_hklout('temp.mtz')
         
         sc_tst.set_tails(tails = True)
         sc_tst.set_bfactor(bfactor = False)
-        sc_tst.set_scaling_parameters('rotation', secondary = None)
+        sc_tst.set_scaling_parameters('rotation', secondary = False)
 
         for epoch in epochs:
             input = self._sweep_information[epoch]
@@ -345,13 +364,13 @@ class CCP4Scaler(Scaler):
 
         # finally test the decay correction
 
-        sc_tst = self._factory.Scala()
+        sc_tst = self._updated_scala()
         sc_tst.set_hklin(self._prepared_reflections)
         sc_tst.set_hklout('temp.mtz')
         
         sc_tst.set_tails(tails = False)
         sc_tst.set_bfactor(bfactor = True)
-        sc_tst.set_scaling_parameters('rotation', secondary = None)
+        sc_tst.set_scaling_parameters('rotation', secondary = False)
 
         for epoch in epochs:
             input = self._sweep_information[epoch]
@@ -725,7 +744,7 @@ class CCP4Scaler(Scaler):
                           os.path.split(hklin)[-1])
             Chatter.write('to give indexing standard')
             
-            qsc = self._factory.Scala()
+            qsc = self._updated_scala()
             qsc.set_hklin(hklin)
             qsc.set_hklout(self._reference)
             qsc.quick_scale()
@@ -1264,7 +1283,7 @@ class CCP4Scaler(Scaler):
         epochs = self._sweep_information.keys()
         epochs.sort()
 
-        sc = self._factory.Scala()
+        sc = self._updated_scala()
         sc.set_hklin(self._prepared_reflections)
         sc.set_scales_file(scales_file)
 
@@ -1286,7 +1305,7 @@ class CCP4Scaler(Scaler):
         # bug # 2326
         if self.get_scaler_anomalous():
             sc.set_anomalous()
-        sc.set_tails()
+        # sc.set_tails()
         sc.scale()
         loggraph = sc.parse_ccp4_loggraph()
 
@@ -1566,8 +1585,10 @@ class CCP4Scaler(Scaler):
         epochs = self._sweep_information.keys()
         epochs.sort()
 
-        # first decide on a scaling model...
-        self._determine_best_scale_model()
+        # first decide on a scaling model... perhaps
+
+        if Flags.get_smart_scaling():
+            self._determine_best_scale_model()
 
         # FIXED in here I need to implement "proper" scaling...
         # this will need to do things like imposing a sensible
@@ -1603,7 +1624,7 @@ class CCP4Scaler(Scaler):
         # damage" data if appropriate. This will be a huge loop here perhaps?
         # what about resolution limit changes, and so on??!
 
-        sc = self._factory.Scala()
+        sc = self._updated_scala()
         sc.set_hklin(self._prepared_reflections)
 
         # generate a name for the "scales" file - this will be used for
@@ -1655,7 +1676,7 @@ class CCP4Scaler(Scaler):
         # bug # 2326
         if self.get_scaler_anomalous():
             sc.set_anomalous()
-        sc.set_tails()
+        # sc.set_tails()
 
         sc.scale()
 
@@ -1898,7 +1919,7 @@ class CCP4Scaler(Scaler):
         # tight loop - initially just rerun the scaling with all of the
         # "right" parameters...
         
-        sc = self._factory.Scala()
+        sc = self._updated_scala()
 
         FileHandler.record_log_file('%s %s scala' % (self._common_pname,
                                                      self._common_xname),
@@ -1956,7 +1977,7 @@ class CCP4Scaler(Scaler):
         # bug # 2326
         if self.get_scaler_anomalous():
             sc.set_anomalous()
-        sc.set_tails()
+        # sc.set_tails()
 
         sc.scale()
 
@@ -2152,7 +2173,7 @@ class CCP4Scaler(Scaler):
         # in here rerun scala recycling the final scales and writing out
         # unmerged reflection files in scalepack format
 
-        sc = self._factory.Scala()
+        sc = self._updated_scala()
         sc.set_hklin(self._prepared_reflections)
         sc.set_scales_file(scales_file)
 
@@ -2187,7 +2208,7 @@ class CCP4Scaler(Scaler):
         # bug # 2326
         if self.get_scaler_anomalous():
             sc.set_anomalous()
-        sc.set_tails()
+        # sc.set_tails()
         sc.scale()
 
         # this will delete the mtz files which have been made 
@@ -2212,7 +2233,7 @@ class CCP4Scaler(Scaler):
         # sdcorrection = 1 0 noadjust for CHEF to much on...
         # c/f Bug # 2798
 
-        sc = self._factory.Scala()
+        sc = self._updated_scala()
         sc.set_hklin(self._prepared_reflections)
         sc.set_scales_file(scales_file)
 
@@ -2249,7 +2270,7 @@ class CCP4Scaler(Scaler):
         if self.get_scaler_anomalous():
             sc.set_anomalous()
             
-        sc.set_tails()
+        # sc.set_tails()
         sc.scale()
 
         # next get the files back in MTZ format...
@@ -2281,7 +2302,7 @@ class CCP4Scaler(Scaler):
                                         'DepositFiles', pname,
                                         '%s.scala' % dname)
 
-            sc = self._factory.Scala()
+            sc = self._updated_scala()
             sc.set_hklin(self._prepared_reflections)
             sc.set_scales_file(scales_file)
 
@@ -2313,7 +2334,7 @@ class CCP4Scaler(Scaler):
             if self.get_scaler_anomalous():
                 sc.set_anomalous()
                 
-            sc.set_tails()
+            # sc.set_tails()
             sc.scale()
             stats = sc.get_summary()
 
