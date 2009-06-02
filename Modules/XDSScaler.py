@@ -126,7 +126,18 @@ class XDSScaler(Scaler):
     def XScale(self):
         '''Create a Xscale wrapper from _Xscale - set the working directory
         and log file stuff as a part of this...'''
+
+        # N.B. in here if the best scaling model has been applied, need
+        # to apply it as part of the constructor, else just give back the
+        # default "apply all corrections" XSCALE...
+        
         xscale = _XScale()
+
+        if self._scalr_corrections:
+            xscale.set_correct_decay(self._scalr_correct_decay)
+            xscale.set_correct_absorption(self._scalr_correct_absorption)
+            xscale.set_correct_modulation(self._scalr_correct_modulation)
+            
         xscale.set_working_directory(self.get_working_directory())
         auto_logfiler(xscale)
         return xscale
@@ -225,6 +236,72 @@ class XDSScaler(Scaler):
 
         return pointgroup, reindex_op, need_to_return
 
+    def _determine_best_scale_model(self):
+        '''Determine the best combination of scaling corrections to
+        apply to this data.'''
+
+        # if we have already defined the best scaling model just return
+
+        if self._scalr_corrections:
+            return
+
+        Debug.write('Optimising scaling corrections...')
+
+        epochs = self._sweep_information.keys()
+        epochs.sort()
+
+        xscale = self.XScale()
+
+        xscale.set_spacegroup_number(self._spacegroup)
+        xscale.set_cell(self._scalr_cell)
+
+        for epoch in epochs:
+
+            # get the prepared reflections
+            reflections = self._sweep_information[epoch][
+                'prepared_reflections']
+            
+            # and the get wavelength that this belongs to
+            dname = self._sweep_information[epoch]['dname']
+
+            # and the resolution range for the reflections
+            intgr = self._sweep_information[epoch]['integrater']
+            resolution = intgr.get_integrater_resolution()
+
+            if resolution == 0.0:
+                raise RuntimeError, 'zero resolution for %s' % \
+                      self._sweep_information[epoch][
+                    'integrater'].get_integrater_sweep_name()
+
+            xscale.add_reflection_file(reflections, dname, resolution)
+
+        # set the global properties of the sample - hmm... some of this should
+        # go into the constructor / factory above, right?
+        xscale.set_crystal(self._scalr_xname)
+        xscale.set_anomalous(self._scalr_anomalous)
+
+        if Flags.get_zero_dose():
+            Debug.write('Switching on zero-dose extrapolation')
+            xscale.set_zero_dose()
+
+        # do the scaling keeping the reflections unmerged, and
+        # switch off all of the corrections
+        xscale.set_correct_decay(False)
+        xscale.set_correct_absorption(False)
+        xscale.set_correct_modulation(False)
+
+        xscale.run()
+
+        # now get the R merge values (why didn't I implement this before ..?)
+        # oh. ok, so previously I merged the data with Scala and got the
+        # statistics from there...
+
+        Debug.write('Testing out the correction testing stuff...')
+        rmerges = xscale.get_rmerges()
+        for dname in sorted(rmerges):
+            Debug.write('%s %.1f' % (dname, rmerges[dname]))
+
+        raise RuntimeError, 'Arsing fecksicles!'
 
     def _refine_sd_parameters_remerge(self, scales_file, sdadd_f, sdb_f):
         '''Actually compute the RMS deviation from scatter / sigma = 1.0
@@ -897,6 +974,8 @@ class XDSScaler(Scaler):
 
     def _scale(self):
         '''Actually scale all of the data together.'''
+
+        self._determine_best_scale_model()
 
         epochs = self._sweep_information.keys()
         epochs.sort()

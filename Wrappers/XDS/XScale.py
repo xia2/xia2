@@ -36,7 +36,10 @@ from XDS import xds_check_error
 from Handlers.Flags import Flags
 from Handlers.Streams import Debug
 
-def XScale(DriverType = None):
+def XScale(DriverType = None,
+           correct_decay = True,
+           correct_absorption = True,
+           correct_modulation = True):
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -63,6 +66,12 @@ def XScale(DriverType = None):
             self._spacegroup_number = None
             self._reindex_matrix = None
 
+            # corrections to apply - N.B. default values come from the
+            # factory function default arguments...
+            self._correct_decay = correct_decay
+            self._correct_absorption = correct_absorption
+            self._correct_modulation = correct_modulation
+
             # input reflections information - including grouping information
             # in the same way as the .xinfo files - through the wavelength
             # names, which will be used for the output files.
@@ -87,6 +96,11 @@ def XScale(DriverType = None):
             # scale factor output
             self._scale_factor = 1.0
 
+            # Rmerge values - for the scale model analysis - N.B. get
+            # one for each data set, obviously...
+            self._rmerges = { }
+            
+
             return
 
         def add_reflection_file(self, reflections, wavelength, resolution):
@@ -108,6 +122,18 @@ def XScale(DriverType = None):
 
         def set_anomalous(self, anomalous = True):
             self._anomalous = anomalous
+            return
+
+        def set_correct_decay(self, correct_decay):
+            self._correct_decay = correct_decay
+            return
+            
+        def set_correct_absorption(self, correct_absorption):
+            self._correct_absorption = correct_absorption
+            return
+
+        def set_correct_modulation(self, correct_modulation):
+            self._correct_modulation = correct_modulation
             return
 
         def get_output_reflection_files(self):
@@ -229,6 +255,17 @@ def XScale(DriverType = None):
            	    # in anger!
                     # xscale_inp.write('CORRECTIONS=DECAY ABSORPTION\n')
 
+                    corrections = 'CORRECTIONS='
+                    if self._correct_decay:
+                        corrections += ' DECAY'
+                    if self._correct_modulation:
+                        corrections += ' MODULATION'
+                    if self._correct_absorption:
+                        corrections += ' ABSORPTION'
+                    corrections += '\n'
+
+                    xscale_inp.write(corrections)
+
                 if self._crystal and self._zero_dose:
                     xscale_inp.write('CRYSTAL_NAME=%s\n' % self._crystal)
 
@@ -258,6 +295,8 @@ def XScale(DriverType = None):
             # now look at XSCALE.LP
             xds_check_error(self.get_all_output())
 
+            dname = None
+
             # get the outlier reflections... and the overall scale factor
             for line in open(os.path.join(
                 self.get_working_directory(),
@@ -270,10 +309,20 @@ def XScale(DriverType = None):
                         
                 if 'FACTOR TO PLACE ALL DATA SETS TO ' in line:
                     self._scale_factor = float(line.split()[-1])
+
+                if 'STATISTICS OF SCALED OUTPUT DATA SET' in line:
+                    dname = line.split()[-1].replace('.HKL', '')
+
+                if 'total' in line and not dname in self._rmerges:
+                    self._rmerges[dname] = float(
+                        line.replace('%', '').split()[5])
                     
             return
 
         def get_scale_factor(self):
             return self._scale_factor
+
+        def get_rmerges(self):
+            return self._rmerges
 
     return XScaleWrapper()
