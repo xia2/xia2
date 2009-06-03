@@ -86,6 +86,7 @@ from Experts.SymmetryExpert import symop_to_mat, compose_matrices_r
 from CCP4ScalerImplementationHelpers import _resolution_estimate
 from CCP4InterRadiationDamageDetector import CCP4InterRadiationDamageDetector
 from Experts.ResolutionExperts import determine_scaled_resolution
+from DoseAccumulate import accumulate
 
 class XDSScaler(Scaler):
     '''An implementation of the xia2 Scaler interface implemented with
@@ -751,6 +752,7 @@ class XDSScaler(Scaler):
                 'batches':intgr.get_integrater_batches(),
                 'image_to_epoch':intgr.get_integrater_sweep(                
                 ).get_image_to_epoch(),
+                'image_to_dose':{},
                 'batch_offset':0                
                 }
 
@@ -761,6 +763,24 @@ class XDSScaler(Scaler):
             Debug.write('For EPOCH %s have:' % str(epoch))
             Debug.write('ID = %s/%s/%s' % (pname, xname, dname))
             Debug.write('SWEEP = %s' % intgr.get_integrater_sweep_name())
+
+        try:
+            all_images = self.get_scaler_xcrystal().get_all_image_names()
+            dose_information = accumulate(all_images)
+
+            # next copy this into the sweep information
+
+            for epoch in self._sweep_information.keys():
+                for i in self._sweep_information[epoch][
+                    'image_to_epoch'].keys():
+                    e = self._sweep_information[epoch][
+                        'image_to_epoch'][i]
+                    d = dose_information[e]
+                    self._sweep_information[epoch][
+                        'image_to_dose'][i] = d
+
+        except RuntimeError, e:
+            pass
 
         # next work through all of the reflection files and make sure that
         # they are XDS_ASCII format...
@@ -1533,6 +1553,23 @@ class XDSScaler(Scaler):
             # update the counter & recycle
 
             counter += 1
+
+        # now output a doser input file - just for kicks ;o)
+
+        fout = open(os.path.join(self.get_working_directory(),
+                                 'doser.in'), 'w')
+
+        for epoch in self._sweep_information.keys():
+            i2d = self._sweep_information[epoch]['image_to_dose']
+            i2e = self._sweep_information[epoch]['image_to_epoch']
+            offset = self._sweep_information[epoch]['batch_offset']
+            images = i2d.keys()
+            images.sort()
+            for i in images:
+                fout.write('batch %d dose %f time %f\n' % \
+                           (i + offset, i2d[i], i2e[i]))
+
+        fout.close()
 
         # then sort the files together, making sure that the resulting
         # reflection file looks right.
