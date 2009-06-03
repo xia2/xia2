@@ -1650,6 +1650,15 @@ class XDSScaler(Scaler):
         ri.set_operator(reindex_operator)
         ri.reindex()
 
+        # N.B. for the chef output will also need to reindex the sorted
+        # input files to the sorting step above, so that they can be
+        # analysed with chef. N.B. this may also involve sorting together
+        # the sweeps afterwards (hell, why not merge it into a single step?)
+        # of the sweeps which (i) belong to the same wavelength and (ii)
+        # are comparable in terms of exposure time per degree and distance.
+
+        # this is #181 so figure this out first...
+
         # record the updated cell parameters...
         # they should be the same in all files so... aah - if I set
         # this in here it may break the scaling if the data are also
