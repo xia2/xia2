@@ -471,7 +471,7 @@ class CCP4Scaler(Scaler):
             for wave in wavelengths:
                 if (wave, rate[0]) in groups:
                     for et in groups[(wave, rate[0])]:
-                        Debug.write('%d %s %s' % (et[0], wave, et[1])
+                        Debug.write('%d %s %s' % (et[0], wave, et[1]))
                     
 
     def _scale_prepare(self):
