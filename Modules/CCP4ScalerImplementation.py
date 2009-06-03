@@ -429,8 +429,8 @@ class CCP4Scaler(Scaler):
         measurements should be compared in chef. This will then print out
         an opinion of what should be compared by sweep epoch / image name.'''
         
-        dose_rates = { }
-        wavelengths = { }
+        dose_rates = []
+        wavelengths = []
         groups = { }
 
         for epoch in sorted(self._sweep_information):
@@ -440,13 +440,39 @@ class CCP4Scaler(Scaler):
             template = self._sweep_information[epoch][
                 'integrater'].get_template()
 
-            Debug.write('%s %s %.1f s/degree' % (template, wave, dr))
+            if not wave in wavelengths:
+                wavelengths.append(wave)
+
+            # Debug.write('%s %s %.1f s/degree' % (template, wave, dr))
             
-            
+            # cluster on power of sqrt(two), perhaps?
+
+            found = False
         
+            for rate in dose_rates:
+                r = rate[1]
+                if dr / r > math.sqrt(0.5) and dr / r < math.sqrt(2.0):
+                    # copy this for grouping
+                    found = True
+                    if (wave, rate[0]) in groups:
+                        groups[(wave, rate[0])].append((epoch, template))
+                    else:
+                        groups[(wave, rate[0])] = [(epoch, template)]
 
+            if not found:
+                rate = (len(dose_rates), dr)
+                dose_rates.append(rate)
+                groups[(wave, rate[0])] = [(epoch, template)]
+                        
+        # now work through the groups and print out the results
 
-
+        for rate in dose_rates:
+            Debug.write('Dose group %d (%s s)' % rate)
+            for wave in wavelengths:
+                if (wave, rate[0]) in groups:
+                    for et in groups[(wave, rate[0])]:
+                        Debug.write('%d %s %s' % (et[0], wave, et[1])
+                    
 
     def _scale_prepare(self):
         '''Perform all of the preparation required to deliver the scaled
