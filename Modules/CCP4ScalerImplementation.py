@@ -424,6 +424,30 @@ class CCP4Scaler(Scaler):
 
         return
 
+    def _sweep_information_to_chef(self):
+        '''Analyse the sweep_information data structure to work out which
+        measurements should be compared in chef. This will then print out
+        an opinion of what should be compared by sweep epoch / image name.'''
+        
+        dose_rates = { }
+        wavelengths = { }
+        groups = { }
+
+        for epoch in sorted(self._sweep_information):
+            header = self._sweep_information[epoch]['header']
+            dr = header['exposure_time'] / header['phi_width']
+            wave = self._sweep_information[epoch]['dname']
+            template = self._sweep_information[epoch][
+                'integrater'].get_template()
+
+            Debug.write('%s %s %.1f s/degree' % (template, wave, dr))
+            
+            
+        
+
+
+
+
     def _scale_prepare(self):
         '''Perform all of the preparation required to deliver the scaled
         data. This should sort together the reflection files, ensure that
@@ -496,6 +520,11 @@ class CCP4Scaler(Scaler):
 
         except RuntimeError, e:
             pass
+
+        # now parse the structure of the data to write out how they should
+        # be examined by chef...
+
+        self._sweep_information_to_chef()
 
         # next check through the reflection files that they are all MTZ
         # format - if not raise an exception.
