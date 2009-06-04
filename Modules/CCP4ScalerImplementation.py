@@ -424,6 +424,78 @@ class CCP4Scaler(Scaler):
 
         return
 
+    def _decide_chef_cutoff_epochs(self):
+        '''Analyse the mode of data collection and set a list of points
+        during data collection (as epochs) where it would be sensible to
+        consider cutting off the data collection. Criteria: difference
+        measurements made in wedges should be paired, whole wedges only.'''
+
+        # N.B. for SAD data or native, any image can be the last...
+
+        dnames = []
+
+        for epoch in sorted(self._scalr_integraters):
+            intgr = self._scalr_integraters[epoch]
+            pname, xname, dname = intgr.get_integrater_project_info()
+            if not dname in dnames:
+                dnames.append(dname)
+
+        # first ask if more than one wavelength was measured
+
+        if len(dnames) > 1:
+            # we have MAD data, or more than one logical wavelength anyway
+            # i.e. SIRAS or RIP
+            multi = True
+        else:
+            # all of the data belongs to a single logical data set
+            multi = False
+                
+        # next ask "are the data measured in wedges" (i.e. individual sweeps)
+        # for this use the batch number vs. epoch table - if the batch numbers
+        # increase monotonically, then wedges were not used in the data
+        # collection
+
+        epoch_to_batch = { }
+        for epoch in sorted(self._scalr_integraters):
+            intgr = self._scalr_integraters[epoch]
+            image_to_epoch = intgr.get_integrater_sweep(
+                ).get_image_to_epoch()
+            offset = self._sweep_information[epoch]['batch_offset']
+            for i in image_to_epoch:
+                epoch_to_batch[image_to_epoch[i]] = offset + i
+        
+        monotonic = True
+
+        b0 = epoch_to_batch[sorted(epoch_to_batch)[0]]
+
+        for e in sorted(epoch_to_batch)[1:]:
+            b = epoch_to_batch[e]
+            if b > b0:
+                b0 = b
+                continue
+            if b < b0:
+                # we have out-of-order batches
+                monotonic = False
+
+        # print out a digest of this...
+
+        Debug.write('Wedges: %s  Multiwavelength: %s' % (not monotonic, multi))
+
+        # then "chunkify" - if multi is false and wedges is false, then this
+        # will simply return / set a list of all epochs. If multi and not
+        # wedges, then consider the end of every wavelength. Elsewise need to
+        # divide up the data into the wedges, which would be the points
+        # at which the monotonicness is broken above. 
+
+        # and finally group the results - how to pass this back (as a list of
+        # integrated doses I guess is the only way to go...?) - Since these
+        # will be the measurements read from the Chef plots then this should
+        # be ok. N.B. when the analysis is performed I will need to look
+        # also at the estimation of the "sigma" for the decision about a
+        # substantial change...
+
+        return
+
     def _sweep_information_to_chef(self):
         '''Analyse the sweep_information data structure to work out which
         measurements should be compared in chef. This will then print out
@@ -1705,6 +1777,7 @@ class CCP4Scaler(Scaler):
         # be examined by chef...
 
         self._sweep_information_to_chef()
+        self._decide_chef_cutoff_epochs()
 
         # FIXED in here I need to implement "proper" scaling...
         # this will need to do things like imposing a sensible
