@@ -432,9 +432,11 @@ class CCP4Scaler(Scaler):
         dose_rates = []
         wavelengths = []
         groups = { }
+        batch_groups = { }
 
         for epoch in sorted(self._sweep_information):
             header = self._sweep_information[epoch]['header']
+            batches = self._sweep_information[epoch]['batches']
             dr = header['exposure_time'] / header['phi_width']
             wave = self._sweep_information[epoch]['dname']
             template = self._sweep_information[epoch][
@@ -443,9 +445,12 @@ class CCP4Scaler(Scaler):
             if not wave in wavelengths:
                 wavelengths.append(wave)
 
-            # Debug.write('%s %s %.1f s/degree' % (template, wave, dr))
-            
-            # cluster on power of sqrt(two), perhaps?
+            # cluster on power of sqrt(two), perhaps? also need to get the
+            # batch ranges which they will end up as so that I can fetch
+            # out the reflections I want from the scaled MTZ files.
+            # When it comes to doing this it will also need to know where
+            # those reflections may be found... - this is in sweep_information
+            # [epoch]['batches'] so should be pretty handy to get to in here.
 
             found = False
         
@@ -456,13 +461,16 @@ class CCP4Scaler(Scaler):
                     found = True
                     if (wave, rate[0]) in groups:
                         groups[(wave, rate[0])].append((epoch, template))
+                        batch_groups[(wave, rate[0])].append(batches)
                     else:
                         groups[(wave, rate[0])] = [(epoch, template)]
+                        batch_groups[(wave, rate[0])] = [batches]
 
             if not found:
                 rate = (len(dose_rates), dr)
                 dose_rates.append(rate)
                 groups[(wave, rate[0])] = [(epoch, template)]
+                batch_groups[(wave, rate[0])] = [batches]
                         
         # now work through the groups and print out the results
 
@@ -470,8 +478,12 @@ class CCP4Scaler(Scaler):
             Debug.write('Dose group %d (%s s)' % rate)
             for wave in wavelengths:
                 if (wave, rate[0]) in groups:
-                    for et in groups[(wave, rate[0])]:
-                        Debug.write('%d %s %s' % (et[0], wave, et[1]))
+                    for j in range(len(groups[(wave, rate[0])])):
+                        et = groups[(wave, rate[0])][j]
+                        batches = batch_groups[(wave, rate[0])][j]
+                        Debug.write('%d %s %s (%d to %d)' % \
+                                    (et[0], wave, et[1],
+                                     batches[0], batches[1]))
                     
 
     def _scale_prepare(self):
@@ -546,11 +558,6 @@ class CCP4Scaler(Scaler):
 
         except RuntimeError, e:
             pass
-
-        # now parse the structure of the data to write out how they should
-        # be examined by chef...
-
-        self._sweep_information_to_chef()
 
         # next check through the reflection files that they are all MTZ
         # format - if not raise an exception.
@@ -1644,6 +1651,11 @@ class CCP4Scaler(Scaler):
 
         if Flags.get_smart_scaling():
             self._determine_best_scale_model()
+
+        # now parse the structure of the data to write out how they should
+        # be examined by chef...
+
+        self._sweep_information_to_chef()
 
         # FIXED in here I need to implement "proper" scaling...
         # this will need to do things like imposing a sensible
