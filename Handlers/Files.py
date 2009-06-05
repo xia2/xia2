@@ -205,6 +205,12 @@ class _FileHandler:
                 input_files = []
                 output_files = []
 
+            elif 'chef' in app_name:
+                commands, allfiles = get_ccp4_commands(
+                    open(original, 'r').readlines())             
+                input_files = []
+                output_files = []
+
             else:
                 commands, allfiles = get_ccp4_commands(
                     open(original, 'r').readlines())

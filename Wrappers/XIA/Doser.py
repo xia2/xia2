@@ -46,7 +46,7 @@ def Doser(DriverType = None):
             return
 
         def run(self):
-            self.check_hlkin()
+            self.check_hklin()
             self.check_hklout()
 
             if not self._times and not self._doses:

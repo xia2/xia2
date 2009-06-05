@@ -2569,7 +2569,7 @@ class CCP4Scaler(Scaler):
             chef = self._factory.Chef()
 
             dose_step = self._chef_analysis_times[group]
-            anomalous = self._get_scaler_anomalous()
+            anomalous = self.get_scaler_anomalous()
 
             for hklin in chef_hklins:
                 chef.add_hklin(hklin)
