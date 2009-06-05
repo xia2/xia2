@@ -494,6 +494,8 @@ class CCP4Scaler(Scaler):
         # also at the estimation of the "sigma" for the decision about a
         # substantial change...
 
+        # Ergo will need a hash table of epoch_to_dose...
+
         return
 
     def _sweep_information_to_chef(self):
@@ -592,16 +594,26 @@ class CCP4Scaler(Scaler):
                 else:
                     resolutions[rate[0]] = resolution
                         
-        # now work through the groups and print out the results
+        # now work through the groups and print out the results, as well
+        # as storing them for future reference...
+
+        self._chef_analysis_groups = { }
+        self._chef_analysis_times = { }
+        self._chef_analysis_resolutions = { }
 
         for rate in dose_rates:
+            self._chef_analysis_groups[rate[0]] = []
+            self._chef_analysis_times[rate[0]] = rate[1]
             Debug.write('Dose group %d (%s s)' % rate)
             Debug.write('Resolution limit: %.2f' % resolutions[rate[0]])
+            self._chef_analysis_resolutions[rate[0]] = resolutions[rate[0]]
             for wave in wavelengths:
                 if (wave, rate[0]) in groups:
                     for j in range(len(groups[(wave, rate[0])])):
                         et = groups[(wave, rate[0])][j]
                         batches = batch_groups[(wave, rate[0])][j]
+                        self._chef_analysis_groups[rate[0]].append(
+                            (wave, et[1], batches[0], batches[1]))
                         Debug.write('%d %s %s (%d to %d)' % \
                                     (et[0], wave, et[1],
                                      batches[0], batches[1]))
@@ -2462,15 +2474,116 @@ class CCP4Scaler(Scaler):
         # sc.set_tails()
         sc.scale()
 
-        # next get the files back in MTZ format...
+        # next get the files back in MTZ format... N.B. this is structured
+        # as a dictionary {WAVE:MTZ}
         reflection_files = sc.get_scaled_reflection_files()
 
-        # and then use doser to add the dose information
+        # perpare the dose profiles (again) 
 
+        doses = { }
 
-        # then feed the results to chef - though this should really happen
-        # much earlier in the cycle - FIXME and see FIXME above which
-        # indicates what code should be moved
+        for epoch in self._sweep_information.keys():
+            i2d = self._sweep_information[epoch]['image_to_dose']
+            i2e = self._sweep_information[epoch]['image_to_epoch']
+            offset = self._sweep_information[epoch]['batch_offset']
+            images = sorted(i2d.keys())
+            for i in images:
+                batch = i + offset
+                doses[batch] = i2d[i]
+
+        # the maximum dose should be one image higher than the "real"
+        # maximum dose to give a little breathing room - this is achieved
+        # by incrementing this by one image worth of dose...
+
+        all_doses = sorted([doses[b] for b in doses])
+        dose_max = all_doses[-1] + (all_doses[-1] - all_doses[-2])
+
+        # now perform the chef analysis for each dose rate group - this
+        # can harmlessly include the running of doser on each little bit
+
+        for group in sorted(self._chef_analysis_groups):
+            # for each wavelength in this analysis group, get the batch
+            # ranges wanted for the comparison, chop them out of the
+            # given reflection file in the dictionary above, then
+            # sort them back together to e.g. chef_group_%s_WAVE.mtz
+            # keeping a track of this of course
+
+            resolution = self._chef_analysis_resolutions[group]
+
+            Debug.write('Preparing chef analysis group %d' % group)
+            Debug.write('N.B. to resolution %.2f' % resolution)
+
+            bits = { }
+
+            for wtse in self._chef_analysis_groups[group]:
+                wave, template, start, end = wtse
+                hklout = os.path.join(self.get_working_directory(),
+                                      'chef_%d_%s_%d_%d.mtz' % \
+                                      (group, wave, start, end))
+                hklout_all = os.path.join(self.get_working_directory(),
+                                          'chef_%d_%s.mtz' % \
+                                          (group, wave))
+                hklin = reflection_files[wave]
+                rb = self._factory.Rebatch()
+                rb.set_hklin(hklin)
+                rb.set_hklout(hklout)
+                rb.limit_batches(start, end)
+
+                if not wave in bits:
+                    bits[wave] = [hklout_all]
+                bits[wave].append(hklout)
+                FileHandler.record_temporary_file(hklout)
+                FileHandler.record_temporary_file(hklout_all)
+
+            # now sort these together
+            for wave in bits:
+                s = self._factory.Sortmtz()
+                s.set_hklout(bits[wave][0])
+                for hklin in bits[wave][1:]:
+                    s.add_hklin(hklin)
+                s.sort()
+
+            # now add the doser information to all of these sorted files
+            # and record these as input files to chef... 
+
+            chef_hklins = []
+            
+            for wave in bits:
+                d = self._factory.Doser()
+                hklin = bits[wave][0]
+                hklout = '%s_dose.mtz' % hklin[:-4]
+                d.set_hklin(hklin)
+                d.set_hklout(hklout)
+                d.set_doses(doses)
+                d.run()
+
+                chef_hklins.append(hklout)
+                FileHandler.record_temporary_file(hklout)
+
+            # then run chef with this - no analysis as yet, but to record
+            # the log file to chef_groupN_analysis or something and be
+            # sure that it finds it's way to the LogFiles directory.
+            
+            # then feed the results to chef
+
+            chef = self._factory.Chef()
+
+            dose_step = self._chef_analysis_times[group]
+            anomalous = self._get_scaler_anomalous()
+
+            for hklin in chef_hklins:
+                chef.add_hklin(hklin)
+
+            chef.set_anomalous(anomalous)
+            chef.set_resolution(resolution)
+            chef.set_width(dose_step)
+            chef.set_max(dose_max)
+            chef.set_labin('DOSE')
+            
+            chef.run()
+
+            FileHandler.record_log_file('%d chef' % group,
+                                        chef.get_log_file())
 
         # FIXME ALSO need to copy the harvest information in this cycle
         # as this is where we get the right harvest files for each
@@ -2615,7 +2728,7 @@ class CCP4Scaler(Scaler):
                                             (self._common_pname,
                                              self._common_xname,
                                              key),
-                                        t.get_log_file())
+                                            t.get_log_file())
 
                 hklout = ''
                 for path in os.path.split(file)[:-1]:

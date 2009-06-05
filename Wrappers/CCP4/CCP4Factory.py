@@ -38,9 +38,10 @@ from Wrappers.CCP4.Freerflag import Freerflag as _Freerflag
 from Wrappers.CCP4.Pointless import Pointless as _Pointless
 from Wrappers.CCP4.Sfcheck import Sfcheck as _Sfcheck
 from Wrappers.CCP4.Matthews_coef import Matthews_coef as _Matthews_coef
+from Wrappers.XIA.Chef import Chef as _Chef
+from Wrappers.XIA.Doser import Doser as _Doser
 
 from lib.Guff import auto_logfiler
-
 
 class CCP4Factory:
     '''A class to provide CCP4 program wrappers.'''
@@ -198,4 +199,23 @@ class CCP4Factory:
         matthews_coef.set_working_directory(self.get_working_directory())
         auto_logfiler(matthews_coef)
         return matthews_coef
+    
+    def Doser(self):
+        '''Create a Doser wrapper from _Doser - set the
+        working directory and log file stuff as a part of this...'''
+        doser = _Doser()
+        doser.set_working_directory(self.get_working_directory())
+        auto_logfiler(doser)
+        return doser
+
+    def Chef(self):
+        '''Create a Chef wrapper from _Chef - set the
+        working directory and log file stuff as a part of this...'''
+        chef = _Chef()
+        chef.set_working_directory(self.get_working_directory())
+        auto_logfiler(chef)
+        return chef
+
+    
+    
     

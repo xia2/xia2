@@ -437,8 +437,12 @@ END PROJECT TS01
         autoindexing.</li>
       <li>Started to use CCTBX - this will be bundled with the release
         from now on...</li>
-      <li>[for testing] can now determine "best" scaling model to use for a 
-        given data set, -smart_scaling.</li>
+      <li>Now runs "smart scaling" i.e. will customise the scaling model
+	used to the data. This can seriously improve the xia2 run time in 
+	cases where some of the default scaling models do not converge.</li>
+      <li>Now also includes running of CHEF for radiation damage, which will
+	slice and dice your data into dose groups, then run a correctly 
+	time sequenced radiation damage analysis.</li>
     </ul>
 
     <p>Changes since 0.2.7.2</p>
@@ -835,7 +839,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Mon Apr 27 10:19:45 BST 2009
+Last modified: Fri Jun  5 10:45:08 BST 2009
 <!-- hhmts end -->
   </body>
 </html>
