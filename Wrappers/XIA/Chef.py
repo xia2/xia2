@@ -110,7 +110,7 @@ def Chef(DriverType = None):
 
             self.start()
 
-            self.input('print chi comp')
+            self.input('print scp comp')
 
             if self._anomalous:
                 self.input('anomalous on')
