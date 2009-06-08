@@ -219,15 +219,15 @@ def headers2sweeps(header_dict):
         delta_phi = math.fabs(
             header['phi_start'] - current_sweep['phi_end']) % 360.0
 
-        Debug.write('Image %d %f %f %f' % \
-                    (i, delta_lambda, delta_distance,
-                     min(delta_phi, 360.0 - delta_phi)))
+        # Debug.write('Image %d %f %f %f' % \
+        # (i, delta_lambda, delta_distance,
+        # min(delta_phi, 360.0 - delta_phi)))
 
         if delta_lambda < 0.0001 and \
                delta_distance < 0.01 and \
                min(delta_phi, 360.0 - delta_phi) < 0.01:
             # this is another image in the sweep
-            Debug.write('Image %d belongs to the sweep' % i)
+            # Debug.write('Image %d belongs to the sweep' % i)
             current_sweep['images'].append(i)
             current_sweep['phi_end'] = header['phi_end']
             current_sweep['collect_end'] = header['epoch']
