@@ -1399,12 +1399,6 @@ class XDSScaler(Scaler):
         epochs = self._sweep_information.keys()
         epochs.sort()
 
-        # now parse the structure of the data to write out how they should
-        # be examined by chef...
-
-        self._sweep_information_to_chef()
-        self._decide_chef_cutoff_epochs()
-
         xscale = self.XScale()
 
         xscale.set_spacegroup_number(self._spacegroup)
@@ -1760,6 +1754,13 @@ class XDSScaler(Scaler):
 
         fout = open(os.path.join(self.get_working_directory(),
                                  'doser.in'), 'w')
+
+        # now parse the structure of the data to write out how they should
+        # be examined by chef... N.B. this was moved from the top of this
+        # method see trac #200.
+
+        self._sweep_information_to_chef()
+        self._decide_chef_cutoff_epochs()
 
         for epoch in self._sweep_information.keys():
             i2d = self._sweep_information[epoch]['image_to_dose']
