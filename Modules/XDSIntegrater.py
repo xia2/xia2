@@ -666,6 +666,12 @@ class XDSIntegrater(FrameProcessor,
             self.get_working_directory(),
             'XDS_ASCII.HKL')
 
+        # also record the batch range - needed for the analysis of the
+        # radiation damage in chef...
+
+        self._intgr_batches_out = (self._intgr_wedge[0],
+                                   self._intgr_wedge[1])
+
         # look at the resolution limit...
         resolution = correct.get_result('resolution_estimate')
         resolution_old = correct.get_result('resolution_estimate_old')

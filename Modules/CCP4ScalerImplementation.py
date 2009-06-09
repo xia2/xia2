@@ -619,6 +619,8 @@ class CCP4Scaler(Scaler):
                                      batches[0], batches[1]))
                     
 
+        return
+
     def _scale_prepare(self):
         '''Perform all of the preparation required to deliver the scaled
         data. This should sort together the reflection files, ensure that

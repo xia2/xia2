@@ -717,6 +717,202 @@ class XDSScaler(Scaler):
 
         return best_sdadd_full, best_sdb_full
 
+    def _decide_chef_cutoff_epochs(self):
+        '''Analyse the mode of data collection and set a list of points
+        during data collection (as epochs) where it would be sensible to
+        consider cutting off the data collection. Criteria: difference
+        measurements made in wedges should be paired, whole wedges only.'''
+
+        # N.B. for SAD data or native, any image can be the last...
+
+        dnames = []
+
+        for epoch in sorted(self._scalr_integraters):
+            intgr = self._scalr_integraters[epoch]
+            pname, xname, dname = intgr.get_integrater_project_info()
+            if not dname in dnames:
+                dnames.append(dname)
+
+        # first ask if more than one wavelength was measured
+
+        if len(dnames) > 1:
+            # we have MAD data, or more than one logical wavelength anyway
+            # i.e. SIRAS or RIP
+            multi = True
+        else:
+            # all of the data belongs to a single logical data set
+            multi = False
+                
+        # next ask "are the data measured in wedges" (i.e. individual sweeps)
+        # for this use the batch number vs. epoch table - if the batch numbers
+        # increase monotonically, then wedges were not used in the data
+        # collection
+
+        epoch_to_batch = { }
+        for epoch in sorted(self._scalr_integraters):
+            intgr = self._scalr_integraters[epoch]
+            image_to_epoch = intgr.get_integrater_sweep(
+                ).get_image_to_epoch()
+            offset = self._sweep_information[epoch]['batch_offset']
+            for i in image_to_epoch:
+                epoch_to_batch[image_to_epoch[i]] = offset + i
+        
+        monotonic = True
+
+        b0 = epoch_to_batch[sorted(epoch_to_batch)[0]]
+
+        for e in sorted(epoch_to_batch)[1:]:
+            b = epoch_to_batch[e]
+            if b > b0:
+                b0 = b
+                continue
+            if b < b0:
+                # we have out-of-order batches
+                monotonic = False
+
+        # print out a digest of this...
+
+        Debug.write('Wedges: %s  Multiwavelength: %s' % (not monotonic, multi))
+
+        # then "chunkify" - if multi is false and wedges is false, then this
+        # will simply return / set a list of all epochs. If multi and not
+        # wedges, then consider the end of every wavelength. Elsewise need to
+        # divide up the data into the wedges, which would be the points
+        # at which the monotonicness is broken above. 
+
+        # and finally group the results - how to pass this back (as a list of
+        # integrated doses I guess is the only way to go...?) - Since these
+        # will be the measurements read from the Chef plots then this should
+        # be ok. N.B. when the analysis is performed I will need to look
+        # also at the estimation of the "sigma" for the decision about a
+        # substantial change...
+
+        # Ergo will need a hash table of epoch_to_dose...
+
+        return
+
+    def _sweep_information_to_chef(self):
+        '''Analyse the sweep_information data structure to work out which
+        measurements should be compared in chef. This will then print out
+        an opinion of what should be compared by sweep epoch / image name.'''
+        
+        dose_rates = []
+        wavelengths = []
+        groups = { }
+        batch_groups = { }
+        resolutions = { }
+
+        # FIXME need to estimate the inscribed circle resolution from the
+        # image header information - the lowest for each group will be used
+        # for the analysis... Actually - this will be the lowest resolution
+        # of all of the integrater resolutions *and* all of the inscribed
+        # circle resolutions...
+
+        for epoch in sorted(self._sweep_information):
+            header = self._sweep_information[epoch]['header']
+            batches = self._sweep_information[epoch]['batches']
+            dr = header['exposure_time'] / header['phi_width']
+            wave = self._sweep_information[epoch]['dname']
+            template = self._sweep_information[epoch][
+                'integrater'].get_template()
+            beam = self._sweep_information[epoch][
+                'integrater'].get_beam()
+            distance = self._sweep_information[epoch][
+                'integrater'].get_distance()
+            wavelength = self._sweep_information[epoch][
+                'integrater'].get_wavelength()
+            resolution_used = self._sweep_information[epoch][
+                'integrater'].get_integrater_high_resolution()
+
+            # ok, in here decide the minimum distance from the beam centre to
+            # the edge... which will depend on the size of the detector
+
+            detector_width = header['size'][0] * header['pixel'][0] 
+            detector_height = header['size'][1] * header['pixel'][1]
+           
+            radius = min([beam[0], detector_width - beam[0],
+                          beam[1], detector_height - beam[1]])
+
+            theta = 0.5 * math.atan(radius / distance)
+
+            resolution_circle = wavelength / (2 * math.sin(theta))
+
+            resolution = max(resolution_circle, resolution_used)
+
+            if not wave in wavelengths:
+                wavelengths.append(wave)
+
+            # cluster on power of sqrt(two), perhaps? also need to get the
+            # batch ranges which they will end up as so that I can fetch
+            # out the reflections I want from the scaled MTZ files.
+            # When it comes to doing this it will also need to know where
+            # those reflections may be found... - this is in sweep_information
+            # [epoch]['batches'] so should be pretty handy to get to in here.
+
+            found = False
+        
+            for rate in dose_rates:
+                r = rate[1]
+                if dr / r > math.sqrt(0.5) and dr / r < math.sqrt(2.0):
+                    # copy this for grouping
+                    found = True
+                    if (wave, rate[0]) in groups:
+                        groups[(wave, rate[0])].append((epoch, template))
+                        batch_groups[(wave, rate[0])].append(batches)
+                        if rate[0] in resolutions:
+                            resolutions[rate[0]] = max(resolutions[rate[0]],
+                                                       resolution)
+                        else:
+                            resolutions[rate[0]] = resolution
+                            
+                                              
+                    else:
+                        groups[(wave, rate[0])] = [(epoch, template)]
+                        batch_groups[(wave, rate[0])] = [batches]
+                        if rate[0] in resolutions:
+                            resolutions[rate[0]] = max(resolutions[rate[0]],
+                                                       resolution)
+                        else:
+                            resolutions[rate[0]] = resolution
+
+            if not found:
+                rate = (len(dose_rates), dr)
+                dose_rates.append(rate)
+                groups[(wave, rate[0])] = [(epoch, template)]
+                batch_groups[(wave, rate[0])] = [batches]
+
+                if rate[0] in resolutions:
+                    resolutions[rate[0]] = max(resolutions[rate[0]],
+                                               resolution)
+                else:
+                    resolutions[rate[0]] = resolution
+                        
+        # now work through the groups and print out the results, as well
+        # as storing them for future reference...
+
+        self._chef_analysis_groups = { }
+        self._chef_analysis_times = { }
+        self._chef_analysis_resolutions = { }
+
+        for rate in dose_rates:
+            self._chef_analysis_groups[rate[0]] = []
+            self._chef_analysis_times[rate[0]] = rate[1]
+            Debug.write('Dose group %d (%s s)' % rate)
+            Debug.write('Resolution limit: %.2f' % resolutions[rate[0]])
+            self._chef_analysis_resolutions[rate[0]] = resolutions[rate[0]]
+            for wave in wavelengths:
+                if (wave, rate[0]) in groups:
+                    for j in range(len(groups[(wave, rate[0])])):
+                        et = groups[(wave, rate[0])][j]
+                        batches = batch_groups[(wave, rate[0])][j]
+                        self._chef_analysis_groups[rate[0]].append(
+                            (wave, et[1], batches[0], batches[1]))
+                        Debug.write('%d %s %s (%d to %d)' % \
+                                    (et[0], wave, et[1],
+                                     batches[0], batches[1]))
+
+        return
+
     def _scale_prepare(self):
         '''Prepare the data for scaling - this will reindex it the
         reflections to the correct pointgroup and setting, for instance,
@@ -1202,6 +1398,12 @@ class XDSScaler(Scaler):
 
         epochs = self._sweep_information.keys()
         epochs.sort()
+
+        # now parse the structure of the data to write out how they should
+        # be examined by chef...
+
+        self._sweep_information_to_chef()
+        self._decide_chef_cutoff_epochs()
 
         xscale = self.XScale()
 
