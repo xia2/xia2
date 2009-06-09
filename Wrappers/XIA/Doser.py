@@ -68,6 +68,7 @@ def Doser(DriverType = None):
             
                 self.input('batch %d dose %f time %f' % (b, d, t))
 
+            self.input('end')
             self.close_wait()
 
             return
