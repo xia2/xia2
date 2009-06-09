@@ -175,7 +175,7 @@ def gather_parameters(source_dir):
     for key in ['SPOT_RANGE', 'BACKGROUND_RANGE', 'DATA_RANGE',
                 'JOB', 'REFINE(IDXREF)', 'REFINE(INTEGRATE)',
                 'REFINE(CORRECT)', 'TEST', 'BEAM_DIVERGENCE',
-                'REFLECTING_RANGE']:
+                'REFLECTING_RANGE', 'CORRECTIONS']:
         try:
             del(new_commands[key])
             keys.remove(key)
