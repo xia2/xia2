@@ -228,6 +228,21 @@ def get_number_cpus():
 
     return -1
 
+def spacegroup_number_to_name(spg_num):
+    '''Convert a spacegroup number to a more readable name.'''
+
+    database = { }
+
+    for record in open(
+        os.path.join(os.environ['CLIBD'], 'symop.lib'), 'r').readlines():
+        if ' ' in record[:1]:
+            continue
+        number = int(record.split()[0])
+        name = record.split('\'')[1].strip()
+        database[number] = name
+
+    return database[spg_num]
+
 def read_command_line():
     '''Read the command line and the image header of the first image found.
     Return a list of matching images (i.e. the start and end of the sweep)
@@ -505,6 +520,9 @@ def merge():
         
         if 'Average mosaicity' in record:
             do_print = False
+
+        if '==========' in record:
+            do_print = False
             
         if do_print:
             print record[:-1]
@@ -540,7 +558,7 @@ def main():
     
     step_time = time.time()
 
-    print 'Integration...'
+    print 'Integrating...'
     write_xds_inp_integrate(metadata)
     xds_output = run_job('xds_par')
     resolution = read_correct_lp_get_resolution()
@@ -567,8 +585,15 @@ def main():
 
     duration = time.time() - start_time
 
-    print 'All processing took %s' % time.strftime('%Hh %Mm %Ss',
-                                                   time.gmtime(duration))
+    gxparm = open('GXPARM.XDS', 'r').readlines()
+    spacegroup = spacegroup_number_to_name(int(gxparm[7].split()[0]))
+    cell = tuple(map(float, gxparm[7].split()[1:]))
+
+    print 'Pointgroup: %s' % spacegroup
+    print 'Cell: %9.3f%9.3f%9.3f%9.3f%9.3f%9.3f' % cell
+
+    print 'All processing took %d (%s)' % \
+          (int(duration), time.strftime('%Hh %Mm %Ss', time.gmtime(duration)))
     
 if __name__ == '__main__':
 
