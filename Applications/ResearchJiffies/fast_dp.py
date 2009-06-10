@@ -592,6 +592,7 @@ def main():
     print 'Pointgroup: %s' % spacegroup
     print 'Cell: %9.3f%9.3f%9.3f%9.3f%9.3f%9.3f' % cell
 
+    print 'Processed %d images' % (metadata['end'] - metadata['start'] + 1)
     print 'All processing took %d (%s)' % \
           (int(duration), time.strftime('%Hh %Mm %Ss', time.gmtime(duration)))
     
