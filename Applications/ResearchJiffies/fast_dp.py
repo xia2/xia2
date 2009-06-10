@@ -27,7 +27,7 @@ import re
 import os
 import string
 
-def run_job(executable, arguments, stdin):
+def run_job(executable, arguments = [], stdin = []):
     '''Run a program with some command-line arguments and some input,
     then return the standard output when it is finished.'''
 
@@ -235,7 +235,7 @@ def read_command_line():
 
     image = sys.argv[-1]
 
-    dd_output = run_job('diffdump', [image], [])
+    dd_output = run_job('diffdump', arguments = [image])
 
     # from this output populate the metadata structure
 
@@ -346,6 +346,8 @@ def write_xds_inp(metadata, resolution = None):
     fout.write('NAME_TEMPLATE_OF_DATA_FRAMES=%s\n' % \
                os.path.join(metadata['directory'],
                             metadata['template'].replace('#', '?')))
+    fout.write('STARTING_ANGLE=%.3f STARTING_FRAME=%d\n' % \
+               (metadata['oscillation'][0], metadata['start']))
     fout.write('DATA_RANGE=%d %d\n' % (metadata['start'],
                                        metadata['end']))
 
@@ -372,7 +374,71 @@ def write_xds_inp(metadata, resolution = None):
 
     return
 
-if __name__ == '__main__':
+def read_correct_lp_get_resolution():
+    '''Read the CORRECT.LP file and get an estimate of the resolution limit.
+    This should then be recycled to a rerun of CORRECT, from which the
+    reflections will be merged to get the statistics.'''
+
+    correct_lp = open('CORRECT.LP', 'r').readlines()
+
+    rec = -1
+
+    for j in range(len(correct_lp)):
+        record = correct_lp[j]
+
+        if 'RESOLUTION RANGE  I/Sigma  Chi^2  R-FACTOR  R-FACTOR' in record:
+            rec = j + 3
+            break
+
+    if rec < 0:
+        raise RuntimeError, 'resolution information not found'
+
+    j = rec
+
+    while not '--------' in correct_lp[j]:
+        isigma = float(correct_lp[j].split()[2])
+        if isigma < 1:
+            return float(correct_lp[j].split()[1])
+        j += 1
+
+    # this will assume that strong reflections go to the edge of the detector
+    # => do not need to feed back a resolution limit...
+
+    return None
+
+def merge():
+    '''Merge the reflections from XDS_ASCII.HKL to get some statistics - this
+    will use pointless for the reflection file format mashing.'''
+
+    # first convert the file format
+
+    run_job('pointless-1.2.23',
+            ['-c', 'xdsin', 'XDS_ASCII.HKL', 'hklout', 'xds_sorted.mtz'])
+
+    # then merge - N.B. the scaling commands are version specific, and
+    # what is coded below corresponds to the 6.0.2 version of Scala...
+
+    log = run_job('scala',
+                  ['hklin', 'xds_sorted.mtz', 'hklout', 'xds_scaled.mtz'],
+                  ['bins 20', 'run 1 all', 'scales constant',
+                   'sdcorrection noadjust both 1.0 0.0', 'anomalous on'])
+
+    for record in log:
+        print record[:-1]
+
+def main():
+    print 'Generating metadata'
     metadata = read_command_line()
+    print 'Creating XDS input file'
     write_xds_inp(metadata)
+    print 'Running XDS...'
+    xds_output = run_job('xds_par')
+    resolution = read_correct_lp_get_resolution()
+    if not resolution is None:
+        print 'Rerunning XDS CORRECT to %.2fA...' % resolution
+        write_xds_inp(metadata, resolution = resolution)
+        xds_output = run_job('xds_par')
+    merge()
     
+if __name__ == '__main__':
+    main()
