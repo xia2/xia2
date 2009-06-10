@@ -67,7 +67,7 @@ def Doser(DriverType = None):
                 t = self._times.get(b, -1)
             
                 self.input('batch %d dose %f time %f' % (b, d, t))
-
+                
             self.input('end')
             self.close_wait()
 
@@ -77,4 +77,32 @@ def Doser(DriverType = None):
 
 if __name__ == '__main__':
     # add a test
-    pass
+    
+    hklin = sys.argv[1]
+
+    # construct the dose table...
+
+    doses = { }
+    times = { }
+
+    for record in open('doser.in', 'r').readlines():
+        lst = record.split()
+        if not lst:
+            continue
+        b = int(lst[1])
+        d = float(lst[3])
+        t = float(lst[5])
+        doses[b] = d
+        times[b] = t
+
+    hklout = 'naff.mtz'
+
+    doser = Doser()
+
+    doser.set_hklin(hklin)
+    doser.set_hklout(hklout)
+    doser.set_doses(doses)
+    doser.set_times(times)
+    doser.run()
+
+    
