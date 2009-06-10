@@ -196,6 +196,37 @@ def template_directory_number2image(template, directory, number):
 
     return image
 
+def get_number_cpus():
+    '''Portably get the number of processor cores available.'''
+
+    # Windows NT derived platforms
+
+    if os.name == 'nt':
+        return int(os.environ['NUMBER_OF_PROCESSORS'])
+    
+    # linux
+
+    if os.path.exists('/proc/cpuinfo'):
+        n_cpu = 0
+
+        for record in open('/proc/cpuinfo', 'r').readlines():
+            if not record.strip():
+                continue
+            if 'processor' in record.split()[0]:
+                n_cpu += 1
+
+        return n_cpu
+
+    # os X
+
+    output = subprocess.Popen(['system_profiler', 'SPHardwareDataType'],
+                              stdout = subprocess.PIPE).communicate()[0]
+    for record in output.split('\n'):
+        if 'Total Number Of Cores' in record:
+            return int(record.split()[-1])
+
+    return -1
+
 def read_command_line():
     '''Read the command line and the image header of the first image found.
     Return a list of matching images (i.e. the start and end of the sweep)
@@ -242,6 +273,12 @@ def read_command_line():
             if phi_width > 360.0:
                 phi_width -= 360.0
             metadata['oscillation'] = phi_start, phi_width
+        elif 'Manufacturer' in record:
+            detector = record.split()[-1]
+            if detector == 'ADSC':
+                metadata['detector'] = detector
+            else:
+                raise RuntimeError, 'detector %s not yet supported' % detector
 
     # now parse the image filename for the template and so on
 
@@ -259,9 +296,83 @@ def read_command_line():
     metadata['start'] = min(matching)
     metadata['end'] = max(matching)
 
-    for token in metadata:
-        print token, metadata[token]
+    # now check what is on the command-line
+
+    if '-beam' in sys.argv:
+        index = sys.argv.index('-beam') + 1
+        x, y = tuple(map(float, sys.argv[index].split(',')))
+        metadata['beam'] = x, y
+
+    return metadata
+
+def write_xds_inp(metadata, resolution = None):
+    '''Write an XDS.INP file from the metadata obtained already. N.B. this
+    will assume that the beam direction and rotation axis correspond to the
+    usual definitions for ADSC images on beamlines.'''
+
+    fout = open('XDS.INP', 'w')
+
+    if not resolution is None:
+        fout.write('JOB=CORRECT\n')
+    else:
+        fout.write(
+            'JOB=XYCORR INIT COLSPOT IDXREF DEFPIX INTEGRATE CORRECT\n')
+        
+    fout.write('DETECTOR=%s MINIMUM_VALID_PIXEL_VALUE=1 OVERLOAD=65000\n' %
+               metadata['detector'])
+    fout.write('DIRECTION_OF_DETECTOR_X-AXIS= 1.0 0.0 0.0\n')
+    fout.write('DIRECTION_OF_DETECTOR_Y-AXIS= 0.0 1.0 0.0\n')
+    fout.write('TRUSTED_REGION=0.0 1.41\n')
+    fout.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % get_number_cpus())
+    fout.write('NX=%d NY=%d QX=%.5f QY=%5f\n' % \
+               (metadata['size'][0], metadata['size'][1],
+                metadata['pixel'][0], metadata['pixel'][1]))
+     
+    # N.B. assuming that the direct beam for XDS is the same as Mosflm,
+    # with X, Y swapped and converted to pixels from mm.
+
+    orgx = metadata['beam'][1] / metadata['pixel'][1]
+    orgy = metadata['beam'][0] / metadata['pixel'][0]
+
+    fout.write('ORGX=%.1f ORGY=%.1f\n' % (orgx, orgy))
+    fout.write('ROTATION_AXIS= 1.0 0.0 0.0\n')
+    fout.write('DETECTOR_DISTANCE=%.2f\n' % metadata['distance'])
+    fout.write('X-RAY_WAVELENGTH=%.5f\n' % metadata['wavelength'])
+    fout.write('OSCILLATION_RANGE=%.3f\n' % metadata['oscillation'][1])
+    fout.write('INCIDENT_BEAM_DIRECTION=0.0 0.0 1.0\n')
+    fout.write('FRACTION_OF_POLARIZATION=0.95\n')
+    fout.write('POLARIZATION_PLANE_NORMAL=0.0 1.0 0.0\n')
+    fout.write('FRIEDEL\'S_LAW=FALSE\n')
+    fout.write('NAME_TEMPLATE_OF_DATA_FRAMES=%s\n' % \
+               os.path.join(metadata['directory'],
+                            metadata['template'].replace('#', '?')))
+    fout.write('DATA_RANGE=%d %d\n' % (metadata['start'],
+                                       metadata['end']))
+
+    # compute the background range as min(all, 5)
+
+    if metadata['end'] - metadata['start'] > 5:
+        fout.write('BACKGROUND_RANGE=%d %d\n' % (metadata['start'],
+                                                 metadata['start'] + 5))
+    else:
+        fout.write('BACKGROUND_RANGE=%d %d\n' % (metadata['start'],
+                                                 metadata['end']))
+
+    # by default autoindex off all images - can make this better later on
+
+    fout.write('SPOT_RANGE=%d %d\n' % (metadata['start'],
+                                       metadata['end']))
+
+    if not resolution is None:
+        fout.write('INCLUDE_RESOLUTION_RANGE=30.0 %.2f\n' % resolution)
+    else:
+        fout.write('INCLUDE_RESOLUTION_RANGE=30.0 0.0\n')
+
+    fout.close()
+
+    return
 
 if __name__ == '__main__':
-    read_command_line()
-           
+    metadata = read_command_line()
+    write_xds_inp(metadata)
+    
