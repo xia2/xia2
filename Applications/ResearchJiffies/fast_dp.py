@@ -274,7 +274,7 @@ def read_command_line():
             if phi_width > 360.0:
                 phi_width -= 360.0
             metadata['oscillation'] = phi_start, phi_width
-        elif 'Manufacturer' in record:
+        elif 'Manufacturer' in record or 'Image type' in record:
             detector = record.split()[-1]
             if detector == 'ADSC':
                 metadata['detector'] = detector
@@ -517,7 +517,8 @@ def merge():
 def help():
     '''Some help for the user.'''
 
-    sys.stderr.write('%s [-beam x,y] /first/image/in/sweep_001.img\n')
+    sys.stderr.write('%s [-beam x,y] /first/image/in/sweep_001.img\n' % \
+                     sys.argv[0])
     sys.exit(0)
 
 def main():
