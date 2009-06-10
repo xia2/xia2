@@ -62,11 +62,17 @@ def Doser(DriverType = None):
 
             self.start()
 
-            for b in batches:
-                d = self._doses.get(b, -1)
-                t = self._times.get(b, -1)
-            
-                self.input('batch %d dose %f time %f' % (b, d, t))
+            fixed = False
+
+            if fixed: 
+                for b in batches:
+                    d = self._doses.get(b, -1)
+                    t = self._times.get(b, -1)
+                    
+                    self.input('batch %d dose %f time %f' % (b, d, t))
+                    
+            else:
+                self.input('@doser.in')
                 
             self.input('end')
             self.close_wait()
