@@ -306,18 +306,14 @@ def read_command_line():
 
     return metadata
 
-def write_xds_inp(metadata, resolution = None):
+def write_xds_inp_index(metadata):
     '''Write an XDS.INP file from the metadata obtained already. N.B. this
     will assume that the beam direction and rotation axis correspond to the
     usual definitions for ADSC images on beamlines.'''
 
     fout = open('XDS.INP', 'w')
 
-    if not resolution is None:
-        fout.write('JOB=CORRECT\n')
-    else:
-        fout.write(
-            'JOB=XYCORR INIT COLSPOT IDXREF DEFPIX INTEGRATE CORRECT\n')
+    fout.write('JOB=XYCORR INIT COLSPOT IDXREF\n')
         
     fout.write('DETECTOR=%s MINIMUM_VALID_PIXEL_VALUE=1 OVERLOAD=65000\n' %
                metadata['detector'])
@@ -361,10 +357,90 @@ def write_xds_inp(metadata, resolution = None):
         fout.write('BACKGROUND_RANGE=%d %d\n' % (metadata['start'],
                                                  metadata['end']))
 
-    # by default autoindex off all images - can make this better later on
+    # by default autoindex off all images - can make this better later on.
+    # Ok: I think it is too slow already. Three wedges, as per xia2...
+    # that would be 5 images per wedge, then.
 
-    fout.write('SPOT_RANGE=%d %d\n' % (metadata['start'],
+    images = [j for j in range(metadata['start'], metadata['end'] + 1)]
+
+    wedge = (images[0], images[0] + 4)
+    fout.write('SPOT_RANGE=%d %d\n' % wedge)
+
+    # if we have more than 90 degrees of data, use wedges at the start,
+    # 45 degrees in and 90 degrees in, else use a wedge at the start,
+    # one in the middle and one at the end.
+
+    if int(90.0 / metadata['oscillation'][1]) + 4 in images:
+        wedge = (int(45.0 / metadata['oscillation'][1]), 
+                 int(45.0 / metadata['oscillation'][1]) + 4)
+        fout.write('SPOT_RANGE=%d %d\n' % wedge)
+        wedge = (int(90.0 / metadata['oscillation'][1]), 
+                 int(90.0 / metadata['oscillation'][1]) + 4)
+        fout.write('SPOT_RANGE=%d %d\n' % wedge)
+    else:
+        mid = (len(images) / 2) - 4 + images[0] - 1
+        wedge = (mid, mid + 4)
+        fout.write('SPOT_RANGE=%d %d\n' % wedge)
+        wedge = (images[-5], images[-1])
+        fout.write('SPOT_RANGE=%d %d\n' % wedge)
+        
+    fout.close()
+
+    return
+
+def write_xds_inp_integrate(metadata, resolution = None):
+    '''Write an XDS.INP file from the metadata obtained already. N.B. this
+    will assume that the beam direction and rotation axis correspond to the
+    usual definitions for ADSC images on beamlines.'''
+
+    fout = open('XDS.INP', 'w')
+
+    if not resolution is None:
+        fout.write('JOB=CORRECT\n')
+    else:
+        fout.write('JOB=DEFPIX INTEGRATE CORRECT\n')
+        
+    fout.write('DETECTOR=%s MINIMUM_VALID_PIXEL_VALUE=1 OVERLOAD=65000\n' %
+               metadata['detector'])
+    fout.write('DIRECTION_OF_DETECTOR_X-AXIS= 1.0 0.0 0.0\n')
+    fout.write('DIRECTION_OF_DETECTOR_Y-AXIS= 0.0 1.0 0.0\n')
+    fout.write('TRUSTED_REGION=0.0 1.41\n')
+    fout.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % get_number_cpus())
+    fout.write('NX=%d NY=%d QX=%.5f QY=%5f\n' % \
+               (metadata['size'][0], metadata['size'][1],
+                metadata['pixel'][0], metadata['pixel'][1]))
+     
+    # N.B. assuming that the direct beam for XDS is the same as Mosflm,
+    # with X, Y swapped and converted to pixels from mm.
+
+    orgx = metadata['beam'][1] / metadata['pixel'][1]
+    orgy = metadata['beam'][0] / metadata['pixel'][0]
+
+    fout.write('ORGX=%.1f ORGY=%.1f\n' % (orgx, orgy))
+    fout.write('ROTATION_AXIS= 1.0 0.0 0.0\n')
+    fout.write('DETECTOR_DISTANCE=%.2f\n' % metadata['distance'])
+    fout.write('X-RAY_WAVELENGTH=%.5f\n' % metadata['wavelength'])
+    fout.write('OSCILLATION_RANGE=%.3f\n' % metadata['oscillation'][1])
+    fout.write('INCIDENT_BEAM_DIRECTION=0.0 0.0 1.0\n')
+    fout.write('FRACTION_OF_POLARIZATION=0.95\n')
+    fout.write('POLARIZATION_PLANE_NORMAL=0.0 1.0 0.0\n')
+    fout.write('FRIEDEL\'S_LAW=FALSE\n')
+    fout.write('NAME_TEMPLATE_OF_DATA_FRAMES=%s\n' % \
+               os.path.join(metadata['directory'],
+                            metadata['template'].replace('#', '?')))
+    fout.write('STARTING_ANGLE=%.3f STARTING_FRAME=%d\n' % \
+               (metadata['oscillation'][0], metadata['start']))
+    fout.write('DATA_RANGE=%d %d\n' % (metadata['start'],
                                        metadata['end']))
+
+    # compute the background range as min(all, 5)
+
+    if metadata['end'] - metadata['start'] > 5:
+        fout.write('BACKGROUND_RANGE=%d %d\n' % (metadata['start'],
+                                                 metadata['start'] + 5))
+    else:
+        fout.write('BACKGROUND_RANGE=%d %d\n' % (metadata['start'],
+                                                 metadata['end']))
 
     if not resolution is None:
         fout.write('INCLUDE_RESOLUTION_RANGE=30.0 %.2f\n' % resolution)
@@ -421,7 +497,8 @@ def merge():
 
     log = run_job('scala',
                   ['hklin', 'xds_sorted.mtz', 'hklout', 'xds_scaled.mtz'],
-                  ['bins 20', 'run 1 all', 'scales constant', 'anomalous on'])
+                  ['bins 20', 'run 1 all', 'scales constant', 'anomalous on',
+                   'sdcorrection both 1.0 0.0 0.0'])
 
     do_print = False
     for record in log:
@@ -437,26 +514,64 @@ def merge():
 
     return
 
+def help():
+    '''Some help for the user.'''
+
+    sys.stderr.write('%s [-beam x,y] /first/image/in/sweep_001.img\n')
+    sys.exit(0)
+
 def main():
+    '''Main program - chain together all of the above steps.'''
     start_time = time.time()
+    step_time = time.time()
+    
     print 'Generating metadata'
     metadata = read_command_line()
-    print 'Creating XDS input file'
-    write_xds_inp(metadata)
-    print 'Running XDS...'
+
+    print 'Indexing...'
+    write_xds_inp_index(metadata)
+    xds_output = run_job('xds_par')
+
+    duration = time.time() - step_time
+
+    print 'Processing took %s' % time.strftime('%Hh %Mm %Ss',
+                                               time.gmtime(duration))
+    
+    step_time = time.time()
+
+    print 'Integration...'
+    write_xds_inp_integrate(metadata)
     xds_output = run_job('xds_par')
     resolution = read_correct_lp_get_resolution()
+
+    duration = time.time() - step_time
+
+    print 'Processing took %s' % time.strftime('%Hh %Mm %Ss',
+                                               time.gmtime(duration))
+    
     if not resolution is None:
-        print 'Rerunning XDS CORRECT to %.2fA...' % resolution
-        write_xds_inp(metadata, resolution = resolution)
+        print 'Rescaling to %.2fA...' % resolution
+        step_time = time.time()
+        
+        write_xds_inp_integrate(metadata, resolution = resolution)
         xds_output = run_job('xds_par')
-    print 'Merging for statistics...'
+        
+        duration = time.time() - step_time
+        
+        print 'Processing took %s' % time.strftime('%Hh %Mm %Ss',
+                                                   time.gmtime(duration))
+
+    print 'Merging...'
     merge()
 
     duration = time.time() - start_time
 
-    print 'Processing took %s' % time.strftime("%Hh %Mm %Ss",
-                                               time.gmtime(duration))
+    print 'All processing took %s' % time.strftime('%Hh %Mm %Ss',
+                                                   time.gmtime(duration))
     
 if __name__ == '__main__':
-    main()
+
+    if len(sys.argv) < 2:
+        help()
+    else:
+        main()
