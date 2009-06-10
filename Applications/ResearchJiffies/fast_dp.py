@@ -453,6 +453,8 @@ def main():
     print 'Merging for statistics...'
     merge()
 
+    duration = time.time() - start_time
+
     print 'Processing took %s' % time.strftime("%Hh %Mm %Ss",
                                                time.gmtime(duration))
     
