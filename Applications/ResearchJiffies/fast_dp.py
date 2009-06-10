@@ -26,6 +26,7 @@ import sys
 import re
 import os
 import string
+import time
 
 def run_job(executable, arguments = [], stdin = []):
     '''Run a program with some command-line arguments and some input,
@@ -420,13 +421,24 @@ def merge():
 
     log = run_job('scala',
                   ['hklin', 'xds_sorted.mtz', 'hklout', 'xds_scaled.mtz'],
-                  ['bins 20', 'run 1 all', 'scales constant',
-                   'sdcorrection noadjust both 1.0 0.0', 'anomalous on'])
+                  ['bins 20', 'run 1 all', 'scales constant', 'anomalous on'])
 
+    do_print = False
     for record in log:
-        print record[:-1]
+        
+        if 'Average mosaicity' in record:
+            do_print = False
+            
+        if do_print:
+            print record[:-1]
+
+        if 'Summary data for' in record:
+            do_print = True
+
+    return
 
 def main():
+    start_time = time.time()
     print 'Generating metadata'
     metadata = read_command_line()
     print 'Creating XDS input file'
@@ -438,7 +450,11 @@ def main():
         print 'Rerunning XDS CORRECT to %.2fA...' % resolution
         write_xds_inp(metadata, resolution = resolution)
         xds_output = run_job('xds_par')
+    print 'Merging for statistics...'
     merge()
+
+    print 'Processing took %s' % time.strftime("%Hh %Mm %Ss",
+                                               time.gmtime(duration))
     
 if __name__ == '__main__':
     main()
