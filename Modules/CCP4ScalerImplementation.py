@@ -522,10 +522,10 @@ class CCP4Scaler(Scaler):
             wave = self._sweep_information[epoch]['dname']
             template = self._sweep_information[epoch][
                 'integrater'].get_template()
-            beam = self._sweep_information[epoch][
-                'integrater'].get_beam()
-            distance = self._sweep_information[epoch][
-                'integrater'].get_distance()
+            indxr = self._sweep_information[epoch][
+                'integrater'].get_integrater_indexer()
+            beam = indxr.get_indexer_beam()
+            distance = indxr.get_indexer_distance()
             wavelength = self._sweep_information[epoch][
                 'integrater'].get_wavelength()
             resolution_used = self._sweep_information[epoch][
@@ -536,6 +536,13 @@ class CCP4Scaler(Scaler):
 
             detector_width = header['size'][0] * header['pixel'][0] 
             detector_height = header['size'][1] * header['pixel'][1]
+
+            # some debugging information to work out what is happening
+            # for SFGH! /0 error...
+
+            Debug.write('Detector dimensions: %d x %d' % tuple(header['size']))
+            Debug.write('Pixel dimensions: %.5f %.5f' % tuple(header['pixel']))
+            Debug.write('Beam centre: %.2f %.2f' % tuple(beam))
            
             radius = min([beam[0], detector_width - beam[0],
                           beam[1], detector_height - beam[1]])
