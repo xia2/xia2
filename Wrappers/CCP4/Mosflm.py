@@ -3440,6 +3440,9 @@ def Mosflm(DriverType = None):
                 job.input('symmetry %s' % spacegroup_number)
                 job.input('mosaic %f' % mosaic)
 
+                if self._mosflm_postref_fix_mosaic:
+                    job.input('postref fix mosaic')
+
                 job.input('refinement include partials')
 
                 # note well that the beam centre is coming from indexing so
