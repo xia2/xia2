@@ -188,8 +188,6 @@ def Chef(DriverType = None):
             # for j in range(len(dose)):
             # print '%8.0f %5.2f' % (float(dose[j]), float(overall[j]))
 
-                
-
     return ChefWrapper()
         
 if __name__ == '__main__':

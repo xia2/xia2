@@ -1733,6 +1733,10 @@ class XDSScaler(Scaler):
             # we will want to delete this one exit
             FileHandler.record_temporary_file(hklout)
 
+            # update the "input information"
+            self._sweep_information[epoch]['hklin'] = hklout
+            self._sweep_information[epoch]['batches'] = new_batches
+
             # record this for future reference - will be needed in the
             # radiation damage analysis...
             first_batch = min(self._sweep_information[epoch]['batches'])
@@ -1745,19 +1749,10 @@ class XDSScaler(Scaler):
 
             new_batches = rb.rebatch()
 
-            # update the "input information"
-
-            self._sweep_information[epoch]['hklin'] = hklout
-            self._sweep_information[epoch]['batches'] = new_batches
 
             # update the counter & recycle
 
             counter += 1
-
-        # now output a doser input file - just for kicks ;o)
-
-        fout = open(os.path.join(self.get_working_directory(),
-                                 'doser.in'), 'w')
 
         # now parse the structure of the data to write out how they should
         # be examined by chef... N.B. this was moved from the top of this
@@ -1765,18 +1760,6 @@ class XDSScaler(Scaler):
 
         self._sweep_information_to_chef()
         self._decide_chef_cutoff_epochs()
-
-        for epoch in self._sweep_information.keys():
-            i2d = self._sweep_information[epoch]['image_to_dose']
-            i2e = self._sweep_information[epoch]['image_to_epoch']
-            offset = self._sweep_information[epoch]['batch_offset']
-            images = i2d.keys()
-            images.sort()
-            for i in images:
-                fout.write('batch %d dose %f time %f\n' % \
-                           (i + offset, i2d[i], i2e[i]))
-
-        fout.close()
 
         # then sort the files together, making sure that the resulting
         # reflection file looks right.
@@ -1898,6 +1881,25 @@ class XDSScaler(Scaler):
             for i in images:
                 batch = i + offset
                 doses[batch] = i2d[i]
+
+        # now output a doser input file - just for kicks ;o) - at this point
+        # the offsets should be known so this should be ok - where this was
+        # before the batch offsets were not known...
+
+        fout = open(os.path.join(self.get_working_directory(),
+                                 'doser.in'), 'w')
+
+        for epoch in self._sweep_information.keys():
+            i2d = self._sweep_information[epoch]['image_to_dose']
+            i2e = self._sweep_information[epoch]['image_to_epoch']
+            offset = self._sweep_information[epoch]['batch_offset']
+            images = i2d.keys()
+            images.sort()
+            for i in images:
+                fout.write('batch %d dose %f time %f\n' % \
+                           (i + offset, i2d[i], i2e[i]))
+
+        fout.close()
 
         # the maximum dose should be one image higher than the "real"
         # maximum dose to give a little breathing room - this is achieved
