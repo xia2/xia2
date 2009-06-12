@@ -522,6 +522,10 @@ class CCP4Scaler(Scaler):
             wave = self._sweep_information[epoch]['dname']
             template = self._sweep_information[epoch][
                 'integrater'].get_template()
+
+            # FIXME should these not really just be inherited / propogated
+            # through the FrameProcessor interface? Trac #255.
+            
             indxr = self._sweep_information[epoch][
                 'integrater'].get_integrater_indexer()
             beam = indxr.get_indexer_beam()

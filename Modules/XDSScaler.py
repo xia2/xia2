@@ -815,10 +815,14 @@ class XDSScaler(Scaler):
             wave = self._sweep_information[epoch]['dname']
             template = self._sweep_information[epoch][
                 'integrater'].get_template()
-            beam = self._sweep_information[epoch][
-                'integrater'].get_beam()
-            distance = self._sweep_information[epoch][
-                'integrater'].get_distance()
+
+            # FIXME should these not really just be inherited / propogated
+            # through the FrameProcessor interface? Trac #255.
+            
+            indxr = self._sweep_information[epoch][
+                'integrater'].get_integrater_indexer()
+            beam = indxr.get_indexer_beam()
+            distance = indxr.get_indexer_distance()
             wavelength = self._sweep_information[epoch][
                 'integrater'].get_wavelength()
             resolution_used = self._sweep_information[epoch][
