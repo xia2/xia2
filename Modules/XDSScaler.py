@@ -1857,24 +1857,6 @@ class XDSScaler(Scaler):
         ri.set_operator(reindex_operator)
         ri.reindex()
 
-        # N.B. for the chef output will also need to reindex the sorted
-        # input files to the sorting step above, so that they can be
-        # analysed with chef. N.B. this may also involve sorting together
-        # the sweeps afterwards (hell, why not merge it into a single step?)
-        # of the sweeps which (i) belong to the same wavelength and (ii)
-        # are comparable in terms of exposure time per degree and distance.
-
-        # this is #181 so figure this out first...
-
-        # record the updated cell parameters...
-        # they should be the same in all files so... aah - if I set
-        # this in here it may break the scaling if the data are also
-        # reindexed! :o(
-        Debug.write(
-            'Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f' % \
-            tuple(ri.get_cell()))
-        self._reindexed_cell = tuple(ri.get_cell())
-
         # then sort the bloody file again!
 
         hklin = hklout
@@ -1889,6 +1871,143 @@ class XDSScaler(Scaler):
         s.sort(vrset = -99999999.0)
 
         self._prepared_reflections = hklout
+
+        # N.B. for the chef output will also need to reindex the sorted
+        # input files to the sorting step above, so that they can be
+        # analysed with chef. N.B. this may also involve sorting together
+        # the sweeps afterwards (hell, why not merge it into a single step?)
+        # of the sweeps which (i) belong to the same wavelength and (ii)
+        # are comparable in terms of exposure time per degree and distance.
+
+        # ok, in here want to:
+        #
+        #  - chop out the batches which belong to different chef analysis
+        #    groups
+        #  - sort together comparison groups (i.e. inverse-beam pairs)
+        #  - add the DOSE information using doser and @doser.in
+        #  - run the chef analysis
+        #  - mark the chef log files for saving in the LogFiles directory
+
+        doses = { }
+
+        for epoch in self._sweep_information.keys():
+            i2d = self._sweep_information[epoch]['image_to_dose']
+            i2e = self._sweep_information[epoch]['image_to_epoch']
+            offset = self._sweep_information[epoch]['batch_offset']
+            images = sorted(i2d.keys())
+            for i in images:
+                batch = i + offset
+                doses[batch] = i2d[i]
+
+        # the maximum dose should be one image higher than the "real"
+        # maximum dose to give a little breathing room - this is achieved
+        # by incrementing this by one image worth of dose...
+
+        all_doses = sorted([doses[b] for b in doses])
+        dose_max = all_doses[-1] + (all_doses[-1] - all_doses[-2])
+
+        # now perform the chef analysis for each dose rate group - this
+        # can harmlessly include the running of doser on each little bit
+
+        for group in sorted(self._chef_analysis_groups):
+            # for each wavelength in this analysis group, get the batch
+            # ranges wanted for the comparison, chop them out of the
+            # given reflection file in the dictionary above, then
+            # sort them back together to e.g. chef_group_%s_WAVE.mtz
+            # keeping a track of this of course
+
+            resolution = self._chef_analysis_resolutions[group]
+
+            Debug.write('Preparing chef analysis group %d' % group)
+            Debug.write('N.B. to resolution %.2f' % resolution)
+
+            bits = { }
+
+            for wtse in self._chef_analysis_groups[group]:
+                wave, template, start, end = wtse
+                hklout = os.path.join(self.get_working_directory(),
+                                      'chef_%d_%s_%d_%d.mtz' % \
+                                      (group, wave, start, end))
+                hklout_all = os.path.join(self.get_working_directory(),
+                                          'chef_%d_%s.mtz' % \
+                                          (group, wave))
+
+                # All of the data is in the one MTZ file as it has not
+                # yet been separated into wavelengths by Scala
+                
+                hklin = self._prepared_reflections
+                rb = self._factory.Rebatch()
+                rb.set_hklin(hklin)
+                rb.set_hklout(hklout)
+                rb.limit_batches(start, end)
+
+                if not wave in bits:
+                    bits[wave] = [hklout_all]
+                    
+                bits[wave].append(hklout)
+                FileHandler.record_temporary_file(hklout)
+                FileHandler.record_temporary_file(hklout_all)
+
+            # now sort these together
+            for wave in bits:
+                s = self._factory.Sortmtz()
+                s.set_hklout(bits[wave][0])
+                for hklin in bits[wave][1:]:
+                    s.add_hklin(hklin)
+                s.sort()
+
+            # now add the doser information to all of these sorted files
+            # and record these as input files to chef... 
+
+            chef_hklins = []
+            
+            for wave in bits:
+                d = self._factory.Doser()
+                hklin = bits[wave][0]
+                hklout = '%s_dose.mtz' % hklin[:-4]
+                d.set_hklin(hklin)
+                d.set_hklout(hklout)
+                d.set_doses(doses)
+                d.run()
+
+                chef_hklins.append(hklout)
+                FileHandler.record_temporary_file(hklout)
+
+            # then run chef with this - no analysis as yet, but to record
+            # the log file to chef_groupN_analysis or something and be
+            # sure that it finds it's way to the LogFiles directory.
+            
+            # then feed the results to chef
+
+            chef = self._factory.Chef()
+
+            dose_step = self._chef_analysis_times[group]
+            anomalous = self.get_scaler_anomalous()
+
+            for hklin in chef_hklins:
+                chef.add_hklin(hklin)
+
+            chef.set_anomalous(anomalous)
+            chef.set_resolution(resolution)
+            chef.set_width(dose_step)
+            chef.set_max(dose_max)
+            chef.set_labin('DOSE')
+            
+            chef.run()
+
+            FileHandler.record_log_file('%d chef' % group,
+                                        chef.get_log_file())
+        
+        # this is #181 so figure this out first...
+
+        # record the updated cell parameters...
+        # they should be the same in all files so... aah - if I set
+        # this in here it may break the scaling if the data are also
+        # reindexed! :o(
+        Debug.write(
+            'Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f' % \
+            tuple(ri.get_cell()))
+        self._reindexed_cell = tuple(ri.get_cell())
 
         # Debug.write('Reindex operator: %s' % reindex_operator)
         # Debug.write('Will save this for later')

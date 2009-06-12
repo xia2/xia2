@@ -2491,7 +2491,10 @@ class CCP4Scaler(Scaler):
         # as a dictionary {WAVE:MTZ}
         reflection_files = sc.get_scaled_reflection_files()
 
-        # perpare the dose profiles (again) 
+        # perpare the dose profiles (again) - N.B. now don't need to do
+        # this as the actual command reads the doser.in file - should
+        # remove this from the API for Doser then really. N.B. do use
+        # the doses though...
 
         doses = { }
 
