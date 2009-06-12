@@ -1733,10 +1733,6 @@ class XDSScaler(Scaler):
             # we will want to delete this one exit
             FileHandler.record_temporary_file(hklout)
 
-            # update the "input information"
-            self._sweep_information[epoch]['hklin'] = hklout
-            self._sweep_information[epoch]['batches'] = new_batches
-
             # record this for future reference - will be needed in the
             # radiation damage analysis...
             first_batch = min(self._sweep_information[epoch]['batches'])
@@ -1749,6 +1745,10 @@ class XDSScaler(Scaler):
 
             new_batches = rb.rebatch()
 
+            # update the "input information"
+
+            self._sweep_information[epoch]['hklin'] = hklout
+            self._sweep_information[epoch]['batches'] = new_batches
 
             # update the counter & recycle
 
