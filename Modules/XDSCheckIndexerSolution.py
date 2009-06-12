@@ -66,7 +66,6 @@ def xds_check_indexer_solution(xparm_file,
     # without testing...
 
     if not is_centred(space_group_number):
-        Debug.write('Primititve, so not testing')        
         return s2l(space_group_number), tuple(cell)
 
     # right, now need to read through the SPOT.XDS file and index the

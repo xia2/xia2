@@ -1735,6 +1735,12 @@ class XDSScaler(Scaler):
 
             # record this for future reference - will be needed in the
             # radiation damage analysis...
+
+            # hack - reset this as it gets in a muddle...
+            intgr = self._sweep_information[epoch]['integrater']
+            self._sweep_information[epoch][
+                'batches'] = intgr.get_integrater_batches()
+            
             first_batch = min(self._sweep_information[epoch]['batches'])
             self._sweep_information[epoch][
                 'batch_offset'] = counter * max_batches - first_batch + 1
