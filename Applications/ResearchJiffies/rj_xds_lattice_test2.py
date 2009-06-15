@@ -116,11 +116,6 @@ def lattice_test(integrate_lp, xds_inp_file):
         
         c = result[l]['cell']
 
-        # print 'Lattice: %s' % l
-        # print 'Cell: %.2f %.2f %.2f %.2f %.2f %.2f' % tuple(c)
-
-        m = nint((images[1] - images[0] + 1) / w)
-
         fout = open('XDS.INP', 'w')
             
         for record in standard:
