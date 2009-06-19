@@ -178,6 +178,10 @@ class CCP4Scaler(Scaler):
         # and could probably be handled better (they used to be
         # all in just the scale() method)
 
+        self._chef_analysis_groups = { }
+        self._chef_analysis_times = { }
+        self._chef_analysis_resolutions = { }
+
         # ok, in here need to keep track of the best scaling model to use
         # when I come to make that decision - FIXME... ok - it looks like
         # I can code this up in a proper component fashion as the Scala
@@ -1801,8 +1805,9 @@ class CCP4Scaler(Scaler):
         # now parse the structure of the data to write out how they should
         # be examined by chef...
 
-        self._sweep_information_to_chef()
-        self._decide_chef_cutoff_epochs()
+        if Flags.get_chef():
+            self._sweep_information_to_chef()
+            self._decide_chef_cutoff_epochs()
 
         # FIXED in here I need to implement "proper" scaling...
         # this will need to do things like imposing a sensible

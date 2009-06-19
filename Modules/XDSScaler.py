@@ -112,7 +112,11 @@ class XDSScaler(Scaler):
 
         # junk which may prove to be useful...
         self._reindexed_cell = None
-    
+
+        self._chef_analysis_groups = { }
+        self._chef_analysis_times = { }
+        self._chef_analysis_resolutions = { }
+
         return    
 
     # This is overloaded from the Scaler interface...
@@ -1764,8 +1768,9 @@ class XDSScaler(Scaler):
         # be examined by chef... N.B. this was moved from the top of this
         # method see trac #200.
 
-        self._sweep_information_to_chef()
-        self._decide_chef_cutoff_epochs()
+        if Flags.get_chef():
+            self._sweep_information_to_chef()
+            self._decide_chef_cutoff_epochs()
 
         # then sort the files together, making sure that the resulting
         # reflection file looks right.
