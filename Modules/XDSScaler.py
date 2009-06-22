@@ -970,7 +970,9 @@ class XDSScaler(Scaler):
 
         try:
             all_images = self.get_scaler_xcrystal().get_all_image_names()
-            dose_information = accumulate(all_images)
+            dose_information, dose_factor = accumulate(all_images)
+
+            self._chef_dose_factor = dose_factor
 
             # next copy this into the sweep information
 
@@ -1994,7 +1996,8 @@ class XDSScaler(Scaler):
 
             chef = self._factory.Chef()
 
-            dose_step = self._chef_analysis_times[group]
+            dose_step = self._chef_analysis_times[group] / \
+                        self._chef_dose_factor
             anomalous = self.get_scaler_anomalous()
 
             for hklin in chef_hklins:

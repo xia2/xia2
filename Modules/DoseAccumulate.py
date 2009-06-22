@@ -24,6 +24,7 @@ if not os.environ['XIA2_ROOT'] is sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
 from Wrappers.XIA.Diffdump import Diffdump
+from Handlers.Streams import Debug
 
 def epocher(images):
     '''Get a list of epochs for each image in this list, returning as
@@ -66,7 +67,25 @@ def accumulate(images):
         integrated_dose[k] = accum + 0.5 * dose[k]
         accum += dose[k]
 
-    return integrated_dose
+    # ok, now check that the value for the maximum dose is < 1e6 - elsewise
+    # chef may explode. or write out ****** as the values are too large for
+    # an f8.1 format statement.
+
+    max_dose = max([integrated_dose[k] for k in keys])
+
+    factor = 1.0
+
+    while max_dose / factor > 1.0e6:
+        factor *= 10.0
+
+    Debug.write('Doses scaled by %5.2e' % factor)
+
+    # now divide all of those doses by factor
+
+    for k in keys:
+        integrated_dose[k] /= factor
+
+    return integrated_dose, factor
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
