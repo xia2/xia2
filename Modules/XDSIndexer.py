@@ -495,6 +495,9 @@ class XDSIndexer(FrameProcessor,
         wavelength = values[6]
         pixel = values[12], values[13]
         beam = values[15], values[16]
+
+        if distance < 0.0:
+            distance *= -1
         
         # then work through the spot list to find the lowest resolution spot
 
