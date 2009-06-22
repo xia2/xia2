@@ -442,7 +442,11 @@ END PROJECT TS01
 	cases where some of the default scaling models do not converge.</li>
       <li>Now also includes running of CHEF for radiation damage, which will
 	slice and dice your data into dose groups, then run a correctly 
-	time sequenced radiation damage analysis.</li>
+	time sequenced radiation damage analysis. N.B. for data measured in 
+        "dose mode" the doses will be scaled to < 1,000,000 to ensure that 
+        the output is tidy.</li>
+      <li>Corner case of running XDS pipelines from data from a Rigaku setup.
+        The low resolution was previously calculated to be 0.0! D'oh!</li>
     </ul>
 
     <p>Changes since 0.2.7.2</p>
