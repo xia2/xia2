@@ -293,6 +293,8 @@ def read_command_line():
             detector = record.split()[-1]
             if detector == 'ADSC':
                 metadata['detector'] = detector
+            elif detector == 'MAR':
+                metadata['detector'] = 'CCDCHESS'
             else:
                 raise RuntimeError, 'detector %s not yet supported' % detector
 
