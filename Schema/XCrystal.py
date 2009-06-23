@@ -411,7 +411,64 @@ class XCrystal(Object):
     def __str__(self):
         return self.__repr__()
 
+    def summarise(self):
+        '''Produce a short summary of this crystal.'''
 
+        summary = ['Crystal: %s' % self._name]
+
+        if self._aa_sequence:
+            summary.append('Sequence length: %d' % \
+                           len(self._aa_sequence.get_sequence()))
+
+        for wavelength in self._wavelengths.keys():
+            for record in self._wavelengths[wavelength].summarise():
+                summary.append(record)
+
+        statistics_all = self._get_scaler().get_scaler_statistics()
+
+        for key in statistics_all:
+            pname, xname, dname = key
+
+            summary.append('For %s/%s/%s:' % key)
+            available = statistics_all[key].keys()
+
+            stats = []
+            keys = [
+                'High resolution limit',
+                'Low resolution limit',
+                'Completeness',
+                'Multiplicity',
+                'I/sigma',
+                'Rmerge',
+                'Anomalous completeness',
+                'Anomalous multiplicity']
+
+            for k in keys:
+                if k in available:
+                    stats.append(k)
+
+            for s in stats:
+                if type(statistics_all[key][s]) == type(0.0):
+                    summary.append('%s: %f' % (s.ljust(40),
+                                               statistics_all[key][s]))
+                elif type(statistics_all[key][s]) == type(""):
+                    summary.append('%s: %s' % (s.ljust(40),
+                                               statistics_all[key][s]))
+                elif type(statistics_all[key][s]) == type([]):
+                    result = '%s ' % s.ljust(40)
+                    for value in statistics_all[key][s]:
+                        result += '\t%s' % str(value)
+                    summary.append(result)
+        
+        cell = self._get_scaler().get_scaler_cell()
+        spacegroup = self._get_scaler().get_scaler_likely_spacegroups()[0]
+
+        summary.append('Cell: %7.3f %7.3f %7.3f %7.3f %7.3f %7.3f' % \
+                       tuple(cell))
+        summary.append('Spacegroup: %s' % spacegroup)
+
+        return summary
+                       
     def set_reference_reflection_file(self, reference_reflection_file):
         '''Set a reference reflection file to use to standardise the
         setting, FreeR etc.'''

@@ -79,6 +79,16 @@ class XWavelength(Object):
 
         return result[:-1]
 
+    def summarise(self):
+
+        summary = ['Wavelength: %s (%7.5f)' % (self._name, self._wavelength)]
+
+        for s in self._sweeps:
+            for record in s.summarise():
+                summary.append(record)
+
+        return summary
+
     def __str__(self):
         return self.__repr__()
 

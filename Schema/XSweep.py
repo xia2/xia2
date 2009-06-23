@@ -481,6 +481,38 @@ class XSweep(Object):
 
         return repr
 
+    def summarise(self):
+
+        summary = ['Sweep: %s' % self._name]
+
+        if self._template and self._directory:
+            summary.append('Files %s' % os.path.join(self._directory,
+                                                     self._template))
+
+        if self._frames_to_process:
+            summary.append('Images: %d to %d' % tuple(self._frames_to_process))
+
+        if self._header and self._get_indexer():
+            # print the comparative values
+
+            header= self._header
+            indxr = self._get_indexer()
+
+            hbeam = header['beam']
+            ibeam = indxr.get_indexer_beam()
+
+            summary.append('Beam %.2f %.2f => %.2f %.2f' % \
+                           (hbeam[0], hbeam[1], ibeam[0], ibeam[1]))
+
+            hdist = header['distance']
+            idist = indxr.get_indexer_distance()
+            
+            summary.append('Distance %.2f => %.2f' % (hdist, idist))
+
+            summary.append('Date: %s' % header['date'])
+
+        return summary
+            
     def get_directory(self):
         return self._directory
 

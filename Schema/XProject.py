@@ -77,6 +77,16 @@ class XProject(Object):
     def __str__(self):
         return self.__repr__()
 
+    def summarise(self):
+        '''Produce summary information.'''
+
+        summary = ['Project: %s' % self._name]
+        for crystal in self._crystals.keys():
+            for record in self._crystals[crystal].summarise():
+                summary.append(record)
+
+        return summary
+
     def get_name(self):
         return self._name
     

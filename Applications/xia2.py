@@ -15,6 +15,12 @@
 #
 # FIXME 17/JAN/07 check environment before startup.
 # 
+# FIXME 23/JUN/09 write out xia2-summary.dat which should contain the given
+#       and correct values for the beamline parameters (i.e. for each sweep)
+#       and the unit cell constants, spacegroup, resolution, file information,
+#       date, wavelength, R factors, completeness, multiplicity. N.B. will
+#       need to get the updated beam centre from IDXREF. Nope, this is already
+#       in place. Excellent.
 
 import sys
 import os
@@ -198,6 +204,14 @@ def xia2():
     # write out the e-htpx XML, perhaps
     if CommandLine.get_ehtpx_xml_out():
         EHTPXXmlHandler.write_xml(CommandLine.get_ehtpx_xml_out())
+
+    # and the summary file
+    summary_records = CommandLine.get_xinfo().summarise()
+
+    fout = open('xia2-summary.dat', 'w')
+    for record in summary_records:
+        fout.write('%s\n' % record)
+    fout.close()
 
     # tell the user which programs were used...
     used = ''
