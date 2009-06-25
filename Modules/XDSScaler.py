@@ -1130,8 +1130,22 @@ class XDSScaler(Scaler):
 
             Chatter.write('Spacegroup %d' % self._spacegroup)
 
+        elif Flags.get_reference_reflection_file():
+            self._reference = Flags.get_reference_reflection_file()
+            
+            Chatter.write('Using HKLREF %s' % self._reference)
+
+            md = self._factory.Mtzdump()
+            md.set_hklin(self.get_scaler_reference_reflection_file())
+            md.dump()
+
+            self._spacegroup = Syminfo.spacegroup_name_to_number(
+                md.get_spacegroup())
+
+            Chatter.write('Spacegroup %d' % self._spacegroup)
+
         if len(self._sweep_information.keys()) > 1 and \
-               not self.get_scaler_reference_reflection_file():
+               not self._reference:
             # need to generate a reference reflection file - generate this
             # from the reflections in self._first_epoch
 

@@ -45,6 +45,9 @@ class _Flags:
         # File from which to copy the FreeR_flag column
         self._freer_file = None
 
+        # reference reflection file
+        self._reference_reflection_file = None
+
         # these are development parameters for the XDS implementation
         self._z_min = 0.0
         self._refine = True
@@ -268,6 +271,21 @@ class _Flags:
 
     def get_freer_file(self):
         return self._freer_file
+
+    def set_reference_reflection_file(self, reference_reflection_file):
+        '''Set a new reference reflection file.'''
+
+        reference_reflection_file = os.path.abspath(reference_reflection_file)
+
+        if not os.path.exists(reference_reflection_file):
+            raise RuntimeError, '%s does not exist' % reference_reflection_file
+
+        self._reference_reflection_file = reference_reflection_file
+
+        return
+
+    def get_reference_reflection_file(self):
+        return self._reference_reflection_file
 
     def set_rejection_threshold(self, rejection_threshold):
         self._rejection_threshold = rejection_threshold

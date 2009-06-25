@@ -179,6 +179,12 @@ class _CommandLine(Object):
                   (self._help_freer_file(), str(e))
 
         try:
+            self._read_reference_reflection_file()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_reference_reflection_file(), str(e))
+
+        try:
             self._read_rejection_threshold()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -510,6 +516,24 @@ class _CommandLine(Object):
 
     def _help_freer_file(self):
         return '-freer_file my_freer_file.mtz'
+
+    def _read_reference_reflection_file(self):
+        try:
+            index = sys.argv.index('-reference_reflection_file')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_reference_reflection_file(sys.argv[index + 1])
+        Debug.write('Reference reflection file: %s' %
+                    Flags.get_reference_reflection_file())
+            
+        return
+
+    def _help_reference_reflection_file(self):
+        return '-reference_reflection_file my_reference_reflection_file.mtz'
 
     def _read_rejection_threshold(self):
         try:

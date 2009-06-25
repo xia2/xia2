@@ -847,9 +847,12 @@ class CCP4Scaler(Scaler):
         if self.get_scaler_reference_reflection_file():
             self._reference = self.get_scaler_reference_reflection_file()
             Chatter.write('Using HKLREF %s' % self._reference)
-
+        elif Flags.get_reference_reflection_file():
+            self._reference = Flags.get_scaler_reflection_file()
+            Chatter.write('Using HKLREF %s' % self._reference)
+            
         if len(self._sweep_information.keys()) > 1 and \
-               not self.get_scaler_reference_reflection_file():
+               not self._reference:
 
             # record this as the reference set, feed this to all subsequent
             # pointless runs through HKLREF (FIXED this needs to be added to
