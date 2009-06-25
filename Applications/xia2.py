@@ -243,6 +243,7 @@ def help():
     sys.stdout.write('[-resolution 2.8] (say, applies to all sweeps)\n')
     sys.stdout.write('[-ehtpx_xml_out foo.xml]\n')
     sys.stdout.write('[-freer_file free.mtz]\n')
+    sys.stdout.write('[-reference_reflection_file free.mtz]\n')
     sys.stdout.write('[-spacegroup C2] (for example)\n')
     sys.stdout.write('[-quick]\n')
     sys.stdout.write('[-reversephi]\n')
