@@ -52,11 +52,11 @@ def add_dose_time_to_mtz(hklin, hklout, doses, times = None):
     batch_column_values = batch_column.extract_values(
         not_a_number_substitute = -1)
 
-    dose_column = batch_dataset.add_column(label = 'DOSE', type = 'F')
+    dose_column = batch_dataset.add_column(label = 'DOSE', type = 'R')
     dose_column_values = flex.float()
 
     if times:
-        time_column = batch_dataset.add_column(label = 'TIME', type = 'F')
+        time_column = batch_dataset.add_column(label = 'TIME', type = 'R')
         time_column_values = flex.float()
 
     valid = flex.bool()
