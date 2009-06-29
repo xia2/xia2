@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# DoserII.py
+# add_dose_time_to_mtz.py
 # 
 #   Copyright (C) 2009 Diamond Light Source, Graeme Winter
 #
