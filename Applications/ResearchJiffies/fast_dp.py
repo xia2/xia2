@@ -550,16 +550,26 @@ def help():
 def main():
     '''Main program - chain together all of the above steps.'''
 
-    working_directory = tempfile.mkdtemp()
     starting_directory = os.getcwd()
-
-    os.chdir(working_directory)
     
     start_time = time.time()
     step_time = time.time()
 
     print 'Generating metadata'
     metadata = read_command_line()
+
+    # working_directory = tempfile.mkdtemp()
+    working_directory = os.path.join(
+        metadata['directory'], '%s.dir' % metadata['template'].split('#')[0])
+    
+    try:
+        os.makedirs(working_directory)
+    except OSError, e:
+        pass
+
+    print 'Running in %s' % working_directory
+    
+    os.chdir(working_directory)
 
     print 'Indexing...'
     write_xds_inp_index(metadata)
@@ -626,10 +636,10 @@ def main():
 
     log.close()
 
-    shutil.copyfile('fast_dp.log', os.path.join(starting_directory,
-                                                'fast_dp.log'))
-    shutil.copyfile('fast_dp.mtz', os.path.join(starting_directory,
-                                                'fast_dp.mtz'))
+    for filename in ['fast_dp.log', 'CORRECT.LP', 'fast_dp.mtz']:
+
+        shutil.copyfile(filename, os.path.join(starting_directory,
+                                               filename))
 
     os.chdir(starting_directory)
     
