@@ -18,7 +18,7 @@ import sys
 from iotbx import mtz
 from cctbx.array_family import flex
 
-def Doser(hklin, hklout, doses, times):
+def add_dose_time_to_mtz(hklin, hklout, doses, times):
     '''Add doses and times from dictionaries doses, times to hklin to
     produce hklout. The dictionaries are indexed by the BATCH column in
     hklin. Will raise exception if no BATCH column.'''
@@ -92,7 +92,7 @@ if (__name__ == "__main__"):
         doses[batch] = dose
         times[batch] = time
 
-    Doser(hklin = 'TS03_12287_chef_INFL.mtz',
-          hklout = 'hklout.mtz',
-          doses = doses,
-          times = times)
+    add_dose_time_to_mtz(hklin = 'TS03_12287_chef_INFL.mtz',
+                         hklout = 'hklout.mtz',
+                         doses = doses,
+                         times = times)
