@@ -18,10 +18,10 @@ import sys
 from iotbx import mtz
 from cctbx.array_family import flex
 
-def add_dose_time_to_mtz(hklin, hklout, doses, times):
-    '''Add doses and times from dictionaries doses, times to hklin to
-    produce hklout. The dictionaries are indexed by the BATCH column in
-    hklin. Will raise exception if no BATCH column.'''
+def add_dose_time_to_mtz(hklin, hklout, doses, times = None):
+    '''Add doses and times from dictionaries doses, times (optional)
+    to hklin to produce hklout. The dictionaries are indexed by the
+    BATCH column in hklin. Will raise exception if no BATCH column.'''
 
     # instantiate the MTZ object representation
 
@@ -53,24 +53,30 @@ def add_dose_time_to_mtz(hklin, hklout, doses, times):
         not_a_number_substitute = -1)
 
     dose_column = batch_dataset.add_column(label = 'DOSE', type = 'F')
-    time_column = batch_dataset.add_column(label = 'TIME', type = 'F')
-
     dose_column_values = flex.float()
-    time_column_values = flex.float()
+
+    if times:
+        time_column = batch_dataset.add_column(label = 'TIME', type = 'F')
+        time_column_values = flex.float()
 
     valid = flex.bool()
 
     for b in batch_column_values:
-        dose_column_values.append(doses.get(b, -1.0))
-        time_column_values.append(times.get(b, -1.0))
+
         valid.append(True)
+        dose_column_values.append(doses.get(b, -1.0))
+
+        if times:
+            time_column_values.append(times.get(b, -1.0))
 
     # add the columns back to the MTZ file structure
 
     dose_column.set_values(values = dose_column_values,
                            selection_valid = valid)
-    time_column.set_values(values = time_column_values,
-                           selection_valid = valid)
+
+    if times:
+        time_column.set_values(values = time_column_values,
+                               selection_valid = valid)
 
     # and write this lot out as hklout
     

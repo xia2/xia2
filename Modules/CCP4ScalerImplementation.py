@@ -164,6 +164,9 @@ from Experts.ResolutionExperts import determine_scaled_resolution
 # See FIXME_X0001 below...
 # from CCP4IntraRadiationDamageDetector import CCP4IntraRadiationDamageDetector
 
+# newly implemented CCTBX powered functions to replace xia2 binaries
+from Functions.add_dose_time_to_mtz import add_dose_time_to_mtz
+
 class CCP4Scaler(Scaler):
     '''An implementation of the Scaler interface using CCP4 programs.'''
 
@@ -2575,13 +2578,19 @@ class CCP4Scaler(Scaler):
             chef_hklins = []
             
             for wave in bits:
-                d = self._factory.Doser()
+
+                # no longer use the doser binary
+                
+                # d = self._factory.Doser()
                 hklin = bits[wave][0]
                 hklout = '%s_dose.mtz' % hklin[:-4]
-                d.set_hklin(hklin)
-                d.set_hklout(hklout)
-                d.set_doses(doses)
-                d.run()
+                # d.set_hklin(hklin)
+                # d.set_hklout(hklout)
+                # d.set_doses(doses)
+                # d.run()
+
+                add_dose_time_to_mtz(hklin = hklin, hklout = hklout,
+                                     doses = doses)
 
                 chef_hklins.append(hklout)
                 FileHandler.record_temporary_file(hklout)
