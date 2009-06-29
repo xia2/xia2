@@ -27,6 +27,8 @@ import re
 import os
 import string
 import time
+import tempfile
+import shutil
 
 def run_job(executable, arguments = [], stdin = []):
     '''Run a program with some command-line arguments and some input,
@@ -504,7 +506,8 @@ def merge():
     '''Merge the reflections from XDS_ASCII.HKL to get some statistics - this
     will use pointless for the reflection file format mashing.'''
 
-    # first convert the file format
+    # first convert the file format - this could be recoded with CCTBX
+    # python code I guess...
 
     run_job('pointless-1.2.23',
             ['-c', 'xdsin', 'XDS_ASCII.HKL', 'hklout', 'xds_sorted.mtz'])
@@ -513,11 +516,14 @@ def merge():
     # what is coded below corresponds to the 6.0.2 version of Scala...
 
     log = run_job('scala',
-                  ['hklin', 'xds_sorted.mtz', 'hklout', 'xds_scaled.mtz'],
+                  ['hklin', 'xds_sorted.mtz', 'hklout', 'fast_dp.mtz'],
                   ['bins 20', 'run 1 all', 'scales constant', 'anomalous on',
                    'sdcorrection both 1.0 0.0 0.0'])
 
     do_print = False
+
+    result_records = []
+
     for record in log:
         
         if 'Average mosaicity' in record:
@@ -527,12 +533,12 @@ def merge():
             do_print = False
             
         if do_print:
-            print record[:-1]
+            result_records.append(record[:-1])
 
         if 'Summary data for' in record:
             do_print = True
 
-    return
+    return result_records
 
 def help():
     '''Some help for the user.'''
@@ -543,9 +549,15 @@ def help():
 
 def main():
     '''Main program - chain together all of the above steps.'''
+
+    working_directory = tempfile.mkdtemp()
+    starting_directory = os.getcwd()
+
+    os.chdir(working_directory)
+    
     start_time = time.time()
     step_time = time.time()
-    
+
     print 'Generating metadata'
     metadata = read_command_line()
 
@@ -583,7 +595,13 @@ def main():
                                                    time.gmtime(duration))
 
     print 'Merging...'
-    merge()
+    result_records = merge()
+
+    log = open('fast_dp.log', 'w')
+    
+    for record in result_records:
+        print record
+        log.write('%s\n' % record)
 
     duration = time.time() - start_time
 
@@ -597,6 +615,23 @@ def main():
     print 'Processed %d images' % (metadata['end'] - metadata['start'] + 1)
     print 'All processing took %d (%s)' % \
           (int(duration), time.strftime('%Hh %Mm %Ss', time.gmtime(duration)))
+
+    log.write('Pointgroup: %s\n' % spacegroup)
+    log.write('Cell: %9.3f%9.3f%9.3f%9.3f%9.3f%9.3f\n' % cell)
+
+    log.write('Processed %d images in %d (%s)\n' % \
+              (metadata['end'] - metadata['start'] + 1,
+               int(duration), time.strftime('%Hh %Mm %Ss',
+                                            time.gmtime(duration))))
+
+    log.close()
+
+    shutil.copyfile('fast_dp.log', os.path.join(starting_directory,
+                                                'fast_dp.log'))
+    shutil.copyfile('fast_dp.mtz', os.path.join(starting_directory,
+                                                'fast_dp.mtz'))
+
+    os.chdir(starting_directory)
     
 if __name__ == '__main__':
 
