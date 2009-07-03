@@ -34,7 +34,6 @@ def run_job(executable, arguments = [], stdin = []):
     '''Run a program with some command-line arguments and some input,
     then return the standard output when it is finished.'''
 
-
     command_line = '%s' % executable
     for arg in arguments:
         command_line += ' "%s"' % arg
@@ -67,17 +66,24 @@ def image2template(filename):
     '''Return a template to match this filename.'''
 
     # check that the file name doesn't contain anything mysterious
+    # FIXME there are probably several other tokens I should
+    # check for in here
+    
     if filename.count('#'):
         raise RuntimeError, '# characters in filename'
 
-    # the patterns in the order I want to test them
+    # the patterns in the order I want to test them, for
+    # future reference, these are RAW strings (hence "r")
+    # which preserves the "\" &c.
 
     pattern_keys = [r'([^\.]*)\.([0-9]+)',
                     r'(.*)_([0-9]*)\.(.*)',
                     r'(.*?)([0-9]*)\.(.*)']
 
-    # patterns is a dictionary of possible regular expressions with
+    # patterns is a dictionary of possible regular expressions with 
     # the format strings to put the file name back together
+    # this would perhaps be better expressed as a list of
+    # tuples (inc. above?)
 
     patterns = {r'([^\.]*)\.([0-9]+)':'%s.%s%s',
                 r'(.*)_([0-9]*)\.(.*)':'%s_%s.%s',
@@ -144,6 +150,10 @@ def image2template_directory(filename):
     image = os.path.split(filename)[-1]
     template = image2template(image)
 
+    # perhaps this should be back-to-front i.e.
+    # directory, template? Also rename the
+    # method.
+
     return template, directory
 
 def find_matching_images(template, directory):
@@ -173,9 +183,9 @@ def find_matching_images(template, directory):
         if match:
             images.append(int(match.group(1)))
 
-    images.sort()
+    return sorted(images)
 
-    return images
+# this should be called directory, template, number to image
 
 def template_directory_number2image(template, directory, number):
     '''Construct the full path to an image from the template, directory
@@ -185,7 +195,7 @@ def template_directory_number2image(template, directory, number):
 
     # check that the number will fit in the template
 
-    if (math.pow(10, length) - 1) < number:
+    if number > (math.pow(10, length) - 1):
         raise RuntimeError, 'number too big for template'
 
     # construct a format statement to give the number part of the
@@ -235,8 +245,16 @@ def spacegroup_number_to_name(spg_num):
 
     database = { }
 
-    for record in open(
-        os.path.join(os.environ['CLIBD'], 'symop.lib'), 'r').readlines():
+    assert('CLIBD' in os.environ)
+
+    symop_lib = os.path.join(os.environ['CLIBD'], 'symop.lib')
+
+    # The CCP4 (old style) symop.lib contains the
+    # spacegroup information on the first line then
+    # the corresponding symmetry operators preceeded
+    # by spaces in subsequent lines
+
+    for record in open(symop_lib, 'r').readlines():
         if ' ' in record[:1]:
             continue
         number = int(record.split()[0])
@@ -300,6 +318,16 @@ def read_command_line():
             else:
                 raise RuntimeError, 'detector %s not yet supported' % detector
 
+    # verify I have everything I expect (or need)
+
+    assert('wavelength' in metadata)
+    assert('beam' in metadata)
+    assert('size' in metadata)
+    assert('pixel' in metadata)
+    assert('distance' in metadata)
+    assert('oscillation' in metadata)
+    assert('detector' in metadata) 
+
     # now parse the image filename for the template and so on
 
     template, directory = image2template_directory(image)
@@ -307,9 +335,13 @@ def read_command_line():
 
     # check that all of the images are present
 
+    missing = []
     for j in range(min(matching), max(matching)):
         if not j in matching:
-            raise RuntimeError, 'image %d missing' % j
+            missing.append(j)
+
+    if missing:
+        raise RuntimeError, 'missing images: %s' % str(missing)
 
     metadata['directory'] = directory
     metadata['template'] = template
@@ -324,6 +356,10 @@ def read_command_line():
         metadata['beam'] = x, y
 
     return metadata
+
+# FIXME explain in here why there are two separate
+# write_xds_inp_??? functions - autoindex, integrate
+# two steps cos XDS is fussy.
 
 def write_xds_inp_index(metadata):
     '''Write an XDS.INP file from the metadata obtained already. N.B. this
@@ -340,7 +376,7 @@ def write_xds_inp_index(metadata):
     fout.write('DIRECTION_OF_DETECTOR_Y-AXIS= 0.0 1.0 0.0\n')
     fout.write('TRUSTED_REGION=0.0 1.41\n')
     fout.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % get_number_cpus())
-    fout.write('NX=%d NY=%d QX=%.5f QY=%5f\n' % \
+    fout.write('NX=%d NY=%d QX=%.5f QY=%.5f\n' % \
                (metadata['size'][0], metadata['size'][1],
                 metadata['pixel'][0], metadata['pixel'][1]))
      
@@ -376,11 +412,9 @@ def write_xds_inp_index(metadata):
         fout.write('BACKGROUND_RANGE=%d %d\n' % (metadata['start'],
                                                  metadata['end']))
 
-    # by default autoindex off all images - can make this better later on.
-    # Ok: I think it is too slow already. Three wedges, as per xia2...
-    # that would be 5 images per wedge, then.
+    # Three wedges, as per xia2... that would be 5 images per wedge, then.
 
-    images = [j for j in range(metadata['start'], metadata['end'] + 1)]
+    images = range(metadata['start'], metadata['end'] + 1)
 
     wedge = (images[0], images[0] + 4)
     fout.write('SPOT_RANGE=%d %d\n' % wedge)
@@ -397,7 +431,7 @@ def write_xds_inp_index(metadata):
                  int(90.0 / metadata['oscillation'][1]) + 4)
         fout.write('SPOT_RANGE=%d %d\n' % wedge)
     else:
-        mid = (len(images) / 2) - 4 + images[0] - 1
+        mid = (len(images) / 2) - 4 + (images[0] - 1)
         wedge = (mid, mid + 4)
         fout.write('SPOT_RANGE=%d %d\n' % wedge)
         wedge = (images[-5], images[-1])
@@ -414,6 +448,10 @@ def write_xds_inp_integrate(metadata, resolution = None):
 
     fout = open('XDS.INP', 'w')
 
+    # at the end I rerun CORRECT to trim back the resolution
+    # limit - ergo if I know the resolution limit I only
+    # want to run CORRECT.
+
     if not resolution is None:
         fout.write('JOB=CORRECT\n')
     else:
@@ -425,7 +463,7 @@ def write_xds_inp_integrate(metadata, resolution = None):
     fout.write('DIRECTION_OF_DETECTOR_Y-AXIS= 0.0 1.0 0.0\n')
     fout.write('TRUSTED_REGION=0.0 1.41\n')
     fout.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % get_number_cpus())
-    fout.write('NX=%d NY=%d QX=%.5f QY=%5f\n' % \
+    fout.write('NX=%d NY=%d QX=%.5f QY=%.5f\n' % \
                (metadata['size'][0], metadata['size'][1],
                 metadata['pixel'][0], metadata['pixel'][1]))
      
@@ -479,8 +517,9 @@ def read_correct_lp_get_resolution():
 
     rec = -1
 
-    for j in range(len(correct_lp)):
-        record = correct_lp[j]
+    # FIXME explain what is happening here...
+
+    for j, record in enumerate(correct_lp):
 
         if 'RESOLUTION RANGE  I/Sigma  Chi^2  R-FACTOR  R-FACTOR' in record:
             rec = j + 3
@@ -503,8 +542,9 @@ def read_correct_lp_get_resolution():
     return None
 
 def merge():
-    '''Merge the reflections from XDS_ASCII.HKL to get some statistics - this
-    will use pointless for the reflection file format mashing.'''
+    '''Merge the symmetry related reflections from XDS_ASCII.HKL
+    to get some statistics - this will use pointless for the reflection file
+    format mashing.'''
 
     # first convert the file format - this could be recoded with CCTBX
     # python code I guess...
@@ -520,6 +560,8 @@ def merge():
                   ['bins 20', 'run 1 all', 'scales constant', 'anomalous on',
                    'sdcorrection both 1.0 0.0 0.0'])
 
+    # now write out the full log file from the merging
+
     fout = open('scala.log', 'w')
     for record in log:
         fout.write(record)
@@ -531,18 +573,19 @@ def merge():
 
     for record in log:
         
+        if 'Summary data for' in record:
+            do_print = True
+            continue
+
+        if do_print:
+            result_records.append(record[:-1])
+
         if 'Average mosaicity' in record:
             do_print = False
 
         if '==========' in record:
             do_print = False
             
-        if do_print:
-            result_records.append(record[:-1])
-
-        if 'Summary data for' in record:
-            do_print = True
-
     return result_records
 
 def help():
@@ -565,9 +608,17 @@ def main():
     print 'Generating metadata'
     metadata = read_command_line()
 
+    # FIXME this *could* be less ugly...
+    # run in /tmp, then zip to foo_.dir below
+    # => have a record but it wasn't really
+    # running in a data directory honest gov.
+
     # working_directory = tempfile.mkdtemp()
     working_directory = os.path.join(
         metadata['directory'], '%s.dir' % metadata['template'].split('#')[0])
+
+    # check if the directory exists first, perhaps,
+    # then don't pass the exception.
     
     try:
         os.makedirs(working_directory)
@@ -614,13 +665,18 @@ def main():
     print 'Merging...'
     result_records = merge()
 
-    log = open('fast_dp.log', 'w')
+    # write these out as a log from the program
+    # perhaps should be a write_log_file method?
+
+    fout = open('fast_dp.log', 'w')
     
     for record in result_records:
         print record
-        log.write('%s\n' % record)
+        fout.write('%s\n' % record)
 
     duration = time.time() - start_time
+
+    # pull some more results to put in the log file
 
     gxparm = open('GXPARM.XDS', 'r').readlines()
     spacegroup = spacegroup_number_to_name(int(gxparm[7].split()[0]))
@@ -633,15 +689,20 @@ def main():
     print 'All processing took %d (%s)' % \
           (int(duration), time.strftime('%Hh %Mm %Ss', time.gmtime(duration)))
 
-    log.write('Pointgroup: %s\n' % spacegroup)
-    log.write('Cell: %9.3f%9.3f%9.3f%9.3f%9.3f%9.3f\n' % cell)
+    fout.write('Pointgroup: %s\n' % spacegroup)
+    fout.write('Cell: %9.3f%9.3f%9.3f%9.3f%9.3f%9.3f\n' % cell)
 
-    log.write('Processed %d images in %d (%s)\n' % \
-              (metadata['end'] - metadata['start'] + 1,
-               int(duration), time.strftime('%Hh %Mm %Ss',
-                                            time.gmtime(duration))))
+    fout.write('Processed %d images in %d (%s)\n' % \
+               (metadata['end'] - metadata['start'] + 1,
+                int(duration), time.strftime('%Hh %Mm %Ss',
+                                             time.gmtime(duration))))
+    
+    fout.close()
 
-    log.close()
+    # FIXME in here check that these files EXIST before copying -
+    # sometimes they don't which indicates that something
+    # went wrong... that said, I should have trapped that
+    # earlier on.
 
     for filename in ['fast_dp.log', 'scala.log',
                      'CORRECT.LP', 'fast_dp.mtz']:
