@@ -27,11 +27,6 @@ def add_dose_time_to_mtz(hklin, hklout, doses, times = None):
 
     mtz_obj = mtz.object(file_name = hklin)
     
-    # construct a list of columns in the file
-
-    cnames = []
-    ctypes = []
-
     batch_column = None
     batch_dataset = None
 

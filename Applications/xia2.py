@@ -56,10 +56,14 @@ def check_cctbx_version():
         tag_path = libtbx.env.under_dist("libtbx",
                                          os.path.join("..", tag_file))
         if (os.path.isfile(tag_path)):
-            try: version = open(tag_path).read().strip()
-            except KeyboardInterrupt: raise
-            except: pass
-            else: break
+            try:
+                version = open(tag_path).read().strip()
+            except KeyboardInterrupt:
+                raise
+            except:
+                pass
+        else:
+            break
     if version is None:
         version = libtbx.env.command_version_suffix
 

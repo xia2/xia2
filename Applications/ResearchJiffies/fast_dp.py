@@ -520,6 +520,11 @@ def merge():
                   ['bins 20', 'run 1 all', 'scales constant', 'anomalous on',
                    'sdcorrection both 1.0 0.0 0.0'])
 
+    fout = open('scala.log', 'w')
+    for record in log:
+        fout.write(record)
+    fout.close()
+
     do_print = False
 
     result_records = []
@@ -554,6 +559,8 @@ def main():
     
     start_time = time.time()
     step_time = time.time()
+
+    print os.environ['CCP4']
 
     print 'Generating metadata'
     metadata = read_command_line()
@@ -636,7 +643,8 @@ def main():
 
     log.close()
 
-    for filename in ['fast_dp.log', 'CORRECT.LP', 'fast_dp.mtz']:
+    for filename in ['fast_dp.log', 'scala.log',
+                     'CORRECT.LP', 'fast_dp.mtz']:
 
         shutil.copyfile(filename, os.path.join(starting_directory,
                                                filename))
