@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # XDSCheckIndexerSolution.py
+# 
 #   Copyright (C) 2009 Diamond Light Source, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
+# 
 # 11th May 2009
 # 
 # Code to check the XDS solution from IDXREF for being pseudo-centred (i.e.
