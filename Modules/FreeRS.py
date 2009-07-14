@@ -10,7 +10,7 @@ def random_selection(fraction, list):
 
     return selected
 
-def set_freeRS(hklin):
+def set_freeRS(hklin, fraction, hklout_work, hklout_free):
 
     # open up the reflection file
 
@@ -20,7 +20,7 @@ def set_freeRS(hklin):
     # the calculate the list of unique miller indices I want to assign
     # as "free" 
 
-    free_set = random_selection(0.05, list(set(mi)))
+    free_set = random_selection(fraction, list(set(mi)))
     
     # now read through and assign those as free by adding 50 to FLAG
     
@@ -50,7 +50,7 @@ def set_freeRS(hklin):
 
     flag_column.set_values(flag_values)
 
-    mtz_obj.write('work.mtz')
+    mtz_obj.write(hklout_work)
 
     # now write out the test set
 
@@ -62,9 +62,9 @@ def set_freeRS(hklin):
 
     flag_column.set_values(flag_values)
 
-    mtz_obj.write('free.mtz')
+    mtz_obj.write(hklout_free)
 
     return
 
 if __name__ == '__main__':
-    set_freeRS(sys.argv[1])
+    set_freeRS(sys.argv[1], float(sys.argv[2]), sys.argv[3], sys.argv[4])
