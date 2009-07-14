@@ -70,8 +70,10 @@ def unpackbyteoffset(filename):
 
     values = unpack_values(data[data_offset:], length)
 
-    for v in values:
-        print v
+    for i in range(slow):
+        for j in range(fast):
+            k = i * fast + j
+            print i, j, values[k]
 
 if __name__ == '__main__':
 
