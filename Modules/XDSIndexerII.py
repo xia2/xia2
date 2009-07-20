@@ -506,32 +506,6 @@ class XDSIndexerII(FrameProcessor,
 
         return
 
-        
-if __name__ == '__main_old__':
-
-    # run a demo test
-
-    if not os.environ.has_key('XIA2_ROOT'):
-        raise RuntimeError, 'XIA2_ROOT not defined'
-
-    xi = XDSIndexerII()
-
-    directory = os.path.join(os.environ['XIA2_ROOT'],
-                             'Data', 'Test', 'Images')
-
-    # directory = '/data/graeme/12287'
-    xi.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
-    xi.set_beam((108.9, 105.0))
-
-    xi.index()
-    
-    print 'Refined beam is: %6.2f %6.2f' % xi.get_indexer_beam()
-    print 'Distance:        %6.2f' % xi.get_indexer_distance()
-    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % xi.get_indexer_cell()
-    print 'Lattice: %s' % xi.get_indexer_lattice()
-    print 'Mosaic: %6.2f' % xi.get_indexer_mosaic()
-
-
 if __name__ == '__main__':
 
     xi = XDSIndexerII()
