@@ -296,13 +296,13 @@ def Mosflm(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            if Flags.get_old_mosflm():
-                self.set_executable('ipmosflm')
-            elif Flags.get_ccp4_61():
-                self.set_executable(os.path.join(
-                    os.environ['CCP4'], 'bin', 'ipmosflm'))
-            else:
-                self.set_executable('ipmosflm-7.0.3')
+
+            if not os.path.exists(os.path.join(
+                os.environ['CCP4'], 'bin', 'ipmosflm')):
+                raise RuntimeError, 'CCP4 mosflm binary missing'
+
+            self.set_executable(os.path.join(
+                os.environ['CCP4'], 'bin', 'ipmosflm'))
     
             FrameProcessor.__init__(self)
             Indexer.__init__(self)

@@ -39,7 +39,6 @@ class _Flags:
             self._parallel = get_number_cpus()
         except:
             self._parallel = 0
-        # self._ccp4_61 = False
         self._batch_scale = False
 
         # File from which to copy the FreeR_flag column
@@ -73,23 +72,10 @@ class _Flags:
         self._rejection_threshold = 1.5
         self._i_over_sigma_limit = 2.0
 
-        # check environment settings
-        # if os.environ.has_key('XIA2_CCP4_61'):
-        # self._ccp4_61 = True
-        
         # are we working with small molecule data?
         self._small_molecule = False
         
         return
-
-    def set_ccp4_61(self, ccp4_61):
-        # self._ccp4_61 = ccp4_61
-        # return
-        pass
-
-    def get_ccp4_61(self):
-        # return self._ccp4_61
-        return False
 
     def set_batch_scale(self, batch_scale):
         self._batch_scale = batch_scale

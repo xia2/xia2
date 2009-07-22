@@ -80,7 +80,6 @@ class _CommandLine(Object):
 
         self._read_debug()
         self._read_trust_timestamps()
-        self._read_ccp4_61()
         self._read_batch_scale()
         self._read_old_mosflm()
         self._read_small_molecule()
@@ -607,13 +606,6 @@ class _CommandLine(Object):
         if '-trust_timestamps' in sys.argv:
             Flags.set_trust_timestamps(True)
             Debug.write('Trust timestamps on')
-        return
-
-    def _read_ccp4_61(self):
-
-        if '-ccp4_61' in sys.argv:
-            Flags.set_ccp4_61(True)
-            Debug.write('CCP4 6.1 mode on')
         return
 
     def _read_batch_scale(self):

@@ -1652,18 +1652,9 @@ class CCP4Scaler(Scaler):
         best_sdb_full = 0.0
         best_sdb_partial = 0.0
 
-        # this is not a problem now for the latest-latest Scala build
-        # :o( should really code this into the Scala wrapper and check
-        # the version in there...
-
-        if Flags.get_ccp4_61() and False:
-            max_sdb_full = 50.0
-            max_sdb_partial = 50.0
-            step_sdb_full = 5.0
-        else:
-            max_sdb_full = 20.0
-            max_sdb_partial = 20.0
-            step_sdb_full = 2.0
+        max_sdb_full = 20.0
+        max_sdb_partial = 20.0
+        step_sdb_full = 2.0
 
         max_sdadd_full = 0.1
         max_sdadd_partial = 0.1
