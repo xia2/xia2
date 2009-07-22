@@ -1374,7 +1374,9 @@ def Mosflm(DriverType = None):
             self.input('directory "%s"' % self.get_directory())
             self.input('newmat xiaindex.mat')
 
-            if self.get_beam_prov() == 'user':
+            # why would I not want to assign the right beam centre?
+
+            if self.get_beam_prov() == 'user' or True:
                 self.input('beam %f %f' % self.get_beam())
 
             if self.get_wavelength_prov() == 'user':
@@ -3199,6 +3201,14 @@ def Mosflm(DriverType = None):
 
                     return
 
+                if 'An unrecoverable error has occurred in GETPROF' in o:
+                    Debug.write(
+                        'GETPROF error detected - try fixing profile...')
+                    self._mosflm_refine_profiles = False
+                    self.set_integrater_done(False)
+
+                    return
+                    
                 if 'MOSFLM HAS TERMINATED EARLY' in o:
                     Chatter.write('Mosflm has failed in integration')
                     message = 'The input was:\n\n'
@@ -3665,6 +3675,14 @@ def Mosflm(DriverType = None):
                     if 'BGSIG too large' in o:
                         Debug.write(
                             'BGSIG error detected - try fixing profile...')
+                        self._mosflm_refine_profiles = False
+                        self.set_integrater_done(False)
+                        
+                        return
+
+                    if 'An unrecoverable error has occurred in GETPROF' in o:
+                        Debug.write(
+                            'GETPROF error detected - try fixing profile...')
                         self._mosflm_refine_profiles = False
                         self.set_integrater_done(False)
                         
