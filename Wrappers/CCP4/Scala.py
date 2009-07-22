@@ -416,6 +416,8 @@ def Scala(DriverType = None,
                     raise RuntimeError, 'negative scales'
                 if 'Scaling has failed to converge' in line:
                     raise RuntimeError, 'scaling not converged'
+                if '*** No observations ***' in line:
+                    raise RuntimeError, 'no observations'
 
             return
 
