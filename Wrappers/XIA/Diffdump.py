@@ -44,7 +44,7 @@ import math
 import exceptions
 
 if __name__ == '__main__':
-    debug = True
+    debug = False
 else:
     debug = False 
 
@@ -425,6 +425,27 @@ def Diffdump(DriverType = None):
 
             else:
                 self._header['detector_class'] = 'unknown'
+
+            # quickly check diffdump didn't do something stupid...
+
+            if detector == 'adsc':
+
+                osc_start = 0.0
+                osc_range = 0.0
+
+                size = int(open(self._image, 'r').read(20).split()[-1])
+                hdr = open(self._image, 'r').read(size)
+                for record in hdr.split('\n'):
+                    if 'OSC_START' in record:
+                        osc_start = float(record.replace(
+                            ';', '').split('=')[-1])
+                    if 'OSC_RANGE' in record:
+                        osc_range = float(record.replace(
+                            ';', '').split('=')[-1])
+
+                self._header['phi_start'] = osc_start
+                self._header['phi_width'] = osc_range
+                self._header['phi_end'] = osc_start + osc_range
 
             HeaderCache.put(self._image, self._header)
 
