@@ -443,12 +443,15 @@ END PROJECT TS01
       <li>Now also includes running of CHEF for radiation damage, which will
 	slice and dice your data into dose groups, then run a correctly 
 	time sequenced radiation damage analysis. N.B. for data measured in 
-        "dose mode" the doses will be scaled to < 1,000,000 to ensure that 
+        "dose mode" the doses will be scaled to &lt; 1,000,000 to ensure that 
         the output is tidy.</li>
       <li>Corner case of running XDS pipelines from data from a Rigaku setup.
         The low resolution was previously calculated to be 0.0! D'oh!</li>
       <li>Added access to reference reflection file functionality to the 
 	command line - -reference_reflection_file foo.mtz.</li>
+      <li>Fixed the use of the -image command-line option. Now works.</li>
+      <li>Removed all of the binaries from the distribution, so now 
+	<b>you need to be using CCP4 6.1.0 or later!</b></li>
     </ul>
 
     <p>Changes since 0.2.7.2</p>
@@ -845,7 +848,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Thu Jun 25 11:30:39 BST 2009
+Last modified: Thu Jul 23 15:22:51 BST 2009
 <!-- hhmts end -->
   </body>
 </html>
