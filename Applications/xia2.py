@@ -154,14 +154,21 @@ def xia2():
 
         argv = sys.argv[1:]
 
-        path = argv.pop()
+        if not CommandLine.get_directory():
 
-        while not os.path.exists(path):
-            try:
-                path = '%s %s' % (argv.pop(), path)
-            except IndexError, e:
-                raise RuntimeError, 'directory not found in arguments: %s' % \
-                      path
+            path = argv.pop()
+
+            while not os.path.exists(path):
+                try:
+                    path = '%s %s' % (argv.pop(), path)
+                except IndexError, e:
+                    raise RuntimeError, \
+                          'directory not found in arguments: %s' % path
+
+        else:
+            path = CommandLine.get_directory()
+            if not os.path.exists(path):
+                raise RuntimeError, 'provided path %s does not exist' % path
 
         if not os.path.isabs(path):
             path = os.path.abspath(path)
@@ -170,8 +177,11 @@ def xia2():
 
         if not os.path.isdir(path):
             raise RuntimeError, '%s must be a directory' % path
-            
-        write_xinfo(xinfo, path)
+
+        if CommandLine.get_template():
+            write_xinfo(xinfo, path, template = CommandLine.get_template())
+        else:
+            write_xinfo(xinfo, path)
 
         CommandLine.set_xinfo(xinfo)
 

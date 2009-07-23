@@ -50,6 +50,8 @@ latest_sequence = None
 
 latest_chooch = None
 
+target_template = None
+
 def is_scan_name(file):
     global known_scan_extensions
 
@@ -88,6 +90,8 @@ def is_image_name(file):
 
 def get_sweep(f):
 
+    global target_template
+
     global known_sweeps
     
     if not is_image_name(f):
@@ -101,6 +105,11 @@ def get_sweep(f):
 
     try:
         template, directory = image2template_directory(f)
+
+        if target_template:
+            if template != target_template:
+                return
+        
         key = (directory, template)
         if not known_sweeps.has_key(key):
             sweeplist = SweepFactory(template, directory)
@@ -298,7 +307,12 @@ def rummage(path):
     os.path.walk(path, visit, os.getcwd())
     return
 
-def write_xinfo(filename, path):
+def write_xinfo(filename, path, template = None):
+
+    global target_template
+
+    target_template = template
+
     crystal = CommandLine.get_crystal_name()
 
     if not crystal:
@@ -316,7 +330,7 @@ def write_xinfo(filename, path):
             raise e
 
     # FIXME should I have some exception handling in here...?
-
+ 
     start = os.getcwd()
     os.chdir(directory)
 
