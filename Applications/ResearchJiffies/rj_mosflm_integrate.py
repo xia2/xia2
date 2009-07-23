@@ -24,7 +24,7 @@ def do_scale_merge(hklin, resolution):
     spacegroup = None
 
     for record in output:
-        if 'Best Solution' in record and 'space group' in record:
+        if 'Best Solution' in record and 'point group' in record:
             spacegroup = record.split('group')[1].strip().replace(' ', '')
 
     assert(spacegroup)
@@ -50,13 +50,262 @@ def do_scale_merge(hklin, resolution):
 
     rmerges = None
 
-    for record in output[-40:]:
-        if 'Rmerge' in record:
+    for record in output[-100:]:
+        if 'Rmerge' in record and not 'intensity' in record:
             rmerges = map(float, record.split()[-3:])
 
     assert(rmerges)
 
     return rmerges, spacegroup
+
+def mosflm_reference(template, directory, beam, distance, start, end,
+                     resolution, symmetry, gain, ai_images, cr_images):
+
+    # first test: what andrew says - this should be the reference...
+
+    # first the autoindexing spell
+
+    commands = [
+        'directory %s' % directory,
+        'template %s' % template,
+        'beam %.2f %.2f' % beam,
+        'distance %.2f' % distance
+        ]
+
+    if gain:
+        commands.append('gain %.3f' % gain)
+
+    commands.append('symmetry %d' % symmetry)
+
+    for ai in ai_images:
+        commands.append('autoindex dps refine image %d' % ai)
+
+    commands.append('mosaic estimate')
+    commands.append('go')
+
+    # then the cell refinement spell
+
+    commands.append('postref multi segments %d' % len(cr_images))
+
+    for cr in cr_images:
+        commands.append('process %d %d' % cr)
+        commands.append('go')
+
+    # then the integration spell
+
+    commands.append('postref fix all')
+    commands.append('hklout integrate.mtz')
+    commands.append('process %d %d' % (start, end))
+    commands.append('go')
+
+    output = rj_run_job('ipmosflm', [], commands)
+
+    # should check that the status here was correct
+
+    # now merge
+
+    rmerges, spacegroup = do_scale_merge('integrate.mtz', resolution)
+
+    # now print where we're at...
+
+    print 'Reference:  %.3f %.3f %.3f %s' % (rmerges[0], rmerges[1],
+                                             rmerges[2], spacegroup)
+
+def mosflm_resolution(template, directory, beam, distance, start, end,
+                      resolution, symmetry, gain, ai_images, cr_images):
+
+    # first test: what andrew says - this should be the reference...
+
+    # first the autoindexing spell
+
+    commands = [
+        'directory %s' % directory,
+        'template %s' % template,
+        'beam %.2f %.2f' % beam,
+        'distance %.2f' % distance
+        ]
+
+    if gain:
+        commands.append('gain %.3f' % gain)
+
+    commands.append('symmetry %d' % symmetry)
+
+    for ai in ai_images:
+        commands.append('autoindex dps refine image %d' % ai)
+
+    commands.append('mosaic estimate')
+    commands.append('go')
+
+    # then the cell refinement spell
+
+    commands.append('postref multi segments %d' % len(cr_images))
+
+    for cr in cr_images:
+        commands.append('process %d %d' % cr)
+        commands.append('go')
+
+    # then the integration spell
+
+    commands.append('postref fix all')
+    commands.append('resolution %.2f' % resolution)
+    commands.append('hklout integrate.mtz')
+    commands.append('process %d %d' % (start, end))
+    commands.append('go')
+
+    output = rj_run_job('ipmosflm', [], commands)
+
+    # should check that the status here was correct
+
+    # now merge
+
+    rmerges, spacegroup = do_scale_merge('integrate.mtz', resolution)
+
+    # now print where we're at...
+
+    print 'Resolution: %.3f %.3f %.3f %s' % (rmerges[0], rmerges[1],
+                                             rmerges[2], spacegroup)
+
+def mosflm_dumb(template, directory, beam, distance, start, end,
+                resolution, symmetry, gain, ai_images, cr_images):
+
+    # dumb - no cell refinement, let mosflm choose &c.
+
+    # first the autoindexing spell
+
+    commands = [
+        'directory %s' % directory,
+        'template %s' % template,
+        'beam %.2f %.2f' % beam,
+        'distance %.2f' % distance
+        ]
+
+    if gain:
+        commands.append('gain %.3f' % gain)
+
+    for ai in ai_images:
+        commands.append('autoindex dps refine image %d' % ai)
+
+    commands.append('mosaic estimate')
+    commands.append('go')
+
+    commands.append('hklout integrate.mtz')
+    commands.append('process %d %d' % (start, end))
+    commands.append('go')
+
+    output = rj_run_job('ipmosflm', [], commands)
+
+    # should check that the status here was correct
+
+    # now merge
+
+    rmerges, spacegroup = do_scale_merge('integrate.mtz', resolution)
+
+    # now print where we're at...
+
+    print 'Dumb:       %.3f %.3f %.3f %s' % (rmerges[0], rmerges[1],
+                                             rmerges[2], spacegroup)
+
+def mosflm_p1(template, directory, beam, distance, start, end,
+              resolution, symmetry, gain, ai_images, cr_images):
+
+    # first the autoindexing spell
+    
+    commands = [
+        'directory %s' % directory,
+        'template %s' % template,
+        'beam %.2f %.2f' % beam,
+        'distance %.2f' % distance,
+        'symmetry p1'
+        ]
+
+    if gain:
+        commands.append('gain %.3f' % gain)
+
+    commands.append('symmetry %d' % symmetry)
+
+    for ai in ai_images:
+        commands.append('autoindex dps refine image %d' % ai)
+
+    commands.append('mosaic estimate')
+    commands.append('go')
+
+    # then the cell refinement spell
+
+    commands.append('postref multi segments %d' % len(cr_images))
+
+    for cr in cr_images:
+        commands.append('process %d %d' % cr)
+        commands.append('go')
+
+    # then the integration spell
+
+    commands.append('postref fix all')
+    commands.append('hklout integrate.mtz')
+    commands.append('process %d %d' % (start, end))
+    commands.append('go')
+
+    output = rj_run_job('ipmosflm', [], commands)
+
+    # should check that the status here was correct
+
+    # now merge
+
+    rmerges, spacegroup = do_scale_merge('integrate.mtz', resolution)
+
+    # now print where we're at...
+
+    print 'P1:         %.3f %.3f %.3f %s' % (rmerges[0], rmerges[1],
+                                             rmerges[2], spacegroup)
+
+def mosflm_nofix(template, directory, beam, distance, start, end,
+                 resolution, symmetry, gain, ai_images, cr_images):
+
+    # first the autoindexing spell
+    
+    commands = [
+        'directory %s' % directory,
+        'template %s' % template,
+        'beam %.2f %.2f' % beam,
+        'distance %.2f' % distance
+        ]
+
+    if gain:
+        commands.append('gain %.3f' % gain)
+
+    commands.append('symmetry %d' % symmetry)
+
+    for ai in ai_images:
+        commands.append('autoindex dps refine image %d' % ai)
+
+    commands.append('mosaic estimate')
+    commands.append('go')
+
+    # then the cell refinement spell
+
+    commands.append('postref multi segments %d' % len(cr_images))
+
+    for cr in cr_images:
+        commands.append('process %d %d' % cr)
+        commands.append('go')
+
+    # then the integration spell
+
+    commands.append('hklout integrate.mtz')
+    commands.append('process %d %d' % (start, end))
+    commands.append('go')
+
+    output = rj_run_job('ipmosflm', [], commands)
+
+    # should check that the status here was correct
+
+    # now merge
+
+    rmerges, spacegroup = do_scale_merge('integrate.mtz', resolution)
+
+    # now print where we're at...
+
+    print 'Nofix:      %.3f %.3f %.3f %s' % (rmerges[0], rmerges[1],
+                                             rmerges[2], spacegroup)
     
 def mosflm_test_integration(mosflm_log):
 
@@ -118,59 +367,18 @@ def mosflm_test_integration(mosflm_log):
     ai_images = calculate_images_ai(images, phi, 3)
     cr_images = calculate_images_cr(images, phi, 3)
 
-    # first test: what andrew says - this should be the reference...
-
-    # first the autoindexing spell
-
-    commands = [
-        'directory %s' % directory,
-        'template %s' % template,
-        'beam %.2f %.2f' % beam,
-        'distance %.2f' % distance
-        ]
-
-    if gain:
-        commands.append('gain %.3f' % gain)
-
-    commands.append('symmetry %d' % symmetry)
-
-    for ai in ai_images:
-        commands.append('autoindex dps refine image %d' % ai)
-
-    commands.append('mosaic estimate')
-    commands.append('go')
-
-    # then the cell refinement spell
-
-    commands.append('postref multi segments %d' % len(cr_images))
-
-    for cr in cr_images:
-        commands.append('process %d %d' % cr)
-        commands.append('go')
-
-    # then the integration spell
-
-    commands.append('postref fix all')
-    commands.append('hklout integrate.mtz')
-    commands.append('process %d %d' % (start, end))
-    commands.append('go')
-
-    output = rj_run_job('ipmosflm', [], commands)
-
-    for record in output:
-        print record[:-1]
-
-    # should check that the status here was correct
-
-    # now merge
-
-    rmerges, spacegroup = do_scale_merge('integrate.mtz', resolution)
-
-    # now print where we're at...
-
-    print 'Reference: %.3f %.3f %.3f %s' % (rmerges[0], rmerges[1],
-                                            rmerges[2], spacegroup)
-
+    mosflm_reference(template, directory, beam, distance, start, end,
+                     resolution, symmetry, gain, ai_images, cr_images)
+    mosflm_resolution(template, directory, beam, distance, start, end,
+                      resolution, symmetry, gain, ai_images, cr_images)
+    mosflm_dumb(template, directory, beam, distance, start, end,
+                resolution, symmetry, gain, ai_images, cr_images)
+    mosflm_p1(template, directory, beam, distance, start, end,
+              resolution, symmetry, gain, ai_images, cr_images)
+    mosflm_nofix(template, directory, beam, distance, start, end,
+                 resolution, symmetry, gain, ai_images, cr_images)
+    
+    
     
 if __name__ == '__main__':
 
