@@ -221,8 +221,6 @@ def mosflm_p1(template, directory, beam, distance, start, end,
     if gain:
         commands.append('gain %.3f' % gain)
 
-    commands.append('symmetry %d' % symmetry)
-
     for ai in ai_images:
         commands.append('autoindex dps refine image %d' % ai)
 
@@ -371,12 +369,12 @@ def mosflm_test_integration(mosflm_log):
                      resolution, symmetry, gain, ai_images, cr_images)
     mosflm_resolution(template, directory, beam, distance, start, end,
                       resolution, symmetry, gain, ai_images, cr_images)
-    mosflm_dumb(template, directory, beam, distance, start, end,
-                resolution, symmetry, gain, ai_images, cr_images)
     mosflm_p1(template, directory, beam, distance, start, end,
               resolution, symmetry, gain, ai_images, cr_images)
     mosflm_nofix(template, directory, beam, distance, start, end,
                  resolution, symmetry, gain, ai_images, cr_images)
+    mosflm_dumb(template, directory, beam, distance, start, end,
+                resolution, symmetry, gain, ai_images, cr_images)
     
     
     
