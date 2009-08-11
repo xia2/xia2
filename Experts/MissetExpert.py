@@ -25,16 +25,16 @@ class MosflmMissetExpert:
     to the data processing. The protocol to obtain these remains to be
     established.'''
 
-    def __init__(self, phi0, missets[0], phi[1], missets[1]):
+    def __init__(self, phi0, misset0, phi1, misset1):
         '''Initialise the rotation axis and what have you from some
         experimental results. N.B. all input values in DEGREES.'''
 
         # canonical: X = X-ray beam
         #            Z = rotation axis
         #            Y = Z ^ X
-        
-        self._z = matrix.col([0, 0, 1])
 
+        z = matrix.col([0, 0, 1])
+        
         # then calculate the rotation axis
 
         R = (z.axis_and_angle_as_r3_rotation_matrix(phi1, deg = True) * \
@@ -43,7 +43,8 @@ class MosflmMissetExpert:
               matrix.sqr(xyz_matrix(misset0[0], misset0[1], misset0[2]))
               ).inverse()
 
-        self._r = matrix.col(r3_rotation_axis_and_angle_from_matrix(R))
+        self._z = z
+        self._r = matrix.col(r3_rotation_axis_and_angle_from_matrix(R).axis)
         self._M0 = matrix.sqr(xyz_matrix(misset0[0], misset0[1], misset0[2]))
 
         return
@@ -53,8 +54,18 @@ class MosflmMissetExpert:
 
         P = self._z.axis_and_angle_as_r3_rotation_matrix(phi, deg = True)
         R = self._r.axis_and_angle_as_r3_rotation_matrix(phi, deg = True)
-        M = P.inverse()) * R * self._M0
+        M = P.inverse() * R * self._M0
 
         return xyz_angles(M)
 
+if __name__ == '__main__':
 
+    # example taken from the problematic myoglobin data set
+    
+    mme = MosflmMissetExpert(0.25, (-0.33, -0.32, -0.01),
+                             91.75, (0.56, -0.12, -0.03))
+
+    for j in range(0, 320, 20):
+        phi = 0.5 * j + 0.25
+        x, y, z = mme.missets(phi)
+        print '%8.2f %8.2f %8.2f %8.2f' % (j + 1, x, y, z)
