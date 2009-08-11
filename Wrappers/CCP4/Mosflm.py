@@ -233,9 +233,10 @@ from lib.Guff import auto_logfiler, mean_sd
 from lib.SymmetryLib import lattice_to_spacegroup
 
 from Experts.MatrixExpert import transmogrify_matrix, \
-     get_reciprocal_space_primitive_matrix
+     get_reciprocal_space_primitive_matrix, reindex_sym_related
 from Experts.ResolutionExperts import mosflm_mtz_to_list, \
      bin_o_tron, digest
+from Experts.MissetExpert import MosflmMissetExpert
 
 # exceptions
 
@@ -321,6 +322,9 @@ def Mosflm(DriverType = None):
             self._mosflm_cell_ref_images = None
             self._mosflm_cell_ref_resolution = None
             self._mosflm_cell_ref_double_mosaic = False
+
+            # and the calculation of the missetting angles
+            self._mosflm_misset_expert = None
             
             # local parameters used in integration
             self._mosflm_refine_profiles = True
@@ -1490,6 +1494,7 @@ def Mosflm(DriverType = None):
                 mosaic = indxr.get_indexer_mosaic()
                 spacegroup_number = lattice_to_spacegroup(lattice)
 
+                # FIXME is this ignored now?
                 if spacegroup_number >= 75:
                     num_wedges = 1
                 else:
@@ -3307,7 +3312,43 @@ def Mosflm(DriverType = None):
             missets. This will all be kind of explicit and hence probably
             messy!'''
 
+            # ok, in here try to get the missetting angles at two "widely
+            # spaced" points, so that the missetting angle calculating
+            # expert can do it's stuff. 
+
+            figured = False
+            if figured:
+
+                offset = self.get_frame_offset()
+                start = self._intgr_wedge[0] - offset
+                end = self._intgr_wedge[1] - offset
+                next = start + \
+                       int(round(90.0 / self.get_header_item('phi_width')))
+                
+                if next > end:
+                    next = end
+
+                end -= 3
+
+                # right, run:
+                
+                wd = os.path.join(self.get_working_directory(),
+                                  'misset' % j)
+                if not os.path.exists(wd):
+                    os.makedirs(wd)
+
+                # create the Driver, configure 
+                job = DriverFactory.Driver(self._mosflm_driver_type)
+                job.set_executable(self.get_executable())
+                job.set_working_directory(wd)
+                auto_logfiler(job)
+                
+            # FIXME why am I getting the cell constants and so on from the
+            # indexer?! Because that is where the _integrate_prepare step
+            # stores them... interesting!
+
             if not self.get_integrater_indexer():
+                # should I raise a RuntimeError here?!
                 self.set_integrater_indexer(self)
 
             indxr = self.get_integrater_indexer()
@@ -3351,6 +3392,7 @@ def Mosflm(DriverType = None):
 
             jobs = []
             hklouts = []
+            # reindex_ops = []
             nref = 0
                
             # calculate the chunks to use
@@ -3443,12 +3485,27 @@ def Mosflm(DriverType = None):
                 for m in mask:
                     job.input(m)
 
+                # suggestion from HRP 10/AUG/09
                 job.input('matrix xiaintegrate.mat')
+                # job.input('target xiaintegrate.mat')
 
                 job.input('beam %f %f' % beam)
                 job.input('distance %f' % distance)
                 job.input('symmetry %s' % spacegroup_number)
                 job.input('mosaic %f' % mosaic)
+
+                # TEST: re-autoindex the pattern to see if the problem
+                # with the cell refinement convergence radius goes away...
+                #
+                # This doesn't work, lots of other problems => calculate the
+                # right missets ab initio.
+                # 
+                # a, b = chunks[j]
+
+                # job.input('autoindex dps refine image %d' % a)
+                # job.input('autoindex dps refine image %d' % b)
+                # job.input('newmat processed.mat')
+                # job.input('go')
 
                 if self._mosflm_postref_fix_mosaic:
                     job.input('postref fix mosaic')
@@ -3669,6 +3726,16 @@ def Mosflm(DriverType = None):
                         Science.write('Integration output: %s' % hklout)
                         hklouts.append(hklout)
 
+                        # compute the corresponding reindex operation
+                        # from the local xiaintegrate.mat and the NEWMAT...
+                        # reindex_op = reindex_sym_related(
+                        # open(os.path.join(job.get_working_directory(),
+                        # 'processed.mat')).read(),
+                        # open(os.path.join(job.get_working_directory(),
+                        # 'xiaintegrate.mat')).read())
+                        
+                        # reindex_ops.append(reindex_op)
+
                     if 'Number of Reflections' in o:
                         nref += int(o.split()[-1])
 
@@ -3747,8 +3814,23 @@ def Mosflm(DriverType = None):
                 '"O" => overloaded  "#" => many bad  "." => blank') 
 
             # sort together all of the hklout files in hklouts to get the
-            # final reflection file...
+            # final reflection file... FIXME, need to reindex each of these
+            # as well...
 
+            # new_hklouts = hklouts
+
+            # for j, hklin in enumerate(hklouts):
+            # reindex_op = reindex_ops[j]
+            # reindex = Reindex()
+            # reindex.set_working_directory(self.get_working_directory())
+            # auto_logfiler(reindex)                
+            # hklout = '%s_proc.mtz' % hklin[:-4]
+            # reindex.set_hklin(hklin)
+            # reindex.set_hklout(hklout)
+            # reindex.set_operator(reindex_op)
+            # reindex.reindex()
+            # new_hklouts.append(hklout)
+            
             hklouts.sort()
 
             hklout = os.path.join(self.get_working_directory(),
