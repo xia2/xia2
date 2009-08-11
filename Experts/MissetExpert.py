@@ -49,6 +49,11 @@ class MosflmMissetExpert:
 
         return
 
+    def get_r(self):
+        '''Get the rotation axis.'''
+
+        return self._r.elems
+
     def missets(self, phi):
         '''Calculate the missetting angles for the given rotation angle.'''
 
