@@ -14,6 +14,8 @@ import os
 import sys
 import math
 
+from scitbx import matrix
+
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
@@ -444,6 +446,20 @@ def mosflm_a_matrix_to_real_space(wavelength, lattice, matrix):
 
     # return these vectors
     return ax, bx, cx
+
+def reindex_sym_related(A, A_ref):
+    '''Calculate a reindexing matrix to move the indices referred to in
+    A to the reference frame in A_ref: both are orientation matrices from
+    Mosflm.'''
+
+    Amat = matrix.sqr(parse_matrix(A)[1])
+    Amat_ref = matrix.sqr(parse_matrix(A_ref)[1])
+    R = Amat_ref.inverse() * Amat
+    Debug.write('%5.3f %5.3f %5.3f %5.3f %5.3f %5.3f %5.3f %5.3f %5.3f' % \
+                R.elems)
+    
+    reindex = mat_to_symop(R)
+    return reindex
 
 if __name__ == '__main__Q':
 
