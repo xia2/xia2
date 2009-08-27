@@ -1234,7 +1234,10 @@ class XDSScaler(Scaler):
                     if ntr:
 
                         # Bug # 3373
-                        
+
+                        Debug.write('Reindex to standard (PIJ): %s' % \
+                                    reindex_op)
+
                         intgr.set_integrater_reindex_operator(
                             reindex_op, compose = False)
                         reindex_op = 'h,k,l'                
@@ -1262,6 +1265,8 @@ class XDSScaler(Scaler):
                 FileHandler.record_temporary_file(hklout)
 
                 # now use pointless to make this conversion
+
+                # try with no conversion?!
 
                 pointless = self._factory.Pointless()
                 pointless.set_xdsin(hklin)
