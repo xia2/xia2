@@ -327,6 +327,9 @@ class CCP4Scaler(Scaler):
         rmerges_tst = [data_tst[k]['Rmerge'][0] for k in data_tst]
         rmerge_tst = sum(rmerges_tst) / len(rmerges_tst)
 
+        rmerge_abs = rmerge_tst
+        converge_abs = converge_tst
+
         if ((rmerge_tst - rmerge_def) / rmerge_def) > 0.03:
             absorption = False
         if converge_tst - converge_def > 1.0:
@@ -364,6 +367,9 @@ class CCP4Scaler(Scaler):
         rmerges_tst = [data_tst[k]['Rmerge'][0] for k in data_tst]
         rmerge_tst = sum(rmerges_tst) / len(rmerges_tst)
 
+        rmerge_tails = rmerge_tst
+        converge_tails = converge_tst
+
         if ((rmerge_tst - rmerge_def) / rmerge_def) > 0.03:
             partiality = False
         if converge_tst - converge_def > 1.0:
@@ -400,6 +406,17 @@ class CCP4Scaler(Scaler):
         converge_tst = sc_tst.get_convergence()
         rmerges_tst = [data_tst[k]['Rmerge'][0] for k in data_tst]
         rmerge_tst = sum(rmerges_tst) / len(rmerges_tst)
+
+        rmerge_decay = rmerge_tst
+        converge_decay = converge_tst
+
+        Debug.write('Scaling optimisation: simpl tails absor decay')
+        Debug.write('Residuals:            %5.3f %5.3f %5.3f %5.3f' % \
+                    (rmerge_def, rmerge_tails, rmerge_abs, rmerge_decay))
+        Debug.write('Convergence:          %5.3f %5.3f %5.3f %5.3f' % \
+                    (converge_def, converge_tails,
+                     converge_abs, converge_decay))
+        
 
         if ((rmerge_tst - rmerge_def) / rmerge_def) > 0.03:
             decay = False
