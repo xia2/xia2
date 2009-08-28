@@ -239,6 +239,49 @@ class CCP4Scaler(Scaler):
     def _pointless_indexer_jiffy(self, hklin, indexer):
         return self._helper.pointless_indexer_jiffy(hklin, indexer)
 
+    def _assess_scaling_model(self, tails, bfactor, secondary):
+        # finally test the decay correction
+        
+        epochs = sorted(self._sweep_information.keys())
+        
+        sc_tst = self._updated_scala()
+        sc_tst.set_hklin(self._prepared_reflections)
+        sc_tst.set_hklout('temp.mtz')
+        
+        sc_tst.set_tails(tails = tails)
+        sc_tst.set_bfactor(bfactor = bfactor)
+
+        if secondary:
+            sc_tst.set_scaling_parameters('rotation', secondary = 6)
+        else:
+            sc_tst.set_scaling_parameters('rotation', secondary = 0)
+
+        for epoch in epochs:
+            input = self._sweep_information[epoch]
+            start, end = (min(input['batches']), max(input['batches']))
+
+            sc_tst.add_run(start, end, pname = input['pname'],
+                           xname = input['xname'], dname = input['dname'],
+                           exclude = False)
+            
+        if self.get_scaler_anomalous():
+            sc_tst.set_anomalous()
+
+        sc_tst.scale()
+
+        data_tst = sc_tst.get_summary()
+
+        # compute average Rmerge, number of cycles to converge - these are
+        # what will form the basis of the comparison
+
+        converge_tst = sc_tst.get_convergence()
+        rmerges_tst = [data_tst[k]['Rmerge'][0] for k in data_tst]
+        rmerge_tst = sum(rmerges_tst) / len(rmerges_tst)
+
+        return rmerge_tst, converge_tst
+
+        
+
     def _determine_best_scale_model(self):
         '''Determine the best set of corrections to apply to the data.'''
 
@@ -263,152 +306,36 @@ class CCP4Scaler(Scaler):
         absorption = True
         decay = True
 
-        sc_def = self._updated_scala()
-        sc_def.set_cycles(5)
-        sc_def.set_hklin(self._prepared_reflections)
-        sc_def.set_hklout('temp.mtz')
-        
-        sc_def.set_tails(tails = False)
-        sc_def.set_bfactor(bfactor = False)
-        sc_def.set_scaling_parameters('rotation', secondary = False)
+        rmerge_def, converge_def = self._assess_scaling_model(
+            tails = False, bfactor = False, secondary = False)
+                                                              
+        rmerge_abs, converge_abs = self._assess_scaling_model(
+            tails = False, bfactor = False, secondary = True)
 
-        for epoch in epochs:
-            input = self._sweep_information[epoch]
-            start, end = (min(input['batches']), max(input['batches']))
-
-            sc_def.add_run(start, end, pname = input['pname'],
-                           xname = input['xname'], dname = input['dname'],
-                           exclude = False)
-            
-        if self.get_scaler_anomalous():
-            sc_def.set_anomalous()
-
-        sc_def.scale()
-
-        data_def = sc_def.get_summary()
-
-        # compute average Rmerge, number of cycles to converge - these are
-        # what will form the basis of the comparison
-
-        converge_def = sc_def.get_convergence()
-        rmerges_def = [data_def[k]['Rmerge'][0] for k in data_def]
-        rmerge_def = sum(rmerges_def) / len(rmerges_def)
-
-        # first test the absorption correction...
-
-        sc_tst = self._updated_scala()
-        sc_tst.set_cycles(5)
-        sc_tst.set_hklin(self._prepared_reflections)
-        sc_tst.set_hklout('temp.mtz')
-        
-        sc_tst.set_tails(tails = False)
-        sc_tst.set_bfactor(bfactor = False)
-        sc_tst.set_scaling_parameters('rotation', secondary = 6)
-
-        for epoch in epochs:
-            input = self._sweep_information[epoch]
-            start, end = (min(input['batches']), max(input['batches']))
-
-            sc_tst.add_run(start, end, pname = input['pname'],
-                           xname = input['xname'], dname = input['dname'],
-                           exclude = False)
-            
-        if self.get_scaler_anomalous():
-            sc_tst.set_anomalous()
-
-        sc_tst.scale()
-
-        data_tst = sc_tst.get_summary()
-
-        # compute average Rmerge, number of cycles to converge - these are
-        # what will form the basis of the comparison
-
-        converge_tst = sc_tst.get_convergence()
-        rmerges_tst = [data_tst[k]['Rmerge'][0] for k in data_tst]
-        rmerge_tst = sum(rmerges_tst) / len(rmerges_tst)
-
-        rmerge_abs = rmerge_tst
-        converge_abs = converge_tst
-
-        if ((rmerge_tst - rmerge_def) / rmerge_def) > 0.03:
+        if ((rmerge_abs - rmerge_def) / rmerge_def) > 0.03:
             absorption = False
-        if converge_tst - converge_def > 1.0:
+        if converge_abs - converge_def > 1.0:
             absorption = False
 
         # then test the partiality correction...
 
-        sc_tst = self._updated_scala()
-        sc_tst.set_hklin(self._prepared_reflections)
-        sc_tst.set_hklout('temp.mtz')
-        
-        sc_tst.set_tails(tails = True)
-        sc_tst.set_bfactor(bfactor = False)
-        sc_tst.set_scaling_parameters('rotation', secondary = False)
+        rmerge_tails, converge_tails = self._assess_scaling_model(
+            tails = True, bfactor = False, secondary = False)
 
-        for epoch in epochs:
-            input = self._sweep_information[epoch]
-            start, end = (min(input['batches']), max(input['batches']))
-
-            sc_tst.add_run(start, end, pname = input['pname'],
-                           xname = input['xname'], dname = input['dname'],
-                           exclude = False)
-            
-        if self.get_scaler_anomalous():
-            sc_tst.set_anomalous()
-
-        sc_tst.scale()
-
-        data_tst = sc_tst.get_summary()
-
-        # compute average Rmerge, number of cycles to converge - these are
-        # what will form the basis of the comparison
-
-        converge_tst = sc_tst.get_convergence()
-        rmerges_tst = [data_tst[k]['Rmerge'][0] for k in data_tst]
-        rmerge_tst = sum(rmerges_tst) / len(rmerges_tst)
-
-        rmerge_tails = rmerge_tst
-        converge_tails = converge_tst
-
-        if ((rmerge_tst - rmerge_def) / rmerge_def) > 0.03:
+        if ((rmerge_tails - rmerge_def) / rmerge_def) > 0.03:
             partiality = False
-        if converge_tst - converge_def > 1.0:
+        if converge_tails - converge_def > 1.0:
             partiality = False
 
         # finally test the decay correction
 
-        sc_tst = self._updated_scala()
-        sc_tst.set_hklin(self._prepared_reflections)
-        sc_tst.set_hklout('temp.mtz')
-        
-        sc_tst.set_tails(tails = False)
-        sc_tst.set_bfactor(bfactor = True)
-        sc_tst.set_scaling_parameters('rotation', secondary = False)
+        rmerge_decay, converge_decay  = self._assess_scaling_model(
+            tails = False, bfactor = True, secondary = False)
 
-        for epoch in epochs:
-            input = self._sweep_information[epoch]
-            start, end = (min(input['batches']), max(input['batches']))
-
-            sc_tst.add_run(start, end, pname = input['pname'],
-                           xname = input['xname'], dname = input['dname'],
-                           exclude = False)
-            
-        if self.get_scaler_anomalous():
-            sc_tst.set_anomalous()
-
-        sc_tst.scale()
-
-        data_tst = sc_tst.get_summary()
-
-        # compute average Rmerge, number of cycles to converge - these are
-        # what will form the basis of the comparison
-
-        converge_tst = sc_tst.get_convergence()
-        rmerges_tst = [data_tst[k]['Rmerge'][0] for k in data_tst]
-        rmerge_tst = sum(rmerges_tst) / len(rmerges_tst)
-
-        rmerge_decay = rmerge_tst
-        converge_decay = converge_tst
+        if ((rmerge_decay - rmerge_def) / rmerge_def) > 0.03:
+            decay = False
+        if converge_decay - converge_def > 1.0:
+            decay = False
 
         Debug.write('Scaling optimisation: simpl tails absor decay')
         Debug.write('Residuals:            %5.3f %5.3f %5.3f %5.3f' % \
@@ -416,12 +343,6 @@ class CCP4Scaler(Scaler):
         Debug.write('Convergence:          %5.3f %5.3f %5.3f %5.3f' % \
                     (converge_def, converge_tails,
                      converge_abs, converge_decay))
-        
-
-        if ((rmerge_tst - rmerge_def) / rmerge_def) > 0.03:
-            decay = False
-        if converge_tst - converge_def > 1.0:
-            decay = False
 
         # then summarise the choices...
 
