@@ -298,9 +298,14 @@ def Mosflm(DriverType = None):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
 
-            if not os.path.exists(os.path.join(
-                os.environ['CCP4'], 'bin', 'ipmosflm')):
-                raise RuntimeError, 'CCP4 mosflm binary missing'
+            if os.name == 'nt':
+                if not os.path.exists(os.path.join(
+                    os.environ['CCP4'], 'bin', 'ipmosflm.exe')):
+                    raise RuntimeError, 'CCP4 mosflm binary missing'
+            else:
+                if not os.path.exists(os.path.join(
+                    os.environ['CCP4'], 'bin', 'ipmosflm')):
+                    raise RuntimeError, 'CCP4 mosflm binary missing'
 
             self.set_executable(os.path.join(
                 os.environ['CCP4'], 'bin', 'ipmosflm'))
