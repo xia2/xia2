@@ -71,10 +71,6 @@ def Othercell(DriverType = None):
         def __init__(self):
             DriverInstance.__class__.__init__(self)
 
-            if not os.path.exists(os.path.join(
-                os.environ['CCP4'], 'bin', 'othercell')):
-                raise RuntimeError, 'CCP4 othercell binary missing'
-            
             self.set_executable(os.path.join(
                 os.environ['CCP4'], 'bin', 'othercell'))
 

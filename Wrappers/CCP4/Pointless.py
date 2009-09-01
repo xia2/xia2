@@ -160,10 +160,6 @@ def Pointless(DriverType = None):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
 
-            if not os.path.exists(os.path.join(
-                os.environ['CCP4'], 'bin', 'pointless')):
-                raise RuntimeError, 'CCP4 pointless executable missing'
-
             self.set_executable(os.path.join(
                 os.environ['CCP4'], 'bin', 'pointless'))
 
