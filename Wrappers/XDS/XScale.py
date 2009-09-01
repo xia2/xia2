@@ -316,6 +316,15 @@ def XScale(DriverType = None,
                 if 'total' in line and not dname in self._rmerges:
                     self._rmerges[dname] = float(
                         line.replace('%', '').split()[5])
+
+                # trac #419 - if the data sets are not correctly indexed,
+                # throw an exception
+
+                if ' !!! WARNING !!! ' in line and \
+                   'SOME CORRELATION FACTORS ARE DANGEROUSLY SMALL' in line:
+                    raise RuntimeError, 'reindexing error: %s' % \
+                          os.path.join(self.get_working_directory(),
+                                       'XSCALE.LP')
                     
             return
 
