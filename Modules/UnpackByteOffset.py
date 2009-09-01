@@ -85,4 +85,4 @@ if __name__ == '__main__':
     hist, minimum, maximum = unpackbyteoffset(sys.argv[1])
 
     for j in range(minimum, maximum + 1):
-        print j, histogram[j]
+        print j, hist[j]

@@ -701,6 +701,9 @@ class _CommandLine(Object):
         if '-no_correct' in sys.argv:
             Flags.set_no_correct(True)
             Debug.write('No-correct mode (XDS/XSCALE) selected')
+        elif '-yes_correct' in sys.argv:
+            Flags.set_no_correct(False)
+            Debug.write('Yes-correct mode (XDS/XSCALE) selected')
         return
 
     def _read_norefine(self):
