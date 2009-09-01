@@ -78,11 +78,11 @@ def unpackbyteoffset(filename):
             k = i * fast + j
             hist[values[k]] += 1
 
-    return hist, max(values)
+    return hist, min(values), max(values)
 
 if __name__ == '__main__':
 
-    hist, maximum = unpackbyteoffset(sys.argv[1])
+    hist, minimum, maximum = unpackbyteoffset(sys.argv[1])
 
-    for j in range(maximum + 1):
+    for j in range(minimum, maximum + 1):
         print j, histogram[j]
