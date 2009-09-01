@@ -141,10 +141,20 @@ def _parse_correct_lp(filename):
             
             postrefinement_stats['sdcorrection'] = tuple(sdcorrection)
 
+        if 'CORRELATION  NPAIR  Rmeas  COMPARED  ESD' in file_contents[i]:
+            j = i + 2
+            while file_contents[j].strip():
+                if '*' in file_contents[j]:
+                    postrefinement_stats['reindex_op'] = map(
+                        int, file_contents[j].split()[-12:])
+                j += 1
+
     return postrefinement_stats
 
 if __name__ == '__main__':
     correct_lp = os.path.join(os.environ['XIA2_ROOT'], 'Wrappers', 'XDS',
                               'Doc', 'CORRECT.LP')
+    if len(sys.argv) > 1:
+        correct_lp = sys.argv[1]
     print _parse_correct_lp(correct_lp)
 

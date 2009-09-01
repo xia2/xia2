@@ -1056,6 +1056,9 @@ class XDSScaler(Scaler):
                     # individual pointgroups?? Bug # 3373
 
                     reindex_op = 'h,k,l'
+                    # actually, should this not be done "by magic"
+                    # when a new pointgroup is assigned in the
+                    # pointless indexer jiffy above?!
                     
                     intgr.set_integrater_reindex_operator(
                         reindex_op, compose = False)
@@ -1291,10 +1294,14 @@ class XDSScaler(Scaler):
                 # also in the correct setting, from the interaction
                 # with the reference set... - though I guess that the
                 # spacegroup number should not have changed, right?
-                
-                intgr.set_integrater_reindex_operator(reindex_op)
+
+                # set the reindex operation afterwards... though if the
+                # spacegroup number is the same this should make no
+                # difference, right?!
+
                 intgr.set_integrater_spacegroup_number(
                     Syminfo.spacegroup_name_to_number(pointgroup))
+                intgr.set_integrater_reindex_operator(reindex_op)
 
                 # and copy the reflection file to the local directory
 

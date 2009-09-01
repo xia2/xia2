@@ -280,8 +280,6 @@ class CCP4Scaler(Scaler):
 
         return rmerge_tst, converge_tst
 
-        
-
     def _determine_best_scale_model(self):
         '''Determine the best set of corrections to apply to the data.'''
 
@@ -337,12 +335,26 @@ class CCP4Scaler(Scaler):
         if converge_decay - converge_def > 1.0:
             decay = False
 
-        Debug.write('Scaling optimisation: simpl tails absor decay')
-        Debug.write('Residuals:            %5.3f %5.3f %5.3f %5.3f' % \
-                    (rmerge_def, rmerge_tails, rmerge_abs, rmerge_decay))
-        Debug.write('Convergence:          %5.3f %5.3f %5.3f %5.3f' % \
-                    (converge_def, converge_tails,
-                     converge_abs, converge_decay))
+        # full fat, with and without tails correction (ff, fft)
+
+        play = False
+        if play:
+
+            rmerge_ff, converge_ff = self._assess_scaling_model(
+                tails = False, bfactor = True, secondary = True)
+            rmerge_fft, converge_fft = self._assess_scaling_model(
+                tails = True, bfactor = True, secondary = True)
+
+            Debug.write(
+                'Scaling optimisation: simpl tails absor decay  all  all+t')
+            Debug.write(
+                'Residuals:            %5.3f %5.3f %5.3f %5.3f %5.3f %5.3f' % \
+                (rmerge_def, rmerge_tails, rmerge_abs, rmerge_decay,
+                 rmerge_ff, rmerge_fft))
+            Debug.write(
+                'Convergence:          %5.3f %5.3f %5.3f %5.3f %5.3f %5.3f' % \
+                (converge_def, converge_tails, converge_abs, converge_decay,
+                 converge_ff, converge_fft))
 
         # then summarise the choices...
 
@@ -366,6 +378,25 @@ class CCP4Scaler(Scaler):
         self._scalr_correct_decay = decay
 
         self._scalr_corrections = True
+
+        # then add a brute-force analysis just to be sure...
+
+        if True:
+            return
+
+        results = { }
+
+        for tails in True, False:
+            for bfactor in True, False:
+                for secondary in True, False:
+                    rmerge, converge = self._assess_scaling_model(
+                        tails = tails, bfactor = bfactor,
+                        secondary = secondary)
+                    results[(tails, bfactor, secondary)] = rmerge, converge
+
+        for t, b, s in sorted(results):
+            r, c = results[(t, b, s)]
+            Debug.write('%s %s %s %.3f %.3f' % (t, b, s, r, c))
 
         return
 

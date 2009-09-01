@@ -37,7 +37,8 @@ from Wrappers.XDS.XDSCorrect import XDSCorrect as _Correct
 
 from Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
 from Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
-from Experts.SymmetryExpert import r_to_rt
+from Experts.SymmetryExpert import r_to_rt, rt_to_r
+from Experts.SymmetryExpert import symop_to_mat, mat_to_symop
 
 # interfaces that this must implement to be an integrater
 
@@ -469,10 +470,12 @@ class XDSIntegrater(FrameProcessor,
 
         p1_deviations = None
 
-        # fix for bug # 3264 - if we have not run integration with refined parameters,
-        # make it so...
+        # fix for bug # 3264 -
+        # if we have not run integration with refined parameters, make it so...
+        
         if not self._data_files.has_key('GXPARM.XDS'):
-            Debug.write('Resetting integrater, to ensure refined orientation is used')
+            Debug.write(
+                'Resetting integrater, to ensure refined orientation is used')
             self.set_integrater_done(False)
 
         if not self.get_integrater_reindex_matrix() and not self._intgr_cell:
@@ -572,7 +575,6 @@ class XDSIntegrater(FrameProcessor,
         # BUG # 3113 - new version of XDS will try and figure the
         # best spacegroup out from the intensities (and get it wrong!)
         # unless we set the spacegroup and cell explicitly
-
         
         if not self.get_integrater_spacegroup_number():
             cell = self._intgr_indexer.get_indexer_cell()
@@ -622,6 +624,44 @@ class XDSIntegrater(FrameProcessor,
             correct.set_reindex_matrix(mult_matrix)
         
         correct.run()
+
+        # erm. just to be sure
+        if self.get_integrater_reindex_matrix() and \
+               correct.get_reindex_used():
+            raise RuntimeError, 'Reindex panic!'
+            
+        # get the reindex operation used, which may be useful if none was
+        # set but XDS decided to apply one, e.g. #419.
+
+        if not self.get_integrater_reindex_matrix() and \
+               correct.get_reindex_used():
+            # convert this reindex operation to h, k, l form: n.b. this
+            # will involve dividing through by the lattice centring multiplier
+            
+            matrix = rt_to_r(correct.get_reindex_used())
+
+            lattice = self._intgr_indexer.get_indexer_lattice()
+
+            if lattice[1] == 'P':
+                mult = 1.0
+            elif lattice[1] == 'C' or lattice[1] == 'I':
+                mult = 2.0
+            elif lattice[1] == 'R':
+                mult = 3.0
+            elif lattice[1] == 'F':
+                mult = 4.0
+
+            matrix = [m / mult for m in matrix]
+
+            reindex_op = mat_to_symop(matrix)
+            
+            # assign this to self: will this reset?! make for a leaky
+            # anstraction and just assign this...
+
+            # self.set_integrater_reindex_operator(reindex)
+
+            self._intgr_reindex_operator = reindex_op
+            
 
         # record the log file -
 

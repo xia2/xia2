@@ -606,6 +606,15 @@ class Integrater:
 
         Debug.write('Set spacegroup as %d' % spacegroup_number)
 
+        # certainly should wipe the reindexing operation! erp! only
+        # if the spacegroup number is DIFFERENT
+
+        if spacegroup_number == self._intgr_spacegroup_number:
+            return
+        
+        self._intgr_reindex_operator = None
+        self._intgr_reindex_matrix = None
+        
         self._intgr_spacegroup_number = spacegroup_number
         self.set_integrater_finish_done(False)        
 

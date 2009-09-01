@@ -87,6 +87,7 @@ def XDSCorrect(DriverType = None):
             self._polarization = 0.0
 
             self._reindex_matrix = None
+            self._reindex_used = None
 
             self._input_data_files = { }
             self._output_data_files = { }
@@ -140,6 +141,9 @@ def XDSCorrect(DriverType = None):
                 raise RuntimeError, 'reindex matrix must be 12 numbers'
             self._reindex_matrix = reindex_matrix
             return
+
+        def get_reindex_used(self):
+            return self._reindex_used
 
         def set_resolution_high(self, resolution_high):
             self._resolution_high = resolution_high
@@ -334,6 +338,14 @@ def XDSCorrect(DriverType = None):
             self._results = _parse_correct_lp(os.path.join(
                 self.get_working_directory(),
                 'CORRECT.LP'))
+
+            # record reindex operation used for future reference... this
+            # is to trap trac #419
+
+            if 'reindex_op' in self._results:
+                format = 'XDS applied reindex:' + 12 * ' %d'
+                Debug.write(format % tuple(self._results['reindex_op']))
+                self._reindex_used = self._results['reindex_op']
 
             # and calculate the resolution limit from the
             # output reflection file... N.B. assume that INTEGRATE was
