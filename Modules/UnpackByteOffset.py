@@ -47,7 +47,7 @@ def unpack_values(data, length):
 
 def unpackbyteoffset(filename):
 
-    hist = [0 for j in range 65536]
+    hist = [0 for j in range(65536)]
 
     data = open(filename, 'r').read()
 
