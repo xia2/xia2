@@ -46,6 +46,9 @@ def unpack_values(data, length):
     return values
 
 def unpackbyteoffset(filename):
+
+    hist = [0 for j in range 65536]
+
     data = open(filename, 'r').read()
 
     start_tag = binascii.unhexlify('0c1a04d5')
@@ -73,8 +76,13 @@ def unpackbyteoffset(filename):
     for i in range(slow):
         for j in range(fast):
             k = i * fast + j
-            print i, j, values[k]
+            hist[values[k]] += 1
+
+    return hist, max(values)
 
 if __name__ == '__main__':
 
-    unpackbyteoffset(sys.argv[1])
+    hist, maximum = unpackbyteoffset(sys.argv[1])
+
+    for j in range(maximum + 1):
+        print j, histogram[j]
