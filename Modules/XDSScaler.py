@@ -362,6 +362,23 @@ class XDSScaler(Scaler):
 
         self._scalr_corrections = True
 
+        play = True
+
+        if play:
+            results = { }
+
+            for decay in True, False:
+                for modulation in True, False:
+                    for absorption in True, False:
+                        rmerge = self._assess_scaling_model(
+                            decay = decay, modulation = modulation,
+                            absorption = absorption)
+                        results[(decay, modulation, absorption)] = rmerge
+
+            for d, m, a in sorted(results):
+                r = results[(d, m, a)]
+                Debug.write('%s %s %s %.3f' % (d, m, a, r))
+            
         return
 
     def _refine_sd_parameters_remerge(self, scales_file, sdadd_f, sdb_f):

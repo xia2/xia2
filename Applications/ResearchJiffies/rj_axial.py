@@ -29,7 +29,10 @@ def digest(values):
                 
     t0 = totals[0] / counts[0]
     for offset in 0, 1, 2, 3, 4, 6:
-        temp = totals[offset] / counts[offset]
+        if counts[offset]:
+            temp = totals[offset] / counts[offset]
+        else:
+            temp = 0
         totals[offset] = temp / t0
 
     return totals
