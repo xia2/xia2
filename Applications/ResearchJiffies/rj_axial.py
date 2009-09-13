@@ -17,15 +17,20 @@ def digest(values):
     hs = sorted(values)
 
     totals = { }
+    counts = { }
 
     for offset in 0, 1, 2, 3, 4, 6:
         totals[offset] = 0
+        counts[offset] = 0
         for j in hs:
             if j + offset in hs:
                 totals[offset] += values[j] * values[j + offset]
-    t0 = totals[0]
+                counts[offset] += 1
+                
+    t0 = totals[0] / counts[0]
     for offset in 0, 1, 2, 3, 4, 6:
-        totals[offset] /= t0
+        temp = totals[offset] / counts[offset]
+        totals[offset] = temp / t0
 
     return totals
     
