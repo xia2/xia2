@@ -1022,6 +1022,9 @@ def Mosflm(DriverType = None):
             # would be useful) but I may save that one for
             # later... c/f TS02/1VK8
 
+            # N.B. need to make sure that this is a sensible answer
+            # which is recycled later on!
+
             if self._indxr_input_cell:
                 self.input('cell %f %f %f %f %f %f' % \
                            self._indxr_input_cell)

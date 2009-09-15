@@ -182,6 +182,17 @@ class XProject(Object):
                 else:
                     lattice = None
 
+                # and also user supplied cell constants - from either
+                # the xinfo file (the first port of call) or the
+                # command-line.
+
+                if crystals[crystal].has_key('user_cell'):
+                    cell = crystals[crystal]['user_cell']
+                elif Flags.get_cell():
+                    cell = Flags.get_cell()
+                else:
+                    cell = None
+
                 dmin = wave_info.get('dmin', 0.0)
                 dmax = wave_info.get('dmax', 0.0)
 
@@ -207,6 +218,7 @@ class XProject(Object):
                             'POLARIZATION', 0.0)),
                             frames_to_process = sweep_info.get('start_end'),
                             user_lattice = lattice,
+                            user_cell = cell,
                             epoch = sweep_info.get('epoch', 0))
                 
                 xc.add_wavelength(xw)

@@ -290,6 +290,20 @@ def LabelitScreen(DriverType = None):
 
             return
 
+        def _compare_cell(self, c_ref, c_test):
+            '''Compare two sets of unit cell constants: if they differ by
+            less than 5% / 5 degrees return True, else False.'''
+
+            for j in range(3):
+                if math.fabs((c_test[j] - c_ref[j]) / c_ref[j]) > 0.05:
+                    return False
+
+            for j in range(3, 6):
+                if math.fabs(c_test[j] - c_ref[j]) > 5:
+                    return False
+
+            return True
+
         def _index(self):
             '''Actually index the diffraction pattern. Note well that
             this is not going to compute the matrix...'''
@@ -669,16 +683,36 @@ def LabelitScreen(DriverType = None):
                 # look through for a solution for this lattice -
                 # FIXME should it delete all other solutions?
                 # c/f eliminate.
-                
-                for s in self._solutions.keys():
-                    if self._solutions[s]['lattice'] == \
-                       self._indxr_input_lattice:
-                        return copy.deepcopy(self._solutions[s])
-                    else:
-                        del(self._solutions[s])
 
-                raise RuntimeError, 'no solution for lattice %s' % \
-                      self._indxr_input_lattice
+                # FIXME should also include a check for the indxr_input_cell
+                
+                if self._indxr_input_cell:
+                    for s in self._solutions.keys():
+                        if self._solutions[s]['lattice'] == \
+                               self._indxr_input_lattice:
+                            if self._compare_cell(
+                                self._indxr_input_cell,
+                                self._solutions[s]['cell']):
+                                return copy.deepcopy(self._solutions[s])
+                            else:
+                                del(self._solutions[s])
+                        else:
+                            del(self._solutions[s])
+
+                    raise RuntimeError, \
+                          'no solution for lattice %s with given cell' % \
+                          self._indxr_input_lattice
+
+                else:
+                    for s in self._solutions.keys():
+                        if self._solutions[s]['lattice'] == \
+                               self._indxr_input_lattice:
+                            return copy.deepcopy(self._solutions[s])
+                        else:
+                            del(self._solutions[s])
+
+                    raise RuntimeError, 'no solution for lattice %s' % \
+                          self._indxr_input_lattice
 
     return LabelitScreenWrapper()
 

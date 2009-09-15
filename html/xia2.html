@@ -429,6 +429,20 @@ END PROJECT TS01
     
     <h1>Release Notes</h1>
 
+    <p>Changes since 0.3.0.3</p>
+    <ul>
+      <li>User now able to assign cell constants: use with great care, as 
+	there is little in the way of nonsense trapping. This may however
+	be used to handle cases where the solution you want is monoclinic
+	with a pseudo-orthorhombic lattice, where the default indexing would 
+	select a different setting. This will not currently work with a 
+	Mosflm indexer. Usage is:
+<pre>-cell a,b,c,alpha,beta,gamma</pre>
+
+	and the correct symmetry should also be assigned. Can also assign 
+	USER_CELL a b c alpha beta gamma in the xinfo file.</li>
+    </ul>
+
     <p>Changes since 0.3.0.0</p>
     <ul>
       <li>Now automatically determine the number of available processor 
@@ -850,7 +864,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Tue Sep  1 13:12:48 BST 2009
+Last modified: Tue Sep 15 15:29:02 BST 2009
 <!-- hhmts end -->
   </body>
 </html>

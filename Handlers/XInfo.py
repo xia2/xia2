@@ -446,11 +446,17 @@ class XInfo:
                 self._crystals[crystal][
                     'freer_file'] = record.replace('FREER_FILE', '').strip()
 
-            # user assigned spacegroup
+            # user assigned spacegroup and cell constants
             if 'USER_SPACEGROUP' in record:
                 self._crystals[crystal][
                     'user_spacegroup'] = record.replace(
                     'USER_SPACEGROUP', '').strip()
+
+            if 'USER_CELL' in record:
+                self._crystals[crystal][
+                    'user_cell'] = tuple(map(float, record.split()[1:]))
+
+
 
 
 if __name__ == '__main__':

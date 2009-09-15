@@ -164,6 +164,7 @@ class XSweep(Object):
                  polarization = 0.0,
                  frames_to_process = None,
                  user_lattice = None,
+                 user_cell = None,
                  epoch = 0):
         '''Create a new sweep named name, belonging to XWavelength object
         wavelength, representing the images in directory starting with image,
@@ -197,6 +198,7 @@ class XSweep(Object):
         self._integrated_reflection_file = integrated_reflection_file
         self._epoch = epoch
         self._user_lattice = user_lattice
+        self._user_cell = user_cell
         self._header = { } 
         self._resolution_high = dmin
         self._resolution_low = dmax
@@ -578,6 +580,16 @@ class XSweep(Object):
             if self._user_lattice:
                 self._indexer.set_indexer_input_lattice(self._user_lattice)
                 self._indexer.set_indexer_user_input_lattice(True)
+
+                # and also the cell constants - but only if lattice is
+                # assigned
+                
+                if self._user_cell:
+                    self._indexer.set_indexer_input_cell(self._user_cell)
+                    
+            else:
+                if self._user_cell:
+                    raise RuntimeError, 'cannot assign cell without lattice'
 
             # set the working directory for this, based on the hierarchy
             # defined herein...

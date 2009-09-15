@@ -60,6 +60,9 @@ class _Flags:
         self._pointgroup = None
         self._lattice = None
 
+        # options to support the -cell option
+        self._cell = None
+
         # resolution limit flags
         self._resolution_low = None
         self._resolution_high = None
@@ -146,6 +149,13 @@ class _Flags:
 
     def get_lattice(self):
         return self._lattice
+
+    def set_cell(self, cell):
+        self._cell = cell
+        return
+
+    def get_cell(self):
+        return self._cell
 
     def get_cellref_mode(self):
         return self._cellref_mode

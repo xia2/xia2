@@ -170,6 +170,20 @@ def XDSIdxref(DriverType = None):
         def get_index_tree_problem(self):
             return self._index_tree_problem
 
+        def _compare_cell(self, c_ref, c_test):
+            '''Compare two sets of unit cell constants: if they differ by
+            less than 5% / 5 degrees return True, else False.'''
+
+            for j in range(3):
+                if math.fabs((c_test[j] - c_ref[j]) / c_ref[j]) > 0.05:
+                    return False
+
+            for j in range(3, 6):
+                if math.fabs(c_test[j] - c_ref[j]) > 5:
+                    return False
+
+            return True
+
         # this needs setting up from setup_from_image in FrameProcessor
 
         def set_beam_centre(self, x, y):
@@ -312,25 +326,41 @@ def XDSIdxref(DriverType = None):
                 # or any value (< 200) if we have been provided the
                 # input unit cell... but # 2731
 
-                if fit < 40.0 or (self._cell and fit < 200.0):
-                    # bug 2417 - if we have an input lattice then we
-                    # don't want to include anything higher symmetry
-                    # in the results table...
+                # if we "know" the answer, well just go ahead with that
 
-                    if self._symm:
-                        if lattice_to_spacegroup_number(lattice) > self._symm:
-                            Debug.write('Ignoring solution with lattice %s' % \
-                                        lattice)
-                            continue
-                    
-                    if self._indexing_solutions.has_key(lattice):
-                        if self._indexing_solutions[lattice][
-                            'goodness'] < fit:
-                            continue
+                if self._symm and self._cell:
+                    if self._compare_cell(self._cell, cell):
+                        if self._indexing_solutions.has_key(lattice):
+                            if self._indexing_solutions[lattice][
+                                'goodness'] < fit:
+                                continue
+                            
+                        self._indexing_solutions[lattice] = {
+                            'goodness':fit,
+                            'cell':cell}
+
+                else:
+                    if fit < 40.0 or (self._cell and fit < 200.0):
+                        # bug 2417 - if we have an input lattice then we
+                        # don't want to include anything higher symmetry
+                        # in the results table...
                         
-                    self._indexing_solutions[lattice] = {
-                        'goodness':fit,
-                        'cell':cell}
+                        if self._symm:
+                            if lattice_to_spacegroup_number(lattice) \
+                                   > self._symm:
+                                Debug.write(
+                                    'Ignoring solution with lattice %s' % \
+                                    lattice)
+                                continue
+                            
+                        if self._indexing_solutions.has_key(lattice):
+                            if self._indexing_solutions[lattice][
+                                'goodness'] < fit:
+                                continue
+                        
+                        self._indexing_solutions[lattice] = {
+                            'goodness':fit,
+                            'cell':cell}
 
             # get the highest symmetry "acceptable" solution
             
@@ -344,6 +374,8 @@ def XDSIdxref(DriverType = None):
             if self._cell:
 
                 # select the solution which matches the input unit cell
+                # actually after the changes above this should now be the
+                # only solution in the table..
 
                 Debug.write(
                     'Target unit cell: %.2f %.2f %.2f %.2f %.2f %.2f' % \
@@ -354,24 +386,23 @@ def XDSIdxref(DriverType = None):
                         # this should be the correct solution...
                         # check the unit cell...
                         cell = l[1]
-                        cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % cell
-                        Debug.write(
+
+                        if self._compare_cell(self._cell, cell):
+                        
+                            cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % cell
+                            Debug.write(
                             'Chosen unit cell: %s' % cell_str)
 
-                        for j in range(6):
-                            if math.fabs(cell[j] - self._cell[j]) > 5 \
-                                   and False:
-                                raise RuntimeError, \
-                                      'bad unit cell [%d] in idxref' % j
+                            self._indxr_lattice = l[0]
+                            self._indxr_cell = l[1]
+                            self._indxr_mosaic = mosaic
 
-                        Debug.write('Removed the check in here...')
+                        else:
 
-                        self._indxr_lattice = l[0]
-                        self._indxr_cell = l[1]
-                        self._indxr_mosaic = mosaic
+                            cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % cell
+                            Debug.write(
+                            'Ignoring unit cell: %s' % cell_str)
 
-                        # return True
-            
             else:
 
                 # select the top solution as the input cell and reset the

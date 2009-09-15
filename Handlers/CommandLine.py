@@ -206,6 +206,10 @@ class _CommandLine(Object):
             raise RuntimeError, '%s (%s)' % \
                   (self._help_cellref_mode(), str(e))
 
+        # FIXME add some consistency checks in here e.g. that there are
+        # images assigned, there is a lattice assigned if cell constants
+        # are given and so on
+
         return
 
     # command line parsers, getters and help functions.
@@ -769,7 +773,6 @@ class _CommandLine(Object):
         except ValueError, e:
             # the token is not on the command line
             self.write('No cell passed in on the command line')
-            self._cell = None
             return
 
         if index < 0:
@@ -785,15 +788,17 @@ class _CommandLine(Object):
             raise RuntimeError, \
                   '-cell correct use "-cell a,b,c,alpha,beta,gamma"'
 
-        format = 6 * ' %f7.2'
+        _cell = tuple(map(float, cell))
 
-        self._cell = tuple(map(float, cell))
+        Flags.set_cell(_cell)
+
+        format = 6 * ' %7.2f'
         
         self.write('Cell passed on the command line: ' + \
-                   format % self._cell)
+                   format % _cell)
 
         Debug.write('Cell read from command line:' + \
-                    format % self._cell)
+                    format % _cell)
 
         return
 
@@ -801,13 +806,9 @@ class _CommandLine(Object):
         '''Return a help string for the read cell method.'''
         return '-cell a,b,c,alpha,beta,gamma'
 
-    def get_cell(self):
-        return self._cell
-
 CommandLine = _CommandLine()
 CommandLine.setup()
 
 if __name__ == '__main__':
     print CommandLine.get_beam()
     print CommandLine.get_xinfo()
-    print CommandLine.get_cell()
