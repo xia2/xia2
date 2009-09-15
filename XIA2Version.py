@@ -112,8 +112,11 @@
 # 0.3.0.1 - revision to accomodate small molecule data reduction (first pass)
 # 
 # 0.3.0.3 - revision which fixes the problems with reindexing in P321 &c.
+#
+# 0.3.0.4 - revision which allows the user to assign the correct cell constants
+#           &c. - see html.
 
-VersionNumber = "0.3.0.3"
+VersionNumber = "0.3.0.4"
 Version = "XIA2 %s" % VersionNumber
 CVSTag = "xia2-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2-%s" % VersionNumber
