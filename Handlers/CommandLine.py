@@ -103,6 +103,11 @@ class _CommandLine(Object):
             raise RuntimeError, self._help_beam()
 
         try:
+            self._read_cell()
+        except:
+            raise RuntimeError, self._help_cell()
+
+        try:
             self._read_first_last()
         except:
             raise RuntimeError, self._help_first_last()
@@ -754,11 +759,55 @@ class _CommandLine(Object):
             Debug.write('Data migration switched on')
         return
 
+    def _read_cell(self):
+        '''Read the cell constants from the command line.'''
+
+        index = -1
+
+        try:
+            index = sys.argv.index('-cell')
+        except ValueError, e:
+            # the token is not on the command line
+            self.write('No cell passed in on the command line')
+            self._cell = None
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        try:
+            cell = sys.argv[index + 1].split(',')
+        except IndexError, e:
+            raise RuntimeError, \
+                  '-cell correct use "-cell a,b,c,alpha,beta,gamma"'
+
+        if len(cell) != 6:
+            raise RuntimeError, \
+                  '-cell correct use "-cell a,b,c,alpha,beta,gamma"'
+
+        format = 6 * ' %f7.2'
+
+        self._cell = tuple(map(float, cell))
+        
+        self.write('Cell passed on the command line: ' + \
+                   format % self._cell)
+
+        Debug.write('Cell read from command line:' + \
+                    format % self._cell)
+
+        return
+
+    def _help_cell(self):
+        '''Return a help string for the read cell method.'''
+        return '-cell a,b,c,alpha,beta,gamma'
+
+    def get_cell(self):
+        return self._cell
 
 CommandLine = _CommandLine()
 CommandLine.setup()
 
 if __name__ == '__main__':
     print CommandLine.get_beam()
-    print CommandLine.get_resolution_limit()
     print CommandLine.get_xinfo()
+    print CommandLine.get_cell()
