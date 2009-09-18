@@ -227,6 +227,13 @@ class XProject(Object):
 
         return
 
+    def write_xifo(self):
+        '''Write an updated .xinfo file which takes into account the input
+        provided by the user on the command line and any input xinfo
+        file: this is what xia2 understood to be the problem.'''
+        
+        raise RuntimeError, 'FIXME this method must be implemented'
+
 if __name__ == '__main__':
     import os
 

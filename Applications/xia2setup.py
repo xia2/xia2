@@ -196,6 +196,11 @@ def print_sweeps(out = sys.stdout):
         out.write('USER_SPACEGROUP %s\n' % Flags.get_spacegroup())
         out.write('\n')
 
+    if Flags.get_cell():
+        out.write('USER_CELL %.2f %.2f %.2f %.2f %.2f %.2f\n' % \
+                  tuple(Flags.get_cell()))
+        out.write('\n')        
+
     if Flags.get_freer_file():
         out.write('FREER_FILE %s\n' % Flags.get_freer_file())
         out.write('\n')
