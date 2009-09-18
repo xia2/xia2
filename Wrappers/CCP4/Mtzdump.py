@@ -244,7 +244,7 @@ def Mtzdump(DriverType = None):
                     # then the column labels are in two lines time...
                     labels = output[i + 2].strip().split()
                     self._header['column_labels'] = labels
-                    
+
                 if 'Column Types' in line:
                     # then the column types are in two lines time...
                     types = output[i + 2].strip().split()

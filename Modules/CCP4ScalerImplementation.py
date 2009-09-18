@@ -2891,6 +2891,22 @@ class CCP4Scaler(Scaler):
 
         else:
 
+            # default fraction of 0.05
+            free_fraction = 0.05
+            
+            if Flags.get_free_fraction():
+                free_fraction = Flags.get_free_fraction()
+            elif Flags.get_free_total():
+                ntot = Flags.get_free_total()
+                
+                # need to get a fraction, so...
+                mtzdump = self._factory.Mtzdump()
+                f.set_free_fraction(fraction)
+                mtzdump.set_hklin(hklin)
+                mtzdump.dump()
+                nref = mtzdump.get_reflections()
+                free_fraction = float(ntot) / float(nref)
+                
             f = self._factory.Freerflag()
             f.set_hklin(self._scalr_scaled_reflection_files['mtz_merged'])
             f.set_hklout(hklout)
@@ -2902,8 +2918,24 @@ class CCP4Scaler(Scaler):
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s_free.mtz' % (self._common_pname,
                                                   self._common_xname))
+
+        # default fraction of 0.05
+        free_fraction = 0.05
+
+        if Flags.get_free_fraction():
+            free_fraction = Flags.get_free_fraction()
+        elif Flags.get_free_total():
+            ntot = Flags.get_free_total()
+
+            # need to get a fraction, so...
+            mtzdump = self._factory.Mtzdump()
+            mtzdump.set_hklin(hklin)
+            mtzdump.dump()
+            nref = mtzdump.get_reflections()
+            free_fraction = float(ntot) / float(nref)
         
         f = self._factory.Freerflag()
+        f.set_free_fraction(fraction)
         f.set_hklin(hklin)
         f.set_hklout(hklout)
         f.complete_free_flag()

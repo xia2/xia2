@@ -44,6 +44,11 @@ class _Flags:
         # File from which to copy the FreeR_flag column
         self._freer_file = None
 
+        # or alternatively the fraction, or total number of free
+        # reflections
+        self._free_fraction = None
+        self._free_total = None
+
         # reference reflection file
         self._reference_reflection_file = None
 
@@ -267,6 +272,20 @@ class _Flags:
 
     def get_freer_file(self):
         return self._freer_file
+
+    def set_free_fraction(self, free_fraction):
+        self._free_fraction = free_fraction
+        return
+
+    def get_free_fraction(self):
+        return self._free_fraction
+
+    def set_free_total(self, free_total):
+        self._free_total = free_total
+        return
+
+    def get_free_total(self):
+        return self._free_total   
 
     def set_reference_reflection_file(self, reference_reflection_file):
         '''Set a new reference reflection file.'''

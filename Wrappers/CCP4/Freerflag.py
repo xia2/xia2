@@ -34,11 +34,20 @@ def Freerflag(DriverType = None):
             CCP4DriverInstance.__class__.__init__(self)
             self.set_executable('freerflag')
 
+            self._free_fraction = 0.05
+
+            return
+
+        def set_free_fraction(self, free_fraction):
+            self._free_fraction = free_fraction
+            return
+
         def add_free_flag(self):
             self.check_hklin()
             self.check_hklout()
 
             self.start()
+            self.input('freerfrac %.3f' % self._free_fraction)
             self.close_wait()
             self.check_for_errors()
             self.check_ccp4_errors()
@@ -50,6 +59,7 @@ def Freerflag(DriverType = None):
             self.check_hklout()
 
             self.start()
+            self.input('freerfrac %.3f' % self._free_fraction)
             self.input('complete FREE=FreeR_flag')
             self.close_wait()
             self.check_for_errors()

@@ -25,21 +25,21 @@
 #             in on the comand line, for example a lattice or a spacegroup.
 #             See 04/SEP/06 below.
 # 
-# 23/AUG/06 - FIXME - need to add handling of the lattice input in particular,
+# 23/AUG/06 - FIXED - need to add handling of the lattice input in particular,
 #             since this is directly supported by Mosflm.py...
 #
 # 04/SEP/06 - FIXED - need to be able to pass in a resolution limit to
 #             work to, for development purposes (this should become
 #             automatic in the future.)
 #
-# 07/FEB/07 - FIXME need flags to control "experimental" functionality
+# 07/FEB/07 - FIXED need flags to control "experimental" functionality
 #             e.g. the phasing pipeline - for instance this could
 #             be -phase to perform phasing on the scaled data.
 # 
 #             At the moment the amount of feedback between the phasing
 #             and the rest of the data reduction is non existent.
 # 
-# 15/MAY/07 - FIXME need to add flag -ehtpx_xml_out which will enable 
+# 15/MAY/07 - FIXED need to add flag -ehtpx_xml_out which will enable 
 #             writing of e-HTPX xml for the data reduction portal. This
 #             should be provided the path on which to write the file.
 
@@ -805,6 +805,40 @@ class _CommandLine(Object):
     def _help_cell(self):
         '''Return a help string for the read cell method.'''
         return '-cell a,b,c,alpha,beta,gamma'
+
+    def _read_free_fraction(self):
+        try:
+            index = sys.argv.index('-free_fraction')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_free_fraction(float(sys.argv[index + 1]))
+        Debug.write('Free fraction set to %f' % Flags.get_free_fraction())
+            
+        return
+
+    def _help_free_fraction(self):
+        return '-free_fraction N'
+
+    def _read_free_total(self):
+        try:
+            index = sys.argv.index('-free_total')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_free_total(int(sys.argv[index + 1]))
+        Debug.write('Free total set to %f' % Flags.get_free_total())
+            
+        return
+
+    def _help_free_total(self):
+        return '-free_total N'
 
 CommandLine = _CommandLine()
 CommandLine.setup()
