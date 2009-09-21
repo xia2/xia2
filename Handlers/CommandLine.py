@@ -90,6 +90,7 @@ class _CommandLine(Object):
         self._read_fiddle_sd()
         self._read_no_relax()
         self._read_norefine()
+        self._read_noremove()        
         self._read_2d()
         self._read_3d()
         self._read_3dii()
@@ -721,6 +722,12 @@ class _CommandLine(Object):
             Flags.set_refine(False)
             # FIXME what does this do??? - switch off orientation refinement
             # in integration
+        return
+
+    def _read_noremove(self):
+
+        if '-noremove' in sys.argv:
+            Flags.set_remove(False)
         return
 
     def _read_2d(self):

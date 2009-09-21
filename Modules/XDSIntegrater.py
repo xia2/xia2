@@ -778,7 +778,7 @@ class XDSIntegrater(FrameProcessor,
                 raise BadLatticeError, \
                       'high relative deviations in postrefinement'
 
-        if not Flags.get_quick():
+        if not Flags.get_quick() and Flags.get_remove():
             # check for alien reflections and perhaps recycle - removing them
             if len(correct.get_remove()) > 0:
 

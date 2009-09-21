@@ -1370,7 +1370,7 @@ class XDSScaler(Scaler):
         # check for outlier reflections and if a number are found
         # then iterate (that is, rerun XSCALE, rejecting these outliers)
 
-        if not Flags.get_quick():
+        if not Flags.get_quick() and Flags.get_remove():
             if len(xscale.get_remove()) > 0:
 
                 xscale_remove = xscale.get_remove()
