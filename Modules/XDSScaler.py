@@ -2592,13 +2592,13 @@ class XDSScaler(Scaler):
                 
                 # need to get a fraction, so...
                 mtzdump = self._factory.Mtzdump()
-                f.set_free_fraction(fraction)
                 mtzdump.set_hklin(hklin)
                 mtzdump.dump()
                 nref = mtzdump.get_reflections()
                 free_fraction = float(ntot) / float(nref)
                 
             f = self._factory.Freerflag()
+            f.set_free_fraction(free_fraction)
             f.set_hklin(self._scalr_scaled_reflection_files['mtz_merged'])
             f.set_hklout(hklout)
             f.add_free_flag()
@@ -2626,7 +2626,7 @@ class XDSScaler(Scaler):
             free_fraction = float(ntot) / float(nref)
 
         f = self._factory.Freerflag()
-        f.set_free_fraction(fraction)
+        f.set_free_fraction(free_fraction)
         f.set_hklin(hklin)
         f.set_hklout(hklout)
         f.complete_free_flag()
