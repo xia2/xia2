@@ -97,6 +97,8 @@ class _CommandLine(Object):
         self._read_migrate_data()
         self._read_zero_dose()
         self._read_no_correct()
+        self._read_free_fraction()
+        self._read_free_total()
 
         try:
             self._read_beam()

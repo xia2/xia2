@@ -79,6 +79,10 @@ def _parse_correct_lp(filename):
 
     postrefinement_stats = { }
 
+    # default values - this may not be refined if the multiplicity
+    # is low...
+    postrefinement_stats['sdcorrection'] = (1.0, 0.0)
+
     for i in range(len(file_contents)):
         if 'OF SPOT    POSITION (PIXELS)' in file_contents[i]:
             rmsd_pixel = float(file_contents[i].split()[-1])
