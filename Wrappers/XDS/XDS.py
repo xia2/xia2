@@ -220,7 +220,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False):
     result = []
 
     result.append('DETECTOR=%s MINIMUM_VALID_PIXEL_VALUE=%d OVERLOAD=%d' % \
-                  (detector_to_detector[detector], 0,
+                  (detector_to_detector[detector], 1,
                    detector_to_overload[detector]))
 
     result.append('DIRECTION_OF_DETECTOR_X-AXIS=%s' % \
