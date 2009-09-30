@@ -115,8 +115,11 @@
 #
 # 0.3.0.4 - revision which allows the user to assign the correct cell constants
 #           &c. - see html.
+# 
+# 0.3.0.5 - revision to give more flexibility to assiging the Free reflections,
+#           also taking copies and using indexing reference if from freer file.
 
-VersionNumber = "0.3.0.4"
+VersionNumber = "0.3.0.5"
 Version = "XIA2 %s" % VersionNumber
 CVSTag = "xia2-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2-%s" % VersionNumber
