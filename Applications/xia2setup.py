@@ -103,6 +103,13 @@ def get_sweep(f):
         from Handlers.Streams import Debug        
         Debug.write('No read permission for %s' % f)
 
+    # now check if it is a decoy XDS file///
+
+    if f.split('.')[-1] == 'cbf':
+        firstline = open(f, 'r').readline()
+        if 'XDS' in firstline.split()[-1]:
+            return
+
     try:
         template, directory = image2template_directory(f)
 
