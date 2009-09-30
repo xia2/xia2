@@ -1077,7 +1077,11 @@ class CCP4Scaler(Scaler):
 
             datasets = md.get_datasets()
 
-            if len(datasets) > 1:
+            # ok I should really allow multiple data sets in here,
+            # just take the measurements from the first... also need to
+            # find a sensible column to use too...
+
+            if len(datasets) > 1 and False:
                 raise RuntimeError, 'more than one dataset in %s' % \
                       self._reference
             

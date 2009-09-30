@@ -435,6 +435,9 @@ END PROJECT TS01
 	the free set, rather than the default 5 percent.</li>
       <li>Added trap for sdcorrection not being refined in XDS correct if
 	multiplicity rather low. Unusual case.</li>
+      <li>Assigning a freer_file by definition sets this as an indexing
+	reference and also copies the spacegroup assignment. This is 
+	what you would expect!</li>
     </ul>
 
     <p>Changes since 0.3.0.3</p>
@@ -872,7 +875,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Fri Sep 25 09:10:09 BST 2009
+Last modified: Wed Sep 30 10:35:39 BST 2009
 <!-- hhmts end -->
   </body>
 </html>

@@ -70,7 +70,7 @@ def unpackbyteoffset(filename):
     assert(length == fast * slow)
 
     values = unpack_values(data[data_offset:], length)
-    hist = [0 for j in range(min(values), max(values) + 1)]
+    hist = [0 for j in range(min(0, min(values)), max(values) + 1)]
 
     for i in range(slow):
         for j in range(fast):

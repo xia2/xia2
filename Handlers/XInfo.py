@@ -443,8 +443,15 @@ class XInfo:
                                    '').strip()
 
             if 'FREER_FILE' in record:
+
+                # free file also needs to be used for indexing reference to
+                # make any sense at all...
+                
                 self._crystals[crystal][
                     'freer_file'] = record.replace('FREER_FILE', '').strip()
+                self._crystals[crystal][
+                    'reference_reflection_file'] = \
+                    record.replace('FREER_FILE', '').strip()
 
             # user assigned spacegroup and cell constants
             if 'USER_SPACEGROUP' in record:

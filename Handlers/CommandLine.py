@@ -522,6 +522,16 @@ class _CommandLine(Object):
         Flags.set_freer_file(sys.argv[index + 1])
         Debug.write('FreeR_flag column taken from %s' %
                     Flags.get_freer_file())
+
+        # this should also be used as an indexing reference to make
+        # sense...
+
+        Flags.set_reference_reflection_file(sys.argv[index + 1])
+        Debug.write('Reference reflection file: %s' %
+                    Flags.get_reference_reflection_file())
+
+        # and also the spacegroup copied out?! ok - this is done
+        # "by magic" in the scaler.
             
         return
 
