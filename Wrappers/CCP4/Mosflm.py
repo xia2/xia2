@@ -2671,7 +2671,7 @@ def Mosflm(DriverType = None):
 
                 if 'Refined mosaic spread (excluding safety factor)' in o:
                     mosaic = float(o.split()[-1])
-                    if mosaic < 0.0:
+                    if mosaic < 0.05:
                         Science.write('Negative mosaic spread (%5.2f)' %
                                       mosaic)
 
