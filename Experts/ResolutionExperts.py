@@ -830,6 +830,9 @@ def digest(bins, isigma_limit = 1.0):
         s = ss[j]
         mean, sdm, sd = bins[s]
 
+        if sd == 0.0:
+            continue
+
         if (mean / sd) <= isigma_limit:
             s1 = s
             j1 = j
@@ -940,5 +943,11 @@ if __name__ == '__main__':
     # print digest(bot)
     # print digest(bot, 3.0)
 
-    print '%.3f %.3f' % determine_scaled_resolution(sys.argv[1],
-                                                    float(sys.argv[2]))
+    # print '%.3f %.3f' % determine_scaled_resolution(sys.argv[1],
+    # float(sys.argv[2]))
+
+    s, r = digest(bin_o_tron(mosflm_mtz_to_list(sys.argv[1])))
+
+    print r
+
+                             
