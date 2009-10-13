@@ -478,7 +478,8 @@ class XDSIntegrater(FrameProcessor,
                 'Resetting integrater, to ensure refined orientation is used')
             self.set_integrater_done(False)
 
-        if not self.get_integrater_reindex_matrix() and not self._intgr_cell:
+        if not self.get_integrater_reindex_matrix() and not self._intgr_cell \
+               and not Flags.get_no_lattice_test():
             correct = self.Correct()
 
             correct.set_data_range(self._intgr_wedge[0],

@@ -87,6 +87,7 @@ class _CommandLine(Object):
         self._read_smart_scaling()
         self._read_chef()
         self._read_reversephi()
+        self._read_no_lattice_test()
         self._read_fiddle_sd()
         self._read_no_relax()
         self._read_norefine()
@@ -695,6 +696,13 @@ class _CommandLine(Object):
         if '-reversephi' in sys.argv:
             Flags.set_reversephi(True)
             Debug.write('Reversephi mode selected')
+        return
+
+    def _read_no_lattice_test(self):
+
+        if '-no_lattice_test' in sys.argv:
+            Flags.set_no_lattice_test(True)
+            Debug.write('No lattice test mode selected')
         return
 
     def _read_fiddle_sd(self):

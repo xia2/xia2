@@ -32,6 +32,7 @@ class _Flags:
         self._smart_scaling = False
         self._chef = False
         self._reversephi = False
+        self._no_lattice_test = False
         self._fiddle_sd = False
         self._migrate_data = False
         self._trust_timestaps = False
@@ -193,6 +194,13 @@ class _Flags:
 
     def get_reversephi(self):
         return self._reversephi
+
+    def set_no_lattice_test(self, no_lattice_test):
+        self._no_lattice_test = no_lattice_test
+        return
+
+    def get_no_lattice_test(self):
+        return self._no_lattice_test
 
     def set_fiddle_sd(self, fiddle_sd):
         self._fiddle_sd = fiddle_sd
