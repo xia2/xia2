@@ -433,6 +433,7 @@ class XDSIndexer(FrameProcessor,
         # need to get the indexing solutions out somehow...
 
         self._indxr_other_lattice_cell = idxref.get_indexing_solutions()
+
         self._indxr_lattice, self._indxr_cell, self._indxr_mosaic = \
                              idxref.get_indexing_solution()
 
@@ -462,7 +463,7 @@ class XDSIndexer(FrameProcessor,
         Debug.write('Centring analysis: %s => %s' % \
                     (lattice, lattice2))
 
-        if self._idxref_subtree_problem and lattice2 != lattice:
+        if self._idxref_subtree_problem and (lattice2 != lattice):
             # hmm.... looks like we don't agree on the correct result...
             # update the putative correct result as input
                 

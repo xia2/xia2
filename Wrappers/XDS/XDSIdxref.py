@@ -101,6 +101,7 @@ def XDSIdxref(DriverType = None):
 
             self._indxr_input_lattice = None
             self._indxr_input_cell = None
+            self._indxr_user_input_lattice = False
             
             self._indxr_lattice = None
             self._indxr_cell = None
@@ -328,7 +329,9 @@ def XDSIdxref(DriverType = None):
 
                 # if we "know" the answer, well just go ahead with that
 
-                if self._symm and self._cell:
+                if self._symm and self._cell and \
+                       self._indxr_user_input_lattice:
+
                     if self._compare_cell(self._cell, cell):
                         if self._indexing_solutions.has_key(lattice):
                             if self._indexing_solutions[lattice][
