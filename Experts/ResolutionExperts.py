@@ -841,8 +841,6 @@ def digest(bins, isigma_limit = 1.0):
     Debug.write('Selected resolution range: %.2f to %.2f for Wilson fit' %
                 (1.0 / math.sqrt(s0), 1.0 / math.sqrt(s1)))
 
-    print 'Range %f %f' % (1.0 / math.sqrt(s0), 1.0 / math.sqrt(s1))
-
     # now decide if it is appropriate to consider a fit to a Wilson
     # distribution... FIXME need to make a decision about this
 

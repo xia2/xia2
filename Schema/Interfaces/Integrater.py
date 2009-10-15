@@ -519,7 +519,7 @@ class Integrater:
             while not self.get_integrater_done():
                 while not self.get_integrater_prepare_done():
 
-                    Chatter.write('Preparing to do some integration...')
+                    Debug.write('Preparing to do some integration...')
                     self.set_integrater_prepare_done(True)
 
                     # if this raises an exception, perhaps the autoindexing
@@ -535,7 +535,7 @@ class Integrater:
                         self._intgr_indexer.eliminate()
                         self.set_integrater_prepare_done(False)
 
-                Chatter.write('Doing some integration...')
+                Debug.write('Doing some integration...')
             
                 self.set_integrater_done(True)
 

@@ -1216,9 +1216,9 @@ class CCP4Scaler(Scaler):
 
             datasets = md.get_datasets()
 
-            Chatter.write('In reflection file %s found:' % hklin)
+            Debug.write('In reflection file %s found:' % hklin)
             for d in datasets:
-                Chatter.write('... %s' % d)
+                Debug.write('... %s' % d)
             
             dataset_info = md.get_dataset_info(datasets[0])
 
@@ -1230,7 +1230,7 @@ class CCP4Scaler(Scaler):
             # this time, make a note of this so that it can be included
             # at a later stage.
 
-        Chatter.write('Biggest sweep has %d batches' % max_batches)
+        Debug.write('Biggest sweep has %d batches' % max_batches)
         max_batches = nifty_power_of_ten(max_batches)
     
         # then rebatch the files, to make sure that the batch numbers are
@@ -1661,8 +1661,8 @@ class CCP4Scaler(Scaler):
             rms_full, rms_partial = self._refine_sd_parameters_remerge(
                 scales_file, sdadd_full, sdb_full, sdadd_partial, sdb_partial)
 
-            Chatter.write('Tested SdAdd %4.2f: %4.2f %4.2f' % \
-                          (sdadd_full, rms_full, rms_partial))
+            Debug.write('Tested SdAdd %4.2f: %4.2f %4.2f' % \
+                        (sdadd_full, rms_full, rms_partial))
 
             if rms_full < best_rms_full:
                 best_sdadd_full = sdadd_full
@@ -1695,8 +1695,8 @@ class CCP4Scaler(Scaler):
                 scales_file, best_sdadd_full, sdb_full,
                 best_sdadd_partial, sdb_partial)
 
-            Chatter.write('Tested SdB %4.1f: %4.2f %4.2f' % \
-                          (sdb_full, rms_full, rms_partial))
+            Debug.write('Tested SdB %4.1f: %4.2f %4.2f' % \
+                        (sdb_full, rms_full, rms_partial))
 
             if rms_full < best_rms_full:
                 best_sdb_full = sdb_full
@@ -1728,8 +1728,8 @@ class CCP4Scaler(Scaler):
                 scales_file, sdadd_full, best_sdb_full,
                 sdadd_partial, best_sdb_partial)
 
-            Chatter.write('Tested SdAdd %4.2f: %4.2f %4.2f' % \
-                          (sdadd_full, rms_full, rms_partial))
+            Debug.write('Tested SdAdd %4.2f: %4.2f %4.2f' % \
+                        (sdadd_full, rms_full, rms_partial))
 
             if rms_full < best_rms_full:
                 best_sdadd_full = sdadd_full

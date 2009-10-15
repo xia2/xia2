@@ -34,10 +34,11 @@ def compute_beam_centre(sweep, working_directory = os.getcwd()):
 
     beam = sweep.get_beam()
 
-    # perhaps fiddle with the beam here
+    # perhaps fiddle with the beam here, and hide the indexing output
+    # that is a side-effect of this.
 
     try:
-        ls = LabelitScreen()
+        ls = LabelitScreen(indxr_print = False)
         ls.setup_from_image(sweep.imagename(min(sweep.get_images())))
         beam = ls.get_indexer_beam()
     except exceptions.Exception, e:

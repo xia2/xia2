@@ -19,7 +19,7 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
-from Handlers.Streams import Admin, Science, Status, Chatter
+from Handlers.Streams import Chatter
 
 def _parse_integrate_lp_updates(filename):
     '''Parse the integrate.lp file to get the values for any updated
@@ -171,22 +171,22 @@ def _happy_integrate_lp(integrate_lp_stats):
 
     results = ''
 
-    Science.write('Report on images %d to %d' % (min(images), max(images)),
-                  forward = False)
+    Debug.write('Report on images %d to %d' % (min(images), max(images)),
+                forward = False)
 
     for i in images:
         data = integrate_lp_stats[i]
     
         if data['rmsd_phi'] > 1.0 or data['rmsd_pixel'] > 1.0:
             status = '*'
-            Science.write('Image %4d ... high rmsd (%f, %f)' % \
-                          (i, data['rmsd_pixel'], data['rmsd_phi']),
-                          forward = False)
+            Debug.write('Image %4d ... high rmsd (%f, %f)' % \
+                        (i, data['rmsd_pixel'], data['rmsd_phi']),
+                        forward = False)
 
         else:
 
             status = '.'
-            Science.write('Image %4d ... ok' % i, forward = False)
+            Debug.write('Image %4d ... ok' % i, forward = False)
 
 
         results += status

@@ -30,7 +30,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 # output streams
 
-from Handlers.Streams import Admin, Science, Status, Chatter
+from Handlers.Streams import Chatter, Debug
 
 def detector_class_to_mosflm(detector_class):
     '''Get the mosflm detector type from the detector class.'''
@@ -234,8 +234,8 @@ def _happy_integrate_lp(integrate_lp_stats):
 
     results = ''
 
-    Science.write('Report on images %d to %d' % (min(images), max(images)),
-                  forward = False)
+    Debug.write('Report on images %d to %d' % (min(images), max(images)),
+                forward = False)
 
     max_weighted_residual = 0.0
 
@@ -251,19 +251,19 @@ def _happy_integrate_lp(integrate_lp_stats):
 
         if not data.has_key('rmsd_pixel'):
             status = '@'
-            Science.write('Image %4d ... abandoned processing',
-                          forward = False)
+            Debug.write('Image %4d ... abandoned processing',
+                        forward = False)
         elif data['rmsd_pixel'] > 2.5:
             status = '!'
-            Science.write('Image %4d ... very high rmsd (%f)' % \
-                          (i, data['rmsd_pixel']), forward = False)
+            Debug.write('Image %4d ... very high rmsd (%f)' % \
+                        (i, data['rmsd_pixel']), forward = False)
         elif data['rmsd_pixel'] > 1.0:
             status = '%'
-            Science.write('Image %4d ... high rmsd (%f)' % \
-                          (i, data['rmsd_pixel']), forward = False)
+            Debug.write('Image %4d ... high rmsd (%f)' % \
+                        (i, data['rmsd_pixel']), forward = False)
         else:
             status = 'o'
-            Science.write('Image %4d ... ok' % i, forward = False)
+            Debug.write('Image %4d ... ok' % i, forward = False)
 
         # also - # bad O overloaded . blank ! problem ? other
         # @ ABANDONED PROCESSING

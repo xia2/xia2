@@ -38,7 +38,7 @@ from Handlers.Flags import Flags
 from Handlers.Syminfo import Syminfo
 
 # output stream
-from Handlers.Streams import Chatter
+from Handlers.Streams import Chatter, Debug
 
 # XML Marked up output for e-HTPX
 if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
@@ -149,11 +149,11 @@ class XProject(Object):
                 wave_info = crystals[crystal]['wavelengths'][wavelength]
 
                 if not wave_info.has_key('wavelength'):
-                    Chatter.write(
+                    Debug.write(
                         'No wavelength value given for wavelength %s' %
                         wavelength)
                 else:
-                    Chatter.write(
+                    Debug.write(
                         'Overriding value for wavelength %s to %8.6f' % \
                         (wavelength, float(wave_info['wavelength'])))
 

@@ -47,7 +47,7 @@ from Modules.XDSIndexer import XDSIndexer
 from Modules.XDSIndexerII import XDSIndexerII
 
 from Exceptions.NotAvailableError import NotAvailableError
-from Handlers.Streams import Admin, Debug
+from Handlers.Streams import Debug
 from Handlers.Flags import Flags
 from Handlers.PipelineSelection import get_preferences
 
@@ -143,7 +143,7 @@ def Indexer(detector = None):
                 Debug.write('Labelit does not support dectris detectors')
                 raise NotAvailableError, 'Labelit does not support dectris'
             indexer = LabelitScreen()
-            Admin.write('Using LabelitScreen Indexer')
+            Debug.write('Using LabelitScreen Indexer')
         except NotAvailableError, e:
             if preselection:
                 raise RuntimeError, \
@@ -153,7 +153,7 @@ def Indexer(detector = None):
     if not indexer and (not preselection or preselection == 'mosflm'):
         try:
             indexer = Mosflm()
-            Admin.write('Using Mosflm Indexer')
+            Debug.write('Using Mosflm Indexer')
         except NotAvailableError, e:
             if preselection:
                 raise RuntimeError, 'preselected indexer mosflm not available'
@@ -162,7 +162,7 @@ def Indexer(detector = None):
     if not indexer and (not preselection or preselection == 'xds'):
         try:
             indexer = XDSIndexer()
-            Admin.write('Using XDS Indexer')
+            Debug.write('Using XDS Indexer')
         except NotAvailableError, e:
             if preselection:
                 raise RuntimeError, 'preselected indexer xds not available'
@@ -171,7 +171,7 @@ def Indexer(detector = None):
     if not indexer and (not preselection or preselection == 'xdsii'):
         try:
             indexer = XDSIndexerII()
-            Admin.write('Using XDS II Indexer')
+            Debug.write('Using XDS II Indexer')
         except NotAvailableError, e:
             if preselection:
                 raise RuntimeError, 'preselected indexer xds not available'

@@ -31,7 +31,7 @@ import sys
 
 class _Stream:
     '''A class to represent an output stream. This will be used as a number
-    of static instances - Science, Admin, Status.'''
+    of static instances - Debug and Chatter in particular.'''
 
     def __init__(self, streamname, prefix):
         '''Create a new stream.'''
@@ -114,28 +114,16 @@ class _Stream:
 # FIXME 23/NOV/06 now write a xia2.txt from chatter and rename that
 # output stream Stdout... then copy everything there!
 
-Science = _Stream('xia2-science', 'SCI-')
-Admin = _Stream('xia2-admin', 'ADMN')
-Status = _Stream('xia2-status', 'STAT')
 Chatter = _Stream('xia2', None)
 Stdout = _Stream(None, None)
-Debug = _Stream('xia2-debug', 'debug: ')
+Debug = _Stream('xia2-debug', None)
 
-Science.join(Chatter)
-Admin.join(Chatter)
-Status.join(Chatter)
 Chatter.join(Stdout)
 
 def streams_off():
     '''Switch off the chatter output - designed for unit tests...'''
     Chatter.off()
-    Science.off()
-    Admin.off()
-    Status.off()
     return
 
 if __name__ == '__main__':
-    Science.write('Hello from Science')
-    Admin.write('Hello from Admin')
-    Status.write('All finished now...')
     Chatter.write('nothing much, really')

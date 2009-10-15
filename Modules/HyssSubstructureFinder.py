@@ -30,7 +30,7 @@ from Schema.Interfaces.SubstructureFinder import SubstructureFinder
 from Wrappers.Shelx.Shelxc import Shelxc
 from Wrappers.Phenix.Hyss import Hyss
 
-from Handlers.Streams import Admin
+from Handlers.Streams import Debug
 from lib.Guff import auto_logfiler
 
 class HyssSubstructureFinder(SubstructureFinder):
@@ -111,10 +111,10 @@ class HyssSubstructureFinder(SubstructureFinder):
         # try:
         if True:
             shelxc = Shelxc()
-            Admin.write('Using shelxc to prepare HA data.')
+            Debug.write('Using shelxc to prepare HA data.')
             self._shelxc_prepare_data()
         # except exceptions.Exception, e:
-        # Admin.write('No shelxc? %s' % str(e))
+        # Debug.write('No shelxc? %s' % str(e))
 
         return
 

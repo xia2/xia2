@@ -33,7 +33,7 @@ from Handlers.PipelineSelection import get_preferences, add_preference
 # other odds and ends
 
 from Exceptions.NotAvailableError import NotAvailableError
-from Handlers.Streams import Admin
+from Handlers.Streams import Debug
 
 def Scaler():
     '''Create a Scaler implementation.'''
@@ -49,7 +49,7 @@ def Scaler():
        (not preselection or preselection == 'ccp4'):
         try:
             scaler = CCP4Scaler()
-            Admin.write('Using CCP4 Scaler')
+            Debug.write('Using CCP4 Scaler')
         except NotAvailableError, e:
             if preselection == 'ccp4':
                 raise RuntimeError, 'preselected scaler ccp4 not available'
@@ -59,7 +59,7 @@ def Scaler():
        (not preselection or preselection == 'xds'):
         try:
             scaler = XDSScaler()
-            Admin.write('Using XDS Scaler')
+            Debug.write('Using XDS Scaler')
         except NotAvailableError, e:
             if preselection == 'xds':
                 raise RuntimeError, 'preselected scaler xds not available'

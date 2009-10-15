@@ -1591,9 +1591,9 @@ class XDSScaler(Scaler):
 
             datasets = md.get_datasets()
 
-            Chatter.write('In reflection file %s found:' % hklin)
+            Debug.write('In reflection file %s found:' % hklin)
             for d in datasets:
-                Chatter.write('... %s' % d)
+                Debug.write('... %s' % d)
             
             dataset_info = md.get_dataset_info(datasets[0])
 
@@ -1605,7 +1605,7 @@ class XDSScaler(Scaler):
             # this time, make a note of this so that it can be included
             # at a later stage.
 
-        Chatter.write('Biggest sweep has %d batches' % max_batches)
+        Debug.write('Biggest sweep has %d batches' % max_batches)
         max_batches = nifty_power_of_ten(max_batches)
     
         # then rebatch the files, to make sure that the batch numbers are

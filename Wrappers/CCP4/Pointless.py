@@ -138,7 +138,7 @@ from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
 
 from Handlers.Syminfo import Syminfo
-from Handlers.Streams import Chatter, Science, Debug
+from Handlers.Streams import Chatter, Debug
 from Handlers.Flags import Flags
 
 # this was rather complicated - now simpler!

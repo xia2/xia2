@@ -215,7 +215,7 @@ from Schema.Interfaces.Integrater import Integrater
 
 # output streams &c.
 
-from Handlers.Streams import Admin, Science, Status, Chatter, Debug
+from Handlers.Streams import Chatter, Debug
 from Handlers.Citations import Citations
 from Handlers.Flags import Flags
 
@@ -1271,9 +1271,6 @@ def Mosflm(DriverType = None):
                 if '99% have resolution' in o:
                     self._indxr_resolution_estimate = float(
                         o.split()[-2])
-                    # remove this as useless, see bug # 2072
-                    # Science.write('Resolution estimated to be %5.2f A' % \
-                    # self._indxr_resolution_estimate)
 
             # FIXME this needs to be picked up by the integrater
             # interface which uses this Indexer, if it's a mosflm
@@ -2391,7 +2388,7 @@ def Mosflm(DriverType = None):
 
                         self.set_integrater_prepare_done(False)
 
-                        Science.write(
+                        Debug.write(
                             'Repeating cell refinement with more data.')
 
                         return
@@ -2504,7 +2501,7 @@ def Mosflm(DriverType = None):
                     # the weighted residual is too high - this suggests
                     # a poor indexing solution - jump out and redo
                     
-                    Science.write('Large weighted residual...')
+                    Debug.write('Large weighted residual...')
                     
                     if len(self._mosflm_cell_ref_images) < 3 and \
                            Flags.get_cellref_mode() == 'default':
@@ -2529,7 +2526,7 @@ def Mosflm(DriverType = None):
                         
                         # tell the user what is going on
 
-                        Science.write(
+                        Debug.write(
                             'Repeating cell refinement with more data.')
 
                         # don't update the indexer - the results could be
@@ -2538,7 +2535,7 @@ def Mosflm(DriverType = None):
                         return
                     
                     else:
-                        # Science.write(
+                        # Debug.write(
                         # 'Integration will be aborted because of this.')
                         
                         # raise BadLatticeError, 'cell refinement failed: ' + \
@@ -2558,11 +2555,11 @@ def Mosflm(DriverType = None):
                         'A', ' ').replace(',', ' ').split()
                     sds = map(float, [sd_record[j] for j in range(1, 12, 2)])
 
-                    Science.write('Standard deviations:')
-                    Science.write('A     %4.2f  B     %4.2f  C     %4.2f' % \
-                                  (tuple(sds[:3])))
-                    Science.write('Alpha %4.2f  Beta  %4.2f  Gamma %4.2f' % \
-                                  (tuple(sds[3:6])))
+                    Debug.write('Standard deviations:')
+                    Debug.write('A     %4.2f  B     %4.2f  C     %4.2f' % \
+                                (tuple(sds[:3])))
+                    Debug.write('Alpha %4.2f  Beta  %4.2f  Gamma %4.2f' % \
+                                (tuple(sds[3:6])))
                                   
                     # FIXME 01/NOV/06 this needs to be toned down a little -
                     # perhaps looking at the relative error in the cell
@@ -2574,12 +2571,12 @@ def Mosflm(DriverType = None):
                     # 0.15A?
 
                     # and warn about them
-                    Science.write(
+                    Debug.write(
                         'In cell refinement, the following cell parameters')
-                    Science.write(
+                    Debug.write(
                         'have refined poorly:')
                     for p in parameters:
-                        Science.write('... %s' % p)
+                        Debug.write('... %s' % p)
 
                     # decide what to do about this...
                     # if this is all cell parameters, abort, else
@@ -2613,7 +2610,7 @@ def Mosflm(DriverType = None):
 
                         # tell the user what is going on
 
-                        Science.write(
+                        Debug.write(
                             'Repeating cell refinement with more data.')
 
                         # don't update the indexer - the results could be
@@ -2622,13 +2619,13 @@ def Mosflm(DriverType = None):
                         return
 
                     else:
-                        Science.write(
+                        Debug.write(
                             'However, will continue to integration.')
                         
 
 		if 'One or more cell parameters has changed by more' in o:
                     # this is a more severe example of the above problem...
-                    Science.write(
+                    Debug.write(
                         'Cell refinement is unstable...')
 
                     # so decide what to do about it...
@@ -2651,14 +2648,14 @@ def Mosflm(DriverType = None):
 
                         self.set_integrater_prepare_done(False)
 
-                        Science.write(
+                        Debug.write(
                             'Repeating cell refinement with more data.')
 
                         return
 
                     else:
 
-                        # Science.write(
+                        # Debug.write(
                         # 'Integration will be aborted because of this.')
                         
                         Debug.write('Ignoring unstable cell parameters')
@@ -2672,8 +2669,8 @@ def Mosflm(DriverType = None):
                 if 'Refined mosaic spread (excluding safety factor)' in o:
                     mosaic = float(o.split()[-1])
                     if mosaic < 0.05:
-                        Science.write('Negative mosaic spread (%5.2f)' %
-                                      mosaic)
+                        Debug.write('Negative mosaic spread (%5.2f)' %
+                                    mosaic)
 
                         # FIXME this needs to be updated to allow for the
                         # fact that the number of wedges used may be
@@ -2702,10 +2699,10 @@ def Mosflm(DriverType = None):
                             self.set_integrater_prepare_done(False)
                             
                             if cellref_mode == 'default':
-                                Science.write(
+                                Debug.write(
                                     'Repeating refinement with more data.')
                             else:
-                                Science.write(
+                                Debug.write(
                                     'Repeating refinement with mosaic fixed.')
                                 
 
@@ -2713,7 +2710,7 @@ def Mosflm(DriverType = None):
 
                         else:
 
-                            # Science.write(
+                            # Debug.write(
                             # 'Integration will be aborted because of this.')
                             # Debug.write(
                             # 'Mosaic spread refining negative => fix!')
@@ -2958,8 +2955,8 @@ def Mosflm(DriverType = None):
             pname, xname, dname = self.get_integrater_project_info()
 
             if pname != None and xname != None and dname != None:
-                Chatter.write('Harvesting: %s/%s/%s' % (pname, xname, dname))
-
+                Debug.write('Harvesting: %s/%s/%s' % (pname, xname, dname))
+                
                 # ensure that the harvest directory exists for this project
                 # and if not, make it as mosflm may barf doing so!
 
@@ -3152,7 +3149,7 @@ def Mosflm(DriverType = None):
                                         'mosflm', 'gain', gain)
                                     self.set_integrater_export_parameter(
                                         'mosflm', 'gain', gain)
-                                    Science.write('GAIN updated to %f' % gain)
+                                    Debug.write('GAIN updated to %f' % gain)
 
                                     self._mosflm_gain = gain
                                     self._mosflm_rerun_integration = True
@@ -3163,7 +3160,7 @@ def Mosflm(DriverType = None):
                                     'mosflm', 'gain', gain)
                                 self.set_integrater_export_parameter(
                                     'mosflm', 'gain', gain)
-                                Science.write('GAIN found to be %f' % gain)
+                                Debug.write('GAIN found to be %f' % gain)
                                 
                                 self._mosflm_gain = gain
                                 self._mosflm_rerun_integration = True
@@ -3183,8 +3180,8 @@ def Mosflm(DriverType = None):
                         self.get_working_directory(),
                         output[i + 1].split()[-1])
 
-                    Science.write('Integration output: %s' % \
-                                  self._mosflm_hklout)
+                    Debug.write('Integration output: %s' % \
+                                self._mosflm_hklout)
 
                 if 'Number of Reflections' in o:
                     self._intgr_n_ref = int(o.split()[-1])
@@ -3439,8 +3436,8 @@ def Mosflm(DriverType = None):
                 # N.B. for harvesting need to append N to dname.
                     
                 if pname != None and xname != None and dname != None:
-                    Chatter.write('Harvesting: %s/%s/%s' % 
-                                  (pname, xname, dname))
+                    Debug.write('Harvesting: %s/%s/%s' % 
+                                (pname, xname, dname))
                     
                     harvest_dir = os.path.join(os.environ['HARVESTHOME'], 
                                                'DepositFiles', pname)
@@ -3551,7 +3548,7 @@ def Mosflm(DriverType = None):
                                   self._fp_header['pixel'][1]
                 
                 # fixme this will probably not work well for non-square
-                # detectors...
+                # detectors... like the pilatus?!
 
                 lim_x = 0.5 * detector_width
                 lim_y = 0.5 * detector_height
@@ -3690,7 +3687,7 @@ def Mosflm(DriverType = None):
                                             'mosflm', 'gain', gain)
                                         self.set_integrater_export_parameter(
                                             'mosflm', 'gain', gain)
-                                        Science.write(
+                                        Debug.write(
                                             'GAIN updated to %f' % gain)
 
                                         self._mosflm_gain = gain
@@ -3702,7 +3699,7 @@ def Mosflm(DriverType = None):
                                         'mosflm', 'gain', gain)
                                     self.set_integrater_export_parameter(
                                         'mosflm', 'gain', gain)
-                                    Science.write('GAIN found to be %f' % gain)
+                                    Debug.write('GAIN found to be %f' % gain)
                                 
                                     self._mosflm_gain = gain
                                     self._mosflm_rerun_integration = True
@@ -3722,7 +3719,7 @@ def Mosflm(DriverType = None):
                             job.get_working_directory(),
                             output[i + 1].split()[-1])
 
-                        Science.write('Integration output: %s' % hklout)
+                        Debug.write('Integration output: %s' % hklout)
                         hklouts.append(hklout)
 
                         # compute the corresponding reindex operation

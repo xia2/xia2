@@ -117,7 +117,7 @@ from Handlers.Citations import Citations
 from Modules.IceId import IceId
 from Modules.MosflmCheckIndexerSolution import mosflm_check_indexer_solution
 
-def LabelitScreen(DriverType = None):
+def LabelitScreen(DriverType = None, indxr_print = True):
     '''Factory for LabelitScreen wrapper classes, with the specified
     Driver type.'''
 
@@ -151,6 +151,8 @@ def LabelitScreen(DriverType = None):
             self._solutions = { }
 
             self._solution = None
+
+            self._indxr_print = indxr_print
 
             return
 

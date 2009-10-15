@@ -132,7 +132,7 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
-from Handlers.Streams import Science, Debug
+from Handlers.Streams import Debug, Chatter
 
 from Experts.LatticeExpert import SortLattices
 
@@ -186,7 +186,7 @@ class _IndexerHelper:
         if len(self._sorted_list) <= 1:
             raise RuntimeError, 'cannot eliminate only solution'
 
-        Science.write('Eliminating indexing solution %s' % self.repr()[0])
+        Chatter.write('Eliminating indexing solution %s' % self.repr()[0])
 
         self._sorted_list = self._sorted_list[1:]
 
@@ -238,6 +238,8 @@ class Indexer:
         # extra indexing guff - a dictionary which the implementation
         # can store things in
         self._indxr_payload = { }
+
+        self._indxr_print = True
 
         return
 
@@ -369,7 +371,7 @@ class Indexer:
                     result = self._index()
 
                     if not self._indxr_done:
-                        Science.write(
+                        Debug.write(
                             'Looks like indexing failed - try again!')
                         continue
 
@@ -389,7 +391,7 @@ class Indexer:
 
                     if self._indxr_lattice != solution[0] and \
                            not self._indxr_input_cell:
-                        Science.write(
+                        Debug.write(
                             'Rerunning indexing with target lattice %s' % \
                             solution[0])
                         self.set_indexer_done(False)
@@ -406,10 +408,11 @@ class Indexer:
 
             self.set_indexer_finish_done(True)
             self._index_finish()
-        
-            Science.write('All possible indexing solutions:')
-            for l in self._indxr_helper.repr():
-                Science.write(l)
+
+            if self._indxr_print:
+                Chatter.write('All possible indexing solutions:')
+                for l in self._indxr_helper.repr():
+                    Chatter.write(l)
                 
             # FIXED 23/OCT/06 at this stage I need to look at the list of
             # reasonable solutions and try to figure out if the indexing
@@ -424,10 +427,12 @@ class Indexer:
             # general one, so may be implemented in the general indexer
             # interface rather than in specific code...
             
-            Science.write('Indexing solution:')
-            Science.write('%s %s' % (self._indxr_lattice,
-                                     '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-                                     self._indxr_cell))
+            if self._indxr_print:
+                Chatter.write('Indexing solution:')
+                Chatter.write('%s %s' % (
+                    self._indxr_lattice,
+                    '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+                    self._indxr_cell))
         
         return 
 
