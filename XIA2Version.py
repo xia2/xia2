@@ -118,8 +118,12 @@
 # 
 # 0.3.0.5 - revision to give more flexibility to assiging the Free reflections,
 #           also taking copies and using indexing reference if from freer file.
+#
+# 0.3.0.6 - fixed bug which appeared from the user setability of the cell etc.
+#           tidied up output (i.e. much less clutter in main log now) and
+#           allowed lattice test to be switched off for tricky cases.
 
-VersionNumber = "0.3.0.5"
+VersionNumber = "0.3.0.6"
 Version = "XIA2 %s" % VersionNumber
 CVSTag = "xia2-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2-%s" % VersionNumber
