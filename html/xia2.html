@@ -433,6 +433,11 @@ END PROJECT TS01
     <ul>
       <li>No lattice test mode added (you can guess the command-line option)
 	for tricky data sets where this perhaps falls over.</li>
+      <li>Fixed side effect of changes which allowed setting of unit cell 
+	etc. - lattices were no longer eliminated, failed complaining 
+	can't eliminate only solution.</li>
+      <li>Tidied up the generation of output files and so on - now only have
+	the main log file and the debug trace.</li>
     </ul>
 
     <p>Changes since 0.3.0.4</p>
@@ -881,7 +886,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Tue Oct 13 16:31:41 BST 2009
+Last modified: Thu Oct 15 13:55:01 BST 2009
 <!-- hhmts end -->
   </body>
 </html>
