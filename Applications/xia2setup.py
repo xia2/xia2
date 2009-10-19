@@ -40,6 +40,12 @@ from Handlers.Streams import streams_off
 
 known_image_extensions = ['img', 'mccd', 'mar2300', 'mar1200',
                           'mar3450', 'osc', 'cbf', 'mar2000']
+
+xds_file_names = ['ABS', 'ABSORP', 'BKGINIT', 'BKGPIX', 'BLANK', 'DECAY',
+                  'X-CORRECTIONS', 'Y-CORRECTIONS', 'MODPIX', 'FRAME',
+                  'GX-CORRECTIONS', 'GY-CORRECTIONS', 'DX-CORRECTIONS',
+                  'DY-CORRECTIONS', 'GAIN']
+
 known_sweeps = { }
 
 known_scan_extensions = ['scan']
@@ -75,7 +81,8 @@ def is_image_name(file):
     global known_image_extensions
     
     if os.path.isfile(file):
-        if file.split('.')[-1] in known_image_extensions:
+        exten = file.split('.')[-1]
+        if exten in known_image_extensions:
             return True
 
         # check for files like foo_bar.0001 - c/f FIXME for 25/SEP/06
