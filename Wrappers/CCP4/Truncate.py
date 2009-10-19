@@ -109,6 +109,8 @@ def Truncate(DriverType = None):
                 except:
                     pass
 
+                raise RuntimeError, 'truncate failure'
+
             # FIXME need to parse the output for interesting things here!
 
             for line in self.get_all_output():
