@@ -72,7 +72,7 @@ def check_cctbx_version():
         return
 
     build = int(version.split('_')[-1])
-    if build < 2320:
+    if build < 2320 and False:
         raise RuntimeError, 'cctbx version < 2320 not supported (%s)' % version
 
 def check_environment():
