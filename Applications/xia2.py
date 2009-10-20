@@ -64,6 +64,7 @@ def check_cctbx_version():
                 pass
         else:
             break
+        
     if version is None:
         version = libtbx.env.command_version_suffix
 
@@ -71,9 +72,7 @@ def check_cctbx_version():
         # just assume that this is from subversion => probably up-to-date!
         return
 
-    build = int(version.split('_')[-1])
-    if build < 2320 and False:
-        raise RuntimeError, 'cctbx version < 2320 not supported (%s)' % version
+    # should find a good way to run a test herein!
 
 def check_environment():
     '''Check the environment we are running in...'''
