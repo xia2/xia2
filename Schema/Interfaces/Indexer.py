@@ -355,9 +355,6 @@ class Indexer:
 
     def index(self):
 
-        if self._indxr_sweep_name:
-            Chatter.write('Autoindexing %s' % self._indxr_sweep_name)
-
         while not self.get_indexer_finish_done():
             while not self.get_indexer_done():
                 while not self.get_indexer_prepare_done():
@@ -377,6 +374,9 @@ class Indexer:
 
                 self.set_indexer_done(True)
 
+                if self._indxr_sweep_name:
+                    Chatter.write('Autoindexing %s' % self._indxr_sweep_name)
+            
                 if not self._indxr_helper:
 
                     result = self._index()
