@@ -1759,9 +1759,9 @@ def Mosflm(DriverType = None):
                self._intgr_spacegroup_number == 0:
                 return self._mosflm_hklout
 
-            Chatter.write('Reindexing to spacegroup %d (%s)' % \
-                          (self._intgr_spacegroup_number,
-                           self._intgr_reindex_operator))
+            Debug.write('Reindexing to spacegroup %d (%s)' % \
+                        (self._intgr_spacegroup_number,
+                         self._intgr_reindex_operator))
 
             hklin = self._mosflm_hklout
             reindex = Reindex()

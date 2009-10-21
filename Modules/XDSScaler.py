@@ -1731,6 +1731,14 @@ class XDSScaler(Scaler):
         
         self._scalr_reindex_operator = reindex_operator
 
+        Chatter.write('Likely spacegroups:')
+        for spag in self._scalr_likely_spacegroups:
+            Chatter.write('%s' % spag)
+
+        Chatter.write(
+            'Reindexing to first spacegroup setting: %s (%s)' % \
+            (spacegroup, reindex_operator))
+
         # FIXME don't save this for later - apply it now, should be
         # safe as the measurements should now be on a sensible scale...
 

@@ -684,6 +684,8 @@ class XDSIntegrater(FrameProcessor,
             Debug.write('Setting integrater resolution to %.2f' % \
                         correct.get_result('resolution_estimate'))
             if not Flags.get_quick():
+                Chatter.write('Set resolution limit: %.2f' % \
+                              correct.get_result('resolution_estimate'))
                 self.set_integrater_high_resolution(
                     correct.get_result('resolution_estimate'))
             else:
