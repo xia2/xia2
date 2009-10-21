@@ -838,7 +838,7 @@ class CCP4Scaler(Scaler):
             epochs.sort()
             first = epochs[0]
             
-            Chatter.write('Preparing reference data set from first sweep')
+            Debug.write('Preparing reference data set from first sweep')
             
             hklin = self._sweep_information[first][
                 'integrater'].get_integrater_reflections()
@@ -892,12 +892,12 @@ class CCP4Scaler(Scaler):
             # compare pointgroup to the one which was given by the user,
             # forcing it to be so if necessary?
 
-            Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+            Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
             # OK, let's see what we can see. 
 
             if self._scalr_input_pointgroup:
-                Chatter.write('Using input pointgroup: %s' % \
+                Debug.write('Using input pointgroup: %s' % \
                               self._scalr_input_pointgroup)
                 pointgroup = self._scalr_input_pointgroup
 
@@ -929,9 +929,9 @@ class CCP4Scaler(Scaler):
             # need to remember this hklout - it will be the reference
             # reflection file for all of the reindexing below...
             
-            Chatter.write('Quickly scaling reference data set: %s' % \
+            Debug.write('Quickly scaling reference data set: %s' % \
                           os.path.split(hklin)[-1])
-            Chatter.write('to give indexing standard')
+            Debug.write('to give indexing standard')
             
             qsc = self._updated_scala()
             qsc.set_hklin(hklin)
@@ -1031,8 +1031,8 @@ class CCP4Scaler(Scaler):
             # OK, let's see what we can see. 
 
             if self._scalr_input_pointgroup:
-                Chatter.write('Using input pointgroup: %s' % \
-                              self._scalr_input_pointgroup)
+                Debug.write('Using input pointgroup: %s' % \
+                            self._scalr_input_pointgroup)
                 pointgroup = self._scalr_input_pointgroup
 
             if not overall_pointgroup:
@@ -1040,7 +1040,7 @@ class CCP4Scaler(Scaler):
             if overall_pointgroup != pointgroup:
                 raise RuntimeError, 'non uniform pointgroups'
             
-            Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+            Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
             integrater.set_integrater_reindex_operator(reindex_op)
             integrater.set_integrater_spacegroup_number(
@@ -1116,7 +1116,7 @@ class CCP4Scaler(Scaler):
                 # write a pointless log file...
                 pl.decide_pointgroup()
 
-                Chatter.write('Reindexing analysis of %s' % pl.get_hklin())
+                Debug.write('Reindexing analysis of %s' % pl.get_hklin())
                 
                 # FIXED here - do I need to contemplate reindexing
                 # the reflections? if not, don't bother - could be an
@@ -1130,7 +1130,7 @@ class CCP4Scaler(Scaler):
                 pointgroup = pl.get_pointgroup()
                 reindex_op = pl.get_reindex_operator()
                 
-                Chatter.write('Operator: %s' % reindex_op)
+                Debug.write('Operator: %s' % reindex_op)
 
                 # apply this...
 
@@ -1362,15 +1362,15 @@ class CCP4Scaler(Scaler):
                     'phi_width', 0.0)))
 
             if self._scalr_input_spacegroup:
-                Chatter.write('Assigning user input spacegroup: %s' % \
-                              self._scalr_input_spacegroup)
+                Dwbug.write('Assigning user input spacegroup: %s' % \
+                            self._scalr_input_spacegroup)
 
                 p.decide_spacegroup()
                 spacegroup = p.get_spacegroup()
                 reindex_operator = p.get_spacegroup_reindex_operator()
 
-                Chatter.write('Pointless thought %s (reindex as %s)' % \
-                              (spacegroup, reindex_operator))
+                Debug.write('Pointless thought %s (reindex as %s)' % \
+                            (spacegroup, reindex_operator))
 
                 spacegroup = self._scalr_input_spacegroup
                 reindex_operator = 'h,k,l'
@@ -1380,8 +1380,8 @@ class CCP4Scaler(Scaler):
                 spacegroup = p.get_spacegroup()
                 reindex_operator = p.get_spacegroup_reindex_operator()
 
-                Chatter.write('Pointless thought %s (reindex as %s)' % \
-                              (spacegroup, reindex_operator))
+                Debug.write('Pointless thought %s (reindex as %s)' % \
+                            (spacegroup, reindex_operator))
                 
             # Write this spacegroup information back to the storage areas
             # in the Scaler interface to allow them to be obtained by the
@@ -1415,7 +1415,7 @@ class CCP4Scaler(Scaler):
                 Chatter.write('%s' % spag)
 
             Chatter.write(
-                'Reindexing to correct spacegroup setting: %s (%s)' % \
+                'Reindexing to first spacegroup setting: %s (%s)' % \
                 (spacegroup, reindex_operator))
 
         else:
@@ -1433,8 +1433,8 @@ class CCP4Scaler(Scaler):
 
             self._scalr_likely_spacegroups = [spacegroup]
 
-            Chatter.write('Assigning spacegroup %s from reference' % \
-                          spacegroup)
+            Debug.write('Assigning spacegroup %s from reference' % \
+                        spacegroup)
 
         # then run reindex to set the correct spacegroup
         
@@ -1970,8 +1970,8 @@ class CCP4Scaler(Scaler):
 
         self._scalr_highest_resolution = highest_resolution
 
-        Chatter.write('Scaler highest resolution set to %5.2f' % \
-                      highest_resolution)
+        Debug.write('Scaler highest resolution set to %5.2f' % \
+                    highest_resolution)
 
         # Ok, now we have the resolution limit stuff, need to work through
         # all of the integraters which belong to this set and if the
@@ -2009,10 +2009,10 @@ class CCP4Scaler(Scaler):
                 pass
 
             elif Flags.get_quick():
-                Chatter.write('Quick, so not resetting resolution limits')
+                Debug.write('Quick, so not resetting resolution limits')
 
             elif intgr.get_integrater_user_resolution():
-                Chatter.write('Using user specified resolution limits')
+                Debug.write('Using user specified resolution limits')
 
             else:
                 # ok it is worth rereducing the data
@@ -2030,7 +2030,7 @@ class CCP4Scaler(Scaler):
         # if we need to redo the scaling, return to allow this to happen
 
         if not self.get_scaler_done():
-            Chatter.write('Returning as scaling not finished...')
+            Debug.write('Returning as scaling not finished...')
             return
 
         # and also radiation damage stuff...
@@ -2066,14 +2066,14 @@ class CCP4Scaler(Scaler):
         average_completeness /= len(data.keys())
 
         if Flags.get_quick():
-            Chatter.write('Quick, so not optimising error parameters')
+            Debug.write('Quick, so not optimising error parameters')
             sdadd_full = 0.02
             sdb_full = 0.0
             sdadd_partial = 0.02
             sdb_partial = 0.0
 
         elif average_completeness < 50.0:
-            Chatter.write('Incomplete data, so not refining error parameters')
+            Debug.write('Incomplete data, so not refining error parameters')
             sdadd_full = 0.02
             sdb_full = 0.0
             sdadd_partial = 0.02
@@ -2086,7 +2086,7 @@ class CCP4Scaler(Scaler):
             # first "fix" the sd add parameters to match up the sd curve from
             # the fulls and partials, and minimise RMS[N (scatter / sigma - 1)]
             
-            Chatter.write('Optimising error parameters')
+            Debug.write('Optimising error parameters')
             
             sdadd_full, sdb_full, sdadd_partial, sdb_partial = \
                         self._refine_sd_parameters(scales_file)
@@ -2096,7 +2096,7 @@ class CCP4Scaler(Scaler):
                 os.remove(os.path.join(self.get_working_directory(),
                                        scales_file))
             except:
-                Chatter.write('Error removing %s' % scales_file)
+                Debug.write('Error removing %s' % scales_file)
 
         # then try tweaking the sdB parameter in a range say 0-20
         # starting at 0 and working until the RMS stops going down
@@ -2969,7 +2969,7 @@ class CCP4Scaler(Scaler):
             elif twinning_score < 1.6:
                 Chatter.write('Your data appear to be twinned')
             else:
-                Chatter.write('Not sure what this means (1.6 < score < 1.9)')
+                Chatter.write('Ambiguous score (1.6 < score < 1.9)')
 
             # next have a look for radiation damage...
             # if more than one wavelength
@@ -2992,7 +2992,7 @@ class CCP4Scaler(Scaler):
                 status = crd.detect()
 
                 Chatter.write('')
-                Chatter.write('Inter-wavelength radiation damage analysis.')
+                Chatter.write('Inter-wavelength B and R-factor analysis:')
                 for s in status:
                     Chatter.write('%s %s' % s)
                 Chatter.write('')

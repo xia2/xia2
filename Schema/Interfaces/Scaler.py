@@ -493,21 +493,22 @@ class Scaler:
         # self._scalr_done = False
         # self._scalr_prepare_done = False
 
+        xname = self._scalr_xcrystal.get_name()
+
         while not self.get_scaler_finish_done():
             while not self.get_scaler_done():
                 while not self.get_scaler_prepare_done():
 
-                    Chatter.write('Preparing to do some scaling...')
+                    Chatter.banner('Preparing %s' % xname)
                  
                     self._scalr_prepare_done = True
                     self._scale_prepare()
 
-                Chatter.write('Doing some scaling...')
+                Chatter.banner('Scaling %s' % xname)
             
                 self._scalr_done = True
                 self._scalr_result = self._scale()
             
-            Chatter.write('Finishing the scaling...')
             self._scalr_finish_done = True
             self._scale_finish()
 

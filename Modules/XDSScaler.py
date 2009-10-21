@@ -180,24 +180,24 @@ class XDSScaler(Scaler):
 
             correct_lattice = None
 
-            Chatter.write('Possible lattices (pointless):')
+            Debug.write('Possible lattices (pointless):')
             lattices = ''
             for lattice in possible:
                 lattices += '%s ' % lattice
-            Chatter.write(lattices)
+            Debug.write(lattices)
 
             for lattice in possible:
                 state = indexer.set_indexer_asserted_lattice(lattice)
                 if state == 'correct':
                             
-                    Chatter.write(
+                    Debug.write(
                         'Agreed lattice %s' % lattice)
                     correct_lattice = lattice
                     
                     break
                 
                 elif state == 'impossible':
-                    Chatter.write(
+                    Debug.write(
                         'Rejected lattice %s' % lattice)
                     
                     rerun_pointless = True
@@ -205,9 +205,9 @@ class XDSScaler(Scaler):
                     continue
                 
                 elif state == 'possible':
-                    Chatter.write(
+                    Debug.write(
                         'Accepted lattice %s ...' % lattice)
-                    Chatter.write(
+                    Debug.write(
                         '... will reprocess accordingly')
                     
                     need_to_return = True
@@ -232,12 +232,12 @@ class XDSScaler(Scaler):
                 pointless.set_correct_lattice(correct_lattice)
                 pointless.decide_pointgroup()
 
-        Chatter.write('Pointless analysis of %s' % pointless.get_hklin())
+        Debug.write('Pointless analysis of %s' % pointless.get_hklin())
 
         pointgroup = pointless.get_pointgroup()
         reindex_op = pointless.get_reindex_operator()
         
-        Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+        Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
         return pointgroup, reindex_op, need_to_return
 
@@ -523,8 +523,8 @@ class XDSScaler(Scaler):
             rms_full = self._refine_sd_parameters_remerge(
                 scales_file, sdadd_full, sdb_full)
 
-            Chatter.write('Tested SdAdd %4.2f: %4.2f' % \
-                          (sdadd_full, rms_full))
+            Debug.write('Tested SdAdd %4.2f: %4.2f' % \
+                        (sdadd_full, rms_full))
 
             if rms_full < best_rms_full:
                 best_sdadd_full = sdadd_full
@@ -549,8 +549,8 @@ class XDSScaler(Scaler):
             rms_full = self._refine_sd_parameters_remerge(
                 scales_file, best_sdadd_full, sdb_full)
 
-            Chatter.write('Tested SdB %4.1f: %4.2f' % \
-                          (sdb_full, rms_full))
+            Debug.write('Tested SdB %4.1f: %4.2f' % \
+                        (sdb_full, rms_full))
 
             if rms_full < best_rms_full:
                 best_sdb_full = sdb_full
@@ -574,8 +574,8 @@ class XDSScaler(Scaler):
             rms_full = self._refine_sd_parameters_remerge(
                 scales_file, sdadd_full, best_sdb_full)
 
-            Chatter.write('Tested SdAdd %4.2f: %4.2f' % \
-                          (sdadd_full, rms_full))
+            Debug.write('Tested SdAdd %4.2f: %4.2f' % \
+                        (sdadd_full, rms_full))
 
             if rms_full < best_rms_full:
                 best_sdadd_full = sdadd_full
@@ -946,8 +946,8 @@ class XDSScaler(Scaler):
                         ordered_lattices.append(l)
 
                 correct_lattice = ordered_lattices[0]
-                Chatter.write('Correct lattice asserted to be %s' % \
-                              correct_lattice)
+                Debug.write('Correct lattice asserted to be %s' % \
+                            correct_lattice)
 
                 # transfer this information back to the indexers
                 for epoch in self._sweep_information.keys():
@@ -962,14 +962,14 @@ class XDSScaler(Scaler):
                     state = indexer.set_indexer_asserted_lattice(
                         correct_lattice)
                     if state == 'correct':
-                        Chatter.write('Lattice %s ok for sweep %s' % \
-                                      (correct_lattice, sname))
+                        Debug.write('Lattice %s ok for sweep %s' % \
+                                    (correct_lattice, sname))
                     elif state == 'impossible':
                         raise RuntimeError, 'Lattice %s impossible for %s' % \
                               (correct_lattice, sname)
                     elif state == 'possible':
-                        Chatter.write('Lattice %s assigned for sweep %s' % \
-                                      (correct_lattice, sname))
+                        Debug.write('Lattice %s assigned for sweep %s' % \
+                                    (correct_lattice, sname))
                         need_to_return = True
 
         # if one or more of them was not in the lowest lattice,
@@ -993,7 +993,7 @@ class XDSScaler(Scaler):
 
         if self.get_scaler_reference_reflection_file():
             self._reference = self.get_scaler_reference_reflection_file()
-            Chatter.write('Using HKLREF %s' % self._reference)
+            Debug.write('Using HKLREF %s' % self._reference)
 
             md = self._factory.Mtzdump()
             md.set_hklin(self.get_scaler_reference_reflection_file())
@@ -1002,12 +1002,12 @@ class XDSScaler(Scaler):
             self._spacegroup = Syminfo.spacegroup_name_to_number(
                 md.get_spacegroup())
 
-            Chatter.write('Spacegroup %d' % self._spacegroup)
+            Debug.write('Spacegroup %d' % self._spacegroup)
 
         elif Flags.get_reference_reflection_file():
             self._reference = Flags.get_reference_reflection_file()
             
-            Chatter.write('Using HKLREF %s' % self._reference)
+            Debug.write('Using HKLREF %s' % self._reference)
 
             md = self._factory.Mtzdump()
             md.set_hklin(self.get_scaler_reference_reflection_file())
@@ -1016,7 +1016,7 @@ class XDSScaler(Scaler):
             self._spacegroup = Syminfo.spacegroup_name_to_number(
                 md.get_spacegroup())
 
-            Chatter.write('Spacegroup %d' % self._spacegroup)
+            Debug.write('Spacegroup %d' % self._spacegroup)
 
         if len(self._sweep_information.keys()) > 1 and \
                not self._reference:
@@ -1042,8 +1042,8 @@ class XDSScaler(Scaler):
 
             # 27/FEB/08 to support user assignment of pointgroups
             if self._scalr_input_pointgroup:
-                Chatter.write('Using input pointgroup: %s' % \
-                              self._scalr_input_pointgroup)
+                Debug.write('Using input pointgroup: %s' % \
+                            self._scalr_input_pointgroup)
                 pointgroup = self._scalr_input_pointgroup
 
             self._spacegroup = Syminfo.spacegroup_name_to_number(pointgroup)
@@ -1121,8 +1121,8 @@ class XDSScaler(Scaler):
                         
                     # 27/FEB/08 to support user assignment of pointgroups
                     
-                    Chatter.write('Using input pointgroup: %s' % \
-                                  self._scalr_input_pointgroup)
+                    Debug.write('Using input pointgroup: %s' % \
+                                self._scalr_input_pointgroup)
                     pointgroup = self._scalr_input_pointgroup
                     reindex_op = 'h,k,l'
                     
@@ -1229,8 +1229,8 @@ class XDSScaler(Scaler):
 
             # 27/FEB/08 to support user assignment of pointgroups
             if self._scalr_input_pointgroup:
-                Chatter.write('Using input pointgroup: %s' % \
-                              self._scalr_input_pointgroup)
+                Debug.write('Using input pointgroup: %s' % \
+                            self._scalr_input_pointgroup)
                 pointgroup = self._scalr_input_pointgroup
 
             self._spacegroup = Syminfo.spacegroup_name_to_number(pointgroup)
@@ -1717,8 +1717,8 @@ class XDSScaler(Scaler):
             reindex_operator = pointless.get_spacegroup_reindex_operator()
 
             if self._scalr_input_spacegroup:
-                Chatter.write('Assigning user input spacegroup: %s' % \
-                              self._scalr_input_spacegroup)
+                Debug.write('Assigning user input spacegroup: %s' % \
+                            self._scalr_input_spacegroup)
                 spacegroups = [self._scalr_input_spacegroup]
                 reindex_operator = 'h,k,l'
 
@@ -2025,7 +2025,7 @@ class XDSScaler(Scaler):
 
         self._scalr_highest_resolution = highest_resolution
 
-        Chatter.write('Scaler highest resolution set to %5.2f' % \
+        Debug.write('Scaler highest resolution set to %5.2f' % \
                       highest_resolution)
 
         # Ok, now we have the resolution limit stuff, need to work through
@@ -2064,10 +2064,10 @@ class XDSScaler(Scaler):
                 pass
 
             elif Flags.get_quick():
-                Chatter.write('Quick, so not resetting resolution limits')
+                Debug.write('Quick, so not resetting resolution limits')
 
             elif intgr.get_integrater_user_resolution():
-                Chatter.write('Using user specified resolution limits')
+                Debug.write('Using user specified resolution limits')
 
             else:
                 # ok it is worth rereducing the data
@@ -2085,7 +2085,7 @@ class XDSScaler(Scaler):
         # if we need to redo the scaling, return to allow this to happen
 
         if not self.get_scaler_done():
-            Chatter.write('Returning as scaling not finished...')
+            Debug.write('Returning as scaling not finished...')
             return
 
         batch_info = { }
@@ -2105,12 +2105,12 @@ class XDSScaler(Scaler):
         average_completeness /= len(data.keys())
 
         if Flags.get_quick() or not Flags.get_fiddle_sd():
-            Chatter.write('Not optimising error parameters')
+            Debug.write('Not optimising error parameters')
             sdadd_full = 0.0
             sdb_full = 0.0
 
         elif average_completeness < 50.0:
-            Chatter.write('Incomplete data, so not refining error parameters')
+            Debug.write('Incomplete data, so not refining error parameters')
             sdadd_full = 0.0
             sdb_full = 0.0
 
@@ -2121,7 +2121,7 @@ class XDSScaler(Scaler):
             # first "fix" the sd add parameters to match up the sd curve from
             # the fulls only, and minimise RMS[N (scatter / sigma - 1)]
             
-            Chatter.write('Optimising error parameters')
+            Debug.write('Optimising error parameters')
             
             sdadd_full, sdb_full = self._refine_sd_parameters(scales_file)
 
@@ -2129,7 +2129,7 @@ class XDSScaler(Scaler):
                 os.remove(os.path.join(self.get_working_directory(),
                                        scales_file))
             except:
-                Chatter.write('Error removing %s' % scales_file)
+                Debug.write('Error removing %s' % scales_file)
 
         # then try tweaking the sdB parameter in a range say 0-20
         # starting at 0 and working until the RMS stops going down
@@ -2653,7 +2653,7 @@ class XDSScaler(Scaler):
         elif twinning_score < 1.6:
             Chatter.write('Your data appear to be twinned')
         else:
-            Chatter.write('Not sure what this means (1.6 < score < 1.9)')
+            Chatter.write('Ambiguous score (1.6 < score < 1.9)')
 
         # next have a look for radiation damage... if more than one wavelength
 
@@ -2675,7 +2675,7 @@ class XDSScaler(Scaler):
             status = crd.detect()
 
             Chatter.write('')
-            Chatter.write('Inter-wavelength radiation damage analysis.')
+            Chatter.write('Inter-wavelength B and R-factor analysis:')
             for s in status:
                 Chatter.write('%s %s' % s)
             Chatter.write('')

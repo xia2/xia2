@@ -206,12 +206,12 @@ class CCP4ScalerImplementationHelper:
                 pointless.set_correct_lattice(correct_lattice)
                 pointless.decide_pointgroup()
 
-        Chatter.write('Pointless analysis of %s' % pointless.get_hklin())
+        Debug.write('Pointless analysis of %s' % pointless.get_hklin())
 
         pointgroup = pointless.get_pointgroup()
         reindex_op = pointless.get_reindex_operator()
         
-        Chatter.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
+        Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
         return pointgroup, reindex_op, need_to_return
         
