@@ -515,6 +515,9 @@ class Integrater:
     def integrate(self):
         '''Actually perform integration until we think we are done...'''
 
+        if self._intgr_sweep_name:
+            Chatter.write('Integrating %s' % self._intgr_sweep_name)
+
         while not self.get_integrater_finish_done():
             while not self.get_integrater_done():
                 while not self.get_integrater_prepare_done():

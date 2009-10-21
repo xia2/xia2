@@ -615,12 +615,13 @@ class XSweep(Object):
                 self._indexer.set_frame_wedge(frames[0],
                                               frames[1])
 
+            self._indexer.set_indexer_sweep_name(self._name)
+
         # FIXME in here I should probably check that the indexer
         # is up-to-date with respect to the crystal &c. if this has
         # changed the indexer will need to be updated...
         #
         # I need to think very hard about how this will work..
-
             
         return self._indexer
 

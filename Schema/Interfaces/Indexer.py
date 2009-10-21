@@ -210,6 +210,7 @@ class Indexer:
         self._indxr_done = False
         self._indxr_prepare_done = False
         self._indxr_finish_done = False
+        self._indxr_sweep_name = None
 
         # the helper to manage the solutions table
         self._indxr_helper = None
@@ -287,6 +288,13 @@ class Indexer:
         self._indxr_finish_done = done
         return
 
+    def set_indexer_sweep_name(self, sweep_name):
+        self._indxr_sweep_name = sweep_name
+        return
+
+    def get_indexer_sweep_name(self):
+        return self._indxr_sweep_name
+
     # getters of the status - note well that these need to cascade
     # the status... note that for the prepare get there is no previous
     # step we could cascade to...
@@ -346,6 +354,9 @@ class Indexer:
         
 
     def index(self):
+
+        if self._indxr_sweep_name:
+            Chatter.write('Autoindexing %s' % self._indxr_sweep_name)
 
         while not self.get_indexer_finish_done():
             while not self.get_indexer_done():

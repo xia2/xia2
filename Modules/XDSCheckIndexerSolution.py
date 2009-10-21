@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env cctbx.python
 # XDSCheckIndexerSolution.py
 # 
 #   Copyright (C) 2009 Diamond Light Source, Graeme Winter
