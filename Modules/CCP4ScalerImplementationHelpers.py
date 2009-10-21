@@ -154,24 +154,24 @@ class CCP4ScalerImplementationHelper:
 
             correct_lattice = None
 
-            Chatter.write('Possible lattices (pointless):')
+            Debug.write('Possible lattices (pointless):')
             lattices = ''
             for lattice in possible:
                 lattices += '%s ' % lattice
-            Chatter.write(lattices)
+            Debug.write(lattices)
 
             for lattice in possible:
                 state = indexer.set_indexer_asserted_lattice(lattice)
                 if state == 'correct':
                             
-                    Chatter.write(
+                    Debug.write(
                         'Agreed lattice %s' % lattice)
                     correct_lattice = lattice
                     
                     break
                 
                 elif state == 'impossible':
-                    Chatter.write(
+                    Debug.write(
                         'Rejected lattice %s' % lattice)
                     
                     rerun_pointless = True
@@ -179,9 +179,9 @@ class CCP4ScalerImplementationHelper:
                     continue
                 
                 elif state == 'possible':
-                    Chatter.write(
+                    Debug.write(
                         'Accepted lattice %s ...' % lattice)
-                    Chatter.write(
+                    Debug.write(
                         '... will reprocess accordingly')
                     
                     need_to_return = True
