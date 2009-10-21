@@ -375,7 +375,7 @@ class Indexer:
                 self.set_indexer_done(True)
 
                 if self._indxr_sweep_name:
-                    Chatter.write('Autoindexing %s' % self._indxr_sweep_name)
+                    Chatter.banner('Autoindexing %s' % self._indxr_sweep_name)
             
                 if not self._indxr_helper:
 

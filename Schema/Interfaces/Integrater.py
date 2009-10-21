@@ -540,7 +540,7 @@ class Integrater:
                 self.set_integrater_done(True)
 
                 if self._intgr_sweep_name:
-                    Chatter.write('Integrating %s' % self._intgr_sweep_name)
+                    Chatter.banner('Integrating %s' % self._intgr_sweep_name)
 
                 try:
 

@@ -88,6 +88,13 @@ class _Stream:
 
         return
 
+    def banner(self, comment, forward = True):
+        l = len(comment)
+        m = (60 - (l + 2)) / 2
+        n = 60 - (l + 2 + m)
+        self.write('%s %s %s' % ('-' * m, comment, '-' * n))
+        return
+
     def smallbanner(self, comment, forward):
         '''Write a small batter for something, like this:
         ----- comment ------.'''
