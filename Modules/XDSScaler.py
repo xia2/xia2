@@ -2531,7 +2531,7 @@ class XDSScaler(Scaler):
                                                         self._common_xname))
             FileHandler.record_temporary_file(hklout)
 
-            Chatter.write('Merging all data sets to %s' % hklout)
+            Debug.write('Merging all data sets to %s' % hklout)
 
             cad = self._factory.Cad()
             for wavelength in reflection_files.keys():

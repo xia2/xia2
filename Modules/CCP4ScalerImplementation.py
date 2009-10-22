@@ -2835,7 +2835,7 @@ class CCP4Scaler(Scaler):
                                   '%s_%s_merged.mtz' % (self._common_pname,
                                                         self._common_xname))
 
-            Chatter.write('Merging all data sets to %s' % hklout)
+            Debug.write('Merging all data sets to %s' % hklout)
 
             c.set_hklout(hklout)
             c.merge()
