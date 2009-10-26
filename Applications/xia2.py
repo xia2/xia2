@@ -147,6 +147,8 @@ def xia2():
 
     from Handlers.CommandLine import CommandLine
     
+    CommandLine.print_command_line()
+
     if not CommandLine.get_xinfo():
         # write an xinfo file then
         xinfo = os.path.join(os.getcwd(), 'automatic.xinfo')

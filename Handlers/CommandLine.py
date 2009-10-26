@@ -46,6 +46,7 @@
 import sys
 import os
 import exceptions
+import copy
 import traceback
 
 if not os.environ.has_key('XIA2_ROOT'):
@@ -71,12 +72,23 @@ class _CommandLine(Object):
 
         Object.__init__(self)
 
+        self._argv = []
+
+        return
+
+    def print_command_line(self):
+        cl = '%s' % self._argv[0]
+        for arg in self._argv[1:]:
+            cl += ' %s' % arg
+        Chatter.write('Command line: %s' % cl)
         return
 
     def setup(self):
         '''Set everything up...'''
 
         # things which are single token flags...
+
+        self._argv = copy.deepcopy(sys.argv)
 
         self._read_debug()
         self._read_trust_timestamps()
