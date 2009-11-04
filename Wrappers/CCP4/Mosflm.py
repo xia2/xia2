@@ -1743,7 +1743,7 @@ def Mosflm(DriverType = None):
                 dirname = '...%s' % self._fp_directory[-46:]
 
             Journal.block(
-                'integration', self._indxr_sweep_name, 'mosflm',
+                'integrating', self._intgr_sweep_name, 'mosflm',
                 {'images':images_str,
                  'cell':cell_str,
                  'lattice':self.get_integrater_indexer().get_indexer_lattice(),

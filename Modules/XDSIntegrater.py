@@ -54,7 +54,7 @@ from Modules.XDSIndexer import XDSIndexer
 # odds and sods that are needed
 
 from lib.Guff import auto_logfiler
-from Handlers.Streams import Chatter, Debug
+from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Flags import Flags
 from Handlers.Files import FileHandler
 
@@ -347,7 +347,8 @@ class XDSIntegrater(FrameProcessor,
         DEFPIX and INTEGRATE to measure all the reflections.'''
 
         images_str = '%d to %d' % self._intgr_wedge
-        cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % self._intgr_cell
+        cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % \
+                   self._intgr_indexer.get_indexer_cell()
         
         if len(self._fp_directory) <= 50:
             dirname = self._fp_directory
@@ -355,7 +356,7 @@ class XDSIntegrater(FrameProcessor,
             dirname = '...%s' % self._fp_directory[-46:]
 
         Journal.block(
-            'integration', self._indxr_sweep_name, 'XDS',
+            'integrating', self._intgr_sweep_name, 'XDS',
             {'images':images_str,
              'cell':cell_str,
              'lattice':self.get_integrater_indexer().get_indexer_lattice(),
