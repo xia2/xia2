@@ -1528,6 +1528,25 @@ def Mosflm(DriverType = None):
 
             indxr = self.get_integrater_indexer()
 
+            images_str = '%d to %d' % self._mosflm_cell_ref_images[0]
+            for i in self._mosflm_cell_ref_images[1:]:
+                images_str += ', %d to %d' % i
+
+            cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % \
+                       indxr.get_indexer_cell()
+
+            if len(self._fp_directory) <= 50:
+                dirname = self._fp_directory
+            else:
+                dirname = '...%s' % self._fp_directory[-46:]
+
+            Journal.block('cell refining', self._intgr_sweep_name, 'mosflm',
+                          {'images':images_str,
+                           'start cell':cell_str,
+                           'target lattice':indxr.get_indexer_lattice(),
+                           'template':self._fp_template,
+                           'directory':dirname})
+
             # in here, check to see if we have the raster parameters and
             # separation from indexing - if we used a different indexer
             # we may not, so if this is the case call a function to generate
@@ -1689,6 +1708,11 @@ def Mosflm(DriverType = None):
             # is part of the preparation and was causing fun with
             # bug # 2040 - going quickly! this resets the integration done
             # flag...
+            
+            cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % \
+                       self._intgr_cell
+
+            Journal.entry({'refined cell':cell_str})
 
             if not self._intgr_wedge:
                 images = self.get_matching_images()

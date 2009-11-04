@@ -348,7 +348,6 @@ class XDSIndexer(FrameProcessor,
                        'template':self._fp_template,
                        'directory':dirname})
                        
-
         idxref = self.Idxref()
 
         for file in ['SPOT.XDS']:

@@ -118,6 +118,16 @@ class _Stream:
 
         return
 
+    def entry(self, options):
+        '''Print subsequent entries to the above block.'''
+
+        for o in sorted(options):
+            if options[o]:
+                oname = '%s:' % o
+                self.write('%s %s' % (oname.ljust(30), options[o]))
+
+        return
+
     def join(self, otherstream):
         '''Join another stream so that all output from this stream goes also
         to that one.'''
