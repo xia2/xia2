@@ -347,7 +347,7 @@ def LabelitScreen(DriverType = None, indxr_print = True):
                 Journal.block(
                     'autoindexing', self._indxr_sweep_name, 'labelit',
                     {'images':images_str,
-                     'target cell':self._indxr_input_cell,
+                     'target cell':cell_str,
                      'target lattice':self._indxr_input_lattice,
                      'template':self._fp_template,
                      'directory':dirname})

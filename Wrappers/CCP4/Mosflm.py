@@ -1748,7 +1748,8 @@ def Mosflm(DriverType = None):
                  'cell':cell_str,
                  'lattice':self.get_integrater_indexer().get_indexer_lattice(),
                  'template':self._fp_template,
-                 'directory':dirname})
+                 'directory':dirname,
+                 'resolution':'%.2f' % self._intgr_reso_high})
 
             self._mosflm_rerun_integration = False
 
@@ -3339,7 +3340,7 @@ def Mosflm(DriverType = None):
                     Debug.write('New method resolution limit: %.2f' % r)
                 
                     resolution = r
-                
+
                 self.set_integrater_high_resolution(resolution)
                 Chatter.write('Set resolution limit: %5.2f' % resolution)
                 

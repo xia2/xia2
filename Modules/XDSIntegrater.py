@@ -361,7 +361,8 @@ class XDSIntegrater(FrameProcessor,
              'cell':cell_str,
              'lattice':self.get_integrater_indexer().get_indexer_lattice(),
              'template':self._fp_template,
-             'directory':dirname})
+             'directory':dirname,
+             'resolution':'%.2f' % self._intgr_reso_high})
 
 
         first_image_in_wedge = self.get_image_name(self._intgr_wedge[0])

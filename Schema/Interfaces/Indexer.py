@@ -186,7 +186,8 @@ class _IndexerHelper:
         if len(self._sorted_list) <= 1:
             raise RuntimeError, 'cannot eliminate only solution'
 
-        Chatter.write('Eliminating indexing solution %s' % self.repr()[0])
+        Chatter.write('Eliminating indexing solution:')
+        Chatter.write(self.repr()[0])
 
         self._sorted_list = self._sorted_list[1:]
 

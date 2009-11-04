@@ -124,7 +124,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from lib.Guff import inherits_from
-from Handlers.Streams import Chatter, Debug
+from Handlers.Streams import Chatter, Debug, Journal
 
 from Schema.Exceptions.BadLatticeError import BadLatticeError
 
@@ -381,7 +381,7 @@ class Integrater:
         if header['epoch'] > 0 and self._intgr_epoch == 0:
             self._intgr_epoch = int(header['epoch'])
 
-        Chatter.write('Sweep epoch: %d' % self._intgr_epoch)
+        Debug.write('Sweep epoch: %d' % self._intgr_epoch)
         
         self.set_integrater_done(False)
         
@@ -531,7 +531,10 @@ class Integrater:
                         self._integrate_prepare()
 
                     except BadLatticeError, e:
-                        Chatter.write('BadLattice! %s' % str(e))
+
+                        Journal.banner('eliminated this lattice', size = 80)
+                        
+                        Chatter.write('Rejecting bad lattice %s' % str(e))
                         self._intgr_indexer.eliminate()
                         self.set_integrater_prepare_done(False)
 
@@ -547,7 +550,10 @@ class Integrater:
                     self._intgr_hklout = self._integrate()
 
                 except BadLatticeError, e:
-                    Chatter.write('Uh oh! %s' % str(e))
+                    Chatter.write('Rejecting bad lattice %s' % str(e))
+
+                    Journal.banner('eliminated this lattice', size = 80)
+                    
                     self._intgr_indexer.eliminate()
                     self.set_integrater_prepare_done(False)
                     self.set_integrater_done(False)
