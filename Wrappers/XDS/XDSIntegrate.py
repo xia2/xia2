@@ -299,6 +299,9 @@ def XDSIntegrate(DriverType = None):
                 low, high = min(stddev_pixel), \
                             max(stddev_pixel)          
 
+                Chatter.write('Processed batches %d to %d' % \
+                              (min(images), max(images)))
+                              
                 Chatter.write('Standard Deviation in pixel range: %f %f' % \
                               (low, high))
 
