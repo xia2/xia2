@@ -244,8 +244,12 @@ class XDSIntegrater(FrameProcessor,
             # be performed...
             
             self.set_integrater_indexer(XDSIndexer())
+            
             # set the indexer up as per the frameprocessor interface...
             # this would usually happen within the IndexerFactory.
+
+            self.get_integrater_indexer().set_indexer_sweep_name(
+                self.get_integrater_sweep_name())
 
             self.get_integrater_indexer().setup_from_image(
                 self.get_image_name(
@@ -341,6 +345,23 @@ class XDSIntegrater(FrameProcessor,
     def _integrate(self):
         '''Actually do the integration - in XDS terms this will mean running
         DEFPIX and INTEGRATE to measure all the reflections.'''
+
+        images_str = '%d to %d' % self._intgr_wedge
+        cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % self._intgr_cell
+        
+        if len(self._fp_directory) <= 50:
+            dirname = self._fp_directory
+        else:
+            dirname = '...%s' % self._fp_directory[-46:]
+
+        Journal.block(
+            'integration', self._indxr_sweep_name, 'XDS',
+            {'images':images_str,
+             'cell':cell_str,
+             'lattice':self.get_integrater_indexer().get_indexer_lattice(),
+             'template':self._fp_template,
+             'directory':dirname})
+
 
         first_image_in_wedge = self.get_image_name(self._intgr_wedge[0])
 

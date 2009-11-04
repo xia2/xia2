@@ -112,7 +112,7 @@ from Wrappers.Labelit.LabelitMosflmScript import LabelitMosflmScript
 from Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
 
 from lib.Guff import auto_logfiler
-from Handlers.Streams import Chatter, Debug
+from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Citations import Citations
 from Modules.IceId import IceId
 from Modules.MosflmCheckIndexerSolution import mosflm_check_indexer_solution
@@ -324,6 +324,33 @@ def LabelitScreen(DriverType = None, indxr_print = True):
                         _images.append(j)
                     
             _images.sort()
+
+            images_str = '%d' % _images[0]
+            for i in _images[1:]:
+                images_str += ', %d' % i
+
+            cell_str = None
+            if self._indxr_input_cell:
+                cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % \
+                            self._indxr_input_cell
+
+            if self._indxr_sweep_name:
+
+                # then this is a proper autoindexing run - describe this
+                # to the journal entry
+
+                if len(self._fp_directory) <= 50:
+                    dirname = self._fp_directory
+                else:
+                    dirname = '...%s' % self._fp_directory[-46:]
+
+                Journal.block(
+                    'autoindexing', self._indxr_sweep_name, 'labelit',
+                    {'images':images_str,
+                     'target cell':self._indxr_input_cell,
+                     'target lattice':self._indxr_input_lattice,
+                     'template':self._fp_template,
+                     'directory':dirname})
 
             if len(_images) > 4:
                 raise RuntimeError, 'cannot use more than 4 images'

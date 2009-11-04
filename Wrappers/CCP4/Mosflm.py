@@ -215,7 +215,7 @@ from Schema.Interfaces.Integrater import Integrater
 
 # output streams &c.
 
-from Handlers.Streams import Chatter, Debug
+from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Citations import Citations
 from Handlers.Flags import Flags
 
@@ -988,6 +988,33 @@ def Mosflm(DriverType = None):
                     
             _images.sort()
 
+            images_str = '%d' % _images[0]
+            for i in _images[1:]:
+                images_str += ', %d' % i
+
+            cell_str = None
+            if self._indxr_input_cell:
+                cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % \
+                            self._indxr_input_cell
+
+            if self._indxr_sweep_name:
+
+                # then this is a proper autoindexing run - describe this
+                # to the journal entry
+
+                if len(self._fp_directory) <= 50:
+                    dirname = self._fp_directory
+                else:
+                    dirname = '...%s' % self._fp_directory[-46:]
+
+                Journal.block(
+                    'autoindexing', self._indxr_sweep_name, 'mosflm',
+                    {'images':images_str,
+                     'target cell':self._indxr_input_cell,
+                     'target lattice':self._indxr_input_lattice,
+                     'template':self._fp_template,
+                     'directory':dirname})
+            
             task = 'Autoindex from images:'
 
             for i in _images:
@@ -1706,6 +1733,23 @@ def Mosflm(DriverType = None):
 
             # by default we don't want to rerun, or we could be here forever
             # (and that did happen! :o( )
+
+            images_str = '%d to %d' % self._intgr_wedge
+            cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % self._intgr_cell
+
+            if len(self._fp_directory) <= 50:
+                dirname = self._fp_directory
+            else:
+                dirname = '...%s' % self._fp_directory[-46:]
+
+            Journal.block(
+                'integration', self._indxr_sweep_name, 'mosflm',
+                {'images':images_str,
+                 'cell':cell_str,
+                 'lattice':self.get_integrater_indexer().get_indexer_lattice(),
+                 'template':self._fp_template,
+                 'directory':dirname})
+
             self._mosflm_rerun_integration = False
 
             wd = self.get_working_directory()
@@ -3271,7 +3315,7 @@ def Mosflm(DriverType = None):
                           for i in range(0, len(spot_status), 60)]:
                 Chatter.write(chunk)
             Chatter.write(
-                '"o" => ok          "%" => iffy rmsd "!" => bad rmsd')
+                '"o" => good        "%" => ok        "!" => bad rmsd')
             Chatter.write(
                 '"O" => overloaded  "#" => many bad  "." => blank') 
 

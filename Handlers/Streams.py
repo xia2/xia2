@@ -88,10 +88,10 @@ class _Stream:
 
         return
 
-    def banner(self, comment, forward = True):
+    def banner(self, comment, forward = True, size = 60):
         l = len(comment)
-        m = (60 - (l + 2)) / 2
-        n = 60 - (l + 2 + m)
+        m = (size - (l + 2)) / 2
+        n = size - (l + 2 + m)
         self.write('%s %s %s' % ('-' * m, comment, '-' * n))
         return
 
@@ -102,6 +102,19 @@ class _Stream:
         dashes = '-' * 10
         
         self.write('%s %s %s' % (dashes, comment, dashes), forward)
+
+        return
+
+    def block(self, task, data, program, options):
+        '''Print out a description of the task being performed with
+        the program and a dictionary of options which will be printed
+        in alphabetical order.'''
+
+        self.banner('%s %s with %s' % (task, data, program), size = 80)
+        for o in sorted(options):
+            if options[o]:
+                oname = '%s:' % o
+                self.write('%s %s' % (oname.ljust(30), options[o]))
 
         return
 
@@ -122,6 +135,7 @@ class _Stream:
 # output stream Stdout... then copy everything there!
 
 Chatter = _Stream('xia2', None)
+Journal = _Stream('xia2-journal', None)
 Stdout = _Stream(None, None)
 Debug = _Stream('xia2-debug', None)
 

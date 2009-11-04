@@ -47,7 +47,7 @@ from Schema.Interfaces.FrameProcessor import FrameProcessor
 # odds and sods that are needed
 
 from lib.Guff import auto_logfiler, nint
-from Handlers.Streams import Chatter, Debug
+from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Flags import Flags
 
 class XDSIndexer(FrameProcessor,
@@ -323,6 +323,31 @@ class XDSIndexer(FrameProcessor,
     def _index(self):
         '''Actually do the autoindexing using the data prepared by the
         previous method.'''
+
+        images_str = '%d to %d' % self._indxr_images[0]
+        for i in self._indxr_images[1:]:
+            images_str += ', %d to %d' % i
+
+        cell_str = None
+        if self._indxr_input_cell:
+            cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % \
+                       self._indxr_input_cell
+
+        # then this is a proper autoindexing run - describe this
+        # to the journal entry
+        
+        if len(self._fp_directory) <= 50:
+            dirname = self._fp_directory
+        else:
+            dirname = '...%s' % self._fp_directory[-46:]
+
+        Journal.block('autoindexing', self._indxr_sweep_name, 'XDS',
+                      {'images':images_str,
+                       'target cell':cell_str,
+                       'target lattice':self._indxr_input_lattice,
+                       'template':self._fp_template,
+                       'directory':dirname})
+                       
 
         idxref = self.Idxref()
 

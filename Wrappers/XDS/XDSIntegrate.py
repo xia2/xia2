@@ -328,7 +328,7 @@ def XDSIntegrate(DriverType = None):
                               for i in range(0, len(status_record), 60)]:
                     Chatter.write(chunk)
                 Chatter.write(
-                    '"o" => ok          "%" => iffy rmsd "!" => bad rmsd')
+                    '"o" => good        "%" => ok        "!" => bad rmsd')
                 Chatter.write(
                     '"O" => overloaded  "#" => many bad  "." => blank') 
 
