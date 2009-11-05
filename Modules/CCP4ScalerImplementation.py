@@ -1354,6 +1354,12 @@ class CCP4Scaler(Scaler):
         if not self.get_scaler_reference_reflection_file():
 
             p = self._factory.Pointless()
+
+            FileHandler.record_log_file('%s %s pointless' % \
+                                        (self._common_pname,
+                                         self._common_xname),
+                                        p.get_log_file())
+
             if len(self._sweep_information.keys()) > 1:
                 p.set_hklin(hklin)
             else:

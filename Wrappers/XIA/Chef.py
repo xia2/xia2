@@ -53,7 +53,7 @@ def Chef(DriverType = None):
 
             CCP4DriverInstance.__class__.__init__(self)
 
-            self.set_executable('chef')
+            self.set_executable('pychef')
 
             self._hklin_list = []
             self._anomalous = False
@@ -110,7 +110,8 @@ def Chef(DriverType = None):
 
             self.start()
 
-            self.input('print scp comp')
+            # this is not needed for pychef
+            # self.input('print scp comp')
 
             if self._anomalous:
                 self.input('anomalous on')
@@ -175,19 +176,9 @@ def Chef(DriverType = None):
 
                 self._completeness[dataset] = cnew
 
-            # done jimmying
-
-            results = self.parse_ccp4_loggraph()
-
-            rd = transpose_loggraph(
-                results['Cumulative RD analysis'])
-
-            dose = rd['1_FIXME_DOSE']
-            overall = rd['2_Overall']
-
-            # for j in range(len(dose)):
-            # print '%8.0f %5.2f' % (float(dose[j]), float(overall[j]))
-
+                # at some point need to figure out how to analyse these
+                # results...
+                
     return ChefWrapper()
         
 if __name__ == '__main__':

@@ -1713,6 +1713,11 @@ class XDSScaler(Scaler):
             pointless.set_hklin(hklout)
             pointless.decide_spacegroup()
 
+            FileHandler.record_log_file('%s %s pointless' % \
+                                        (self._common_pname,
+                                         self._common_xname),
+                                        pointless.get_log_file())
+
             # get one spacegroup and so on which will be used for
             # all of the reflection files...
             
