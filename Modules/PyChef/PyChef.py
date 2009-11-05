@@ -306,6 +306,12 @@ class PyChef:
                   overall_range_max
             self._range_max = overall_range_max
 
+        # if > 1 data set assume that this is anomalous data...
+
+        if len(self._reflections) > 1:
+            print 'More than one data set: assume anomalous'
+            self._anomalous = True
+
         # FIXME add warning if measurements don't reach the edge...
 
         return
