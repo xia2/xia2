@@ -297,7 +297,6 @@ def XDSIdxref(DriverType = None):
                                          '%d_IDXREF.LP' % self.get_xpid()))
 
             # parse the output
-
             lp = open(os.path.join(
                 self.get_working_directory(), 'IDXREF.LP'), 'r').readlines()
 
