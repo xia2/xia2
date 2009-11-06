@@ -84,6 +84,9 @@ class _Flags:
 
         # are we working with small molecule data?
         self._small_molecule = False
+
+        # flags relating to fixing specific bugs
+        self._fixed_628 = False
         
         return
 
@@ -295,6 +298,13 @@ class _Flags:
 
     def get_free_total(self):
         return self._free_total   
+
+    def set_fixed_628(self):
+        self._fixed_628 = True
+        return
+
+    def get_fixed_628(self):
+        return self._fixed_628   
 
     def set_reference_reflection_file(self, reference_reflection_file):
         '''Set a new reference reflection file.'''

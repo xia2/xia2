@@ -113,6 +113,9 @@ class _CommandLine(Object):
         self._read_free_fraction()
         self._read_free_total()
 
+        # flags relating to unfixed bugs...
+        self._read_fixed_628()
+
         try:
             self._read_beam()
         except:
@@ -878,6 +881,22 @@ class _CommandLine(Object):
 
     def _help_free_total(self):
         return '-free_total N'
+
+    def _read_fixed_628(self):
+        try:
+            index = sys.argv.index('-fixed_628')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_fixed_628()
+            
+        return
+
+    def _help_fixed_628(self):
+        return '-fixed_628'
 
 CommandLine = _CommandLine()
 CommandLine.setup()
