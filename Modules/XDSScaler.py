@@ -813,9 +813,14 @@ class XDSScaler(Scaler):
         # FIXME in here I want to record the batch number to
         # epoch mapping as per the CCP4 Scaler implementation.
 
+        Journal.block(
+            'gathering', self.get_scaler_xcrystal().get_name(), 'XDS',
+            {'working directory':self.get_working_directory()})
+
         for epoch in self._scalr_integraters.keys():
             intgr = self._scalr_integraters[epoch]
             pname, xname, dname = intgr.get_integrater_project_info()
+            sweep_name = intgr.get_integrater_sweep_name()
             self._sweep_information[epoch] = {
                 'pname':pname,
                 'xname':xname,
@@ -828,9 +833,13 @@ class XDSScaler(Scaler):
                 'image_to_epoch':intgr.get_integrater_sweep(                
                 ).get_image_to_epoch(),
                 'image_to_dose':{},
-                'batch_offset':0                
+                'batch_offset':0,
+                'sweep_name':sweep_name
                 }
 
+            Journal.entry({'adding data from':'%s/%s/%s' % \
+                           (xname, dname, sweep_name)})
+            
             # what are these used for?
             # pname / xname / dname - dataset identifiers
             # image to epoch / batch offset / batches - for RD analysis
@@ -1306,6 +1315,20 @@ class XDSScaler(Scaler):
         if Flags.get_smart_scaling():
             self._determine_best_scale_model()
 
+        if self._scalr_corrections:
+            Journal.block(
+                'scaling', self.get_scaler_xcrystal().get_name(), 'CCP4',
+                {'scaling model':'automatic',
+                 'absorption':self._scalr_correct_absorption,
+                 'modulation':self._scalr_correct_modulation,
+                 'decay':self._scalr_correct_decay
+                 })
+
+        else:
+            Journal.block(
+                'scaling', self.get_scaler_xcrystal().get_name(), 'CCP4',
+                {'scaling model':'default'})
+            
         epochs = self._sweep_information.keys()
         epochs.sort()
 
@@ -1623,6 +1646,9 @@ class XDSScaler(Scaler):
 
         counter = 0
 
+        Journal.block(
+            'merging', self.get_scaler_xcrystal().get_name(), 'CCP4', {})
+
         for epoch in epochs:
             rb = self._factory.Rebatch()
 
@@ -1631,6 +1657,11 @@ class XDSScaler(Scaler):
             pname = self._sweep_information[epoch]['pname']
             xname = self._sweep_information[epoch]['xname']
             dname = self._sweep_information[epoch]['dname']
+
+            sweep_name = self._sweep_information[epoch]['sweep_name']
+
+            Journal.entry({'adding data from':'%s/%s/%s' % \
+                           (xname, dname, sweep_name)})
 
             hklout = os.path.join(self.get_working_directory(),
                                   '%s_%s_%s_%d.mtz' % \

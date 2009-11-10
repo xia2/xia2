@@ -140,7 +140,7 @@ from Schema.Interfaces.Scaler import Scaler
 
 from Wrappers.CCP4.CCP4Factory import CCP4Factory
 
-from Handlers.Streams import Chatter, Debug
+from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Files import FileHandler
 from Handlers.Citations import Citations
 from Handlers.Flags import Flags        
@@ -642,9 +642,14 @@ class CCP4Scaler(Scaler):
         # later on in the "doser" wrapper to add this information to
         # unmerged MTZ files from Scala.
 
+        Journal.block(
+            'gathering', self.get_scaler_xcrystal().get_name(), 'CCP4',
+            {'working directory':self.get_working_directory()})        
+
         for epoch in self._scalr_integraters.keys():
             intgr = self._scalr_integraters[epoch]
             pname, xname, dname = intgr.get_integrater_project_info()
+            sweep_name = intgr.get_integrater_sweep_name()
             self._sweep_information[epoch] = {
                 'pname':pname,
                 'xname':xname,
@@ -655,8 +660,12 @@ class CCP4Scaler(Scaler):
                 'image_to_epoch':intgr.get_integrater_sweep(                
                 ).get_image_to_epoch(),
                 'image_to_dose':{},
-                'batch_offset':0
+                'batch_offset':0,
+                'sweep_name':sweep_name
                 }
+
+            Journal.entry({'adding data from':'%s/%s/%s' % \
+                           (xname, dname, sweep_name)})
 
         # gather data for all images which belonged to the parent
         # crystal - allowing for the fact that things could go wrong
@@ -1783,6 +1792,20 @@ class CCP4Scaler(Scaler):
         if Flags.get_smart_scaling():
             self._determine_best_scale_model()
 
+        if self._scalr_corrections:
+            Journal.block(
+                'scaling', self.get_scaler_xcrystal().get_name(), 'CCP4',
+                {'scaling model':'automatic',
+                 'absorption':self._scalr_correct_absorption,
+                 'tails':self._scalr_correct_partiality,
+                 'decay':self._scalr_correct_decay
+                 })
+
+        else:
+            Journal.block(
+                'scaling', self.get_scaler_xcrystal().get_name(), 'CCP4',
+                {'scaling model':'default'})
+        
         # now parse the structure of the data to write out how they should
         # be examined by chef...
 
