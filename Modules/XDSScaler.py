@@ -88,6 +88,9 @@ from CCP4InterRadiationDamageDetector import CCP4InterRadiationDamageDetector
 from Experts.ResolutionExperts import determine_scaled_resolution
 from DoseAccumulate import accumulate
 
+# newly implemented CCTBX powered functions to replace xia2 binaries
+from Functions.add_dose_time_to_mtz import add_dose_time_to_mtz
+
 class XDSScaler(Scaler):
     '''An implementation of the xia2 Scaler interface implemented with
     xds and xscale, possibly with some help from a couple of CCP4
@@ -1924,13 +1927,16 @@ class XDSScaler(Scaler):
                 d = self._factory.Doser()
                 hklin = bits[wave][0]
                 hklout = '%s_dose.mtz' % hklin[:-4]
-                d.set_hklin(hklin)
-                d.set_hklout(hklout)
-                d.set_doses(doses)
-                d.run()
+                # d.set_hklin(hklin)
+                # d.set_hklout(hklout)
+                # d.set_doses(doses)
+                # d.run()
+
+                add_dose_time_to_mtz(hklin = hklin, hklout = hklout,
+                                     doses = doses)
 
                 chef_hklins.append(hklout)
-                FileHandler.record_temporary_file(hklout)
+                # FileHandler.record_temporary_file(hklout)
 
             # then run chef with this - no analysis as yet, but to record
             # the log file to chef_groupN_analysis or something and be
@@ -1939,6 +1945,8 @@ class XDSScaler(Scaler):
             # then feed the results to chef
 
             chef = self._factory.Chef()
+
+            chef.set_title('Group %d' % group)
 
             dose_step = self._chef_analysis_times[group] / \
                         self._chef_dose_factor
@@ -1955,7 +1963,7 @@ class XDSScaler(Scaler):
             
             chef.run()
 
-            FileHandler.record_log_file('%d chef' % group,
+            FileHandler.record_log_file('chef group %d' % (group + 1),
                                         chef.get_log_file())
         
         # this is #181 so figure this out first...

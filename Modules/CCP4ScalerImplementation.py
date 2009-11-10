@@ -2558,8 +2558,8 @@ class CCP4Scaler(Scaler):
                     bits[wave] = [hklout_all]
                 bits[wave].append(hklout)
                 FileHandler.record_temporary_file(hklout)
-                FileHandler.record_temporary_file(hklout_all)
-
+                # FileHandler.record_temporary_file(hklout_all)
+                
             # now sort these together
             for wave in bits:
                 s = self._factory.Sortmtz()
@@ -2589,7 +2589,7 @@ class CCP4Scaler(Scaler):
                                      doses = doses)
 
                 chef_hklins.append(hklout)
-                FileHandler.record_temporary_file(hklout)
+                # FileHandler.record_temporary_file(hklout)
 
             # then run chef with this - no analysis as yet, but to record
             # the log file to chef_groupN_analysis or something and be
@@ -2616,7 +2616,7 @@ class CCP4Scaler(Scaler):
             
             chef.run()
 
-            FileHandler.record_log_file('chef group %d' % group,
+            FileHandler.record_log_file('chef group %d' % (group + 1),
                                         chef.get_log_file())
 
         # FIXME ALSO need to copy the harvest information in this cycle
