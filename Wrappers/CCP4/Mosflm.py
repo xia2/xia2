@@ -3874,7 +3874,7 @@ def Mosflm(DriverType = None):
                 Chatter.write(chunk)
 
             Chatter.write(
-                '"o" => ok          "%" => iffy rmsd "!" => bad rmsd')
+                '"o" => good        "%" => ok        "!" => bad rmsd')
             Chatter.write(
                 '"O" => overloaded  "#" => many bad  "." => blank') 
 
