@@ -66,6 +66,8 @@ def Chef(DriverType = None):
 
             self._completeness = { }
             
+            self._title = None
+
             return
 
         def add_hklin(self, hklin):
@@ -90,6 +92,10 @@ def Chef(DriverType = None):
 
         def set_labin(self, labin):
             self._b_labin = labin
+            return
+
+        def set_title(self, title):
+            self._title = title
             return
 
         def get_completeness(self, wavelength):
@@ -124,6 +130,9 @@ def Chef(DriverType = None):
                 self.input('resolution %.2f' % self._resolution)
 
             self.input('labin BASE=%s' % self._b_labin)
+
+            if self._title:
+                self.input('title %s' % self._title)
 
             self.close_wait()
 

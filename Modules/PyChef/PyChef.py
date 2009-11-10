@@ -49,23 +49,6 @@ class PyChef:
 
         self._title = None
 
-        self.banner()
-
-        return
-
-    def banner(self):
-        version = '1.0'
-        user = os.environ.get('USER', '')
-        now = time.asctime()
-        
-        print '#' * 60
-        print '#' * 60
-        print '#' * 60
-        print '### PyCHEF                                           %s ###' % \
-              version
-        print '#' * 60
-        print 'User: %s                  Run at: %s' % (user, now)
-
         return
         
     def set_base_column(self, base_column):
@@ -602,7 +585,7 @@ class PyChef:
         # now digest the results - as a function of dose and resolution...
 
         if self._title:
-            print '$TABLE : Cumulative radiation damage analysis: %s' % \
+            print '$TABLE : Cumulative radiation damage analysis (%s):' % \
                   self._title
 
         else:

@@ -2599,6 +2599,8 @@ class CCP4Scaler(Scaler):
 
             chef = self._factory.Chef()
 
+            chef.set_title('Group %d' % group)
+
             dose_step = self._chef_analysis_times[group] / \
                         self._chef_dose_factor
             anomalous = self.get_scaler_anomalous()
@@ -2614,7 +2616,7 @@ class CCP4Scaler(Scaler):
             
             chef.run()
 
-            FileHandler.record_log_file('%d chef' % group,
+            FileHandler.record_log_file('chef group %d' % group,
                                         chef.get_log_file())
 
         # FIXME ALSO need to copy the harvest information in this cycle

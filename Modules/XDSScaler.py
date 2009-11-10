@@ -76,7 +76,7 @@ from lib.Guff import nifty_power_of_ten
 from lib.SymmetryLib import lattices_in_order
 from Handlers.Citations import Citations
 from Handlers.Syminfo import Syminfo
-from Handlers.Streams import Chatter, Debug
+from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Flags import Flags
 from Handlers.Files import FileHandler
 from Experts.SymmetryExpert import r_to_rt, rt_to_r

@@ -22,6 +22,21 @@ import time
 
 from PyChef import PyChef
 
+def banner():
+    version = '1.0'
+    user = os.environ.get('USER', '')
+    now = time.asctime()
+    
+    print '#' * 60
+    print '#' * 60
+    print '#' * 60
+    print '### PyCHEF                                           %s ###' % \
+          version
+    print '#' * 60
+    print 'User: %s                  Run at: %s' % (user, now)
+    
+    return
+
 def get_hklin_files():
     '''From the command-line, get the list of hklin files. Set up thus
     as it may be useful externally. Assumes that the list of reflection
@@ -43,6 +58,9 @@ def get_hklin_files():
             
             hklin_files.append(hklin)
 
+    for hklin in hklin_files:
+        print 'HKLIN: %s' % hklin
+
     return hklin_files
 
 def parse_standard_input():
@@ -63,10 +81,12 @@ def parse_standard_input():
 
     for record in sys.stdin.readlines():
 
-        record = record.split('!')[0].split('#')[0]
+        record = record.split('!')[0].split('#')[0].strip()
 
-        if not record.strip():
+        if not record:
             continue
+
+        print '> %s' % record
 
         key = record[:4].upper()
         tokens = record.split()
@@ -142,7 +162,8 @@ def parse_standard_input():
         'anomalous':anomalous,
         'resolution_high':resolution_high,
         'resolution_low':resolution_low,
-        'base_column':base_column
+        'base_column':base_column,
+        'title':title
         }
 
     return results
@@ -150,6 +171,8 @@ def parse_standard_input():
 def main():
     '''Create and run a PyChef, reading the traditional format input from
     the command-line.'''
+
+    banner()
 
     hklin_list = get_hklin_files()
     standard_input = parse_standard_input()
@@ -170,6 +193,9 @@ def main():
     pychef.set_resolution(standard_input['resolution_high'],
                           standard_input['resolution_low'])
     pychef.set_anomalous(standard_input['anomalous'])
+
+    if standard_input['title']:
+        pychef.set_title(standard_input['title'])
 
     for hklin in hklin_list:
         pychef.add_hklin(hklin)
