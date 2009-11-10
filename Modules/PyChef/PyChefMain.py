@@ -59,6 +59,8 @@ def parse_standard_input():
 
     base_column = None
 
+    title = None
+
     for record in sys.stdin.readlines():
 
         record = record.split('!')[0].split('#')[0]
@@ -119,6 +121,10 @@ def parse_standard_input():
             assert('BASE=' in tokens[1])
 
             base_column = tokens[1].replace('BASE=', '')
+
+        elif key == 'TITL':
+            keyword = tokens[0]
+            title = record[len(keyword):].strip()
 
     # check that these values are sound - where they are needed...
     # assert(base_column)

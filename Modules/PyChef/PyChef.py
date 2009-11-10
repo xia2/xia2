@@ -47,6 +47,8 @@ class PyChef:
 
         self._anomalous = False
 
+        self._title = None
+
         self.banner()
 
         return
@@ -114,6 +116,10 @@ class PyChef:
         '''Set the separation of anomalous pairs on or off.'''
 
         self._anomalous = anomalous
+        return
+
+    def set_title(self, title):
+        self._title = title
         return
 
     def init(self):
@@ -331,7 +337,7 @@ class PyChef:
 
         would be nice to have this described a little tidier.'''
 
-        for crystal_name, dataset_name in self._reflections:
+        for crystal_name, dataset_name in sorted(self._reflections):
 
             reflections = self._reflections[(crystal_name, dataset_name)]
             uc = self._unit_cells[(crystal_name, dataset_name)]
@@ -379,7 +385,7 @@ class PyChef:
 
             if self._anomalous:
 
-                print '$TABLE : Completeness vs. %s, %s %s:' % \
+                print '$TABLE : Completeness vs. %s, %s/%s:' % \
                       (self._base_column, crystal_name, dataset_name)
                 print '$GRAPHS: Completeness:N:1,2,3,4,5: $$'
                 print '%8s %5s %5s %5s %5s $$ $$' % \
@@ -595,7 +601,13 @@ class PyChef:
 
         # now digest the results - as a function of dose and resolution...
 
-        print '$TABLE : Cumulative radiation damage analysis:'
+        if self._title:
+            print '$TABLE : Cumulative radiation damage analysis: %s' % \
+                  self._title
+
+        else:
+            print '$TABLE : Cumulative radiation damage analysis:'            
+
         print '$GRAPHS: Scp(d):N:1,%d: $$' % (self._resolution_bins + 2)
 
         columns = ''
