@@ -89,7 +89,9 @@ from NMolLib import compute_nmol, compute_solvent
 # XML Marked up output for e-HTPX
 if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'Interfaces'))
+
 from eHTPX.EHTPXXmlHandler import EHTPXXmlHandler
+from ISPyB.ISPyBXmlHandler import ISPyBXmlHandler
 
 def sort_o_dict(dict, metric):
     '''A generic sorter for dictionaries - will return the keys in
@@ -257,6 +259,7 @@ class XCrystal(Object):
         result = 'Crystal: %s\n' % self._name
 
         EHTPXXmlHandler.add_crystal(self._name)
+        # ISPyBXmlHandler.add_xcrystal(self)
         
         if self._aa_sequence:
             result += 'Sequence: %s\n' % self._aa_sequence.get_sequence()
@@ -672,6 +675,18 @@ class XCrystal(Object):
         '''Get specific reflection files.'''
 
         return self._get_scaler().get_scaled_reflections(format)
+
+    def get_cell(self):
+        '''Get the final unit cell from scaling.'''
+        return self._get_scaler().get_scaler_cell()
+
+    def get_likely_spacegroups(self):
+        '''Get the list if likely spacegroups from the scaling.'''
+        return self._get_scaler().get_scaler_likely_spacegroups()
+
+    def get_statistics(self):
+        '''Get the scaling statistics for this sample.'''
+        return self._get_scaler().get_scaler_statistics()
 
     def _get_scaler(self):
         if self._scaler is None:
