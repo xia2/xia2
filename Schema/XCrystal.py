@@ -262,7 +262,6 @@ class XCrystal(Object):
         
         if Flags.get_ispyb_xml_out():
             ISPyBXmlHandler.add_xcrystal(self)
-            ISPyBXmlHandler.write_xml(Flags.get_ispyb_xml_out())
         
         if self._aa_sequence:
             result += 'Sequence: %s\n' % self._aa_sequence.get_sequence()
@@ -411,6 +410,9 @@ class XCrystal(Object):
                     ).substructure_find_get_sites())
 	    except:
                 result += 'No sites - sorry!\n'
+
+        if Flags.get_ispyb_xml_out():
+            ISPyBXmlHandler.write_xml(Flags.get_ispyb_xml_out())
 
         return result
 
