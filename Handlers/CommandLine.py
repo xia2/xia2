@@ -172,6 +172,12 @@ class _CommandLine(Object):
                   (self._help_ehtpx_xml_out(), str(e))
 
         try:
+            self._read_ispyb_xml_out()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_ispyb_xml_out(), str(e))
+
+        try:
             self._read_parallel()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -630,6 +636,28 @@ class _CommandLine(Object):
         '''Return the ehtpx xml out file.'''
         return self._ehtpx_xml_out
     
+    def _read_ispyb_xml_out(self):
+        try:
+            index = sys.argv.index('-ispyb_xml_out')
+        except ValueError, e:
+            self._ispyb_xml_out = None
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        self._ispyb_xml_out = sys.argv[index + 1]
+        Debug.write('ISPyB XML output set to %s' % sys.argv[index + 1])
+            
+        return
+
+    def _help_ispyb_xml_out(self):
+        return '-ispyb_xml_out project.xml'
+
+    def get_ispyb_xml_out(self):
+        '''Return the ispyb xml out file.'''
+        return self._ispyb_xml_out    
+
     def get_template(self):
         return self._default_template
 

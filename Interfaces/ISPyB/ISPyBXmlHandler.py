@@ -10,6 +10,8 @@
 # 
 # 11th November 2009
 
+import time
+
 class _ISPyBXmlHandler:
 
     def __init__(self):
@@ -28,25 +30,20 @@ class _ISPyBXmlHandler:
             'Rmerge':'rMerge',
             'I/sigma':'meanIOverSigI',
             }
-            
-        
+                    
         return
 
     def set_project(self, project):
         self._project = project
         return
 
-    def add_crystal(self, crystal):
-        if not crystal in self._crystals:
-            self._crystals.append(crystal)
+    def add_xcrystal(self, xcrystal):
+        if not xcrystal.get_name() in self._crystals:
+            self._crystals[xcrystal.get_name()] = xcrystal
 
-            self._per_crystal_data[crystal] = {
-                'stats':{},
-                'cell':{},
-                'log_files':[],
-                'deposition_files':[],
-                'reflection_files':[]
-                }
+        # should ideally drill down and get the refined cell constants for
+        # each sweep and the scaling statistics for low resolution, high
+        # resolution and overall...
 
         return
 
@@ -75,15 +72,15 @@ class _ISPyBXmlHandler:
                 log_file)
 
         return
-    
-    def add_crystal_deposition_file(self, crystal, deposition_file):
-        if not deposition_file in self._per_crystal_data[crystal][
-            'deposition_files']:
-            self._per_crystal_data[crystal]['deposition_files'].append(
-                deposition_file)
+
+    def write_date(self, fout):
+        '''Write the current date and time out as XML.'''
+
+        fout.write('<recordTimeStamp>%s</recordTimeStamp>\n' % \
+                   time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
 
         return
-
+        
     def write_cell(self, fout, cell):
         '''Write out a UNIT CELL as XML...'''
 
@@ -112,9 +109,80 @@ class _ISPyBXmlHandler:
         fout.write('<refinedCell_gamma>%f</refinedCell_gamma>' % \
                    cell_info['cell'][5])
 
+        return    
+
+    def write_scaling_statistics(self, fout, scaling_stats_type, stats_dict):
+        '''Write out the SCALING STATISTICS block...'''
+
+        fout.write('<AutoProcScalingStatistics>\n')
+
+        fout.write('<scalingStatisticsType>%s</scalingStatisticsType>\n' % \
+                   scaing_stats_type)
+
+        for name in stats_dict:
+            if not name in self._name_map:
+                continue
+
+            out_name = self._name_map[name]
+            fout.write('<%s>%s</%s>' % (out_name, stats_dict[name], out_name))
+
+        fout.write('</AutoProcScalingStatistics>\n')
+
         return
 
     def write_xml(self, file):
+
+        for crystal in self._per_crsytal_data:
+            xcrystal = self._per_crystal-data[crystal]
+
+            cell = xcrystal.get_cell()
+            spacegroup = xcrystal.get_likely_spacegroups()[0]
+            statistics_all = xcrystal.get_statistics()
+                        
+            for key in statistics_all.keys():
+                pname, xname, dname = key
+
+                available = statistics_all[key].keys()
+
+                stats = []
+                keys = [
+                    'High resolution limit',
+                    'Low resolution limit',
+                    'Completeness',
+                    'Multiplicity',
+                    'I/sigma',
+                    'Rmerge',
+                    'Rmeas(I)',
+                    'Rmeas(I+/-)',
+                    'Rpim(I)',
+                    'Rpim(I+/-)',
+                    'Wilson B factor',
+                    'Partial bias',
+                    'Anomalous completeness',
+                    'Anomalous multiplicity',
+                    'Anomalous correlation',
+                    'Anomalous slope',
+                    'Total observations',
+                    'Total unique']
+
+                for k in keys:
+                    if k in available:
+                        stats.append(k)
+
+                save_stats_overall = { }
+                save_stats_high = { }
+
+                for s in stats:
+                    if type(statistics_all[key][s]) == type(0.0):
+
+                    elif type(statistics_all[key][s]) == type(""):
+                        result += '%s: %s\n' % (s.ljust(40),
+                                                statistics_all[key][s])
+                    elif type(statistics_all[key][s]) == type([]):
+
+                    save_stats_overall[s] = statistics_all[key][s][0]
+                    save_stats_high[s] = statistics_all[key][s][-1]
+            
         fout = open(file, 'w')
 
         fout.write('<?xml version="1.0"?>')
