@@ -87,6 +87,9 @@ class _Flags:
 
         # flags relating to fixing specific bugs
         self._fixed_628 = False
+
+        # ISPyB things
+        self._ispyb_xml_out = None
         
         return
 
@@ -298,6 +301,13 @@ class _Flags:
 
     def get_free_total(self):
         return self._free_total   
+
+    def set_ispyb_xml_out(self, ispyb_xml_out):
+        self._ispyb_xml_out = ispyb_xml_out
+        return
+
+    def get_ispyb_xml_out(self):
+        return self._ispyb_xml_out   
 
     def set_fixed_628(self):
         self._fixed_628 = True

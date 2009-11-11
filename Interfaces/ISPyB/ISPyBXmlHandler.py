@@ -15,7 +15,7 @@ import time
 class _ISPyBXmlHandler:
 
     def __init__(self):
-        self._crystals = []
+        self._crystals = { }
         self._per_crystal_data = {}
         self._project = None
 
@@ -116,7 +116,7 @@ class _ISPyBXmlHandler:
         fout.write('<?xml version="1.0"?>')
         fout.write('<AutoProcContainer>\n')
 
-        for crystal in self._per_crsytal_data:
+        for crystal in self._per_crystal_data:
             xcrystal = self._per_crystal_data[crystal]
 
             log_files = self._per_crystal_data[crystal]['log_files']

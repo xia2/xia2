@@ -260,9 +260,9 @@ class XCrystal(Object):
 
         EHTPXXmlHandler.add_crystal(self._name)
         
-        if CommandLine.get_ispyb_xml_out():
+        if Flags.get_ispyb_xml_out():
             ISPyBXmlHandler.add_xcrystal(self)
-            ISPyBXmlHandler.write_xml(CommandLine.get_ispyb_xml_out())
+            ISPyBXmlHandler.write_xml(Flags.get_ispyb_xml_out())
         
         if self._aa_sequence:
             result += 'Sequence: %s\n' % self._aa_sequence.get_sequence()

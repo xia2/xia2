@@ -646,7 +646,7 @@ class _CommandLine(Object):
         if index < 0:
             raise RuntimeError, 'negative index'
 
-        self._ispyb_xml_out = sys.argv[index + 1]
+        Flags.set_ispyb_xml_out(sys.argv[index + 1])
         Debug.write('ISPyB XML output set to %s' % sys.argv[index + 1])
             
         return
