@@ -33,10 +33,6 @@ class _ISPyBXmlHandler:
                     
         return
 
-    def set_project(self, project):
-        self._project = project
-        return
-
     def add_xcrystal(self, xcrystal):
         if not xcrystal.get_name() in self._crystals:
             self._crystals[xcrystal.get_name()] = xcrystal
@@ -47,24 +43,6 @@ class _ISPyBXmlHandler:
 
         return
 
-    def set_crystal_statistics(self, crystal, key, stats):
-        self._per_crystal_data[crystal]['stats'][key] = stats
-        return
-
-    def set_crystal_cell(self, crystal, cell, spacegroup_list):
-        self._per_crystal_data[crystal]['cell']['cell'] = cell
-        self._per_crystal_data[crystal]['cell'][
-            'spacegroup_list'] = spacegroup_list
-        return        
-
-    def add_crystal_reflection_file(self, crystal, reflection_file):
-        if not reflection_file in self._per_crystal_data[crystal][
-            'reflection_files']:
-            self._per_crystal_data[crystal]['reflection_files'].append(
-                reflection_file)
-
-        return
-    
     def add_crystal_log_file(self, crystal, log_file):
         if not log_file in self._per_crystal_data[crystal][
             'log_files']:
@@ -132,15 +110,39 @@ class _ISPyBXmlHandler:
 
     def write_xml(self, file):
 
+            
+        fout = open(file, 'w')
+
+        fout.write('<?xml version="1.0"?>')
+        fout.write('<AutoProcContainer>\n')
+
         for crystal in self._per_crsytal_data:
-            xcrystal = self._per_crystal-data[crystal]
+            xcrystal = self._per_crystal_data[crystal]
+
+            log_files = self._per_crystal_data[crystal]['log_files']
 
             cell = xcrystal.get_cell()
             spacegroup = xcrystal.get_likely_spacegroups()[0]
+
+            fout.write('<AutoProc><spaceGroup>%s</spaceGroup>' % spacegroup)
+            self.write_refined_cell(fout, cell)
+            fout.write('</AutoProc>')
+
+            fout.write('<AutoProcScalingContainer>')
+            fout.write('<AutoProcScaling>')
+            self.write_date(fout)
+            fout.write('</AutoProcScaling>')
+
             statistics_all = xcrystal.get_statistics()
-                        
+            reflection_file = xcrystal.get_scaled_merged_reflections()
+
+            wavelength_names = xcrystal.get_wavelength_names()
+
             for key in statistics_all.keys():
                 pname, xname, dname = key
+
+                # FIXME should assert that the dname is a
+                # valid wavelength name
 
                 available = statistics_all[key].keys()
 
@@ -169,81 +171,43 @@ class _ISPyBXmlHandler:
                     if k in available:
                         stats.append(k)
 
-                save_stats_overall = { }
-                save_stats_high = { }
+                xwavelength = xcrystal.get_xwavelength(dname)
+                sweeps = xwavelength.get_sweeps()
 
-                for s in stats:
-                    if type(statistics_all[key][s]) == type(0.0):
-
-                    elif type(statistics_all[key][s]) == type(""):
-                        result += '%s: %s\n' % (s.ljust(40),
-                                                statistics_all[key][s])
-                    elif type(statistics_all[key][s]) == type([]):
-
-                    save_stats_overall[s] = statistics_all[key][s][0]
-                    save_stats_high[s] = statistics_all[key][s][-1]
-            
-        fout = open(file, 'w')
-
-        fout.write('<?xml version="1.0"?>')
-
-        fout.write('<DiffractionDataReduction><project>%s</project>' % \
-                   self._project)
-
-        for crystal in self._crystals:
-            fout.write('<per-crystal-results><crystal>%s</crystal>' % \
-                       crystal)
-            fout.write('<unit-cell-information>')
-
-            cell_info = self._per_crystal_data[crystal]['cell']
-
-            for s in cell_info['spacegroup_list']:
-                fout.write(
-                    '<space-group-name-H-M>%s</space-group-name-H-M>' % \
-                    s)
-
-            fout.write('<cell_a>%f</cell_a>' % cell_info['cell'][0])
-            fout.write('<cell_b>%f</cell_b>' % cell_info['cell'][1])
-            fout.write('<cell_c>%f</cell_c>' % cell_info['cell'][2])
-            fout.write('<cell_alpha>%f</cell_alpha>' % cell_info['cell'][3])
-            fout.write('<cell_beta>%f</cell_beta>' % cell_info['cell'][4])
-            fout.write('<cell_gamma>%f</cell_gamma>' % cell_info['cell'][5])
-    
-            fout.write('</unit-cell-information>')
-
-            for f in self._per_crystal_data[crystal]['reflection_files']:
-                fout.write('<reflection-file>%s</reflection-file>' % f)
-            for f in self._per_crystal_data[crystal]['log_files']:
-                fout.write('<log-file>%s</log-file>' % f)
-            for f in self._per_crystal_data[crystal]['deposition_files']:
-                fout.write('<deposition-file>%s</deposition-file>' % f)
-
-
-            for k in self._per_crystal_data[crystal]['stats'].keys():
-                fout.write('<diffraction-statistics>')
-                dataset, resolution_bin = k.split(':')
-
-                fout.write('<dataset>%s</dataset>' % dataset)
-                fout.write('<resolution-bin>%s</resolution-bin>' % \
-                           resolution_bin)
-
-                for stat in self._per_crystal_data[crystal][
-                    'stats'][k].keys():
+                for j, name in enumerate(
+                    ['overall', 'innerShell', 'outerShell']):
+                    statistics_cache = { }
                     
-                    if not self._name_map.has_key(stat):
-                        continue
-                    
-                    name = self._name_map[stat]
-                    datum = self._per_crystal_data[crystal][
-                        'stats'][k][stat]
-                    fout.write('<%s>%s</%s>' % (name, str(datum), name))
-            
-                fout.write('</diffraction-statistics>')
-            
-            fout.write('</per-crystal-results>')
+                    for s in stats:
+                        if type(statistics_all[key][s]) == type([]):
+                            stats_cache[s] = statistics_all[key][s][j]
 
-        fout.write('</DiffractionDataReduction>')
+                    # send these to be written out
+                    self.write_scaling_statistics(fout, name, stats_cache)
 
+                for sweep in sweeps:
+                    fout.write('<AutoProcIntegrationContainer>\n')
+                    image_name = sweep.get_all_image_names()[0]
+                    fout.write('<Image><fileName>%s</fileName>' % \
+                               os.path.split(image_name)[-1])
+                    fout.write('<fileLocation>%s</fileLocation></Image>' %
+                               os.path.split(image_name)[0])
+                    fout.write('<AutoProcIntegration>\n')
+                    cell = sweep.get_integrater_cell()
+                    self.write_cell(fout, cell)
+                    fout.write('</AutoProcIntegration>\n')
+                    fout.write('</AutoProcIntegrationContainer>\n')
+                               
+            fout.write('</AutoProcScalingContainer>')
+
+            fout.write(
+                '<AutoProcProgramAttachment><fileType>result</fileType>')
+            fout.write('<fileName>%s</fileName>' % \
+                       os.path.split(reflection_file)[-1])
+            fout.write('<fileLocation>%s</fileLocation>' % \
+                       os.path.split(reflection_file)[0])
+            
+        fout.write('</AutoProcContainer>\n')
         fout.close()
 
         return

@@ -259,7 +259,10 @@ class XCrystal(Object):
         result = 'Crystal: %s\n' % self._name
 
         EHTPXXmlHandler.add_crystal(self._name)
-        # ISPyBXmlHandler.add_xcrystal(self)
+        
+        if CommandLine.get_ispyb_xml_out():
+            ISPyBXmlHandler.add_xcrystal(self)
+            ISPyBXmlHandler.write_xml(CommandLine.get_ispyb_xml_out())
         
         if self._aa_sequence:
             result += 'Sequence: %s\n' % self._aa_sequence.get_sequence()
@@ -555,6 +558,14 @@ class XCrystal(Object):
                     ha_info_dict['number_total'])
         
         return
+
+    def get_wavelength_names(self):
+        '''Get a list of wavelengths belonging to this crystal.'''
+        return sorted(self._wavelengths)
+
+    def get_xwavelength(self, wavelength_name):
+        '''Get a named xwavelength object back.'''
+        return self._wavelength[wavelength_name]
 
     def add_wavelength(self, xwavelength):
 

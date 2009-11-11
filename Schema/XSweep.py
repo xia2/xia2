@@ -709,6 +709,12 @@ class XSweep(Object):
     def get_indexer_cell(self):
         return self._get_indexer().get_indexer_cell()
 
+    def get_integrater_lattice(self):
+        return self._get_integrater().get_integrater_lattice()
+
+    def get_integrater_cell(self):
+        return self._get_integrater().get_integrater_cell()
+
     def get_indexer_distance(self):
         return self._get_indexer().get_indexer_distance()
 
