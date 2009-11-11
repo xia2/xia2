@@ -567,7 +567,7 @@ class XCrystal(Object):
 
     def get_xwavelength(self, wavelength_name):
         '''Get a named xwavelength object back.'''
-        return self._wavelength[wavelength_name]
+        return self._wavelengths[wavelength_name]
 
     def add_wavelength(self, xwavelength):
 

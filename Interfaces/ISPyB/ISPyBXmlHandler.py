@@ -11,6 +11,7 @@
 # 11th November 2009
 
 import time
+import os
 
 class _ISPyBXmlHandler:
 
@@ -62,30 +63,24 @@ class _ISPyBXmlHandler:
     def write_cell(self, fout, cell):
         '''Write out a UNIT CELL as XML...'''
 
-        fout.write('<cell_a>%f</cell_a>' % cell_info['cell'][0])
-        fout.write('<cell_b>%f</cell_b>' % cell_info['cell'][1])
-        fout.write('<cell_c>%f</cell_c>' % cell_info['cell'][2])
-        fout.write('<cell_alpha>%f</cell_alpha>' % cell_info['cell'][3])
-        fout.write('<cell_beta>%f</cell_beta>' % cell_info['cell'][4])
-        fout.write('<cell_gamma>%f</cell_gamma>' % cell_info['cell'][5])
+        fout.write('<cell_a>%f</cell_a>' % cell[0])
+        fout.write('<cell_b>%f</cell_b>' % cell[1])
+        fout.write('<cell_c>%f</cell_c>' % cell[2])
+        fout.write('<cell_alpha>%f</cell_alpha>' % cell[3])
+        fout.write('<cell_beta>%f</cell_beta>' % cell[4])
+        fout.write('<cell_gamma>%f</cell_gamma>' % cell[5])
 
         return
 
     def write_refined_cell(self, fout, cell):
         '''Write out a REFINED UNIT CELL as XML...'''
 
-        fout.write('<refinedCell_a>%f</refinedCell_a>' % \
-                   cell_info['cell'][0])
-        fout.write('<refinedCell_b>%f</refinedCell_b>' % \
-                   cell_info['cell'][1])
-        fout.write('<refinedCell_c>%f</refinedCell_c>' % \
-                   cell_info['cell'][2])
-        fout.write('<refinedCell_alpha>%f</refinedCell_alpha>' % \
-                   cell_info['cell'][3])
-        fout.write('<refinedCell_beta>%f</refinedCell_beta>' % \
-                   cell_info['cell'][4])
-        fout.write('<refinedCell_gamma>%f</refinedCell_gamma>' % \
-                   cell_info['cell'][5])
+        fout.write('<refinedCell_a>%f</refinedCell_a>' % cell[0])
+        fout.write('<refinedCell_b>%f</refinedCell_b>' % cell[1])
+        fout.write('<refinedCell_c>%f</refinedCell_c>' % cell[2])
+        fout.write('<refinedCell_alpha>%f</refinedCell_alpha>' % cell[3])
+        fout.write('<refinedCell_beta>%f</refinedCell_beta>' % cell[4])
+        fout.write('<refinedCell_gamma>%f</refinedCell_gamma>' % cell[5])
 
         return    
 
@@ -95,7 +90,7 @@ class _ISPyBXmlHandler:
         fout.write('<AutoProcScalingStatistics>\n')
 
         fout.write('<scalingStatisticsType>%s</scalingStatisticsType>\n' % \
-                   scaing_stats_type)
+                   scaling_stats_type)
 
         for name in stats_dict:
             if not name in self._name_map:
@@ -110,16 +105,13 @@ class _ISPyBXmlHandler:
 
     def write_xml(self, file):
 
-            
         fout = open(file, 'w')
 
         fout.write('<?xml version="1.0"?>')
         fout.write('<AutoProcContainer>\n')
 
-        for crystal in self._per_crystal_data:
-            xcrystal = self._per_crystal_data[crystal]
-
-            log_files = self._per_crystal_data[crystal]['log_files']
+        for crystal in sorted(self._crystals):
+            xcrystal = self._crystals[crystal]
 
             cell = xcrystal.get_cell()
             spacegroup = xcrystal.get_likely_spacegroups()[0]
@@ -134,7 +126,7 @@ class _ISPyBXmlHandler:
             fout.write('</AutoProcScaling>')
 
             statistics_all = xcrystal.get_statistics()
-            reflection_file = xcrystal.get_scaled_merged_reflections()
+            reflection_files = xcrystal.get_scaled_merged_reflections()
 
             wavelength_names = xcrystal.get_wavelength_names()
 
@@ -154,18 +146,10 @@ class _ISPyBXmlHandler:
                     'Multiplicity',
                     'I/sigma',
                     'Rmerge',
-                    'Rmeas(I)',
-                    'Rmeas(I+/-)',
-                    'Rpim(I)',
-                    'Rpim(I+/-)',
-                    'Wilson B factor',
-                    'Partial bias',
                     'Anomalous completeness',
                     'Anomalous multiplicity',
-                    'Anomalous correlation',
-                    'Anomalous slope',
-                    'Total observations',
-                    'Total unique']
+                    'Total observations'
+                    ]
 
                 for k in keys:
                     if k in available:
@@ -180,10 +164,11 @@ class _ISPyBXmlHandler:
                     
                     for s in stats:
                         if type(statistics_all[key][s]) == type([]):
-                            stats_cache[s] = statistics_all[key][s][j]
+                            statistics_cache[s] = statistics_all[key][s][j]
 
                     # send these to be written out
-                    self.write_scaling_statistics(fout, name, stats_cache)
+                    self.write_scaling_statistics(fout, name,
+                                                  statistics_cache)
 
                 for sweep in sweeps:
                     fout.write('<AutoProcIntegrationContainer>\n')
@@ -200,12 +185,16 @@ class _ISPyBXmlHandler:
                                
             fout.write('</AutoProcScalingContainer>')
 
-            fout.write(
-                '<AutoProcProgramAttachment><fileType>result</fileType>')
-            fout.write('<fileName>%s</fileName>' % \
-                       os.path.split(reflection_file)[-1])
-            fout.write('<fileLocation>%s</fileLocation>' % \
-                       os.path.split(reflection_file)[0])
+            for k in reflection_files:
+                reflection_file = reflection_files[k]
+
+                fout.write(
+                    '<AutoProcProgramAttachment><fileType>result</fileType>')
+                fout.write('<fileName>%s</fileName>' % \
+                           os.path.split(reflection_file)[-1])
+                fout.write('<fileLocation>%s</fileLocation>' % \
+                           os.path.split(reflection_file)[0])
+                fout.write('</AutoProcProgramAttachment>\n')
             
         fout.write('</AutoProcContainer>\n')
         fout.close()
