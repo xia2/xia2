@@ -185,17 +185,23 @@ class _ISPyBXmlHandler:
                                
             fout.write('</AutoProcScalingContainer>')
 
+            # file unpacking nonsense
+
             for k in reflection_files:
+
                 reflection_file = reflection_files[k]
 
+                if not type(reflection_file) == type(''):
+                    continue
+                
                 fout.write(
-                    '<AutoProcProgramAttachment><fileType>result</fileType>')
-                fout.write('<fileName>%s</fileName>' % \
+                    '<AutoProcProgramAttachment><fileType>result')
+                fout.write('</fileType><fileName>%s</fileName>' % \
                            os.path.split(reflection_file)[-1])
                 fout.write('<fileLocation>%s</fileLocation>' % \
                            os.path.split(reflection_file)[0])
                 fout.write('</AutoProcProgramAttachment>\n')
-            
+                
         fout.write('</AutoProcContainer>\n')
         fout.close()
 
