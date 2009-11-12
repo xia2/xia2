@@ -27,10 +27,13 @@ from Handlers.Environment import get_number_cpus
 class _Flags:
     '''A singleton to manage boolean flags.'''
 
+    # by default now switch on smart scaling and chef - after the smart
+    # scaling has been reset in the XDS Scaler to be "everything"
+
     def __init__(self):
         self._quick = False
-        self._smart_scaling = False
-        self._chef = False
+        self._smart_scaling = True
+        self._chef = True
         self._reversephi = False
         self._no_lattice_test = False
         self._fiddle_sd = False

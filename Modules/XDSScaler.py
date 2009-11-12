@@ -303,6 +303,17 @@ class XDSScaler(Scaler):
         if self._scalr_corrections:
             return
 
+        # so it turns out that applying everything is often as
+        # good as not...?!
+
+        if True:
+
+            self._scalr_correct_decay = True
+            self._scalr_correct_modulation = True
+            self._scalr_correct_absorption = True
+
+            return
+
         Debug.write('Optimising scaling corrections...')
 
         use_decay = False
