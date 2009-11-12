@@ -195,7 +195,7 @@ class _ISPyBXmlHandler:
 
             from Handlers.CommandLine import CommandLine
 
-            fout.write('<AutoProProgramContainer><AutoProcProgram>')
+            fout.write('<AutoProcProgramContainer><AutoProcProgram>')
             fout.write('<processingCommandLine>%s</processingCommandLine>' \
                        % CommandLine.get_command_line())
             fout.write('<processingPrograms>xia2</processingPrograms>')
@@ -224,7 +224,7 @@ class _ISPyBXmlHandler:
             fout.write('<fileLocation>%s</fileLocation>' % os.getcwd())
             fout.write('</AutoProcProgramAttachment>\n')
                 
-            fout.write('</AutoProProgramContainer>')
+            fout.write('</AutoProcProgramContainer>')
             
         fout.write('</AutoProcContainer>\n')
         fout.close()
