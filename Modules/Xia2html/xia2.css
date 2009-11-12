@@ -1,0 +1,82 @@
+/* xia2.css
+   Stylesheet for xia2.html
+   CVS_id $Id: xia2.css,v 1.1 2009/11/12 18:43:07 pjx Exp $
+   */
+body { font-family: Arial, sans-serif;
+       font-size: 17px;
+       background-color: white; }
+h1 { font-family: Georgia, serif;
+     background-color: gray;
+     color: white; }
+h2 { font-family: Georgia, serif;
+     background-color: lightgray; }
+h3 { font-family: Georgia, serif;
+     background-color: lightblue; }
+
+table,td,th { border-style: solid;
+              border-width: 2px;
+              border-spacing: 0;
+              border-color: gray;
+              padding: 1px;
+              font-size: 90%; }
+td,th { padding-left: 8px; padding-right: 8px; }
+
+table.key { border-style: none;
+            font-size: 80%; }
+table.key th { background-color: gray;
+               font-weight: bold;
+               font-size: 85%;
+               color: white; }
+
+/* Styling the "table_one" summary table */
+table.table_one { border-style: none;
+                  empty-cells: show;
+                  border-top-style: solid;
+                  border-bottom-style: solid;
+		  border-collapse: collapse;
+                  background-color: #fffddc; }
+table.table_one th { border-style: none;
+                     border-top-style: solid;
+                     border-bottom-style: solid;
+                     background-color: #ffffcd;
+                     padding: 10px;}
+table.table_one td { border-style: none; }
+table.table_one tr.unit_cell > *:first-child { text-align: right; }
+
+/* Footer */
+p.footer { background-color: #fffddc;
+           font-size: 75%;
+           padding: 10px; }
+
+.logfile { background-color: #fffddc; }
+.ccp4i   { font-weight: bold; }
+.banner  { background-color: lightgray;
+           border-top-style: solid;
+           border-bottom-style: solid;
+           border-color: gray;
+           border-width: 2px; }
+.summary  { font-weight: bold;
+            color: red;
+            font-size: 90%;
+            white-space: pre;
+            background-color: #ffffc6;
+            border-style: solid;
+            border-width: 1px;
+            border-color: orange; }
+.non_summary { font-size: 80%; }
+.result   { margin-left:5%; margin-right:5%; }
+.references { font-size: 70%; }
+.progname { font-size: 150%; font-weight: bold; }
+.proginfo { font-size: 90%; font-style: italic; }
+.progvers { font-size: 90%; font-style: italic; font-weight: bold; }
+.progterm { font-size: 90%; font-style: italic; font-weight: bold; }
+.doclink { font-size: 90%; position: absolute; right: 5%;}
+.applet  { border-bottom: 1px solid gray; }
+
+.loggraph_tables      { border-style: none;
+                        background-color: #cfcdff; }
+table.loggraph_tables { padding: 8px;
+                        background-color: white; }
+.inner_control > a { font-size: 70%;
+                     background-color: white;
+                     position: relative; bottom: 0px; left: 80%; }
