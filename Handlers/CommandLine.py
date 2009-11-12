@@ -77,11 +77,16 @@ class _CommandLine(Object):
         return
 
     def print_command_line(self):
-        cl = '%s' % self._argv[0]
-        for arg in self._argv[1:]:
-            cl += ' %s' % arg
+        cl = self.get_command_line()
         Chatter.write('Command line: %s' % cl)
         return
+
+    def get_command_line(self):
+        cl = 'xia2'
+        for arg in self._argv[1:]:
+            cl += ' %s' % arg
+
+        return cl
 
     def setup(self):
         '''Set everything up...'''

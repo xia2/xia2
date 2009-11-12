@@ -97,7 +97,13 @@ class _ISPyBXmlHandler:
                 continue
 
             out_name = self._name_map[name]
-            fout.write('<%s>%s</%s>' % (out_name, stats_dict[name], out_name))
+
+            if out_name in ['nTotalObservations']:
+                fout.write('<%s>%d</%s>' % \
+                           (out_name, int(stats_dict[name]), out_name))
+            else:
+                fout.write('<%s>%s</%s>' % \
+                           (out_name, stats_dict[name], out_name))
 
         fout.write('</AutoProcScalingStatistics>\n')
 
@@ -187,6 +193,14 @@ class _ISPyBXmlHandler:
 
             # file unpacking nonsense
 
+            from Handlers.CommandLine import CommandLine
+
+            fout.write('<AutoProProgramContainer><AutoProcProgram>')
+            fout.write('<processingCommandLine>%s</processingCommandLine>' \
+                       % CommandLine.get_command_line())
+            fout.write('<processingPrograms>xia2</processingPrograms>')
+            fout.write('</AutoProcProgram>')
+            
             for k in reflection_files:
 
                 reflection_file = reflection_files[k]
@@ -195,13 +209,23 @@ class _ISPyBXmlHandler:
                     continue
                 
                 fout.write(
-                    '<AutoProcProgramAttachment><fileType>result')
+                    '<AutoProcProgramAttachment><fileType>Result')
                 fout.write('</fileType><fileName>%s</fileName>' % \
                            os.path.split(reflection_file)[-1])
                 fout.write('<fileLocation>%s</fileLocation>' % \
                            os.path.split(reflection_file)[0])
                 fout.write('</AutoProcProgramAttachment>\n')
+
+
+            # add the xia2.txt file...
+
+            fout.write('<AutoProcProgramAttachment><fileType>Log')
+            fout.write('</fileType><fileName>xia2.txt</fileName>')
+            fout.write('<fileLocation>%s</fileLocation>' % os.getcwd())
+            fout.write('</AutoProcProgramAttachment>\n')
                 
+            fout.write('</AutoProProgramContainer>')
+            
         fout.write('</AutoProcContainer>\n')
         fout.close()
 
