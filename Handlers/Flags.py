@@ -34,6 +34,7 @@ class _Flags:
         self._quick = False
         self._smart_scaling = True
         self._chef = True
+        self._automatch = False
         self._reversephi = False
         self._no_lattice_test = False
         self._fiddle_sd = False
@@ -196,6 +197,13 @@ class _Flags:
 
     def get_chef(self):
         return self._chef
+
+    def set_automatch(self, automatch):
+        self._automatch = automatch
+        return
+
+    def get_automatch(self):
+        return self._automatch
 
     def set_reversephi(self, reversephi):
         self._reversephi = reversephi

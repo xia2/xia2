@@ -103,6 +103,7 @@ class _CommandLine(Object):
         self._read_quick()
         self._read_smart_scaling()
         self._read_chef()
+        self._read_automatch()
         self._read_reversephi()
         self._read_no_lattice_test()
         self._read_fiddle_sd()
@@ -737,6 +738,13 @@ class _CommandLine(Object):
         if '-chef' in sys.argv:
             Flags.set_chef(True)
             Debug.write('Chef mode selected')
+        return
+
+    def _read_automatch(self):
+
+        if '-automatch' in sys.argv:
+            Flags.set_automatch(True)
+            Debug.write('Automatch mode selected')
         return
 
     def _read_reversephi(self):

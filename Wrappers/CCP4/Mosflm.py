@@ -3633,7 +3633,7 @@ def Mosflm(DriverType = None):
                 if b - a > 3:
                     b = a + 3
 
-                # job.input('automatch')
+                job.input('automatch')
                 job.input('postref multi segments 1')
                 job.input('process %d %d' % (a, b))
                 job.input('go')
