@@ -23,8 +23,8 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.1 2009/11/12 18:43:07 pjx Exp $"
-__version__ = "0.0.1"
+__cvs_id__ = "$Id: Xia2html.py,v 1.2 2009/11/16 18:01:32 pjx Exp $"
+__version__ = "0.0.2"
 
 #######################################################################
 # Import modules that this module depends on
@@ -107,6 +107,8 @@ class Baublizer:
     def __init__(self):
         # List of file patterns
         self.__baubles_programs = []
+        # Set the location of the Jloggraph applet explicitly
+        baubles.setJLoggraphCodebase('.')
 
     def addProgram(self,prog):
         """Add a program name to the list of files to baublize
@@ -129,7 +131,7 @@ class Baublizer:
         # Check if this is in the list of files to
         # baublize
         for prog in self.__baubles_programs:
-            if os.path.basename(os.path.splitext(logfile)[0]).endswith(prog):
+            if os.path.basename(os.path.splitext(logfile)[0]).count(prog):
                 # Run baubles
                 try:
                     baubles.baubles_html(logfile,htmlfile)
@@ -137,6 +139,8 @@ class Baublizer:
                 except:
                     print "Error running baubles on "+str(logfile)
                     return None
+                baubles.baubles_html(logfile,htmlfile)
+                return htmlfile
         # Didn't find the program in the list
         return None
 
@@ -314,12 +318,22 @@ def list_sweeps(int_status_list):
     """Return a list of sweep names
 
     Given a list of 'integration_status_...' Data objects,
-    return a list of the unique sweep names."""
+    return a list of the unique sweep names.
+
+    If sweeps are called SWEEP1, SWEEP2 etc then this will
+    also sort them into alphanumeric order."""
     sweep_list = []
+    auto_assigned = True
     for int_status in int_status_list:
         this_sweep = int_status.value('sweep')
         if not sweep_list.count(this_sweep):
             sweep_list.append(this_sweep)
+            if not this_sweep.startswith("SWEEP"):
+                auto_assigned = False
+    # If the names were automatically assigned (i.e. all
+    # start with SWEEP...) then sort alphanumerically
+    if auto_assigned:
+        sweep_list.sort()
     return sweep_list
 
 def get_last_int_run(int_status_list,sweep):
@@ -361,6 +375,21 @@ def htmlise_sg_name(spacegroup):
         html += ' '
     # Finished - strip trailing space
     return html.rstrip(' ')
+
+def get_relative_path(filename):
+    """Attempt to get the path relative to cwd
+
+    If 'filename' refers to a file or directory below the current
+    working directory (cwd) then this function returns the relative
+    path to cwd. Otherwise it returns 'filename'."""
+    pwd = os.getcwd()
+    common_prefix = os.path.commonprefix([pwd,filename])
+    if common_prefix == pwd:
+        # File is relative to cwd - strip off cwd and return
+        return str(filename).replace(common_prefix,'',1).lstrip(os.sep)
+    else:
+        # File is not relative to cwd - return as is
+        return filename
 
 #######################################################################
 # Main program
@@ -616,8 +645,13 @@ if __name__ == "__main__":
         baublizer.addProgram('truncate')
         baublizer.addProgram('pointless')
         baublizer.addProgram('chef')
+    # Sort out relative and absolute paths to log files
+    # If the logfiles are in a directory below where the program
+    # is running then use relative paths to refer to them,
+    # otherwise use absolute paths
+    abslogdir = os.path.abspath(os.path.join(xia2dir,"LogFiles"))
+    logdir = get_relative_path(abslogdir)
     # Process logiles
-    logdir = os.path.abspath(os.path.join(xia2dir,"LogFiles"))
     try:
         files = list_logfiles(logdir)
         for filen in files:
@@ -630,6 +664,7 @@ if __name__ == "__main__":
                 print "Found logfile >>> "+filen
                 # Store the name without the extension
                 logfile_data['name'] = filen
+                logfile_data['full_dir'] = abslogdir
                 logfile_data['dir'] = logdir
                 logfile_data['log'] = os.path.join(logdir,filen)
                 # Run baubles on this file
@@ -815,9 +850,6 @@ if __name__ == "__main__":
         int_status_section.addPara("Status of images from the "+\
                                    "final integration run performed on "+\
                                    "each sweep")
-        # Start up: build mappings of text to symbols (and vice versa)
-        symbol_dict = int_status_reporter.getSymbolDictionary()
-        symbol_reverse_dict = int_status_reporter.getReverseSymbolLookup()
         # Write out the key of symbols
         int_status_section.addContent(
             int_status_reporter.makeSymbolKey(ncolumns=6))
@@ -880,7 +912,9 @@ if __name__ == "__main__":
     else:
         # Display table of log files
         output_logfiles.addPara("Log files found in "+ \
-                                      Canary.MakeLink(xia2['logfile'][0]. \
+                                    Canary.MakeLink(xia2['logfile'][0]. \
+                                                        value('full_dir'), \
+                                                        xia2['logfile'][0]. \
                                                         value('dir'))+":")
         logs = output_logfiles.addTable()
         for log in xia2['logfile']:
@@ -895,6 +929,17 @@ if __name__ == "__main__":
             output_logfiles.addPara("Baubles wasn't run so there are "+
                                       "no HTML files (set do_baubles to "+
                                       "True in Xia2html.py to change this)")
+        else:
+            # Copy the JLoggraph applet to the xia2_html directory
+            # It lives in the "extras" subdir of the Xia2html source
+            # directory
+            jar_file = "JLogGraph.jar"
+            jloggraph_jar = os.path.join(xia2htmldir,"extras",jar_file)
+            print "Copying %s status icons to %s" % (jloggraph_jar,xia2_html)
+            if os.path.isfile(jloggraph_jar):
+                shutil.copy(jloggraph_jar,os.path.join(xia2_html,jar_file))
+            else:
+                print "*** %s not found ***" % jloggraph_jar
 
     # External reflection files
     output_datafiles = output_files.addSubsection("Reflection data files")
@@ -906,10 +951,13 @@ if __name__ == "__main__":
         refln_files = output_datafiles.addTable(('Dataset','Format','File'))
         for refln_file in xia2['scaled_refln_file']:
             # Need to do some processing here to make it look nicer
+            # (Note that if possible we link to the files using a
+            # relative rather than absolute path)
             filen = os.path.basename(refln_file.value('filename'))
             reflndata = [refln_file.value('dataset'),
                          refln_file.value('format'),
-                         Canary.MakeLink(filen,refln_file.value('filename'))]
+                         Canary.MakeLink(filen,get_relative_path(
+                        refln_file.value('filename')))]
             refln_files.addRow(reflndata)
 
     # Summary from the end of the log
