@@ -6,6 +6,21 @@
 #     A copy of the CCP4 licence can be obtained by writing to the
 #     CCP4 Secretary, Daresbury Laboratory, Warrington WA4 4AD, UK.
 #
+#     NB: Modified from Baubles 0.0.8 by Peter Briggs Nov 2009
+#
+#     Changes:
+#
+#     1. Introduced global JAVALOGGRAPH_CODEBASE which overrides the
+#        automatic codebase determination in javaloggraph.__init__()
+#        Applications can set and get JAVALOGGRAPH_CODEBASE using the
+#        setJLoggraphCodebase() and getJLoggraphCodebase() functions.
+#
+#     2. New function "baubles()" now generates the HTML output directly
+#        from a populated smartie.logfile object.
+#        The "baubles_html()" function wraps "baubles()" and should
+#        behave as before i.e. accepting the name of an input logfile
+#        and optionally an output html file.
+#
 ########################################################################
 #
 # baubles.py
@@ -21,8 +36,15 @@ import os
 import re
 import time
 
-__cvs_id__ = "$Id: baubles.py,v 1.1 2009/11/12 18:43:07 pjx Exp $"
+__cvs_id__ = "$Id: baubles.py,v 1.2 2009/11/16 17:58:56 pjx Exp $"
 __version__ = "0.0.8"
+__diamond_version__ = "0.0.1"
+
+############################################################
+# Module globals
+############################################################
+
+JAVALOGGRAPH_CODEBASE = None # Default for Jloggraph codebase
 
 ############################################################
 # HTML and Javascript generation functions
@@ -642,29 +664,32 @@ class javaloggraph:
 
         These parameters can then be recovered using the 'code',
         'codebase' and 'archive' methods."""
-        self.__codebase = ""
+        self.__codebase = getJLoggraphCodebase()
         self.__code = ""
-        self.__archive = ""
+        self.__archive = "JLogGraph.jar"
 
         # Determine what archive is available
-        if os.environ.has_key("CBIN"):
-            # Local version of java
-            self.__codebase = "file:"+os.sep*2+os.environ["CBIN"]
-            if os.path.exists(os.path.join(os.environ["CBIN"],"JLogView.jar")):
-                self.__archive = "JLogView.jar"
-            elif os.path.exists(os.path.join(os.environ["CBIN"],"JLogGraph.jar")):
-                self.__archive = "JLogGraph.jar"
-        
-        if self.__archive == "":
-            # No local version - use the web version instead
-            self.__codebase = "http://www.ccp4.ac.uk/peter/java"
-            self.__archive = "JLogGraph.jar"
+        if self.__codebase is None:
+            if os.environ.has_key("CBIN"):
+                # Local version of java
+                self.__codebase = "file:"+os.sep*2+os.environ["CBIN"]
+                if os.path.exists(os.path.join(os.environ["CBIN"],"JLogView.jar")):
+                    self.__archive = "JLogView.jar"
+                elif os.path.exists(os.path.join(os.environ["CBIN"],"JLogGraph.jar")):
+                    self.__archive = "JLogGraph.jar"
+            else:
+                # No local version - use the web version instead
+                self.__codebase = "http://www.ccp4.ac.uk/peter/java"
 
         # Set the 'code' parameter according to the archive name
         if self.__archive == "JLogGraph.jar":
             self.__code="JLogGraph.class"
         elif self.__archive == "JLogView.jar":
             self.__code="JLogView_.LGApplet.class"
+
+    def setCodebase(self,codebase):
+        """Explicitly set the codebase for the applet"""
+        self.__codebase = codebase;
 
     def codebase(self):
         """Return the value of the codebase for the applet."""
@@ -1268,6 +1293,17 @@ def baubles_html(logfile,htmlfile=None):
 
     # Process the logfile
     log = smartie.parselog(logfile)
+    # Generate the HTML
+    baubles(log,htmlfile)
+    return
+
+def baubles(log,htmlfile=None):
+    """Given a smartie logfile object, generate HTML summary
+
+    'log' specifies a populated smartie logfile object; htmlfile
+    specifies the name of the file to write the HTML output
+    to. If htmlfile is None then the HTML is written to
+    stdout."""
 
     # Open the file
     if htmlfile:
@@ -1291,7 +1327,7 @@ def baubles_html(logfile,htmlfile=None):
     html.write("-->\n")
     writeInlineStyle(html)
     writeJavascriptLibrary(html)
-    logfilename = os.path.basename(logfile)
+    logfilename = os.path.basename(log.filename())
     html.write("<title>baubles: "+str(logfilename)+"</title>\n")
     html.write("""</head>
 <body>
@@ -1400,6 +1436,34 @@ def baubles_html(logfile,htmlfile=None):
     # Close the file
     if html: html.close()
     return
+
+# Configuration
+def setJLoggraphCodebase(codebase):
+    """Set the default value for the Java loggraph codebase
+
+    This allows an application to override the value of the
+    'codebase' parameter that is written to the output HTML
+    for the Java loggraphs.
+
+    The codebase tells the browser where to find the java
+    applet or archive containing the JLoggraph code. If this
+    is not set to an explicit value then it is determined
+    automatically on initialisation of a 'javaloggraph' object.
+
+    Set 'codebase' to None to return to the automatic
+    defaults."""
+    global JAVALOGGRAPH_CODEBASE
+    JAVALOGGRAPH_CODEBASE = codebase
+    return
+
+def getJLoggraphCodebase():
+    """Fetch the default value for the Java loggraph codebase
+
+    Returns the setting of the default value of the 'codebase'
+    parameter that is written to the output HTML for the Java
+    loggraphs."""
+    global JAVALOGGRAPH_CODEBASE
+    return JAVALOGGRAPH_CODEBASE
 
 ############################################################
 # Top level (baubles program)
