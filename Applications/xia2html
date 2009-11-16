@@ -5,15 +5,10 @@
 # NB Need to set the XIA2HTMLDIR to the location of the
 # Xia2Log.py script
 #
-# CVS_id $Id: xia2html,v 1.1 2009/11/12 18:45:11 pjx Exp $
+# CVS_id $Id: xia2html,v 1.2 2009/11/16 13:21:50 pjx Exp $
 #
 # Set up the environment
 export XIA2HTMLDIR=$XIA2_ROOT/Modules/Xia2html
-if test "PYTHONPATH"; then
-    export PYTHONPATH=$XIA2HTMLDIR:$PYTHONPATH
-else
-    export LD_LIBRARY_PATH=$XIA2HTMLDIR
-fi
 # Run the Xia2log.py script
 python $XIA2HTMLDIR/Xia2html.py ${1+"$@"}
 #
