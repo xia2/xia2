@@ -44,6 +44,7 @@ class _Flags:
             self._parallel = get_number_cpus()
         except:
             self._parallel = 0
+        self._xparallel = 0
         self._batch_scale = False
 
         # File from which to copy the FreeR_flag column
@@ -267,6 +268,13 @@ class _Flags:
 
     def get_parallel(self):
         return self._parallel
+
+    def set_xparallel(self, xparallel):
+        self._xparallel = xparallel
+        return
+
+    def get_xparallel(self):
+        return self._xparallel
 
     def set_z_min(self, z_min):
         self._z_min = z_min

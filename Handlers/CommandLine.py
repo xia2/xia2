@@ -190,6 +190,12 @@ class _CommandLine(Object):
                   (self._help_parallel(), str(e))
 
         try:
+            self._read_xparallel()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_xparallel(), str(e))
+
+        try:
             self._read_spacegroup()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -472,6 +478,23 @@ class _CommandLine(Object):
 
     def _help_parallel(self):
         return '-parallel N'
+
+    def _read_xparallel(self):
+        try:
+            index = sys.argv.index('-xparallel')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_xparallel(int(sys.argv[index + 1]))
+        Debug.write('XParallel set to %d' % Flags.get_xparallel())
+            
+        return
+
+    def _help_xparallel(self):
+        return '-xparallel N'
 
     def _read_spacegroup(self):
         try:

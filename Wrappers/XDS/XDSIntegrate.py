@@ -148,6 +148,9 @@ def XDSIntegrate(DriverType = None):
             xds_inp.write('JOB=INTEGRATE\n')
             xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
                           self._parallel) 
+            if Flags.get_xparallel() > 1:
+                xds_inp.write('MAXIMUM_NUMBER_OF_JOBS=%d\n' % \
+                              Flags.get_xparallel()) 
 
             # write out lots of output
             xds_inp.write('TEST=2\n')
