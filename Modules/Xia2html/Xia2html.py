@@ -23,8 +23,8 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.2 2009/11/16 18:01:32 pjx Exp $"
-__version__ = "0.0.2"
+__cvs_id__ = "$Id: Xia2html.py,v 1.3 2009/11/19 19:01:55 pjx Exp $"
+__version__ = "0.0.3"
 
 #######################################################################
 # Import modules that this module depends on
@@ -36,6 +36,14 @@ import time
 import Magpie
 import Canary
 import baubles
+
+#######################################################################
+# Local data
+#######################################################################
+
+format_useful_for = { "mtz": "CCP4 and Phenix",
+                      "sca": "AutoSHARP etc",
+                      "sca_unmerged": "Shelx C/D/E" }
 
 #######################################################################
 # Class definitions
@@ -170,7 +178,8 @@ class IntegrationStatusReporter:
                  'ok': '%',
                  'bad_rmsd': '!',
                  'many_bad': '#',
-                 'blank': '.' }
+                 'blank': '.',
+                 'abandoned': '@' }
 
     def __makeReverseSymbolLookup(self):
         """Internal: build the reverse lookup table for symbols"""
@@ -314,11 +323,15 @@ def cmp_file_by_keyword(file1,file2):
     if i == j: return 0
     if i > j: return 1
 
-def list_sweeps(int_status_list):
+def list_sweeps(int_status_list,dataset=None):
     """Return a list of sweep names
 
     Given a list of 'integration_status_...' Data objects,
     return a list of the unique sweep names.
+
+    Optionally if a 'dataset' name is given, then the
+    list will only have those sweeps associated with that
+    dataset name.
 
     If sweeps are called SWEEP1, SWEEP2 etc then this will
     also sort them into alphanumeric order."""
@@ -326,6 +339,10 @@ def list_sweeps(int_status_list):
     auto_assigned = True
     for int_status in int_status_list:
         this_sweep = int_status.value('sweep')
+        # Check for matching dataset name
+        if dataset:
+            if int_status.value('dataset') != dataset: continue
+        # Check if name has been encountered before
         if not sweep_list.count(this_sweep):
             sweep_list.append(this_sweep)
             if not this_sweep.startswith("SWEEP"):
@@ -384,7 +401,10 @@ def get_relative_path(filename):
     path to cwd. Otherwise it returns 'filename'."""
     pwd = os.getcwd()
     common_prefix = os.path.commonprefix([pwd,filename])
-    if common_prefix == pwd:
+    if filename == pwd:
+        # 'File' is the current working directory
+        return '.'
+    elif common_prefix == pwd:
         # File is relative to cwd - strip off cwd and return
         return str(filename).replace(common_prefix,'',1).lstrip(os.sep)
     else:
@@ -498,6 +518,11 @@ if __name__ == "__main__":
     xia2.addPattern('scaled_refln_file',
                     "Scaled reflections ?\(?([^\):]*)\)?: (.+)$",
                     ['dataset','filename','format'])
+    # sweep_to_dataset pattern matches:
+    # SWEEP NATIVE [WAVELENGTH NATIVE]
+    xia2.addPattern('sweep_to_dataset',
+                    "SWEEP ([^ ]+) \[WAVELENGTH ([^\]]+)\]",
+                    ['sweep','dataset'])
 
     # Block definitions
     #
@@ -603,7 +628,7 @@ if __name__ == "__main__":
                                 "Processed batches ([0-9]+) to ([0-9]+)",
                                 ['start','end'])
     status_processor.addPattern('status_per_image',
-                                "([oO%#!]+)$")
+                                "([oO%#!@]+)$")
     status_processor.addPattern('key',
                                 "\"o\".*\n.*blank")
     for int_status in xia2['integration_status_per_image']:
@@ -612,7 +637,8 @@ if __name__ == "__main__":
         # FIXME: maybe this could be more generally be done
         # inside of Magpie in future?
         status_processor.processText(str(int_status))
-        int_status.setValue('sweep',status_processor['sweep'][0].value('name'))
+        this_sweep = status_processor['sweep'][0].value('name')
+        int_status.setValue('sweep',this_sweep)
         try:
             start_batch = status_processor['batch'][0]. \
                           value('start')
@@ -628,6 +654,15 @@ if __name__ == "__main__":
         for line in status_processor['status_per_image']:
             image_status_line += str(line) + "\n"
         image_status_line = image_status_line.strip('\n')
+        # Find which dataset this sweep belongs to
+        int_status.setValue('dataset',None)
+        for sweep in xia2['sweep_to_dataset']:
+            if sweep.value('sweep') == this_sweep:
+                int_status.setValue('dataset',sweep.value('dataset'))
+                print "Sweep %s assigned to dataset %s" % \
+                    (this_sweep,sweep.value('dataset'))
+                break
+        # Store the data
         int_status.setValue('image_status',image_status_line)
         # Reset the processor for the next round
         status_processor.reset()
@@ -698,6 +733,10 @@ if __name__ == "__main__":
             # Format is not defined, reset it to the
             # last defined value we found
             refln_file.setValue('format',refln_format)
+        # For MTZ file check the dataset - if not assigned
+        # then set to "All"
+        if not refln_file.value('dataset'):
+            refln_file.setValue('dataset',"All")
 
     #########################################################
     # Construct output HTML file
@@ -710,7 +749,7 @@ if __name__ == "__main__":
 
     # XIA2 version and other general info
     try:
-        status = xia2['xia2_status'][0].value('status')
+        termination_status = xia2['xia2_status'][0].value('status')
     except IndexError:
         # Assume that xia2 is still running
         # For now don't attempt to process incomplete file
@@ -719,69 +758,40 @@ if __name__ == "__main__":
         sys.exit(1)
 
     version = xia2['xia2_version'][0].value('version')
-    xia2doc.addPara("XIA2 version %s completed with status '%s'" % \
-                    (version, status)). \
-                    addPara("Read output from %s" % Canary.MakeLink(xia2dir))
     command_line = xia2['command_line'][0].value('cmd_line')
 
-    # Build summary table ("table 1") at head of file
-    table_one = xia2doc.addTable()
-    table_one.addClass('table_one')
-    row_titles = ['Wavelength (&Aring;)',
-                  'High resolution limit',
-                  'Low resolution limit',
-                  'Completeness',
-                  'Multiplicity',
-                  'I/sigma',
-                  'R<sub>merge</sub>']
-    if have_anomalous:
-        row_titles.extend(['Anomalous completeness',
-                           'Anomalous multiplicity'])
-    # Add initial the column
-    table_one.addColumn(row_titles)
-    # Add additional columns for each dataset
-    for dataset in datasets:
-        # Locate the wavelength
-        wave_lambda = '?'
-        for wavelength in xia2['wavelength']:
-            if dataset.shortName() == wavelength.value('name'):
-                wave_lambda = wavelength.value('lambda')
-                break
-        # Construct the column of data and add to the table
-        column_data = [wave_lambda,
-                       dataset['high_resolution_limit'][1],
-                       dataset['low_resolution_limit'][1],
-                       dataset['completeness'][1],
-                       dataset['multiplicity'][1],
-                       dataset['i/sigma'][1],
-                       dataset['rmerge'][1]]
-        if have_anomalous:
-            try:
-                anom_completeness = dataset['anomalous_completeness'][1]
-                anom_multiplicity = dataset['anomalous_multiplicity'][1]
-            except KeyError:
-                anom_completeness = '-'
-                anom_multiplicity = '-'
-            column_data.extend([anom_completeness,anom_multiplicity])
-        table_one.addColumn(column_data,
-                            header=dataset.shortName())
-    # Additional data
+    # Build the skeleton of the document here
+    # Create the major sections which will be populated later on
+    #
+    # Preamble
+    xia2doc.addPara("XIA2 version %s completed with status '%s'" % \
+                    (version, termination_status)). \
+                    addPara("Read output from %s" % \
+                                Canary.MakeLink(xia2dir,
+                                                get_relative_path(xia2dir)))
+    #
+    # Initial summary table
+    table_one = xia2doc.addTable() # Initial summary table
+    #
+    # Overview section
+    overview = xia2doc.addSection("Overview")
+    #
+    # Integration status section
+    int_status_section = xia2doc.addSection("Integration status per image")
+    #
+    # Output files section
+    output_files = xia2doc.addSection("Output files")    
+    #
+    # Detailed statistics
+    summary = xia2doc.addSection("Detailed statistics for each dataset")
+    #
+    # Credits section
+    credits = xia2doc.addSection("Credits")
+
+    # Populate the "overview" section
+    #
+    # Crystallographic parameters section
     unit_cell = xia2['unit_cell'][0]
-    table_one.addRow(['Unit cell dimensions: a (&Aring;)',
-                      unit_cell.value('a')],"unit_cell")
-    table_one.addRow(['b (&Aring;)',unit_cell.value('b')],"unit_cell")
-    table_one.addRow(['c (&Aring;)',unit_cell.value('c')],"unit_cell")
-    table_one.addRow(['&alpha;',unit_cell.value('alpha')],"unit_cell")
-    table_one.addRow(['&beta;',unit_cell.value('beta')],"unit_cell")
-    table_one.addRow(['&gamma;',unit_cell.value('gamma')],"unit_cell")
-    table_one.addRow(['Spacegroup',
-                      htmlise_sg_name(
-                xia2['assumed_spacegroup'][0].value('spacegroup'))])
-
-    # Add table of contents
-    xia2doc.addTOC()
-
-    # Crystallographic parameters
     twinning = str(xia2['twinning'][0])
     try:
         asu_and_solvent = str(xia2['asu_and_solvent'][0])
@@ -789,9 +799,6 @@ if __name__ == "__main__":
         # Assume that this was missing
         # Put in a default message
         asu_and_solvent = "No information on ASU contents"
-
-    # Overview section
-    overview = xia2doc.addSection("Overview")
     
     # Crystallographic parameters
     xtal_params = overview.addSubsection("Crystallographic parameters")
@@ -840,27 +847,25 @@ if __name__ == "__main__":
     #########################################################
     # Integration status per image
     #########################################################
-    int_status = xia2['integration_status_per_image']
-    int_status_section = xia2doc.addSection("Integration status per image")
     int_status_reporter = IntegrationStatusReporter(xia2_html_dir)
-    # Report what was found
-    if len(int_status):
-        print "*** PROCESSING SWEEPS ***"
-        # Write section preamble
-        int_status_section.addPara("Status of images from the "+\
-                                   "final integration run performed on "+\
-                                   "each sweep")
-        # Write out the key of symbols
-        int_status_section.addContent(
-            int_status_reporter.makeSymbolKey(ncolumns=6))
-        # Get list of sweeps
-        sweep_list = list_sweeps(int_status)
-        print "Sweep list:"
+    int_status = xia2['integration_status_per_image']
+    # Write out the preamble and key of symbols
+    int_status_section.addPara("The following sections show the status of the each images from the final integration run performed on each sweep within each dataset.")
+    int_status_section.addContent(
+        int_status_reporter.makeSymbolKey(ncolumns=6))
+    # Add
+    int_status_section.addTOC()
+    # Loop over datasets/wavelengths
+    for wavelength in xia2['wavelength']:
+        # Make a section for each dataset
+        dataset = wavelength.value('name')
+        int_status_dataset_section = int_status_section. \
+            addSubsection("Dataset %s" % dataset)
+        print ">>>> DATASET: "+str(dataset)
+        sweep_list = list_sweeps(int_status,dataset)
+        # Deal with each sweep associated with the dataset
         for sweep in sweep_list:
-            print ">>> "+sweep
-        # For each sweep, find the last integration run
-        for sweep in sweep_list:
-            print "Processing integration status for sweep: "+sweep
+            print "* Sweep: "+str(sweep)
             last_int_run = get_last_int_run(int_status,sweep)
             if not last_int_run:
                 # Failed to find a match
@@ -869,16 +874,15 @@ if __name__ == "__main__":
                 # Output status info for this sweep in its own section
                 start_batch = str(last_int_run.value('start_batch'))
                 end_batch = str(last_int_run.value('end_batch'))
-                sweep_section = int_status_section.addSubsection(sweep+\
-                                                                 ": batches "+\
-                                                                 start_batch+\
-                                                                 " to "+\
-                                                                 end_batch)
+                sweep_section = int_status_dataset_section. \
+                    addSubsection(sweep + ": batches " + start_batch + \
+                                      " to " + end_batch)
                 # Build the output HTML
                 images_html = ''
                 # Process each line of the status separately
                 batch_num = int(start_batch)
-                for images_text in last_int_run.value('image_status').split('\n'):
+                for images_text in last_int_run.value('image_status'). \
+                        split('\n'):
                     # Turn the status symbols into icons
                     for symbol in list(images_text):
                         status = int_status_reporter.lookupStatus(symbol)
@@ -889,21 +893,15 @@ if __name__ == "__main__":
                     images_html += "<br />\n"
                 # Add the icons to the document
                 sweep_section.addContent("<p>"+images_html+"</p>")
-        # Finally: copy the image icons to the xia2_html directory
-        print "Copying image status icons to %s" % xia2_html
-        for icon in int_status_reporter.listIconNames():
-            shutil.copy(os.path.join(xia2icondir,icon),
-                        os.path.join(xia2_html,icon))
-            
-    else:
-        # Nothing found in the xia2.txt file
-        int_status_section.addPara("No data available")
+    # Finally: copy the image icons to the xia2_html directory
+    print "Copying image status icons to %s" % xia2_html
+    for icon in int_status_reporter.listIconNames():
+        shutil.copy(os.path.join(xia2icondir,icon),
+                    os.path.join(xia2_html,icon))
 
     #########################################################
     # External files
     #########################################################
-    
-    output_files = xia2doc.addSection("Output files")
 
     # External log files
     output_logfiles = output_files.addSubsection("Log files")
@@ -948,49 +946,60 @@ if __name__ == "__main__":
     else:
         # Display table of reflection files
         output_datafiles.addPara("Available reflection files:")
-        refln_files = output_datafiles.addTable(('Dataset','Format','File'))
+        refln_files = output_datafiles.addTable(('Dataset','Format','File','Useful for...'))
         for refln_file in xia2['scaled_refln_file']:
             # Need to do some processing here to make it look nicer
             # (Note that if possible we link to the files using a
             # relative rather than absolute path)
             filen = os.path.basename(refln_file.value('filename'))
+            try:
+                useful_for = format_useful_for[refln_file.value('format')]
+            except KeyError:
+                useful_for = ''
             reflndata = [refln_file.value('dataset'),
                          refln_file.value('format'),
                          Canary.MakeLink(filen,get_relative_path(
-                        refln_file.value('filename')))]
+                        refln_file.value('filename'))),
+                         useful_for]
             refln_files.addRow(reflndata)
 
-    # Summary from the end of the log
-    summary = xia2doc.addSection("Detailed summary")
+    # Detailed statistics for each dataset
     print "Number of summary tables: "+str(xia2.count('dataset_summary'))
+    # If there is more than 1 summary then write a TOC
+    if len(xia2['dataset_summary']) > 1:
+        summary.addPara("Statistics for each of the following datasets:")
+        summary.addTOC()
+    statistic_sections = {}
     for dataset in xia2['dataset_summary']:
+        # Make a subsection for each dataset
+        name = dataset.value('dataset')
         summary_table = Canary.MakeMagicTable(dataset.value('table'))
         summary_table.setHeader(['','Overall','Low','High'])
-        summary.addSubsection(dataset.value('dataset')). \
-                              addContent(summary_table)
+        stats_subsection = summary.addSubsection(name)
+        stats_subsection.addContent(summary_table)
+        # Store a reference to the subsection for linking to later
+        statistic_sections[name] = stats_subsection
 
     # Credits section
-    credits = xia2doc.addSection("Credits")
-
+    #
     # Programs used by XIA2
     programs = credits.addSubsection("Software Used").addList()
     for prog in xia2['xia2_used'][0].value('software').split():
         programs.addItem(prog)
-    
     # Citations
     citations = credits.addSubsection("Citations").addList()
     for line in str(xia2['citations'][0]).split('\n'):
         if line.strip() != "": citations.addItem(line)
-
     # Some other xia2-specific stuff
     sect_xia2_stuff = credits.addSubsection("xia2 Details")
     sect_xia2_stuff.addPara("Additional details about this run:")
     tbl_xia2_stuff = sect_xia2_stuff.addTable()
     tbl_xia2_stuff.addRow(['Version',version])
     tbl_xia2_stuff.addRow(['Command line',command_line])
-    tbl_xia2_stuff.addRow(['Termination status',status])
+    tbl_xia2_stuff.addRow(['Termination status',termination_status])
+    xia2txt = os.path.join(xia2dir,"xia2.txt")
     tbl_xia2_stuff.addRow(['xia2.txt file',
-                           Canary.MakeLink(os.path.join(xia2dir,"xia2.txt"))])
+                           Canary.MakeLink(xia2txt,get_relative_path(xia2txt))])
 
     # Footer section
     footer = "This file generated for you from xia2 output by Xia2html %s on %s<br />Powered by Magpie %s and Canary %s<br />&copy; Diamond 2009" \
@@ -999,6 +1008,73 @@ if __name__ == "__main__":
            Magpie.version(),
            Canary.version())
     xia2doc.addContent("<p class='footer'>%s</p>" % footer)
+
+    #########################################################
+    # "Table one" (initial summary table)
+    #########################################################
+    # Note: although this table appears at the start of the output
+    # document, we make it last so we can link to later content
+    table_one.addClass('table_one')
+    row_titles = ['Wavelength (&Aring;)',
+                  'High resolution limit',
+                  'Low resolution limit',
+                  'Completeness',
+                  'Multiplicity',
+                  'I/sigma',
+                  'R<sub>merge</sub>']
+    if have_anomalous:
+        row_titles.extend(['Anomalous completeness',
+                           'Anomalous multiplicity'])
+    # Add initial the column
+    table_one.addColumn(row_titles)
+    # Add additional columns for each dataset
+    for dataset in datasets:
+        # Locate the wavelength
+        wave_lambda = '?'
+        for wavelength in xia2['wavelength']:
+            if dataset.shortName() == wavelength.value('name'):
+                wave_lambda = wavelength.value('lambda')
+                break
+        # Construct the column of data and add to the table
+        column_data = [wave_lambda,
+                       dataset['high_resolution_limit'][1],
+                       dataset['low_resolution_limit'][1],
+                       dataset['completeness'][1],
+                       dataset['multiplicity'][1],
+                       dataset['i/sigma'][1],
+                       dataset['rmerge'][1]]
+        if have_anomalous:
+            try:
+                anom_completeness = dataset['anomalous_completeness'][1]
+                anom_multiplicity = dataset['anomalous_multiplicity'][1]
+            except KeyError:
+                anom_completeness = '-'
+                anom_multiplicity = '-'
+            column_data.extend([anom_completeness,anom_multiplicity])
+        table_one.addColumn(column_data,
+                            header=dataset.shortName())
+    # Link forward to full stats for each dataset
+    row = ['']
+    for dataset in datasets:
+        row.append(Canary.Link("Full stats..",
+                               statistic_sections[dataset.name()]))
+    table_one.addRow(row)
+    # Additional data: unit cell, spacegroup
+    table_one.addRow(['&nbsp;']) # Empty row for padding
+    table_one.addRow(['Unit cell dimensions: a (&Aring;)',
+                      unit_cell.value('a')],"unit_cell")
+    table_one.addRow(['b (&Aring;)',unit_cell.value('b')],"unit_cell")
+    table_one.addRow(['c (&Aring;)',unit_cell.value('c')],"unit_cell")
+    table_one.addRow(['&alpha;',unit_cell.value('alpha')],"unit_cell")
+    table_one.addRow(['&beta;',unit_cell.value('beta')],"unit_cell")
+    table_one.addRow(['&gamma;',unit_cell.value('gamma')],"unit_cell")
+    table_one.addRow(['&nbsp;']) # Empty row for padding
+    table_one.addRow(['Spacegroup',
+                      htmlise_sg_name(
+                xia2['assumed_spacegroup'][0].value('spacegroup'))])
+    table_one.addRow(['',Canary.Link("More crystallographic parameters..",
+                                     overview)])
+    
 
     # Spit out the HTML
     xia2doc.renderFile('xia2.html')
