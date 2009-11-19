@@ -15,6 +15,7 @@ Modules/Doc/XDSIntegrater.pdf -text
 Modules/SPOT.XDS -text svneol=unset#application/octet-stream
 Modules/XPARM.XDS -text svneol=unset#application/octet-stream
 Modules/Xia2html/extras/JLogGraph.jar -text
+Modules/Xia2html/icons/img_abandoned.png -text
 Modules/Xia2html/icons/img_bad_rmsd.png -text
 Modules/Xia2html/icons/img_blank.png -text
 Modules/Xia2html/icons/img_good.png -text
