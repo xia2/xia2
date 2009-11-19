@@ -10,8 +10,8 @@
 # Provide classes and functions for generating interactive HTML
 # documents
 #
-__cvs_id__ = "$Id: Canary.py,v 1.1 2009/11/12 18:43:07 pjx Exp $"
-__version__ = "0.0.1"
+__cvs_id__ = "$Id: Canary.py,v 1.2 2009/11/19 18:54:51 pjx Exp $"
+__version__ = "0.0.2"
 
 #######################################################################
 # Import modules that this module depends on
@@ -459,6 +459,59 @@ class Table:
         # Didn't match the header
         raise KeyError
 
+    def __renderRow(self,row,tag,classes=None):
+        """Internal: render a single row of the table.
+
+        Calling method must supply 'row' (list of data
+        items forming the row) and 'tag' (HTML tag to
+        enclose row elements with - typically either
+        'td' or 'th').
+
+        Optional argument 'classes' is a string of
+        class names to attach to the row.
+
+        This method will do automatic cell merging on
+        the generated row, with empty cells merged into
+        the first non-empty cell to the left
+
+        Returns the HTML code for the row."""
+        # Build a template for cell merging
+        template = []
+        last_nonempty_cell = 0
+        for i in range(0,len(row)):
+            if not row[i] is None:
+                last_nonempty_cell = i
+            template.append(last_nonempty_cell)
+        # Deal with supplid CSS classes
+        if classes:
+            row_classes = " class='"+str(classes)+"'"
+        else:
+            row_classes = ''
+        # Start building the row
+        row_html = "<tr"+row_classes+">"
+        for i in range(0,len(row)):
+            # Colspan (number of columns this cell spans)
+            colspan = template.count(i)
+            if colspan > 0:
+                item = row[i]
+                if colspan > 1:
+                    colspan_attr = " colspan='"+str(colspan)+"' "
+                else:
+                    colspan_attr = ''
+                # Cell contents
+                try:
+                    item_str = item.render()
+                except AttributeError:
+                    # Assume item has no render method
+                    if item == None:
+                        item_str = ''
+                    else:
+                        item_str = str(item)
+                row_html += "<"+tag+colspan_attr+">"+item_str+"</"+tag+">"
+        # Close the row
+        row_html += "</tr>\n"
+        return row_html
+
     def render(self):
         """Generate a HTML version of the table"""
         # Deal with CSS classes
@@ -475,41 +528,7 @@ class Table:
         contents = "<table"+class_attribute+title_attribute+">\n"
         # Build the table header
         if len(self.__header) and not self.hasEmptyHeader():
-            # Automatic cell merging - empty cells
-            # will be merged into the first non-empty
-            # cell to the left
-            template = []
-            last_nonempty_cell = 0
-            for i in range(0,len(self.__header)):
-                if not self.__header[i] is None:
-                    last_nonempty_cell = i
-                template.append(last_nonempty_cell)
-            #FIXME diagnostic code commented out below
-            ##colspan = []
-            ##for i in range(0,len(template)):
-            ##    colspan.append(template.count(i))
-            ##print "Header = "+str(self.__header)
-            ##print "Template = "+str(template)
-            ##print "Colspan = "+str(colspan)
-            contents += "<tr>"
-            for i in range(0,len(self.__header)):
-                colspan = template.count(i)
-                if colspan > 0:
-                    item = self.__header[i]
-                    if colspan > 1:
-                        colspan_attr = " colspan='"+str(colspan)+"' "
-                    else:
-                        colspan_attr = ''
-                    try:
-                        item_str = item.render()
-                    except AttributeError:
-                        # Assume item has no render method
-                        if item == None:
-                            item_str = ''
-                        else:
-                            item_str = str(item)
-                    contents += "<th"+colspan_attr+">"+item_str+"</th>"
-            contents += "</tr>\n"
+            contents += self.__renderRow(self.__header,'th')
         # Table contents
         i = 0 # Row counter
         for row in self.__rows:
@@ -518,18 +537,7 @@ class Table:
                 row_classes = " class='"+str(self.__row_classes[i])+"'"
             else:
                 row_classes = ''
-            contents += "<tr"+row_classes+">"
-            for item in row:
-                try:
-                    item_str = item.render()
-                except AttributeError:
-                    # Assume item has no render method
-                    if item == None:
-                        item_str = ''
-                    else:
-                        item_str = str(item)
-                contents += "<td>"+item_str+"</td>"
-            contents += "</tr>\n"
+            contents += self.__renderRow(row,'td',self.__row_classes[i])
             i += 1
         contents += "</table>\n"
         return contents
@@ -707,7 +715,7 @@ def MakeLink(text,url=None):
 
     If 'url' is not supplied then the text and the url are
     assumed to be the same."""
-    if not url: url = text
+    if url is None: url = text
     return "<a href='"+str(url)+"'>"+str(text)+"</a>"
 
 #######################################################################
