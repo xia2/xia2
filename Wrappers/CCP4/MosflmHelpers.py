@@ -497,33 +497,65 @@ def standard_mask(detector):
     # unknown detector
     
     return []
-        
+
+def _parse_summary_file(filename):
+    '''Parse the results of postrefinement &c. from a summary file to a
+    dictionary keyed by the image number.'''
+
+    loggraph = { }
+
+    output = open(filename).read()
+
+    tokens = output.split('$$')
+
+    assert(len(tokens) == 9)
+
+    result = { }
+
+    refined_columns = tokens[1].split()
+    refined_values = map(float, tokens[3].split())
+
+    ncol = len(refined_columns)
+
+    keys = [column.lower() for column in refined_columns]
+
+    for j in range(len(refined_values) / ncol):
+        image = int(round(refined_values[j * ncol]))
+
+        d = { }
+
+        for k in range(1, ncol):
+            d[keys[k]] = refined_values[j * ncol + k]
+
+        result[image] = d
+            
+    postref_columns = tokens[5].split()
+    postref_values = map(float, tokens[7].split())
+
+    ncol = len(postref_columns)
+
+    keys = [column.lower() for column in postref_columns]
+
+    for j in range(len(postref_values) / ncol):
+        image = int(round(postref_values[j * ncol]))
+
+        d = { }
+
+        for k in range(1, ncol):
+            d[keys[k]] = postref_values[j * ncol + k]
+
+        result[image].update(d)
+            
+    return result
 
 if __name__ == '__main__':
-    integrate_lp = os.path.join(os.environ['XIA2_ROOT'], 'Wrappers', 'CCP4',
-                                'Doc', 'mosflm-reintegration.log')
-    stats = _parse_mosflm_integration_output(
-        open(integrate_lp, 'r').readlines())
-    _print_integrate_lp(stats)
-    
-    print _happy_integrate_lp(stats)
 
-    print 'Integration resolution limit: %5.2fA' % \
-          decide_integration_resolution_limit(
-        open(integrate_lp, 'r').readlines())        
+    result = { }
 
-    index_lp = os.path.join(os.environ['XIA2_ROOT'], 'Wrappers', 'CCP4',
-                            'Doc', 'mosflm-autoindex.log')
-    _parse_mosflm_index_output(open(index_lp, 'r').readlines())
-    idx = _parse_mosflm_index_output_all(open(index_lp, 'r').readlines())
+    for argv in sys.argv[1:]:
+        result.update(_parse_summary_file(argv))
 
-    keys = idx.keys()
-    keys.sort()
-    for k in keys:
-        print idx[k]
-
-    target_cell = [227.0, 52.2, 43.9, 90.0, 99.0, 90.0]
-    target_lattice = 'mC'
-
-    print _get_indexing_solution_number(open(index_lp, 'r').readlines(),
-                                        target_cell, target_lattice)
+    for image in sorted(result):
+        print '%3d %.2f %.2f %.2f' % (image, result[image].get('phix', 0),
+                                      result[image].get('phiy', 0),
+                                      result[image].get('phiz', 0))
