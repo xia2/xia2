@@ -252,7 +252,8 @@ class CCP4Scaler(Scaler):
         sc_tst.set_bfactor(bfactor = bfactor)
 
         if secondary:
-            sc_tst.set_scaling_parameters('rotation', secondary = 6)
+            sc_tst.set_scaling_parameters(
+                'rotation', secondary = Flags.get_scala_secondary())
         else:
             sc_tst.set_scaling_parameters('rotation', secondary = 0)
 

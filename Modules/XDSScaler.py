@@ -2451,7 +2451,7 @@ class XDSScaler(Scaler):
                                      os.path.split(hklout)[1].replace(
                 '_temp', '_unmerged').replace('.mtz', '.sca'))
             self._scalr_scaled_reflection_files['sca_unmerged'][
-                key] = scalepack
+                dataset] = scalepack
             FileHandler.record_data_file(scalepack)
                            
         return
@@ -2561,7 +2561,7 @@ class XDSScaler(Scaler):
         # and cad together into a single data set - recalling that we already
         # have a standard unit cell... and remembering where the files go...
 
-        self._scalr_scaled_reflection_files = { }
+        # self._scalr_scaled_reflection_files = { }
 
         if len(self._tmp_scaled_refl_files.keys()) > 1:
 
