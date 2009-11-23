@@ -179,9 +179,9 @@ def Scala(DriverType = None,
             self._spacing = 5
 
             if absorption_correction == None:
-                self._secondary = 6
+                self._secondary = Flags.get_scala_secondary()
             elif absorption_correction == True:
-                self._secondary = 6
+                self._secondary = Flags.get_scala_secondary()
             else:
                 self._secondary = 0
 

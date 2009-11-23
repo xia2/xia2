@@ -3497,6 +3497,11 @@ def Mosflm(DriverType = None):
                     f.write(m)
                 f.close()
 
+                spacegroup_number = lattice_to_spacegroup(lattice)
+                summary_file = 'summary_%s.log' % spacegroup_number
+                job.add_command_line('SUMMARY')
+                job.add_command_line(summary_file)
+
                 job.start()
 
                 if not self._mosflm_refine_profiles:
