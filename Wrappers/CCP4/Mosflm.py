@@ -3861,7 +3861,16 @@ def Mosflm(DriverType = None):
 
                 for s in spot_status:
                     all_spot_status += s
+                    
+                # concatenate all of the output lines to our own output
+                # channel (may be messy, but nothing better presents itself...
+                # yuck, this involves delving in to the Driver interface...
 
+                for record in output:
+                    self._standard_output_records.append(record)
+                    if not self._log_file is None:
+                        self._log_file.write(record)
+            
             self._intgr_batches_out = (first_integrated_batch,
                                        last_integrated_batch)
 
