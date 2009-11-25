@@ -944,8 +944,10 @@ if __name__ == '__main__':
     # print '%.3f %.3f' % determine_scaled_resolution(sys.argv[1],
     # float(sys.argv[2]))
 
-    s, r = digest(bin_o_tron(mosflm_mtz_to_list(sys.argv[1])))
+    # s, r = digest(bin_o_tron(mosflm_mtz_to_list(sys.argv[1])))
 
-    print r
+    # print r
 
-                             
+    s, r = determine_scaled_resolution(sys.argv[1], 3.0)
+
+    print s, r

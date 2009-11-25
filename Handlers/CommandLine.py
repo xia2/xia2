@@ -214,6 +214,12 @@ class _CommandLine(Object):
                   (self._help_z_min(), str(e))
 
         try:
+            self._read_scala_secondary()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_scala_secondary(), str(e))
+
+        try:
             self._read_freer_file()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -560,6 +566,23 @@ class _CommandLine(Object):
 
     def _help_z_min(self):
         return '-z_min N'
+
+    def _read_scala_secondary(self):
+        try:
+            index = sys.argv.index('-scala_secondary')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_scala_secondary(float(sys.argv[index + 1]))
+        Debug.write('Z min set to %f' % Flags.get_scala_secondary())
+            
+        return
+
+    def _help_scala_secondary(self):
+        return '-scala_secondary N'
 
     def _read_freer_file(self):
         try:

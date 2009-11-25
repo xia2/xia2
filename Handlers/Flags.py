@@ -72,6 +72,9 @@ class _Flags:
         self._pointgroup = None
         self._lattice = None
 
+        # scala secondary correction
+        self._scala_secondary = 6        
+
         # options to support the -cell option
         self._cell = None
 
@@ -282,6 +285,13 @@ class _Flags:
 
     def get_z_min(self):
         return self._z_min
+
+    def set_scala_secondary(self, scala_secondary):
+        self._scala_secondary = scala_secondary
+        return
+
+    def get_scala_secondary(self):
+        return self._scala_secondary
 
     def set_freer_file(self, freer_file):
 
