@@ -1783,6 +1783,15 @@ def Mosflm(DriverType = None):
  
                 self.reset()
                 auto_logfiler(self)
+
+                if self.get_integrater_sweep_name():
+                    pname, xname, dname = self.get_integrater_project_info()
+                    FileHandler.record_log_file(
+                        '%s %s %s %s mosflm integrate' % \
+                        (self.get_integrater_sweep_name(),
+                         pname, xname, dname),
+                        self.get_log_file())
+                
                 if Flags.get_parallel() > 1:
                     Debug.write('Parallel integration: %d jobs' %
                                 Flags.get_parallel())
@@ -3168,12 +3177,12 @@ def Mosflm(DriverType = None):
             output = self.get_all_output()
 
             # record a copy of it, perhaps
-            if self.get_integrater_sweep_name():
-                pname, xname, dname = self.get_integrater_project_info()
-                FileHandler.record_log_file('%s %s %s %s mosflm integrate' % \
-                                            (self.get_integrater_sweep_name(),
-                                             pname, xname, dname),
-                                            self.get_log_file())
+            # if self.get_integrater_sweep_name():
+            # pname, xname, dname = self.get_integrater_project_info()
+            # FileHandler.record_log_file('%s %s %s %s mosflm integrate' % \
+            # (self.get_integrater_sweep_name(),
+            # pname, xname, dname),
+            # self.get_log_file())
 
             # look for things that we want to know...
             # that is, the output reflection file name, the updated
@@ -3705,8 +3714,8 @@ def Mosflm(DriverType = None):
                 # get the log file
                 output = job.get_all_output()
                 
-                # record a copy of it, perhaps
-                if self.get_integrater_sweep_name():
+                # record a copy of it, perhaps - though not if parallel
+                if self.get_integrater_sweep_name() and False:
                     pname, xname, dname = self.get_integrater_project_info()
                     FileHandler.record_log_file(
                         '%s %s %s %s mosflm integrate' % \
