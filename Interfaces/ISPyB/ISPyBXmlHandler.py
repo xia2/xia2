@@ -181,7 +181,7 @@ class _ISPyBXmlHandler:
                     image_name = sweep.get_all_image_names()[0]
                     fout.write('<Image><fileName>%s</fileName>' % \
                                os.path.split(image_name)[-1])
-                    fout.write('<fileLocation>%s</fileLocation></Image>' %
+                    fout.write('<filePath>%s</filePath></Image>' %
                                os.path.split(image_name)[0])
                     fout.write('<AutoProcIntegration>\n')
                     cell = sweep.get_integrater_cell()
@@ -212,7 +212,7 @@ class _ISPyBXmlHandler:
                     '<AutoProcProgramAttachment><fileType>Result')
                 fout.write('</fileType><fileName>%s</fileName>' % \
                            os.path.split(reflection_file)[-1])
-                fout.write('<fileLocation>%s</fileLocation>' % \
+                fout.write('<filePath>%s</filePath>' % \
                            os.path.split(reflection_file)[0])
                 fout.write('</AutoProcProgramAttachment>\n')
 
@@ -221,7 +221,7 @@ class _ISPyBXmlHandler:
 
             fout.write('<AutoProcProgramAttachment><fileType>Log')
             fout.write('</fileType><fileName>xia2.txt</fileName>')
-            fout.write('<fileLocation>%s</fileLocation>' % os.getcwd())
+            fout.write('<filePath>%s</filePath>' % os.getcwd())
             fout.write('</AutoProcProgramAttachment>\n')
                 
             fout.write('</AutoProcProgramContainer>')
