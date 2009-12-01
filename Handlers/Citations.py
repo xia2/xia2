@@ -121,6 +121,7 @@ if __name__ == '__main__':
     Citations.cite('denzo')
     Citations.cite('mosflm')
     Citations.cite('xds')
+    Citations.cite('xia2')
 
     for citation in Citations.get_citations_acta():
         print citation

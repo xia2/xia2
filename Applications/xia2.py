@@ -142,6 +142,7 @@ def xia2():
     
     # print the version
     Chatter.write(Version)
+    Citations.cite('xia2')
 
     start_time = time.time()
 

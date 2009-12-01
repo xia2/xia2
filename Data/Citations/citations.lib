@@ -1,4 +1,17 @@
 <citations>
+<citation program="xia2">
+@article{Winter:ea5113,
+author = "Winter, G.",
+title = "{{\it xia2}: an expert system for macromolecular crystallography data reduction}",
+journal = "Journal of Applied Crystallography",
+year = "2010",
+volume = "43",
+number = "1",
+month = "Feb",
+doi = {10.1107/S0021889809045701},
+url = {http://dx.doi.org/10.1107/S0021889809045701},
+}
+</citation>
 <citation program="lepage-cell-reduction">
 @article{LePage:a21775,
 author = "Le Page, Y.",
