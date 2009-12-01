@@ -3352,6 +3352,8 @@ def Mosflm(DriverType = None):
                 '"o" => good        "%" => ok        "!" => bad rmsd')
             Chatter.write(
                 '"O" => overloaded  "#" => many bad  "." => blank') 
+            Chatter.write(
+                '"@" => abandoned') 
 
             # if we have not processed to a given resolution, fix
             # the limit for future reference
@@ -3648,7 +3650,11 @@ def Mosflm(DriverType = None):
                     b = a + 3
 
                 if Flags.get_automatch():
+                    lim = 0.25 * min(detector_width, detector_height)
+
                     job.input('automatch')
+                    job.input('refine limit %.2f' % lim)
+
                 job.input('postref multi segments 1')
                 job.input('process %d %d' % (a, b))
                 job.input('go')
@@ -3901,6 +3907,8 @@ def Mosflm(DriverType = None):
                 '"o" => good        "%" => ok        "!" => bad rmsd')
             Chatter.write(
                 '"O" => overloaded  "#" => many bad  "." => blank') 
+            Chatter.write(
+                '"@" => abandoned') 
 
             # sort together all of the hklout files in hklouts to get the
             # final reflection file... FIXME, need to reindex each of these
