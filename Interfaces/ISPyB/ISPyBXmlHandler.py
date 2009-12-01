@@ -181,7 +181,7 @@ class _ISPyBXmlHandler:
                     image_name = sweep.get_all_image_names()[0]
                     fout.write('<Image><fileName>%s</fileName>' % \
                                os.path.split(image_name)[-1])
-                    fout.write('<filePath>%s</filePath></Image>' %
+                    fout.write('<fileLocation>%s</fileLocation></Image>' %
                                os.path.split(image_name)[0])
                     fout.write('<AutoProcIntegration>\n')
                     cell = sweep.get_integrater_cell()
