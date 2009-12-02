@@ -43,6 +43,8 @@ def Rebatch(DriverType = None):
             self._first_batch = 0
             self._add_batch = 0
 
+            self._exclude_batches = []
+
             self._pname = None
             self._xname = None
             self._dname = None
@@ -63,6 +65,43 @@ def Rebatch(DriverType = None):
             self._add_batch = add_batch
             return
 
+        def exclude_batch(self, batch):
+            if not batch in self._exclude_batches:
+                self._exclude_batches.append(batch)
+            return
+
+        def exclude_batches(self):
+
+            self.check_hklin()
+            self.check_hklout()
+
+            if not self._exclude_batches:
+                raise RuntimeError, 'no batches to exclude'
+
+            self.start()
+            
+            for batch in sorted(self._exclude_batches):
+                self.input('batch %d reject' % batch)
+
+            self.close_wait()
+
+            # check for errors...
+            try:
+                self.check_for_errors()
+                self.check_ccp4_errors()
+
+            except RuntimeError, e:
+                try:
+                    os.remove(self.get_hklout())
+                except:
+                    pass
+
+                raise e
+
+            output = self.get_all_output()
+
+            return
+                
         def limit_batches(self, first, last):
             '''Limit the batches to first to last.'''
 
