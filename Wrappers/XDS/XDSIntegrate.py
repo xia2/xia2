@@ -310,15 +310,22 @@ def XDSIntegrate(DriverType = None):
 
                 # print a one-spot-per-image rendition of this...
                 stddev_pixel = [stats[i]['rmsd_pixel'] for i in images]
+                overloads = [stats[i]['overloads'] for i in images]
+                strong = [stats[i]['strong'] for i in images]
+                fraction_weak = [stats[i]['fraction_weak'] for i in images]
 
                 # FIXME need to allow for blank images in here etc.
 
                 status_record = ''
-                for stddev in stddev_pixel:
+                for i, stddev in enumerate(stddev_pixel):
                     if stddev > 2.5:
                         status_record += '!'
                     elif stddev > 1.0:
                         status_record += '%'
+                    elif overloads[i] > 0.1 * strong[i]:
+                        status_record += 'O'
+                    elif fraction_weak[i] > 0.99:
+                        status_record += '.'
                     else:
                         status_record += 'o'
 

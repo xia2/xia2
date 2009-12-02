@@ -78,22 +78,27 @@ def _parse_integrate_lp(filename):
         if 'IMAGE IER  SCALE' in file_contents[i]:
             j = i + 1
             while len(file_contents[j].strip()):
-                list = file_contents[j].split()
-                image = int(list[0])
-                status = int(list[1])
-                scale = float(list[2])
-                overloads = int(list[4])
-                strong = int(list[6])
-                rejected = int(list[7])
+                lst = file_contents[j].split()
+                image = int(lst[0])
+                status = int(lst[1])
+                scale = float(lst[2])
+                overloads = int(lst[4])
+                all = int(lst[5])
+                strong = int(lst[6])
+                rejected = int(lst[7])
 
                 if status == 0:
 
                     # trap e.g. missing images - need to be able to
                     # record this somewhere...
+
+                    fraction_weak = 1.0 - (float(strong) / float(all))
                 
                     per_image_stats[image] = {'scale':scale,
                                               'overloads':overloads,
                                               'strong':strong,
+                                              'all':all,
+                                              'fraction_weak':fraction_weak,
                                               'rejected':rejected}
 
                 else:
