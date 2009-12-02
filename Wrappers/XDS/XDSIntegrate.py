@@ -324,7 +324,7 @@ def XDSIntegrate(DriverType = None):
                         status_record += '!'
                     elif stddev > 1.0:
                         status_record += '%'
-                    elif overloads[i] > 0.1 * strong[i]:
+                    elif overloads[i] > 0.01 * strong[i]:
                         status_record += 'O'
                     else:
                         status_record += 'o'

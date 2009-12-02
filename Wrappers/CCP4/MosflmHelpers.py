@@ -169,7 +169,11 @@ def _parse_mosflm_integration_output(integration_output_list):
             # of number in bins 0, 1, 2 (i.e. very negative, weak negative,
             # weak positive) divided by the total number.
 
-            fraction_weak = float(sum(numbers[:3])) / float(sum(numbers))
+            if sum(numbers):
+                fraction_weak = float(sum(numbers[:3])) / float(sum(numbers))
+            else:
+                fraction_weak = 1.0
+                
             per_image_stats[current_image]['fraction_weak'] = fraction_weak
 
         if 'Analysis as a function of resolution.' in record and \
@@ -268,13 +272,13 @@ def _happy_integrate_lp(integrate_lp_stats):
 
         if not data.has_key('rmsd_pixel'):
             status = '@'
-        elif data['fraction_weak'] > 0.95:
+        elif data.get('fraction_weak', 1.0) > 0.95:
             status = '.'
         elif data['rmsd_pixel'] > 2.5:
             status = '!'
         elif data['rmsd_pixel'] > 1.0:
             status = '%'
-        elif data['overloads'] > 0.1 * data['strong']:
+        elif data['overloads'] > 0.01 * data['strong']:
             status = 'O'
         else:
             status = 'o'
