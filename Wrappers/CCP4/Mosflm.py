@@ -1597,12 +1597,16 @@ def Mosflm(DriverType = None):
 
             try:
 
+                # now reading the background residual values as well - if these
+                # are > 10 it would indicate that the images are blank (assert)
+                # so ignore from the analyis / comparison
+
                 self.reset()
                 auto_logfiler(self)
-                rms_deviations_p1 = self._mosflm_test_refine_cell('aP')                
+                rms_deviations_p1, br_p1 = self._mosflm_test_refine_cell('aP')
                 self.reset()
                 auto_logfiler(self)
-                rms_deviations = self._mosflm_refine_cell()
+                rms_deviations, br = self._mosflm_refine_cell()
 
             except NegativeMosaicError, nme:
 
@@ -1670,7 +1674,17 @@ def Mosflm(DriverType = None):
 
                 for c in cycles:
                     Debug.write('Cycle %d' % c)
-                    for j in range(len(images)):
+                    for j, image in enumerate(images):
+
+                        background_residual = max(br_p1[c][image],
+                                                  br[c][image])
+
+                        if background_residual > 10:
+                            Debug.write('. %4d   %.2f     %.2f (ignored)' % \
+                                        (images[j], rms_deviations[c][j],
+                                         rms_deviations_p1[c][j]))
+                            continue
+
                         Debug.write('. %4d   %.2f     %.2f' % \
                                     (images[j], rms_deviations[c][j],
                                      rms_deviations_p1[c][j]))
@@ -1695,7 +1709,7 @@ def Mosflm(DriverType = None):
                     Debug.write('Of the good: %.3f +- %.3f' % (m, s))
 
                 Debug.write('Average ratio: %.2f' % \
-                            (ratio / (max(cycles) * len(images))))
+                            (ratio / len(ratios)))
 
                 if (ratio / (max(cycles) * len(images))) > \
                        Flags.get_rejection_threshold():
@@ -2041,7 +2055,12 @@ def Mosflm(DriverType = None):
             new_rms_values = { }
             new_image_counter = None
             new_ignore_update = False
-            
+
+            parse_cycle = 1
+            parse_image = 0
+
+            background_residual = { }
+                                    
             for i in range(len(output)):
                 o = output[i]
 
@@ -2058,7 +2077,18 @@ def Mosflm(DriverType = None):
 
                 if 'Processing Image' in o:
                     new_image_counter = int(o.split()[2])
+                    parse_image = int(o.split()[2])
 
+                if 'Repeating the entire run' in o:
+                    parse_cycle += 1
+
+                if 'Background residual' in o:
+                    res = float(o.replace('residual=', '').split()[8])
+                    
+                    if not parse_cycle in background_residual:
+                        background_residual[parse_cycle] = { }
+                    background_residual[parse_cycle][parse_image] = res
+                    
                 if 'As this is near to the start' in o:
                     new_ignore_update = True
 
@@ -2128,7 +2158,7 @@ def Mosflm(DriverType = None):
                     
                     rms_values_last = rms_values[max(cycles)]
 
-            return rms_values
+            return rms_values, background_residual
 
         def _mosflm_refine_cell(self, set_spacegroup = None):
             '''Perform the refinement of the unit cell. This will populate
@@ -2398,10 +2428,10 @@ def Mosflm(DriverType = None):
             cell_refinement_ok = False
 
             for o in output:
+                
                 if 'Cell refinement is complete' in o:
                     cell_refinement_ok = True
                     
-
             if not cell_refinement_ok:
                 Chatter.write(
                     'Looks like cell refinement failed - more follows...')
@@ -2435,6 +2465,11 @@ def Mosflm(DriverType = None):
             new_image_counter = None
             new_ignore_update = False
 
+            parse_cycle = 1
+            parse_image = 0
+
+            background_residual = { }
+            
             for i in range(len(output)):
                 o = output[i]
 
@@ -2802,9 +2837,14 @@ def Mosflm(DriverType = None):
                             # 'negative mosaic spread'
 
                             raise NegativeMosaicError, 'refinement failed'
+
+            parse_cycle = 1
+            parse_image = 0
+
+            background_residual = { }
                         
-            for i in range(len(output)):
-                o = output[i]
+            for i, o in enumerate(output):
+                # o = output[i]
 
                 # FIXED for all of these which follow - the refined values
                 # for these parameters should only be stored if the cell
@@ -2815,6 +2855,26 @@ def Mosflm(DriverType = None):
                 # FIXME will these get lost if the indexer in question is
                 # not this program...? Find out... would be nice to write
                 # this to Chatter too...
+
+                # OK, in here want to accumulate the profile background
+                # information (which will provide a clue as to whether
+                # the image is blank) as a function of cycle and image
+                # number - only challenge is that this will require harvesting
+                # the information by hand...
+
+                if 'Processing Image' in o:
+                    parse_image = int(o.split()[2])
+
+                if 'Repeating the entire run' in o:
+                    parse_cycle += 1
+
+                if 'Background residual' in o:
+
+                    res = float(o.replace('residual=', '').split()[8])
+                    
+                    if not parse_cycle in background_residual:
+                        background_residual[parse_cycle] = { }
+                    background_residual[parse_cycle][parse_image] = res
 
                 if 'Cell refinement is complete' in o:
                     j = i + 2
@@ -2926,7 +2986,7 @@ def Mosflm(DriverType = None):
                 os.path.join(self.get_working_directory(),
                              'xiarefine.mat'), 'r').readlines())
 
-            return rms_values
+            return rms_values, background_residual
 
         def _mosflm_integrate(self):
             '''Perform the actual integration, based on the results of the

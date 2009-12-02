@@ -249,9 +249,6 @@ def _happy_integrate_lp(integrate_lp_stats):
 
     results = ''
 
-    Debug.write('Report on images %d to %d' % (min(images), max(images)),
-                forward = False)
-
     max_weighted_residual = 0.0
 
     for i in images:
@@ -271,18 +268,16 @@ def _happy_integrate_lp(integrate_lp_stats):
 
         if not data.has_key('rmsd_pixel'):
             status = '@'
+        elif data['fraction_weak'] > 0.95:
+            status = '.'
         elif data['rmsd_pixel'] > 2.5:
             status = '!'
         elif data['rmsd_pixel'] > 1.0:
             status = '%'
         elif data['overloads'] > 0.1 * data['strong']:
             status = 'O'
-        elif data['fraction_weak'] > 0.95:
-            status = '.'
-            
         else:
             status = 'o'
-            Debug.write('Image %4d ... ok' % i, forward = False)
 
         # also - # bad O overloaded . blank ! problem ? other
         # @ ABANDONED PROCESSING

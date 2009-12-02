@@ -318,14 +318,14 @@ def XDSIntegrate(DriverType = None):
 
                 status_record = ''
                 for i, stddev in enumerate(stddev_pixel):
-                    if stddev > 2.5:
+                    if fraction_weak[i] > 0.99:
+                        status_record += '.'
+                    elif stddev > 2.5:
                         status_record += '!'
                     elif stddev > 1.0:
                         status_record += '%'
                     elif overloads[i] > 0.1 * strong[i]:
                         status_record += 'O'
-                    elif fraction_weak[i] > 0.99:
-                        status_record += '.'
                     else:
                         status_record += 'o'
 
