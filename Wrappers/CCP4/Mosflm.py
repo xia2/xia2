@@ -3348,6 +3348,7 @@ def Mosflm(DriverType = None):
             for chunk in [spot_status[i:i + 60] \
                           for i in range(0, len(spot_status), 60)]:
                 Chatter.write(chunk)
+                
             Chatter.write(
                 '"o" => good        "%" => ok        "!" => bad rmsd')
             Chatter.write(

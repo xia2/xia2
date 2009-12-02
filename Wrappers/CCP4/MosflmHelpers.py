@@ -157,6 +157,21 @@ def _parse_mosflm_integration_output(integration_output_list):
             # FIXME also with the name...
             per_image_stats[current_image]['rejected'] = bad
 
+
+        # look for BLANK images (i.e. those with no strong spots)
+
+        if 'Analysis of Intensities' in record:
+            numbers = map(int, 
+                         integration_output_list[i + 3].split()[1:])
+
+            # define: if more than 95 % of the measurements are in the
+            # lowest two bins, the image is BLANK? here record the fraction
+            # of number in bins 0, 1, 2 (i.e. very negative, weak negative,
+            # weak positive) divided by the total number.
+
+            fraction_weak = float(sum(numbers[:3])) / float(sum(numbers))
+            per_image_stats[current_image]['fraction_weak'] = fraction_weak
+
         if 'Analysis as a function of resolution.' in record and \
            'Maximum Intensity' in integration_output_list[i - 3]:
             # then get out the resolution information, spot counts and
@@ -249,18 +264,22 @@ def _happy_integrate_lp(integrate_lp_stats):
         elif data['weighted_residual'] < max_weighted_residual:
             max_weighted_residual = data['weighted_residual']
 
+        # definitions...
+
+        # rmsd pixel > 1.0 -> % (ok) > 2.5 -> ! (bad)
+        # > 10% overloads -> O (overloads)
+
         if not data.has_key('rmsd_pixel'):
             status = '@'
-            Debug.write('Image %4d ... abandoned processing',
-                        forward = False)
         elif data['rmsd_pixel'] > 2.5:
             status = '!'
-            Debug.write('Image %4d ... very high rmsd (%f)' % \
-                        (i, data['rmsd_pixel']), forward = False)
         elif data['rmsd_pixel'] > 1.0:
             status = '%'
-            Debug.write('Image %4d ... high rmsd (%f)' % \
-                        (i, data['rmsd_pixel']), forward = False)
+        elif data['overloads'] > 0.1 * data['strong']:
+            status = 'O'
+        elif data['fraction_weak'] > 0.95:
+            status = '.'
+            
         else:
             status = 'o'
             Debug.write('Image %4d ... ok' % i, forward = False)
