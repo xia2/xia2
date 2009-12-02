@@ -544,8 +544,6 @@ def mosflm_mtz_to_list(mtz):
 
     os.remove(hklout)
 
-    print hklout
-
     return hkl
 
 def pointless_summedlist_to_list(summedlist, cell):

@@ -754,8 +754,13 @@ class CCP4Scaler(Scaler):
                 # -ve Z score for a C2 case for an I222 lattice...)
                 # it will be rejected perhaps... we don't want pointgroup.
 
+                pointless_hklin = _prepare_pointless_hklin(
+                    self.get_working_directory(),
+                    hklin, self._sweep_information[first]['header'].get(
+                    'phi_width', 0.0))
+                
                 pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
-                    hklin, indxr)
+                    pointless_hklin, indxr)
 
                 lattice = Syminfo.get_lattice(pointgroup)
 
@@ -993,17 +998,24 @@ class CCP4Scaler(Scaler):
             # may trigger reintegration... This is now handled by
             # adding a pointer to the Integrater into the sweep_information
             # which can then be used to pass around this information.
-            
-            pl = self._factory.Pointless()
+
             hklin = self._sweep_information[epoch][
                 'integrater'].get_integrater_reflections()
+
+            pointless_hklin = _prepare_pointless_hklin(
+                self.get_working_directory(),
+                hklin, self._sweep_information[epoch]['header'].get(
+                'phi_width', 0.0))
+            
+            pl = self._factory.Pointless()
             hklout = os.path.join(
                 self.get_working_directory(),
                 os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
-            pl.set_hklin(_prepare_pointless_hklin(
-                self.get_working_directory(),
-                hklin, self._sweep_information[epoch]['header'].get(
-                'phi_width', 0.0)))
+            pl.set_hklin(pointless_hklin)
+
+            # FIXME why am I doing this here above then again below?
+            # surely this above is only worth doing if not indexer?
+            # also prepare_pointless_hklin should be employed below.
 
             # we will want to delete this one exit
             FileHandler.record_temporary_file(hklout)
@@ -1025,7 +1037,7 @@ class CCP4Scaler(Scaler):
             if indexer:
 
                 pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
-                    hklin, indexer)
+                    pointless_hklin, indexer)
 
                 if ntr:
                     
@@ -1111,13 +1123,15 @@ class CCP4Scaler(Scaler):
                 pl = self._factory.Pointless()
                 hklin = self._sweep_information[epoch][
                     'integrater'].get_integrater_reflections()
-                hklout = os.path.join(
-                    self.get_working_directory(),
-                    '%s_rdx2.mtz' % os.path.split(hklin)[-1][:-4])
+
                 pl.set_hklin(_prepare_pointless_hklin(
                     self.get_working_directory(),
                     hklin, self._sweep_information[epoch]['header'].get(
                     'phi_width', 0.0)))
+
+                hklout = os.path.join(
+                    self.get_working_directory(),
+                    '%s_rdx2.mtz' % os.path.split(hklin)[-1][:-4])
 
                 # we will want to delete this one exit
                 FileHandler.record_temporary_file(hklout)
