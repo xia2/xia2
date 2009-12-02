@@ -27,6 +27,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Wrappers.CCP4.Pointless import Pointless
 from Wrappers.CCP4.Mtzdump import Mtzdump
+from Wrappers.CCP4.Rebatch import Rebatch
 from Handlers.Streams import Debug
 from Handlers.Flags import Flags
 
@@ -543,6 +544,8 @@ def mosflm_mtz_to_list(mtz):
 
     os.remove(hklout)
 
+    print hklout
+
     return hkl
 
 def pointless_summedlist_to_list(summedlist, cell):
@@ -572,7 +575,66 @@ def pointless_summedlist_to_list(summedlist, cell):
 
     return result
     
+def find_blank(hklin):
 
+    # first dump to temp. file
+    hklout = tempfile.mktemp('.hkl', '', os.environ['BINSORT_SCR'])
+
+    p = Pointless()
+    p.set_hklin(hklin)
+    cell = p.sum_mtz(hklout)
+    
+    isig = { }
+
+    for record in open(hklout, 'r'):
+        lst = record.split()
+        if not lst:
+            continue
+        batch = int(lst[3])
+        i, sig = float(lst[4]), float(lst[5])
+
+        if not sig:
+            continue
+
+        if not batch in isig:
+            isig[batch] = []
+
+        isig[batch].append(i / sig)
+
+    # look at the mean and sd
+
+    blank = []
+    
+    for batch in sorted(isig):
+        m, s = meansd(isig[batch])
+        if m < 1:
+            blank.append(batch)
+
+    # finally delete temp file
+    os.remove(hklout)
+
+    return blank
+
+def remove_blank(hklin, hklout):
+    '''Find and remove blank batches from the file. Returns hklin if no
+    blanks.'''
+
+    blanks = find_blank(hklin)
+
+    if not blanks:
+        return hklin
+
+    rb = Rebatch()
+    rb.set_hklin(hklin)
+    rb.set_hklout(hklout)
+
+    for b in blanks:
+        rb.exclude_batch(b)
+
+    rb.exclude_batches()
+
+    return hklout
+    
 def bin_o_tron0(sisigma):
     '''Bin the incoming list of (s, i, sigma) and return a list of bins
     of width _scale_bins in S.'''
@@ -599,7 +661,6 @@ def bin_o_tron0(sisigma):
             print result[_scale_bins * (j + 1)][0], \
                   result[_scale_bins * (j + 1)][1], \
                   len(bins[j + 1])
-        
 
     return result
 
@@ -685,7 +746,6 @@ def outlier(sisigma):
             sisigma_new.append(sis)
 
     return sisigma_new
-
 
 def bin_o_tron(sisigma):
     '''Bin the incoming list of (s, i, sigma) and return a list of bins
@@ -948,6 +1008,12 @@ if __name__ == '__main__':
 
     # print r
 
-    s, r = determine_scaled_resolution(sys.argv[1], 3.0)
+    # s, r = determine_scaled_resolution(sys.argv[1], 3.0)
+    
+    # s, r = digest(bin_o_tron(mosflm_mtz_to_list(sys.argv[1])))
 
-    print s, r
+    # print s, r
+
+    blank = remove_blank(sys.argv[1], sys.argv[2])
+    
+    print blank

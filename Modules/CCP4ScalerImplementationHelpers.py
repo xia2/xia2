@@ -20,6 +20,7 @@ from Wrappers.CCP4.Rebatch import Rebatch
 from lib.Guff import auto_logfiler
 from Handlers.Streams import Chatter, Debug
 from Handlers.Files import FileHandler
+from Experts.ResolutionExperts import remove_blank
 
 ############ JIFFY FUNCTIONS #################
 
@@ -65,6 +66,18 @@ def _prepare_pointless_hklin(working_directory,
     of data if there is more than this (through a "rebatch" command) else
     will simply return hklin.'''
 
+    # also remove blank images?
+
+    Debug.write('Excluding blank images')
+
+    hklout = os.path.join(
+        working_directory,
+        '%s_noblank.mtz' % (os.path.split(hklin)[-1][:-4]))
+    
+    FileHandler.record_temporary_file(hklout)
+
+    hklin = remove_blank(hklin, hklout)
+    
     # find the number of batches
 
     md = Mtzdump()
@@ -100,7 +113,7 @@ def _prepare_pointless_hklin(working_directory,
 
     # we will want to delete this one exit
     FileHandler.record_temporary_file(hklout)
-    
+
     return hklout
 
 def _fraction_difference(value, reference):
