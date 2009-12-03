@@ -756,7 +756,7 @@ class CCP4Scaler(Scaler):
 
                 pointless_hklin = _prepare_pointless_hklin(
                     self.get_working_directory(),
-                    hklin, self._sweep_information[first]['header'].get(
+                    hklin, self._sweep_information[epoch]['header'].get(
                     'phi_width', 0.0))
                 
                 pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
