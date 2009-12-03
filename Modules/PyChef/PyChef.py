@@ -598,9 +598,9 @@ class PyChef:
             columns += ' S%d' % j
         
         print '%s %s Scp(d) $$ $$' % (self._base_column, columns)
-        format = '%8.1f %5.3f'
+        format = '%8.1f %6.4f'
         for k in range(self._resolution_bins):
-            format += ' %5.3f'
+            format += ' %6.4f'
 
         for j in range(nsteps):
             base = j * self._range_width + self._range_min
