@@ -174,6 +174,8 @@ def main():
 
     banner()
 
+    start_time = time.time()
+
     hklin_list = get_hklin_files()
     standard_input = parse_standard_input()
 
@@ -206,6 +208,11 @@ def main():
     pychef.init()
     pychef.print_completeness_vs_dose()
     pychef.scp()    
+
+    print ' PyChef: ** Normal termination **'
+    print ' Times: Elapsed: %.1s' % (time.time() - start_time)
+
+    return
 
 if __name__ == '__main__':
 
