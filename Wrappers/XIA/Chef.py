@@ -37,7 +37,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
-from lib.Guff import transpose_loggraph
+from lib.Guff import transpose_loggraph, mean_sd
 from Wrappers.CCP4.Mtzdump import Mtzdump
 
 def Chef(DriverType = None):
@@ -187,10 +187,108 @@ def Chef(DriverType = None):
 
                 # at some point need to figure out how to analyse these
                 # results...
+
+            return
+
+        def parse(self):
+            '''Parse the output of the chef run.'''
+
+            results = self.parse_ccp4_loggraph()
+
+            scp_keys = []
+            comp_keys = []
+
+            scp_data = None
+            comp_data = { }
+
+            for key in results:
+                if 'Completeness vs. ' in key:
+                    comp_keys.append(key)
+                    comp_data[key.split()[-1]] = transpose_loggraph(
+                        results[key])
+                              
+                elif 'Cumulative radiation' in key:
+                    scp_keys.append(key)
+                    scp_data = transpose_loggraph(results[key])
+
+            # right, so first work through these to define the limits from
+            # where the first set is 50% complete to 90% complete, which
+            # will establish the benchmark, then calculate a kinda
+            # Z-score for the subsequent Scp values
+
+            lowest_50 = None
+            lowest_90 = None
+
+            for dataset in comp_data:
+                i_col = '2_I'
+                if '5_dI' in comp_data[dataset]:
+                    i_col = '4_I'
+
+                completeness = comp_data[dataset][i_col]
+
+                local_50 = None
+                local_90 = None
+
+                for j, dose in enumerate(comp_data[dataset]['1_DOSE']):
+                    
+                    comp = float(completeness[j])
+
+                    if comp > 0.50 and not local_50:
+                        local_50 = float(dose)
+
+                    if comp > 0.9 and not local_90:
+                        local_90 = float(dose)
+
+            if not lowest_50:
+                lowest_50 = local_50
+            if local_50 < lowest_50:
+                lowest_50 = local_50
+
+            if not lowest_90:
+                lowest_90 = local_90
+            if local_90 < lowest_90:
+                lowest_90 = local_90
+
+            # now build up the reference population
+
+            scp_reference = []
+
+            scp_key = None
+
+            for k in scp_data:
+                if 'Scp(d)' in k:
+                    scp_key = k
+                    
+            for j, d in enumerate(scp_data['1_DOSE']):
+                dose = float(d)
+                if dose >= lowest_50 and dose <= lowest_90:
+                    scp_reference.append(float(scp_data[scp_key][j]))
+
+            m, s = mean_sd(scp_reference)
+
+            for j, d in enumerate(scp_data['1_DOSE']):
+                dose = float(d)
+                scp = float(scp_data[scp_key][j])
+                z = (scp - m) / s
+
+                if math.fabs(z) < 1:
+                    # add to the population
+                    scp_reference.append(scp)
+                    m, s = mean_sd(scp_reference)
+
+                print '%6.1f %5.3f %5.3f' % (dose, scp, z)
+
+                if z > 3:
+                    break
+
+            print min(scp_reference), max(scp_reference)
+                    
+            
+
                 
     return ChefWrapper()
         
-if __name__ == '__main__':
+if __name__ == '__main_exec__':
     # then run a test...
 
     source = os.path.join(os.environ['X2TD_ROOT'], 'Test', 'Chef',
@@ -273,3 +371,15 @@ if __name__ == '__main__':
 
     print 'Establish the baseline from %f to %f' % (start_min, end_min)
         
+if __name__ == '__main__':
+
+    chef = Chef()
+
+    # hack for testing - copy input from elsewhere?!
+
+    for record in open(sys.argv[1]):
+        chef._standard_output_records.append(record)
+
+    chef.parse()
+
+    
