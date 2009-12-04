@@ -266,25 +266,34 @@ def Chef(DriverType = None):
 
             m, s = mean_sd(scp_reference)
 
+            dose = scp_data['1_DOSE'][0]
+
+            scp_max = 0.0
+
             for j, d in enumerate(scp_data['1_DOSE']):
+
                 dose = float(d)
                 scp = float(scp_data[scp_key][j])
                 z = (scp - m) / s
+
+                if dose < lowest_90:
+                    scp_max = max(scp, scp_max)
+                    continue
 
                 if math.fabs(z) < 1:
                     # add to the population
                     scp_reference.append(scp)
                     m, s = mean_sd(scp_reference)
 
-                print '%6.1f %5.3f %5.3f' % (dose, scp, z)
-
-                if z > 3:
+                if z > 3 and scp > scp_max:
                     break
 
-            print min(scp_reference), max(scp_reference)
-                    
-            
+                scp_max = max(scp, scp_max)
 
+            if dose == float(scp_data['1_DOSE'][-1]):
+                print 'Dose limit: use all data'
+            else:
+                print 'Dose limit: %.1f' % dose
                 
     return ChefWrapper()
         
