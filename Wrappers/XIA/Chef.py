@@ -190,25 +190,103 @@ def Chef(DriverType = None):
 
             return
 
+        def digest_rd(self, values):
+            '''Digest the results of an Rd calculation, working on the
+            assumptions that (i) the corresponding dose values are
+            meaningless and (ii) we are trying to decide if there is a
+            significant gradient there. N.B. does however assume that the
+            dose increments are UNIFORM.'''
+
+            sxx = 0.0
+            sxy = 0.0
+            syy = 0.0
+            sx = 0.0
+            sy = 0.0
+
+            n = 0
+
+            for j, v in enumerate(values):
+
+                if not v:
+                    continue
+
+                sx += j
+                sy += v
+
+                n += 1
+
+            mx = sx / n
+            my = sy / n
+
+            for j, v in enumerate(values):
+
+                if not v:
+                    continue
+
+                sxx = (j - mx) * (j - mx)
+                sxy = (j - mx) * (v - my)
+
+            m = sxy / sxx
+            c = my - m * mx
+
+            # now calculate residual about this line            
+
+            ss = 0.0
+
+            for j, v in enumerate(values):
+
+                if not v:
+                    continue
+                
+                _v = m * j + c
+
+                ss += (v - _v) * (v - _v)
+
+            sd = math.sqrt(ss / (n - 2))
+
+            # then compute the standard deviation of the population
+
+            var = 0.0
+
+            for j, v in enumerate(values):
+                
+                if not v:
+                    continue
+
+                var += (v - my) * (v - my)
+
+            sigma = math.sqrt(var / (n - 1))
+
+            return sigma / sd
+        
         def parse(self):
             '''Parse the output of the chef run.'''
 
             results = self.parse_ccp4_loggraph()
 
-            scp_keys = []
+            rd_keys = []
             comp_keys = []
 
             scp_data = None
             comp_data = { }
+            rd_data = { }
 
             for key in results:
                 if 'Completeness vs. ' in key:
                     comp_keys.append(key)
                     comp_data[key.split()[-1]] = transpose_loggraph(
                         results[key])
+
+                elif 'R vs. ' in key:
+                    rd_keys.append(key)
+                    rd_data[key.split()[-1]] = transpose_loggraph(
+                        results[key])                    
+
+                    values = map(float, rd_data[key.split()[-1]]['2_Rd'])
+                    print '%s %.2f' % (key.split()[-1], self.digest_rd(values))
+                    
                               
                 elif 'Cumulative radiation' in key:
-                    scp_keys.append(key)
                     scp_data = transpose_loggraph(results[key])
 
             # right, so first work through these to define the limits from
