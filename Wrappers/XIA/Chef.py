@@ -197,9 +197,6 @@ def Chef(DriverType = None):
             significant gradient there. N.B. does however assume that the
             dose increments are UNIFORM.'''
 
-            sxx = 0.0
-            sxy = 0.0
-            syy = 0.0
             sx = 0.0
             sy = 0.0
 
@@ -218,13 +215,16 @@ def Chef(DriverType = None):
             mx = sx / n
             my = sy / n
 
+            sxx = 0.0
+            sxy = 0.0
+
             for j, v in enumerate(values):
 
                 if not v:
                     continue
 
-                sxx = (j - mx) * (j - mx)
-                sxy = (j - mx) * (v - my)
+                sxx += (j - mx) * (j - mx)
+                sxy += (j - mx) * (v - my)
 
             m = sxy / sxx
             c = my - m * mx
@@ -257,7 +257,9 @@ def Chef(DriverType = None):
 
             sigma = math.sqrt(var / (n - 1))
 
-            return sigma / sd
+            # return sigma / sd
+
+            return (var / (sd * sd)) / n
         
         def parse(self):
             '''Parse the output of the chef run.'''
