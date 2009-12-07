@@ -40,6 +40,8 @@ from Decorators.DecoratorFactory import DecoratorFactory
 from lib.Guff import transpose_loggraph, mean_sd
 from Wrappers.CCP4.Mtzdump import Mtzdump
 
+from Handlers.Streams import Chatter
+
 def Chef(DriverType = None):
     '''A factory for wrappers for the chef.'''
 
@@ -188,6 +190,8 @@ def Chef(DriverType = None):
                 # at some point need to figure out how to analyse these
                 # results...
 
+            self.parse()
+
             return
 
         def digest_rd(self, values):
@@ -285,7 +289,9 @@ def Chef(DriverType = None):
                         results[key])                    
 
                     values = map(float, rd_data[key.split()[-1]]['2_Rd'])
-                    print '%s %.2f' % (key.split()[-1], self.digest_rd(values))
+
+                    Chatter.write('Rd analysis: %s %.2f' %
+                                  (key.split()[-1], self.digest_rd(values)))
                     
                               
                 elif 'Cumulative radiation' in key:
@@ -371,9 +377,9 @@ def Chef(DriverType = None):
                 scp_max = max(scp, scp_max)
 
             if dose == float(scp_data['1_DOSE'][-1]):
-                print 'Dose limit: use all data'
+                Chatter.write('Dose limit: use all data')
             else:
-                print 'Dose limit: %.1f' % dose
+                Chatter.write('Dose limit: %.1f' % dose)
                 
     return ChefWrapper()
         
