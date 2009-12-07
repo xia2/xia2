@@ -208,9 +208,10 @@ def main():
     pychef.init()
     pychef.print_completeness_vs_dose()
     pychef.scp()    
+    pychef.rd()
 
     print ' PyChef: ** Normal termination **'
-    print ' Times: Elapsed: %.1s' % (time.time() - start_time)
+    print ' Times: Elapsed: %.1f' % (time.time() - start_time)
 
     return
 

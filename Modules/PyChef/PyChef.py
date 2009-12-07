@@ -6,7 +6,7 @@
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
 # 
-# A reimplementation of the FORTRAN program CHEF (Winter, unpublished work)
+# A reimplementation of the FORTRAN program CHEF (Winter, PhD thesis)
 # into Python, using the CCTBX library. The idea is to analyse scaled 
 # intensity measurements as a function of cumulative dose, to assess the
 # impact of radiation damage.
@@ -481,6 +481,85 @@ class PyChef:
 
         return
 
+    def rd(self):
+        '''Calculate Rd (Diederichs, 2006) for the data in the individual
+        wavelengths. This will obviously result in one plot for each of the
+        input data sets.'''
+
+        nsteps = 1 + int(
+            (self._range_max - self._range_min) / self._range_width)
+
+        for crystal_name, dataset_name in sorted(self._reflections):
+
+            rd_top = [0.0 for j in range(nsteps)]
+            rd_bottom = [0.0 for j in range(nsteps)]
+
+            reflections = self._reflections[(crystal_name, dataset_name)]
+
+            if self._anomalous:
+
+                for hkl in reflections:
+
+                    observations = self._reflections[
+                        (crystal_name, dataset_name)][hkl]
+                    
+                    iplus = []
+                    iminus = []
+                    
+                    for pm, base, i, sigi in observations:
+                        if pm:
+                            iplus.append((base, i, sigi))
+                        else:
+                            iminus.append((base, i, sigi))
+
+                    for n, (base, i, sigi) in enumerate(iplus):
+                        for _base, _i, _sigi in iplus[n + 1:]:
+                            d = int(round(math.fabs(base - _base) /
+                                          self._range_width))
+                            rd_top[d] += math.fabs(i - _i)
+                            rd_bottom[d] += 0.5 * (i + _i)
+
+                    for n, (base, i, sigi) in enumerate(iminus):
+                        for _base, _i, _sigi in iminus[n + 1:]:
+                            d = int(round(math.fabs(base - _base) /
+                                          self._range_width))
+                            rd_top[d] += math.fabs(i - _i)
+                            rd_bottom[d] += 0.5 * (i + _i)
+
+            else:
+
+                for hkl in reflections:
+
+                    observations = self._reflections[
+                        (crystal_name, dataset_name)][hkl]
+                    
+
+                    for n, (pm, base, i, sigi) in enumerate(observations):
+                        for _base, _i, _sigi in observations[n + 1:]:
+                            d = int(round(math.fabs(base - _base) /
+                                          self._range_width))
+                            rd_top[d] += math.fabs(i - _i)
+                            rd_bottom[d] += 0.5 * (i + _i)
+
+            # print the report...
+
+            print '$TABLE : R vs. %s difference, %s/%s:' % \
+                  (self._base_column, crystal_name, dataset_name)
+            print '$GRAPHS: Rd:N:1, 2: $$'
+            print '%8s %5s $$ $$' % (self._base_column, 'Rd')
+            
+            for j in range(nsteps):
+                d = self._range_width * j
+                if rd_bottom[j]:
+                    r = rd_top[j] / rd_bottom[j]
+                else:
+                    r = 0.0
+                print '%8.1f %5.3f' % (d, r)
+
+            print '$$'
+
+        return
+            
     def scp(self):
         '''Perform the scp = rcp / ercp calculation as a function of
         assumulated dose across a number of resolution bins, from
