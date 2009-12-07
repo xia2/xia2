@@ -315,14 +315,16 @@ def Chef(DriverType = None):
                 local_50 = None
                 local_90 = None
 
+                max_comp = max(map(float, completeness))
+
                 for j, dose in enumerate(comp_data[dataset]['1_DOSE']):
                     
                     comp = float(completeness[j])
 
-                    if comp > 0.50 and not local_50:
+                    if comp > (0.5 * max_comp) and not local_50:
                         local_50 = float(dose)
 
-                    if comp > 0.9 and not local_90:
+                    if comp > (0.9 * max_comp) and not local_90:
                         local_90 = float(dose)
 
             if not lowest_50:
