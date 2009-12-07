@@ -535,7 +535,7 @@ class PyChef:
                     
 
                     for n, (pm, base, i, sigi) in enumerate(observations):
-                        for _base, _i, _sigi in observations[n + 1:]:
+                        for _pm, _base, _i, _sigi in observations[n + 1:]:
                             d = int(round(math.fabs(base - _base) /
                                           self._range_width))
                             rd_top[d] += math.fabs(i - _i)
