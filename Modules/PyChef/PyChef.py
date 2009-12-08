@@ -38,7 +38,7 @@ class PyChef:
 
         self._range_min = None
         self._range_max = None
-        self._range_width = 1
+        self._range_width = None
         
         self._resolution_high = None
         self._resolution_low = None
@@ -116,6 +116,7 @@ class PyChef:
 
         overall_range_min = None
         overall_range_max = None
+        overall_range_width = None
 
         for hklin in self._hklin_list:
             
@@ -204,6 +205,16 @@ class PyChef:
             min_base = min(base_values)
             max_base = max(base_values)
 
+            if not self._range_width:
+                bases = sorted(set(base_values))
+                mean_shift = sum([bases[j + 1] - bases[j] for j in \
+                                  range(len(bases) - 1)]) / (len(bases) - 1)
+                
+                if overall_range_width is None:
+                    overall_range_width = mean_shift
+                if mean_shift < overall_range_width:
+                    overall_range_width = mean_shift
+                    
             if overall_range_min == None:
                 overall_range_min = min_base
             else:
@@ -284,6 +295,11 @@ class PyChef:
         if not self._resolution_high:
             print 'Assigning high resolution limit: %.2f' % overall_dmin
             self._resolution_high = overall_dmin
+
+        if not self._range_width:
+            print 'Assigning baseline width:   %.2f' % \
+                  overall_range_width
+            self._range_width = overall_range_width
 
         if not self._range_min:
             print 'Assigning baseline minimum: %.2f' % \
