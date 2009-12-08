@@ -295,9 +295,11 @@ def Chef(DriverType = None,
                     rd_data[wavelength] = transpose_loggraph(
                         results[key])                    
 
-
                     values = map(float, rd_data[wavelength]['2_Rd'])
                     digest = self.digest_rd(values)
+                    
+                    # stream.write('Rd score (%s): %.2f' % \
+                    # (wavelength, digest))
 
                     if digest > 3:
                         datasets_damaged.append((wavelength, digest))
