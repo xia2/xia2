@@ -131,7 +131,8 @@ def Chef(DriverType = None):
             if self._resolution > 0.0:
                 self.input('resolution %.2f' % self._resolution)
 
-            self.input('labin BASE=%s' % self._b_labin)
+            if self._b_labin:
+                self.input('labin BASE=%s' % self._b_labin)
 
             if self._title:
                 self.input('title %s' % self._title)
@@ -305,10 +306,16 @@ def Chef(DriverType = None):
             lowest_50 = None
             lowest_90 = None
 
+            i_col = '2_I'
+            dose_col = '1_DOSE'
+
             for dataset in comp_data:
-                i_col = '2_I'
+                
                 if '5_dI' in comp_data[dataset]:
                     i_col = '4_I'
+
+                if '1_BATCH' in comp_data[dataset]:
+                    dose_col = '1_BATCH'
 
                 completeness = comp_data[dataset][i_col]
 
@@ -317,7 +324,7 @@ def Chef(DriverType = None):
 
                 max_comp = max(map(float, completeness))
 
-                for j, dose in enumerate(comp_data[dataset]['1_DOSE']):
+                for j, dose in enumerate(comp_data[dataset][dose_col]):
                     
                     comp = float(completeness[j])
 
@@ -347,18 +354,18 @@ def Chef(DriverType = None):
                 if 'Scp(d)' in k:
                     scp_key = k
                     
-            for j, d in enumerate(scp_data['1_DOSE']):
+            for j, d in enumerate(scp_data[dose_col]):
                 dose = float(d)
                 if dose >= lowest_50 and dose <= lowest_90:
                     scp_reference.append(float(scp_data[scp_key][j]))
 
             m, s = mean_sd(scp_reference)
 
-            dose = scp_data['1_DOSE'][0]
+            dose = scp_data[dose_col][0]
 
             scp_max = 0.0
 
-            for j, d in enumerate(scp_data['1_DOSE']):
+            for j, d in enumerate(scp_data[dose_col]):
 
                 dose = float(d)
                 scp = float(scp_data[scp_key][j])
@@ -378,7 +385,7 @@ def Chef(DriverType = None):
 
                 scp_max = max(scp, scp_max)
 
-            if dose == float(scp_data['1_DOSE'][-1]):
+            if dose == float(scp_data[dose_col][-1]):
                 Chatter.write('Dose limit: use all data')
             else:
                 Chatter.write('Dose limit: %.1f' % dose)
@@ -470,13 +477,44 @@ if __name__ == '__main_exec__':
         
 if __name__ == '__main__':
 
+    # ok, in here (which will be "autoCHEF") this will inspect the MTZ
+    # file and run with DOSE if such a column exists, else will run with
+    # BATCH. N.B. this will require a fix above.
+
     chef = Chef()
 
-    # hack for testing - copy input from elsewhere?!
+    dose_column = None
 
-    for record in open(sys.argv[1]):
-        chef._standard_output_records.append(record)
+    for argv in sys.argv[1:]:
 
-    chef.parse()
+        md = Mtzdump()
+        md.set_hklin(argv)
+        md.dump()
+
+        columns = [c[0] for c in md.get_columns()]
+
+        if dose_column:
+            assert(dose_column in columns)
+            continue
+
+        if 'DOSE' in columns:
+            dose_column = 'DOSE'
+        elif 'BATCH' in columns:
+            dose_column = 'BATCH'
+        else:
+            raise RuntimeError, 'no DOSE/BATCH column found'
+
+    Chatter.write('Selected column: %s' % dose_column)
+
+    for argv in sys.argv[1:]:
+
+        chef.add_hklin(argv)
+        chef.set_labin(dose_column)
+
+    chef.set_anomalous(True)
+    chef.run()
+
+    
+    
 
     
