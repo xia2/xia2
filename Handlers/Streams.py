@@ -63,7 +63,7 @@ class _Stream:
         if not self._file_name:
             self._file = sys.stdout
         else:
-            self._file = open(file_name, 'w')
+            self._file = open(self._file_name, 'w')
         return self._file
     
     def write(self, record, forward = True):
