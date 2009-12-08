@@ -281,6 +281,8 @@ def Chef(DriverType = None,
             comp_data = { }
             rd_data = { }
 
+            datasets_damaged = []
+
             for key in results:
                 if 'Completeness vs. ' in key:
                     comp_keys.append(key)
@@ -289,15 +291,17 @@ def Chef(DriverType = None,
 
                 elif 'R vs. ' in key:
                     rd_keys.append(key)
-                    rd_data[key.split()[-1]] = transpose_loggraph(
+                    wavelength = key.split()[-1]
+                    rd_data[wavelength] = transpose_loggraph(
                         results[key])                    
 
-                    values = map(float, rd_data[key.split()[-1]]['2_Rd'])
 
-                    stream.write('Rd analysis: %s %.2f' %
-                                 (key.split()[-1], self.digest_rd(values)))
-                    
-                              
+                    values = map(float, rd_data[wavelength]['2_Rd'])
+                    digest = self.digest_rd(values)
+
+                    if digest > 3:
+                        datasets_damaged.append((wavelength, digest))
+
                 elif 'Cumulative radiation' in key:
                     scp_data = transpose_loggraph(results[key])
 
@@ -388,10 +392,20 @@ def Chef(DriverType = None,
 
                 scp_max = max(scp, scp_max)
 
+            if not datasets_damaged:
+                stream.write('No significant radiation damage detected')
+                return
+
+            stream.write('Significant radiation damage detected:')
+
+            for wavelength, digest in datasets_damaged:
+                stream.write('Rd analysis (%s): %.2f' % (wavelength, digest))
+
             if dose == float(scp_data[dose_col][-1]):
-                stream.write('Dose limit: use all data')
+                stream.write('Conclusion: use all data')
             else:
-                stream.write('Dose limit: %.1f' % dose)
+                stream.write('Conclusion: cut off after %s ~ %.1f' % \
+                             (dose_col.replace('1_', ''), dose))
                 
     return ChefWrapper()
         
