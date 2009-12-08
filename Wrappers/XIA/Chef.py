@@ -502,6 +502,8 @@ if __name__ == '__main__':
 
     dose_column = None
 
+    overall_dmin = None
+
     for argv in sys.argv[1:]:
 
         md = Mtzdump()
@@ -521,6 +523,13 @@ if __name__ == '__main__':
         else:
             raise RuntimeError, 'no DOSE/BATCH column found'
 
+        dmin = min(md.get_resolution_range())
+
+        if overall_dmin is None:
+            overall_dmin = dmin
+        if dmin > overall_dmin:
+            overall_dmin = dmin
+
     Stdout.write('Selected column: %s' % dose_column)
 
     for argv in sys.argv[1:]:
@@ -528,6 +537,8 @@ if __name__ == '__main__':
         chef.add_hklin(argv)
         chef.set_labin(dose_column)
 
+    chef.set_resolution(overall_dmin)
+    chef.write_log_file('chef.log')
     chef.set_anomalous(True)
     chef.run()
 
