@@ -40,9 +40,10 @@ from Decorators.DecoratorFactory import DecoratorFactory
 from lib.Guff import transpose_loggraph, mean_sd
 from Wrappers.CCP4.Mtzdump import Mtzdump
 
-from Handlers.Streams import Chatter
+from Handlers.Streams import Chatter, Stdout
 
-def Chef(DriverType = None):
+def Chef(DriverType = None,
+         stream = Chatter):
     '''A factory for wrappers for the chef.'''
 
     DriverInstance = DriverFactory.Driver(DriverType)
@@ -69,6 +70,8 @@ def Chef(DriverType = None):
             self._completeness = { }
             
             self._title = None
+
+            self._stream = stream
 
             return
 
@@ -291,8 +294,8 @@ def Chef(DriverType = None):
 
                     values = map(float, rd_data[key.split()[-1]]['2_Rd'])
 
-                    Chatter.write('Rd analysis: %s %.2f' %
-                                  (key.split()[-1], self.digest_rd(values)))
+                    stream.write('Rd analysis: %s %.2f' %
+                                 (key.split()[-1], self.digest_rd(values)))
                     
                               
                 elif 'Cumulative radiation' in key:
@@ -386,9 +389,9 @@ def Chef(DriverType = None):
                 scp_max = max(scp, scp_max)
 
             if dose == float(scp_data[dose_col][-1]):
-                Chatter.write('Dose limit: use all data')
+                stream.write('Dose limit: use all data')
             else:
-                Chatter.write('Dose limit: %.1f' % dose)
+                stream.write('Dose limit: %.1f' % dose)
                 
     return ChefWrapper()
         
@@ -481,7 +484,7 @@ if __name__ == '__main__':
     # file and run with DOSE if such a column exists, else will run with
     # BATCH. N.B. this will require a fix above.
 
-    chef = Chef()
+    chef = Chef(stream = Stdout)
 
     dose_column = None
 
@@ -504,7 +507,7 @@ if __name__ == '__main__':
         else:
             raise RuntimeError, 'no DOSE/BATCH column found'
 
-    Chatter.write('Selected column: %s' % dose_column)
+    Stdout.write('Selected column: %s' % dose_column)
 
     for argv in sys.argv[1:]:
 

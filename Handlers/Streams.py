@@ -39,12 +39,12 @@ class _Stream:
         # FIXME would rather this goes to a file...
         # unless this is impossible
 
-        try:
-            if streamname == None:
-                raise RuntimeError, 'want this to go to stdout'
-            self._file = open('%s.txt' % streamname, 'w')
-        except:
-            self._file = sys.stdout
+        if streamname:
+            self._file_name = '%s.txt' % streamname
+        else:
+            self._file_name = None
+
+        self._file = None
             
         self._streamname = streamname
         self._prefix = prefix
@@ -56,6 +56,15 @@ class _Stream:
 
     # FIXED 20/OCT/06 added forward option, specify as false to
     # prevent this happening...
+
+    def get_file(self):
+        if self._file:
+            return self._file
+        if not self._file_name:
+            self._file = sys.stdout
+        else:
+            self._file = open(file_name, 'w')
+        return self._file
     
     def write(self, record, forward = True):
 
@@ -64,13 +73,13 @@ class _Stream:
         
         for r in record.split('\n'):
             if self._prefix:
-                result = self._file.write('[%s]  %s\n' %
-                                          (self._prefix, r.strip()))
+                result = self.get_file().write('[%s]  %s\n' %
+                                               (self._prefix, r.strip()))
             else:
-                result = self._file.write('%s\n' %
-                                          (r.strip()))
+                result = self.get_file().write('%s\n' %
+                                               (r.strip()))
 
-            self._file.flush()
+            self.get_file().flush()
 
         if self._otherstream and forward:
             self._otherstream.write(record)
@@ -154,6 +163,8 @@ Chatter.join(Stdout)
 def streams_off():
     '''Switch off the chatter output - designed for unit tests...'''
     Chatter.off()
+    Journal.off()
+    Debug.off()
     return
 
 if __name__ == '__main__':
