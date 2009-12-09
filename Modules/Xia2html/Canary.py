@@ -10,8 +10,8 @@
 # Provide classes and functions for generating interactive HTML
 # documents
 #
-__cvs_id__ = "$Id: Canary.py,v 1.2 2009/11/19 18:54:51 pjx Exp $"
-__version__ = "0.0.2"
+__cvs_id__ = "$Id: Canary.py,v 1.3 2009/12/09 13:13:41 pjx Exp $"
+__version__ = "0.0.3"
 
 #######################################################################
 # Import modules that this module depends on
@@ -34,7 +34,69 @@ INLINE=1
 # Class definitions
 #######################################################################
 
-class Section:
+class DocElement:
+    """Generic document element
+
+    The DocElement is a generic part of a document. Other more
+    specific elements can be built as subclasses of the DocElement
+    class.
+
+    Subclasses of DocElement should provide a 'renderContent'
+    method to generate their specific HTML code by the DocElement
+    'render' method, and should avoid overriding the 'render'
+    method."""
+
+    def __init__(self,parent_doc=None):
+        # Basic class properties
+        # Parent document
+        self.__parent = parent_doc
+        self.__classes = ''
+        self.__doc_id = None
+        self.__setDocId()
+
+    def __setDocId(self):
+        """Internal: return the unique id for the DocElement"""
+        if not self.__doc_id and self.__parent:
+            self.__doc_id = self.__parent.getUniqueId()
+
+    def getDocId(self):
+        """Get the unique id for the DocElement"""
+        return self.__doc_id
+
+    def id(self):
+        """Return the DocElement's name for itself
+
+        Subclasses of the DocElement class should override this
+        method."""
+        return self.getDocId()
+
+    def parent(self):
+        """Return the DocElement's parent document"""
+        return self.__parent
+
+    def addCSSClass(self,css_class):
+        """Add a CSS class to the DocElement"""
+        if self.__classes: self.__classes += " "
+        self.__classes += css_class 
+
+    def render(self):
+        """Return the HTML code for the DocElement"""
+        # Get the specific content for the element, if there
+        # is any
+        try:
+            content = self.renderContent()
+        except AttributeError:
+            content = ''
+        # Build the div wrapper
+        open_div = "<div"
+        if self.id(): open_div += " id='"+str(self.id())+"'"
+        if self.__classes: open_div += " class='"+str(self.__classes)+"'"
+        open_div += ">"
+        close_div = "</div>"
+        # Return the rendered element
+        return open_div + content + close_div
+
+class Section(DocElement):
     """Section object
 
     A section is part of a document. Sections can be contained
@@ -48,38 +110,40 @@ class Section:
         h1, h2 etc.
         'parent' is the parent Document object to
         which the Section belongs."""
-        # Class properties
-        self.__title = str(title)
+        # Specific class properties
+        self.__title = None
+        if title != None:
+            self.__title = str(title)
         self.__subsections = []
         self.__content = []
         self.__level = level
-        # Parent document
-        self.__parent = parent
-        # Generate the unique HTML id
-        self.__make_id()
+        # Call the base class initialiser
+        DocElement.__init__(self,parent_doc=parent)
+        # Set the class
+        self.addCSSClass('section_'+str(self.__level))
         return
 
-    def __make_id(self):
-        """Internal: generate the id for this section"""
+    def id(self):
+        """Return the id for this section
+
+        Overrides the base class 'id' method."""
         # Base part of the id is a unique id from the parent
-        ele = ["sect_",str(self.__parent.getUniqueId()),"-"]
+        ele = ["sect_",str(self.getDocId())]
         # Add some title text to make it more human-friendly
         # Substitute special characters with "-" and "_"
         text = ''
-        for c in list(self.__title.lower()):
-            if c.isspace():
-                text += '-'
-            elif not c.isalnum():
-                text += '_'
-            else:
-                text += c
-        # Make the id
-        ele.append(text)
-        self.__id = "".join(ele)
-
-    def id(self):
-        """Return the id for this section"""
-        return self.__id
+        if self.__title != None:
+            ele.append("-")
+            for c in list(self.__title.lower()):
+                if c.isspace():
+                    ch = '-'
+                elif not c.isalnum():
+                    ch = '_'
+                else:
+                    ch = c
+                ele.append(ch)
+        # Return the id
+        return "".join(ele)
 
     def title(self):
         """Return the title for the section"""
@@ -97,15 +161,15 @@ class Section:
         """Add a new table to the section"""
         return self.addContent(Table(header=header))
 
-    def addSubsection(self,title):
+    def addSubsection(self,title=None):
         """Add a subsection to the section."""
-        new_section = Section(title,self.__level+1,self.__parent)
+        new_section = Section(title,self.__level+1,self.parent())
         self.__subsections.append(new_section)
         return self.addContent(new_section)
 
-    def addPara(self,text):
+    def addPara(self,text,css_class=None):
         """Add a paragraph to the section"""
-        new_para = Para(str(text))
+        new_para = Para(str(text),css_class=css_class)
         self.__content.append(new_para)
         return self
 
@@ -137,11 +201,23 @@ class Section:
             toc_html += subtoc.render()
         return toc_html
 
-    def render(self):
-        """Generate a HTML version of the section"""
-        open_tag = "<h"+str(self.__level)+"><a id='"+self.__id+"'></a>"
-        close_tag = "</h"+str(self.__level)+">"
-        contents = open_tag + self.__title + close_tag + "\n"
+    def renderContent(self):
+        """Generate a HTML version of the section
+
+        Each section will be rendered contained within a <div>.
+        The div id will be a unique name built from the title
+        plus an id number acquired from the parent document.
+        
+        The div class will be 'section_<x>', where <x> is the
+        level of the section."""
+        # Deal with the title
+        if self.__title:
+            open_tag = "<h"+str(self.__level)+">"
+            close_tag = "</h"+str(self.__level)+">"
+            contents = open_tag + self.__title + close_tag + "\n"
+        else:
+            contents = ''
+        # Deal with the contents
         for content in self.__content:
             try:
                 contents = contents + content.render()
@@ -199,7 +275,7 @@ class Document(Section):
         """Set whether to display automatic table of contents"""
         self.__toc = toc
 
-    def addSection(self,title):
+    def addSection(self,title=None):
         """Add a section to the SDocument"""
         # Wrapper for addSubsection
         return self.addSubsection(title)
@@ -234,12 +310,16 @@ class Para:
     treat newlines when generating the HTML with render:
 
     PRESERVE_NEWLINES : newlines are replaced by <br /> tags
-    NO_FORMATTING     : no changes are made to newlines"""
+    NO_FORMATTING     : no changes are made to newlines
 
-    def __init__(self,content='',formatting=PRESERVE_NEWLINES):
+    The optional 'css_class' flag can be used to specify CSS classes
+    to associate with the paragraph."""
+
+    def __init__(self,content='',formatting=PRESERVE_NEWLINES,css_class=None):
         """Make a new paragraph"""
         self.__content = content
         self.__formatting = formatting
+        self.__css_class = css_class
         return
 
     def render(self):
@@ -250,7 +330,10 @@ class Para:
         # Deal with newlines
         if self.__formatting == PRESERVE_NEWLINES:
             content = content.rstrip("\n").replace("\n","<br />")
-        return "<p>"+content+"</p>\n"
+        if self.__css_class:
+            return "<p class=\""+self.__css_class+"\">"+content+"</p>"
+        else:
+            return "<p>"+content+"</p>\n"
 
 class List:
     """List object
@@ -276,7 +359,7 @@ class List:
         contents = contents + "</ul>\n"
         return contents
 
-class Table:
+class Table(DocElement):
     """Table object
 
     A table is one or more rows with columns of items. Items
@@ -303,6 +386,8 @@ class Table:
         if header:
             for item in header:
                 self.__header.append(item)
+        # Initialise base class
+        DocElement.__init__(self)
 
     def __normalise(self):
         """Internal: normalise the table
@@ -357,6 +442,8 @@ class Table:
     def addClass(self,css_class):
         """Add a CSS class name to the table"""
         self.__classes.append(css_class)
+        # Also add the class to the wrapper div
+        self.addCSSClass(css_class)
 
     def addRow(self,data,css_classes=None):
         """Add a row to the table
@@ -512,7 +599,7 @@ class Table:
         row_html += "</tr>\n"
         return row_html
 
-    def render(self):
+    def renderContent(self):
         """Generate a HTML version of the table"""
         # Deal with CSS classes
         if len(self.__classes):
