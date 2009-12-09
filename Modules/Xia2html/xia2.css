@@ -1,6 +1,6 @@
 /* xia2.css
    Stylesheet for xia2.html
-   CVS_id $Id: xia2.css,v 1.2 2009/11/19 18:55:16 pjx Exp $
+   CVS_id $Id: xia2.css,v 1.3 2009/12/09 13:14:14 pjx Exp $
    */
 body { font-family: Arial, sans-serif;
        font-size: 17px;
@@ -15,14 +15,31 @@ h3 { font-family: Georgia, serif;
 h4 { background-color: #ffd799;
      display: inline; }
 
-table,td,th { border-style: solid;
-              border-width: 2px;
-              border-spacing: 0;
-              border-color: gray;
-              padding: 1px;
-              font-size: 90%; }
-td,th { padding-left: 8px; padding-right: 8px; }
+.warning { background-color: red;
+           color: white;
+	   font-weight: bold; }
 
+.info { font-style: italic;
+        font-size: 90%; }
+
+/* Default styling for all tables */
+table,td,th { border-style: none;
+              border-spacing: 0;
+              padding: 2px;
+              font-size: 90%;
+              empty-cells: show; }
+td,th { border-style: solid;
+        border-width: 2px;
+        border-color: darkgray;
+        padding-left: 8px;
+        padding-right: 8px; }
+th { background-color: gray;
+     color: white;
+     font-weight: bold;
+     border-top-style: none;
+     border-bottom-style: none; }
+
+/* Styling the "key" table */
 table.key { border-style: none;
             font-size: 80%; }
 table.key th { background-color: gray;
@@ -42,9 +59,32 @@ table.table_one th { border-style: none;
                      border-bottom-style: solid;
                      background-color: #ffffcd;
                      padding: 10px;
-                     text-align: left; }
+                     text-align: left;
+                     color: black; }
 table.table_one td { border-style: none; }
-table.table_one tr.unit_cell > *:first-child { text-align: right; }
+table.table_one tr.unit_cell > td:first-child { text-align: right; }
+
+/* Styling the table of log files */
+table.log_files { border-style: none;
+                  width: 85%;
+                  margin-left: auto;
+                  margin-right: auto;
+                  empty-cells: show; }
+table.log_files * { border-style: none;}
+table.log_files td { vertical-align: top;
+                     border-bottom: 2px solid gray; }
+table.log_files tr.proc_stage > td:first-child { background-color: #377cb1;
+                                                 color: white;
+                                                 font-weight: bold;
+                                                 font-size: 100%;
+                                                 border-top: 10px solid white; }
+table.log_files tr.proc_stage > td { border-bottom: 2px solid #377cb1; }
+table.log_files tr.proc_description td { background-color: lightblue;
+                                         color: black;
+                                         font-style: italic;
+                                         border-style: none;
+                                         border-top: 2px solid white;
+                                         border-bottom: 2px solid white; }
 
 /* Footer */
 p.footer { background-color: #fffddc;
