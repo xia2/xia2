@@ -384,11 +384,6 @@ def Chef(DriverType = None,
                     scp_max = max(scp, scp_max)
                     continue
 
-                if math.fabs(z) < 1:
-                    # add to the population
-                    scp_reference.append(scp)
-                    m, s = mean_sd(scp_reference)
-
                 if z > 3 and scp > scp_max:
                     break
 
