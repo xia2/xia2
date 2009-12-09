@@ -23,8 +23,8 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.3 2009/11/19 19:01:55 pjx Exp $"
-__version__ = "0.0.3"
+__cvs_id__ = "$Id: Xia2html.py,v 1.4 2009/12/09 13:18:03 pjx Exp $"
+__version__ = "0.0.4"
 
 #######################################################################
 # Import modules that this module depends on
@@ -35,6 +35,7 @@ import shutil
 import time
 import Magpie
 import Canary
+import smartie
 import baubles
 
 #######################################################################
@@ -45,9 +46,264 @@ format_useful_for = { "mtz": "CCP4 and Phenix",
                       "sca": "AutoSHARP etc",
                       "sca_unmerged": "Shelx C/D/E" }
 
+logfile_programs = { "INTEGRATE": "xds",
+                     "CORRECT": "xds",
+                     "XSCALE": "xds",
+                     "mosflm_integrate": "mosflm",
+                     "pointless": "pointless",
+                     "scala": "scala",
+                     "truncate": "truncate",
+                     "chef": "chef" }
+
+program_stage = { "xds":       "Integration",
+                  "mosflm":    "Integration",
+                  "pointless": "Spacegroup determination",
+                  "scala":     "Scaling and merging",
+                  "truncate":  "Analysis",
+                  "chef":      "Analysis" }
+
 #######################################################################
 # Class definitions
 #######################################################################
+
+# Citations
+#
+# Store and recover citation info
+class Citations:
+    """Information on citations
+
+    Provides lookup etc for citations from xia2."""
+
+    def __init__(self):
+        """Create citations object"""
+        self.__citations = []
+        self.__populate()
+
+    def __populate(self):
+        """Setup citation info"""
+        # CCP4
+        self.addCitation(
+            'ccp4',
+            '(1994) Acta Crystallogr. D 50, 760--763',
+            'http://journals.iucr.org/d/issues/1994/05/00/ad0004/ad0004.pdf')
+        # Scala, pointless (same paper)
+        self.addCitation(
+            'scala',
+            'Evans, Philip (2006) Acta Crystallographica Section D 62, 72--82',
+            'http://journals.iucr.org/d/issues/2006/01/00/ba5084/index.html')
+        self.addCitation(
+            'pointless',
+            'Evans, Philip (2006) Acta Crystallographica Section D 62, 72--82',
+            'http://journals.iucr.org/d/issues/2006/01/00/ba5084/index.html')
+        # Mosflm
+        self.addCitation(
+            'mosflm',
+            'Leslie, Andrew G. W. (2006) Acta Crystallographica Section D 62, 48--57',
+            'http://journals.iucr.org/d/issues/2006/01/00/ba5082/index.html')
+        # labelit
+        self.addCitation(
+            'labelit',
+            'Sauter, Nicholas K. and Grosse-Kunstleve, Ralf W. and Adams, Paul D. (2004) Journal of Applied Crystallography 37, 399--409',
+            'http://journals.iucr.org/j/issues/2004/03/00/dd5008/index.html')
+        # distl
+        self.addCitation(
+            'distl',
+            'Zhang, Z. and Sauter, N.K. and van den Bedem, H. and Snell, G. and Deacon, A.M. (2006) J. Appl. Cryst 39, 112--119',
+            'http://journals.iucr.org/j/issues/2006/01/00/ea5046/index.html')
+        # XDS
+        self.addCitation(
+            'xds',
+            'Kabsch, W. (1988) Journal of Applied Crystallography 21, 67--72',
+            'http://journals.iucr.org/j/issues/1988/01/00/wi0022/wi0022.pdf')
+        self.addCitation(
+            'xds',
+            'Kabsch, W. (1988) Journal of Applied Crystallography 21, 916--924',
+            'http://journals.iucr.org/j/issues/1988/06/00/wi0031/wi0031.pdf')
+        self.addCitation(
+            'xds',
+            'Kabsch, W. (1993) Journal of Applied Crystallography 26, 795--800',
+            'http://journals.iucr.org/j/issues/1993/06/00/wi0124/wi0124.pdf')
+
+    def addCitation(self,program,citation,link):
+        """Add citation info
+
+        'program' is the name of the program that the citation
+        refers to.
+        'citation' is the citation text produced by xia2.
+        'link' is the URL link for the citation/paper."""
+        self.__citations.append({ "program": program,
+                                  "citation": citation,
+                                  "link": link })
+
+    def getCitationLink(self,citation_text):
+        """Get link for citation text
+
+        Returns the stored link which matches the supplied
+        citation text, or None if the text is not found."""
+        for citation in self.__citations:
+            if citation['citation'] == citation_text:
+                return citation['link']
+        # No match
+        return None
+
+# LogFile
+#
+# Store information about a log file and provide tools for
+# analysis, annotation etc
+class LogFile:
+    """Xia2 log file information
+
+    Given the name of a log file from xia2, provides various
+    methods for analysis and manipulation."""
+
+    def __init__(self,logfile,xds_pipeline=False):
+        """Create a new LogFile object.
+
+        'filen' is the name and path of the log file. Optional
+        parameter 'xds_pipeline' should be set to True to
+        indicate that the log is part of the XDS pipeline (used
+        to correctly describe the scala stage)."""
+        self.__filen = logfile
+        # Smartie log object
+        self.__smartie_log = None
+        # Flag to indicate if we're in the XDS pipeline
+        self.__xds_pipeline = xds_pipeline
+        # Lookup table for matching programs to file names
+        self.__program_lookup = {
+            "INTEGRATE": "xds",
+            "CORRECT": "xds",
+            "XSCALE": "xds",
+            "mosflm_integrate": "mosflm",
+            "pointless": "pointless",
+            "scala": "scala",
+            "truncate": "truncate",
+            "chef": "chef" }
+        # Lookup table for matching descriptions to file names
+        self.__description_lookup = {
+            "INTEGRATE":
+                "Integration of this sweep",
+            "CORRECT":
+                "Postrefinement and correction for this sweep",
+            "XSCALE":
+                "Scaling together all the data for this crystal",
+            "mosflm_integrate":
+                "Full logs for the integration of each wavelength",
+            "pointless":
+                "Decision making for the spacegroup assignment",
+            "scala":
+                "Scaling and correction of all measurements on the crystal",
+            "scala_xds": "Merging results for all of the data for the crystal",
+            "truncate": "Intensity analysis for each wavelength of data",
+            "chef": "Cumulative radiation damage analysis" }
+        # List of programs to run baubles on
+        self.__run_smartie = ['pointless','scala','truncate','chef']
+
+    def basename(self):
+        """Return the filename without any leading directory"""
+        return os.path.basename(self.__filen)
+
+    def fullFileName(self):
+        """Return the full filename with the leading (absolute) path"""
+        return os.path.join(self.absoluteDirPath(),self.basename())
+
+    def isLog(self):
+        """Test whether file is a log file
+
+        Checks whether the file name ends with .log extension"""
+        return os.path.splitext(self.__filen)[1] == ".log"
+
+    def smartieLog(self):
+        """Return the smartie logfile object
+
+        Returns the smartie logfile object (it may have to
+        generate it first) if appropriate; otherwise, return None"""
+        try:
+            self.__run_smartie.index(self.program())
+        except ValueError:
+            # Don't run baubles on this log
+            print "Not running smartie for "+self.__filen
+            return None
+        if not self.__smartie_log:
+            # Create and store a smartie logfile object
+            print "Generating logfile object for "+str(self.__filen)
+            self.__smartie_log = smartie.parselog(self.__filen)
+        return self.__smartie_log
+
+    def dir(self):
+        """Return directory that the log file is in"""
+        return os.path.dirname(self.__filen)
+
+    def absoluteDirPath(self):
+        """Return the absolute directory for the log file"""
+        return os.path.abspath(self.dir())
+
+    def relativeDirPath(self):
+        """Return the relative directory for the log file"""
+        return get_relative_path(self.absoluteDirPath())
+
+    def baublize(self,target_dir=None):
+        """Generate baublized HTML version of the log
+
+        Returns the name of the HTML file, or None if the
+        log wasn't baublized.
+
+        The baublized file will be created in 'target_dir'
+        if specified, or in the current working directory
+        otherwise."""
+        smartie_log = self.smartieLog()
+        if not smartie_log: return None
+        htmlfile = os.path.join(target_dir,
+                                os.path.splitext(self.basename())[0]+
+                                ".html")
+        try:
+            # Set the location of the Jloggraph applet explicitly
+            baubles.setJLoggraphCodebase('.')
+            # Run baubles on the processed log
+            baubles.baubles(smartie_log,htmlfile)
+            return htmlfile
+        except:
+            # Some baubles error - return None
+            print "Error running baubles on "+str(self.__filen)
+            return None
+
+    def warnings(self):
+        """Return list of warnings from smartie log file"""
+        smartie_log = self.smartieLog()
+        if not smartie_log: return []
+        warnings = []
+        nkeytexts = smartie_log.nkeytexts()
+        for i in range(0,nkeytexts):
+            if smartie_log.keytext(i).name() == "Warning":
+                warnings.append(smartie_log.keytext(i))
+        return warnings
+
+    def program(self):
+        """Return program name associated with this log file"""
+        for fragment in self.__program_lookup.keys():
+            if self.__filen.find(fragment) > -1:
+                return self.__program_lookup[fragment]
+        # No match
+        return None
+
+    def description(self):
+        """Return log file description associated with the name"""
+        # Deal with scala in XDS pipeline
+        if self.program() == "scala" and self.__xds_pipeline:
+            return self.__description_lookup['scala_xds']
+        # Deal with other log files
+        for fragment in self.__description_lookup.keys():
+            if self.__filen.find(fragment) > -1:
+                return self.__description_lookup[fragment]
+        # No match
+        return None
+
+    def dataset(self):
+        """Return dataset name associated with this log file"""
+        return ''
+
+    def sweep(self):
+        """Return sweep name associated with this log file"""
+        return ''
 
 # Dataset
 #
@@ -97,61 +353,6 @@ class Dataset:
         """Return the list of data item names (keys)"""
         return self.__keys
 
-# Baublizer
-#
-# Handles running baubles on logfiles
-class Baublizer:
-    """Class to handle running baubles on logfiles
-
-    Wraps the running of baubles along with some basic filename
-    recognition.
-
-    Once a Baublizer is instantiated, use addProgram to specify
-    program names that baubles should be run on. When a log file
-    is presented to the Baublizer via the baublize method,
-    baubles will run if the logfile name matches one of the
-    specified program names."""
-
-    def __init__(self):
-        # List of file patterns
-        self.__baubles_programs = []
-        # Set the location of the Jloggraph applet explicitly
-        baubles.setJLoggraphCodebase('.')
-
-    def addProgram(self,prog):
-        """Add a program name to the list of files to baublize
-
-        If the program name is found at the end the file name
-        of a logfile (not including the extension) then the
-        baublize method will run baubles on the file."""
-        self.__baubles_programs.append(prog)
-
-    def baublize(self,logfile,htmlfile):
-        """Run baubles on a log file
-
-        'logfile' is the name and path of the log file to be
-        examined. If the log file name contains a program name
-        that has been added via the addProgram method then it
-        will run baubles to generate 'htmlfile'.
-
-        Returns 'htmlfile', or None if the log file didn't match
-        or if baubles failed to run."""
-        # Check if this is in the list of files to
-        # baublize
-        for prog in self.__baubles_programs:
-            if os.path.basename(os.path.splitext(logfile)[0]).count(prog):
-                # Run baubles
-                try:
-                    baubles.baubles_html(logfile,htmlfile)
-                    return htmlfile
-                except:
-                    print "Error running baubles on "+str(logfile)
-                    return None
-                baubles.baubles_html(logfile,htmlfile)
-                return htmlfile
-        # Didn't find the program in the list
-        return None
-
 # IntegrationStatusReporter
 #
 # Helps with reporting the status of each image in sweeps
@@ -168,7 +369,12 @@ class IntegrationStatusReporter:
         self.__img_dir = img_dir
         self.__symbol_dict = self.__makeSymbolDictionary()
         self.__symbol_lookup = self.__makeReverseSymbolLookup()
+        self.__symbol_list = self.__listSymbols()
         return
+
+    def __listSymbols(self):
+        """Internal: make a list of the symbols"""
+        return ['o','%','O','!','#','.','@']
 
     def __makeSymbolDictionary(self):
         """Internal: build the symbol dictionary from the key text"""
@@ -187,6 +393,10 @@ class IntegrationStatusReporter:
         for key in self.__symbol_dict.keys():
             symbol_lookup[self.__symbol_dict[key]] = key
         return symbol_lookup
+
+    def getSymbolList(self):
+        """Return the list of symbols"""
+        return self.__symbol_list
 
     def getSymbolDictionary(self):
         """Return the symbol dictionary
@@ -309,8 +519,15 @@ def cmp_file_by_keyword(file1,file2):
     # List of keywords that might appear in the log file names
     # The list is in the order that we would want the file names
     # to appear in a list of files
-    keywords = ['INTEGRATE','integrate','mosflm','chef','pointless',
-                'scala','truncate']
+    keywords = ['DEPFIX',
+                'INTEGRATE',
+                'CORRECT',
+                'XSCALE',
+                'mosflm_integrate',
+                'pointless',
+                'scala',
+                'truncate',
+                'chef']
     # Locate the keywords in the list for both file names
     for i in range(0,len(keywords)):
         k = os.path.basename(os.path.splitext(file1)[0]).find(keywords[i])
@@ -496,8 +713,11 @@ if __name__ == "__main__":
     xia2.addPattern('xia2_status',
                     "Status: ([^\n]*)",
                     ['status'])
+    # twinning pattern matches:
+    # Overall twinning score: 1.86
+    # Ambiguous score (1.6 < score < 1.9)
     xia2.addPattern('twinning',
-                    "Overall twinning score: ([^\n]+)\n(Your data [^\n]+)",
+                    "Overall twinning score: ([^\n]+)\n([^\n]+)",
                     ['score','report'])
     xia2.addPattern('asu_and_solvent',
                     "Likely number of molecules in ASU: ([0-9]+)\nGiving solvent fraction:        ([0-9.]+)",
@@ -620,6 +840,7 @@ if __name__ == "__main__":
     # using a text-based Magpie processor
     print "****** Additional processing for integration status ******"
     # Set up a new processor specifically for this block
+    int_status_reporter = IntegrationStatusReporter(xia2_html_dir)
     status_processor = Magpie.Magpie()
     status_processor.addPattern('sweep',
                                 "-------------------- Integrating ([^ ]*) --------------------",
@@ -654,6 +875,11 @@ if __name__ == "__main__":
         for line in status_processor['status_per_image']:
             image_status_line += str(line) + "\n"
         image_status_line = image_status_line.strip('\n')
+        # Count each type of image
+        symbol_count = {}
+        for symbol in int_status_reporter.getSymbolList():
+            symbol_count[symbol] = image_status_line.count(symbol)
+        int_status.setValue('count',symbol_count)
         # Find which dataset this sweep belongs to
         int_status.setValue('dataset',None)
         for sweep in xia2['sweep_to_dataset']:
@@ -671,15 +897,6 @@ if __name__ == "__main__":
     # Store the data for each log file as Data objects in the xia2
     # object for reference later
     print "Dealing with LogFiles directory..."
-    # Set up Baublizer object to convert log files to html
-    baublizer = Baublizer()
-    do_baubles = True
-    if do_baubles:
-        # List of programs to process with baubles
-        baublizer.addProgram('scala')
-        baublizer.addProgram('truncate')
-        baublizer.addProgram('pointless')
-        baublizer.addProgram('chef')
     # Sort out relative and absolute paths to log files
     # If the logfiles are in a directory below where the program
     # is running then use relative paths to refer to them,
@@ -687,32 +904,28 @@ if __name__ == "__main__":
     abslogdir = os.path.abspath(os.path.join(xia2dir,"LogFiles"))
     logdir = get_relative_path(abslogdir)
     # Process logiles
+    found_xds = False
     try:
         files = list_logfiles(logdir)
         for filen in files:
-            logfile_data = {'name': None,
-                            'dir': None,
-                            'log': None,
-                            'html': None }
-            # Test for .log extension
-            if os.path.splitext(filen)[1] == ".log":
-                print "Found logfile >>> "+filen
-                # Store the name without the extension
-                logfile_data['name'] = filen
-                logfile_data['full_dir'] = abslogdir
-                logfile_data['dir'] = logdir
-                logfile_data['log'] = os.path.join(logdir,filen)
-                # Run baubles on this file
-                print "Running baublizer..."
-                logfile = logfile_data['log']
-                htmlfile = os.path.join(xia2_html_dir,
-                                        os.path.splitext(filen)[0]+
-                                        ".html")
-                logfile_data['html'] = baublizer.baublize(logfile,htmlfile)
+            print ">>>>"+str(filen)
+            log = LogFile(os.path.join(logdir,filen),xds_pipeline=found_xds)
+            if log.isLog():
+                print log.basename()+" is log file"
+                logfile_data = {'name': log.basename(),
+                                'full_dir': log.absoluteDirPath(),
+                                'dir': log.relativeDirPath(),
+                                'log': log.fullFileName(),
+                                'html': log.baublize(target_dir=xia2_html_dir),
+                                'program': log.program(),
+                                'description': log.description(),
+                                'LogFile': log }
                 # Store data for this file in the xia2 object
                 xia2.addData('logfile',logfile_data)
+                # Update found_xds flag
+                if log.program == "xds": found_xds = True
             else:
-                print filen + " : not logfile "
+                print log.basename() + " : not logfile "
         print "Finished with logfiles"
     except OSError:
         # Possibly the LogFiles directory doesn't
@@ -773,14 +986,19 @@ if __name__ == "__main__":
     # Initial summary table
     table_one = xia2doc.addTable() # Initial summary table
     #
+    # Index section
+    index = xia2doc.addSection()
+    #
     # Overview section
-    overview = xia2doc.addSection("Overview")
+    xtal_parameters = xia2doc.addSection("Crystallographic parameters")
+    #
+    # Output files section
+    output_files = xia2doc.addSection("Output files")
+    output_datafiles = output_files.addSubsection("Reflection data files")
+    output_logfiles = output_files.addSubsection("Log files")
     #
     # Integration status section
     int_status_section = xia2doc.addSection("Integration status per image")
-    #
-    # Output files section
-    output_files = xia2doc.addSection("Output files")    
     #
     # Detailed statistics
     summary = xia2doc.addSection("Detailed statistics for each dataset")
@@ -801,30 +1019,44 @@ if __name__ == "__main__":
         asu_and_solvent = "No information on ASU contents"
     
     # Crystallographic parameters
-    xtal_params = overview.addSubsection("Crystallographic parameters")
-    xtal_params.addPara("Unit cell parameters:")
-    xtal_params.addTable(['a','b','c',
-                          '&alpha;','&beta;','&gamma']). \
-                          addRow([unit_cell.value('a'),
-                                  unit_cell.value('b'),
-                                  unit_cell.value('c'),
-                                  unit_cell.value('alpha'),
-                                  unit_cell.value('beta'),
-                                  unit_cell.value('gamma')])
-    xtal_params.addPara("Assumed spacegroup: "+
-                        htmlise_sg_name(xia2['assumed_spacegroup'][0].
+    #
+    # Unit cell
+    unit_cell_params = xtal_parameters.addSubsection("Unit cell")
+    unit_cell_params.addTable(['a','b','c',
+                               '&alpha;','&beta;','&gamma']). \
+                               addRow([unit_cell.value('a'),
+                                       unit_cell.value('b'),
+                                       unit_cell.value('c'),
+                                       unit_cell.value('alpha'),
+                                       unit_cell.value('beta'),
+                                       unit_cell.value('gamma')])
+    unit_cell_params.addPara(
+        "The unit cell parameters are the average for all measurements")
+    #
+    # Spacegroup
+    spacegroup = xtal_parameters.addSubsection("Spacegroup")
+    spacegroup.addPara("Spacegroup: "+
+                       htmlise_sg_name(xia2['assumed_spacegroup'][0].
                                          value('spacegroup')))
+    spacegroup.addPara("The spacegroup determination is made using pointless ("+
+                       Canary.Link("see the appropriate log file",
+                                   output_logfiles).render()+")")
     alt_spgs = xia2['assumed_spacegroup'][0].value('alternative')
     if alt_spgs:
-        xtal_params.addPara("Likely alternatives:")
-        alt_spg_list = xtal_params.addList()
+        spacegroup.addPara("Other possibilities could be:")
+        alt_spg_list = spacegroup.addList()
         for alt_spg in alt_spgs:
             if alt_spg:
                 alt_spg_list.addItem(htmlise_sg_name(alt_spg))
     else:
-        xtal_params.addPara("No likely alternatives to this spacegroup")
-    xtal_params. \
-        addPara(twinning). \
+        spacegroup.addPara("No likely alternatives to this spacegroup")
+    #
+    # Twinning
+    twinning_analysis = xtal_parameters.addSubsection("Twinning analysis"). \
+        addPara(twinning)
+    #
+    # ASU and solvent content
+    asu_contents = xtal_parameters.addSubsection("Asymmetric unit contents"). \
         addPara(asu_and_solvent)
 
     # Inter-wavelength analysis table
@@ -837,12 +1069,118 @@ if __name__ == "__main__":
                                          'B-factor',
                                          'R-factor',
                                          'Status'])
-        overview.addSubsection("Inter-wavelength B and R-factor analysis"). \
+        xtal_parameters.addSubsection(
+            "Inter-wavelength B and R-factor analysis"). \
             addContent(interwavelength_table)
     except IndexError:
         # Table not found, ignore
         pass
 
+    #########################################################
+    # External files
+    #########################################################
+
+    # External reflection files
+    if not xia2.count('scaled_refln_file'):
+        output_datafiles.addPara("No external reflection files")
+    else:
+        # Display table of reflection files
+        output_datafiles.addPara("Available reflection files:")
+        refln_files = output_datafiles.addTable(('Dataset','Format','File','Useful for...'))
+        for refln_file in xia2['scaled_refln_file']:
+            # Need to do some processing here to make it look nicer
+            # (Note that if possible we link to the files using a
+            # relative rather than absolute path)
+            filen = os.path.basename(refln_file.value('filename'))
+            try:
+                useful_for = format_useful_for[refln_file.value('format')]
+            except KeyError:
+                useful_for = ''
+            reflndata = [refln_file.value('dataset'),
+                         refln_file.value('format'),
+                         Canary.MakeLink(filen,get_relative_path(
+                        refln_file.value('filename'))),
+                         useful_for]
+            refln_files.addRow(reflndata)
+
+    # External log files
+    if not xia2.count('logfile'):
+        output_logfiles.addPara("No external log files")
+    else:
+        # Display table of log files
+        output_logfiles.addPara("The following log files are located in "+ \
+                                    Canary.MakeLink(xia2['logfile'][0]. \
+                                                        value('full_dir'), \
+                                                        xia2['logfile'][0]. \
+                                                        value('dir'))+ \
+                                    " and are grouped by processing stage:")
+        logs = output_logfiles.addTable()
+        logs.addClass('log_files')
+        this_stage = None
+        this_program = None
+        for log in xia2['logfile']:
+            # Determine the processing stage
+            # Logs are grouped by stage according to the
+            # program name
+            program = log.value('program')
+            stage = program_stage[program]
+            if stage != this_stage:
+                logs.addRow([stage,''],css_classes='proc_stage')
+                this_stage = stage
+            # Get the description of the log file
+            if program != this_program:
+                description = log.value('description')
+                if description:
+                    logs.addRow([description],css_classes='proc_description')
+                this_program = program
+            logdata = [log.value('name'),
+                       Canary.MakeLink("original",log.value('log'))]
+            # Link to baubles file
+            if log.value('html'):
+                logdata.append(Canary.MakeLink("html",log.value('html')))
+            else:
+                logdata.append(None)
+            # Warnings from smartie analysis
+            if log.value('LogFile'):
+                warnings = log.value('LogFile').warnings()
+                if len(warnings):
+                    warning_text = "Warning(s) in this log:"
+                    warning_list = Canary.List()
+                    for warning in warnings:
+                        warning_list.addItem(warning.message())
+                    warning_text += warning_list.render()
+                    logdata.append(warning_text)
+                else:
+                    logdata.append('')
+            # Add data to the table
+            logs.addRow(logdata)
+        # Copy the JLoggraph applet to the xia2_html directory
+        # It lives in the "extras" subdir of the Xia2html source
+        # directory
+        jar_file = "JLogGraph.jar"
+        jloggraph_jar = os.path.join(xia2htmldir,"extras",jar_file)
+        print "Copying %s status icons to %s" % (jloggraph_jar,xia2_html)
+        if os.path.isfile(jloggraph_jar):
+            shutil.copy(jloggraph_jar,os.path.join(xia2_html,jar_file))
+        else:
+            print "*** %s not found ***" % jloggraph_jar
+
+    # Detailed statistics for each dataset
+    print "Number of summary tables: "+str(xia2.count('dataset_summary'))
+    # If there is more than 1 summary then write a TOC
+    if len(xia2['dataset_summary']) > 1:
+        summary.addPara("Statistics for each of the following datasets:")
+        summary.addTOC()
+    statistic_sections = {}
+    for dataset in xia2['dataset_summary']:
+        # Make a subsection for each dataset
+        name = dataset.value('dataset')
+        summary_table = Canary.MakeMagicTable(dataset.value('table'))
+        summary_table.setHeader(['','Overall','Low','High'])
+        stats_subsection = summary.addSubsection(name)
+        stats_subsection.addContent(summary_table)
+        # Store a reference to the subsection for linking to later
+        statistic_sections[name] = stats_subsection
 
     #########################################################
     # Integration status per image
@@ -850,12 +1188,15 @@ if __name__ == "__main__":
     int_status_reporter = IntegrationStatusReporter(xia2_html_dir)
     int_status = xia2['integration_status_per_image']
     # Write out the preamble and key of symbols
-    int_status_section.addPara("The following sections show the status of the each images from the final integration run performed on each sweep within each dataset.")
+    int_status_section.addPara("The following sections show the status of each image from the final integration run performed on each sweep within each dataset.")
     int_status_section.addContent(
         int_status_reporter.makeSymbolKey(ncolumns=6))
-    # Add
-    int_status_section.addTOC()
+    # Add a summary table here - it will be populated as
+    # we got along
+    int_status_section.addPara("The following table summarises the image status results for each dataset and sweep.")
+    int_table = int_status_section.addTable()
     # Loop over datasets/wavelengths
+    this_dataset = None
     for wavelength in xia2['wavelength']:
         # Make a section for each dataset
         dataset = wavelength.value('name')
@@ -893,93 +1234,42 @@ if __name__ == "__main__":
                     images_html += "<br />\n"
                 # Add the icons to the document
                 sweep_section.addContent("<p>"+images_html+"</p>")
+                # Add a row to the summary table
+                row = []
+                total = 0
+                if this_dataset != dataset:
+                    # Only link to each dataset once from the table
+                    this_dataset = dataset
+                    row.append(Canary.Link(dataset,int_status_dataset_section).
+                               render())
+                else:
+                    row.append('')
+                # Link to sweep followed by the stats
+                row.append(Canary.Link(str(sweep),sweep_section).render())
+                symbol_count = last_int_run.value('count')
+                for symbol in int_status_reporter.getSymbolList():
+                    if symbol_count[symbol]:
+                        row.append(str(symbol_count[symbol]))
+                    else:
+                        row.append('')
+                    total += symbol_count[symbol]
+                row.append(total)
+                int_table.addRow(row)
+    # Finish off the summary table by adding the header
+    header = ['Dataset','Sweep']
+    for symbol in int_status_reporter.getSymbolList():
+        symbol_status = int_status_reporter.lookupStatus(symbol)
+        description = int_status_reporter.getDescription(symbol_status)
+        symbol_image = int_status_reporter.getIcon(symbol_status)
+        header.append(description+"<br />"+symbol_image)
+    header.append("Total")
+    int_table.setHeader(header)
     # Finally: copy the image icons to the xia2_html directory
     print "Copying image status icons to %s" % xia2_html
     for icon in int_status_reporter.listIconNames():
         shutil.copy(os.path.join(xia2icondir,icon),
                     os.path.join(xia2_html,icon))
-
-    #########################################################
-    # External files
-    #########################################################
-
-    # External log files
-    output_logfiles = output_files.addSubsection("Log files")
-    if not xia2.count('logfile'):
-        output_logfiles.addPara("No external log files")
-    else:
-        # Display table of log files
-        output_logfiles.addPara("Log files found in "+ \
-                                    Canary.MakeLink(xia2['logfile'][0]. \
-                                                        value('full_dir'), \
-                                                        xia2['logfile'][0]. \
-                                                        value('dir'))+":")
-        logs = output_logfiles.addTable()
-        for log in xia2['logfile']:
-            logdata = [log.value('name'),
-                       Canary.MakeLink("original",log.value('log'))]
-            if log.value('html'):
-                # Also link to baubles file
-                logdata.append(Canary.MakeLink("html",log.value('html')))
-            logs.addRow(logdata)
-        # Report if baubles was not run
-        if not do_baubles:
-            output_logfiles.addPara("Baubles wasn't run so there are "+
-                                      "no HTML files (set do_baubles to "+
-                                      "True in Xia2html.py to change this)")
-        else:
-            # Copy the JLoggraph applet to the xia2_html directory
-            # It lives in the "extras" subdir of the Xia2html source
-            # directory
-            jar_file = "JLogGraph.jar"
-            jloggraph_jar = os.path.join(xia2htmldir,"extras",jar_file)
-            print "Copying %s status icons to %s" % (jloggraph_jar,xia2_html)
-            if os.path.isfile(jloggraph_jar):
-                shutil.copy(jloggraph_jar,os.path.join(xia2_html,jar_file))
-            else:
-                print "*** %s not found ***" % jloggraph_jar
-
-    # External reflection files
-    output_datafiles = output_files.addSubsection("Reflection data files")
-    if not xia2.count('scaled_refln_file'):
-        output_datafiles.addPara("No external reflection files")
-    else:
-        # Display table of reflection files
-        output_datafiles.addPara("Available reflection files:")
-        refln_files = output_datafiles.addTable(('Dataset','Format','File','Useful for...'))
-        for refln_file in xia2['scaled_refln_file']:
-            # Need to do some processing here to make it look nicer
-            # (Note that if possible we link to the files using a
-            # relative rather than absolute path)
-            filen = os.path.basename(refln_file.value('filename'))
-            try:
-                useful_for = format_useful_for[refln_file.value('format')]
-            except KeyError:
-                useful_for = ''
-            reflndata = [refln_file.value('dataset'),
-                         refln_file.value('format'),
-                         Canary.MakeLink(filen,get_relative_path(
-                        refln_file.value('filename'))),
-                         useful_for]
-            refln_files.addRow(reflndata)
-
-    # Detailed statistics for each dataset
-    print "Number of summary tables: "+str(xia2.count('dataset_summary'))
-    # If there is more than 1 summary then write a TOC
-    if len(xia2['dataset_summary']) > 1:
-        summary.addPara("Statistics for each of the following datasets:")
-        summary.addTOC()
-    statistic_sections = {}
-    for dataset in xia2['dataset_summary']:
-        # Make a subsection for each dataset
-        name = dataset.value('dataset')
-        summary_table = Canary.MakeMagicTable(dataset.value('table'))
-        summary_table.setHeader(['','Overall','Low','High'])
-        stats_subsection = summary.addSubsection(name)
-        stats_subsection.addContent(summary_table)
-        # Store a reference to the subsection for linking to later
-        statistic_sections[name] = stats_subsection
-
+        
     # Credits section
     #
     # Programs used by XIA2
@@ -987,9 +1277,18 @@ if __name__ == "__main__":
     for prog in xia2['xia2_used'][0].value('software').split():
         programs.addItem(prog)
     # Citations
-    citations = credits.addSubsection("Citations").addList()
+    citer = Citations()
+    citations = credits.addSubsection("Citations")
+    citations.addPara("Note: links to external content that may require you to login before you can view or download",css_class="info")
+    citation_list = citations.addList()
     for line in str(xia2['citations'][0]).split('\n'):
-        if line.strip() != "": citations.addItem(line)
+        if line.strip() != "":
+            # Get citation link
+            url = citer.getCitationLink(line)
+            if url:
+                citation_list.addItem(Canary.MakeLink(line,url))
+            else:
+                citation_list.addItem(line)
     # Some other xia2-specific stuff
     sect_xia2_stuff = credits.addSubsection("xia2 Details")
     sect_xia2_stuff.addPara("Additional details about this run:")
@@ -1000,6 +1299,19 @@ if __name__ == "__main__":
     xia2txt = os.path.join(xia2dir,"xia2.txt")
     tbl_xia2_stuff.addRow(['xia2.txt file',
                            Canary.MakeLink(xia2txt,get_relative_path(xia2txt))])
+    
+    # Put in some forwarding linking from the index
+    index.addPara("Contents of the rest of this document:")
+    forward_links = index.addList()
+    forward_links.addItem(Canary.Link("Reflection data files output from xia2",output_datafiles).render())
+    forward_links.addItem(Canary.Link("Full statistics for each wavelength", \
+                                      summary).render())
+    forward_links.addItem(Canary.Link("Log files from individual stages", \
+                                      output_logfiles).render())
+    forward_links.addItem(Canary.Link("Integration status for images by wavelength and sweep", \
+                                      int_status_section).render())
+    forward_links.addItem(Canary.Link("Lists of programs and citations",
+                                      credits).render())
 
     # Footer section
     footer = "This file generated for you from xia2 output by Xia2html %s on %s<br />Powered by Magpie %s and Canary %s<br />&copy; Diamond 2009" \
@@ -1072,8 +1384,12 @@ if __name__ == "__main__":
     table_one.addRow(['Spacegroup',
                       htmlise_sg_name(
                 xia2['assumed_spacegroup'][0].value('spacegroup'))])
-    table_one.addRow(['',Canary.Link("More crystallographic parameters..",
-                                     overview)])
+    table_one.addRow(['&nbsp;']) # Empty row for padding
+    table_one.addRow(['Twinning score',
+                      xia2['twinning'][0].value('score')+
+                      " ("+xia2['twinning'][0].value('report')+")"])
+    table_one.addRow(['',Canary.Link("All crystallographic parameters..",
+                                     xtal_parameters)])
     
 
     # Spit out the HTML
