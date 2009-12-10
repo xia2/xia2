@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.16 2009/12/10 17:28:12 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.17 2009/12/10 17:33:47 pjx Exp $"
 __version__ = "0.0.4"
 
 #######################################################################
@@ -1416,9 +1416,8 @@ if __name__ == "__main__":
                       htmlise_sg_name(
                 xia2['assumed_spacegroup'][0].value('spacegroup'))])
     table_one.addRow(['&nbsp;']) # Empty row for padding
-    table_one.addRow(['Twinning score',
+    table_one.addRow(['Sfcheck twinning score',
                       twinning_score+" ("+twinning_report+")"])
-    table_one.addRow(['(from sfcheck)'])
     table_one.addRow(['',Canary.Link("All crystallographic parameters..",
                                      xtal_parameters)])
     
