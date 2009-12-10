@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.12 2009/12/10 15:26:58 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.13 2009/12/10 15:46:27 pjx Exp $"
 __version__ = "0.0.4"
 
 #######################################################################
@@ -1172,12 +1172,9 @@ if __name__ == "__main__":
             if log.value('LogFile'):
                 warnings = log.value('LogFile').warnings()
                 if len(warnings):
-                    warning_text = "Warning(s) in this log:"
-                    warning_list = Canary.List()
-                    for warning in warnings:
-                        warning_list.addItem(warning.message())
-                    warning_text += warning_list.render()
-                    logdata.append(warning_text)
+                    logdata.append(Canary.MakeLink("See warnings",
+                                                   log.value('html')+
+                                                   "#warnings"))
                 else:
                     logdata.append('')
             # Add data to the table
