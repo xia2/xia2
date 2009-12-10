@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.15 2009/12/10 17:27:16 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.16 2009/12/10 17:28:12 pjx Exp $"
 __version__ = "0.0.4"
 
 #######################################################################
@@ -860,10 +860,9 @@ if __name__ == "__main__":
     # Set up a new processor specifically for this block
     int_status_reporter = IntegrationStatusReporter(xia2_html_dir)
     status_processor = Magpie.Magpie()
-    status_processor.addPattern(
-        'sweep',
-        "-+ Integrating ([^ ]*) -+",
-        ['name'])
+    status_processor.addPattern('sweep',
+                                "-+ Integrating ([^ ]*) -+",
+                                ['name'])
     status_processor.addPattern('batch',
                                 "Processed batches ([0-9]+) to ([0-9]+)",
                                 ['start','end'])
