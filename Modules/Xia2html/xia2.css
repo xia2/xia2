@@ -1,6 +1,6 @@
 /* xia2.css
    Stylesheet for xia2.html
-   CVS_id $Id: xia2.css,v 1.5 2009/12/10 15:27:20 pjx Exp $
+   CVS_id $Id: xia2.css,v 1.6 2009/12/10 18:02:08 pjx Exp $
    */
 body { font-family: Arial, sans-serif;
        font-size: 17px;
@@ -77,6 +77,29 @@ table.table_one th { border-style: none;
                      color: black; }
 table.table_one td { border-style: none; }
 table.table_one tr.unit_cell > td:first-child { text-align: right; }
+
+/* Styling the table of reflection files */
+table.refln_files { border-style: none;
+                  width: 85%;
+                  margin-left: auto;
+                  margin-right: auto;
+                  empty-cells: show; }
+table.refln_files * { border-style: none;}
+table.refln_files td { vertical-align: top;
+                     border-bottom: 2px solid gray; }
+table.refln_files tr.refln_format > td:first-child { background-color: #377cb1;
+                                                     color: white;
+                                                     font-weight: bold;
+                                                     font-size: 100%;
+                                                     border-top: 10px solid white; }
+table.refln_files tr.refln_format > td { border-bottom: 2px solid #377cb1; }
+table.refln_files tr.refln_header td { background-color: lightblue;
+                                       color: black;
+                                       font-style: italic;
+                                       border-style: none;
+                                       border-top: 2px solid white;
+                                       border-bottom: 2px solid white; }
+table.refln_files tr.useful_for td { font-weight: bold; }
 
 /* Styling the table of log files */
 table.log_files { border-style: none;
