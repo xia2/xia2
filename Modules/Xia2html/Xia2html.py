@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.13 2009/12/10 15:46:27 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.14 2009/12/10 17:19:57 pjx Exp $"
 __version__ = "0.0.4"
 
 #######################################################################
@@ -232,6 +232,16 @@ class LogFile:
             # Create and store a smartie logfile object
             print "Generating logfile object for "+str(self.__filen)
             self.__smartie_log = smartie.parselog(self.__filen)
+            # Check for errors with table parsing
+            nprograms = self.__smartie_log.nfragments()
+            for i in range(0,nprograms):
+                prog = self.__smartie_log.fragment(i)
+                for tbl in prog.tables():
+                    if tbl.parse_error():
+                        prog.addkeytext(name="Warning",
+                                        message="Badly formed table: "+
+                                        tbl.title())
+                        print "*** TABLE PARSE ERROR DETECTED ***"
         return self.__smartie_log
 
     def dir(self):
