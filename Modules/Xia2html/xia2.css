@@ -1,6 +1,6 @@
 /* xia2.css
    Stylesheet for xia2.html
-   CVS_id $Id: xia2.css,v 1.3 2009/12/09 13:14:14 pjx Exp $
+   CVS_id $Id: xia2.css,v 1.4 2009/12/10 13:01:44 pjx Exp $
    */
 body { font-family: Arial, sans-serif;
        font-size: 17px;
@@ -15,9 +15,13 @@ h3 { font-family: Georgia, serif;
 h4 { background-color: #ffd799;
      display: inline; }
 
+/* Warnings */
 .warning { background-color: red;
            color: white;
-	   font-weight: bold; }
+           font-size: 75%;
+	   font-weight: bold;
+           padding: 10px; }
+.warning a { color: white; }
 
 .info { font-style: italic;
         font-size: 90%; }
