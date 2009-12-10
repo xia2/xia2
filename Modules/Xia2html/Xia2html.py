@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.10 2009/12/10 14:53:15 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.11 2009/12/10 15:13:55 pjx Exp $"
 __version__ = "0.0.4"
 
 #######################################################################
@@ -1021,7 +1021,8 @@ if __name__ == "__main__":
     #
     # Crystallographic parameters section
     unit_cell = xia2['unit_cell'][0]
-    twinning = str(xia2['twinning'][0])
+    twinning_score = str(xia2['twinning'][0].value('score'))
+    twinning_report = str(xia2['twinning'][0].value('report'))
     try:
         asu_and_solvent = str(xia2['asu_and_solvent'][0])
     except IndexError:
@@ -1063,8 +1064,12 @@ if __name__ == "__main__":
         spacegroup.addPara("No likely alternatives to this spacegroup")
     #
     # Twinning
-    twinning_analysis = xtal_parameters.addSubsection("Twinning analysis"). \
-        addPara(twinning)
+    twinning_analysis = xtal_parameters.addSubsection("Twinning analysis")
+    twinning_analysis.addPara("Overall twinning score: "+
+                              twinning_score+"<br />"+
+                              "This is the value of &lt;E<sup>4</sup>&gt; "+
+                              "reported by sfcheck")
+    twinning_analysis.addPara(twinning_report)
     #
     # ASU and solvent content
     asu_contents = xtal_parameters.addSubsection("Asymmetric unit contents"). \
@@ -1403,8 +1408,8 @@ if __name__ == "__main__":
                 xia2['assumed_spacegroup'][0].value('spacegroup'))])
     table_one.addRow(['&nbsp;']) # Empty row for padding
     table_one.addRow(['Twinning score',
-                      xia2['twinning'][0].value('score')+
-                      " ("+xia2['twinning'][0].value('report')+")"])
+                      twinning_score+" ("+twinning_report+")"])
+    table_one.addRow(['(from sfcheck)'])
     table_one.addRow(['',Canary.Link("All crystallographic parameters..",
                                      xtal_parameters)])
     
