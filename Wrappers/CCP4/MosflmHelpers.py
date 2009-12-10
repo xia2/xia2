@@ -134,9 +134,10 @@ def _parse_mosflm_integration_output(integration_output_list):
             rmsd = residual / pixel_size
             per_image_stats[current_image]['rmsd_pixel'] = rmsd
             per_image_stats[current_image]['rmsd_phi'] = 0.0
-            weighted_residual = float(record.split()[-1])
-            per_image_stats[current_image][
-                'weighted_residual'] = weighted_residual
+            if 'Weighted residual' in record:
+                weighted_residual = float(record.split()[-1])
+                per_image_stats[current_image][
+                    'weighted_residual'] = weighted_residual
 
         if 'Real cell parameters' in record:
             cell = map(float, integration_output_list[i + 1].split())

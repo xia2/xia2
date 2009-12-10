@@ -298,9 +298,14 @@ def Mosflm(DriverType = None):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
 
-            self.set_executable(os.path.join(
-                os.environ['CCP4'], 'bin', 'ipmosflm'))
-    
+            if Flags.get_automatch():
+                self.set_executable(os.path.join(
+                    os.environ['CCP4'], 'bin', 'ipmosflm.test'))
+
+            else:
+                self.set_executable(os.path.join(
+                    os.environ['CCP4'], 'bin', 'ipmosflm'))
+                
             FrameProcessor.__init__(self)
             Indexer.__init__(self)
             Integrater.__init__(self)
@@ -3714,6 +3719,7 @@ def Mosflm(DriverType = None):
                     lim = 0.25 * min(detector_width, detector_height)
 
                     job.input('automatch')
+                    job.input('refine nousebox')
                     job.input('refine limit %.2f' % lim)
 
                 job.input('postref multi segments 1')
