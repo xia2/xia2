@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.4 2009/12/09 13:18:03 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.5 2009/12/10 13:01:04 pjx Exp $"
 __version__ = "0.0.4"
 
 #######################################################################
@@ -279,8 +279,9 @@ class LogFile:
 
     def program(self):
         """Return program name associated with this log file"""
+        logname = self.basename() # Ignore the leading directory
         for fragment in self.__program_lookup.keys():
-            if self.__filen.find(fragment) > -1:
+            if logname.find(fragment) > -1:
                 return self.__program_lookup[fragment]
         # No match
         return None
@@ -912,6 +913,8 @@ if __name__ == "__main__":
             log = LogFile(os.path.join(logdir,filen),xds_pipeline=found_xds)
             if log.isLog():
                 print log.basename()+" is log file"
+                if not log.program():
+                    print "*** No program assigned for this file! ***"
                 logfile_data = {'name': log.basename(),
                                 'full_dir': log.absoluteDirPath(),
                                 'dir': log.relativeDirPath(),
@@ -1123,7 +1126,18 @@ if __name__ == "__main__":
             # Logs are grouped by stage according to the
             # program name
             program = log.value('program')
-            stage = program_stage[program]
+            try:
+                stage = program_stage[program]
+            except KeyError:
+                # No stage assigned for this program
+                # Add a warning to the HTML file and skip
+                print "No program stage for program "+str(program)
+                output_logfiles.addPara("xia2html: failed to classify log "+
+                                        Canary.MakeLink(log.value('name'),
+                                                        log.value('log'))+
+                                        "<br />Please report this problem",
+                                        css_class='warning')
+                continue
             if stage != this_stage:
                 logs.addRow([stage,''],css_classes='proc_stage')
                 this_stage = stage
