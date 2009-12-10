@@ -394,16 +394,6 @@ class XDSIntegrater(FrameProcessor,
 
         defpix.run()
 
-        # record the log file -
-
-        pname, xname, dname = self.get_integrater_project_info()
-        sweep = self.get_integrater_sweep_name()
-        FileHandler.record_log_file('%s %s %s %s DEFPIX' % \
-                                    (pname, xname, dname, sweep),
-                                    os.path.join(self.get_working_directory(),
-                                                 'DEFPIX.LP'))
-                                                 
-
         # and gather the result files
         for file in ['BKGPIX.cbf',
                      'ABS.cbf']:
