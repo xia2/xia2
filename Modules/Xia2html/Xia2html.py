@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.6 2009/12/10 13:07:44 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.7 2009/12/10 13:48:16 pjx Exp $"
 __version__ = "0.0.4"
 
 #######################################################################
@@ -48,7 +48,7 @@ format_useful_for = { "mtz": "CCP4 and Phenix",
 
 logfile_programs = { "INTEGRATE": "xds",
                      "CORRECT": "xds",
-                     "XSCALE": "xds",
+                     "XSCALE": "xscale",
                      "mosflm_integrate": "mosflm",
                      "pointless": "pointless",
                      "scala": "scala",
@@ -58,6 +58,7 @@ logfile_programs = { "INTEGRATE": "xds",
 program_stage = { "xds":       "Integration",
                   "mosflm":    "Integration",
                   "pointless": "Spacegroup determination",
+                  "xscale":    "Scaling and merging",
                   "scala":     "Scaling and merging",
                   "truncate":  "Analysis",
                   "chef":      "Analysis" }
@@ -176,7 +177,7 @@ class LogFile:
         self.__program_lookup = {
             "INTEGRATE": "xds",
             "CORRECT": "xds",
-            "XSCALE": "xds",
+            "XSCALE": "xscale",
             "mosflm_integrate": "mosflm",
             "pointless": "pointless",
             "scala": "scala",
@@ -293,11 +294,13 @@ class LogFile:
     def description(self):
         """Return log file description associated with the name"""
         # Deal with scala in XDS pipeline
+        # FIXME can this be generalised?
         if self.program() == "scala" and self.__xds_pipeline:
             return self.__description_lookup['scala_xds']
         # Deal with other log files
+        logname = self.basename() # Ignore the leading directory
         for fragment in self.__description_lookup.keys():
-            if self.__filen.find(fragment) > -1:
+            if logname.find(fragment) > -1:
                 return self.__description_lookup[fragment]
         # No match
         return None
@@ -527,9 +530,9 @@ def cmp_file_by_keyword(file1,file2):
     keywords = ['DEPFIX',
                 'INTEGRATE',
                 'CORRECT',
-                'XSCALE',
                 'mosflm_integrate',
                 'pointless',
+                'XSCALE',
                 'scala',
                 'truncate',
                 'chef']
@@ -930,7 +933,7 @@ if __name__ == "__main__":
                 # Store data for this file in the xia2 object
                 xia2.addData('logfile',logfile_data)
                 # Update found_xds flag
-                if log.program == "xds": found_xds = True
+                if log.program() == "xds": found_xds = True
             else:
                 print log.basename() + " : not logfile "
         print "Finished with logfiles"
