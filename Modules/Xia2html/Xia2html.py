@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.8 2009/12/10 14:00:16 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.9 2009/12/10 14:49:09 pjx Exp $"
 __version__ = "0.0.4"
 
 #######################################################################
@@ -782,7 +782,7 @@ if __name__ == "__main__":
                      "Inter-wavelength B and R-factor analysis",
                      "Project:",Magpie.EXCLUDE)
     xia2.defineBlock('integration_status_per_image',
-                     "-------------------- Integrating","blank")
+                     "--- Integrating","blank")
 
     # Process the output
     xia2.process()
@@ -850,9 +850,10 @@ if __name__ == "__main__":
     # Set up a new processor specifically for this block
     int_status_reporter = IntegrationStatusReporter(xia2_html_dir)
     status_processor = Magpie.Magpie()
-    status_processor.addPattern('sweep',
-                                "-------------------- Integrating ([^ ]*) --------------------",
-                                ['name'])
+    status_processor.addPattern(
+        'sweep',
+        "-------------------- Integrating ([^ ]*) --------------------",
+        ['name'])
     status_processor.addPattern('batch',
                                 "Processed batches ([0-9]+) to ([0-9]+)",
                                 ['start','end'])
