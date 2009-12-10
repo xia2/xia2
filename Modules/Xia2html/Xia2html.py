@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.9 2009/12/10 14:49:09 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.10 2009/12/10 14:53:15 pjx Exp $"
 __version__ = "0.0.4"
 
 #######################################################################
@@ -1035,12 +1035,12 @@ if __name__ == "__main__":
     unit_cell_params = xtal_parameters.addSubsection("Unit cell")
     unit_cell_params.addTable(['a','b','c',
                                '&alpha;','&beta;','&gamma']). \
-                               addRow([unit_cell.value('a'),
-                                       unit_cell.value('b'),
-                                       unit_cell.value('c'),
-                                       unit_cell.value('alpha'),
-                                       unit_cell.value('beta'),
-                                       unit_cell.value('gamma')])
+                               addRow([unit_cell.value('a')+'&nbsp;',
+                                       unit_cell.value('b')+'&nbsp;',
+                                       unit_cell.value('c')+'&nbsp;',
+                                       unit_cell.value('alpha')+'&nbsp;',
+                                       unit_cell.value('beta')+'&nbsp;',
+                                       unit_cell.value('gamma')+'&nbsp;'])
     unit_cell_params.addPara(
         "The unit cell parameters are the average for all measurements")
     #
