@@ -687,8 +687,8 @@ class XSweep(Object):
             # we can set...
 
             if global_integration_parameters.get_parameters(crystal_id):
-                Chatter.write('Using integration parameters for crystal %s' \
-                              % crystal_id)
+                Debug.write('Using integration parameters for crystal %s' \
+                            % crystal_id)
                 self._integrater.set_integrater_parameters(
                     global_integration_parameters.get_parameters(crystal_id))
 
@@ -747,8 +747,8 @@ class XSweep(Object):
                 global_integration_parameters.set_parameters(
                     crystal_id,
                     self._integrater.get_integrater_export_parameters())
-                Chatter.write('Stored integration parameters' + \
-                              ' for crystal %s' % crystal_id)
+                Debug.write('Stored integration parameters' + \
+                            ' for crystal %s' % crystal_id)
 
         except exceptions.Exception, e:
             # Chatter.write('Error storing parameters for crystal %s' % \
