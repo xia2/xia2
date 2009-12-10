@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.11 2009/12/10 15:13:55 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.12 2009/12/10 15:26:58 pjx Exp $"
 __version__ = "0.0.4"
 
 #######################################################################
@@ -983,6 +983,7 @@ if __name__ == "__main__":
 
     version = xia2['xia2_version'][0].value('version')
     command_line = xia2['command_line'][0].value('cmd_line')
+    run_time = xia2['processing_time'][0].value('time')
 
     # Build the skeleton of the document here
     # Create the major sections which will be populated later on
@@ -1315,7 +1316,9 @@ if __name__ == "__main__":
     sect_xia2_stuff = credits.addSubsection("xia2 Details")
     sect_xia2_stuff.addPara("Additional details about this run:")
     tbl_xia2_stuff = sect_xia2_stuff.addTable()
+    tbl_xia2_stuff.addClass('xia2_info')
     tbl_xia2_stuff.addRow(['Version',version])
+    tbl_xia2_stuff.addRow(['Run time',run_time])
     tbl_xia2_stuff.addRow(['Command line',command_line])
     tbl_xia2_stuff.addRow(['Termination status',termination_status])
     xia2txt = os.path.join(xia2dir,"xia2.txt")
