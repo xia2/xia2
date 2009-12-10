@@ -1957,7 +1957,7 @@ class XDSScaler(Scaler):
 
             chef = self._factory.Chef()
 
-            chef.set_title('Group %d' % group)
+            chef.set_title('%s Group %d' % (self._common_xname, group + 1))
 
             dose_step = self._chef_analysis_times[group] / \
                         self._chef_dose_factor
@@ -1974,8 +1974,9 @@ class XDSScaler(Scaler):
             
             chef.run()
 
-            FileHandler.record_log_file('chef group %d' % (group + 1),
-                                        chef.get_log_file())
+            FileHandler.record_log_file(
+                '%s chef %d' % (self._common_xname, group + 1),
+                chef.get_log_file())
         
         # this is #181 so figure this out first...
 
