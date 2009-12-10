@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.5 2009/12/10 13:01:04 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.6 2009/12/10 13:07:44 pjx Exp $"
 __version__ = "0.0.4"
 
 #######################################################################
@@ -123,6 +123,10 @@ class Citations:
             'xds',
             'Kabsch, W. (1993) Journal of Applied Crystallography 26, 795--800',
             'http://journals.iucr.org/j/issues/1993/06/00/wi0124/wi0124.pdf')
+        self.addCitation(
+            'xia2',
+            'Winter, G. (2010) Journal of Applied Crystallography 43',
+            'http://journals.iucr.org/j/issues/2010/01/00/ea5113/index.html')
 
     def addCitation(self,program,citation,link):
         """Add citation info
