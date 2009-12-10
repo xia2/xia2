@@ -3424,7 +3424,10 @@ def Mosflm(DriverType = None):
 
             # gather the statistics from the postrefinement
 
-            postref_result = _parse_summary_file(summary_file)
+            try:
+                postref_result = _parse_summary_file(summary_file)
+            except AssertionError, e:
+                postref_result = { }
 
             # now write this to a postrefinement log
 
@@ -4021,7 +4024,11 @@ def Mosflm(DriverType = None):
             postref_result = { }
 
             for summary in summary_files:
-                postref_result.update(_parse_summary_file(summary))
+                try:
+                    update = _parse_summary_file(summary)
+                except AssertionError, e:
+                    update = { }
+                postref_result.update(update)
 
             # now write this to a postrefinement log
 
