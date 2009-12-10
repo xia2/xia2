@@ -224,7 +224,8 @@ from Handlers.Flags import Flags
 from MosflmHelpers import _happy_integrate_lp, \
      _parse_mosflm_integration_output, decide_integration_resolution_limit, \
      _parse_mosflm_index_output, standard_mask, \
-     _get_indexing_solution_number, detector_class_to_mosflm
+     _get_indexing_solution_number, detector_class_to_mosflm, \
+     _parse_summary_file
 
 from Modules.GainEstimater import gain
 from Handlers.Files import FileHandler
@@ -3421,6 +3422,40 @@ def Mosflm(DriverType = None):
             Chatter.write(
                 '"@" => abandoned') 
 
+            # gather the statistics from the postrefinement
+
+            postref_result = _parse_summary_file(summary_file)
+
+            # now write this to a postrefinement log
+
+            postref_log = os.path.join(self.get_working_directory(),
+                                       'postrefinement.log')
+
+            fout = open(postref_log, 'w')
+
+            fout.write('$TABLE: Postrefinement for %s:\n' % \
+                       self._intgr_sweep_name)
+            fout.write('$GRAPHS: Missetting angles:A:1, 2, 3, 4: $$\n')
+            fout.write('Batch PhiX PhiY PhiZ $$ Batch PhiX PhiY PhiZ $$\n')
+
+            for image in sorted(postref_result):
+                phix = postref_result[image].get('phix', 0.0)
+                phiy = postref_result[image].get('phiy', 0.0)
+                phiz = postref_result[image].get('phiz', 0.0)
+
+                fout.write('%d %5.2f %5.2f %5.2f\n' % \
+                           (image, phix, phiy, phiz))
+
+            fout.write('$$\n')
+            fout.close()            
+
+            if self.get_integrater_sweep_name():
+                pname, xname, dname = self.get_integrater_project_info()
+                FileHandler.record_log_file('%s %s %s %s postrefinement' % \
+                                            (self.get_integrater_sweep_name(),
+                                             pname, xname, dname),
+                                            postref_log)            
+
             # if we have not processed to a given resolution, fix
             # the limit for future reference
 
@@ -3553,6 +3588,8 @@ def Mosflm(DriverType = None):
                 left_images -= size
                 left_chunks -= 1
 
+            summary_files = []
+
             for j in range(parallel):
 
                 # make some working directories, as necessary - chunk-(0:N-1)
@@ -3578,6 +3615,8 @@ def Mosflm(DriverType = None):
                 summary_file = 'summary_%s.log' % spacegroup_number
                 job.add_command_line('SUMMARY')
                 job.add_command_line(summary_file)
+
+                summary_files.append(os.path.join(wd, summary_file))
 
                 job.start()
 
@@ -3977,6 +4016,43 @@ def Mosflm(DriverType = None):
             Chatter.write(
                 '"@" => abandoned') 
 
+            # gather the statistics from the postrefinement for all sweeps
+
+            postref_result = { }
+
+            for summary in summary_files:
+                postref_result.update(_parse_summary_file(summary))
+
+            # now write this to a postrefinement log
+
+            postref_log = os.path.join(self.get_working_directory(),
+                                       'postrefinement.log')
+
+            fout = open(postref_log, 'w')
+
+            fout.write('$TABLE: Postrefinement for %s:\n' % \
+                       self._intgr_sweep_name)
+            fout.write('$GRAPHS: Missetting angles:A:1, 2, 3, 4: $$\n')
+            fout.write('Batch PhiX PhiY PhiZ $$ Batch PhiX PhiY PhiZ $$\n')
+
+            for image in sorted(postref_result):
+                phix = postref_result[image].get('phix', 0.0)
+                phiy = postref_result[image].get('phiy', 0.0)
+                phiz = postref_result[image].get('phiz', 0.0)
+
+                fout.write('%d %5.2f %5.2f %5.2f\n' % \
+                           (image, phix, phiy, phiz))
+
+            fout.write('$$\n')
+            fout.close()
+
+            if self.get_integrater_sweep_name():
+                pname, xname, dname = self.get_integrater_project_info()
+                FileHandler.record_log_file('%s %s %s %s postrefinement' % \
+                                            (self.get_integrater_sweep_name(),
+                                             pname, xname, dname),
+                                            postref_log)
+            
             # sort together all of the hklout files in hklouts to get the
             # final reflection file... FIXME, need to reindex each of these
             # as well...
