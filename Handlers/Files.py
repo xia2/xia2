@@ -163,6 +163,12 @@ class _FileHandler:
         
         # now iterate through the "steps"
         for f in self._log_file_keys:
+
+            # ignore the troublesome ones
+
+            if 'postrefinement' in f:
+                continue
+            
             filename = os.path.join(target_directory,
                                     '%s.log' % f.replace(' ', '_'))
             original = self._log_files[f]
