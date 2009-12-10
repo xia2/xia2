@@ -21,6 +21,10 @@
 #        behave as before i.e. accepting the name of an input logfile
 #        and optionally an output html file.
 #
+#     3. Added the id "warnings" to the containing HTML div for
+#        warning messages extracted from the log file, so that they
+#        can be linked to using e.g. <a href="baubles.html#warnings">...
+#
 ########################################################################
 #
 # baubles.py
@@ -36,7 +40,7 @@ import os
 import re
 import time
 
-__cvs_id__ = "$Id: baubles.py,v 1.2 2009/11/16 17:58:56 pjx Exp $"
+__cvs_id__ = "$Id: baubles.py,v 1.3 2009/12/10 15:45:14 pjx Exp $"
 __version__ = "0.0.8"
 __diamond_version__ = "0.0.1"
 
@@ -1165,7 +1169,7 @@ def summariseGeneric(html,program):
         html.write("</div></p>\n")
         html.write("</div>\n")
     if len(warnings) > 0:
-        html.write("<div class=\"keytext\">\n")
+        html.write("<div id=\"warnings\" class=\"keytext\">\n")
         html.write("<p>The following warnings were issued:</p>\n")
         html.write("<ul>\n")
         for warning in warnings:
