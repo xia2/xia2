@@ -122,8 +122,10 @@
 # 0.3.0.6 - fixed bug which appeared from the user setability of the cell etc.
 #           tidied up output (i.e. much less clutter in main log now) and
 #           allowed lattice test to be switched off for tricky cases.
+#
+# 0.3.1.0 - included xia2html, chef running and so on.
 
-VersionNumber = "0.3.0.6"
+VersionNumber = "0.3.1.0"
 Version = "XIA2 %s" % VersionNumber
 CVSTag = "xia2-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2-%s" % VersionNumber
