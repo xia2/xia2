@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.7 2009/12/10 13:48:16 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.8 2009/12/10 14:00:16 pjx Exp $"
 __version__ = "0.0.4"
 
 #######################################################################
@@ -1210,11 +1210,9 @@ if __name__ == "__main__":
     int_status = xia2['integration_status_per_image']
     # Write out the preamble and key of symbols
     int_status_section.addPara("The following sections show the status of each image from the final integration run performed on each sweep within each dataset.")
-    int_status_section.addContent(
-        int_status_reporter.makeSymbolKey(ncolumns=6))
     # Add a summary table here - it will be populated as
     # we got along
-    int_status_section.addPara("The following table summarises the image status results for each dataset and sweep.")
+    int_status_section.addPara("This table summarises the image status for each dataset and sweep.")
     int_table = int_status_section.addTable()
     # Loop over datasets/wavelengths
     this_dataset = None
@@ -1269,10 +1267,7 @@ if __name__ == "__main__":
                 row.append(Canary.Link(str(sweep),sweep_section).render())
                 symbol_count = last_int_run.value('count')
                 for symbol in int_status_reporter.getSymbolList():
-                    if symbol_count[symbol]:
-                        row.append(str(symbol_count[symbol]))
-                    else:
-                        row.append('')
+                    row.append(str(symbol_count[symbol]))
                     total += symbol_count[symbol]
                 row.append(total)
                 int_table.addRow(row)
