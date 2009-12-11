@@ -2740,13 +2740,14 @@ class XDSScaler(Scaler):
             crd.set_hklout(hklout)
 
             status = crd.detect()
-
+            
             Chatter.write('')
-            Chatter.write('Inter-wavelength B and R-factor analysis:')
+            # Chatter.write('Inter-wavelength B and R-factor analysis:')
+            Chatter.banner('Local Scaling %s' % self._common_xname)
             for s in status:
                 Chatter.write('%s %s' % s)
-            Chatter.write('')
-        
+            # Chatter.write('')
+            Chatter.banner('')
 
         return
 

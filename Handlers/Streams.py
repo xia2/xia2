@@ -98,6 +98,11 @@ class _Stream:
         return
 
     def banner(self, comment, forward = True, size = 60):
+
+        if not comment:
+            self.write('-' * size)
+            return
+
         l = len(comment)
         m = (size - (l + 2)) / 2
         n = size - (l + 2 + m)
