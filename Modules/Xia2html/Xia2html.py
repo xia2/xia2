@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.20 2009/12/11 10:39:55 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.21 2009/12/11 11:40:58 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -883,6 +883,26 @@ if __name__ == "__main__":
         assumed_spg.setValue('alternative',alt_spgs)
         # Reset the processor for the next round
         spg_processor.reset()
+
+    # Post-process the inter-wavelength b/r factor table
+    #
+    # We need to do this because we may have grabbed too much
+    # data if we got the terminating pattern wrong
+    print "****** Additional processing for interwavelength analysis ******"
+    if xia2.count('interwavelength_analysis') > 0:
+        for interwavelength in xia2['interwavelength_analysis']:
+            # New copy of table
+            tbl = []
+            for line in str(interwavelength).split('\n'):
+                # Terminate the table at the first blank line
+                if line == "":
+                    # Reset the stored table
+                    interwavelength.setValue('interwavelength_analysis',
+                                             "\n".join(tbl))
+                    break
+                else:
+                    # Append line to new copy of table
+                    tbl.append(line)
     
     # Post-process integration status per image 
     #
