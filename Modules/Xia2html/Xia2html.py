@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.19 2009/12/11 09:31:55 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.20 2009/12/11 10:39:55 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -363,9 +363,41 @@ class Dataset:
         """Return the full name"""
         return self.__name
 
-    def shortName(self):
-        """Return the short name"""
-        return self.__short_name
+    def datasetName(self):
+        """Return the dataset name
+
+        This is the trailing part of the full name
+        (which we expect has the form project/crystal/dataset)"""
+        names = self.__name.split('/')
+        dataset_name = names[-1]
+        return dataset_name
+
+    def crystalName(self):
+        """Return the crystal name
+
+        This is the middle part of the full name
+        (which we expect has the form project/crystal/dataset)"""
+        names = self.__name.split('/')
+        if len(names) == 3:
+            crystal_name = names[1]
+        else:
+            crystal_name = None
+        return crystal_name
+
+    def projectName(self):
+        """Return the project name
+
+        This is the leading part of the full name
+        (which we expect has the form project/crystal/dataset)
+
+        If there are less than 3 components in the full name
+        then None is returned."""
+        names = self.__name.split('/')
+        if len(names) == 3:
+            project_name = names[0]
+        else:
+            project_name = None
+        return project_name
 
     def keys(self):
         """Return the list of data item names (keys)"""
@@ -821,7 +853,7 @@ if __name__ == "__main__":
             pass
     # Summarise/report
     for dataset in datasets:
-        print "Dataset %s (%s)" % (dataset.name(),dataset.shortName())
+        print "Dataset %s (%s)" % (dataset.name(),dataset.datasetName())
         print "Data items:"
         for key in dataset.keys():
             print ">>> "+str(key)+" : "+str(dataset[key])
@@ -1389,7 +1421,7 @@ if __name__ == "__main__":
         # Locate the wavelength
         wave_lambda = '?'
         for wavelength in xia2['wavelength']:
-            if dataset.shortName() == wavelength.value('name'):
+            if dataset.datasetName() == wavelength.value('name'):
                 wave_lambda = wavelength.value('lambda')
                 break
         # Construct the column of data and add to the table
@@ -1409,7 +1441,8 @@ if __name__ == "__main__":
                 anom_multiplicity = '-'
             column_data.extend([anom_completeness,anom_multiplicity])
         table_one.addColumn(column_data,
-                            header=dataset.shortName())
+                            header=dataset.crystalName()+"<br />"+
+                            dataset.datasetName())
     # Link forward to full stats for each dataset
     row = ['']
     for dataset in datasets:
