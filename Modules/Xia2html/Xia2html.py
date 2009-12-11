@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.23 2009/12/11 14:30:09 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.24 2009/12/11 17:19:45 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -323,9 +323,206 @@ class LogFile:
         """Return sweep name associated with this log file"""
         return ''
 
+# ReflectionFile
+#
+# Store information about a reflection data file
+class ReflectionFile:
+    """Reflection data file reference
+
+    Store the information pertaining to a reflection data file
+    referenced in the xia2 output."""
+
+    def __init__(self,filename,format,dataset):
+        """Create a ReflectionFile object
+
+        'filename' is the name of the reflection data file,
+        'format' is the format (e.g. mtz) and 'dataset' is the
+        name of the dataset that it relates to."""
+        self.__filename = filename
+        self.__format = format
+        if not dataset:
+            self.__dataset = "All datasets"
+        else:
+            self.__dataset = dataset
+
+    def format(self):
+        """Return the format of the reflection file"""
+        return self.__format
+
+    def dataset(self):
+        """Return the dataset of the reflection file"""
+        return self.__dataset
+
+# Xia2run
+#
+# Store information about a run of xia2
+class Xia2run:
+    """Xia2 run information
+
+    Store the information about a run of xia2 that has been
+    gathered from xia2.txt and other sources (like the LogFiles
+    directory)."""
+
+    def __init__(self,xia2_magpie,xia2_dir):
+        """Create new Xia2run object
+
+        'xia2_magpie' is a Magpie processor object that has
+        been run on the output of a xia2 run.
+
+        'xia2_dir' is the directory containing the xia2 output
+        (either relative or absolute)."""
+        self.__xia2     = xia2_magpie
+        self.__xia2_dir  = xia2_dir
+        self.__datasets    = [] # List of datasets
+        self.__crystals    = [] # List of crystals
+        self.__sweeps      = [] # List of sweeps
+        self.__logfiles    = [] # List of log files
+        self.__refln_files = [] # List of reflection data files
+        self.__has_anomalous = False # Anomalous data?
+        self.__xds_pipeline  = False # XDS pipeline used?
+        try:
+            # Populate the object with data
+            self.__populate()
+            self.__complete = True
+        except:
+            # Some problem
+            self.__complete = False
+
+    def __populate(self):
+        """Internal: populate the data structure"""
+        print "POPULATE> STARTED"
+        xia2 = self.__xia2
+        # Datasets
+        print "POPULATE> DATASETS"
+        for dataset in xia2['dataset_summary']:
+            self.__datasets.append(Dataset(dataset.value('dataset'),
+                                           dataset.value('table')))
+        # Crystals
+        print "POPULATE> CRYSTALS"
+        xtal_list = []
+        for dataset in self.__datasets:
+            xtal = dataset.crystalName()
+            try:
+                xtal_list.index(xtal)
+            except ValueError:
+                # Crystal not in list, add it
+                xtal_list.append(xtal)
+                # Create and store a crystal object
+                self.__crystals.append(Crystal(xtal))
+        # Associate crystal-specific data (e.g. unit cell etc)
+        # with each crystal object
+        nxtals = len(self.__crystals)
+        for i in range(0,nxtals):
+            crystal = self.__crystals[i]
+            crystal.setUnitCellData(xia2['unit_cell'][i])
+            crystal.setSpacegroupData(xia2['assumed_spacegroup'][i])
+            crystal.setTwinningData(xia2['twinning'][i])
+        # Anomalous data?
+        # Look for the "anomalous_completeness" data item in
+        # the dataset summary table
+        print "POPULATE> ANOMALOUS DATA"
+        for dataset in self.__datasets:
+            try:
+                x = dataset['anomalous_completeness']
+                self.__has_anomalous = True
+                break
+            except KeyError:
+                pass
+        # Logfiles
+        # Look in the xia2 LogFiles directory
+        print "POPULATE> LOGFILES"
+        abslogdir = os.path.abspath(os.path.join(xia2dir,"LogFiles"))
+        logdir = get_relative_path(abslogdir)
+        # Process logfiles
+        try:
+            files = list_logfiles(logdir)
+            for filen in files:
+                print "LOGFILES>"+str(filen)
+                log = LogFile(os.path.join(logdir,filen),
+                              xds_pipeline=self.__xds_pipeline)
+                if log.isLog():
+                    # Store the log file
+                    self.__logfiles.append(log)
+                    # Update found_xds flag
+                    if log.program() == "xds":
+                        self.__xds_pipeline = True
+                else:
+                    print "LOGFILES> "+log.basename()+ \
+                          " not a log file, ignored"
+        except OSError:
+            # Possibly the LogFiles directory doesn'texist
+            if not os.path.isdir(logdir):
+                print "LOGFILES> LogFiles directory not found"
+            else:
+                raise
+        # Reflection files
+        print "POPULATE> REFLECTION FILES"
+        refln_format = None
+        for refln_file in xia2['scaled_refln_file']:
+            filen = refln_file.value('filename')
+            print "REFLN_FILE> "+filen
+            if refln_file.value('format'):
+                # Format is already defined so collect it
+                refln_format = refln_file.value('format')
+            print "REFLN_FILE> "+refln_format
+            refln_dataset = refln_file.value('dataset')
+            print "REFLN_FILE> "+str(refln_dataset)
+            # Store the data for this file
+            self.__refln_files.append(ReflectionFile(filen,
+                                                     refln_format,
+                                                     refln_dataset))
+        print "POPULATE> FINISHED"
+
+    def complete(self):
+        """Check if the Xia2run object is complete
+
+        If there were any errors during processing then this
+        method will return False, otherwise this will return
+        True."""
+        return self.__complete
+
+    def has_anomalous(self):
+        """Check whether anomalous data is available
+
+        Returns True if anomalous statistics were found for at
+        least one dataset, False otherwise."""
+        return self.__has_anomalous
+
+    def xds_pipeline(self):
+        """Check whether the run used the 'XDS pipeline'"""
+        return self.__xds_pipeline
+
+    def datasets(self):
+        """Return Datasets for the run
+
+        This returns a list of the Dataset objects representing
+        datasets/wavelengths found in the output."""
+        return self.__datasets
+
+    def crystals(self):
+        """Return Crystals for the run
+
+        This returns a list of the Crystal objects representing
+        crystals found in the output."""
+        return self.__crystals
+
+    def logfiles(self):
+        """Return LogFiles for the run
+
+        Returns a list of the LogFile objects representing the
+        log files found in the xia LogFiles directory."""
+        return self.__logfiles
+
+    def refln_files(self):
+        """Return ReflectionFiles for the run
+
+        Returns a list of the ReflectionFile objects representing
+        the reflection data files reference in the xia2 output."""
+        return self.__refln_files
+
 # Crystal
 #
-# Store information a crystal
+# Store information about a crystal
 class Crystal:
     """Xia2 crystal information
 
@@ -1039,7 +1236,7 @@ if __name__ == "__main__":
     # otherwise use absolute paths
     abslogdir = os.path.abspath(os.path.join(xia2dir,"LogFiles"))
     logdir = get_relative_path(abslogdir)
-    # Process logiles
+    # Process logfiles
     found_xds = False
     try:
         files = list_logfiles(logdir)
@@ -1088,6 +1285,12 @@ if __name__ == "__main__":
         # then set to "All datasets"
         if not refln_file.value('dataset'):
             refln_file.setValue('dataset',"All datatsets")
+
+    # Instantiate a Xia2run object
+    xia2run = Xia2run(xia2,xia2dir)
+    if not xia2run.complete():
+        print "Incomplete processing! Stopped"
+        sys.exit(1)
 
     #########################################################
     # Construct output HTML file
