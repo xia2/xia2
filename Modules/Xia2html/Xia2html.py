@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.22 2009/12/11 14:23:24 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.23 2009/12/11 14:30:09 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1531,9 +1531,14 @@ if __name__ == "__main__":
         column_data.append(Canary.Link("Full stats..",
                                        statistic_sections[dataset.name()]))
         # Append the column to the table
+        if len(xtals) > 1:
+            # Add the crystal name
+            column_title = dataset.crystalName()+"<br />"
+        else:
+            column_title = ''
+        column_title += dataset.datasetName()
         table_one.addColumn(column_data,
-                            header=dataset.crystalName()+"<br />"+
-                            dataset.datasetName())
+                            header=column_title)
     row = ['']
     # Additional data: unit cell, spacegroup
     table_one.addRow(['&nbsp;']) # Empty row for padding
