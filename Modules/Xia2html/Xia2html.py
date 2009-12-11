@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.21 2009/12/11 11:40:58 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.22 2009/12/11 14:23:24 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -322,6 +322,49 @@ class LogFile:
     def sweep(self):
         """Return sweep name associated with this log file"""
         return ''
+
+# Crystal
+#
+# Store information a crystal
+class Crystal:
+    """Xia2 crystal information
+
+    Store information associated with each crystal (e.g. unit
+    cell, twinning analysis etc)"""
+
+    def __init__(self,name):
+        self.__name = str(name)
+        self.__unit_cell  = None
+        self.__spacegroup = None
+        self.__twinning   = None
+
+    def name(self):
+        """Get the crystal name"""
+        return self.__name
+
+    def setUnitCellData(self,unit_cell):
+        """Set the unit cell data"""
+        self.__unit_cell = unit_cell
+
+    def unitCellData(self):
+        """Get the unit cell data"""
+        return self.__unit_cell
+
+    def setSpacegroupData(self,spacegroup):
+        """Set the spacegroup data"""
+        self.__spacegroup = spacegroup
+
+    def spacegroupData(self):
+        """Get the spacegroup data"""
+        return self.__spacegroup
+
+    def setTwinningData(self,twinning):
+        """Set the twinning data"""
+        self.__twinning = twinning
+
+    def twinningData(self):
+        """Get the twinning data"""
+        return self.__twinning
 
 # Dataset
 #
@@ -851,6 +894,29 @@ if __name__ == "__main__":
             break
         except KeyError:
             pass
+    # Get info on crystals
+    xtal_list = []
+    for dataset in datasets:
+        xtal = dataset.crystalName()
+        try:
+            xtal_list.index(xtal)
+        except ValueError:
+            # Crystal not in list, add it
+            print "Crystal: "+str(xtal)
+            xtal_list.append(xtal)
+    # Deal with unit cell and twinning data for each crystal
+    nxtals = len(xtal_list)
+    xtals = []
+    if xia2.count('unit_cell') != nxtals:
+        print "***** WARNING: number of unit cells != number of xtals *****"
+    for i in range(0,nxtals):
+        # Create a new Crystal object and store related data
+        crystal = Crystal(xtal_list[i])
+        crystal.setUnitCellData(xia2['unit_cell'][i])
+        crystal.setSpacegroupData(xia2['assumed_spacegroup'][i])
+        crystal.setTwinningData(xia2['twinning'][i])
+        xtals.append(crystal)
+
     # Summarise/report
     for dataset in datasets:
         print "Dataset %s (%s)" % (dataset.name(),dataset.datasetName())
@@ -1434,7 +1500,8 @@ if __name__ == "__main__":
     if have_anomalous:
         row_titles.extend(['Anomalous completeness',
                            'Anomalous multiplicity'])
-    # Add initial the column
+    row_titles.extend(['']) # Line linking to full stats
+    # Add initial title column
     table_one.addColumn(row_titles)
     # Add additional columns for each dataset
     for dataset in datasets:
@@ -1460,15 +1527,14 @@ if __name__ == "__main__":
                 anom_completeness = '-'
                 anom_multiplicity = '-'
             column_data.extend([anom_completeness,anom_multiplicity])
+        # Link forward to full stats for this dataset
+        column_data.append(Canary.Link("Full stats..",
+                                       statistic_sections[dataset.name()]))
+        # Append the column to the table
         table_one.addColumn(column_data,
                             header=dataset.crystalName()+"<br />"+
                             dataset.datasetName())
-    # Link forward to full stats for each dataset
     row = ['']
-    for dataset in datasets:
-        row.append(Canary.Link("Full stats..",
-                               statistic_sections[dataset.name()]))
-    table_one.addRow(row)
     # Additional data: unit cell, spacegroup
     table_one.addRow(['&nbsp;']) # Empty row for padding
     table_one.addRow(['Unit cell dimensions: a (&Aring;)',
