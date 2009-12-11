@@ -23,8 +23,8 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.18 2009/12/10 18:01:28 pjx Exp $"
-__version__ = "0.0.4"
+__cvs_id__ = "$Id: Xia2html.py,v 1.19 2009/12/11 09:31:55 pjx Exp $"
+__version__ = "0.0.5"
 
 #######################################################################
 # Import modules that this module depends on
