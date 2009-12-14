@@ -10,7 +10,7 @@
 # Provide classes and functions for generating interactive HTML
 # documents
 #
-__cvs_id__ = "$Id: Canary.py,v 1.3 2009/12/09 13:13:41 pjx Exp $"
+__cvs_id__ = "$Id: Canary.py,v 1.4 2009/12/14 16:31:01 pjx Exp $"
 __version__ = "0.0.3"
 
 #######################################################################
@@ -481,18 +481,22 @@ class Table(DocElement):
             try:
                 self.__rows[i].append(data[i])
             except IndexError:
-                # No row at this position - make new one
-                # This will automatically be the same 'width'
-                # as all previous rows, but populated with
-                # 'None' items
-                self.addRow([])
-                if self.nRows() == 1:
-                    # Special case: this is the first
-                    # row in an empty table
-                    self.__rows[0].append(data[i])
+                if len(data) > len(self.__rows):
+                    # No row at this position - make new one
+                    # This will automatically be the same 'width'
+                    # as all previous rows, but populated with
+                    # 'None' items
+                    self.addRow([])
+                    if self.nRows() == 1:
+                        # Special case: this is the first
+                        # row in an empty table
+                        self.__rows[0].append(data[i])
+                    else:
+                        # Put the new data at the last position
+                        self.__rows[i][-1] = data[i]
                 else:
-                    # Put the new data at the last position
-                    self.__rows[i][-1] = data[i]
+                    # Not enough data in the column
+                    self.__rows[i].append(None)               
         self.__normalise()
         # Deal with the header
         self.__header[-1] = header
