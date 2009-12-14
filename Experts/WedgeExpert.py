@@ -62,3 +62,15 @@ for batch in start_batches:
     exposure = batch_dose[batch + 1] - batch_dose[batch]
     print '%d %d %.1f %.1f' % (batch, length_wedge[batch],
                                exposure, batch_dose[batch])
+
+# ok so so far we have a good understanding of the structure of the
+# wedges - next need to chase down the pairing of the wedges, and define
+# some rules for this...
+
+# (i) assert: multiple wavelengths, same phi range => paired wedges
+# (ii) assert: inverse beam measurements, phi + 180 => paired wedges
+# (iii) assume want complete pairs
+
+# ok, to do this will need wavelength information, phi start, phi offset,
+# dose and batch stuff. so, ideally work from the contents of the cheffy
+# MTZ files via MTZdump, or cctbx code to do same. c/f autochef module.
