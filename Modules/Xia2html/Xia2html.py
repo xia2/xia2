@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.24 2009/12/11 17:19:45 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.25 2009/12/14 13:19:54 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -344,6 +344,14 @@ class ReflectionFile:
             self.__dataset = "All datasets"
         else:
             self.__dataset = dataset
+
+    def filename(self):
+        """Return the filename that was supplied on creation"""
+        return self.__filename
+
+    def basename(self):
+        """Return the basename of the file i.e. no leading directory"""
+        return os.path.basename(self.__filename)
 
     def format(self):
         """Return the format of the reflection file"""
