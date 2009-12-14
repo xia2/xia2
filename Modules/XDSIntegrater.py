@@ -779,6 +779,23 @@ class XDSIntegrater(FrameProcessor,
         Debug.write('Error correction parameters: A=%.3f B=%.3f' % \
                     correct.get_result('sdcorrection'))
 
+        # compute misorientation of axes
+
+        tokens = map(float, self._data_files['GXPARM.XDS'].split())
+
+        rotn = tokens[3:6]
+        beam = tokens[7:10]
+
+        dot = sum([rotn[j] * beam[j] for j in range(3)])
+        r = math.sqrt(sum([rotn[j] * rotn[j] for j in range(3)]))
+        b = math.sqrt(sum([beam[j] * beam[j] for j in range(3)]))
+
+        rtod = 180.0 / math.pi
+
+        angle = rtod * math.fabs(0.5 * math.pi - math.acos(dot / (r * b)))
+
+        Debug.write('Axis misalignment %.2f degrees' % angle)
+
         correct_deviations = (correct.get_result('rmsd_pixel'),
                               correct.get_result('rmsd_phi'))
 
