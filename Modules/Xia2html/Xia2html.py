@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.30 2009/12/14 15:25:49 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.31 2009/12/14 16:25:04 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1678,6 +1678,7 @@ if __name__ == "__main__":
                 wave_lambda = wavelength.value('lambda')
                 break
         # Construct the column of data and add to the table
+        # This is for the overall/average values
         column_data = [wave_lambda,
                        dataset['high_resolution_limit'][1],
                        dataset['low_resolution_limit'][1],
@@ -1694,7 +1695,7 @@ if __name__ == "__main__":
                 anom_multiplicity = '-'
             column_data.extend([anom_completeness,anom_multiplicity])
         # Link forward to full stats for this dataset
-        column_data.append(Canary.Link("Full stats..",
+        column_data.append(Canary.Link("See all statistics",
                                        statistic_sections[dataset.name()]))
         # Append the column to the table
         if len(xtals) > 1:
@@ -1705,7 +1706,33 @@ if __name__ == "__main__":
         column_title += dataset.datasetName()
         table_one.addColumn(column_data,
                             header=column_title)
-    row = ['']
+        # Add a second column with the high and low values
+        column_data = [None,
+                       "("+dataset['high_resolution_limit'][2]+\
+                       " - "+dataset['high_resolution_limit'][3]+")",
+                       "("+dataset['low_resolution_limit'][2]+\
+                       " - "+dataset['low_resolution_limit'][3]+")",
+                       "("+dataset['completeness'][2]+\
+                       " - "+dataset['completeness'][3]+")",
+                       "("+dataset['multiplicity'][2]+\
+                       " - "+dataset['multiplicity'][3]+")",
+                       "("+dataset['i/sigma'][2]+\
+                       " - "+dataset['i/sigma'][3]+")",
+                       "("+dataset['rmerge'][2]+\
+                       " - "+dataset['rmerge'][3]+")"]
+        if have_anomalous:
+            try:
+                anom_completeness = "("+dataset['anomalous_completeness'][2]+\
+                                    " - "+\
+                                    dataset['anomalous_completeness'][3]+")"
+                anom_multiplicity = "("+dataset['anomalous_multiplicity'][2]+\
+                                    " - "+\
+                                    dataset['anomalous_multiplicity'][3]+")"
+            except KeyError:
+                anom_completeness = '-'
+                anom_multiplicity = '-'
+            column_data.extend([anom_completeness,anom_multiplicity])
+        table_one.addColumn(column_data)
     # Additional data: unit cell, spacegroup
     table_one.addRow(['&nbsp;']) # Empty row for padding
     table_one.addRow(['Unit cell dimensions: a (&Aring;)',
