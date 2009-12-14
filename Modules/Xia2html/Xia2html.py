@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.31 2009/12/14 16:25:04 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.32 2009/12/14 16:58:10 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -396,6 +396,7 @@ class Xia2run:
         (either relative or absolute)."""
         self.__xia2     = xia2_magpie
         self.__xia2_dir  = xia2_dir
+        self.__xia2_journal = None # Journal file
         self.__log_dir   = None # Logfile directory
         self.__datasets    = [] # List of datasets
         self.__crystals    = [] # List of crystals
@@ -495,6 +496,12 @@ class Xia2run:
             self.__refln_files.append(ReflectionFile(filen,
                                                      refln_format,
                                                      refln_dataset))
+        # Journal file xia2-journal.txt
+        print "POPULATE> JOURNAL_FILE"
+        self.__xia2_journal = os.path.join(self.__xia2_dir,
+                                           "xia2-journal.txt")
+        if not os.path.isfile(self.__xia2_journal):
+            self.__xia2_journal = None
         print "POPULATE> FINISHED"
 
     def complete(self):
@@ -549,6 +556,13 @@ class Xia2run:
         Returns a list of the ReflectionFile objects representing
         the reflection data files reference in the xia2 output."""
         return self.__refln_files
+
+    def journal_file(self):
+        """Return name of the journal file for the run
+
+        Returns the full path of the xia2-journal.txt file, if one
+        exists - otherwise returns None."""
+        return self.__xia2_journal
 
 # Crystal
 #
@@ -1486,6 +1500,11 @@ if __name__ == "__main__":
                 logdata.append('')
             # Add data to the table
             logs.addRow(logdata)
+        # Add a link to the journal file xia2-journal.txt, if found
+        if xia2run.journal_file():
+            output_logfiles.addPara("More detailed information on what xia2 did can be found in the &quot;journal&quot; file:")
+            output_logfiles.addList().addItem(Canary.MakeLink(
+                "xia2-journal.txt",get_relative_path(xia2run.journal_file())))
         # Copy the JLoggraph applet to the xia2_html directory
         # It lives in the "extras" subdir of the Xia2html source
         # directory
