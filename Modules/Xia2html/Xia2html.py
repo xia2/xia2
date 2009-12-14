@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.28 2009/12/14 14:14:38 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.29 2009/12/14 14:58:26 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -41,15 +41,6 @@ import baubles
 #######################################################################
 # Local data
 #######################################################################
-
-logfile_programs = { "INTEGRATE": "xds",
-                     "CORRECT": "xds",
-                     "XSCALE": "xscale",
-                     "mosflm_integrate": "mosflm",
-                     "pointless": "pointless",
-                     "scala": "scala",
-                     "truncate": "truncate",
-                     "chef": "chef" }
 
 program_stage = { "xds":       "Integration",
                   "mosflm":    "Integration",
@@ -207,38 +198,9 @@ class LogFile:
         """Return the full filename with the leading (absolute) path"""
         return os.path.join(self.absoluteDirPath(),self.basename())
 
-    def isLog(self):
-        """Test whether file is a log file
-
-        Checks whether the file name ends with .log extension"""
-        return os.path.splitext(self.__filen)[1] == ".log"
-
-    def smartieLog(self):
-        """Return the smartie logfile object
-
-        Returns the smartie logfile object (it may have to
-        generate it first) if appropriate; otherwise, return None"""
-        try:
-            self.__run_smartie.index(self.program())
-        except ValueError:
-            # Don't run baubles on this log
-            print "Not running smartie for "+self.__filen
-            return None
-        if not self.__smartie_log:
-            # Create and store a smartie logfile object
-            print "Generating logfile object for "+str(self.__filen)
-            self.__smartie_log = smartie.parselog(self.__filen)
-            # Check for errors with table parsing
-            nprograms = self.__smartie_log.nfragments()
-            for i in range(0,nprograms):
-                prog = self.__smartie_log.fragment(i)
-                for tbl in prog.tables():
-                    if tbl.parse_error():
-                        prog.addkeytext(name="Warning",
-                                        message="Badly formed table: "+
-                                        tbl.title())
-                        print "*** TABLE PARSE ERROR DETECTED ***"
-        return self.__smartie_log
+    def relativeName(self):
+        """Return the relative filename"""
+        return os.path.join(self.relativeDirPath(),self.basename())
 
     def dir(self):
         """Return directory that the log file is in"""
@@ -251,6 +213,72 @@ class LogFile:
     def relativeDirPath(self):
         """Return the relative directory for the log file"""
         return get_relative_path(self.absoluteDirPath())
+
+    def isLog(self):
+        """Test whether file is a log file
+
+        Checks whether the file name ends with .log extension"""
+        return os.path.splitext(self.__filen)[1] == ".log"
+
+    def program(self):
+        """Return program name associated with this log file"""
+        logname = self.basename() # Ignore the leading directory
+        for fragment in self.__program_lookup.keys():
+            if logname.find(fragment) > -1:
+                return self.__program_lookup[fragment]
+        # No match
+        return None
+
+    def description(self):
+        """Return log file description associated with the name"""
+        # Deal with scala in XDS pipeline
+        # FIXME can this be generalised?
+        if self.program() == "scala" and self.__xds_pipeline:
+            return self.__description_lookup['scala_xds']
+        # Deal with other log files
+        logname = self.basename() # Ignore the leading directory
+        for fragment in self.__description_lookup.keys():
+            if logname.find(fragment) > -1:
+                return self.__description_lookup[fragment]
+        # No match
+        return None
+
+    def dataset(self):
+        """Return dataset name associated with this log file"""
+        print "*** NOT IMPLEMENTED ***"
+        return ''
+
+    def sweep(self):
+        """Return sweep name associated with this log file"""
+        print "*** NOT IMPLEMENTED ***"
+        return ''
+
+    def smartieLog(self):
+        """Return the smartie logfile object
+
+        Returns the smartie logfile object (it may have to
+        generate it first) if appropriate; otherwise, return None"""
+        try:
+            self.__run_smartie.index(self.program())
+        except ValueError:
+            # Don't run baubles on this log
+            print "Not running smartie for "+self.basename()
+            return None
+        if not self.__smartie_log:
+            # Create and store a smartie logfile object
+            print "Creating smartie logfile object for "+str(self.basename())
+            self.__smartie_log = smartie.parselog(self.__filen)
+            # Check for errors with table parsing
+            nprograms = self.__smartie_log.nfragments()
+            for i in range(0,nprograms):
+                prog = self.__smartie_log.fragment(i)
+                for tbl in prog.tables():
+                    if tbl.parse_error():
+                        prog.addkeytext(name="Warning",
+                                        message="Badly formed table: "+
+                                        tbl.title())
+                        print "*** TABLE PARSE ERROR DETECTED ***"
+        return self.__smartie_log
 
     def baublize(self,target_dir=None):
         """Generate baublized HTML version of the log
@@ -287,37 +315,6 @@ class LogFile:
             if smartie_log.keytext(i).name() == "Warning":
                 warnings.append(smartie_log.keytext(i))
         return warnings
-
-    def program(self):
-        """Return program name associated with this log file"""
-        logname = self.basename() # Ignore the leading directory
-        for fragment in self.__program_lookup.keys():
-            if logname.find(fragment) > -1:
-                return self.__program_lookup[fragment]
-        # No match
-        return None
-
-    def description(self):
-        """Return log file description associated with the name"""
-        # Deal with scala in XDS pipeline
-        # FIXME can this be generalised?
-        if self.program() == "scala" and self.__xds_pipeline:
-            return self.__description_lookup['scala_xds']
-        # Deal with other log files
-        logname = self.basename() # Ignore the leading directory
-        for fragment in self.__description_lookup.keys():
-            if logname.find(fragment) > -1:
-                return self.__description_lookup[fragment]
-        # No match
-        return None
-
-    def dataset(self):
-        """Return dataset name associated with this log file"""
-        return ''
-
-    def sweep(self):
-        """Return sweep name associated with this log file"""
-        return ''
 
 # ReflectionFile
 #
@@ -392,6 +389,7 @@ class Xia2run:
         (either relative or absolute)."""
         self.__xia2     = xia2_magpie
         self.__xia2_dir  = xia2_dir
+        self.__log_dir   = None # Logfile directory
         self.__datasets    = [] # List of datasets
         self.__crystals    = [] # List of crystals
         self.__sweeps      = [] # List of sweeps
@@ -450,8 +448,8 @@ class Xia2run:
         # Logfiles
         # Look in the xia2 LogFiles directory
         print "POPULATE> LOGFILES"
-        abslogdir = os.path.abspath(os.path.join(xia2dir,"LogFiles"))
-        logdir = get_relative_path(abslogdir)
+        self.__log_dir = os.path.abspath(os.path.join(xia2dir,"LogFiles"))
+        logdir = get_relative_path(self.__log_dir)
         # Process logfiles
         try:
             files = list_logfiles(logdir)
@@ -510,6 +508,12 @@ class Xia2run:
     def xds_pipeline(self):
         """Check whether the run used the 'XDS pipeline'"""
         return self.__xds_pipeline
+
+    def log_dir(self):
+        """Return location of the xia2 LogFiles directory
+
+        This is the absolute path for the xia2 logfile directory."""
+        return self.__log_dir
 
     def datasets(self):
         """Return Datasets for the run
@@ -1245,50 +1249,6 @@ if __name__ == "__main__":
         # Reset the processor for the next round
         status_processor.reset()
 
-    # Deal with any external log files found in LogFiles directory
-    # Store the data for each log file as Data objects in the xia2
-    # object for reference later
-    print "Dealing with LogFiles directory..."
-    # Sort out relative and absolute paths to log files
-    # If the logfiles are in a directory below where the program
-    # is running then use relative paths to refer to them,
-    # otherwise use absolute paths
-    abslogdir = os.path.abspath(os.path.join(xia2dir,"LogFiles"))
-    logdir = get_relative_path(abslogdir)
-    # Process logfiles
-    found_xds = False
-    try:
-        files = list_logfiles(logdir)
-        for filen in files:
-            print ">>>>"+str(filen)
-            log = LogFile(os.path.join(logdir,filen),xds_pipeline=found_xds)
-            if log.isLog():
-                print log.basename()+" is log file"
-                if not log.program():
-                    print "*** No program assigned for this file! ***"
-                logfile_data = {'name': log.basename(),
-                                'full_dir': log.absoluteDirPath(),
-                                'dir': log.relativeDirPath(),
-                                'log': log.fullFileName(),
-                                'html': log.baublize(target_dir=xia2_html_dir),
-                                'program': log.program(),
-                                'description': log.description(),
-                                'LogFile': log }
-                # Store data for this file in the xia2 object
-                xia2.addData('logfile',logfile_data)
-                # Update found_xds flag
-                if log.program() == "xds": found_xds = True
-            else:
-                print log.basename() + " : not logfile "
-        print "Finished with logfiles"
-    except OSError:
-        # Possibly the LogFiles directory doesn't
-        # exist
-        if not os.path.isdir(logdir):
-            print "LogFiles directory not found"
-        else:
-            raise
-
     # Instantiate a Xia2run object
     xia2run = Xia2run(xia2,xia2dir)
     if not xia2run.complete():
@@ -1465,25 +1425,24 @@ if __name__ == "__main__":
             refln_files.addRow(reflndata)
 
     # External log files
-    if not xia2.count('logfile'):
+    if not len(xia2run.logfiles()):
         output_logfiles.addPara("No external log files")
     else:
         # Display table of log files
         output_logfiles.addPara("The following log files are located in "+ \
-                                    Canary.MakeLink(xia2['logfile'][0]. \
-                                                        value('full_dir'), \
-                                                        xia2['logfile'][0]. \
-                                                        value('dir'))+ \
-                                    " and are grouped by processing stage:")
+                                Canary.MakeLink(xia2run.log_dir(),
+                                                get_relative_path( \
+                                                xia2run.log_dir()))+ \
+                                " and are grouped by processing stage:")
         logs = output_logfiles.addTable()
         logs.addClass('log_files')
         this_stage = None
         this_program = None
-        for log in xia2['logfile']:
+        for log in xia2run.logfiles():
             # Determine the processing stage
             # Logs are grouped by stage according to the
             # program name
-            program = log.value('program')
+            program = log.program()
             try:
                 stage = program_stage[program]
             except KeyError:
@@ -1491,8 +1450,8 @@ if __name__ == "__main__":
                 # Add a warning to the HTML file and skip
                 print "No program stage for program "+str(program)
                 output_logfiles.addPara("xia2html: failed to classify log "+
-                                        Canary.MakeLink(log.value('name'),
-                                                        log.value('log'))+
+                                        Canary.MakeLink(log.basename(),
+                                                        log.relativeName())+
                                         "<br />Please report this problem",
                                         css_class='warning')
                 continue
@@ -1501,26 +1460,24 @@ if __name__ == "__main__":
                 this_stage = stage
             # Get the description of the log file
             if program != this_program:
-                description = log.value('description')
+                description = log.description()
                 if description:
                     logs.addRow([description],css_classes='proc_description')
                 this_program = program
-            logdata = [log.value('name'),
-                       Canary.MakeLink("original",log.value('log'))]
+            logdata = [log.basename(),
+                       Canary.MakeLink("original",log.relativeName())]
             # Link to baubles file
-            if log.value('html'):
-                logdata.append(Canary.MakeLink("html",log.value('html')))
+            html_log = log.baublize(target_dir=xia2_html_dir)
+            if html_log:
+                logdata.append(Canary.MakeLink("html",html_log))
             else:
                 logdata.append(None)
             # Warnings from smartie analysis
-            if log.value('LogFile'):
-                warnings = log.value('LogFile').warnings()
-                if len(warnings):
-                    logdata.append(Canary.MakeLink("See warnings",
-                                                   log.value('html')+
-                                                   "#warnings"))
-                else:
-                    logdata.append('')
+            if len(log.warnings()):
+                logdata.append(Canary.MakeLink("See warnings",
+                                               html_log+"#warnings"))
+            else:
+                logdata.append('')
             # Add data to the table
             logs.addRow(logdata)
         # Copy the JLoggraph applet to the xia2_html directory
