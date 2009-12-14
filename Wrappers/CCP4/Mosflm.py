@@ -3425,7 +3425,8 @@ def Mosflm(DriverType = None):
             # gather the statistics from the postrefinement
 
             try:
-                postref_result = _parse_summary_file(summary_file)
+                postref_result = _parse_summary_file(
+                    os.path.join(self.get_working_directory(), summary_file))
             except AssertionError, e:
                 postref_result = { }
 
