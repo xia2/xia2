@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.27 2009/12/14 14:11:16 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.28 2009/12/14 14:14:38 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -343,7 +343,7 @@ class ReflectionFile:
         # Internal data
         self.__format_useful_for = { "mtz": "CCP4 and Phenix",
                                      "sca": "AutoSHARP etc",
-                                     "sca_unmerged": "Shelx C/D/E" }
+                                     "sca_unmerged": "XPREP and Shelx C/D/E" }
 
     def filename(self):
         """Return the filename that was supplied on creation"""
