@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.25 2009/12/14 13:19:54 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.26 2009/12/14 14:02:21 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1278,22 +1278,6 @@ if __name__ == "__main__":
         else:
             raise
 
-    # Post-process the reflection file data to set the
-    # format for those references that were missing it
-    refln_format = '?'
-    for refln_file in xia2['scaled_refln_file']:
-        if refln_file.value('format'):
-            # Format is already defined so collect it
-            refln_format = refln_file.value('format')
-        else:
-            # Format is not defined, reset it to the
-            # last defined value we found
-            refln_file.setValue('format',refln_format)
-        # For MTZ file check the dataset - if not assigned
-        # then set to "All datasets"
-        if not refln_file.value('dataset'):
-            refln_file.setValue('dataset',"All datatsets")
-
     # Instantiate a Xia2run object
     xia2run = Xia2run(xia2,xia2dir)
     if not xia2run.complete():
@@ -1445,12 +1429,9 @@ if __name__ == "__main__":
         refln_files = output_datafiles.addTable()
         refln_files.addClass('refln_files')
         last_refln_format = None
-        for refln_file in xia2['scaled_refln_file']:
-            # Need to do some processing here to make it look nicer
-            # (Note that if possible we link to the files using a
-            # relative rather than absolute path)
-            filen = os.path.basename(refln_file.value('filename'))
-            refln_format = refln_file.value('format')
+        for refln_file in xia2run.refln_files():
+            filen = refln_file.basename()
+            refln_format = refln_file.format()
             if refln_format != last_refln_format:
                 # Add a title row for the new format
                 refln_files.addRow([str(refln_format).upper()+" files",""],
@@ -1458,7 +1439,7 @@ if __name__ == "__main__":
                 last_refln_format = refln_format
                 # Add "useful for.."
                 try:
-                    useful_for = format_useful_for[refln_file.value('format')]
+                    useful_for = format_useful_for[refln_format]
                     refln_files.addRow(["Useful for: "+useful_for],
                                        css_classes='useful_for')
                 except KeyError:
@@ -1467,9 +1448,9 @@ if __name__ == "__main__":
                 refln_files.addRow(['Dataset','File name'],
                                    css_classes='refln_header')
             # Build the row data
-            reflndata = [refln_file.value('dataset'),
+            reflndata = [refln_file.dataset(),
                          Canary.MakeLink(filen,get_relative_path(
-                        refln_file.value('filename')))]
+                refln_file.filename()))]
             refln_files.addRow(reflndata)
 
     # External log files
