@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.29 2009/12/14 14:58:26 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.30 2009/12/14 15:25:49 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -37,18 +37,6 @@ import Magpie
 import Canary
 import smartie
 import baubles
-
-#######################################################################
-# Local data
-#######################################################################
-
-program_stage = { "xds":       "Integration",
-                  "mosflm":    "Integration",
-                  "pointless": "Spacegroup determination",
-                  "xscale":    "Scaling and merging",
-                  "scala":     "Scaling and merging",
-                  "truncate":  "Analysis",
-                  "chef":      "Analysis" }
 
 #######################################################################
 # Class definitions
@@ -170,6 +158,15 @@ class LogFile:
             "scala": "scala",
             "truncate": "truncate",
             "chef": "chef" }
+        # Lookup table for matching programs to processing stages
+        self.__processing_stage_lookup = {
+            "xds":       "Integration",
+            "mosflm":    "Integration",
+            "pointless": "Spacegroup determination",
+            "xscale":    "Scaling and merging",
+            "scala":     "Scaling and merging",
+            "truncate":  "Analysis",
+            "chef":      "Analysis" }
         # Lookup table for matching descriptions to file names
         self.__description_lookup = {
             "INTEGRATE":
@@ -242,6 +239,16 @@ class LogFile:
                 return self.__description_lookup[fragment]
         # No match
         return None
+
+    def processing_stage(self):
+        """Return the processing stage that this log file belongs to
+
+        Returns the name of the processing stage, or None if no
+        match was found."""
+        try:
+            return self.__processing_stage_lookup[self.program()]
+        except KeyError:
+            return None
 
     def dataset(self):
         """Return dataset name associated with this log file"""
@@ -1442,10 +1449,8 @@ if __name__ == "__main__":
             # Determine the processing stage
             # Logs are grouped by stage according to the
             # program name
-            program = log.program()
-            try:
-                stage = program_stage[program]
-            except KeyError:
+            stage = log.processing_stage()
+            if not stage:
                 # No stage assigned for this program
                 # Add a warning to the HTML file and skip
                 print "No program stage for program "+str(program)
@@ -1459,6 +1464,7 @@ if __name__ == "__main__":
                 logs.addRow([stage,''],css_classes='proc_stage')
                 this_stage = stage
             # Get the description of the log file
+            program = log.program()
             if program != this_program:
                 description = log.description()
                 if description:
