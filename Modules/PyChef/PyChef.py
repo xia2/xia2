@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env cctbx.python
 # PyChef.py
 # 
 #   Copyright (C) 2009 Diamond Light Source, Graeme Winter
@@ -26,6 +26,9 @@ class PyChef:
 
     def __init__(self):
 
+        # assuming that we will be using BATCH by default... unless there is a
+        # column named DOSE
+
         self._base_column = 'BATCH'
 
         self._hklin_list = []
@@ -34,11 +37,13 @@ class PyChef:
         self._unit_cells = { }
         self._space_groups = { }
 
-        # assuming that we will be using BATCH by default...
-
         self._range_min = None
         self._range_max = None
         self._range_width = None
+
+        # Dose / batch information for reporting purposes
+
+        self._dose_information = { }
         
         self._resolution_high = None
         self._resolution_low = None
@@ -162,6 +167,9 @@ class PyChef:
             i_column = None
             sigi_column = None
 
+            batch_column = None
+            dose_column = None
+
             for crystal in mtz_obj.crystals():
 
                 for dataset in crystal.datasets():
@@ -177,6 +185,14 @@ class PyChef:
 
                     for column in dataset.columns():
 
+                        # for recording purposes for the BATCH / DOSE
+                        # mapping...
+
+                        if column.label() == 'BATCH':
+                            batch_column = column
+                        elif column.label() == 'DOSE':
+                            dose_column = column
+
                         if column.label() == self._base_column:
                             base_column = column
                         if column.label() == 'M_ISYM':
@@ -191,6 +207,25 @@ class PyChef:
             assert(i_column != None)
             assert(sigi_column != None)
 
+            if batch_column and dose_column:
+
+                # read, accumulate the dose information - assume that these
+                # are correctly structured as per xia2 handling...
+
+                batch_values = batch_column.extract_values(
+                    not_a_number_substitute = 0.0)
+                dose_values = dose_column.extract_values(
+                    not_a_number_substitute = 0.0)
+
+                assert(len(batch_values) == len(dose_values))
+
+                for j in range(len(batch_values)):
+                    batch = int(round(batch_values[j]))
+                    dose = dose_values[j]
+
+                    if not batch in self._dose_information:
+                        self._dose_information[batch] = dose
+                    
             print 'Reading in data from %s/%s' % (crystal_name, dataset_name)
             print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
                   tuple(uc.parameters())
@@ -575,7 +610,7 @@ class PyChef:
             print '$$'
 
         return
-            
+
     def scp(self):
         '''Perform the scp = rcp / ercp calculation as a function of
         assumulated dose across a number of resolution bins, from
@@ -722,4 +757,19 @@ class PyChef:
 
         return
     
-                        
+    def print_dose_profile(self):
+
+        if not self._dose_information:
+            return
+
+        print '$TABLE: Dose vs. BATCH:'
+        print '$GRAPHS: Dose Profile:N:1,2: $$'
+        print 'BATCH DOSE $$ $$'
+
+        for j in sorted(self._dose_information):
+            print '%d %f' % (j, self._dose_information[j])
+
+        print '$$'
+
+        return
+    

@@ -209,6 +209,7 @@ def main():
     pychef.print_completeness_vs_dose()
     pychef.scp()    
     pychef.rd()
+    pychef.print_dose_profile()
 
     print ' PyChef: ** Normal termination **'
     print ' Times: Elapsed: %.1f' % (time.time() - start_time)
