@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.26 2009/12/14 14:02:21 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.27 2009/12/14 14:11:16 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -41,10 +41,6 @@ import baubles
 #######################################################################
 # Local data
 #######################################################################
-
-format_useful_for = { "mtz": "CCP4 and Phenix",
-                      "sca": "AutoSHARP etc",
-                      "sca_unmerged": "Shelx C/D/E" }
 
 logfile_programs = { "INTEGRATE": "xds",
                      "CORRECT": "xds",
@@ -344,6 +340,10 @@ class ReflectionFile:
             self.__dataset = "All datasets"
         else:
             self.__dataset = dataset
+        # Internal data
+        self.__format_useful_for = { "mtz": "CCP4 and Phenix",
+                                     "sca": "AutoSHARP etc",
+                                     "sca_unmerged": "Shelx C/D/E" }
 
     def filename(self):
         """Return the filename that was supplied on creation"""
@@ -360,6 +360,17 @@ class ReflectionFile:
     def dataset(self):
         """Return the dataset of the reflection file"""
         return self.__dataset
+
+    def useful_for(self):
+        """Return description of the what the file can be used for
+
+        This returns a text description of what the file can be
+        used for.
+
+        NB The descriptions are taken from a look-up table that is
+        internal to the ReflectionFile class. To modify see the
+        __init__ method of this class."""
+        return self.__format_useful_for[self.format()]
 
 # Xia2run
 #
@@ -1439,8 +1450,8 @@ if __name__ == "__main__":
                 last_refln_format = refln_format
                 # Add "useful for.."
                 try:
-                    useful_for = format_useful_for[refln_format]
-                    refln_files.addRow(["Useful for: "+useful_for],
+                    refln_files.addRow(["Useful for: "+
+                                        refln_file.useful_for()],
                                        css_classes='useful_for')
                 except KeyError:
                     pass
