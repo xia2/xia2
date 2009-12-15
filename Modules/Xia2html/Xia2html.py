@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.33 2009/12/15 09:35:38 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.34 2009/12/15 11:06:08 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1283,6 +1283,7 @@ if __name__ == "__main__":
     # Build up the output HTML using Canary
     xia2doc = Canary.Document("xia2 Processing Report")
     xia2doc.addStyle(os.path.join(xia2htmldir,"xia2.css"),Canary.INLINE)
+    warning_icon = "<img src='"+os.path.join(xia2_html,"warning.png")+"'>"
     ##xia2doc.addScript("./baubles.js",Canary.INLINE)
 
     # XIA2 version and other general info
@@ -1469,7 +1470,8 @@ if __name__ == "__main__":
                 # No stage assigned for this program
                 # Add a warning to the HTML file and skip
                 print "No program stage for program "+str(program)
-                output_logfiles.addPara("xia2html: failed to classify log "+
+                output_logfiles.addPara(warning_icon+
+                                        " xia2html: failed to classify log "+
                                         Canary.MakeLink(log.basename(),
                                                         log.relativeName())+
                                         "<br />Please report this problem",
@@ -1494,7 +1496,7 @@ if __name__ == "__main__":
                 logdata.append(None)
             # Warnings from smartie analysis
             if len(log.warnings()):
-                logdata.append(Canary.MakeLink("See warnings",
+                logdata.append(Canary.MakeLink(warning_icon+" See warnings",
                                                html_log+"#warnings"))
             else:
                 logdata.append('')
@@ -1615,6 +1617,9 @@ if __name__ == "__main__":
     for icon in int_status_reporter.listIconNames():
         shutil.copy(os.path.join(xia2icondir,icon),
                     os.path.join(xia2_html,icon))
+    # Also copy the warning icon
+    shutil.copy(os.path.join(xia2icondir,"warning.png"),
+                os.path.join(xia2_html,"warning.png"))
         
     # Credits section
     #
