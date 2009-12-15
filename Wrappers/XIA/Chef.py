@@ -361,6 +361,9 @@ def Chef(DriverType = None,
                 # to have an indication of the logical wavelength to
                 # which the measurements belong
 
+                # wedges is a list of:
+                # FIRST_BATCH SIZE EXPOSURE FIRST_DOSE DATASET
+
             if not lowest_50:
                 lowest_50 = local_50
             if local_50 < lowest_50:
@@ -434,14 +437,17 @@ def Chef(DriverType = None,
 
             dose_batch = { }
             batch_dose = { }
+            batch_dataset = { }
 
             for j, b in enumerate(self._dose_profile['1_BATCH']):
 
                 b = int(b)
                 d = float(self._dose_profile['2_DOSE'][j])
-
+                ds = self._dose_profile['3_DATASET'][j]
+                
                 dose_batch[d] = b
                 batch_dose[b] = d
+                batch_dataset[b] = ds
 
             doses = sorted(dose_batch)
 
@@ -452,6 +458,7 @@ def Chef(DriverType = None,
             start_batches = [first_batch]
             current = first_batch
             wedge_sizes = {first_batch:1}
+            wedge_datasets = {first_batch:batch_dataset[first_batch]}
 
             for d in doses[1:]:
 
@@ -461,12 +468,14 @@ def Chef(DriverType = None,
                     current = b
                     start_batches.append(current)
                     wedge_sizes[current] = 0
+                    wedge_datasets[current] = batch_dataset[current]
                     is_monotonic = False
-
+                    
                 if b > first_batch + 1:
                     current = b
                     start_batches.append(current)
                     wedge_sizes[current] = 0
+                    wedge_datasets[current] = batch_dataset[current]
 
                 first_batch = b
                 wedge_sizes[current] += 1
@@ -478,7 +487,8 @@ def Chef(DriverType = None,
             for batch in start_batches:
                 exposure = batch_dose[batch + 1] - batch_dose[batch]
                 result.append((batch, wedge_sizes[batch],
-                               exposure, batch_dose[batch]))
+                               exposure, batch_dose[batch],
+                               wedge_datasets[batch]))
 
             return result
                 
