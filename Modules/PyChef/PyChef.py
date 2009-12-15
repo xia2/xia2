@@ -224,7 +224,7 @@ class PyChef:
                     dose = dose_values[j]
 
                     if not batch in self._dose_information:
-                        self._dose_information[batch] = dose
+                        self._dose_information[batch] = dose, dataset_name
                     
             print 'Reading in data from %s/%s' % (crystal_name, dataset_name)
             print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
@@ -764,10 +764,11 @@ class PyChef:
 
         print '$TABLE: Dose vs. BATCH:'
         print '$GRAPHS: Dose Profile:N:1,2: $$'
-        print 'BATCH DOSE $$ $$'
+        print 'BATCH DOSE DATASET $$ $$'
 
         for j in sorted(self._dose_information):
-            print '%d %f' % (j, self._dose_information[j])
+            d, n = self._dose_information[j]
+            print '%d %f %s' % (j, d, n)
 
         print '$$'
 
