@@ -22,6 +22,7 @@ Modules/Xia2html/icons/img_good.png -text
 Modules/Xia2html/icons/img_many_bad.png -text
 Modules/Xia2html/icons/img_ok.png -text
 Modules/Xia2html/icons/img_overloaded.png -text
+Modules/Xia2html/icons/warning.png -text
 Schema/Doc/Structure.pdf -text
 Schema/Interfaces/Doc/Interfaces.pdf -text
 Wrappers/CCP4/Doc/Chooch.pdf -text
