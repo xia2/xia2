@@ -10,7 +10,7 @@
 # Provide classes and functions for generating interactive HTML
 # documents
 #
-__cvs_id__ = "$Id: Canary.py,v 1.4 2009/12/14 16:31:01 pjx Exp $"
+__cvs_id__ = "$Id: Canary.py,v 1.5 2009/12/15 09:30:26 pjx Exp $"
 __version__ = "0.0.3"
 
 #######################################################################
@@ -92,7 +92,7 @@ class DocElement:
         if self.id(): open_div += " id='"+str(self.id())+"'"
         if self.__classes: open_div += " class='"+str(self.__classes)+"'"
         open_div += ">"
-        close_div = "</div>"
+        close_div = "</div>\n"
         # Return the rendered element
         return open_div + content + close_div
 
@@ -331,7 +331,7 @@ class Para:
         if self.__formatting == PRESERVE_NEWLINES:
             content = content.rstrip("\n").replace("\n","<br />")
         if self.__css_class:
-            return "<p class=\""+self.__css_class+"\">"+content+"</p>"
+            return "<p class=\""+self.__css_class+"\">"+content+"</p>\n"
         else:
             return "<p>"+content+"</p>\n"
 
