@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.39 2009/12/15 16:12:33 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.40 2009/12/15 16:23:52 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -562,6 +562,7 @@ class Xia2run:
         # Datasets
         print "POPULATE> DATASETS"
         for dataset in xia2['dataset_summary']:
+            print "DATASETS> dataset: "+str(dataset.value('dataset'))
             self.__datasets.append(Dataset(dataset.value('dataset'),
                                            dataset.value('table')))
         # Crystals
@@ -605,7 +606,7 @@ class Xia2run:
             xds_pipeline = False
             files = self.__list_logfiles()
             for filen in files:
-                print "LOGFILES>"+str(filen)
+                print "LOGFILES> "+str(filen)
                 log = LogFile(os.path.join(logdir,filen),
                               self.__pipeline_info)
                 if log.isLog():
@@ -629,13 +630,13 @@ class Xia2run:
         refln_format = None
         for refln_file in xia2['scaled_refln_file']:
             filen = refln_file.value('filename')
-            print "REFLN_FILE> "+filen
+            print "REFLN_FILE> file   : "+filen
             if refln_file.value('format'):
                 # Format is already defined so collect it
                 refln_format = refln_file.value('format')
-            print "REFLN_FILE> "+refln_format
+            print "REFLN_FILE> format : "+refln_format
             refln_dataset = refln_file.value('dataset')
-            print "REFLN_FILE> "+str(refln_dataset)
+            print "REFLN_FILE> dataset: "+str(refln_dataset)
             # Store the data for this file
             self.__refln_files.append(ReflectionFile(filen,
                                                      refln_format,
@@ -1214,45 +1215,6 @@ if __name__ == "__main__":
     # Intermediate/additional processing
     #########################################################
 
-    # Post-process the information for each wavelength from the
-    # dataset_summary data
-    #
-    print "****** Additional processing for dataset statistics ******"
-    datasets = []
-    for dataset in xia2['dataset_summary']:
-        datasets.append(Dataset(dataset.value('dataset'),
-                                dataset.value('table')))
-    # Get info on crystals
-    xtal_list = []
-    for dataset in datasets:
-        xtal = dataset.crystalName()
-        try:
-            xtal_list.index(xtal)
-        except ValueError:
-            # Crystal not in list, add it
-            print "Crystal: "+str(xtal)
-            xtal_list.append(xtal)
-    # Deal with unit cell and twinning data for each crystal
-    nxtals = len(xtal_list)
-    xtals = []
-    if xia2.count('unit_cell') != nxtals:
-        print "***** WARNING: number of unit cells != number of xtals *****"
-    for i in range(0,nxtals):
-        # Create a new Crystal object and store related data
-        crystal = Crystal(xtal_list[i])
-        crystal.setUnitCellData(xia2['unit_cell'][i])
-        crystal.setSpacegroupData(xia2['assumed_spacegroup'][i])
-        crystal.setTwinningData(xia2['twinning'][i])
-        xtals.append(crystal)
-
-    # Summarise/report
-    for dataset in datasets:
-        print "Dataset %s (%s)" % (dataset.name(),dataset.datasetName())
-        print "Data items:"
-        for key in dataset.keys():
-            print ">>> "+str(key)+" : "+str(dataset[key])
-    # Check for anomalous data
-
     # Post-process the assumed spacegroup block
     #
     # Reprocess the blocks using a text-based Magpie processor
@@ -1781,7 +1743,7 @@ if __name__ == "__main__":
     # Add initial title column
     table_one.addColumn(row_titles)
     # Add additional columns for each dataset
-    for dataset in datasets:
+    for dataset in xia2run.datasets():
         # Locate the wavelength
         wave_lambda = '?'
         for wavelength in xia2['wavelength']:
@@ -1809,7 +1771,7 @@ if __name__ == "__main__":
         column_data.append(Canary.Link("See all statistics",
                                        statistic_sections[dataset.name()]))
         # Append the column to the table
-        if len(xtals) > 1:
+        if len(xia2run.crystals()) > 1:
             # Add the crystal name
             column_title = dataset.crystalName()+"<br />"
         else:
