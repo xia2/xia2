@@ -1,6 +1,6 @@
 /* xia2.css
    Stylesheet for xia2.html
-   CVS_id $Id: xia2.css,v 1.7 2009/12/15 11:06:42 pjx Exp $
+   CVS_id $Id: xia2.css,v 1.8 2009/12/15 11:12:58 pjx Exp $
    */
 body { font-family: Arial, sans-serif;
        font-size: 17px;
@@ -82,7 +82,9 @@ table.table_one th { border-style: none;
                      text-align: left;
                      color: black; }
 table.table_one td { border-style: none; }
-table.table_one tr.unit_cell > td:first-child { text-align: right; }
+table.table_one td:first-child { font-weight: bold; }
+table.table_one tr.unit_cell > td:first-child { text-align: right;
+                                                font-weight: bold; }
 
 /* Styling the table of reflection files */
 table.refln_files { border-style: none;
