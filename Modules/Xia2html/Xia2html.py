@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.32 2009/12/14 16:58:10 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.33 2009/12/15 09:35:38 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1463,6 +1463,7 @@ if __name__ == "__main__":
             # Determine the processing stage
             # Logs are grouped by stage according to the
             # program name
+            program = log.program()
             stage = log.processing_stage()
             if not stage:
                 # No stage assigned for this program
@@ -1478,7 +1479,6 @@ if __name__ == "__main__":
                 logs.addRow([stage,''],css_classes='proc_stage')
                 this_stage = stage
             # Get the description of the log file
-            program = log.program()
             if program != this_program:
                 description = log.description()
                 if description:
