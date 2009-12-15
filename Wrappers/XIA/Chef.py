@@ -68,6 +68,11 @@ def Chef(DriverType = None,
             self._p_crd = True
 
             self._completeness = { }
+
+            # this will be parsed from the Chef program output (which
+            # reconstructs this) if available
+
+            self._dose_profile = { }
             
             self._title = None
 
@@ -307,6 +312,9 @@ def Chef(DriverType = None,
                 elif 'Cumulative radiation' in key:
                     scp_data = transpose_loggraph(results[key])
 
+                elif 'Dose vs. BATCH' in key:
+                    self._dose_profile = transpose_loggraph(results[key])
+
             # right, so first work through these to define the limits from
             # where the first set is 50% complete to 90% complete, which
             # will establish the benchmark, then calculate a kinda
@@ -342,6 +350,16 @@ def Chef(DriverType = None,
 
                     if comp > (0.9 * max_comp) and not local_90:
                         local_90 = float(dose)
+
+            # check if we have dose profile etc available
+
+            if self._dose_profile:
+                wedges = self.digest_dose_profile()
+
+                # given these and the completeness curves, need to make a
+                # choice as to when to stop... will be necessary here
+                # to have an indication of the logical wavelength to
+                # which the measurements belong
 
             if not lowest_50:
                 lowest_50 = local_50
@@ -403,6 +421,66 @@ def Chef(DriverType = None,
             else:
                 stream.write('Conclusion: cut off after %s ~ %.1f' % \
                              (dose_col.replace('1_', ''), dose))
+
+
+            return
+
+        def digest_dose_profile(self):
+            '''Digest the dose profile to list a range of points where
+            we could consider stopping the data collection.'''
+
+            # N.B. in the first pass this may not make proper acknowledgement
+            # of the wedged structure of the data collection!
+
+            dose_batch = { }
+            batch_dose = { }
+
+            for j, b in enumerate(self._dose_profile['1_BATCH']):
+
+                b = int(b)
+                d = float(self._dose_profile['2_DOSE'][j])
+
+                dose_batch[d] = b
+                batch_dose[b] = d
+
+            doses = sorted(dose_batch)
+
+            is_monotonic = True
+
+            first_batch = dose_batch[doses[0]]
+
+            start_batches = [first_batch]
+            current = first_batch
+            wedge_sizes = {first_batch:1}
+
+            for d in doses[1:]:
+
+                b = dose_batch[d]
+                
+                if b < first_batch:
+                    current = b
+                    start_batches.append(current)
+                    wedge_sizes[current] = 0
+                    is_monotonic = False
+
+                if b > first_batch + 1:
+                    current = b
+                    start_batches.append(current)
+                    wedge_sizes[current] = 0
+
+                first_batch = b
+                wedge_sizes[current] += 1
+
+            result = []
+
+            start_batches.sort()
+
+            for batch in start_batches:
+                exposure = batch_dose[batch + 1] - batch_dose[batch]
+                result.append((batch, wedge_sizes[batch],
+                               exposure, batch_dose[batch]))
+
+            return result
                 
     return ChefWrapper()
         
