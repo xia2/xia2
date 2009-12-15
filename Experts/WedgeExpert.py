@@ -63,13 +63,48 @@ def digest_wedges(wedges):
 
     groups = []
 
-    
+    last_time = sorted(sweeps)[0][0] - 1.0
 
-    
+    for s in sorted(sweeps):
+        if s[0] > last_time:
+            last_time = s[1]
+            groups.append([s])
+        else:
+            last_time = s[1]
+            groups[-1].append(s)
 
-    
-    
+    dmaxes = []
 
+    for j, g in enumerate(groups):
+
+        # check that the group structure is correct, i.e. all have the
+        # uniform number of wedges...
+
+        group_wedges = { }
+
+        for s in g:
+            all_wedges = belonging_wedges[sweeps[s]]
+            dataset = all_wedges[0][-1]
+            group_wedges[dataset] = all_wedges
+
+        size = 0
+
+        for dataset in group_wedges:
+            if not size:
+                size = len(group_wedges[dataset])
+
+            assert(size == len(group_wedges[dataset]))
+
+        for j in range(size):
+
+            d_local = []
+            
+            for s in g:
+                bw = belonging_wedges[sweeps[s]][j]
+                d_local.append(bw[0] + bw[2] * bw[3])
+
+            # print max(d_local)
+                        
 
 if __name__ == '__main__':
 
