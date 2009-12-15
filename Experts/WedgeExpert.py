@@ -26,6 +26,9 @@ def digest_wedges(wedges):
     # first digest to logical sweeps, keyed by the last image in the set
     # and the wavelength name, and containing the start and end dose.
 
+    if True:
+        return
+
     doses = { }
 
     belonging_wedges = { }
@@ -85,9 +88,17 @@ def digest_wedges(wedges):
         for s in g:
             all_wedges = belonging_wedges[sweeps[s]]
             dataset = all_wedges[0][-1]
+
+            # Boom! this is wrong for inverse beam data sets
+            
             group_wedges[dataset] = all_wedges
 
         size = 0
+
+        if len(group_wedges) == 1:
+            print 'Inverse beam'
+        else:
+            print 'Wedged data collection'
 
         for dataset in group_wedges:
             if not size:
