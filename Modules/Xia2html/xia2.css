@@ -1,6 +1,6 @@
 /* xia2.css
    Stylesheet for xia2.html
-   CVS_id $Id: xia2.css,v 1.6 2009/12/10 18:02:08 pjx Exp $
+   CVS_id $Id: xia2.css,v 1.7 2009/12/15 11:06:42 pjx Exp $
    */
 body { font-family: Arial, sans-serif;
        font-size: 17px;
@@ -22,9 +22,15 @@ h4 { background-color: #ffd799;
 	   font-weight: bold;
            padding: 10px; }
 .warning a { color: white; }
+p.warning { width: 90%;
+            margin-left: auto;
+            margin-right: auto; }
 
 .info { font-style: italic;
         font-size: 90%; }
+
+/* Default styling for images */
+img { vertical-align: bottom; }
 
 /* Default styling for all tables */
 table,td,th { border-style: none;
@@ -108,7 +114,7 @@ table.log_files { border-style: none;
                   margin-right: auto;
                   empty-cells: show; }
 table.log_files * { border-style: none;}
-table.log_files td { vertical-align: top;
+table.log_files td { vertical-align: bottom;
                      border-bottom: 2px solid gray; }
 table.log_files tr.proc_stage > td:first-child { background-color: #377cb1;
                                                  color: white;
