@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.34 2009/12/15 11:06:08 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.35 2009/12/15 14:39:31 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -41,6 +41,196 @@ import baubles
 #######################################################################
 # Class definitions
 #######################################################################
+
+# PipelineInfo
+#
+# Store and recover information about logfiles and associated
+# data such as ordering, program associations etc
+class PipelineInfo:
+    """Information on log files within the xia2 'pipeline'
+
+    Provides lookup etc for identifying and associating data
+    (such as source program, processing stage, description etc)
+    with log files output from the xia2.
+
+    To add a new log file to the list of files, put a new
+    addLogInfo() method call in the __populate method with
+    information about the new log file. Note that the order in
+    which addLogInfo calls occur also defines the order that
+    the logs will be sorted into on output."""
+
+    def __init__(self):
+        """Create pipeline object"""
+        self.__pipeline = []
+        self.__populate()
+
+    def __populate(self):
+        """Setup default pipeline info"""
+        # Integration stage
+        self.addLogInfo(
+            "INTEGRATE",
+            "xds",
+            "Integration",
+            "Integration of this sweep",
+            False)
+        self.addLogInfo(
+            "CORRECT",
+            "xds",
+            "Integration",
+            "Postrefinement and correction for this sweep")
+        self.addLogInfo(
+            "_mosflm_integrate",
+            "mosflm",
+            "Integration",
+            "Full logs for the integration of each wavelength")
+        # Spacegroup determination
+        self.addLogInfo(
+            "_pointless",
+            "pointless",
+            "Spacegroup Determination",
+            "Decision making for the spacegroup assignment",
+            baublize=True)
+        # Scaling and merging
+        self.addLogInfo(
+            "XSCALE",
+            "xscale",
+            "Scaling and merging",
+            "Scaling together all the data for this crystal")
+        self.addLogInfo(
+            "_scala",
+            "scala",
+            "Scaling and merging",
+            "Scaling and correction of all measurements on the crystal",
+            baublize=True)
+        # Analysis
+        self.addLogInfo(
+            "_truncate",
+            "truncate",
+            "Analysis",
+            "Intensity analysis for each wavelength of data",
+            baublize=True)
+        self.addLogInfo(
+            "_chef_",
+            "chef",
+            "Analysis",
+            "Cumulative radiation damage analysis",
+            baublize=True)
+
+    def setXDSPipeline(self):
+        """Update pipeline data for XDS pipeline
+
+        Invoke this to make changes to the pipeline information
+        to make it consistent with the 'XDS pipeline'."""
+        # Reset description for scala
+        self.updateLogInfo(
+            "_scala",
+            description="Merging results for all of the data for the crystal")
+
+    def addLogInfo(self,logname,program,stage,description,baublize=False):
+        """Add information about a log file
+
+        'logname' is part of the log file name which is used to
+        identify it.
+
+        'program' is the source program name.
+
+        'stage' is the name of the processing stage that the file
+        belongs to.
+
+        'description' is generic text that describes what the function
+        of the log file is.
+
+        'baublize' is a logical value indicating whether the log
+        can be baublized."""
+        self.__pipeline.append({
+                'logname': logname,
+                'program': program,
+                'stage': stage,
+                'description': description,
+                'baublize': baublize})
+
+    def updateLogInfo(self,logname,
+                      new_program=None,
+                      new_stage=None,
+                      new_description=None,
+                      new_baublize=None):
+        """Update the information associated with a log file"""
+        data = self.lookupLogInfo(logname)
+        if data:
+            if new_program:
+                data['program'] = new_program
+            if new_stage:
+                data['stage'] = new_stage
+            if new_description:
+                data['description'] = new_description
+            if not new_baublize is None:
+                data['baublize'] = new_baublize
+
+    def lookupLogInfo(self,logfile):
+        """Lookup the stored information for the named log file
+
+        Attempts to match the logfile name against the stored name
+        fragments; if a match is found then returns the stored
+        dictionary.
+
+        Applications should not call this method directly; instead
+        use the other methods to get specific information e.g. the
+        associated program name."""
+        basename = os.path.basename(logfile)
+        for item in self.__pipeline:
+            if basename.find(item['logname']) > -1:
+                return item
+        # Nothing found
+        return {}
+                
+    def program(self,logfile):
+        """Get the program associated with a logfile"""
+        data = self.lookupLogInfo(logfile)
+        if data:
+            return data['program']
+
+    def stage(self,logfile):
+        """Get the processing stage associated with a logfile"""
+        data = self.lookupLogInfo(logfile)
+        if data:
+            return data['stage']
+
+    def description(self,logfile):
+        """Get the description associated with a logfile"""
+        data = self.lookupLogInfo(logfile)
+        if data:
+            return data['description']
+
+    def baublize(self,logfile):
+        """Get the value of the baublize flag for a logfile"""
+        data = self.lookupLogInfo(logfile)
+        if data:
+            return data['baublize']
+
+    def listNames(self):
+        """Return a list of the log file name fragments in pipeline order"""
+        names = []
+        for item in self.__pipeline:
+            names.append(item['logname'])
+        return names
+
+    def compareLogfilesByOrder(self,logfile1,logfile2):
+        """Compare logfile names by pipeline position"""
+        # List of keywords that might appear in the log file names
+        # The list is in the order that we would want the file names
+        # to appear in a list of files
+        keywords = self.listNames()
+        # Locate the keywords in the list for both file names
+        for i in range(0,len(keywords)):
+            k = logfile1.find(keywords[i])
+            if k > -1: break
+        for j in range(0,len(keywords)):
+            k = logfile2.find(keywords[j])
+            if k > -1: break
+        # Return value indicates order
+        if i < j: return -1
+        if i == j: return 0
+        if i > j: return 1
 
 # Citations
 #
@@ -136,56 +326,19 @@ class LogFile:
     Given the name of a log file from xia2, provides various
     methods for analysis and manipulation."""
 
-    def __init__(self,logfile,xds_pipeline=False):
+    def __init__(self,logfile,pipeline_info):
         """Create a new LogFile object.
 
-        'filen' is the name and path of the log file. Optional
-        parameter 'xds_pipeline' should be set to True to
-        indicate that the log is part of the XDS pipeline (used
-        to correctly describe the scala stage)."""
+        'filen' is the name and path of the log file.
+
+        'pipeline_info' is a PipelineInfo object which is
+        used to lookup data such as the associated program,
+        description etc."""
         self.__filen = logfile
         # Smartie log object
         self.__smartie_log = None
-        # Flag to indicate if we're in the XDS pipeline
-        self.__xds_pipeline = xds_pipeline
-        # Lookup table for matching programs to file names
-        self.__program_lookup = {
-            "INTEGRATE": "xds",
-            "CORRECT": "xds",
-            "XSCALE": "xscale",
-            "mosflm_integrate": "mosflm",
-            "pointless": "pointless",
-            "scala": "scala",
-            "truncate": "truncate",
-            "chef": "chef" }
-        # Lookup table for matching programs to processing stages
-        self.__processing_stage_lookup = {
-            "xds":       "Integration",
-            "mosflm":    "Integration",
-            "pointless": "Spacegroup determination",
-            "xscale":    "Scaling and merging",
-            "scala":     "Scaling and merging",
-            "truncate":  "Analysis",
-            "chef":      "Analysis" }
-        # Lookup table for matching descriptions to file names
-        self.__description_lookup = {
-            "INTEGRATE":
-                "Integration of this sweep",
-            "CORRECT":
-                "Postrefinement and correction for this sweep",
-            "XSCALE":
-                "Scaling together all the data for this crystal",
-            "mosflm_integrate":
-                "Full logs for the integration of each wavelength",
-            "pointless":
-                "Decision making for the spacegroup assignment",
-            "scala":
-                "Scaling and correction of all measurements on the crystal",
-            "scala_xds": "Merging results for all of the data for the crystal",
-            "truncate": "Intensity analysis for each wavelength of data",
-            "chef": "Cumulative radiation damage analysis" }
-        # List of programs to run baubles on
-        self.__run_smartie = ['pointless','scala','truncate','chef']
+        # PipelineInfo object
+        self.__pipeline = pipeline_info
 
     def basename(self):
         """Return the filename without any leading directory"""
@@ -219,36 +372,15 @@ class LogFile:
 
     def program(self):
         """Return program name associated with this log file"""
-        logname = self.basename() # Ignore the leading directory
-        for fragment in self.__program_lookup.keys():
-            if logname.find(fragment) > -1:
-                return self.__program_lookup[fragment]
-        # No match
-        return None
+        return self.__pipeline.program(self.__filen)
 
     def description(self):
         """Return log file description associated with the name"""
-        # Deal with scala in XDS pipeline
-        # FIXME can this be generalised?
-        if self.program() == "scala" and self.__xds_pipeline:
-            return self.__description_lookup['scala_xds']
-        # Deal with other log files
-        logname = self.basename() # Ignore the leading directory
-        for fragment in self.__description_lookup.keys():
-            if logname.find(fragment) > -1:
-                return self.__description_lookup[fragment]
-        # No match
-        return None
+        return self.__pipeline.description(self.__filen)
 
     def processing_stage(self):
-        """Return the processing stage that this log file belongs to
-
-        Returns the name of the processing stage, or None if no
-        match was found."""
-        try:
-            return self.__processing_stage_lookup[self.program()]
-        except KeyError:
-            return None
+        """Return the processing stage that this log file belongs to"""
+        return self.__pipeline.stage(self.__filen)
 
     def dataset(self):
         """Return dataset name associated with this log file"""
@@ -265,9 +397,7 @@ class LogFile:
 
         Returns the smartie logfile object (it may have to
         generate it first) if appropriate; otherwise, return None"""
-        try:
-            self.__run_smartie.index(self.program())
-        except ValueError:
+        if not self.__pipeline.baublize(self.__filen):
             # Don't run baubles on this log
             print "Not running smartie for "+self.basename()
             return None
@@ -405,6 +535,7 @@ class Xia2run:
         self.__refln_files = [] # List of reflection data files
         self.__has_anomalous = False # Anomalous data?
         self.__xds_pipeline  = False # XDS pipeline used?
+        self.__pipeline_info = PipelineInfo() # Data about logfiles
         try:
             # Populate the object with data
             self.__populate()
@@ -460,20 +591,22 @@ class Xia2run:
         logdir = get_relative_path(self.__log_dir)
         # Process logfiles
         try:
-            files = list_logfiles(logdir)
+            xds_pipeline = False
+            files = self.__list_logfiles()
             for filen in files:
                 print "LOGFILES>"+str(filen)
                 log = LogFile(os.path.join(logdir,filen),
-                              xds_pipeline=self.__xds_pipeline)
+                              self.__pipeline_info)
                 if log.isLog():
                     # Store the log file
                     self.__logfiles.append(log)
                     # Update found_xds flag
                     if log.program() == "xds":
-                        self.__xds_pipeline = True
+                        xds_pipeline = True
                 else:
                     print "LOGFILES> "+log.basename()+ \
                           " not a log file, ignored"
+            if xds_pipeline: self.__pipeline_info.setXDSPipeline()
         except OSError:
             # Possibly the LogFiles directory doesn'texist
             if not os.path.isdir(logdir):
@@ -503,6 +636,14 @@ class Xia2run:
         if not os.path.isfile(self.__xia2_journal):
             self.__xia2_journal = None
         print "POPULATE> FINISHED"
+
+    def __list_logfiles(self):
+        """Internal: get list of xia2 log files in pipeline order"""
+        # Get unsorted list of file names
+        files = os.listdir(self.__log_dir)
+        # Sort list on order of file names within the pipeline
+        files.sort(self.__pipeline_info.compareLogfilesByOrder)
+        return files
 
     def complete(self):
         """Check if the Xia2run object is complete
@@ -818,61 +959,6 @@ class IntegrationStatusReporter:
 #######################################################################
 # Module Functions
 #######################################################################
-
-def list_logfiles(logdir):
-    """Return list of log files in logdir, in data order"""
-    # Get unsorted list of names
-    files = os.listdir(logdir)
-    # Prepend the logdir
-    files2 = []
-    for filen in files:
-        files2.append(os.path.join(logdir,filen))
-    # Sort file2 list on modification time
-    ##files2.sort(cmp_file_mtime)
-    # Sort file2 list on keywords in file names
-    files2.sort(cmp_file_by_keyword)
-    # Rebuild the list to contain only file names
-    files = []
-    for filen in files2:
-        files.append(os.path.basename(filen))
-    return files
-        
-def cmp_file_mtime(file1,file2):
-    """Compare file modification times for sorting"""
-    mtime1 = os.stat(file1).st_mtime
-    mtime2 = os.stat(file2).st_mtime
-    if mtime1 < mtime2:
-        return 1
-    elif mtime1 == mtime2:
-        return 0
-    else:
-        return -1
-
-def cmp_file_by_keyword(file1,file2):
-    """Compare file names with crystallographic components"""
-    # List of keywords that might appear in the log file names
-    # The list is in the order that we would want the file names
-    # to appear in a list of files
-    keywords = ['DEPFIX',
-                'INTEGRATE',
-                'CORRECT',
-                'mosflm_integrate',
-                'pointless',
-                'XSCALE',
-                'scala',
-                'truncate',
-                'chef']
-    # Locate the keywords in the list for both file names
-    for i in range(0,len(keywords)):
-        k = os.path.basename(os.path.splitext(file1)[0]).find(keywords[i])
-        if k > -1: break
-    for j in range(0,len(keywords)):
-        k = os.path.basename(os.path.splitext(file2)[0]).find(keywords[j])
-        if k > -1: break
-    # Return value indicates order
-    if i < j: return -1
-    if i == j: return 0
-    if i > j: return 1
 
 def list_sweeps(int_status_list,dataset=None):
     """Return a list of sweep names
