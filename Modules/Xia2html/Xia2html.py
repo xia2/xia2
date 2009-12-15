@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.35 2009/12/15 14:39:31 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.36 2009/12/15 14:46:22 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -83,6 +83,12 @@ class PipelineInfo:
             "mosflm",
             "Integration",
             "Full logs for the integration of each wavelength")
+        self.addLogInfo(
+            "_postrefinement",
+            "mosflm",
+            "Integration",
+            "Results of postrefinement",
+            baublize=True)
         # Spacegroup determination
         self.addLogInfo(
             "_pointless",
