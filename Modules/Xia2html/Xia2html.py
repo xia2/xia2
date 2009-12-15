@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.37 2009/12/15 14:56:37 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.38 2009/12/15 15:00:24 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -116,7 +116,7 @@ class PipelineInfo:
             "Intensity analysis for each wavelength of data",
             baublize=True)
         self.addLogInfo(
-            "_chef_",
+            "chef_",
             "chef",
             "Analysis",
             "Cumulative radiation damage analysis",
