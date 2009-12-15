@@ -39,6 +39,7 @@ from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
 from lib.Guff import transpose_loggraph, mean_sd
 from Wrappers.CCP4.Mtzdump import Mtzdump
+from Experts.WedgeExpert import digest_wedges
 
 from Handlers.Streams import Chatter, Stdout
 
@@ -354,7 +355,7 @@ def Chef(DriverType = None,
             # check if we have dose profile etc available
 
             if self._dose_profile:
-                wedges = self.digest_dose_profile()
+                wedges = sorted(self.digest_dose_profile())
 
                 # given these and the completeness curves, need to make a
                 # choice as to when to stop... will be necessary here
@@ -362,7 +363,26 @@ def Chef(DriverType = None,
                 # which the measurements belong
 
                 # wedges is a list of:
-                # FIRST_BATCH SIZE EXPOSURE FIRST_DOSE DATASET
+                # FIRST_DOSE FIRST_BATCH SIZE EXPOSURE DATASET
+
+                # digest this as follows: if sweeps switch between
+                # A and B, or A, B and C then these are tied wedges: aim
+                # for uniform total rotation / number of images. if
+                # there is the same data set in subsequent chunks,
+                # these are tied inverse beams
+
+                # ok, logic. expect at most four wavelengths interleaved,
+                # most likely two or three. also assume that the sizes of
+                # the wedges should be the same. only want to "block" these.
+
+                # if len(wedges) == 1: can consider any point at which
+                # to cut off the data.  N.B. don't forget EDNA strategies...
+
+                # ok, easiest thing is encode a set of rules.
+
+                digest_wedges(wedges)
+                
+                
 
             if not lowest_50:
                 lowest_50 = local_50
@@ -486,9 +506,8 @@ def Chef(DriverType = None,
 
             for batch in start_batches:
                 exposure = batch_dose[batch + 1] - batch_dose[batch]
-                result.append((batch, wedge_sizes[batch],
-                               exposure, batch_dose[batch],
-                               wedge_datasets[batch]))
+                result.append((batch_dose[batch], batch, wedge_sizes[batch],
+                               exposure, wedge_datasets[batch]))
 
             return result
                 
