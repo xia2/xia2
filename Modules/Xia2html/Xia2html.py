@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.38 2009/12/15 15:00:24 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.39 2009/12/15 16:12:33 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1222,16 +1222,6 @@ if __name__ == "__main__":
     for dataset in xia2['dataset_summary']:
         datasets.append(Dataset(dataset.value('dataset'),
                                 dataset.value('table')))
-    # Check for anomalous data
-    # FIXME surely this could be done in the loop above?
-    have_anomalous = False
-    for dataset in datasets:
-        try:
-            x = dataset['anomalous_completeness']
-            have_anomalous = True
-            break
-        except KeyError:
-            pass
     # Get info on crystals
     xtal_list = []
     for dataset in datasets:
@@ -1784,7 +1774,7 @@ if __name__ == "__main__":
                   'Multiplicity',
                   'I/sigma',
                   'R<sub>merge</sub>']
-    if have_anomalous:
+    if xia2run.has_anomalous():
         row_titles.extend(['Anomalous completeness',
                            'Anomalous multiplicity'])
     row_titles.extend(['']) # Line linking to full stats
@@ -1807,7 +1797,7 @@ if __name__ == "__main__":
                        dataset['multiplicity'][1],
                        dataset['i/sigma'][1],
                        dataset['rmerge'][1]]
-        if have_anomalous:
+        if xia2run.has_anomalous():
             try:
                 anom_completeness = dataset['anomalous_completeness'][1]
                 anom_multiplicity = dataset['anomalous_multiplicity'][1]
@@ -1841,7 +1831,7 @@ if __name__ == "__main__":
                        " - "+dataset['i/sigma'][3]+")",
                        "("+dataset['rmerge'][2]+\
                        " - "+dataset['rmerge'][3]+")"]
-        if have_anomalous:
+        if xia2run.has_anomalous():
             try:
                 anom_completeness = "("+dataset['anomalous_completeness'][2]+\
                                     " - "+\
