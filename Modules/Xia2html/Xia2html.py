@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.36 2009/12/15 14:46:22 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.37 2009/12/15 14:56:37 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -130,7 +130,8 @@ class PipelineInfo:
         # Reset description for scala
         self.updateLogInfo(
             "_scala",
-            description="Merging results for all of the data for the crystal")
+            new_description=
+            "Merging results for all of the data for the crystal")
 
     def addLogInfo(self,logname,program,stage,description,baublize=False):
         """Add information about a log file
@@ -194,24 +195,28 @@ class PipelineInfo:
         data = self.lookupLogInfo(logfile)
         if data:
             return data['program']
+        return None
 
     def stage(self,logfile):
         """Get the processing stage associated with a logfile"""
         data = self.lookupLogInfo(logfile)
         if data:
             return data['stage']
+        return None
 
     def description(self,logfile):
         """Get the description associated with a logfile"""
         data = self.lookupLogInfo(logfile)
         if data:
             return data['description']
+        return None
 
     def baublize(self,logfile):
         """Get the value of the baublize flag for a logfile"""
         data = self.lookupLogInfo(logfile)
         if data:
             return data['baublize']
+        return False
 
     def listNames(self):
         """Return a list of the log file name fragments in pipeline order"""
