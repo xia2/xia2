@@ -100,11 +100,14 @@ def digest_wedges(wedges):
 
         datasets = list(set([k[0] for k in group_wedges]))
 
-        if len(datasets) == 1:
+        if len(g) == 1:
+            assert(len(belonging_wedges[sweeps[g[0]]]) == 1)
+            group_report.append('Single wedge')
+        elif len(datasets) == 1:
             assert(len(group_wedges) == 2)
             group_report.append('Inverse beam')
         else:
-            group_report.append('%d-wedged data collection' % \
+            group_report.append('%d-wedge data collection' % \
                                 len(group_wedges))
 
         for dataset, last_image in group_wedges:

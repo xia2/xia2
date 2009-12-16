@@ -354,6 +354,8 @@ def Chef(DriverType = None,
 
             # check if we have dose profile etc available
 
+            stop_doses = []
+
             if self._dose_profile:
                 wedges = sorted(self.digest_dose_profile())
 
@@ -380,9 +382,11 @@ def Chef(DriverType = None,
 
                 # ok, easiest thing is encode a set of rules.
 
-                digest_wedges(wedges)
-                
-                
+                stop_doses, groups = digest_wedges(wedges)
+
+                for j, g in enumerate(groups):
+                    stream.write('Group %d: %s' % \
+                                 (j + 1, g))
 
             if not lowest_50:
                 lowest_50 = local_50
@@ -434,16 +438,20 @@ def Chef(DriverType = None,
                 stream.write('No significant radiation damage detected')
                 return
 
+            for stop_dose in stop_doses:
+                if stop_dose > dose:
+                    break
+
             stream.write('Significant radiation damage detected:')
 
             for wavelength, digest in datasets_damaged:
                 stream.write('Rd analysis (%s): %.2f' % (wavelength, digest))
 
-            if dose == float(scp_data[dose_col][-1]):
+            if stop_dose == float(scp_data[dose_col][-1]):
                 stream.write('Conclusion: use all data')
             else:
                 stream.write('Conclusion: cut off after %s ~ %.1f' % \
-                             (dose_col.replace('1_', ''), dose))
+                             (dose_col.replace('1_', ''), stop_dose))
 
 
             return
