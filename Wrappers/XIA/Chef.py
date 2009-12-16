@@ -355,6 +355,7 @@ def Chef(DriverType = None,
             # check if we have dose profile etc available
 
             stop_doses = []
+            groups = []
 
             if self._dose_profile:
                 wedges = sorted(self.digest_dose_profile())
@@ -438,9 +439,12 @@ def Chef(DriverType = None,
                 stream.write('No significant radiation damage detected')
                 return
 
-            for stop_dose in stop_doses:
-                if stop_dose > dose:
-                    break
+            if groups == ['Single wedge']:
+                stop_dose = dose
+            else:
+                for stop_dose in stop_doses:
+                    if stop_dose > dose:
+                        break
 
             stream.write('Significant radiation damage detected:')
 
