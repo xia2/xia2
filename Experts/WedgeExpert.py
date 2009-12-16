@@ -26,7 +26,7 @@ def digest_wedges(wedges):
     # first digest to logical sweeps, keyed by the last image in the set
     # and the wavelength name, and containing the start and end dose.
 
-    if True:
+    if False:
         return
 
     doses = { }
@@ -78,6 +78,8 @@ def digest_wedges(wedges):
 
     dmaxes = []
 
+    group_report = []
+
     for j, g in enumerate(groups):
 
         # check that the group structure is correct, i.e. all have the
@@ -88,23 +90,28 @@ def digest_wedges(wedges):
         for s in g:
             all_wedges = belonging_wedges[sweeps[s]]
             dataset = all_wedges[0][-1]
+            last_image = int(s[1])
 
             # Boom! this is wrong for inverse beam data sets
             
-            group_wedges[dataset] = all_wedges
+            group_wedges[(dataset, last_image)] = all_wedges
 
         size = 0
 
-        if len(group_wedges) == 1:
-            print 'Inverse beam'
+        datasets = list(set([k[0] for k in group_wedges]))
+
+        if len(datasets) == 1:
+            assert(len(group_wedges) == 2)
+            group_report.append('Inverse beam')
         else:
-            print 'Wedged data collection'
+            group_report.append('%d-wedged data collection' % \
+                                len(group_wedges))
 
-        for dataset in group_wedges:
+        for dataset, last_image in group_wedges:
             if not size:
-                size = len(group_wedges[dataset])
+                size = len(group_wedges[(dataset, last_image)])
 
-            assert(size == len(group_wedges[dataset]))
+            assert(size == len(group_wedges[(dataset, last_image)]))
 
         for j in range(size):
 
@@ -114,14 +121,17 @@ def digest_wedges(wedges):
                 bw = belonging_wedges[sweeps[s]][j]
                 d_local.append(bw[0] + bw[2] * bw[3])
 
-            # print max(d_local)
-                        
+            dmaxes.append(max(d_local))
+
+    return dmaxes, group_report
 
 if __name__ == '__main__':
 
-
     wedges = pickle.loads(open('test.pkl').read())
     
-    digest_wedges(wedges)
+    dmaxes, group_report = digest_wedges(wedges)
+
+    for gr in group_report:
+        print gr
 
     
