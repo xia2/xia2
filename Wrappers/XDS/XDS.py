@@ -219,6 +219,9 @@ def header_to_xds(header, synchrotron = None, reversephi = False):
 
     result = []
 
+    # FIXME what follows below should perhaps be 0 for the really weak
+    # pilatus data sets?
+
     result.append('DETECTOR=%s MINIMUM_VALID_PIXEL_VALUE=%d OVERLOAD=%d' % \
                   (detector_to_detector[detector], 1,
                    detector_to_overload[detector]))
