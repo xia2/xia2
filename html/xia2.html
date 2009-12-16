@@ -437,7 +437,17 @@ END PROJECT TS01
       <li>Allow for xia2html and (beta) ISPyB output (latter more useful for 
         synchrotron sources, former handy if you want a report. </li>
       <li>Smart scaling mode switched on by default.</li>
-      <li>Chef now run by default, for radiation damage analysis.</li>
+      <li>Chef now run by default, for radiation damage analysis, e.g.
+	<pre>
+Group 1: 2-wedge data collection
+Group 2: Single wedge
+Significant radiation damage detected:
+Rd analysis (12287/LREM): 15.17
+Rd analysis (12287/INFL): 7.89
+Rd analysis (12287/PEAK): 12.82
+Conclusion: cut off after DOSE ~ 608.8
+	</pre>
+      </li>
       <li>Blank images now handled more gracefully.</li>
       <li>Overloaded and blank images now correctly reported in the summary
         output, along with abandoned images for the processing with 
@@ -903,7 +913,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Fri Dec 11 08:26:34 GMT 2009
+Last modified: Wed Dec 16 10:45:00 GMT 2009
 <!-- hhmts end -->
   </body>
 </html>
