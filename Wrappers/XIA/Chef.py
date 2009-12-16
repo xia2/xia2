@@ -517,6 +517,10 @@ def Chef(DriverType = None,
             start_batches.sort()
 
             for batch in start_batches:
+
+                if not (batch + 1) in batch_dose:
+                    continue
+
                 exposure = batch_dose[batch + 1] - batch_dose[batch]
                 result.append((batch_dose[batch], batch, wedge_sizes[batch],
                                exposure, wedge_datasets[batch]))
