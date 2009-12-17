@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.50 2009/12/17 14:17:52 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.51 2009/12/17 14:48:48 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -566,6 +566,15 @@ class Xia2run:
             print "DATASETS> dataset: "+str(dataset.value('dataset'))
             self.__datasets.append(Dataset(dataset.value('dataset'),
                                            dataset.value('table')))
+        # Assign wavelength (i.e. lambda) value to dataset
+        print "POPULATE> WAVELENGTHS"
+        for wavelength in xia2['wavelength']:
+            for dataset in self.datasets():
+                if dataset.datasetName() == wavelength['name']:
+                    dataset['wavelength'] = wavelength['lambda']
+                    print "WAVELENGTHS> "+dataset.crystalName()+"/" +\
+                        dataset.datasetName()+": "+dataset['wavelength']
+                    break
         # Crystals
         print "POPULATE> CRYSTALS"
         xtal_list = []
@@ -878,6 +887,10 @@ class Dataset:
         Returns the 'row' of data associated with the key 'name'
         i.e. a list of items."""
         return self.__data[name]
+
+    def __setitem__(self,name,value):
+        """Implement Dataset[name] = value for set operations"""
+        self.__data[name] = value
 
     def name(self):
         """Return the full name"""
@@ -1867,15 +1880,9 @@ if __name__ == "__main__":
             xtal_data['unit_cell_gamma'].extend([None,None])
             xtal_data['spacegroup'].extend([None,None])
             xtal_data['twinning'].extend([None,None])
-        # Locate the wavelength
-        wave_lambda = '?'
-        for wavelength in xia2['wavelength']:
-            if dataset.datasetName() == wavelength.value('name'):
-                wave_lambda = wavelength.value('lambda')
-                break
         # Construct the column of data and add to the table
         # This is for the overall/average values
-        column_data = [wave_lambda,
+        column_data = [dataset['wavelength'],
                        dataset['high_resolution_limit'][1],
                        dataset['low_resolution_limit'][1],
                        dataset['completeness'][1],
