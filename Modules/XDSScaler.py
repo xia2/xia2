@@ -79,7 +79,7 @@ from Handlers.Syminfo import Syminfo
 from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Flags import Flags
 from Handlers.Files import FileHandler
-from Experts.SymmetryExpert import r_to_rt, rt_to_r
+from Experts.SymmetryExpert import r_to_rt, rt_to_r, compose_symops
 from Experts.SymmetryExpert import symop_to_mat, compose_matrices_r
 
 # stuff I have nicked from the CCP4 Scaler implementation
@@ -1053,10 +1053,12 @@ class XDSScaler(Scaler):
 
             hklin = intgr.get_integrater_reflections()
             indxr = intgr.get_integrater_indexer()
+
+            reference_reindex_op = intgr.get_integrater_reindex_operator()
             
             pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
                 hklin, indxr)
-
+        
             if ntr:
 
                 # Bug # 3373
