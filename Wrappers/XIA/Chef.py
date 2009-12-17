@@ -637,10 +637,15 @@ if __name__ == '__main__':
             continue
 
         if 'DOSE' in columns:
-            dose_column = 'DOSE'
-        elif 'BATCH' in columns:
+
+            dose_range = md.get_column_range('DOSE')[:2]
+            if dose_range[0] != dose_range[1]:
+                dose_column = 'DOSE'
+            
+        if 'BATCH' in columns and not dose_column:
             dose_column = 'BATCH'
-        else:
+
+        if not dose_column:
             raise RuntimeError, 'no DOSE/BATCH column found'
 
         dmin = min(md.get_resolution_range())

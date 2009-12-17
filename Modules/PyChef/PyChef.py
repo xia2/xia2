@@ -219,12 +219,14 @@ class PyChef:
 
                 assert(len(batch_values) == len(dose_values))
 
-                for j in range(len(batch_values)):
-                    batch = int(round(batch_values[j]))
-                    dose = dose_values[j]
+                if min(dose_values) != max(dose_values):
 
-                    if not batch in self._dose_information:
-                        self._dose_information[batch] = dose, dataset_name
+                    for j in range(len(batch_values)):
+                        batch = int(round(batch_values[j]))
+                        dose = dose_values[j]
+
+                        if not batch in self._dose_information:
+                            self._dose_information[batch] = dose, dataset_name
                     
             print 'Reading in data from %s/%s' % (crystal_name, dataset_name)
             print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \

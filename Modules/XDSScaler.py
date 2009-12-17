@@ -1968,9 +1968,16 @@ class XDSScaler(Scaler):
 
             chef.set_anomalous(anomalous)
             chef.set_resolution(resolution)
-            chef.set_width(dose_step)
-            chef.set_max(dose_max)
-            chef.set_labin('DOSE')
+
+            # work around a possible failure to read the dose profiles
+            # correctly
+
+            if min(all_doses) < max(all_doses):
+                chef.set_width(dose_step)
+                chef.set_max(dose_max)
+                chef.set_labin('DOSE')
+            else:
+                chef.set_labin('BATCH')
             
             chef.run()
 
