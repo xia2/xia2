@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.44 2009/12/17 10:31:46 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.45 2009/12/17 11:02:09 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -752,13 +752,24 @@ class Crystal:
         """Get the list of alternative spacegroups"""
         return self.__alt_spacegroups
 
-    def setUnitCellData(self,unit_cell):
-        """Set the unit cell data"""
-        self.__unit_cell = unit_cell
+    def unit_cell(self):
+        """Get the unit cell data
 
-    def unitCellData(self):
-        """Get the unit cell data"""
+        This returns the Magpie.Data object supplied via the
+        setUnitCellData call. The individual unit cell
+        parameters can be accessed using:
+
+        x = Crystal.unit_cell()['a']
+        
+        etc."""
         return self.__unit_cell
+
+    def setUnitCellData(self,unit_cell):
+        """Set the unit cell data
+
+        'unit_cell' should be the Magpie.Data object with the
+        unit cell data collected from xia2.txt."""
+        self.__unit_cell = unit_cell
 
     def setSpacegroupData(self,spacegroup_data):
         """Set the spacegroup data
@@ -1394,7 +1405,6 @@ if __name__ == "__main__":
     # Populate the "overview" section
     #
     # Crystallographic parameters section
-    unit_cell = xia2['unit_cell'][0]
     twinning_score = str(xia2['twinning'][0].value('score'))
     twinning_report = str(xia2['twinning'][0].value('report'))
     try:
@@ -1408,14 +1418,21 @@ if __name__ == "__main__":
     #
     # Unit cell
     unit_cell_params = xtal_parameters.addSubsection("Unit cell")
-    unit_cell_params.addTable(['a','b','c',
+    for xtal in xia2run.crystals():
+        if xia2run.multi_crystal():
+            this_section = unit_cell_params.addSubsection("Crystal "+
+                                                          xtal.name())
+        else:
+            this_section = unit_cell_params
+        unit_cell = xtal.unit_cell()
+        this_section.addTable(['a','b','c',
                                '&alpha;','&beta;','&gamma']). \
-                               addRow([unit_cell.value('a')+'&nbsp;',
-                                       unit_cell.value('b')+'&nbsp;',
-                                       unit_cell.value('c')+'&nbsp;',
-                                       unit_cell.value('alpha')+'&nbsp;',
-                                       unit_cell.value('beta')+'&nbsp;',
-                                       unit_cell.value('gamma')+'&nbsp;'])
+                               addRow([unit_cell['a']+'&nbsp;',
+                                       unit_cell['b']+'&nbsp;',
+                                       unit_cell['c']+'&nbsp;',
+                                       unit_cell['alpha']+'&nbsp;',
+                                       unit_cell['beta']+'&nbsp;',
+                                       unit_cell['gamma']+'&nbsp;'])
     unit_cell_params.addPara(
         "The unit cell parameters are the average for all measurements")
     #
@@ -1821,14 +1838,15 @@ if __name__ == "__main__":
         table_one.addColumn(column_data)
     # Additional data: unit cell, spacegroup
     xtal = xia2run.crystals()[0]
+    unit_cell = xtal.unit_cell()
     table_one.addRow(['&nbsp;']) # Empty row for padding
     table_one.addRow(['Unit cell dimensions: a (&Aring;)',
-                      unit_cell.value('a')],"unit_cell")
-    table_one.addRow(['b (&Aring;)',unit_cell.value('b')],"unit_cell")
-    table_one.addRow(['c (&Aring;)',unit_cell.value('c')],"unit_cell")
-    table_one.addRow(['&alpha;',unit_cell.value('alpha')],"unit_cell")
-    table_one.addRow(['&beta;',unit_cell.value('beta')],"unit_cell")
-    table_one.addRow(['&gamma;',unit_cell.value('gamma')],"unit_cell")
+                      unit_cell['a']],"unit_cell")
+    table_one.addRow(['b (&Aring;)',unit_cell['b']],"unit_cell")
+    table_one.addRow(['c (&Aring;)',unit_cell['c']],"unit_cell")
+    table_one.addRow(['&alpha;',unit_cell['alpha']],"unit_cell")
+    table_one.addRow(['&beta;',unit_cell['beta']],"unit_cell")
+    table_one.addRow(['&gamma;',unit_cell['gamma']],"unit_cell")
     table_one.addRow(['&nbsp;']) # Empty row for padding
     table_one.addRow(['Spacegroup',htmlise_sg_name(xtal.spacegroup())])
     table_one.addRow(['&nbsp;']) # Empty row for padding
