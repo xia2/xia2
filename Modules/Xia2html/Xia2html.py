@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.48 2009/12/17 14:05:17 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.49 2009/12/17 14:12:44 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1541,7 +1541,8 @@ if __name__ == "__main__":
 
     # External reflection files
     if not xia2.count('scaled_refln_file'):
-        output_datafiles.addPara("No reflection data files were found",
+        output_datafiles.addPara(warning_icon+
+                                 " No reflection data files were found",
                                  css_class='warning')
     else:
         # Display table of reflection files
@@ -1575,7 +1576,11 @@ if __name__ == "__main__":
 
     # External log files
     if not len(xia2run.logfiles()):
-        output_logfiles.addPara("No external log files")
+        output_logfiles.addPara(warning_icon+" No program log files found in"+ \
+                                Canary.MakeLink(xia2run.log_dir(),
+                                                get_relative_path( \
+                                                xia2run.log_dir())),
+                                css_class="warning")
     else:
         # Display table of log files
         output_logfiles.addPara("The following log files are located in "+ \
