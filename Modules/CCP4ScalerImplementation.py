@@ -2625,9 +2625,13 @@ class CCP4Scaler(Scaler):
 
             chef.set_anomalous(anomalous)
             chef.set_resolution(resolution)
-            chef.set_width(dose_step)
-            chef.set_max(dose_max)
-            chef.set_labin('DOSE')
+
+            if min(all_doses) < max(all_doses):
+                chef.set_width(dose_step)
+                chef.set_max(dose_max)
+                chef.set_labin('DOSE')
+            else:
+                chef.set_labin('BATCH')
             
             chef.run()
 
