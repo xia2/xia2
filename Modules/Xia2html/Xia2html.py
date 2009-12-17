@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.43 2009/12/17 09:28:14 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.44 2009/12/17 10:31:46 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -546,6 +546,7 @@ class Xia2run:
         self.__refln_files = [] # List of reflection data files
         self.__has_anomalous = False # Anomalous data?
         self.__xds_pipeline  = False # XDS pipeline used?
+        self.__multi_crystal = False # Run has multiple crystals?
         self.__pipeline_info = PipelineInfo() # Data about logfiles
         try:
             # Populate the object with data
@@ -585,6 +586,8 @@ class Xia2run:
             crystal.setUnitCellData(xia2['unit_cell'][i])
             crystal.setSpacegroupData(xia2['assumed_spacegroup'][i])
             crystal.setTwinningData(xia2['twinning'][i])
+        # Assign multi-crystal flag
+        if nxtals > 1: self.__multi_crystal = True
         # Anomalous data?
         # Look for the "anomalous_completeness" data item in
         # the dataset summary table
@@ -676,6 +679,10 @@ class Xia2run:
         """Check whether the run used the 'XDS pipeline'"""
         return self.__xds_pipeline
 
+    def multi_crystal(self):
+        """Check whether the run contains multiple crystals"""
+        return self.__multi_crystal
+
     def log_dir(self):
         """Return location of the xia2 LogFiles directory
 
@@ -729,12 +736,21 @@ class Crystal:
     def __init__(self,name):
         self.__name = str(name)
         self.__unit_cell  = None
-        self.__spacegroup = None
         self.__twinning   = None
+        self.__spacegroup = None
+        self.__alt_spacegroups = []
 
     def name(self):
         """Get the crystal name"""
         return self.__name
+
+    def spacegroup(self):
+        """Get the assumed spacegroup"""
+        return self.__spacegroup
+
+    def alt_spacegroups(self):
+        """Get the list of alternative spacegroups"""
+        return self.__alt_spacegroups
 
     def setUnitCellData(self,unit_cell):
         """Set the unit cell data"""
@@ -744,13 +760,28 @@ class Crystal:
         """Get the unit cell data"""
         return self.__unit_cell
 
-    def setSpacegroupData(self,spacegroup):
-        """Set the spacegroup data"""
-        self.__spacegroup = spacegroup
+    def setSpacegroupData(self,spacegroup_data):
+        """Set the spacegroup data
 
-    def spacegroupData(self):
-        """Get the spacegroup data"""
-        return self.__spacegroup
+        'spacegroup_data' is the text extracted from xia2.txt
+        pertaining to the spacegroup determination. It is
+        reprocessed and the results can be accessed via the
+        spacegroup() and alt_spacegroups() methods."""
+        # Extract and store spacegroup information
+        # Post-process the assumed spacegroup block using a text-based
+        # Magpie processor specifically for this block
+        spg_processor = Magpie.Magpie()
+        spg_processor.addPattern('spacegroup',
+                                 "Assuming spacegroup: (.*)$",['name'])
+        spg_processor.addPattern('alternative',
+                                 "([PCFI/abcdmn0-9\- ]+)$",['name'])
+        spg_processor.processText(str(spacegroup_data))
+        # Set the appropriate class properties
+        self.__spacegroup = spg_processor['spacegroup'][0].value('name')
+        self.__alt_spacegroups = []
+        for alt in spg_processor['alternative']:
+            self.__alt_spacegroups.append(alt.value('name'))
+        return
 
     def setTwinningData(self,twinning):
         """Set the twinning data"""
@@ -1219,31 +1250,6 @@ if __name__ == "__main__":
     # Intermediate/additional processing
     #########################################################
 
-    # Post-process the assumed spacegroup block
-    #
-    # Reprocess the blocks using a text-based Magpie processor
-    print "****** Additional processing for assumed spacegroup ******"
-    # Set up a new processor specifically for this block
-    spg_processor = Magpie.Magpie()
-    spg_processor.addPattern('spacegroup',
-                            "Assuming spacegroup: (.*)$",['name'])
-    spg_processor.addPattern('alternative',
-                             "([PCFI/abcdmn0-9\- ]+)$",['name'])
-    for assumed_spg in xia2['assumed_spacegroup']:
-        print "Processing "+str(assumed_spg)
-        # Reprocess the text and update the data
-        # FIXME: maybe this could be more generally be done
-        # inside of Magpie in future?
-        spg_processor.processText(str(assumed_spg))
-        assumed_spg.setValue('spacegroup',
-                             spg_processor['spacegroup'][0].value('name'))
-        alt_spgs = []
-        for alt in spg_processor['alternative']:
-            alt_spgs.append(alt.value('name'))
-        assumed_spg.setValue('alternative',alt_spgs)
-        # Reset the processor for the next round
-        spg_processor.reset()
-
     # Post-process the inter-wavelength b/r factor table
     #
     # We need to do this because we may have grabbed too much
@@ -1415,21 +1421,25 @@ if __name__ == "__main__":
     #
     # Spacegroup
     spacegroup = xtal_parameters.addSubsection("Spacegroup")
-    spacegroup.addPara("Spacegroup: "+
-                       htmlise_sg_name(xia2['assumed_spacegroup'][0].
-                                         value('spacegroup')))
-    spacegroup.addPara("The spacegroup determination is made using pointless ("+
-                       Canary.Link("see the appropriate log file",
+    for xtal in xia2run.crystals():
+        if xia2run.multi_crystal():
+            this_section = spacegroup.addSubsection("Crystal "+xtal.name())
+        else:
+            this_section = spacegroup
+        this_section.addPara("Spacegroup: "+htmlise_sg_name(xtal.spacegroup()))
+        if xtal.alt_spacegroups():
+            this_section.addPara("Other possibilities could be:")
+            alt_spg_list = this_section.addList()
+            for alt_spg in xtal.alt_spacegroups():
+                if alt_spg:
+                    alt_spg_list.addItem(htmlise_sg_name(alt_spg))
+        else:
+            this_section.addPara("No likely alternatives to this spacegroup")
+    # Link to logfiles section for pointless log file(s)
+    spacegroup.addPara("The spacegroup determination is made using "+
+                       "pointless ("+
+                       Canary.Link("see the appropriate log file(s)",
                                    output_logfiles).render()+")")
-    alt_spgs = xia2['assumed_spacegroup'][0].value('alternative')
-    if alt_spgs:
-        spacegroup.addPara("Other possibilities could be:")
-        alt_spg_list = spacegroup.addList()
-        for alt_spg in alt_spgs:
-            if alt_spg:
-                alt_spg_list.addItem(htmlise_sg_name(alt_spg))
-    else:
-        spacegroup.addPara("No likely alternatives to this spacegroup")
     #
     # Twinning
     twinning_analysis = xtal_parameters.addSubsection("Twinning analysis")
@@ -1810,6 +1820,7 @@ if __name__ == "__main__":
             column_data.extend([anom_completeness,anom_multiplicity])
         table_one.addColumn(column_data)
     # Additional data: unit cell, spacegroup
+    xtal = xia2run.crystals()[0]
     table_one.addRow(['&nbsp;']) # Empty row for padding
     table_one.addRow(['Unit cell dimensions: a (&Aring;)',
                       unit_cell.value('a')],"unit_cell")
@@ -1819,9 +1830,7 @@ if __name__ == "__main__":
     table_one.addRow(['&beta;',unit_cell.value('beta')],"unit_cell")
     table_one.addRow(['&gamma;',unit_cell.value('gamma')],"unit_cell")
     table_one.addRow(['&nbsp;']) # Empty row for padding
-    table_one.addRow(['Spacegroup',
-                      htmlise_sg_name(
-                xia2['assumed_spacegroup'][0].value('spacegroup'))])
+    table_one.addRow(['Spacegroup',htmlise_sg_name(xtal.spacegroup())])
     table_one.addRow(['&nbsp;']) # Empty row for padding
     table_one.addRow(['Sfcheck twinning score',
                       twinning_score+" ("+twinning_report+")"])
