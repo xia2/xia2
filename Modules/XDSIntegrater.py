@@ -886,7 +886,7 @@ class XDSIntegrater(FrameProcessor,
                     self.set_integrater_finish_done(False)
 
         else:
-            Chatter.write(
+            Debug.write(
                 'Going quickly so not removing %d outlier reflections...' % \
                 len(correct.get_remove()))
 
