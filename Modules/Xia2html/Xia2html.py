@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.49 2009/12/17 14:12:44 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.50 2009/12/17 14:17:52 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1827,9 +1827,9 @@ if __name__ == "__main__":
     xtal_data = { "unit_cell_a": ['Unit cell dimensions: a (&Aring;)'],
                   "unit_cell_b": ['b (&Aring;)'],
                   "unit_cell_c": ['c (&Aring;)'],
-                  "unit_cell_alpha": ['&alpha;'],
-                  "unit_cell_beta": ['&beta;'],
-                  "unit_cell_gamma": ['&gamma;'],
+                  "unit_cell_alpha": ['&alpha; (&deg;)'],
+                  "unit_cell_beta": ['&beta; (&deg;)'],
+                  "unit_cell_gamma": ['&gamma; (&deg;)'],
                   "spacegroup": ['Spacegroup'],
                   "twinning": ['Sfcheck twinning score']}
     last_xtal = None
