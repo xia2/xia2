@@ -10,7 +10,7 @@
 # Provide classes and functions for extracting information from
 # text files based on pattern matching
 #
-__cvs_id__ = "$Id: Magpie.py,v 1.1 2009/11/12 18:43:07 pjx Exp $"
+__cvs_id__ = "$Id: Magpie.py,v 1.2 2009/12/17 10:56:46 pjx Exp $"
 __version__ = "0.0.1"
 
 #######################################################################
@@ -192,6 +192,18 @@ class Data:
         self.__name = name
         self.__data = data
         return
+
+    def __getitem__(self,key):
+        """Implement x = Data[key]
+
+        Wrapper for value() method."""
+        return self.value(key)
+
+    def __setitem__(self,key,value):
+        """Implement Data[key] = x
+
+        Wrapper for setValue() method."""
+        return self.setValue(key,value)
 
     def __str__(self):
         """Return string representation"""
