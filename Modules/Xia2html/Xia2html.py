@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.45 2009/12/17 11:02:09 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.46 2009/12/17 11:13:14 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -736,9 +736,10 @@ class Crystal:
     def __init__(self,name):
         self.__name = str(name)
         self.__unit_cell  = None
-        self.__twinning   = None
         self.__spacegroup = None
         self.__alt_spacegroups = []
+        self.__twinning_score = None
+        self.__twinning_report = ''
 
     def name(self):
         """Get the crystal name"""
@@ -763,6 +764,14 @@ class Crystal:
         
         etc."""
         return self.__unit_cell
+
+    def twinning_score(self):
+        """Return the twinning score"""
+        return self.__twinning_score
+
+    def twinning_report(self):
+        """Return the twinning report"""
+        return self.__twinning_report
 
     def setUnitCellData(self,unit_cell):
         """Set the unit cell data
@@ -794,13 +803,13 @@ class Crystal:
             self.__alt_spacegroups.append(alt.value('name'))
         return
 
-    def setTwinningData(self,twinning):
-        """Set the twinning data"""
-        self.__twinning = twinning
+    def setTwinningData(self,twinning_data):
+        """Set the twinning data
 
-    def twinningData(self):
-        """Get the twinning data"""
-        return self.__twinning
+        'twinning_data' is the Magpie.Data object with the
+        twinning information extracted from xia2.txt."""
+        self.__twinning_score = twinning_data['score']
+        self.__twinning_report = twinning_data['report']
 
 # Dataset
 #
@@ -1460,11 +1469,17 @@ if __name__ == "__main__":
     #
     # Twinning
     twinning_analysis = xtal_parameters.addSubsection("Twinning analysis")
-    twinning_analysis.addPara("Overall twinning score: "+
-                              twinning_score+"<br />"+
-                              "This is the value of &lt;E<sup>4</sup>&gt; "+
-                              "reported by sfcheck")
-    twinning_analysis.addPara(twinning_report)
+    for xtal in xia2run.crystals():
+        if xia2run.multi_crystal():
+            this_section = twinning_analysis.addSubsection("Crystal "+
+                                                           xtal.name())
+        else:
+            this_section = twinning_analysis
+        this_section.addPara("Overall twinning score: "+
+                             xtal.twinning_score())
+        this_section.addPara(xtal.twinning_report())
+    twinning_analysis.addPara("Twinning score is the value of "+
+                              "&lt;E<sup>4</sup>&gt; reported by sfcheck")
     #
     # ASU and solvent content
     asu_contents = xtal_parameters.addSubsection("Asymmetric unit contents"). \
@@ -1851,7 +1866,7 @@ if __name__ == "__main__":
     table_one.addRow(['Spacegroup',htmlise_sg_name(xtal.spacegroup())])
     table_one.addRow(['&nbsp;']) # Empty row for padding
     table_one.addRow(['Sfcheck twinning score',
-                      twinning_score+" ("+twinning_report+")"])
+                      xtal.twinning_score()+" ("+xtal.twinning_report()+")"])
     table_one.addRow(['',Canary.Link("All crystallographic parameters..",
                                      xtal_parameters)])
     
