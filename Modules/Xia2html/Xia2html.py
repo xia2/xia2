@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.47 2009/12/17 13:39:18 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.48 2009/12/17 14:05:17 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -586,6 +586,11 @@ class Xia2run:
             crystal.setUnitCellData(xia2['unit_cell'][i])
             crystal.setSpacegroupData(xia2['assumed_spacegroup'][i])
             crystal.setTwinningData(xia2['twinning'][i])
+            try:
+                crystal.setASUData(xia2['asu_and_solvent'][i])
+            except IndexError:
+                # Assume that this wasn't found
+                pass
         # Assign multi-crystal flag
         if nxtals > 1: self.__multi_crystal = True
         # Anomalous data?
@@ -748,6 +753,8 @@ class Crystal:
         self.__alt_spacegroups = []
         self.__twinning_score = None
         self.__twinning_report = ''
+        self.__mols_in_asu = None
+        self.__solvent_frac = None
 
     def name(self):
         """Get the crystal name"""
@@ -780,6 +787,14 @@ class Crystal:
     def twinning_report(self):
         """Return the twinning report"""
         return self.__twinning_report
+
+    def molecules_in_asu(self):
+        """Return the number of molecules in the ASU"""
+        return self.__mols_in_asu
+
+    def solvent_fraction(self):
+        """Return the solvent fraction"""
+        return self.__solvent_frac
 
     def setUnitCellData(self,unit_cell):
         """Set the unit cell data
@@ -818,6 +833,15 @@ class Crystal:
         twinning information extracted from xia2.txt."""
         self.__twinning_score = twinning_data['score']
         self.__twinning_report = twinning_data['report']
+
+    def setASUData(self,asu_data):
+        """Set the assymmetric unit data
+
+        'asu_data' is the Magpie.Data object with the ASU
+        data (i.e. number of molecules in the ASU and solvent
+        fraction) extracted from xia2.txt."""
+        self.__mols_in_asu = asu_data['molecules_in_asu']
+        self.__solvent_frac = asu_data['solvent_fraction']
 
 # Dataset
 #
@@ -1418,18 +1442,6 @@ if __name__ == "__main__":
     #
     # Credits section
     credits = xia2doc.addSection("Credits")
-
-    # Populate the "overview" section
-    #
-    # Crystallographic parameters section
-    twinning_score = str(xia2['twinning'][0].value('score'))
-    twinning_report = str(xia2['twinning'][0].value('report'))
-    try:
-        asu_and_solvent = str(xia2['asu_and_solvent'][0])
-    except IndexError:
-        # Assume that this was missing
-        # Put in a default message
-        asu_and_solvent = "No information on ASU contents"
     
     # Crystallographic parameters
     #
@@ -1490,8 +1502,21 @@ if __name__ == "__main__":
                               "&lt;E<sup>4</sup>&gt; reported by sfcheck")
     #
     # ASU and solvent content
-    asu_contents = xtal_parameters.addSubsection("Asymmetric unit contents"). \
-        addPara(asu_and_solvent)
+    asu_contents = xtal_parameters.addSubsection("Asymmetric unit contents")
+    for xtal in xia2run.crystals():
+        if xia2run.multi_crystal():
+            this_section = asu_contents.addSubsection("Crystal "+xtal.name())
+        else:
+            this_section = asu_contents
+        nmols = xtal.molecules_in_asu()
+        solvent = xtal.solvent_fraction()
+        if not nmols is None and not solvent is None:
+            # Create a table
+            asu_tbl = this_section.addTable()
+            asu_tbl.addRow(['Likely number of molecules in ASU',nmols])
+            asu_tbl.addRow(['Resulting solvent fraction',solvent])
+        else:
+            this_section.addPara("No information on ASU contents")
 
     # Inter-wavelength analysis table
     try:
