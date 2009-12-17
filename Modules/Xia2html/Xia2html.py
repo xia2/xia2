@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.51 2009/12/17 14:48:48 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.52 2009/12/17 14:56:56 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1657,12 +1657,16 @@ if __name__ == "__main__":
         # directory
         jar_file = "JLogGraph.jar"
         jloggraph_jar = os.path.join(xia2htmldir,"extras",jar_file)
-        print "Copying %s status icons to %s" % (jloggraph_jar,xia2_html)
+        print "Copying %s to %s" % (jloggraph_jar,xia2_html)
         if os.path.isfile(jloggraph_jar):
             shutil.copy(jloggraph_jar,os.path.join(xia2_html,jar_file))
         else:
             print "*** %s not found ***" % jloggraph_jar
-
+            output_logfiles.addPara(warning_icon+" Unable to copy "+
+                                    jloggraph_jar+": file not found<br />"+
+                                    "Loggraphs in html log files may not work",
+                                    css_class="warning")
+                            
     # Detailed statistics for each dataset
     print "Number of summary tables: "+str(xia2.count('dataset_summary'))
     # If there is more than 1 summary then write a TOC
