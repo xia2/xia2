@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.46 2009/12/17 11:13:14 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.47 2009/12/17 13:39:18 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -723,6 +723,14 @@ class Xia2run:
         Returns the full path of the xia2-journal.txt file, if one
         exists - otherwise returns None."""
         return self.__xia2_journal
+
+    def get_crystal(self,xtal_name):
+        """Fetch the Crystal object corresponding to the supplied name"""
+        for xtal in self.crystals():
+            if xtal.name() == xtal_name:
+                return xtal
+        # Nothing found
+        return None
 
 # Crystal
 #
@@ -1785,10 +1793,50 @@ if __name__ == "__main__":
         row_titles.extend(['Anomalous completeness',
                            'Anomalous multiplicity'])
     row_titles.extend(['']) # Line linking to full stats
+    # Deal with crystal-specific data
+    xtal_data = { "unit_cell_a": ['Unit cell dimensions: a (&Aring;)'],
+                  "unit_cell_b": ['b (&Aring;)'],
+                  "unit_cell_c": ['c (&Aring;)'],
+                  "unit_cell_alpha": ['&alpha;'],
+                  "unit_cell_beta": ['&beta;'],
+                  "unit_cell_gamma": ['&gamma;'],
+                  "spacegroup": ['Spacegroup'],
+                  "twinning": ['Sfcheck twinning score']}
+    last_xtal = None
     # Add initial title column
     table_one.addColumn(row_titles)
     # Add additional columns for each dataset
     for dataset in xia2run.datasets():
+        # Crystal-specific data
+        xtal = xia2run.get_crystal(dataset.crystalName())
+        if xtal.name() != last_xtal:
+            # New crystal - fetch data
+            unit_cell = xtal.unit_cell()
+            spacegroup = xtal.spacegroup()
+            twinning_score = xtal.twinning_score()
+            twinning_report = xtal.twinning_report()
+            # Store the data for print out at the end
+            xtal_data['unit_cell_a'].extend([unit_cell['a'],None])
+            xtal_data['unit_cell_b'].extend([unit_cell['b'],None])
+            xtal_data['unit_cell_c'].extend([unit_cell['c'],None])
+            xtal_data['unit_cell_alpha'].extend([unit_cell['alpha'],None])
+            xtal_data['unit_cell_beta'].extend([unit_cell['beta'],None])
+            xtal_data['unit_cell_gamma'].extend([unit_cell['gamma'],None])
+            xtal_data['spacegroup'].extend([htmlise_sg_name(spacegroup),None])
+            xtal_data['twinning'].extend([twinning_score+"<br />"+
+                                         twinning_report,None])
+            # Update last crystal name
+            last_xtal = xtal.name()
+        else:
+            # Same crystal as before
+            xtal_data['unit_cell_a'].extend([None,None])
+            xtal_data['unit_cell_b'].extend([None,None])
+            xtal_data['unit_cell_c'].extend([None,None])
+            xtal_data['unit_cell_alpha'].extend([None,None])
+            xtal_data['unit_cell_beta'].extend([None,None])
+            xtal_data['unit_cell_gamma'].extend([None,None])
+            xtal_data['spacegroup'].extend([None,None])
+            xtal_data['twinning'].extend([None,None])
         # Locate the wavelength
         wave_lambda = '?'
         for wavelength in xia2['wavelength']:
@@ -1852,24 +1900,19 @@ if __name__ == "__main__":
             column_data.extend([anom_completeness,anom_multiplicity])
         table_one.addColumn(column_data)
     # Additional data: unit cell, spacegroup
-    xtal = xia2run.crystals()[0]
-    unit_cell = xtal.unit_cell()
     table_one.addRow(['&nbsp;']) # Empty row for padding
-    table_one.addRow(['Unit cell dimensions: a (&Aring;)',
-                      unit_cell['a']],"unit_cell")
-    table_one.addRow(['b (&Aring;)',unit_cell['b']],"unit_cell")
-    table_one.addRow(['c (&Aring;)',unit_cell['c']],"unit_cell")
-    table_one.addRow(['&alpha;',unit_cell['alpha']],"unit_cell")
-    table_one.addRow(['&beta;',unit_cell['beta']],"unit_cell")
-    table_one.addRow(['&gamma;',unit_cell['gamma']],"unit_cell")
+    table_one.addRow(xtal_data['unit_cell_a'],"unit_cell")
+    table_one.addRow(xtal_data['unit_cell_b'],"unit_cell")
+    table_one.addRow(xtal_data['unit_cell_c'],"unit_cell")
+    table_one.addRow(xtal_data['unit_cell_alpha'],"unit_cell")
+    table_one.addRow(xtal_data['unit_cell_beta'],"unit_cell")
+    table_one.addRow(xtal_data['unit_cell_gamma'],"unit_cell")
     table_one.addRow(['&nbsp;']) # Empty row for padding
-    table_one.addRow(['Spacegroup',htmlise_sg_name(xtal.spacegroup())])
+    table_one.addRow(xtal_data['spacegroup'])
     table_one.addRow(['&nbsp;']) # Empty row for padding
-    table_one.addRow(['Sfcheck twinning score',
-                      xtal.twinning_score()+" ("+xtal.twinning_report()+")"])
+    table_one.addRow(xtal_data['twinning'])
     table_one.addRow(['',Canary.Link("All crystallographic parameters..",
                                      xtal_parameters)])
-    
 
     # Spit out the HTML
     xia2doc.renderFile('xia2.html')
