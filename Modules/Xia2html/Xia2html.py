@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.42 2009/12/17 09:25:26 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.43 2009/12/17 09:28:14 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1337,7 +1337,6 @@ if __name__ == "__main__":
     xia2doc = Canary.Document("xia2 Processing Report")
     xia2doc.addStyle(os.path.join(xia2htmldir,"xia2.css"),Canary.INLINE)
     warning_icon = "<img src='"+os.path.join(xia2_html_dir, "warning.png")+"'>"
-    ##xia2doc.addScript("./baubles.js",Canary.INLINE)
 
     # XIA2 version and other general info
     try:
