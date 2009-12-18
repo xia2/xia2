@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.53 2009/12/18 10:43:18 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.54 2009/12/18 11:11:55 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -908,6 +908,7 @@ class Dataset:
 
     def __init__(self,name,tabular_data,auto_separator='\t'):
         self.__name = str(name)
+        self.__summary_data = tabular_data
         self.__short_name = self.__name.split('/')[-1]
         # Auto separator is the delimiter separating tabular items
         self.__auto_separator = auto_separator
@@ -981,6 +982,10 @@ class Dataset:
     def keys(self):
         """Return the list of data item names (keys)"""
         return self.__keys
+
+    def summary_data(self):
+        """Return the tabular summary data"""
+        return self.__summary_data
 
     def addSweep(self,sweep):
         """Add a sweep to the dataset
@@ -1743,21 +1748,25 @@ if __name__ == "__main__":
                                     css_class="warning")
                             
     # Detailed statistics for each dataset
-    print "Number of summary tables: "+str(xia2.count('dataset_summary'))
-    # If there is more than 1 summary then write a TOC
-    if len(xia2['dataset_summary']) > 1:
+    print "Number of datasets: "+str(len(xia2run.datasets()))
+    # If there is more than one datatset then write a TOC
+    if len(xia2run.datasets()) > 1:
         summary.addPara("Statistics for each of the following datasets:")
         summary.addTOC()
     statistic_sections = {}
-    for dataset in xia2['dataset_summary']:
+    for dataset in xia2run.datasets():
         # Make a subsection for each dataset
-        name = dataset.value('dataset')
-        summary_table = Canary.MakeMagicTable(dataset.value('table'))
+        if xia2run.multi_crystal():
+            section_title = "Crystal "+dataset.crystalName()+\
+                " Dataset "+dataset.datasetName()
+        else:
+            section_title = "Dataset "+dataset.datasetName()
+        stats_subsection = summary.addSubsection(section_title)
+        summary_table = Canary.MakeMagicTable(dataset.summary_data())
         summary_table.setHeader(['','Overall','Low','High'])
-        stats_subsection = summary.addSubsection(name)
         stats_subsection.addContent(summary_table)
         # Store a reference to the subsection for linking to later
-        statistic_sections[name] = stats_subsection
+        statistic_sections[dataset.name()] = stats_subsection
 
     #########################################################
     # Integration status per image
