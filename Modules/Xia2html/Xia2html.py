@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.52 2009/12/17 14:56:56 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.53 2009/12/18 10:43:18 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -541,7 +541,6 @@ class Xia2run:
         self.__log_dir   = None # Logfile directory
         self.__datasets    = [] # List of datasets
         self.__crystals    = [] # List of crystals
-        self.__sweeps      = [] # List of sweeps
         self.__logfiles    = [] # List of log files
         self.__refln_files = [] # List of reflection data files
         self.__has_anomalous = False # Anomalous data?
@@ -575,6 +574,46 @@ class Xia2run:
                     print "WAVELENGTHS> "+dataset.crystalName()+"/" +\
                         dataset.datasetName()+": "+dataset['wavelength']
                     break
+        # Anomalous data?
+        # Look for the "anomalous_completeness" data item in
+        # the dataset summary table
+        print "POPULATE> ANOMALOUS DATA"
+        for dataset in self.__datasets:
+            try:
+                x = dataset['anomalous_completeness']
+                self.__has_anomalous = True
+                break
+            except KeyError:
+                pass
+        # Sweeps and integration runs
+        print "POPULATE> SWEEPS"
+        # Assign (empty) sweeps to datasets
+        for sweep_to_dataset in xia2['sweep_to_dataset']:
+            dataset = self.get_dataset(sweep_to_dataset['dataset'])
+            this_sweep = sweep_to_dataset['sweep']
+            new_sweep = True
+            for sweep in dataset.sweeps():
+                if sweep.name() == this_sweep:
+                    # Already exists
+                    new_sweep = False
+                    break
+            if new_sweep:
+                dataset.addSweep(Sweep(this_sweep))
+                print "SWEEPS> new sweep "+this_sweep+" added to "+ \
+                    dataset.name()
+        # Add integration runs to sweeps
+        print "SWEEPS> "+str(xia2.count('integration_status_per_image'))+\
+            " sweep integration records found"
+        for int_status in xia2['integration_status_per_image']:
+            # Create an integration run object
+            integration_run = IntegrationRun(int_status)
+            # Locate the Sweep object to assign this to
+            for dataset in self.datasets():
+                for sweep in dataset.sweeps():
+                    if sweep.name() == integration_run.name():
+                        sweep.addIntegrationRun(integration_run)
+                        print "SWEEPS> run assigned to sweep "+sweep.name()
+                        break
         # Crystals
         print "POPULATE> CRYSTALS"
         xtal_list = []
@@ -602,17 +641,6 @@ class Xia2run:
                 pass
         # Assign multi-crystal flag
         if nxtals > 1: self.__multi_crystal = True
-        # Anomalous data?
-        # Look for the "anomalous_completeness" data item in
-        # the dataset summary table
-        print "POPULATE> ANOMALOUS DATA"
-        for dataset in self.__datasets:
-            try:
-                x = dataset['anomalous_completeness']
-                self.__has_anomalous = True
-                break
-            except KeyError:
-                pass
         # Logfiles
         # Look in the xia2 LogFiles directory
         print "POPULATE> LOGFILES"
@@ -737,6 +765,22 @@ class Xia2run:
         Returns the full path of the xia2-journal.txt file, if one
         exists - otherwise returns None."""
         return self.__xia2_journal
+
+    def get_dataset(self,dataset_name):
+        """Fetch the Dataset object corresponding to the supplied name
+
+        'dataset_name' can be either the 'long' version of the name
+        (which includes project and crystal qualifiers) or the 'short'
+        version (which only has the dataset name)."""
+        # Try the long name first i.e. including project and crystal
+        for dataset in self.datasets():
+            if dataset.name() == dataset_name:
+                return dataset
+        # Nothing found - try the short name (dataset only)
+        for dataset in self.datasets():
+            if dataset.datasetName() == dataset_name:
+                return dataset
+        return None
 
     def get_crystal(self,xtal_name):
         """Fetch the Crystal object corresponding to the supplied name"""
@@ -870,6 +914,8 @@ class Dataset:
         # List of keys (stored data items)
         self.__keys = []
         self.__data = {}
+        # List of Sweep objects
+        self.__sweeps = []
         # Extract data and populate the data structure
         self.__extract_tabular_data(tabular_data)
 
@@ -935,6 +981,135 @@ class Dataset:
     def keys(self):
         """Return the list of data item names (keys)"""
         return self.__keys
+
+    def addSweep(self,sweep):
+        """Add a sweep to the dataset
+
+        'sweep' is a Sweep object.
+
+        Note: the sweeps are automatically sorted into
+        alphanumerical order."""
+        self.__sweeps.append(sweep)
+        self.__sweeps.sort(self.__cmp_sweeps_by_name)
+
+    def sweeps(self):
+        """Return the list of sweeps"""
+        return self.__sweeps
+
+    def __cmp_sweeps_by_name(self,sweep1,sweep2):
+        """Internal: comparision function for sorting sweeps"""
+        # Return value indicates order
+        if sweep1.name() <  sweep2.name(): return -1
+        if sweep1.name() == sweep2.name(): return 0
+        if sweep1.name() >  sweep2.name(): return 1
+        return
+
+# Sweep
+#
+# Store information about an individual sweep
+class Sweep:
+    """Store information about a sweep reported in the xia2
+    output.
+
+    Each sweep has a list of integration runs"""
+
+    def __init__(self,name):
+        """Create a new Sweep object"""
+        self.__name = name
+        self.__integration_runs = []
+
+    def name(self):
+        """Return the name of the sweep"""
+        return self.__name
+
+    def addIntegrationRun(self,integration_run):
+        """Append an integration run to this Sweep
+
+        'integration_run' is a populated IntegrationRun object
+        which is appended to the list of runs for this
+        sweep."""
+        self.__integration_runs.append(integration_run)
+
+    def last_integration_run(self):
+        """Return the last integration run
+
+        Returns the last IntegrationRun object added to the
+        sweep."""
+        return self.__integration_runs[-1]
+
+# IntegrationRun
+#
+# Store and manage information about an integration run for a sweep        
+class IntegrationRun:
+    """Store information about an integration run for a sweep"""
+    
+    def __init__(self,sweep_data):
+        """New IntegrationRun object
+
+        'sweep_data' is a Magpie.Data object for the
+        'integration_status_per_image' pattern."""
+        self.__name = None
+        self.__start_batch = 0
+        self.__end_batch = 0
+        self.__image_status = ''
+        # Extract and store the sweep data
+        self.__process(sweep_data)
+
+    def __process(self,sweep_data):
+        """Internal: process sweep data to extract information"""
+        # Create a new Magpie processor to break up
+        # the supplied data
+        status_processor = Magpie.Magpie()
+        status_processor.addPattern('sweep',
+                                    "-+ Integrating ([^ ]*) -+",
+                                    ['name'])
+        status_processor.addPattern('batch',
+                                    "Processed batches ([0-9]+) to ([0-9]+)",
+                                    ['start','end'])
+        status_processor.addPattern('status_per_image',
+                                    "([oO%#!@]+)$")
+        status_processor.addPattern('key',
+                                    "\"o\".*\n.*blank")
+        # Reprocess the supplied text
+        status_processor.processText(str(sweep_data))
+        # Extract and store the data
+        self.__name = status_processor['sweep'][0]['name']
+        try:
+            self.__start_batch = status_processor['batch'][0]['start']
+            self.__end_batch = status_processor['batch'][0]['end']
+        except IndexError:
+            # Couldn't get batch numbers
+            pass
+        # Symbols showing image status
+        for line in status_processor['status_per_image']:
+            self.__image_status += str(line) + "\n"
+        self.__image_status = self.__image_status.strip('\n')
+
+    def name(self):
+        """Return the sweep name for the integration run"""
+        return self.__name
+
+    def start_batch(self):
+        """Return the start batch number"""
+        return self.__start_batch
+
+    def end_batch(self):
+        """Return the end batch number"""
+        return self.__end_batch
+
+    def image_status(self):
+        """Return the image status line
+
+        This is the string of symbols representing the integration
+        status of each image in the run."""
+        return self.__image_status
+
+    def countSymbol(self,symbol):
+        """Return the number of times a symbol appears
+
+        Given a 'symbol', returns the number of times that symbol
+        appears in the status line for this integration run"""
+        return self.__image_status.count(symbol)
 
 # IntegrationStatusReporter
 #
@@ -1067,47 +1242,6 @@ class IntegrationStatusReporter:
 #######################################################################
 # Module Functions
 #######################################################################
-
-def list_sweeps(int_status_list,dataset=None):
-    """Return a list of sweep names
-
-    Given a list of 'integration_status_...' Data objects,
-    return a list of the unique sweep names.
-
-    Optionally if a 'dataset' name is given, then the
-    list will only have those sweeps associated with that
-    dataset name.
-
-    If sweeps are called SWEEP1, SWEEP2 etc then this will
-    also sort them into alphanumeric order."""
-    sweep_list = []
-    auto_assigned = True
-    for int_status in int_status_list:
-        this_sweep = int_status.value('sweep')
-        # Check for matching dataset name
-        if dataset:
-            if int_status.value('dataset') != dataset: continue
-        # Check if name has been encountered before
-        if not sweep_list.count(this_sweep):
-            sweep_list.append(this_sweep)
-            if not this_sweep.startswith("SWEEP"):
-                auto_assigned = False
-    # If the names were automatically assigned (i.e. all
-    # start with SWEEP...) then sort alphanumerically
-    if auto_assigned:
-        sweep_list.sort()
-    return sweep_list
-
-def get_last_int_run(int_status_list,sweep):
-    """Return the last integration run for the named sweep
-
-    Given a list of 'integration_status_...' Data objects,
-    return the Data object corresponding to the final
-    integration run for the named sweep."""
-    last_run = None
-    for run in int_status_list:
-        if run.value('sweep') == sweep: last_run = run
-    return last_run
 
 def htmlise_sg_name(spacegroup):
     """HTMLise a spacegroup name
@@ -1334,65 +1468,6 @@ if __name__ == "__main__":
                 else:
                     # Append line to new copy of table
                     tbl.append(line)
-    
-    # Post-process integration status per image 
-    #
-    # Reprocess the blocks found from "integration_status_per_image"
-    # using a text-based Magpie processor
-    print "****** Additional processing for integration status ******"
-    # Set up a new processor specifically for this block
-    int_status_reporter = IntegrationStatusReporter(xia2_html_dir)
-    status_processor = Magpie.Magpie()
-    status_processor.addPattern('sweep',
-                                "-+ Integrating ([^ ]*) -+",
-                                ['name'])
-    status_processor.addPattern('batch',
-                                "Processed batches ([0-9]+) to ([0-9]+)",
-                                ['start','end'])
-    status_processor.addPattern('status_per_image',
-                                "([oO%#!@]+)$")
-    status_processor.addPattern('key',
-                                "\"o\".*\n.*blank")
-    for int_status in xia2['integration_status_per_image']:
-        print "Processing "+str(int_status)
-        # Reprocess the text and update the data
-        # FIXME: maybe this could be more generally be done
-        # inside of Magpie in future?
-        status_processor.processText(str(int_status))
-        this_sweep = status_processor['sweep'][0].value('name')
-        int_status.setValue('sweep',this_sweep)
-        try:
-            start_batch = status_processor['batch'][0]. \
-                          value('start')
-            end_batch = status_processor['batch'][0]. \
-                        value('end')
-        except IndexError:
-            # Fudge the (missing) batch numbers
-            start_batch = 0
-            end_batch = 0
-        int_status.setValue('start_batch',start_batch)
-        int_status.setValue('end_batch',end_batch)
-        image_status_line = ''
-        for line in status_processor['status_per_image']:
-            image_status_line += str(line) + "\n"
-        image_status_line = image_status_line.strip('\n')
-        # Count each type of image
-        symbol_count = {}
-        for symbol in int_status_reporter.getSymbolList():
-            symbol_count[symbol] = image_status_line.count(symbol)
-        int_status.setValue('count',symbol_count)
-        # Find which dataset this sweep belongs to
-        int_status.setValue('dataset',None)
-        for sweep in xia2['sweep_to_dataset']:
-            if sweep.value('sweep') == this_sweep:
-                int_status.setValue('dataset',sweep.value('dataset'))
-                print "Sweep %s assigned to dataset %s" % \
-                    (this_sweep,sweep.value('dataset'))
-                break
-        # Store the data
-        int_status.setValue('image_status',image_status_line)
-        # Reset the processor for the next round
-        status_processor.reset()
 
     # Instantiate a Xia2run object
     xia2run = Xia2run(xia2,xia2dir)
@@ -1695,63 +1770,55 @@ if __name__ == "__main__":
     # we got along
     int_status_section.addPara("This table summarises the image status for each dataset and sweep.")
     int_table = int_status_section.addTable()
-    # Loop over datasets/wavelengths
+    # Loop over datasets
     this_dataset = None
-    for wavelength in xia2['wavelength']:
+    for dataset in xia2run.datasets():
         # Make a section for each dataset
-        dataset = wavelength.value('name')
         int_status_dataset_section = int_status_section. \
-            addSubsection("Dataset %s" % dataset)
-        print ">>>> DATASET: "+str(dataset)
-        sweep_list = list_sweeps(int_status,dataset)
+            addSubsection("Dataset %s" % dataset.datasetName())
+        print ">>>> DATASET: "+dataset.datasetName()
         # Deal with each sweep associated with the dataset
-        for sweep in sweep_list:
-            print "* Sweep: "+str(sweep)
-            last_int_run = get_last_int_run(int_status,sweep)
-            if not last_int_run:
-                # Failed to find a match
-                print ">>> Couldn't locate last run for this sweep"
+        for sweep in dataset.sweeps():
+            print ">>>> SWEEP: "+str(sweep.name())
+            last_int_run = sweep.last_integration_run()
+            # Output status info for this sweep in its own section
+            start_batch = last_int_run.start_batch()
+            end_batch = last_int_run.end_batch()
+            sweep_section = int_status_dataset_section. \
+                addSubsection(sweep.name() + ": batches " + start_batch + \
+                                  " to " + end_batch)
+            # Build the output HTML
+            images_html = ''
+            # Process each line of the status separately
+            batch_num = int(start_batch)
+            for images_text in last_int_run.image_status().split('\n'):
+                # Turn the status symbols into icons
+                for symbol in list(images_text):
+                    status = int_status_reporter.lookupStatus(symbol)
+                    description = int_status_reporter.getDescription(status)
+                    title = "Batch: %d Status: %s" % (batch_num,description)
+                    images_html += int_status_reporter.getIcon(status,title)
+                    batch_num += 1
+                images_html += "<br />\n"
+            # Add the icons to the document
+            sweep_section.addContent("<p>"+images_html+"</p>")
+            # Add a row to the summary table
+            row = []
+            total = 0
+            if this_dataset != dataset:
+                # Only link to each dataset once from the table
+                this_dataset = dataset
+                row.append(Canary.Link(dataset.datasetName(),
+                                       int_status_dataset_section).render())
             else:
-                # Output status info for this sweep in its own section
-                start_batch = str(last_int_run.value('start_batch'))
-                end_batch = str(last_int_run.value('end_batch'))
-                sweep_section = int_status_dataset_section. \
-                    addSubsection(sweep + ": batches " + start_batch + \
-                                      " to " + end_batch)
-                # Build the output HTML
-                images_html = ''
-                # Process each line of the status separately
-                batch_num = int(start_batch)
-                for images_text in last_int_run.value('image_status'). \
-                        split('\n'):
-                    # Turn the status symbols into icons
-                    for symbol in list(images_text):
-                        status = int_status_reporter.lookupStatus(symbol)
-                        description = int_status_reporter.getDescription(status)
-                        title = "Batch: %d Status: %s" % (batch_num,description)
-                        images_html += int_status_reporter.getIcon(status,title)
-                        batch_num += 1
-                    images_html += "<br />\n"
-                # Add the icons to the document
-                sweep_section.addContent("<p>"+images_html+"</p>")
-                # Add a row to the summary table
-                row = []
-                total = 0
-                if this_dataset != dataset:
-                    # Only link to each dataset once from the table
-                    this_dataset = dataset
-                    row.append(Canary.Link(dataset,int_status_dataset_section).
-                               render())
-                else:
-                    row.append('')
-                # Link to sweep followed by the stats
-                row.append(Canary.Link(str(sweep),sweep_section).render())
-                symbol_count = last_int_run.value('count')
-                for symbol in int_status_reporter.getSymbolList():
-                    row.append(str(symbol_count[symbol]))
-                    total += symbol_count[symbol]
-                row.append(total)
-                int_table.addRow(row)
+                row.append('')
+            # Link to sweep followed by the stats
+            row.append(Canary.Link(sweep.name(),sweep_section).render())
+            for symbol in int_status_reporter.getSymbolList():
+                row.append(str(last_int_run.countSymbol(symbol)))
+                total += last_int_run.countSymbol(symbol)
+            row.append(total)
+            int_table.addRow(row)
     # Finish off the summary table by adding the header
     header = ['Dataset','Sweep']
     for symbol in int_status_reporter.getSymbolList():
