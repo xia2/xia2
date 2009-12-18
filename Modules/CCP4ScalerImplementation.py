@@ -2398,13 +2398,16 @@ class CCP4Scaler(Scaler):
         
         for key in self._tmp_scaled_refl_files:
             file = self._tmp_scaled_refl_files[key]
+            scaout = '%s.sca' % file[:-4]
+            
             m2v = self._factory.Mtz2various()
             m2v.set_hklin(file)
-            m2v.set_hklout('%s.sca' % file[:-4])
+            m2v.set_hklout(scaout)
             m2v.convert()
 
-            self._scalr_scaled_reflection_files['sca'][
-                key] = '%s.sca' % file[:-4]
+            self._scalr_scaled_reflection_files['sca'][key] = scaout
+
+            FileHandler.record_data_file(scaout)
 
         # FIXED BUG 2146
 

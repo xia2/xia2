@@ -84,6 +84,7 @@ from Modules.ScalerFactory import Scaler
 from Modules.SubstructureFinderFactory import SubstructureFinder
 from Handlers.Syminfo import Syminfo
 from Handlers.Flags import Flags
+from Handlers.Files import FileHandler
 from NMolLib import compute_nmol, compute_solvent
 
 # XML Marked up output for e-HTPX
@@ -391,16 +392,18 @@ class XCrystal(Object):
 
                 if type(reflections) == type({}):
                     for wavelength in reflections.keys():
+                        target = FileHandler.get_data_file(
+                            reflections[wavelength])
                         result += 'Scaled reflections (%s): %s\n' % \
-                                  (wavelength, reflections[wavelength])
+                                  (wavelength, target)
                         EHTPXXmlHandler.add_crystal_reflection_file(
-                            xname, reflections[wavelength])
+                            xname, target)
                     
                 else:
-                    result += 'Scaled reflections: %s\n' % \
-                              str(reflections)
-                    EHTPXXmlHandler.add_crystal_reflection_file(
-                        xname, reflections)
+                    target = FileHandler.get_data_file(
+                        reflections)
+                    result += 'Scaled reflections: %s\n' % target
+                    EHTPXXmlHandler.add_crystal_reflection_file(xname, target)
 
         # and now some site information... maybe
         if self._ha_info and False:

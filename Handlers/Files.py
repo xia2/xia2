@@ -331,6 +331,15 @@ class _FileHandler:
             self._data_files.append(filename)
         return
 
+    def get_data_file(self, filename):
+        '''Return the point where this data file will end up!'''
+
+        if not filename in self._data_files:
+            return filename
+
+        data_directory = Environment.generate_directory('DataFiles')
+        return os.path.join(data_directory, os.path.split(filename)[-1])
+
     def record_temporary_file(self, filename):
         # allow for file overwrites etc.
         if not filename in self._temporary_files:
