@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.55 2009/12/18 12:18:19 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.56 2009/12/18 14:56:38 gwin Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1102,9 +1102,9 @@ class IntegrationRun:
 
         The key to symbols from xia2.txt typically looks like:
 
-        "o" => good        "%" => ok        "!" => bad rmsd
-        "O" => overloaded  "#" => many bad  "." => blank
-        "@" => abandoned
+        'o' => good        '%' => ok        '!' => bad rmsd
+        'O' => overloaded  '#' => many bad  '.' => blank
+        '@' => abandoned
 
         This method attempts to parse this text and produce a
         dictionary with the symbols (i.e. o,%,! etc) as keys
