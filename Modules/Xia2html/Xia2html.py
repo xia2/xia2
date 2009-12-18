@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.54 2009/12/18 11:11:55 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.55 2009/12/18 12:18:19 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1057,6 +1057,7 @@ class IntegrationRun:
         self.__start_batch = 0
         self.__end_batch = 0
         self.__image_status = ''
+        self.__symbol_key = {}
         # Extract and store the sweep data
         self.__process(sweep_data)
 
@@ -1074,7 +1075,7 @@ class IntegrationRun:
         status_processor.addPattern('status_per_image',
                                     "([oO%#!@]+)$")
         status_processor.addPattern('key',
-                                    "\"o\".*\n.*blank")
+                                    "\"o\".*\n.*\n.*abandoned")
         # Reprocess the supplied text
         status_processor.processText(str(sweep_data))
         # Extract and store the data
@@ -1089,6 +1090,44 @@ class IntegrationRun:
         for line in status_processor['status_per_image']:
             self.__image_status += str(line) + "\n"
         self.__image_status = self.__image_status.strip('\n')
+        # Key to symbols
+        try:
+            self.__process_symbol_key(str(status_processor['key'][0]))
+        except:
+            print "IntegrationRun: failed to process symbols!"
+            raise
+
+    def __process_symbol_key(self,key_text):
+        """Internal: process the key to symbols
+
+        The key to symbols from xia2.txt typically looks like:
+
+        "o" => good        "%" => ok        "!" => bad rmsd
+        "O" => overloaded  "#" => many bad  "." => blank
+        "@" => abandoned
+
+        This method attempts to parse this text and produce a
+        dictionary with the symbols (i.e. o,%,! etc) as keys
+        and the corresponding descriptions (good, ok etc) as
+        the values."""
+        symbol = ''
+        description = []
+        got_arrow = False
+        for token in key_text.split():
+            if token == "=>":
+                got_arrow = True
+                continue
+            if got_arrow:
+                if not token.startswith('"'):
+                    description.append(token)
+                else:
+                    self.__symbol_key[symbol] = " ".join(description)
+                    description = []
+                    got_arrow = False
+            if not got_arrow:
+                symbol = token.strip('"')
+        if got_arrow:
+            self.__symbol_key[symbol] = " ".join(description)
 
     def name(self):
         """Return the sweep name for the integration run"""
@@ -1445,7 +1484,7 @@ if __name__ == "__main__":
                      "Inter-wavelength B and R-factor analysis",
                      "Project:",Magpie.EXCLUDE)
     xia2.defineBlock('integration_status_per_image',
-                     "--- Integrating","blank")
+                     "--- Integrating","abandoned")
 
     # Process the output
     xia2.process()
