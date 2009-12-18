@@ -10,7 +10,7 @@
 # Provide classes and functions for extracting information from
 # text files based on pattern matching
 #
-__cvs_id__ = "$Id: Magpie.py,v 1.2 2009/12/17 10:56:46 pjx Exp $"
+__cvs_id__ = "$Id: Magpie.py,v 1.3 2009/12/18 09:59:25 pjx Exp $"
 __version__ = "0.0.1"
 
 #######################################################################
@@ -43,13 +43,17 @@ class Magpie:
     Creates a configurable line-by-line text processor object which
     can process input from a file or from text."""
 
-    def __init__(self,txtfile=None):
+    def __init__(self,txtfile=None,verbose=False):
         """New Magpie object
 
         Optionally, 'txtfile' is the name and full path of the file
-        to be processed."""
+        to be processed.
+
+        """
         # Source text file
         self.__txtfile = txtfile
+        # Verbose output
+        self.__verbose = verbose
         # List of data items
         self.__data = []
         # List of blocks
@@ -74,7 +78,7 @@ class Magpie:
                     pattern=None,pattern_keys=None):
         """Define a block of lines to collect"""
         new_block = Block(name,starts_with,ends_with,pattern,pattern_keys,
-                          include_flag)
+                          include_flag,verbose=self.__verbose)
         self.__blocks.append(new_block)
         return new_block
 
@@ -164,11 +168,9 @@ class Magpie:
             for pattern in self.__regex.listPatterns():
                 test = self.__regex.test(pattern,bufftext)
                 if test:
-                    print "Matched pattern '"+str(pattern)+"'"
+                    self.__print("Matched pattern '"+str(pattern)+"'")
                     for key in test.keys():
-                        print ">>> "+str(key)+": "+str(test[key])
-                    ##print "Buffertext:\n" + str(bufftext)
-                    ##print "Text>>> " + str(text)
+                        self.__print(">>> "+str(key)+": "+str(test[key]))
                     text = test[pattern]
                     self.addData(pattern,test)
                     # Clear the buffer and break out the loop
@@ -183,7 +185,13 @@ class Magpie:
                     # store the block and then reset
                     self.addData(block.name(),block.getData())
                     block.reset()
-        print "Finished"
+        self.__print("Finished")
+
+    def __print(self,text):
+        """Internal: print to stdout
+
+        Controlled by the __verbose attribute."""
+        if self.__verbose: print text
 
 class Data:
     """Data items from the output"""
@@ -264,12 +272,14 @@ class Block:
     matching regular expression group."""
 
     def __init__(self,name,starts_with,ends_with,pattern=None,
-                 pattern_keys=None,include_flag=INCLUDE):
+                 pattern_keys=None,include_flag=INCLUDE,
+                 verbose=False):
         self.__name = name
         self.__text = ""
         self.__start = starts_with
         self.__end = ends_with
         self.__include = include_flag
+        self.__verbose = verbose
         if pattern:
             self.__pattern = Pattern(name,pattern,pattern_keys)
         else:
@@ -306,9 +316,9 @@ class Block:
             # Associate the name of the block with
             # the stored text
             data = { self.__name : self.__text }
-        print "Matched block '"+str(self.__name)+"'"
+        self.__print("Matched block '"+str(self.__name)+"'")
         for key in data.keys():
-            print ">>> "+str(key)+": "+str(data[key])
+            self.__print(">>> "+str(key)+": "+str(data[key]))
         return data
 
     def add(self,text):
@@ -354,6 +364,12 @@ class Block:
         self.__text = ""
         self.__active = False
         self.__complete = False
+
+    def __print(self,text):
+        """Internal: print to stdout
+
+        Controlled by the __verbose attribute."""
+        if self.__verbose: print text
 
 class PatternMatcher:
     """Store and invoke regexp pattern matches
