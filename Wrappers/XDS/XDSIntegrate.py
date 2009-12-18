@@ -341,6 +341,8 @@ def XDSIntegrate(DriverType = None):
                     '"o" => good        "%" => ok        "!" => bad rmsd')
                 Chatter.write(
                     '"O" => overloaded  "#" => many bad  "." => blank') 
+                Chatter.write(
+                    '"@" => abandoned') 
 
                 # next look for variations in the unit cell parameters
                 unit_cells = [stats[i]['unit_cell'] for i in images]
