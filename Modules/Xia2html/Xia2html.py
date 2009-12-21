@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.56 2009/12/18 14:56:38 gwin Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.57 2009/12/21 13:46:49 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -547,6 +547,7 @@ class Xia2run:
         self.__xds_pipeline  = False # XDS pipeline used?
         self.__multi_crystal = False # Run has multiple crystals?
         self.__pipeline_info = PipelineInfo() # Data about logfiles
+        self.__int_status_key = '' # Text with key for integration status
         try:
             # Populate the object with data
             self.__populate()
@@ -614,6 +615,10 @@ class Xia2run:
                         sweep.addIntegrationRun(integration_run)
                         print "SWEEPS> run assigned to sweep "+sweep.name()
                         break
+        # Store the raw text of the key to the symbols 
+        print "POPULATE> INTEGRATION STATUS KEY"
+        if xia2.count('integration_status_key'):
+            self.__int_status_key = str(xia2['integration_status_key'][0])
         # Crystals
         print "POPULATE> CRYSTALS"
         xtal_list = []
@@ -765,6 +770,10 @@ class Xia2run:
         Returns the full path of the xia2-journal.txt file, if one
         exists - otherwise returns None."""
         return self.__xia2_journal
+
+    def integration_status_key(self):
+        """Return the text for the key of integration status icons"""
+        return self.__int_status_key
 
     def get_dataset(self,dataset_name):
         """Fetch the Dataset object corresponding to the supplied name
@@ -1040,7 +1049,9 @@ class Sweep:
 
         Returns the last IntegrationRun object added to the
         sweep."""
-        return self.__integration_runs[-1]
+        if len(self.__integration_runs):
+            return self.__integration_runs[-1]
+        return None
 
 # IntegrationRun
 #
@@ -1054,10 +1065,11 @@ class IntegrationRun:
         'sweep_data' is a Magpie.Data object for the
         'integration_status_per_image' pattern."""
         self.__name = None
-        self.__start_batch = 0
-        self.__end_batch = 0
+        self.__start_batch = '0'
+        self.__end_batch = '0'
         self.__image_status = ''
         self.__symbol_key = {}
+        self.__symbol_list = []
         # Extract and store the sweep data
         self.__process(sweep_data)
 
@@ -1074,8 +1086,6 @@ class IntegrationRun:
                                     ['start','end'])
         status_processor.addPattern('status_per_image',
                                     "([oO%#!@]+)$")
-        status_processor.addPattern('key',
-                                    "\"o\".*\n.*\n.*abandoned")
         # Reprocess the supplied text
         status_processor.processText(str(sweep_data))
         # Extract and store the data
@@ -1090,44 +1100,6 @@ class IntegrationRun:
         for line in status_processor['status_per_image']:
             self.__image_status += str(line) + "\n"
         self.__image_status = self.__image_status.strip('\n')
-        # Key to symbols
-        try:
-            self.__process_symbol_key(str(status_processor['key'][0]))
-        except:
-            print "IntegrationRun: failed to process symbols!"
-            raise
-
-    def __process_symbol_key(self,key_text):
-        """Internal: process the key to symbols
-
-        The key to symbols from xia2.txt typically looks like:
-
-        'o' => good        '%' => ok        '!' => bad rmsd
-        'O' => overloaded  '#' => many bad  '.' => blank
-        '@' => abandoned
-
-        This method attempts to parse this text and produce a
-        dictionary with the symbols (i.e. o,%,! etc) as keys
-        and the corresponding descriptions (good, ok etc) as
-        the values."""
-        symbol = ''
-        description = []
-        got_arrow = False
-        for token in key_text.split():
-            if token == "=>":
-                got_arrow = True
-                continue
-            if got_arrow:
-                if not token.startswith('"'):
-                    description.append(token)
-                else:
-                    self.__symbol_key[symbol] = " ".join(description)
-                    description = []
-                    got_arrow = False
-            if not got_arrow:
-                symbol = token.strip('"')
-        if got_arrow:
-            self.__symbol_key[symbol] = " ".join(description)
 
     def name(self):
         """Return the sweep name for the integration run"""
@@ -1161,40 +1133,61 @@ class IntegrationRun:
 class IntegrationStatusReporter:
     """Class to handle reporting the integration status per image"""
 
-    def __init__(self,img_dir,key_text=None):
+    def __init__(self,img_dir,key_text):
         """Create a new IntegrationStatusRenderer
 
         'img_dir' points to the location of the image icons.
 
-        'key_text' is the text from the xia2.txt file which
-        links the text symbols to their meanings."""
+        'key_text' is the text extracted from xia2.txt which
+        contains the key matching symbols to their descriptions."""
         self.__img_dir = img_dir
-        self.__symbol_dict = self.__makeSymbolDictionary()
-        self.__symbol_lookup = self.__makeReverseSymbolLookup()
-        self.__symbol_list = self.__listSymbols()
+        self.__symbol_lookup = {}
+        self.__symbol_dict = {}
+        self.__symbol_list = []
+        self.__makeSymbolLookup(key_text)
+        self.__makeSymbolDictionary()
         return
 
-    def __listSymbols(self):
-        """Internal: make a list of the symbols"""
-        return ['o','%','O','!','#','.','@']
+    def __makeSymbolLookup(self,key_text):
+        """Internal: build a dictionary with the key to symbols
+
+        The key to symbols from xia2.txt typically looks like:
+
+        'o' => good        '%' => ok        '!' => bad rmsd
+        'O' => overloaded  '#' => many bad  '.' => blank
+        '@' => abandoned
+
+        This method attempts to parse this text and produce a
+        dictionary with the symbols (i.e. o,%,! etc) as keys
+        and the corresponding descriptions (good, ok etc) as
+        the values."""
+        symbol = ''
+        description = []
+        got_arrow = False
+        for token in key_text.split():
+            if token == "=>":
+                got_arrow = True
+                continue
+            if got_arrow:
+                if not token.startswith('"'):
+                    description.append(token)
+                else:
+                    # Store the symbol and description
+                    self.__symbol_list.append(symbol)
+                    self.__symbol_lookup[symbol] = " ".join(description)
+                    description = []
+                    got_arrow = False
+            if not got_arrow:
+                symbol = token.strip('"')
+        if got_arrow:
+            # Deal with final symbol, if any
+            self.__symbol_list.append(symbol)
+            self.__symbol_lookup[symbol] = " ".join(description)
 
     def __makeSymbolDictionary(self):
-        """Internal: build the symbol dictionary from the key text"""
-        # FIXME for now just hardcode the dictionary
-        return { 'good': 'o',
-                 'overloaded': 'O',
-                 'ok': '%',
-                 'bad_rmsd': '!',
-                 'many_bad': '#',
-                 'blank': '.',
-                 'abandoned': '@' }
-
-    def __makeReverseSymbolLookup(self):
-        """Internal: build the reverse lookup table for symbols"""
-        symbol_lookup = {}
-        for key in self.__symbol_dict.keys():
-            symbol_lookup[self.__symbol_dict[key]] = key
-        return symbol_lookup
+        """Internal: build the symbol dictionary from the lookup table"""
+        for key in self.__symbol_lookup.keys():
+            self.__symbol_dict[self.__symbol_lookup[key]] = key
 
     def getSymbolList(self):
         """Return the list of symbols"""
@@ -1238,7 +1231,8 @@ class IntegrationStatusReporter:
     def getIconName(self,status):
         """Return the name of the icon file associated with 'status'"""
         # Icon is a PNG image called "img_<status>.png"
-        return "img_"+status+".png"
+        name = "img_"+str(status).replace(' ','_').lower()+".png"
+        return name
 
     def getIconFile(self,status):
         """Return the name and path for the icon associated with 'status'"""
@@ -1259,29 +1253,6 @@ class IntegrationStatusReporter:
         """Return the description string associated with 'status'"""
         # Description is just a nice version of the status name
         return str(status).replace('_',' ').capitalize()
-
-    def makeSymbolKey(self,ncolumns=2):
-        """Generate the key of symbols to descriptions (alternative)
-
-        Optional argument 'ncolumns' specifies how many columns to
-        have in each row of the table."""
-        key_tbl = Canary.Table()
-        key_tbl.addClass('key')
-        key_tbl.addTitle('Explanation of the symbols used below')
-        key_tbl.setHeader(['Key to symbols'])
-        row_data = []
-        for status in self.__symbol_dict.keys():
-            img_icon = self.getIcon(status)
-            description = self.getDescription(status)
-            row_data.append(img_icon)
-            row_data.append(description)
-            if len(row_data) == ncolumns:
-                # Row is full, add to the table
-                key_tbl.addRow(row_data)
-                row_data = []
-        # Make sure that an incomplete final row is also added
-        if len(row_data): key_tbl.addRow(row_data)
-        return key_tbl.render()
 
 #######################################################################
 # Module Functions
@@ -1484,7 +1455,9 @@ if __name__ == "__main__":
                      "Inter-wavelength B and R-factor analysis",
                      "Project:",Magpie.EXCLUDE)
     xia2.defineBlock('integration_status_per_image',
-                     "--- Integrating","abandoned")
+                     "--- Integrating","ok",Magpie.EXCLUDE_END)
+    xia2.defineBlock('integration_status_key',
+                     "ok","abandoned")
 
     # Process the output
     xia2.process()
@@ -1810,8 +1783,8 @@ if __name__ == "__main__":
     #########################################################
     # Integration status per image
     #########################################################
-    int_status_reporter = IntegrationStatusReporter(xia2_html_dir)
-    int_status = xia2['integration_status_per_image']
+    int_status_reporter = IntegrationStatusReporter(xia2_html_dir,
+                                            xia2run.integration_status_key())
     # Write out the preamble and key of symbols
     int_status_section.addPara("The following sections show the status of each image from the final integration run performed on each sweep within each dataset.")
     # Add a summary table here - it will be populated as
@@ -1829,6 +1802,12 @@ if __name__ == "__main__":
         for sweep in dataset.sweeps():
             print ">>>> SWEEP: "+str(sweep.name())
             last_int_run = sweep.last_integration_run()
+            if not last_int_run:
+                # No last integration run found
+                int_status_dataset_section.addPara(warning_icon + \
+                    " Error aquiring last integration run for sweep "+ \
+                        sweep.name(),css_class="warning")
+                break
             # Output status info for this sweep in its own section
             start_batch = last_int_run.start_batch()
             end_batch = last_int_run.end_batch()
