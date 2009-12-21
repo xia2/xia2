@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.57 2009/12/21 13:46:49 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.58 2009/12/21 14:23:20 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1254,6 +1254,33 @@ class IntegrationStatusReporter:
         # Description is just a nice version of the status name
         return str(status).replace('_',' ').capitalize()
 
+    def htmliseStatusLine(self,integration_run):
+        """Turn an integration status line into HTML for reporting
+
+        'integration_run' is an IntegrationRun object. This method
+        takes the status line read from the xia2.txt file,
+        for example of the form:
+
+        ooooooooooooo%oooooooooooooo%ooooooooooooooooooooooooooooooo
+
+        and returns the appropriate block of HTML with img tags to
+        represent each image."""
+        images_html = ""
+        batch_num = int(integration_run.start_batch())
+        for images_text in integration_run.image_status().split('\n'):
+            # Turn the status symbols into icons
+            for symbol in list(images_text):
+                status = self.lookupStatus(symbol)
+                if status:
+                    description = self.getDescription(status)
+                    title = "Batch: %d Status: %s" % (batch_num,description)
+                    images_html += self.getIcon(status,title)
+                else:
+                    images_html += "<span title=\"Unrecognised\">?</span>"
+                batch_num += 1
+            images_html += "<br />\n"
+        return images_html
+
 #######################################################################
 # Module Functions
 #######################################################################
@@ -1814,20 +1841,8 @@ if __name__ == "__main__":
             sweep_section = int_status_dataset_section. \
                 addSubsection(sweep.name() + ": batches " + start_batch + \
                                   " to " + end_batch)
-            # Build the output HTML
-            images_html = ''
-            # Process each line of the status separately
-            batch_num = int(start_batch)
-            for images_text in last_int_run.image_status().split('\n'):
-                # Turn the status symbols into icons
-                for symbol in list(images_text):
-                    status = int_status_reporter.lookupStatus(symbol)
-                    description = int_status_reporter.getDescription(status)
-                    title = "Batch: %d Status: %s" % (batch_num,description)
-                    images_html += int_status_reporter.getIcon(status,title)
-                    batch_num += 1
-                images_html += "<br />\n"
-            # Add the icons to the document
+            # Get the HTML representation of the status line
+            images_html = int_status_reporter.htmliseStatusLine(last_int_run)
             sweep_section.addContent("<p>"+images_html+"</p>")
             # Add a row to the summary table
             row = []
