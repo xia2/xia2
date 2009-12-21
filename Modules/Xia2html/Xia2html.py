@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.58 2009/12/21 14:23:20 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.59 2009/12/21 15:06:18 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -537,6 +537,10 @@ class Xia2run:
         (either relative or absolute)."""
         self.__xia2     = xia2_magpie
         self.__xia2_dir  = xia2_dir
+        self.__version   = '' # xia2 version
+        self.__cmd_line  = '' # Command line
+        self.__run_time  = '' # Processing time
+        self.__termination_status = '' # Termination status
         self.__xia2_journal = None # Journal file
         self.__log_dir   = None # Logfile directory
         self.__datasets    = [] # List of datasets
@@ -548,6 +552,7 @@ class Xia2run:
         self.__multi_crystal = False # Run has multiple crystals?
         self.__pipeline_info = PipelineInfo() # Data about logfiles
         self.__int_status_key = '' # Text with key for integration status
+        self.__run_finished = False # Whether run finished or not
         try:
             # Populate the object with data
             self.__populate()
@@ -560,6 +565,31 @@ class Xia2run:
         """Internal: populate the data structure"""
         print "POPULATE> STARTED"
         xia2 = self.__xia2
+        # xia2 and run information
+        print "POPULATE> XIA2 INFO"
+        # Termination status
+        try:
+            self.__termination_status = xia2['xia2_status'][0]['status']
+            self.__run_finished = True
+        except IndexError:
+            # xia2 is still running or else terminated prematurely
+            self.__termination_status = "incomplete"
+            self.__run_finished = False
+        # xia2 version
+        try:
+            self.__version = xia2['xia2_version'][0]['version']
+        except IndexError:
+            self.__version = "unknown"
+        # Command line
+        try:
+            self.__cmd_line = xia2['command_line'][0]['cmd_line']
+        except IndexError:
+            self.__cmd_line = "unavailable"
+        # Run time
+        try:
+            self.__run_time = xia2['processing_time'][0]['time']
+        except IndexError:
+            self.__run_time = 'unavailable'
         # Datasets
         print "POPULATE> DATASETS"
         for dataset in xia2['dataset_summary']:
@@ -707,6 +737,22 @@ class Xia2run:
         files.sort(self.__pipeline_info.compareLogfilesByOrder)
         return files
 
+    def version(self):
+        """Return the xia2 version"""
+        return self.__version
+
+    def run_time(self):
+        """Return the processing time"""
+        return self.__run_time
+
+    def termination_status(self):
+        """Return the termination status"""
+        return self.__termination_status
+
+    def cmd_line(self):
+        """Return the command line"""
+        return self.__cmd_line
+
     def complete(self):
         """Check if the Xia2run object is complete
 
@@ -729,6 +775,10 @@ class Xia2run:
     def multi_crystal(self):
         """Check whether the run contains multiple crystals"""
         return self.__multi_crystal
+
+    def finished(self):
+        """Check whether the run completed or not"""
+        return self.__run_finished
 
     def log_dir(self):
         """Return location of the xia2 LogFiles directory
@@ -1528,26 +1578,20 @@ if __name__ == "__main__":
     xia2doc.addStyle(os.path.join(xia2htmldir,"xia2.css"),Canary.INLINE)
     warning_icon = "<img src='"+os.path.join(xia2_html_dir, "warning.png")+"'>"
 
-    # XIA2 version and other general info
-    try:
-        termination_status = xia2['xia2_status'][0].value('status')
-    except IndexError:
+    # Test whether xia2 run finished
+    if not xia2run.finished():
         # Assume that xia2 is still running
         # For now don't attempt to process incomplete file
-        print "*** Missing status, file incomplete (xia2 still running?) ***"
+        print "*** xia2.txt file is incomplete (xia2 still running?) ***"
         print "Refusing to process incomplete file - stopping"
         sys.exit(1)
-
-    version = xia2['xia2_version'][0].value('version')
-    command_line = xia2['command_line'][0].value('cmd_line')
-    run_time = xia2['processing_time'][0].value('time')
 
     # Build the skeleton of the document here
     # Create the major sections which will be populated later on
     #
     # Preamble
     xia2doc.addPara("XIA2 version %s completed with status '%s'" % \
-                    (version, termination_status)). \
+                    (xia2run.version(), xia2run.termination_status())). \
                     addPara("Read output from %s" % \
                                 Canary.MakeLink(xia2dir,
                                                 get_relative_path(xia2dir)))
@@ -1903,10 +1947,10 @@ if __name__ == "__main__":
     sect_xia2_stuff.addPara("Additional details about this run:")
     tbl_xia2_stuff = sect_xia2_stuff.addTable()
     tbl_xia2_stuff.addClass('xia2_info')
-    tbl_xia2_stuff.addRow(['Version',version])
-    tbl_xia2_stuff.addRow(['Run time',run_time])
-    tbl_xia2_stuff.addRow(['Command line',command_line])
-    tbl_xia2_stuff.addRow(['Termination status',termination_status])
+    tbl_xia2_stuff.addRow(['Version',xia2run.version()])
+    tbl_xia2_stuff.addRow(['Run time',xia2run.run_time()])
+    tbl_xia2_stuff.addRow(['Command line',xia2run.cmd_line()])
+    tbl_xia2_stuff.addRow(['Termination status',xia2run.termination_status()])
     xia2txt = os.path.join(xia2dir,"xia2.txt")
     tbl_xia2_stuff.addRow(['xia2.txt file',
                            Canary.MakeLink(xia2txt,get_relative_path(xia2txt))])
