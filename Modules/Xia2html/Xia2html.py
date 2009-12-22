@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.64 2009/12/22 14:10:44 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.65 2009/12/22 14:16:02 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1676,7 +1676,10 @@ if __name__ == "__main__":
         this_section.addPara(xtal.twinning_report())
     twinning_analysis.addPara(info_icon+
                               " Twinning score is the value of "+
-                              "&lt;E<sup>4</sup>&gt; reported by sfcheck",
+                              "&lt;E<sup>4</sup>&gt;/&lt;I<sup>2</sup>&gt; "+
+                              "reported by sfcheck "+
+                              Canary.MakeLink("http://www.ccp4.ac.uk/html/sfcheck.html#Twinning%20test",
+                                              "(see documentation)"),
                               css_class="info")
     #
     # ASU and solvent content
