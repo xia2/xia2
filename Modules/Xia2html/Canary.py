@@ -10,12 +10,13 @@
 # Provide classes and functions for generating interactive HTML
 # documents
 #
-__cvs_id__ = "$Id: Canary.py,v 1.5 2009/12/15 09:30:26 pjx Exp $"
+__cvs_id__ = "$Id: Canary.py,v 1.6 2009/12/22 09:22:16 pjx Exp $"
 __version__ = "0.0.3"
 
 #######################################################################
 # Import modules that this module depends on
 #######################################################################
+import os
 import smartie
 
 #######################################################################
@@ -633,24 +634,6 @@ class Table(DocElement):
         contents += "</table>\n"
         return contents
 
-class Link:
-    """Link to another section in the document"""
-
-    def __init__(self,text,section):
-        """Build a HTML link to another section of the document
-        
-        'text' is the text that will appear as the wording for the
-        link; 'section' is the section object that represents the
-        section that the link should go to."""
-        self.__text = text
-        self.__resource = section
-
-    def render(self):
-        """Generate HTML code for the link"""
-        # Get the name of the resource
-        url = "#"+str(self.__resource.id())
-        return "<a href='"+str(url)+"'>"+str(self.__text)+"</a>"
-
 class TOC:
     """Table of contents object"""
     def __init__(self,parent):
@@ -800,20 +783,71 @@ def MakeMagicTable(text,magic_separator='\t',ignore_empty=True):
         magic_table.addRow(data)
     # Finished
     return magic_table
-    
-def MakeLink(text,url=None):
-    """Build a <a href='...'>...</a> tag
 
-    If 'url' is not supplied then the text and the url are
-    assumed to be the same."""
-    if url is None: url = text
-    return "<a href='"+str(url)+"'>"+str(text)+"</a>"
+def MakeLink(resource,text=None,relative_link=False):
+    """Build a <a href='...'>...</a> tag to link to a resource
+
+    'resource' can be a URL or a string, or a Canary document
+    element (typically a Section) which supplies an 'id()'
+    method.
+
+    'text' specifies the text for the link. If no text is supplied
+    then the text defaults to the resource name or URL.
+
+    Optional parameter 'link_type' specifies whether links should
+    be left as they are or else where possible converted to
+    relative links (relative to the current working directory).
+
+    Basic usage examples:
+
+    MakeLink('http://www.yoyodyne.com/')
+    => <a href='http://www.yoyodyne.com/'>http://www.yoyodyne.com/</a>
+
+    MakeLink('http://www.yoyodyne.com/','Yoyodyne homepage')
+    => <a href='http://www.yoyodyne.com/'>Yoyodyne homepage</a>
+
+    yoyodyne = doc.addSection("About Yoyodyne")
+    MakeLink(yoyodyne,'Read more about Yoyodyne here')
+    => <a href='#sect_1-about-yoyodyne'>Read more about Yoyodyne here</a>"""
+
+    # Obtain the resource URL
+    try:
+        # Try to get the resource id
+        url = '#'+str(resource.id())
+    except AttributeError:
+        # Doesn't have an id method
+        url = str(resource)
+    # Deal with relative links
+    if relative_link:
+        # Determine if URL is in or below the current directory
+        # and convert if necessary
+        pwd = os.getcwd()
+        common_prefix = os.path.commonprefix([pwd,url])
+        if url == pwd:
+            # URL is the current working directory
+            url = '.'
+        elif common_prefix == pwd:
+            # URL is relative to cwd - strip off cwd and return
+            url = str(url).replace(common_prefix,'',1).lstrip(os.sep)
+    # Obtain the link text
+    link_text = None
+    if not text:
+        try:
+            link_text = str(resource)
+        except AttributError:
+            # No str method support
+            link_text = url
+    else:
+        link_text = str(text)
+    # Build and return the link
+    return "<a href='"+str(url)+"'>"+str(link_text)+"</a>"
 
 #######################################################################
 # Main program
 #######################################################################
 
 # Test script
+# Now somewhat out of date
 if __name__ == "__main__":
     """Test script"""
     d = Document("Test document")
