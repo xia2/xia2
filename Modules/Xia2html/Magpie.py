@@ -10,7 +10,7 @@
 # Provide classes and functions for extracting information from
 # text files based on pattern matching
 #
-__cvs_id__ = "$Id: Magpie.py,v 1.3 2009/12/18 09:59:25 pjx Exp $"
+__cvs_id__ = "$Id: Magpie.py,v 1.4 2009/12/22 13:32:19 pjx Exp $"
 __version__ = "0.0.1"
 
 #######################################################################
@@ -342,6 +342,10 @@ class Block:
                 if self.__include == EXCLUDE or \
                         self.__include == EXCLUDE_START:
                     # Don't store the start delimiter line
+                    return
+                else:
+                    # Add text
+                    self.__text += text
                     return
             else:
                 return
