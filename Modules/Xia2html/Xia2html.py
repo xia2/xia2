@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.65 2009/12/22 14:16:02 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.66 2009/12/22 15:16:02 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1452,51 +1452,107 @@ if __name__ == "__main__":
     # Each time a pattern is matched in the source document
     # a data item is created with the name attached to that
     # pattern
+    #
+    # xia2_version pattern
+    #
+    # An example of a matching line is:
+    #XIA2 0.3.1.0
     xia2.addPattern('xia2_version',
                     "XIA2 ([0-9.]+)$",
                     ['version'])
+    # project_name pattern
+    #
+    # An example of a matching line is:
+    #Project: AUTOMATIC
     xia2.addPattern('project_name',"Project: (.*)$",['name'])
+    #
+    # sequence pattern
+    #
+    # An example of a matching line is:
+    #Sequence: GIVEQCCASVCSLYQLENYCNFVNQHLCGSHLVEALYLVCGERGFFYTPKA
     xia2.addPattern('sequence',"Sequence: (.*)$",['sequence'])
+    #
+    # wavelength pattern
+    #
+    # An example of a matching set of lines is:
+    #Wavelength name: NATIVE
+    #Wavelength 0.97900
     xia2.addPattern('wavelength',
                     "Wavelength name: ([^\n]*)\nWavelength (.*)$",
                     ['name','lambda'])
-    xia2.addPattern('computed_average_unit_cell',
-                    "Computed average unit cell \(will use in all files\)\n([^\n]*)",['cell_parameters'])
+    # xia2_used pattern
+    #
+    # An example of a matching line is:
+    #XIA2 used...  ccp4 mosflm pointless scala xia2
     xia2.addPattern('xia2_used',
                     "XIA2 used... ([^\n]*)",
                     ['software'])
+    # processing_time pattern
+    #
+    # An example of a matching line is:
+    #Processing took 00h 14m 24s
     xia2.addPattern('processing_time',
                     "Processing took ([0-9]+h [0-9]+m [0-9]+s)",
                     ['time'])
+    # xia2_status
+    #
+    # An example of a matching line is:
+    #Status: normal termination
     xia2.addPattern('xia2_status',
                     "Status: ([^\n]*)",
                     ['status'])
-    # twinning pattern matches:
-    # Overall twinning score: 1.86
-    # Ambiguous score (1.6 < score < 1.9)
+    # twinning pattern
+    #
+    # An example of a matching set of lines:
+    #Overall twinning score: 1.86
+    #Ambiguous score (1.6 < score < 1.9)
     xia2.addPattern('twinning',
                     "Overall twinning score: ([^\n]+)\n([^\n]+)",
                     ['score','report'])
+    # asu_and_solvent pattern
+    #
+    # An example of a matching set of lines:
+    #Likely number of molecules in ASU: 1
+    #Giving solvent fraction:        0.64
     xia2.addPattern('asu_and_solvent',
                     "Likely number of molecules in ASU: ([0-9]+)\nGiving solvent fraction:        ([0-9.]+)",
                     ['molecules_in_asu','solvent_fraction'])
+    # unit_cell pattern
+    #
+    # An example of a matching set of lines:
+    #Unit cell:
+    #78.013  78.013  78.013
+    #90.000  90.000  90.000
     xia2.addPattern('unit_cell',
                     "Unit cell:\n([0-9.]+) +([0-9.]+) +([0-9.]+)\n([0-9.]+) +([0-9.]+) +([0-9.]+)",
                     ['a','b','c','alpha','beta','gamma'])
-    # command_line pattern matches:
-    # Command line: /home/pjb/xia2/Applications/xia2.py -chef -xinfo demo.xinfo
+    # command_line pattern
+    #
+    # An example of a matching line:
+    #Command line: /home/pjb/xia2/Applications/xia2.py -chef -xinfo demo.xinfo
     xia2.addPattern('command_line',
                     "Command line: (.*)$",
                     ['cmd_line'])
+    # scaled_refln_file patterns
+    #
     # Pair of patterns with the same name but match slightly
     # different instances of the same information (reflection files)
+    #
+    # Example of first instance:
+    #mtz format:
+    #Scaled reflections: /path/to/xia2/DataFiles/blah_blah_free.mtz
+    #
+    # Example of second instance:
+    #Scaled reflections (NATIVE): /path/to/xia2/DataFiles/blah_blah_scaled.sca
     xia2.addPattern('scaled_refln_file',
                     '(mtz|sca|sca_unmerged) format:\nScaled reflections ?\(?([^\):]*)\)?: (.+)$',
                     ['format','dataset','filename'])
     xia2.addPattern('scaled_refln_file',
                     "Scaled reflections ?\(?([^\):]*)\)?: (.+)$",
                     ['dataset','filename','format'])
-    # sweep_to_dataset pattern matches:
+    # sweep_to_dataset pattern
+    #
+    # An example of a matching line:
     # SWEEP NATIVE [WAVELENGTH NATIVE]
     xia2.addPattern('sweep_to_dataset',
                     "SWEEP ([^ ]+) \[WAVELENGTH ([^\]]+)\]",
@@ -1517,7 +1573,10 @@ if __name__ == "__main__":
                      "Total unique",
                      pattern="For ([^\n]*)\n(.+)",
                      pattern_keys=['dataset','table'])
-    # assumed_spacegroup block:
+    # assumed_spacegroup block
+    #
+    # An example of this is:
+    #
     #Assuming spacegroup: I 2 3
     #Other likely alternatives are:
     #I 21 3
@@ -1525,13 +1584,39 @@ if __name__ == "__main__":
     xia2.defineBlock('assumed_spacegroup',
                      "Assuming spacegroup",
                      "Unit cell:",Magpie.EXCLUDE_END)
+    # citations block
+    #
+    # An example might look like this:
+    #
+    #Here are the appropriate citations (BIBTeX in xia-citations.bib.)
+    #(1994) Acta Crystallogr. D 50, 760--763
+    #<snipped>
+    #Winter, G. (2010) Journal of Applied Crystallography 43
+    #Status: normal termination
     xia2.defineBlock('citations',
                      "Here are the appropriate citations",
                      "Status",Magpie.EXCLUDE)
+    # integration_status_per_image block
+    #
+    # An example of this is shown below, although there can be
+    # some variation in the preamble:
+    #
+    #-------------------- Integrating SWEEP1 --------------------
+    #Processed batches 1 to 90
+    #Weighted RMSD: 0.89 (0.09)
+    #Integration status per image (60/record):
+    #oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+    #oooooooooooooooooooooooooooooo
     xia2.defineBlock('integration_status_per_image',
                      "--- Integrating","ok",Magpie.EXCLUDE_END)
-    xia2.defineBlock('integration_status_key',
-                     "ok","abandoned")
+    # integration_status_key
+    #
+    # An example of this looks like:
+    #
+    #"o" => good        "%" => ok        "!" => bad rmsd
+    #"O" => overloaded  "#" => many bad  "." => blank
+    #"@" => abandoned
+    xia2.defineBlock('integration_status_key',"ok","abandoned")
     # interwavelength_analysis block
     #
     # There are two block definitions here with the same name
