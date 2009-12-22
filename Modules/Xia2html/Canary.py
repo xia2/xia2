@@ -10,7 +10,7 @@
 # Provide classes and functions for generating interactive HTML
 # documents
 #
-__cvs_id__ = "$Id: Canary.py,v 1.6 2009/12/22 09:22:16 pjx Exp $"
+__cvs_id__ = "$Id: Canary.py,v 1.7 2009/12/22 11:21:34 pjx Exp $"
 __version__ = "0.0.3"
 
 #######################################################################
@@ -110,18 +110,22 @@ class Section(DocElement):
         'level' is the heading level corresponding to
         h1, h2 etc.
         'parent' is the parent Document object to
-        which the Section belongs."""
+        which the Section belongs.
+
+        See the renderContent() method for information on
+        the HTML that is generated (including CSS classes
+        etc)."""
         # Specific class properties
         self.__title = None
-        if title != None:
-            self.__title = str(title)
+        if title != None: self.__title = str(title)
         self.__subsections = []
         self.__content = []
         self.__level = level
         # Call the base class initialiser
         DocElement.__init__(self,parent_doc=parent)
-        # Set the class
+        # Set the classes
         self.addCSSClass('section_'+str(self.__level))
+        if not self.__title: self.addCSSClass('anonymous')
         return
 
     def id(self):
@@ -210,7 +214,9 @@ class Section(DocElement):
         plus an id number acquired from the parent document.
         
         The div class will be 'section_<x>', where <x> is the
-        level of the section."""
+        level of the section. If no title was supplied then
+        the section will also be assigned a class of
+        'anonymous'."""
         # Deal with the title
         if self.__title:
             open_tag = "<h"+str(self.__level)+">"
