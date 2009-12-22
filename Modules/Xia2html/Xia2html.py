@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.63 2009/12/22 13:07:44 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.64 2009/12/22 14:10:44 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1528,40 +1528,36 @@ if __name__ == "__main__":
     xia2.defineBlock('citations',
                      "Here are the appropriate citations",
                      "Status",Magpie.EXCLUDE)
-    xia2.defineBlock('interwavelength_analysis',
-                     "Inter-wavelength B and R-factor analysis",
-                     "Project:",Magpie.EXCLUDE)
     xia2.defineBlock('integration_status_per_image',
                      "--- Integrating","ok",Magpie.EXCLUDE_END)
     xia2.defineBlock('integration_status_key',
                      "ok","abandoned")
+    # interwavelength_analysis block
+    #
+    # There are two block definitions here with the same name
+    # Example of "old style" table:
+    #
+    #Inter-wavelength B and R-factor analysis:
+    #WAVE1   0.0 0.00 (ok)
+    #WAVE2  -0.1 0.08 (ok)
+    #WAVE3  -0.4 0.14 (ok)
+    #
+    xia2.defineBlock('interwavelength_analysis',
+                     "Inter-wavelength B and R-factor analysis",
+                     "",Magpie.EXCLUDE)
+    # Example of "new style" table:
+    #
+    #------------------ Local Scaling DEFAULT -------------------
+    #WAVE1   0.0 0.00 (ok)
+    #WAVE2  -0.3 0.08 (ok)
+    #WAVE3  -2.5 0.15 (ok)
+    #------------------------------------------------------------
+    xia2.defineBlock('interwavelength_analysis',
+                     "-- Local Scaling ",
+                     "--",Magpie.EXCLUDE)
 
     # Process the output
     xia2.process()
-
-    #########################################################
-    # Intermediate/additional processing
-    #########################################################
-
-    # Post-process the inter-wavelength b/r factor table
-    #
-    # We need to do this because we may have grabbed too much
-    # data if we got the terminating pattern wrong
-    print "****** Additional processing for interwavelength analysis ******"
-    if xia2.count('interwavelength_analysis') > 0:
-        for interwavelength in xia2['interwavelength_analysis']:
-            # New copy of table
-            tbl = []
-            for line in str(interwavelength).split('\n'):
-                # Terminate the table at the first blank line
-                if line == "":
-                    # Reset the stored table
-                    interwavelength.setValue('interwavelength_analysis',
-                                             "\n".join(tbl))
-                    break
-                else:
-                    # Append line to new copy of table
-                    tbl.append(line)
 
     # Instantiate a Xia2run object
     xia2run = Xia2run(xia2,xia2dir)
