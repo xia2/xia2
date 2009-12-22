@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.59 2009/12/21 15:06:18 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.60 2009/12/22 09:23:31 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1594,7 +1594,7 @@ if __name__ == "__main__":
                     (xia2run.version(), xia2run.termination_status())). \
                     addPara("Read output from %s" % \
                                 Canary.MakeLink(xia2dir,
-                                                get_relative_path(xia2dir)))
+                                                relative_link=True))
     #
     # Initial summary table
     table_one = xia2doc.addTable() # Initial summary table
@@ -1660,8 +1660,8 @@ if __name__ == "__main__":
     # Link to logfiles section for pointless log file(s)
     spacegroup.addPara("The spacegroup determination is made using "+
                        "pointless ("+
-                       Canary.Link("see the appropriate log file(s)",
-                                   output_logfiles).render()+")")
+                       Canary.MakeLink(output_logfiles,
+                                       "see the appropriate log file(s)")+")")
     #
     # Twinning
     twinning_analysis = xtal_parameters.addSubsection("Twinning analysis")
@@ -1746,24 +1746,22 @@ if __name__ == "__main__":
                                    css_classes='refln_header')
             # Build the row data
             reflndata = [refln_file.dataset(),
-                         Canary.MakeLink(filen,get_relative_path(
-                refln_file.filename()))]
+                         Canary.MakeLink(refln_file.filename(),
+                                         filen,relative_link=True)]
             refln_files.addRow(reflndata)
 
     # External log files
     if not len(xia2run.logfiles()):
         output_logfiles.addPara(warning_icon+" No program log files found in"+ \
                                 Canary.MakeLink(xia2run.log_dir(),
-                                                get_relative_path( \
-                                                xia2run.log_dir())),
+                                                relative_link=True),
                                 css_class="warning")
     else:
         # Display table of log files
         output_logfiles.addPara("The following log files are located in "+ \
-                                Canary.MakeLink(xia2run.log_dir(),
-                                                get_relative_path( \
-                                                xia2run.log_dir()))+ \
-                                " and are grouped by processing stage:")
+                                    Canary.MakeLink(xia2run.log_dir(),
+                                                    relative_link=True)+ \
+                                    " and are grouped by processing stage:")
         logs = output_logfiles.addTable()
         logs.addClass('log_files')
         this_stage = None
@@ -1780,8 +1778,8 @@ if __name__ == "__main__":
                 print "No program stage for program "+str(program)
                 output_logfiles.addPara(warning_icon+
                                         " xia2html: failed to classify log "+
-                                        Canary.MakeLink(log.basename(),
-                                                        log.relativeName())+
+                                        Canary.MakeLink(
+                        log.relativeName(),log.basename())+
                                         "<br />Please report this problem",
                                         css_class='warning')
                 continue
@@ -1795,17 +1793,17 @@ if __name__ == "__main__":
                     logs.addRow([description],css_classes='proc_description')
                 this_program = program
             logdata = [log.basename(),
-                       Canary.MakeLink("original",log.relativeName())]
+                       Canary.MakeLink(log.relativeName(),"original")]
             # Link to baubles file
             html_log = log.baublize(target_dir=xia2_html_dir)
             if html_log:
-                logdata.append(Canary.MakeLink("html",html_log))
+                logdata.append(Canary.MakeLink(html_log,"html"))
             else:
                 logdata.append(None)
             # Warnings from smartie analysis
             if len(log.warnings()):
-                logdata.append(Canary.MakeLink(warning_icon+" See warnings",
-                                               html_log+"#warnings"))
+                logdata.append(Canary.MakeLink(html_log+"#warnings",
+                                               warning_icon+" See warnings"))
             else:
                 logdata.append('')
             # Add data to the table
@@ -1814,7 +1812,8 @@ if __name__ == "__main__":
         if xia2run.journal_file():
             output_logfiles.addPara("More detailed information on what xia2 did can be found in the &quot;journal&quot; file:")
             output_logfiles.addList().addItem(Canary.MakeLink(
-                "xia2-journal.txt",get_relative_path(xia2run.journal_file())))
+                    xia2run.journal_file(),"xia2-journal.txt",
+                    relative_link=True))
         # Copy the JLoggraph applet to the xia2_html directory
         # It lives in the "extras" subdir of the Xia2html source
         # directory
@@ -1894,12 +1893,13 @@ if __name__ == "__main__":
             if this_dataset != dataset:
                 # Only link to each dataset once from the table
                 this_dataset = dataset
-                row.append(Canary.Link(dataset.datasetName(),
-                                       int_status_dataset_section).render())
+                row.append(Canary.MakeLink(
+                        int_status_dataset_section,
+                        dataset.datasetName()))
             else:
                 row.append('')
             # Link to sweep followed by the stats
-            row.append(Canary.Link(sweep.name(),sweep_section).render())
+            row.append(Canary.MakeLink(sweep_section,sweep.name()))
             for symbol in int_status_reporter.getSymbolList():
                 row.append(str(last_int_run.countSymbol(symbol)))
                 total += last_int_run.countSymbol(symbol)
@@ -1939,7 +1939,7 @@ if __name__ == "__main__":
             # Get citation link
             url = citer.getCitationLink(line)
             if url:
-                citation_list.addItem(Canary.MakeLink(line,url))
+                citation_list.addItem(Canary.MakeLink(url,line))
             else:
                 citation_list.addItem(line)
     # Some other xia2-specific stuff
@@ -1953,20 +1953,21 @@ if __name__ == "__main__":
     tbl_xia2_stuff.addRow(['Termination status',xia2run.termination_status()])
     xia2txt = os.path.join(xia2dir,"xia2.txt")
     tbl_xia2_stuff.addRow(['xia2.txt file',
-                           Canary.MakeLink(xia2txt,get_relative_path(xia2txt))])
+                           Canary.MakeLink(xia2txt,relative_link=True)])
     
     # Put in some forwarding linking from the index
     index.addPara("Contents of the rest of this document:")
     forward_links = index.addList()
-    forward_links.addItem(Canary.Link("Reflection data files output from xia2",output_datafiles).render())
-    forward_links.addItem(Canary.Link("Full statistics for each wavelength", \
-                                      summary).render())
-    forward_links.addItem(Canary.Link("Log files from individual stages", \
-                                      output_logfiles).render())
-    forward_links.addItem(Canary.Link("Integration status for images by wavelength and sweep", \
-                                      int_status_section).render())
-    forward_links.addItem(Canary.Link("Lists of programs and citations",
-                                      credits).render())
+    forward_links.addItem(Canary.MakeLink(output_datafiles,
+                                     "Reflection data files output from xia2"))
+    forward_links.addItem(Canary.MakeLink(summary,
+                                     "Full statistics for each wavelength"))
+    forward_links.addItem(Canary.MakeLink(output_logfiles,
+                                     "Log files from individual stages"))
+    forward_links.addItem(Canary.MakeLink(int_status_section,
+                       "Integration status for images by wavelength and sweep"))
+    forward_links.addItem(Canary.MakeLink(credits,
+                                     "Lists of programs and citations"))
 
     # Footer section
     footer = "This file generated for you from xia2 output by Xia2html %s on %s<br />Powered by Magpie %s and Canary %s<br />&copy; Diamond 2009" \
@@ -2055,8 +2056,9 @@ if __name__ == "__main__":
                 anom_multiplicity = '-'
             column_data.extend([anom_completeness,anom_multiplicity])
         # Link forward to full stats for this dataset
-        column_data.append(Canary.Link("See all statistics",
-                                       statistic_sections[dataset.name()]))
+        column_data.append(Canary.MakeLink(
+                statistic_sections[dataset.name()],
+                "See all statistics"))
         # Append the column to the table
         if len(xia2run.crystals()) > 1:
             # Add the crystal name
@@ -2105,8 +2107,8 @@ if __name__ == "__main__":
     table_one.addRow(xtal_data['spacegroup'])
     table_one.addRow(['&nbsp;']) # Empty row for padding
     table_one.addRow(xtal_data['twinning'])
-    table_one.addRow(['',Canary.Link("All crystallographic parameters..",
-                                     xtal_parameters)])
+    table_one.addRow(['',Canary.MakeLink(xtal_parameters,
+                                         "All crystallographic parameters..")])
 
     # Spit out the HTML
     xia2doc.renderFile('xia2.html')
