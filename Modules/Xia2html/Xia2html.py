@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.66 2009/12/22 15:16:02 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.67 2009/12/22 16:20:45 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -601,9 +601,9 @@ class Xia2run:
         for wavelength in xia2['wavelength']:
             for dataset in self.datasets():
                 if dataset.datasetName() == wavelength['name']:
-                    dataset['wavelength'] = wavelength['lambda']
+                    dataset.setWavelength(wavelength['lambda'])
                     print "WAVELENGTHS> "+dataset.crystalName()+"/" +\
-                        dataset.datasetName()+": "+dataset['wavelength']
+                        dataset.datasetName()+": "+dataset.wavelength()
                     break
         # Anomalous data?
         # Look for the "anomalous_completeness" data item in
@@ -611,7 +611,7 @@ class Xia2run:
         print "POPULATE> ANOMALOUS DATA"
         for dataset in self.__datasets:
             try:
-                x = dataset['anomalous_completeness']
+                x = dataset['Anomalous completeness']
                 self.__has_anomalous = True
                 break
             except KeyError:
@@ -958,49 +958,34 @@ class Crystal:
 # Dataset
 #
 # Store information about a dataset
-class Dataset:
+class Dataset(Magpie.Tabulator):
     """Xia2 dataset information
 
     Given the tabulated data from Scala that is reproduced for
     each dataset in the xia2.txt file, extract and store the
     information so that it can be accessed later on."""
 
-    def __init__(self,name,tabular_data,auto_separator='\t'):
+    def __init__(self,name,summary_table):
         self.__name = str(name)
-        self.__summary_data = tabular_data
+        self.__wavelength = None
+        self.__summary_table = summary_table
         self.__short_name = self.__name.split('/')[-1]
-        # Auto separator is the delimiter separating tabular items
-        self.__auto_separator = auto_separator
-        # List of keys (stored data items)
-        self.__keys = []
-        self.__data = {}
         # List of Sweep objects
         self.__sweeps = []
-        # Extract data and populate the data structure
-        self.__extract_tabular_data(tabular_data)
-
-    def __extract_tabular_data(self,tabular_data):
-        """Internal: build data structure from tabular data"""
-        for row in tabular_data.strip('\n').split('\n'):
-            row_data = row.split(self.__auto_separator)
-            key = row_data[0].lower().strip(' ').replace(' ','_')
-            self.__keys.append(key)
-            self.__data[key] = row_data
-
-    def __getitem__(self,name):
-        """Implement Dataset[name] for get operations
-
-        Returns the 'row' of data associated with the key 'name'
-        i.e. a list of items."""
-        return self.__data[name]
-
-    def __setitem__(self,name,value):
-        """Implement Dataset[name] = value for set operations"""
-        self.__data[name] = value
+        # Instantiate the base class and populate the data structure
+        Magpie.Tabulator.__init__(self,self.__summary_table)
 
     def name(self):
         """Return the full name"""
         return self.__name
+
+    def setWavelength(self,wavelength):
+        """Set the wavelength for the dataset"""
+        self.__wavelength = wavelength
+
+    def wavelength(self):
+        """Return the wavelength (lambda)"""
+        return self.__wavelength
 
     def datasetName(self):
         """Return the dataset name
@@ -1038,13 +1023,9 @@ class Dataset:
             project_name = None
         return project_name
 
-    def keys(self):
-        """Return the list of data item names (keys)"""
-        return self.__keys
-
     def summary_data(self):
         """Return the tabular summary data"""
-        return self.__summary_data
+        return self.table()
 
     def addSweep(self,sweep):
         """Add a sweep to the dataset
@@ -2129,17 +2110,17 @@ if __name__ == "__main__":
             xtal_data['twinning'].extend([None,None])
         # Construct the column of data and add to the table
         # This is for the overall/average values
-        column_data = [dataset['wavelength'],
-                       dataset['high_resolution_limit'][1],
-                       dataset['low_resolution_limit'][1],
-                       dataset['completeness'][1],
-                       dataset['multiplicity'][1],
-                       dataset['i/sigma'][1],
-                       dataset['rmerge'][1]]
+        column_data = [dataset.wavelength(),
+                       dataset['High resolution limit'][1],
+                       dataset['Low resolution limit'][1],
+                       dataset['Completeness'][1],
+                       dataset['Multiplicity'][1],
+                       dataset['I/sigma'][1],
+                       dataset['Rmerge'][1]]
         if xia2run.has_anomalous():
             try:
-                anom_completeness = dataset['anomalous_completeness'][1]
-                anom_multiplicity = dataset['anomalous_multiplicity'][1]
+                anom_completeness = dataset['Anomalous completeness'][1]
+                anom_multiplicity = dataset['Anomalous multiplicity'][1]
             except KeyError:
                 anom_completeness = '-'
                 anom_multiplicity = '-'
@@ -2159,26 +2140,26 @@ if __name__ == "__main__":
                             header=column_title)
         # Add a second column with the high and low values
         column_data = [None,
-                       "("+dataset['high_resolution_limit'][2]+\
-                       " - "+dataset['high_resolution_limit'][3]+")",
-                       "("+dataset['low_resolution_limit'][2]+\
-                       " - "+dataset['low_resolution_limit'][3]+")",
-                       "("+dataset['completeness'][2]+\
-                       " - "+dataset['completeness'][3]+")",
-                       "("+dataset['multiplicity'][2]+\
-                       " - "+dataset['multiplicity'][3]+")",
-                       "("+dataset['i/sigma'][2]+\
-                       " - "+dataset['i/sigma'][3]+")",
-                       "("+dataset['rmerge'][2]+\
-                       " - "+dataset['rmerge'][3]+")"]
+                       "("+dataset['High resolution limit'][2]+\
+                       " - "+dataset['High resolution limit'][3]+")",
+                       "("+dataset['Low resolution limit'][2]+\
+                       " - "+dataset['Low resolution limit'][3]+")",
+                       "("+dataset['Completeness'][2]+\
+                       " - "+dataset['Completeness'][3]+")",
+                       "("+dataset['Multiplicity'][2]+\
+                       " - "+dataset['Multiplicity'][3]+")",
+                       "("+dataset['I/sigma'][2]+\
+                       " - "+dataset['I/sigma'][3]+")",
+                       "("+dataset['Rmerge'][2]+\
+                       " - "+dataset['Rmerge'][3]+")"]
         if xia2run.has_anomalous():
             try:
-                anom_completeness = "("+dataset['anomalous_completeness'][2]+\
+                anom_completeness = "("+dataset['Anomalous completeness'][2]+\
                                     " - "+\
-                                    dataset['anomalous_completeness'][3]+")"
-                anom_multiplicity = "("+dataset['anomalous_multiplicity'][2]+\
+                                    dataset['Anomalous completeness'][3]+")"
+                anom_multiplicity = "("+dataset['Anomalous multiplicity'][2]+\
                                     " - "+\
-                                    dataset['anomalous_multiplicity'][3]+")"
+                                    dataset['Anomalous multiplicity'][3]+")"
             except KeyError:
                 anom_completeness = '-'
                 anom_multiplicity = '-'
