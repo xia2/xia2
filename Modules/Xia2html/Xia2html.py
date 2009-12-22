@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.62 2009/12/22 13:04:26 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.63 2009/12/22 13:07:44 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1698,7 +1698,7 @@ if __name__ == "__main__":
             asu_tbl.addRow(['Likely number of molecules in ASU',nmols])
             asu_tbl.addRow(['Resulting solvent fraction',solvent])
         else:
-            this_section.addPara(warning_icon," No information on ASU contents")
+            this_section.addPara(warning_icon+" No information on ASU contents")
 
     # Inter-wavelength analysis table
     try:
