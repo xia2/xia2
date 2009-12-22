@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.60 2009/12/22 09:23:31 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.61 2009/12/22 12:51:46 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1577,6 +1577,7 @@ if __name__ == "__main__":
     xia2doc = Canary.Document("xia2 Processing Report")
     xia2doc.addStyle(os.path.join(xia2htmldir,"xia2.css"),Canary.INLINE)
     warning_icon = "<img src='"+os.path.join(xia2_html_dir, "warning.png")+"'>"
+    info_icon = "<img src='"+os.path.join(xia2_html_dir,"info.png")+"'>"
 
     # Test whether xia2 run finished
     if not xia2run.finished():
@@ -1639,7 +1640,9 @@ if __name__ == "__main__":
                                        unit_cell['beta']+'&nbsp;',
                                        unit_cell['gamma']+'&nbsp;'])
     unit_cell_params.addPara(
-        "The unit cell parameters are the average for all measurements")
+        info_icon+ \
+            " The unit cell parameters are the average for all measurements",
+        css_class="info")
     #
     # Spacegroup
     spacegroup = xtal_parameters.addSubsection("Spacegroup")
@@ -1658,10 +1661,11 @@ if __name__ == "__main__":
         else:
             this_section.addPara("No likely alternatives to this spacegroup")
     # Link to logfiles section for pointless log file(s)
-    spacegroup.addPara("The spacegroup determination is made using "+
+    spacegroup.addPara(info_icon+" The spacegroup determination is made using "+
                        "pointless ("+
                        Canary.MakeLink(output_logfiles,
-                                       "see the appropriate log file(s)")+")")
+                                       "see the appropriate log file(s)")+")",
+                       css_class="info")
     #
     # Twinning
     twinning_analysis = xtal_parameters.addSubsection("Twinning analysis")
@@ -1674,8 +1678,10 @@ if __name__ == "__main__":
         this_section.addPara("Overall twinning score: "+
                              xtal.twinning_score())
         this_section.addPara(xtal.twinning_report())
-    twinning_analysis.addPara("Twinning score is the value of "+
-                              "&lt;E<sup>4</sup>&gt; reported by sfcheck")
+    twinning_analysis.addPara(info_icon+
+                              " Twinning score is the value of "+
+                              "&lt;E<sup>4</sup>&gt; reported by sfcheck",
+                              css_class="info")
     #
     # ASU and solvent content
     asu_contents = xtal_parameters.addSubsection("Asymmetric unit contents")
@@ -1810,7 +1816,7 @@ if __name__ == "__main__":
             logs.addRow(logdata)
         # Add a link to the journal file xia2-journal.txt, if found
         if xia2run.journal_file():
-            output_logfiles.addPara("More detailed information on what xia2 did can be found in the &quot;journal&quot; file:")
+            output_logfiles.addPara(info_icon+" More detailed information on what xia2 did can be found in the &quot;journal&quot; file:",css_class="info")
             output_logfiles.addList().addItem(Canary.MakeLink(
                     xia2run.journal_file(),"xia2-journal.txt",
                     relative_link=True))
@@ -1914,15 +1920,14 @@ if __name__ == "__main__":
         header.append(description+"<br />"+symbol_image)
     header.append("Total")
     int_table.setHeader(header)
-    # Finally: copy the image icons to the xia2_html directory
-    print "Copying image status icons to %s" % xia2_html
-    for icon in int_status_reporter.listIconNames():
+    # Finally: copy the icons to the xia2_html directory
+    print "Copying icons to %s" % xia2_html
+    icons = int_status_reporter.listIconNames()
+    icons.append("warning.png")
+    icons.append("info.png")
+    for icon in icons:
         shutil.copy(os.path.join(xia2icondir,icon),
                     os.path.join(xia2_html,icon))
-    # Also copy the warning icon
-    shutil.copy(os.path.join(xia2icondir,"warning.png"),
-                os.path.join(xia2_html,"warning.png"))
-        
     # Credits section
     #
     # Programs used by XIA2
