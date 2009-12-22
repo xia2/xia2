@@ -1,6 +1,6 @@
 /* xia2.css
    Stylesheet for xia2.html
-   CVS_id $Id: xia2.css,v 1.10 2009/12/22 12:45:12 pjx Exp $
+   CVS_id $Id: xia2.css,v 1.11 2009/12/22 12:52:32 pjx Exp $
    */
 body { font-family: Arial, sans-serif;
        font-size: 17px;
@@ -38,6 +38,9 @@ div.section_2 h2 { color: white;
 
 div.anonymous { border: none; }
 
+/* Default styling for images */
+img { vertical-align: bottom; }
+
 /* Warnings */
 .warning { background-color: red;
            color: white;
@@ -51,9 +54,7 @@ p.warning { width: 90%;
 
 .info { font-style: italic;
         font-size: 90%; }
-
-/* Default styling for images */
-img { vertical-align: bottom; }
+.info img { vertical-align: middle; }
 
 /* Default styling for all tables */
 table,td,th { border-style: none;
