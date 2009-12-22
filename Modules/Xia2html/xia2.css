@@ -1,21 +1,24 @@
 /* xia2.css
    Stylesheet for xia2.html
-   CVS_id $Id: xia2.css,v 1.9 2009/12/22 12:37:29 pjx Exp $
+   CVS_id $Id: xia2.css,v 1.10 2009/12/22 12:45:12 pjx Exp $
    */
 body { font-family: Arial, sans-serif;
        font-size: 17px;
+       color: black;
        background-color: white; }
 h1 { font-family: Georgia, serif;
      background-color: gray;
      color: white;
-     padding: 0 10 0 10; }
+     padding: 5 10 5 10; }
 h2 { font-family: Georgia, serif;
      background-color: lightgray;
-     padding: 0 10 0 10;  }
+     padding: 1 10 1 10;  }
 h3 { font-family: Georgia, serif;
-     background-color: lightblue; }
+     background-color: lightblue;
+     padding: 1 15 1 15; }
 h4 { background-color: #ffd799;
-     display: inline; }
+     display: inline;
+     padding: 1 10 1 10; }
 
 p,table { margin-left: 10px;
           margin-right: 10px; }
