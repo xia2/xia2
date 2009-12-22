@@ -10,7 +10,7 @@
 # Provide classes and functions for extracting information from
 # text files based on pattern matching
 #
-__cvs_id__ = "$Id: Magpie.py,v 1.5 2009/12/22 14:08:52 pjx Exp $"
+__cvs_id__ = "$Id: Magpie.py,v 1.6 2009/12/22 16:14:10 pjx Exp $"
 __version__ = "0.0.1"
 
 #######################################################################
@@ -520,6 +520,68 @@ class Pattern:
                     i += 1
             ##return match.group(0)
         return data
+
+# Tabulator
+#
+# Break up a raw text "table"
+class Tabulator:
+    """Extract data from a raw text 'table'
+
+    The Tabulator will break up a supplied block of text treating
+    each line as a table 'row', and split each row into individual
+    data items according to a specified delimiter.
+
+    The first data item in each "row" becomes a key to retrieve that
+    row (which is stored as a Python list containing all the data
+    items in the row).
+
+    For example to access the 'High' row of this 'table':
+
+    High   5.0 9.0
+    Medium 3.0 4.5
+    Low    1.0 0.0
+
+    use Tabulator['High']. To access the last data item in the 'Medium'
+    row, use Tabulator['Medium'][1]."""
+
+    def __init__(self,tabular_data,delimiter='\t'):
+        """Create and populate a new Tabulator object
+
+        'tabular_data' is the raw text of the 'table';"""
+        self.__tabular_data = tabular_data
+        self.__delimiter = delimiter
+        # List of keys (stored data items)
+        self.__keys = []
+        self.__data = {}
+        # Extract data and populate the data structure
+        self.__extract_tabular_data(tabular_data)
+
+    def __extract_tabular_data(self,tabular_data):
+        """Internal: build data structure from tabular data"""
+        for row in tabular_data.strip('\n').split('\n'):
+            row_data = row.split(self.__delimiter)
+            key = row_data[0].strip()
+            self.__keys.append(key)
+            self.__data[key] = row_data
+
+    def __getitem__(self,key):
+        """Implement x = Tabulator[key] for get operations
+
+        Returns the 'row' of data associated with the key 'name'
+        i.e. a list of items."""
+        return self.__data[key]
+
+    def has_key(self,key):
+        """Check if a row called 'key' exists"""
+        return self.__data.has_key(key)
+
+    def keys(self):
+        """Return the list of data item names (keys)"""
+        return self.__keys
+
+    def table(self):
+        """Return the original data that was supplied"""
+        return self.__tabular_data
 
 #######################################################################
 # Module Functions
