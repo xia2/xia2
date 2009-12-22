@@ -10,7 +10,7 @@
 # Provide classes and functions for extracting information from
 # text files based on pattern matching
 #
-__cvs_id__ = "$Id: Magpie.py,v 1.4 2009/12/22 13:32:19 pjx Exp $"
+__cvs_id__ = "$Id: Magpie.py,v 1.5 2009/12/22 14:08:52 pjx Exp $"
 __version__ = "0.0.1"
 
 #######################################################################
@@ -258,6 +258,10 @@ class Block:
     are text strings which mark the beginning and end of the
     block of output that is of interest.
 
+    To match blocks ending (or starting) with a blank line
+    (i.e. a line containing whitespace only), set the 'ends_with'
+    (or 'starts_with') parameter to an empty string i.e. ''.
+
     include_flag determines whether the delimiters should
     also be added to the block. Values are:
     INCLUDE       : include both start and end delimiters (the default)
@@ -337,7 +341,7 @@ class Block:
             return
         if not self.__active:
             # Check for start delimiter
-            if str(text).find(self.__start) > -1:
+            if self.__contains(text,self.__start):
                 self.__active = True
                 if self.__include == EXCLUDE or \
                         self.__include == EXCLUDE_START:
@@ -350,7 +354,7 @@ class Block:
             else:
                 return
         # Check for end delimiter
-        if str(text).find(self.__end) > -1:
+        if self.__contains(text,self.__end):
             self.__complete = True
             if self.__include == EXCLUDE or \
                     self.__include == EXCLUDE_END:
@@ -368,6 +372,21 @@ class Block:
         self.__text = ""
         self.__active = False
         self.__complete = False
+
+    def __contains(self,text,pattern):
+        """Internal: test if text contains a pattern
+
+        Used by the 'add' method to determine if supplied
+        'text' contains the text in 'pattern'. Returns True
+        if a match is found and False otherwise.
+
+        If 'pattern' evaluates as False (e.g. an empty string)
+        then 'text' will match if it contains whitespace only."""
+        if not pattern:
+            return str(text).isspace()
+        elif str(text).find(pattern) > -1:
+            return True
+        return False
 
     def __print(self,text):
         """Internal: print to stdout
