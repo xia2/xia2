@@ -80,7 +80,7 @@ two types of file.
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.79 2009/12/31 20:14:29 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.80 2009/12/31 20:22:35 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -2275,6 +2275,13 @@ if __name__ == "__main__":
                 # Add a row to the summary table
                 row = []
                 total = 0
+                if xia2run.multi_crystal():
+                    if this_xtal != xtal:
+                        # Only link to each crystal once from the table
+                        this_xtal = xtal
+                        row.append(Canary.MakeLink(this_section,xtal.name()))
+                    else:
+                        row.append('')
                 if this_dataset != dataset:
                     # Only link to each dataset once from the table
                     this_dataset = dataset
@@ -2291,7 +2298,10 @@ if __name__ == "__main__":
                 row.append(total)
                 int_table.addRow(row)
     # Finish off the summary table by adding the header
-    header = ['Dataset','Sweep']
+    header = []
+    if xia2run.multi_crystal():
+        header.append('Crystal')
+    header.extend(['Dataset','Sweep'])
     for symbol in int_status_reporter.getSymbolList():
         symbol_status = int_status_reporter.lookupStatus(symbol)
         description = int_status_reporter.getDescription(symbol_status)
