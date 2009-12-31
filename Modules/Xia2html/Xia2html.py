@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.73 2009/12/31 15:23:55 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.74 2009/12/31 15:50:25 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -392,6 +392,11 @@ class LogFile:
     def processing_stage(self):
         """Return the processing stage that this log file belongs to"""
         return self.__pipeline.stage(self.__filen)
+
+    def crystal(self):
+        """Return crystal name associated with this log file"""
+        print "*** NOT IMPLEMENTED ***"
+        return ''
 
     def dataset(self):
         """Return dataset name associated with this log file"""
