@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.69 2009/12/31 11:39:23 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.70 2009/12/31 11:57:47 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -671,16 +671,26 @@ class Xia2run:
             crystal.setTwinningData(xia2['twinning'][i])
             crystal.setSequence(xia2['sequence'][i]['sequence'])
             try:
-                crystal.setInterwavelengthAnalysis(
-                    xia2['interwavelength_analysis'][i])
-            except IndexError:
-                # Assume that this wasn't found
-                pass
-            try:
                 crystal.setASUData(xia2['asu_and_solvent'][i])
             except IndexError:
                 # Assume that this wasn't found
                 pass
+        # Assign interwavelength analysis data
+        # Do this separately as only crystals with more than one
+        # wavelength will have this information
+        print "POPULATE> INTERWAVELENGTH ANALYSIS"
+        i = 0
+        for crystal in self.__crystals:
+            # Determine number of wavelengths/datasets
+            nwavelengths = 0
+            for dataset in self.__datasets:
+                if dataset.crystalName() == crystal.name():
+                    nwavelengths += 1
+            # Assign interwavelength analysis data
+            if nwavelengths > 1:
+                crystal.setInterwavelengthAnalysis(
+                    xia2['interwavelength_analysis'][i])
+                i = i+1
         # Assign multi-crystal flag
         if nxtals > 1: self.__multi_crystal = True
         # Logfiles
