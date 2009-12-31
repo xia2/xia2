@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.70 2009/12/31 11:57:47 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.71 2009/12/31 14:37:49 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -543,6 +543,7 @@ class Xia2run:
         self.__termination_status = '' # Termination status
         self.__xia2_journal = None # Journal file
         self.__log_dir   = None # Logfile directory
+        self.__project_name= '' # Project name
         self.__datasets    = [] # List of datasets
         self.__crystals    = [] # List of crystals
         self.__logfiles    = [] # List of log files
@@ -590,6 +591,9 @@ class Xia2run:
             self.__run_time = xia2['processing_time'][0]['time']
         except IndexError:
             self.__run_time = 'unavailable'
+        # Project name
+        print "POPULATE> PROJECT NAME"
+        self.__project_name = xia2['project_name'][0]['name']
         # Datasets
         print "POPULATE> DATASETS"
         for dataset in xia2['dataset_summary']:
@@ -802,6 +806,10 @@ class Xia2run:
 
         This is the absolute path for the xia2 logfile directory."""
         return self.__log_dir
+
+    def project_name(self):
+        """Return the project name extracted from the xia2.txt file"""
+        return self.__project_name
 
     def datasets(self):
         """Return Datasets for the run
@@ -1692,7 +1700,7 @@ if __name__ == "__main__":
     #########################################################
 
     # Build up the output HTML using Canary
-    xia2doc = Canary.Document("xia2 Processing Report")
+    xia2doc = Canary.Document("xia2 Processing Report: "+xia2run.project_name())
     xia2doc.addStyle(os.path.join(xia2htmldir,"xia2.css"),Canary.INLINE)
     warning_icon = "<img src='"+os.path.join(xia2_html_dir, "warning.png")+"'>"
     info_icon = "<img src='"+os.path.join(xia2_html_dir,"info.png")+"'>"
