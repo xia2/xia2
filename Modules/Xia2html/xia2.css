@@ -1,6 +1,6 @@
 /* xia2.css
    Stylesheet for xia2.html
-   CVS_id $Id: xia2.css,v 1.12 2009/12/31 10:59:15 pjx Exp $
+   CVS_id $Id: xia2.css,v 1.13 2009/12/31 11:34:06 pjx Exp $
    */
 body { font-family: Arial, sans-serif;
        font-size: 17px;
@@ -57,6 +57,7 @@ p.warning { width: 90%;
 .info img { vertical-align: middle; }
 
 /* Default styling for all tables */
+table { margin: 10px; }
 table,td,th { border-style: none;
               border-spacing: 0;
               padding: 2px;
