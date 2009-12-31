@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.71 2009/12/31 14:37:49 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.72 2009/12/31 15:01:11 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -473,18 +473,18 @@ class ReflectionFile:
     Store the information pertaining to a reflection data file
     referenced in the xia2 output."""
 
-    def __init__(self,filename,format,dataset):
+    def __init__(self,filename,format,dataset_name):
         """Create a ReflectionFile object
 
         'filename' is the name of the reflection data file,
-        'format' is the format (e.g. mtz) and 'dataset' is the
-        name of the dataset that it relates to."""
+        'format' is the format (e.g. mtz) and 'dataset_name'
+        identifies the dataset that it relates to."""
         self.__filename = filename
         self.__format = format
-        if not dataset:
-            self.__dataset = "All datasets"
+        if not dataset_name:
+            self.__dataset_name = "All datasets"
         else:
-            self.__dataset = dataset
+            self.__dataset_name = dataset_name
         # Internal data
         self.__format_useful_for = { "mtz": "CCP4 and Phenix",
                                      "sca": "AutoSHARP etc",
@@ -503,8 +503,15 @@ class ReflectionFile:
         return self.__format
 
     def dataset(self):
-        """Return the dataset of the reflection file"""
-        return self.__dataset
+        """Return the dataset name that the file belongs to"""
+        return self.__dataset_name
+
+    def crystal(self):
+        """Return the crystal that the file belongs to
+
+        This is extracted from the file name, which is assumed to be
+        of the form <project>_<crystal>_..."""
+        return self.basename().split('_')[1]
 
     def useful_for(self):
         """Return description of the what the file can be used for
@@ -1900,12 +1907,19 @@ if __name__ == "__main__":
                 except KeyError:
                     pass
                 # Add a "header" row for the files below
-                refln_files.addRow(['Dataset','File name'],
-                                   css_classes='refln_header')
+                if xia2run.multi_crystal():
+                    header = ['Crystal','Dataset','File name']
+                else:
+                    header = ['Dataset','File name']
+                refln_files.addRow(header,css_classes='refln_header')
             # Build the row data
-            reflndata = [refln_file.dataset(),
-                         Canary.MakeLink(refln_file.filename(),
-                                         filen,relative_link=True)]
+            if xia2run.multi_crystal():
+                reflndata = [refln_file.crystal()]
+            else:
+                reflndata = []
+            reflndata.extend([refln_file.dataset(),
+                              Canary.MakeLink(refln_file.filename(),
+                                              filen,relative_link=True)])
             refln_files.addRow(reflndata)
 
     # External log files
