@@ -1,6 +1,6 @@
 /* xia2.css
    Stylesheet for xia2.html
-   CVS_id $Id: xia2.css,v 1.11 2009/12/22 12:52:32 pjx Exp $
+   CVS_id $Id: xia2.css,v 1.12 2009/12/31 10:59:15 pjx Exp $
    */
 body { font-family: Arial, sans-serif;
        font-size: 17px;
@@ -90,6 +90,9 @@ table.xia2_info tr > td:first-child { border-style: solid;
 	background-color: gray;
 	font-weight: bold;
 	color: white; }
+table.xia2_info tr.xtal_name td { background-color: #ffd799;
+                                  color: black;
+                                  font-size: 100%; }
 
 /* Styling the "table_one" summary table */
 table.table_one { border-style: none;
@@ -154,6 +157,9 @@ table.log_files tr.proc_description td { background-color: lightblue;
                                          border-style: none;
                                          border-top: 2px solid white;
                                          border-bottom: 2px solid white; }
+
+/* Sequence information */
+.sequence { font-family: monospace; }
 
 /* Footer */
 p.footer { background-color: #fffddc;
