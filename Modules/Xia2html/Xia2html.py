@@ -80,7 +80,7 @@ two types of file.
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.77 2009/12/31 19:48:53 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.78 2009/12/31 19:57:11 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -2048,9 +2048,15 @@ if __name__ == "__main__":
                                                  'B-factor',
                                                  'R-factor',
                                                  'Status'])
-                # Make a section to display it
-                interwavelength_analysis.addSubsection("Crystal "+xtal.name()).\
-                    addContent(interwavelength_table)
+                # Do we need a specific section to display it?
+                if xia2run.multi_crystal():
+                    # Make a section to display it
+                    interwavelength_analysis.addSubsection(
+                        "Crystal "+xtal.name()).\
+                        addContent(interwavelength_table)
+                else:
+                    # No specific subsection needed
+                    interwavelength_analysis.addContent(interwavelength_table)
 
     #########################################################
     # External files
