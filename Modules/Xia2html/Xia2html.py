@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.72 2009/12/31 15:01:11 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.73 2009/12/31 15:23:55 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -735,6 +735,8 @@ class Xia2run:
                 raise
         # Reflection files
         print "POPULATE> REFLECTION FILES"
+        refln_formats = []
+        refln_files = {}
         refln_format = None
         for refln_file in xia2['scaled_refln_file']:
             filen = refln_file.value('filename')
@@ -742,13 +744,23 @@ class Xia2run:
             if refln_file.value('format'):
                 # Format is already defined so collect it
                 refln_format = refln_file.value('format')
+                # Store locally by format so that we can build a
+                # single list sorted by format later
+                if not refln_formats.count(refln_format):
+                    refln_formats.append(refln_format)
+                    refln_files[refln_format] = []
             print "REFLN_FILE> format : "+refln_format
             refln_dataset = refln_file.value('dataset')
             print "REFLN_FILE> dataset: "+str(refln_dataset)
-            # Store the data for this file
-            self.__refln_files.append(ReflectionFile(filen,
-                                                     refln_format,
-                                                     refln_dataset))
+            # Store the data by format for now
+            refln_files[refln_format].append(ReflectionFile(filen,
+                                                            refln_format,
+                                                            refln_dataset))
+        # Put all the data together into a single list
+        # This is implicitly sorted into format/crystal/dataset order
+        for format in refln_formats:
+            for refln_file in refln_files[format]:
+                self.__refln_files.append(refln_file)
         # Journal file xia2-journal.txt
         print "POPULATE> JOURNAL_FILE"
         self.__xia2_journal = os.path.join(self.__xia2_dir,
