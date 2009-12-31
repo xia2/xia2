@@ -80,7 +80,7 @@ two types of file.
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.78 2009/12/31 19:57:11 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.79 2009/12/31 20:14:29 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -2235,50 +2235,61 @@ if __name__ == "__main__":
     # we got along
     int_status_section.addPara("This table summarises the image status for each dataset and sweep.")
     int_table = int_status_section.addTable()
-    # Loop over datasets
-    this_dataset = None
-    for dataset in xia2run.datasets():
-        # Make a section for each dataset
-        int_status_dataset_section = int_status_section. \
-            addSubsection("Dataset %s" % dataset.datasetName())
-        print ">>>> DATASET: "+dataset.datasetName()
-        # Deal with each sweep associated with the dataset
-        for sweep in dataset.sweeps():
-            print ">>>> SWEEP: "+str(sweep.name())
-            last_int_run = sweep.last_integration_run()
-            if not last_int_run:
-                # No last integration run found
-                int_status_dataset_section.addPara(warning_icon + \
-                    " Error aquiring last integration run for sweep "+ \
+    # Loop over crystals
+    this_xtal = None
+    for xtal in xia2run.crystals():
+        print ">>>> CRYSTAL: "+xtal.name()
+        # Make a section for each crystal (if multi-crystal run)
+        if xia2run.multi_crystal():
+            this_section = int_status_section.addSubsection("Crystal %s" %
+                                                            xtal.name())
+        else:
+            this_section = int_status_section
+        # Loop over datasets
+        this_dataset = None
+        for dataset in xtal.datasets():
+            print ">>>> DATASET: "+dataset.datasetName()
+            # Make a section for each dataset
+            int_status_dataset_section = this_section. \
+                addSubsection("Dataset %s" % dataset.datasetName())
+            # Deal with each sweep associated with the dataset
+            for sweep in dataset.sweeps():
+                print ">>>> SWEEP: "+str(sweep.name())
+                last_int_run = sweep.last_integration_run()
+                if not last_int_run:
+                    # No last integration run found
+                    int_status_dataset_section.addPara(warning_icon + \
+                        " Error aquiring last integration run for sweep "+ \
                         sweep.name(),css_class="warning")
-                break
-            # Output status info for this sweep in its own section
-            start_batch = last_int_run.start_batch()
-            end_batch = last_int_run.end_batch()
-            sweep_section = int_status_dataset_section. \
-                addSubsection(sweep.name() + ": batches " + start_batch + \
+                    break
+                # Output status info for this sweep in its own section
+                start_batch = last_int_run.start_batch()
+                end_batch = last_int_run.end_batch()
+                sweep_section = int_status_dataset_section. \
+                    addSubsection(sweep.name() + ": batches " + start_batch + \
                                   " to " + end_batch)
-            # Get the HTML representation of the status line
-            images_html = int_status_reporter.htmliseStatusLine(last_int_run)
-            sweep_section.addContent("<p>"+images_html+"</p>")
-            # Add a row to the summary table
-            row = []
-            total = 0
-            if this_dataset != dataset:
-                # Only link to each dataset once from the table
-                this_dataset = dataset
-                row.append(Canary.MakeLink(
-                        int_status_dataset_section,
+                # Get the HTML representation of the status line
+                images_html = int_status_reporter. \
+                    htmliseStatusLine(last_int_run)
+                sweep_section.addContent("<p>"+images_html+"</p>")
+                # Add a row to the summary table
+                row = []
+                total = 0
+                if this_dataset != dataset:
+                    # Only link to each dataset once from the table
+                    this_dataset = dataset
+                    row.append(Canary.MakeLink(
+                            int_status_dataset_section,
                         dataset.datasetName()))
-            else:
-                row.append('')
-            # Link to sweep followed by the stats
-            row.append(Canary.MakeLink(sweep_section,sweep.name()))
-            for symbol in int_status_reporter.getSymbolList():
-                row.append(str(last_int_run.countSymbol(symbol)))
-                total += last_int_run.countSymbol(symbol)
-            row.append(total)
-            int_table.addRow(row)
+                else:
+                    row.append('')
+                # Link to sweep followed by the stats
+                row.append(Canary.MakeLink(sweep_section,sweep.name()))
+                for symbol in int_status_reporter.getSymbolList():
+                    row.append(str(last_int_run.countSymbol(symbol)))
+                    total += last_int_run.countSymbol(symbol)
+                row.append(total)
+                int_table.addRow(row)
     # Finish off the summary table by adding the header
     header = ['Dataset','Sweep']
     for symbol in int_status_reporter.getSymbolList():
