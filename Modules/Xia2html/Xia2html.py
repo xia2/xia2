@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.68 2009/12/31 10:58:38 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.69 2009/12/31 11:39:23 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -671,6 +671,12 @@ class Xia2run:
             crystal.setTwinningData(xia2['twinning'][i])
             crystal.setSequence(xia2['sequence'][i]['sequence'])
             try:
+                crystal.setInterwavelengthAnalysis(
+                    xia2['interwavelength_analysis'][i])
+            except IndexError:
+                # Assume that this wasn't found
+                pass
+            try:
                 crystal.setASUData(xia2['asu_and_solvent'][i])
             except IndexError:
                 # Assume that this wasn't found
@@ -869,6 +875,7 @@ class Crystal:
         self.__mols_in_asu = None
         self.__solvent_frac = None
         self.__sequence = None
+        self.__interwavelength_analysis = None
 
     def name(self):
         """Get the crystal name"""
@@ -914,6 +921,10 @@ class Crystal:
         """Return the sequence"""
         return self.__sequence
 
+    def interwavelength_analysis(self):
+        """Return the interwavelength analysis data"""
+        return self.__interwavelength_analysis
+
     def setUnitCellData(self,unit_cell):
         """Set the unit cell data
 
@@ -953,7 +964,7 @@ class Crystal:
         self.__twinning_report = twinning_data['report']
 
     def setASUData(self,asu_data):
-        """Set the assymmetric unit data
+        """Set the asymmetric unit data
 
         'asu_data' is the Magpie.Data object with the ASU
         data (i.e. number of molecules in the ASU and solvent
@@ -967,6 +978,13 @@ class Crystal:
         'sequence' is the sequence string from the 'sequence'
         Magpie.Data object."""
         self.__sequence = sequence
+
+    def setInterwavelengthAnalysis(self,interwavelength_analysis):
+        """Store the interwavelength analysis table
+
+        'interwavelength_analysis' is an 'interwavelength_analysis'
+        Magpie.Data object."""
+        self.__interwavelength_analysis = str(interwavelength_analysis)
 
 # Dataset
 #
@@ -1807,22 +1825,31 @@ if __name__ == "__main__":
                 warning_message += " due to missing sequence information"
             this_section.addPara(warning_message)
 
-    # Inter-wavelength analysis table
-    try:
-        interwavelength_analysis = \
-            str(xia2['interwavelength_analysis'][0])
-        interwavelength_table = Canary.MakeMagicTable(
-            interwavelength_analysis,' ')
-        interwavelength_table.setHeader(['Wavelength',
-                                         'B-factor',
-                                         'R-factor',
-                                         'Status'])
-        xtal_parameters.addSubsection(
-            "Inter-wavelength B and R-factor analysis"). \
-            addContent(interwavelength_table)
-    except IndexError:
-        # Table not found, ignore
-        pass
+    # Inter-wavelength analysis tables
+    #
+    # Determine how many tables there are
+    got_interwavelength = False
+    for xtal in xia2run.crystals():
+        if xtal.interwavelength_analysis():
+            got_interwavelength = True
+            break
+    if got_interwavelength:
+        # Make a section to print the table(s)
+        interwavelength_analysis = xtal_parameters.addSubsection(
+            "Inter-wavelength B and R-factor analysis")
+        # Examine each crystal
+        for xtal in xia2run.crystals():
+            if xtal.interwavelength_analysis():
+                # This crystal has the data
+                interwavelength_table = Canary.MakeMagicTable(
+                    xtal.interwavelength_analysis(),' ')
+                interwavelength_table.setHeader(['Wavelength',
+                                                 'B-factor',
+                                                 'R-factor',
+                                                 'Status'])
+                # Make a section to display it
+                interwavelength_analysis.addSubsection("Crystal "+xtal.name()).\
+                    addContent(interwavelength_table)
 
     #########################################################
     # External files
