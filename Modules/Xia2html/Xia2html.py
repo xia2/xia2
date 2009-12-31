@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.67 2009/12/22 16:20:45 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.68 2009/12/31 10:58:38 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -669,6 +669,7 @@ class Xia2run:
             crystal.setUnitCellData(xia2['unit_cell'][i])
             crystal.setSpacegroupData(xia2['assumed_spacegroup'][i])
             crystal.setTwinningData(xia2['twinning'][i])
+            crystal.setSequence(xia2['sequence'][i]['sequence'])
             try:
                 crystal.setASUData(xia2['asu_and_solvent'][i])
             except IndexError:
@@ -867,6 +868,7 @@ class Crystal:
         self.__twinning_report = ''
         self.__mols_in_asu = None
         self.__solvent_frac = None
+        self.__sequence = None
 
     def name(self):
         """Get the crystal name"""
@@ -907,6 +909,10 @@ class Crystal:
     def solvent_fraction(self):
         """Return the solvent fraction"""
         return self.__solvent_frac
+
+    def sequence(self):
+        """Return the sequence"""
+        return self.__sequence
 
     def setUnitCellData(self,unit_cell):
         """Set the unit cell data
@@ -954,6 +960,13 @@ class Crystal:
         fraction) extracted from xia2.txt."""
         self.__mols_in_asu = asu_data['molecules_in_asu']
         self.__solvent_frac = asu_data['solvent_fraction']
+
+    def setSequence(self,sequence):
+        """Store the sequence data
+
+        'sequence' is the sequence string from the 'sequence'
+        Magpie.Data object."""
+        self.__sequence = sequence
 
 # Dataset
 #
@@ -1363,6 +1376,21 @@ def get_relative_path(filename):
         # File is not relative to cwd - return as is
         return filename
 
+def splitlines(text,maxline):
+    """Split text into lines no longer than maxline
+
+    Returns a list of strings, each no longer than 'maxline' characters
+    long, from the supplied 'text'."""
+    i = 0
+    lines = []
+    len_text = len(text)
+    while i < len_text:
+        j = i+maxline
+        if j > len_text: j = len_text
+        lines.append(text[i:j])
+        i = j
+    return lines
+
 #######################################################################
 # Main program
 #######################################################################
@@ -1451,7 +1479,7 @@ if __name__ == "__main__":
     #
     # An example of a matching line is:
     #Sequence: GIVEQCCASVCSLYQLENYCNFVNQHLCGSHLVEALYLVCGERGFFYTPKA
-    xia2.addPattern('sequence',"Sequence: (.*)$",['sequence'])
+    xia2.addPattern('sequence',"Sequence: ?(.*)$",['sequence'])
     #
     # wavelength pattern
     #
@@ -1752,7 +1780,7 @@ if __name__ == "__main__":
     asu_contents = xtal_parameters.addSubsection("Asymmetric unit contents")
     for xtal in xia2run.crystals():
         if xia2run.multi_crystal():
-            this_section = asu_contents.addSubsection("Crystal "+xtal.name())
+            this_section = asu_contents.addSubsection()
         else:
             this_section = asu_contents
         nmols = xtal.molecules_in_asu()
@@ -1760,10 +1788,24 @@ if __name__ == "__main__":
         if not nmols is None and not solvent is None:
             # Create a table
             asu_tbl = this_section.addTable()
+            if xia2run.multi_crystal():
+                asu_tbl.addRow(["<h4>Crystal "+xtal.name()+"</h4>"],
+                               css_classes='xtal_name')
+            seq_html = ''
+            for line in splitlines(xtal.sequence(),60):
+                seq_html += line+"<br />"
+            seq_html = "<span class='sequence'>"+\
+                seq_html.strip("<br />")+\
+                "</span>"
+            asu_tbl.addRow(['Sequence',seq_html])
             asu_tbl.addRow(['Likely number of molecules in ASU',nmols])
             asu_tbl.addRow(['Resulting solvent fraction',solvent])
+            asu_tbl.addClass('xia2_info')
         else:
-            this_section.addPara(warning_icon+" No information on ASU contents")
+            warning_message = warning_icon+" No information on ASU contents"
+            if not len(xtal.sequence()):
+                warning_message += " due to missing sequence information"
+            this_section.addPara(warning_message)
 
     # Inter-wavelength analysis table
     try:
