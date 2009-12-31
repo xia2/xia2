@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.75 2009/12/31 16:12:58 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.76 2009/12/31 18:58:00 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -72,22 +72,26 @@ class PipelineInfo:
             "xds",
             "Integration",
             "Integration of this sweep",
+            "<PROJECT>_<CRYSTAL>_<DATASET>_<SWEEP>_INTEGRATE.log",
             False)
         self.addLogInfo(
             "CORRECT",
             "xds",
             "Integration",
-            "Postrefinement and correction for this sweep")
+            "Postrefinement and correction for this sweep",
+            "<PROJECT>_<CRYSTAL>_<DATASET>_<SWEEP>_CORRECT.log")
         self.addLogInfo(
             "_mosflm_integrate",
             "mosflm",
             "Integration",
-            "Full logs for the integration of each wavelength")
+            "Full logs for the integration of each wavelength",
+            "<SWEEP>_<PROJECT>_<CRYSTAL>_<DATASET>_mosflm_integrate.log")
         self.addLogInfo(
             "_postrefinement",
             "mosflm",
             "Integration",
             "Results of postrefinement",
+            "<SWEEP>_<PROJECT>_<CRYSTAL>_<DATASET>_postrefinement.log",
             baublize=True)
         # Spacegroup determination
         self.addLogInfo(
@@ -95,18 +99,21 @@ class PipelineInfo:
             "pointless",
             "Spacegroup Determination",
             "Decision making for the spacegroup assignment",
+            "<PROJECT>_<CRYSTAL>_pointless.log",
             baublize=True)
         # Scaling and merging
         self.addLogInfo(
             "XSCALE",
             "xscale",
             "Scaling and merging",
-            "Scaling together all the data for this crystal")
+            "Scaling together all the data for this crystal",
+            "<PROJECT>_<CRYSTAL>_XSCALE.log")
         self.addLogInfo(
             "_scala",
             "scala",
             "Scaling and merging",
             "Scaling and correction of all measurements on the crystal",
+            "<PROJECT>_<CRYSTAL>_scala.log",
             baublize=True)
         # Analysis
         self.addLogInfo(
@@ -114,12 +121,21 @@ class PipelineInfo:
             "truncate",
             "Analysis",
             "Intensity analysis for each wavelength of data",
+            "<PROJECT>_<CRYSTAL>_<DATASET>_truncate.log",
             baublize=True)
         self.addLogInfo(
-            "chef_",
+            "chef_1",
             "chef",
             "Analysis",
             "Cumulative radiation damage analysis",
+            "<CRYSTAL>_chef_1.log",
+            baublize=True)
+        self.addLogInfo(
+            "chef_2",
+            "chef",
+            "Analysis",
+            "Cumulative radiation damage analysis",
+            "<CRYSTAL>_chef_2.log",
             baublize=True)
 
     def setXDSPipeline(self):
@@ -133,7 +149,8 @@ class PipelineInfo:
             new_description=
             "Merging results for all of the data for the crystal")
 
-    def addLogInfo(self,logname,program,stage,description,baublize=False):
+    def addLogInfo(self,logname,program,stage,description,template,
+                   baublize=False):
         """Add information about a log file
 
         'logname' is part of the log file name which is used to
@@ -147,6 +164,16 @@ class PipelineInfo:
         'description' is generic text that describes what the function
         of the log file is.
 
+        'template' is a string that provides a template for building
+        the file name. The following placeholders are used to show
+        where project, crystal, dataset and sweep names should be
+        substituted:
+        <PROJECT> - project name
+        <CRYSTAL> - crystal name
+        <DATASET> - dataset name
+        <SWEEP>   - sweep name
+        For example: <PROJECT>_<CRYSTAL>_pointless.log
+
         'baublize' is a logical value indicating whether the log
         can be baublized."""
         self.__pipeline.append({
@@ -154,6 +181,7 @@ class PipelineInfo:
                 'program': program,
                 'stage': stage,
                 'description': description,
+                'template': template,
                 'baublize': baublize})
 
     def updateLogInfo(self,logname,
@@ -210,6 +238,13 @@ class PipelineInfo:
         if data:
             return data['description']
         return None
+
+    def template(self,logfile):
+        """Get the template associated with a logfile"""
+        data = self.lookupLogInfo(logfile)
+        if data:
+            return data['template']
+        return ""
 
     def baublize(self,logfile):
         """Get the value of the baublize flag for a logfile"""
@@ -350,6 +385,18 @@ class LogFile:
         self.__smartie_log = None
         # PipelineInfo object
         self.__pipeline = pipeline_info
+        # Crystal etc assignment
+        self.__project = None
+        self.__crystal = None
+        self.__dataset = None
+        self.__sweep   = None
+
+    def assign(self,project,crystal,dataset,sweep):
+        """Set the project, crystal, dataset and sweep names"""
+        self.__project = project
+        self.__crystal = crystal
+        self.__dataset = dataset
+        self.__sweep = sweep
 
     def basename(self):
         """Return the filename without any leading directory"""
@@ -395,18 +442,15 @@ class LogFile:
 
     def crystal(self):
         """Return crystal name associated with this log file"""
-        print "*** NOT IMPLEMENTED ***"
-        return ''
+        return self.__crystal
 
     def dataset(self):
         """Return dataset name associated with this log file"""
-        print "*** NOT IMPLEMENTED ***"
-        return ''
+        return self.__dataset
 
     def sweep(self):
         """Return sweep name associated with this log file"""
-        print "*** NOT IMPLEMENTED ***"
-        return ''
+        return self.__sweep
 
     def smartieLog(self):
         """Return the smartie logfile object
@@ -739,6 +783,48 @@ class Xia2run:
                 print "LOGFILES> LogFiles directory not found"
             else:
                 raise
+        # Assign log files to crystals, datasets (and sweeps)
+        print "POPULATE> ASSIGN LOG FILES TO CRYSTALS, DATASETS ..."
+                    
+        for log in self.__logfiles:
+            print "LOGFILE> checking "+str(log.basename())
+            # Fetch the template
+            template = self.__pipeline_info.template(log.basename())
+            # Test name combinations until we find a match
+            for crystal in self.__crystals:
+                for dataset in crystal.datasets():
+                    for sweep in dataset.sweeps():
+                        # Substitute names
+                        name = template. \
+                            replace("<PROJECT>",self.__project_name). \
+                            replace("<CRYSTAL>",crystal.name()). \
+                            replace("<DATASET>",dataset.datasetName()). \
+                            replace("<SWEEP>",sweep.name())
+                        if log.basename() == name:
+                            # Found a match
+                            assign_project = None
+                            assign_crystal = None
+                            assign_dataset = None
+                            assign_sweep = None
+                            if template.count("<PROJECT>"):
+                                assign_project = self.__project_name
+                            if template.count("<CRYSTAL>"):
+                                assign_crystal = crystal.name()
+                            if template.count("<DATASET>"):
+                                assign_dataset = dataset.datasetName()
+                            if template.count("<SWEEP>"):
+                                assign_sweep = sweep.name()
+                            log.assign(assign_project,
+                                       assign_crystal,
+                                       assign_dataset,
+                                       assign_sweep)
+                            print "LOGFILE> assigned: "+str(assign_project)+\
+                                " "+str(assign_crystal)+\
+                                " "+str(assign_dataset)+\
+                                " "+str(assign_sweep)
+                            # Stop and go on to the next log
+                            break;
+                            
         # Reflection files
         print "POPULATE> REFLECTION FILES"
         refln_formats = []
@@ -1966,52 +2052,72 @@ if __name__ == "__main__":
                                     Canary.MakeLink(xia2run.log_dir(),
                                                     relative_link=True)+ \
                                     " and are grouped by processing stage:")
-        logs = output_logfiles.addTable()
-        logs.addClass('log_files')
-        this_stage = None
-        this_program = None
+        for xtal in xia2run.crystals():
+            if not xia2run.multi_crystal():
+                this_section = output_logfiles
+            else:
+                this_section = output_logfiles.addSubsection(\
+                    "Log files for crystal "+xtal.name())
+            logs = this_section.addTable()
+            logs.addClass('log_files')
+            this_stage = None
+            this_program = None
+            for log in xia2run.logfiles():
+                # Check whether if belongs to this crystal
+                if log.crystal() != xtal.name(): continue
+                # Determine the processing stage
+                # Logs are grouped by stage according to the
+                # program name
+                program = log.program()
+                stage = log.processing_stage()
+                if not stage:
+                    # No stage assigned for this program
+                    # Add a warning to the HTML file and skip
+                    print "No program stage for program "+str(program)
+                    output_logfiles.addPara(warning_icon+
+                                            " xia2html: failed to classify log "+
+                                            Canary.MakeLink(
+                            log.relativeName(),log.basename())+
+                                            "<br />Please report this problem",
+                                            css_class='warning')
+                    continue
+                if stage != this_stage:
+                    logs.addRow([stage,''],css_classes='proc_stage')
+                    this_stage = stage
+                # Get the description of the log file
+                if program != this_program:
+                    description = log.description()
+                    if description:
+                        logs.addRow([description],css_classes='proc_description')
+                        this_program = program
+                logdata = [log.basename(),
+                           Canary.MakeLink(log.relativeName(),"original")]
+                # Link to baubles file
+                html_log = log.baublize(target_dir=xia2_html_dir)
+                if html_log:
+                    logdata.append(Canary.MakeLink(html_log,"html"))
+                else:
+                    logdata.append(None)
+                # Warnings from smartie analysis
+                if len(log.warnings()):
+                    logdata.append(Canary.MakeLink(html_log+"#warnings",
+                                                   warning_icon+" See warnings"))
+                else:
+                    logdata.append('')
+                # Add data to the table
+                logs.addRow(logdata)
+        # Add a warning for any logs that weren't assigned to a crystal
+        unassigned_logs = []
         for log in xia2run.logfiles():
-            # Determine the processing stage
-            # Logs are grouped by stage according to the
-            # program name
-            program = log.program()
-            stage = log.processing_stage()
-            if not stage:
-                # No stage assigned for this program
-                # Add a warning to the HTML file and skip
-                print "No program stage for program "+str(program)
-                output_logfiles.addPara(warning_icon+
-                                        " xia2html: failed to classify log "+
-                                        Canary.MakeLink(
-                        log.relativeName(),log.basename())+
-                                        "<br />Please report this problem",
-                                        css_class='warning')
-                continue
-            if stage != this_stage:
-                logs.addRow([stage,''],css_classes='proc_stage')
-                this_stage = stage
-            # Get the description of the log file
-            if program != this_program:
-                description = log.description()
-                if description:
-                    logs.addRow([description],css_classes='proc_description')
-                this_program = program
-            logdata = [log.basename(),
-                       Canary.MakeLink(log.relativeName(),"original")]
-            # Link to baubles file
-            html_log = log.baublize(target_dir=xia2_html_dir)
-            if html_log:
-                logdata.append(Canary.MakeLink(html_log,"html"))
-            else:
-                logdata.append(None)
-            # Warnings from smartie analysis
-            if len(log.warnings()):
-                logdata.append(Canary.MakeLink(html_log+"#warnings",
-                                               warning_icon+" See warnings"))
-            else:
-                logdata.append('')
-            # Add data to the table
-            logs.addRow(logdata)
+            if not log.crystal(): unassigned_logs.append(log)
+        if len(unassigned_logs):
+            output_logfiles.addPara(warning_icon+ \
+                      " The following files weren't assigned to a crystal: ", \
+                                      css_class="warning")
+            unassigned = output_logfiles.addList()
+            for log in unassigned_logs:
+                unassigned.addItem(Canary.MakeLink(
+                        log.relativeName(),log.basename()))
         # Add a link to the journal file xia2-journal.txt, if found
         if xia2run.journal_file():
             output_logfiles.addPara(info_icon+" More detailed information on what xia2 did can be found in the &quot;journal&quot; file:",css_class="info")
