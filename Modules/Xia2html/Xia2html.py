@@ -23,7 +23,7 @@
 # subdirectory which is used to hold associated files (PNGs, html
 # versions of log files etc)
 #
-__cvs_id__ = "$Id: Xia2html.py,v 1.74 2009/12/31 15:50:25 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.75 2009/12/31 16:12:58 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -691,19 +691,20 @@ class Xia2run:
             except IndexError:
                 # Assume that this wasn't found
                 pass
+        # Assign datasets to crystals
+        print "POPULATE> ASSIGN DATASETS TO CRYSTALS"
+        for crystal in self.__crystals:
+            for dataset in self.__datasets:
+                if dataset.crystalName() == crystal.name():
+                    crystal.addDataset(dataset)
         # Assign interwavelength analysis data
-        # Do this separately as only crystals with more than one
-        # wavelength will have this information
+        # Only crystals with more than one dataset will also 
+        # have this information
         print "POPULATE> INTERWAVELENGTH ANALYSIS"
         i = 0
         for crystal in self.__crystals:
-            # Determine number of wavelengths/datasets
-            nwavelengths = 0
-            for dataset in self.__datasets:
-                if dataset.crystalName() == crystal.name():
-                    nwavelengths += 1
             # Assign interwavelength analysis data
-            if nwavelengths > 1:
+            if len(crystal.datasets()) > 1:
                 crystal.setInterwavelengthAnalysis(
                     xia2['interwavelength_analysis'][i])
                 i = i+1
@@ -716,7 +717,7 @@ class Xia2run:
         logdir = get_relative_path(self.__log_dir)
         # Process logfiles
         try:
-            xds_pipeline = False
+            self.__xds_pipeline = False
             files = self.__list_logfiles()
             for filen in files:
                 print "LOGFILES> "+str(filen)
@@ -727,13 +728,13 @@ class Xia2run:
                     self.__logfiles.append(log)
                     # Update found_xds flag
                     if log.program() == "xds":
-                        xds_pipeline = True
+                        self.__xds_pipeline = True
                 else:
                     print "LOGFILES> "+log.basename()+ \
                           " not a log file, ignored"
-            if xds_pipeline: self.__pipeline_info.setXDSPipeline()
+            if self.__xds_pipeline: self.__pipeline_info.setXDSPipeline()
         except OSError:
-            # Possibly the LogFiles directory doesn'texist
+            # Possibly the LogFiles directory doesn't exist
             if not os.path.isdir(logdir):
                 print "LOGFILES> LogFiles directory not found"
             else:
@@ -918,6 +919,7 @@ class Crystal:
         self.__solvent_frac = None
         self.__sequence = None
         self.__interwavelength_analysis = None
+        self.__datasets = []
 
     def name(self):
         """Get the crystal name"""
@@ -966,6 +968,10 @@ class Crystal:
     def interwavelength_analysis(self):
         """Return the interwavelength analysis data"""
         return self.__interwavelength_analysis
+
+    def datasets(self):
+        """Return the list of Dataset objects"""
+        return self.__datasets
 
     def setUnitCellData(self,unit_cell):
         """Set the unit cell data
@@ -1027,6 +1033,15 @@ class Crystal:
         'interwavelength_analysis' is an 'interwavelength_analysis'
         Magpie.Data object."""
         self.__interwavelength_analysis = str(interwavelength_analysis)
+
+    def addDataset(self,dataset):
+        """Add a Dataset object to the Crystal
+
+        'dataset' is an existing Dataset object, which is added to
+        the list of Dataset objects associated with the crystal.
+        Retrieve the list of Dataset objects using the datasets()
+        method."""
+        self.__datasets.append(dataset)
 
 # Dataset
 #
