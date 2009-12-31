@@ -6,24 +6,81 @@
 # Xia2html.py
 #
 ########################################################################
-#
-# Extract information from XIA2 output and generate an interactive
-# HTML document
-#
-# Run as an application using:
-# python /path/to/Xia2Log.py <xia2_output_dir>
-#
-# where <xia2_output_dir> is the location of xia2.txt and the rest of
-# the xia2 output (including LogFiles etc).
-#
-# Needs the XIA2HTMLDIR environment variable to be set to the directory
-# where this file (and supporting modules etc) are held.
-#
-# Creates a xia2.html file in the current directory, plus a xia2_html
-# subdirectory which is used to hold associated files (PNGs, html
-# versions of log files etc)
-#
-__cvs_id__ = "$Id: Xia2html.py,v 1.76 2009/12/31 18:58:00 pjx Exp $"
+
+"""Xia2html: extract data xia2 output and generate a HTML report
+
+Overview
+
+The Xia2html module provides an application which generates a HTML
+report of a xia2 run.
+
+Running Xia2html
+
+It can be run using the command line:
+
+python /path/to/Xia2Log.py [<xia2_output_dir>]
+
+where the optional <xia2_output_dir> parameter specifies the location
+of the xia2.txt file and the rest of the xia2 output (i.e. the LogFiles
+and DataFiles directories). If no <xia2_output_dir> is specified then
+the application looks for the xia2 output in the current working
+directory.
+
+Output
+
+Xia2html creates a xia2.html file in the current directory, plus a
+xia2_html subdirectory which holds associated files (PNGs, html
+versions of log files etc). Where possible relative paths are used for
+links from xia2.html to external files, so it should be possible to
+copy the files to another location and still have functional links.
+
+Requirements
+
+The XIA2HTMLDIR environment variable needs to be set to the directory
+where this file (and supporting modules etc) are held. Xia2html expects
+to find icons in the 'icons' subdirectory of XIA2HTMLDIR.
+
+Updating and extending
+
+1. To add new citations or modify existing ones, edit the Citations
+   class.
+
+2. To add new log files or modify existing ones, edit the PipelineInfo
+   class.
+
+3. To update the regular expressions used to extract data from xia2.txt
+   look at the addPattern() and addBlock() calls.
+
+More detail on how Xia2html works
+
+The basic procedure in Xia2html is:
+
+1. Process the raw data (specifically xia2.txt - processed using classes
+   from the Magpie module - and the contents of the LogFiles directory),
+
+2. Populate a data structure (provided by the Xia2run class in this module)
+   to organise what was found,
+
+3. Use the data in Xia2run class in conjunction with document generation
+   classes and functions in the Canary module to make an output HTML
+   document.
+
+This module contains a number of classes to support gathering, organising
+and writing out the data:
+
+PipelineInfo and Citations classes hold 'external' data about log files
+and citations respectively. The data in these classes may need to be
+updated or extended as xia2's output evolves.
+
+Crystal, Dataset, Sweep and Integration run classes are used within
+Xia2run to organise the data regarding these data from the run. The
+LogFile and ReflectionFile classes organise the data regarding these
+two types of file.
+
+IntegrationStatusReporter class is used to help with generating HTML
+specific to the sweeps."""
+
+__cvs_id__ = "$Id: Xia2html.py,v 1.77 2009/12/31 19:48:53 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -794,7 +851,11 @@ class Xia2run:
             for crystal in self.__crystals:
                 for dataset in crystal.datasets():
                     for sweep in dataset.sweeps():
-                        # Substitute names
+                        # Kludge to skip template matching if the crystal
+                        # has already been assigned
+                        if log.crystal():
+                            continue
+                        # Substitute names and look for a match
                         name = template. \
                             replace("<PROJECT>",self.__project_name). \
                             replace("<CRYSTAL>",crystal.name()). \
@@ -822,9 +883,6 @@ class Xia2run:
                                 " "+str(assign_crystal)+\
                                 " "+str(assign_dataset)+\
                                 " "+str(assign_sweep)
-                            # Stop and go on to the next log
-                            break;
-                            
         # Reflection files
         print "POPULATE> REFLECTION FILES"
         refln_formats = []
