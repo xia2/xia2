@@ -1,6 +1,6 @@
 /* xia2.css
    Stylesheet for xia2.html
-   CVS_id $Id: xia2.css,v 1.14 2010/01/04 11:23:23 pjx Exp $
+   CVS_id $Id: xia2.css,v 1.15 2010/01/04 11:27:25 pjx Exp $
    */
 body { font-family: Arial, sans-serif;
        font-size: 17px;
@@ -17,6 +17,9 @@ h3 { font-family: Georgia, serif;
      background-color: lightblue;
      padding: 1 15 1 15; }
 h4 { background-color: #ffd799;
+     display: inline;
+     padding: 1 10 1 10; }
+h5 { background-color: lightgray;
      display: inline;
      padding: 1 10 1 10; }
 
