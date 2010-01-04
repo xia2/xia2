@@ -80,7 +80,7 @@ two types of file.
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.80 2009/12/31 20:22:35 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.81 2010/01/04 10:38:30 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -97,6 +97,10 @@ import baubles
 
 #######################################################################
 # Class definitions
+#######################################################################
+
+#######################################################################
+# Classes with hardcoded data
 #######################################################################
 
 # PipelineInfo
@@ -419,216 +423,9 @@ class Citations:
         # No match
         return None
 
-# LogFile
-#
-# Store information about a log file and provide tools for
-# analysis, annotation etc
-class LogFile:
-    """Xia2 log file information
-
-    Given the name of a log file from xia2, provides various
-    methods for analysis and manipulation."""
-
-    def __init__(self,logfile,pipeline_info):
-        """Create a new LogFile object.
-
-        'filen' is the name and path of the log file.
-
-        'pipeline_info' is a PipelineInfo object which is
-        used to lookup data such as the associated program,
-        description etc."""
-        self.__filen = logfile
-        # Smartie log object
-        self.__smartie_log = None
-        # PipelineInfo object
-        self.__pipeline = pipeline_info
-        # Crystal etc assignment
-        self.__project = None
-        self.__crystal = None
-        self.__dataset = None
-        self.__sweep   = None
-
-    def assign(self,project,crystal,dataset,sweep):
-        """Set the project, crystal, dataset and sweep names"""
-        self.__project = project
-        self.__crystal = crystal
-        self.__dataset = dataset
-        self.__sweep = sweep
-
-    def basename(self):
-        """Return the filename without any leading directory"""
-        return os.path.basename(self.__filen)
-
-    def fullFileName(self):
-        """Return the full filename with the leading (absolute) path"""
-        return os.path.join(self.absoluteDirPath(),self.basename())
-
-    def relativeName(self):
-        """Return the relative filename"""
-        return os.path.join(self.relativeDirPath(),self.basename())
-
-    def dir(self):
-        """Return directory that the log file is in"""
-        return os.path.dirname(self.__filen)
-
-    def absoluteDirPath(self):
-        """Return the absolute directory for the log file"""
-        return os.path.abspath(self.dir())
-
-    def relativeDirPath(self):
-        """Return the relative directory for the log file"""
-        return get_relative_path(self.absoluteDirPath())
-
-    def isLog(self):
-        """Test whether file is a log file
-
-        Checks whether the file name ends with .log extension"""
-        return os.path.splitext(self.__filen)[1] == ".log"
-
-    def program(self):
-        """Return program name associated with this log file"""
-        return self.__pipeline.program(self.__filen)
-
-    def description(self):
-        """Return log file description associated with the name"""
-        return self.__pipeline.description(self.__filen)
-
-    def processing_stage(self):
-        """Return the processing stage that this log file belongs to"""
-        return self.__pipeline.stage(self.__filen)
-
-    def crystal(self):
-        """Return crystal name associated with this log file"""
-        return self.__crystal
-
-    def dataset(self):
-        """Return dataset name associated with this log file"""
-        return self.__dataset
-
-    def sweep(self):
-        """Return sweep name associated with this log file"""
-        return self.__sweep
-
-    def smartieLog(self):
-        """Return the smartie logfile object
-
-        Returns the smartie logfile object (it may have to
-        generate it first) if appropriate; otherwise, return None"""
-        if not self.__pipeline.baublize(self.__filen):
-            # Don't run baubles on this log
-            print "Not running smartie for "+self.basename()
-            return None
-        if not self.__smartie_log:
-            # Create and store a smartie logfile object
-            print "Creating smartie logfile object for "+str(self.basename())
-            self.__smartie_log = smartie.parselog(self.__filen)
-            # Check for errors with table parsing
-            nprograms = self.__smartie_log.nfragments()
-            for i in range(0,nprograms):
-                prog = self.__smartie_log.fragment(i)
-                for tbl in prog.tables():
-                    if tbl.parse_error():
-                        prog.addkeytext(name="Warning",
-                                        message="Badly formed table: "+
-                                        tbl.title())
-                        print "*** TABLE PARSE ERROR DETECTED ***"
-        return self.__smartie_log
-
-    def baublize(self,target_dir=None):
-        """Generate baublized HTML version of the log
-
-        Returns the name of the HTML file, or None if the
-        log wasn't baublized.
-
-        The baublized file will be created in 'target_dir'
-        if specified, or in the current working directory
-        otherwise."""
-        smartie_log = self.smartieLog()
-        if not smartie_log: return None
-        htmlfile = os.path.join(target_dir,
-                                os.path.splitext(self.basename())[0]+
-                                ".html")
-        try:
-            # Set the location of the Jloggraph applet explicitly
-            baubles.setJLoggraphCodebase('.')
-            # Run baubles on the processed log
-            baubles.baubles(smartie_log,htmlfile)
-            return htmlfile
-        except:
-            # Some baubles error - return None
-            print "Error running baubles on "+str(self.__filen)
-            return None
-
-    def warnings(self):
-        """Return list of warnings from smartie log file"""
-        smartie_log = self.smartieLog()
-        if not smartie_log: return []
-        warnings = []
-        nkeytexts = smartie_log.nkeytexts()
-        for i in range(0,nkeytexts):
-            if smartie_log.keytext(i).name() == "Warning":
-                warnings.append(smartie_log.keytext(i))
-        return warnings
-
-# ReflectionFile
-#
-# Store information about a reflection data file
-class ReflectionFile:
-    """Reflection data file reference
-
-    Store the information pertaining to a reflection data file
-    referenced in the xia2 output."""
-
-    def __init__(self,filename,format,dataset_name):
-        """Create a ReflectionFile object
-
-        'filename' is the name of the reflection data file,
-        'format' is the format (e.g. mtz) and 'dataset_name'
-        identifies the dataset that it relates to."""
-        self.__filename = filename
-        self.__format = format
-        if not dataset_name:
-            self.__dataset_name = "All datasets"
-        else:
-            self.__dataset_name = dataset_name
-        # Internal data
-        self.__format_useful_for = { "mtz": "CCP4 and Phenix",
-                                     "sca": "AutoSHARP etc",
-                                     "sca_unmerged": "XPREP and Shelx C/D/E" }
-
-    def filename(self):
-        """Return the filename that was supplied on creation"""
-        return self.__filename
-
-    def basename(self):
-        """Return the basename of the file i.e. no leading directory"""
-        return os.path.basename(self.__filename)
-
-    def format(self):
-        """Return the format of the reflection file"""
-        return self.__format
-
-    def dataset(self):
-        """Return the dataset name that the file belongs to"""
-        return self.__dataset_name
-
-    def crystal(self):
-        """Return the crystal that the file belongs to
-
-        This is extracted from the file name, which is assumed to be
-        of the form <project>_<crystal>_..."""
-        return self.basename().split('_')[1]
-
-    def useful_for(self):
-        """Return description of the what the file can be used for
-
-        This returns a text description of what the file can be
-        used for.
-
-        NB The descriptions are taken from a look-up table that is
-        internal to the ReflectionFile class. To modify see the
-        __init__ method of this class."""
-        return self.__format_useful_for[self.format()]
+#######################################################################
+# Classes for organising data about the xia2 run
+#######################################################################
 
 # Xia2run
 #
@@ -1389,6 +1186,221 @@ class IntegrationRun:
         Given a 'symbol', returns the number of times that symbol
         appears in the status line for this integration run"""
         return self.__image_status.count(symbol)
+
+# LogFile
+#
+# Store information about a log file and provide tools for
+# analysis, annotation etc
+class LogFile:
+    """Xia2 log file information
+
+    Given the name of a log file from xia2, provides various
+    methods for analysis and manipulation."""
+
+    def __init__(self,logfile,pipeline_info):
+        """Create a new LogFile object.
+
+        'filen' is the name and path of the log file.
+
+        'pipeline_info' is a PipelineInfo object which is
+        used to lookup data such as the associated program,
+        description etc."""
+        self.__filen = logfile
+        # Smartie log object
+        self.__smartie_log = None
+        # PipelineInfo object
+        self.__pipeline = pipeline_info
+        # Crystal etc assignment
+        self.__project = None
+        self.__crystal = None
+        self.__dataset = None
+        self.__sweep   = None
+
+    def assign(self,project,crystal,dataset,sweep):
+        """Set the project, crystal, dataset and sweep names"""
+        self.__project = project
+        self.__crystal = crystal
+        self.__dataset = dataset
+        self.__sweep = sweep
+
+    def basename(self):
+        """Return the filename without any leading directory"""
+        return os.path.basename(self.__filen)
+
+    def fullFileName(self):
+        """Return the full filename with the leading (absolute) path"""
+        return os.path.join(self.absoluteDirPath(),self.basename())
+
+    def relativeName(self):
+        """Return the relative filename"""
+        return os.path.join(self.relativeDirPath(),self.basename())
+
+    def dir(self):
+        """Return directory that the log file is in"""
+        return os.path.dirname(self.__filen)
+
+    def absoluteDirPath(self):
+        """Return the absolute directory for the log file"""
+        return os.path.abspath(self.dir())
+
+    def relativeDirPath(self):
+        """Return the relative directory for the log file"""
+        return get_relative_path(self.absoluteDirPath())
+
+    def isLog(self):
+        """Test whether file is a log file
+
+        Checks whether the file name ends with .log extension"""
+        return os.path.splitext(self.__filen)[1] == ".log"
+
+    def program(self):
+        """Return program name associated with this log file"""
+        return self.__pipeline.program(self.__filen)
+
+    def description(self):
+        """Return log file description associated with the name"""
+        return self.__pipeline.description(self.__filen)
+
+    def processing_stage(self):
+        """Return the processing stage that this log file belongs to"""
+        return self.__pipeline.stage(self.__filen)
+
+    def crystal(self):
+        """Return crystal name associated with this log file"""
+        return self.__crystal
+
+    def dataset(self):
+        """Return dataset name associated with this log file"""
+        return self.__dataset
+
+    def sweep(self):
+        """Return sweep name associated with this log file"""
+        return self.__sweep
+
+    def smartieLog(self):
+        """Return the smartie logfile object
+
+        Returns the smartie logfile object (it may have to
+        generate it first) if appropriate; otherwise, return None"""
+        if not self.__pipeline.baublize(self.__filen):
+            # Don't run baubles on this log
+            print "Not running smartie for "+self.basename()
+            return None
+        if not self.__smartie_log:
+            # Create and store a smartie logfile object
+            print "Creating smartie logfile object for "+str(self.basename())
+            self.__smartie_log = smartie.parselog(self.__filen)
+            # Check for errors with table parsing
+            nprograms = self.__smartie_log.nfragments()
+            for i in range(0,nprograms):
+                prog = self.__smartie_log.fragment(i)
+                for tbl in prog.tables():
+                    if tbl.parse_error():
+                        prog.addkeytext(name="Warning",
+                                        message="Badly formed table: "+
+                                        tbl.title())
+                        print "*** TABLE PARSE ERROR DETECTED ***"
+        return self.__smartie_log
+
+    def baublize(self,target_dir=None):
+        """Generate baublized HTML version of the log
+
+        Returns the name of the HTML file, or None if the
+        log wasn't baublized.
+
+        The baublized file will be created in 'target_dir'
+        if specified, or in the current working directory
+        otherwise."""
+        smartie_log = self.smartieLog()
+        if not smartie_log: return None
+        htmlfile = os.path.join(target_dir,
+                                os.path.splitext(self.basename())[0]+
+                                ".html")
+        try:
+            # Set the location of the Jloggraph applet explicitly
+            baubles.setJLoggraphCodebase('.')
+            # Run baubles on the processed log
+            baubles.baubles(smartie_log,htmlfile)
+            return htmlfile
+        except:
+            # Some baubles error - return None
+            print "Error running baubles on "+str(self.__filen)
+            return None
+
+    def warnings(self):
+        """Return list of warnings from smartie log file"""
+        smartie_log = self.smartieLog()
+        if not smartie_log: return []
+        warnings = []
+        nkeytexts = smartie_log.nkeytexts()
+        for i in range(0,nkeytexts):
+            if smartie_log.keytext(i).name() == "Warning":
+                warnings.append(smartie_log.keytext(i))
+        return warnings
+
+# ReflectionFile
+#
+# Store information about a reflection data file
+class ReflectionFile:
+    """Reflection data file reference
+
+    Store the information pertaining to a reflection data file
+    referenced in the xia2 output."""
+
+    def __init__(self,filename,format,dataset_name):
+        """Create a ReflectionFile object
+
+        'filename' is the name of the reflection data file,
+        'format' is the format (e.g. mtz) and 'dataset_name'
+        identifies the dataset that it relates to."""
+        self.__filename = filename
+        self.__format = format
+        if not dataset_name:
+            self.__dataset_name = "All datasets"
+        else:
+            self.__dataset_name = dataset_name
+        # Internal data
+        self.__format_useful_for = { "mtz": "CCP4 and Phenix",
+                                     "sca": "AutoSHARP etc",
+                                     "sca_unmerged": "XPREP and Shelx C/D/E" }
+
+    def filename(self):
+        """Return the filename that was supplied on creation"""
+        return self.__filename
+
+    def basename(self):
+        """Return the basename of the file i.e. no leading directory"""
+        return os.path.basename(self.__filename)
+
+    def format(self):
+        """Return the format of the reflection file"""
+        return self.__format
+
+    def dataset(self):
+        """Return the dataset name that the file belongs to"""
+        return self.__dataset_name
+
+    def crystal(self):
+        """Return the crystal that the file belongs to
+
+        This is extracted from the file name, which is assumed to be
+        of the form <project>_<crystal>_..."""
+        return self.basename().split('_')[1]
+
+    def useful_for(self):
+        """Return description of the what the file can be used for
+
+        This returns a text description of what the file can be
+        used for.
+
+        NB The descriptions are taken from a look-up table that is
+        internal to the ReflectionFile class. To modify see the
+        __init__ method of this class."""
+        return self.__format_useful_for[self.format()]
+
+#######################################################################
+# Classes for generating the output HTML document
+#######################################################################
 
 # IntegrationStatusReporter
 #
