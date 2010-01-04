@@ -80,7 +80,7 @@ two types of file.
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.83 2010/01/04 11:17:04 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.84 2010/01/04 11:22:55 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -2021,7 +2021,7 @@ if __name__ == "__main__":
     asu_contents = xtal_parameters.addSubsection("Asymmetric unit contents")
     for xtal in xia2run.crystals():
         if xia2run.multi_crystal():
-            this_section = asu_contents.addSubsection()
+            this_section = asu_contents.addSubsection("Crystal "+xtal.name())
         else:
             this_section = asu_contents
         nmols = xtal.molecules_in_asu()
@@ -2029,9 +2029,6 @@ if __name__ == "__main__":
         if not nmols is None and not solvent is None:
             # Create a table
             asu_tbl = this_section.addTable()
-            if xia2run.multi_crystal():
-                asu_tbl.addRow(["<h4>Crystal "+xtal.name()+"</h4>"],
-                               css_classes='xtal_name')
             seq_html = ''
             for line in splitlines(xtal.sequence(),60):
                 seq_html += line+"<br />"
