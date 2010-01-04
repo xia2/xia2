@@ -80,7 +80,7 @@ two types of file.
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.81 2010/01/04 10:38:30 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.82 2010/01/04 11:07:55 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -121,12 +121,11 @@ class PipelineInfo:
     the logs will be sorted into on output."""
 
     def __init__(self):
-        """Create pipeline object"""
-        self.__pipeline = []
-        self.__populate()
+        """Create and initialise Pipeline object
 
-    def __populate(self):
-        """Setup default pipeline info"""
+        Note that the order that log file references appear
+        implicitly defines the order that logs will be sorted into"""
+        self.__pipeline = []
         # Integration stage
         self.addLogInfo(
             "INTEGRATE",
@@ -184,6 +183,9 @@ class PipelineInfo:
             "Intensity analysis for each wavelength of data",
             "<PROJECT>_<CRYSTAL>_<DATASET>_truncate.log",
             baublize=True)
+        # *** Note for Chef log files ***
+        # There is one entry for each chef log corresponding
+        # to the different possible groups
         self.addLogInfo(
             "chef_1",
             "chef",
@@ -197,6 +199,13 @@ class PipelineInfo:
             "Analysis",
             "Cumulative radiation damage analysis",
             "<CRYSTAL>_chef_2.log",
+            baublize=True)
+        self.addLogInfo(
+            "chef_3",
+            "chef",
+            "Analysis",
+            "Cumulative radiation damage analysis",
+            "<CRYSTAL>_chef_3.log",
             baublize=True)
 
     def setXDSPipeline(self):
@@ -345,15 +354,15 @@ class PipelineInfo:
 class Citations:
     """Information on citations
 
-    Provides lookup etc for citations from xia2."""
+    Stores and retrieves additional information on links for citations in
+    the xia2.txt file.
+
+    To add information on a new citation, add a new call to the
+    addCitation method in __init__."""
 
     def __init__(self):
-        """Create citations object"""
+        """Create and initialise Citations object."""
         self.__citations = []
-        self.__populate()
-
-    def __populate(self):
-        """Setup citation info"""
         # CCP4
         self.addCitation(
             'ccp4',
@@ -406,7 +415,8 @@ class Citations:
 
         'program' is the name of the program that the citation
         refers to.
-        'citation' is the citation text produced by xia2.
+        'citation' is the citation text - this must match exactly the
+        text for the citation produced by xia2.
         'link' is the URL link for the citation/paper."""
         self.__citations.append({ "program": program,
                                   "citation": citation,
