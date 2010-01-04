@@ -80,7 +80,7 @@ two types of file.
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.82 2010/01/04 11:07:55 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.83 2010/01/04 11:17:04 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -2206,8 +2206,9 @@ if __name__ == "__main__":
                         log.relativeName(),log.basename()))
         # Add a link to the journal file xia2-journal.txt, if found
         if xia2run.journal_file():
-            output_logfiles.addPara(info_icon+" More detailed information on what xia2 did can be found in the &quot;journal&quot; file:",css_class="info")
-            output_logfiles.addList().addItem(Canary.MakeLink(
+            xia2_journal = output_files.addSubsection("xia2 Journal file")
+            xia2_journal.addPara(info_icon+" More detailed information on what xia2 did can be found in the &quot;journal&quot; file:",css_class="info")
+            xia2_journal.addList().addItem(Canary.MakeLink(
                     xia2run.journal_file(),"xia2-journal.txt",
                     relative_link=True))
         # Copy the JLoggraph applet to the xia2_html directory
