@@ -1,6 +1,6 @@
 /* xia2.css
    Stylesheet for xia2.html
-   CVS_id $Id: xia2.css,v 1.13 2009/12/31 11:34:06 pjx Exp $
+   CVS_id $Id: xia2.css,v 1.14 2010/01/04 11:23:23 pjx Exp $
    */
 body { font-family: Arial, sans-serif;
        font-size: 17px;
@@ -91,9 +91,6 @@ table.xia2_info tr > td:first-child { border-style: solid;
 	background-color: gray;
 	font-weight: bold;
 	color: white; }
-table.xia2_info tr.xtal_name td { background-color: #ffd799;
-                                  color: black;
-                                  font-size: 100%; }
 
 /* Styling the "table_one" summary table */
 table.table_one { border-style: none;
