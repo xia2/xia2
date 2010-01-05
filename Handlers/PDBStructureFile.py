@@ -11,6 +11,29 @@
 
 import os
 
+residue_letters = { }
+
+residue_letters['ALA'] = 'A'
+residue_letters['ARG'] = 'R'
+residue_letters['ASN'] = 'N'
+residue_letters['ASP'] = 'D'
+residue_letters['CYS'] = 'C'
+residue_letters['GLN'] = 'Q'
+residue_letters['GLU'] = 'E'
+residue_letters['GLY'] = 'G'
+residue_letters['HIS'] = 'H'
+residue_letters['ILE'] = 'I'
+residue_letters['LEU'] = 'L'
+residue_letters['LYS'] = 'K'
+residue_letters['MET'] = 'M'
+residue_letters['PHE'] = 'F'
+residue_letters['PRO'] = 'P'
+residue_letters['SER'] = 'S'
+residue_letters['THR'] = 'T'
+residue_letters['TRP'] = 'W'
+residue_letters['TYR'] = 'Y'
+residue_letters['VAL'] = 'V'
+
 def parse_pdb_remark_200(pdb_file_records):
     '''Look for REMARK 200 data and transform into a dictionary.'''
 
@@ -89,7 +112,65 @@ def analyse():
               (dmin, completeness, multiplicity,
                i_sigma, r_merge, predicted_r, r_merge /
                predicted_r)
+
+def read_modifications(pdb_file):
+
+    modifications = { }
+
+    for record in open(pdb_file):
+        if not 'MODRES' in record[:6]:
+            continue
+
+        modifications[record.split()[2]] = record.split()[5]
+
+    return modifications
         
+def read_sequence(pdb_file):
+    '''Read the sequence from the SEQRES records and return as a dictionary.'''
+
+    sequences = { }
+    chains = []
+    lengths = { }
+
+    modifications = read_modifications(pdb_file)
+
+    for record in open(pdb_file):
+        if not 'SEQRES' in record[:6]:
+            continue
+
+        chain = record.split()[2]
+        residues = record.split()[4:]
+
+        if not chain in chains:
+            chains.append(chain)
+
+        if not chain in sequences:
+            sequences[chain] = ''
+            
+        for r in residues:
+            if r in modifications:
+                r = modifications[r]
+            sequences[chain] += residue_letters[r]
+
+        if not chain in lengths:
+            lengths[chain] = int(record.split()[3])
+
+    for chain in chains:
+        assert(len(sequences[chain]) == lengths[chain])
+
+    return sequences
+
+if __name__ == '__main__' and False:
+
+    import sys
+
+    if len(sys.argv) < 2:
+        raise RuntimeError, '%s pdb_file ...' % sys.argv[0]
+
+    for arg in sys.argv[1:]:
+        compute(arg)
+        
+    analyse()
 
 if __name__ == '__main__':
 
@@ -99,7 +180,11 @@ if __name__ == '__main__':
         raise RuntimeError, '%s pdb_file ...' % sys.argv[0]
 
     for arg in sys.argv[1:]:
-        compute(arg)
+        sequences = read_sequence(arg)
+        for k in sorted(sequences):
+            sequence = sequences[k]
+            print k
+            print sequence
 
 
-    analyse()
+            
