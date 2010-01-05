@@ -81,7 +81,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.88 2010/01/05 13:33:27 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.89 2010/01/05 15:23:25 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1476,9 +1476,14 @@ class Xia2doc:
         # Integration status reporter
         self.__int_status_reporter = IntegrationStatusReporter(
             self.__xia2_html_dir,self.__xia2run.integration_status_key())
-        # Initialise and build the document
+        # Initialise the document
         self.initialiseDocument()
-        self.buildDocument()
+        # Check whether the run completed
+        if xia2run.complete():
+            self.reportRun()
+        else:
+            # Report an incomplete run
+            self.reportIncompleteRun()
         # Copy icon files and jloggraph etc
         self.copyFiles()
         # Spit out the HTML
@@ -1487,18 +1492,23 @@ class Xia2doc:
     def initialiseDocument(self):
         """Initialise the HTML document
 
-        """
+        Create a new Canary.Document object and make a 'skeleton'
+        document by adding empty sections which are subsequently
+        populated by other methods.
+
+        A reference to each section object is also stored internally
+        to the Xia2doc object, to enable 'forward linking' from an
+        earlier to a later section in the document."""
         # Make a new Canary HTML document
         self.__xia2doc = Canary.Document("xia2 Processing Report: "+
                                          self.__xia2run.project_name())
         # Add reference to style sheet
         self.__xia2doc.addStyle(os.path.join(self.__xia2htmldir,"xia2.css"),
                                 Canary.INLINE)
-        # Build the document skeleton by adding empty sections
-        # that will be populated later on
-        #
-        # A reference is also stored to each section object
-        #
+        # Create document skeleton
+        if not self.__xia2run.complete():
+            # Don't make a skeleton if the run didn't complete
+            return
         # Preamble
         self.__preamble = self.addSection()
         # Initial summary table
@@ -1521,8 +1531,8 @@ class Xia2doc:
         # Credits section
         self.__credits = self.addSection("Credits")
 
-    def buildDocument(self):
-        """Populate the document with content"""
+    def reportRun(self):
+        """Populate the document with content from the xia2 run"""
         # Write the preamble
         self.addPreamble(self.__preamble)
         # Add the crystallographic data
@@ -1542,6 +1552,21 @@ class Xia2doc:
         self.reportCredits(self.__credits)
         # Index and footer
         self.addIndex(self.__index)
+        self.addFooter()
+
+    def reportIncompleteRun(self):
+        """Generate a report for incomplete processing of the run data"""
+        self.addWarning(self.__xia2doc,
+                        "Xia2html failed to process the output from this run"+
+                        " in directory "+
+                        Canary.MakeLink(self.__xia2run.xia2_dir(),
+                                        relative_link=True))
+        self.__xia2doc.addPara("Possible reasons for the failure are:")
+        self.__xia2doc.addList(). \
+            addItem("xia2 is still running"). \
+            addItem("xia2 failed unexpectedly"). \
+            addItem("xia2 completed successfully but Xia2html failed")
+        self.reportXia2Info(self.__xia2doc)
         self.addFooter()
 
     def addSection(self,title=None):
@@ -2157,19 +2182,23 @@ class Xia2doc:
                 citation_list.addItem(Canary.MakeLink(url,citation))
             else:
                 citation_list.addItem(citation)
+        self.reportXia2Info(section)
+
+    def reportXia2Info(self,section):
+        """Add a report of xia2-specific information to the section"""
         # Some other xia2-specific stuff
-        xia2_stuff = section.addSubsection("xia2 Details")
-        xia2_stuff.addPara("Additional details about this run:")
-        tbl_xia2_stuff = xia2_stuff.addTable()
-        tbl_xia2_stuff.addClass('xia2_info')
-        tbl_xia2_stuff.addRow(['Version',self.__xia2run.version()])
-        tbl_xia2_stuff.addRow(['Run time',self.__xia2run.run_time()])
-        tbl_xia2_stuff.addRow(['Command line',self.__xia2run.cmd_line()])
-        tbl_xia2_stuff.addRow(['Termination status',
-                               self.__xia2run.termination_status()])
+        xia2_info = section.addSubsection("xia2 Details")
+        xia2_info.addPara("Details about this run:",css_class="preamble")
+        tbl_xia2_info = xia2_info.addTable()
+        tbl_xia2_info.addClass('xia2_info')
+        tbl_xia2_info.addRow(['Version',self.__xia2run.version()])
+        tbl_xia2_info.addRow(['Run time',self.__xia2run.run_time()])
+        tbl_xia2_info.addRow(['Command line',self.__xia2run.cmd_line()])
+        tbl_xia2_info.addRow(['Termination status',
+                              self.__xia2run.termination_status()])
         xia2txt = os.path.join(self.__xia2run.xia2_dir(),"xia2.txt")
-        tbl_xia2_stuff.addRow(['xia2.txt file',
-                               Canary.MakeLink(xia2txt,relative_link=True)])
+        tbl_xia2_info.addRow(['xia2.txt file',
+                              Canary.MakeLink(xia2txt,relative_link=True)])
 
     def addFooter(self):
         """Add the footer section"""
@@ -2445,7 +2474,6 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         # No Xia2 output directory supplied - assume cwd
         xia2dir = os.getcwd()
-        print "Running in current directory: "+str(xia2dir)
     elif len(sys.argv) == 2:
         # Xia2 output directory is the last argument
         xia2dir = os.path.abspath(sys.argv[-1])
@@ -2453,15 +2481,16 @@ if __name__ == "__main__":
         # Something unexpected
         print "Usage: "+str(usage)
         sys.exit(1)
+    print "Xia2html: will run in directory: "+str(xia2dir)
 
     # Check the target directory exists
     if not os.path.exists(xia2dir):
-        print "Directory not found: \""+str(xia2dir)+"\""
+        print "Xia2html: directory not found: \""+str(xia2dir)+"\",stopping."
         sys.exit(1)
 
     # Check the xia2.txt file exists
     if not os.path.exists(os.path.join(xia2dir,"xia2.txt")):
-        print "xia2.txt not found"
+        print "Xia2html: xia2.txt not found, stopping."
         sys.exit(1)
 
     #########################################################
@@ -2668,17 +2697,6 @@ if __name__ == "__main__":
 
     # Instantiate a Xia2run object
     xia2run = Xia2run(xia2,xia2dir)
-    if not xia2run.complete():
-        print "Incomplete processing! Stopped"
-        sys.exit(1)
-
-    # Test whether xia2 run finished
-    if not xia2run.finished():
-        # Assume that xia2 is still running
-        # For now don't attempt to process incomplete file
-        print "*** xia2.txt file is incomplete (xia2 still running?) ***"
-        print "Refusing to process incomplete file - stopping"
-        sys.exit(1)
 
     # Generate the HTML
     xia2doc = Xia2doc(xia2run)
