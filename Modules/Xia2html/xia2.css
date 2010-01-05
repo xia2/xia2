@@ -1,6 +1,6 @@
 /* xia2.css
    Stylesheet for xia2.html
-   CVS_id $Id: xia2.css,v 1.15 2010/01/04 11:27:25 pjx Exp $
+   CVS_id $Id: xia2.css,v 1.16 2010/01/05 11:18:46 pjx Exp $
    */
 body { font-family: Arial, sans-serif;
        font-size: 17px;
@@ -30,8 +30,9 @@ p,table { margin-left: 10px;
    They are surrounded by a solid border with the
    heading positioned across it */
 div.section_2 { border: solid 3px gray;
-                margin-top: 25px;
+                margin-top: 35px;
 		margin-bottom: 25px;
+                padding-top: 15px;
 		position: relative; }
 div.section_2 h2 { color: white;
                    background-color: gray;
@@ -39,7 +40,9 @@ div.section_2 h2 { color: white;
                    position: absolute; 
 		   top: -40; left: 5; }
 
-div.anonymous { border: none; }
+div.anonymous { border: none;
+                margin: 0 0 0 0;
+                padding: 0 0 0 0;}
 
 /* Default styling for images */
 img { vertical-align: bottom; }
@@ -55,9 +58,13 @@ p.warning { width: 90%;
             margin-left: auto;
             margin-right: auto; }
 
+/* Information */
 .info { font-style: italic;
         font-size: 90%; }
-.info img { vertical-align: middle; }
+.info img { vertical-align: bottom; }
+
+/* Preamble-style text */
+.preamble { font-size: 90% }
 
 /* Default styling for all tables */
 table { margin: 10px; }
