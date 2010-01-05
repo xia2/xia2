@@ -81,7 +81,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.85 2010/01/05 11:17:51 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.86 2010/01/05 13:21:03 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1441,105 +1441,63 @@ class ReflectionFile:
 #
 # Build the xia2.html document
 class Xia2doc:
-    """Class for building the output xia2.html report"""
+    """Class for generating the output xia2.html report
+
+    Upon instantiation this class will automatically try to
+    generate the xia2.html report as well as the xia2_html
+    output directory and HTML versions of log files, and
+    will also copy Jloggraph.jar and icons to the xia2_html
+    directory."""
 
     def __init__(self,xia2run):
-        """Create a new Xia2doc object"""
+        """Create a new Xia2doc object
+
+        'xia2run' is a populated Xia2run object which stores the
+        data from a run of xia2."""
         # Store Xia2run object
         self.__xia2run = xia2run
         # Collect the XIA2HTML environment variable setting
         self.__xia2htmldir = os.environ['XIA2HTMLDIR']
         print "XIA2HTMLDIR => %s" % self.__xia2htmldir
-        # Relative path for directory with xia2html output files
+        # Relative and absolute paths for xia2_html directory
         self.__xia2_html_dir = "xia2_html"
-        # Absolute path for directory with xia2html output files
         self.__xia2_html = os.path.join(os.getcwd(),xia2_html_dir)
         if not os.path.isdir(self.__xia2_html):
             # Try to make the directory
             print "Making output subdirectory %s" % xia2_html
             os.mkdir(xia2_html)
-        # Icons
-        self.__init__Icons()
+        # Sourc directory where icons are located
+        self.__icondir = os.path.join(self.__xia2htmldir,"icons")
+        # HTML code for warning and info icons
+        self.__warning_icon = Canary.MakeImg(os.path.join(xia2_html_dir,
+                                                          "warning.png"))
+        self.__info_icon = Canary.MakeImg(os.path.join(xia2_html_dir,
+                                                       "info.png"))
         # Integration status reporter
-        self.__init__IntStatusReporter()
-        # Initialise the document
-        self.__init__Document()
-        # Write the preamble
-        self.addPreamble(self.__preamble)
-        # Add the crystallographic data
-        for xtal in xia2run.crystals():
-            if xia2run.multi_crystal():
-                # For multicrystal run, create a new subsection for
-                # the data for each crystal
-                xtal_name = "Crystal "+xtal.name()
-                unit_cell = self.__unit_cell.addSubsection(xtal_name)
-                spacegroup = self.__spacegroup.addSubsection(xtal_name)
-                twinning = self.__twinning.addSubsection(xtal_name)
-                asu_content = self.__asu_content.addSubsection(xtal_name)
-                if xtal.interwavelength_analysis():
-                    interwavelength = self.__interwavelength_analysis. \
-                        addSubsection(xtal_name)
-                else:
-                    interwavelength = None
-            else:
-                # Single crystal run, use sections already created
-                unit_cell = self.__unit_cell
-                spacegroup = self.__spacegroup
-                twinning = self.__twinning
-                asu_content = self.__asu_content
-                interwavelength = self.__interwavelength_analysis
-            # Report the data
-            self.reportUnitCell(xtal,unit_cell)
-            self.reportSpacegroup(xtal,spacegroup)
-            self.reportTwinning(xtal,twinning)
-            self.reportASUContents(xtal,asu_content)
-            if interwavelength:
-                self.reportInterwavelengthAnalysis(xtal,interwavelength)
-        # Add information for each section
-        self.addInfo(self.__unit_cell,
-                     "The unit cell parameters are the average for "+
-                     "all measurements")
-        self.addInfo(self.__spacegroup,
-                     "The spacegroup determination is made using "+
-                     "pointless ("+
-                     Canary.MakeLink(self.__logfiles,
-                                     "see the appropriate log file(s)")+")")
-        self.addInfo(self.__twinning,
-                     "The twinning score is the value of "+
-                     "&lt;E<sup>4</sup>&gt;/&lt;I<sup>2</sup>&gt; "+
-                     "reported by sfcheck "+
-                     Canary.MakeLink("http://www.ccp4.ac.uk/html/sfcheck.html#Twinning%20test",
-                                     "(see documentation)"))
-        # Report the output files
-        self.reportReflectionFiles(self.__refln_files)
-        self.reportLogFiles(self.__logfiles)
-        self.reportJournalFile()
-        # Report the integration status per image
-        self.reportIntegrationStatus(self.__integration_status)
-        # Report the detailed statistics and summary table
-        self.reportStatistics(self.__statistics)
-        self.writeSummaryTable(self.__summary_table)
-        # Credits/citations
-        self.reportCredits(self.__credits)
-        # Index and footer
-        self.addIndex(self.__index)
-        self.addFooter()
-        # Copy files
+        self.__int_status_reporter = IntegrationStatusReporter(
+            self.__xia2_html_dir,self.__xia2run.integration_status_key())
+        # Initialise and build the document
+        self.initialiseDocument()
+        self.buildDocument()
+        # Copy icon files and jloggraph etc
         self.copyFiles()
         # Spit out the HTML
         self.__xia2doc.renderFile('xia2.html')
 
-    def __init__Document(self):
-        """Internal: initialise the document for output
+    def initialiseDocument(self):
+        """Initialise the HTML document
 
         """
         # Make a new Canary HTML document
         self.__xia2doc = Canary.Document("xia2 Processing Report: "+
                                          self.__xia2run.project_name())
+        # Add reference to style sheet
         self.__xia2doc.addStyle(os.path.join(self.__xia2htmldir,"xia2.css"),
                                 Canary.INLINE)
         # Build the document skeleton by adding empty sections
         # that will be populated later on
+        #
+        # A reference is also stored to each section object
         #
         # Preamble
         self.__preamble = self.addSection()
@@ -1549,20 +1507,6 @@ class Xia2doc:
         self.__index = self.addSection()
         # Crystallographic parameters
         self.__xtal_parameters = self.addSection("Crystallographic parameters")
-        self.__unit_cell  = self.__xtal_parameters.addSubsection("Unit cell")
-        self.__spacegroup = self.__xtal_parameters.addSubsection("Spacegroup")
-        self.__twinning = self.__xtal_parameters. \
-            addSubsection("Twinning analysis")
-        self.__asu_content = self.__xtal_parameters. \
-            addSubsection("Asymmetric unit contents")
-        # Interwavelength analysis tables
-        self.__interwavelength_analysis = None
-        for xtal in self.__xia2run.crystals():
-            if xtal.interwavelength_analysis():
-                # There is at least one table to report
-                self.__interwavelength_analysis = self.__xtal_parameters. \
-                    addSubsection("Inter-wavelength B and R-factor analysis")
-                break
         # Output files sections
         self.__output_files = self.addSection("Output files")
         self.__refln_files = self.__output_files. \
@@ -1577,21 +1521,31 @@ class Xia2doc:
         # Credits section
         self.__credits = self.addSection("Credits")
 
-    def __init__Icons(self):
-        """Internal: initialise the information on the icons"""
-        self.__icondir = os.path.join(xia2htmldir,"icons")
-        self.__warning_icon = Canary.MakeImg(os.path.join(xia2_html_dir,
-                                                          "warning.png"))
-        self.__info_icon = Canary.MakeImg(os.path.join(xia2_html_dir,
-                                                          "info.png"))
-
-    def __init__IntStatusReporter(self):
-        """Internal: initialise the IntegrationStatusReporter"""
-        self.__int_status_reporter = IntegrationStatusReporter(
-            self.__xia2_html_dir,self.__xia2run.integration_status_key())
+    def buildDocument(self):
+        """Populate the document with content"""
+        # Write the preamble
+        self.addPreamble(self.__preamble)
+        # Add the crystallographic data
+        self.reportXtallographicData(self.__xtal_parameters)
+        # Interwavelength analysis
+        self.reportInterwavelengthAnalyses(self.__xtal_parameters)
+        # Report the output files
+        self.reportReflectionFiles(self.__refln_files)
+        self.reportLogFiles(self.__logfiles)
+        self.reportJournalFile()
+        # Report the integration status per image
+        self.reportIntegrationStatus(self.__integration_status)
+        # Report the detailed statistics and summary table
+        self.reportStatistics(self.__statistics)
+        self.writeSummaryTable(self.__summary_table)
+        # Credits/citations
+        self.reportCredits(self.__credits)
+        # Index and footer
+        self.addIndex(self.__index)
+        self.addFooter()
 
     def addSection(self,title=None):
-        """Add a section to the document"""
+        """Add a new section to the document"""
         return self.__xia2doc.addSection(title)
 
     def addInfo(self,section,message):
@@ -1608,8 +1562,8 @@ class Xia2doc:
                             (self.__xia2run.version(),
                              self.__xia2run.termination_status())). \
                              addPara("Read output from %s" % \
-                                         Canary.MakeLink(self.__xia2run.xia2_dir(),
-                                                         relative_link=True))
+                                     Canary.MakeLink(self.__xia2run.xia2_dir(),
+                                                     relative_link=True))
 
     def addIndex(self,section):
         """Add an index to the rest of the document"""
@@ -1626,6 +1580,50 @@ class Xia2doc:
                        "Integration status for images by wavelength and sweep"))
         forward_links.addItem(Canary.MakeLink(self.__credits,
                                      "Lists of programs and citations"))
+
+    def reportXtallographicData(self,section):
+        """Add the report of crystallographic data for all crystals"""
+        # Create the subsections for each type of data
+        self.__unit_cell   = section.addSubsection("Unit cell")
+        self.__spacegroup  = section.addSubsection("Spacegroup")
+        self.__twinning    = section.addSubsection("Twinning analysis")
+        self.__asu_content = section.addSubsection("Asymmetric unit contents")
+        # Loop over all crystals to report the data
+        for xtal in xia2run.crystals():
+            if xia2run.multi_crystal():
+                # For multicrystal run, create a new subsection for
+                # the data for each crystal
+                xtal_name = "Crystal "+xtal.name()
+                unit_cell = self.__unit_cell.addSubsection(xtal_name)
+                spacegroup = self.__spacegroup.addSubsection(xtal_name)
+                twinning = self.__twinning.addSubsection(xtal_name)
+                asu_content = self.__asu_content.addSubsection(xtal_name)
+            else:
+                # Single crystal run, use sections already created
+                unit_cell = self.__unit_cell
+                spacegroup = self.__spacegroup
+                twinning = self.__twinning
+                asu_content = self.__asu_content
+            # Report the data
+            self.reportUnitCell(xtal,unit_cell)
+            self.reportSpacegroup(xtal,spacegroup)
+            self.reportTwinning(xtal,twinning)
+            self.reportASUContents(xtal,asu_content)
+        # Add information for each section
+        self.addInfo(self.__unit_cell,
+                     "The unit cell parameters are the average for "+
+                     "all measurements")
+        self.addInfo(self.__spacegroup,
+                     "The spacegroup determination is made using "+
+                     "pointless ("+
+                     Canary.MakeLink(self.__logfiles,
+                                     "see the appropriate log file(s)")+")")
+        self.addInfo(self.__twinning,
+                     "The twinning score is the value of "+
+                     "&lt;E<sup>4</sup>&gt;/&lt;I<sup>2</sup>&gt; "+
+                     "reported by sfcheck "+
+                     Canary.MakeLink("http://www.ccp4.ac.uk/html/sfcheck.html#Twinning%20test",
+                                     "(see documentation)"))
 
     def reportUnitCell(self,xtal,section):
         """Add the report of unit cell data to a section"""
@@ -1681,20 +1679,42 @@ class Xia2doc:
                 message += " (because no sequence information was supplied?)"
             self.addInfo(section,message)
 
-    def reportInterwavelengthAnalysis(self,xtal,section):
-        """Add the report of an interwavelength analysis table to a section"""
-        if not xtal.interwavelength_analysis():
+    def reportInterwavelengthAnalyses(self,section):
+        """Add the interwavelength analyses report to a section"""
+        # Only make section for the report if there is at least one
+        # table to dispaly
+        self.__interwavelength_analysis = None
+        for xtal in self.__xia2run.crystals():
+            if xtal.interwavelength_analysis():
+                # There is at least one table to report
+                self.__interwavelength_analysis = section. \
+                    addSubsection("Inter-wavelength B and R-factor analysis")
+                break
+        if not self.__interwavelength_analysis:
             # No interwavelength analysis to report
             return
-        # Make a table to display the data
-        interwavelength_table = Canary.MakeMagicTable(
-            xtal.interwavelength_analysis(),' ')
-        interwavelength_table.setHeader(['Wavelength',
-                                         'B-factor',
-                                         'R-factor',
-                                         'Status'])
-        # Add the table to the section
-        section.addContent(interwavelength_table)
+        # Loop over all crystals to report the data
+        for xtal in xia2run.crystals():
+            if not xtal.interwavelength_analysis():
+                # No table for this crystal, skip to the next one
+                continue
+            if xia2run.multi_crystal():
+                # For multicrystal run, create a new subsection for
+                # the data for each crystal
+                xtal_name = "Crystal "+xtal.name()
+                interwavelength_section = self.__interwavelength_analysis. \
+                    addSubsection(xtal_name)
+            else:
+                interwavelength_section = self.__interwavelength_analysis
+            # Make a table to display the data
+            interwavelength_tbl = Canary.MakeMagicTable(
+                xtal.interwavelength_analysis(),' ')
+            interwavelength_tbl.setHeader(['Wavelength',
+                                           'B-factor',
+                                           'R-factor',
+                                           'Status'])
+            # Add the table to the section
+            interwavelength_section.addContent(interwavelength_tbl)
 
     def reportReflectionFiles(self,section):
         """Add a report of the reflection files to a section"""
