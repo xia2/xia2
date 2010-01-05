@@ -77,10 +77,11 @@ Xia2run to organise the data regarding these data from the run. The
 LogFile and ReflectionFile classes organise the data regarding these
 two types of file.
 
+Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.84 2010/01/04 11:22:55 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.85 2010/01/05 11:17:51 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -468,6 +469,8 @@ class Xia2run:
         self.__crystals    = [] # List of crystals
         self.__logfiles    = [] # List of log files
         self.__refln_files = [] # List of reflection data files
+        self.__programs    = [] # List of programs/software used
+        self.__citations   = [] # List of citations
         self.__has_anomalous = False # Anomalous data?
         self.__xds_pipeline  = False # XDS pipeline used?
         self.__multi_crystal = False # Run has multiple crystals?
@@ -724,6 +727,16 @@ class Xia2run:
                                            "xia2-journal.txt")
         if not os.path.isfile(self.__xia2_journal):
             self.__xia2_journal = None
+        # List of programs/software used
+        print "POPULATE> SOFTWARE USED"
+        for prog in xia2['xia2_used'][0]['software'].split():
+            self.__programs.append(prog)
+        # List of citations
+        print "POPULATE> CITATIONS"
+        for line in str(xia2['citations'][0]).split('\n'):
+            citation = line.strip()
+            if citation != "":
+                self.__citations.append(citation)
         print "POPULATE> FINISHED"
 
     def __list_logfiles(self):
@@ -733,6 +746,10 @@ class Xia2run:
         # Sort list on order of file names within the pipeline
         files.sort(self.__pipeline_info.compareLogfilesByOrder)
         return files
+
+    def xia2_dir(self):
+        """Return the directory where xia2.txt was found"""
+        return self.__xia2_dir
 
     def version(self):
         """Return the xia2 version"""
@@ -749,6 +766,14 @@ class Xia2run:
     def cmd_line(self):
         """Return the command line"""
         return self.__cmd_line
+
+    def programs(self):
+        """Return the list of programs/software used in the run"""
+        return self.__programs
+
+    def citations(self):
+        """Return the list of citations"""
+        return self.__citations
 
     def complete(self):
         """Check if the Xia2run object is complete
@@ -1412,6 +1437,757 @@ class ReflectionFile:
 # Classes for generating the output HTML document
 #######################################################################
 
+# Xia2doc
+#
+# Build the xia2.html document
+class Xia2doc:
+    """Class for building the output xia2.html report"""
+
+    def __init__(self,xia2run):
+        """Create a new Xia2doc object"""
+        # Store Xia2run object
+        self.__xia2run = xia2run
+        # Collect the XIA2HTML environment variable setting
+        self.__xia2htmldir = os.environ['XIA2HTMLDIR']
+        print "XIA2HTMLDIR => %s" % self.__xia2htmldir
+        # Relative path for directory with xia2html output files
+        self.__xia2_html_dir = "xia2_html"
+        # Absolute path for directory with xia2html output files
+        self.__xia2_html = os.path.join(os.getcwd(),xia2_html_dir)
+        if not os.path.isdir(self.__xia2_html):
+            # Try to make the directory
+            print "Making output subdirectory %s" % xia2_html
+            os.mkdir(xia2_html)
+        # Icons
+        self.__init__Icons()
+        # Integration status reporter
+        self.__init__IntStatusReporter()
+        # Initialise the document
+        self.__init__Document()
+        # Write the preamble
+        self.addPreamble(self.__preamble)
+        # Add the crystallographic data
+        for xtal in xia2run.crystals():
+            if xia2run.multi_crystal():
+                # For multicrystal run, create a new subsection for
+                # the data for each crystal
+                xtal_name = "Crystal "+xtal.name()
+                unit_cell = self.__unit_cell.addSubsection(xtal_name)
+                spacegroup = self.__spacegroup.addSubsection(xtal_name)
+                twinning = self.__twinning.addSubsection(xtal_name)
+                asu_content = self.__asu_content.addSubsection(xtal_name)
+                if xtal.interwavelength_analysis():
+                    interwavelength = self.__interwavelength_analysis. \
+                        addSubsection(xtal_name)
+                else:
+                    interwavelength = None
+            else:
+                # Single crystal run, use sections already created
+                unit_cell = self.__unit_cell
+                spacegroup = self.__spacegroup
+                twinning = self.__twinning
+                asu_content = self.__asu_content
+                interwavelength = self.__interwavelength_analysis
+            # Report the data
+            self.reportUnitCell(xtal,unit_cell)
+            self.reportSpacegroup(xtal,spacegroup)
+            self.reportTwinning(xtal,twinning)
+            self.reportASUContents(xtal,asu_content)
+            if interwavelength:
+                self.reportInterwavelengthAnalysis(xtal,interwavelength)
+        # Add information for each section
+        self.addInfo(self.__unit_cell,
+                     "The unit cell parameters are the average for "+
+                     "all measurements")
+        self.addInfo(self.__spacegroup,
+                     "The spacegroup determination is made using "+
+                     "pointless ("+
+                     Canary.MakeLink(self.__logfiles,
+                                     "see the appropriate log file(s)")+")")
+        self.addInfo(self.__twinning,
+                     "The twinning score is the value of "+
+                     "&lt;E<sup>4</sup>&gt;/&lt;I<sup>2</sup>&gt; "+
+                     "reported by sfcheck "+
+                     Canary.MakeLink("http://www.ccp4.ac.uk/html/sfcheck.html#Twinning%20test",
+                                     "(see documentation)"))
+        # Report the output files
+        self.reportReflectionFiles(self.__refln_files)
+        self.reportLogFiles(self.__logfiles)
+        self.reportJournalFile()
+        # Report the integration status per image
+        self.reportIntegrationStatus(self.__integration_status)
+        # Report the detailed statistics and summary table
+        self.reportStatistics(self.__statistics)
+        self.writeSummaryTable(self.__summary_table)
+        # Credits/citations
+        self.reportCredits(self.__credits)
+        # Index and footer
+        self.addIndex(self.__index)
+        self.addFooter()
+        # Copy files
+        self.copyFiles()
+        # Spit out the HTML
+        self.__xia2doc.renderFile('xia2.html')
+
+    def __init__Document(self):
+        """Internal: initialise the document for output
+
+        """
+        # Make a new Canary HTML document
+        self.__xia2doc = Canary.Document("xia2 Processing Report: "+
+                                         self.__xia2run.project_name())
+        self.__xia2doc.addStyle(os.path.join(self.__xia2htmldir,"xia2.css"),
+                                Canary.INLINE)
+        # Build the document skeleton by adding empty sections
+        # that will be populated later on
+        #
+        # Preamble
+        self.__preamble = self.addSection()
+        # Initial summary table
+        self.__summary_table = self.__xia2doc.addTable()
+        # Index section
+        self.__index = self.addSection()
+        # Crystallographic parameters
+        self.__xtal_parameters = self.addSection("Crystallographic parameters")
+        self.__unit_cell  = self.__xtal_parameters.addSubsection("Unit cell")
+        self.__spacegroup = self.__xtal_parameters.addSubsection("Spacegroup")
+        self.__twinning = self.__xtal_parameters. \
+            addSubsection("Twinning analysis")
+        self.__asu_content = self.__xtal_parameters. \
+            addSubsection("Asymmetric unit contents")
+        # Interwavelength analysis tables
+        self.__interwavelength_analysis = None
+        for xtal in self.__xia2run.crystals():
+            if xtal.interwavelength_analysis():
+                # There is at least one table to report
+                self.__interwavelength_analysis = self.__xtal_parameters. \
+                    addSubsection("Inter-wavelength B and R-factor analysis")
+                break
+        # Output files sections
+        self.__output_files = self.addSection("Output files")
+        self.__refln_files = self.__output_files. \
+            addSubsection("Reflection data files")
+        self.__logfiles = self.__output_files.addSubsection("Log files")
+        # Integration status per image for each sweep
+        self.__integration_status = self.addSection(
+            "Integration status per image")
+        # Detailed statistics
+        self.__statistics = self.addSection(
+            "Detailed statistics for each dataset")
+        # Credits section
+        self.__credits = self.addSection("Credits")
+
+    def __init__Icons(self):
+        """Internal: initialise the information on the icons"""
+        self.__icondir = os.path.join(xia2htmldir,"icons")
+        self.__warning_icon = Canary.MakeImg(os.path.join(xia2_html_dir,
+                                                          "warning.png"))
+        self.__info_icon = Canary.MakeImg(os.path.join(xia2_html_dir,
+                                                          "info.png"))
+
+    def __init__IntStatusReporter(self):
+        """Internal: initialise the IntegrationStatusReporter"""
+        self.__int_status_reporter = IntegrationStatusReporter(
+            self.__xia2_html_dir,self.__xia2run.integration_status_key())
+
+    def addSection(self,title=None):
+        """Add a section to the document"""
+        return self.__xia2doc.addSection(title)
+
+    def addInfo(self,section,message):
+        """Add an info message to a section"""
+        section.addPara(self.__info_icon+" "+message,css_class="info")
+
+    def addWarning(self,section,message):
+        """Add a warning message to a section"""
+        section.addPara(self.__warning_icon+" "+message,css_class="warning")
+
+    def addPreamble(self,section):
+        """Add the preamble to the document"""
+        section.addPara("XIA2 version %s completed with status '%s'" % \
+                            (self.__xia2run.version(),
+                             self.__xia2run.termination_status())). \
+                             addPara("Read output from %s" % \
+                                         Canary.MakeLink(self.__xia2run.xia2_dir(),
+                                                         relative_link=True))
+
+    def addIndex(self,section):
+        """Add an index to the rest of the document"""
+        # Put in some forwarding linking from the index
+        section.addPara("Contents of the rest of this document:")
+        forward_links = section.addList()
+        forward_links.addItem(Canary.MakeLink(self.__refln_files,
+                                     "Reflection files output from xia2"))
+        forward_links.addItem(Canary.MakeLink(self.__statistics,
+                                     "Full statistics for each wavelength"))
+        forward_links.addItem(Canary.MakeLink(self.__logfiles,
+                                     "Log files from individual stages"))
+        forward_links.addItem(Canary.MakeLink(self.__integration_status,
+                       "Integration status for images by wavelength and sweep"))
+        forward_links.addItem(Canary.MakeLink(self.__credits,
+                                     "Lists of programs and citations"))
+
+    def reportUnitCell(self,xtal,section):
+        """Add the report of unit cell data to a section"""
+        # Get the unit cell data for the crystal
+        unit_cell = xtal.unit_cell()
+        # Add a table to the section with the parameters
+        section.addTable(['a','b','c',
+                          '&alpha;','&beta;','&gamma']). \
+                          addRow([unit_cell['a']+'&nbsp;',
+                                  unit_cell['b']+'&nbsp;',
+                                  unit_cell['c']+'&nbsp;',
+                                  unit_cell['alpha']+'&nbsp;',
+                                  unit_cell['beta']+'&nbsp;',
+                                  unit_cell['gamma']+'&nbsp;'])
+
+    def reportSpacegroup(self,xtal,section):
+        """Add the report of the spacegroup to a section"""
+        section.addPara("Spacegroup: "+htmlise_sg_name(xtal.spacegroup()))
+        if xtal.alt_spacegroups():
+            section.addPara("Other possibilities could be:")
+            alt_spg_list = section.addList()
+            for alt_spg in xtal.alt_spacegroups():
+                if alt_spg:
+                    alt_spg_list.addItem(htmlise_sg_name(alt_spg))
+        else:
+            section.addPara("No likely alternatives to this spacegroup")
+
+    def reportTwinning(self,xtal,section):
+        """Add the report of twinning analysis to a section"""
+        section.addPara("Overall twinning score: "+xtal.twinning_score())
+        section.addPara(xtal.twinning_report())
+
+    def reportASUContents(self,xtal,section):
+        """Add the report of ASU contents to a section"""
+        nmols = xtal.molecules_in_asu()
+        solvent = xtal.solvent_fraction()
+        if not nmols is None and not solvent is None:
+            # Create a table
+            asu_tbl = section.addTable()
+            seq_html = ''
+            for line in splitlines(xtal.sequence(),60):
+                seq_html += line+"<br />"
+            seq_html = "<span class='sequence'>"+\
+                seq_html.strip("<br />")+\
+                "</span>"
+            asu_tbl.addRow(['Sequence',seq_html])
+            asu_tbl.addRow(['Likely number of molecules in ASU',nmols])
+            asu_tbl.addRow(['Resulting solvent fraction',solvent])
+            asu_tbl.addClass('xia2_info')
+        else:
+            message = "No information on ASU contents"
+            if not len(xtal.sequence()):
+                message += " (because no sequence information was supplied?)"
+            self.addInfo(section,message)
+
+    def reportInterwavelengthAnalysis(self,xtal,section):
+        """Add the report of an interwavelength analysis table to a section"""
+        if not xtal.interwavelength_analysis():
+            # No interwavelength analysis to report
+            return
+        # Make a table to display the data
+        interwavelength_table = Canary.MakeMagicTable(
+            xtal.interwavelength_analysis(),' ')
+        interwavelength_table.setHeader(['Wavelength',
+                                         'B-factor',
+                                         'R-factor',
+                                         'Status'])
+        # Add the table to the section
+        section.addContent(interwavelength_table)
+
+    def reportReflectionFiles(self,section):
+        """Add a report of the reflection files to a section"""
+        refln_files = self.__xia2run.refln_files()
+        if not len(refln_files):
+            self.addWarning(section,"No reflection data files found")
+            return
+        # Write the preamble
+        preamble = "xia2 produced the following reflection data files - to "+\
+            "download, right-click on the link and select \"Save Link As...\""
+        section.addPara(preamble,css_class="preamble")
+        # Build a table of reflection files
+        refln_tbl = section.addTable()
+        refln_tbl.addClass('refln_files')
+        last_format = None
+        # Each file creates a row in the table
+        for refln_file in refln_files:
+            filen = refln_file.basename()
+            if refln_file.format() != last_format:
+                # New format encountered
+                # 
+                # Add a title row for the new format
+                refln_tbl.addRow([str(refln_file.format()).upper()+" files",""],
+                                 css_classes='refln_format')
+                last_format = refln_file.format()
+                # Add "useful for.."
+                try:
+                    refln_tbl.addRow(["Useful for: "+
+                                      refln_file.useful_for()],
+                                     css_classes='useful_for')
+                except KeyError:
+                    pass
+                # Add a "header" row for the files below
+                if self.__xia2run.multi_crystal():
+                    header = ['Crystal','Dataset','File name']
+                else:
+                    header = ['Dataset','File name']
+                refln_tbl.addRow(header,css_classes='refln_header')
+            # Build the row
+            if self.__xia2run.multi_crystal():
+                # Multicrystal run: prepend crystal name
+                reflndata = [refln_file.crystal()]
+            else:
+                reflndata = []
+            reflndata.extend([refln_file.dataset(),
+                              Canary.MakeLink(refln_file.filename(),
+                                              filen,relative_link=True)])
+            # Add the row to the table
+            refln_tbl.addRow(reflndata)
+
+    def reportLogFiles(self,section):
+        """Add a report of the log files to a section"""
+        if not len(self.__xia2run.logfiles()):
+            self.addWarning(section,"No program log files found in"+ \
+                                Canary.MakeLink(self.__xia2run.log_dir(),
+                                                relative_link=True))
+            return
+        # Write the preamble
+        preamble = "The log files are located in "+ \
+            Canary.MakeLink(self.__xia2run.log_dir(),
+                            relative_link=True)+ \
+                            " and are grouped by"
+        if self.__xia2run.multi_crystal():
+            preamble += " crystal and"
+        preamble += " processing stage:"
+        section.addPara(preamble,css_class="preamble")
+        # Loop over crystals
+        for xtal in self.__xia2run.crystals():
+            if not self.__xia2run.multi_crystal():
+                this_section = section
+            else:
+                this_section = section.addSubsection(\
+                    "Log files for crystal "+xtal.name())
+            self.reportLogFilesForXtal(xtal,this_section)
+        # Check for and report any log files not assigned to a crystal
+        unassigned_logs = []
+        for log in self.__xia2run.logfiles():
+            if not log.crystal(): unassigned_logs.append(log)
+        if len(unassigned_logs):
+            self.addWarning(self.__logfiles,
+                            "The following files weren't assigned to a "+
+                            "crystal: ")
+            unassigned = self.__logfiles.addList()
+            for log in unassigned_logs:
+                unassigned.addItem(Canary.MakeLink(
+                        log.relativeName(),log.basename()))
+
+    def reportLogFilesForXtal(self,xtal,section):
+        """Report the log files for a specific crystal"""
+        # Make a table to report the files
+        logs_tbl = section.addTable()
+        logs_tbl.addClass('log_files')
+        this_stage = None
+        this_program = None
+        for log in self.__xia2run.logfiles():
+            # Check whether if belongs to this crystal
+            if log.crystal() != xtal.name(): continue
+            # Determine the processing stage
+            # Logs are grouped by stage according to the
+            # program name
+            program = log.program()
+            stage = log.processing_stage()
+            if not stage:
+                # No stage assigned for this program
+                # Add a warning to the HTML file and skip
+                print "No program stage for program "+str(program)
+                self.addWarning(section,"xia2html: failed to classify log "+
+                                Canary.MakeLink(
+                        log.relativeName(),log.basename())+
+                                "<br />Please report this problem")
+                continue
+            if stage != this_stage:
+                logs_tbl.addRow([stage,''],css_classes='proc_stage')
+                this_stage = stage
+            # Get the description of the log file
+            if program != this_program:
+                description = log.description()
+                if description:
+                    logs_tbl.addRow([description],
+                                    css_classes='proc_description')
+                    this_program = program
+            logdata = [log.basename(),
+                       Canary.MakeLink(log.relativeName(),"original")]
+            # Link to baubles file
+            html_log = log.baublize(target_dir=self.__xia2_html_dir)
+            if html_log:
+                logdata.append(Canary.MakeLink(html_log,"html"))
+            else:
+                logdata.append(None)
+            # Warnings from smartie analysis
+            if len(log.warnings()):
+                logdata.append(Canary.MakeLink(html_log+"#warnings",
+                                               self.__warning_icon+
+                                               " See warnings"))
+            else:
+                logdata.append('')
+            # Add data to the table
+            logs_tbl.addRow(logdata)
+
+    def reportJournalFile(self):
+        """Add a report of the journal files"""
+        # Add a link to the journal file xia2-journal.txt, if found
+        if self.__xia2run.journal_file():
+            journal = self.__output_files.addSubsection("xia2 Journal file")
+            self.addInfo(journal,
+                         "More detailed information on what xia2 did can "+
+                         "be found in the &quot;journal&quot; file:")
+            journal.addList().addItem(Canary.MakeLink(
+                    self.__xia2run.journal_file(),"xia2-journal.txt",
+                    relative_link=True))
+
+    def reportIntegrationStatus(self,section):
+        """Add a report of the integration status to a section"""
+        # Write out the preamble
+        preamble = "The following sections show the status of "+ \
+            "each image from the final integration run "+ \
+            "performed on each sweep within each dataset."
+        preamble += "The table below summarises the image status for each"
+        if self.__xia2run.multi_crystal():
+            preamble += " crystal,"
+        preamble += " dataset and sweep."
+        section.addPara(preamble,css_class="preamble")
+        # Initialise the summary table (listing number of images with
+        # each status) - it will be populated as we go along
+        summary_tbl = section.addTable()
+        # Local convenience variables
+        multi_crystal = self.__xia2run.multi_crystal()
+        int_status_reporter = self.__int_status_reporter
+        # Loop over crystals
+        last_xtal = None
+        for xtal in self.__xia2run.crystals():
+            print ">>>> CRYSTAL: "+xtal.name()
+            # Make a section for each crystal (if multi-crystal run)
+            if multi_crystal:
+                xtal_section = section.addSubsection("Crystal %s" %
+                                                           xtal.name())
+            else:
+                xtal_section = section
+            # Loop over datasets
+            last_dataset = None
+            for dataset in xtal.datasets():
+                print ">>>> DATASET: "+dataset.datasetName()
+                # Make a section for each dataset
+                dataset_section = xtal_section. \
+                    addSubsection("Dataset %s" % dataset.datasetName())
+                # Deal with each sweep associated with the dataset
+                for sweep in dataset.sweeps():
+                    print ">>>> SWEEP: "+str(sweep.name())
+                    last_int_run = sweep.last_integration_run()
+                    if not last_int_run:
+                        # No last integration run found
+                        self.addWarning(dataset_section,
+                                        "Error aquiring last integration "+
+                                        "run for sweep "+sweep.name())
+                        break
+                    # Output status info for this sweep in its own section
+                    start_batch = last_int_run.start_batch()
+                    end_batch = last_int_run.end_batch()
+                    sweep_section = dataset_section. \
+                        addSubsection(sweep.name() + 
+                                      ": batches " + start_batch +
+                                      " to " + end_batch)
+                    # Get the HTML representation of the status line
+                    images_html = int_status_reporter. \
+                        htmliseStatusLine(last_int_run)
+                    sweep_section.addContent("<p>"+images_html+"</p>")
+                    # Add a row to the summary table
+                    row = []
+                    total = 0
+                    if multi_crystal:
+                        if xtal != last_xtal:
+                            # Only link to each crystal once from the table
+                            row.append(Canary.MakeLink(
+                                    xtal_section,xtal.name()))
+                            last_xtal = xtal
+                        else:
+                            row.append('')
+                    if dataset != last_dataset:
+                        # Only link to each dataset once from the table
+                        row.append(Canary.MakeLink(dataset_section,
+                                                   dataset.datasetName()))
+                        last_dataset = dataset
+                    else:
+                        row.append('')
+                    # Link to sweep followed by the stats
+                    row.append(Canary.MakeLink(sweep_section,sweep.name()))
+                    for symbol in int_status_reporter.getSymbolList():
+                        row.append(str(last_int_run.countSymbol(symbol)))
+                        total += last_int_run.countSymbol(symbol)
+                    row.append(total)
+                    summary_tbl.addRow(row)
+        # Finish off the summary table by adding the header
+        header = []
+        if multi_crystal:
+            header.append('Crystal')
+        header.extend(['Dataset','Sweep'])
+        for symbol in int_status_reporter.getSymbolList():
+            symbol_status = int_status_reporter.lookupStatus(symbol)
+            description = int_status_reporter.getDescription(symbol_status)
+            symbol_image = int_status_reporter.getIcon(symbol_status)
+            header.append(description+"<br />"+symbol_image)
+        header.append("Total")
+        summary_tbl.setHeader(header)
+
+    def writeSummaryTable(self,table):
+        """Populate the initial summary table
+
+        Note: although this table appears at the start of the output
+        document, we make it last so we can link to later content."""
+        # Convenience variables
+        has_anomalous = self.__xia2run.has_anomalous()
+        # Build the table as follows:
+        # First: make 
+        table.addClass('table_one')
+        row_titles = ['Wavelength (&Aring;)',
+                      'High resolution limit',
+                      'Low resolution limit',
+                      'Completeness',
+                      'Multiplicity',
+                      'I/sigma',
+                      'R<sub>merge</sub>']
+        if has_anomalous:
+            row_titles.extend(['Anomalous completeness',
+                               'Anomalous multiplicity'])
+        row_titles.extend(['']) # Line linking to full stats
+        # Deal with crystal-specific data
+        xtal_data = { "unit_cell_a": ['Unit cell dimensions: a (&Aring;)'],
+                      "unit_cell_b": ['b (&Aring;)'],
+                      "unit_cell_c": ['c (&Aring;)'],
+                      "unit_cell_alpha": ['&alpha; (&deg;)'],
+                      "unit_cell_beta": ['&beta; (&deg;)'],
+                      "unit_cell_gamma": ['&gamma; (&deg;)'],
+                      "spacegroup": ['Spacegroup'],
+                      "twinning": ['Sfcheck twinning score']}
+        last_xtal = None
+        # Add the initial title column just built
+        table.addColumn(row_titles)
+        # Loop over crystals and datasets
+        for xtal in self.__xia2run.crystals():
+            # Add an additional column for each dataset
+            for dataset in xtal.datasets():
+                # Crystal-specific data
+                if xtal != last_xtal:
+                    # New crystal - fetch data
+                    unit_cell = xtal.unit_cell()
+                    spacegroup = xtal.spacegroup()
+                    twinning_score = xtal.twinning_score()
+                    twinning_report = xtal.twinning_report()
+                    # Store the data for print out at the end
+                    xtal_data['unit_cell_a'].extend([unit_cell['a'],None])
+                    xtal_data['unit_cell_b'].extend([unit_cell['b'],None])
+                    xtal_data['unit_cell_c'].extend([unit_cell['c'],None])
+                    xtal_data['unit_cell_alpha'].extend([unit_cell['alpha'],
+                                                         None])
+                    xtal_data['unit_cell_beta'].extend([unit_cell['beta'],
+                                                        None])
+                    xtal_data['unit_cell_gamma'].extend([unit_cell['gamma'],
+                                                         None])
+                    xtal_data['spacegroup'].extend([htmlise_sg_name(spacegroup),
+                                                None])
+                    xtal_data['twinning'].extend([twinning_score+"<br />"+
+                                                  twinning_report,None])
+                    # Update last crystal
+                    last_xtal = xtal
+                else:
+                    # Same crystal as before
+                    xtal_data['unit_cell_a'].extend([None,None])
+                    xtal_data['unit_cell_b'].extend([None,None])
+                    xtal_data['unit_cell_c'].extend([None,None])
+                    xtal_data['unit_cell_alpha'].extend([None,None])
+                    xtal_data['unit_cell_beta'].extend([None,None])
+                    xtal_data['unit_cell_gamma'].extend([None,None])
+                    xtal_data['spacegroup'].extend([None,None])
+                    xtal_data['twinning'].extend([None,None])
+                # Construct the column of data and add to the table
+                # This is for the overall/average values
+                column_data = [dataset.wavelength(),
+                               dataset['High resolution limit'][1],
+                               dataset['Low resolution limit'][1],
+                               dataset['Completeness'][1],
+                               dataset['Multiplicity'][1],
+                               dataset['I/sigma'][1],
+                               dataset['Rmerge'][1]]
+                if has_anomalous:
+                    try:
+                        anom_completeness = dataset['Anomalous completeness'][1]
+                        anom_multiplicity = dataset['Anomalous multiplicity'][1]
+                    except KeyError:
+                        anom_completeness = '-'
+                        anom_multiplicity = '-'
+                    column_data.extend([anom_completeness,anom_multiplicity])
+                # Link forward to full stats for this dataset
+                column_data.append(Canary.MakeLink(
+                        self.__statistics_sections[dataset.datasetName()],
+                        "See all statistics"))
+                # Append the column to the table
+                if self.__xia2run.multi_crystal():
+                    # Add the crystal name
+                    column_title = xtal.name()+"<br />"
+                else:
+                    column_title = ''
+                column_title += dataset.datasetName()
+                table.addColumn(column_data,
+                                header=column_title)
+                # Add a second column with the high and low values
+                column_data = [None,
+                               "("+dataset['High resolution limit'][2]+\
+                               " - "+dataset['High resolution limit'][3]+")",
+                               "("+dataset['Low resolution limit'][2]+\
+                               " - "+dataset['Low resolution limit'][3]+")",
+                               "("+dataset['Completeness'][2]+\
+                               " - "+dataset['Completeness'][3]+")",
+                               "("+dataset['Multiplicity'][2]+\
+                               " - "+dataset['Multiplicity'][3]+")",
+                               "("+dataset['I/sigma'][2]+\
+                               " - "+dataset['I/sigma'][3]+")",
+                               "("+dataset['Rmerge'][2]+\
+                               " - "+dataset['Rmerge'][3]+")"]
+                if has_anomalous:
+                    try:
+                        anom_completeness = \
+                            "("+dataset['Anomalous completeness'][2]+\
+                            " - "+\
+                            dataset['Anomalous completeness'][3]+")"
+                        anom_multiplicity = \
+                            "("+dataset['Anomalous multiplicity'][2]+\
+                            " - "+\
+                            dataset['Anomalous multiplicity'][3]+")"
+                    except KeyError:
+                        anom_completeness = '-'
+                        anom_multiplicity = '-'
+                    column_data.extend([anom_completeness,anom_multiplicity])
+                table.addColumn(column_data)
+        # Additional data: unit cell, spacegroup
+        table.addRow(['&nbsp;']) # Empty row for padding
+        table.addRow(xtal_data['unit_cell_a'],"unit_cell")
+        table.addRow(xtal_data['unit_cell_b'],"unit_cell")
+        table.addRow(xtal_data['unit_cell_c'],"unit_cell")
+        table.addRow(xtal_data['unit_cell_alpha'],"unit_cell")
+        table.addRow(xtal_data['unit_cell_beta'],"unit_cell")
+        table.addRow(xtal_data['unit_cell_gamma'],"unit_cell")
+        table.addRow(['&nbsp;']) # Empty row for padding
+        table.addRow(xtal_data['spacegroup'])
+        table.addRow(['&nbsp;']) # Empty row for padding
+        table.addRow(xtal_data['twinning'])
+        table.addRow(['',Canary.MakeLink(self.__xtal_parameters,
+                                         "All crystallographic parameters..")])
+
+    def reportStatistics(self,section):
+        """Add a detailed report of the statistics for each dataset"""
+        # Add information line
+        self.addInfo(section,
+                     "Detailed statistics for each dataset as "+
+                     "reported by Scala")
+        # For multiple datasets write a table of contents
+        if len(self.__xia2run.datasets()) > 1:
+            section.addTOC()
+        # Make a subsection for each dataset
+        # and keep a record so we can link to them
+        self.__statistics_sections = {}
+        for xtal in self.__xia2run.crystals():
+            # Create a new subsection for the crystal, if this is a
+            # multicrystal run
+            xtal_name = xtal.name()
+            if self.__xia2run.multi_crystal():
+                xtal_section = section.addSubsection("Crystal "+xtal_name)
+            else:
+                xtal_section = section
+            # Loop over datasets
+            for dataset in xtal.datasets():
+                dataset_name = dataset.datasetName()
+                # Make a new subsection
+                dataset_stats = xtal_section. \
+                    addSubsection("Dataset "+dataset_name)
+                # Make a table of the statistics
+                stats_tbl = Canary.MakeMagicTable(dataset.summary_data())
+                stats_tbl.setHeader(['','Overall','Low','High'])
+                dataset_stats.addContent(stats_tbl)
+                # Store a reference to the subsection for linking to
+                self.__statistics_sections[dataset_name] = dataset_stats
+
+    def reportCredits(self,section):
+        """Add report of the software and citations to the section"""
+        # Software used
+        software = section.addSubsection("Software used").addList()
+        for prog in self.__xia2run.programs():
+            software.addItem(prog)
+        # Citations
+        citer = Citations()
+        citations = section.addSubsection("Citations")
+        self.addInfo(citations,
+                     "Note that links to external content below may "+
+                     "require you to log in before you can view or "+
+                     "download the materials")
+        citation_list = citations.addList()
+        for citation in self.__xia2run.citations():
+            # Get citation link
+            url = citer.getCitationLink(citation)
+            if url:
+                citation_list.addItem(Canary.MakeLink(url,citation))
+            else:
+                citation_list.addItem(citation)
+        # Some other xia2-specific stuff
+        xia2_stuff = section.addSubsection("xia2 Details")
+        xia2_stuff.addPara("Additional details about this run:")
+        tbl_xia2_stuff = xia2_stuff.addTable()
+        tbl_xia2_stuff.addClass('xia2_info')
+        tbl_xia2_stuff.addRow(['Version',self.__xia2run.version()])
+        tbl_xia2_stuff.addRow(['Run time',self.__xia2run.run_time()])
+        tbl_xia2_stuff.addRow(['Command line',self.__xia2run.cmd_line()])
+        tbl_xia2_stuff.addRow(['Termination status',
+                               self.__xia2run.termination_status()])
+        xia2txt = os.path.join(self.__xia2run.xia2_dir(),"xia2.txt")
+        tbl_xia2_stuff.addRow(['xia2.txt file',
+                               Canary.MakeLink(xia2txt,relative_link=True)])
+
+    def addFooter(self):
+        """Add the footer section"""
+        self.__xia2doc.addPara("This file was generated for you from xia2 output by Xia2html %s on %s<br />Powered by Magpie %s and Canary %s<br />&copy; Diamond 2009" \
+                                   % (__version__,
+                                      time.asctime(),
+                                      Magpie.version(),
+                                      Canary.version()),
+                               css_class='footer')
+
+    def copyFiles(self):
+        """Copy Jloggraph and icon files to the xia2_html directory"""
+        # Extras
+        # Just jloggraph applet for now
+        extras_files = ["JLogGraph.jar"]
+        print "Copying files from 'extras' directory..."
+        for filen in extras_files:
+            print "\t"+str(filen)
+            src_file = os.path.join(self.__xia2htmldir,"extras",filen)
+            tgt_file = os.path.join(self.__xia2_html,filen)
+            if os.path.isfile(src_file):
+                shutil.copy(src_file,tgt_file)
+            else:
+                print "*** %s not found ***" % src_file
+                self.addWarning(self.__preamble,
+                                " Unable to copy "+str(src_file)+
+                                ": file not found<br />"+
+                                "Loggraphs in html log files may not work")
+        # Icons
+        print "Copying icons to %s" % self.__xia2_html
+        icons = self.__int_status_reporter.listIconNames()
+        icons.append("warning.png")
+        icons.append("info.png")
+        for icon in icons:
+            print "\t"+str(icon)
+            shutil.copy(os.path.join(self.__icondir,icon),
+                        os.path.join(self.__xia2_html,icon))
+
 # IntegrationStatusReporter
 #
 # Helps with reporting the status of each image in sweeps
@@ -1900,16 +2676,6 @@ if __name__ == "__main__":
         print "Incomplete processing! Stopped"
         sys.exit(1)
 
-    #########################################################
-    # Construct output HTML file
-    #########################################################
-
-    # Build up the output HTML using Canary
-    xia2doc = Canary.Document("xia2 Processing Report: "+xia2run.project_name())
-    xia2doc.addStyle(os.path.join(xia2htmldir,"xia2.css"),Canary.INLINE)
-    warning_icon = "<img src='"+os.path.join(xia2_html_dir, "warning.png")+"'>"
-    info_icon = "<img src='"+os.path.join(xia2_html_dir,"info.png")+"'>"
-
     # Test whether xia2 run finished
     if not xia2run.finished():
         # Assume that xia2 is still running
@@ -1918,611 +2684,5 @@ if __name__ == "__main__":
         print "Refusing to process incomplete file - stopping"
         sys.exit(1)
 
-    # Build the skeleton of the document here
-    # Create the major sections which will be populated later on
-    #
-    # Preamble
-    xia2doc.addPara("XIA2 version %s completed with status '%s'" % \
-                    (xia2run.version(), xia2run.termination_status())). \
-                    addPara("Read output from %s" % \
-                                Canary.MakeLink(xia2dir,
-                                                relative_link=True))
-    #
-    # Initial summary table
-    table_one = xia2doc.addTable() # Initial summary table
-    #
-    # Index section
-    index = xia2doc.addSection()
-    #
-    # Overview section
-    xtal_parameters = xia2doc.addSection("Crystallographic parameters")
-    #
-    # Output files section
-    output_files = xia2doc.addSection("Output files")
-    output_datafiles = output_files.addSubsection("Reflection data files")
-    output_logfiles = output_files.addSubsection("Log files")
-    #
-    # Integration status section
-    int_status_section = xia2doc.addSection("Integration status per image")
-    #
-    # Detailed statistics
-    summary = xia2doc.addSection("Detailed statistics for each dataset")
-    #
-    # Credits section
-    credits = xia2doc.addSection("Credits")
-    
-    # Crystallographic parameters
-    #
-    # Unit cell
-    unit_cell_params = xtal_parameters.addSubsection("Unit cell")
-    for xtal in xia2run.crystals():
-        if xia2run.multi_crystal():
-            this_section = unit_cell_params.addSubsection("Crystal "+
-                                                          xtal.name())
-        else:
-            this_section = unit_cell_params
-        unit_cell = xtal.unit_cell()
-        this_section.addTable(['a','b','c',
-                               '&alpha;','&beta;','&gamma']). \
-                               addRow([unit_cell['a']+'&nbsp;',
-                                       unit_cell['b']+'&nbsp;',
-                                       unit_cell['c']+'&nbsp;',
-                                       unit_cell['alpha']+'&nbsp;',
-                                       unit_cell['beta']+'&nbsp;',
-                                       unit_cell['gamma']+'&nbsp;'])
-    unit_cell_params.addPara(
-        info_icon+ \
-            " The unit cell parameters are the average for all measurements",
-        css_class="info")
-    #
-    # Spacegroup
-    spacegroup = xtal_parameters.addSubsection("Spacegroup")
-    for xtal in xia2run.crystals():
-        if xia2run.multi_crystal():
-            this_section = spacegroup.addSubsection("Crystal "+xtal.name())
-        else:
-            this_section = spacegroup
-        this_section.addPara("Spacegroup: "+htmlise_sg_name(xtal.spacegroup()))
-        if xtal.alt_spacegroups():
-            this_section.addPara("Other possibilities could be:")
-            alt_spg_list = this_section.addList()
-            for alt_spg in xtal.alt_spacegroups():
-                if alt_spg:
-                    alt_spg_list.addItem(htmlise_sg_name(alt_spg))
-        else:
-            this_section.addPara("No likely alternatives to this spacegroup")
-    # Link to logfiles section for pointless log file(s)
-    spacegroup.addPara(info_icon+" The spacegroup determination is made using "+
-                       "pointless ("+
-                       Canary.MakeLink(output_logfiles,
-                                       "see the appropriate log file(s)")+")",
-                       css_class="info")
-    #
-    # Twinning
-    twinning_analysis = xtal_parameters.addSubsection("Twinning analysis")
-    for xtal in xia2run.crystals():
-        if xia2run.multi_crystal():
-            this_section = twinning_analysis.addSubsection("Crystal "+
-                                                           xtal.name())
-        else:
-            this_section = twinning_analysis
-        this_section.addPara("Overall twinning score: "+
-                             xtal.twinning_score())
-        this_section.addPara(xtal.twinning_report())
-    twinning_analysis.addPara(info_icon+
-                              " Twinning score is the value of "+
-                              "&lt;E<sup>4</sup>&gt;/&lt;I<sup>2</sup>&gt; "+
-                              "reported by sfcheck "+
-                              Canary.MakeLink("http://www.ccp4.ac.uk/html/sfcheck.html#Twinning%20test",
-                                              "(see documentation)"),
-                              css_class="info")
-    #
-    # ASU and solvent content
-    asu_contents = xtal_parameters.addSubsection("Asymmetric unit contents")
-    for xtal in xia2run.crystals():
-        if xia2run.multi_crystal():
-            this_section = asu_contents.addSubsection("Crystal "+xtal.name())
-        else:
-            this_section = asu_contents
-        nmols = xtal.molecules_in_asu()
-        solvent = xtal.solvent_fraction()
-        if not nmols is None and not solvent is None:
-            # Create a table
-            asu_tbl = this_section.addTable()
-            seq_html = ''
-            for line in splitlines(xtal.sequence(),60):
-                seq_html += line+"<br />"
-            seq_html = "<span class='sequence'>"+\
-                seq_html.strip("<br />")+\
-                "</span>"
-            asu_tbl.addRow(['Sequence',seq_html])
-            asu_tbl.addRow(['Likely number of molecules in ASU',nmols])
-            asu_tbl.addRow(['Resulting solvent fraction',solvent])
-            asu_tbl.addClass('xia2_info')
-        else:
-            warning_message = warning_icon+" No information on ASU contents"
-            if not len(xtal.sequence()):
-                warning_message += " due to missing sequence information"
-            this_section.addPara(warning_message)
-
-    # Inter-wavelength analysis tables
-    #
-    # Determine how many tables there are
-    got_interwavelength = False
-    for xtal in xia2run.crystals():
-        if xtal.interwavelength_analysis():
-            got_interwavelength = True
-            break
-    if got_interwavelength:
-        # Make a section to print the table(s)
-        interwavelength_analysis = xtal_parameters.addSubsection(
-            "Inter-wavelength B and R-factor analysis")
-        # Examine each crystal
-        for xtal in xia2run.crystals():
-            if xtal.interwavelength_analysis():
-                # This crystal has the data
-                interwavelength_table = Canary.MakeMagicTable(
-                    xtal.interwavelength_analysis(),' ')
-                interwavelength_table.setHeader(['Wavelength',
-                                                 'B-factor',
-                                                 'R-factor',
-                                                 'Status'])
-                # Do we need a specific section to display it?
-                if xia2run.multi_crystal():
-                    # Make a section to display it
-                    interwavelength_analysis.addSubsection(
-                        "Crystal "+xtal.name()).\
-                        addContent(interwavelength_table)
-                else:
-                    # No specific subsection needed
-                    interwavelength_analysis.addContent(interwavelength_table)
-
-    #########################################################
-    # External files
-    #########################################################
-
-    # External reflection files
-    if not xia2.count('scaled_refln_file'):
-        output_datafiles.addPara(warning_icon+
-                                 " No reflection data files were found",
-                                 css_class='warning')
-    else:
-        # Display table of reflection files
-        output_datafiles.addPara("The following reflection data files are available:")
-        refln_files = output_datafiles.addTable()
-        refln_files.addClass('refln_files')
-        last_refln_format = None
-        for refln_file in xia2run.refln_files():
-            filen = refln_file.basename()
-            refln_format = refln_file.format()
-            if refln_format != last_refln_format:
-                # Add a title row for the new format
-                refln_files.addRow([str(refln_format).upper()+" files",""],
-                                   css_classes='refln_format')
-                last_refln_format = refln_format
-                # Add "useful for.."
-                try:
-                    refln_files.addRow(["Useful for: "+
-                                        refln_file.useful_for()],
-                                       css_classes='useful_for')
-                except KeyError:
-                    pass
-                # Add a "header" row for the files below
-                if xia2run.multi_crystal():
-                    header = ['Crystal','Dataset','File name']
-                else:
-                    header = ['Dataset','File name']
-                refln_files.addRow(header,css_classes='refln_header')
-            # Build the row data
-            if xia2run.multi_crystal():
-                reflndata = [refln_file.crystal()]
-            else:
-                reflndata = []
-            reflndata.extend([refln_file.dataset(),
-                              Canary.MakeLink(refln_file.filename(),
-                                              filen,relative_link=True)])
-            refln_files.addRow(reflndata)
-
-    # External log files
-    if not len(xia2run.logfiles()):
-        output_logfiles.addPara(warning_icon+" No program log files found in"+ \
-                                Canary.MakeLink(xia2run.log_dir(),
-                                                relative_link=True),
-                                css_class="warning")
-    else:
-        # Display table of log files
-        output_logfiles.addPara("The following log files are located in "+ \
-                                    Canary.MakeLink(xia2run.log_dir(),
-                                                    relative_link=True)+ \
-                                    " and are grouped by processing stage:")
-        for xtal in xia2run.crystals():
-            if not xia2run.multi_crystal():
-                this_section = output_logfiles
-            else:
-                this_section = output_logfiles.addSubsection(\
-                    "Log files for crystal "+xtal.name())
-            logs = this_section.addTable()
-            logs.addClass('log_files')
-            this_stage = None
-            this_program = None
-            for log in xia2run.logfiles():
-                # Check whether if belongs to this crystal
-                if log.crystal() != xtal.name(): continue
-                # Determine the processing stage
-                # Logs are grouped by stage according to the
-                # program name
-                program = log.program()
-                stage = log.processing_stage()
-                if not stage:
-                    # No stage assigned for this program
-                    # Add a warning to the HTML file and skip
-                    print "No program stage for program "+str(program)
-                    output_logfiles.addPara(warning_icon+
-                                            " xia2html: failed to classify log "+
-                                            Canary.MakeLink(
-                            log.relativeName(),log.basename())+
-                                            "<br />Please report this problem",
-                                            css_class='warning')
-                    continue
-                if stage != this_stage:
-                    logs.addRow([stage,''],css_classes='proc_stage')
-                    this_stage = stage
-                # Get the description of the log file
-                if program != this_program:
-                    description = log.description()
-                    if description:
-                        logs.addRow([description],css_classes='proc_description')
-                        this_program = program
-                logdata = [log.basename(),
-                           Canary.MakeLink(log.relativeName(),"original")]
-                # Link to baubles file
-                html_log = log.baublize(target_dir=xia2_html_dir)
-                if html_log:
-                    logdata.append(Canary.MakeLink(html_log,"html"))
-                else:
-                    logdata.append(None)
-                # Warnings from smartie analysis
-                if len(log.warnings()):
-                    logdata.append(Canary.MakeLink(html_log+"#warnings",
-                                                   warning_icon+" See warnings"))
-                else:
-                    logdata.append('')
-                # Add data to the table
-                logs.addRow(logdata)
-        # Add a warning for any logs that weren't assigned to a crystal
-        unassigned_logs = []
-        for log in xia2run.logfiles():
-            if not log.crystal(): unassigned_logs.append(log)
-        if len(unassigned_logs):
-            output_logfiles.addPara(warning_icon+ \
-                      " The following files weren't assigned to a crystal: ", \
-                                      css_class="warning")
-            unassigned = output_logfiles.addList()
-            for log in unassigned_logs:
-                unassigned.addItem(Canary.MakeLink(
-                        log.relativeName(),log.basename()))
-        # Add a link to the journal file xia2-journal.txt, if found
-        if xia2run.journal_file():
-            xia2_journal = output_files.addSubsection("xia2 Journal file")
-            xia2_journal.addPara(info_icon+" More detailed information on what xia2 did can be found in the &quot;journal&quot; file:",css_class="info")
-            xia2_journal.addList().addItem(Canary.MakeLink(
-                    xia2run.journal_file(),"xia2-journal.txt",
-                    relative_link=True))
-        # Copy the JLoggraph applet to the xia2_html directory
-        # It lives in the "extras" subdir of the Xia2html source
-        # directory
-        jar_file = "JLogGraph.jar"
-        jloggraph_jar = os.path.join(xia2htmldir,"extras",jar_file)
-        print "Copying %s to %s" % (jloggraph_jar,xia2_html)
-        if os.path.isfile(jloggraph_jar):
-            shutil.copy(jloggraph_jar,os.path.join(xia2_html,jar_file))
-        else:
-            print "*** %s not found ***" % jloggraph_jar
-            output_logfiles.addPara(warning_icon+" Unable to copy "+
-                                    jloggraph_jar+": file not found<br />"+
-                                    "Loggraphs in html log files may not work",
-                                    css_class="warning")
-                            
-    # Detailed statistics for each dataset
-    print "Number of datasets: "+str(len(xia2run.datasets()))
-    # If there is more than one datatset then write a TOC
-    if len(xia2run.datasets()) > 1:
-        summary.addPara("Statistics for each of the following datasets:")
-        summary.addTOC()
-    statistic_sections = {}
-    for dataset in xia2run.datasets():
-        # Make a subsection for each dataset
-        if xia2run.multi_crystal():
-            section_title = "Crystal "+dataset.crystalName()+\
-                " Dataset "+dataset.datasetName()
-        else:
-            section_title = "Dataset "+dataset.datasetName()
-        stats_subsection = summary.addSubsection(section_title)
-        summary_table = Canary.MakeMagicTable(dataset.summary_data())
-        summary_table.setHeader(['','Overall','Low','High'])
-        stats_subsection.addContent(summary_table)
-        # Store a reference to the subsection for linking to later
-        statistic_sections[dataset.name()] = stats_subsection
-
-    #########################################################
-    # Integration status per image
-    #########################################################
-    int_status_reporter = IntegrationStatusReporter(xia2_html_dir,
-                                            xia2run.integration_status_key())
-    # Write out the preamble and key of symbols
-    int_status_section.addPara("The following sections show the status of each image from the final integration run performed on each sweep within each dataset.")
-    # Add a summary table here - it will be populated as
-    # we got along
-    int_status_section.addPara("This table summarises the image status for each dataset and sweep.")
-    int_table = int_status_section.addTable()
-    # Loop over crystals
-    this_xtal = None
-    for xtal in xia2run.crystals():
-        print ">>>> CRYSTAL: "+xtal.name()
-        # Make a section for each crystal (if multi-crystal run)
-        if xia2run.multi_crystal():
-            this_section = int_status_section.addSubsection("Crystal %s" %
-                                                            xtal.name())
-        else:
-            this_section = int_status_section
-        # Loop over datasets
-        this_dataset = None
-        for dataset in xtal.datasets():
-            print ">>>> DATASET: "+dataset.datasetName()
-            # Make a section for each dataset
-            int_status_dataset_section = this_section. \
-                addSubsection("Dataset %s" % dataset.datasetName())
-            # Deal with each sweep associated with the dataset
-            for sweep in dataset.sweeps():
-                print ">>>> SWEEP: "+str(sweep.name())
-                last_int_run = sweep.last_integration_run()
-                if not last_int_run:
-                    # No last integration run found
-                    int_status_dataset_section.addPara(warning_icon + \
-                        " Error aquiring last integration run for sweep "+ \
-                        sweep.name(),css_class="warning")
-                    break
-                # Output status info for this sweep in its own section
-                start_batch = last_int_run.start_batch()
-                end_batch = last_int_run.end_batch()
-                sweep_section = int_status_dataset_section. \
-                    addSubsection(sweep.name() + ": batches " + start_batch + \
-                                  " to " + end_batch)
-                # Get the HTML representation of the status line
-                images_html = int_status_reporter. \
-                    htmliseStatusLine(last_int_run)
-                sweep_section.addContent("<p>"+images_html+"</p>")
-                # Add a row to the summary table
-                row = []
-                total = 0
-                if xia2run.multi_crystal():
-                    if this_xtal != xtal:
-                        # Only link to each crystal once from the table
-                        this_xtal = xtal
-                        row.append(Canary.MakeLink(this_section,xtal.name()))
-                    else:
-                        row.append('')
-                if this_dataset != dataset:
-                    # Only link to each dataset once from the table
-                    this_dataset = dataset
-                    row.append(Canary.MakeLink(
-                            int_status_dataset_section,
-                        dataset.datasetName()))
-                else:
-                    row.append('')
-                # Link to sweep followed by the stats
-                row.append(Canary.MakeLink(sweep_section,sweep.name()))
-                for symbol in int_status_reporter.getSymbolList():
-                    row.append(str(last_int_run.countSymbol(symbol)))
-                    total += last_int_run.countSymbol(symbol)
-                row.append(total)
-                int_table.addRow(row)
-    # Finish off the summary table by adding the header
-    header = []
-    if xia2run.multi_crystal():
-        header.append('Crystal')
-    header.extend(['Dataset','Sweep'])
-    for symbol in int_status_reporter.getSymbolList():
-        symbol_status = int_status_reporter.lookupStatus(symbol)
-        description = int_status_reporter.getDescription(symbol_status)
-        symbol_image = int_status_reporter.getIcon(symbol_status)
-        header.append(description+"<br />"+symbol_image)
-    header.append("Total")
-    int_table.setHeader(header)
-    # Finally: copy the icons to the xia2_html directory
-    print "Copying icons to %s" % xia2_html
-    icons = int_status_reporter.listIconNames()
-    icons.append("warning.png")
-    icons.append("info.png")
-    for icon in icons:
-        shutil.copy(os.path.join(xia2icondir,icon),
-                    os.path.join(xia2_html,icon))
-    # Credits section
-    #
-    # Programs used by XIA2
-    programs = credits.addSubsection("Software Used").addList()
-    for prog in xia2['xia2_used'][0].value('software').split():
-        programs.addItem(prog)
-    # Citations
-    citer = Citations()
-    citations = credits.addSubsection("Citations")
-    citations.addPara("Note: links to external content that may require you to login before you can view or download",css_class="info")
-    citation_list = citations.addList()
-    for line in str(xia2['citations'][0]).split('\n'):
-        if line.strip() != "":
-            # Get citation link
-            url = citer.getCitationLink(line)
-            if url:
-                citation_list.addItem(Canary.MakeLink(url,line))
-            else:
-                citation_list.addItem(line)
-    # Some other xia2-specific stuff
-    sect_xia2_stuff = credits.addSubsection("xia2 Details")
-    sect_xia2_stuff.addPara("Additional details about this run:")
-    tbl_xia2_stuff = sect_xia2_stuff.addTable()
-    tbl_xia2_stuff.addClass('xia2_info')
-    tbl_xia2_stuff.addRow(['Version',xia2run.version()])
-    tbl_xia2_stuff.addRow(['Run time',xia2run.run_time()])
-    tbl_xia2_stuff.addRow(['Command line',xia2run.cmd_line()])
-    tbl_xia2_stuff.addRow(['Termination status',xia2run.termination_status()])
-    xia2txt = os.path.join(xia2dir,"xia2.txt")
-    tbl_xia2_stuff.addRow(['xia2.txt file',
-                           Canary.MakeLink(xia2txt,relative_link=True)])
-    
-    # Put in some forwarding linking from the index
-    index.addPara("Contents of the rest of this document:")
-    forward_links = index.addList()
-    forward_links.addItem(Canary.MakeLink(output_datafiles,
-                                     "Reflection data files output from xia2"))
-    forward_links.addItem(Canary.MakeLink(summary,
-                                     "Full statistics for each wavelength"))
-    forward_links.addItem(Canary.MakeLink(output_logfiles,
-                                     "Log files from individual stages"))
-    forward_links.addItem(Canary.MakeLink(int_status_section,
-                       "Integration status for images by wavelength and sweep"))
-    forward_links.addItem(Canary.MakeLink(credits,
-                                     "Lists of programs and citations"))
-
-    # Footer section
-    footer = "This file generated for you from xia2 output by Xia2html %s on %s<br />Powered by Magpie %s and Canary %s<br />&copy; Diamond 2009" \
-        % (__version__,
-           time.asctime(),
-           Magpie.version(),
-           Canary.version())
-    xia2doc.addContent("<p class='footer'>%s</p>" % footer)
-
-    #########################################################
-    # "Table one" (initial summary table)
-    #########################################################
-    # Note: although this table appears at the start of the output
-    # document, we make it last so we can link to later content
-    table_one.addClass('table_one')
-    row_titles = ['Wavelength (&Aring;)',
-                  'High resolution limit',
-                  'Low resolution limit',
-                  'Completeness',
-                  'Multiplicity',
-                  'I/sigma',
-                  'R<sub>merge</sub>']
-    if xia2run.has_anomalous():
-        row_titles.extend(['Anomalous completeness',
-                           'Anomalous multiplicity'])
-    row_titles.extend(['']) # Line linking to full stats
-    # Deal with crystal-specific data
-    xtal_data = { "unit_cell_a": ['Unit cell dimensions: a (&Aring;)'],
-                  "unit_cell_b": ['b (&Aring;)'],
-                  "unit_cell_c": ['c (&Aring;)'],
-                  "unit_cell_alpha": ['&alpha; (&deg;)'],
-                  "unit_cell_beta": ['&beta; (&deg;)'],
-                  "unit_cell_gamma": ['&gamma; (&deg;)'],
-                  "spacegroup": ['Spacegroup'],
-                  "twinning": ['Sfcheck twinning score']}
-    last_xtal = None
-    # Add initial title column
-    table_one.addColumn(row_titles)
-    # Add additional columns for each dataset
-    for dataset in xia2run.datasets():
-        # Crystal-specific data
-        xtal = xia2run.get_crystal(dataset.crystalName())
-        if xtal.name() != last_xtal:
-            # New crystal - fetch data
-            unit_cell = xtal.unit_cell()
-            spacegroup = xtal.spacegroup()
-            twinning_score = xtal.twinning_score()
-            twinning_report = xtal.twinning_report()
-            # Store the data for print out at the end
-            xtal_data['unit_cell_a'].extend([unit_cell['a'],None])
-            xtal_data['unit_cell_b'].extend([unit_cell['b'],None])
-            xtal_data['unit_cell_c'].extend([unit_cell['c'],None])
-            xtal_data['unit_cell_alpha'].extend([unit_cell['alpha'],None])
-            xtal_data['unit_cell_beta'].extend([unit_cell['beta'],None])
-            xtal_data['unit_cell_gamma'].extend([unit_cell['gamma'],None])
-            xtal_data['spacegroup'].extend([htmlise_sg_name(spacegroup),None])
-            xtal_data['twinning'].extend([twinning_score+"<br />"+
-                                         twinning_report,None])
-            # Update last crystal name
-            last_xtal = xtal.name()
-        else:
-            # Same crystal as before
-            xtal_data['unit_cell_a'].extend([None,None])
-            xtal_data['unit_cell_b'].extend([None,None])
-            xtal_data['unit_cell_c'].extend([None,None])
-            xtal_data['unit_cell_alpha'].extend([None,None])
-            xtal_data['unit_cell_beta'].extend([None,None])
-            xtal_data['unit_cell_gamma'].extend([None,None])
-            xtal_data['spacegroup'].extend([None,None])
-            xtal_data['twinning'].extend([None,None])
-        # Construct the column of data and add to the table
-        # This is for the overall/average values
-        column_data = [dataset.wavelength(),
-                       dataset['High resolution limit'][1],
-                       dataset['Low resolution limit'][1],
-                       dataset['Completeness'][1],
-                       dataset['Multiplicity'][1],
-                       dataset['I/sigma'][1],
-                       dataset['Rmerge'][1]]
-        if xia2run.has_anomalous():
-            try:
-                anom_completeness = dataset['Anomalous completeness'][1]
-                anom_multiplicity = dataset['Anomalous multiplicity'][1]
-            except KeyError:
-                anom_completeness = '-'
-                anom_multiplicity = '-'
-            column_data.extend([anom_completeness,anom_multiplicity])
-        # Link forward to full stats for this dataset
-        column_data.append(Canary.MakeLink(
-                statistic_sections[dataset.name()],
-                "See all statistics"))
-        # Append the column to the table
-        if len(xia2run.crystals()) > 1:
-            # Add the crystal name
-            column_title = dataset.crystalName()+"<br />"
-        else:
-            column_title = ''
-        column_title += dataset.datasetName()
-        table_one.addColumn(column_data,
-                            header=column_title)
-        # Add a second column with the high and low values
-        column_data = [None,
-                       "("+dataset['High resolution limit'][2]+\
-                       " - "+dataset['High resolution limit'][3]+")",
-                       "("+dataset['Low resolution limit'][2]+\
-                       " - "+dataset['Low resolution limit'][3]+")",
-                       "("+dataset['Completeness'][2]+\
-                       " - "+dataset['Completeness'][3]+")",
-                       "("+dataset['Multiplicity'][2]+\
-                       " - "+dataset['Multiplicity'][3]+")",
-                       "("+dataset['I/sigma'][2]+\
-                       " - "+dataset['I/sigma'][3]+")",
-                       "("+dataset['Rmerge'][2]+\
-                       " - "+dataset['Rmerge'][3]+")"]
-        if xia2run.has_anomalous():
-            try:
-                anom_completeness = "("+dataset['Anomalous completeness'][2]+\
-                                    " - "+\
-                                    dataset['Anomalous completeness'][3]+")"
-                anom_multiplicity = "("+dataset['Anomalous multiplicity'][2]+\
-                                    " - "+\
-                                    dataset['Anomalous multiplicity'][3]+")"
-            except KeyError:
-                anom_completeness = '-'
-                anom_multiplicity = '-'
-            column_data.extend([anom_completeness,anom_multiplicity])
-        table_one.addColumn(column_data)
-    # Additional data: unit cell, spacegroup
-    table_one.addRow(['&nbsp;']) # Empty row for padding
-    table_one.addRow(xtal_data['unit_cell_a'],"unit_cell")
-    table_one.addRow(xtal_data['unit_cell_b'],"unit_cell")
-    table_one.addRow(xtal_data['unit_cell_c'],"unit_cell")
-    table_one.addRow(xtal_data['unit_cell_alpha'],"unit_cell")
-    table_one.addRow(xtal_data['unit_cell_beta'],"unit_cell")
-    table_one.addRow(xtal_data['unit_cell_gamma'],"unit_cell")
-    table_one.addRow(['&nbsp;']) # Empty row for padding
-    table_one.addRow(xtal_data['spacegroup'])
-    table_one.addRow(['&nbsp;']) # Empty row for padding
-    table_one.addRow(xtal_data['twinning'])
-    table_one.addRow(['',Canary.MakeLink(xtal_parameters,
-                                         "All crystallographic parameters..")])
-
-    # Spit out the HTML
-    xia2doc.renderFile('xia2.html')
+    # Generate the HTML
+    xia2doc = Xia2doc(xia2run)
