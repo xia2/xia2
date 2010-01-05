@@ -81,7 +81,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.90 2010/01/05 16:10:59 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.91 2010/01/05 16:49:35 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1580,11 +1580,24 @@ class Xia2doc:
                         " in directory "+
                         Canary.MakeLink(self.__xia2run.xia2_dir(),
                                         relative_link=True))
-        self.__xia2doc.addPara("Possible reasons for the failure are:")
-        self.__xia2doc.addList(). \
-            addItem("xia2 is still running"). \
-            addItem("xia2 failed unexpectedly"). \
-            addItem("xia2 completed successfully but Xia2html failed")
+        # Check to see if the run finished
+        if self.__xia2run.finished():
+            # Run finished - was there an error?
+            xia2_status = self.__xia2run.termination_status()
+            if xia2_status.startswith("error:"):
+                self.__xia2doc.addPara("xia2 terminated with an error:")
+            else:
+                self.__xia2doc.addPara("xia2 terminated with the message:")
+            self.__xia2doc.addList().addItem(xia2_status)
+        else:
+            # Run doesn't appear to have finished - offer suggestions
+            self.__xia2doc.addPara(
+                "It's not clear why this has happened but possible reasons "+
+                "for the failure include:")
+            self.__xia2doc.addList(). \
+                addItem("xia2 is still running"). \
+                addItem("xia2 failed unexpectedly"). \
+                addItem("xia2 completed successfully but Xia2html failed")
         # Make a tar file with xia2.txt, xia2.error and xia2-debug.txt
         archive = os.path.join(self.__xia2_html,"xia2-fail.tar")
         tf = tarfile.open(archive,'w')
