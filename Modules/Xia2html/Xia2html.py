@@ -81,7 +81,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.87 2010/01/05 13:30:17 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.88 2010/01/05 13:33:27 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -2463,13 +2463,6 @@ if __name__ == "__main__":
     if not os.path.exists(os.path.join(xia2dir,"xia2.txt")):
         print "xia2.txt not found"
         sys.exit(1)
-
-    # Collect the XIA2HTML environment variable setting
-    xia2htmldir = os.environ['XIA2HTMLDIR']
-    print "XIA2HTMLDIR environment variable set to %s" % xia2htmldir
-
-    # Location of the icons
-    xia2icondir = os.path.join(xia2htmldir,"icons")
 
     #########################################################
     # Construct Magpie processor object for xia2.txt
