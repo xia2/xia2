@@ -1333,7 +1333,7 @@ class XDSScaler(Scaler):
 
         if self._scalr_corrections:
             Journal.block(
-                'scaling', self.get_scaler_xcrystal().get_name(), 'CCP4',
+                'scaling', self.get_scaler_xcrystal().get_name(), 'XSCALE',
                 {'scaling model':'automatic',
                  'absorption':self._scalr_correct_absorption,
                  'modulation':self._scalr_correct_modulation,
