@@ -81,7 +81,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.86 2010/01/05 13:21:03 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.87 2010/01/05 13:30:17 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1461,18 +1461,18 @@ class Xia2doc:
         print "XIA2HTMLDIR => %s" % self.__xia2htmldir
         # Relative and absolute paths for xia2_html directory
         self.__xia2_html_dir = "xia2_html"
-        self.__xia2_html = os.path.join(os.getcwd(),xia2_html_dir)
+        self.__xia2_html = os.path.join(os.getcwd(),self.__xia2_html_dir)
         if not os.path.isdir(self.__xia2_html):
             # Try to make the directory
-            print "Making output subdirectory %s" % xia2_html
-            os.mkdir(xia2_html)
+            print "Making output subdirectory %s" % self.__xia2_html
+            os.mkdir(self.__xia2_html)
         # Sourc directory where icons are located
         self.__icondir = os.path.join(self.__xia2htmldir,"icons")
         # HTML code for warning and info icons
-        self.__warning_icon = Canary.MakeImg(os.path.join(xia2_html_dir,
-                                                          "warning.png"))
-        self.__info_icon = Canary.MakeImg(os.path.join(xia2_html_dir,
-                                                       "info.png"))
+        self.__warning_icon = Canary.MakeImg(
+            os.path.join(self.__xia2_html_dir,"warning.png"))
+        self.__info_icon = Canary.MakeImg(
+            os.path.join(self.__xia2_html_dir,"info.png"))
         # Integration status reporter
         self.__int_status_reporter = IntegrationStatusReporter(
             self.__xia2_html_dir,self.__xia2run.integration_status_key())
@@ -2470,23 +2470,6 @@ if __name__ == "__main__":
 
     # Location of the icons
     xia2icondir = os.path.join(xia2htmldir,"icons")
-
-    #########################################################
-    # Some decisions are made here
-    #########################################################
-
-    # We'll make a subdirectory in the current directory
-    # for the generated files, images and helpers
-    #
-    # Relative path for directory with xia2html output files
-    xia2_html_dir = "xia2_html"
-    #
-    # Absolute path for directory with xia2html output files
-    xia2_html = os.path.join(os.getcwd(),xia2_html_dir)
-    if not os.path.isdir(xia2_html):
-        # Try to make the directory
-        print "Making output subdirectory %s" % xia2_html
-        os.mkdir(xia2_html)
 
     #########################################################
     # Construct Magpie processor object for xia2.txt
