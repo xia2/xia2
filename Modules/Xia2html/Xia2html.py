@@ -81,7 +81,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.89 2010/01/05 15:23:25 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.90 2010/01/05 16:10:59 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -91,6 +91,7 @@ import sys
 import os
 import shutil
 import time
+import tarfile
 import Magpie
 import Canary
 import smartie
@@ -1532,7 +1533,16 @@ class Xia2doc:
         self.__credits = self.addSection("Credits")
 
     def reportRun(self):
-        """Populate the document with content from the xia2 run"""
+        """Populate the document with content from the xia2 run
+
+        This method populates the output document by invoking the
+        methods required to populate the individual document
+        sections.
+
+        Note that the order that the sections appear in the final
+        rendered document is not determined by the order of the
+        invocations here, but by the order in which the sections
+        were created in the initialiseDocument method."""
         # Write the preamble
         self.addPreamble(self.__preamble)
         # Add the crystallographic data
@@ -1555,7 +1565,16 @@ class Xia2doc:
         self.addFooter()
 
     def reportIncompleteRun(self):
-        """Generate a report for incomplete processing of the run data"""
+        """Generate a report for incomplete processing of the run data
+
+        For 'incomplete' runs (i.e. a xia2 run that the Xia2run instance
+        couldn't process fully), this writes a document explaining the
+        error and some possible reasons.
+
+        It also attempts to create a .tar file in the xia2_html directory
+        with diagnostic files (e.g. xia2.txt, xia2-debug.txt...) and
+        gives a link to this file so that it can be emailed to the
+        xia2 developer."""
         self.addWarning(self.__xia2doc,
                         "Xia2html failed to process the output from this run"+
                         " in directory "+
@@ -1566,6 +1585,21 @@ class Xia2doc:
             addItem("xia2 is still running"). \
             addItem("xia2 failed unexpectedly"). \
             addItem("xia2 completed successfully but Xia2html failed")
+        # Make a tar file with xia2.txt, xia2.error and xia2-debug.txt
+        archive = os.path.join(self.__xia2_html,"xia2-fail.tar")
+        tf = tarfile.open(archive,'w')
+        for filen in ("xia2.txt","xia2.error","xia2-debug.txt"):
+            if os.path.exists(filen):
+                tf.add(filen)
+        tf.close()
+        self.__xia2doc.addPara(
+            "A tar file with diagnostic information has been created: "+
+            Canary.MakeLink(archive))
+        self.__xia2doc.addPara(
+            "Please send this tar file to report the error to "+
+            Canary.MakeLink("mailto:graeme.winter@diamond.ac.uk",
+                            "graeme.winter@diamond.ac.uk"))
+        # Finish off the document with xia2 info and footer
         self.reportXia2Info(self.__xia2doc)
         self.addFooter()
 
