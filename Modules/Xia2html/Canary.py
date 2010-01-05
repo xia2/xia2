@@ -10,7 +10,7 @@
 # Provide classes and functions for generating interactive HTML
 # documents
 #
-__cvs_id__ = "$Id: Canary.py,v 1.7 2009/12/22 11:21:34 pjx Exp $"
+__cvs_id__ = "$Id: Canary.py,v 1.8 2010/01/05 11:13:25 pjx Exp $"
 __version__ = "0.0.3"
 
 #######################################################################
@@ -847,6 +847,21 @@ def MakeLink(resource,text=None,relative_link=False):
         link_text = str(text)
     # Build and return the link
     return "<a href='"+str(url)+"'>"+str(link_text)+"</a>"
+
+def MakeImg(src,alt=None,title=None):
+    """Build a <img... /> tag to link to an image
+
+    'src' is the path to the image file.
+
+    Optional parameters 'alt' and 'title' are used to populate
+    alt and title attributes of the img tag, if provided."""
+    img = "<img src='"+str(src)+"'"
+    if alt:
+        img += " alt='"+str(alt)+"'"
+    if title:
+        img += " title='"+str(title)+"'"
+    img += " />"
+    return img
 
 #######################################################################
 # Main program
