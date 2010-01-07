@@ -77,7 +77,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.101 2010/01/07 17:43:03 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.102 2010/01/07 18:00:47 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -116,7 +116,19 @@ class PipelineInfo:
     addLogInfo() method call in the __populate method with
     information about the new log file. Note that the order in
     which addLogInfo calls occur also defines the order that
-    the logs will be sorted into on output."""
+    the logs will be sorted into on output.
+
+    Note regarding the 'XDS pipeline':
+
+    At the time of writing xia2 supports at least two different
+    notional pipelines, one using XDS and one without. By default
+    the PipelineInfo class is set up to return data appropriate for
+    the non-XDS pipeline. To change a PipelineInfo object to
+    represent the XDS pipeline, invoke the 'setXDSPipeline' method.
+
+    Developers modifying the PipelineInfo should therefore also
+    consider changes to the 'setXDSPipeline' method if their
+    modifications relate to the use of XDS in xia2."""
 
     def __init__(self):
         """Create and initialise Pipeline object
@@ -319,7 +331,10 @@ class PipelineInfo:
         return ""
 
     def baublize(self,logfile):
-        """Get the value of the baublize flag for a logfile"""
+        """Get the value of the baublize flag for a logfile
+
+        Returns a boolean value depending on whether baubles
+        can be run on this log file (True) or not (False)."""
         data = self.lookupLogInfo(logfile)
         if data:
             return data['baublize']
@@ -369,7 +384,10 @@ class Citations:
     the xia2.txt file.
 
     To add information on a new citation, add a new call to the
-    addCitation method in __init__."""
+    addCitation method in __init__.
+    Note that the citation text supplied in addCitation this must
+    exactly match the text in the xia2.txt file for the associated
+    link (if any) to be returned."""
 
     def __init__(self):
         """Create and initialise Citations object."""
