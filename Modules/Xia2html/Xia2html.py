@@ -81,7 +81,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.91 2010/01/05 16:49:35 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.92 2010/01/07 11:23:19 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -324,6 +324,15 @@ class PipelineInfo:
         if data:
             return data['baublize']
         return False
+
+    def stageForProgram(self,program):
+        """Get the processing stage for a program"""
+        for name in self.listNames():
+            log_info = self.lookupLogInfo(name)
+            if log_info['program'] == program:
+                return log_info['stage']
+        # No match
+        return None
 
     def listNames(self):
         """Return a list of the log file name fragments in pipeline order"""
@@ -1467,7 +1476,7 @@ class Xia2doc:
             # Try to make the directory
             print "Making output subdirectory %s" % self.__xia2_html
             os.mkdir(self.__xia2_html)
-        # Sourc directory where icons are located
+        # Source directory where icons are located
         self.__icondir = os.path.join(self.__xia2htmldir,"icons")
         # HTML code for warning and info icons
         self.__warning_icon = Canary.MakeImg(
@@ -1477,6 +1486,11 @@ class Xia2doc:
         # Integration status reporter
         self.__int_status_reporter = IntegrationStatusReporter(
             self.__xia2_html_dir,self.__xia2run.integration_status_key())
+        # Dictionary to store anchors within the report
+        self.__anchor = {}
+        # Local pipeline info object
+        self.__pipeline = PipelineInfo()
+        if self.__xia2run.xds_pipeline(): self.__pipeline.setXDSPipeline()
         # Initialise the document
         self.initialiseDocument()
         # Check whether the run completed
@@ -1545,14 +1559,14 @@ class Xia2doc:
         were created in the initialiseDocument method."""
         # Write the preamble
         self.addPreamble(self.__preamble)
-        # Add the crystallographic data
-        self.reportXtallographicData(self.__xtal_parameters)
-        # Interwavelength analysis
-        self.reportInterwavelengthAnalyses(self.__xtal_parameters)
         # Report the output files
         self.reportReflectionFiles(self.__refln_files)
         self.reportLogFiles(self.__logfiles)
         self.reportJournalFile()
+        # Add the crystallographic data
+        self.reportXtallographicData(self.__xtal_parameters)
+        # Interwavelength analysis
+        self.reportInterwavelengthAnalyses(self.__xtal_parameters)
         # Report the integration status per image
         self.reportIntegrationStatus(self.__integration_status)
         # Report the detailed statistics and summary table
@@ -1620,6 +1634,27 @@ class Xia2doc:
         """Add a new section to the document"""
         return self.__xia2doc.addSection(title)
 
+    def makeAnchor(self,xtal_name,data_name):
+        """Make an anchor in the document
+
+        This creates and returns a Canary.Anchor object.
+        A reference to the anchor is stored by 'xtal_name'
+        and 'data_name' so that it can be retrieved later
+        using the fetchAnchor method."""
+        anchor = Canary.Anchor(self.__xia2doc,xtal_name+"_"+data_name)
+        try:
+            anchors = self.__anchor[xtal_name]
+        except KeyError:
+            # Create the dictionary first
+            self.__anchor[xtal_name] = {}
+            anchors = self.__anchor[xtal_name]
+        anchors[data_name] = anchor
+        return anchor
+
+    def fetchAnchor(self,xtal_name,data_name):
+        """Return a stored anchor"""
+        return self.__anchor[xtal_name][data_name]
+
     def addInfo(self,section,message):
         """Add an info message to a section"""
         section.addPara(self.__info_icon+" "+message,css_class="info")
@@ -1681,15 +1716,10 @@ class Xia2doc:
             self.reportSpacegroup(xtal,spacegroup)
             self.reportTwinning(xtal,twinning)
             self.reportASUContents(xtal,asu_content)
-        # Add information for each section
+        # Add information for each section as appropriate
         self.addInfo(self.__unit_cell,
                      "The unit cell parameters are the average for "+
                      "all measurements")
-        self.addInfo(self.__spacegroup,
-                     "The spacegroup determination is made using "+
-                     "pointless ("+
-                     Canary.MakeLink(self.__logfiles,
-                                     "see the appropriate log file(s)")+")")
         self.addInfo(self.__twinning,
                      "The twinning score is the value of "+
                      "&lt;E<sup>4</sup>&gt;/&lt;I<sup>2</sup>&gt; "+
@@ -1722,6 +1752,15 @@ class Xia2doc:
                     alt_spg_list.addItem(htmlise_sg_name(alt_spg))
         else:
             section.addPara("No likely alternatives to this spacegroup")
+        # Link to the pointless log file if possible
+        try:
+            # Look up the processing stage for pointless
+            stage = self.__pipeline.stageForProgram('pointless')
+            info = "The spacegroup was determined using pointless "+\
+                self.fetchAnchor(xtal.name(),stage).link("(see log file)")
+        except KeyError:
+            info = "The spacegroup determination was made using pointless"
+        self.addInfo(self.__spacegroup,info)
 
     def reportTwinning(self,xtal,section):
         """Add the report of twinning analysis to a section"""
@@ -1840,7 +1879,7 @@ class Xia2doc:
     def reportLogFiles(self,section):
         """Add a report of the log files to a section"""
         if not len(self.__xia2run.logfiles()):
-            self.addWarning(section,"No program log files found in"+ \
+            self.addWarning(section,"No program log files found in "+ \
                                 Canary.MakeLink(self.__xia2run.log_dir(),
                                                 relative_link=True))
             return
@@ -1899,7 +1938,9 @@ class Xia2doc:
                                 "<br />Please report this problem")
                 continue
             if stage != this_stage:
-                logs_tbl.addRow([stage,''],css_classes='proc_stage')
+                anchor = self.makeAnchor(xtal.name(),stage)
+                logs_tbl.addRow([anchor.embed(stage),''],
+                                css_classes='proc_stage')
                 this_stage = stage
             # Get the description of the log file
             if program != this_program:
@@ -1908,6 +1949,7 @@ class Xia2doc:
                     logs_tbl.addRow([description],
                                     css_classes='proc_description')
                     this_program = program
+            # Start making the table row for the file
             logdata = [log.basename(),
                        Canary.MakeLink(log.relativeName(),"original")]
             # Link to baubles file
