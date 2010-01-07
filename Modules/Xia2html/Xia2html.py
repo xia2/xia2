@@ -81,7 +81,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.94 2010/01/07 13:35:45 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.95 2010/01/07 13:49:19 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1702,9 +1702,11 @@ class Xia2doc:
         # Check whether the run completed
         if xia2run.complete():
             self.reportRun()
+            self.__status = True
         else:
             # Report an incomplete run
             self.reportIncompleteRun()
+            self.__status = False
         # Copy icon files and jloggraph etc
         self.copyFiles()
         # Spit out the HTML
@@ -2554,6 +2556,13 @@ class Xia2doc:
             shutil.copy(os.path.join(self.__icondir,icon),
                         os.path.join(self.__xia2_html,icon))
 
+    def status(self):
+        """Return the status of the Xia2doc object
+
+        Returns True if the run appeared to be successful and False
+        if not."""
+        return self.__status
+
 # IntegrationStatusReporter
 #
 # Helps with reporting the status of each image in sweeps
@@ -2779,14 +2788,18 @@ def splitlines(text,maxline):
 #######################################################################
 
 if __name__ == "__main__":
+    """Xia2html
 
-    #########################################################
-    # Deal with command line etc
-    #########################################################
+    Main program: collects command line arguments, processes xia2
+    output and writes out report document(s).
+
+    Exits with code 0 on success and 1 if there was an error, or if
+    the xia2 output could not be properly processed."""
 
     # Set usage string
     usage = "python Xia2html.py [<xia2-output-dir>]"
 
+    # Process command line
     # Needs one argument to run (i.e. name of a Xia2 output directory)
     if len(sys.argv) < 2:
         # No Xia2 output directory supplied - assume cwd
@@ -2810,12 +2823,16 @@ if __name__ == "__main__":
         print "Xia2html: xia2.txt not found, stopping."
         sys.exit(1)
 
-    #########################################################
-    # Construct Magpie processor object for xia2.txt
-    #########################################################
-
-    # Instantiate a Xia2run object
+    # Process the output
     xia2run = Xia2run(xia2dir)
 
     # Generate the HTML
     xia2doc = Xia2doc(xia2run)
+
+    # Check the status and exit appropriately
+    if xia2doc.status():
+        print "Run was successful"
+        sys.exit(0)
+    else:
+        print "Run was unsuccessful, or there was a Xia2html problem"
+        sys.exit(1)
