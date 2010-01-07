@@ -10,7 +10,7 @@
 # Provide classes and functions for generating interactive HTML
 # documents
 #
-__cvs_id__ = "$Id: Canary.py,v 1.9 2010/01/07 10:43:25 pjx Exp $"
+__cvs_id__ = "$Id: Canary.py,v 1.10 2010/01/07 10:44:41 pjx Exp $"
 __version__ = "0.0.3"
 
 #######################################################################
@@ -738,6 +738,14 @@ class Script(ExternalFile):
         self.inline_end = '</script>'
         self.link_format = '<script src="%s"></script>'
 
+#######################################################################
+# Module Functions
+#######################################################################
+
+def version():
+    """Return the version of the Canary module"""
+    return __version__
+
 def replace_special_characters(text):
     """Replace special characters in a string
 
@@ -756,14 +764,6 @@ def replace_special_characters(text):
             ch = c
         ele.append(ch)
     return "".join(ele)
-
-#######################################################################
-# Module Functions
-#######################################################################
-
-def version():
-    """Return the version of the Canary module"""
-    return __version__
 
 def MakeMagicTable(text,magic_separator='\t',ignore_empty=True):
     """Convert tabular plain text into a Table
