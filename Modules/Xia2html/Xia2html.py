@@ -77,7 +77,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.99 2010/01/07 17:07:30 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.100 2010/01/07 17:36:49 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -763,7 +763,7 @@ class Xia2run:
         # Assign wavelength (i.e. lambda) value to dataset
         print "POPULATE> WAVELENGTHS"
         for wavelength in xia2['wavelength']:
-            for dataset in self.datasets():
+            for dataset in self.__datasets:
                 if dataset.datasetName() == wavelength['name']:
                     dataset.setWavelength(wavelength['lambda'])
                     print "WAVELENGTHS> "+dataset.crystalName()+"/" +\
@@ -780,39 +780,6 @@ class Xia2run:
                 break
             except KeyError:
                 pass
-        # Sweeps and integration runs
-        print "POPULATE> SWEEPS"
-        # Assign (empty) sweeps to datasets
-        for sweep_to_dataset in xia2['sweep_to_dataset']:
-            dataset = self.__get_dataset(sweep_to_dataset['dataset'])
-            this_sweep = sweep_to_dataset['sweep']
-            new_sweep = True
-            for sweep in dataset.sweeps():
-                if sweep.name() == this_sweep:
-                    # Already exists
-                    new_sweep = False
-                    break
-            if new_sweep:
-                dataset.addSweep(Sweep(this_sweep))
-                print "SWEEPS> new sweep "+this_sweep+" added to "+ \
-                    dataset.name()
-        # Add integration runs to sweeps
-        print "SWEEPS> "+str(xia2.count('integration_status_per_image'))+\
-            " sweep integration records found"
-        for int_status in xia2['integration_status_per_image']:
-            # Create an integration run object
-            integration_run = IntegrationRun(int_status)
-            # Locate the Sweep object to assign this to
-            for dataset in self.datasets():
-                for sweep in dataset.sweeps():
-                    if sweep.name() == integration_run.name():
-                        sweep.addIntegrationRun(integration_run)
-                        print "SWEEPS> run assigned to sweep "+sweep.name()
-                        break
-        # Store the raw text of the key to the symbols 
-        print "POPULATE> INTEGRATION STATUS KEY"
-        if xia2.count('integration_status_key'):
-            self.__int_status_key = str(xia2['integration_status_key'][0])
         # Crystals
         print "POPULATE> CRYSTALS"
         xtal_list = []
@@ -845,6 +812,40 @@ class Xia2run:
             for dataset in self.__datasets:
                 if dataset.crystalName() == crystal.name():
                     crystal.addDataset(dataset)
+        # Sweeps and integration runs
+        print "POPULATE> SWEEPS"
+        # Assign (empty) sweeps to datasets
+        for sweep_to_dataset in xia2['sweep_to_dataset']:
+            dataset = self.__get_dataset(sweep_to_dataset['dataset'])
+            this_sweep = sweep_to_dataset['sweep']
+            new_sweep = True
+            for sweep in dataset.sweeps():
+                if sweep.name() == this_sweep:
+                    # Already exists
+                    new_sweep = False
+                    break
+            if new_sweep:
+                dataset.addSweep(Sweep(this_sweep))
+                print "SWEEPS> new sweep "+this_sweep+" added to "+ \
+                    dataset.name()
+        # Add integration runs to sweeps
+        print "SWEEPS> "+str(xia2.count('integration_status_per_image'))+\
+            " sweep integration records found"
+        for int_status in xia2['integration_status_per_image']:
+            # Create an integration run object
+            integration_run = IntegrationRun(int_status)
+            # Locate the Sweep object to assign this to
+            for crystal in self.crystals():
+                for dataset in crystal.datasets():
+                    for sweep in dataset.sweeps():
+                        if sweep.name() == integration_run.name():
+                            sweep.addIntegrationRun(integration_run)
+                            print "SWEEPS> run assigned to sweep "+sweep.name()
+                            break
+        # Store the raw text of the key to the symbols 
+        print "POPULATE> INTEGRATION STATUS KEY"
+        if xia2.count('integration_status_key'):
+            self.__int_status_key = str(xia2['integration_status_key'][0])
         # Assign interwavelength analysis data
         # Only crystals with more than one dataset will also 
         # have this information
@@ -984,15 +985,18 @@ class Xia2run:
         version (which only has the dataset name).
 
         Note that an assumption is made that dataset names are unique
-        across crystals."""
-        # Try the long name first i.e. including project and crystal
-        for dataset in self.datasets():
-            if dataset.name() == dataset_name:
-                return dataset
-        # Nothing found - try the short name (dataset only)
-        for dataset in self.datasets():
-            if dataset.datasetName() == dataset_name:
-                return dataset
+        across crystals.
+
+        Returns None if no match was located."""
+        for xtal in self.crystals():
+            for dataset in xtal.datasets():
+                if dataset.name() == dataset_name:
+                    # Matched long name (including project and crystal)
+                    return dataset
+                elif  dataset.datasetName() == dataset_name:
+                    # Matched short name (no crystal qualifier)
+                    return dataset
+        # No match
         return None
 
     def __list_logfiles(self):
@@ -1084,14 +1088,6 @@ class Xia2run:
     def project_name(self):
         """Return the project name extracted from the xia2.txt file"""
         return self.__project_name
-
-    def datasets(self):
-        """Return Datasets for the run
-
-        This returns a list of the Dataset objects representing
-        datasets/wavelengths that were found in the output. See the
-        Dataset class for information on its methods."""
-        return self.__datasets
 
     def crystals(self):
         """Return Crystals for the run
@@ -2536,8 +2532,10 @@ class Xia2doc:
         self.addInfo(section,
                      "Detailed statistics for each dataset as "+
                      "reported by Scala")
-        # For multiple datasets write a table of contents
-        if len(self.__xia2run.datasets()) > 1:
+        # For multiple crystals and/or multiple datasets, write a table
+        # of contents for the statistics
+        if len(self.__xia2run.crystals()) > 1 or \
+                len(self.__xia2run.crystals()[0].datasets()) > 1:
             section.addTOC()
         # Make a subsection for each dataset
         # and keep a record so we can link to them
