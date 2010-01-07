@@ -81,7 +81,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.92 2010/01/07 11:23:19 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.93 2010/01/07 12:55:29 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -458,7 +458,7 @@ class Xia2run:
     gathered from xia2.txt and other sources (like the LogFiles
     directory)."""
 
-    def __init__(self,xia2_magpie,xia2_dir):
+    def __init__(self,xia2_dir):
         """Create new Xia2run object
 
         'xia2_magpie' is a Magpie processor object that has
@@ -466,7 +466,7 @@ class Xia2run:
 
         'xia2_dir' is the directory containing the xia2 output
         (either relative or absolute)."""
-        self.__xia2     = xia2_magpie
+        self.__xia2      = None
         self.__xia2_dir  = xia2_dir
         self.__version   = '' # xia2 version
         self.__cmd_line  = '' # Command line
@@ -489,11 +489,213 @@ class Xia2run:
         self.__run_finished = False # Whether run finished or not
         try:
             # Populate the object with data
+            self.__process_xia2dottxt()
             self.__populate()
             self.__complete = True
         except:
             # Some problem
+            print "Xia2run: processing/population failed"
             self.__complete = False
+
+    def __process_xia2dottxt(self):
+        """Run text processor on xia2.txt
+
+        Create a Magpie text processor object and use this to
+        process the xia2.txt file."""
+        self.__xia2 = Magpie.Magpie()
+        # Define patterns
+        # Each time a pattern is matched in the source document
+        # a data item is created with the name attached to that
+        # pattern
+        #
+        # xia2_version pattern
+        #
+        # An example of a matching line is:
+        #XIA2 0.3.1.0
+        self.__xia2.addPattern('xia2_version',
+                        "XIA2 ([0-9.]+)$",
+                        ['version'])
+        # project_name pattern
+        #
+        # An example of a matching line is:
+        #Project: AUTOMATIC
+        self.__xia2.addPattern('project_name',"Project: (.*)$",['name'])
+        #
+        # sequence pattern
+        #
+        # An example of a matching line is:
+        #Sequence: GIVEQCCASVCSLYQLENYCNFVNQHLCGSHLVEALYLVCGERGFFYTPKA
+        self.__xia2.addPattern('sequence',"Sequence: ?(.*)$",['sequence'])
+        #
+        # wavelength pattern
+        #
+        # An example of a matching set of lines is:
+        #Wavelength name: NATIVE
+        #Wavelength 0.97900
+        self.__xia2.addPattern('wavelength',
+                               "Wavelength name: ([^\n]*)\nWavelength (.*)$",
+                               ['name','lambda'])
+        # xia2_used pattern
+        #
+        # An example of a matching line is:
+        #XIA2 used...  ccp4 mosflm pointless scala xia2
+        self.__xia2.addPattern('xia2_used',
+                               "XIA2 used... ([^\n]*)",
+                               ['software'])
+        # processing_time pattern
+        #
+        # An example of a matching line is:
+        #Processing took 00h 14m 24s
+        self.__xia2.addPattern('processing_time',
+                               "Processing took ([0-9]+h [0-9]+m [0-9]+s)",
+                               ['time'])
+        # xia2_status
+        #
+        # An example of a matching line is:
+        #Status: normal termination
+        self.__xia2.addPattern('xia2_status',
+                               "Status: ([^\n]*)",
+                               ['status'])
+        # twinning pattern
+        #
+        # An example of a matching set of lines:
+        #Overall twinning score: 1.86
+        #Ambiguous score (1.6 < score < 1.9)
+        self.__xia2.addPattern('twinning',
+                               "Overall twinning score: ([^\n]+)\n([^\n]+)",
+                               ['score','report'])
+        # asu_and_solvent pattern
+        #
+        # An example of a matching set of lines:
+        #Likely number of molecules in ASU: 1
+        #Giving solvent fraction:        0.64
+        self.__xia2.addPattern('asu_and_solvent',
+                               "Likely number of molecules in ASU: ([0-9]+)\nGiving solvent fraction:        ([0-9.]+)",
+                               ['molecules_in_asu','solvent_fraction'])
+        # unit_cell pattern
+        #
+        # An example of a matching set of lines:
+        #Unit cell:
+        #78.013  78.013  78.013
+        #90.000  90.000  90.000
+        self.__xia2.addPattern('unit_cell',
+                               "Unit cell:\n([0-9.]+) +([0-9.]+) +([0-9.]+)\n([0-9.]+) +([0-9.]+) +([0-9.]+)",
+                        ['a','b','c','alpha','beta','gamma'])
+        # command_line pattern
+        #
+        # An example of a matching line:
+        #Command line: /home/pjb/xia2/Applications/xia2.py -xinfo demo.xinfo
+        self.__xia2.addPattern('command_line',
+                               "Command line: (.*)$",
+                               ['cmd_line'])
+        # scaled_refln_file patterns
+        #
+        # Pair of patterns with the same name but match slightly
+        # different instances of the same information (reflection files)
+        #
+        # Example of first instance:
+        #mtz format:
+        #Scaled reflections: /path/to/xia2/DataFiles/blah_blah_free.mtz
+        #
+        # Example of second instance:
+        #Scaled reflections (NATIVE): /path/to/xia2/DataFiles/blah_blah_scaled.sca
+        self.__xia2.addPattern('scaled_refln_file',
+                               '(mtz|sca|sca_unmerged) format:\nScaled reflections ?\(?([^\):]*)\)?: (.+)$',
+                               ['format','dataset','filename'])
+        self.__xia2.addPattern('scaled_refln_file',
+                               "Scaled reflections ?\(?([^\):]*)\)?: (.+)$",
+                               ['dataset','filename','format'])
+        # sweep_to_dataset pattern
+        #
+        # An example of a matching line:
+        # SWEEP NATIVE [WAVELENGTH NATIVE]
+        self.__xia2.addPattern('sweep_to_dataset',
+                               "SWEEP ([^ ]+) \[WAVELENGTH ([^\]]+)\]",
+                               ['sweep','dataset'])
+        # Block definitions
+        #
+        # A block is a contigious set of lines in the input text file
+        # Block definitions consist of a name, and a pair of strings which
+        # mark the beginning and end of the block
+        # Optionally the lines containing the start and end delimiters
+        # can be omitted from the block
+        #
+        # Each time a block is matched in the source document
+        # a data item is created with the name attached to the definition
+        self.__xia2.defineBlock('dataset_summary',
+                                "For ",
+                                "Total unique",
+                                pattern="For ([^\n]*)\n(.+)",
+                                pattern_keys=['dataset','table'])
+        # assumed_spacegroup block
+        #
+        # An example of this is:
+        #
+        #Assuming spacegroup: I 2 3
+        #Other likely alternatives are:
+        #I 21 3
+        #Unit cell:
+        self.__xia2.defineBlock('assumed_spacegroup',
+                                "Assuming spacegroup",
+                                "Unit cell:",Magpie.EXCLUDE_END)
+        # citations block
+        #
+        # An example might look like this:
+        #
+        #Here are the appropriate citations (BIBTeX in xia-citations.bib.)
+        #(1994) Acta Crystallogr. D 50, 760--763
+        #<snipped>
+        #Winter, G. (2010) Journal of Applied Crystallography 43
+        #Status: normal termination
+        self.__xia2.defineBlock('citations',
+                                "Here are the appropriate citations",
+                                "Status",Magpie.EXCLUDE)
+        # integration_status_per_image block
+        #
+        # An example of this is shown below, although there can be
+        # some variation in the preamble:
+        #
+        #-------------------- Integrating SWEEP1 --------------------
+        #Processed batches 1 to 90
+        #Weighted RMSD: 0.89 (0.09)
+        #Integration status per image (60/record):
+        #oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+        #oooooooooooooooooooooooooooooo
+        self.__xia2.defineBlock('integration_status_per_image',
+                                "--- Integrating","ok",Magpie.EXCLUDE_END)
+        # integration_status_key
+        #
+        # An example of this looks like:
+        #
+        #"o" => good        "%" => ok        "!" => bad rmsd
+        #"O" => overloaded  "#" => many bad  "." => blank
+        #"@" => abandoned
+        self.__xia2.defineBlock('integration_status_key',"ok","abandoned")
+        # interwavelength_analysis block
+        #
+        # There are two block definitions here with the same name
+        # Example of "old style" table:
+        #
+        #Inter-wavelength B and R-factor analysis:
+        #WAVE1   0.0 0.00 (ok)
+        #WAVE2  -0.1 0.08 (ok)
+        #WAVE3  -0.4 0.14 (ok)
+        #
+        self.__xia2.defineBlock('interwavelength_analysis',
+                                "Inter-wavelength B and R-factor analysis",
+                                "",Magpie.EXCLUDE)
+        # Example of "new style" table:
+        #
+        #------------------ Local Scaling DEFAULT -------------------
+        #WAVE1   0.0 0.00 (ok)
+        #WAVE2  -0.3 0.08 (ok)
+        #WAVE3  -2.5 0.15 (ok)
+        #------------------------------------------------------------
+        self.__xia2.defineBlock('interwavelength_analysis',
+                                "-- Local Scaling ",
+                                "--",Magpie.EXCLUDE)
+        # Process the xia2.txt file
+        self.__xia2.processFile(os.path.join(self.__xia2_dir,"xia2.txt"))
 
     def __populate(self):
         """Internal: populate the data structure"""
@@ -2586,206 +2788,8 @@ if __name__ == "__main__":
     # Construct Magpie processor object for xia2.txt
     #########################################################
 
-    xia2 = Magpie.Magpie(os.path.join(xia2dir,"xia2.txt"))
-
-    # Define patterns
-    # Each time a pattern is matched in the source document
-    # a data item is created with the name attached to that
-    # pattern
-    #
-    # xia2_version pattern
-    #
-    # An example of a matching line is:
-    #XIA2 0.3.1.0
-    xia2.addPattern('xia2_version',
-                    "XIA2 ([0-9.]+)$",
-                    ['version'])
-    # project_name pattern
-    #
-    # An example of a matching line is:
-    #Project: AUTOMATIC
-    xia2.addPattern('project_name',"Project: (.*)$",['name'])
-    #
-    # sequence pattern
-    #
-    # An example of a matching line is:
-    #Sequence: GIVEQCCASVCSLYQLENYCNFVNQHLCGSHLVEALYLVCGERGFFYTPKA
-    xia2.addPattern('sequence',"Sequence: ?(.*)$",['sequence'])
-    #
-    # wavelength pattern
-    #
-    # An example of a matching set of lines is:
-    #Wavelength name: NATIVE
-    #Wavelength 0.97900
-    xia2.addPattern('wavelength',
-                    "Wavelength name: ([^\n]*)\nWavelength (.*)$",
-                    ['name','lambda'])
-    # xia2_used pattern
-    #
-    # An example of a matching line is:
-    #XIA2 used...  ccp4 mosflm pointless scala xia2
-    xia2.addPattern('xia2_used',
-                    "XIA2 used... ([^\n]*)",
-                    ['software'])
-    # processing_time pattern
-    #
-    # An example of a matching line is:
-    #Processing took 00h 14m 24s
-    xia2.addPattern('processing_time',
-                    "Processing took ([0-9]+h [0-9]+m [0-9]+s)",
-                    ['time'])
-    # xia2_status
-    #
-    # An example of a matching line is:
-    #Status: normal termination
-    xia2.addPattern('xia2_status',
-                    "Status: ([^\n]*)",
-                    ['status'])
-    # twinning pattern
-    #
-    # An example of a matching set of lines:
-    #Overall twinning score: 1.86
-    #Ambiguous score (1.6 < score < 1.9)
-    xia2.addPattern('twinning',
-                    "Overall twinning score: ([^\n]+)\n([^\n]+)",
-                    ['score','report'])
-    # asu_and_solvent pattern
-    #
-    # An example of a matching set of lines:
-    #Likely number of molecules in ASU: 1
-    #Giving solvent fraction:        0.64
-    xia2.addPattern('asu_and_solvent',
-                    "Likely number of molecules in ASU: ([0-9]+)\nGiving solvent fraction:        ([0-9.]+)",
-                    ['molecules_in_asu','solvent_fraction'])
-    # unit_cell pattern
-    #
-    # An example of a matching set of lines:
-    #Unit cell:
-    #78.013  78.013  78.013
-    #90.000  90.000  90.000
-    xia2.addPattern('unit_cell',
-                    "Unit cell:\n([0-9.]+) +([0-9.]+) +([0-9.]+)\n([0-9.]+) +([0-9.]+) +([0-9.]+)",
-                    ['a','b','c','alpha','beta','gamma'])
-    # command_line pattern
-    #
-    # An example of a matching line:
-    #Command line: /home/pjb/xia2/Applications/xia2.py -chef -xinfo demo.xinfo
-    xia2.addPattern('command_line',
-                    "Command line: (.*)$",
-                    ['cmd_line'])
-    # scaled_refln_file patterns
-    #
-    # Pair of patterns with the same name but match slightly
-    # different instances of the same information (reflection files)
-    #
-    # Example of first instance:
-    #mtz format:
-    #Scaled reflections: /path/to/xia2/DataFiles/blah_blah_free.mtz
-    #
-    # Example of second instance:
-    #Scaled reflections (NATIVE): /path/to/xia2/DataFiles/blah_blah_scaled.sca
-    xia2.addPattern('scaled_refln_file',
-                    '(mtz|sca|sca_unmerged) format:\nScaled reflections ?\(?([^\):]*)\)?: (.+)$',
-                    ['format','dataset','filename'])
-    xia2.addPattern('scaled_refln_file',
-                    "Scaled reflections ?\(?([^\):]*)\)?: (.+)$",
-                    ['dataset','filename','format'])
-    # sweep_to_dataset pattern
-    #
-    # An example of a matching line:
-    # SWEEP NATIVE [WAVELENGTH NATIVE]
-    xia2.addPattern('sweep_to_dataset',
-                    "SWEEP ([^ ]+) \[WAVELENGTH ([^\]]+)\]",
-                    ['sweep','dataset'])
-
-    # Block definitions
-    #
-    # A block is a contigious set of lines in the input text file
-    # Block definitions consist of a name, and a pair of strings which
-    # mark the beginning and end of the block
-    # Optionally the lines containing the start and end delimiters
-    # can be omitted from the block
-    #
-    # Each time a block is matched in the source document
-    # a data item is created with the name attached to the definition
-    xia2.defineBlock('dataset_summary',
-                     "For ",
-                     "Total unique",
-                     pattern="For ([^\n]*)\n(.+)",
-                     pattern_keys=['dataset','table'])
-    # assumed_spacegroup block
-    #
-    # An example of this is:
-    #
-    #Assuming spacegroup: I 2 3
-    #Other likely alternatives are:
-    #I 21 3
-    #Unit cell:
-    xia2.defineBlock('assumed_spacegroup',
-                     "Assuming spacegroup",
-                     "Unit cell:",Magpie.EXCLUDE_END)
-    # citations block
-    #
-    # An example might look like this:
-    #
-    #Here are the appropriate citations (BIBTeX in xia-citations.bib.)
-    #(1994) Acta Crystallogr. D 50, 760--763
-    #<snipped>
-    #Winter, G. (2010) Journal of Applied Crystallography 43
-    #Status: normal termination
-    xia2.defineBlock('citations',
-                     "Here are the appropriate citations",
-                     "Status",Magpie.EXCLUDE)
-    # integration_status_per_image block
-    #
-    # An example of this is shown below, although there can be
-    # some variation in the preamble:
-    #
-    #-------------------- Integrating SWEEP1 --------------------
-    #Processed batches 1 to 90
-    #Weighted RMSD: 0.89 (0.09)
-    #Integration status per image (60/record):
-    #oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-    #oooooooooooooooooooooooooooooo
-    xia2.defineBlock('integration_status_per_image',
-                     "--- Integrating","ok",Magpie.EXCLUDE_END)
-    # integration_status_key
-    #
-    # An example of this looks like:
-    #
-    #"o" => good        "%" => ok        "!" => bad rmsd
-    #"O" => overloaded  "#" => many bad  "." => blank
-    #"@" => abandoned
-    xia2.defineBlock('integration_status_key',"ok","abandoned")
-    # interwavelength_analysis block
-    #
-    # There are two block definitions here with the same name
-    # Example of "old style" table:
-    #
-    #Inter-wavelength B and R-factor analysis:
-    #WAVE1   0.0 0.00 (ok)
-    #WAVE2  -0.1 0.08 (ok)
-    #WAVE3  -0.4 0.14 (ok)
-    #
-    xia2.defineBlock('interwavelength_analysis',
-                     "Inter-wavelength B and R-factor analysis",
-                     "",Magpie.EXCLUDE)
-    # Example of "new style" table:
-    #
-    #------------------ Local Scaling DEFAULT -------------------
-    #WAVE1   0.0 0.00 (ok)
-    #WAVE2  -0.3 0.08 (ok)
-    #WAVE3  -2.5 0.15 (ok)
-    #------------------------------------------------------------
-    xia2.defineBlock('interwavelength_analysis',
-                     "-- Local Scaling ",
-                     "--",Magpie.EXCLUDE)
-
-    # Process the output
-    xia2.process()
-
     # Instantiate a Xia2run object
-    xia2run = Xia2run(xia2,xia2dir)
+    xia2run = Xia2run(xia2dir)
 
     # Generate the HTML
     xia2doc = Xia2doc(xia2run)
