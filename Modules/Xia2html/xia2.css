@@ -1,6 +1,6 @@
 /* xia2.css
    Stylesheet for xia2.html
-   CVS_id $Id: xia2.css,v 1.16 2010/01/05 11:18:46 pjx Exp $
+   CVS_id $Id: xia2.css,v 1.17 2010/01/07 16:47:01 pjx Exp $
    */
 body { font-family: Arial, sans-serif;
        font-size: 17px;
@@ -52,11 +52,11 @@ img { vertical-align: bottom; }
            color: white;
            font-size: 75%;
 	   font-weight: bold;
-           padding: 10px; }
+           padding: 10px;
+           width: 90%;
+           margin-left: auto;
+           margin-right: auto;}
 .warning a { color: white; }
-p.warning { width: 90%;
-            margin-left: auto;
-            margin-right: auto; }
 
 /* Information */
 .info { font-style: italic;
