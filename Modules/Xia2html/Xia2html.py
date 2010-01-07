@@ -81,7 +81,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.93 2010/01/07 12:55:29 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.94 2010/01/07 13:35:45 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -128,6 +128,10 @@ class PipelineInfo:
         Note that the order that log file references appear
         implicitly defines the order that logs will be sorted into"""
         self.__pipeline = []
+        # Set up log file definitions
+        #
+        # *** THE ORDER OF THE addLogInfo CALLS BELOW IS SIGNIFICANT ***
+        #
         # Integration stage
         self.addLogInfo(
             "INTEGRATE",
@@ -1793,7 +1797,7 @@ class Xia2doc:
         xia2 developer."""
         self.addWarning(self.__xia2doc,
                         "Xia2html failed to process the output from this run"+
-                        " in directory "+
+                        " in directory<br />"+
                         Canary.MakeLink(self.__xia2run.xia2_dir(),
                                         relative_link=True))
         # Check to see if the run finished
@@ -1822,10 +1826,10 @@ class Xia2doc:
                 tf.add(filen)
         tf.close()
         self.__xia2doc.addPara(
-            "A tar file with diagnostic information has been created: "+
-            Canary.MakeLink(archive))
+            "A tar file with diagnostic information has been created:")
+        self.__xia2doc.addList().addItem(Canary.MakeLink(archive))
         self.__xia2doc.addPara(
-            "Please send this tar file to report the error to "+
+            "Please report the error and send this tar file to "+
             Canary.MakeLink("mailto:graeme.winter@diamond.ac.uk",
                             "graeme.winter@diamond.ac.uk"))
         # Finish off the document with xia2 info and footer
@@ -2034,6 +2038,12 @@ class Xia2doc:
         refln_files = self.__xia2run.refln_files()
         if not len(refln_files):
             self.addWarning(section,"No reflection data files found")
+            section.addPara("No information on the reflection files was found "+
+                            "in the xia2.txt file.")
+            self.addInfo("Note to xia2 developer: check the pattern "+
+                         "definitions for <b>scaled_refln_file</b> "+
+                         "in the Xia2run class to ensure that they match "+
+                         "the text found in xia2.txt")
             return
         # Write the preamble
         preamble = "xia2 produced the following reflection data files - to "+\
@@ -2081,9 +2091,15 @@ class Xia2doc:
     def reportLogFiles(self,section):
         """Add a report of the log files to a section"""
         if not len(self.__xia2run.logfiles()):
+            # No log files were found
+            # Print warning and diagnostics
             self.addWarning(section,"No program log files found in "+ \
                                 Canary.MakeLink(self.__xia2run.log_dir(),
                                                 relative_link=True))
+            if not os.path.isdir(self.__xia2run.log_dir()):
+                self.addInfo(section,
+                             "This is because the log file directory wasn't "+
+                             "found")
             return
         # Write the preamble
         preamble = "The log files are located in "+ \
@@ -2114,6 +2130,11 @@ class Xia2doc:
             for log in unassigned_logs:
                 unassigned.addItem(Canary.MakeLink(
                         log.relativeName(),log.basename()))
+            self.addInfo(self.__logfiles,
+                         "Note to the xia2 developer: check the "+
+                         "&quot;addLogFile&quot; definitions in the "+
+                         "PipelineInfo class to ensure that information "+
+                         "about these files exists and is correct.")
 
     def reportLogFilesForXtal(self,xtal,section):
         """Report the log files for a specific crystal"""
@@ -2138,6 +2159,11 @@ class Xia2doc:
                                 Canary.MakeLink(
                         log.relativeName(),log.basename())+
                                 "<br />Please report this problem")
+                self.addInfo(section,
+                             "Note to the xia2 developer: check that the "+
+                             "&quot;addLogFile&quot; definitions in the "+
+                             "PipelineInfo class to ensure that information "+
+                             "about this file exists and is correct.")
                 continue
             if stage != this_stage:
                 anchor = self.makeAnchor(xtal.name(),stage)
