@@ -55,15 +55,11 @@ More detail on how Xia2html works
 
 The basic procedure in Xia2html is:
 
-1. Process the raw data (specifically xia2.txt - processed using classes
-   from the Magpie module - and the contents of the LogFiles directory),
+1. Populate a data structure (provided by the Xia2run class in this module)
+   with data extracted from the xia2.txt file and LogFiles directory.
 
-2. Populate a data structure (provided by the Xia2run class in this module)
-   to organise what was found,
-
-3. Use the data in Xia2run class in conjunction with document generation
-   classes and functions in the Canary module to make an output HTML
-   document.
+2. Build a HTML document (done by the Xia2doc class) using the data
+   organised in the Xia2run class.
 
 This module contains a number of classes to support gathering, organising
 and writing out the data:
@@ -81,7 +77,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.98 2010/01/07 15:48:51 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.99 2010/01/07 17:07:30 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -458,9 +454,34 @@ class Citations:
 class Xia2run:
     """Xia2 run information
 
-    Store the information about a run of xia2 that has been
-    gathered from xia2.txt and other sources (like the LogFiles
-    directory)."""
+    The Xia2run object gathers information about a run of xia2
+    from xia2.txt (like the LogFiles directory) and organises it
+    into a data structure that can then be accessed for
+    reporting purposes.
+
+    Upon instantiation the Xia2run object will automatically
+    attempt to gather the data from xia2.txt (by calling the
+    __process_xia2dottxt method) and then organise these data
+    (by calling the __populate method). Update these two methods
+    to extend or modify the data that Xia2run gathers and stores.
+
+    Use the 'complete' method to check if a Xia2run object
+    successfully processed the data, and the 'finished' method to
+    determine if xia2 actually completed.
+
+    The data is organised into a hierarchy of crystals, datasets,
+    sweeps and integration runs, with separate classes representing
+    each level of the hierarchy. The 'crystals' method returns
+    a list of Crystal objects, from where other levels of the
+    hierarchy can be accessed.
+
+    In addition other methods access information about the xia2 run
+    (such as version, termination status, programs used and so on).   
+    The 'has_anomalous', 'multi_crystal' and 'xds_pipeline' methods
+    give 'meta-information' about the run.
+
+    Finally the 'logfiles' and 'refln_files' methods return lists
+    of objects representing log files and reflections respectively."""
 
     def __init__(self,xia2_dir):
         """Create new Xia2run object
@@ -480,7 +501,7 @@ class Xia2run:
         self.__crystals    = [] # List of crystals
         self.__logfiles    = [] # List of log files
         self.__refln_files = [] # List of reflection data files
-        self.__programs    = [] # List of programs/software used
+        self.__programs_used = [] # List of programs/software used
         self.__citations   = [] # List of citations
         self.__has_anomalous = False # Anomalous data?
         self.__xds_pipeline  = False # XDS pipeline used?
@@ -499,7 +520,7 @@ class Xia2run:
             self.__complete = False
 
     def __process_xia2dottxt(self):
-        """Run text processor on xia2.txt
+        """Internal: run text processor on xia2.txt
 
         Create a Magpie text processor object and use this to
         process the xia2.txt file."""
@@ -699,7 +720,10 @@ class Xia2run:
         self.__xia2.processFile(os.path.join(self.__xia2_dir,"xia2.txt"))
 
     def __populate(self):
-        """Internal: populate the data structure"""
+        """Internal: populate the data structure
+
+        Attempt to populate the Xia2run object with the data extracted
+        by __process_xia2dottxt, plus scanning of the LogFiles directory."""
         print "POPULATE> STARTED"
         xia2 = self.__xia2
         # xia2 and run information
@@ -760,7 +784,7 @@ class Xia2run:
         print "POPULATE> SWEEPS"
         # Assign (empty) sweeps to datasets
         for sweep_to_dataset in xia2['sweep_to_dataset']:
-            dataset = self.get_dataset(sweep_to_dataset['dataset'])
+            dataset = self.__get_dataset(sweep_to_dataset['dataset'])
             this_sweep = sweep_to_dataset['sweep']
             new_sweep = True
             for sweep in dataset.sweeps():
@@ -943,7 +967,7 @@ class Xia2run:
         # List of programs/software used
         print "POPULATE> SOFTWARE USED"
         for prog in xia2['xia2_used'][0]['software'].split():
-            self.__programs.append(prog)
+            self.__programs_used.append(prog)
         # List of citations
         print "POPULATE> CITATIONS"
         for line in str(xia2['citations'][0]).split('\n'):
@@ -952,8 +976,31 @@ class Xia2run:
                 self.__citations.append(citation)
         print "POPULATE> FINISHED"
 
+    def __get_dataset(self,dataset_name):
+        """Internal: lookup a Dataset object with the supplied name
+
+        'dataset_name' can be either the 'long' version of the name
+        (which includes project and crystal qualifiers) or the 'short'
+        version (which only has the dataset name).
+
+        Note that an assumption is made that dataset names are unique
+        across crystals."""
+        # Try the long name first i.e. including project and crystal
+        for dataset in self.datasets():
+            if dataset.name() == dataset_name:
+                return dataset
+        # Nothing found - try the short name (dataset only)
+        for dataset in self.datasets():
+            if dataset.datasetName() == dataset_name:
+                return dataset
+        return None
+
     def __list_logfiles(self):
-        """Internal: get list of xia2 log files in pipeline order"""
+        """Internal: get list of xia2 log files in pipeline order
+
+        This fetches a list of the files in the LogFiles directory,
+        sorted into order according to the comparision function
+        in the PipelineInfo object."""
         # Get unsorted list of file names
         files = os.listdir(self.__log_dir)
         # Sort list on order of file names within the pipeline
@@ -961,31 +1008,34 @@ class Xia2run:
         return files
 
     def xia2_dir(self):
-        """Return the directory where xia2.txt was found"""
+        """Return the directory where xia2.txt was found
+
+        Returns the name of the directory supplied on instantiation,
+        where the xia2 output is located."""
         return self.__xia2_dir
 
     def version(self):
-        """Return the xia2 version"""
+        """Return the xia2 version from xia2.txt"""
         return self.__version
 
     def run_time(self):
-        """Return the processing time"""
+        """Return the processing time from xia2.txt"""
         return self.__run_time
 
     def termination_status(self):
-        """Return the termination status"""
+        """Return the termination status from xia2.txt"""
         return self.__termination_status
 
     def cmd_line(self):
-        """Return the command line"""
+        """Return the command line from xia2.txt"""
         return self.__cmd_line
 
-    def programs(self):
-        """Return the list of programs/software used in the run"""
-        return self.__programs
+    def programs_used(self):
+        """Return the list of programs/software used in the run from xia2.txt"""
+        return self.__programs_used
 
     def citations(self):
-        """Return the list of citations"""
+        """Return the list of citations from xia2.txt"""
         return self.__citations
 
     def complete(self):
@@ -1004,15 +1054,25 @@ class Xia2run:
         return self.__has_anomalous
 
     def xds_pipeline(self):
-        """Check whether the run used the 'XDS pipeline'"""
+        """Check whether the run used the 'XDS pipeline'
+
+        Returns True if XDS was identified as one of the programs
+        used in the xia2 run."""
         return self.__xds_pipeline
 
     def multi_crystal(self):
-        """Check whether the run contains multiple crystals"""
+        """Check whether the run contains multiple crystals
+
+        Returns True if the run contained data from more than
+        one crystal. (To find out how many crystals do e.g.
+        len(Xia2run.crystals()).)"""
         return self.__multi_crystal
 
     def finished(self):
-        """Check whether the run completed or not"""
+        """Check whether the run completed or not
+
+        Returns True if a termination status line was found in
+        xia2.txt (indicating that xia2 completed)."""
         return self.__run_finished
 
     def log_dir(self):
@@ -1029,28 +1089,32 @@ class Xia2run:
         """Return Datasets for the run
 
         This returns a list of the Dataset objects representing
-        datasets/wavelengths found in the output."""
+        datasets/wavelengths that were found in the output. See the
+        Dataset class for information on its methods."""
         return self.__datasets
 
     def crystals(self):
         """Return Crystals for the run
 
         This returns a list of the Crystal objects representing
-        crystals found in the output."""
+        crystals that were found in the output. See the Crystal
+        class for information on its methods."""
         return self.__crystals
 
     def logfiles(self):
         """Return LogFiles for the run
 
         Returns a list of the LogFile objects representing the
-        log files found in the xia LogFiles directory."""
+        log files found in the xia2 LogFiles directory. See the
+        LogFile class for information on its methods."""
         return self.__logfiles
 
     def refln_files(self):
         """Return ReflectionFiles for the run
 
         Returns a list of the ReflectionFile objects representing
-        the reflection data files reference in the xia2 output."""
+        the reflection data files referenced in xia2.txt. See the
+        ReflectionFile class for information on its methods."""
         return self.__refln_files
 
     def journal_file(self):
@@ -1061,32 +1125,12 @@ class Xia2run:
         return self.__xia2_journal
 
     def integration_status_key(self):
-        """Return the text for the key of integration status icons"""
+        """Return the text for the key of integration status icons
+
+        The key is the block of text from xia2.txt which identifies
+        the possible integration status symbols and their meanings,
+        e.g 'o' => good etc"""
         return self.__int_status_key
-
-    def get_dataset(self,dataset_name):
-        """Fetch the Dataset object corresponding to the supplied name
-
-        'dataset_name' can be either the 'long' version of the name
-        (which includes project and crystal qualifiers) or the 'short'
-        version (which only has the dataset name)."""
-        # Try the long name first i.e. including project and crystal
-        for dataset in self.datasets():
-            if dataset.name() == dataset_name:
-                return dataset
-        # Nothing found - try the short name (dataset only)
-        for dataset in self.datasets():
-            if dataset.datasetName() == dataset_name:
-                return dataset
-        return None
-
-    def get_crystal(self,xtal_name):
-        """Fetch the Crystal object corresponding to the supplied name"""
-        for xtal in self.crystals():
-            if xtal.name() == xtal_name:
-                return xtal
-        # Nothing found
-        return None
 
 # Crystal
 #
@@ -2523,7 +2567,7 @@ class Xia2doc:
         """Add report of the software and citations to the section"""
         # Software used
         software = section.addSubsection("Software used").addList()
-        for prog in self.__xia2run.programs():
+        for prog in self.__xia2run.programs_used():
             software.addItem(prog)
         # Citations
         citer = Citations()
