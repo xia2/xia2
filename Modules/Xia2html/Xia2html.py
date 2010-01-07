@@ -81,7 +81,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.95 2010/01/07 13:49:19 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.96 2010/01/07 14:18:52 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -465,9 +465,6 @@ class Xia2run:
     def __init__(self,xia2_dir):
         """Create new Xia2run object
 
-        'xia2_magpie' is a Magpie processor object that has
-        been run on the output of a xia2 run.
-
         'xia2_dir' is the directory containing the xia2 output
         (either relative or absolute)."""
         self.__xia2      = None
@@ -517,8 +514,8 @@ class Xia2run:
         # An example of a matching line is:
         #XIA2 0.3.1.0
         self.__xia2.addPattern('xia2_version',
-                        "XIA2 ([0-9.]+)$",
-                        ['version'])
+                               "XIA2 ([0-9.]+)$",
+                               ['version'])
         # project_name pattern
         #
         # An example of a matching line is:
@@ -2212,6 +2209,24 @@ class Xia2doc:
 
     def reportIntegrationStatus(self,section):
         """Add a report of the integration status to a section"""
+        # Local convenience variables
+        multi_crystal = self.__xia2run.multi_crystal()
+        int_status_reporter = self.__int_status_reporter
+        # Check for problems with the data
+        if not len(int_status_reporter.getSymbolList()):
+            # No integration status symbols were extracted from the key
+            self.addWarning(section,
+                            "The integration status symbols were not "+
+                            "properly extracted from the xia2.txt file, "+
+                            "so the integration status for each sweep "+
+                            "cannot be reported")
+            self.addInfo(section,
+                         "Note to the xia2 developer: this is most likely "+
+                         "because the key was not extracted from xia2.txt. "+
+                         "Check the 'integration_status_key' pattern in the "+
+                         "Xia2run class, and the __makeSymbolLookup method "+
+                         "in the IntegrationStatusReporter class.")
+            return
         # Write out the preamble
         preamble = "The following sections show the status of "+ \
             "each image from the final integration run "+ \
@@ -2224,9 +2239,6 @@ class Xia2doc:
         # Initialise the summary table (listing number of images with
         # each status) - it will be populated as we go along
         summary_tbl = section.addTable()
-        # Local convenience variables
-        multi_crystal = self.__xia2run.multi_crystal()
-        int_status_reporter = self.__int_status_reporter
         # Loop over crystals
         last_xtal = None
         for xtal in self.__xia2run.crystals():
