@@ -81,7 +81,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.96 2010/01/07 14:18:52 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.97 2010/01/07 15:02:34 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1866,7 +1866,9 @@ class Xia2doc:
 
     def addWarning(self,section,message):
         """Add a warning message to a section"""
-        section.addPara(self.__warning_icon+" "+message,css_class="warning")
+        warning = "<div class='warning'>"+\
+            self.__warning_icon+" "+message+"</div>"
+        section.addContent(warning)
 
     def addPreamble(self,section):
         """Add the preamble to the document"""
@@ -2122,13 +2124,13 @@ class Xia2doc:
         for log in self.__xia2run.logfiles():
             if not log.crystal(): unassigned_logs.append(log)
         if len(unassigned_logs):
-            self.addWarning(self.__logfiles,
-                            "The following files weren't assigned to a "+
-                            "crystal: ")
-            unassigned = self.__logfiles.addList()
+            unassigned = Canary.List()
             for log in unassigned_logs:
                 unassigned.addItem(Canary.MakeLink(
                         log.relativeName(),log.basename()))
+            self.addWarning(self.__logfiles,
+                            "The following files weren't assigned to a "+
+                            "crystal:"+unassigned.render())
             self.addInfo(self.__logfiles,
                          "Note to the xia2 developer: check the "+
                          "&quot;addLogFile&quot; definitions in the "+
