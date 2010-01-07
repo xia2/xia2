@@ -81,7 +81,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.97 2010/01/07 15:02:34 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.98 2010/01/07 15:48:51 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -2320,13 +2320,29 @@ class Xia2doc:
     def writeSummaryTable(self,table):
         """Populate the initial summary table
 
-        Note: although this table appears at the start of the output
-        document, we make it last so we can link to later content."""
+        This is the big table at the head of the report, which lists
+        the stats for each wavelength and crystal as columns (similar
+        to the Acta Cryst D 'table one').
+
+        Note that although this table appears at the start of the final
+        document, this method should be called after the sections that
+        it references (for example, the full statistics for each
+        wavelength) have been written. This is so that we can link
+        forward to those sections."""
         # Convenience variables
         has_anomalous = self.__xia2run.has_anomalous()
-        # Build the table as follows:
-        # First: make 
-        table.addClass('table_one')
+        # Build up the table content
+        #
+        # Note that the table is constructed in two sections:
+        #
+        # * The first section is the top part of the table with
+        #   a subset of statistics from Scala, and is constructed
+        #   "column-wise".
+        #
+        # * The second section consists of the crystallographic
+        #   parameters and is constructed row-wise
+        #
+        # Build the first section (stats)
         row_titles = ['Wavelength (&Aring;)',
                       'High resolution limit',
                       'Low resolution limit',
@@ -2338,55 +2354,12 @@ class Xia2doc:
             row_titles.extend(['Anomalous completeness',
                                'Anomalous multiplicity'])
         row_titles.extend(['']) # Line linking to full stats
-        # Deal with crystal-specific data
-        xtal_data = { "unit_cell_a": ['Unit cell dimensions: a (&Aring;)'],
-                      "unit_cell_b": ['b (&Aring;)'],
-                      "unit_cell_c": ['c (&Aring;)'],
-                      "unit_cell_alpha": ['&alpha; (&deg;)'],
-                      "unit_cell_beta": ['&beta; (&deg;)'],
-                      "unit_cell_gamma": ['&gamma; (&deg;)'],
-                      "spacegroup": ['Spacegroup'],
-                      "twinning": ['Sfcheck twinning score']}
-        last_xtal = None
         # Add the initial title column just built
         table.addColumn(row_titles)
         # Loop over crystals and datasets
         for xtal in self.__xia2run.crystals():
             # Add an additional column for each dataset
             for dataset in xtal.datasets():
-                # Crystal-specific data
-                if xtal != last_xtal:
-                    # New crystal - fetch data
-                    unit_cell = xtal.unit_cell()
-                    spacegroup = xtal.spacegroup()
-                    twinning_score = xtal.twinning_score()
-                    twinning_report = xtal.twinning_report()
-                    # Store the data for print out at the end
-                    xtal_data['unit_cell_a'].extend([unit_cell['a'],None])
-                    xtal_data['unit_cell_b'].extend([unit_cell['b'],None])
-                    xtal_data['unit_cell_c'].extend([unit_cell['c'],None])
-                    xtal_data['unit_cell_alpha'].extend([unit_cell['alpha'],
-                                                         None])
-                    xtal_data['unit_cell_beta'].extend([unit_cell['beta'],
-                                                        None])
-                    xtal_data['unit_cell_gamma'].extend([unit_cell['gamma'],
-                                                         None])
-                    xtal_data['spacegroup'].extend([htmlise_sg_name(spacegroup),
-                                                None])
-                    xtal_data['twinning'].extend([twinning_score+"<br />"+
-                                                  twinning_report,None])
-                    # Update last crystal
-                    last_xtal = xtal
-                else:
-                    # Same crystal as before
-                    xtal_data['unit_cell_a'].extend([None,None])
-                    xtal_data['unit_cell_b'].extend([None,None])
-                    xtal_data['unit_cell_c'].extend([None,None])
-                    xtal_data['unit_cell_alpha'].extend([None,None])
-                    xtal_data['unit_cell_beta'].extend([None,None])
-                    xtal_data['unit_cell_gamma'].extend([None,None])
-                    xtal_data['spacegroup'].extend([None,None])
-                    xtal_data['twinning'].extend([None,None])
                 # Construct the column of data and add to the table
                 # This is for the overall/average values
                 column_data = [dataset.wavelength(),
@@ -2446,20 +2419,72 @@ class Xia2doc:
                         anom_multiplicity = '-'
                     column_data.extend([anom_completeness,anom_multiplicity])
                 table.addColumn(column_data)
-        # Additional data: unit cell, spacegroup
+        # Now build the second section of the table (crystal-specific data)
+        # This is built up row-wise
+        # Store each row as a list in the 'row_data' dictionary
+        row_data = { "unit_cell_a": ['Unit cell dimensions: a (&Aring;)'],
+                     "unit_cell_b": ['b (&Aring;)'],
+                     "unit_cell_c": ['c (&Aring;)'],
+                     "unit_cell_alpha": ['&alpha; (&deg;)'],
+                     "unit_cell_beta": ['&beta; (&deg;)'],
+                     "unit_cell_gamma": ['&gamma; (&deg;)'],
+                     "spacegroup": ['Spacegroup'],
+                     "twinning": ['Sfcheck twinning score']}
+        # Loop over crystals and datasets
+        # Add elements to each row in row_data
+        last_xtal = None
+        for xtal in self.__xia2run.crystals():
+            for dataset in xtal.datasets():
+                # Crystal-specific data
+                if xtal != last_xtal:
+                    # New crystal - fetch data
+                    unit_cell = xtal.unit_cell()
+                    spacegroup = xtal.spacegroup()
+                    twinning_score = xtal.twinning_score()
+                    twinning_report = xtal.twinning_report()
+                    # Store the data for print out at the end
+                    row_data['unit_cell_a'].append(unit_cell['a'])
+                    row_data['unit_cell_b'].append(unit_cell['b'])
+                    row_data['unit_cell_c'].append(unit_cell['c'])
+                    row_data['unit_cell_alpha'].append(unit_cell['alpha'])
+                    row_data['unit_cell_beta'].append(unit_cell['beta'])
+                    row_data['unit_cell_gamma'].append(unit_cell['gamma'])
+                    row_data['spacegroup'].append(htmlise_sg_name(spacegroup))
+                    row_data['twinning'].append(twinning_score+"<br />"+
+                                                twinning_report)
+                    # Add an empty element to the end of each row
+                    # This will correspond to an empty column, so that
+                    # the columns in this section match up with those
+                    # in the first section of the table
+                    for item in row_data.keys():
+                        row_data[item].append(None)
+                    # Update last crystal
+                    last_xtal = xtal
+                else:
+                    # Same crystal as before
+                    # Add two empty elements to each row
+                    # These will correspond to two empty columns, so that
+                    # the columns in this section match up with those
+                    # in the first section of the table
+                    for item in row_data.keys():
+                        row_data[item].extend([None,None])
+        # Finished constructing row_data array
+        # Add the rows to the table
         table.addRow(['&nbsp;']) # Empty row for padding
-        table.addRow(xtal_data['unit_cell_a'],"unit_cell")
-        table.addRow(xtal_data['unit_cell_b'],"unit_cell")
-        table.addRow(xtal_data['unit_cell_c'],"unit_cell")
-        table.addRow(xtal_data['unit_cell_alpha'],"unit_cell")
-        table.addRow(xtal_data['unit_cell_beta'],"unit_cell")
-        table.addRow(xtal_data['unit_cell_gamma'],"unit_cell")
+        table.addRow(row_data['unit_cell_a'],"unit_cell")
+        table.addRow(row_data['unit_cell_b'],"unit_cell")
+        table.addRow(row_data['unit_cell_c'],"unit_cell")
+        table.addRow(row_data['unit_cell_alpha'],"unit_cell")
+        table.addRow(row_data['unit_cell_beta'],"unit_cell")
+        table.addRow(row_data['unit_cell_gamma'],"unit_cell")
         table.addRow(['&nbsp;']) # Empty row for padding
-        table.addRow(xtal_data['spacegroup'])
+        table.addRow(row_data['spacegroup'])
         table.addRow(['&nbsp;']) # Empty row for padding
-        table.addRow(xtal_data['twinning'])
+        table.addRow(row_data['twinning'])
         table.addRow(['',Canary.MakeLink(self.__xtal_parameters,
                                          "All crystallographic parameters..")])
+        # Finished - add the CSS class
+        table.addClass('table_one')
 
     def reportStatistics(self,section):
         """Add a detailed report of the statistics for each dataset"""
