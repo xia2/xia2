@@ -77,7 +77,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.100 2010/01/07 17:36:49 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.101 2010/01/07 17:43:03 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -866,7 +866,6 @@ class Xia2run:
         logdir = get_relative_path(self.__log_dir)
         # Process logfiles
         try:
-            self.__xds_pipeline = False
             files = self.__list_logfiles()
             for filen in files:
                 print "LOGFILES> "+str(filen)
@@ -875,13 +874,9 @@ class Xia2run:
                 if log.isLog():
                     # Store the log file
                     self.__logfiles.append(log)
-                    # Update found_xds flag
-                    if log.program() == "xds":
-                        self.__xds_pipeline = True
                 else:
                     print "LOGFILES> "+log.basename()+ \
                           " not a log file, ignored"
-            if self.__xds_pipeline: self.__pipeline_info.setXDSPipeline()
         except OSError:
             # Possibly the LogFiles directory doesn't exist
             if not os.path.isdir(logdir):
@@ -975,6 +970,12 @@ class Xia2run:
             citation = line.strip()
             if citation != "":
                 self.__citations.append(citation)
+        # XDS pipeline flag
+        print "POPULATE> XDS PIPELINE"
+        if self.programs_used().count('xds'):
+            # If xds is listed as a program then update flags etc
+            self.__xds_pipeline = True
+            self.__pipeline_info.setXDSPipeline()
         print "POPULATE> FINISHED"
 
     def __get_dataset(self,dataset_name):
