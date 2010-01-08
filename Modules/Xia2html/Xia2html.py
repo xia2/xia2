@@ -77,7 +77,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.106 2010/01/08 14:30:55 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.107 2010/01/08 15:06:09 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1512,13 +1512,20 @@ class Dataset(Magpie.Tabulator):
 #
 # Store information about an individual sweep
 class Sweep:
-    """Store information about a sweep reported in the xia2
-    output.
+    """Store information about a sweep reported in the xia2 output
 
-    Each sweep has a list of integration runs"""
+    In xia2 a dataset consists of one or more 'sweeps' of data,
+    and each sweep may be integrated multiple times.
+
+    In Xia2html each Sweep object is essentially a container for
+    the integration runs (represented by a list of IntegrationRun
+    objects) performed on the data."""
 
     def __init__(self,name):
-        """Create a new Sweep object"""
+        """Create a new Sweep object
+
+        'name' is the name of the sweep as it appears in the xia2
+        output."""
         self.__name = name
         self.__integration_runs = []
 
@@ -1547,26 +1554,29 @@ class Sweep:
 #
 # Store and manage information about an integration run for a sweep        
 class IntegrationRun:
-    """Store information about an integration run for a sweep"""
+    """Store information about an integration run for a sweep
+
+    Each sweep of data may be integrated multiple times by xia2.
+    The IntegrationRun class stores information about one of
+    these integration passes, specifically: associated sweep name,
+    the start and end batch numbers and the 'image status line' (i.e.
+    the lines of characters representineg the status of each image)."""
     
     def __init__(self,sweep_data):
-        """New IntegrationRun object
+        """Create and populate a new IntegrationRun object
 
         'sweep_data' is a Magpie.Data object for the
-        'integration_status_per_image' pattern."""
+        'integration_status_per_image' pattern. The data in
+        this object is automatically extracted and stored in
+        the new IntegrationRun object."""
         self.__name = None
         self.__start_batch = '0'
         self.__end_batch = '0'
         self.__image_status = ''
         self.__symbol_key = {}
         self.__symbol_list = []
-        # Extract and store the sweep data
-        self.__process(sweep_data)
-
-    def __process(self,sweep_data):
-        """Internal: process sweep data to extract information"""
-        # Create a new Magpie processor to break up
-        # the supplied data
+        # Extract and store the sweep data using a Magpie processor
+        # to break up the supplied data
         status_processor = Magpie.Magpie()
         status_processor.addPattern('sweep',
                                     "-+ Integrating ([^ ]*) -+",
@@ -1592,7 +1602,7 @@ class IntegrationRun:
         self.__image_status = self.__image_status.strip('\n')
 
     def name(self):
-        """Return the sweep name for the integration run"""
+        """Return the name of the sweep associated with the integration run"""
         return self.__name
 
     def start_batch(self):
@@ -1607,14 +1617,21 @@ class IntegrationRun:
         """Return the image status line
 
         This is the string of symbols representing the integration
-        status of each image in the run."""
+        status of each image in the run as found in the xia2.txt file,
+        for example:
+
+        oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+        oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+        oooooooooo%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        """
         return self.__image_status
 
     def countSymbol(self,symbol):
         """Return the number of times a symbol appears
 
-        Given a 'symbol', returns the number of times that symbol
-        appears in the status line for this integration run"""
+        Given a 'symbol' (e.g. 'o','%' etc), returns the number of
+        times that symbol appears in the status line for this
+        integration run"""
         return self.__image_status.count(symbol)
 
 # LogFile
