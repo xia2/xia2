@@ -77,7 +77,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.102 2010/01/07 18:00:47 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.103 2010/01/08 13:30:54 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -226,7 +226,8 @@ class PipelineInfo:
         """Update pipeline data for XDS pipeline
 
         Invoke this to make changes to the pipeline information
-        to make it consistent with the 'XDS pipeline'."""
+        to make it consistent with xia2 running in the notional
+        'XDS pipeline' mode."""
         # Reset description for scala
         self.updateLogInfo(
             "_scala",
@@ -238,15 +239,18 @@ class PipelineInfo:
         """Add information about a log file
 
         'logname' is part of the log file name which is used to
-        identify it.
+        identify it, for example: for truncate log files, a typical
+        file name would be 'TS01_13140_LREM_truncate.log', so
+        '_truncate' is used to recognise all truncate log files.
 
-        'program' is the source program name.
+        'program' is the source program name, for example 'xds'.
 
         'stage' is the name of the processing stage that the file
-        belongs to.
+        belongs to, for example 'Spacegroup Determination'.
 
         'description' is generic text that describes what the function
-        of the log file is.
+        of the log file is, for example 'Intensity analysis for each
+        wavelength of data'.
 
         'template' is a string that provides a template for building
         the file name. The following placeholders are used to show
@@ -259,7 +263,17 @@ class PipelineInfo:
         For example: <PROJECT>_<CRYSTAL>_pointless.log
 
         'baublize' is a logical value indicating whether the log
-        can be baublized."""
+        can be baublized.
+
+        NOTE 1: the template is similar but distinct to the logname.
+        The template can't be used instead of the logname since it
+        is possible for project, crystal and dataset names to also
+        contain underscores.
+
+        NOTE 2: the lookup functions below will be confused by
+        log file names which have project, crystal or dataset names
+        which match one of the program names. There is no fix to
+        address this situation."""
         self.__pipeline.append({
                 'logname': logname,
                 'program': program,
@@ -272,8 +286,17 @@ class PipelineInfo:
                       new_program=None,
                       new_stage=None,
                       new_description=None,
+                      new_template=None,
                       new_baublize=None):
-        """Update the information associated with a log file"""
+        """Update the information associated with a log file
+
+        Allows the modification of information previously associated
+        with a log file name via addLogInfo. One or more attributes
+        can be changed by providing values for the appropriate
+        parameters.
+
+        See the addLogInfo method for descriptions of each of the
+        attributes."""
         data = self.lookupLogInfo(logname)
         if data:
             if new_program:
@@ -282,6 +305,8 @@ class PipelineInfo:
                 data['stage'] = new_stage
             if new_description:
                 data['description'] = new_description
+            if new_template:
+                data['template'] = new_template
             if not new_baublize is None:
                 data['baublize'] = new_baublize
 
@@ -303,7 +328,7 @@ class PipelineInfo:
         return {}
                 
     def program(self,logfile):
-        """Get the program associated with a logfile"""
+        """Get the program name associated with a logfile"""
         data = self.lookupLogInfo(logfile)
         if data:
             return data['program']
@@ -350,19 +375,28 @@ class PipelineInfo:
         return None
 
     def listNames(self):
-        """Return a list of the log file name fragments in pipeline order"""
+        """Return a list of the log file name fragments in pipeline order
+
+        'Pipeline order' is the order in which the log file
+        information was added to the PipelineInfo object (i.e. the
+        order in which the addLogInfo calls were made)."""
         names = []
         for item in self.__pipeline:
             names.append(item['logname'])
         return names
 
     def compareLogfilesByOrder(self,logfile1,logfile2):
-        """Compare logfile names by pipeline position"""
-        # List of keywords that might appear in the log file names
-        # The list is in the order that we would want the file names
-        # to appear in a list of files
-        keywords = self.listNames()
+        """Compare logfile names by pipeline position
+
+        Provides a comparision function that can be used in a sorting
+        function to compare two log file names 'logfile1' and 'logfile2',
+        and return an integer value indicating the order that the
+        log files should be according to the pipeline definition.
+
+        Returns -1 if logfile1 appears before logfile2, 1 if logfile2
+        appears after logfile1, and 0 otherwise."""
         # Locate the keywords in the list for both file names
+        keywords = self.listNames()
         for i in range(0,len(keywords)):
             k = logfile1.find(keywords[i])
             if k > -1: break
@@ -383,6 +417,9 @@ class Citations:
     Stores and retrieves additional information on links for citations in
     the xia2.txt file.
 
+    Use the getCitation method to look up the URL associated with a
+    citation.
+
     To add information on a new citation, add a new call to the
     addCitation method in __init__.
     Note that the citation text supplied in addCitation this must
@@ -390,7 +427,12 @@ class Citations:
     link (if any) to be returned."""
 
     def __init__(self):
-        """Create and initialise Citations object."""
+        """Create and initialise Citations object.
+
+        Makes a new Citations object, and populates with information
+        about citations for which there are associated URLs. No
+        information is added for citations without associated URLs."""
+        # Initialise storage of citation information
         self.__citations = []
         # CCP4
         self.addCitation(
@@ -443,10 +485,15 @@ class Citations:
         """Add citation info
 
         'program' is the name of the program that the citation
-        refers to.
+        refers to (not currently used).
+
         'citation' is the citation text - this must match exactly the
-        text for the citation produced by xia2.
-        'link' is the URL link for the citation/paper."""
+        text for the citation produced by xia2, for example
+        'Winter, G. (2010) Journal of Applied Crystallography 43'.
+
+        'link' is the URL link for the citation/paper, for example
+        'http://journals.iucr.org/j/issues/2010/01/00/ea5113/index.html'.
+        This can be set to None if there is no associated URL."""
         self.__citations.append({ "program": program,
                                   "citation": citation,
                                   "link": link })
@@ -454,8 +501,8 @@ class Citations:
     def getCitationLink(self,citation_text):
         """Get link for citation text
 
-        Returns the stored link which matches the supplied
-        citation text, or None if the text is not found."""
+        Returns the stored URL associated with the supplied
+        citation text, or None if the citation is not found."""
         for citation in self.__citations:
             if citation['citation'] == citation_text:
                 return citation['link']
