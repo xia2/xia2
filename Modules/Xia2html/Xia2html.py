@@ -77,7 +77,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.105 2010/01/08 13:56:21 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.106 2010/01/08 14:30:55 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1360,22 +1360,67 @@ class Crystal:
 class Dataset(Magpie.Tabulator):
     """Xia2 dataset information
 
-    Given the tabulated data from Scala that is reproduced for
-    each dataset in the xia2.txt file, extract and store the
-    information so that it can be accessed later on."""
+    Store the data about a dataset from the xia2 run, and provide
+    methods to access that data.
 
-    def __init__(self,name,summary_table):
+    The Dataset class is a subclass of Magpie.Tabulator. After the
+    Dataset object has been instantiated with the statistics table
+    from xia2.txt, the 'rows' of the table are made available as
+    elements of the Dataset object.
+
+    For example, if the statistics table includes the following rows:
+    ...
+    High resolution limit                    	1.21	5.41	1.21
+    Low resolution limit                     	39.15	39.15	1.24
+    ...
+    
+    then these can be accessed using:
+
+    Dataset['High resolution limit']
+    Dataset['Low resolution limit']
+
+    and individual values in the row can be accessed using positional
+    indices. For example:
+
+    Dataset['High resolution'][1]
+
+    will return '1.21'. Dataset.keys() will return a list of the keys
+    for each of the table, in the order that they appear in the table.
+
+    Additionally the Dataset object also stores:
+
+    * Wavelength associated with the dataset,
+    * List of sweeps,
+    * Associated project and crystal names."""
+
+    def __init__(self,name,statistics_table):
+        """Create and initialise a Dataset object
+
+        'name' is the fully qualified name of the dataset from xia2.txt,
+        i.e. with the leading project and crystal names (for example,
+        'TS01/13140/LREM').
+
+        'statistics_table' is the table of statistics from Scala
+        for the dataset (reproduced in xia2.txt), which typically
+        starts:
+        High resolution limit                    	1.21	5.41	1.21
+        Low resolution limit                     	39.15	39.15	1.24
+        Completeness                             	89.0	96.0	25.1
+        ..etc etc.."""
         self.__name = str(name)
         self.__wavelength = None
-        self.__summary_table = summary_table
-        self.__short_name = self.__name.split('/')[-1]
+        self.__statistics_table = statistics_table
         # List of Sweep objects
         self.__sweeps = []
         # Instantiate the base class and populate the data structure
-        Magpie.Tabulator.__init__(self,self.__summary_table)
+        Magpie.Tabulator.__init__(self,self.__statistics_table)
 
     def name(self):
-        """Return the full name"""
+        """Return the full name
+
+        The fully qualified dataset name, which includes the project
+        and crystal names prepended to the dataset name, i.e.
+        project/crystal/dataset"""
         return self.__name
 
     def setWavelength(self,wavelength):
@@ -1389,8 +1434,8 @@ class Dataset(Magpie.Tabulator):
     def datasetName(self):
         """Return the dataset name
 
-        This is the trailing part of the full name
-        (which we expect has the form project/crystal/dataset)"""
+        This is the dataset name without the leading project/crystal
+        part (i.e. the trailing part of the full name)."""
         names = self.__name.split('/')
         dataset_name = names[-1]
         return dataset_name
@@ -1398,8 +1443,11 @@ class Dataset(Magpie.Tabulator):
     def crystalName(self):
         """Return the crystal name
 
-        This is the middle part of the full name
-        (which we expect has the form project/crystal/dataset)"""
+        The name of the crystal that the dataset is associated with.
+        This is the middle part of the fully qualified dataset name.
+
+        NB if there are fewer than 3 components in the fully qualified
+        name then None is returned."""
         names = self.__name.split('/')
         if len(names) == 3:
             crystal_name = names[1]
@@ -1413,8 +1461,8 @@ class Dataset(Magpie.Tabulator):
         This is the leading part of the full name
         (which we expect has the form project/crystal/dataset)
 
-        If there are less than 3 components in the full name
-        then None is returned."""
+        NB if there are fewer than 3 components in the fully qualified
+        name then None is returned."""
         names = self.__name.split('/')
         if len(names) == 3:
             project_name = names[0]
@@ -1422,8 +1470,12 @@ class Dataset(Magpie.Tabulator):
             project_name = None
         return project_name
 
-    def summary_data(self):
-        """Return the tabular summary data"""
+    def statistics_table(self):
+        """Return the table of statistics
+
+        Invokes the 'table' method provided by the Tabulator
+        superclass to return the 'raw' table that was supplied
+        when the Dataset object was instantiated."""
         return self.table()
 
     def addSweep(self,sweep):
@@ -1437,12 +1489,20 @@ class Dataset(Magpie.Tabulator):
         self.__sweeps.sort(self.__cmp_sweeps_by_name)
 
     def sweeps(self):
-        """Return the list of sweeps"""
+        """Return the list of sweeps
+
+        This is a list of Sweep objects that have been associated
+        with the Dataset via addSweep method calls."""
         return self.__sweeps
 
     def __cmp_sweeps_by_name(self,sweep1,sweep2):
-        """Internal: comparision function for sorting sweeps"""
-        # Return value indicates order
+        """Internal: comparision function for sorting sweeps
+
+        Compares the two Sweep objects 'sweep1' and 'sweep2'
+        and returns an integer value depending on the ordering
+        of the names.
+
+        Used to put the Sweeps in order inside the Dataset."""
         if sweep1.name() <  sweep2.name(): return -1
         if sweep1.name() == sweep2.name(): return 0
         if sweep1.name() >  sweep2.name(): return 1
@@ -2637,7 +2697,7 @@ class Xia2doc:
                 dataset_stats = xtal_section. \
                     addSubsection("Dataset "+dataset_name)
                 # Make a table of the statistics
-                stats_tbl = Canary.MakeMagicTable(dataset.summary_data())
+                stats_tbl = Canary.MakeMagicTable(dataset.statistics_table())
                 stats_tbl.setHeader(['','Overall','Low','High'])
                 dataset_stats.addContent(stats_tbl)
                 # Store a reference to the subsection for linking to
