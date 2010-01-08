@@ -77,7 +77,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.103 2010/01/08 13:30:54 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.104 2010/01/08 13:35:07 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -145,14 +145,14 @@ class PipelineInfo:
             "INTEGRATE",
             "xds",
             "Integration",
-            "Integration of this sweep",
+            "Integration of each sweep",
             "<PROJECT>_<CRYSTAL>_<DATASET>_<SWEEP>_INTEGRATE.log",
             False)
         self.addLogInfo(
             "CORRECT",
             "xds",
             "Integration",
-            "Postrefinement and correction for this sweep",
+            "Postrefinement and correction for each sweep",
             "<PROJECT>_<CRYSTAL>_<DATASET>_<SWEEP>_CORRECT.log")
         self.addLogInfo(
             "_mosflm_integrate",
