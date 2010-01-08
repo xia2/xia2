@@ -536,7 +536,8 @@ class Integrater:
                         
                         Chatter.write('Rejecting bad lattice %s' % str(e))
                         self._intgr_indexer.eliminate()
-                        self.set_integrater_prepare_done(False)
+                        # self.set_integrater_prepare_done(False)
+                        self._integrater_reset()
 
                 Debug.write('Doing some integration...')
             
@@ -555,9 +556,10 @@ class Integrater:
                     Journal.banner('eliminated this lattice', size = 80)
                     
                     self._intgr_indexer.eliminate()
-                    self.set_integrater_prepare_done(False)
-                    self.set_integrater_done(False)
-
+                    # self.set_integrater_prepare_done(False)
+                    # self.set_integrater_done(False)
+                    self._integrater_reset()
+                    
             self.set_integrater_finish_done(True)
             
             try:
@@ -569,9 +571,10 @@ class Integrater:
             except BadLatticeError, e:
                 Chatter.write('Uh oh! %s' % str(e))
                 self._intgr_indexer.eliminate()
-                self.set_integrater_prepare_done(False)
-                self.set_integrater_done(False)
-                self.set_integrater_finish_done(False)
+                self._integrater_reset()
+                # self.set_integrater_prepare_done(False)
+                # self.set_integrater_done(False)
+                # self.set_integrater_finish_done(False)
 
         return self._intgr_hklout
     
