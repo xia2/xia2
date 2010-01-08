@@ -77,7 +77,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.104 2010/01/08 13:35:07 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.105 2010/01/08 13:56:21 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -1200,10 +1200,23 @@ class Xia2run:
 class Crystal:
     """Xia2 crystal information
 
-    Store information associated with each crystal (e.g. unit
-    cell, twinning analysis etc)"""
+    Store and retrieve the information associated with a crystal,
+    specifically: unit cell, spacegroup information, twinning
+    analysis, ASU content, sequence and interwavelength analysis.
+
+    Also store references to the datasets measured from the
+    crystal."""
 
     def __init__(self,name):
+        """Create a new Crystal object
+        
+        'name' is the name associated with the crystal in the
+        xia2 run. Other data are added subsequently using the
+        'set...Data' methods (e.g. 'setUnitCellData').
+
+        Dataset objects are attached to the Crystal using
+        addDataset. The list of Dataset objects can be retrieved
+        using the 'dataset' method."""
         self.__name = str(name)
         self.__unit_cell  = None
         self.__spacegroup = None
@@ -1217,25 +1230,26 @@ class Crystal:
         self.__datasets = []
 
     def name(self):
-        """Get the crystal name"""
+        """Return the crystal name"""
         return self.__name
 
     def spacegroup(self):
-        """Get the assumed spacegroup"""
+        """Return the assumed spacegroup"""
         return self.__spacegroup
 
     def alt_spacegroups(self):
-        """Get the list of alternative spacegroups"""
+        """Return the list of alternative spacegroups"""
         return self.__alt_spacegroups
 
     def unit_cell(self):
-        """Get the unit cell data
+        """Return the unit cell data
 
         This returns the Magpie.Data object supplied via the
         setUnitCellData call. The individual unit cell
-        parameters can be accessed using:
+        parameters can be accessed using e.g.:
 
-        x = Crystal.unit_cell()['a']
+        a    = Crystal.unit_cell()['a']
+        beta = Crystal.unit_cell()['beta']
         
         etc."""
         return self.__unit_cell
@@ -1245,7 +1259,10 @@ class Crystal:
         return self.__twinning_score
 
     def twinning_report(self):
-        """Return the twinning report"""
+        """Return the twinning report
+
+        This is text of the form 'Your data does not appear to be
+        twinned', as extracted from the xia2.txt file."""
         return self.__twinning_report
 
     def molecules_in_asu(self):
@@ -1282,7 +1299,6 @@ class Crystal:
         pertaining to the spacegroup determination. It is
         reprocessed and the results can be accessed via the
         spacegroup() and alt_spacegroups() methods."""
-        # Extract and store spacegroup information
         # Post-process the assumed spacegroup block using a text-based
         # Magpie processor specifically for this block
         spg_processor = Magpie.Magpie()
