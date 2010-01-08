@@ -1,6 +1,6 @@
 #!/bin/sh -fe
 #
-# CVS Id $Id: make_icons.sh,v 1.6 2010/01/05 11:12:03 pjx Exp $
+# CVS Id $Id: make_icons.sh,v 1.7 2010/01/08 13:37:42 pjx Exp $
 #
 # Use ImageMagick convert to make little circle PNGs
 # Each PNG represents one of the possible image statuses
@@ -28,7 +28,7 @@ convert -size 12x12 xc:white icons/img_blank.png
 #
 # Create a "warning" symbol
 #
-convert -size 32x32 xc:transparent -fill yellow -stroke orange -draw "polygon 16,4 4,28 28,28" -stroke black -fill black -pointsize 22 -font Bitstream-Vera-Sans-Mono-Bold -draw "text 10,26 '!'" icons/warning.png
+convert -size 32x32 xc:transparent -fill yellow -stroke orange -draw "polygon 16,4 4,28 28,28" -stroke orange -fill black -pointsize 22 -font Bitstream-Vera-Sans-Mono-Bold -draw "text 10,26 '!'" icons/warning.png
 # Make it a bit smaller
 convert icons/warning.png -resize 25 icons/warning.png
 #
