@@ -20,7 +20,7 @@ types of content (Section, List etc).
 Similarly Section objects can also have Sections, Lists and so on added
 to them in a similar fashion."""
 
-__cvs_id__ = "$Id: Canary.py,v 1.12 2010/01/11 17:37:21 pjx Exp $"
+__cvs_id__ = "$Id: Canary.py,v 1.13 2010/01/11 18:25:02 pjx Exp $"
 __version__ = "0.0.3"
 
 #######################################################################
@@ -458,26 +458,37 @@ class Document(Section):
 class Para:
     """Paragraph object
 
-    A paragraph is an arbitrary string of text.
-
-    The optional 'formatting' flag can be used to specify how to
-    treat newlines when generating the HTML with render:
-
-    PRESERVE_NEWLINES : newlines are replaced by <br /> tags
-    NO_FORMATTING     : no changes are made to newlines
-
-    The optional 'css_class' flag can be used to specify CSS classes
-    to associate with the paragraph."""
+    A paragraph is an arbitrary string of text. When the paragraph
+    is rendered into HTML this text will be wrapped in <p>...</p>
+    tags."""
 
     def __init__(self,content='',formatting=PRESERVE_NEWLINES,css_class=None):
-        """Make a new paragraph"""
+        """Make a new paragraph
+
+        'content' is any string of text.
+
+        The optional 'formatting' flag can be used to specify how to
+        treat newlines when generating the HTML with render:
+
+        PRESERVE_NEWLINES : newlines are replaced by <br /> tags
+        NO_FORMATTING     : no changes are made to newlines
+
+        The optional 'css_class' flag can be used to specify CSS classes
+        to associate with the paragraph."""
         self.__content = content
         self.__formatting = formatting
         self.__css_class = css_class
         return
 
     def render(self):
-        """Generate a HTML version of the paragraph"""
+        """Generate a HTML version of the paragraph
+
+        This converts HTML special characters in the string to their
+        HTML entity codes (for example, & is turned into &amp;) and
+        replaces newlines with <br /> (unless NO_FORMATTING was set).
+
+        It then wraps it in <p>...</p> tags, with the class attribute
+        set to any CSS classes that were specified on instantiation."""
         # Convert special characters
         content = smartie.escape_xml_characters(self.__content)
         content = self.__content
@@ -492,21 +503,48 @@ class Para:
 class List:
     """List object
 
-    A list is one or more strings of text. Don't confuse with
-    Python lists."""
+    A List is one or more strings of text (don't confuse with
+    Python lists) which form the items of an unordered HTML list
+    when rendered.
+
+    A new List may be created within a Document or Section using
+    the addList method of the parent object, or it can be created
+    on its own and then attached to the parent via the parent's
+    addContent method.
+
+    Once a List object has been created, items are added using the
+    addItem method, e.g.:
+
+    myList = List()
+    myList.addItem('First item')
+
+    It is also possible to add several items in a single call using
+    the idiom:
+
+    myList.addItem('Second').addItem('Third').addItem(...
+
+    When rendered as HTML the items are written in the order that
+    were added to the list."""
 
     def __init__(self):
-        """Make a new list"""
+        """Make a new List"""
         self.__items = []
         return
 
     def addItem(self,item):
-        """Append an item to the list"""
+        """Append an item to the list
+
+        'item' is typically a string of text although it can be
+        anything which can be converted to a string."""
         self.__items.append(item)
         return self
 
     def render(self):
-        """Generate a HTML version of the list"""
+        """Generate a HTML version of the list
+
+        Returns an unordered HTML list with each of the items
+        added via addItem converted to a string representation
+        and wrapped in <li>...</li> tags."""
         contents = "<ul>\n"
         for item in self.__items:
             contents = contents + "<li>" + str(item) + "</li>\n"
@@ -516,15 +554,67 @@ class List:
 class Table(DocElement):
     """Table object
 
-    A table is one or more rows with columns of items. Items
-    can be text, or any object that has a render method that
+    A Table consists of one or more rows with columns of items.
+    Items can be text, or any object that has a render method that
     can be used to generate a string representation when the
     table as a whole is rendered.
 
-    The Table object will perform automatic management of the
-    table internals (for example padding rows or columns to
-    keep the table rectangular, and merging empty header
-    cells)."""
+    Data can be added to a Table row-wise, column-wise, or via
+    a combination of the two - though this last method needs some
+    care in order to manage correctly.
+
+    A new Table can be created as part of a Document or Section
+    using the addTable method of the parent object, or it can be
+    created on its own and then attached to the parent via the
+    parent's addContent method.
+
+    (The MakeMagicTable function also returns a Table that can be
+    manipulated using Table methods.)
+
+    Two simple examples:
+
+    1. Create and populate a table row-wise:
+
+    tbl = Table([None,'Column 1','Column 2'])
+    tbl.addRow(['Row 1',1,2])
+    tbl.addRow(['Row 2',3,4])
+    tbl.render()
+
+    This will render to:
+
+    <div>
+    <table>
+    <tr><th>&nbsp;</th><th>Column 1</th><th>Column 2</th></tr>
+    <tr><td>Row 1</td><td>1</td><td>2</td></tr>
+    <tr><td>Row 2</td><td>3</td><td>4</td></tr>
+    </table>
+    </div>
+
+    2. Create and populate the same table column-wise:
+
+    tbl = Table()
+    tbl.addColumn(['Row 1','Row 2'])
+    tbl.addColumn([1,3],header='Column 1')
+    tbl.addColumn([2,4],header='Column 2')
+    tbl.render()
+
+    Note that each time a row or column is added the Table object
+    will perform automatic management of the table internals to
+    keep the table rectangular: if a supplied row or column doesn't
+    have enough items then it pads them with 'empty' items to make
+    it wide/long enough; if the row or column has 'too many' items
+    then the table is expanded and padded with 'empty' items to fit.
+
+    Empty items are items containing None. At render time empty
+    cells are merged into non-empty cells to their left.
+
+    CSS classes can be added to the Table as a whole using the
+    addClass method. Classes can also be added to individual rows
+    in the table, but only when they are initially added. There is
+    no way to add classes to columns.
+
+    Note that CSS classes can be added to the <div> wrapper using the
+    appropriate methods inherited from the DocElement base class."""
 
     def __init__(self,header=None):
         """Make a new table
@@ -678,7 +768,12 @@ class Table(DocElement):
 
         Return a row as a list of items from the table,
         where the string 'key' matches the value in the
-        first column."""
+        first column.
+
+        If there are multiple possible matches then only the
+        first match will be returned.
+
+        Raises a KeyError exception if no match is found."""
         for row in self.__rows:
             if str(row[0]).find(key):
                 return row
@@ -690,7 +785,12 @@ class Table(DocElement):
 
         Return a column as a list of items. The column
         to be returned is identified by the 'key'
-        matching the header for that column."""
+        matching the header for that column.
+
+        If there are multiple possible matches then only the
+        first match will be returned.
+
+        Raises a KeyError exception if no match is found."""
         i = 0
         for item in self.__header:
             if not str(item).find(key):
