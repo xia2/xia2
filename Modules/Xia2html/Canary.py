@@ -6,11 +6,21 @@
 # Canary.py
 #
 ########################################################################
-#
-# Provide classes and functions for generating interactive HTML
-# documents
-#
-__cvs_id__ = "$Id: Canary.py,v 1.10 2010/01/07 10:44:41 pjx Exp $"
+
+"""Canary: classes and functions for building HTML documents.
+
+Canary provides classes and functions that can be used build HTML
+documents programmatically.
+
+Documents can be created by instantiating Document objects, and content
+such as sections, lists and paragraphs etc are added using the
+appropriate methods to fetch back objects that represent each of these
+types of content (Section, List etc).
+
+Similarly Section objects can also have Sections, Lists and so on added
+to them in a similar fashion."""
+
+__cvs_id__ = "$Id: Canary.py,v 1.11 2010/01/11 16:29:37 pjx Exp $"
 __version__ = "0.0.3"
 
 #######################################################################
@@ -38,37 +48,53 @@ INLINE=1
 class DocElement:
     """Generic document element
 
-    The DocElement is a generic part of a document. Other more
-    specific elements can be built as subclasses of the DocElement
-    class.
-
-    Subclasses of DocElement should provide a 'renderContent'
+    The DocElement is a generic part of a document, and is not really
+    intended to be used directly but instead should be subclassed
+    to create more elements (for example Sections).
+    
+    Note: subclasses of DocElement should provide a 'renderContent'
     method to generate their specific HTML code by the DocElement
     'render' method, and should avoid overriding the 'render'
     method."""
 
     def __init__(self,parent_doc=None):
+        """Instantiate new DocElement
+
+        'parent_doc' should be a Document object, however it could
+        in principle be any object which implements the getUniqueId
+        method."""
         # Basic class properties
         # Parent document
         self.__parent = parent_doc
         self.__classes = ''
-        self.__doc_id = None
-        self.__setDocId()
-
-    def __setDocId(self):
-        """Internal: return the unique id for the DocElement"""
-        if not self.__doc_id and self.__parent:
+        if self.__parent:
             self.__doc_id = self.__parent.getUniqueId()
+        else:
+            self.__doc_id = ''
 
     def getDocId(self):
-        """Get the unique id for the DocElement"""
+        """Return the unique id for the DocElement
+
+        This is a unique id string obtained from the parent document.
+        Typically this method is only called when overriding the
+        id method in a subclass."""
         return self.__doc_id
 
     def id(self):
         """Return the DocElement's name for itself
 
-        Subclasses of the DocElement class should override this
-        method."""
+        This is a placeholder method which returns the unique
+        id given to the DocElement by the parent Document (which
+        is typically just an integer).
+
+        Subclasses of the DocElement class can override this
+        method to embelish the document id and make it more
+        meaningful - for example by prepending it with a string
+        indicating the type of element that the subclass
+        represents.
+
+        The id returned by this method is written to the 'id'
+        attribute of the DocElement's <div> wrapper."""
         return self.getDocId()
 
     def parent(self):
@@ -76,18 +102,36 @@ class DocElement:
         return self.__parent
 
     def addCSSClass(self,css_class):
-        """Add a CSS class to the DocElement"""
+        """Add a CSS class to the DocElement
+
+        This defines a CSS class string to be added to the
+        'class' attribute of the DocElement's <div> wrapper when it
+        is rendered into HTML.
+
+        Multiple CSS classes can be placed in the 'css_class'
+        string by separating them with spaces."""
         if self.__classes: self.__classes += " "
         self.__classes += css_class 
 
+    def renderContent(self):
+        """Placeholder method
+
+        The renderContent method should be overridden by subclasses
+        of the DocElement to return the actual HTML which represents
+        the subclass's content."""
+        return ''
+
     def render(self):
-        """Return the HTML code for the DocElement"""
-        # Get the specific content for the element, if there
-        # is any
-        try:
-            content = self.renderContent()
-        except AttributeError:
-            content = ''
+        """Return the HTML code for the DocElement
+
+        The render method gets the actual content from the renderContent
+        method, which should be implemented by any subclass to produce
+        the appropriate HTML code.
+
+        render will then wrap this content in a <div ...> </div> tag
+        pair and return it to the calling subprogram."""
+        # Get the specific content for the element
+        content = self.renderContent()
         # Build the div wrapper
         open_div = "<div"
         if self.id(): open_div += " id='"+str(self.id())+"'"
