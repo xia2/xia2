@@ -77,7 +77,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.107 2010/01/08 15:06:09 pjx Exp $"
+__cvs_id__ = "$Id: Xia2html.py,v 1.108 2010/01/11 14:41:14 pjx Exp $"
 __version__ = "0.0.5"
 
 #######################################################################
@@ -589,7 +589,7 @@ class Xia2run:
 
         Create a Magpie text processor object and use this to
         process the xia2.txt file."""
-        self.__xia2 = Magpie.Magpie()
+        self.__xia2 = Magpie.Magpie(verbose=False)
         # Define patterns
         # Each time a pattern is matched in the source document
         # a data item is created with the name attached to that
@@ -781,6 +781,35 @@ class Xia2run:
         self.__xia2.defineBlock('interwavelength_analysis',
                                 "-- Local Scaling ",
                                 "--",Magpie.EXCLUDE)
+        # radiation_damage
+        #
+        # Chef radiation damage analysis. An example of this looks
+        # like:
+        #
+        #Group 1: 2-wedge data collection
+        #Significant radiation damage detected:
+        #Rd analysis (DEFAULT/WAVE1): 4.55
+        #Conclusion: cut off after DOSE ~ 2161.5
+        #
+        # FIXME: This is commented out for now (and see also notes below)
+        ##self.__xia2.defineBlock('radiation_damage',
+        ##                        "Group",
+        ##                        "Conclusion")
+        # Say that in future the radiation damage analysis was
+        # surrounded by a 'header' and 'footer' markup, e.g.:
+        #
+        #------------- Radiation Damage Analysis XTAL ---------------
+        #Group 1: 2-wedge data collection
+        #Significant radiation damage detected:
+        #Rd analysis (DEFAULT/WAVE1): 4.55
+        #Conclusion: cut off after DOSE ~ 2161.5
+        #------------------------------------------------------------
+        #
+        # Then the following block definition would capture it:
+        ##self.__xia2.defineBlock('radiation_damage',
+        ##                        "-- Radiation Damage Analysis",
+        ##                        "--")
+        #
         # Process the xia2.txt file
         self.__xia2.processFile(os.path.join(self.__xia2_dir,"xia2.txt"))
 
@@ -922,6 +951,18 @@ class Xia2run:
                 crystal.setInterwavelengthAnalysis(
                     xia2['interwavelength_analysis'][i])
                 i = i+1
+        # Assign radiation damage analysis to crystals
+        print "POPULATE> RADIATION DAMAGE ANALYSIS"
+        if not xia2.count('radiation_damage'):
+            print "No radiation damage analyses found"
+        for analysis in xia2['radiation_damage']:
+            radiation_damage = RadiationDamageAnalysis(analysis)
+            # Assign to crystal
+            for crystal in self.__crystals:
+                if crystal.name() == radiation_damage.xtal_name():
+                    print "Assigned to "+crystal.name()
+                    crystal.setRadiationDamage(radiation_damage)
+                    break
         # Assign multi-crystal flag
         if nxtals > 1: self.__multi_crystal = True
         # Logfiles
@@ -1202,7 +1243,8 @@ class Crystal:
 
     Store and retrieve the information associated with a crystal,
     specifically: unit cell, spacegroup information, twinning
-    analysis, ASU content, sequence and interwavelength analysis.
+    analysis, ASU content, sequence, interwavelength analysis and
+    radiation damage analysis.
 
     Also store references to the datasets measured from the
     crystal."""
@@ -1227,6 +1269,7 @@ class Crystal:
         self.__solvent_frac = None
         self.__sequence = None
         self.__interwavelength_analysis = None
+        self.__radiation_damage_analyses = []
         self.__datasets = []
 
     def name(self):
@@ -1280,6 +1323,14 @@ class Crystal:
     def interwavelength_analysis(self):
         """Return the interwavelength analysis data"""
         return self.__interwavelength_analysis
+
+    def radiation_damage_analyses(self):
+        """Return the radiation damage analysis data
+
+        This is a list of RadiatioDamageAnalysis objects that
+        have been assigned to the crystal. The list will be
+        empty if no analyses were assigned."""
+        return self.__radiation_damage_analyses
 
     def datasets(self):
         """Return the list of Dataset objects"""
@@ -1344,6 +1395,13 @@ class Crystal:
         'interwavelength_analysis' is an 'interwavelength_analysis'
         Magpie.Data object."""
         self.__interwavelength_analysis = str(interwavelength_analysis)
+
+    def setRadiationDamage(self,radiation_damage):
+        """Store the radiation damage analysis from chef
+
+        'radiation_damage' is a populated RadiationDamageAnalysis
+        object."""
+        self.__radiation_damage_analyses.append(radiation_damage)
 
     def addDataset(self,dataset):
         """Add a Dataset object to the Crystal
@@ -1845,6 +1903,110 @@ class ReflectionFile:
         __init__ method of this class."""
         return self.__format_useful_for[self.format()]
 
+# RadiatioDamageAnalysis
+#
+# Process and store information about radiation damage analysis
+class RadiationDamageAnalysis:
+    """Process an radiation damage analysis report and store data
+
+    Given 'raw' radiation damage analysis data from xia2.txt, this
+    class extracts information and makes it available for retrieval."""
+
+    def __init__(self,radiation_damage):
+        """Create a new RadiationDamageAnalysis object
+
+        'radiation_damage' is the Magpie.Data object with the 'raw'
+        radiation damage analysis data from xia2.txt."""
+        self.__xtal_name = None
+        self.__dataset_names = []
+        self.__group_ids = []
+        self.__group_descriptions = []
+        self.__report = ''
+        self.__conclusion = ''
+        self.__table = None
+        # Process the radiation damage report using a text-based
+        # Magpie processor specifically for this block
+        print "Radiation damage = "+str(radiation_damage)
+        processor = Magpie.Magpie(verbose=False)
+        # Set up patterns to match the text
+        # 
+        # group
+        # matches lines like:
+        # Group 1: 2-wedge data collection
+        processor.addPattern('group',
+                             "Group ([0-9]):(.*)",
+                             ['id','description'])
+        # analysis_report
+        # matches lines like:
+        # Significant radiation damage detected:
+        processor.addPattern('analysis_report',
+                             "(No s|S)ignificant radiation damage detected(:?)")
+        # analysis_row
+        # matches lines like:
+        #Rd analysis (DEFAULT/WAVE1): 4.55
+        processor.addPattern('analysis_row',
+                             "Rd analysis \(([^/]+)/([^\)]+)\): ([0-9.]+)",
+                             ['xtal','dataset','value'])
+        # conclusion
+        # matches lines like:
+        #Conclusion: cut off after DOSE ~ 2161.5
+        processor.addPattern('conclusion',
+                             "Conclusion: (.*)",
+                             ['conclusion'])
+        # Do the processing and set the class properties based
+        # on extracted data
+        processor.processText(str(radiation_damage))
+        # Set the appropriate class properties
+        for group in processor['group']:
+            self.__group_ids.append(group['id'])
+            self.__group_descriptions.append(group['description'])
+        self.__report = str(processor['analysis_report'][0])
+        self.__conclusion = processor['conclusion'][0]['conclusion']
+        try:
+            # Build a raw text table of the analysis
+            tbl = ''
+            for row in processor['analysis_row']:
+                tbl += str(row['xtal'])+"\t"+\
+                       str(row['dataset'])+"\t"+\
+                       str(row['value'])+"\n"
+                # Also store crystal and dataset names
+                self.__xtal_name = str(row['xtal'])
+                self.__dataset_names.append(str(row['dataset']))
+                print "XTAL: "+self.xtal_name()+" DATASET: "+\
+                    self.dataset_names()[-1]
+            self.__table = tbl.strip("\n")
+        except KeyError:
+            # No analysis rows found - skip
+            pass
+
+    def xtal_name(self):
+        """Return the associated crystal name for this analysis"""
+        return self.__xtal_name
+
+    def dataset_names(self):
+        """Return a list of the associated dataset names"""
+        return self.__dataset_names
+
+    def ids(self):
+        """Return the group ids"""
+        return self.__group_ids
+
+    def descriptions(self):
+        """Return the group descriptions"""
+        return self.__group_descriptions
+
+    def report(self):
+        """Return the report from the radiation damage analysis"""
+        return self.__report
+
+    def conclusion(self):
+        """Return the conclusion of the radiation damage analysis"""
+        return self.__conclusion
+
+    def table(self):
+        """Return text-based table from radiation damage analysis"""
+        return self.__table
+
 #######################################################################
 # Classes for generating the output HTML document
 #######################################################################
@@ -1969,6 +2131,9 @@ class Xia2doc:
         self.reportJournalFile()
         # Add the crystallographic data
         self.reportXtallographicData(self.__xtal_parameters)
+        # Radiation damage analysis
+        # FIXME commented out for now
+        ##self.reportRadiationDamage(self.__xtal_parameters)
         # Interwavelength analysis
         self.reportInterwavelengthAnalyses(self.__xtal_parameters)
         # Report the integration status per image
@@ -2232,6 +2397,46 @@ class Xia2doc:
                                            'Status'])
             # Add the table to the section
             interwavelength_section.addContent(interwavelength_tbl)
+
+    def reportRadiationDamage(self,section):
+        """Add a report of the radiation damage analysis to the section"""
+        # Loop over all crystals to report the analysis for each
+        radiation_damage = section.addSubsection("Radiation damage analysis")
+        for xtal in xia2run.crystals():
+            if xia2run.multi_crystal():
+                # For multicrystal run, create a new subsection for
+                # the data for each crystal
+                xtal_name = "Crystal "+xtal.name()
+                radiation_damage_section = radiation_damage. \
+                    addSubsection(xtal_name)
+            else:
+                radiation_damage_section = radiation_damage
+            # Report the analysis and conclusion
+            n_analyses = len(xtal.radiation_damage_analyses())
+            if not n_analyses:
+                # Assume no analysis was found
+                self.addInfo(radiation_damage_section,
+                             "No radiation damage analysis found")
+                continue
+            i = 0
+            for analysis in xtal.radiation_damage_analyses():
+                if n_analyses > 1:
+                    # Multiple analyses - write a title
+                    i += 1
+                    radiation_damage_section.addPara("Analysis "+str(i))
+                # Report the groups
+                for j in range(0,len(analysis.ids())):
+                    radiation_damage_section.addPara("Group "+
+                                                     analysis.ids()[j]+
+                                                     ": "+
+                                                     analysis.descriptions()[j])
+                # Report other data from the analysis
+                radiation_damage_section.addPara(analysis.report())
+                if analysis.table():
+                    radiation_damage_section.addContent(
+                        Canary.MakeMagicTable(analysis.table()))
+                radiation_damage_section.addPara("Conclusion:"+
+                                                 analysis.conclusion())
 
     def reportReflectionFiles(self,section):
         """Add a report of the reflection files to a section"""
