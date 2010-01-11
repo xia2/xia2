@@ -20,7 +20,7 @@ types of content (Section, List etc).
 Similarly Section objects can also have Sections, Lists and so on added
 to them in a similar fashion."""
 
-__cvs_id__ = "$Id: Canary.py,v 1.11 2010/01/11 16:29:37 pjx Exp $"
+__cvs_id__ = "$Id: Canary.py,v 1.12 2010/01/11 17:37:21 pjx Exp $"
 __version__ = "0.0.3"
 
 #######################################################################
@@ -144,10 +144,45 @@ class DocElement:
 class Section(DocElement):
     """Section object
 
-    A section is part of a document. Sections can be contained
-    within sections."""
+    A Section is part of a Document, and can contain other
+    Sections, Lists, Tables and paragraphs. These are added to
+    the Section using the appropriate methods (addList, addTable,
+    addSubsection, addPara). Arbitrary content can also be added
+    via the addContent method.
 
-    def __init__(self,title,level,parent):
+    Sections may be created with or without a title string. Sections
+    created with an empty title are referred to as 'anonymous'
+    Sections.
+
+    When the Section is rendered to HTML the content is generated
+    in the order that it was added to the Section.
+    
+    A 'table of contents' can be added to the Section using the
+    addTOC method. This will automatically create a list of links
+    to the subsquent subsections in the Section.
+
+    When rendered into HTML, the section will take the form
+
+    <div id='...' class='...'>
+    <hX>Title</hX>
+    ...content...
+    </div>
+
+    The div id will be a unique name built from the title (if
+    supplied) plus an id number acquired from the parent document.
+        
+    The div class will be 'section_<X>', where <X> is the level of
+    the section (also used in the <h..> tags around the title, if
+    a title was supplied).
+
+    If no title was supplied then none will be written and the section
+    will also be assigned a class of 'anonymous'.
+
+    Typically Sections are created either via a call to the addSection
+    method of the Document class, or a call to the addSubsection of
+    another Section."""
+
+    def __init__(self,title,level,parent_doc):
         """Initialise a new section.
 
         'title' is the title text for the section.
@@ -166,7 +201,7 @@ class Section(DocElement):
         self.__content = []
         self.__level = level
         # Call the base class initialiser
-        DocElement.__init__(self,parent_doc=parent)
+        DocElement.__init__(self,parent_doc=parent_doc)
         # Set the classes
         self.addCSSClass('section_'+str(self.__level))
         if not self.__title: self.addCSSClass('anonymous')
@@ -175,7 +210,12 @@ class Section(DocElement):
     def id(self):
         """Return the id for this section
 
-        Overrides the base class 'id' method."""
+        Overrides the base class 'id' method and returns the
+        unique id that will be written to the id attribute of
+        the section container.
+
+        This id can be used to make HTML links to the section
+        from elsewhere, and as a CSS selector."""
         # Base part of the id is a unique id from the parent
         id = "sect_"+str(self.getDocId())
         # Add some title text to make it more human-friendly
@@ -184,44 +224,91 @@ class Section(DocElement):
         return id
 
     def title(self):
-        """Return the title for the section"""
+        """Return the title for the section
+
+        This the title string supplied on initialisation."""
         return self.__title
 
     def sections(self):
-        """Return list of (sub)section objects"""
+        """Return list of (sub)section objects
+
+        This returns a list of the Section objects that are
+        contained as subsections within the Section."""
         return self.__subsections
 
     def addList(self):
-        """Add a new list to the section"""
+        """Add a new list to the section
+
+        Creates and returns a new List object which is also
+        added to the Section. See the List class for more
+        information on how to add data to the List."""
         return self.addContent(List())
 
     def addTable(self,header=None):
-        """Add a new table to the section"""
+        """Add a new table to the section
+
+        Creates and returns a new Table object which is also
+        added to the Section.
+
+        'header' is an optional argument which should be a
+        Python list or tuple, the elements of which will be
+        assigned as column titles for the new table.
+
+        See the Table class for more information on how to
+        add data to the Table."""
         return self.addContent(Table(header=header))
 
     def addSubsection(self,title=None):
-        """Add a subsection to the section."""
+        """Add a subsection to the section
+
+        Creates and returns a new Section object which is also
+        added to the parent Section as a subsection."""
         new_section = Section(title,self.__level+1,self.parent())
         self.__subsections.append(new_section)
         return self.addContent(new_section)
 
     def addPara(self,text,css_class=None):
-        """Add a paragraph to the section"""
+        """Add a paragraph to the section
+
+        Create a new Para(graph) object populated with 'text',
+        and add this to the Section. Optionally also associate a
+        CSS class string with the Para(graph) - see the Para
+        class for more information.
+
+        Note that this method returns a reference to the parent
+        Section and *not* to the Para object (which is different
+        from other methods e.g. addList). This is to allow the
+        idiom:
+
+        sect.addPara('1st').addPara('2nd').addPara('3rd').addPara..
+
+        whereby multiple paragraphs can be added in a single
+        line of Python."""
         new_para = Para(str(text),css_class=css_class)
         self.__content.append(new_para)
         return self
 
     def addTOC(self):
-        """Add an automatic table of contents"""
+        """Add an automatic table of contents
+
+        Inserts an automatic table of contents (TOC) into the
+        Section at the point where it is invoked.
+
+        When rendered the table of contents will create a list
+        linking to all subsections that occur after it in the
+        Section."""
         new_toc = TOC(self)
         self.__content.append(new_toc)
         return self
 
     def addContent(self,content):
-        """Add content to the section
+        """Add arbitrary content to the section
 
-        'content' can be any object which has a render method that
-        returns a string representation of that object."""
+        'content' can be any object or string. If the object has a
+        'render' method then that will be invoked to generate a
+        representation of the content when the Section itself is
+        rendered to HTML. Otherwise a string conversion will be
+        attempted to get a string representation of the object."""
         self.__content.append(content)
         return content
 
@@ -240,16 +327,7 @@ class Section(DocElement):
         return toc_html
 
     def renderContent(self):
-        """Generate a HTML version of the section
-
-        Each section will be rendered contained within a <div>.
-        The div id will be a unique name built from the title
-        plus an id number acquired from the parent document.
-        
-        The div class will be 'section_<x>', where <x> is the
-        level of the section. If no title was supplied then
-        the section will also be assigned a class of
-        'anonymous'."""
+        """Generate a HTML version of the section"""
         # Deal with the title
         if self.__title:
             open_tag = "<h"+str(self.__level)+">"
@@ -276,14 +354,29 @@ class Document(Section):
 
     The Document object is an abstract representation of a document.
 
-    It is a subclass of the Section class and is a specialised type
-    of section.
+    It is a subclass of the Section class and so has all the same
+    methods for adding content (such as Sections, Tables, Lists, tables
+    of contents and Para(graph)s).
+
+    An 'addSection' method is also provided as an alias for the
+    'addSubsection' method inherited from the Section base class.
+
+    In addition CSS stylesheets and script files can be associated
+    with the Document via 'addStyle' and 'addScript' methods. A 'master
+    table of contents' can be added to the document by invoking the
+    'toc' method.
     
-    It is populated with content via its input methods, and an actual
-    document can be generated using its rendering methods."""
+    HTML can be rendered from the Document object at any time by using
+    one of the rendering methods. 'render' returns the document HTML,
+    'renderFile' writes the HTML to a file. Rendering doesn't change
+    or erase the Document content so it can further modified and
+    rendered as required."""
 
     def __init__(self,title):
-        """Initialise a new document object."""
+        """Initialise a new document object.
+
+        'title' is the document title. Set to an empty string
+        to create an untitled document."""
         # Class properties
         self.__styles = []
         self.__scripts = []
@@ -312,22 +405,38 @@ class Document(Section):
         return
 
     def toc(self,toc):
-        """Set whether to display automatic table of contents"""
+        """Set whether to display automatic table of contents
+
+        By default a master table of contents is not displayed.
+        Set 'toc' to True to turn on the table of contents, or
+        to False to turn it off."""
         self.__toc = toc
 
     def addSection(self,title=None):
-        """Add a section to the Document"""
-        # Wrapper for addSubsection
+        """Add a section to the Document
+
+        Creates and returns a new Section object which is also
+        added to the Document.
+
+        This is basically a wrapper to addSubsection from the
+        base class."""
         return self.addSubsection(title)
 
     def getUniqueId(self):
-        """Fetch a new unique id number"""
+        """Fetch a new unique id number
+
+        This returns an integer which is unique within the
+        Document, and thus can be used in element names to
+        make them unique across the Document."""
         # Increment id number, store and return
         self.__last_id += 1
         return self.__last_id
 
     def render(self):
-        """Generate a HTML version of the document"""
+        """Generate a HTML version of the document
+
+        Returns the HTML code representing the Document and its
+        content."""
         HTML = HTML_components()
         contents = HTML.start(self.title(),self.__styles,self.__scripts)
         contents += Section.render(self)
@@ -335,7 +444,12 @@ class Document(Section):
         return contents
 
     def renderFile(self,filename):
-        """Generate HTML file"""
+        """Generate HTML file
+
+        This writes the HTML for the document to a file called
+        'filename'.
+
+        If this file already exists then it will be overwritten."""
         html = open(filename,'w')
         html.write(self.render())
         html.close()
