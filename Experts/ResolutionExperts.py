@@ -907,7 +907,7 @@ def digest(bins, isigma_limit = 1.0):
     x = []
     y = []
 
-    if j0 == j1:
+    if j0 + 1 >= j1:
         # we need to do this differently... just count down the bins
         # until I/sigma < 1 - actually this is already s1
         r1 = 1.0 / math.sqrt(s1)
