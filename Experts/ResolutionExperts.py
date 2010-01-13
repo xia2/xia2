@@ -907,6 +907,13 @@ def digest(bins, isigma_limit = 1.0):
     x = []
     y = []
 
+    if j0 == j1:
+        # we need to do this differently... just count down the bins
+        # until I/sigma < 1 - actually this is already s1
+        r1 = 1.0 / math.sqrt(s1)
+
+        return s1, r1
+
     for j in range(j0, j1):
         s = ss[j]
 
@@ -940,78 +947,16 @@ def digest(bins, isigma_limit = 1.0):
 
     return s, r
 
-if __name__ == '__main__X':
+if __name__ == '__main__':
 
-    # test what hklin was...
-    # s, r = digest(bin_o_tron(mosflm_mtz_to_list(sys.argv[1])))
-
-    # if xds:
     bot = bin_o_tron(xds_integrate_hkl_to_list(sys.argv[1]))
-    ss = bot.keys()
 
-    ss.sort()
-
-    for j in range(len(bot)):
-        s = ss[j]
-        mean, sd = bot[s]
-
-        if sd > 0:
-
-            print s, 1.0 / math.sqrt(s), mean, sd, mean / sd
+    for b in sorted(bot):
+        mean, spread, sigma = bot[b]
+        if mean:
+            print 1.0 / math.sqrt(b), mean, spread, sigma, mean / sigma
 
     s, r = digest(bot)
 
     print s, r
 
-if __name__ == '__moon__':
-    rc = ResolutionCell(90.24, 90.24, 45.24, 90.0, 90.0, 120.0)
-
-    for l in range(1, 35):
-        s, r = rc.resolution(0, 0, l)
-        print '%d %.4f %.2f' % (l, s, r)
-
-    for k in range(1, 65):
-        s, r, = rc.resolution(0, k, 0)
-        print '%d %.4f %.2f' % (k, s, r)
-
-    rg = ResolutionGeometry(200.0, 0.97975, 109.0, 105.0)
-
-    for xy in [(100, 100), (200, 200)]:
-        s, r = rg.resolution(xy[0], xy[1])
-        print '%.1f %.1f %.4f %.4f' % (xy[0], xy[1], s, r)
-        
-
-if __name__ == '__main__':
-
-    # main(open(sys.argv[1], 'r').readlines())
-
-    # model()
-
-    # import random
-
-    # a = [random.random() for j in range(100)]
-    # b = [random.random() for j in range(100)]
-
-    # print cc(a, b)
-   
-    # bot = bin_o_tron(mosflm_mtz_to_list(sys.argv[1]))
-
-    # print digest(bot)
-    # print digest(bot, 3.0)
-
-    # print '%.3f %.3f' % determine_scaled_resolution(sys.argv[1],
-    # float(sys.argv[2]))
-
-    # s, r = digest(bin_o_tron(mosflm_mtz_to_list(sys.argv[1])))
-
-    # print r
-
-    # s, r = determine_scaled_resolution(sys.argv[1], 3.0)
-    
-    # s, r = digest(bin_o_tron(mosflm_mtz_to_list(sys.argv[1])))
-
-    # print s, r
-
-    blank = remove_blank(sys.argv[1], sys.argv[2])
-    
-    print blank
