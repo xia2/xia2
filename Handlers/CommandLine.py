@@ -107,6 +107,7 @@ class _CommandLine(Object):
         self._read_reversephi()
         self._read_no_lattice_test()
         self._read_fiddle_sd()
+        self._read_harrison_clock()
         self._read_no_relax()
         self._read_norefine()
         self._read_noremove()        
@@ -812,6 +813,13 @@ class _CommandLine(Object):
         if '-fiddle_sd' in sys.argv:
             Flags.set_fiddle_sd(True)
             Debug.write('[deprecated] Fiddle SD (3D) mode selected')
+        return
+
+    def _read_harrison_clock(self):
+
+        if '-harrison_clock' in sys.argv:
+            Flags.set_harrison_clock(True)
+            Debug.write('[development] Harrison Clock mode on')
         return
 
     def _read_no_relax(self):
