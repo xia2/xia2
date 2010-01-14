@@ -68,12 +68,17 @@
     <p>Since everything is precompiled, the only requirement is to unpack the
       directory somewhere and edit the directory setup.bat, setup.csh or
       setup.sh appropriately, for instance setting XIA2_HOME as 
-      /opt/px/xia/xia-0.2.6.5 if you unpacked the tarball in /opt/px/xia.
-      Note that this includes the xia-0.2.6.5 directory!</p>
+      /opt/px/xia/xia-0.3.1.0 if you unpacked the tarball in /opt/px/xia.
+      Note that this includes the xia-0.3.1.0 directory!</p>
 
     <p>All that is then needed is to source this setup file and the application
-      xia2 should be available. Apologies to those (t)csh users out there
-      who found that the setup scripts were broken! They are fixed now...</p>
+      xia2 should be available. One more recent change is that I am using 
+      CCTBX python, which needs to be more recent than the version included
+      (currently) in CCP4 - downloading an update from cctbx.sourceforge.net
+      and reading the setup file <i>after</i> the CCP4 one works fine.
+      Also loading any recent PHENIX installation should work fine.</p>
+
+    
 
     <h1>Input</h1>
 
@@ -435,6 +440,8 @@ END PROJECT TS01
       <li>Fixed bug where the resolution limit was not reset in an indexer
 	solution elimination.</li>
       <li>Added support for XDS from Dec 09.</li>
+      <li>Fixed some of the issues found in the resolution limit determination
+	when processing low resolution data.</li>
     <ul>
 
     <p>Changes since 0.3.0.6</p>
@@ -920,7 +927,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Fri Jan  8 13:22:43 GMT 2010
+Last modified: Thu Jan 14 10:31:16 GMT 2010
 <!-- hhmts end -->
   </body>
 </html>
