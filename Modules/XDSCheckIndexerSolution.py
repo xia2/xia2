@@ -67,7 +67,7 @@ def xds_check_indexer_solution(xparm_file,
     # now ask if it is centred - if not, just return the input solution
     # without testing...
 
-    if not is_centred(space_group_number):
+    if not is_centred(space_group_number) and False:
         return s2l(space_group_number), tuple(cell)
 
     # right, now need to read through the SPOT.XDS file and index the
@@ -127,6 +127,10 @@ def xds_check_indexer_solution(xparm_file,
     absent = 0
     total = 0
 
+    half_h = 0
+    half_k = 0
+    half_l = 0
+
     for record in open(spot_file, 'r').readlines():
         l = record.split()
 
@@ -168,21 +172,29 @@ def xds_check_indexer_solution(xparm_file,
         # lattice point - a for a random point this will be about 0.8% of
         # the time...
 
-        if math.fabs(hkl[0] - ihkl[0]) > 0.1:
+        dhkl = [math.fabs(hkl[j] - ihkl[j]) for j in range(3)]
+
+        # is this reflection close to an integral index?
+
+        if dhkl[0] < 0.1 and dhkl[1] < 0.1 and dhkl[2] < 0.1:
+
+            # is it absent?
+            
+            if sg.is_sys_absent(ihkl):
+                absent += 1
+            else:
+                present += 1
+
             continue
 
-        if math.fabs(hkl[1] - ihkl[1]) > 0.1:
-            continue
+        if math.fabs(dhkl[0] - 0.5) < 0.1 and dhkl[1] < 0.1 and dhkl[2] < 0.1:
+            half_h += 1
 
-        if math.fabs(hkl[2] - ihkl[2]) > 0.1:
-            continue
+        if math.fabs(dhkl[1] - 0.5) < 0.1 and dhkl[0] < 0.1 and dhkl[2] < 0.1:
+            half_k += 1
 
-        # now count if it is "absent"
-
-        if sg.is_sys_absent(ihkl):
-            absent += 1
-        else:
-            present += 1
+        if math.fabs(dhkl[2] - 0.5) < 0.1 and dhkl[0] < 0.1 and dhkl[1] < 0.1:
+            half_l += 1
 
     # now, if the number of absences is substantial, need to consider
     # transforming this to a primitive basis
@@ -190,6 +202,38 @@ def xds_check_indexer_solution(xparm_file,
     Debug.write('Absent: %d  vs.  Present: %d Total: %d' % \
                 (absent, present, total))
 
+    Debug.write('Half-H: %d Half-K: %d Half-L: %d' % (half_h, half_k, half_l))
+
+    # check if it looks like we may half a half-axis someplace...
+
+    cell_a = cell[0]
+    cell_b = cell[1]
+    cell_c = cell[2]
+    cell_al = cell[3]
+    cell_be = cell[4]
+    cell_ga = cell[5]
+
+    double = False
+
+    sd_h = math.sqrt(half_h)
+    if (half_h - 3 * sd_h) / total > 0.008:
+        double = True
+        cell_a *= 2
+        
+    sd_k = math.sqrt(half_k)
+    if (half_k - 3 * sd_k) / total > 0.008:
+        double = True
+        cell_b *= 2
+        
+    sd_l = math.sqrt(half_l)
+    if (half_l - 3 * sd_l) / total > 0.008:
+        double = True
+        cell_c *= 2
+
+    if double:
+        cell = cell_a, cell_b, cell_c, cell_al, cell_be, cell_ga
+        return s2l(space_group_number), tuple(cell)
+                
     # now see if this is compatible with a centred lattice or suggests
     # a primitive basis is correct
 
@@ -231,8 +275,13 @@ def is_centred(space_group_number):
 if __name__ == '__main__':
 
     source = os.path.join(os.environ['X2TD_ROOT'], 'new_index', 'x45453_w1')
+
+    if len(sys.argv) > 1:
+        source = sys.argv[1]
+
     xparm = os.path.join(source, 'XPARM.XDS')
     spot = os.path.join(source, 'SPOT.XDS')
 
-    xds_check_indexer_solution(xparm, spot)    
+    sg, cell = xds_check_indexer_solution(xparm, spot)
+    print 'Lattice: %s' % sg, 'Cell: %.3f %.3f %.3f %.3f %.3f %.3f' % cell
 

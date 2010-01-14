@@ -449,6 +449,7 @@ class XDSIndexerII(FrameProcessor,
         # ok, in here now ask if this solution was sensible!
 
         lattice = self._indxr_lattice
+        cell = self._indxr_cell
         
         lattice2, cell2 = xds_check_indexer_solution(
             os.path.join(self.get_working_directory(), 'XPARM.XDS'),
@@ -457,7 +458,15 @@ class XDSIndexerII(FrameProcessor,
         Debug.write('Centring analysis: %s => %s' % \
                     (lattice, lattice2))
 
-        if self._idxref_subtree_problem and lattice2 != lattice:
+        doubled_lattice = False
+        for j in range(3):
+            if int(round(cell2[j] / cell[j])) == 2:
+                doubled_lattice = True
+                axes = 'A', 'B', 'C'
+                Debug.write('Lattice axis doubled: %s' % axes[j])
+
+        if (self._idxref_subtree_problem and (lattice2 != lattice)) or \
+               doubled_lattice:
             # hmm.... looks like we don't agree on the correct result...
             # update the putative correct result as input
                 
