@@ -120,6 +120,13 @@ class _CommandLine(Object):
         self._read_free_fraction()
         self._read_free_total()
 
+        # finer grained control over the selection of indexer, integrater
+        # and scaler to use.
+
+        self._read_indexer()
+        self._read_integrater()
+        self._read_scaler()
+
         # flags relating to unfixed bugs...
         self._read_fixed_628()
 
@@ -992,6 +999,37 @@ class _CommandLine(Object):
 
     def _help_fixed_628(self):
         return '-fixed_628'
+
+    def _read_indexer(self):
+
+        try:
+            index = sys.argv.index('-indexer')
+        except ValueError, e:
+            return
+
+        indexer = sys.argv[index + 1]
+        add_preference('indexer', indexer)
+            
+    def _read_integrater(self):
+
+        try:
+            index = sys.argv.index('-integrater')
+        except ValueError, e:
+            return
+
+        integrater = sys.argv[index + 1]
+        add_preference('integrater', integrater)
+            
+    def _read_scaler(self):
+
+        try:
+            index = sys.argv.index('-scaler')
+        except ValueError, e:
+            return
+
+        scaler = sys.argv[index + 1]
+        add_preference('scaler', scaler)
+            
 
 CommandLine = _CommandLine()
 CommandLine.setup()
