@@ -479,7 +479,7 @@ class XDSIndexer(FrameProcessor,
         # ok, in here now ask if this solution was sensible!
 
         lattice = self._indxr_lattice
-        cell = self._inedxr_cell
+        cell = self._indxr_cell
         
         lattice2, cell2 = xds_check_indexer_solution(
             os.path.join(self.get_working_directory(), 'XPARM.XDS'),
