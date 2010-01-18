@@ -42,12 +42,17 @@ def xds_to_cbf(xparm_file):
                     y[0], y[1], y[2],
                     z[0], z[1], z[2]])
 
+    _beam = m * beam
     _nbeam = m.inverse() * (0, 0, - 1)
     _ra = m.inverse() * (1, 0, 0)
 
+    print _beam
+
+
+    print '%.8f %.8f %.8f' % (- z).elems
     print '%.8f %.8f %.8f' % _nbeam.elems
     print '%.8f %.8f %.8f' % beam.elems
-    print '%.8f %.8f %.8f' % (- z).elems
+    print '%.8f %.8f %.8f' % (m.inverse() * _beam).elems
 
     print '%.8f %.8f %.8f' % _ra.elems
     print '%.8f %.8f %.8f' % ra.elems
