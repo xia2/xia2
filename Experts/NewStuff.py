@@ -9,7 +9,6 @@
 from scitbx import matrix
 import math
 import sys
-import random
 
 def parse_xparm(xparm_file):
     '''Read an xparm file, return the rotation axis and beam vector in the
@@ -45,9 +44,6 @@ def xds_to_cbf(xparm_file):
     _beam = m * beam
     _nbeam = m.inverse() * (0, 0, - 1)
     _ra = m.inverse() * (1, 0, 0)
-
-    print _beam
-
 
     print '%.8f %.8f %.8f' % (- z).elems
     print '%.8f %.8f %.8f' % _nbeam.elems
