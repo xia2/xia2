@@ -439,7 +439,9 @@ def Chef(DriverType = None,
                 stream.write('No significant radiation damage detected')
                 return
 
-            if groups == ['Single wedge']:
+            if not groups:
+                stop_dose = dose
+            elif groups == ['Single wedge']:
                 stop_dose = dose
             else:
                 for stop_dose in stop_doses:
