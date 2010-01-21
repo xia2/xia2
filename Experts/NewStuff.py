@@ -53,5 +53,17 @@ def xds_to_cbf(xparm_file):
     print '%.8f %.8f %.8f' % _ra.elems
     print '%.8f %.8f %.8f' % ra.elems
 
+    det_x = m * matrix.col((1, 0, 0))
+    det_y = m * matrix.col((0, 1, 0))
+    det_z = m * matrix.col((0, 0, 1))
+    det_n = det_x.cross(det_y)
+
+    print 'Detector axes:'
+    print '%.8f %.8f %.8f' % det_x.elems
+    print '%.8f %.8f %.8f' % det_y.elems
+    print '%.8f %.8f %.8f' % det_z.elems
+    print '%.8f %.8f %.8f' % det_n.elems
+
+
 if __name__ == '__main__':
     xds_to_cbf(sys.argv[1])

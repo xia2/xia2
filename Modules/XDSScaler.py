@@ -2120,6 +2120,9 @@ class XDSScaler(Scaler):
             # check the resolution limit for this integrater
             dmin = intgr.get_integrater_high_resolution()
 
+            Debug.write('Integrater (%s) resolution limit: %.2f' % \
+                        (dname, dmin))
+
             # compare this against the resolution limit computed above
             if dmin == 0.0 and not Flags.get_quick():
                 intgr.set_integrater_high_resolution(
@@ -2134,7 +2137,7 @@ class XDSScaler(Scaler):
             # integration shouldn't be repeated once it has been repeated
             # once...
             
-            elif dmin > resolution_limits[dname] - 0.075:
+            elif dmin > (resolution_limits[dname] - 0.075):
                 # no need to reprocess the data - this is near enough...
                 # this should save us from the "infinate loop"
                 pass
