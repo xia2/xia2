@@ -1395,7 +1395,7 @@ class CCP4Scaler(Scaler):
                     'phi_width', 0.0)))
 
             if self._scalr_input_spacegroup:
-                Dwbug.write('Assigning user input spacegroup: %s' % \
+                Debug.write('Assigning user input spacegroup: %s' % \
                             self._scalr_input_spacegroup)
 
                 p.decide_spacegroup()
