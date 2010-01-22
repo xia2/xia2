@@ -38,7 +38,7 @@ from Wrappers.CCP4.Chooch import Chooch
 from Modules.LabelitBeamCentre import compute_beam_centre
 from Handlers.Streams import streams_off
 
-known_image_extensions = ['img', 'mccd', 'mar2300', 'mar1200',
+known_image_extensions = ['img', 'mccd', 'mar2300', 'mar1200', 'mar1600',
                           'mar3450', 'osc', 'cbf', 'mar2000']
 
 xds_file_names = ['ABS', 'ABSORP', 'BKGINIT', 'BKGPIX', 'BLANK', 'DECAY',
