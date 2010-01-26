@@ -1996,7 +1996,8 @@ class CCP4Scaler(Scaler):
                     resolution_points, Flags.get_i_over_sigma_limit())
             else:
                 resolution = determine_scaled_resolution(
-                    reflection_files[dataset], 3.0)[1]
+                    reflection_files[dataset], 
+                    Flags.get_i_over_sigma_limit())[1]
 
             # FIXME in here want to look at the reflection file to
             # calculate the resolution limit, not the Scala log

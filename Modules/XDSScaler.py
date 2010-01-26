@@ -2084,7 +2084,8 @@ class XDSScaler(Scaler):
                     resolution_points, Flags.get_i_over_sigma_limit())
             else:
                 resolution = determine_scaled_resolution(
-                    reflection_files[dataset], 2.0)[1]
+                    reflection_files[dataset],
+                    Flags.get_i_over_sigma_limit())[1]
                 
             # next compute "useful" versions of these resolution limits
             # want 0.05A steps - in here it would also be useful to
