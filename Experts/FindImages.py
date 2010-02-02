@@ -49,14 +49,14 @@ def image2template(filename):
 
     # the patterns in the order I want to test them
 
-    pattern_keys = [r'([^\.]*)\.([0-9]+)',
+    pattern_keys = [r'([^\.]*)\.([0-9]+)\Z',
                     r'(.*)_([0-9]*)\.(.*)',
                     r'(.*?)([0-9]*)\.(.*)']
 
     # patterns is a dictionary of possible regular expressions with
     # the format strings to put the file name back together
 
-    patterns = {r'([^\.]*)\.([0-9]+)':'%s.%s%s',
+    patterns = {r'([^\.]*)\.([0-9]+)\Z':'%s.%s%s',
                 r'(.*)_([0-9]*)\.(.*)':'%s_%s.%s',
                 r'(.*?)([0-9]*)\.(.*)':'%s%s.%s'}
 
@@ -88,7 +88,7 @@ def image2image(filename):
 
     # the patterns in the order I want to test them
 
-    pattern_keys = [r'([^\.]*)\.([0-9]+)',
+    pattern_keys = [r'([^\.]*)\.([0-9]+)\Z',
                     r'(.*)_([0-9]*)\.(.*)',
                     r'(.*?)([0-9]*)\.(.*)']
 
