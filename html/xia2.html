@@ -445,6 +445,9 @@ END PROJECT TS01
       <li>Fixed use of I/sigma limit assignment.</li>
       <li>Added command-line control of individual indexer, integrater, 
         scaler.</li>
+      <li>Repaired regular expression for image matching, to cope with 
+	images where there is e.g. 3.5 in the template. This was previously
+	misinterpreted as an image name of the form setup.NNNN.</li>
     <ul>
 
     <p>Changes since 0.3.0.6</p>
@@ -930,7 +933,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Thu Jan 14 10:31:16 GMT 2010
+Last modified: Tue Feb  2 09:26:19 GMT 2010
 <!-- hhmts end -->
   </body>
 </html>
