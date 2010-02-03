@@ -204,9 +204,16 @@ def mosflm_check_indexer_solution(indexer):
 
         sd = math.sqrt(absent)
 
-        Debug.write('Counts: %d %d %d %.3f' % \
-                    (total, present, absent, (absent - 3 * sd) / total))
+        if total:
 
+            Debug.write('Counts: %d %d %d %.3f' % \
+                        (total, present, absent, (absent - 3 * sd) / total))
+
+        else:
+
+            Debug.write('Not enough spots found for analysis')
+            return False, None, None, None
+            
         if (absent - 3 * sd) / total < 0.008:
             return False, None, None, None
 

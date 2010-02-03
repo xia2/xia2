@@ -168,6 +168,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False):
         'mar 165 ccd':False,
         'mar 135 ccd':False,
         'pilatus 6M':True,
+        'pilatus 2M':True,
         'rigaku saturn 92 2x2 binned':True,
         'rigaku saturn 944 2x2 binned':True,
         'rigaku saturn 92':True,
