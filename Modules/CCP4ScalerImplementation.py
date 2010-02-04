@@ -101,7 +101,7 @@
 #                 be done by looking at the overall Rmerge, or the highest
 #                 resolution shell.
 # 
-# FIXME 02/DEC/08 need to make this more clever with the scaling model - this
+# FIXED 02/DEC/08 need to make this more clever with the scaling model - this
 #                 will mean testing it out... at the moment the Scala wrapper
 #                 allows this by setting the secondary, cycles, tails and 
 #                 b_factor can be set, using:
@@ -218,7 +218,6 @@ class CCP4Scaler(Scaler):
         return
 
     # this is an overload from the factory
-
     def _updated_scala(self):
         
         if not self._scalr_corrections:
@@ -647,6 +646,10 @@ class CCP4Scaler(Scaler):
             'gathering', self.get_scaler_xcrystal().get_name(), 'CCP4',
             {'working directory':self.get_working_directory()})        
 
+        # FIXME code review 4FEB10 - why is this not defined in terms of
+        # another class? - these should be mediated by a new class
+        # which could handle some of the book keeping which will follow.
+        
         for epoch in self._scalr_integraters.keys():
             intgr = self._scalr_integraters[epoch]
             pname, xname, dname = intgr.get_integrater_project_info()
@@ -690,6 +693,9 @@ class CCP4Scaler(Scaler):
                     self._sweep_information[epoch][
                         'image_to_dose'][i] = d
 
+            # FIXME shouldn't the journalling make some comment
+            # here about whether this works or no? 4FEB10
+
         except RuntimeError, e:
             pass
 
@@ -706,6 +712,9 @@ class CCP4Scaler(Scaler):
                       'input file %s not MTZ format' % \
                       self._sweep_information[epoch][
                     'integrater'].get_integrater_reflections()
+
+        # FIXME why is this global? 4FEB10 - in fact, why is this
+        # test not performed in the scaler interface?
 
         self._common_pname = self._sweep_information[epochs[0]]['pname']
         self._common_xname = self._sweep_information[epochs[0]]['xname']
@@ -1827,14 +1836,6 @@ class CCP4Scaler(Scaler):
         if Flags.get_chef():
             self._sweep_information_to_chef()
             self._decide_chef_cutoff_epochs()
-
-        # FIXED in here I need to implement "proper" scaling...
-        # this will need to do things like imposing a sensible
-        # resolution limit on the data, deciding on the appropriate
-        # scaling parameters. The former is best done by analysing
-        # the "by resolution" output for each run, and then passing
-        # this information back somewhere. The latter can be achieved
-        # by a search using "onlymerge restore" type commands.
 
         # ---------- INITIAL SCALING ----------
 
