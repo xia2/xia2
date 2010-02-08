@@ -35,7 +35,7 @@ class mtz_dataset:
         
         return
 
-    def get_column_labels(self):
+    def get_column_names(self):
         return [column.label() for column in self._columns]
 
     def get_column_values(self, column_label, nan_value = 0.0):
@@ -53,14 +53,25 @@ class mtz_crystal:
 
         self._dataset_table = { }
         for dataset in self._datasets:
-            self._dataset_table[dataset.name] = mtz_dataset(dataset)
+            self._dataset_table[dataset.name()] = mtz_dataset(dataset)
 
         return
+
+    def get_datasets(self):
+        return [dataset.name() for dataset in self._datasets]
+
+    def get_dataset(self, dataset_name):
+        return self._dataset_table[dataset_name]
+
+    def get_unit_cell(self):
+        return tuple(self._unit_cell.parameters())
 
 class mtz_file:
     '''A class to represent the full MTZ file in the hierarchy - this
     will have a list of one or more crystals contained within it each
     with its own unit cell and datasets.'''
+
+    # FIXME need to keep in mind MTZ batch headers - can I access these?
 
     def __init__(self, hklin):
         mtz_obj = mtz.object(hklin)
@@ -85,7 +96,32 @@ class mtz_file:
     def get_space_group(self):
         return self._space_group
 
-    
+def mtz_dump(hklin):
+    '''An implementation of mtzdump using the above classes.'''
+
+    mtz = mtz_file(hklin)
+
+    print 'Reading file: %s' % hklin
+    print 'Spacegroup: %s' % mtz.get_space_group().type(
+         ).universal_hermann_mauguin_symbol()
+
+    for xname in mtz.get_crystal_names():
+        crystal = mtz.get_crystal(xname)
+        print 'Crystal: %s' % xname
+        print 'Cell: %.3f %.3f %.3f %.3f %.3f %.3f' % crystal.get_unit_cell()
+
+        for dname in crystal.get_datasets():
+            dataset = crystal.get_dataset(dname)
+            print 'Dataset: %s' % dname
+            print 'Columns (with min / max)'
+            for column in dataset.get_column_names():
+                values = dataset.get_column_values(column)
+                print '%20s %.4e %.4e' % (column, min(values), max(values))
+
+if __name__ == '__main__':
+    import sys
+
+    mtz_dump(sys.argv[1])
 
     
         
