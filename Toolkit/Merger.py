@@ -115,51 +115,123 @@ class merger:
 
         return
 
-    def calculate_rmerge(self):
+    def calculate_resolution_ranges(self, bins = 20):
+        '''Calculate semi-useful resolution ranges for analysis.'''
+
+        miller_indices = list(self._merged_reflections)
+        uc = self._mf.get_unit_cell()
+
+        d_mi = []
+
+        for mi in miller_indices:
+            d = uc.d(mi)
+            d_mi.append((d, mi))
+
+        d_mi.sort()
+
+        chunk_size = int(round(float(len(d_mi)) / bins))
+
+        hkl_ranges = []
+        resolution_ranges = []
+
+        for chunk in [d_mi[i:i + chunk_size] \
+                      for i in range(0, len(d_mi), chunk_size)]:
+            mi = [c[1] for c in chunk]
+            d = [c[0] for c in chunk]
+            hkl_ranges.append(mi)
+            resolution_ranges.append((min(d), max(d)))
+
+        # stitch together the two low res bins
+
+        self._hkl_ranges = hkl_ranges[:-1]
+        for mi in hkl_ranges[-1]:
+            self._hkl_ranges[-1].append(mi)
+            
+        self._resolution_ranges = resolution_ranges[:-1]
+        self._resolution_ranges[-1] = (self._resolution_ranges[-1][0],
+                                       resolution_ranges[-1][1])
+        
+        return
+
+    def get_resolution_bins(self):
+        return self._hkl_ranges, self._resolution_ranges
+
+    def calculate_rmerge(self, hkl_list = None):
         '''Calculate the overall Rmerge.'''
 
         t = 0.0
         b = 0.0
+
+        if not hkl_list:
+            hkl_list = list(self._unmerged_reflections)
         
-        for hkl in self._unmerged_reflections:
+        for hkl in hkl_list:
             i_mean = self._merged_reflections[hkl][0]
             t += self._unmerged_reflections[hkl].rmerge_contribution(i_mean)
             b += self._unmerged_reflections[hkl].multiplicity() * i_mean
 
         return t / b
 
-    def calculate_multiplicity(self):
+    def calculate_multiplicity(self, hkl_list = None):
         '''Calculate the overall average multiplicity.'''
         
+        if not hkl_list:
+            hkl_list = list(self._unmerged_reflections)
+
         multiplicity = [float(self._unmerged_reflections[hkl].multiplicity()) \
-                        for hkl in self._unmerged_reflections]
+                        for hkl in hkl_list]
+        
         return sum(multiplicity) / len(multiplicity)
 
-    def calculate_merged_isigma(self):
+    def calculate_merged_isigma(self, hkl_list = None):
         '''Calculate the average merged I/sigma.'''
+
+        if not hkl_list:
+            hkl_list = list(self._unmerged_reflections)
 
         isigma_values = [self._merged_reflections[hkl][0] / \
                          self._merged_reflections[hkl][1] \
-                         for hkl in self._merged_reflections]
+                         for hkl in hkl_list]
 
         return sum(isigma_values) / len(isigma_values)
 
-    def calculate_unmerged_isigma(self):
+    def calculate_unmerged_isigma(self, hkl_list = None):
         '''Calculate the average unmerged I/sigma.'''
 
-        return sum([self._unmerged_reflections[hkl].isigma_contribution() \
-                    for hkl in self._unmerged_reflections]) / \
-                    sum([self._unmerged_reflections[hkl].multiplicity() \
-                         for hkl in self._unmerged_reflections])
+        if not hkl_list:
+            hkl_list = list(self._unmerged_reflections)
 
+        return sum([self._unmerged_reflections[hkl].isigma_contribution() \
+                    for hkl in hkl_list]) / \
+                    sum([self._unmerged_reflections[hkl].multiplicity() \
+                         for hkl in hkl_list])
 
 if __name__ == '__main__':
     import sys
 
     m = merger(sys.argv[1])
-    
+
+    print 'Overall'
     print 'Rmerge:       %6.3f' % m.calculate_rmerge()
     print 'Multiplicity: %6.3f' % m.calculate_multiplicity()
     print 'Mn(I/sigma):  %6.3f' % m.calculate_merged_isigma()
     print 'I/sigma):     %6.3f' % m.calculate_unmerged_isigma()
     
+    m.calculate_resolution_ranges()
+
+    bins, ranges = m.get_resolution_bins()
+
+    print 'By resolution shell'
+    print '%6s %6s %6s %6s %6s %6s' % ('Low', 'High', 'Rmerge', 'Mult',
+                                       'M(I/s)', 'I/s')
+    
+    for j, bin in enumerate(bins):
+        dmin, dmax = ranges[j]
+        rmerge = m.calculate_rmerge(bin)
+        mult = m.calculate_multiplicity(bin)
+        misigma = m.calculate_merged_isigma(bin)
+        isigma = m.calculate_unmerged_isigma(bin)
+
+        print '%6.3f %6.3f %6.3f %6.3f %6.3f %6.3f' % \
+              (dmin, dmax, rmerge, mult, misigma, isigma)
+        

@@ -72,8 +72,11 @@ class mtz_crystal:
     def get_dataset(self, dataset_name):
         return self._dataset_table[dataset_name]
 
-    def get_unit_cell(self):
+    def get_unit_cell_parameters(self):
         return tuple(self._unit_cell.parameters())
+
+    def get_unit_cell(self):
+        return self._unit_cell
 
     def get_column_names(self):
         return list(self._column_table)
@@ -133,6 +136,11 @@ class mtz_file:
     def get_crystal(self, crystal_name):
         return self._crystal_table[crystal_name]
 
+    def get_unit_cell(self):
+        '''Get the unit cell object from HKL_base for other calculations.'''
+        
+        return self.get_crystal('HKL_base').get_unit_cell()
+
     def get_space_group(self):
         return self._space_group
 
@@ -175,7 +183,8 @@ def mtz_dump(hklin):
     for xname in mtz.get_crystal_names():
         crystal = mtz.get_crystal(xname)
         print 'Crystal: %s' % xname
-        print 'Cell: %.3f %.3f %.3f %.3f %.3f %.3f' % crystal.get_unit_cell()
+        print 'Cell: %.3f %.3f %.3f %.3f %.3f %.3f' % \
+              crystal.get_unit_cell_parameters()
 
         for dname in crystal.get_dataset_names():
             dataset = crystal.get_dataset(dname)
