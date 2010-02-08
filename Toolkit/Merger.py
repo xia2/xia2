@@ -24,6 +24,8 @@ import time
 
 from iotbx import mtz
 
+from MtzFactory import mtz_file
+
 class unmerged_intensity:
     '''A class to represent and encapsulate the multiple observations of a
     given intensity defined in terms of the Miller index. It is assumed that
@@ -56,6 +58,46 @@ class unmerged_intensity:
         sigi_mean = math.sqrt(1.0 / sum_w)
 
         return i_mean, sigi_mean
+
+def merge_scala_intensities(hklin):
+    '''Read in reflection file given in hklin, merge the observations to a
+    minimal set.'''
+
+    reflections = { }
+
+    mf = mtz_file(hklin)
+
+    # assert: for my purposes here I am looking for H, K, L, M_ISYM,
+    # I, SIGI columns as are expected in Scala output unmerged MTZ format.
+
+    assert('HKL_base' in mf.get_crystal_names())
+    assert('HKL_base' in mf.get_crystal('HKL_base').get_datasets())
+
+    md = mf.get_crystal('HKL_base').get_dataset('HKL_base')
+
+    assert('H' in md.column_names())
+    assert('K' in md.column_names())
+    assert('L' in md.column_names())
+    assert('M_ISYM' in md.column_names())
+    assert('I' in md.column_names())
+    assert('SIGI' in md.column_names())
+
+    h = md.get_column_values('H')
+    k = md.get_column_values('K')
+    l = md.get_column_values('L')
+    m_isym = md.get_column_values('M_ISYM')
+    i = md.get_column_values('I')
+    sigi = md.get_column_values('SIGI')
+    
+    for j in range(len(i)):
+        hkl = int(round(h[j])), int(round(k[j])), int(round(l[j]))
+        if not hkl in reflections:
+            reflections[hkl] = unmerged_intensity()
+        reflections[hkl].add(misym[j], i[j], sigi[j])
+
+    # ok that should be all the reflections gathered.... now merge them
+
+    
 
 if __name__ == '__main__':
 
