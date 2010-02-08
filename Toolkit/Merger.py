@@ -59,6 +59,14 @@ class unmerged_intensity:
 
         return i_mean, sigi_mean
 
+    def multiplicity(self):
+        return len(self._observations)
+
+    def rmerge_contribution(self, i_mean):
+        '''Calculate the contribution of this reflection to Rmerge.'''
+
+        return sum([math.fabs(o[1] - i_mean) for o in self._observations])
+
 def merge_scala_intensities(hklin):
     '''Read in reflection file given in hklin, merge the observations to a
     minimal set.'''
@@ -70,46 +78,46 @@ def merge_scala_intensities(hklin):
     # assert: for my purposes here I am looking for H, K, L, M_ISYM,
     # I, SIGI columns as are expected in Scala output unmerged MTZ format.
 
-    assert('HKL_base' in mf.get_crystal_names())
-    assert('HKL_base' in mf.get_crystal('HKL_base').get_datasets())
+    all_columns = mf.get_column_names()
 
-    md = mf.get_crystal('HKL_base').get_dataset('HKL_base')
+    assert('M_ISYM' in all_columns)
+    assert('I' in all_columns)
+    assert('SIGI' in all_columns)
 
-    assert('H' in md.column_names())
-    assert('K' in md.column_names())
-    assert('L' in md.column_names())
-    assert('M_ISYM' in md.column_names())
-    assert('I' in md.column_names())
-    assert('SIGI' in md.column_names())
+    mi = mf.get_miller_indices()
 
-    h = md.get_column_values('H')
-    k = md.get_column_values('K')
-    l = md.get_column_values('L')
-    m_isym = md.get_column_values('M_ISYM')
-    i = md.get_column_values('I')
-    sigi = md.get_column_values('SIGI')
+    m_isym = mf.get_column_values('M_ISYM')
+    i = mf.get_column_values('I')
+    sigi = mf.get_column_values('SIGI')
     
     for j in range(len(i)):
-        hkl = int(round(h[j])), int(round(k[j])), int(round(l[j]))
+        hkl = mi[j]
         if not hkl in reflections:
             reflections[hkl] = unmerged_intensity()
-        reflections[hkl].add(misym[j], i[j], sigi[j])
+        reflections[hkl].add(m_isym[j], i[j], sigi[j])
 
     # ok that should be all the reflections gathered.... now merge them
 
+    merged_reflections = { }
     
+    for hkl in reflections:
+        i_mean, sigi_mean = reflections[hkl].merge()
+        merged_reflections[hkl] = i_mean, sigi_mean
+
+    # calculate Rmerge
+
+    t = 0.0
+    b = 0.0
+
+    for hkl in reflections:
+        i_mean = merged_reflections[hkl][0]
+        t += reflections[hkl].rmerge_contribution(i_mean)
+        b += reflections[hkl].multiplicity() * i_mean
+
+    print t / b
 
 if __name__ == '__main__':
+    import sys
 
-    import random
-
-    ui = unmerged_intensity()
-
-    for j in range(10):
-        ui.add(1, 10 * random.random(), random.random())
-
-    print '%.3f %.3f' % ui.merge()
-
+    merge_scala_intensities(sys.argv[1])
     
-
-
