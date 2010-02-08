@@ -79,7 +79,9 @@ class mtz_file:
     #            print token
     #        print batch.num()
     #
-    # but need to decide what I am looking for...
+    # but need to decide what I am looking for... will bake this in with
+    # a future update (it would be interesting to look at how the UB
+    # matrices behave.)
 
     def __init__(self, hklin):
         mtz_obj = mtz.object(hklin)
@@ -109,7 +111,9 @@ class mtz_file:
 
     def get_centring_operations(self):
         return [ltr for ltr in self._space_group.ltr()]
-        
+
+    def get_miller_indices(self):
+        return self._miller_indices
 
 def mtz_dump(hklin):
     '''An implementation of mtzdump using the above classes.'''
