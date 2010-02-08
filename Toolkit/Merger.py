@@ -115,7 +115,7 @@ class merger:
 
         return
 
-    def calculate_resolution_ranges(self, bins = 20):
+    def calculate_resolution_ranges(self, nbins = 20):
         '''Calculate semi-useful resolution ranges for analysis.'''
 
         miller_indices = list(self._merged_reflections)
@@ -129,7 +129,7 @@ class merger:
 
         d_mi.sort()
 
-        chunk_size = int(round(float(len(d_mi)) / bins))
+        chunk_size = int(round(float(len(d_mi)) / nbins))
 
         hkl_ranges = []
         resolution_ranges = []
@@ -209,7 +209,12 @@ class merger:
 if __name__ == '__main__':
     import sys
 
+    nbins = 20
+
     m = merger(sys.argv[1])
+
+    if len(sys.argv) > 2:
+        nbins = int(sys.argv[2])
 
     print 'Overall'
     print 'Rmerge:       %6.3f' % m.calculate_rmerge()
@@ -217,7 +222,7 @@ if __name__ == '__main__':
     print 'Mn(I/sigma):  %6.3f' % m.calculate_merged_isigma()
     print 'I/sigma):     %6.3f' % m.calculate_unmerged_isigma()
     
-    m.calculate_resolution_ranges()
+    m.calculate_resolution_ranges(nbins = nbins)
 
     bins, ranges = m.get_resolution_bins()
 
