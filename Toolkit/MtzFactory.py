@@ -27,16 +27,17 @@ class mtz_dataset:
 
     def __init__(self, iotbx_dataset):
         self._name = iotbx_dataset.name()
-        self._columns = iotbx_dataset.columns()
-
         self._column_table = { }
-        for column in self._columns:
+        for column in iotbx_dataset.columns():
             self._column_table[column.label()] = column
         
         return
 
     def get_column_names(self):
-        return [column.label() for column in self._columns]
+        return list(self._column_table)
+
+    def get_column(self, column_label):
+        return self._column_table[column_label]
 
     def get_column_values(self, column_label, nan_value = 0.0):
         return self._column_table[column_label].extract_values(
@@ -48,23 +49,41 @@ class mtz_crystal:
 
     def __init__(self, iotbx_crystal):
         self._name = iotbx_crystal.name()
-        self._datasets = iotbx_crystal.datasets()
         self._unit_cell = iotbx_crystal.unit_cell()
 
         self._dataset_table = { }
-        for dataset in self._datasets:
+        for dataset in iotbx_crystal.datasets():
             self._dataset_table[dataset.name()] = mtz_dataset(dataset)
+
+        self._column_table = { }
+
+        for dname in self._dataset_table:
+            dataset = self._dataset_table[dname]
+            for column_name in dataset.get_column_names():
+                assert(not column_name in self._column_table)
+                self._column_table[column_name] = dataset.get_column(
+                    column_name)
 
         return
 
-    def get_datasets(self):
-        return [dataset.name() for dataset in self._datasets]
+    def get_dataset_names(self):
+        return list(self._dataset_table)
 
     def get_dataset(self, dataset_name):
         return self._dataset_table[dataset_name]
 
     def get_unit_cell(self):
         return tuple(self._unit_cell.parameters())
+
+    def get_column_names(self):
+        return list(self._column_table)
+
+    def get_column(self, column_label):
+        return self._column_table[column_label]
+
+    def get_column_values(self, column_label, nan_value = 0.0):
+        return self._column_table[column_label].extract_values(
+            not_a_number_substitute = nan_value)
 
 class mtz_file:
     '''A class to represent the full MTZ file in the hierarchy - this
@@ -89,16 +108,27 @@ class mtz_file:
         self._miller_indices = mtz_obj.extract_miller_indices()
         self._resolution_range = mtz_obj.max_min_resolution()
         self._space_group = mtz_obj.space_group()
-        self._crystals = mtz_obj.crystals()
 
         self._crystal_table = { }
-        for crystal in self._crystals:
+
+        for crystal in mtz_obj.crystals():
             self._crystal_table[crystal.name()] = mtz_crystal(crystal)
+
+        self._column_table = { }
+
+        for xname in self._crystal_table:
+            crystal = self._crystal_table[xname]
+            for dname in crystal.get_dataset_names():
+                dataset = crystal.get_dataset(dname)
+                for column_name in dataset.get_column_names():
+                    assert(not column_name in self._column_table)
+                    self._column_table[column_name] = dataset.get_column(
+                        column_name)
 
         return
 
     def get_crystal_names(self):
-        return [crystal.name() for crystal in self._crystals]
+        return list(self._crystal_table)
 
     def get_crystal(self, crystal_name):
         return self._crystal_table[crystal_name]
@@ -114,6 +144,16 @@ class mtz_file:
 
     def get_miller_indices(self):
         return self._miller_indices
+
+    def get_column_names(self):
+        return list(self._column_table)
+
+    def get_column(self, column_label):
+        return self._column_table[column_label]
+
+    def get_column_values(self, column_label, nan_value = 0.0):
+        return self._column_table[column_label].extract_values(
+            not_a_number_substitute = nan_value)
 
 def mtz_dump(hklin):
     '''An implementation of mtzdump using the above classes.'''
@@ -137,13 +177,17 @@ def mtz_dump(hklin):
         print 'Crystal: %s' % xname
         print 'Cell: %.3f %.3f %.3f %.3f %.3f %.3f' % crystal.get_unit_cell()
 
-        for dname in crystal.get_datasets():
+        for dname in crystal.get_dataset_names():
             dataset = crystal.get_dataset(dname)
             print 'Dataset: %s' % dname
             print 'Columns (with min / max)'
             for column in dataset.get_column_names():
                 values = dataset.get_column_values(column)
                 print '%20s %.4e %.4e' % (column, min(values), max(values))
+
+    print 'All columns:'
+    for column in mtz.get_column_names():
+        print column
 
 if __name__ == '__main__':
     import sys
