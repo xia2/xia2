@@ -72,6 +72,14 @@ class mtz_file:
     with its own unit cell and datasets.'''
 
     # FIXME need to keep in mind MTZ batch headers - can I access these?
+    # yes - through stuff like this:
+    #
+    #    for batch in mtz_obj.batches():
+    #        for token in dir(batch):
+    #            print token
+    #        print batch.num()
+    #
+    # but need to decide what I am looking for...
 
     def __init__(self, hklin):
         mtz_obj = mtz.object(hklin)
@@ -96,6 +104,13 @@ class mtz_file:
     def get_space_group(self):
         return self._space_group
 
+    def get_symmetry_operations(self):
+        return [smx for smx in self._space_group.smx()]
+
+    def get_centring_operations(self):
+        return [ltr for ltr in self._space_group.ltr()]
+        
+
 def mtz_dump(hklin):
     '''An implementation of mtzdump using the above classes.'''
 
@@ -104,6 +119,15 @@ def mtz_dump(hklin):
     print 'Reading file: %s' % hklin
     print 'Spacegroup: %s' % mtz.get_space_group().type(
          ).universal_hermann_mauguin_symbol()
+
+    sg = mtz.get_space_group()
+    print 'Centring operations:'
+    for cenop in mtz.get_centring_operations():
+        print cenop
+
+    print 'Symmetry operations:'
+    for symop in mtz.get_symmetry_operations():
+        print symop
 
     for xname in mtz.get_crystal_names():
         crystal = mtz.get_crystal(xname)
