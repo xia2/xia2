@@ -6,7 +6,7 @@
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
 # 
-# A toolkit component to read MTZ format reflection filesm, wrapping the
+# A toolkit component to read MTZ format reflection files, wrapping the
 # functionality in iotbx. This will return a data structure to represent
 # merged and unmerged MTZ files.
 
@@ -124,7 +124,6 @@ def mtz_dump(hklin):
     print 'Spacegroup: %s' % mtz.get_space_group().type(
          ).universal_hermann_mauguin_symbol()
 
-    sg = mtz.get_space_group()
     print 'Centring operations:'
     for cenop in mtz.get_centring_operations():
         print cenop
