@@ -71,6 +71,11 @@ class unmerged_intensity:
         '''Calculate the contribution to the I/sigma. N.B. multiplicity!'''
         return sum(o[1] / o[2] for o in self._observations)
 
+    def chisq_contribution(self, i_mean):
+        '''Calculate the contribution to the reduced chi^2.'''
+        
+        return [(o[1] - i_mean) / o[2] for o in self._observations]
+
 class merger:
     '''A class to calculate things from merging reflections.'''
 
@@ -172,6 +177,25 @@ class merger:
 
         return t / b
 
+    def calculate_chisq(self, hkl_list = None):
+        '''Calculate the overall erzatz chi^2.'''
+
+        if not hkl_list:
+            hkl_list = list(self._unmerged_reflections)
+
+        deltas = []
+        
+        for hkl in hkl_list:
+            i_mean = self._merged_reflections[hkl][0]
+            for d in self._unmerged_reflections[hkl].chisq_contribution(
+                i_mean):
+                deltas.append(d)
+
+        mean = sum(deltas) / len(deltas)
+        var = sum([(d - mean) * (d - mean) for d in deltas]) / len(deltas)
+
+        return mean, math.sqrt(var)
+
     def calculate_multiplicity(self, hkl_list = None):
         '''Calculate the overall average multiplicity.'''
         
@@ -238,23 +262,28 @@ if __name__ == '__main__':
     print 'Mn(I/sigma):  %6.3f' % m.calculate_merged_isigma()
     print 'I/sigma:      %6.3f' % m.calculate_unmerged_isigma()
     print 'Z^2:          %6.3f' % m.calculate_z2()
+    print 'Chi^2:        %6.3f %6.3f' % m.calculate_chisq()
     
     m.calculate_resolution_ranges(nbins = nbins)
 
     bins, ranges = m.get_resolution_bins()
 
     print 'By resolution shell'
-    print '%6s %6s %6s %6s %6s %6s %.6s' % ('Low', 'High', 'Rmerge', 'Mult',
-                                            'M(I/s)', 'I/s', 'Z^2')
+    print '%6s %6s %6s %6s %6s %6s %6s %6s %6s %6s' % \
+          ('Low', 'High', 'N', 'Rmerge', 'Mult',
+           'M(I/s)', 'I/s', 'Z^2', 'Chi^2', 'Chi^2')
     
     for j, bin in enumerate(bins):
         dmin, dmax = ranges[j]
+        n = len(bin)
         rmerge = m.calculate_rmerge(bin)
         mult = m.calculate_multiplicity(bin)
         misigma = m.calculate_merged_isigma(bin)
         isigma = m.calculate_unmerged_isigma(bin)
         z2 = m.calculate_z2(bin)
+        chisq = m.calculate_chisq(bin)
 
-        print '%6.3f %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f' % \
-              (dmin, dmax, rmerge, mult, misigma, isigma, z2)
+        print '%6.3f %6.3f %6d %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f' % \
+              (dmin, dmax, n, rmerge, mult, misigma,
+               isigma, z2, chisq[0], chisq[1])
         
