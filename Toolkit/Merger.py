@@ -206,6 +206,22 @@ class merger:
                     sum([self._unmerged_reflections[hkl].multiplicity() \
                          for hkl in hkl_list])
 
+    def calculate_z2(self, hkl_list = None):
+        '''Calculate average Z^2 values, where Z = I/<I> in the bin,
+        from the merged observations.'''
+
+        if not hkl_list:
+            hkl_list = list(self._merged_reflections)
+
+        # first calculate the average intensity, then calculate the Z values
+        # from these, and finally calculate the Z^2 value.
+
+        i_s = [self._merged_reflections[hkl][0] for hkl in hkl_list]
+        mean_i = sum(i_s) / len(i_s)
+        
+        z_s = [i / mean_i for i in i_s]
+        return sum([z * z for z in z_s]) / len(z_s)
+        
 if __name__ == '__main__':
     import sys
 
@@ -220,15 +236,16 @@ if __name__ == '__main__':
     print 'Rmerge:       %6.3f' % m.calculate_rmerge()
     print 'Multiplicity: %6.3f' % m.calculate_multiplicity()
     print 'Mn(I/sigma):  %6.3f' % m.calculate_merged_isigma()
-    print 'I/sigma):     %6.3f' % m.calculate_unmerged_isigma()
+    print 'I/sigma:      %6.3f' % m.calculate_unmerged_isigma()
+    print 'Z^2:          %6.3f' % m.calculate_z2()
     
     m.calculate_resolution_ranges(nbins = nbins)
 
     bins, ranges = m.get_resolution_bins()
 
     print 'By resolution shell'
-    print '%6s %6s %6s %6s %6s %6s' % ('Low', 'High', 'Rmerge', 'Mult',
-                                       'M(I/s)', 'I/s')
+    print '%6s %6s %6s %6s %6s %6s %.6s' % ('Low', 'High', 'Rmerge', 'Mult',
+                                            'M(I/s)', 'I/s', 'Z^2')
     
     for j, bin in enumerate(bins):
         dmin, dmax = ranges[j]
@@ -236,7 +253,8 @@ if __name__ == '__main__':
         mult = m.calculate_multiplicity(bin)
         misigma = m.calculate_merged_isigma(bin)
         isigma = m.calculate_unmerged_isigma(bin)
+        z2 = m.calculate_z2(bin)
 
-        print '%6.3f %6.3f %6.3f %6.3f %6.3f %6.3f' % \
-              (dmin, dmax, rmerge, mult, misigma, isigma)
+        print '%6.3f %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f' % \
+              (dmin, dmax, rmerge, mult, misigma, isigma, z2)
         
