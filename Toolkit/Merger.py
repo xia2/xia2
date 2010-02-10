@@ -59,13 +59,73 @@ class unmerged_intensity:
 
         return i_mean, sigi_mean
 
+    def merge_anomalous(self):
+        '''Merge the observations recorded so far, return Imean+, SigImean+
+        &c. N.B. will return a 4-ple. +/- defined by M_ISYM record, which
+        if odd = I+, even I-.'''
+
+        assert(self._observations)
+
+        sum_wi_p = 0.0
+        sum_w_p = 0.0
+        
+        sum_wi_m = 0.0
+        sum_w_m = 0.0
+
+        for o in self._observations:
+            i = o[1]
+            w = 1.0 / (o[2] * o[2])
+            if o[0] % 2:
+                sum_w_p += w
+                sum_wi_p += w * i
+            else:
+                sum_w_m += w
+                sum_wi_m += w * i
+                
+        if sum_w_p:
+            i_mean_p = sum_wi_p / sum_w_p
+            sigi_mean_p = math.sqrt(1.0 / sum_w_p)
+        else:
+            i_mean_p = 0.0
+            sigi_mean_p = 0.0
+
+        if sum_w_m:
+            i_mean_m = sum_wi_m / sum_w_m
+            sigi_mean_m = math.sqrt(1.0 / sum_w_m)
+        else:
+            i_mean_m = 0.0 
+            sigi_mean_m = 0.0        
+
+        return i_mean_p, sigi_mean_p, i_mean_m, sigi_mean_m
+
     def multiplicity(self):
         return len(self._observations)
+
+    def multiplicity_anomalous(self):
+        def p(x): return x[0] % 2
+        def m(x): return not x[0] % 2
+        return len(filter(p, self._observations)), \
+               len(filter(m, self._observations))
 
     def rmerge_contribution(self, i_mean):
         '''Calculate the contribution of this reflection to Rmerge.'''
 
         return sum([math.fabs(o[1] - i_mean) for o in self._observations])
+
+    def rmerge_contribution_anomalous(self, i_mean_p, i_mean_m):
+        '''Calculate the contribution of this reflection to Rmerge,
+        separating anomalous pairs. Returns contributions for I+, I-.'''
+
+        rmerge_p = 0.0
+        rmerge_m = 0.0
+
+        for o in self._observations:
+            if o[0] % 2:
+                rmerge_p += math.fabs(o[1] - i_mean_p)
+            else:
+                rmerge_m += math.fabs(o[1] - i_mean_m)
+                
+        return rmerge_p, rmerge_m
 
     def isigma_contribution(self):
         '''Calculate the contribution to the I/sigma. N.B. multiplicity!'''
@@ -83,6 +143,7 @@ class merger:
         self._mf = mtz_file(hklin)
         self._unmerged_reflections = { }
         self._merged_reflections = { }
+        self._merged_reflections_anomalous = { }
 
         all_columns = self._mf.get_column_names()
 
@@ -92,6 +153,7 @@ class merger:
 
         self._read_unmerged_reflections()
         self._merge_reflections()
+        self._merge_reflections_anomalous()
 
         return
 
@@ -115,8 +177,17 @@ class merger:
         '''Merge the currently recorded unmerged reflections.'''
 
         for hkl in self._unmerged_reflections:
-            i_mean, sigi_mean = self._unmerged_reflections[hkl].merge()
-            self._merged_reflections[hkl] = i_mean, sigi_mean
+            self._merged_reflections[hkl] = self._unmerged_reflections[
+                hkl].merge()
+
+        return
+
+    def _merge_reflections_anomalous(self):
+        '''Merge the currently recorded unmerged reflections.'''
+
+        for hkl in self._unmerged_reflections:
+            self._merged_reflections_anomalous[
+                hkl] = self._unmerged_reflections[hkl].merge_anomalous()
 
         return
 
@@ -174,6 +245,27 @@ class merger:
             i_mean = self._merged_reflections[hkl][0]
             t += self._unmerged_reflections[hkl].rmerge_contribution(i_mean)
             b += self._unmerged_reflections[hkl].multiplicity() * i_mean
+
+        return t / b
+
+    def calculate_rmerge_anomalous(self, hkl_list = None):
+        '''Calculate the overall Rmerge, separating anomalous pairs.'''
+
+        t = 0.0
+        b = 0.0
+
+        if not hkl_list:
+            hkl_list = list(self._unmerged_reflections)
+        
+        for hkl in hkl_list:
+            is_pm = self._merged_reflections_anomalous[hkl]
+            i_mean_p, i_mean_m = is_pm[0], is_pm[2]
+            r_pm = self._unmerged_reflections[
+                hkl].rmerge_contribution_anomalous(i_mean_p, i_mean_m)
+            t += r_pm[0] + r_pm[1]
+            multiplicity_pm = self._unmerged_reflections[
+                hkl].multiplicity_anomalous()
+            b += multiplicity_pm[0] * i_mean_p + multiplicity_pm[1] * i_mean_m
 
         return t / b
 
@@ -248,6 +340,7 @@ class merger:
         
 if __name__ == '__main__':
     import sys
+    import time
 
     nbins = 20
 
@@ -257,7 +350,11 @@ if __name__ == '__main__':
         nbins = int(sys.argv[2])
 
     print 'Overall'
+    t0 = time.time()
     print 'Rmerge:       %6.3f' % m.calculate_rmerge()
+    t1 = time.time()
+    print 'Rmerge +/-:   %6.3f' % m.calculate_rmerge_anomalous()
+    t2 = time.time()
     print 'Multiplicity: %6.3f' % m.calculate_multiplicity()
     print 'Mn(I/sigma):  %6.3f' % m.calculate_merged_isigma()
     print 'I/sigma:      %6.3f' % m.calculate_unmerged_isigma()
@@ -287,3 +384,4 @@ if __name__ == '__main__':
               (dmin, dmax, n, rmerge, mult, misigma,
                isigma, z2, chisq[0], chisq[1])
         
+    print 'Rmerge times: %.4fs vs. %4fs' % (t1 - t0, t2 - t1)
