@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env cctbx.python
 # xia2patterson
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #

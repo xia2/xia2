@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env cctbx.python
 # PattersonExpert.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
@@ -13,6 +13,7 @@
 import os
 import sys
 import math
+from cctbx import crystal
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -51,6 +52,7 @@ def anomalous_patterson_jiffy(hklin, symmetry = None,
     _dmin, _dmax = mtzdump.get_resolution_range()
     datasets = mtzdump.get_datasets()
 
+
     if not dmin:
         dmin = _dmin
     if not dmax:
@@ -63,6 +65,10 @@ def anomalous_patterson_jiffy(hklin, symmetry = None,
         raise RuntimeError, 'more than one dataset for anomalous Patterson'
 
     dataset = datasets[0].split('/')[-1]
+
+    # best guess for the unit cell?
+    cell = mtzdump.get_dataset_info(datasets[0])['cell']
+
     dano = ('DANO_%s' % dataset, 'D')
     if dano in mtzdump.get_columns():
         pass
@@ -126,7 +132,7 @@ def anomalous_patterson_jiffy(hklin, symmetry = None,
 
     # now read the peak list
 
-    peaks = []
+    all_peaks = []
 
     for record in open(xyzout, 'r').readlines():
         if 'ATOM' in record[:4]:
@@ -135,9 +141,35 @@ def anomalous_patterson_jiffy(hklin, symmetry = None,
             z = float(record[46:54].strip())
             o = float(record[54:60].strip())
 
-            peaks.append((x, y, z, o))
+            all_peaks.append((x, y, z, o))
 
-    return peaks
+    # now reduce these using spells from CCTBX!
+
+    cs = crystal.symmetry(
+        unit_cell = cell,
+        space_group_symbol = symmetry)
+
+    ds = cs.direct_space_asu()
+    sg = cs.space_group()
+
+    am = crystal.direct_space_asu.asu_mappings(
+        space_group = sg,
+        asu = ds.as_float_asu(),
+        buffer_thickness = 0.0)
+
+    for p in all_peaks:
+        am.process(cs.unit_cell().fractionalize(p[:3]))
+
+    asu_sites = [m[0].mapped_site() for m in am.mappings()]
+
+    peaks = []
+
+    for j, s in enumerate(asu_sites):
+        x, y, z = cs.unit_cell().fractionalize(s)
+        o = all_peaks[j][3]
+        peaks.append((o, x, y, z))
+
+    return sorted(peaks)
 
 if __name__ == '__main__':
 
@@ -150,4 +182,4 @@ if __name__ == '__main__':
                                       working_directory, scratch)
 
     for p in peaks:
-        print '%6.2f %6.2f %6.2f %6.2f' % p
+        print '%6.3f %6.3f %6.3f %6.2f' % p
