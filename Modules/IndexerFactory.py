@@ -139,7 +139,7 @@ def Indexer(detector = None):
 
     if not indexer and (not preselection or preselection == 'labelit'):
         try:
-            if detector == 'dectris':
+            if detector == 'dectris' and False:
                 Debug.write('Labelit does not support dectris detectors')
                 raise NotAvailableError, 'Labelit does not support dectris'
             indexer = LabelitScreen()
