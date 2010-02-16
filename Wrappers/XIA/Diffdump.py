@@ -269,6 +269,8 @@ def Diffdump(DriverType = None):
                      'mar':{'wavelength':1.0,
                             'pixel':1.0}}
 
+            cbf_format = False
+
             for o in output:
                 l = o.split(':')
 
@@ -297,6 +299,10 @@ def Diffdump(DriverType = None):
 		    if self._header['detector'] == 'rigaku r-axis':
 			self._header['detector'] = 'raxis'
                     detector = self._header['detector']
+
+                if 'Format' in o:
+                    if o.split()[-1] == 'CBF':
+                        cbf_format = True
 
                 # FIXME in here need to check a trust file timestamp flag
 
@@ -430,7 +436,7 @@ def Diffdump(DriverType = None):
 
             # quickly check diffdump didn't do something stupid...
 
-            if detector == 'adsc':
+            if detector == 'adsc' and not cbf_format:
 
                 osc_start = 0.0
                 osc_range = 0.0
