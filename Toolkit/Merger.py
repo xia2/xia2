@@ -40,6 +40,9 @@ class unmerged_intensity:
         self._observations.append((misym, i, sigi, b))
         return
 
+    def get(self):
+        return self._observations
+
     def merge(self):
         '''Merge the observations recorded so far, return Imean, SigImean.'''
 
@@ -136,30 +139,25 @@ class unmerged_intensity:
         
         return [(o[1] - i_mean) / o[2] for o in self._observations]
 
-    def unmerged_di(self):
-        '''Calculate unmerged dI values.'''
+    def calculate_unmerged_di(self):
+        '''Calculate unmerged dI values, returns a list of putative unmerged
+        observations in same structure, though misym is replaced with dose
+        difference...'''
 
-        i_p = []
-        i_m = []
+        def isp(x): return x[0] % 2
+        def ism(x): return not x[0] % 2
 
-        for o in self._observations:
-            if o[0] % 2:
-                i_p.append(o)
-            else:
-                i_m.append(o)
+        i_p = filter(isp, self._observations)
+        i_m = filter(ism, self._observations)
 
-        dis = []
-
-        for ip, p in enumerate(i_p):
-            for im, m in enumerate(i_m):
-                dis.append((math.fabs(m[3] - p[3]), ip, im))
-
-        dis.sort()
+        dis = sorted([(math.fabs(m[3] - p[3]), ip, im) \
+                      for ip, p in enumerate(i_p) \
+                      for im, m in enumerate(i_m)])
 
         ip_used = []
         im_used = []
 
-        pairs = []
+        result = unmerged_intensity()
 
         for d, ip, im in dis:
             if ip in ip_used:
@@ -167,11 +165,21 @@ class unmerged_intensity:
             if im in im_used:
                 continue
 
-            pairs.append((i_p[ip], i_m[im]))
             ip_used.append(ip)
             im_used.append(im)
 
-        return pairs
+            # calculate intensity difference ...
+
+            _ip = i_p[ip]
+            _im = i_m[im]
+
+            _i = _ip[1] - _im[1]
+            _si = math.sqrt(_ip[2] * _ip[2] + _im[2] * _im[2])
+            _b = 0.5 * (_ip[3] + _im[3])
+
+            result.add(d, _i, _si, _b)
+
+        return result
             
 class merger:
     '''A class to calculate things from merging reflections.'''
@@ -181,6 +189,7 @@ class merger:
         self._unmerged_reflections = { }
         self._merged_reflections = { }
         self._merged_reflections_anomalous = { }
+        self._unmerged_di = { }
 
         all_columns = self._mf.get_column_names()
 
@@ -188,7 +197,7 @@ class merger:
         assert('I' in all_columns)
         assert('SIGI' in all_columns)
 
-        if 'DOSE' in all_columns:
+        if 'DOSE' in all_columns and False:
             self._b_column = 'DOSE'
         elif 'BATCH' in all_columns:
             self._b_column = 'BATCH'
@@ -199,6 +208,20 @@ class merger:
         self._merge_reflections()
         self._merge_reflections_anomalous()
 
+        t0 = time.time()
+        self._calculate_unmerged_di()
+        print 'Unmerged dI calculation: %.2fs' % (time.time() - t0)
+
+        diff = []
+
+        for hkl in self._unmerged_di:
+            [diff.append(o[0]) for o in self._unmerged_di[hkl].get()]
+
+        mean = sum(diff) / len(diff)
+        var = sum([(d - mean) * (d - mean) for d in diff]) / len(diff)
+
+        print mean, math.sqrt(var)
+    
         return
 
     def _read_unmerged_reflections(self):
@@ -228,6 +251,15 @@ class merger:
 
         return
 
+    def _merge_reflections(self):
+        '''Merge the currently recorded unmerged reflections.'''
+
+        for hkl in self._unmerged_reflections:
+            self._merged_reflections[hkl] = self._unmerged_reflections[
+                hkl].merge()
+
+        return
+
     def _merge_reflections_anomalous(self):
         '''Merge the currently recorded unmerged reflections.'''
 
@@ -236,6 +268,17 @@ class merger:
                 hkl] = self._unmerged_reflections[hkl].merge_anomalous()
 
         return
+
+    def _calculate_unmerged_di(self):
+        '''Calculate a set of unmerged intensity differences.'''
+
+        for hkl in self._unmerged_reflections:
+            self._unmerged_di[hkl] = self._unmerged_reflections[
+                hkl].calculate_unmerged_di()
+
+        return
+
+
 
     def calculate_resolution_ranges(self, nbins = 20):
         '''Calculate semi-useful resolution ranges for analysis.'''
@@ -385,8 +428,6 @@ class merger:
         return sum([z * z for z in z_s]) / len(z_s)
         
 if __name__ == '__main__':
-    import sys
-    import time
 
     nbins = 20
 
