@@ -36,8 +36,8 @@ class unmerged_intensity:
 
         return
 
-    def add(self, misym, i, sigi):
-        self._observations.append((misym, i, sigi))
+    def add(self, misym, i, sigi, b):
+        self._observations.append((misym, i, sigi, b))
         return
 
     def merge(self):
@@ -136,6 +136,43 @@ class unmerged_intensity:
         
         return [(o[1] - i_mean) / o[2] for o in self._observations]
 
+    def unmerged_di(self):
+        '''Calculate unmerged dI values.'''
+
+        i_p = []
+        i_m = []
+
+        for o in self._observations:
+            if o[0] % 2:
+                i_p.append(o)
+            else:
+                i_m.append(o)
+
+        dis = []
+
+        for ip, p in enumerate(i_p):
+            for im, m in enumerate(i_m):
+                dis.append((math.fabs(m[3] - p[3]), ip, im))
+
+        dis.sort()
+
+        ip_used = []
+        im_used = []
+
+        pairs = []
+
+        for d, ip, im in dis:
+            if ip in ip_used:
+                continue
+            if im in im_used:
+                continue
+
+            pairs.append((i_p[ip], i_m[im]))
+            ip_used.append(ip)
+            im_used.append(im)
+
+        return pairs
+            
 class merger:
     '''A class to calculate things from merging reflections.'''
 
@@ -151,6 +188,13 @@ class merger:
         assert('I' in all_columns)
         assert('SIGI' in all_columns)
 
+        if 'DOSE' in all_columns:
+            self._b_column = 'DOSE'
+        elif 'BATCH' in all_columns:
+            self._b_column = 'BATCH'
+        else:
+            raise RuntimeError, 'no baseline column (DOSE or BATCH) found'
+
         self._read_unmerged_reflections()
         self._merge_reflections()
         self._merge_reflections_anomalous()
@@ -164,12 +208,14 @@ class merger:
         m_isym = self._mf.get_column_values('M_ISYM')
         i = self._mf.get_column_values('I')
         sigi = self._mf.get_column_values('SIGI')
+        b = self._mf.get_column_values(self._b_column)
         
         for j in range(len(i)):
             hkl = mi[j]
             if not hkl in self._unmerged_reflections:
                 self._unmerged_reflections[hkl] = unmerged_intensity()
-            self._unmerged_reflections[hkl].add(m_isym[j], i[j], sigi[j])
+            self._unmerged_reflections[hkl].add(
+                m_isym[j], i[j], sigi[j], b[j])
 
         return
 
