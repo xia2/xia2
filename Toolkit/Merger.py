@@ -16,6 +16,13 @@
 # 
 # Then in a separate calculation, E^4, merged I/sigma and completeness will
 # be calculated. This should be a different Toolkit component.
+#
+# FIXME separate out hkl for centric and acentric reflections. The code for
+#       this is I think in PyChef for the completeness calculation.
+# 
+# FIXME should also include a completeness calculation in here for all of the
+#       resolution shells.
+
 
 import sys
 import math
