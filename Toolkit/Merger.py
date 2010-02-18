@@ -208,6 +208,9 @@ class merger:
         self._merge_reflections()
         self._merge_reflections_anomalous()
 
+        if True:
+            return
+
         t0 = time.time()
         self._calculate_unmerged_di()
         print 'Unmerged dI calculation: %.2fs' % (time.time() - t0)
