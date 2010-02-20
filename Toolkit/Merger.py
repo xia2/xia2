@@ -22,6 +22,9 @@
 # 
 # FIXME should also include a completeness calculation in here for all of the
 #       resolution shells.
+#
+# FIXME restructure this (or extend) to include the Chef calculations =>
+#       can then apply these to any derived data types.
 
 
 import sys
