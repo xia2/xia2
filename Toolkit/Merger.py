@@ -309,8 +309,6 @@ class merger:
 
         return
 
-
-
     def calculate_resolution_ranges(self, nbins = 20):
         '''Calculate semi-useful resolution ranges for analysis.'''
 
@@ -419,6 +417,12 @@ class merger:
         
         return sum(multiplicity) / len(multiplicity)
 
+    def calculate_completeness(self, hkl_list = None):
+        '''Calculate the completeness of measurements in this resolution
+        range.'''
+
+        raise RuntimeError, 'FIXME implement this'
+
     def calculate_merged_isigma(self, hkl_list = None):
         '''Calculate the average merged I/sigma.'''
 
@@ -451,6 +455,10 @@ class merger:
 
         # first calculate the average intensity, then calculate the Z values
         # from these, and finally calculate the Z^2 value.
+
+        # FIXME separate out centric and acentric reflections in this
+        # calculation! can run as a filter(is_centric(hkl) for hkl in hkl_list)
+        # type of thing.
 
         i_s = [self._merged_reflections[hkl][0] for hkl in hkl_list]
         mean_i = sum(i_s) / len(i_s)
