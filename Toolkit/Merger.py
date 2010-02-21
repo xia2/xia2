@@ -18,10 +18,28 @@
 # be calculated. This should be a different Toolkit component.
 #
 # FIXME separate out hkl for centric and acentric reflections. The code for
-#       this is I think in PyChef for the completeness calculation.
+#       this is I think in PyChef for the completeness calculation:
+# 
+#             sg = mtz_obj.space_group()
+#             if sg.is_centric((h, k, l)) &c.
 # 
 # FIXME should also include a completeness calculation in here for all of the
-#       resolution shells.
+#       resolution shells:
+# 
+# def compute_unique_reflections(unit_cell,
+#                                space_group,
+#                                anomalous,
+#                                high_resolution_limit,
+#                                low_resolution_limit = None):
+#     '''Compute the list of unique reflections from the unit cell and space
+#     group.'''
+# 
+#     cs = crystal_symmetry(unit_cell = unit_cell,
+#                           space_group = space_group)
+# 
+#     return [hkl for hkl in build_set(cs, anomalous,
+#                                      d_min = high_resolution_limit,
+#                                      d_max = low_resolution_limit).indices()]
 #
 # FIXME restructure this (or extend) to include the Chef calculations =>
 #       can then apply these to any derived data types.
