@@ -3,6 +3,36 @@ import struct
 import math
 import os
 import sys
+import random
+
+def pack_values(data):
+    current = 0
+    packed = ''
+
+    for d in data:
+        delta = d - current
+        if -127 < delta < 127:
+            packed += struct.pack('b', delta)
+            current = d
+            continue
+        
+        packed += struct.pack('b', -128)
+        if -32767 < delta < 32767:
+            packed += struct.pack('<h', delta)
+            current = d
+            continue
+
+        packed += struct.pack('<h', -32768)
+        if -2147483647 < delta < 2147483647:
+            packed += struct.pack('<i', delta)
+            current = d
+            continue
+        
+        packed += struct.pack('<h', -2147483648)
+        packed += struct.pack('<q', delta)
+        current = d
+
+    return packed
 
 def unpack_values(data, length):
     # unpack data stream
@@ -45,6 +75,29 @@ def unpack_values(data, length):
 
     return values
 
+def unpack_tiff(filename):
+    data = open(filename, 'r'),read()
+    header = data[:4096]
+    data = data[4096:]
+
+    values = struct.unpack('<i', data)
+
+    print min(values), max(values)
+
+def work():
+    values = [int(random.random() * 65536) for j in range(1024 * 1024)]
+
+    l = len(values)
+    
+    packed = pack_values(values)
+
+    unpacked = unpack_values(packed, l)
+
+    for j in range(l):
+        assert(unpacked[j] == values[j])
+
+    return
+
 def unpackbyteoffset(filename):
 
     data = open(filename, 'r').read()
@@ -85,3 +138,5 @@ if __name__ == '__main__':
 
     for j in range(minimum, maximum + 1):
         print j, hist[j]
+
+    # work()
