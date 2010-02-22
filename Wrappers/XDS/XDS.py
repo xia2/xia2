@@ -75,7 +75,8 @@ def xds_check_version_supported(xds_output_list):
     xds_version = _xds_version(xds_output_list)
 
     # supported_versions = ['January 30, 2009']
-    supported_versions = ['December 28, 2009']
+    supported_versions = ['December 28, 2009',
+                          'February 3, 2010']
 
     if not xds_version in supported_versions:
         raise RuntimeError, 'XDS version "%s" not supported' % xds_version
@@ -125,6 +126,14 @@ def header_to_xds(header, synchrotron = None, reversephi = False):
         'raxis':'RAXIS',
         'saturn':'SATURN',
         'adsc':'ADSC'}
+
+    detector_to_minimum_trusted = {
+        'mar':1,
+        'marccd':1,
+        'dectris':0,
+        'raxis':1,
+        'saturn':1,
+        'adsc':1}
 
     detector_to_overload = {
         'mar':130000,
@@ -226,7 +235,8 @@ def header_to_xds(header, synchrotron = None, reversephi = False):
     # pilatus data sets?
 
     result.append('DETECTOR=%s MINIMUM_VALID_PIXEL_VALUE=%d OVERLOAD=%d' % \
-                  (detector_to_detector[detector], 1,
+                  (detector_to_detector[detector],
+                   detector_to_minimum_trusted[detector],
                    detector_to_overload[detector]))
 
     result.append('DIRECTION_OF_DETECTOR_X-AXIS=%s' % \
