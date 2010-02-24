@@ -43,6 +43,12 @@
 #
 # FIXME restructure this (or extend) to include the Chef calculations =>
 #       can then apply these to any derived data types.
+#
+# FIXME add capability to read in XDS (G)XPARM file as well as e.g. INTEGRATE
+#       HKL format file (or pointless equivalent, if possible) to compute
+#       LP corrections. This will allow XDS INTEGRATE -> Scala to be performed
+#       correctly. N.B. will be useful to add extra column for LP correction
+#       values.
 
 
 import sys
