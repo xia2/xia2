@@ -48,7 +48,9 @@
 #       HKL format file (or pointless equivalent, if possible) to compute
 #       LP corrections. This will allow XDS INTEGRATE -> Scala to be performed
 #       correctly. N.B. will be useful to add extra column for LP correction
-#       values.
+#       values. N.B. INTEGRATE applies an LP correction assuming that the
+#       fraction is 0.5 - this is improved by CORRECT. Pointless copies this
+#       across correctly and computes LP column. 
 
 
 import sys
