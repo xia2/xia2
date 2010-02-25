@@ -234,6 +234,7 @@ def XScale(DriverType = None,
                     xscale_inp.write('\n')
                 if self._anomalous:
                     xscale_inp.write('FRIEDEL\'S_LAW=FALSE MERGE=FALSE\n')
+                    xscale_inp.write('STRICT_ABSORPTION_CORRECTION=TRUE\n')
                 else:
                     xscale_inp.write('FRIEDEL\'S_LAW=TRUE MERGE=FALSE\n')
                 if self._version == 'new':
