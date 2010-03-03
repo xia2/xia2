@@ -425,7 +425,8 @@ class XDSIndexer(FrameProcessor,
                     Debug.write(
                         'XDS complains solution inaccurate - ignoring')
                     done = idxref.run(ignore_errors = True)
-                elif 'insufficient percentage (< 70%)' in str(e) and \
+                elif ('insufficient percentage (< 70%)' in str(e) or
+                      'insufficient percentage (< 50%)' in str(e)) and \
                          original_cell:
                     done = idxref.run(ignore_errors = True)                    
                     lattice, cell, mosaic = \
