@@ -15,6 +15,7 @@
 #  - parse the output from CORRECT.LP
 
 import os
+import re
 import sys
 import copy
 
@@ -126,8 +127,13 @@ def _parse_correct_lp(filename):
             resolution_info = []
             j = i + 3
             while not '-----' in file_contents[j]:
-                l = file_contents[j].split()
-                resolution_info.append((float(l[1]),float(l[2])))
+                try:
+                    l = file_contents[j].split()
+                    resolution_info.append((float(l[1]),float(l[2])))
+                except ValueError, e:
+                    l = file_contents[j].split()
+                    m = re.match(r'(\d+\.\d{2})(\d+\.\d+)', l[2])
+                    resolution_info.append((float(l[1]),float(m.group(1))))
                 j += 1
 
             # bug # 2409 - this seems a little harsh set as 1.0 so
