@@ -13,15 +13,8 @@
 #  - Chi^2
 #  - Multiplicity
 #  - Unmerged I/sigma
-# 
-# Then in a separate calculation, E^4, merged I/sigma and completeness will
-# be calculated. This should be a different Toolkit component.
-#
-# FIXME separate out hkl for centric and acentric reflections. The code for
-#       this is I think in PyChef for the completeness calculation:
-# 
-#             sg = mtz_obj.space_group()
-#             if sg.is_centric((h, k, l)) &c.
+#  - Z^2 for centric and acentric reflections
+#  - Completeness
 # 
 # FIXME should also include a completeness calculation in here for all of the
 #       resolution shells:
@@ -60,6 +53,8 @@ import time
 import itertools
 
 from iotbx import mtz
+from cctbx.miller import build_set
+from cctbx.crystal import symmetry as crystal_symmetry
 
 from MtzFactory import mtz_file
 
@@ -359,6 +354,29 @@ class merger:
     def get_resolution_bins(self):
         return self._hkl_ranges, self._resolution_ranges
 
+    def calculate_completeness(self, resolution_bin = None):
+        '''Calculate the completeness of observations in a named
+        resolution bin.'''
+
+        if resolution_bin is None:
+            resolution_range = self._mf.get_resolution_range()
+            hkl_list = list(self._merged_reflections)
+        else:
+            resolution_range = self._resolution_ranges[resolution_bin]
+            hkl_list = self._hkl_ranges[resolution_bin]
+
+        uc = self._mf.get_unit_cell()
+        sg = self._mf.get_space_group()
+
+        dmin = min(resolution_range)
+        dmax = max(resolution_range)
+
+        cs = crystal_symmetry(unit_cell = uc, space_group = sg)
+        hkl_calc = [hkl for hkl in build_set(
+            cs, False, d_min = dmin, d_max = dmax).indices()]
+
+        return float(len(hkl_list)) / float(len(hkl_calc))
+
     def calculate_rmerge(self, hkl_list = None):
         '''Calculate the overall Rmerge.'''
 
@@ -425,12 +443,6 @@ class merger:
                         for hkl in hkl_list]
         
         return sum(multiplicity) / len(multiplicity)
-
-    def calculate_completeness(self, hkl_list = None):
-        '''Calculate the completeness of measurements in this resolution
-        range.'''
-
-        raise RuntimeError, 'FIXME implement this'
 
     def calculate_merged_isigma(self, hkl_list = None):
         '''Calculate the average merged I/sigma.'''
@@ -506,6 +518,7 @@ if __name__ == '__main__':
     print 'I/sigma:      %6.3f' % m.calculate_unmerged_isigma()
     print 'Z^2:          %6.3f %6.3f' % m.calculate_z2()
     print 'Chi^2:        %6.3f %6.3f' % m.calculate_chisq()
+    print 'Completeness: %6.3f' % m.calculate_completeness()
     
     m.calculate_resolution_ranges(nbins = nbins)
 
@@ -514,7 +527,7 @@ if __name__ == '__main__':
     print 'By resolution shell'
     print '%6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s' % \
           ('Low', 'High', 'N', 'Rmerge', 'Mult',
-           'M(I/s)', 'I/s', 'cZ^2', 'aZ^2', 'Chi^2', 'Chi^2')
+           'M(I/s)', 'I/s', 'cZ^2', 'aZ^2', 'Comp', 'Chi^2')
     
     for j, bin in enumerate(bins):
         dmin, dmax = ranges[j]
@@ -525,9 +538,10 @@ if __name__ == '__main__':
         isigma = m.calculate_unmerged_isigma(bin)
         z2 = m.calculate_z2(bin)
         chisq = m.calculate_chisq(bin)
+        comp = m.calculate_completeness(j)
 
         print '%6.3f %6.3f %6d %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f' % \
               (dmin, dmax, n, rmerge, mult, misigma,
-               isigma, z2[0], z2[1], chisq[0], chisq[1])
+               isigma, z2[0], z2[1], comp, chisq[1])
         
     print 'Rmerge times: %.4fs vs. %4fs' % (t1 - t0, t2 - t1)

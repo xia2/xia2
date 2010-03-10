@@ -144,6 +144,9 @@ class mtz_file:
     def get_space_group(self):
         return self._space_group
 
+    def get_resolution_range(self):
+        return self._resolution_range
+
     def get_symmetry_operations(self):
         return [smx for smx in self._space_group.smx()]
 
