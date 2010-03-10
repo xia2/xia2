@@ -57,6 +57,7 @@ import sys
 import math
 import os
 import time
+import itertools
 
 from iotbx import mtz
 
@@ -456,24 +457,35 @@ class merger:
 
     def calculate_z2(self, hkl_list = None):
         '''Calculate average Z^2 values, where Z = I/<I> in the bin,
-        from the merged observations.'''
+        from the merged observations. Now also separate centric and
+        acentric reflections.'''
 
         if not hkl_list:
             hkl_list = list(self._merged_reflections)
 
-        # first calculate the average intensity, then calculate the Z values
-        # from these, and finally calculate the Z^2 value.
+        # separate centric and acentric reflections
 
-        # FIXME separate out centric and acentric reflections in this
-        # calculation! can run as a filter(is_centric(hkl) for hkl in hkl_list)
-        # type of thing.
+        sg = self._mf.get_space_group()
 
-        i_s = [self._merged_reflections[hkl][0] for hkl in hkl_list]
+        hkl_centric = [hkl for hkl in
+                       itertools.ifilter(sg.is_centric, hkl_list)]
+        hkl_acentric = [hkl for hkl in
+                        itertools.ifilterfalse(sg.is_centric, hkl_list)]
+
+        i_s = [self._merged_reflections[hkl][0] for hkl in hkl_centric]
         mean_i = sum(i_s) / len(i_s)
         
         z_s = [i / mean_i for i in i_s]
-        return sum([z * z for z in z_s]) / len(z_s)
+        z_centric = sum([z * z for z in z_s]) / len(z_s)
+
+        i_s = [self._merged_reflections[hkl][0] for hkl in hkl_acentric]
+        mean_i = sum(i_s) / len(i_s)
         
+        z_s = [i / mean_i for i in i_s]
+        z_acentric = sum([z * z for z in z_s]) / len(z_s)
+
+        return z_centric, z_acentric
+
 if __name__ == '__main__':
 
     nbins = 20
@@ -492,7 +504,7 @@ if __name__ == '__main__':
     print 'Multiplicity: %6.3f' % m.calculate_multiplicity()
     print 'Mn(I/sigma):  %6.3f' % m.calculate_merged_isigma()
     print 'I/sigma:      %6.3f' % m.calculate_unmerged_isigma()
-    print 'Z^2:          %6.3f' % m.calculate_z2()
+    print 'Z^2:          %6.3f %6.3f' % m.calculate_z2()
     print 'Chi^2:        %6.3f %6.3f' % m.calculate_chisq()
     
     m.calculate_resolution_ranges(nbins = nbins)
@@ -500,9 +512,9 @@ if __name__ == '__main__':
     bins, ranges = m.get_resolution_bins()
 
     print 'By resolution shell'
-    print '%6s %6s %6s %6s %6s %6s %6s %6s %6s %6s' % \
+    print '%6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s' % \
           ('Low', 'High', 'N', 'Rmerge', 'Mult',
-           'M(I/s)', 'I/s', 'Z^2', 'Chi^2', 'Chi^2')
+           'M(I/s)', 'I/s', 'cZ^2', 'aZ^2', 'Chi^2', 'Chi^2')
     
     for j, bin in enumerate(bins):
         dmin, dmax = ranges[j]
@@ -514,8 +526,8 @@ if __name__ == '__main__':
         z2 = m.calculate_z2(bin)
         chisq = m.calculate_chisq(bin)
 
-        print '%6.3f %6.3f %6d %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f' % \
+        print '%6.3f %6.3f %6d %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f' % \
               (dmin, dmax, n, rmerge, mult, misigma,
-               isigma, z2, chisq[0], chisq[1])
+               isigma, z2[0], z2[1], chisq[0], chisq[1])
         
     print 'Rmerge times: %.4fs vs. %4fs' % (t1 - t0, t2 - t1)
