@@ -16,24 +16,6 @@
 #  - Z^2 for centric and acentric reflections
 #  - Completeness
 # 
-# FIXME should also include a completeness calculation in here for all of the
-#       resolution shells:
-# 
-# def compute_unique_reflections(unit_cell,
-#                                space_group,
-#                                anomalous,
-#                                high_resolution_limit,
-#                                low_resolution_limit = None):
-#     '''Compute the list of unique reflections from the unit cell and space
-#     group.'''
-# 
-#     cs = crystal_symmetry(unit_cell = unit_cell,
-#                           space_group = space_group)
-# 
-#     return [hkl for hkl in build_set(cs, anomalous,
-#                                      d_min = high_resolution_limit,
-#                                      d_max = low_resolution_limit).indices()]
-#
 # FIXME restructure this (or extend) to include the Chef calculations =>
 #       can then apply these to any derived data types.
 #
