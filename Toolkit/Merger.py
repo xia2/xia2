@@ -357,6 +357,11 @@ class merger:
         hkl_calc = [hkl for hkl in build_set(
             cs, False, d_min = dmin, d_max = dmax).indices()]
 
+        # remove systematically absent reflections
+
+        hkl_list = [hkl for hkl in
+                    itertools.ifilterfalse(sg.is_sys_absent, hkl_list)]
+
         return float(len(hkl_list)) / float(len(hkl_calc))
 
     def calculate_rmerge(self, hkl_list = None):
