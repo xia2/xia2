@@ -113,6 +113,7 @@ class _CommandLine(Object):
         self._read_noremove()        
         self._read_2d()
         self._read_3d()
+        self._read_3dr()
         self._read_3dii()
         self._read_migrate_data()
         self._read_zero_dose()
@@ -881,6 +882,14 @@ class _CommandLine(Object):
             add_preference('integrater', 'xds')
             add_preference('scaler', 'xds')
             Debug.write('3D pipeline selected')
+        return
+
+    def _read_3dr(self):
+
+        if '-3dr' in sys.argv:
+            add_preference('integrater', 'xdsr')
+            add_preference('scaler', 'xds')
+            Debug.write('3DR pipeline selected')
         return
 
     def _read_3dii(self):

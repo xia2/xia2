@@ -60,8 +60,8 @@ from Handlers.Files import FileHandler
 
 from Experts.SymmetryExpert import lattice_to_spacegroup_number
 
-class XDSIntegrater(FrameProcessor,
-                    Integrater):
+class XDSIntegraterR(FrameProcessor,
+                     Integrater):
     '''A class to implement the Integrater interface using *only* XDS
     programs.'''
 
@@ -380,13 +380,7 @@ class XDSIntegrater(FrameProcessor,
         defpix.set_data_range(self._intgr_wedge[0],
                               self._intgr_wedge[1])
 
-        if self.get_integrater_high_resolution() > 0.0:
-            Debug.write('Setting resolution limit in DEFPIX to %.2f' % \
-                        self.get_integrater_high_resolution())
-            defpix.set_resolution_high(self.get_integrater_high_resolution())
-            defpix.set_resolution_low(self.get_integrater_low_resolution())
-
-        elif self.get_integrater_low_resolution():
+        if self.get_integrater_low_resolution():
             Debug.write('Setting low resolution limit in DEFPIX to %.2f' % \
                         self.get_integrater_low_resolution())
             defpix.set_resolution_high(0.0)
@@ -498,22 +492,6 @@ class XDSIntegrater(FrameProcessor,
             correct.set_data_range(self._intgr_wedge[0],
                                    self._intgr_wedge[1])
 
-            if self.get_integrater_high_resolution() > 0.0:
-                Debug.write('Using resolution limit: %.2f' % \
-                            self.get_integrater_high_resolution())
-                correct.set_resolution_high(
-                    self.get_integrater_high_resolution())
-                correct.set_resolution_low(
-                    self.get_integrater_low_resolution())
-                
-            elif self.get_integrater_low_resolution() > 0.0:
-                Debug.write('Using low resolution limit: %.2f' % \
-                            self.get_integrater_low_resolution())
-                correct.set_resolution_high(
-                    self.get_integrater_high_resolution())
-                correct.set_resolution_low(
-                    self.get_integrater_low_resolution())
-        
             if self.get_polarization() > 0.0:
                 correct.set_polarization(self.get_polarization())
 
@@ -559,18 +537,6 @@ class XDSIntegrater(FrameProcessor,
         correct.set_data_range(self._intgr_wedge[0],
                                self._intgr_wedge[1])
         
-        if self.get_integrater_high_resolution() > 0.0:
-            Debug.write('Using resolution limit: %.2f' % \
-                        self.get_integrater_high_resolution())
-            correct.set_resolution_high(self.get_integrater_high_resolution())
-            correct.set_resolution_low(self.get_integrater_low_resolution())
-
-        elif self.get_integrater_low_resolution() > 0.0:
-            Debug.write('Using low resolution limit: %.2f' % \
-                        self.get_integrater_low_resolution())
-            correct.set_resolution_high(self.get_integrater_high_resolution())
-            correct.set_resolution_low(self.get_integrater_low_resolution())
-
         if self.get_polarization() > 0.0:
             correct.set_polarization(self.get_polarization())
 
@@ -686,38 +652,6 @@ class XDSIntegrater(FrameProcessor,
                                     os.path.join(self.get_working_directory(),
                                                  'CORRECT.LP'))
 
-        if self.get_integrater_high_resolution() == 0.0:
-            # get the "correct" resolution from ... correct
-            # why is this using the highest recorded resolution,
-            # not the estimated resolution limit?? FIXME need to
-            # make sense of all of this...
-
-            # ok this was "highest_resolution" -> "resolution_estimate"
-            
-            Debug.write('Setting integrater resolution to %.2f' % \
-                        correct.get_result('resolution_estimate'))
-            if not Flags.get_quick():
-                Chatter.write('Set resolution limit: %.2f' % \
-                              correct.get_result('resolution_estimate'))
-                self.set_integrater_high_resolution(
-                    correct.get_result('resolution_estimate'))
-            else:
-                # just record it for future reference
-                self._intgr_reso_high = correct.get_result(
-                    'resolution_estimate')                                     
-
-        # FIXME bug # 3205 - if the resolution has been set by the user,
-        # the data will not be reintegrated with the refined orientation
-        # parameters => should check for this here? To be honest, that was
-        # slightly accidental in the past anyway. Really, should store
-        # the results of the unrefined integration, reintegrate with the
-        # refined orientation and see if they are any better - if not,
-        # revert to using the unrefined orientation.
-
-        # should get some interesting stuff from the XDS correct file
-        # here, for instance the resolution range to use in integration
-        # (which should be fed back if not fast) and so on...
-
         self._intgr_hklout = os.path.join(
             self.get_working_directory(),
             'XDS_ASCII.HKL')
@@ -728,37 +662,6 @@ class XDSIntegrater(FrameProcessor,
         self._intgr_batches_out = (self._intgr_wedge[0],
                                    self._intgr_wedge[1])
 
-        # look at the resolution limit...
-        resolution = correct.get_result('resolution_estimate')
-        resolution_old = correct.get_result('resolution_estimate_old')
-
-        Debug.write('Old style resolution limit: %.2f' % resolution_old)
-        Debug.write('New style resolution limit: %.2f' % resolution)
-
-        if self.get_integrater_high_resolution():
-            if not self.get_integrater_user_resolution():
-                if resolution - self.get_integrater_high_resolution() < 0.075:
-                
-                    # ignore this new resolution limit - this is similar to
-                    # what was done for the Mosflm implementation...
-
-                    # FIXME this should be done in S space.
-
-                    Debug.write('Ignoring slight change in resolution limit')
-                    resolution = self.get_integrater_high_resolution()
-
-        if resolution > self.get_integrater_high_resolution() and \
-               not Flags.get_quick():
-            if not self.get_integrater_user_resolution():
-                self.set_integrater_high_resolution(resolution)
-                Chatter.write('Set resolution limit: %5.2f' % resolution)
-        elif Flags.get_quick():
-            # just record it for future reference
-            self._intgr_reso_high = resolution
-            Chatter.write(
-                'Set resolution limit: %5.2f (quick, so no rerun)' % \
-                resolution)
-            
         # FIXME perhaps I should also feedback the GXPARM file here??
         for file in ['GXPARM.XDS']:
             self._data_files[file] = correct.get_output_data_file(file)

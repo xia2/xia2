@@ -27,6 +27,7 @@ from Handlers.Flags import Flags
 from Handlers.PipelineSelection import get_preferences, add_preference
 
 from Modules.XDSIntegrater import XDSIntegrater
+from Modules.XDSIntegraterR import XDSIntegraterR
 
 from NullIntegraterImplementation import NullIntegrater
 
@@ -132,6 +133,18 @@ def Integrater():
         try:
             integrater = XDSIntegrater()
             Debug.write('Using XDS Integrater')
+            add_preference('scaler', 'xds')
+        except NotAvailableError, e:
+            if preselection == 'xds':
+                raise RuntimeError, \
+                      'preselected integrater xds not available'
+            pass
+
+    if not integrater and \
+           (not preselection or preselection == 'xdsr'):
+        try:
+            integrater = XDSIntegrater()
+            Debug.write('Using XDSR Integrater')
             add_preference('scaler', 'xds')
         except NotAvailableError, e:
             if preselection == 'xds':
