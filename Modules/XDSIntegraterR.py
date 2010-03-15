@@ -794,8 +794,18 @@ class XDSIntegraterR(FrameProcessor,
                 len(correct.get_remove()))
 
         return self._intgr_hklout
+
+    # overload these methods as we don't want the resolution range
+    # feeding back...
             
-        
+    def set_integrater_resolution(self, dmin, dmax, user = False):
+        pass
+
+    def set_integrater_high_resolution(self, dmin, user = False):
+        pass
+
+    def set_integrater_low_resolution(self, dmax):
+        pass
 
 if __name__ == '__main__':
 

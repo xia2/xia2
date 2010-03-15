@@ -2092,41 +2092,6 @@ class XDSScalerR(Scaler):
             Debug.write('Integrater (%s) resolution limit: %.2f' % \
                         (dname, dmin))
 
-            # compare this against the resolution limit computed above
-            if dmin == 0.0 and not Flags.get_quick():
-                intgr.set_integrater_high_resolution(
-                    resolution_limits[dname])
-
-                # we need to rerun both the scaling and the preparation -
-                # this may trigger reintegration as well...
-                self.set_scaler_done(False)
-                self.set_scaler_prepare_done(False)
-
-            # note well that this spacing (0.075A) is designed to ensure that
-            # integration shouldn't be repeated once it has been repeated
-            # once...
-            
-            elif dmin > (resolution_limits[dname] - 0.075):
-                # no need to reprocess the data - this is near enough...
-                # this should save us from the "infinate loop"
-                pass
-
-            elif Flags.get_quick():
-                Debug.write('Quick, so not resetting resolution limits')
-
-            elif intgr.get_integrater_user_resolution():
-                Debug.write('Using user specified resolution limits')
-
-            else:
-                # ok it is worth rereducing the data
-                intgr.set_integrater_high_resolution(
-                    resolution_limits[dname])
-
-                # we need to rerun both the scaling and the preparation -
-                # this may trigger reintegration as well...
-                self.set_scaler_done(False)
-                self.set_scaler_prepare_done(False)
-
             if resolution_limits[dname] < best_resolution:
                 best_resolution = resolution_limits[dname]
 
