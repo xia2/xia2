@@ -888,7 +888,7 @@ class _CommandLine(Object):
 
         if '-3dr' in sys.argv:
             add_preference('integrater', 'xdsr')
-            add_preference('scaler', 'xds')
+            add_preference('scaler', 'xdsr')
             Debug.write('3DR pipeline selected')
         return
 

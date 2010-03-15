@@ -20,11 +20,11 @@ def check(key, value):
 
     allowed_indexers = ['mosflm', 'labelit', 'xds', 'xdsii']
     allowed_integraters = ['mosflm', 'xds', 'xdsr']
-    allowed_scalers = ['ccp4', 'xds']
+    allowed_scalers = ['ccp4', 'xds', 'xdsr']
 
     potential_indexers = ['mosflm', 'labelit', 'xds', 'xdsii']
     potential_integraters = ['mosflm', 'xds', 'xdsr']
-    potential_scalers = ['ccp4', 'xds']
+    potential_scalers = ['ccp4', 'xds', 'xdsr']
 
     if key == 'indexer':
         if not value in potential_indexers:

@@ -143,13 +143,13 @@ def Integrater():
     if not integrater and \
            (not preselection or preselection == 'xdsr'):
         try:
-            integrater = XDSIntegrater()
+            integrater = XDSIntegraterR()
             Debug.write('Using XDSR Integrater')
-            add_preference('scaler', 'xds')
+            add_preference('scaler', 'xdsr')
         except NotAvailableError, e:
-            if preselection == 'xds':
+            if preselection == 'xdsr':
                 raise RuntimeError, \
-                      'preselected integrater xds not available'
+                      'preselected integrater xdsr not available'
             pass
             
     if not integrater:

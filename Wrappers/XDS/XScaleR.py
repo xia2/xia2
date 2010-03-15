@@ -30,17 +30,16 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
 from Driver.DriverFactory import DriverFactory
-from XScaleHelpers import generate_resolution_shells_str
 from XDS import xds_check_error
 
 from Handlers.Flags import Flags
 from Handlers.Streams import Debug
 
-def XScale(DriverType = None,
-           correct_decay = True,
-           correct_absorption = True,
-           correct_modulation = True):
-
+def XScaleR(DriverType = None,
+            correct_decay = True,
+            correct_absorption = True,
+            correct_modulation = True):
+    
     DriverInstance = DriverFactory.Driver(DriverType)
 
     class XScaleWrapper(DriverInstance.__class__):
@@ -174,32 +173,9 @@ def XScale(DriverType = None,
             self._reindex_matrix = reindex_matrix
             return
 
-        def _generate_resolution_shells(self):
-            if len(self._input_resolution_ranges) == 0:
-                raise RuntimeError, 'cannot generate resolution ranges'
-
-            # FIXME this should not be defaulted to 40 - surely should be
-            # the lowest limit identified?
-
-            dmin = 40.0
-            dmax = 0.0
-
-            for r in self._input_resolution_ranges:
-                if max(r) > dmax:
-                    dmax = max(r)
-
-                if min(r) < dmin and min(r) > 0.0:
-                    dmin = min(r)
-
-            self._resolution_shells = generate_resolution_shells_str(
-                dmax, dmin)
-
-            return
-
         def _write_xscale_inp(self):
             '''Write xscale.inp.'''
 
-            self._generate_resolution_shells()
             self._transform_input_files()
 
             xscale_inp = open(os.path.join(self.get_working_directory(),
@@ -209,8 +185,6 @@ def XScale(DriverType = None,
 
             xscale_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
                              self._parallel)
-            xscale_inp.write('RESOLUTION_SHELLS=%s\n' % \
-                             self._resolution_shells)
             xscale_inp.write('SPACE_GROUP_NUMBER=%d\n' % \
                              self._spacegroup_number)
             xscale_inp.write('UNIT_CELL_CONSTANTS=')
@@ -250,11 +224,9 @@ def XScale(DriverType = None,
                     # should check that the files exists though...
 
                     xscale_inp.write(
-                        'INPUT_FILE=%s XDS_ASCII %.2f %.2f\n' % \
-                        (self._transposed_input[wave]['hkl'][j],
-                         self._transposed_input[wave]['resol'][j][1],
-                         self._transposed_input[wave]['resol'][j][0]))
-
+                        'INPUT_FILE=%s XDS_ASCII\n' % \
+                        self._transposed_input[wave]['hkl'][j])
+                    
 	            # FIXME this needs to be removed before being used again
            	    # in anger!
                     # xscale_inp.write('CORRECTIONS=DECAY ABSORPTION\n')

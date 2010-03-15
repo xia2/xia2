@@ -46,7 +46,7 @@ from Experts.ResolutionExperts import xds_integrate_hkl_to_list, \
 from Handlers.Flags import Flags
 from Handlers.Streams import Debug
 
-def XDSCorrect(DriverType = None):
+def XDSCorrectR(DriverType = None):
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -346,15 +346,6 @@ def XDSCorrect(DriverType = None):
                 format = 'XDS applied reindex:' + 12 * ' %d'
                 Debug.write(format % tuple(self._results['reindex_op']))
                 self._reindex_used = self._results['reindex_op']
-
-            # and calculate the resolution limit from the
-            # output reflection file... N.B. assume that INTEGRATE was
-            # run in the same directory as CORRECT is now being -
-            # not very tidy though. FIXME, perhaps?
-            
-            s, r = digest(bin_o_tron(xds_integrate_hkl_to_list(
-                os.path.join(self.get_working_directory(), 'INTEGRATE.HKL'))))
-            self._results['resolution_estimate'] = r
 
             # get the reflections to remove...
             for line in open(os.path.join(

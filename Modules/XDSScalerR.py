@@ -65,7 +65,7 @@ from Modules.XDSScalerHelpers import XDSScalerHelper
 
 # program wrappers that we will need
 
-from Wrappers.XDS.XScale import XScale as _XScale
+from Wrappers.XDS.XScaleR import XScaleR as _XScale
 from Wrappers.XDS.Cellparm import Cellparm as _Cellparm
 
 from Wrappers.CCP4.CCP4Factory import CCP4Factory
@@ -91,7 +91,7 @@ from DoseAccumulate import accumulate
 # newly implemented CCTBX powered functions to replace xia2 binaries
 from Functions.add_dose_time_to_mtz import add_dose_time_to_mtz
 
-class XDSScaler(Scaler):
+class XDSScalerR(Scaler):
     '''An implementation of the xia2 Scaler interface implemented with
     xds and xscale, possibly with some help from a couple of CCP4
     programs like pointless and combat.'''
@@ -267,14 +267,7 @@ class XDSScaler(Scaler):
 
             # and the resolution range for the reflections
             intgr = self._sweep_information[epoch]['integrater']
-            resolution = intgr.get_integrater_resolution()
-
-            if resolution == 0.0:
-                raise RuntimeError, 'zero resolution for %s' % \
-                      self._sweep_information[epoch][
-                    'integrater'].get_integrater_sweep_name()
-
-            xscale.add_reflection_file(reflections, dname, resolution)
+            xscale.add_reflection_file(reflections, dname, 0.0)
 
         xscale.set_crystal(self._scalr_xname)
         xscale.set_anomalous(self._scalr_anomalous)
@@ -714,8 +707,6 @@ class XDSScaler(Scaler):
             distance = indxr.get_indexer_distance()
             wavelength = self._sweep_information[epoch][
                 'integrater'].get_wavelength()
-            resolution_used = self._sweep_information[epoch][
-                'integrater'].get_integrater_high_resolution()
 
             # ok, in here decide the minimum distance from the beam centre to
             # the edge... which will depend on the size of the detector
@@ -728,9 +719,7 @@ class XDSScaler(Scaler):
 
             theta = 0.5 * math.atan(radius / distance)
 
-            resolution_circle = wavelength / (2 * math.sin(theta))
-
-            resolution = max(resolution_circle, resolution_used)
+            resolution = wavelength / (2 * math.sin(theta))
 
             if not wave in wavelengths:
                 wavelengths.append(wave)
@@ -1371,17 +1360,10 @@ class XDSScaler(Scaler):
 
             # and the resolution range for the reflections
             intgr = self._sweep_information[epoch]['integrater']
-            resolution = intgr.get_integrater_resolution()
-
-            if resolution == 0.0:
-                raise RuntimeError, 'zero resolution for %s' % \
-                      self._sweep_information[epoch][
-                    'integrater'].get_integrater_sweep_name()
-
             Debug.write('Epoch: %d' % epoch)
             Debug.write('HKL: %s (%s)' % (reflections, dname))
 
-            xscale.add_reflection_file(reflections, dname, resolution)
+            xscale.add_reflection_file(reflections, dname, 0.0)
 
         # set the global properties of the sample
         xscale.set_crystal(self._scalr_xname)
@@ -1508,20 +1490,6 @@ class XDSScaler(Scaler):
 
         user_resolution_limits = { }
         resolution_limits = { }
-
-        for epoch in self._sweep_information.keys():
-            
-            input = self._sweep_information[epoch]
-
-            intgr = input['integrater']
-
-            if intgr.get_integrater_user_resolution():
-                dmin = intgr.get_integrater_high_resolution()
-                
-                if not user_resolution_limits.has_key(input['dname']):
-                    user_resolution_limits[input['dname']] = dmin
-                elif dmin < user_resolution_limits[input['dname']]:
-                    user_resolution_limits[input['dname']] = dmin
 
         self._tmp_scaled_refl_files = { }
 
