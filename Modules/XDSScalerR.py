@@ -120,6 +120,8 @@ class XDSScalerR(Scaler):
         self._chef_analysis_times = { }
         self._chef_analysis_resolutions = { }
 
+        self._resolution_limits = { }
+
         # scaling correction choices
         self._scalr_correct_decay = True
         self._scalr_correct_modulation = True
@@ -951,6 +953,8 @@ class XDSScalerR(Scaler):
 
         self._scalr_cell = cellparm.get_cell()
 
+        self._resolution_limits = { }
+        
         Debug.write('Determined unit cell: %.2f %.2f %.2f %.2f %.2f %.2f' % \
                     tuple(self._scalr_cell))
 
@@ -987,8 +991,6 @@ class XDSScalerR(Scaler):
 
         Debug.write('Gathering measurements for scaling')
 
-        resolution_limits = { }
-        
         for epoch in epochs:
 
             # get the prepared reflections
@@ -1003,7 +1005,10 @@ class XDSScalerR(Scaler):
             Debug.write('Epoch: %d' % epoch)
             Debug.write('HKL: %s (%s)' % (reflections, dname))
 
-            resolution = resolution_limits.get(dname, 0.0)
+            resolution_low = intgr.get_integrater_low_resolution()
+            resolution_high = self._resolution_limits.get(dname, 0.0)
+
+            resolution = (resolution_high, resolution_low)
 
             xscale.add_reflection_file(reflections, dname, resolution)
 
@@ -1645,7 +1650,7 @@ class XDSScalerR(Scaler):
 
         # next compute resolution limits for each dataset.
 
-        resolution_limits = { }
+        self._resolution_limits = { }
 
         reflection_files = sc.get_scaled_reflection_files()
 
@@ -1660,7 +1665,7 @@ class XDSScalerR(Scaler):
 
             if user_resolution_limits.has_key(dataset):
                 resolution = user_resolution_limits[dataset]
-                resolution_limits[dataset] = resolution
+                self._resolution_limits[dataset] = resolution
                 if resolution < highest_resolution:
                     highest_resolution = resolution
                 Chatter.write('Resolution limit for %s: %5.2f' % \
@@ -1676,13 +1681,13 @@ class XDSScalerR(Scaler):
             # gather up an "average" best resolution and perhaps use this
             # where it seems appropriate e.g. TS03 INFL, LREM.
 
-            resolution_limits[dataset] = resolution
+            self._resolution_limits[dataset] = resolution
 
             if resolution < highest_resolution:
                 highest_resolution = resolution
 
             Chatter.write('Resolution limit for %s: %5.2f' % \
-                          (dataset, resolution_limits[dataset]))
+                          (dataset, self._resolution_limits[dataset]))
 
         self._scalr_highest_resolution = highest_resolution
 
@@ -1708,8 +1713,8 @@ class XDSScalerR(Scaler):
             Debug.write('Integrater (%s) resolution limit: %.2f' % \
                         (dname, dmin))
 
-            if resolution_limits[dname] < best_resolution:
-                best_resolution = resolution_limits[dname]
+            if self._resolution_limits[dname] < best_resolution:
+                best_resolution = self._resolution_limits[dname]
 
         # if we need to redo the scaling, return to allow this to happen
 
@@ -1768,7 +1773,7 @@ class XDSScalerR(Scaler):
             input = self._sweep_information[epoch]
             start, end = (min(input['batches']), max(input['batches']))
 
-            run_resolution_limit = resolution_limits[input['dname']]
+            run_resolution_limit = self._resolution_limits[input['dname']]
 
             sc.add_run(start, end, pname = input['pname'],
                        xname = input['xname'],
@@ -1916,7 +1921,7 @@ class XDSScalerR(Scaler):
                 # set the resolution limit to what we decided above...
                 # by the time we get this far this should have been what
                 # was used...
-                sc.set_resolution(resolution_limits[dname])
+                sc.set_resolution(self._resolution_limits[dname])
 
             sc.set_hklout(os.path.join(self.get_working_directory(),
                                            'temp.mtz'))
@@ -1953,10 +1958,7 @@ class XDSScalerR(Scaler):
             input = self._sweep_information[epoch]
             start, end = (min(input['batches']), max(input['batches']))
 
-            if Flags.get_quick():
-                run_resolution_limit = resolution_limits[input['dname']]
-            else:
-                run_resolution_limit = 0.0
+            run_resolution_limit = self._resolution_limits[input['dname']]
 
             sc.add_run(start, end, pname = input['pname'],
                        xname = input['xname'],

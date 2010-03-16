@@ -868,6 +868,9 @@ def Scala(DriverType = None,
 
             self.input('bins 20')
 
+            if self._resolution:
+                self.input('resolution %f' % self._resolution)
+
             run_number = 0
             for run in self._runs:
                 run_number += 1
@@ -920,9 +923,6 @@ def Scala(DriverType = None,
 
             self.input('scales constant')
             self.input('exclude sdmin 2.0')
-
-            if self._resolution:
-                self.input('resolution %f' % self._resolution)
 
             if self._resolution_by_run != { }:
                 # FIXME 20/NOV/06 this needs implementing somehow...
