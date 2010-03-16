@@ -195,6 +195,7 @@
 
 import os
 import sys
+import inspect
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
@@ -358,14 +359,32 @@ class Scaler:
         return self._scalr_freer_file
 
     def set_scaler_prepare_done(self, done = True):
+
+        frm = inspect.stack()[1]
+        mod = inspect.getmodule(frm[0])
+        Debug.write('Called scaler prepare done from %s %d (%s)' %
+                    (mod.__name__, frm[0].f_lineno, done))
+        
         self._scalr_prepare_done = done
         return
         
     def set_scaler_done(self, done = True):
+
+        frm = inspect.stack()[1]
+        mod = inspect.getmodule(frm[0])
+        Debug.write('Called scaler done from %s %d (%s)' %
+                    (mod.__name__, frm[0].f_lineno, done))
+        
         self._scalr_done = done
         return
 
     def set_scaler_finish_done(self, done = True):
+
+        frm = inspect.stack()[1]
+        mod = inspect.getmodule(frm[0])
+        Debug.write('Called scaler finish done from %s %d (%s)' %
+                    (mod.__name__, frm[0].f_lineno, done))
+                
         self._scalr_finish_done = done
         return
 
