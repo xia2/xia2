@@ -986,6 +986,8 @@ class XDSScalerR(Scaler):
                     self._spacegroup)
 
         Debug.write('Gathering measurements for scaling')
+
+        resolution_limits = { }
         
         for epoch in epochs:
 
@@ -1001,7 +1003,9 @@ class XDSScalerR(Scaler):
             Debug.write('Epoch: %d' % epoch)
             Debug.write('HKL: %s (%s)' % (reflections, dname))
 
-            xscale.add_reflection_file(reflections, dname, 0.0)
+            resolution = resolution_limits.get(dname, 0.0)
+
+            xscale.add_reflection_file(reflections, dname, resolution)
 
         # set the global properties of the sample
         xscale.set_crystal(self._scalr_xname)
@@ -1127,7 +1131,6 @@ class XDSScalerR(Scaler):
         # limits a la bug # 3183.
 
         user_resolution_limits = { }
-        resolution_limits = { }
 
         self._tmp_scaled_refl_files = { }
 
@@ -1664,29 +1667,9 @@ class XDSScalerR(Scaler):
                               (dataset, resolution))
                 continue
 
-            # transform this to a useful form... [(resol, i/sigma), (resol..)]
-            resolution_points = []
-            resol_ranges = resolution_info[dataset]['3_Dmin(A)']
-            mn_i_sigma_values = resolution_info[dataset]['13_Mn(I/sd)']
-            for i in range(len(resol_ranges)):
-                dmin = float(resol_ranges[i])
-                i_sigma = float(mn_i_sigma_values[i])
-                resolution_points.append((dmin, i_sigma))
-
-            # FIXME in here need to look at the reflection files
-            # rather than the scaling statistics to estimate the resolution
-            # limits... see equivalent at this stage in the
-            # CCP4 scaler. XQ
-
-            old_way = False
-
-            if old_way:
-                resolution = _resolution_estimate(
-                    resolution_points, Flags.get_i_over_sigma_limit())
-            else:
-                resolution = determine_scaled_resolution(
-                    reflection_files[dataset],
-                    Flags.get_i_over_sigma_limit())[1]
+            resolution = determine_scaled_resolution(
+                reflection_files[dataset],
+                Flags.get_i_over_sigma_limit())[1]
                 
             # next compute "useful" versions of these resolution limits
             # want 0.05A steps - in here it would also be useful to
@@ -1785,10 +1768,7 @@ class XDSScalerR(Scaler):
             input = self._sweep_information[epoch]
             start, end = (min(input['batches']), max(input['batches']))
 
-            if Flags.get_quick():
-                run_resolution_limit = resolution_limits[input['dname']]
-            else:
-                run_resolution_limit = 0.0
+            run_resolution_limit = resolution_limits[input['dname']]
 
             sc.add_run(start, end, pname = input['pname'],
                        xname = input['xname'],

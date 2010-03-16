@@ -223,10 +223,19 @@ def XScaleR(DriverType = None,
                     # file which has been placed in here by XDSScaler -
                     # should check that the files exists though...
 
-                    xscale_inp.write(
-                        'INPUT_FILE=%s XDS_ASCII\n' % \
-                        self._transposed_input[wave]['hkl'][j])
-                    
+                    resolution = self._transposed_input[wave]['resol'][j]
+
+                    if resolution[0]:
+                        xscale_inp.write(
+                            'INPUT_FILE=%s XDS_ASCII %.2f %.2f\n' % \
+                            (self._transposed_input[wave]['hkl'][j],
+                             resolution[1], resolution[0]))
+
+                    else:
+                        xscale_inp.write(
+                            'INPUT_FILE=%s XDS_ASCII\n' % \
+                            self._transposed_input[wave]['hkl'][j])
+                        
 	            # FIXME this needs to be removed before being used again
            	    # in anger!
                     # xscale_inp.write('CORRECTIONS=DECAY ABSORPTION\n')
