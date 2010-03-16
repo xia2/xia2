@@ -2023,57 +2023,6 @@ class XDSScalerR(Scaler):
 
             hklin = self._tmp_scaled_refl_files[wavelength]
 
-            # perhaps reindex first?
-
-            # FIXED in here need to check if the spacegroup
-            # needs assigning e.g. from P 2 2 2 to P 21 21 21
-            # bug 2511
-            
-            if self._scalr_reindex_operator != 'h,k,l' and False:
-
-                hklout = os.path.join(self.get_working_directory(),
-                                      '%s_reindexed.mtz' % wavelength)
-                FileHandler.record_temporary_file(hklout)
-
-                Debug.write('Reindexing operator = %s' % \
-                            self._scalr_reindex_operator)
-                
-                reindex = self._factory.Reindex()
-                reindex.set_hklin(hklin)
-                reindex.set_spacegroup(self._scalr_likely_spacegroups[0])
-                reindex.set_operator(self._scalr_reindex_operator)
-                reindex.set_hklout(hklout)
-                reindex.reindex()
-                hklin = hklout
-
-                # record the updated cell parameters...
-                # they should be the same in all files so...
-                Debug.write(
-                    'Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f' % \
-                    tuple(reindex.get_cell()))
-                self._scalr_cell = tuple(reindex.get_cell())
-
-            elif False:
-            
-                # just assign the spacegroup - note that this may be
-                # a worthless step, but never mind...
-
-                hklout = os.path.join(self.get_working_directory(),
-                                      '%s_reindexed.mtz' % wavelength)
-                FileHandler.record_temporary_file(hklout)
-
-                Debug.write('Setting spacegroup = %s' % \
-                            self._scalr_likely_spacegroups[0])
-                
-                reindex = self._factory.Reindex()
-                reindex.set_hklin(hklin)
-                reindex.set_spacegroup(self._scalr_likely_spacegroups[0])
-                reindex.set_hklout(hklout)
-                reindex.reindex()
-                hklin = hklout
-
-            Debug.write('Now skipping the post-merge reindex step...')
-
             truncate = self._factory.Truncate()
             truncate.set_hklin(hklin)
 
