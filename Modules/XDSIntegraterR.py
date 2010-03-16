@@ -805,7 +805,8 @@ class XDSIntegraterR(FrameProcessor,
         pass
 
     def set_integrater_low_resolution(self, dmax):
-        pass
+        self._intgr_reso_low = dmax
+        return
 
 if __name__ == '__main__':
 

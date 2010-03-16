@@ -120,6 +120,12 @@ class XDSScalerR(Scaler):
         self._chef_analysis_times = { }
         self._chef_analysis_resolutions = { }
 
+        # scaling correction choices
+        self._scalr_correct_decay = True
+        self._scalr_correct_modulation = True
+        self._scalr_correct_absorption = True
+        self._scalr_corrections = True
+
         return    
 
     # This is overloaded from the Scaler interface...
@@ -243,361 +249,6 @@ class XDSScalerR(Scaler):
         Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
         return pointgroup, reindex_op, need_to_return
-
-    def _assess_scaling_model(self, decay, modulation, absorption):
-        '''Test the given combination of scaling corrections, return
-        average Rmerge.'''
-
-        epochs = self._sweep_information.keys()
-        epochs.sort()
-
-        xscale = self.XScale()
-
-        xscale.set_spacegroup_number(self._spacegroup)
-        xscale.set_cell(self._scalr_cell)
-
-        for epoch in epochs:
-
-            # get the prepared reflections
-            reflections = self._sweep_information[epoch][
-                'prepared_reflections']
-            
-            # and the get wavelength that this belongs to
-            dname = self._sweep_information[epoch]['dname']
-
-            # and the resolution range for the reflections
-            intgr = self._sweep_information[epoch]['integrater']
-            xscale.add_reflection_file(reflections, dname, 0.0)
-
-        xscale.set_crystal(self._scalr_xname)
-        xscale.set_anomalous(self._scalr_anomalous)
-
-        if Flags.get_zero_dose():
-            Debug.write('Switching on zero-dose extrapolation')
-            xscale.set_zero_dose()
-
-        xscale.set_correct_decay(decay)
-        xscale.set_correct_absorption(absorption)
-        xscale.set_correct_modulation(modulation)
-
-        xscale.run()
-
-        rmerges = xscale.get_rmerges()
-        rmerge_def = sum([rmerges[dname] for dname in rmerges])
-
-        return rmerge_def / len(rmerges)
-
-    def _determine_best_scale_model(self):
-        '''Determine the best combination of scaling corrections to
-        apply to this data.'''
-
-        # if we have already defined the best scaling model just return
-
-        if self._scalr_corrections:
-            return
-
-        # so it turns out that applying everything is often as
-        # good as not...?!
-
-        if True:
-
-            self._scalr_correct_decay = True
-            self._scalr_correct_modulation = True
-            self._scalr_correct_absorption = True
-
-            return
-
-        Debug.write('Optimising scaling corrections...')
-
-        use_decay = False
-        use_modulation = False
-        use_absorption = False
-
-        rmerge_def = self._assess_scaling_model(decay = False,
-                                                modulation = False,
-                                                absorption = False)
-
-        rmerge_abs = self._assess_scaling_model(decay = False,
-                                                modulation = False,
-                                                absorption = True)
-
-        rmerge_mod = self._assess_scaling_model(decay = False,
-                                                modulation = True,
-                                                absorption = False)
-
-        rmerge_dec = self._assess_scaling_model(decay = True,
-                                                modulation = False,
-                                                absorption = False)
-
-        # now decide which of these corrections is worth applying...
-        # try doing this by the ones which are apparently giving an
-        # improvement, but really I guess some combinatorial stuff needs
-        # to be considered here... FIXME do this once I have signed off the
-        # above as giving the same answers as before...
-
-        if (rmerge_def - rmerge_abs) / rmerge_def > 0.03:
-            use_absorption = True
-
-        if (rmerge_def - rmerge_mod) / rmerge_def > 0.03:
-            use_modulation = True
-
-        if (rmerge_def - rmerge_dec) / rmerge_def > 0.03:
-            use_decay = True
-
-        # then explain what we are using
-
-        if use_absorption:
-            Debug.write('Absorption correction: on')
-        else:
-            Debug.write('Absorption correction: off')
-
-        if use_decay:
-            Debug.write('Decay correction: on')
-        else:
-            Debug.write('Decay correction: off')
-
-        if use_modulation:
-            Debug.write('Modulation correction: on')
-        else:
-            Debug.write('Modulation correction: off')
-    
-        # then save them
-
-        self._scalr_correct_decay = use_decay
-        self._scalr_correct_modulation = use_modulation
-        self._scalr_correct_absorption = use_absorption
-
-        self._scalr_corrections = True
-
-        play = True
-
-        if play:
-            results = { }
-
-            for decay in True, False:
-                for modulation in True, False:
-                    for absorption in True, False:
-                        rmerge = self._assess_scaling_model(
-                            decay = decay, modulation = modulation,
-                            absorption = absorption)
-                        results[(decay, modulation, absorption)] = rmerge
-
-            for d, m, a in sorted(results):
-                r = results[(d, m, a)]
-                Debug.write('%s %s %s %.3f' % (d, m, a, r))
-            
-        return
-
-    def _refine_sd_parameters_remerge(self, scales_file, sdadd_f, sdb_f):
-        '''Actually compute the RMS deviation from scatter / sigma = 1.0
-        from unity.'''
-        
-        epochs = self._sweep_information.keys()
-        epochs.sort()
-
-        sc = self._factory.Scala()
-        sc.set_hklin(self._prepared_reflections)
-        sc.set_scales_file(scales_file)
-
-        sc.add_sd_correction('both', 1.0, sdadd_f, sdb_f)
-        
-        for epoch in epochs:
-            input = self._sweep_information[epoch]
-            start, end = (min(input['batches']), max(input['batches']))
-            sc.add_run(start, end, pname = input['pname'],
-                       xname = input['xname'],
-                       dname = input['dname'])
-
-        sc.set_hklout(os.path.join(self.get_working_directory(), 'temp.mtz'))
-
-        if self.get_scaler_anomalous():
-            sc.set_anomalous()
-        sc.set_onlymerge()
-        sc.multi_merge()
-        
-        loggraph = sc.parse_ccp4_loggraph()
-
-        standard_deviation_info = { }
-
-        # FIXME in here this will take account of all runs separately
-        # and also the "all runs" collection as well - should I
-        # just refine on the all-runs or is it better to exclude this?
-
-        for key in loggraph.keys():
-            if 'standard deviation v. Intensity' in key:
-                dataset = key.split(',')[-1].strip()
-                standard_deviation_info[dataset] = transpose_loggraph(
-                    loggraph[key])
-
-        # compute an RMS sigma...
-
-        score_full = 0.0
-        ref_count_full = 0
-
-        for dataset in standard_deviation_info.keys():
-            info = standard_deviation_info[dataset]
-
-            for j in range(len(info['1_Range'])):
-                n_full = int(info['5_Number'][j])
-                I_full = float(info['4_Irms'][j])
-
-                # if the data are processed in P1 and there are no
-                # duplicates (i.e. ~ 60 degrees, say) then this
-                # may be output as - not a number -> trap for this.
-                
-                if sc.get_new_scala():
-                    if info['7_SigmaFull'][j] == '-':
-                        s_full = 0.0
-                    else:
-                        s_full = float(info['7_SigmaFull'][j])
-                else:
-                    if info['7_Sigma'] == '-':
-                        s_full = 0.0
-                    else:
-                        s_full = float(info['7_Sigma'][j])                    
-
-                n_tot = n_full
-
-                # trap case where we have no reflections in a higher
-                # intensity bin (one may ask why they are being printed
-                # by Scala, then?)
-
-                if n_tot:
-                    i_tot = I_full
-                    s_tot = s_full
-                else:
-                    i_tot = 0.0
-                    s_tot = 1.0
-
-                s_full -= 1.0
-
-                score_full += s_full * s_full * n_full
-                ref_count_full += n_full
-
-            # compute the scores...
-
-            if ref_count_full > 0:
-                score_full /= ref_count_full
-
-        return math.sqrt(score_full)
-
-    def _refine_sd_parameters(self, scales_file):
-        '''To some repeated merging (it is assumed that the data have
-        already ben scaled) to determine appropriate values of
-        sd_add, sd_fac, sd_b for fulls only. FIXME at some point
-        this should probably be for each run as well...'''
-
-        if False:
-            return (0.0, 0.0, 0.0, 0.0)
-
-        # note to self - the sdB is scaled as the square-root of
-        # intensity, so in this situation needs to be massively
-        # larger to be useful (perhaps this should follow a power law?)
-        # so have inflated the limits by a factor of 100 (should probably
-        # be more) to make this useful... FIXME this should rely on an
-        # analysis of the actual statistics... allowing 5-times more
-        # sdb steps than before too as this is probably most use...
-        # alternatively could scale-down all of the reflected intensity
-        # values in COMBAT...
-
-        best_sdadd_full = 0.0
-        best_sdb_full = 0.0
-
-        max_sdadd_full = 0.1
-        max_sdb_full = 10000.0
-
-        step_sdadd_full = 0.01
-        step_sdb_full = 200.0
-
-        sdadd_full = 0.0
-        sdb_full = 0.0
-
-        best_rms_full = 1.0e9
-
-        # compute sd_add first...
-
-        # FIXME I need to assess whether this route is appropriate, or
-        # whether I would be better off following some kind of mimisation
-        # procedure...
-
-        # perhaps the following would be more use:
-        # 
-        # refine SdB based on "flatness" of the curve - flatten it out
-        # refine SdAdd afterwards to work on the gradient
-
-        while sdadd_full < max_sdadd_full:
-            
-            rms_full = self._refine_sd_parameters_remerge(
-                scales_file, sdadd_full, sdb_full)
-
-            Debug.write('Tested SdAdd %4.2f: %4.2f' % \
-                        (sdadd_full, rms_full))
-
-            if rms_full < best_rms_full:
-                best_sdadd_full = sdadd_full
-                best_rms_full = rms_full
-
-            # check to see if we're going uphill again...
-            # FIXME in here I have to allow for the scores being
-            # exactly zero as an alternative - i.e. there are
-            # no reflections which are full, for instance.
-
-            if rms_full > best_rms_full:
-                break
-
-            sdadd_full += step_sdadd_full
-
-        best_rms_full = 1.0e9
-
-        # then compute sdb ...
-
-        while sdb_full < max_sdb_full:
-
-            rms_full = self._refine_sd_parameters_remerge(
-                scales_file, best_sdadd_full, sdb_full)
-
-            Debug.write('Tested SdB %4.1f: %4.2f' % \
-                        (sdb_full, rms_full))
-
-            if rms_full < best_rms_full:
-                best_sdb_full = sdb_full
-                best_rms_full = rms_full
-
-            # check to see if we're going uphill again...
-
-            if rms_full > best_rms_full:
-                break
-
-            sdb_full += step_sdb_full
-
-        # now we have good parameters for the SdB try rerefining the
-        # SdAdd...
-
-        sdadd_full = 0.0
-        best_rms_full = 1.0e9
-        
-        while sdadd_full < max_sdadd_full:
-            
-            rms_full = self._refine_sd_parameters_remerge(
-                scales_file, sdadd_full, best_sdb_full)
-
-            Debug.write('Tested SdAdd %4.2f: %4.2f' % \
-                        (sdadd_full, rms_full))
-
-            if rms_full < best_rms_full:
-                best_sdadd_full = sdadd_full
-                best_rms_full = rms_full
-
-            if rms_full > best_rms_full:
-                break
-
-            sdadd_full += step_sdadd_full
-
-        Chatter.write('Optimised SD corrections (A, B) found to be:')
-        Chatter.write('Full:       %4.2f   %4.1f' %
-                      (best_sdadd_full, best_sdb_full))
-
-        return best_sdadd_full, best_sdb_full
 
     def _decide_chef_cutoff_epochs(self):
         '''Analyse the mode of data collection and set a list of points
@@ -1317,22 +968,9 @@ class XDSScalerR(Scaler):
     def _scale(self):
         '''Actually scale all of the data together.'''
 
-        if Flags.get_smart_scaling():
-            self._determine_best_scale_model()
-
-        if self._scalr_corrections:
-            Journal.block(
-                'scaling', self.get_scaler_xcrystal().get_name(), 'XSCALE',
-                {'scaling model':'automatic',
-                 'absorption':self._scalr_correct_absorption,
-                 'modulation':self._scalr_correct_modulation,
-                 'decay':self._scalr_correct_decay
-                 })
-
-        else:
-            Journal.block(
-                'scaling', self.get_scaler_xcrystal().get_name(), 'CCP4',
-                {'scaling model':'default'})
+        Journal.block(
+            'scaling', self.get_scaler_xcrystal().get_name(), 'XSCALE',
+            {'scaling model':'default (all)'})
             
         epochs = self._sweep_information.keys()
         epochs.sort()
@@ -1908,16 +1546,11 @@ class XDSScalerR(Scaler):
                 d = self._factory.Doser()
                 hklin = bits[wave][0]
                 hklout = '%s_dose.mtz' % hklin[:-4]
-                # d.set_hklin(hklin)
-                # d.set_hklout(hklout)
-                # d.set_doses(doses)
-                # d.run()
 
                 add_dose_time_to_mtz(hklin = hklin, hklout = hklout,
                                      doses = doses)
 
                 chef_hklins.append(hklout)
-                # FileHandler.record_temporary_file(hklout)
 
             # then run chef with this - no analysis as yet, but to record
             # the log file to chef_groupN_analysis or something and be
@@ -2117,35 +1750,8 @@ class XDSScalerR(Scaler):
             average_completeness += data[k]['Completeness'][0]
         average_completeness /= len(data.keys())
 
-        if Flags.get_quick() or not Flags.get_fiddle_sd():
-            Debug.write('Not optimising error parameters')
-            sdadd_full = 0.0
-            sdb_full = 0.0
-
-        elif average_completeness < 50.0:
-            Debug.write('Incomplete data, so not refining error parameters')
-            sdadd_full = 0.0
-            sdb_full = 0.0
-
-        else:
-
-            # ---------- SD CORRECTION PARAMETER LOOP ----------
-            
-            # first "fix" the sd add parameters to match up the sd curve from
-            # the fulls only, and minimise RMS[N (scatter / sigma - 1)]
-            
-            Debug.write('Optimising error parameters')
-            
-            sdadd_full, sdb_full = self._refine_sd_parameters(scales_file)
-
-            try:
-                os.remove(os.path.join(self.get_working_directory(),
-                                       scales_file))
-            except:
-                Debug.write('Error removing %s' % scales_file)
-
-        # then try tweaking the sdB parameter in a range say 0-20
-        # starting at 0 and working until the RMS stops going down
+        sdadd_full = 0.0
+        sdb_full = 0.0
 
         # ---------- FINAL SCALING ----------
 
