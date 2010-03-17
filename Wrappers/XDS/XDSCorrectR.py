@@ -264,14 +264,9 @@ def XDSCorrectR(DriverType = None):
             xds_inp.write('DATA_RANGE=%d %d\n' % self._data_range)
             # xds_inp.write('MINIMUM_ZETA=0.1\n')
             # include the resolution range, perhaps
-            if self._resolution_high > 0.0:
+            if self._resolution_high or self._resolution_low:
                 xds_inp.write('INCLUDE_RESOLUTION_RANGE=%.2f %.2f\n' % \
                               (self._resolution_low, self._resolution_high))
-
-            # for spot_range in self._spot_range:
-            # xds_inp.write('SPOT_RANGE=%d %d\n' % spot_range)
-            # xds_inp.write('BACKGROUND_RANGE=%d %d\n' % \
-            # self._background_range)
 
             # assume for the moment anomalous data
 
