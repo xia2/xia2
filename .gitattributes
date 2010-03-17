@@ -28,6 +28,7 @@ Modules/Xia2html/icons/info.png -text
 Modules/Xia2html/icons/warning.png -text
 Schema/Doc/Structure.pdf -text
 Schema/Interfaces/Doc/Interfaces.pdf -text
+Toolkit/PlayPen/TestMinimise.py -text
 Wrappers/CCP4/Doc/Chooch.pdf -text
 Wrappers/CCP4/Doc/Combat.pdf -text
 Wrappers/CCP4/Doc/General.pdf -text
