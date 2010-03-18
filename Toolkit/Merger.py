@@ -225,22 +225,7 @@ class merger:
         self._merge_reflections()
         self._merge_reflections_anomalous()
 
-        if True:
-            return
-
-        t0 = time.time()
-        self._calculate_unmerged_di()
-        print 'Unmerged dI calculation: %.2fs' % (time.time() - t0)
-
-        diff = []
-
-        for hkl in self._unmerged_di:
-            [diff.append(o[0]) for o in self._unmerged_di[hkl].get()]
-
-        mean = sum(diff) / len(diff)
-        var = sum([(d - mean) * (d - mean) for d in diff]) / len(diff)
-
-        print mean, math.sqrt(var)
+        # self._calculate_unmerged_di()
     
         return
 
@@ -488,6 +473,85 @@ class merger:
 
         return z_centric, z_acentric
 
+    def resolution_rmerge(self, limit = 1.0):
+        '''Compute a resolution limit where either rmerge = 1.0 (limit if
+        set) or the full extent of the data.'''
+
+        bins, ranges = m.get_resolution_bins()
+
+        s_s = [1.0 / (r[0] * r[0]) for r in ranges]
+        rmerge_s = [self.calculate_rmerge(bin) for bin in bins]
+        
+        rmerge_f = log_inv_fit(s_s, rmerge_s, 10)
+
+        try:
+            r_rmerge = 1.0 / math.sqrt(interpolate_value(s_s, rmerge_f, limit))
+        except:
+            r_rmerge = 1.0 / math.sqrt(max(s_s))
+
+        return r_rmerge
+
+    def resolution_unmerged_isigma(self, limit = 1.0):
+        '''Compute a resolution limit where either I/sigma = 1.0 (limit if
+        set) or the full extent of the data.'''
+
+        bins, ranges = m.get_resolution_bins()
+
+        s_s = [1.0 / (r[0] * r[0]) for r in ranges]
+        isigma_s = [self.calculate_unmerged_isigma(bin) for bin in bins]
+        
+        isigma_f = log_fit(s_s, isigma_s, 10)
+        
+        try:
+            r_isigma = 1.0 / math.sqrt(interpolate_value(s_s, isigma_f, limit))
+        except:
+            r_isigma = 1.0 / math.sqrt(max(s_s))
+
+        return r_isigma
+
+    def resolution_merged_isigma(self, limit = 1.0):
+        '''Compute a resolution limit where either Mn(I/sigma) = 1.0 (limit if
+        set) or the full extent of the data.'''
+
+        bins, ranges = m.get_resolution_bins()
+
+        s_s = [1.0 / (r[0] * r[0]) for r in ranges]
+        misigma_s = [self.calculate_merged_isigma(bin) for bin in bins]
+        
+        misigma_f = log_fit(s_s, misigma_s, 10)
+        
+        try:
+            r_misigma = 1.0 / math.sqrt(
+                interpolate_value(s_s, misigma_f, limit))
+        except:
+            r_misigma = 1.0 / math.sqrt(max(s_s))
+
+        return r_misigma
+
+    def resolution_completeness(self, limit = 0.5):
+        '''Compute a resolution limit where completeness < 0.5 (limit if
+        set) or the full extent of the data. N.B. this completeness is
+        with respect to the *maximum* completeness in a shell, to reflect
+        triclinic cases.'''
+
+        bins, ranges = m.get_resolution_bins()
+
+        s_s = [1.0 / (r[0] * r[0]) for r in ranges]
+        comp_s = [self.calculate_completeness(j) for j, bin in enumerate(bins)]
+        
+        comp_f = fit(s_s, comp_s, 10)
+        
+        rlimit = limit * max(comp_f)
+
+        try:
+            r_comp = 1.0 / math.sqrt(
+                interpolate_value(s_s, comp_f, rlimit))
+        except:
+            r_comp = 1.0 / math.sqrt(max(s_s))
+
+        return r_comp
+        
+
 if __name__ == '__main__':
 
     nbins = 100
@@ -499,56 +563,9 @@ if __name__ == '__main__':
 
     m.calculate_resolution_ranges(nbins = nbins)
 
-    bins, ranges = m.get_resolution_bins()
-
-    s_s = []
-
-    rmerge_s = []
-    misigma_s = []
-    isigma_s = []
-    comp_s = []
-
-    # for the moment, ignoring these
-    # z2_s = []
-    # chisq_s = []
-    # mult_s = []
-    
-    for j, bin in enumerate(bins):
-        dmin, dmax = ranges[j]
-        s_s.append((1.0 / (dmin * dmin)))
-        n = len(bin)
-
-        rmerge_s.append(m.calculate_rmerge(bin))
-        misigma_s.append(m.calculate_merged_isigma(bin))
-        isigma_s.append(m.calculate_unmerged_isigma(bin))
-        comp_s.append(m.calculate_completeness(j))
-        
-        # mult_s.append(m.calculate_multiplicity(bin))
-        # z2_s.append(m.calculate_z2(bin))
-        # chisq_s.append(m.calculate_chisq(bin))    
-
-    # then report some results
-
-    # do some poly fits?
-
-    misigma_f = log_fit(s_s, misigma_s, 10)
-    isigma_f = log_fit(s_s, isigma_s, 10)
-    rmerge_f = log_inv_fit(s_s, rmerge_s, 10)
-    comp_f = fit(s_s, comp_s, 10)
-
-    r_misigma = 1.0 / math.sqrt(interpolate_value(s_s, misigma_f, 2.0))
-    r_isigma = 1.0 / math.sqrt(interpolate_value(s_s, isigma_f, 1.0))
-    r_rmerge = 1.0 / math.sqrt(interpolate_value(s_s, rmerge_f, 1.0))
-    
-    try:
-        r_comp = 1.0 / math.sqrt(interpolate_value(s_s, comp_f,
-                                                   0.5 * max(comp_f)))
-    except RuntimeError, e:
-        r_comp = 1.0 / math.sqrt(max(s_s))
-
     print 'Resolutions:'
-    print 'Rmerge:     %.2f' % r_rmerge
-    print 'I/sig:      %.2f' % r_isigma
-    print 'Mn(I/sig):  %.2f' % r_misigma
-    print 'Comp:       %.2f' % r_comp
+    print 'Rmerge:     %.2f' % m.resolution_rmerge()
+    print 'I/sig:      %.2f' % m.resolution_unmerged_isigma()
+    print 'Mn(I/sig):  %.2f' % m.resolution_merged_isigma()
+    print 'Comp:       %.2f' % m.resolution_completeness()
     
