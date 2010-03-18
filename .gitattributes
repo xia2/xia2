@@ -30,6 +30,7 @@ Schema/Doc/Structure.pdf -text
 Schema/Interfaces/Doc/Interfaces.pdf -text
 Toolkit/PlayPen/TestMinimise.py -text
 Toolkit/PolyFitter.py -text
+Toolkit/__init__.py -text
 Wrappers/CCP4/Doc/Chooch.pdf -text
 Wrappers/CCP4/Doc/Combat.pdf -text
 Wrappers/CCP4/Doc/General.pdf -text
