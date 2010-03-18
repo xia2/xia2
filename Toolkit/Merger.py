@@ -477,7 +477,7 @@ class merger:
         '''Compute a resolution limit where either rmerge = 1.0 (limit if
         set) or the full extent of the data.'''
 
-        bins, ranges = m.get_resolution_bins()
+        bins, ranges = self.get_resolution_bins()
 
         s_s = [1.0 / (r[0] * r[0]) for r in ranges]
         rmerge_s = [self.calculate_rmerge(bin) for bin in bins]
@@ -495,7 +495,7 @@ class merger:
         '''Compute a resolution limit where either I/sigma = 1.0 (limit if
         set) or the full extent of the data.'''
 
-        bins, ranges = m.get_resolution_bins()
+        bins, ranges = self.get_resolution_bins()
 
         s_s = [1.0 / (r[0] * r[0]) for r in ranges]
         isigma_s = [self.calculate_unmerged_isigma(bin) for bin in bins]
@@ -513,7 +513,7 @@ class merger:
         '''Compute a resolution limit where either Mn(I/sigma) = 1.0 (limit if
         set) or the full extent of the data.'''
 
-        bins, ranges = m.get_resolution_bins()
+        bins, ranges = self.get_resolution_bins()
 
         s_s = [1.0 / (r[0] * r[0]) for r in ranges]
         misigma_s = [self.calculate_merged_isigma(bin) for bin in bins]
@@ -534,7 +534,7 @@ class merger:
         with respect to the *maximum* completeness in a shell, to reflect
         triclinic cases.'''
 
-        bins, ranges = m.get_resolution_bins()
+        bins, ranges = self.get_resolution_bins()
 
         s_s = [1.0 / (r[0] * r[0]) for r in ranges]
         comp_s = [self.calculate_completeness(j) for j, bin in enumerate(bins)]

@@ -88,6 +88,9 @@ from CCP4InterRadiationDamageDetector import CCP4InterRadiationDamageDetector
 from Experts.ResolutionExperts import determine_scaled_resolution
 from DoseAccumulate import accumulate
 
+# new resolution limit code
+from Toolkit.Merger import merger
+
 # newly implemented CCTBX powered functions to replace xia2 binaries
 from Functions.add_dose_time_to_mtz import add_dose_time_to_mtz
 
@@ -1202,13 +1205,43 @@ class XDSScalerR(Scaler):
                         self._sweep_information[epoch][
                             'scaled_reflections'] = ref[hklout]
                      
-
         # now I have a list of reflection files in MTZ format linked
         # to the original reflection files from the integrater - which
         # means I can do the rebatch shuffle prior to merging in Scala.
         
         # have defined a new method in the scala wrapper called "multi_merge"
         # to enable this.
+
+        # prior to these calculations, let's do some thinking about
+        # resolution limits...
+
+        for epoch in self._sweep_information.keys():
+            hklin = self._sweep_information[epoch]['scaled_reflections']
+            dname = self._sweep_information[epoch]['dname']
+            sname = self._sweep_information[epoch]['sweep_name']
+
+            m = merger(hklin)
+
+            # figure resolutions as: max(r_comp, r_rm, r_uis, r_mis)
+            # where these come from the calculations below. Then, for a given
+            # wavelength, pick the highest resolution limit.
+            
+            m.calculate_resolution_ranges(nbins = 100)
+            r_comp = m.resolution_completeness()
+            r_rm = m.resolution_rmerge()
+            r_uis = m.resolution_unmerged_isigma()
+            r_mis = m.resolution_merged_isigma()
+
+            resolution = max([r_comp, r_rm, r_uis, r_mis])
+
+            Chatter.write('Resolution for sweep %s: %.2f' % \
+                          (sname, resolution))
+
+            if not dname in self._resolution_limits:
+                self._resolution_limits[dname] = resolution
+            else:
+                if resolution < self._resolution_limits[dname]:
+                    self._resolution_limits[dname] = resolution
 
         # first the rebatch / sortmtz shuffle
         
@@ -1672,17 +1705,17 @@ class XDSScalerR(Scaler):
                               (dataset, resolution))
                 continue
 
-            resolution = determine_scaled_resolution(
-                reflection_files[dataset],
-                Flags.get_i_over_sigma_limit())[1]
+            if not dataset in self._resolution_limits:
+                raise RuntimeError, 'resolution calculation already failed?'
+
+            if False:
+                resolution = determine_scaled_resolution(
+                    reflection_files[dataset],
+                    Flags.get_i_over_sigma_limit())[1]
                 
-            # next compute "useful" versions of these resolution limits
-            # want 0.05A steps - in here it would also be useful to
-            # gather up an "average" best resolution and perhaps use this
-            # where it seems appropriate e.g. TS03 INFL, LREM.
+                self._resolution_limits[dataset] = resolution
 
-            self._resolution_limits[dataset] = resolution
-
+            resolution = self._resolution_limits[dataset]
             if resolution < highest_resolution:
                 highest_resolution = resolution
 
