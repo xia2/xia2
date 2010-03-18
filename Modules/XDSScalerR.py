@@ -1683,7 +1683,7 @@ class XDSScalerR(Scaler):
 
         # next compute resolution limits for each dataset.
 
-        self._resolution_limits = { }
+        # self._resolution_limits = { }
 
         reflection_files = sc.get_scaled_reflection_files()
 
