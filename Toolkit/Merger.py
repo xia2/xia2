@@ -39,6 +39,7 @@ from cctbx.miller import build_set
 from cctbx.crystal import symmetry as crystal_symmetry
 
 from MtzFactory import mtz_file
+from PolyFitter import poly_fitter
 
 class unmerged_intensity:
     '''A class to represent and encapsulate the multiple observations of a
@@ -494,41 +495,86 @@ if __name__ == '__main__':
     if len(sys.argv) > 2:
         nbins = int(sys.argv[2])
 
-    print 'Overall'
-    t0 = time.time()
-    print 'Rmerge:       %6.3f' % m.calculate_rmerge()
-    t1 = time.time()
-    print 'Rmerge +/-:   %6.3f' % m.calculate_rmerge_anomalous()
-    t2 = time.time()
-    print 'Multiplicity: %6.3f' % m.calculate_multiplicity()
-    print 'Mn(I/sigma):  %6.3f' % m.calculate_merged_isigma()
-    print 'I/sigma:      %6.3f' % m.calculate_unmerged_isigma()
-    print 'Z^2:          %6.3f %6.3f' % m.calculate_z2()
-    print 'Chi^2:        %6.3f %6.3f' % m.calculate_chisq()
-    print 'Completeness: %6.3f' % m.calculate_completeness()
+    if False:
+
+        print 'Overall'
+        t0 = time.time()
+        print 'Rmerge:       %6.3f' % m.calculate_rmerge()
+        t1 = time.time()
+        print 'Rmerge +/-:   %6.3f' % m.calculate_rmerge_anomalous()
+        t2 = time.time()
+        print 'Multiplicity: %6.3f' % m.calculate_multiplicity()
+        print 'Mn(I/sigma):  %6.3f' % m.calculate_merged_isigma()
+        print 'I/sigma:      %6.3f' % m.calculate_unmerged_isigma()
+        print 'Z^2:          %6.3f %6.3f' % m.calculate_z2()
+        print 'Chi^2:        %6.3f %6.3f' % m.calculate_chisq()
+        print 'Completeness: %6.3f' % m.calculate_completeness()
     
     m.calculate_resolution_ranges(nbins = nbins)
 
     bins, ranges = m.get_resolution_bins()
 
-    print 'By resolution shell'
-    print '%6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s' % \
-          ('Low', 'High', 'N', 'Rmerge', 'Mult',
-           'M(I/s)', 'I/s', 'cZ^2', 'aZ^2', 'Comp', 'Chi^2')
+    if False:
+
+        print 'By resolution shell'
+        print '%6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s' % \
+              ('Low', 'High', 'N', 'Rmerge', 'Mult',
+               'M(I/s)', 'I/s', 'cZ^2', 'aZ^2', 'Comp', 'Chi^2')
+
+    s_s = []
+
+    rmerge_s = []
+    mult_s = []
+    misigma_s = []
+    isigma_s = []
+    z2_s = []
+    chisq_s = []
+    comp_s = []
     
     for j, bin in enumerate(bins):
         dmin, dmax = ranges[j]
+        s_s.append((1.0 / (dmin * dmin)))
         n = len(bin)
-        rmerge = m.calculate_rmerge(bin)
-        mult = m.calculate_multiplicity(bin)
-        misigma = m.calculate_merged_isigma(bin)
-        isigma = m.calculate_unmerged_isigma(bin)
-        z2 = m.calculate_z2(bin)
-        chisq = m.calculate_chisq(bin)
-        comp = m.calculate_completeness(j)
 
-        print '%6.3f %6.3f %6d %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f' % \
-              (dmin, dmax, n, rmerge, mult, misigma,
-               isigma, z2[0], z2[1], comp, chisq[1])
-        
-    print 'Rmerge times: %.4fs vs. %4fs' % (t1 - t0, t2 - t1)
+        if False:
+            rmerge_s.append(m.calculate_rmerge(bin))
+            mult_s.append(m.calculate_multiplicity(bin))
+            misigma_s.append(m.calculate_merged_isigma(bin))
+            isigma_s.append(m.calculate_unmerged_isigma(bin))
+            z2_s.append(m.calculate_z2(bin))
+            chisq_s.append(m.calculate_chisq(bin))
+        comp_s.append(m.calculate_completeness(j))
+
+    # then report some results
+
+    format = '%6.3f %6.3f %6d %6.3f %6.3f %6.3f ' + \
+             '%6.3f %6.3f %6.3f %6.3f %6.3f' 
+
+    for j, bin in enumerate(bins):
+        dmin, dmax = ranges[j]
+        if False:
+            rmerge = rmerge_s[j]
+            mult = mult_s[j]
+            misigma = misigma_s[j]
+            isigma = isigma_s[j]
+            z2 = z2_s[j]
+            chisq = chisq_s[j]
+        comp = comp_s[j]
+
+        if False:
+            print format % (dmin, dmax, n, rmerge, mult, misigma,
+                            isigma, z2[0], z2[1], comp, chisq[1])
+            
+    # do some poly fits?
+
+    pf = poly_fitter(s_s, comp_s, 10)
+    pf.refine()
+    comp_f = [pf.evaluate(s) for s in s_s]
+
+    for j, bin in enumerate(bins):
+        dmin, dmax = ranges[j]
+        s = s_s[j]
+        comp = comp_s[j]
+        fit = comp_f[j]
+        print '%6.3f %6.3f %6.5f %6.3f %6.3f' % \
+              (dmin, dmax, s, comp, fit)
