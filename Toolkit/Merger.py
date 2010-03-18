@@ -486,6 +486,30 @@ class merger:
 
         return z_centric, z_acentric
 
+def log_fit(x, y, order):
+    '''Fit the values log(y(x)) then return exp() to this fit. x, y should
+    be iterables containing floats of the same size. The order is the order
+    of polynomial to use for this fit. This will be useful for e.g. I/sigma.'''
+
+    ly = [math.log(_y) for _y in y]
+
+    pf = poly_fitter(x, ly, order)
+    pf.refine()
+
+    return [math.exp(pf.evaluate(_x)) for _x in x]
+
+def log_inv_fit(x, y, order):
+    '''Fit the values log(1 / y(x)) then return the inverse of this fit.
+    x, y should be iterables, the order of the polynomial for the transformed
+    fit needs to be specified. This will be useful for e.g. Rmerge.'''
+
+    ly = [math.log(1.0 / _y) for _y in y]
+
+    pf = poly_fitter(x, ly, order)
+    pf.refine()
+
+    return [(1.0 / math.exp(pf.evaluate(_x))) for _x in x]
+
 if __name__ == '__main__':
 
     nbins = 20
@@ -536,14 +560,12 @@ if __name__ == '__main__':
         s_s.append((1.0 / (dmin * dmin)))
         n = len(bin)
 
-        if False:
-            rmerge_s.append(m.calculate_rmerge(bin))
-            mult_s.append(m.calculate_multiplicity(bin))
-            isigma_s.append(m.calculate_unmerged_isigma(bin))
-            z2_s.append(m.calculate_z2(bin))
-            chisq_s.append(m.calculate_chisq(bin))
-            
+        rmerge_s.append(m.calculate_rmerge(bin))
+        mult_s.append(m.calculate_multiplicity(bin))
         misigma_s.append(m.calculate_merged_isigma(bin))
+        isigma_s.append(m.calculate_unmerged_isigma(bin))
+        z2_s.append(m.calculate_z2(bin))
+        chisq_s.append(m.calculate_chisq(bin))    
         comp_s.append(m.calculate_completeness(j))
 
     # then report some results
@@ -551,51 +573,42 @@ if __name__ == '__main__':
     format = '%6.3f %6.3f %6d %6.3f %6.3f %6.3f ' + \
              '%6.3f %6.3f %6.3f %6.3f %6.3f' 
 
-    for j, bin in enumerate(bins):
-        dmin, dmax = ranges[j]
-        if False:
+    if False:
+        for j, bin in enumerate(bins):
+            dmin, dmax = ranges[j]
             rmerge = rmerge_s[j]
             mult = mult_s[j]
             misigma = misigma_s[j]
             isigma = isigma_s[j]
             z2 = z2_s[j]
             chisq = chisq_s[j]
-        comp = comp_s[j]
+            comp = comp_s[j]
 
-        if False:
             print format % (dmin, dmax, n, rmerge, mult, misigma,
                             isigma, z2[0], z2[1], comp, chisq[1])
             
     # do some poly fits?
 
-    pf = poly_fitter(s_s, comp_s, 10)
-    pf.refine()
-    comp_f = [pf.evaluate(s) for s in s_s]
+    if False:
 
-    for j, bin in enumerate(bins):
-        dmin, dmax = ranges[j]
-        s = s_s[j]
-        comp = comp_s[j]
-        fit = comp_f[j]
-        if False:
+        misigma_f = log_fit(s_s, misigma_s, 10)
+
+        for j, bin in enumerate(bins):
+            dmin, dmax = ranges[j]
+            s = s_s[j]
+            misigma = misigma_s[j]
+            fit = misigma_f[j]
             print '%6.3f %6.3f %6.5f %6.3f %6.3f' % \
-                  (dmin, dmax, s, comp, fit)
+                  (dmin, dmax, s, misigma, fit)
 
-    # try one for log(I/sigI)
+    if True:
+        rmerge_f = log_inv_fit(s_s, rmerge_s, 10)
 
-    t0 = time.time()
-
-    l_misigma_s = [math.log(misigma) for misigma in misigma_s]
-    pf = poly_fitter(s_s, l_misigma_s, 10)
-    pf.refine()
-    misigma_f = [math.exp(pf.evaluate(s)) for s in s_s]
-
-    for j, bin in enumerate(bins):
-        dmin, dmax = ranges[j]
-        s = s_s[j]
-        misigma = misigma_s[j]
-        fit = misigma_f[j]
-        print '%6.3f %6.3f %6.5f %6.3f %6.3f' % \
-              (dmin, dmax, s, misigma, fit)
+        for j, bin in enumerate(bins):
+            dmin, dmax = ranges[j]
+            s = s_s[j]
+            rmerge = rmerge_s[j]
+            fit = rmerge_f[j]
+            print '%6.3f %6.3f %6.5f %6.3f %6.3f' % \
+                  (dmin, dmax, s, rmerge, fit)
     
-    sys.stderr.write('Fit took %.1fs\n' % (time.time() - t0))
