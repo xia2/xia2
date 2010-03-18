@@ -14,7 +14,7 @@ import math
 from cctbx.array_family import flex
 from scitbx import lbfgs
 
-def poly_residual(x, y, params):
+def poly_residual(xp, y, params):
     '''Compute the residual between the observations y[i] and sum_j
     params[j] x[i]^j.'''
 
@@ -22,14 +22,15 @@ def poly_residual(x, y, params):
 
     n = len(params)
 
+    e = flex.double()
+
     for j, _x in enumerate(x):
-        o = y[j]
-        e = sum([math.pow(_x, k) * params[k] for k in range(n)])
-        r += (o - e) * (o - e)
+        # e.append(sum([math.pow(_x, k) * params[k] for k in range(n)]))
+        e.append(flex.sum(xp[j] * params))
 
-    return r
+    return flex.sum(flex.pow2(y - e))
 
-def poly_gradients(x, y, params):
+def poly_gradients(xp, y, params):
     '''Compute the gradient of the residual w.r.t. the parameters, N.B.
     will be performed using a finite difference method.'''
 
@@ -44,7 +45,7 @@ def poly_gradients(x, y, params):
         for signed_eps in [- eps, eps]:
             params_eps = params[:]
             params_eps[j] += signed_eps
-            rs.append(poly_residual(x, y, params_eps))
+            rs.append(poly_residual(xp, y, params_eps))
         g.append((rs[1] - rs[0]) / (2 * eps))
 
     return g
@@ -58,6 +59,9 @@ class PolyFitter:
         self._x = flex.double(points)
         self._y = flex.double(values)
 
+        self._xp = [flex.double([math.pow(x, j) for j in range(order)])
+                    for x in self._x]
+
         return
 
     def refine(self):
@@ -66,22 +70,33 @@ class PolyFitter:
         return lbfgs.run(target_evaluator = self)
 
     def compute_functional_and_gradients(self):
-        return poly_residual(self._x, self._y, self.x), \
-               poly_gradients(self._x, self._y, self.x)
+        return poly_residual(self._xp, self._y, self.x), \
+               poly_gradients(self._xp, self._y, self.x)
 
     def get_parameters(self):
         return list(self.x)
+
+    def evaluate(self, x):
+        '''Evaluate the resulting fit at point x.'''
+
+        return sum([math.pow(x, k) * self.x[k] for k in range(len(self.x))])
 
 if __name__ == '__main__':
 
     import random
 
+    random.seed(1)
+
     def f(x):
-        return 1.0 + x + 2.0 * math.pow(x, 2) + 0.01 * random.random()
+        return math.sin(x) + 1.0 + x + 2.0 * math.pow(x, 2) + \
+               0.2 * random.random()
 
     x = [0.01 * j for j in range(100)]
     y = [f(_x) for _x in x]
 
-    r = PolyFitter(x, y, 3)
+    r = PolyFitter(x, y, 10)
     r.refine()
-    print r.get_parameters()
+
+    for j, _x in enumerate(x):
+        print '%.4f %.4f %.4f' % (_x, y[j], r.evaluate(_x))
+        
