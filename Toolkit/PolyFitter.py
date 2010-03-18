@@ -23,10 +23,11 @@ def poly_residual(xp, y, params):
     r = 0.0
 
     n = len(params)
+    c = len(y)
 
     e = flex.double()
 
-    for j, _x in enumerate(x):
+    for j in range(c):
         e.append(flex.sum(xp[j] * params))
 
     return flex.sum(flex.pow2(y - e))
