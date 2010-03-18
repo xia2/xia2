@@ -51,7 +51,7 @@ def poly_gradients(xp, y, params):
 
     return g
 
-class PolyFitter:
+class poly_fitter:
     '''A class to do the polynomial fit. This will fit observations y
     at points x with a polynomial of order n.'''
 
@@ -97,7 +97,7 @@ if __name__ == '__main__':
     x = [0.01 * j for j in range(100)]
     y = [f(_x) for _x in x]
 
-    r = PolyFitter(x, y, 10)
+    r = poly_fitter(x, y, 10)
     r.refine()
 
     for j, _x in enumerate(x):
