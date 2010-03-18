@@ -539,10 +539,11 @@ if __name__ == '__main__':
         if False:
             rmerge_s.append(m.calculate_rmerge(bin))
             mult_s.append(m.calculate_multiplicity(bin))
-            misigma_s.append(m.calculate_merged_isigma(bin))
             isigma_s.append(m.calculate_unmerged_isigma(bin))
             z2_s.append(m.calculate_z2(bin))
             chisq_s.append(m.calculate_chisq(bin))
+            
+        misigma_s.append(m.calculate_merged_isigma(bin))
         comp_s.append(m.calculate_completeness(j))
 
     # then report some results
@@ -576,5 +577,25 @@ if __name__ == '__main__':
         s = s_s[j]
         comp = comp_s[j]
         fit = comp_f[j]
+        if False:
+            print '%6.3f %6.3f %6.5f %6.3f %6.3f' % \
+                  (dmin, dmax, s, comp, fit)
+
+    # try one for log(I/sigI)
+
+    t0 = time.time()
+
+    l_misigma_s = [math.log(misigma) for misigma in misigma_s]
+    pf = poly_fitter(s_s, l_misigma_s, 10)
+    pf.refine()
+    misigma_f = [math.exp(pf.evaluate(s)) for s in s_s]
+
+    for j, bin in enumerate(bins):
+        dmin, dmax = ranges[j]
+        s = s_s[j]
+        misigma = misigma_s[j]
+        fit = misigma_f[j]
         print '%6.3f %6.3f %6.5f %6.3f %6.3f' % \
-              (dmin, dmax, s, comp, fit)
+              (dmin, dmax, s, misigma, fit)
+    
+    sys.stderr.write('Fit took %.1fs\n' % (time.time() - t0))
