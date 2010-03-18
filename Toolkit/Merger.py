@@ -27,7 +27,6 @@
 #       fraction is 0.5 - this is improved by CORRECT. Pointless copies this
 #       across correctly and computes LP column. 
 
-
 import sys
 import math
 import os
@@ -39,11 +38,10 @@ from cctbx.miller import build_set
 from cctbx.crystal import symmetry as crystal_symmetry
 
 from MtzFactory import mtz_file
-from PolyFitter import poly_fitter
+from PolyFitter import fit
 from PolyFitter import log_fit
 from PolyFitter import log_inv_fit
 from PolyFitter import interpolate_value
-
 
 class unmerged_intensity:
     '''A class to represent and encapsulate the multiple observations of a
@@ -492,48 +490,28 @@ class merger:
 
 if __name__ == '__main__':
 
-    nbins = 20
+    nbins = 100
 
     m = merger(sys.argv[1])
 
     if len(sys.argv) > 2:
         nbins = int(sys.argv[2])
 
-    if False:
-
-        print 'Overall'
-        t0 = time.time()
-        print 'Rmerge:       %6.3f' % m.calculate_rmerge()
-        t1 = time.time()
-        print 'Rmerge +/-:   %6.3f' % m.calculate_rmerge_anomalous()
-        t2 = time.time()
-        print 'Multiplicity: %6.3f' % m.calculate_multiplicity()
-        print 'Mn(I/sigma):  %6.3f' % m.calculate_merged_isigma()
-        print 'I/sigma:      %6.3f' % m.calculate_unmerged_isigma()
-        print 'Z^2:          %6.3f %6.3f' % m.calculate_z2()
-        print 'Chi^2:        %6.3f %6.3f' % m.calculate_chisq()
-        print 'Completeness: %6.3f' % m.calculate_completeness()
-    
     m.calculate_resolution_ranges(nbins = nbins)
 
     bins, ranges = m.get_resolution_bins()
 
-    if False:
-
-        print 'By resolution shell'
-        print '%6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s' % \
-              ('Low', 'High', 'N', 'Rmerge', 'Mult',
-               'M(I/s)', 'I/s', 'cZ^2', 'aZ^2', 'Comp', 'Chi^2')
-
     s_s = []
 
     rmerge_s = []
-    mult_s = []
     misigma_s = []
     isigma_s = []
-    z2_s = []
-    chisq_s = []
     comp_s = []
+
+    # for the moment, ignoring these
+    # z2_s = []
+    # chisq_s = []
+    # mult_s = []
     
     for j, bin in enumerate(bins):
         dmin, dmax = ranges[j]
@@ -541,55 +519,36 @@ if __name__ == '__main__':
         n = len(bin)
 
         rmerge_s.append(m.calculate_rmerge(bin))
-        mult_s.append(m.calculate_multiplicity(bin))
         misigma_s.append(m.calculate_merged_isigma(bin))
         isigma_s.append(m.calculate_unmerged_isigma(bin))
-        z2_s.append(m.calculate_z2(bin))
-        chisq_s.append(m.calculate_chisq(bin))    
         comp_s.append(m.calculate_completeness(j))
+        
+        # mult_s.append(m.calculate_multiplicity(bin))
+        # z2_s.append(m.calculate_z2(bin))
+        # chisq_s.append(m.calculate_chisq(bin))    
 
     # then report some results
 
-    format = '%6.3f %6.3f %6d %6.3f %6.3f %6.3f ' + \
-             '%6.3f %6.3f %6.3f %6.3f %6.3f' 
-
-    if False:
-        for j, bin in enumerate(bins):
-            dmin, dmax = ranges[j]
-            rmerge = rmerge_s[j]
-            mult = mult_s[j]
-            misigma = misigma_s[j]
-            isigma = isigma_s[j]
-            z2 = z2_s[j]
-            chisq = chisq_s[j]
-            comp = comp_s[j]
-
-            print format % (dmin, dmax, n, rmerge, mult, misigma,
-                            isigma, z2[0], z2[1], comp, chisq[1])
-            
     # do some poly fits?
 
-    if False:
+    misigma_f = log_fit(s_s, misigma_s, 10)
+    isigma_f = log_fit(s_s, isigma_s, 10)
+    rmerge_f = log_inv_fit(s_s, rmerge_s, 10)
+    comp_f = fit(s_s, comp_s, 10)
 
-        misigma_f = log_fit(s_s, misigma_s, 10)
-
-        for j, bin in enumerate(bins):
-            dmin, dmax = ranges[j]
-            s = s_s[j]
-            misigma = misigma_s[j]
-            fit = misigma_f[j]
-            print '%6.3f %6.3f %6.5f %6.3f %6.3f' % \
-                  (dmin, dmax, s, misigma, fit)
-
-    if True:
-        rmerge_f = log_inv_fit(s_s, rmerge_s, 10)
-
-        for j, bin in enumerate(bins):
-            dmin, dmax = ranges[j]
-            s = s_s[j]
-            rmerge = rmerge_s[j]
-            fit = rmerge_f[j]
-            print '%6.3f %6.3f %6.5f %6.3f %6.3f' % \
-                  (dmin, dmax, s, rmerge, fit)
+    r_misigma = 1.0 / math.sqrt(interpolate_value(s_s, misigma_f, 2.0))
+    r_isigma = 1.0 / math.sqrt(interpolate_value(s_s, isigma_f, 1.0))
+    r_rmerge = 1.0 / math.sqrt(interpolate_value(s_s, rmerge_f, 1.0))
     
-    print 1.0 / math.sqrt(interpolate_value(s_s, rmerge_f, 1.0))
+    try:
+        r_comp = 1.0 / math.sqrt(interpolate_value(s_s, comp_f,
+                                                   0.5 * max(comp_f)))
+    except RuntimeError, e:
+        r_comp = 1.0 / math.sqrt(max(s_s))
+
+    print 'Resolutions:'
+    print 'Rmerge:     %.2f' % r_rmerge
+    print 'I/sig:      %.2f' % r_isigma
+    print 'Mn(I/sig):  %.2f' % r_misigma
+    print 'Comp:       %.2f' % r_comp
+    

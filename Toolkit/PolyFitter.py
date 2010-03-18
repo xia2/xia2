@@ -86,6 +86,16 @@ class poly_fitter:
 
         return sum([math.pow(x, k) * self.x[k] for k in range(len(self.x))])
 
+def fit(x, y, order):
+    '''Fit the values y(x) then return this fit. x, y should
+    be iterables containing floats of the same size. The order is the order
+    of polynomial to use for this fit. This will be useful for e.g. I/sigma.'''
+
+    pf = poly_fitter(x, y, order)
+    pf.refine()
+
+    return [pf.evaluate(_x) for _x in x]
+
 def log_fit(x, y, order):
     '''Fit the values log(y(x)) then return exp() to this fit. x, y should
     be iterables containing floats of the same size. The order is the order
@@ -113,6 +123,9 @@ def log_inv_fit(x, y, order):
 def interpolate_value(x, y, t):
     '''Find the value of x: y(x) = t.'''
 
+    if t > max(y) or t < min(y):
+        raise RuntimeError, 't outside of [%f, %f]' % (min(y), max(y))
+
     for j in range(1, len(x)):
         x0 = x[j - 1]
         y0 = y[j - 1]
@@ -122,26 +135,8 @@ def interpolate_value(x, y, t):
 
         if (y0 - t) * (y1 - t) < 0:
             return x0 + (t - y0) * (x1 - x0) / (y1 - y0)
-
-    return x1
         
-
 if __name__ == '__main__':
 
-    import random
+    pass
 
-    random.seed(1)
-
-    def f(x):
-        return math.sin(10 * x) + 1.0 + x + 2.0 * math.pow(x, 2) + \
-               0.2 * random.random()
-
-    x = [0.01 * j for j in range(100)]
-    y = [f(_x) for _x in x]
-
-    r = poly_fitter(x, y, 10)
-    r.refine()
-
-    for j, _x in enumerate(x):
-        print '%.4f %.4f %.4f' % (_x, y[j], r.evaluate(_x))
-        
