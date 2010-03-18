@@ -7,7 +7,9 @@
 #   included in the root directory of this package.
 # 
 # A toolkit component for performing polynomial fits to an array of data,
-# using the CCTBX lbfgs minimiser.
+# using the CCTBX lbfgs minimiser. For data from a general form, it may
+# be helpful to transform the measurements to a "sensible" form - for example
+# taking log(I/sigI).
 
 import math
 
@@ -16,7 +18,7 @@ from scitbx import lbfgs
 
 def poly_residual(xp, y, params):
     '''Compute the residual between the observations y[i] and sum_j
-    params[j] x[i]^j.'''
+    params[j] x[i]^j. For efficiency, x[i]^j are pre-calculated in xp.'''
 
     r = 0.0
 
@@ -25,7 +27,6 @@ def poly_residual(xp, y, params):
     e = flex.double()
 
     for j, _x in enumerate(x):
-        # e.append(sum([math.pow(_x, k) * params[k] for k in range(n)]))
         e.append(flex.sum(xp[j] * params))
 
     return flex.sum(flex.pow2(y - e))
@@ -59,6 +60,8 @@ class PolyFitter:
         self._x = flex.double(points)
         self._y = flex.double(values)
 
+        # precalculate x[j]^[0-(n - 1)] values
+
         self._xp = [flex.double([math.pow(x, j) for j in range(order)])
                     for x in self._x]
 
@@ -88,7 +91,7 @@ if __name__ == '__main__':
     random.seed(1)
 
     def f(x):
-        return math.sin(x) + 1.0 + x + 2.0 * math.pow(x, 2) + \
+        return math.sin(10 * x) + 1.0 + x + 2.0 * math.pow(x, 2) + \
                0.2 * random.random()
 
     x = [0.01 * j for j in range(100)]
