@@ -40,6 +40,10 @@ from cctbx.crystal import symmetry as crystal_symmetry
 
 from MtzFactory import mtz_file
 from PolyFitter import poly_fitter
+from PolyFitter import log_fit
+from PolyFitter import log_inv_fit
+from PolyFitter import interpolate_value
+
 
 class unmerged_intensity:
     '''A class to represent and encapsulate the multiple observations of a
@@ -486,30 +490,6 @@ class merger:
 
         return z_centric, z_acentric
 
-def log_fit(x, y, order):
-    '''Fit the values log(y(x)) then return exp() to this fit. x, y should
-    be iterables containing floats of the same size. The order is the order
-    of polynomial to use for this fit. This will be useful for e.g. I/sigma.'''
-
-    ly = [math.log(_y) for _y in y]
-
-    pf = poly_fitter(x, ly, order)
-    pf.refine()
-
-    return [math.exp(pf.evaluate(_x)) for _x in x]
-
-def log_inv_fit(x, y, order):
-    '''Fit the values log(1 / y(x)) then return the inverse of this fit.
-    x, y should be iterables, the order of the polynomial for the transformed
-    fit needs to be specified. This will be useful for e.g. Rmerge.'''
-
-    ly = [math.log(1.0 / _y) for _y in y]
-
-    pf = poly_fitter(x, ly, order)
-    pf.refine()
-
-    return [(1.0 / math.exp(pf.evaluate(_x))) for _x in x]
-
 if __name__ == '__main__':
 
     nbins = 20
@@ -612,3 +592,4 @@ if __name__ == '__main__':
             print '%6.3f %6.3f %6.5f %6.3f %6.3f' % \
                   (dmin, dmax, s, rmerge, fit)
     
+    print 1.0 / math.sqrt(interpolate_value(s_s, rmerge_f, 1.0))

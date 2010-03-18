@@ -34,7 +34,8 @@ def poly_residual(xp, y, params):
 
 def poly_gradients(xp, y, params):
     '''Compute the gradient of the residual w.r.t. the parameters, N.B.
-    will be performed using a finite difference method.'''
+    will be performed using a finite difference method. N.B. this should
+    be trivial to do algebraicly.'''
 
     eps = 1.0e-6
 
@@ -84,6 +85,46 @@ class poly_fitter:
         '''Evaluate the resulting fit at point x.'''
 
         return sum([math.pow(x, k) * self.x[k] for k in range(len(self.x))])
+
+def log_fit(x, y, order):
+    '''Fit the values log(y(x)) then return exp() to this fit. x, y should
+    be iterables containing floats of the same size. The order is the order
+    of polynomial to use for this fit. This will be useful for e.g. I/sigma.'''
+
+    ly = [math.log(_y) for _y in y]
+
+    pf = poly_fitter(x, ly, order)
+    pf.refine()
+
+    return [math.exp(pf.evaluate(_x)) for _x in x]
+
+def log_inv_fit(x, y, order):
+    '''Fit the values log(1 / y(x)) then return the inverse of this fit.
+    x, y should be iterables, the order of the polynomial for the transformed
+    fit needs to be specified. This will be useful for e.g. Rmerge.'''
+
+    ly = [math.log(1.0 / _y) for _y in y]
+
+    pf = poly_fitter(x, ly, order)
+    pf.refine()
+
+    return [(1.0 / math.exp(pf.evaluate(_x))) for _x in x]
+
+def interpolate_value(x, y, t):
+    '''Find the value of x: y(x) = t.'''
+
+    for j in range(1, len(x)):
+        x0 = x[j - 1]
+        y0 = y[j - 1]
+
+        x1 = x[j]
+        y1 = y[j]
+
+        if (y0 - t) * (y1 - t) < 0:
+            return x0 + (t - y0) * (x1 - x0) / (y1 - y0)
+
+    return x1
+        
 
 if __name__ == '__main__':
 
