@@ -32,6 +32,7 @@ import math
 import os
 import time
 import itertools
+import copy
 
 from iotbx import mtz
 from cctbx.miller import build_set
@@ -323,7 +324,12 @@ class merger:
         return
 
     def get_resolution_bins(self):
-        return self._hkl_ranges, self._resolution_ranges
+        '''Return the reversed resolution limits - N.B. this is most
+        important when considering resolution calculations, see
+        resolution_completeness.'''
+        
+        return list(reversed(self._hkl_ranges)), \
+               list(reversed(self._resolution_ranges))
 
     def calculate_completeness(self, resolution_bin = None):
         '''Calculate the completeness of observations in a named
@@ -483,10 +489,12 @@ class merger:
 
         rmerge_s = get_positive_values(
             [self.calculate_rmerge(bin) for bin in bins])
+
         s_s = [1.0 / (r[0] * r[0]) for r in ranges][:len(rmerge_s)]
         
         rmerge_f = log_inv_fit(s_s, rmerge_s, 10)
 
+        r_rmerge = 1.0 / math.sqrt(interpolate_value(s_s, rmerge_f, limit))
         try:
             r_rmerge = 1.0 / math.sqrt(interpolate_value(s_s, rmerge_f, limit))
         except:
@@ -502,7 +510,7 @@ class merger:
 
         isigma_s = get_positive_values(
             [self.calculate_unmerged_isigma(bin) for bin in bins])
-        s_s = [1.0 / (r[0] * r[0]) for r in ranges][:len(rmerge_s)]
+        s_s = [1.0 / (r[0] * r[0]) for r in ranges][:len(isigma_s)]
         
         isigma_f = log_fit(s_s, isigma_s, 10)
         
@@ -521,7 +529,7 @@ class merger:
 
         misigma_s = get_positive_values(
             [self.calculate_merged_isigma(bin) for bin in bins])
-        s_s = [1.0 / (r[0] * r[0]) for r in ranges][:len(rmerge_s)]
+        s_s = [1.0 / (r[0] * r[0]) for r in ranges][:len(misigma_s)]
         
         misigma_f = log_fit(s_s, misigma_s, 10)
         
@@ -541,8 +549,9 @@ class merger:
 
         bins, ranges = self.get_resolution_bins()
 
-        s_s = [1.0 / (r[0] * r[0]) for r in ranges]
-        comp_s = [self.calculate_completeness(j) for j, bin in enumerate(bins)]
+        s_s = [1.0 / (r[0] * r[0]) for r in reversed(ranges)]
+        comp_s = [self.calculate_completeness(j) for j, bin in enumerate(
+            reversed(bins))]
         
         comp_f = fit(s_s, comp_s, 10)
         
