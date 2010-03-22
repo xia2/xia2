@@ -494,7 +494,6 @@ class merger:
         
         rmerge_f = log_inv_fit(s_s, rmerge_s, 10)
 
-        r_rmerge = 1.0 / math.sqrt(interpolate_value(s_s, rmerge_f, limit))
         try:
             r_rmerge = 1.0 / math.sqrt(interpolate_value(s_s, rmerge_f, limit))
         except:
