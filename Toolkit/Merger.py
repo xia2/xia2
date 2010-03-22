@@ -42,6 +42,7 @@ from PolyFitter import fit
 from PolyFitter import log_fit
 from PolyFitter import log_inv_fit
 from PolyFitter import interpolate_value
+from PolyFitter import get_positive_values
 
 class unmerged_intensity:
     '''A class to represent and encapsulate the multiple observations of a
@@ -475,12 +476,14 @@ class merger:
 
     def resolution_rmerge(self, limit = 1.0):
         '''Compute a resolution limit where either rmerge = 1.0 (limit if
-        set) or the full extent of the data.'''
+        set) or the full extent of the data. N.B. this fit is only meaningful
+        for positive values.'''
 
         bins, ranges = self.get_resolution_bins()
 
-        s_s = [1.0 / (r[0] * r[0]) for r in ranges]
-        rmerge_s = [self.calculate_rmerge(bin) for bin in bins]
+        rmerge_s = get_positive_values(
+            [self.calculate_rmerge(bin) for bin in bins])
+        s_s = [1.0 / (r[0] * r[0]) for r in ranges][:len(rmerge_s)]
         
         rmerge_f = log_inv_fit(s_s, rmerge_s, 10)
 
@@ -497,8 +500,9 @@ class merger:
 
         bins, ranges = self.get_resolution_bins()
 
-        s_s = [1.0 / (r[0] * r[0]) for r in ranges]
-        isigma_s = [self.calculate_unmerged_isigma(bin) for bin in bins]
+        isigma_s = get_positive_values(
+            [self.calculate_unmerged_isigma(bin) for bin in bins])
+        s_s = [1.0 / (r[0] * r[0]) for r in ranges][:len(rmerge_s)]
         
         isigma_f = log_fit(s_s, isigma_s, 10)
         
@@ -515,8 +519,9 @@ class merger:
 
         bins, ranges = self.get_resolution_bins()
 
-        s_s = [1.0 / (r[0] * r[0]) for r in ranges]
-        misigma_s = [self.calculate_merged_isigma(bin) for bin in bins]
+        misigma_s = get_positive_values(
+            [self.calculate_merged_isigma(bin) for bin in bins])
+        s_s = [1.0 / (r[0] * r[0]) for r in ranges][:len(rmerge_s)]
         
         misigma_f = log_fit(s_s, misigma_s, 10)
         
