@@ -144,6 +144,8 @@ def get_positive_values(x):
         else:
             return result
 
+    return result
+
         
 if __name__ == '__main__':
 
