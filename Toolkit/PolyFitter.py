@@ -132,8 +132,22 @@ def interpolate_value(x, y, t):
 
         if (y0 - t) * (y1 - t) < 0:
             return x0 + (t - y0) * (x1 - x0) / (y1 - y0)
+
+def get_positive_values(x):
+    '''Return a list of values v from x where v > 0.'''
+
+    result = []
+
+    for _x in x:
+        if _x > 0:
+            result.append(_x)
+        else:
+            return result
+
         
 if __name__ == '__main__':
 
-    pass
+    assert(len(get_positive_values(range(10, -10, -1))) == 10)
+    
+
 
