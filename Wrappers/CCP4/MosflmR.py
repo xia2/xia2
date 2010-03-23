@@ -283,16 +283,16 @@ def remove_outliers(values, limit):
 
     return result, outliers
 
-def Mosflm(DriverType = None):
+def MosflmR(DriverType = None):
     '''A factory for MosflmWrapper classes.'''
 
     DriverInstance = DriverFactory.Driver(DriverType)
     CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, 'ccp4')
 
-    class MosflmWrapper(CCP4DriverInstance.__class__,
-                        FrameProcessor,
-                        Indexer,
-                        Integrater):
+    class MosflmRWrapper(CCP4DriverInstance.__class__,
+                         FrameProcessor,
+                         Indexer,
+                         Integrater):
         '''A wrapper for Mosflm, using the CCP4-ified Driver.'''
 
         def __init__(self):
@@ -4312,7 +4312,7 @@ def Mosflm(DriverType = None):
             return self._mosflm_best_datfile, self._mosflm_best_parfile, \
                    self._mosflm_best_hklfile
 
-    return MosflmWrapper()
+    return MosflmRWrapper()
 
 
 if __name__ == '__main__':
@@ -4322,7 +4322,7 @@ if __name__ == '__main__':
     if not os.environ.has_key('XIA2_ROOT'):
         raise RuntimeError, 'XIA2_ROOT not defined'
 
-    m = Mosflm()
+    m = MosflmR()
     directory = os.path.join(os.environ['XIA2_ROOT'],
                              'Data', 'Test', 'Images')
 
