@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# NullScalerImplementation.py
+# NullScaler.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
@@ -29,7 +29,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Wrappers.CCP4.Mtzdump import Mtzdump
 from Schema.Interfaces.Scaler import Scaler
 
-class NullScalerImplementation(Scaler):
+class NullScaler(Scaler):
     '''A null scaler implementation which looks like a real scaler
     but actually does nothing but wrap a couple of reflection files.
     This will also transmogrify reflection files if appropriate.'''
@@ -179,7 +179,7 @@ if __name__ == '__main__':
                          'Test', 'UnitTest', 'Interfaces',
                          'Scaler', 'Merged', 'TS00_13185_merged_free.mtz')
 
-    nsi = NullScalerImplementation()
+    nsi = NullScaler()
 
     nsi.add_scaled_reflection_file('mtz', hklin)
     nsi.set_scaler_cell((57.74, 76.92, 86.57, 90.00, 90.00, 90.00))

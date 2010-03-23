@@ -30,7 +30,7 @@ from Handlers.PipelineSelection import get_preferences, add_preference
 from Modules.XDSIntegrater import XDSIntegrater
 from Modules.XDSIntegraterR import XDSIntegraterR
 
-from NullIntegraterImplementation import NullIntegrater
+from NullIntegrater import NullIntegrater
 
 from Exceptions.NotAvailableError import NotAvailableError
 
