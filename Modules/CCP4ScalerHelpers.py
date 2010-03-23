@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# CCP4ScalerImplementationHelpers.py
+# CCP4ScalerHelpers.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
@@ -128,8 +128,8 @@ from Wrappers.CCP4.Pointless import Pointless as _Pointless
 
 ############### HELPER CLASS #########################
 
-class CCP4ScalerImplementationHelper:
-    '''A class to help the CCP4 Scaler implementation along a little.'''
+class CCP4ScalerHelper:
+    '''A class to help the CCP4 Scaler along a little.'''
 
     def __init__(self):
         self._working_directory = os.getcwd()

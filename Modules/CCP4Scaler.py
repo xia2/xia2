@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# CCP4ScalerImplementation.py
+# CCP4Scaler.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
@@ -151,9 +151,9 @@ from lib.Guff import is_mtz_file, nifty_power_of_ten, auto_logfiler
 from lib.Guff import transpose_loggraph, nint
 from lib.SymmetryLib import lattices_in_order
 
-from CCP4ScalerImplementationHelpers import _resolution_estimate, \
+from CCP4ScalerHelpers import _resolution_estimate, \
      _prepare_pointless_hklin, _fraction_difference, \
-     CCP4ScalerImplementationHelper
+     CCP4ScalerHelper
 
 from CCP4InterRadiationDamageDetector import CCP4InterRadiationDamageDetector
 from DoseAccumulate import accumulate
@@ -206,7 +206,7 @@ class CCP4Scaler(Scaler):
         self._reference = None
 
         self._factory = CCP4Factory()
-        self._helper = CCP4ScalerImplementationHelper()
+        self._helper = CCP4ScalerHelper()
 
         return
 

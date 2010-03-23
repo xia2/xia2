@@ -83,7 +83,7 @@ from Experts.SymmetryExpert import r_to_rt, rt_to_r, compose_symops
 from Experts.SymmetryExpert import symop_to_mat, compose_matrices_r
 
 # stuff I have nicked from the CCP4 Scaler implementation
-from CCP4ScalerImplementationHelpers import _resolution_estimate
+from CCP4ScalerHelpers import _resolution_estimate
 from CCP4InterRadiationDamageDetector import CCP4InterRadiationDamageDetector
 from Experts.ResolutionExperts import determine_scaled_resolution
 from DoseAccumulate import accumulate

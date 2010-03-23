@@ -23,8 +23,8 @@ sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 # scaler implementations
 
-from CCP4ScalerImplementation import CCP4Scaler
-from CCP4ScalerImplementationR import CCP4ScalerR
+from CCP4Scaler import CCP4Scaler
+from CCP4ScalerR import CCP4ScalerR
 from XDSScaler import XDSScaler
 from XDSScalerR import XDSScalerR
 
