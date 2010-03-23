@@ -185,19 +185,13 @@ class CCP4ScalerR(Scaler):
         self._chef_analysis_times = { }
         self._chef_analysis_resolutions = { }
 
-        # ok, in here need to keep track of the best scaling model to use
-        # when I come to make that decision - FIXME... ok - it looks like
-        # I can code this up in a proper component fashion as the Scala
-        # wrapper provides a decent interface. If all three of the following
-        # are None then this has not been set, else we have already defined
-        # a scaling model so we can crack on and use it. Assert: the
-        # scaling model applies only to actually scaling the data. Assert:
-        # we will be using smoothed rotation scaling over 5 degree intervals.
-        # Assert: the predicted number of cycles is not overly important.
+        # flags to keep track of the corrections we will be applying
 
         self._scale_model_b = None
         self._scale_model_secondary = None
         self._scale_model_tails = None
+
+        # useful handles...!
 
         self._prepared_reflections = None
         self._common_pname = None
@@ -210,26 +204,22 @@ class CCP4ScalerR(Scaler):
 
         return
 
-    # This is overloaded from the Scaler interface...
+    # overloaded from the Scaler interface... to plumb in the factory
+    
     def set_working_directory(self, working_directory):
         self._working_directory = working_directory
         self._factory.set_working_directory(working_directory)
         self._helper.set_working_directory(working_directory)        
         return
 
-    # this is an overload from the factory
+    # this is an overload from the factory - it returns Scala set up with
+    # the desired corrections
+    
     def _updated_scala(self):
         
         if not self._scalr_corrections:
-            # Debug.write('Scala factory: default scala')
             return self._factory.Scala()
 
-        # Debug.write('Scala factory: modified scala')
-        # Debug.write('Partiality %s Absorption %s Decay %s' % \
-        # (self._scalr_correct_partiality,
-        # self._scalr_correct_absorption,
-        # self._scalr_correct_decay))
-        
         return self._factory.Scala(
             partiality_correction = self._scalr_correct_partiality,
             absorption_correction = self._scalr_correct_absorption,
@@ -239,7 +229,6 @@ class CCP4ScalerR(Scaler):
         return self._helper.pointless_indexer_jiffy(hklin, indexer)
 
     def _assess_scaling_model(self, tails, bfactor, secondary):
-        # finally test the decay correction
         
         epochs = sorted(self._sweep_information.keys())
         
@@ -294,11 +283,8 @@ class CCP4ScalerR(Scaler):
 
         epochs = sorted(self._sweep_information.keys())
 
-        # this will test out the individual corrections and compare the
-        # results (average Rmerge, convergence rate) with the option of
-        # just running a very simple scaling (scales rotation spacing 5)
-        # to see if they justify their existence. By default the corrections
-        # are "on"...
+        # test corrections, compare Rmerge, accept if converge and helpful
+        # shouldn't this be an eight-way comparison?
 
         partiality = True
         absorption = True
@@ -335,27 +321,6 @@ class CCP4ScalerR(Scaler):
         if converge_decay - converge_def > 1.0:
             decay = False
 
-        # full fat, with and without tails correction (ff, fft)
-
-        play = False
-        if play:
-
-            rmerge_ff, converge_ff = self._assess_scaling_model(
-                tails = False, bfactor = True, secondary = True)
-            rmerge_fft, converge_fft = self._assess_scaling_model(
-                tails = True, bfactor = True, secondary = True)
-
-            Debug.write(
-                'Scaling optimisation: simpl tails absor decay  all  all+t')
-            Debug.write(
-                'Residuals:            %5.3f %5.3f %5.3f %5.3f %5.3f %5.3f' % \
-                (rmerge_def, rmerge_tails, rmerge_abs, rmerge_decay,
-                 rmerge_ff, rmerge_fft))
-            Debug.write(
-                'Convergence:          %5.3f %5.3f %5.3f %5.3f %5.3f %5.3f' % \
-                (converge_def, converge_tails, converge_abs, converge_decay,
-                 converge_ff, converge_fft))
-
         # then summarise the choices...
 
         if absorption:
@@ -379,7 +344,8 @@ class CCP4ScalerR(Scaler):
 
         self._scalr_corrections = True
 
-        # then add a brute-force analysis just to be sure...
+        # then add a brute-force analysis just to be sure... actually, this is
+        # probably how the top level should be working anyhow?! #882
 
         if True:
             return
@@ -471,6 +437,8 @@ class CCP4ScalerR(Scaler):
         # substantial change...
 
         # Ergo will need a hash table of epoch_to_dose...
+
+        # I thought that this was all sorted?! FIXME #883
 
         return
 
@@ -622,25 +590,7 @@ class CCP4ScalerR(Scaler):
 
         # ---------- GATHER ----------
 
-        # first gather reflection files - seeing as we go along if any
-        # of them need transforming to MTZ format, e.g. from d*TREK
-        # format. N.B. this will also require adding the project,
-        # crystal, dataset name from the parent integrater.
-
-        # FIXED 30/OCT/06 in here need to check that the input batches
-        # are not 0,0 - because if they are I will need to do some
-        # MTZ dumping... see a little further down!
-
         self._sweep_information = { }
-
-        # FIXME 2/APR/07 added epoch to this... for radiation damage
-        # analysis - though this could be NULL...
-
-        # changes 18/DEC/07 adding dose information to this as well,
-        # based on image header parsing in DoseAccumulator, which will
-        # hopefully operate from cached values. This will be needed
-        # later on in the "doser" wrapper to add this information to
-        # unmerged MTZ files from Scala.
 
         Journal.block(
             'gathering', self.get_scaler_xcrystal().get_name(), 'CCP4',
@@ -649,6 +599,7 @@ class CCP4ScalerR(Scaler):
         # FIXME code review 4FEB10 - why is this not defined in terms of
         # another class? - these should be mediated by a new class
         # which could handle some of the book keeping which will follow.
+        # Trac #884
         
         for epoch in self._scalr_integraters.keys():
             intgr = self._scalr_integraters[epoch]
@@ -835,13 +786,8 @@ class CCP4ScalerR(Scaler):
             self.set_scaler_prepare_done(False)
             return
 
-        # FIXME 06/NOV/06 and before, need to merge the first reflection
-        # file in the "correct" pointgroup, so that the others can be
-        # reindexed against this - this will ensure consistent indexing
-        # in the TS02 case where the unit cell parameters are a bit fiddly.
-
-        # FIXME 02/AUG/07 if we have a reference reflection file
-        # passed in explicitly then this will have to behave differently.
+        # need to merge the first reflection file in the "correct" pointgroup,
+        # so that the others can be reindexed against this (if no reference)
 
         if self.get_scaler_reference_reflection_file():
             self._reference = self.get_scaler_reference_reflection_file()
@@ -852,10 +798,6 @@ class CCP4ScalerR(Scaler):
             
         if len(self._sweep_information.keys()) > 1 and \
                not self._reference:
-
-            # record this as the reference set, feed this to all subsequent
-            # pointless runs through HKLREF (FIXED this needs to be added to
-            # the pointless interface - set_hklref()!) 
 
             # ---------- PREPARE REFERENCE SET ----------
             
@@ -965,31 +907,8 @@ class CCP4ScalerR(Scaler):
             qsc.set_hklout(self._reference)
             qsc.quick_scale()
             
-            # we will want to delete this one exit
             FileHandler.record_temporary_file(qsc.get_hklout())
             
-            # for the moment ignore all of the scaling statistics and whatnot!
-
-            # then check that the unit cells &c. in these reflection files
-            # correspond to those rescribed in the indexers belonging to the
-            # parent integraters.
-            
-            # at this stage (see FIXED from 25/SEP/06) I need to run pointless
-            # to assess the likely pointgroup. This, unfortunately, will need
-            # to tie into the .xinfo hierarchy, as the crystal lattice
-            # management takes place in there...
-            # also need to make sure that the results from each sweep match
-            # up...
-
-            # FIXED 27/OCT/06 need a hook in here to the integrater->indexer
-            # to inspect the lattices which have ben contemplated (read tested)
-            # because it is quite possible that pointless will come up with
-            # a solution which has already been eliminated in the data
-            # reduction (e.g. TS01 native being reindexed to I222.)
-
-            # FIXED 06/NOV/06 first run through this with the reference ignored
-            # to get the reflections reindexed into the correct pointgroup
-
         # ---------- REINDEX ALL DATA TO CORRECT POINTGROUP ----------
 
         # all should share the same pointgroup
@@ -1000,14 +919,6 @@ class CCP4ScalerR(Scaler):
         
         for epoch in self._sweep_information.keys():
             
-            # in this loop need to include feedback to the indexing
-            # to ensure that the solutions selected are tractable -
-            # note that this will require linking back to the integraters
-            # so that the next call to get_integrated_reflections()
-            # may trigger reintegration... This is now handled by
-            # adding a pointer to the Integrater into the sweep_information
-            # which can then be used to pass around this information.
-
             hklin = self._sweep_information[epoch][
                 'integrater'].get_integrater_reflections()
 
@@ -1087,11 +998,6 @@ class CCP4ScalerR(Scaler):
             self.set_scaler_done(False)
             self.set_scaler_prepare_done(False)
             return
-
-        # FIXED 06/NOV/06 need to run this again - this time with the
-        # reference file... messy but perhaps effective? modded 2/AUG/07
-        # if we have a reference from either outside or from the first
-        # sweep we need to perform the reindex shuffle.
 
         if self._reference:
 
@@ -1258,14 +1164,6 @@ class CCP4ScalerR(Scaler):
             
             dataset_info = md.get_dataset_info(datasets[0])
 
-            # FIXME should also confirm the batch numbers from this
-            # reflection file...
-
-            # now make the comparison - FIXME this needs to be implemented
-            # FIXME also - if the pname, xname, dname is not defined by
-            # this time, make a note of this so that it can be included
-            # at a later stage.
-
         Debug.write('Biggest sweep has %d batches' % max_batches)
         max_batches = nifty_power_of_ten(max_batches)
     
@@ -1274,10 +1172,6 @@ class CCP4ScalerR(Scaler):
 
         epochs = self._sweep_information.keys()
         epochs.sort()
-
-        # need to check that the batches are all sensible numbers
-        # so run rebatch on them! note here that we will need new
-        # MTZ files to store the output...
 
         counter = 0
 
@@ -1295,7 +1189,6 @@ class CCP4ScalerR(Scaler):
                                   '%s_%s_%s_%d.mtz' % \
                                   (pname, xname, dname, counter))
 
-            # we will want to delete this one exit
             FileHandler.record_temporary_file(hklout)
 
             # record this for future reference - will be needed in the
@@ -1339,9 +1232,6 @@ class CCP4ScalerR(Scaler):
         Debug.write('Wrote DOSER information to %s' % \
                     os.path.join(self.get_working_directory(), 'doser.in'))
 
-        # then sort the files together, making sure that the resulting
-        # reflection file looks right.
-
         s = self._factory.Sortmtz()
 
         hklout = os.path.join(self.get_working_directory(),
@@ -1351,38 +1241,16 @@ class CCP4ScalerR(Scaler):
         
         s.set_hklout(hklout)
 
-        # we will want to delete this one exit - actually in this case
-        # we don't really as it is helpful to keep this for
-        # repeating the scaling...
-        # FileHandler.record_temporary_file(hklout)
-
         for epoch in epochs:
             s.add_hklin(self._sweep_information[epoch]['hklin'])
 
         s.sort()
 
-        # FIXED 16/NOV/06 perhaps in here I should consider running
-        # pointless again, this time to decide the correct spacegroup
-        # and setting - this should then reset to the correct indexing
-        # and reassign the spacegroup (or it's enantiomorph.) I think
-        # that this is now done.
-
-        # note well that this is going to use the current pointgroup so
-        # any reindexing is to get into the standard setting for the
-        # spacegroup
+        # verify that the measurements are in the correct setting
+        # choice for the spacegroup
 
         hklin = hklout
         hklout = hklin.replace('sorted.mtz', 'temp.mtz')
-
-        # FIXME in here need to check to see if we have a reference
-        # reflection file - if we do then we will have already
-        # reset the reflections to the correct setting so we don't
-        # need to do anything here but apply the spacegroup.
-
-        # note here I am not abbreviating the reflection file as I
-        # don't know whether this is a great idea...?  30/NOV/06
-
-        # if it's a huge SAD data set then do it! else don't...
 
         if not self.get_scaler_reference_reflection_file():
 
@@ -1424,34 +1292,12 @@ class CCP4ScalerR(Scaler):
 
                 Debug.write('Pointless thought %s (reindex as %s)' % \
                             (spacegroup, reindex_operator))
-                
-            # Write this spacegroup information back to the storage areas
-            # in the Scaler interface to allow them to be obtained by the
-            # calling entity. Note well that I also want to write in
-            # here the spacegroup enantiomorphs.
-            
-            # FIXED 21/NOV/06 need now to get this from the pointless
-            # output...
-            
+                            
             if self._scalr_input_spacegroup:
                 self._scalr_likely_spacegroups = [self._scalr_input_spacegroup]
             else:
                 self._scalr_likely_spacegroups = p.get_likely_spacegroups()
 
-            # these are generated by the get_likely_spacegroups so we don't
-            # need to be worrying about this - 
-
-            # also need in here to generate cases like I222/I212121, I23, I213,
-            # as likely cases - however they are probably included in the
-            # likely list...
-
-            # and it turns out that this is not really a problem so can just
-            # 'ignore' it -
-            
-            # then consider all other spacegroups for this pointgroup (at least
-            # the ones in "legal" settings) which are not already in the
-            # likely list - these will be considered as the unlikely ones.
-            
             Chatter.write('Likely spacegroups:')
             for spag in self._scalr_likely_spacegroups:
                 Chatter.write('%s' % spag)
@@ -1461,10 +1307,6 @@ class CCP4ScalerR(Scaler):
                 (spacegroup, reindex_operator))
 
         else:
-
-            # copy the spacegroup from hklref and use this - and set the
-            # reindex operator to 'h,k,l', as we should be reindexed
-            # correctly already.
 
             md = self._factory.Mtzdump()
             md.set_hklin(self.get_scaler_reference_reflection_file())
@@ -1538,9 +1380,9 @@ class CCP4ScalerR(Scaler):
         # for the wavelength
 
         # bug # 2326
+
         if self.get_scaler_anomalous():
             sc.set_anomalous()
-        # sc.set_tails()
         sc.scale()
         loggraph = sc.parse_ccp4_loggraph()
 
@@ -1605,26 +1447,10 @@ class CCP4ScalerR(Scaler):
                     i_tot = 0.0
                     s_tot = 1.0
 
-                # FIXED should this really measure the errors in terms
-                # of total numbers of reflections, or just flatten the
-                # graph???
-
-                # FIXME still need to do this...
-                # TEST! Solve the structures and work out what is better...
-
                 # trying to minimise difference between this and 1.0!
                 
                 s_full -= 1.0
                 s_partial -= 1.0
-
-                # don't try uniform weighting...
-
-                # if n_full > 0:
-                # n_full = 1
-                # if n_partial > 0:
-                # n_partial = 1
-
-                # end don't try uniform weighting...
 
                 score_full += s_full * s_full * n_full
                 ref_count_full += n_full
@@ -1649,19 +1475,6 @@ class CCP4ScalerR(Scaler):
         sd_add, sd_fac, sd_b for fulls, partials. FIXME at some point
         this should probably be for each run as well...'''
 
-        # FIXME 10/NOV/06 in here should I also be recording the
-        # SdFac that Scala computes and recycling it? It may help
-        # the parameter refinement some...
-
-        # FIXME 11/AUG/08 the definition of SdB has now changed to
-        # include Lorentz factors or something, so the values hard
-        # coded for testing in here are no longer appropriate...
-
-        # FIXME need an option somewhere to configure this...
-        
-        if False:
-            return (0.0, 0.0, 0.0, 0.0)
-
         best_sdadd_full = 0.0
         best_sdadd_partial = 0.0
         best_sdb_full = 0.0
@@ -1685,16 +1498,7 @@ class CCP4ScalerR(Scaler):
         best_rms_full = 1.0e9
         best_rms_partial = 1.0e9
 
-        # compute sd_add first...
-
-        # FIXME I need to assess whether this route is appropriate, or
-        # whether I would be better off following some kind of mimisation
-        # procedure...
-
-        # perhaps the following would be more use:
-        # 
-        # refine SdB based on "flatness" of the curve - flatten it out
-        # refine SdAdd afterwards to work on the gradient
+        # compute sd_add first, then sdb, then sdadd
 
         while sdadd_full < max_sdadd_full:
             
@@ -1713,11 +1517,6 @@ class CCP4ScalerR(Scaler):
             if rms_partial < best_rms_partial:
                 best_sdadd_partial = sdadd_partial
                 best_rms_partial = rms_partial
-
-            # check to see if we're going uphill again...
-            # FIXME in here I have to allow for the scores being
-            # exactly zero as an alternative - i.e. there are
-            # no reflections which are full, for instance.
 
             if rms_full > best_rms_full and rms_partial > best_rms_partial:
                 break
@@ -1748,15 +1547,10 @@ class CCP4ScalerR(Scaler):
                 best_sdb_partial = sdb_partial
                 best_rms_partial = rms_partial
 
-            # check to see if we're going uphill again...
-
             if rms_full > best_rms_full and rms_partial > best_rms_partial:
                 break
 
             sdb_full += step_sdb_full
-
-        # now we have good parameters for the SdB try rerefining the
-        # SdAdd...
 
         sdadd_full = 0.0
         best_rms_full = 1.0e9
@@ -1781,11 +1575,6 @@ class CCP4ScalerR(Scaler):
                 best_sdadd_partial = sdadd_partial
                 best_rms_partial = rms_partial
 
-            # check to see if we're going uphill again...
-            # FIXME in here I have to allow for the scores being
-            # exactly zero as an alternative - i.e. there are
-            # no reflections which are full, for instance.
-
             if rms_full > best_rms_full and rms_partial > best_rms_partial:
                 break
 
@@ -1805,13 +1594,8 @@ class CCP4ScalerR(Scaler):
         '''Perform all of the operations required to deliver the scaled
         data.'''
 
-        # then perform some scaling - including any parameter fiddling
-        # which is required.
-        
         epochs = self._sweep_information.keys()
         epochs.sort()
-
-        # first decide on a scaling model... perhaps
 
         if Flags.get_smart_scaling():
             self._determine_best_scale_model()
@@ -1830,59 +1614,16 @@ class CCP4ScalerR(Scaler):
                 'scaling', self.get_scaler_xcrystal().get_name(), 'CCP4',
                 {'scaling model':'default'})
         
-        # now parse the structure of the data to write out how they should
-        # be examined by chef...
-
         if Flags.get_chef():
             self._sweep_information_to_chef()
             self._decide_chef_cutoff_epochs()
-
-        # ---------- INITIAL SCALING ----------
-
-        # perform the radiation damage analysis
-
-        # only do this after 1/JUN deadline is reached - this should not
-        # be a part of 0.2.5.x c/f bug # 2059. FIXME this will need
-        # to be reinstated. FIXME_X0001
-
-        # ird = CCP4IntraRadiationDamageDetector()
-        # ird.set_working_directory(self.get_working_directory())
-        # ird.set_hklin(self._prepared_reflections)
-        # ird.set_sweep_information(self._sweep_information)
-        # ird.analyse()
-
-        # FIXME 10/APR/07 -
-        # This should probably return a dictionary of new sweep information
-        # blocks which should be considered in sequence and completely
-        # reduced to provide *named* radiation damage treatment options -
-        # alternative is always to reduce radiation damage wherever
-        # possible...
-        #
-        # This will mean that the sweep information for each sample will
-        # need to be duplicated for "include all data" and "manage radiation
-        # damage" data if appropriate. This will be a huge loop here perhaps?
-        # what about resolution limit changes, and so on??!
-
+            
         sc = self._updated_scala()
         sc.set_hklin(self._prepared_reflections)
-
-        # generate a name for the "scales" file - this will be used for
-        # recycling the scaling parameters to compute appropriate
-        # sd correction parameters
-        
-        # scales_file = os.path.join(self.get_working_directory(),
-        # '%s.scales' % self._common_xname)
 
         scales_file = '%s.scales' % self._common_xname
 
         sc.set_new_scales_file(scales_file)
-
-        # this will require first sorting out the batches/runs, then
-        # deciding what the "standard" wavelength/dataset is, then
-        # combining everything appropriately...
-
-        # while we are here (see bug # 3183) gather any user specified
-        # resolution limits
 
         user_resolution_limits = { }
 
@@ -1915,7 +1656,6 @@ class CCP4ScalerR(Scaler):
         # bug # 2326
         if self.get_scaler_anomalous():
             sc.set_anomalous()
-        # sc.set_tails()
 
         sc.scale()
 
@@ -1925,27 +1665,7 @@ class CCP4ScalerR(Scaler):
         data = sc.get_summary()
 
         loggraph = sc.parse_ccp4_loggraph()
-
-        # parse the statistics from Scala - these are printed in the
-        # loggraph output, and therefore need some transformation &
-        # massaging to be useful.
-
-        # look also for a sensible resolution limit for this data set -
-        # that is, the place where I/sigma is about two for the highest
-        # resolution data set - this should be a multiple of 0.05 A just
-        # to keep the output tidy...
-
-        # FIXME 08/NOV/06 asserting a resolution limit here will cause
-        # the integration to be repeated. I want to assert a resolution
-        # limit for each wavelength, rather than each sweep, since this
-        # will get around the complication of merging multiple sweeps
-        # together (I hope...)
-
-        # FIXME further - if this process has already happened once the new
-        # resolution limit should be within 0.1A of the current resolution
-        # limit of the data - therefore ensure that if this is the case
-        # the resolution limit is not reasserted.
-
+        
         resolution_info = { }
 
         # this returns a dictionary of files that I will use to calculate
@@ -1981,33 +1701,9 @@ class CCP4ScalerR(Scaler):
                               (dataset, resolution))
                 continue
             
-            # transform this to a useful form... [(resol, i/sigma), (resol..)]
-            resolution_points = []
-            resol_ranges = resolution_info[dataset]['3_Dmin(A)']
-            mn_i_sigma_values = resolution_info[dataset]['13_Mn(I/sd)']
-            for i in range(len(resol_ranges)):
-                dmin = float(resol_ranges[i])
-                i_sigma = float(mn_i_sigma_values[i])
-                resolution_points.append((dmin, i_sigma))
-
-            old_way = False
-
-            if old_way:
-                resolution = _resolution_estimate(
-                    resolution_points, Flags.get_i_over_sigma_limit())
-            else:
-                resolution = determine_scaled_resolution(
-                    reflection_files[dataset], 
-                    Flags.get_i_over_sigma_limit())[1]
-
-            # FIXME in here want to look at the reflection file to
-            # calculate the resolution limit, not the Scala log
-            # file output... FIXME-DETERMINE-RESOLUTION
-
-            # next compute "useful" versions of these resolution limits
-            # want 0.05A steps - in here it would also be useful to
-            # gather up an "average" best resolution and perhaps use this
-            # where it seems appropriate e.g. TS03 INFL, LREM.
+            resolution = determine_scaled_resolution(
+                reflection_files[dataset], 
+                Flags.get_i_over_sigma_limit())[1]
 
             resolution_limits[dataset] = resolution
 
@@ -2021,13 +1717,6 @@ class CCP4ScalerR(Scaler):
 
         Debug.write('Scaler highest resolution set to %5.2f' % \
                     highest_resolution)
-
-        # Ok, now we have the resolution limit stuff, need to work through
-        # all of the integraters which belong to this set and if the
-        # resolution defined for a given dataset is found to be lower
-        # than the high resolution limit of the integrater, then reset
-        # that limit, assert that the scaling and preparation is needed and
-        # at the end return.
 
         best_resolution = 100.0
 
@@ -2043,18 +1732,10 @@ class CCP4ScalerR(Scaler):
                 intgr.set_integrater_high_resolution(
                     resolution_limits[dname])
 
-                # we need to rerun both the scaling and the preparation -
-                # this may trigger reintegration as well...
                 self.set_scaler_done(False)
                 self.set_scaler_prepare_done(False)
 
-            # note well that this spacing (0.075A) is designed to ensure that
-            # integration shouldn't be repeated once it has been repeated
-            # once...
-            
             elif dmin > resolution_limits[dname] - 0.075:
-                # no need to reprocess the data - this is near enough...
-                # this should save us from the "infinate loop"
                 pass
 
             elif Flags.get_quick():
@@ -2064,31 +1745,18 @@ class CCP4ScalerR(Scaler):
                 Debug.write('Using user specified resolution limits')
 
             else:
-                # ok it is worth rereducing the data
                 intgr.set_integrater_high_resolution(
                     resolution_limits[dname])
 
-                # we need to rerun both the scaling and the preparation -
-                # this may trigger reintegration as well...
                 self.set_scaler_done(False)
                 self.set_scaler_prepare_done(False)
 
             if resolution_limits[dname] < best_resolution:
                 best_resolution = resolution_limits[dname]
 
-        # if we need to redo the scaling, return to allow this to happen
-
         if not self.get_scaler_done():
             Debug.write('Returning as scaling not finished...')
             return
-
-        # and also radiation damage stuff...
-
-        # FIXME 08/NOV/06 this needs to be fed back into the Integraters
-        # as to the batches that they should integrate - and possibly even
-        # have integraters eliminated from the input based on this
-        # information (this will be a later development, see also the
-        # scaling of multiple datasets below after CAD.)
 
         batch_info = { }
         
@@ -2097,16 +1765,6 @@ class CCP4ScalerR(Scaler):
                 dataset = key.split(',')[-1].strip()
                 batch_info[dataset] = transpose_loggraph(
                     loggraph[key])
-
-        # perform some analysis of these results
-
-        # bug 2040 - want to perhaps be quick? if so, do not bother
-        # with this and instead just set these parameters to
-        # the default values
-
-        # data still contains the summary information - for bug # 2357
-        # see if the completeness appears to be > 50 % overall and if
-        # not, do not refine sd parameters...
 
         average_completeness = 0.0
 
@@ -2130,35 +1788,17 @@ class CCP4ScalerR(Scaler):
 
         else:
 
-            # ---------- SD CORRECTION PARAMETER LOOP ----------
-            
-            # first "fix" the sd add parameters to match up the sd curve from
-            # the fulls and partials, and minimise RMS[N (scatter / sigma - 1)]
-            
             Debug.write('Optimising error parameters')
             
             sdadd_full, sdb_full, sdadd_partial, sdb_partial = \
                         self._refine_sd_parameters(scales_file)
 
-            # remove the old scales file
             try:
                 os.remove(os.path.join(self.get_working_directory(),
                                        scales_file))
             except:
                 Debug.write('Error removing %s' % scales_file)
 
-        # then try tweaking the sdB parameter in a range say 0-20
-        # starting at 0 and working until the RMS stops going down
-
-        # ---------- FINAL SCALING ----------
-
-        # assert the resolution limits in the integraters - beware, this
-        # means that the reflection files will probably have to be
-        # regenerated (integration restarted!) and so we will have to
-        # build in some "fudge factor" to ensure we don't get stuck in a
-        # tight loop - initially just rerun the scaling with all of the
-        # "right" parameters...
-        
         sc = self._updated_scala()
 
         FileHandler.record_log_file('%s %s scala' % (self._common_pname,
@@ -2168,10 +1808,7 @@ class CCP4ScalerR(Scaler):
         sc.set_resolution(best_resolution)
 
         sc.set_hklin(self._prepared_reflections)
-
-        # scales_file = os.path.join(self.get_working_directory(),
-        # '%s_final.scales' % self._common_xname)
-
+        
         scales_file = '%s_final.scales' % self._common_xname
 
         sc.set_new_scales_file(scales_file)
@@ -2179,12 +1816,6 @@ class CCP4ScalerR(Scaler):
         sc.add_sd_correction('full', 2.0, sdadd_full, sdb_full)
         sc.add_sd_correction('partial', 2.0, sdadd_partial, sdb_partial)
 
-        # this will require first sorting out the batches/runs, then
-        # deciding what the "standard" wavelength/dataset is, then
-        # combining everything appropriately...
-
-        # record this for ease of access in development - FIXME this
-        # needs removing!
         open(os.path.join(
             self.get_working_directory(),
             'sweep_info.xia'), 'w').write(str(self._sweep_information))
@@ -2192,9 +1823,6 @@ class CCP4ScalerR(Scaler):
         for epoch in epochs:
             input = self._sweep_information[epoch]
             start, end = (min(input['batches']), max(input['batches']))
-
-            # bug # 2040 - if going quickly then the resolution limits
-            # won't have been set correctly in the reflection files...
 
             if Flags.get_quick():
                 run_resolution_limit = resolution_limits[input['dname']]
@@ -2211,89 +1839,22 @@ class CCP4ScalerR(Scaler):
                                    '%s_%s_scaled.mtz' % \
                                    (self._common_pname, self._common_xname)))
         
-        # FIXME this needs to be set only is we have f', f'' values
-        # for the wavelength or multiple wavelengths...
-        
-        # bug # 2326
         if self.get_scaler_anomalous():
             sc.set_anomalous()
-        # sc.set_tails()
 
         sc.scale()
 
-        # print out the number of cycles needed for convergence in the
-        # final run... for testing!
-
         Debug.write('Convergence at: %.1f cycles' % sc.get_convergence())
 
-        # let's take a look at the resolutions once the error corrections
-        # have been applied...
-        
         for dataset in resolution_info.keys():
             if False:
                 print dataset
                 determine_scaled_resolution(
                     reflection_files[dataset], 3.0)[1]
 
-        # then gather up all of the resulting reflection files
-        # and convert them into the required formats (.sca, .mtz.)
-
         data = sc.get_summary()
 
         loggraph = sc.parse_ccp4_loggraph()
-
-        # parse the statistics from Scala - these are printed in the
-        # loggraph output, and therefore need some transformation &
-        # massaging to be useful.
-
-        # look for the B factor vs. batch / rotation range graphs for
-        # radiation damage analysis...
-        #
-        # FIXME pull all of this out and move it to ccp4 intra radiation
-        # damage module - though this will need to me moved earlier
-        # and also look at R merges etc.
-
-        FIXME_X0001 = False
-
-        if FIXME_X0001:
-            bfactor_info = { }
-
-        for key in loggraph.keys():
-
-            damaged = False
-            damage_batch = 0
-            
-            if 'Scales v rotation range' in key and FIXME_X0001:
-                # then this contains Bfactor information...
-                # which we don't want to consider at the moment.
-                dataset = key.split(',')[-1].strip()
-                bfactor_info[dataset] = transpose_loggraph(
-                    loggraph[key])
-
-                # perform some analysis on this information -
-                # this could be fiddly...
-                # FIXME this needs to be moved to the CCP4
-                # intra radiation damage analysis tool...
-                # look at Bfactor and Rmerge.
-
-                for j in range(len(bfactor_info[dataset]['1_N'])):
-                    batch = int(bfactor_info[dataset]['4_Batch'][j])
-                    bfactor = float(bfactor_info[dataset]['5_Bfactor'][j])
-
-                    if bfactor < -10.0:
-                        damaged = True
-                        damage_batch = batch
-                        break
-
-                if damaged:
-                    Chatter.write(
-                        '%s appears to be radiation damaged (batch %d)' % \
-                        (dataset, damage_batch))
-                else:
-                    Chatter.write(
-                        '%s appears to be ok' % dataset)
-                    
-        # look for the standard deviation graphs - see FIXME 31/OCT/06
 
         standard_deviation_info = { }
 
@@ -2313,10 +1874,6 @@ class CCP4ScalerR(Scaler):
             
             for j in range(len(info['1_Range'])):            
 
-                # the format of the output changed with versions
-                # 3.3.x I think - cope with this here...
-                # bug # 2714
-            
                 n_full = int(info['5_Number'][j])
                 I_full = float(info['4_Irms'][j])
                 if n_full > 0 and info['7_SigmaFull'][j] != '-':
@@ -2341,11 +1898,6 @@ class CCP4ScalerR(Scaler):
                 i_tot = ((n_full * I_full) + (n_part * I_part)) / n_tot
                 s_tot = ((n_full * s_full) + (n_part * s_part)) / n_tot
 
-        # look also for a sensible resolution limit for this data set -
-        # that is, the place where I/sigma is about two for the highest
-        # resolution data set - this should be a multiple of 0.05 A just
-        # to keep the output tidy...
-
         resolution_info = { }
 
         for key in loggraph.keys():
@@ -2354,8 +1906,6 @@ class CCP4ScalerR(Scaler):
                 resolution_info[dataset] = transpose_loggraph(
                     loggraph[key])
 
-        # and also radiation damage stuff...
-
         batch_info = { }
         
         for key in loggraph.keys():
@@ -2363,9 +1913,6 @@ class CCP4ScalerR(Scaler):
                 dataset = key.split(',')[-1].strip()
                 batch_info[dataset] = transpose_loggraph(
                     loggraph[key])
-
-
-        # also look at the standard deviation factors which were used
 
         sd_factors = sc.get_sd_factors()
 
@@ -2380,23 +1927,11 @@ class CCP4ScalerR(Scaler):
         
         self._scalr_statistics = data
 
-        # FIXED this is not correct for multi-wavelength data...
-        # it should be now!
-
         self._tmp_scaled_refl_files = copy.deepcopy(
             sc.get_scaled_reflection_files())
+
         self._scalr_scaled_reflection_files = { }
-        
-        # compute a "standard unit cell" - FIXME perhaps - looks like
-        # sortmtz will already assign somehow a standard unit cell -
-        # interesting!
-
-        # convert reflection files to .sca format - use mtz2various for this
-
         self._scalr_scaled_reflection_files['sca'] = { }
-
-        # this is confusing as it implicitly iterates over the keys of the
-        # dictionary
         
         for key in self._tmp_scaled_refl_files:
             file = self._tmp_scaled_refl_files[key]
@@ -2410,11 +1945,6 @@ class CCP4ScalerR(Scaler):
             self._scalr_scaled_reflection_files['sca'][key] = scaout
 
             FileHandler.record_data_file(scaout)
-
-        # FIXED BUG 2146
-
-        # in here rerun scala recycling the final scales and writing out
-        # unmerged reflection files in scalepack format
 
         sc = self._updated_scala()
         sc.set_hklin(self._prepared_reflections)
@@ -2448,16 +1978,9 @@ class CCP4ScalerR(Scaler):
                                       (self._common_pname,
                                        self._common_xname)))
 
-        # bug # 2326
         if self.get_scaler_anomalous():
             sc.set_anomalous()
-        # sc.set_tails()
         sc.scale()
-
-        # this will delete the mtz files which have been made 
-        # and record the unmerged scalepack files in the file dictionary
-        # BUG FIXME this is only right for MAD data... but that should now
-        # be fixed...
 
         self._scalr_scaled_reflection_files['sca_unmerged'] = { }
         for key in self._tmp_scaled_refl_files:
@@ -2468,13 +1991,6 @@ class CCP4ScalerR(Scaler):
             self._scalr_scaled_reflection_files['sca_unmerged'][
                 key] = scalepack
             FileHandler.record_data_file(scalepack)
-
-        # FIXME moving marker - see FIXME below...
-
-        # merge the data yet again, except this time don't merge (!)
-        # just recycle the scales to produce output MTZ files with
-        # sdcorrection = 1 0 noadjust for CHEF to much on...
-        # c/f Bug # 2798
 
         sc = self._updated_scala()
         sc.set_hklin(self._prepared_reflections)
@@ -2499,7 +2015,6 @@ class CCP4ScalerR(Scaler):
             if not input['dname'] in self._wavelengths_in_order:
                 self._wavelengths_in_order.append(input['dname'])
 
-        # note well that this will produce multiple reflection files...
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_chef.mtz' % \
                                    (self._common_pname,
@@ -2512,12 +2027,8 @@ class CCP4ScalerR(Scaler):
 
         if self.get_scaler_anomalous():
             sc.set_anomalous()
-            
-        # sc.set_tails()
         sc.scale()
 
-        # next get the files back in MTZ format... N.B. this is structured
-        # as a dictionary {WAVE:MTZ}
         reflection_files = sc.get_scaled_reflection_files()
 
         # perpare the dose profiles (again) - N.B. now don't need to do
