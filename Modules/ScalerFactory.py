@@ -24,6 +24,7 @@ sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 # scaler implementations
 
 from CCP4ScalerImplementation import CCP4Scaler
+from CCP4ScalerImplementationR import CCP4ScalerR
 from XDSScaler import XDSScaler
 from XDSScalerR import XDSScalerR
 
@@ -45,6 +46,16 @@ def Scaler():
 
     scaler = None
     preselection = get_preferences().get('scaler')
+
+    if not scaler and \
+       (not preselection or preselection == 'ccp4r'):
+        try:
+            scaler = CCP4ScalerR()
+            Debug.write('Using CCP4R Scaler')
+        except NotAvailableError, e:
+            if preselection == 'ccp4r':
+                raise RuntimeError, 'preselected scaler ccp4r not available'
+            pass
 
     if not scaler and \
        (not preselection or preselection == 'ccp4'):

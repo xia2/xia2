@@ -7,6 +7,7 @@ Handlers/Doc/CommandLine.pdf -text
 Handlers/Doc/Decision.pdf -text
 Handlers/Doc/Syminfo.pdf -text
 Handlers/Doc/Xinfo.pdf -text
+Modules/CCP4ScalerImplementationR.py -text
 Modules/Doc/CCP4ScalerImplementation.pdf -text
 Modules/Doc/Indexer.pdf -text
 Modules/Doc/IndexerFactory.pdf -text
@@ -39,6 +40,7 @@ Wrappers/CCP4/Doc/Mtzdump.pdf -text
 Wrappers/CCP4/Doc/Reindex.pdf -text
 Wrappers/CCP4/Doc/Scala.pdf -text
 Wrappers/CCP4/Doc/Sortmtz.pdf -text
+Wrappers/CCP4/MosflmR.py -text
 Wrappers/Labelit/Doc/LabelitDistl.pdf -text
 Wrappers/Labelit/Doc/LabelitScreen.pdf -text
 Wrappers/Labelit/Doc/LabelitStats_distl.pdf -text

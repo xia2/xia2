@@ -112,6 +112,7 @@ class _CommandLine(Object):
         self._read_norefine()
         self._read_noremove()        
         self._read_2d()
+        self._read_2dr()
         self._read_3d()
         self._read_3dr()
         self._read_3dii()
@@ -874,6 +875,14 @@ class _CommandLine(Object):
             add_preference('integrater', 'mosflm')
             add_preference('scaler', 'ccp4')
             Debug.write('2D pipeline selected')
+        return
+
+    def _read_2dr(self):
+
+        if '-2dr' in sys.argv:
+            add_preference('integrater', 'mosflmr')
+            add_preference('scaler', 'ccp4r')
+            Debug.write('2DR pipeline selected')
         return
 
     def _read_3d(self):
