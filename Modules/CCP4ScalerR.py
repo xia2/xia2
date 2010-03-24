@@ -2106,21 +2106,13 @@ class CCP4ScalerR(Scaler):
             
             for wave in bits:
 
-                # no longer use the doser binary
-                
-                # d = self._factory.Doser()
                 hklin = bits[wave][0]
                 hklout = '%s_dose.mtz' % hklin[:-4]
-                # d.set_hklin(hklin)
-                # d.set_hklout(hklout)
-                # d.set_doses(doses)
-                # d.run()
 
                 add_dose_time_to_mtz(hklin = hklin, hklout = hklout,
                                      doses = doses)
 
                 chef_hklins.append(hklout)
-                # FileHandler.record_temporary_file(hklout)
 
             # then run chef with this - no analysis as yet, but to record
             # the log file to chef_groupN_analysis or something and be
@@ -2315,8 +2307,6 @@ class CCP4ScalerR(Scaler):
 
                 # look for the second moment information...
                 moments = t.get_moments()
-                # for j in range(len(moments['MomentZ2'])):
-                # pass
 
                 # record the b factor somewhere (hopefully) useful...
 
@@ -2562,13 +2552,10 @@ class CCP4ScalerR(Scaler):
                 status = crd.detect()
 
                 Chatter.write('')
-                # Chatter.write('Inter-wavelength B and R-factor analysis:')
                 Chatter.banner('Local Scaling %s' % self._common_xname)
                 for s in status:
                     Chatter.write('%s %s' % s)
-                # Chatter.write('')
-                Chatter.banner('')
-        
+                 Chatter.banner('')       
 
         return
     
