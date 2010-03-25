@@ -160,9 +160,7 @@ from DoseAccumulate import accumulate
 
 from AnalyseMyIntensities import AnalyseMyIntensities
 from Experts.ResolutionExperts import determine_scaled_resolution
-
-# See FIXME_X0001 below...
-# from CCP4IntraRadiationDamageDetector import CCP4IntraRadiationDamageDetector
+from Toolkit.Merger import merger
 
 # newly implemented CCTBX powered functions to replace xia2 binaries
 from Functions.add_dose_time_to_mtz import add_dose_time_to_mtz
@@ -1390,9 +1388,15 @@ class CCP4ScalerR(Scaler):
         if Flags.get_chef():
             self._sweep_information_to_chef()
             self._decide_chef_cutoff_epochs()
+
+        # first scale the data and output unmerged, to decide the
+        # most sensible resolution limits - at the moment this works
+        # through the "chef" interface
             
         sc = self._updated_scala()
         sc.set_hklin(self._prepared_reflections)
+
+        sc.set_chef_unmerged(True)
 
         scales_file = '%s.scales' % self._common_xname
 
@@ -1419,7 +1423,7 @@ class CCP4ScalerR(Scaler):
                            dname = input['dname'])
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
-                                   '%s_%s_scaled.mtz' % \
+                                   '%s_%s_scaled_test.mtz' % \
                                    (self._common_pname, self._common_xname)))
         
         if self.get_scaler_anomalous():
@@ -1437,9 +1441,13 @@ class CCP4ScalerR(Scaler):
         resolution_info = { }
 
         # this returns a dictionary of files that I will use to calculate
-        # the resolution limits...
-        
+        # the resolution limits... N.B. these are now unmerged reflection
+        # files to allow more clever calculations
+
         reflection_files = sc.get_scaled_reflection_files()
+
+        for dataset in reflection_files:
+            FileHandler.record_temporary_file(reflection_files[dataset])
 
         for key in loggraph.keys():
             if 'Analysis against resolution' in key:
@@ -1464,10 +1472,25 @@ class CCP4ScalerR(Scaler):
                 Chatter.write('Resolution limit for %s: %5.2f' % \
                               (dataset, resolution))
                 continue
-            
-            resolution = determine_scaled_resolution(
-                reflection_files[dataset], 
-                Flags.get_i_over_sigma_limit())[1]
+
+            m = merger(reflection_files[dataset])
+            m.calculate_resolution_ranges(nbins = 100)
+            r_comp = m.resolution_completeness()
+            r_rm = m.resolution_rmerge()
+            r_uis = m.resolution_unmerged_isigma()
+            r_mis = m.resolution_merged_isigma()
+
+            resolution = max([r_comp, r_rm, r_uis, r_mis])
+
+            Chatter.write('Resolution for sweep %s: %.2f' % \
+                          (dataset, resolution))
+                        
+            # the old version of this code...
+
+            if False:
+                resolution = determine_scaled_resolution(
+                    reflection_files[dataset], 
+                    Flags.get_i_over_sigma_limit())[1]
 
             if not dataset in self._resolution_limits:
                 self._resolution_limits[dataset] = resolution
