@@ -208,7 +208,11 @@ def Scala(DriverType = None,
             
             # standard error parameters - now a dictionary to handle
             # multiple runs
-            self._sd_parameters = { } 
+            self._sd_parameters = { }
+
+            # completely automatic error fiddling
+            self._sd_parameters_auto = False
+            
             self._project_crystal_dataset = { }
             self._runs = []
 
@@ -255,6 +259,11 @@ def Scala(DriverType = None,
                 raise RuntimeError, 'set not known "%s"' % set
 
             self._sd_parameters[set] = (sdfac, sdadd, sdb)
+            return
+
+        def set_sd_parameters_auto(self, sd_parameters_auto = True):
+            '''Switch on automatic sd parameters - requires new Scala.'''
+            self._sd_parameters_auto = sd_parameters_auto
             return
 
         def set_scalepack(self, scalepack):
@@ -495,7 +504,6 @@ def Scala(DriverType = None,
             if self._pname and self._xname and self._dname:
                 self.input('name run 1 project %s crystal %s dataset %s' % \
                            (self._pname, self._xname, self._dname))
-            
 
             if self._anomalous:
                 self.input('anomalous on')
@@ -681,10 +689,11 @@ def Scala(DriverType = None,
 
             self.input('cycles %d' % self._cycles)
 
-            if not self._chef_unmerged or True:
+            assert(self._new_scala)
 
-                if not self._sd_parameters and self._new_scala:
-                    # restore old default behaviour
+            if not self._sd_parameters_auto:
+
+                if not self._sd_parameters:
                     
                     self.input(
                         'sdcorrection fixsdb adjust norefine both 2.0 0.02')
@@ -694,28 +703,14 @@ def Scala(DriverType = None,
                     parameters = self._sd_parameters[key]
 
                     if key == 'both' and parameters == (1.0, 0.0, 0.0):
-                        # use the FIXED default
-                        if self._new_scala:
-                            self.input(
-                                'sdcorrection fixsdb noadjust norefine ' + \
-                            'both 1.0 0.0')
-                        else:
-                            self.input(
-                                'sdcorrection noadjust both 1.0 0.0')
-                            
-                        continue
-
-                    if self._new_scala:
                         self.input(
-                            'sdcorrection fixsdb adjust norefine %s %f %f %f' % \
-                            (key, parameters[0], parameters[2],
-                             parameters[1]))
-                    else:
-                        self.input('sdcorrection %s %f %f %f' % \
-                                   (key, parameters[0], parameters[2],
-                                    parameters[1]))
-            else:
-                self.input('sdcorrection noadjust both 2.0 0.0 0.0')
+                            'sdcorrection fixsdb noadjust norefine ' + \
+                            'both 1.0 0.0')
+
+                    self.input(
+                        'sdcorrection fixsdb adjust norefine %s %f %f %f' % \
+                        (key, parameters[0], parameters[2],
+                         parameters[1]))
 
             if self._anomalous:
                 self.input('anomalous on')

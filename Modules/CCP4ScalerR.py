@@ -218,14 +218,22 @@ class CCP4ScalerR(Scaler):
     # the desired corrections
     
     def _updated_scala(self):
+        '''Generate a correctly configured Scala...'''
+
+        scala = None
         
         if not self._scalr_corrections:
-            return self._factory.Scala()
+            scala = self._factory.Scala()
+        else:
 
-        return self._factory.Scala(
-            partiality_correction = self._scalr_correct_partiality,
-            absorption_correction = self._scalr_correct_absorption,
-            decay_correction = self._scalr_correct_decay)
+            scala =  self._factory.Scala(
+                partiality_correction = self._scalr_correct_partiality,
+                absorption_correction = self._scalr_correct_absorption,
+                decay_correction = self._scalr_correct_decay)
+
+        scala.set_sd_parameters_auto()
+
+        return scala
 
     def _pointless_indexer_jiffy(self, hklin, indexer):
         return self._helper.pointless_indexer_jiffy(hklin, indexer)
@@ -1355,245 +1363,6 @@ class CCP4ScalerR(Scaler):
 
         return
 
-    def _refine_sd_parameters_remerge(self, scales_file,
-                                      sdadd_f, sdb_f,
-                                      sdadd_p, sdb_p):
-        '''Actually compute the RMS deviation from scatter / sigma = 1.0
-        from the scales.'''
-        
-        epochs = self._sweep_information.keys()
-        epochs.sort()
-
-        sc = self._updated_scala()
-        sc.set_hklin(self._prepared_reflections)
-        sc.set_scales_file(scales_file)
-
-        sc.add_sd_correction('full', 2.0, sdadd_f, sdb_f)
-        sc.add_sd_correction('partial', 2.0, sdadd_p, sdb_p)
-        
-        for epoch in epochs:
-            input = self._sweep_information[epoch]
-            start, end = (min(input['batches']), max(input['batches']))
-            sc.add_run(start, end, pname = input['pname'],
-                       xname = input['xname'],
-                       dname = input['dname'])
-
-        sc.set_hklout(os.path.join(self.get_working_directory(), 'temp.mtz'))
-
-        # FIXME this needs to be set only is we have f', f'' values
-        # for the wavelength
-
-        # bug # 2326
-
-        if self.get_scaler_anomalous():
-            sc.set_anomalous()
-        sc.scale()
-        loggraph = sc.parse_ccp4_loggraph()
-
-        standard_deviation_info = { }
-
-        for key in loggraph.keys():
-            if 'standard deviation v. Intensity' in key:
-                dataset = key.split(',')[-1].strip()
-                standard_deviation_info[dataset] = transpose_loggraph(
-                    loggraph[key])
-
-        # compute an RMS sigma...
-
-        score_full = 0.0
-        ref_count_full = 0
-
-        score_partial = 0.0
-        ref_count_partial = 0
-
-        for dataset in standard_deviation_info.keys():
-            info = standard_deviation_info[dataset]
-
-            # need to consider partials separately to fulls in assigning
-            # the error correction parameters
-
-            for j in range(len(info['1_Range'])):
-
-                # the format of the output changed with versions
-                # 3.3.x I think - cope with this here...
-                # bug # 2714
-                
-                n_full = int(info['5_Number'][j])
-                I_full = float(info['4_Irms'][j])
-                if n_full > 0 and info['7_SigmaFull'][j] != '-':
-                    s_full = float(info['7_SigmaFull'][j])
-                else:
-                    s_full = 0.0
-
-                if info.has_key('9_Number'):
-
-                    n_partial = int(info['9_Number'][j])
-                    I_partial = float(info['8_Irms'][j])
-                    s_partial = float(info['11_SigmaPartial'][j])
-
-                else:
-
-                    n_partial = int(info['12_Number'][j])
-                    I_partial = float(info['11_Irms'][j])
-                    s_partial = float(info['14_SigmaPartial'][j])                
-                n_tot = n_full + n_partial
-
-                # trap case where we have no reflections in a higher
-                # intensity bin (one may ask why they are being printed
-                # by Scala, then?)
-
-                if n_tot:
-                    i_tot = ((n_full * I_full) +
-                             (n_partial * I_partial)) / n_tot
-                    s_tot = ((n_full * s_full) +
-                             (n_partial * s_partial)) / n_tot
-                else:
-                    i_tot = 0.0
-                    s_tot = 1.0
-
-                # trying to minimise difference between this and 1.0!
-                
-                s_full -= 1.0
-                s_partial -= 1.0
-
-                score_full += s_full * s_full * n_full
-                ref_count_full += n_full
-
-                score_partial += s_partial * s_partial * n_partial
-                ref_count_partial += n_partial
-
-            # compute the scores...
-
-            if ref_count_full > 0:
-                score_full /= ref_count_full
-
-            if ref_count_partial > 0:
-                score_partial /= ref_count_partial
-
-        return math.sqrt(score_full), \
-               math.sqrt(score_partial)
-
-    def _refine_sd_parameters(self, scales_file):
-        '''To some repeated merging (it is assumed that the data have
-        already ben scaled) to determine appropriate values of
-        sd_add, sd_fac, sd_b for fulls, partials. FIXME at some point
-        this should probably be for each run as well...'''
-
-        best_sdadd_full = 0.0
-        best_sdadd_partial = 0.0
-        best_sdb_full = 0.0
-        best_sdb_partial = 0.0
-
-        max_sdb_full = 20.0
-        max_sdb_partial = 20.0
-        step_sdb_full = 2.0
-
-        max_sdadd_full = 0.1
-        max_sdadd_partial = 0.1
-
-        step_sdadd_full = 0.01
-        step_sdadd_partial = 0.01
-
-        sdadd_full = 0.0
-        sdadd_partial = 0.0
-        sdb_full = 0.0
-        sdb_partial = 0.0
-
-        best_rms_full = 1.0e9
-        best_rms_partial = 1.0e9
-
-        # compute sd_add first, then sdb, then sdadd
-
-        while sdadd_full < max_sdadd_full:
-            
-            sdadd_partial = sdadd_full
-
-            rms_full, rms_partial = self._refine_sd_parameters_remerge(
-                scales_file, sdadd_full, sdb_full, sdadd_partial, sdb_partial)
-
-            Debug.write('Tested SdAdd %4.2f: %4.2f %4.2f' % \
-                        (sdadd_full, rms_full, rms_partial))
-
-            if rms_full < best_rms_full:
-                best_sdadd_full = sdadd_full
-                best_rms_full = rms_full
-
-            if rms_partial < best_rms_partial:
-                best_sdadd_partial = sdadd_partial
-                best_rms_partial = rms_partial
-
-            if rms_full > best_rms_full and rms_partial > best_rms_partial:
-                break
-
-            sdadd_full += step_sdadd_full
-
-        best_rms_full = 1.0e9
-        best_rms_partial = 1.0e9
-
-        # then compute sdb ...
-
-        while sdb_full < max_sdb_full:
-
-            sdb_partial = sdb_full
-
-            rms_full, rms_partial = self._refine_sd_parameters_remerge(
-                scales_file, best_sdadd_full, sdb_full,
-                best_sdadd_partial, sdb_partial)
-
-            Debug.write('Tested SdB %4.1f: %4.2f %4.2f' % \
-                        (sdb_full, rms_full, rms_partial))
-
-            if rms_full < best_rms_full:
-                best_sdb_full = sdb_full
-                best_rms_full = rms_full
-
-            if rms_partial < best_rms_partial:
-                best_sdb_partial = sdb_partial
-                best_rms_partial = rms_partial
-
-            if rms_full > best_rms_full and rms_partial > best_rms_partial:
-                break
-
-            sdb_full += step_sdb_full
-
-        sdadd_full = 0.0
-        best_rms_full = 1.0e9
-        best_rms_partial = 1.0e9
-        
-        while sdadd_full < max_sdadd_full:
-            
-            sdadd_partial = sdadd_full
-
-            rms_full, rms_partial = self._refine_sd_parameters_remerge(
-                scales_file, sdadd_full, best_sdb_full,
-                sdadd_partial, best_sdb_partial)
-
-            Debug.write('Tested SdAdd %4.2f: %4.2f %4.2f' % \
-                        (sdadd_full, rms_full, rms_partial))
-
-            if rms_full < best_rms_full:
-                best_sdadd_full = sdadd_full
-                best_rms_full = rms_full
-
-            if rms_partial < best_rms_partial:
-                best_sdadd_partial = sdadd_partial
-                best_rms_partial = rms_partial
-
-            if rms_full > best_rms_full and rms_partial > best_rms_partial:
-                break
-
-            sdadd_full += step_sdadd_full
-
-        Chatter.write('Optimised SD corrections (A, B) found to be:')
-        Chatter.write('Full:       %4.2f   %4.1f' %
-                      (best_sdadd_full, best_sdb_full))
-        Chatter.write('Partial:    %4.2f   %4.1f' %
-                      (best_sdadd_partial, best_sdb_partial))
-
-
-        return best_sdadd_full, best_sdb_full, \
-               best_sdadd_partial, best_sdb_partial
-
     def _scale(self):
         '''Perform all of the operations required to deliver the scaled
         data.'''
@@ -1653,10 +1422,6 @@ class CCP4ScalerR(Scaler):
                                    '%s_%s_scaled.mtz' % \
                                    (self._common_pname, self._common_xname)))
         
-        # FIXME this needs to be set only is we have f', f'' values
-        # for the wavelength
-        
-        # bug # 2326
         if self.get_scaler_anomalous():
             sc.set_anomalous()
 
@@ -1731,39 +1496,6 @@ class CCP4ScalerR(Scaler):
                 batch_info[dataset] = transpose_loggraph(
                     loggraph[key])
 
-        average_completeness = 0.0
-
-        for k in data.keys():
-            average_completeness += data[k]['Completeness'][0]
-        average_completeness /= len(data.keys())
-
-        if Flags.get_quick():
-            Debug.write('Quick, so not optimising error parameters')
-            sdadd_full = 0.02
-            sdb_full = 0.0
-            sdadd_partial = 0.02
-            sdb_partial = 0.0
-
-        elif average_completeness < 50.0:
-            Debug.write('Incomplete data, so not refining error parameters')
-            sdadd_full = 0.02
-            sdb_full = 0.0
-            sdadd_partial = 0.02
-            sdb_partial = 0.0
-
-        else:
-
-            Debug.write('Optimising error parameters')
-            
-            sdadd_full, sdb_full, sdadd_partial, sdb_partial = \
-                        self._refine_sd_parameters(scales_file)
-
-            try:
-                os.remove(os.path.join(self.get_working_directory(),
-                                       scales_file))
-            except:
-                Debug.write('Error removing %s' % scales_file)
-
         sc = self._updated_scala()
 
         FileHandler.record_log_file('%s %s scala' % (self._common_pname,
@@ -1778,13 +1510,6 @@ class CCP4ScalerR(Scaler):
 
         sc.set_new_scales_file(scales_file)
 
-        sc.add_sd_correction('full', 2.0, sdadd_full, sdb_full)
-        sc.add_sd_correction('partial', 2.0, sdadd_partial, sdb_partial)
-
-        open(os.path.join(
-            self.get_working_directory(),
-            'sweep_info.xia'), 'w').write(str(self._sweep_information))
-        
         for epoch in epochs:
             input = self._sweep_information[epoch]
             start, end = (min(input['batches']), max(input['batches']))
@@ -1912,9 +1637,6 @@ class CCP4ScalerR(Scaler):
         sc.set_hklin(self._prepared_reflections)
         sc.set_scales_file(scales_file)
 
-        sc.add_sd_correction('full', 2.0, sdadd_full, sdb_full)
-        sc.add_sd_correction('partial', 2.0, sdadd_partial, sdb_partial)
-
         self._wavelengths_in_order = []
         
         for epoch in epochs:
@@ -1977,9 +1699,6 @@ class CCP4ScalerR(Scaler):
                                     self._common_xname)))
         
         sc.set_chef_unmerged(True)
-
-        sc.add_sd_correction('full', 2.0, sdadd_full, sdb_full)
-        sc.add_sd_correction('partial', 2.0, sdadd_partial, sdb_partial)
 
         if self.get_scaler_anomalous():
             sc.set_anomalous()
@@ -2126,9 +1845,6 @@ class CCP4ScalerR(Scaler):
             sc.set_hklin(self._prepared_reflections)
             sc.set_scales_file(scales_file)
 
-            sc.add_sd_correction('full', 2.0, sdadd_full, sdb_full)
-            sc.add_sd_correction('partial', 2.0, sdadd_partial, sdb_partial)
-        
             for epoch in epochs:
                 input = self._sweep_information[epoch]
                 start, end = (min(input['batches']), max(input['batches']))

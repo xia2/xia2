@@ -2762,30 +2762,6 @@ def MosflmR(DriverType = None):
                                              pname, xname, dname),
                                             postref_log)            
 
-            # if we have not processed to a given resolution, fix
-            # the limit for future reference
-
-            # bug # 2040 - this is one place where we could cut out the
-            # middle-man and make things quicker, by not resetting the
-            # resolution limit...
-
-            if not self._intgr_reso_high and not Flags.get_quick():
-                resolution = decide_integration_resolution_limit(output)
-
-                Debug.write('Old method resolution limit: %.2f' % resolution)
-                
-                if not Flags.get_small_molecule():
-
-                    s, r = digest(bin_o_tron(mosflm_mtz_to_list(
-                        self._mosflm_hklout)))
-                    
-                    Debug.write('New method resolution limit: %.2f' % r)
-                
-                    resolution = r
-
-                self.set_integrater_high_resolution(resolution)
-                Chatter.write('Set resolution limit: %5.2f' % resolution)
-                
             return self._mosflm_hklout
 
         def _mosflm_parallel_integrate(self):
@@ -3399,15 +3375,6 @@ def MosflmR(DriverType = None):
 
             self._mosflm_hklout = hklout
 
-            if not self._intgr_reso_high and not Flags.get_quick():
-                s, r = digest(bin_o_tron(mosflm_mtz_to_list(
-                    self._mosflm_hklout)))
-
-                Debug.write('New method resolution limit: %.2f' % r)
-                
-                self.set_integrater_high_resolution(r)
-                Chatter.write('Set resolution limit: %5.2f' % r)
-                
             return self._mosflm_hklout
         
         def _reorder_cell_refinement_images(self):
