@@ -160,6 +160,13 @@ class XDSIntegraterR(FrameProcessor,
 
         if self.get_integrater_ice():
             correct.set_ice(self.get_integrater_ice())
+
+        if self.get_integrater_low_resolution() > 0.0:
+            Debug.write('Using low resolution limit: %.2f' % \
+                        self.get_integrater_low_resolution())
+            correct.set_resolution_high(0.0)
+            correct.set_resolution_low(
+                self.get_integrater_low_resolution())
             
         auto_logfiler(correct, 'CORRECT')
         
@@ -492,13 +499,6 @@ class XDSIntegraterR(FrameProcessor,
             correct.set_data_range(self._intgr_wedge[0],
                                    self._intgr_wedge[1])
 
-            if self.get_integrater_low_resolution() > 0.0:
-                Debug.write('Using low resolution limit: %.2f' % \
-                            self.get_integrater_low_resolution())
-                correct.set_resolution_high(0.0)
-                correct.set_resolution_low(
-                    self.get_integrater_low_resolution())
-
             if self.get_polarization() > 0.0:
                 correct.set_polarization(self.get_polarization())
 
@@ -544,13 +544,6 @@ class XDSIntegraterR(FrameProcessor,
         correct.set_data_range(self._intgr_wedge[0],
                                self._intgr_wedge[1])
         
-        if self.get_integrater_low_resolution() > 0.0:
-            Debug.write('Using low resolution limit: %.2f' % \
-                        self.get_integrater_low_resolution())
-            correct.set_resolution_high(0.0)
-            correct.set_resolution_low(
-                self.get_integrater_low_resolution())
-
         if self.get_polarization() > 0.0:
             correct.set_polarization(self.get_polarization())
 
