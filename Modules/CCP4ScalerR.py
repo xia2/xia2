@@ -2555,7 +2555,7 @@ class CCP4ScalerR(Scaler):
                 Chatter.banner('Local Scaling %s' % self._common_xname)
                 for s in status:
                     Chatter.write('%s %s' % s)
-                 Chatter.banner('')       
+                Chatter.banner('')       
 
         return
     
