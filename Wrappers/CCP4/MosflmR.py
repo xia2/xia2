@@ -3614,8 +3614,20 @@ def MosflmR(DriverType = None):
             return self._mosflm_best_datfile, self._mosflm_best_parfile, \
                    self._mosflm_best_hklfile
 
+        # overload these methods as we don't want the resolution range
+        # feeding back...
+        
+        def set_integrater_resolution(self, dmin, dmax, user = False):
+            pass
+        
+        def set_integrater_high_resolution(self, dmin, user = False):
+            pass
+        
+        def set_integrater_low_resolution(self, dmax):
+            self._intgr_reso_low = dmax
+            return
+      
     return MosflmRWrapper()
-
 
 if __name__ == '__main__':
 

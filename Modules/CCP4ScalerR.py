@@ -185,6 +185,8 @@ class CCP4ScalerR(Scaler):
         self._chef_analysis_times = { }
         self._chef_analysis_resolutions = { }
 
+        self._resolution_limits = { }
+
         # flags to keep track of the corrections we will be applying
 
         self._scale_model_b = None
@@ -1349,6 +1351,8 @@ class CCP4ScalerR(Scaler):
 
         self._prepared_reflections = s.get_hklout()
 
+        self._resolution_limits = { }
+
         return
 
     def _refine_sd_parameters_remerge(self, scales_file,
@@ -1631,20 +1635,19 @@ class CCP4ScalerR(Scaler):
 
             input = self._sweep_information[epoch]
 
-            intgr = input['integrater']
-
-            if intgr.get_integrater_user_resolution():
-                dmin = intgr.get_integrater_high_resolution()
-                
-                if not user_resolution_limits.has_key(input['dname']):
-                    user_resolution_limits[input['dname']] = dmin
-                elif dmin < user_resolution_limits[input['dname']]:
-                    user_resolution_limits[input['dname']] = dmin
-                    
             start, end = (min(input['batches']), max(input['batches']))
-            sc.add_run(start, end, pname = input['pname'],
-                       xname = input['xname'],
-                       dname = input['dname'])
+
+            if input['dname'] in self._resolution_limits:
+                resolution = self._resolution_limits[input['dname']]
+                sc.add_run(start, end, pname = input['pname'],
+                           xname = input['xname'],
+                           dname = input['dname'],
+                           exclude = False,
+                           resolution = resolution)
+            else:
+                sc.add_run(start, end, pname = input['pname'],
+                           xname = input['xname'],
+                           dname = input['dname'])
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled.mtz' % \
@@ -1679,10 +1682,6 @@ class CCP4ScalerR(Scaler):
                 resolution_info[dataset] = transpose_loggraph(
                     loggraph[key])
 
-        # next compute resolution limits for each dataset.
-
-        resolution_limits = { }
-
         highest_resolution = 100.0
 
         # check in here that there is actually some data to scale..!
@@ -1692,9 +1691,9 @@ class CCP4ScalerR(Scaler):
 
         for dataset in resolution_info.keys():
 
-            if user_resolution_limits.has_key(dataset):
+            if dataset in user_resolution_limits:
                 resolution = user_resolution_limits[dataset]
-                resolution_limits[dataset] = resolution
+                self._resolution_limits[dataset] = resolution
                 if resolution < highest_resolution:
                     highest_resolution = resolution
                 Chatter.write('Resolution limit for %s: %5.2f' % \
@@ -1705,55 +1704,21 @@ class CCP4ScalerR(Scaler):
                 reflection_files[dataset], 
                 Flags.get_i_over_sigma_limit())[1]
 
-            resolution_limits[dataset] = resolution
+            if not dataset in self._resolution_limits:
+                self._resolution_limits[dataset] = resolution
+                self.set_scaler_done(False)
 
             if resolution < highest_resolution:
                 highest_resolution = resolution
 
             Chatter.write('Resolution limit for %s: %5.2f' % \
-                          (dataset, resolution_limits[dataset]))
+                          (dataset, self._resolution_limits[dataset]))
 
         self._scalr_highest_resolution = highest_resolution
 
         Debug.write('Scaler highest resolution set to %5.2f' % \
                     highest_resolution)
-
-        best_resolution = 100.0
-
-        for epoch in self._scalr_integraters.keys():
-            intgr = self._scalr_integraters[epoch]
-            pname, xname, dname = intgr.get_integrater_project_info()
-
-            # check the resolution limit for this integrater
-            dmin = intgr.get_integrater_high_resolution()
-
-            # compare this against the resolution limit computed above
-            if dmin == 0.0 and not Flags.get_quick():
-                intgr.set_integrater_high_resolution(
-                    resolution_limits[dname])
-
-                self.set_scaler_done(False)
-                self.set_scaler_prepare_done(False)
-
-            elif dmin > resolution_limits[dname] - 0.075:
-                pass
-
-            elif Flags.get_quick():
-                Debug.write('Quick, so not resetting resolution limits')
-
-            elif intgr.get_integrater_user_resolution():
-                Debug.write('Using user specified resolution limits')
-
-            else:
-                intgr.set_integrater_high_resolution(
-                    resolution_limits[dname])
-
-                self.set_scaler_done(False)
-                self.set_scaler_prepare_done(False)
-
-            if resolution_limits[dname] < best_resolution:
-                best_resolution = resolution_limits[dname]
-
+        
         if not self.get_scaler_done():
             Debug.write('Returning as scaling not finished...')
             return
@@ -1805,7 +1770,7 @@ class CCP4ScalerR(Scaler):
                                                      self._common_xname),
                                     sc.get_log_file())
 
-        sc.set_resolution(best_resolution)
+        sc.set_resolution(self._scalr_highest_resolution)
 
         sc.set_hklin(self._prepared_reflections)
         
@@ -1824,10 +1789,7 @@ class CCP4ScalerR(Scaler):
             input = self._sweep_information[epoch]
             start, end = (min(input['batches']), max(input['batches']))
 
-            if Flags.get_quick():
-                run_resolution_limit = resolution_limits[input['dname']]
-            else:
-                run_resolution_limit = 0.0
+            run_resolution_limit = self._resolution_limits[input['dname']]
 
             sc.add_run(start, end, pname = input['pname'],
                        xname = input['xname'],
@@ -1959,10 +1921,7 @@ class CCP4ScalerR(Scaler):
             input = self._sweep_information[epoch]
             start, end = (min(input['batches']), max(input['batches']))
 
-            if Flags.get_quick():
-                run_resolution_limit = resolution_limits[input['dname']]
-            else:
-                run_resolution_limit = 0.0
+            run_resolution_limit = self._resolution_limits[input['dname']]
 
             sc.add_run(start, end, pname = input['pname'],
                        xname = input['xname'],
@@ -2002,10 +1961,7 @@ class CCP4ScalerR(Scaler):
             input = self._sweep_information[epoch]
             start, end = (min(input['batches']), max(input['batches']))
 
-            if Flags.get_quick():
-                run_resolution_limit = resolution_limits[input['dname']]
-            else:
-                run_resolution_limit = 0.0
+            run_resolution_limit = self._resolution_limits[input['dname']]
 
             sc.add_run(start, end, pname = input['pname'],
                        xname = input['xname'],
@@ -2190,7 +2146,7 @@ class CCP4ScalerR(Scaler):
                 # set the resolution limit to what we decided above...
                 # by the time we get this far this should have been what
                 # was used...
-                sc.set_resolution(resolution_limits[dname])
+                sc.set_resolution(self._resolution_limits[dname])
 
             sc.set_hklout(os.path.join(self.get_working_directory(),
                                            'temp.mtz'))
