@@ -394,31 +394,6 @@ def Mosflm(DriverType = None):
                 self._index_select_images()
             return
 
-        def _index_select_images_old(self):
-            '''Select correct images based on image headers.'''
-
-            # FIXME perhaps this should be somewhere central, because
-            # LabelitScreen will share the same implementation
-
-            phi_width = self._get_header_item('phi_width')
-            images = self.get_matching_images()
-
-            # FIXME what to do if phi_width is 0.0? set it
-            # to 1.0! This should be safe enough... though a warning
-            # would not go amiss...
-
-            if phi_width == 0.0:
-                Chatter.write('Phi width 0.0? Assuming 1.0!')
-                phi_width = 1.0
-
-            self.add_indexer_image_wedge(images[0])
-            if int(90.0 / phi_width) in images:
-                self.add_indexer_image_wedge(int(90.0 / phi_width))
-            else:
-                self.add_indexer_image_wedge(images[-1])
-
-            return
-
         def _index_select_images(self):
             '''Select correct images based on image headers.'''
 
@@ -434,13 +409,6 @@ def Mosflm(DriverType = None):
             Debug.write('Selected image %s' % images[0])
 
             self.add_indexer_image_wedge(images[0])
-
-            # FIXME what to do if phi_width is recorded as zero?
-            # perhaps assume that it is 1.0!
-
-            if phi_width == 0.0:
-                Chatter.write('Phi width 0.0? Assuming 1.0!')
-                phi_width = 1.0
 
             offset = images[0] - 1
 
@@ -458,6 +426,38 @@ def Mosflm(DriverType = None):
                     self.add_indexer_image_wedge(images[middle])
                 Debug.write('Selected image %s' % images[-1])
                 self.add_indexer_image_wedge(images[-1])
+
+            # ok, if running interactively, allow user to override these...
+
+            if Flags.get_interactive():
+                images = self.get_indexer_images()
+                images_list = '%d' % images[0][0]
+                for image in images[1:]:
+                    images_list += ', %d' % image[0]
+            
+                Chatter.write('Existing images for indexing: %s' % \
+                              images_list)
+
+                while True:
+
+                    record = raw_input('>')
+                    
+                    if not record.strip():
+                        return
+                    
+                    try:
+                        images = map(int, record.replace(',', ' ').split())
+                        images_list = '%d' % images[0]
+                        for image in images[1:]:
+                            images_list += ', %d' % image
+            
+                        Chatter.write('New images for indexing: %s' % \
+                                      images_list)
+                        self.set_indexer_image_wedges(images)
+                        return
+                        
+                    except ValueError, e:
+                        pass
 
             return
 

@@ -464,6 +464,24 @@ class Indexer:
         
         return
 
+    def set_indexer_image_wedges(self, indexer_image_wedges):
+        '''Assign images to use for autoindexing, will clobber existing
+        values. Use with interactive indexing...'''
+
+        self._indxr_images = []
+
+        for image in indexer_image_wedges:
+
+            if type(image) == type(()):
+                self._indxr_images.append(image)
+            if type(image) == type(1):
+                self._indxr_images.append((image, image))
+                
+        self.set_indexer_prepare_done(False)
+        
+        return
+
+
     def get_indexer_images(self):
         return self._indxr_images
 

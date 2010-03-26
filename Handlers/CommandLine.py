@@ -96,6 +96,7 @@ class _CommandLine(Object):
         self._argv = copy.deepcopy(sys.argv)
 
         self._read_debug()
+        self._read_interactive()
         self._read_trust_timestamps()
         self._read_batch_scale()
         self._read_old_mosflm()
@@ -916,6 +917,14 @@ class _CommandLine(Object):
             # join the debug stream to the main output
             Debug.join(Chatter)
             Debug.write('Debugging output switched on')
+        return
+
+    def _read_interactive(self):
+
+        if '-interactive' in sys.argv:
+            Flags.set_interactive(True)
+            Debug.write('Interactive indexing ON')
+            
         return
 
     def _read_migrate_data(self):

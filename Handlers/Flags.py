@@ -32,6 +32,7 @@ class _Flags:
 
     def __init__(self):
         self._quick = False
+        self._interactive = False
         self._smart_scaling = True
         self._chef = True
         self._automatch = False
@@ -188,6 +189,13 @@ class _Flags:
 
     def get_quick(self):
         return self._quick
+
+    def set_interactive(self, interactive):
+        self._interactive = interactive
+        return
+
+    def get_interactive(self):
+        return self._interactive
 
     def set_smart_scaling(self, smart_scaling):
         self._smart_scaling = smart_scaling

@@ -114,6 +114,7 @@ from Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
 from lib.Guff import auto_logfiler
 from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Citations import Citations
+from Handlers.Flags import Flags
 from Modules.IceId import IceId
 from Modules.MosflmCheckIndexerSolution import mosflm_check_indexer_solution
 
@@ -266,13 +267,6 @@ def LabelitScreen(DriverType = None, indxr_print = True):
 
             self.add_indexer_image_wedge(images[0])
 
-            # FIXME what to do if phi_width is recorded as zero?
-            # perhaps assume that it is 1.0!
-
-            if phi_width == 0.0:
-                Chatter.write('Phi width 0.0? Assuming 1.0!')
-                phi_width = 1.0
-
             offset = images[0] - 1
 
             if offset + int(90.0 / phi_width) in images:
@@ -289,6 +283,38 @@ def LabelitScreen(DriverType = None, indxr_print = True):
                     self.add_indexer_image_wedge(images[middle])
                 Debug.write('Selected image %s' % images[-1])
                 self.add_indexer_image_wedge(images[-1])
+
+            # ok, if running interactively, allow user to override these...
+
+            if Flags.get_interactive():
+                images = self.get_indexer_images()
+                images_list = '%d' % images[0][0]
+                for image in images[1:]:
+                    images_list += ', %d' % image[0]
+            
+                Chatter.write('Existing images for indexing: %s' % \
+                              images_list)
+
+                while True:
+
+                    record = raw_input('>')
+                    
+                    if not record.strip():
+                        return
+                    
+                    try:
+                        images = map(int, record.replace(',', ' ').split())
+                        images_list = '%d' % images[0]
+                        for image in images[1:]:
+                            images_list += ', %d' % image
+            
+                        Chatter.write('New images for indexing: %s' % \
+                                      images_list)
+                        self.set_indexer_image_wedges(images)
+                        return
+                        
+                    except ValueError, e:
+                        pass
 
             return
 
