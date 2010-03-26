@@ -448,6 +448,21 @@ END PROJECT TS01
       <li>Repaired regular expression for image matching, to cope with 
 	images where there is e.g. 3.5 in the template. This was previously
 	misinterpreted as an image name of the form setup.NNNN.</li>
+      <li>Implemented new resolution limit pipelines, based on new merging code
+	to give more robust control. Currently not easily configurable, that
+	will need an overhaul of the user input.</li>
+      <li>Added interactive indexing mechanism, where user can assign images 
+	to use for autoindexing, e.g.:
+
+	<pre>
+Existing images for indexing: 1, 90, 180
+>1, 60, 120, 180
+New images for indexing: 1, 60, 120, 180
+	</pre> 
+	
+	Assign -interactive on the command line (Mosflm and Labelit indexers)
+      </li>
+
     <ul>
 
     <p>Changes since 0.3.0.6</p>
@@ -933,7 +948,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Tue Feb  2 09:26:19 GMT 2010
+Last modified: Fri Mar 26 16:08:58 GMT 2010
 <!-- hhmts end -->
   </body>
 </html>
