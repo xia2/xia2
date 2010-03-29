@@ -34,6 +34,14 @@ import time
 import itertools
 import copy
 
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
+if not os.environ.has_key('XIA2CORE_ROOT'):
+    raise RuntimeError, 'XIA2CORE_ROOT not defined'
+
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
+
 from iotbx import mtz
 from cctbx.miller import build_set
 from cctbx.crystal import symmetry as crystal_symmetry
@@ -44,6 +52,8 @@ from PolyFitter import log_fit
 from PolyFitter import log_inv_fit
 from PolyFitter import interpolate_value
 from PolyFitter import get_positive_values
+from Handlers.Flags import Flags
+
 
 class unmerged_intensity:
     '''A class to represent and encapsulate the multiple observations of a
@@ -480,17 +490,23 @@ class merger:
 
         return z_centric, z_acentric
 
-    def resolution_rmerge(self, limit = 1.0, log = None):
+    def resolution_rmerge(self, limit = None, log = None):
         '''Compute a resolution limit where either rmerge = 1.0 (limit if
         set) or the full extent of the data. N.B. this fit is only meaningful
         for positive values.'''
 
+        if limit is None:
+            limit = Flags.get_rmerge()
+            
         bins, ranges = self.get_resolution_bins()
 
         rmerge_s = get_positive_values(
             [self.calculate_rmerge(bin) for bin in bins])
 
         s_s = [1.0 / (r[0] * r[0]) for r in ranges][:len(rmerge_s)]
+
+        if limit == 0.0:
+            return 1.0 / math.sqrt(max(s_s))
         
         rmerge_f = log_inv_fit(s_s, rmerge_s, 10)
 
@@ -510,9 +526,12 @@ class merger:
 
         return r_rmerge
 
-    def resolution_unmerged_isigma(self, limit = 1.0, log = None):
+    def resolution_unmerged_isigma(self, limit = None, log = None):
         '''Compute a resolution limit where either I/sigma = 1.0 (limit if
         set) or the full extent of the data.'''
+
+        if limit is None:
+            limit = Flags.get_isigma()
 
         bins, ranges = self.get_resolution_bins()
 
@@ -538,9 +557,12 @@ class merger:
 
         return r_isigma
 
-    def resolution_merged_isigma(self, limit = 1.0, log = None):
+    def resolution_merged_isigma(self, limit = None, log = None):
         '''Compute a resolution limit where either Mn(I/sigma) = 1.0 (limit if
         set) or the full extent of the data.'''
+
+        if limit is None:
+            limit = Flags.get_misigma()
 
         bins, ranges = self.get_resolution_bins()
 
@@ -567,15 +589,22 @@ class merger:
 
         return r_misigma
 
-    def resolution_completeness(self, limit = 0.5, log = None):
+    def resolution_completeness(self, limit = None, log = None):
         '''Compute a resolution limit where completeness < 0.5 (limit if
         set) or the full extent of the data. N.B. this completeness is
         with respect to the *maximum* completeness in a shell, to reflect
         triclinic cases.'''
 
+        if limit is None:
+            limit = Flags.get_completeness()
+            
         bins, ranges = self.get_resolution_bins()
 
         s_s = [1.0 / (r[0] * r[0]) for r in reversed(ranges)]
+
+        if limit == 0.0:
+            return 1.0 / math.sqrt(max(s_s))
+        
         comp_s = [self.calculate_completeness(j) for j, bin in enumerate(
             reversed(bins))]
         

@@ -91,6 +91,10 @@ class _Flags:
         # and these are general rejection criteria
         self._rejection_threshold = 1.5
         self._i_over_sigma_limit = 2.0
+        self._isigma = 1.0
+        self._misigma = 2.0
+        self._completeness = 0.0
+        self._rmerge = 0.0
 
         # are we working with small molecule data?
         self._small_molecule = False
@@ -389,6 +393,34 @@ class _Flags:
 
     def get_i_over_sigma_limit(self):
         return self._i_over_sigma_limit
+
+    def set_isigma(self, isigma):
+        self._isigma = isigma
+        return
+
+    def get_isigma(self):
+        return self._isigma
+
+    def set_misigma(self, misigma):
+        self._misigma = misigma
+        return
+
+    def get_misigma(self):
+        return self._misigma
+
+    def set_completeness(self, completeness):
+        self._completeness = completeness
+        return
+
+    def get_completeness(self):
+        return self._completeness
+
+    def set_rmerge(self, rmerge):
+        self._rmerge = rmerge
+        return
+
+    def get_rmerge(self):
+        return self._rmerge
 
     def set_refine(self, refine):
         self._refine = refine

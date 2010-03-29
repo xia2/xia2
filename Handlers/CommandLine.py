@@ -255,6 +255,30 @@ class _CommandLine(Object):
                   (self._help_i_over_sigma_limit(), str(e))
 
         try:
+            self._read_isigma()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_isigma(), str(e))
+
+        try:
+            self._read_misigma()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_misigma(), str(e))
+
+        try:
+            self._read_rmerge()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_rmerge(), str(e))
+
+        try:
+            self._read_completeness()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_completeness(), str(e))
+
+        try:
             self._read_cellref_mode()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -676,6 +700,78 @@ class _CommandLine(Object):
 
     def _help_i_over_sigma_limit(self):
         return '-i_over_sigma_limit N'
+
+    def _read_isigma(self):
+        try:
+            index = sys.argv.index('-isigma')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_isigma(float(sys.argv[index + 1]))
+        Debug.write('I/sigma limit set to %f' % \
+                    Flags.get_isigma())
+            
+        return
+
+    def _help_isigma(self):
+        return '-isigma N'
+
+    def _read_misigma(self):
+        try:
+            index = sys.argv.index('-misigma')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_misigma(float(sys.argv[index + 1]))
+        Debug.write('Merged I/sigma limit set to %f' % \
+                    Flags.get_misigma())
+            
+        return
+
+    def _help_misigma(self):
+        return '-misigma N'
+
+    def _read_completeness(self):
+        try:
+            index = sys.argv.index('-completeness')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_completeness(float(sys.argv[index + 1]))
+        Debug.write('Completeness limit set to %f' % \
+                    Flags.get_completeness())
+            
+        return
+
+    def _help_completeness(self):
+        return '-completeness N'
+
+    def _read_rmerge(self):
+        try:
+            index = sys.argv.index('-rmerge')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_rmerge(float(sys.argv[index + 1]))
+        Debug.write('Rmerge limit set to %f' % \
+                    Flags.get_rmerge())
+            
+        return
+
+    def _help_rmerge(self):
+        return '-rmerge N'
 
     def _read_ehtpx_xml_out(self):
         try:
