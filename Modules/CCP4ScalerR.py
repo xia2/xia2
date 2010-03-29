@@ -1473,12 +1473,38 @@ class CCP4ScalerR(Scaler):
                               (dataset, resolution))
                 continue
 
+            log_completeness = os.path.join(self.get_working_directory(),
+                                      '%s-completeness.log' % dataset)
+
+            if os.path.exists(log_completeness):
+                log_completeness = None
+            
+            log_rmerge = os.path.join(self.get_working_directory(),
+                                      '%s-rmerge.log' % dataset)
+
+            if os.path.exists(log_rmerge):
+                log_rmerge = None
+
+            log_isigma = os.path.join(self.get_working_directory(),
+                                      '%s-isigma.log' % dataset)
+
+            if os.path.exists(log_isigma):
+                log_isigma = None
+            
+            log_misigma = os.path.join(self.get_working_directory(),
+                                      '%s-misigma.log' % dataset)
+
+            if os.path.exists(log_misigma):
+                log_misigma = None
+
             m = merger(reflection_files[dataset])
+
             m.calculate_resolution_ranges(nbins = 100)
-            r_comp = m.resolution_completeness()
-            r_rm = m.resolution_rmerge()
-            r_uis = m.resolution_unmerged_isigma()
-            r_mis = m.resolution_merged_isigma()
+
+            r_comp = m.resolution_completeness(log = log_completeness)
+            r_rm = m.resolution_rmerge(log = log_rmerge)
+            r_uis = m.resolution_unmerged_isigma(log = log_isigma)
+            r_mis = m.resolution_merged_isigma(log = log_misigma)
 
             resolution = max([r_comp, r_rm, r_uis, r_mis])
 

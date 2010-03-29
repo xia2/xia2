@@ -480,7 +480,7 @@ class merger:
 
         return z_centric, z_acentric
 
-    def resolution_rmerge(self, limit = 1.0):
+    def resolution_rmerge(self, limit = 1.0, log = None):
         '''Compute a resolution limit where either rmerge = 1.0 (limit if
         set) or the full extent of the data. N.B. this fit is only meaningful
         for positive values.'''
@@ -494,6 +494,15 @@ class merger:
         
         rmerge_f = log_inv_fit(s_s, rmerge_s, 10)
 
+        if log:
+            fout = open(log, 'w')
+            for j, s in enumerate(s_s):
+                d = 1.0 / math.sqrt(s)
+                o = rmerge_s[j]
+                m = rmerge_f[j]
+                fout.write('%f %f %f %f\n' % (s, d, o, m))
+            fout.close()
+
         try:
             r_rmerge = 1.0 / math.sqrt(interpolate_value(s_s, rmerge_f, limit))
         except:
@@ -501,7 +510,7 @@ class merger:
 
         return r_rmerge
 
-    def resolution_unmerged_isigma(self, limit = 1.0):
+    def resolution_unmerged_isigma(self, limit = 1.0, log = None):
         '''Compute a resolution limit where either I/sigma = 1.0 (limit if
         set) or the full extent of the data.'''
 
@@ -512,6 +521,15 @@ class merger:
         s_s = [1.0 / (r[0] * r[0]) for r in ranges][:len(isigma_s)]
         
         isigma_f = log_fit(s_s, isigma_s, 10)
+
+        if log:
+            fout = open(log, 'w')
+            for j, s in enumerate(s_s):
+                d = 1.0 / math.sqrt(s)
+                o = isigma_s[j]
+                m = isigma_f[j]
+                fout.write('%f %f %f %f\n' % (s, d, o, m))
+            fout.close()
         
         try:
             r_isigma = 1.0 / math.sqrt(interpolate_value(s_s, isigma_f, limit))
@@ -520,7 +538,7 @@ class merger:
 
         return r_isigma
 
-    def resolution_merged_isigma(self, limit = 1.0):
+    def resolution_merged_isigma(self, limit = 1.0, log = None):
         '''Compute a resolution limit where either Mn(I/sigma) = 1.0 (limit if
         set) or the full extent of the data.'''
 
@@ -532,6 +550,15 @@ class merger:
         
         misigma_f = log_fit(s_s, misigma_s, 10)
         
+        if log:
+            fout = open(log, 'w')
+            for j, s in enumerate(s_s):
+                d = 1.0 / math.sqrt(s)
+                o = misigma_s[j]
+                m = misigma_f[j]
+                fout.write('%f %f %f %f\n' % (s, d, o, m))
+            fout.close()
+
         try:
             r_misigma = 1.0 / math.sqrt(
                 interpolate_value(s_s, misigma_f, limit))
@@ -540,7 +567,7 @@ class merger:
 
         return r_misigma
 
-    def resolution_completeness(self, limit = 0.5):
+    def resolution_completeness(self, limit = 0.5, log = None):
         '''Compute a resolution limit where completeness < 0.5 (limit if
         set) or the full extent of the data. N.B. this completeness is
         with respect to the *maximum* completeness in a shell, to reflect
@@ -554,7 +581,16 @@ class merger:
         
         comp_f = fit(s_s, comp_s, 10)
         
-        rlimit = limit * max(comp_f)
+        rlimit = limit * max(comp_s)
+
+        if log:
+            fout = open(log, 'w')
+            for j, s in enumerate(s_s):
+                d = 1.0 / math.sqrt(s)
+                o = comp_s[j]
+                m = comp_f[j]
+                fout.write('%f %f %f %f\n' % (s, d, o, m))
+            fout.close()
 
         try:
             r_comp = 1.0 / math.sqrt(
