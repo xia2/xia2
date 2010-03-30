@@ -1072,6 +1072,7 @@ class XDSScalerR(Scaler):
                     Debug.write(
                         '%d alien reflections are already removed' % \
                         (len(xscale_remove) - len(final_remove)))
+                    
                 else:
                     # we want to remove all of the new dodgy reflections
                     final_remove = xscale_remove
@@ -1116,7 +1117,11 @@ class XDSScalerR(Scaler):
                 # unless we have added no new reflections
                 if used:                
                     self.set_scaler_done(False)
-            
+
+        if not self.get_scaler_done():
+            Chatter.write('Excluding outlier reflections Z > %.2f' %
+                          Flags.get_z_min())
+            return
 
         # now get the reflection files out and merge them with scala
 
