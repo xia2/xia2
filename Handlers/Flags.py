@@ -33,6 +33,7 @@ class _Flags:
     def __init__(self):
         self._quick = False
         self._interactive = False
+        self._egg = False
         self._uniform_sd = True
         self._smart_scaling = True
         self._chef = True
@@ -201,6 +202,13 @@ class _Flags:
 
     def get_interactive(self):
         return self._interactive
+
+    def set_egg(self, egg):
+        self._egg = egg
+        return
+
+    def get_egg(self):
+        return self._egg
 
     def set_uniform_sd(self, uniform_sd):
         self._uniform_sd = uniform_sd

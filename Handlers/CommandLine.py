@@ -97,6 +97,7 @@ class _CommandLine(Object):
 
         self._read_debug()
         self._read_interactive()
+        self._read_egg()
         self._read_uniform_sd()
         self._read_trust_timestamps()
         self._read_batch_scale()
@@ -1024,10 +1025,17 @@ class _CommandLine(Object):
             
         return
 
+    def _read_egg(self):
+
+        if '-egg' in sys.argv:
+            Flags.set_egg(True)
+            
+        return
+
     def _read_uniform_sd(self):
 
         if '-no_uniform_sd' in sys.argv:
-            Flags.set_uniform_sd(True)
+            Flags.set_uniform_sd(False)
             Debug.write('Uniform SD OFF')
             
         return

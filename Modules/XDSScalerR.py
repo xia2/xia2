@@ -67,6 +67,7 @@ from Modules.XDSScalerHelpers import XDSScalerHelper
 
 from Wrappers.XDS.XScaleR import XScaleR as _XScale
 from Wrappers.XDS.Cellparm import Cellparm as _Cellparm
+from TTT import ttt
 
 from Wrappers.CCP4.CCP4Factory import CCP4Factory
 
@@ -1121,6 +1122,10 @@ class XDSScalerR(Scaler):
         if not self.get_scaler_done():
             Chatter.write('Excluding outlier reflections Z > %.2f' %
                           Flags.get_z_min())
+
+            if Flags.get_egg():
+                for record in ttt():
+                    Chatter.write(record)
             return
 
         # now get the reflection files out and merge them with scala
