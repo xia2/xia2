@@ -1508,8 +1508,8 @@ class CCP4ScalerR(Scaler):
 
             resolution = max([r_comp, r_rm, r_uis, r_mis])
 
-            Chatter.write('Resolution for sweep %s: %.2f' % \
-                          (dataset, resolution))
+            Debug.write('Resolution for sweep %s: %.2f' % \
+                        (dataset, resolution))
                         
             # the old version of this code...
 
