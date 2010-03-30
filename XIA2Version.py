@@ -124,8 +124,11 @@
 #           allowed lattice test to be switched off for tricky cases.
 #
 # 0.3.1.0 - included xia2html, chef running and so on.
+#
+# 0.3.1.5 - overhauled the resolution limit calculations, viz:
+#           http://xia2.blogspot.com/2010/03/resolution-limit-overhaul.html
 
-VersionNumber = "0.3.1.0"
+VersionNumber = "0.3.1.5"
 Version = "XIA2 %s" % VersionNumber
 CVSTag = "xia2-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2-%s" % VersionNumber
