@@ -691,7 +691,11 @@ def Scala(DriverType = None,
 
             assert(self._new_scala)
 
-            if not self._sd_parameters_auto:
+            if self._sd_parameters_auto:
+                if Flags.get_uniform_sd():
+                    self.input('sdcorrection uniform')
+                        
+            else:
 
                 if not self._sd_parameters:
                     

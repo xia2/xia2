@@ -97,6 +97,7 @@ class _CommandLine(Object):
 
         self._read_debug()
         self._read_interactive()
+        self._read_uniform_sd()
         self._read_trust_timestamps()
         self._read_batch_scale()
         self._read_old_mosflm()
@@ -1020,6 +1021,14 @@ class _CommandLine(Object):
         if '-interactive' in sys.argv:
             Flags.set_interactive(True)
             Debug.write('Interactive indexing ON')
+            
+        return
+
+    def _read_uniform_sd(self):
+
+        if '-no_uniform_sd' in sys.argv:
+            Flags.set_uniform_sd(True)
+            Debug.write('Uniform SD OFF')
             
         return
 
