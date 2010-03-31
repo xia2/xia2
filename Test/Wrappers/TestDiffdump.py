@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# TestLabelitScreen.py
+# TestDiffdump.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
@@ -7,7 +7,7 @@
 #
 # 2nd June 2006
 # 
-# Unit tests to ensure that the LabelitScreen wrapper is behaving
+# Unit tests to ensure that the Diffdump wrapper is behaving
 # properly.
 # 
 # 

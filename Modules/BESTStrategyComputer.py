@@ -40,7 +40,7 @@ from Schema.Interfaces.StrategyComputer import StrategyComputer
 from Wrappers.CCP4.Mosflm import Mosflm
 from Wrappers.EMBL.Best import Best
 from Wrappers.XIA.Diffdump import Diffdump
-from Wrappers.Labelit.LabelitScreen import LabelitScreen
+from Wrappers.Labelit.LabelitIndex import LabelitIndex
 
 class BESTStrategyComputer(FrameProcessor,
                           StrategyComputer):
@@ -164,7 +164,7 @@ if __name__ == '__main__':
 
     if True:
 
-        ls = LabelitScreen()
+        ls = LabelitIndex()
 
     else:
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# TestLabelitScreen.py
+# TestLabelitIndex.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
@@ -7,7 +7,7 @@
 #
 # 2nd June 2006
 # 
-# Unit tests to ensure that the LabelitScreen wrapper is behaving
+# Unit tests to ensure that the LabelitIndex wrapper is behaving
 # properly.
 # 
 # 
@@ -19,7 +19,7 @@ if not os.environ.has_key('XIA2_ROOT'):
 
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
-from Wrappers.Labelit.LabelitScreen import LabelitScreen
+from Wrappers.Labelit.LabelitIndex import LabelitIndex
 import unittest
 
 from Handlers.Streams import streams_off
@@ -34,7 +34,7 @@ def nint(a):
         b += 1
     return b
 
-class TestLabelitScreen(unittest.TestCase):
+class TestLabelitIndex(unittest.TestCase):
 
     def setUp(self):
         pass
@@ -42,7 +42,7 @@ class TestLabelitScreen(unittest.TestCase):
     def testtetragonal(self):
         '''A test to see if the indexing works when it should.'''
 
-        ls = LabelitScreen()
+        ls = LabelitIndex()
 
         directory = os.path.join(os.environ['XIA2_ROOT'],
                                  'Data', 'Test', 'Images')
@@ -75,7 +75,7 @@ class TestLabelitScreen(unittest.TestCase):
         # :)   1     0.0000 dg 4.365    152     triclinic aP    \
         # 7.56  49.82  50.39  95.39 90.02  94.01    18856
 
-        ls = LabelitScreen()
+        ls = LabelitIndex()
 
         directory = os.path.join(os.environ['XIA2_ROOT'],
                                  'Data', 'Test', 'Images')

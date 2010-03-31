@@ -10,7 +10,7 @@
 # An interface to the labelit program labelit.mosflm_script, used for
 # generating an integration script for Mosflm. In this case this is used
 # for generating the matrix file to make mosflm work. This will be added
-# to the Indexer payload in LabelitScreen.py.
+# to the Indexer payload in LabelitIndex.py.
 # 
 # 
 # 

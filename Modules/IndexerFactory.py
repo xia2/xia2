@@ -10,7 +10,7 @@
 # A factory for Indexer class instances. This will return an indexer
 # suitable for using in the context defined in the input.
 # 
-# 04/SEP/06 FIXME this needs to handle Mosflm, LabelitScreen as
+# 04/SEP/06 FIXME this needs to handle Mosflm, LabelitIndex as
 #           implementations of indexer, since the constructors will
 #           now raise an exception if the program is not available
 #           can encode the expertise on which to provide in here.
@@ -21,7 +21,7 @@
 # This supports the following Indexer implementations:
 # 
 # Mosflm/Indexer
-# LabelitScreen/Indexer
+# LabelitIndex/Indexer
 # XDS/Indexer
 # 
 # And will make a decision based on the screen information if available.
@@ -41,7 +41,7 @@ sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 # from LabelitIndexer import LabelitIndexer
 
-from Wrappers.Labelit.LabelitScreen import LabelitScreen
+from Wrappers.Labelit.LabelitIndex import LabelitIndex
 from Wrappers.CCP4.Mosflm import Mosflm
 from Modules.XDSIndexer import XDSIndexer
 from Modules.XDSIndexerII import XDSIndexerII
@@ -142,8 +142,8 @@ def Indexer(detector = None):
             if detector == 'dectris' and False:
                 Debug.write('Labelit does not support dectris detectors')
                 raise NotAvailableError, 'Labelit does not support dectris'
-            indexer = LabelitScreen()
-            Debug.write('Using LabelitScreen Indexer')
+            indexer = LabelitIndex()
+            Debug.write('Using LabelitIndex Indexer')
         except NotAvailableError, e:
             if preselection:
                 raise RuntimeError, \

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# LabelitScreen.py
+# LabelitIndex.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
@@ -7,7 +7,7 @@
 #
 # 2nd June 2006
 # 
-# A wrapper for labelit.screen - this will provide functionality to:
+# A wrapper for labelit.index - this will provide functionality to:
 #
 # Decide the beam centre.
 # Index the lattce.
@@ -118,16 +118,16 @@ from Handlers.Flags import Flags
 from Modules.IceId import IceId
 from Modules.MosflmCheckIndexerSolution import mosflm_check_indexer_solution
 
-def LabelitScreen(DriverType = None, indxr_print = True):
-    '''Factory for LabelitScreen wrapper classes, with the specified
+def LabelitIndex(DriverType = None, indxr_print = True):
+    '''Factory for LabelitIndex wrapper classes, with the specified
     Driver type.'''
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
-    class LabelitScreenWrapper(DriverInstance.__class__,
-                               FrameProcessor,
-                               Indexer):
-        '''A wrapper for the program labelit.screen - which will provide
+    class LabelitIndexWrapper(DriverInstance.__class__,
+                              FrameProcessor,
+                              Indexer):
+        '''A wrapper for the program labelit.index - which will provide
         functionality for deciding the beam centre and indexing the
         diffraction pattern.'''
 
@@ -139,7 +139,7 @@ def LabelitScreen(DriverType = None, indxr_print = True):
             FrameProcessor.__init__(self)
             Indexer.__init__(self)
 
-            self.set_executable('labelit.screen')
+            self.set_executable('labelit.index')
 
             # control over the behaviour
 
@@ -769,7 +769,7 @@ def LabelitScreen(DriverType = None, indxr_print = True):
                     raise RuntimeError, 'no solution for lattice %s' % \
                           self._indxr_input_lattice
 
-    return LabelitScreenWrapper()
+    return LabelitIndexWrapper()
 
 if __name__ == '__main__':
 
@@ -778,7 +778,7 @@ if __name__ == '__main__':
     if not os.environ.has_key('XIA2_ROOT'):
         raise RuntimeError, 'XIA2_ROOT not defined'
 
-    l = LabelitScreen()
+    l = LabelitIndex()
 
     directory = os.path.join(os.environ['XIA2_ROOT'], '..', 'xia2test',
                              'XIA2', 'Images')

@@ -29,14 +29,14 @@ from Handlers.CommandLine import CommandLine
 from Schema.Sweep import SweepFactory
 
 # program wrappers we will use
-from Wrappers.Labelit.LabelitScreen import LabelitScreen
+from Wrappers.Labelit.LabelitIndex import LabelitIndex
 from Wrappers.CCP4.Mosflm import Mosflm
 from Wrappers.CCP4.Pointless import Pointless
 
 def xia2pointgroup():
     '''Do it!'''
 
-    l = LabelitScreen()
+    l = LabelitIndex()
 
     l.setup_from_image(CommandLine.get_image())
 

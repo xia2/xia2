@@ -37,7 +37,7 @@ from Handlers.CommandLine import CommandLine
 from Schema.Sweep import SweepFactory
 
 # program wrappers we will use
-from Wrappers.Labelit.LabelitScreen import LabelitScreen
+from Wrappers.Labelit.LabelitIndex import LabelitIndex
 from Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
 
 def xia2scan():
@@ -86,7 +86,7 @@ def xia2scan():
 
             try:
 
-                ls = LabelitScreen()
+                ls = LabelitIndex()
                 ls.setup_from_image(s.imagename(i))
                 ls.add_indexer_image_wedge(i)
                 ls.set_beam(beam)
