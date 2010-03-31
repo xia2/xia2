@@ -449,8 +449,9 @@ END PROJECT TS01
 	images where there is e.g. 3.5 in the template. This was previously
 	misinterpreted as an image name of the form setup.NNNN.</li>
       <li>Implemented new resolution limit pipelines, based on new merging code
-	to give more robust control. Currently not easily configurable, that
-	will need an overhaul of the user input.</li>
+	to give more robust control: -2dr and -3dr (recommended.) Fine
+	control over the choices can be made using the -isigma, -misigma, 
+	-completeness and -rmerge command line options.</li>
       <li>Added interactive indexing mechanism, where user can assign images 
 	to use for autoindexing, e.g.:
 
@@ -948,7 +949,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Fri Mar 26 16:08:58 GMT 2010
+Last modified: Wed Mar 31 11:02:52 BST 2010
 <!-- hhmts end -->
   </body>
 </html>
