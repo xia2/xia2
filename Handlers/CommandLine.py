@@ -119,6 +119,7 @@ class _CommandLine(Object):
         self._read_3d()
         self._read_3dr()
         self._read_3dii()
+        self._read_3diir()
         self._read_migrate_data()
         self._read_zero_dose()
         self._read_no_correct()
@@ -1007,6 +1008,15 @@ class _CommandLine(Object):
             add_preference('integrater', 'xds')
             add_preference('scaler', 'xds')
             Debug.write('3D II pipeline (XDS IDXREF all images) selected')
+        return
+
+    def _read_3diir(self):
+
+        if '-3diir' in sys.argv:
+            add_preference('indexer', 'xdsii')
+            add_preference('integrater', 'xdsr')
+            add_preference('scaler', 'xdsr')
+            Debug.write('3D II R pipeline (XDS IDXREF all images) selected')
         return
 
     def _read_debug(self):
