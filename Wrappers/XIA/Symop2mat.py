@@ -4,7 +4,7 @@
 #   Copyright (C) 2007 CCLRC, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
-#   included in the root directory of this package.# 
+#   included in the root directory of this package.
 #  
 # A wrapper for the jiffy program symop2mat, which converts a symmetry
 # operation to a matrix, for input into XDS CORRECT from e.g. pointless.

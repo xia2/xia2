@@ -636,14 +636,24 @@ if __name__ == '__main__':
 
     m = merger(sys.argv[1])
 
+    name = os.path.split(sys.argv[1])[-1].replace('.mtz', '')
+
+    l_rmerge = '%s_rmerge' % name
+    l_comp = '%s_comp' % name
+    l_isigma = '%s_isigma' % name
+    l_misigma = '%s_misigma' % name
+
     if len(sys.argv) > 2:
         nbins = int(sys.argv[2])
 
     m.calculate_resolution_ranges(nbins = nbins)
 
     print 'Resolutions:'
-    print 'Rmerge:     %.2f' % m.resolution_rmerge()
-    print 'I/sig:      %.2f' % m.resolution_unmerged_isigma()
-    print 'Mn(I/sig):  %.2f' % m.resolution_merged_isigma()
-    print 'Comp:       %.2f' % m.resolution_completeness()
+    print 'Rmerge:     %.2f' % m.resolution_rmerge(log = l_rmerge)
+    print 'I/sig:      %.2f' % m.resolution_unmerged_isigma(log = l_isigma)
+    print 'Mn(I/sig):  %.2f' % m.resolution_merged_isigma(log = l_misigma)
+    print 'Comp:       %.2f' % m.resolution_completeness(log = l_comp)
+    
+
+
     

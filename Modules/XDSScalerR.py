@@ -1260,6 +1260,12 @@ class XDSScalerR(Scaler):
             
             m = merger(hklin)
 
+            hkl_copy = os.path.join(self.get_working_directory(),
+                                    'R_%s' % os.path.split(hklin)[-1])
+
+            if not os.path.exists(hkl_copy):
+                shutil.copyfile(hklin, hkl_copy)
+
             m.calculate_resolution_ranges(nbins = 100)
 
             r_comp = m.resolution_completeness(log = log_completeness)
