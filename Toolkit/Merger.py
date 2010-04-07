@@ -53,7 +53,7 @@ from PolyFitter import log_inv_fit
 from PolyFitter import interpolate_value
 from PolyFitter import get_positive_values
 from Handlers.Flags import Flags
-
+from Handlers.Streams import streams_off
 
 class unmerged_intensity:
     '''A class to represent and encapsulate the multiple observations of a
@@ -379,9 +379,13 @@ class merger:
             hkl_list = list(self._unmerged_reflections)
         
         for hkl in hkl_list:
-            i_mean = self._merged_reflections[hkl][0]
-            t += self._unmerged_reflections[hkl].rmerge_contribution(i_mean)
-            b += self._unmerged_reflections[hkl].multiplicity() * i_mean
+            # if we have only one observation, do not include in the
+            # rmerge calculations
+            if self._unmerged_reflections[hkl].multiplicity() > 1:
+                i_mean = self._merged_reflections[hkl][0]
+                t += self._unmerged_reflections[hkl].rmerge_contribution(
+                    i_mean)
+                b += self._unmerged_reflections[hkl].multiplicity() * i_mean
 
         return t / b
 
@@ -400,9 +404,19 @@ class merger:
             r_pm = self._unmerged_reflections[
                 hkl].rmerge_contribution_anomalous(i_mean_p, i_mean_m)
             t += r_pm[0] + r_pm[1]
-            multiplicity_pm = self._unmerged_reflections[
+
+            # if we have only one observation, do not include in the
+            # rmerge calculations
+            
+            mult_p, mult_m = self._unmerged_reflections[
                 hkl].multiplicity_anomalous()
-            b += multiplicity_pm[0] * i_mean_p + multiplicity_pm[1] * i_mean_m
+            
+            if mult_p == 1:
+                mult_p = 0
+            if mult_m == 1:
+                mult_m = 0
+                
+            b += mult_p * i_mean_p + mult_m * i_mean_m
 
         return t / b
 
@@ -632,6 +646,8 @@ class merger:
 
 if __name__ == '__main__':
 
+    streams_off()
+
     nbins = 100
 
     m = merger(sys.argv[1])
@@ -649,10 +665,12 @@ if __name__ == '__main__':
     m.calculate_resolution_ranges(nbins = nbins)
 
     print 'Resolutions:'
-    print 'Rmerge:     %.2f' % m.resolution_rmerge(log = l_rmerge)
+    print 'Rmerge:     %.2f' % m.resolution_rmerge(limit = 1.0,
+                                                   log = l_rmerge)
     print 'I/sig:      %.2f' % m.resolution_unmerged_isigma(log = l_isigma)
     print 'Mn(I/sig):  %.2f' % m.resolution_merged_isigma(log = l_misigma)
-    print 'Comp:       %.2f' % m.resolution_completeness(log = l_comp)
+    print 'Comp:       %.2f' % m.resolution_completeness(limit = 0.5,
+                                                         log = l_comp)
     
 
 

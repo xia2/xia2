@@ -34,7 +34,7 @@ class _Environment:
     def __init__(self):
         self._cwd = os.getcwd()
         self._is_setup = False
-        self._setup()
+        # self._setup()
         return
 
     def _setup(self):
@@ -66,6 +66,8 @@ class _Environment:
         binsort_scr = tempfile.mkdtemp()
         os.environ['BINSORT_SCR'] = binsort_scr
         Debug.write('Created BINSORT_SCR: %s' % binsort_scr)
+
+        self._is_setup = True
 
         return
 
