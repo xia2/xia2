@@ -31,17 +31,18 @@ def correlation_coefficient(a, b):
 
     return sab / (saa * sbb)
 
-class MultiMerger:
+class multi_merger:
     '''A class to mediate merging of multiple reflection files from putatively
     isomorphous structures. This will include list of possible reindexing
     operations which could be needed. N.B. these could one day be generated
     internally.'''
 
     def __init__(self, hklin_list, reindex_op_list):
-        '''Set up stuff!'''
+        '''Copy in list of reflection files, alternate indexing options.'''
         
         self._hklin_list = hklin_list
-        self._reindex_op_list = ['h,k,l'].extend(reindex_op_list)
+        self._reindex_op_list = ['h,k,l']
+        self._reindex_op_list.extend(reindex_op_list)
 
         # N.B. will need to verify that the reindexing operations are
         # not spacegroup / pointgroup symmetry operations.
@@ -76,6 +77,7 @@ class MultiMerger:
 
         for reindex_op in self._reindex_op_list:
 
+            m_work.reload()
             m_work.reindex(reindex_op)
 
             r_ref = m_ref.get_merged_reflections()
@@ -95,92 +97,30 @@ class MultiMerger:
 
         ccs.sort()
 
-        
+        best_reindex = ccs[-1][1]
 
-        return
+        m_work.reload()
+        m_work.reindex(best_reindex)
+
+        return best_reindex
 
     def unify_indexing(self):
         '''Unify the indexing conventions, to the first reflection file.'''
 
+        for j in range(1, len(self._merger_list)):
+            reindex = self.decide_correct_indexing(j)
+
+            print 'File (%s): %s' % (self._hklin_list[j], reindex)
+
         return
     
-        
+if __name__ == '__main__':
 
-    
+    hklin_list = ['R1.mtz', 'R2.mtz', 'R3.mtz', 'R4.mtz']
+    reindex_op_list = ['-k,h,l']
 
+    mm = multi_merger(hklin_list, reindex_op_list)
 
-m1 = merger('R1.mtz')
-m2 = merger('R2.mtz')
-m3 = merger('R3.mtz')
-m4 = merger('R4.mtz')
+    mm.unify_indexing()
 
-# ensure consistent ASU
-m1.reindex('h,k,l')
-m2.reindex('h,k,l')
-m3.reindex('h,k,l')
-m4.reindex('h,k,l')
-
-r1 = m1.get_merged_reflections()
-
-print '1, 2'
-
-r2 = m2.get_merged_reflections()
-
-c1 = []
-c2 = []
-
-for hkl in r1:
-    if hkl in r2:
-        c1.append(r1[hkl][0])
-        c2.append(r2[hkl][0])
-
-print correlation_coefficient(c1, c2)
-print len(c1)
-
-print '1, 3'
-
-r3 = m3.get_merged_reflections()
-
-c1 = []
-c3 = []
-
-for hkl in r1:
-    if hkl in r3:
-        c1.append(r1[hkl][0])
-        c3.append(r3[hkl][0])
-
-print correlation_coefficient(c1, c3)
-print len(c1)
-
-print '1, 4'
-
-r4 = m4.get_merged_reflections()
-
-c1 = []
-c4 = []
-
-for hkl in r1:
-    if hkl in r4:
-        c1.append(r1[hkl][0])
-        c4.append(r4[hkl][0])
-
-print correlation_coefficient(c1, c4)
-print len(c1)
-
-print '1, 4R'
-
-m4.reindex('-k,h,l')
-
-r4 = m4.get_merged_reflections()
-
-c1 = []
-c4 = []
-
-for hkl in r1:
-    if hkl in r4:
-        c1.append(r1[hkl][0])
-        c4.append(r4[hkl][0])
-
-print correlation_coefficient(c1, c4)
-print len(c1)
 

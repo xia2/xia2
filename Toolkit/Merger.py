@@ -220,6 +220,7 @@ class merger:
     '''A class to calculate things from merging reflections.'''
 
     def __init__(self, hklin):
+
         self._mf = mtz_file(hklin)
         self._unmerged_reflections = { }
         self._merged_reflections = { }
@@ -245,6 +246,19 @@ class merger:
 
         # self._calculate_unmerged_di()
     
+        return
+
+    def reload(self):
+        '''Reload the reflection list &c.'''
+
+        self._unmerged_reflections = { }
+        self._merged_reflections = { }
+        self._merged_reflections_anomalous = { }
+
+        self._read_unmerged_reflections()
+        self._merge_reflections()
+        self._merge_reflections_anomalous()
+
         return
 
     def _read_unmerged_reflections(self):
