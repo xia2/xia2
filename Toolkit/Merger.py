@@ -333,6 +333,9 @@ class merger:
 
         return
 
+    def get_merged_reflections(self):
+        return self._merged_reflections
+    
     def calculate_resolution_ranges(self, nbins = 20):
         '''Calculate semi-useful resolution ranges for analysis.'''
 
