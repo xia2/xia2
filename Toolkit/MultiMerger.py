@@ -12,7 +12,6 @@ import sys
 import math
 import os
 import time
-import itertools
 import copy
 
 from Merger import merger
@@ -33,7 +32,13 @@ def correlation_coefficient(a, b):
 m1 = merger('R1.mtz')
 m2 = merger('R2.mtz')
 m3 = merger('R3.mtz')
-m4 = merger('R4R.mtz')
+m4 = merger('R4.mtz')
+
+# ensure consistent ASU
+m1.reindex('h,k,l')
+m2.reindex('h,k,l')
+m3.reindex('h,k,l')
+m4.reindex('h,k,l')
 
 r1 = m1.get_merged_reflections()
 

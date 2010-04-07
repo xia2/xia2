@@ -42,8 +42,10 @@ if not os.environ.has_key('XIA2CORE_ROOT'):
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
+from cctbx.array_family import flex
 from iotbx import mtz
 from cctbx.miller import build_set
+from cctbx.miller import map_to_asu
 from cctbx.crystal import symmetry as crystal_symmetry
 from cctbx.sgtbx import rt_mx
 
@@ -304,11 +306,42 @@ class merger:
 
         R = rt_mx(reindex_operation).inverse()
 
-        merged_reflections = { }
+        # first construct mapping table - native, anomalous
+
+        map_native = { }
+
+        hkls = flex.miller_index()
 
         for hkl in self._merged_reflections:
             Fhkl = R * hkl
             Rhkl = nint(Fhkl[0]), nint(Fhkl[1]), nint(Fhkl[2])
+            hkls.append(Rhkl)
+
+        map_to_asu(self._mf.get_space_group().type(), False, hkls)
+        
+        for j, hkl in enumerate(self._merged_reflections):
+            map_native[hkl] = hkls[j]
+
+        map_anomalous = { }
+
+        hkls = flex.miller_index()
+
+        for hkl in self._merged_reflections_anomalous:
+            Fhkl = R * hkl
+            Rhkl = nint(Fhkl[0]), nint(Fhkl[1]), nint(Fhkl[2])
+            hkls.append(Rhkl)
+
+        map_to_asu(self._mf.get_space_group().type(), True, hkls)
+        
+        for j, hkl in enumerate(self._merged_reflections_anomalous):
+            map_anomalous[hkl] = hkls[j]
+
+        merged_reflections = { }
+
+        for hkl in self._merged_reflections:
+            # Fhkl = R * hkl
+            # Rhkl = nint(Fhkl[0]), nint(Fhkl[1]), nint(Fhkl[2])
+            Rhkl = map_native[hkl]
             merged_reflections[Rhkl] = self._merged_reflections[hkl]
 
         self._merged_reflections = merged_reflections
@@ -316,8 +349,9 @@ class merger:
         merged_reflections = { }
 
         for hkl in self._merged_reflections_anomalous:
-            Fhkl = R * hkl
-            Rhkl = nint(Fhkl[0]), nint(Fhkl[1]), nint(Fhkl[2]) 
+            # Fhkl = R * hkl
+            # Rhkl = nint(Fhkl[0]), nint(Fhkl[1]), nint(Fhkl[2])
+            Rhkl = map_anomalous[hkl]
             merged_reflections[Rhkl] = self._merged_reflections_anomalous[hkl]
 
         self._merged_reflections_anomalous = merged_reflections
@@ -325,8 +359,9 @@ class merger:
         unmerged_reflections = { }
 
         for hkl in self._unmerged_reflections:
-            Fhkl = R * hkl
-            Rhkl = nint(Fhkl[0]), nint(Fhkl[1]), nint(Fhkl[2]) 
+            # Fhkl = R * hkl
+            # Rhkl = nint(Fhkl[0]), nint(Fhkl[1]), nint(Fhkl[2]) 
+            Rhkl = map_anomalous[hkl]
             unmerged_reflections[Rhkl] = self._unmerged_reflections[hkl]
 
         self._unmerged_reflections = unmerged_reflections
