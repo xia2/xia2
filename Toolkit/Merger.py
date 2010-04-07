@@ -45,6 +45,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from iotbx import mtz
 from cctbx.miller import build_set
 from cctbx.crystal import symmetry as crystal_symmetry
+from cctbx.sgtbx import rt_mx
 
 from MtzFactory import mtz_file
 from PolyFitter import fit
@@ -54,6 +55,9 @@ from PolyFitter import interpolate_value
 from PolyFitter import get_positive_values
 from Handlers.Flags import Flags
 from Handlers.Streams import streams_off
+
+def nint(a):
+    return int(round(a))
 
 class unmerged_intensity:
     '''A class to represent and encapsulate the multiple observations of a
@@ -292,6 +296,40 @@ class merger:
         for hkl in self._unmerged_reflections:
             self._unmerged_di[hkl] = self._unmerged_reflections[
                 hkl].calculate_unmerged_di()
+
+        return
+
+    def reindex(self, reindex_operation):
+        '''Reindex the reflections by the given reindexing operation.'''
+
+        R = rt_mx(reindex_operation).inverse()
+
+        merged_reflections = { }
+
+        for hkl in self._merged_reflections:
+            Fhkl = R * hkl
+            Rhkl = nint(Fhkl[0]), nint(Fhkl[1]), nint(Fhkl[2])
+            merged_reflections[Rhkl] = self._merged_reflections[hkl]
+
+        self._merged_reflections = merged_reflections
+
+        merged_reflections = { }
+
+        for hkl in self._merged_reflections_anomalous:
+            Fhkl = R * hkl
+            Rhkl = nint(Fhkl[0]), nint(Fhkl[1]), nint(Fhkl[2]) 
+            merged_reflections[Rhkl] = self._merged_reflections_anomalous[hkl]
+
+        self._merged_reflections_anomalous = merged_reflections
+
+        unmerged_reflections = { }
+
+        for hkl in self._unmerged_reflections:
+            Fhkl = R * hkl
+            Rhkl = nint(Fhkl[0]), nint(Fhkl[1]), nint(Fhkl[2]) 
+            unmerged_reflections[Rhkl] = self._unmerged_reflections[hkl]
+
+        self._unmerged_reflections = unmerged_reflections
 
         return
 
@@ -663,6 +701,21 @@ if __name__ == '__main__':
         nbins = int(sys.argv[2])
 
     m.calculate_resolution_ranges(nbins = nbins)
+
+    print 'Resolutions:'
+    print 'Rmerge:     %.2f' % m.resolution_rmerge(limit = 1.0,
+                                                   log = l_rmerge)
+    print 'I/sig:      %.2f' % m.resolution_unmerged_isigma(log = l_isigma)
+    print 'Mn(I/sig):  %.2f' % m.resolution_merged_isigma(log = l_misigma)
+    print 'Comp:       %.2f' % m.resolution_completeness(limit = 0.5,
+                                                         log = l_comp)
+    l_rmerge = 'R%s_rmerge' % name
+    l_comp = 'R%s_comp' % name
+    l_isigma = 'R%s_isigma' % name
+    l_misigma = 'R%s_misigma' % name
+
+    m.reindex('-k,h,l')
+    m.calculate_resolution_ranges(nbins = nbins)    
 
     print 'Resolutions:'
     print 'Rmerge:     %.2f' % m.resolution_rmerge(limit = 1.0,
