@@ -261,6 +261,30 @@ class merger:
 
         return
 
+    def accumulate(self, other_merger):
+        '''Accumulate all of the measurements from another merger class
+        instance.'''
+
+        self._unmerged_reflections = { }
+        self._merged_reflections = { }
+        self._merged_reflections_anomalous = { }
+
+        self._read_unmerged_reflections()
+
+        other_unmerged_reflections = other_merger.get_unmerged_reflections()
+
+        for hkl in other_unmerged_reflections:
+            if not hkl in self._unmerged_reflections:
+                self._unmerged_reflections[hkl] = unmerged_intensity()
+            for observation in other_unmerged_reflections[hkl].get():
+                m_isym, i, sigi, b = observation
+                self._unmerged_reflections[hkl].add(m_isym, i, sigi, b)
+
+        self._merge_reflections()
+        self._merge_reflections_anomalous()
+
+        return
+
     def _read_unmerged_reflections(self):
         '''Actually read the reflections in to memory.'''
 
@@ -384,6 +408,9 @@ class merger:
 
     def get_merged_reflections(self):
         return self._merged_reflections
+    
+    def get_unmerged_reflections(self):
+        return self._unmerged_reflections
     
     def calculate_resolution_ranges(self, nbins = 20):
         '''Calculate semi-useful resolution ranges for analysis.'''

@@ -6,7 +6,11 @@
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
 #
-# A playpen for figuring out merging multi-crystal merging...
+# A playpen for figuring out merging multi-crystal merging... start by
+# figuring out a way of comparing the indexing, then by adding together the
+# lists of reindexed observations. Then can compare the other data sets
+# with this accumulation of measurements to see how well the named data set
+# agrees.
 
 import sys
 import math
@@ -52,6 +56,9 @@ class multi_merger:
         self.setup()
         
         return
+
+    def get_mergers(self):
+        return self._merger_list
 
     def setup(self):
         '''Load in all of the reflection files and so on.'''
@@ -123,4 +130,15 @@ if __name__ == '__main__':
 
     mm.unify_indexing()
 
+    mergers = mm.get_mergers()
 
+    m = mergers[0]
+
+    print '%.3f %.2f' % (m.calculate_completeness(),
+                         m.calculate_multiplicity())
+
+    for j in range(1, len(mergers)):
+        m.accumulate(mergers[j])
+        print '%.3f %.2f' % (m.calculate_completeness(),
+                             m.calculate_multiplicity())
+        
