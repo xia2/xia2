@@ -19,6 +19,7 @@ import time
 import copy
 
 from Merger import merger
+from KBScale import lkb_scale
 
 def correlation_coefficient(a, b):
     '''Calculate the correlation coefficient between values a and b.'''
@@ -120,8 +121,32 @@ class multi_merger:
         
         m_ref = self._merger_list[0]
         m_work = self._merger_list[file_no]
+        
+        r_ref = m_ref.get_merged_reflections()
+        r_work = m_work.get_merged_reflections()
+            
+        ref = []
+        work = []
 
-        # blah implement this!
+        for hkl in r_ref:
+            if hkl in r_work:
+
+                if r_ref[hkl][0] / r_ref[hkl][1] < 1:
+                    continue
+
+                if r_work[hkl][0] / r_work[hkl][1] < 1:
+                    continue
+                
+                d = m_work.resolution(hkl)
+                s = 1.0 / (d * d)
+                ref.append((s, r_ref[hkl][0]))
+                work.append((s, r_work[hkl][0]))
+
+        k, b = lkb_scale(ref, work)
+
+        m_work.apply_kb(k, b)
+
+        return k, b
         
     def unify_indexing(self):
         '''Unify the indexing conventions, to the first reflection file.'''
@@ -133,15 +158,29 @@ class multi_merger:
 
         return
     
+    def scale_all(self):
+        '''Place all measurements on a common scale using kB scaling.'''
+
+        for j in range(1, len(self._merger_list)):
+            k, b = self.scale(j)
+
+            print 'File (%s): %.2f %.2f' % (self._hklin_list[j], k, b)
+
+        return
+    
 if __name__ == '__main__':
 
-    # hklin_list = ['R1.mtz', 'R2.mtz', 'R3.mtz', 'R4.mtz']
-    hklin_list = ['chunk_%d.mtz' % j for j in [0, 1, 2]]
+    hklin_list = ['R1.mtz', 'R2.mtz', 'R3.mtz', 'R4.mtz']
+    # hklin_list = ['chunk_%d.mtz' % j for j in [0, 1, 2]]
     reindex_op_list = ['-k,h,l']
 
     mm = multi_merger(hklin_list, reindex_op_list)
 
     mm.unify_indexing()
+
+    mm.scale_all()
+
+if __name__ == '__other__':
 
     mergers = mm.get_mergers()
 
@@ -155,3 +194,4 @@ if __name__ == '__main__':
         print '%.3f %.2f' % (m.calculate_completeness(),
                              m.calculate_multiplicity())
         
+    

@@ -32,7 +32,7 @@ def gradients_kb(ref, work, params):
 
     return g
 
-class kb_scale:
+class kb_scaler:
 
     def __init__(self, ref, work):
 
@@ -84,7 +84,7 @@ def gradients_lkb(ref, work, params):
 
     return g
         
-class lkb_scale:
+class lkb_scaler:
 
     def __init__(self, ref, work):
 
@@ -105,6 +105,19 @@ class lkb_scale:
 
     def get_kb(self):
         return math.exp(self.x[0]), self.x[1]
+
+def lkb_scale(ref, work):
+    '''Scale work to reference via scale factor of the form
+
+    Ir = Iw * K * exp(-Bs)
+
+    returning k, B.'''
+
+    lkbs = lkb_scaler(ref, work)
+    lkbs.refine()
+
+    return lkbs.get_kb()
+    
         
 if __name__ == '__main__':
 
@@ -122,13 +135,13 @@ if __name__ == '__main__':
 
         work = [(r[0], r[1] / kb(r[0], k, b)) for r in ref]
 
-        kbs = kb_scale(ref, work)
+        kbs = kb_scaler(ref, work)
 
         kbs.refine()
 
         print 'Linear: %.2f %.2f' % kbs.get_kb()
 
-        lkbs = lkb_scale(ref, work)
+        lkbs = lkb_scaler(ref, work)
 
         lkbs.refine()
 

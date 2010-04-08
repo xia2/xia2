@@ -312,15 +312,6 @@ class merger:
 
         return
 
-    def _merge_reflections(self):
-        '''Merge the currently recorded unmerged reflections.'''
-
-        for hkl in self._unmerged_reflections:
-            self._merged_reflections[hkl] = self._unmerged_reflections[
-                hkl].merge()
-
-        return
-
     def _merge_reflections_anomalous(self):
         '''Merge the currently recorded unmerged reflections.'''
 
@@ -336,6 +327,19 @@ class merger:
         for hkl in self._unmerged_reflections:
             self._unmerged_di[hkl] = self._unmerged_reflections[
                 hkl].calculate_unmerged_di()
+
+        return
+
+    def apply_kb(self, k, b):
+        '''Apply kB scale factors to the recorded measurements.'''
+
+        for hkl in self._merged_reflections:
+            d = self.resolution(hkl)
+            i, sigi = self._merged_reflections[hkl]
+            scale = k * math.exp(-1 * b / (d * d))
+            self._merged_reflections[hkl] = (i * scale, sigi * scale)
+
+        # fixme apply this to anomalous, unmerged reflections
 
         return
 
@@ -412,6 +416,11 @@ class merger:
     
     def get_unmerged_reflections(self):
         return self._unmerged_reflections
+
+    def resolution(self, hkl):
+        '''Compute the resolution corresponding to this miller index.'''
+
+        return self._mf.get_unit_cell().d(hkl)
     
     def calculate_resolution_ranges(self, nbins = 20):
         '''Calculate semi-useful resolution ranges for analysis.'''
