@@ -194,8 +194,8 @@ class multi_merger:
     
 if __name__ == '__main__':
 
-    # hklin_list = ['R1.mtz', 'R2.mtz', 'R3.mtz', 'R4.mtz']
-    hklin_list = ['chunk_%d.mtz' % j for j in [0, 1, 2, 3]]
+    hklin_list = ['R1.mtz', 'R2.mtz', 'R3.mtz', 'R4.mtz']
+    # hklin_list = ['chunk_%d.mtz' % j for j in [0, 1, 2, 3]]
     reindex_op_list = ['-k,h,l']
 
     mm = multi_merger(hklin_list, reindex_op_list)
@@ -219,12 +219,14 @@ if __name__ == '__main__':
 
     m = mergers[0]
 
-    print '%.3f %.2f' % (m.calculate_completeness(),
-                         m.calculate_multiplicity())
+    print '%.3f %.2f %.2f' % (m.calculate_completeness(),
+                              m.calculate_multiplicity(),
+                              m.calculate_rmerge())
 
     for j in range(1, len(mergers)):
         m.accumulate(mergers[j])
-        print '%.3f %.2f' % (m.calculate_completeness(),
-                             m.calculate_multiplicity())
+        print '%.3f %.2f %.2f' % (m.calculate_completeness(),
+                                  m.calculate_multiplicity(),
+                                  m.calculate_rmerge())
         
     

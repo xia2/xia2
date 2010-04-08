@@ -75,6 +75,18 @@ class unmerged_intensity:
         self._observations.append((misym, i, sigi, b))
         return
 
+    def apply_scale(self, s):
+        '''Apply scale factor s.'''
+
+        scaled_observations = []
+
+        for o in self._observations:
+            scaled_observations.append((o[0], s * o[1], s * o[2], o[3]))
+
+        self._observations = scaled_observations
+
+        return
+
     def get(self):
         return self._observations
 
@@ -331,15 +343,26 @@ class merger:
         return
 
     def apply_kb(self, k, b):
-        '''Apply kB scale factors to the recorded measurements.'''
+        '''Apply kB scale factors to the recorded measurements, for all
+        merged and unmerged observations.'''
 
         for hkl in self._merged_reflections:
             d = self.resolution(hkl)
-            i, sigi = self._merged_reflections[hkl]
             scale = k * math.exp(-1 * b / (d * d))
+            i, sigi = self._merged_reflections[hkl]
             self._merged_reflections[hkl] = (i * scale, sigi * scale)
 
-        # fixme apply this to anomalous, unmerged reflections
+        for hkl in self._merged_reflections_anomalous:
+            d = self.resolution(hkl)
+            scale = k * math.exp(-1 * b / (d * d))
+            ip, sigip, im, sigim = self._merged_reflections_anomalous[hkl]
+            self._merged_reflections_anomalous[hkl] = (
+                ip * scale, sigip * scale, im * scale, sigim * scale)
+
+        for hkl in self._unmerged_reflections:
+            d = self.resolution(hkl)
+            scale = k * math.exp(-1 * b / (d * d))            
+            self._unmerged_reflections[hkl].apply_scale(scale)
 
         return
 
