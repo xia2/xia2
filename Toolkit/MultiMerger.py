@@ -112,6 +112,30 @@ class multi_merger:
 
         return best_reindex
 
+    def r(self, file_no):
+        '''Compute the residual between related data sets.'''
+
+        assert(file_no > 0)
+        
+        m_ref = self._merger_list[0]
+        m_work = self._merger_list[file_no]
+        
+        r_ref = m_ref.get_merged_reflections()
+        r_work = m_work.get_merged_reflections()
+            
+        ref = []
+        work = []
+
+        r = 0.0
+        d = 0.0
+        
+        for hkl in r_ref:
+            if hkl in r_work:
+                r += math.fabs(r_ref[hkl][0] - r_work[hkl][0])
+                d += math.fabs(r_ref[hkl][0])
+
+        return r / d
+
     def scale(self, file_no):
         '''Scale the measurements in file number j to the reference, here
         defined to be the first one. N.B. assumes that the indexing is
@@ -170,17 +194,26 @@ class multi_merger:
     
 if __name__ == '__main__':
 
-    hklin_list = ['R1.mtz', 'R2.mtz', 'R3.mtz', 'R4.mtz']
-    # hklin_list = ['chunk_%d.mtz' % j for j in [0, 1, 2]]
+    # hklin_list = ['R1.mtz', 'R2.mtz', 'R3.mtz', 'R4.mtz']
+    hklin_list = ['chunk_%d.mtz' % j for j in [0, 1, 2, 3]]
     reindex_op_list = ['-k,h,l']
 
     mm = multi_merger(hklin_list, reindex_op_list)
 
+    for j in range(1, len(hklin_list)):
+        print '%d %.2f' % (j, mm.r(j))
+
     mm.unify_indexing()
+
+    for j in range(1, len(hklin_list)):
+        print '%d %.2f' % (j, mm.r(j))
 
     mm.scale_all()
 
-if __name__ == '__other__':
+    for j in range(1, len(hklin_list)):
+        print '%d %.2f' % (j, mm.r(j))
+
+    mm.scale_all()
 
     mergers = mm.get_mergers()
 
