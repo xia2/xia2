@@ -111,6 +111,18 @@ class multi_merger:
 
         return best_reindex
 
+    def scale(self, file_no):
+        '''Scale the measurements in file number j to the reference, here
+        defined to be the first one. N.B. assumes that the indexing is
+        already consistent.'''
+
+        assert(file_no > 0)
+        
+        m_ref = self._merger_list[0]
+        m_work = self._merger_list[file_no]
+
+        # blah implement this!
+        
     def unify_indexing(self):
         '''Unify the indexing conventions, to the first reflection file.'''
 
@@ -123,7 +135,8 @@ class multi_merger:
     
 if __name__ == '__main__':
 
-    hklin_list = ['R1.mtz', 'R2.mtz', 'R3.mtz', 'R4.mtz']
+    # hklin_list = ['R1.mtz', 'R2.mtz', 'R3.mtz', 'R4.mtz']
+    hklin_list = ['chunk_%d.mtz' % j for j in [0, 1, 2]]
     reindex_op_list = ['-k,h,l']
 
     mm = multi_merger(hklin_list, reindex_op_list)

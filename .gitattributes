@@ -30,6 +30,7 @@ Modules/Xia2html/icons/info.png -text
 Modules/Xia2html/icons/warning.png -text
 Schema/Doc/Structure.pdf -text
 Schema/Interfaces/Doc/Interfaces.pdf -text
+Toolkit/KBScale.py -text
 Toolkit/MultiMerger.py -text
 Toolkit/PlayPen/TestMinimise.py -text
 Toolkit/PolyFitter.py -text

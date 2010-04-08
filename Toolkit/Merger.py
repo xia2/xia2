@@ -265,11 +265,11 @@ class merger:
         '''Accumulate all of the measurements from another merger class
         instance.'''
 
-        self._unmerged_reflections = { }
-        self._merged_reflections = { }
-        self._merged_reflections_anomalous = { }
+        # self._unmerged_reflections = { }
+        # self._merged_reflections = { }
+        # self._merged_reflections_anomalous = { }
 
-        self._read_unmerged_reflections()
+        # self._read_unmerged_reflections()
 
         other_unmerged_reflections = other_merger.get_unmerged_reflections()
 
@@ -399,7 +399,8 @@ class merger:
         for hkl in self._unmerged_reflections:
             # Fhkl = R * hkl
             # Rhkl = nint(Fhkl[0]), nint(Fhkl[1]), nint(Fhkl[2]) 
-            Rhkl = map_anomalous[hkl]
+            # Rhkl = map_anomalous[hkl]
+            Rhkl = map_native[hkl]
             unmerged_reflections[Rhkl] = self._unmerged_reflections[hkl]
 
         self._unmerged_reflections = unmerged_reflections
