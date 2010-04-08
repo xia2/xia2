@@ -136,6 +136,30 @@ class multi_merger:
 
         return r / d
 
+    def r_ext(self, j, ext):
+        '''Compute the residual between related data sets, given from an
+        external source.'''
+
+        assert(j < len(self._merger_list))
+
+        m_ref = self._merger_list[j]
+        
+        r_ref = m_ref.get_merged_reflections()
+        r_work = ext.get_merged_reflections()
+            
+        ref = []
+        work = []
+
+        r = 0.0
+        d = 0.0
+        
+        for hkl in r_ref:
+            if hkl in r_work:
+                r += math.fabs(r_ref[hkl][0] - r_work[hkl][0])
+                d += math.fabs(r_ref[hkl][0])
+
+        return r / d
+
     def scale(self, file_no):
         '''Scale the measurements in file number j to the reference, here
         defined to be the first one. N.B. assumes that the indexing is
@@ -228,5 +252,12 @@ if __name__ == '__main__':
         print '%.3f %.2f %.2f' % (m.calculate_completeness(),
                                   m.calculate_multiplicity(),
                                   m.calculate_rmerge())
-        
+
+    # compare each data set with all merged together
     
+    mm = multi_merger(hklin_list, reindex_op_list)
+    mm.unify_indexing()
+    mm.scale_all()
+
+    for j in range(len(hklin_list)):
+        print '%d %.2f' % (j, mm.r_ext(j, m))

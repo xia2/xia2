@@ -1,3 +1,16 @@
+#!/usr/bin/env cctbx.python
+# KBScale.py
+# 
+#   Copyright (C) 2010 Diamond Light Source, Graeme Winter
+#
+#   This code is distributed under the BSD license, a copy of which is 
+#   included in the root directory of this package.
+#
+# A rough implementation of local scaling for partial data sets, using kB
+# scaling. Includes linear and log scaling, and uses CCTBX minimization
+# which seems to work nicely. Used in MultiMerger.
+# 
+
 import math
 
 from cctbx.array_family import flex
