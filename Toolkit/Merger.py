@@ -260,6 +260,20 @@ class merger:
     
         return
 
+    def debug_info(self):
+        '''Pull out some information for debugging, namely total intensity,
+        number of reflections &c.'''
+
+        n = 0
+        I = 0.0
+
+        for hkl in self._unmerged_reflections:
+            for o in self._unmerged_reflections[hkl].get():
+                n += 1
+                I += o[1]
+
+        return n, I
+
     def reload(self):
         '''Reload the reflection list &c.'''
 
@@ -401,11 +415,11 @@ class merger:
         for j, hkl in enumerate(self._merged_reflections_anomalous):
             map_anomalous[hkl] = hkls[j]
 
+        # then remap the actual measurements
+
         merged_reflections = { }
 
         for hkl in self._merged_reflections:
-            # Fhkl = R * hkl
-            # Rhkl = nint(Fhkl[0]), nint(Fhkl[1]), nint(Fhkl[2])
             Rhkl = map_native[hkl]
             merged_reflections[Rhkl] = self._merged_reflections[hkl]
 
@@ -414,8 +428,6 @@ class merger:
         merged_reflections = { }
 
         for hkl in self._merged_reflections_anomalous:
-            # Fhkl = R * hkl
-            # Rhkl = nint(Fhkl[0]), nint(Fhkl[1]), nint(Fhkl[2])
             Rhkl = map_anomalous[hkl]
             merged_reflections[Rhkl] = self._merged_reflections_anomalous[hkl]
 
@@ -424,9 +436,6 @@ class merger:
         unmerged_reflections = { }
 
         for hkl in self._unmerged_reflections:
-            # Fhkl = R * hkl
-            # Rhkl = nint(Fhkl[0]), nint(Fhkl[1]), nint(Fhkl[2]) 
-            # Rhkl = map_anomalous[hkl]
             Rhkl = map_native[hkl]
             unmerged_reflections[Rhkl] = self._unmerged_reflections[hkl]
 
@@ -490,6 +499,35 @@ class merger:
         
         return list(reversed(self._hkl_ranges)), \
                list(reversed(self._resolution_ranges))
+
+    def apply_resolution_limit(self, dmin):
+        '''Remove reflections with resolution < dmin.'''
+
+        delete = []
+        for hkl in self._merged_reflections:
+            if self.resolution(hkl) < dmin:
+                delete.append(hkl)
+                
+        for hkl in delete:
+            del(self._merged_reflections[hkl])
+        
+        delete = []
+        for hkl in self._merged_reflections_anomalous:
+            if self.resolution(hkl) < dmin:
+                delete.append(hkl)
+
+        for hkl in delete:
+            del(self._merged_reflections_anomalous[hkl])
+        
+        delete = []
+        for hkl in self._unmerged_reflections:
+            if self.resolution(hkl) < dmin:
+                delete.append(hkl)
+
+        for hkl in delete:
+            del(self._unmerged_reflections[hkl])
+        
+        return
 
     def calculate_completeness(self, resolution_bin = None):
         '''Calculate the completeness of observations in a named

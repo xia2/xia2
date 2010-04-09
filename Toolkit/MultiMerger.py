@@ -241,6 +241,16 @@ if __name__ == '__main__':
 
     mergers = mm.get_mergers()
 
+    resolutions = { }
+    
+    for j, m in enumerate(mergers):
+        m.calculate_resolution_ranges(nbins = 100)
+        r = m.resolution_unmerged_isigma(limit = 1.0)
+        n, I = m.debug_info()
+        m.apply_resolution_limit(r)
+        nr, Ir = m.debug_info()
+        print 'No: %d -> %d   I: %.1f -> %.1f' % (n, nr, I, Ir)
+
     m = mergers[0]
 
     print '%.3f %.2f %.2f' % (m.calculate_completeness(),
