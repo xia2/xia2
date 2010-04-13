@@ -206,7 +206,7 @@ class multi_merger:
         for j in range(1, len(self._merger_list)):
             reindex = self.decide_correct_indexing(j)
 
-            print 'File %s: %s' % (self._hklin_list[j], reindex)
+            # print 'File %s: %s' % (self._hklin_list[j], reindex)
 
         return
     
@@ -221,7 +221,7 @@ class multi_merger:
         for j in range(start, len(self._merger_list)):
             k, b = self.scale(j, reference = reference)
 
-            print 'File %s: %.2f %.2f' % (self._hklin_list[j], k, b)
+            # print 'File %s: %.2f %.2f' % (self._hklin_list[j], k, b)
 
         return
 
@@ -238,10 +238,8 @@ class multi_merger:
 
         return
         
-if __name__ == '__main__':
+if __name__ == '__main_all__':
 
-    # hklin_list = ['R1.mtz', 'R2.mtz', 'R3.mtz', 'R4.mtz']
-    # hklin_list = ['chunk_%d.mtz' % j for j in [0, 1, 2, 3]]
     hklin_list = sys.argv[1:]
     reindex_op_list = ['-k,h,l']
 
@@ -254,9 +252,6 @@ if __name__ == '__main__':
 
     for j in range(1, len(hklin_list)):
         print '%d %.2f' % (j, mm.r(j))
-
-    # this was to verify that the scales were all 1, 0 (k, B)
-    # mm.scale_all()
 
     mergers = mm.get_mergers()
     m = mergers[0]
@@ -304,3 +299,45 @@ if __name__ == '__main__':
         print '%.3f %s %.3f %.3f' % (r_f[0], r_f[1],
                                      m.calculate_completeness(),
                                      m.calculate_rmerge())
+
+if __name__ == '__main__':
+
+    hklin_list = sys.argv[1:]
+    reindex_op_list = ['-k,h,l']
+
+    print 'Now look at things in a pairwise manner'
+
+    r_matrix = { }
+
+    for j in range(len(hklin_list)):
+        for k in range(j, len(hklin_list)):
+            l = [hklin_list[j], hklin_list[k]]
+
+            if j != k:
+                pmm = multi_merger(l, reindex_op_list)
+
+                pmm.assign_resolution_unmerged_isigma(limit = 1.0)
+                pmm.unify_indexing()
+                pmm.scale_all()
+
+                r = pmm.r(1)
+
+            else:
+                r = 0
+
+            print '%2d %2d %.3f' % (j, k, r)
+            r_matrix[(j, k)] = r
+            r_matrix[(k, j)] = r
+
+    # now accumulate the columns / rows
+
+    totals = { }
+
+    for j in range(len(hklin_list)):
+        totals[j] = sum([r_matrix[(j, k)] for k in range(len(hklin_list))])
+
+    scale = len(hklin_list) - 1
+
+    for j in range(len(hklin_list)):
+        print '%s %.2f' % (hklin_list[j], totals[j] / scale)
+        
