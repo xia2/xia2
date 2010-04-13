@@ -100,7 +100,6 @@ class multi_merger:
                     work.append(r_work[hkl][0])
 
             cc = correlation_coefficient(ref, work)
-
             ccs.append((cc, reindex_op))
 
         ccs.sort()
@@ -160,14 +159,19 @@ class multi_merger:
 
         return r / d
 
-    def scale(self, file_no):
+    def scale(self, file_no, reference = None):
         '''Scale the measurements in file number j to the reference, here
         defined to be the first one. N.B. assumes that the indexing is
         already consistent.'''
 
-        assert(file_no > 0)
-        
-        m_ref = self._merger_list[0]
+        if not reference:
+            assert(file_no > 0)
+
+        if reference:
+            m_ref = reference
+        else:
+            m_ref = self._merger_list[0]
+            
         m_work = self._merger_list[file_no]
         
         r_ref = m_ref.get_merged_reflections()
@@ -202,20 +206,38 @@ class multi_merger:
         for j in range(1, len(self._merger_list)):
             reindex = self.decide_correct_indexing(j)
 
-            print 'File (%s): %s' % (self._hklin_list[j], reindex)
+            print 'File %s: %s' % (self._hklin_list[j], reindex)
 
         return
     
-    def scale_all(self):
+    def scale_all(self, reference = None):
         '''Place all measurements on a common scale using kB scaling.'''
 
-        for j in range(1, len(self._merger_list)):
-            k, b = self.scale(j)
+        if reference:
+            start = 0
+        else:
+            start = 1
 
-            print 'File (%s): %.2f %.2f' % (self._hklin_list[j], k, b)
+        for j in range(start, len(self._merger_list)):
+            k, b = self.scale(j, reference = reference)
+
+            print 'File %s: %.2f %.2f' % (self._hklin_list[j], k, b)
 
         return
-    
+
+    def assign_resolution_unmerged_isigma(self, limit = 1.0):
+        '''Assign a resolution limit based on unmerged I/sigma to all
+        mergers.'''
+
+        mergers = self.get_mergers()
+
+        for m in mergers:
+            m.calculate_resolution_ranges(nbins = 100)
+            r = m.resolution_unmerged_isigma(limit = limit)
+            m.apply_resolution_limit(r)
+
+        return
+        
 if __name__ == '__main__':
 
     # hklin_list = ['R1.mtz', 'R2.mtz', 'R3.mtz', 'R4.mtz']
@@ -224,35 +246,22 @@ if __name__ == '__main__':
     reindex_op_list = ['-k,h,l']
 
     mm = multi_merger(hklin_list, reindex_op_list)
-
-    for j in range(1, len(hklin_list)):
-        print '%d %.2f' % (j, mm.r(j))
-
+    mm.assign_resolution_unmerged_isigma(limit = 1.0)
     mm.unify_indexing()
+    mm.scale_all()
+
+    print 'Internal R factors within scaled data sets'
 
     for j in range(1, len(hklin_list)):
         print '%d %.2f' % (j, mm.r(j))
 
-    mm.scale_all()
-
-    for j in range(1, len(hklin_list)):
-        print '%d %.2f' % (j, mm.r(j))
-
-    mm.scale_all()
+    # this was to verify that the scales were all 1, 0 (k, B)
+    # mm.scale_all()
 
     mergers = mm.get_mergers()
-
-    resolutions = { }
-    
-    for j, m in enumerate(mergers):
-        m.calculate_resolution_ranges(nbins = 100)
-        r = m.resolution_unmerged_isigma(limit = 1.0)
-        n, I = m.debug_info()
-        m.apply_resolution_limit(r)
-        nr, Ir = m.debug_info()
-        print 'No: %d -> %d   I: %.1f -> %.1f' % (n, nr, I, Ir)
-
     m = mergers[0]
+
+    print 'Accumulating full reference data set'
 
     print '%.3f %.2f %.2f' % (m.calculate_completeness(),
                               m.calculate_multiplicity(),
@@ -264,11 +273,34 @@ if __name__ == '__main__':
                                   m.calculate_multiplicity(),
                                   m.calculate_rmerge())
 
-    # compare each data set with all merged together
+    print 'Rescaling individual data sets to match full reference'
     
     mm = multi_merger(hklin_list, reindex_op_list)
+
+    mm.assign_resolution_unmerged_isigma(limit = 1.0)
     mm.unify_indexing()
-    mm.scale_all()
+    mm.scale_all(reference = m)
+
+    print 'R factor between individual data sets and the full set'
+
+    r_list = []
 
     for j in range(len(hklin_list)):
-        print '%d %.2f' % (j, mm.r_ext(j, m))
+        r = mm.r_ext(j, m)
+        print '%d %.3f' % (j, r)
+        r_list.append((r, hklin_list[j]))
+
+    r_list.sort()
+
+    print 'Final level of agreement list'
+
+    for r_f in r_list:
+
+        m = merger(r_f[1])
+        m.calculate_resolution_ranges(nbins = 100)
+        r = m.resolution_unmerged_isigma(limit = 1.0)
+        m.apply_resolution_limit(r)
+        
+        print '%.3f %s %.3f %.3f' % (r_f[0], r_f[1],
+                                     m.calculate_completeness(),
+                                     m.calculate_rmerge())
