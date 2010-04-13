@@ -420,6 +420,11 @@ def Chef(DriverType = None,
 
             scp_max = 0.0
 
+
+            if s == 0.0:
+                stream.write('Insufficient measurements for analysis')
+                return
+
             for j, d in enumerate(scp_data[dose_col]):
 
                 dose = float(d)
