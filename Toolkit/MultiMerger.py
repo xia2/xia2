@@ -339,7 +339,7 @@ if __name__ == '__main__':
     for j in range(len(hklin_list)):
         print '%s %.2f' % (hklin_list[j], totals[j] / scale)
         
-    p_list = [(totals[j], hklin_list[j]) for k in range(len(hklin_list))]
+    p_list = [(totals[j], hklin_list[j]) for j in range(len(hklin_list))]
     p_list.sort()
 
     sorted_ar = [r[1] for r in r_list]
