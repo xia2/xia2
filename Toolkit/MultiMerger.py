@@ -238,7 +238,7 @@ class multi_merger:
 
         return
         
-if __name__ == '__main_all__':
+if __name__ == '__main__':
 
     hklin_list = sys.argv[1:]
     reindex_op_list = ['-k,h,l']
@@ -300,8 +300,6 @@ if __name__ == '__main_all__':
                                      m.calculate_completeness(),
                                      m.calculate_rmerge())
 
-if __name__ == '__main__':
-
     hklin_list = sys.argv[1:]
     reindex_op_list = ['-k,h,l']
 
@@ -341,3 +339,12 @@ if __name__ == '__main__':
     for j in range(len(hklin_list)):
         print '%s %.2f' % (hklin_list[j], totals[j] / scale)
         
+    p_list = [(totals[j], hklin_list[j]) for k in range(len(hklin_list))]
+    p_list.sort()
+
+    sorted_ar = [r[1] for r in r_list]
+    sorted_pr = [p[1] for p in p_list]
+
+    print 'AR PR hklin'
+    for h in hklin_list:
+        print '%2d %2d %s' % (sorted_ar.index(h), sorted_pr.index(h), h) 
