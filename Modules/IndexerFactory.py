@@ -72,7 +72,7 @@ def IndexerForXSweep(xsweep):
     # FIXME need to code something in here to make a "good" decision
     # about the correct Indexer to return...
 
-    detector = xsweep.get_header()['detector']
+    detector = xsweep.get_header()['detector_class']
 
     indexer = Indexer(detector = detector)
 
@@ -139,8 +139,8 @@ def Indexer(detector = None):
 
     if not indexer and (not preselection or preselection == 'labelit'):
         try:
-            if detector == 'dectris' and False:
-                Debug.write('Labelit does not support dectris detectors')
+            if detector == 'pilatus 2M':
+                Debug.write('Labelit does not support P2M detectors well')
                 raise NotAvailableError, 'Labelit does not support dectris'
             indexer = LabelitIndex()
             Debug.write('Using LabelitIndex Indexer')
