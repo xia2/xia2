@@ -160,7 +160,7 @@ def Diffdump(DriverType = None):
             if datestring == 'N/A':
                 # we don't have the date!
                 # set default to 0-epoch
-                return datetime.datetime(1970, 0, 0, 0, 0, 0).timetuple()
+                return datetime.datetime(1970, 0, 0, 0, 0, 0).timetuple(), 0.0
 
             # problem here is multiple formats for date strings!
             # so have to change the structure...
@@ -169,9 +169,13 @@ def Diffdump(DriverType = None):
             # pilatus: 2007/Sep/22 21:15:03.229
             # format: %Y/%b/%d %H:%M:%S
 
+            # allow for milliseconds
+            ms = 0.0
+
             try:
                 if self._header['detector'] == 'dectris':
                     format = '%Y/%b/%d %H:%M:%S'
+                    ms = 0.001 * int(datestring.split('.')[1])
                     datestring = datestring.split('.')[0]
                     struct_time = time.strptime(datestring, format)
                 else:
@@ -197,18 +201,19 @@ def Diffdump(DriverType = None):
                     struct_time = time.strptime(datestring,
                                                 '%d-%b-%Y %H:%M:%S')
 
-
-            return struct_time
+            return struct_time, ms
         
         def _epoch(self, datestring):
             '''Compute an epoch from a date string.'''
 
-            return time.mktime(self._get_time(datestring))
+            t, ms = self._get_time(datestring)
+
+            return time.mktime(t) + ms
 
         def _date(self, datestring):
             '''Compute a human readable date from a date string.'''
 
-            return time.asctime(self._get_time(datestring))
+            return time.asctime(self._get_time(datestring)[0])
 
         def readheader(self):
             '''Read the image header.'''
@@ -329,7 +334,7 @@ def Diffdump(DriverType = None):
 
                         if debug:
                             print '! error interpreting date: %s' % str(e)
-                        
+
                         # this is badly formed....
                         # so perhaps read the file creation date?
                         # time.ctime(os.stat(filename)[8]) -> date
@@ -503,22 +508,25 @@ if __name__ == '__main__':
         p.set_image(image)
         
         header = p.readheader()
-        
+
         print 'Frame %s collected at: %s' % \
               (os.path.split(image)[-1], header['date'])
         print 'Phi:  %6.2f %6.2f' % \
               (header['phi_start'], header['phi_end'])
         print 'Wavelength: %6.4f    Distance:   %6.2f' % \
               (header['wavelength'], header['distance'])
+        print 'Gain: %f' % gain
         print 'Pixel size: %f %f' % header['pixel']
         print 'Detector class: %s' % header['detector_class']
-            
+        print 'Epochs:        %.3f' % header['epoch']
+        print 'Exposure time: %.3f' % header['exposure_time']
+    
     else:
         for image in sys.argv[1:]:
             p.set_image(image)
 
             header = p.readheader()
-            gain = p.gain()
+            # gain = p.gain()
             
             print 'Frame %s collected at: %s' % \
                   (os.path.split(image)[-1], header['date'])
@@ -526,7 +534,8 @@ if __name__ == '__main__':
                   (header['phi_start'], header['phi_end'])
             print 'Wavelength: %6.4f    Distance:   %6.2f' % \
                   (header['wavelength'], header['distance'])
-            print 'Gain: %f' % gain
+            # print 'Gain: %f' % gain
             print 'Pixel size: %f %f' % header['pixel']
             print 'Detector class: %s' % header['detector_class']
-
+            print 'Epochs:        %.3f' % header['epoch']
+            print 'Exposure time: %.3f' % header['exposure_time']
