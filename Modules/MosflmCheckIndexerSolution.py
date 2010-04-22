@@ -35,6 +35,13 @@ from cctbx import crystal
 from cctbx import uctbx
 from scitbx import matrix
 
+# check for deprecation, add workaround (thanks to RWGK 21/APR/10)
+
+if (hasattr(matrix.rec, "rotate_around_origin")):
+    matrix.rec.rotate = matrix.rec.rotate_around_origin
+
+# end workaround
+
 def s2l(spacegroup):
     lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5, 
                              'oP':16, 'oC':20, 'oF':22,
