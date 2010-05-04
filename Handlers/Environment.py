@@ -38,10 +38,6 @@ class _Environment:
         # self._setup()
         return
 
-    def __del__(self):
-        self.cleanup()
-        return
-
     def _setup(self):
         if self._is_setup:
             return
@@ -116,25 +112,24 @@ class _Environment:
         '''Clean up now we are done - chown all harvest files to world
         readable.'''
 
-        if not self._is_setup():
+        if not self._is_setup:
             return
 
-        os.path.walk(self.getenv('HARVESTHOME'), make_world_readable, None)
+        if os.name != 'posix':
+            return
 
-        return
-        
-def make_world_readable(dummy, directory, files):
-    '''Make files world readable.'''
-    
-    if os.name != 'posix':
-        return
-    
-    for f in files:
-        os.chmod(os.path.join(directory, f),
-                 stat.S_IROTH | stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP)
-        
-    return
+        harvest = self.getenv('HARVESTHOME')
 
+        mod = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
+
+        for (dirpath, dirnames, filenames) in os.walk(harvest):
+        
+            for f in filenames:
+                _f = os.path.join(harvest, dirpath, f)
+                os.chmod(_f, mod)
+                
+        return
+ 
 Environment = _Environment()
 
 # jiffy functions

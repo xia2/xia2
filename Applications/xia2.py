@@ -248,6 +248,8 @@ def xia2():
         out.write('%s\n' % citation)
 
     out.close()
+
+    Environment.cleanup()
     
     return
 
