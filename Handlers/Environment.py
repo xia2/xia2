@@ -17,6 +17,7 @@
 import os
 import sys
 import subprocess
+import stat
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
@@ -35,6 +36,10 @@ class _Environment:
         self._cwd = os.getcwd()
         self._is_setup = False
         # self._setup()
+        return
+
+    def __del__(self):
+        self.cleanup()
         return
 
     def _setup(self):
@@ -89,7 +94,6 @@ class _Environment:
         else:
             Debug.write('Directory exists: %s' % path)
     
-
         return path
 
     def setenv(self, name, value):
@@ -107,6 +111,29 @@ class _Environment:
             return os.environ[name]
         except:
             return None
+
+    def cleanup(self):
+        '''Clean up now we are done - chown all harvest files to world
+        readable.'''
+
+        if not self._is_setup():
+            return
+
+        os.path.walk(self.getenv('HARVESTHOME'), make_world_readable, None)
+
+        return
+        
+def make_world_readable(dummy, directory, files):
+    '''Make files world readable.'''
+    
+    if os.name != 'posix':
+        return
+    
+    for f in files:
+        os.chmod(os.path.join(directory, f),
+                 stat.S_IROTH | stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP)
+        
+    return
 
 Environment = _Environment()
 
