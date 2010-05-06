@@ -717,11 +717,11 @@ class PyChef:
         # now digest the results - as a function of dose and resolution...
 
         if self._title:
-            print '$TABLE : Cumulative radiation damage analysis (%s):' % \
+            print '$TABLE : Normalised radiation damage analysis (%s):' % \
                   self._title
 
         else:
-            print '$TABLE : Cumulative radiation damage analysis:'            
+            print '$TABLE : Normalised radiation damage analysis:'            
 
         print '$GRAPHS: Scp(d):N:1,%d: $$' % (self._resolution_bins + 2)
 
@@ -752,6 +752,144 @@ class PyChef:
                 values.append(scp)
 
             values.append((sum(values[1:]) / self._resolution_bins))
+
+            print format % tuple(values)
+
+        print '$$'
+
+        return
+
+    def rcp(self):
+        '''Perform the rcp calculation as a function of
+        assumulated dose across a number of resolution bins, from
+        measurements already cached in memory.'''
+
+        rcp_top = { }
+        rcp_bottom = { }
+
+        if self._resolution_low:
+            smin = 1.0 / (self._resolution_low * self._resolution_low)
+        else:
+            smin = 0.0
+
+        smax = 1.0 / (self._resolution_high * self._resolution_high)
+
+        nsteps = 1 + int(
+            (self._range_max - self._range_min) / self._range_width)
+
+        # lay out the storage 
+
+        for j in range(self._resolution_bins + 1):
+
+            rcp_top[j] = []
+            rcp_bottom[j] = []
+            
+            for k in range(nsteps):
+                rcp_top[j].append(0.0)
+                rcp_bottom[j].append(0.0)
+
+        # then populate
+
+        for xname, dname in sorted(self._reflections):
+
+            print 'Accumulating from %s %s' % (xname, dname)
+            
+            for h, k, l in self._reflections[(xname, dname)]:
+
+                d = self._unit_cells[(xname, dname)].d([h, k, l])
+
+                s = 1.0 / (d * d)
+
+                bin = int(self._resolution_bins * (s - smin) / (smax - smin))
+                
+                observations = self._reflections[(xname, dname)][(h, k, l)]
+
+                iplus = []
+                iminus = []
+
+                for pm, base, i, sigi in observations:
+                    if pm:
+                        iplus.append((base, i, sigi))
+                    else:
+                        iminus.append((base, i, sigi))
+
+                # compute contributions
+
+                for n, (base, i, sigi) in enumerate(iplus):
+
+                    for _base, _i, _sigi in iplus[n + 1:]:
+                        start = int((max(base, _base) - self._range_min) /
+                                    self._range_width)
+
+                        ra = math.fabs(i - _i)
+                        rb = 0.5 * (i + _i)
+
+                        rcp_top[bin][start] += ra
+                        rcp_bottom[bin][start] += rb
+
+                for n, (base, i, sigi) in enumerate(iminus):
+
+                    for _base, _i, _sigi in iminus[n + 1:]:
+                        start = int((max(base, _base) - self._range_min) /
+                                    self._range_width)
+
+                        ra = math.fabs(i - _i)
+                        rb = 0.5 * (i + _i)
+
+                        rcp_top[bin][start] += ra
+                        rcp_bottom[bin][start] += rb
+
+        # now accumulate as a funtion of time...
+
+        for k in range(self._resolution_bins):
+            for j in range(1, nsteps):
+                rcp_top[k][j] += rcp_top[k][j - 1]
+                rcp_bottom[k][j] += rcp_bottom[k][j - 1]
+
+        # now digest the results - as a function of dose and resolution...
+
+        if self._title:
+            print '$TABLE : Cumulative radiation damage analysis (%s):' % \
+                  self._title
+
+        else:
+            print '$TABLE : Cumulative radiation damage analysis:'            
+
+        print '$GRAPHS: Rcp(d):N:1,%d: $$' % (self._resolution_bins + 2)
+
+        columns = ''
+        for j in range(self._resolution_bins):
+            columns += ' S%d' % j
+        
+        print '%s %s Rcp(d) $$ $$' % (self._base_column, columns)
+        format = '%8.1f %6.4f'
+        for k in range(self._resolution_bins):
+            format += ' %6.4f'
+
+        for j in range(nsteps):
+            base = j * self._range_width + self._range_min
+            values = [base]
+
+            for k in range(self._resolution_bins):
+
+                if rcp_bottom[k][j]:
+                    rcp = rcp_top[k][j] / rcp_bottom[k][j]
+                else:
+                    rcp = 0.0
+
+                values.append(rcp)
+
+            klist = [k in range(self._resolution_bins)]
+
+            ot = sum([rcp_top[k][j] for k in klist])
+            ob = sum([rcp_bottom[k][j] for k in klist])
+
+            if ob:
+                overall = ot / ob
+            else:
+                overall = 0.0
+
+            values.append(overall)
 
             print format % tuple(values)
 

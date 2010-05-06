@@ -207,6 +207,7 @@ def main():
 
     pychef.init()
     pychef.print_completeness_vs_dose()
+    pychef.rcp()    
     pychef.scp()    
     pychef.rd()
     pychef.print_dose_profile()

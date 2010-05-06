@@ -310,7 +310,7 @@ def Chef(DriverType = None,
                     if digest > 3:
                         datasets_damaged.append((wavelength, digest))
 
-                elif 'Cumulative radiation' in key:
+                elif 'Normalised radiation' in key:
                     scp_data = transpose_loggraph(results[key])
 
                 elif 'Dose vs. BATCH' in key:
