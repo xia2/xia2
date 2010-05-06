@@ -139,7 +139,7 @@ def Indexer(detector = None):
 
     if not indexer and (not preselection or preselection == 'labelit'):
         try:
-            if detector == 'pilatus 2M':
+            if detector == 'pilatus 2M' and False:
                 Debug.write('Labelit does not support P2M detectors well')
                 raise NotAvailableError, 'Labelit does not support dectris'
             indexer = LabelitIndex()
