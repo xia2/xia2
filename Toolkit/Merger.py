@@ -575,6 +575,9 @@ class merger:
                     i_mean)
                 b += self._unmerged_reflections[hkl].multiplicity() * i_mean
 
+        if not b:
+            return 0.0
+        
         return t / b
 
     def calculate_rmerge_anomalous(self, hkl_list = None):
@@ -605,6 +608,9 @@ class merger:
                 mult_m = 0
                 
             b += mult_p * i_mean_p + mult_m * i_mean_m
+
+        if not b:
+            return 0.0
 
         return t / b
 
