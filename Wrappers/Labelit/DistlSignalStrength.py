@@ -86,7 +86,49 @@ def DistlSignalStrength(DriverType = None):
                 if l[:3] == ['%Saturation,', 'Top', '50']:
                     self._statistics[
                         'saturation'] = float(l[-1])
-                
-            return 'ok'
+
+            return
         
+        def find_peaks(self):
+            '''Actually analyse the images.'''
+
+            self.add_command_line(self._image)
+            self.add_command_line('verbose=True')
+            self.start()
+            self.close_wait()
+
+            # check for errors
+            self.check_for_errors()
+
+            # ok now we're done, let's look through for some useful stuff
+
+            output = self.get_all_output()
+
+            for o in output:
+                if 'Area in pixel' in o:
+                    print o[:-1]
+                if 'Peak' in o:
+                    print o[:-1]
+                    
+                l = o.split()
+
+            return
+
+        def get_statistics(self):
+            return self._statistics
+
+        def get_peaks(self):
+            return self._peaks
+        
+    return DistlSignalStrengthWrapper()
+
+if __name__ == '__main__':
+
+    if len(sys.argv) < 2:
+        raise RuntimeError, '%s image' % sys.argv[0]
+
+    d = DistlSignalStrength()
+    d.set_image(sys.argv[1])
+    d.find_peaks()
+
 
