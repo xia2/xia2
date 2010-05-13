@@ -276,6 +276,12 @@ class _CommandLine(Object):
                   (self._help_rmerge(), str(e))
 
         try:
+            self._read_tricky()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_tricky(), str(e))
+
+        try:
             self._read_completeness()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -770,6 +776,17 @@ class _CommandLine(Object):
         Flags.set_rmerge(float(sys.argv[index + 1]))
         Debug.write('Rmerge limit set to %f' % \
                     Flags.get_rmerge())
+            
+        return
+
+    def _help_rmerge(self):
+        return '-rmerge N'
+
+    def _read_tricky(self):
+
+        if '-tricky' in sys.argv:
+            Flags.set_tricky()
+            Debug.write('Tricky mode on')
             
         return
 

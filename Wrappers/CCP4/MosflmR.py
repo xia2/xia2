@@ -2533,6 +2533,20 @@ def MosflmR(DriverType = None):
 
             self.input('genfile %s' % genfile)
 
+            # add an extra chunk of orientation refinement
+
+            if Flags.get_tricky():
+                a = self._intgr_wedge[0] - offset
+                if self._intgr_wedge[0] - self._intgr_wedge[1] > 20:
+                    b = a + 20
+                else:
+                    b = self._intgr_wedge[1] - offset
+
+                self.input('postref segment 1 fix all')
+                self.input('process %d %d' % (a, b))
+                self.input('go')
+                self.input('postref nosegment')
+
             self.input('process %d %d' % (self._intgr_wedge[0] - offset,
                                           self._intgr_wedge[1] - offset))
                 

@@ -98,6 +98,8 @@ class _Flags:
         self._completeness = 0.0
         self._rmerge = 0.0
 
+        self._tricky = False
+
         # are we working with small molecule data?
         self._small_molecule = False
 
@@ -437,6 +439,13 @@ class _Flags:
 
     def get_rmerge(self):
         return self._rmerge
+
+    def set_tricky(self, tricky = True):
+        self._tricky = tricky
+        return
+
+    def get_tricky(self):
+        return self._tricky
 
     def set_refine(self, refine):
         self._refine = refine

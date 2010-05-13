@@ -705,8 +705,11 @@ class merger:
 
         if limit is None:
             limit = Flags.get_rmerge()
-            
+
         bins, ranges = self.get_resolution_bins()
+
+        if limit == 0.0:
+            return ranges[-1][0]
 
         rmerge_s = get_positive_values(
             [self.calculate_rmerge(bin) for bin in bins])
