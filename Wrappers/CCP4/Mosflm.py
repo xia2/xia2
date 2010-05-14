@@ -2144,7 +2144,7 @@ def Mosflm(DriverType = None):
                                 for v in values:
                                     rms_values[cycle].append(v)
                             except ValueError, e:
-                                Chatter.write(
+                                Debug.write(
                                     'Error parsing %s as floats' % \
                                     output[j][12:])
                             
@@ -2584,7 +2584,7 @@ def Mosflm(DriverType = None):
                                 for v in values:
                                     rms_values[cycle].append(v)
                             except ValueError, e:
-                                Chatter.write(
+                                Debug.write(
                                     'Error parsing %s as floats' % \
                                     output[j][12:])
                             
