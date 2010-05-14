@@ -1196,7 +1196,7 @@ def Mosflm(DriverType = None):
 
             except RuntimeError, e:
                 # check if mosflm rejected a solution we have it
-                if 'horribl' in str(e):
+                if 'horribl' in str(e) and False:
                     # ok it did - time to break out the big guns...
                     if not self._indxr_input_cell:
                         raise RuntimeError, \

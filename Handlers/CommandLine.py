@@ -293,6 +293,12 @@ class _CommandLine(Object):
             raise RuntimeError, '%s (%s)' % \
                   (self._help_cellref_mode(), str(e))
 
+        try:
+            self._read_scale_model()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_scale_model(), str(e))
+
         # FIXME add some consistency checks in here e.g. that there are
         # images assigned, there is a lattice assigned if cell constants
         # are given and so on
@@ -886,6 +892,23 @@ class _CommandLine(Object):
         Flags.set_cellref_mode(sys.argv[index + 1])
         Debug.write('Cell refinement mode (2D) set to %s' % \
                     Flags.get_cellref_mode())
+
+        return
+
+    def _help_cellref_mode(self):
+        return '-cellref_mode (default|parallel|orthogonal|both)'
+
+    def _read_scale_model(self):
+        try:
+            index = sys.argv.index('-scale_model')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_scale_model(sys.argv[index + 1])
+        Debug.write('Scaling model set to: %s' % Flags.get_scale_model())
 
         return
 

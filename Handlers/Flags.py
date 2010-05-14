@@ -70,6 +70,14 @@ class _Flags:
         self._relax = True
         self._no_correct = True
 
+        # and these for the Mosflm / Scala and perhaps XDS implementation
+
+        self._scale_model = False
+        self._scale_model_decay = False
+        self._scale_model_modulation = False
+        self._scale_model_absorption = False
+        self._scale_model_partiality = False
+
         # options to support the -spacegroup flag - the spacegroup is
         # set from this, the lattice and pointgroup derived from such
         self._spacegroup = None
@@ -117,6 +125,53 @@ class _Flags:
 
     def get_batch_scale(self):
         return self._batch_scale
+
+    # matters relating to the manual definition of a scaling model
+
+    def set_scale_model(self, scale_model):
+        self._scale_model = scale_model
+
+        # now unpack this
+
+        self.set_scale_model_decay('decay' in scale_model)
+        self.set_scale_model_modulation('modulation' in scale_model)
+        self.set_scale_model_absorption('absorption' in scale_model)
+        self.set_scale_model_partiality('partiality' in scale_model)
+        
+        return
+
+    def get_scale_model(self):
+        return self._scale_model
+
+    def set_scale_model_decay(self, scale_model_decay = True):
+        self._scale_model_decay = scale_model_decay
+        return
+
+    def get_scale_model_decay(self):
+        return self._scale_model_decay
+
+    def set_scale_model_modulation(self, scale_model_modulation = True):
+        self._scale_model_modulation = scale_model_modulation
+        return
+
+    def get_scale_model_modulation(self):
+        return self._scale_model_modulation
+
+    def set_scale_model_absorption(self, scale_model_absorption = True):
+        self._scale_model_absorption = scale_model_absorption
+        return
+
+    def get_scale_model_absorption(self):
+        return self._scale_model_absorption
+
+    def set_scale_model_partiality(self, scale_model_partiality = True):
+        self._scale_model_partiality = scale_model_partiality
+        return
+
+    def get_scale_model_partiality(self):
+        return self._scale_model_partiality
+
+    # the end of such matters
 
     def set_cellref_mode(self, cellref_mode):
         if not cellref_mode in ['default', 'parallel',
