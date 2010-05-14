@@ -126,11 +126,21 @@ class XDSScalerR(Scaler):
 
         self._resolution_limits = { }
 
-        # scaling correction choices
-        self._scalr_correct_decay = True
-        self._scalr_correct_modulation = True
-        self._scalr_correct_absorption = True
-        self._scalr_corrections = True
+        # scaling correction choices - may be set one on the command line...
+
+        if Flags.get_scale_model():
+            self._scalr_correct_absorption = Flags.get_scale_model_absorption()
+            self._scalr_correct_modulation = Flags.get_scale_model_modulation()
+            self._scalr_correct_decay = Flags.get_scale_model_decay()
+            
+            self._scalr_corrections = True
+
+        else:
+
+            self._scalr_correct_decay = True
+            self._scalr_correct_modulation = True
+            self._scalr_correct_absorption = True
+            self._scalr_corrections = True
 
         return    
 
