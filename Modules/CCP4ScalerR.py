@@ -1611,40 +1611,6 @@ class CCP4ScalerR(Scaler):
                 standard_deviation_info[dataset] = transpose_loggraph(
                     loggraph[key])
 
-        # write this in an interesting way...
-
-        for dataset in standard_deviation_info.keys():
-            info = standard_deviation_info[dataset]
-
-            # need to consider partials separately to fulls in assigning
-            # the error correction parameters
-            
-            for j in range(len(info['1_Range'])):            
-
-                n_full = int(info['5_Number'][j])
-                I_full = float(info['4_Irms'][j])
-                if n_full > 0 and info['7_SigmaFull'][j] != '-':
-                    s_full = float(info['7_SigmaFull'][j])
-                else:
-                    s_full = 0.0
-                
-                if info.has_key('9_Number'):
-                
-                    n_part = int(info['9_Number'][j])
-                    I_part = float(info['8_Irms'][j])
-                    s_part = float(info['11_SigmaPartial'][j])
-                    
-                else:
-                    
-                    n_part = int(info['12_Number'][j])
-                    I_part = float(info['11_Irms'][j])
-                    s_part = float(info['14_SigmaPartial'][j])
-                
-                n_tot = n_full + n_part
-
-                i_tot = ((n_full * I_full) + (n_part * I_part)) / n_tot
-                s_tot = ((n_full * s_full) + (n_part * s_part)) / n_tot
-
         resolution_info = { }
 
         for key in loggraph.keys():
