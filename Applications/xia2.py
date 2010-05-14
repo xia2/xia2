@@ -108,6 +108,8 @@ def check_environment():
             raise RuntimeError, 'spaces around "%s"' % os.environ[k]
         Chatter.write('%s => %s' % (k, os.environ[k]))
 
+    Chatter.write('Working directory: %s' % os.getcwd())
+
     try:
         if os.name == 'nt':
             hostname = os.environ['COMPUTERNAME'].split('.')[0]
