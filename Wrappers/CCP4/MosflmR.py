@@ -1457,7 +1457,7 @@ def MosflmR(DriverType = None):
             # if set, use the resolution for cell refinement - see
             # bug # 2078...
             
-            if self._mosflm_cell_ref_resolution:
+            if self._mosflm_cell_ref_resolution and not Flags.get_tricky():
                 self.input('resolution %f' % \
                            self._mosflm_cell_ref_resolution)
 
@@ -1840,7 +1840,7 @@ def MosflmR(DriverType = None):
             # if set, use the resolution for cell refinement - see
             # bug # 2078...
             
-            if self._mosflm_cell_ref_resolution:
+            if self._mosflm_cell_ref_resolution and not Flags.get_tricky():
                 self.input('resolution %f' % \
                            self._mosflm_cell_ref_resolution)
 
