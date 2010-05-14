@@ -231,6 +231,14 @@ class CCP4ScalerR(Scaler):
 
         scala.set_sd_parameters_auto()
 
+        if Flags.get_tricky():
+
+            # fiddly little data sets - allow more rapid scaling...
+            
+            scala.set_scaling_parameters('rotation', 2.0)
+            if self._scalr_correct_decay:
+                scala.set_bfactor(bfactor = True, brotation = 2.0)
+        
         return scala
 
     def _pointless_indexer_jiffy(self, hklin, indexer):
@@ -736,6 +744,7 @@ class CCP4ScalerR(Scaler):
                 if self._scalr_input_pointgroup:
                     pointgroup = self._scalr_input_pointgroup
                     reindex_op = 'h,k,l'
+                    ntr = False
 
                 else:
                     pointless_hklin = _prepare_pointless_hklin(
