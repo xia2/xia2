@@ -240,6 +240,9 @@ def Chef(DriverType = None,
                 sxx += (j - mx) * (j - mx)
                 sxy += (j - mx) * (v - my)
 
+            if not sxx:
+                return 0.0
+
             m = sxy / sxx
             c = my - m * mx
 
