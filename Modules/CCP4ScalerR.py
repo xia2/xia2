@@ -942,7 +942,10 @@ class CCP4ScalerR(Scaler):
             qsc = self._updated_scala()
             qsc.set_hklin(hklin)
             qsc.set_hklout(self._reference)
-            qsc.quick_scale()
+            if Flags.get_tricky():
+                qsc.quick_scale(constant = True)
+            else:
+                qsc.quick_scale()                
             
             FileHandler.record_temporary_file(qsc.get_hklout())
             

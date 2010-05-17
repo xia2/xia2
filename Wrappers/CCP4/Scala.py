@@ -1067,7 +1067,7 @@ def Scala(DriverType = None,
 
             return self.get_ccp4_status()
 
-        def quick_scale(self):
+        def quick_scale(self, constant = False):
             '''Perform a quick scaling - to assess data quality & merging.'''
 
             self.check_hklin()
@@ -1085,7 +1085,10 @@ def Scala(DriverType = None,
 
             self.input('run 1 all')
             self.input('cycles 6')
-            self.input('scales rotation spacing 10')
+            if constant:
+                self.input('scales constant')
+            else:
+                self.input('scales rotation spacing 10')
                 
             # next any 'generic' parameters
 
