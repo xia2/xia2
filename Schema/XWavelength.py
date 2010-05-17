@@ -33,6 +33,8 @@ from XSweep import XSweep
 
 from Object import Object
 
+from Handlers.Flags import Flags
+
 class XWavelength(Object):
     '''An object representation of a wavelength, which will after data
     reduction correspond to an MTZ hierarchy dataset.'''
@@ -75,7 +77,13 @@ class XWavelength(Object):
 
         result += 'Sweeps:\n'
         for s in self._sweeps:
-            result += '%s\n' % str(s)
+            if Flags.get_failover():
+                try:
+                    result += '%s\n' % str(s)
+                except:
+                    self._sweeps.remove(s)
+            else:
+                result += '%s\n' % str(s)
 
         return result[:-1]
 

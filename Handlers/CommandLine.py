@@ -282,6 +282,12 @@ class _CommandLine(Object):
                   (self._help_tricky(), str(e))
 
         try:
+            self._read_failover()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_failover(), str(e))
+
+        try:
             self._read_completeness()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -793,6 +799,14 @@ class _CommandLine(Object):
         if '-tricky' in sys.argv:
             Flags.set_tricky()
             Debug.write('Tricky mode on')
+            
+        return
+
+    def _read_failover(self):
+
+        if '-failover' in sys.argv:
+            Flags.set_failover()
+            Debug.write('Failover mode on')
             
         return
 

@@ -107,6 +107,7 @@ class _Flags:
         self._rmerge = 0.0
 
         self._tricky = False
+        self._failover = False
 
         # are we working with small molecule data?
         self._small_molecule = False
@@ -501,6 +502,13 @@ class _Flags:
 
     def get_tricky(self):
         return self._tricky
+
+    def set_failover(self, failover = True):
+        self._failover = failover
+        return
+
+    def get_failover(self):
+        return self._failover
 
     def set_refine(self, refine):
         self._refine = refine
