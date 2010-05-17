@@ -30,10 +30,9 @@
 #                 reduce the least damaged data first.
 
 from XSweep import XSweep
-
 from Object import Object
-
 from Handlers.Flags import Flags
+from Handlers.Streams import Chatter
 
 class XWavelength(Object):
     '''An object representation of a wavelength, which will after data
@@ -77,10 +76,16 @@ class XWavelength(Object):
 
         result += 'Sweeps:\n'
         for s in self._sweeps:
+
+            # would be nice to put this somewhere else in the hierarchy - not
+            # sure how to do that though (should be handled in Innterfaces?)
+
             if Flags.get_failover():
                 try:
                     result += '%s\n' % str(s)
-                except:
+                except Exception, e:
+                    Chatter.write('Processing sweep %s failed: %s' % \
+                                  (s.get_name(), str(e)))
                     self._sweeps.remove(s)
             else:
                 result += '%s\n' % str(s)
