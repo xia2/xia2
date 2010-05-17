@@ -20,6 +20,7 @@ from Wrappers.CCP4.Rebatch import Rebatch
 from lib.Guff import auto_logfiler
 from Handlers.Streams import Chatter, Debug
 from Handlers.Files import FileHandler
+from Handlers.Flags import Flags
 from Experts.ResolutionExperts import remove_blank
 
 ############ JIFFY FUNCTIONS #################
@@ -68,15 +69,17 @@ def _prepare_pointless_hklin(working_directory,
 
     # also remove blank images?
 
-    Debug.write('Excluding blank images')
+    if not Flags.get_tricky():
 
-    hklout = os.path.join(
-        working_directory,
-        '%s_noblank.mtz' % (os.path.split(hklin)[-1][:-4]))
+        Debug.write('Excluding blank images')
+
+        hklout = os.path.join(
+            working_directory,
+            '%s_noblank.mtz' % (os.path.split(hklin)[-1][:-4]))
     
-    FileHandler.record_temporary_file(hklout)
+        FileHandler.record_temporary_file(hklout)
 
-    hklin = remove_blank(hklin, hklout)
+        hklin = remove_blank(hklin, hklout)
     
     # find the number of batches
 
