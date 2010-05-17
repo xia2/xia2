@@ -870,8 +870,7 @@ class CCP4ScalerR(Scaler):
             # from an external source, in which case I will want to do
             # something cunning in here...
             
-            if indexer:
-
+            if indexer and not self._scalr_input_pointgroup:
                 # this should explode if the pointgroup is incompatible
                 # with the lattice, right? through eliminate if the
                 # lattice is user-assigned
@@ -890,6 +889,10 @@ class CCP4ScalerR(Scaler):
                         reindex_op, compose = False)
                     
                     need_to_return = True
+
+            else:
+                pointgroup = self._scalr_input_pointgroup
+                reindex_op = 'h,k,l'                
 
             # FIXME_ABQ
             # compare pointgroup to the one which was given by the user,
