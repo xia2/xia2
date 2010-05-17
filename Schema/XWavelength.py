@@ -75,6 +75,9 @@ class XWavelength(Object):
                                                          self._f_prpr)
 
         result += 'Sweeps:\n'
+
+        remove = []
+        
         for s in self._sweeps:
 
             # would be nice to put this somewhere else in the hierarchy - not
@@ -86,9 +89,12 @@ class XWavelength(Object):
                 except Exception, e:
                     Chatter.write('Processing sweep %s failed: %s' % \
                                   (s.get_name(), str(e)))
-                    self._sweeps.remove(s)
+                    remove.append(s)
             else:
                 result += '%s\n' % str(s)
+
+        for s in remove:
+            self._sweeps.remove(s)
 
         return result[:-1]
 
