@@ -93,12 +93,6 @@ class XWavelength(Object):
             else:
                 result += '%s\n' % str(s)
 
-            if Flags.get_tricky():
-                if not s.get_integrater_reflections():
-                    Chatter.write('No measurements recorded for sweep %s' % \
-                                  s.get_name())
-                    remove.append(s)
-
         for s in remove:
             self._sweeps.remove(s)
 
