@@ -2534,11 +2534,15 @@ def MosflmR(DriverType = None):
                 self.input('process %d %d' % (a, b))
                 self.input('go')
                 self.input('postref nosegment')
-                self.input('process block %d' % \
-                           (self._intgr_wedge[1] - self._intgr_wedge[0]))
 
-            self.input('process %d %d' % (self._intgr_wedge[0] - offset,
-                                          self._intgr_wedge[1] - offset))
+                self.input('process %d %d block %d' % \
+                           (self._intgr_wedge[0] - offset,
+                            self._intgr_wedge[1] - offset,
+                            self._intgr_wedge[1] - self._intgr_wedge[0]))
+                                            
+            else:
+                self.input('process %d %d' % (self._intgr_wedge[0] - offset,
+                                              self._intgr_wedge[1] - offset))
                 
             self.input('go')
 
