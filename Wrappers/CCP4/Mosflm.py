@@ -400,6 +400,9 @@ def Mosflm(DriverType = None):
             if Flags.get_small_molecule():
                 return self._index_select_images_small_molecule()
 
+            if Flags.get_tricky():
+                return self._index_select_images_tricky()
+
             # FIXME perhaps this should be somewhere central, because
             # Mosflm will share the same implementation
 
@@ -492,6 +495,25 @@ def Mosflm(DriverType = None):
 
                 Debug.write('Selected image %s' % image_number)
                 self.add_indexer_image_wedge(image_number)
+
+            return
+
+        def _index_select_images_tricky(self):
+            '''Select images for more tricky cases e.g. microcrystal
+            work. Will apply (up to) 20 images to the task.'''
+
+            phi_width = self.get_header_item('phi_width')
+            images = self.get_matching_images()
+
+            spacing = max(1, int(len(images) / 20))
+
+            selected = []
+
+            for j in range(0, len(images), spacing):
+                selected.append(images[j])
+
+            for image in selected[:20]:
+                self.add_indexer_image_wedge(image)
 
             return
 
@@ -1259,7 +1281,14 @@ def Mosflm(DriverType = None):
                     # mosflm built on linux in CCP4 6.0.1...
                     # FIXME this should be a specific kind of
                     # exception e.g. an IndexError
-                    raise IndexingError, 'mosaicity estimation failed'
+
+                    # if tricky mode, just assume for the moment mosaic spread
+                    # is 0.5 degrees...
+
+                    if Flags.get_tricky():
+                        self._indxr_mosaic = 0.5
+                    else:
+                        raise IndexingError, 'mosaicity estimation failed'
 
                 # or it may alternatively look like this...
 
