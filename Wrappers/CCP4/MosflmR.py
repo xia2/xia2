@@ -1108,7 +1108,6 @@ def MosflmR(DriverType = None):
                 rms_deviations, br = self._mosflm_refine_cell()
 
             except NegativeMosaicError, nme:
-
                 # need to handle cases where the mosaic spread refines to
                 # a negative value when the lattice is right - this could
                 # be caused by the starting value being too small so
@@ -1875,17 +1874,6 @@ def MosflmR(DriverType = None):
                              self._fp_header['pixel'][0]
             detector_height = self._fp_header['size'][1] * \
                               self._fp_header['pixel'][1]
-
-            # fixme this will probably not work well for non-square
-            # detectors...
-
-            # lim_x = min(beam[0], detector_width - beam[0])
-            # lim_y = min(beam[1], detector_height - beam[1])
-
-            # Debug.write('Detector limits: %.1f %.1f' % (lim_x, lim_y))
-
-            # self.input('limits xmin 0.0 xmax %.1f ymin 0.0 ymax %.1f' % \
-            # (lim_x, lim_y))            
 
             lim_x = 0.5 * detector_width
             lim_y = 0.5 * detector_height
