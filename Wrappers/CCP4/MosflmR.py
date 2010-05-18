@@ -2643,8 +2643,13 @@ def MosflmR(DriverType = None):
                 if 'BGSIG too large' in o:
                     # we have a BGSIG problem - explain, fix the
                     # problem and rerun
+
+                    if not self._mosflm_refine_profiles:
+                        raise RuntimeError, 'BGSIG error with profiles fixed'
+                    
                     Debug.write(
                         'BGSIG error detected - try fixing profile...')
+                    
                     self._mosflm_refine_profiles = False
                     self.set_integrater_done(False)
 
