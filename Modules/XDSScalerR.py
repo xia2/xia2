@@ -959,9 +959,17 @@ class XDSScalerR(Scaler):
 
         # finally work through all of the reflection files we have
         # been given and compute the correct spacegroup and an
-        # average unit cell... using CELLPARM
+        # average unit cell... using CELLPARM - or perhaps not...
+        # CELLPARM can't cope with loads of data sets!
 
-        cellparm = self.Cellparm()
+        w_tot = 0.0
+        
+        a_tot = 0.0
+        b_tot = 0.0
+        c_tot = 0.0
+        alpha_tot = 0.0
+        beta_tot = 0.0
+        gamma_tot = 0.0
 
         for epoch in self._sweep_information.keys():
             integrater = self._sweep_information[epoch]['integrater']
@@ -973,10 +981,18 @@ class XDSScalerR(Scaler):
                          cell[0], cell[1], cell[2],
                          cell[3], cell[4], cell[5]))
             Debug.write('=> %d reflections' % n_ref)
-            
-            cellparm.add_cell(cell, n_ref)
 
-        self._scalr_cell = cellparm.get_cell()
+            w_tot += n_ref
+            a_tot += cell[0] * n_ref
+            b_tot += cell[1] * n_ref
+            c_tot += cell[2] * n_ref
+            alpha_tot += cell[3] * n_ref
+            beta_tot += cell[4] * n_ref
+            gamma_tot += cell[5] * n_ref
+            
+        self._scalr_cell = (a_tot / w_tot, b_tot / w_tot, c_tot / w_tot, 
+                            alpha_tot / w_tot, beta_tot / w_tot,
+                            gamma_tot / w_tot)
 
         self._resolution_limits = { }
         
