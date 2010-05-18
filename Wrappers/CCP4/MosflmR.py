@@ -2534,6 +2534,8 @@ def MosflmR(DriverType = None):
                 self.input('process %d %d' % (a, b))
                 self.input('go')
                 self.input('postref nosegment')
+                self.input('process block %d' % \
+                           (self._intgr_wedge[1] - self._intgr_wedge[0]))
 
             self.input('process %d %d' % (self._intgr_wedge[0] - offset,
                                           self._intgr_wedge[1] - offset))
@@ -2672,6 +2674,9 @@ def MosflmR(DriverType = None):
                     raise RuntimeError, \
                           'integration failed: reason unknown (log %s)' % \
                           self.get_log_file()
+
+            if not self._mosflm_hklout:
+                raise RuntimeError, 'processing abandoned'
 
             self._intgr_batches_out = (integrated_images_first,
                                        integrated_images_last)
