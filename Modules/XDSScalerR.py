@@ -593,11 +593,18 @@ class XDSScalerR(Scaler):
                 hklin = intgr.get_integrater_reflections()
                 indxr = intgr.get_integrater_indexer()
 
-                pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
-                    hklin, indxr)
+                if self._scalr_input_pointgroup:
+                    pointgroup = self._scalr_input_pointgroup
+                    reindex_op = 'h,k,l'
+                    ntr = False
 
+                else:
+
+                    pointgroup, reindex_op, ntr = \
+                                self._pointless_indexer_jiffy(hklin, indxr)
+                    
                 lattice = Syminfo.get_lattice(pointgroup)
-
+                    
                 if not lattice in lattices:
                     lattices.append(lattice)
 
@@ -710,11 +717,19 @@ class XDSScalerR(Scaler):
             hklin = intgr.get_integrater_reflections()
             indxr = intgr.get_integrater_indexer()
 
+            if self._scalr_input_pointgroup:
+                Debug.write('Using input pointgroup: %s' % \
+                            self._scalr_input_pointgroup)
+                pointgroup = self._scalr_input_pointgroup
+                ntr = False
+                reindex_op = 'h,k,l'
+
+            else:
+                pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
+                    hklin, indxr)
+        
             reference_reindex_op = intgr.get_integrater_reindex_operator()
             
-            pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
-                hklin, indxr)
-        
             if ntr:
 
                 # Bug # 3373
@@ -723,12 +738,6 @@ class XDSScalerR(Scaler):
                     reindex_op, compose = False)
                 reindex_op = 'h,k,l'                
                 need_to_return = True
-
-            # 27/FEB/08 to support user assignment of pointgroups
-            if self._scalr_input_pointgroup:
-                Debug.write('Using input pointgroup: %s' % \
-                            self._scalr_input_pointgroup)
-                pointgroup = self._scalr_input_pointgroup
 
             self._spacegroup = Syminfo.spacegroup_name_to_number(pointgroup)
             
@@ -895,8 +904,16 @@ class XDSScalerR(Scaler):
 
             hklin = hklout 
 
-            pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
-                hklin, indxr)
+            if self._scalr_input_pointgroup:
+                Debug.write('Using input pointgroup: %s' % \
+                            self._scalr_input_pointgroup)
+                pointgroup = self._scalr_input_pointgroup
+                ntr = False
+                reindex_op = 'h,k,l'
+
+            else:
+                pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
+                    hklin, indxr)
 
             if ntr:
 
@@ -910,12 +927,6 @@ class XDSScalerR(Scaler):
                     reindex_op, compose = False)
                 
                 need_to_return = True
-
-            # 27/FEB/08 to support user assignment of pointgroups
-            if self._scalr_input_pointgroup:
-                Debug.write('Using input pointgroup: %s' % \
-                            self._scalr_input_pointgroup)
-                pointgroup = self._scalr_input_pointgroup
 
             self._spacegroup = Syminfo.spacegroup_name_to_number(pointgroup)
             

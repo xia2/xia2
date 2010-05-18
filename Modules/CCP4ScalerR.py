@@ -745,13 +745,13 @@ class CCP4ScalerR(Scaler):
                     pointgroup = self._scalr_input_pointgroup
                     reindex_op = 'h,k,l'
                     ntr = False
-
                 else:
+                
                     pointless_hklin = _prepare_pointless_hklin(
                         self.get_working_directory(),
                         hklin, self._sweep_information[epoch]['header'].get(
                         'phi_width', 0.0))
-                
+                    
                     pointgroup, reindex_op, ntr = \
                                 self._pointless_indexer_jiffy(
                         pointless_hklin, indxr)
