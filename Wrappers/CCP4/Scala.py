@@ -657,7 +657,8 @@ def Scala(DriverType = None,
                     scale_command += ' bfactor on'
 
                     if self._brotation:
-                        scale_command += ' brotation %f' % self._brotation
+                        scale_command += ' brotation spacing %f' % \
+                                         self._brotation
                     
                 else:
                     scale_command += ' bfactor off'
@@ -675,7 +676,8 @@ def Scala(DriverType = None,
                     scale_command += ' bfactor on'
 
                     if self._brotation:
-                        scale_command += ' brotation %f' % self._brotation
+                        scale_command += ' brotation spacing %f' % \
+                                         self._brotation
                     else:
                         scale_command += ' brotation spacing %f' % \
                                          self._spacing
