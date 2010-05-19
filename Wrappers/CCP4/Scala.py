@@ -439,6 +439,32 @@ def Scala(DriverType = None,
 
             return run, (min(runs_to_batches[run]), max(runs_to_batches[run]))
 
+        def identify_no_observations_run(self):
+            '''Identify the run which was causing problems with "no
+            observations" reported.'''
+
+            bad_run = 0
+
+            runs_to_batches = { }
+            run = 0
+
+            for record in self.get_all_output():
+
+                if 'Run number' and 'consists of batches' in record:
+                    run = int(record.split()[2])
+                    runs_to_batches[run] = []
+
+                if run and not record.strip():
+                    run = 0
+
+                if run:
+                    runs_to_batches[run].extend(map(int, record.split()))
+                
+                if 'No observations for parameter' in record:
+                    bad_run = int(record.split()[-1])
+
+            return run, (min(runs_to_batches[run]), max(runs_to_batches[run]))
+
         def check_scala_error_negative_scale_run(self):
             '''Check for a bad run giving a negative scale in Scala - this
             is particularly for the multi-crystal analysis.'''
@@ -468,8 +494,10 @@ def Scala(DriverType = None,
                 if 'Scaling has failed to converge' in line:
                     raise RuntimeError, 'scaling not converged'
                 if '*** No observations ***' in line:
-                    raise RuntimeError, 'no observations'
-
+                    run, batches = identify_no_observations_run()
+                    raise RuntimeError, 'no observations run %d: %d to %d' % \
+                          (run, batches[0], batches[1])
+                          
             return
 
         def sum(self):
@@ -688,7 +716,7 @@ def Scala(DriverType = None,
                     scale_command += ' bfactor on'
 
                     if self._brotation:
-                        scale_command += ' brotation spacing %f' % \
+                        scale_command += ' brotation %f' % \
                                          self._brotation
                     
                 else:
@@ -707,10 +735,10 @@ def Scala(DriverType = None,
                     scale_command += ' bfactor on'
 
                     if self._brotation:
-                        scale_command += ' brotation spacing %f' % \
+                        scale_command += ' brotation %f' % \
                                          self._brotation
                     else:
-                        scale_command += ' brotation spacing %f' % \
+                        scale_command += ' brotation %f' % \
                                          self._spacing
                     
                 else:
@@ -737,7 +765,7 @@ def Scala(DriverType = None,
             assert(self._new_scala)
 
             if self._sd_parameters_auto:
-                if Flags.get_uniform_sd():
+                if Flags.get_uniform_sd() and not Flags.get_tricky():
                     self.input('sdcorrection uniform')
                         
             else:
