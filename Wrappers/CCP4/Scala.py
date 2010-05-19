@@ -410,6 +410,17 @@ def Scala(DriverType = None,
 
             return x_intercept
 
+        def check_scala_error_negative_scale_run(self):
+            '''Check for a bad run giving a negative scale in Scala - this
+            is particularly for the multi-crystal analysis.'''
+
+            for record in self.get_all_output():
+                if ' **** Negative scale factor' in record:
+                    raise RuntimeError, 'bad batch %d' % \
+                          int(record.split()[-3])
+
+            return
+        
         def check_scala_errors(self):
             '''Check for Scala specific errors. Raise RuntimeError if
             error is found.'''
@@ -452,6 +463,7 @@ def Scala(DriverType = None,
             try:
                 self.check_for_errors()
                 self.check_ccp4_errors()
+                self.check_scala_error_negative_scale_run()
                 self.check_scala_errors()
 
                 status = self.get_ccp4_status()
