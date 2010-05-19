@@ -189,6 +189,16 @@ class XWavelength(Object):
     def get_sweeps(self):
         return self._sweeps
 
+    def remove_sweep(self, sweep):
+        '''Remove a sweep object from this wavelength.'''
+
+        try:
+            self._sweeps.remove(s)
+        except ValueError, e:
+            pass
+        
+        return
+
     def _get_integraters(self):
         integraters = []
         for s in self._sweeps:

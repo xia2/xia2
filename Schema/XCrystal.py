@@ -592,6 +592,14 @@ class XCrystal(Object):
             
         return
 
+    def remove_sweep(self, s):
+        '''Find and remove the sweep s from this crystal.'''
+
+        for wave in self._wavelengths.keys():
+            self._wavelengths[wave].remove_sweep(s)
+
+        return
+            
     def _get_integraters(self):
         integraters = []
 
