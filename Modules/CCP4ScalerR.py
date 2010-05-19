@@ -1464,7 +1464,51 @@ class CCP4ScalerR(Scaler):
         if self.get_scaler_anomalous():
             sc.set_anomalous()
 
-        sc.scale()
+        # ok in tricky mode may want to be able to remove a run / sweep from
+        # the scaling - this will be caused by a bad batch error (or perhaps
+        # a negative scale) - will need to identify the sweep, then remove
+        # it...
+
+        if Flags.get_failover():
+
+            try:
+                sc.scale()
+            except RuntimeError, e:
+                if not 'bad batch' in e:
+                    raise e
+
+                # first ID the sweep from the batch no
+
+                batch = int(e.split()[-1])
+                epoch = self._identify_sweep_epoch(batch)
+                sweep = self._scalr_integraters[epoch].get_integrater_sweep()
+
+                # then remove it from my parent xcrystal
+
+                self.get_scaler_xcrystal().remove_sweep(sweep)
+
+                # then remove it from the scaler list of intergraters
+                # - this should really be a scaler interface method
+
+                del(self._scalr_integraters[epoch])
+
+                # then tell the user what is happening
+
+                Chatter.write('Sweep %s gave negative scales - removing' % \
+                              sweep.get_name())
+                              
+                # then reset the prepare, do, finish flags
+
+                self.set_scaler_prepare_done(False)
+                self.set_scaler_done(False)
+                self.set_scaler_finish_done(False)
+
+                # and return
+
+                return
+
+        else:
+            sc.scale()
 
         # then gather up all of the resulting reflection files
         # and convert them into the required formats (.sca, .mtz.)
@@ -2280,4 +2324,25 @@ class CCP4ScalerR(Scaler):
                 Chatter.banner('')       
 
         return
+    
+    def _identify_sweep_epoch(self, batch):
+        '''Identify the sweep epoch a given batch came from - N.B.
+        this assumes that the data are rebatched, will raise an exception if
+        more than one candidate is present.'''
+
+        epochs = []
+
+        for epoch in self._sweep_information:
+
+            if batch in self._sweep_information[epoch]['batches']:
+                epochs.append(epoch)
+
+        if not epochs:
+            raise RuntimeError, 'batch %d not found' % batch
+
+        if len(epochs) > 1:
+            raise RuntimeError, 'batch %d found in multiple sweeps' % batch
+        
+        return epochs[0]
+
     
