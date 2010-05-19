@@ -392,7 +392,8 @@ def Mosflm(DriverType = None):
             if self._indxr_images == []:
                 self._index_select_images()
 
-            if self._mosflm_autoindex_thresh is None and Flags.get_tricky():
+            if self._mosflm_autoindex_thresh is None and \
+                   Flags.get_microcrystal():
                 self._mosflm_autoindex_thresh = 5
                                 
             return
@@ -403,8 +404,8 @@ def Mosflm(DriverType = None):
             if Flags.get_small_molecule():
                 return self._index_select_images_small_molecule()
 
-            if Flags.get_tricky():
-                return self._index_select_images_tricky()
+            if Flags.get_microcrystal():
+                return self._index_select_images_microcrystal()
 
             # FIXME perhaps this should be somewhere central, because
             # Mosflm will share the same implementation
@@ -501,8 +502,8 @@ def Mosflm(DriverType = None):
 
             return
 
-        def _index_select_images_tricky(self):
-            '''Select images for more tricky cases e.g. microcrystal
+        def _index_select_images_microcrystal(self):
+            '''Select images for more difficult cases e.g. microcrystal
             work. Will apply (up to) 20 images to the task.'''
 
             phi_width = self.get_header_item('phi_width')
@@ -1285,10 +1286,10 @@ def Mosflm(DriverType = None):
                     # FIXME this should be a specific kind of
                     # exception e.g. an IndexError
 
-                    # if tricky mode, just assume for the moment mosaic spread
-                    # is 0.5 degrees...
+                    # if microcrystal mode, just assume for the moment mosaic
+                    # spread is 0.5 degrees...
 
-                    if Flags.get_tricky():
+                    if Flags.get_microcrystal():
                         self._indxr_mosaic = 0.5
                     else:
                         raise IndexingError, 'mosaicity estimation failed'
@@ -2062,7 +2063,7 @@ def Mosflm(DriverType = None):
             self.input('refinement include partials')
 
             # set up the cell refinement - allowing quite a lot of
-            # refinement for tricky cases (e.g. 7.2 SRS insulin SAD
+            # refinement for some cases (e.g. 7.2 SRS insulin SAD
             # data collected on MAR IP)
 
             self._reorder_cell_refinement_images()
@@ -2435,7 +2436,7 @@ def Mosflm(DriverType = None):
             self.input('limits xscan %f yscan %f' % (lim_x, lim_y))
 
             # set up the cell refinement - allowing quite a lot of
-            # refinement for tricky cases (e.g. 7.2 SRS insulin SAD
+            # refinement for some cases (e.g. 7.2 SRS insulin SAD
             # data collected on MAR IP)
 
             self._reorder_cell_refinement_images()
@@ -3267,7 +3268,7 @@ def Mosflm(DriverType = None):
 
             # add an extra chunk of orientation refinement
 
-            if Flags.get_tricky():
+            if Flags.get_microcrystal():
             
                 a = self._intgr_wedge[0] - offset
                 if self._intgr_wedge[0] - self._intgr_wedge[1] > 20:

@@ -231,7 +231,7 @@ class CCP4ScalerR(Scaler):
 
         scala.set_sd_parameters_auto()
 
-        if Flags.get_tricky():
+        if Flags.get_microcrystal():
 
             # fiddly little data sets - allow more rapid scaling...
             
@@ -942,7 +942,7 @@ class CCP4ScalerR(Scaler):
             qsc = self._updated_scala()
             qsc.set_hklin(hklin)
             qsc.set_hklout(self._reference)
-            if Flags.get_tricky():
+            if Flags.get_microcrystal():
                 qsc.quick_scale(constant = True)
             else:
                 qsc.quick_scale()                

@@ -106,7 +106,7 @@ class _Flags:
         self._completeness = 0.0
         self._rmerge = 0.0
 
-        self._tricky = False
+        self._microcrystal = False
         self._failover = False
 
         # are we working with small molecule data?
@@ -496,12 +496,12 @@ class _Flags:
     def get_rmerge(self):
         return self._rmerge
 
-    def set_tricky(self, tricky = True):
-        self._tricky = tricky
+    def set_microcrystal(self, microcrystal = True):
+        self._microcrystal = microcrystal
         return
 
-    def get_tricky(self):
-        return self._tricky
+    def get_microcrystal(self):
+        return self._microcrystal
 
     def set_failover(self, failover = True):
         self._failover = failover

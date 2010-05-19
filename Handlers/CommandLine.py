@@ -276,10 +276,10 @@ class _CommandLine(Object):
                   (self._help_rmerge(), str(e))
 
         try:
-            self._read_tricky()
+            self._read_microcrystal()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
-                  (self._help_tricky(), str(e))
+                  (self._help_microcrystal(), str(e))
 
         try:
             self._read_failover()
@@ -794,11 +794,11 @@ class _CommandLine(Object):
     def _help_rmerge(self):
         return '-rmerge N'
 
-    def _read_tricky(self):
+    def _read_microcrystal(self):
 
-        if '-tricky' in sys.argv:
-            Flags.set_tricky()
-            Debug.write('Tricky mode on')
+        if '-microcrystal' in sys.argv:
+            Flags.set_microcrystal()
+            Debug.write('Microcrystal mode on')
             
         return
 

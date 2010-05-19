@@ -392,7 +392,8 @@ def MosflmR(DriverType = None):
             if self._indxr_images == []:
                 self._index_select_images()
 
-            if self._mosflm_autoindex_thresh is None and Flags.get_tricky():
+            if self._mosflm_autoindex_thresh is None and \
+                   Flags.get_microcrystal():
                 self._mosflm_autoindex_thresh = 5
                 
             return
@@ -1467,7 +1468,8 @@ def MosflmR(DriverType = None):
             # if set, use the resolution for cell refinement - see
             # bug # 2078...
             
-            if self._mosflm_cell_ref_resolution and not Flags.get_tricky():
+            if self._mosflm_cell_ref_resolution and not \
+                   Flags.get_microcrystal():
                 self.input('resolution %f' % \
                            self._mosflm_cell_ref_resolution)
 
@@ -1850,7 +1852,8 @@ def MosflmR(DriverType = None):
             # if set, use the resolution for cell refinement - see
             # bug # 2078...
             
-            if self._mosflm_cell_ref_resolution and not Flags.get_tricky():
+            if self._mosflm_cell_ref_resolution and not \
+                   Flags.get_microcrystal():
                 self.input('resolution %f' % \
                            self._mosflm_cell_ref_resolution)
 
@@ -2534,7 +2537,7 @@ def MosflmR(DriverType = None):
 
             # add an extra chunk of orientation refinement
 
-            if Flags.get_tricky():
+            if Flags.get_microcrystal():
                 a = self._intgr_wedge[0] - offset
                 if self._intgr_wedge[0] - self._intgr_wedge[1] > 20:
                     b = a + 20

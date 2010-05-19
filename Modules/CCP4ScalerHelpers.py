@@ -69,7 +69,7 @@ def _prepare_pointless_hklin(working_directory,
 
     # also remove blank images?
 
-    if not Flags.get_tricky():
+    if not Flags.get_microcrystal():
 
         Debug.write('Excluding blank images')
 
