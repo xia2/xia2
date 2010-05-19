@@ -425,9 +425,11 @@ def Scala(DriverType = None,
                 if 'Run number' and 'consists of batches' in record:
                     run = int(record.split()[2])
                     runs_to_batches[run] = []
+                    continue
 
                 if run and not record.strip():
                     run = 0
+                    continue
 
                 if run:
                     runs_to_batches[run].extend(map(int, record.split()))
@@ -453,9 +455,11 @@ def Scala(DriverType = None,
                 if 'Run number' and 'consists of batches' in record:
                     run = int(record.split()[2])
                     runs_to_batches[run] = []
+                    continue
 
                 if run and not record.strip():
                     run = 0
+                    continue
 
                 if run:
                     runs_to_batches[run].extend(map(int, record.split()))
