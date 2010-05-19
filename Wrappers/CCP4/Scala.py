@@ -410,6 +410,35 @@ def Scala(DriverType = None,
 
             return x_intercept
 
+        def identify_negative_scale_run(self):
+            '''Given the presence of a negative scale factor, try to
+            identify it - this is going to be called after a negative scales
+            error has been raised.'''
+
+            bad_run = 0
+
+            runs_to_batches = { }
+            run = 0
+
+            for record in self.get_all_output():
+
+                if 'Run number' and 'consists of batches' in record:
+                    run = int(record.split()[2])
+                    runs_to_batches[run] = []
+
+                if run and not record.strip():
+                    run = 0
+
+                if run:
+                    runs_to_batches[run].extend(map(int, record.split()))
+                
+                if 'shifted scale factor' in record and 'negative' in record:
+                    tokens = record.split()
+                    scale = tokens[tokens.index('factor') + 1]
+                    bad_run = int(scale.split('.')[0][1:])
+
+            return run, (min(runs_to_batches[run]), max(runs_to_batches[run]))
+
         def check_scala_error_negative_scale_run(self):
             '''Check for a bad run giving a negative scale in Scala - this
             is particularly for the multi-crystal analysis.'''
@@ -433,7 +462,9 @@ def Scala(DriverType = None,
                 if 'File must be sorted' in line:
                     raise RuntimeError, 'hklin not sorted'
                 if 'Negative scales' in line:
-                    raise RuntimeError, 'negative scales'
+                    run, batches = self.identify_negative_scale_run()
+                    raise RuntimeError, 'negative scales run %d: %d to %d' % \
+                          (run, batches[0], batches[1])
                 if 'Scaling has failed to converge' in line:
                     raise RuntimeError, 'scaling not converged'
                 if '*** No observations ***' in line:
