@@ -1016,6 +1016,11 @@ def MosflmR(DriverType = None):
             if not self._mosflm_gain and self.get_gain():
                 self._mosflm_gain = self.get_gain()
 
+            # if pilatus override GAIN to 1.0
+
+            if 'pilatus' in self.get_header_item('detector_class'):
+                self._mosflm_gain = 1.0
+
             if not self._mosflm_cell_ref_images:
                 indxr = self.get_integrater_indexer()
                 lattice = indxr.get_indexer_lattice()
@@ -2593,6 +2598,12 @@ def MosflmR(DriverType = None):
                         integrated_images_last = batch
 
                 if 'ERROR IN DETECTOR GAIN' in o:
+
+                    # ignore for photon counting detectors
+
+                    if 'pilatus' in self.get_header_item('detector_class'):
+                        continue
+
                     # look for the correct gain
                     for j in range(i, i + 10):
                         if output[j].split()[:2] == ['set', 'to']:
@@ -3041,9 +3052,6 @@ def MosflmR(DriverType = None):
                 detector_height = self._fp_header['size'][1] * \
                                   self._fp_header['pixel'][1]
                 
-                # fixme this will probably not work well for non-square
-                # detectors... like the pilatus?!
-
                 lim_x = 0.5 * detector_width
                 lim_y = 0.5 * detector_height
                 
@@ -3170,6 +3178,12 @@ def MosflmR(DriverType = None):
                             last_integrated_batch = batch
 
                     if 'ERROR IN DETECTOR GAIN' in o:
+
+                        # ignore for photon counting detectors
+                        
+                        if 'pilatus' in self.get_header_item('detector_class'):
+                            continue
+
                         # look for the correct gain
                         for j in range(i, i + 10):
                             if output[j].split()[:2] == ['set', 'to']:

@@ -1537,6 +1537,11 @@ def Mosflm(DriverType = None):
             if not self._mosflm_gain and self.get_gain():
                 self._mosflm_gain = self.get_gain()
 
+            # if pilatus override GAIN to 1.0
+
+            if 'pilatus' in self.get_header_item('detector_class'):
+                self._mosflm_gain = 1.0
+
             # try performing the cell refinement in P1 first and then
             # in the correct setting ... not sure how to "insulate" this
             # from errors in the cell refinement though... if this
@@ -3320,6 +3325,12 @@ def Mosflm(DriverType = None):
                         integrated_images_last = batch
 
                 if 'ERROR IN DETECTOR GAIN' in o:
+
+                    # ignore for photon counting detectors
+
+                    if 'pilatus' in self.get_header_item('detector_class'):
+                        continue
+                    
                     # look for the correct gain
                     for j in range(i, i + 10):
                         if output[j].split()[:2] == ['set', 'to']:
@@ -3913,6 +3924,12 @@ def Mosflm(DriverType = None):
                             last_integrated_batch = batch
 
                     if 'ERROR IN DETECTOR GAIN' in o:
+
+                        # ignore for photon counting detectors
+                        
+                        if 'pilatus' in self.get_header_item('detector_class'):
+                            continue
+                    
                         # look for the correct gain
                         for j in range(i, i + 10):
                             if output[j].split()[:2] == ['set', 'to']:
