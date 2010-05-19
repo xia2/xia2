@@ -388,10 +388,13 @@ def Mosflm(DriverType = None):
             return
         
         def _index_prepare(self):
-            # prepare to do some autoindexing
             
             if self._indxr_images == []:
                 self._index_select_images()
+
+            if self._mosflm_autoindex_thresh is None and Flags.get_tricky():
+                self._mosflm_autoindex_thresh = 5
+                                
             return
 
         def _index_select_images(self):
@@ -1375,19 +1378,16 @@ def Mosflm(DriverType = None):
             if not (i.e. it gave a centred lattice where a primitive one
             would be correct) pick up the correct solution.'''
 
+            if self._indxr_input_lattice:
+                return
+
             status, lattice, matrix, cell = mosflm_check_indexer_solution(
                 self)
-
+            
             if status is None:
-
-                # basis is primitive
-
                 return
 
             if status is False:
-
-                # basis is centred, and passes test
-
                 return
 
             # ok need to update internals...

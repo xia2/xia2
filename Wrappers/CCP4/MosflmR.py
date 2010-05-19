@@ -391,6 +391,9 @@ def MosflmR(DriverType = None):
 
             if self._indxr_images == []:
                 self._index_select_images()
+
+            if self._mosflm_autoindex_thresh is None and Flags.get_tricky():
+                self._mosflm_autoindex_thresh = 5
                 
             return
 
@@ -858,6 +861,9 @@ def MosflmR(DriverType = None):
             '''Check that the autoindexing gave a convincing result, and
             if not (i.e. it gave a centred lattice where a primitive one
             would be correct) pick up the correct solution.'''
+
+            if self._indxr_input_lattice:
+                return
 
             status, lattice, matrix, cell = mosflm_check_indexer_solution(
                 self)
