@@ -1474,38 +1474,44 @@ class CCP4ScalerR(Scaler):
             try:
                 sc.scale()
             except RuntimeError, e:
-                if not 'bad batch' in e:
+                if 'bad batch' in e or 'negative scles run' in e:
+                    
+                    # first ID the sweep from the batch no
+
+                    batch = int(e.split()[-1])
+                    epoch = self._identify_sweep_epoch(batch)
+                    sweep = self._scalr_integraters[
+                        epoch].get_integrater_sweep()
+
+                    # then remove it from my parent xcrystal
+
+                    self.get_scaler_xcrystal().remove_sweep(sweep)
+
+                    # then remove it from the scaler list of intergraters
+                    # - this should really be a scaler interface method
+
+                    del(self._scalr_integraters[epoch])
+
+                    # then tell the user what is happening
+
+                    Chatter.write(
+                        'Sweep %s gave negative scales - removing' % \
+                        sweep.get_name())
+                              
+                    # then reset the prepare, do, finish flags
+
+                    self.set_scaler_prepare_done(False)
+                    self.set_scaler_done(False)
+                    self.set_scaler_finish_done(False)
+                    
+                    # and return
+                    
+                    return
+
+                else:
+                    
                     raise e
 
-                # first ID the sweep from the batch no
-
-                batch = int(e.split()[-1])
-                epoch = self._identify_sweep_epoch(batch)
-                sweep = self._scalr_integraters[epoch].get_integrater_sweep()
-
-                # then remove it from my parent xcrystal
-
-                self.get_scaler_xcrystal().remove_sweep(sweep)
-
-                # then remove it from the scaler list of intergraters
-                # - this should really be a scaler interface method
-
-                del(self._scalr_integraters[epoch])
-
-                # then tell the user what is happening
-
-                Chatter.write('Sweep %s gave negative scales - removing' % \
-                              sweep.get_name())
-                              
-                # then reset the prepare, do, finish flags
-
-                self.set_scaler_prepare_done(False)
-                self.set_scaler_done(False)
-                self.set_scaler_finish_done(False)
-
-                # and return
-
-                return
 
         else:
             sc.scale()
