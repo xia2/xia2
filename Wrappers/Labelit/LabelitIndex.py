@@ -589,7 +589,6 @@ def LabelitIndex(DriverType = None, indxr_print = True):
                             Debug.write('Ignoring solution: %s' % l[6])
                             continue
 
-                    
                     self._solutions[int(l[0])] = {'number':int(l[0]),
                                                   'mosaic':self._mosaic,
                                                   'metric':float(l[1]),
@@ -689,9 +688,11 @@ def LabelitIndex(DriverType = None, indxr_print = True):
             if not (i.e. it gave a centred lattice where a primitive one
             would be correct) pick up the correct solution.'''
 
-            # print out old matrix
+            # strictly speaking, given the right input there should be
+            # no need to test...
 
-            # print self._indxr_payload['mosflm_orientation_matrix']
+            if self._indxr_input_lattice:
+                return
             
             status, lattice, matrix, cell = mosflm_check_indexer_solution(
                 self)
