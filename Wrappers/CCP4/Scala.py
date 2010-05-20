@@ -771,7 +771,7 @@ def Scala(DriverType = None,
             assert(self._new_scala)
 
             if self._sd_parameters_auto:
-                if Flags.get_uniform_sd() and not Flags.get_microcrystal():
+                if Flags.get_uniform_sd():
                     self.input('sdcorrection uniform')
                         
             else:
