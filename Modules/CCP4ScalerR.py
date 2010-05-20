@@ -1474,8 +1474,9 @@ class CCP4ScalerR(Scaler):
             try:
                 sc.scale()
             except RuntimeError, e:
-                if 'bad batch' in e or 'negative scales run' in e or \
-                       'no observations' in e:
+                if 'bad batch' in str(e) or \
+                       'negative scales run' in str(e) or \
+                       'no observations' in str(e):
                     
                     # first ID the sweep from the batch no
 
