@@ -193,7 +193,7 @@ class XWavelength(Object):
         '''Remove a sweep object from this wavelength.'''
 
         try:
-            self._sweeps.remove(s)
+            self._sweeps.remove(sweep)
         except ValueError, e:
             pass
         
