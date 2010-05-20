@@ -1474,13 +1474,16 @@ class CCP4ScalerR(Scaler):
             try:
                 sc.scale()
             except RuntimeError, e:
-                if 'bad batch' in str(e) or \
-                       'negative scales run' in str(e) or \
-                       'no observations' in str(e):
+
+                es = str(e)
+
+                if 'bad batch' in es or \
+                       'negative scales run' in es or \
+                       'no observations' in es:
                     
                     # first ID the sweep from the batch no
 
-                    batch = int(e.split()[-1])
+                    batch = int(es.split()[-1])
                     epoch = self._identify_sweep_epoch(batch)
                     sweep = self._scalr_integraters[
                         epoch].get_integrater_sweep()

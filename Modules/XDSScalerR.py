@@ -1315,11 +1315,21 @@ class XDSScalerR(Scaler):
             Chatter.write('Resolution for sweep %s: %.2f' % \
                           (sname, resolution))
 
+            # N.B. below should really reset so that the scaling is re-run
+            # to the assigned limit...
+
             if not dname in self._resolution_limits:
                 self._resolution_limits[dname] = resolution
+                self.set_scaler_done(False)                
             else:
                 if resolution < self._resolution_limits[dname]:
                     self._resolution_limits[dname] = resolution
+                    self.set_scaler_done(False)
+
+
+        if not self.get_scaler_done():
+            Debug.write('Returning as scaling not finished...')
+            return
 
         # first the rebatch / sortmtz shuffle
         
