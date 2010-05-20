@@ -439,7 +439,8 @@ def Scala(DriverType = None,
                     scale = tokens[tokens.index('factor') + 1]
                     bad_run = int(scale.split('.')[0][1:])
 
-            return run, (min(runs_to_batches[run]), max(runs_to_batches[run]))
+            return bad_run, (min(runs_to_batches[bad_run]),
+                             max(runs_to_batches[bad_run]))
 
         def identify_no_observations_run(self):
             '''Identify the run which was causing problems with "no
@@ -467,7 +468,8 @@ def Scala(DriverType = None,
                 if 'No observations for parameter' in record:
                     bad_run = int(record.split()[-1])
 
-            return run, (min(runs_to_batches[run]), max(runs_to_batches[run]))
+            return bad_run, (min(runs_to_batches[bad_run]),
+                             max(runs_to_batches[bad_run]))
 
         def check_scala_error_negative_scale_run(self):
             '''Check for a bad run giving a negative scale in Scala - this
@@ -498,7 +500,7 @@ def Scala(DriverType = None,
                 if 'Scaling has failed to converge' in line:
                     raise RuntimeError, 'scaling not converged'
                 if '*** No observations ***' in line:
-                    run, batches = identify_no_observations_run()
+                    run, batches = self.identify_no_observations_run()
                     raise RuntimeError, 'no observations run %d: %d to %d' % \
                           (run, batches[0], batches[1])
                           
