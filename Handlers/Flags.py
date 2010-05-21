@@ -207,6 +207,8 @@ class _Flags:
 
         from Handlers.Syminfo import Syminfo
 
+        spacegroup = spacegroup.upper()
+
         # validate by deriving the pointgroup and lattice...
 
         pointgroup = Syminfo.get_pointgroup(spacegroup)
