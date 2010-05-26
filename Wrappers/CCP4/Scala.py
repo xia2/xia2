@@ -1166,6 +1166,7 @@ def Scala(DriverType = None,
             self.input('cycles 6')
             if constant:
                 self.input('scales constant')
+                self.input('exclude sdmin 0.5')
             else:
                 self.input('scales rotation spacing 10')
                 
