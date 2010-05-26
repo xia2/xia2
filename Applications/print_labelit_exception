@@ -1,0 +1,3 @@
+#!/bin/bash
+
+labelit.python ${XIA2_ROOT}/Applications/print_labelit_exception.py $@
