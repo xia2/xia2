@@ -2539,7 +2539,7 @@ def MosflmR(DriverType = None):
 
             if Flags.get_microcrystal():
                 a = self._intgr_wedge[0] - offset
-                if self._intgr_wedge[0] - self._intgr_wedge[1] > 20:
+                if self._intgr_wedge[1] - self._intgr_wedge[0] > 20:
                     b = a + 20
                 else:
                     b = self._intgr_wedge[1] - offset
