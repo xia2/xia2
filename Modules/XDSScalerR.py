@@ -781,7 +781,11 @@ class XDSScalerR(Scaler):
             scala = self._factory.Scala()            
             scala.set_hklin(hklin)
             scala.set_hklout(self._reference)
-            scala.quick_scale()            
+            if Flags.get_microcrystal():
+                scala.quick_scale(constant = True)
+            else:
+                scala.quick_scale()                
+
 
         if self._reference:
 
