@@ -81,7 +81,10 @@ class XWavelength(Object):
         for s in self._sweeps:
 
             # would be nice to put this somewhere else in the hierarchy - not
-            # sure how to do that though (should be handled in Innterfaces?)
+            # sure how to do that though (should be handled in Interfaces?)
+
+            # would also be nice to put some parallelism in here - though is
+            # this the right place to do that? would seem kind-of messy...
 
             if Flags.get_failover():
                 try:
