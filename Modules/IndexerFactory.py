@@ -42,6 +42,7 @@ sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 # from LabelitIndexer import LabelitIndexer
 
 from Wrappers.Labelit.LabelitIndex import LabelitIndex
+from Wrappers.Labelit.LabelitIndexII import LabelitIndexII
 from Wrappers.CCP4.Mosflm import Mosflm
 from Modules.XDSIndexer import XDSIndexer
 from Modules.XDSIndexerII import XDSIndexerII
@@ -139,9 +140,6 @@ def Indexer(detector = None):
 
     if not indexer and (not preselection or preselection == 'labelit'):
         try:
-            if detector == 'pilatus 2M' and False:
-                Debug.write('Labelit does not support P2M detectors well')
-                raise NotAvailableError, 'Labelit does not support dectris'
             indexer = LabelitIndex()
             Debug.write('Using LabelitIndex Indexer')
         except NotAvailableError, e:
@@ -175,6 +173,16 @@ def Indexer(detector = None):
         except NotAvailableError, e:
             if preselection:
                 raise RuntimeError, 'preselected indexer xds not available'
+            pass
+
+    if not indexer and (not preselection or preselection == 'labelitii'):
+        try:
+            indexer = LabelitIndexII()
+            Debug.write('Using LabelitIndexII Indexer')
+        except NotAvailableError, e:
+            if preselection:
+                raise RuntimeError, \
+                      'preselected indexer labelit not available'            
             pass
 
     if not indexer:
