@@ -1488,6 +1488,9 @@ def MosflmR(DriverType = None):
             if self._mosflm_postref_fix_mosaic:
                 self.input('postref fix mosaic')
 
+            if Flags.get_microcrystal():
+                self.input('postref sdfac 2.0')
+                
             # note well that the beam centre is coming from indexing so
             # should be already properly handled
 
@@ -1868,6 +1871,9 @@ def MosflmR(DriverType = None):
                    Flags.get_microcrystal():
                 self.input('resolution %f' % \
                            self._mosflm_cell_ref_resolution)
+
+            if Flags.get_microcrystal():
+                self.input('postref sdfac 2.0')
 
             # note well that the beam centre is coming from indexing so
             # should be already properly handled
