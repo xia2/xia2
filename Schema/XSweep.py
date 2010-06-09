@@ -437,6 +437,14 @@ class XSweep(Object):
     def get_image_to_epoch(self):
         '''Get the image to epoch mapping table.'''
         return copy.deepcopy(self._image_to_epoch)
+
+    # to see if we have been instructed...
+
+    def get_user_lattice(self):
+        return self._user_lattice
+
+    def get_user_cell(self):
+        return self._user_cell    
     
     def __str__(self):
         return self.__repr__()
