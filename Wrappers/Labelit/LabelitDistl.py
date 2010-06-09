@@ -92,7 +92,10 @@ def LabelitDistl(DriverType = None):
             current_image = None
 
             for o in output:
-                l = o.split()
+                if 'None' in o and 'Resolution' in o:
+                    l = o.replace('None', '0.0').split()
+                else:
+                    l = o.split()
 
                 if l[:1] == ['File']:
                     current_image = l[2]
@@ -135,18 +138,14 @@ if __name__ == '__main__':
         raise RuntimeError, 'XIA2_ROOT not defined'
 
     l = LabelitDistl()
-
-    directory = os.path.join(os.environ['XIA2_ROOT'],
-                             'Data', 'Test', 'Images')
-
-    l.add_image(os.path.join(directory, '12287_1_E1_001.img'))
+    for image in sys.argv[1:]:
+        l.add_image(image)
 
     l.distl()
 
-    stats = l.get_statistics('12287_1_E1_001.img')
+    for image in sys.argv[1:]:
+        stats = l.get_statistics(image)
 
-    print 'Fraction of good spots: %4.2f' % (float(stats['spots_good']) /
-                                             float(stats['spots']))
-    print 'Ice rings:              %d' % stats['ice_rings']
-    print 'Resolutions:            %f  %f' % \
-          (stats['resol_one'], stats['resol_two'])
+        print image, stats['spots_good'], stats['spots']
+
+

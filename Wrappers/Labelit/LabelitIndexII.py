@@ -113,6 +113,7 @@ from Schema.Interfaces.Indexer import Indexer
 # other labelit things that this uses
 from Wrappers.Labelit.LabelitMosflmMatrix import LabelitMosflmMatrix
 from Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
+from Wrappers.Labelit.LabelitDistl import LabelitDistl
 from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
 
 from lib.Guff import auto_logfiler
@@ -263,13 +264,23 @@ def LabelitIndexII(DriverType = None, indxr_print = True):
 
         def _index_select_images(self):
             '''Select correct images based on image headers. This will in
-            general use the first 20 frames.'''
+            general use the first 20 frames. N.B. only if they have good
+            spots on them!'''
 
             phi_width = self.get_header_item('phi_width')
             images = self.get_matching_images()
 
             for image in sorted(images)[:20]:
-                self.add_indexer_image_wedge(image)
+
+                ld = LabelitDistl()
+                auto_logfiler(ld)
+                ld.add_image(self.get_image_name(image))
+                ld.distl()
+                spots = ld.get_statistics(
+                    self.get_image_name(image))['spots_good']
+                Debug.write('Image %d good spots %d' % (image, spots))
+                if spots > 0:
+                    self.add_indexer_image_wedge(image)
 
             return
 

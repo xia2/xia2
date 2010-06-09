@@ -492,10 +492,25 @@ def MosflmR(DriverType = None):
                                         middle - 2 + min_images))
                 cell_ref_images.append((images[-min_images],
                                         images[-1]))
-                
 
             return cell_ref_images
                             
+        def _refine_select_twenty(self, mosaic):
+            '''Select images for cell refinement - first 20 in the sweep.'''
+
+            cell_ref_images = []
+
+            images = self.get_matching_images()
+
+            cell_ref_images = []
+
+            if len(images) > 20:
+                cell_ref_images.append((images[0], images[19]))
+            else:
+                cell_ref_images.append((images[0], images[-1]))
+                
+            return cell_ref_images
+
         def _index(self):
             '''Implement the indexer interface.'''
 
@@ -1024,18 +1039,14 @@ def MosflmR(DriverType = None):
 
             if not self._mosflm_cell_ref_images:
                 indxr = self.get_integrater_indexer()
-                lattice = indxr.get_indexer_lattice()
                 mosaic = indxr.get_indexer_mosaic()
-                spacegroup_number = lattice_to_spacegroup(lattice)
 
-                # FIXME is this ignored now?
-                if spacegroup_number >= 75:
-                    num_wedges = 1
+                if Flags.get_microcrystal():
+                    self._mosflm_cell_ref_images = self._refine_select_twenty(
+                        mosaic)
                 else:
-                    num_wedges = 2
-
-                self._mosflm_cell_ref_images = self._refine_select_images(
-                    mosaic)
+                    self._mosflm_cell_ref_images = self._refine_select_images(
+                        mosaic)
 
             indxr = self.get_integrater_indexer()
 
