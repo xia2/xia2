@@ -283,9 +283,6 @@ def LabelitIndexII(DriverType = None, indxr_print = True):
                 if spots > 0:
                     self.add_indexer_image_wedge(image)
 
-            if not self._indxr_images:
-                raise RuntimeError, 'No good spots found on any images'
-
             return
 
         def _compare_cell(self, c_ref, c_test):
@@ -307,6 +304,9 @@ def LabelitIndexII(DriverType = None, indxr_print = True):
             this is not going to compute the matrix...'''
 
             # acknowledge this program
+
+            if not self._indxr_images:
+                raise RuntimeError, 'No good spots found on any images'
 
             Citations.cite('labelit')
             Citations.cite('distl')
