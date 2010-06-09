@@ -77,7 +77,11 @@ def LabelitStats_distl(DriverType = None):
             current_image = None
 
             for o in output:
-                l = o.split()
+
+                if 'None' in o and 'Resolution' in o:
+                    l = o.replace('None', '0.0').split()
+                else:
+                    l = o.split()
 
                 if l[:1] == ['File']:
                     current_image = l[2]

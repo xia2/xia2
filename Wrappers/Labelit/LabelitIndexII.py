@@ -57,7 +57,7 @@
 #
 # FIXME 06/SEP/06 This needs to have an indentity change to LabelitIndex
 #                 Combine this with the renaming of LabelitStats_distl to
-#                 fit in with LabelitMosflmScript.
+#                 fit in with LabelitMosflmMatrix.
 #
 # FIXED 18/SEP/06 pass on the working directory to sub processes...
 #
@@ -111,7 +111,7 @@ from Schema.Interfaces.FrameProcessor import FrameProcessor
 from Schema.Interfaces.Indexer import Indexer
 
 # other labelit things that this uses
-from Wrappers.Labelit.LabelitMosflmScript import LabelitMosflmScript
+from Wrappers.Labelit.LabelitMosflmMatrix import LabelitMosflmMatrix
 from Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
 from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
 
@@ -582,7 +582,7 @@ def LabelitIndexII(DriverType = None, indxr_print = True):
             self._indxr_cell = tuple(self._solution['cell'])
             self._indxr_mosaic = self._solution['mosaic']
 
-            lms = LabelitMosflmScript()
+            lms = LabelitMosflmMatrix()
             lms.set_working_directory(self.get_working_directory())
             lms.set_solution(self._solution['number'])
             self._indxr_payload['mosflm_orientation_matrix'] = lms.calculate()
