@@ -273,6 +273,7 @@ def LabelitIndexII(DriverType = None, indxr_print = True):
             for image in sorted(images)[:20]:
 
                 ld = LabelitDistl()
+                ld.set_working_directory(self.get_working_directory())
                 auto_logfiler(ld)
                 ld.add_image(self.get_image_name(image))
                 ld.distl()
@@ -281,6 +282,9 @@ def LabelitIndexII(DriverType = None, indxr_print = True):
                 Debug.write('Image %d good spots %d' % (image, spots))
                 if spots > 0:
                     self.add_indexer_image_wedge(image)
+
+            if not self._indxr_images:
+                raise RuntimeError, 'No good spots found on any images'
 
             return
 
