@@ -1233,7 +1233,8 @@ def MosflmR(DriverType = None):
                             (ratio / len(ratios)))
 
                 if (ratio / (max(cycles) * len(images))) > \
-                       Flags.get_rejection_threshold():
+                       Flags.get_rejection_threshold() and \
+                       not self.get_integrater_sweep().get_user_lattice():
                     raise BadLatticeError, 'incorrect lattice constraints'
 
             else:
