@@ -818,6 +818,7 @@ def Scala(DriverType = None,
             try:
                 self.check_for_errors()
                 self.check_ccp4_errors()
+                self.check_scala_error_negative_scale_run()
                 self.check_scala_errors()
                 
                 status = self.get_ccp4_status()                
@@ -1163,12 +1164,13 @@ def Scala(DriverType = None,
             # assert here that there is only one dataset in the input...
 
             self.input('run 1 all')
-            self.input('cycles 6')
             if constant:
                 self.input('scales constant')
                 self.input('exclude sdmin 0.5')
+                self.input('cycles 0')
             else:
                 self.input('scales rotation spacing 10')
+                self.input('cycles 6')
                 
             # next any 'generic' parameters
 
