@@ -325,6 +325,10 @@ def MosflmR(DriverType = None):
             self._mosflm_cell_ref_resolution = None
             self._mosflm_cell_ref_double_mosaic = False
 
+            # belt + braces for very troublesome cases - this will only
+            # be used in failover / microcrystal mode
+            self._mosflm_cell_ref_add_autoindex = False
+
             # and the calculation of the missetting angles
             self._mosflm_misset_expert = None
             
@@ -1497,6 +1501,20 @@ def MosflmR(DriverType = None):
             if self.get_wavelength_prov() == 'user':
                 self.input('wavelength %f' % self.get_wavelength())
 
+            # belt + braces mode - only to be used when considering failover,
+            # will run an additional step of autoindexing prior to cell
+            # refinement, to be used only after proving that not going it
+            # will result in cell refinement failure - will use the first
+            # wedge... N.B. this is only useful if the indexer is Labelit
+            # not Mosflm...
+
+            if self._mosflm_cell_ref_add_autoindex:
+                assert(Flags.get_failover())
+                cri = self._mosflm_cell_ref_images[0]
+                for j in range(cri[0], 1 + cri[1]):
+                    self.input('autoindex dps refine image %d' % j)
+                self.input('go')
+
             # get all of the stored parameter values
             parameters = self.get_integrater_parameters('mosflm')
 
@@ -1880,6 +1898,19 @@ def MosflmR(DriverType = None):
             if self.get_wavelength_prov() == 'user':
                 self.input('wavelength %f' % self.get_wavelength())
 
+            # belt + braces mode - only to be used when considering failover,
+            # will run an additional step of autoindexing prior to cell
+            # refinement, to be used only after proving that not going it
+            # will result in cell refinement failure - will use the first
+            # wedge...
+
+            if self._mosflm_cell_ref_add_autoindex:
+                assert(Flags.get_failover())
+                cri = self._mosflm_cell_ref_images[0]
+                for j in range(cri[0], 1 + cri[1]):
+                    self.input('autoindex dps refine image %d' % j)
+                self.input('go')
+
             # get all of the stored parameter values
             parameters = self.get_integrater_parameters('mosflm')
 
@@ -1952,6 +1983,13 @@ def MosflmR(DriverType = None):
                     cell_refinement_ok = True
                     
             if not cell_refinement_ok:
+                if Flags.get_failover() and not \
+                       self._mosflm_cell_ref_add_autoindex:
+                    Debug.write('Repeating cell refinement...')
+                    self.set_integrater_prepare_done(False)
+                    self._mosflm_cell_ref_add_autoindex = True
+                    return [0.0], [0.0]
+                
                 Chatter.write(
                     'Looks like cell refinement failed - more follows...')
 

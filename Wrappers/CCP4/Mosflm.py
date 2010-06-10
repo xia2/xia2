@@ -2279,7 +2279,6 @@ def Mosflm(DriverType = None):
                 self.set_indexer_input_lattice(lattice)
                 self.set_indexer_beam(beam)
 
-
             # here need to check the LATTICE - which will be
             # something like tP etc. FIXME how to cope when the
             # spacegroup has been explicitly stated?
