@@ -118,6 +118,17 @@ def Integrater():
     integrater = None
     preselection = get_preferences().get('integrater')
 
+    if not integrater and (not preselection or preselection == 'mosflmr'):
+        try:
+            integrater = MosflmR.MosflmR()
+            Debug.write('Using MosflmR Integrater')
+            add_preference('scaler', 'ccp4r')
+        except NotAvailableError, e:
+            if preselection == 'mosflmr':
+                raise RuntimeError, \
+                      'preselected integrater mosflmr not available'
+            pass
+            
     if not integrater and (not preselection or preselection == 'mosflm'):
         try:
             integrater = Mosflm.Mosflm()
@@ -129,15 +140,16 @@ def Integrater():
                       'preselected integrater mosflm not available'
             pass
             
-    if not integrater and (not preselection or preselection == 'mosflmr'):
+    if not integrater and \
+           (not preselection or preselection == 'xdsr'):
         try:
-            integrater = MosflmR.MosflmR()
-            Debug.write('Using MosflmR Integrater')
-            add_preference('scaler', 'ccp4r')
+            integrater = XDSIntegraterR()
+            Debug.write('Using XDSR Integrater')
+            add_preference('scaler', 'xdsr')
         except NotAvailableError, e:
-            if preselection == 'mosflmr':
+            if preselection == 'xdsr':
                 raise RuntimeError, \
-                      'preselected integrater mosflmr not available'
+                      'preselected integrater xdsr not available'
             pass
             
     if not integrater and \
@@ -152,18 +164,6 @@ def Integrater():
                       'preselected integrater xds not available'
             pass
 
-    if not integrater and \
-           (not preselection or preselection == 'xdsr'):
-        try:
-            integrater = XDSIntegraterR()
-            Debug.write('Using XDSR Integrater')
-            add_preference('scaler', 'xdsr')
-        except NotAvailableError, e:
-            if preselection == 'xdsr':
-                raise RuntimeError, \
-                      'preselected integrater xdsr not available'
-            pass
-            
     if not integrater:
         raise RuntimeError, 'no integrater implementations found'
 

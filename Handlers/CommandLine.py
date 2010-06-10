@@ -1025,7 +1025,7 @@ class _CommandLine(Object):
 
     def _read_2d(self):
 
-        if '-2d' in sys.argv:
+        if '-2dold' in sys.argv:
             add_preference('integrater', 'mosflm')
             add_preference('scaler', 'ccp4')
             Debug.write('2D pipeline selected')
@@ -1033,7 +1033,7 @@ class _CommandLine(Object):
 
     def _read_2dr(self):
 
-        if '-2dr' in sys.argv:
+        if '-2dr' in sys.argv or '-2d' in sys.argv:
             add_preference('integrater', 'mosflmr')
             add_preference('scaler', 'ccp4r')
             Debug.write('2DR pipeline selected')
@@ -1041,7 +1041,7 @@ class _CommandLine(Object):
 
     def _read_3d(self):
 
-        if '-3d' in sys.argv:
+        if '-3dold' in sys.argv:
             add_preference('integrater', 'xds')
             add_preference('scaler', 'xds')
             Debug.write('3D pipeline selected')
@@ -1049,7 +1049,7 @@ class _CommandLine(Object):
 
     def _read_3dr(self):
 
-        if '-3dr' in sys.argv:
+        if '-3dr' in sys.argv or '-3d' in sys.argv:
             add_preference('integrater', 'xdsr')
             add_preference('scaler', 'xdsr')
             Debug.write('3DR pipeline selected')
@@ -1057,7 +1057,7 @@ class _CommandLine(Object):
 
     def _read_3dii(self):
 
-        if '-3dii' in sys.argv:
+        if '-3diiold' in sys.argv:
             add_preference('indexer', 'xdsii')
             add_preference('integrater', 'xds')
             add_preference('scaler', 'xds')
@@ -1066,7 +1066,7 @@ class _CommandLine(Object):
 
     def _read_3diir(self):
 
-        if '-3diir' in sys.argv:
+        if '-3diir' in sys.argv or '-3dii' in sys.argv:
             add_preference('indexer', 'xdsii')
             add_preference('integrater', 'xdsr')
             add_preference('scaler', 'xdsr')
