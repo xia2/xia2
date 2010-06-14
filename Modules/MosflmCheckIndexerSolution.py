@@ -28,6 +28,12 @@ from Handlers.Streams import Debug
 from lib.Guff import nint
 from Experts.MatrixExpert import format_matrix
 
+# optional labelit stuff
+
+from Wrappers.Labelit.DistlSignalStrength import DistlSignalStrength
+
+use_distl = True
+
 # cctbx stuff
 
 from cctbx import sgtbx
@@ -41,6 +47,32 @@ if (hasattr(matrix.rec, "rotate_around_origin")):
     matrix.rec.rotate = matrix.rec.rotate_around_origin
 
 # end workaround
+
+# failover on spot picking...
+
+def locate_maxima(image):
+
+    global use_distl
+    
+    if use_distl:
+        try:
+            dss = DistlSignalStrength()
+            dss.set_image(image)
+            peaks = dss.find_peaks()
+
+            if not peaks:
+                raise RuntimeError, 'no peaks found'
+
+        except Exception, e:
+            use_distl = False
+        
+    if not use_distl:
+
+        pp = Printpeaks()
+        pp.set_image(image)
+        peaks = pp.get_maxima()
+
+    return peaks
 
 def s2l(spacegroup):
     lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5, 
@@ -141,9 +173,7 @@ def mosflm_check_indexer_solution(indexer):
         phi = header['phi_start'] + 0.5 * header['phi_width']
         pixel = header['pixel']
         wavelength = header['wavelength']
-        pp = Printpeaks()
-        pp.set_image(image)
-        peaks = pp.get_maxima()
+        peaks = locate_maxima(image)
 
         spots_r_j[i] = []
 
