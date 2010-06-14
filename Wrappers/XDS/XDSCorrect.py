@@ -283,6 +283,7 @@ def XDSCorrect(DriverType = None):
 
             if self._anomalous:
                 xds_inp.write('FRIEDEL\'S_LAW=FALSE\n')
+                xds_inp.write('STRICT_ABSORPTION_CORRECTION=TRUE\n')
             else:
                 xds_inp.write('FRIEDEL\'S_LAW=TRUE\n')
                 
