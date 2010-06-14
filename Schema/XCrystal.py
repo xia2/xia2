@@ -766,7 +766,6 @@ class XCrystal(Object):
                 self._scaler.set_scaler_input_pointgroup(
                     Flags.get_pointgroup())
                 
-
             integraters = self._get_integraters()
 
             # then feed them to the scaler

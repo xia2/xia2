@@ -228,6 +228,11 @@ class _Flags:
                     spacegroup)
         Debug.write('Pointgroup: %s  Lattice: %s' % (pointgroup, lattice))
 
+        # indicate that since this has been assigned, we do not wish to
+        # test it!
+
+        self.set_no_lattice_test(True)
+
         return
 
     def get_spacegroup(self):

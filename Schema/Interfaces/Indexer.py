@@ -213,6 +213,9 @@ class Indexer:
         self._indxr_finish_done = False
         self._indxr_sweep_name = None
 
+        # links to where my data is coming from
+        self._indxr_sweep = None
+
         # the helper to manage the solutions table
         self._indxr_helper = None
 
@@ -288,6 +291,13 @@ class Indexer:
     def set_indexer_finish_done(self, done = True):
         self._indxr_finish_done = done
         return
+
+    def set_indexer_sweep(self, sweep):
+        self._indxr_sweep = sweep
+        return
+
+    def get_indexer_sweep(self):
+        return self._indxr_sweep
 
     def set_indexer_sweep_name(self, sweep_name):
         self._indxr_sweep_name = sweep_name

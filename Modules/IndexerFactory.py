@@ -117,6 +117,8 @@ def IndexerForXSweep(xsweep):
         Debug.write('Indexer factory: Setting wavelength: %.6f' % \
                     xsweep.get_wavelength_value())
         indexer.set_wavelength(xsweep.get_wavelength_value())
+        
+    indexer.set_indexer_sweep(xsweep)
     
     return indexer
     

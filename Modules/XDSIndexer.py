@@ -479,43 +479,45 @@ class XDSIndexer(FrameProcessor,
 
         # ok, in here now ask if this solution was sensible!
 
-        lattice = self._indxr_lattice
-        cell = self._indxr_cell
-        
-        lattice2, cell2 = xds_check_indexer_solution(
-            os.path.join(self.get_working_directory(), 'XPARM.XDS'),
-            os.path.join(self.get_working_directory(), 'SPOT.XDS'))
+        if not self.get_indexer_sweep().get_user_lattice():
+       
+            lattice = self._indxr_lattice
+            cell = self._indxr_cell
 
-        Debug.write('Centring analysis: %s => %s' % \
-                    (lattice, lattice2))
-
-        doubled_lattice = False
-        for j in range(3):
-            if int(round(cell2[j] / cell[j])) == 2:
-                doubled_lattice = True
-                axes = 'A', 'B', 'C'
-                Debug.write('Lattice axis doubled: %s' % axes[j])
-
-        if (self._idxref_subtree_problem and (lattice2 != lattice)) or \
-                            doubled_lattice:
-                            
-            # hmm.... looks like we don't agree on the correct result...
-            # update the putative correct result as input
-                
-            Debug.write('Detected pseudocentred lattice')
-            Debug.write('Inserting solution: %s ' % lattice2 + 
-                        '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % cell2)
-
-            self._indxr_replace(lattice2, cell2)
-
-            Debug.write('Set lattice: %s' % lattice2)
-            Debug.write('Set cell: %f %f %f %f %f %f' % \
-                        cell2)
-
-            # then rerun
+            lattice2, cell2 = xds_check_indexer_solution(
+                os.path.join(self.get_working_directory(), 'XPARM.XDS'),
+                os.path.join(self.get_working_directory(), 'SPOT.XDS'))
             
-            self.set_indexer_done(False)
-            return
+            Debug.write('Centring analysis: %s => %s' % \
+                        (lattice, lattice2))
+
+            doubled_lattice = False
+            for j in range(3):
+                if int(round(cell2[j] / cell[j])) == 2:
+                    doubled_lattice = True
+                    axes = 'A', 'B', 'C'
+                    Debug.write('Lattice axis doubled: %s' % axes[j])
+
+            if (self._idxref_subtree_problem and (lattice2 != lattice)) or \
+                   doubled_lattice:
+                            
+                # hmm.... looks like we don't agree on the correct result...
+                # update the putative correct result as input
+                
+                Debug.write('Detected pseudocentred lattice')
+                Debug.write('Inserting solution: %s ' % lattice2 + 
+                            '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % cell2)
+
+                self._indxr_replace(lattice2, cell2)
+
+                Debug.write('Set lattice: %s' % lattice2)
+                Debug.write('Set cell: %f %f %f %f %f %f' % \
+                            cell2)
+
+                # then rerun
+            
+                self.set_indexer_done(False)
+                return
             
         # finally read through SPOT.XDS and XPARM.XDS to get an estimate
         # of the low resolution limit - this should be pretty straightforward

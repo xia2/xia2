@@ -202,6 +202,8 @@ class XDSIntegraterR(FrameProcessor,
 
         if not self._intgr_indexer:
             self.set_integrater_indexer(XDSIndexer())
+            self.get_integrater_indexer().set_indexer_sweep(
+                self.get_integrater_sweep())
 
             self._intgr_indexer.set_working_directory(
                 self.get_working_directory())
@@ -254,6 +256,8 @@ class XDSIntegraterR(FrameProcessor,
             # be performed...
             
             self.set_integrater_indexer(XDSIndexer())
+            self.get_integrater_indexer().set_indexer_sweep(
+                self.get_integrater_sweep())
             
             # set the indexer up as per the frameprocessor interface...
             # this would usually happen within the IndexerFactory.
@@ -496,7 +500,8 @@ class XDSIntegraterR(FrameProcessor,
             self.set_integrater_done(False)
 
         if not self.get_integrater_reindex_matrix() and not self._intgr_cell \
-               and not Flags.get_no_lattice_test():
+               and not Flags.get_no_lattice_test() and not \
+               self.get_integrater_sweep().get_user_lattice():
             correct = self.Correct()
 
             correct.set_data_range(self._intgr_wedge[0],

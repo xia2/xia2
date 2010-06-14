@@ -1382,6 +1382,9 @@ def Mosflm(DriverType = None):
             if self._indxr_input_lattice:
                 return
 
+            if self.get_indexer_sweep().get_user_lattice():
+                return
+
             status, lattice, matrix, cell = mosflm_check_indexer_solution(
                 self)
             
@@ -1642,9 +1645,16 @@ def Mosflm(DriverType = None):
                 # are > 10 it would indicate that the images are blank (assert)
                 # so ignore from the analyis / comparison
 
-                self.reset()
-                auto_logfiler(self)
-                rms_deviations_p1, br_p1 = self._mosflm_test_refine_cell('aP')
+                if Flags.get_no_lattice_test() or \
+                       self.get_integrater_sweep().get_user_lattice():
+                    rms_deviations_p1 = []
+                    br_p1 = []
+                else:
+                    self.reset()
+                    auto_logfiler(self)
+                    rms_deviations_p1, br_p1 = self._mosflm_test_refine_cell(
+                        'aP')
+
                 self.reset()
                 auto_logfiler(self)
                 rms_deviations, br = self._mosflm_refine_cell()
@@ -1757,7 +1767,7 @@ def Mosflm(DriverType = None):
                     raise BadLatticeError, 'incorrect lattice constraints'
 
             else:
-                Debug.write('Cell refinement in P1 failed...')
+                Debug.write('Cell refinement in P1 failed... or was not run')
 
             # also look for the images we want to integrate... since this
             # is part of the preparation and was causing fun with
