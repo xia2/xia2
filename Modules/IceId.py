@@ -23,7 +23,8 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
 from Wrappers.XIA.Diffdump import Diffdump
-from Wrappers.XIA.Printpeaks import Printpeaks
+# from Wrappers.XIA.Printpeaks import Printpeaks
+from MosflmCheckIndexerSolution import locate_maxima
 
 from Modules.Resolution import compute_resolution
 
@@ -142,10 +143,10 @@ class IceId:
         if not self._setup:
             self.setup()
 
-        p = Printpeaks()
-        p.set_image(self._image)
-
-        peaks = p.getpeaks()
+        # p = Printpeaks()
+        # p.set_image(self._image)
+        # peaks = p.getpeaks()
+        peaks = locate_maxima(self._image)
 
         # now do some sums...
 
