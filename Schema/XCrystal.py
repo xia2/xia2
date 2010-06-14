@@ -685,6 +685,9 @@ class XCrystal(Object):
 
         return None
 
+    def get_anomalous(self):
+        return self._anomalous
+
     # "power" methods - now where these actually perform some real calculations
     # to get some real information out - beware, this will actually run
     # programs...

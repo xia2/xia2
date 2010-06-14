@@ -83,6 +83,7 @@ def XDSCorrectR(DriverType = None):
 
             self._cell = None
             self._spacegroup_number = None
+            self._anomalous = False
 
             self._polarization = 0.0
 
@@ -117,6 +118,13 @@ def XDSCorrectR(DriverType = None):
             return
 
         # getter and setter for input / output data
+
+        def set_anomalous(self, anomalous):
+            self._anomalous = anomalous
+            return
+
+        def get_anomalous(self):
+            return self._anomalous
 
         def set_spacegroup_number(self, spacegroup_number):
             self._spacegroup_number = spacegroup_number
@@ -268,10 +276,11 @@ def XDSCorrectR(DriverType = None):
                 xds_inp.write('INCLUDE_RESOLUTION_RANGE=%.2f %.2f\n' % \
                               (self._resolution_low, self._resolution_high))
 
-            # assume for the moment anomalous data
-
-            xds_inp.write('FRIEDEL\'S_LAW=FALSE\n')
-
+            if self._anomalous:
+                xds_inp.write('FRIEDEL\'S_LAW=FALSE\n')
+            else:
+                xds_inp.write('FRIEDEL\'S_LAW=TRUE\n')
+                
             if self._spacegroup_number:
                 if not self._cell:
                     raise RuntimeError, \

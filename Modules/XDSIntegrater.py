@@ -160,6 +160,9 @@ class XDSIntegrater(FrameProcessor,
 
         if self.get_integrater_ice():
             correct.set_ice(self.get_integrater_ice())
+
+        if self.get_integrater_anomalous():
+            correct.set_anomalous(True)
             
         auto_logfiler(correct, 'CORRECT')
         

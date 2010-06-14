@@ -680,6 +680,11 @@ class XSweep(Object):
 
             self._integrater.set_integrater_sweep_name(self._name)
 
+            # copy across anomalous flags in case it's useful - #871
+
+            self._integrater.set_integrater_anomalous(
+                self.get_wavelength().get_crystal().get_anomalous())
+
             # see if we have any useful detector parameters to pass
             # on
 
@@ -690,7 +695,6 @@ class XSweep(Object):
             if self.get_polarization():
                 self._integrater.set_polarization(self.get_polarization())
                 
-
             # look to see if there are any global integration parameters
             # we can set...
 

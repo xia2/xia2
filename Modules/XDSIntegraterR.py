@@ -161,6 +161,9 @@ class XDSIntegraterR(FrameProcessor,
         if self.get_integrater_ice():
             correct.set_ice(self.get_integrater_ice())
 
+        if self.get_integrater_anomalous():
+            correct.set_anomalous(True)
+    
         if self.get_integrater_low_resolution() > 0.0:
             Debug.write('Using low resolution limit: %.2f' % \
                         self.get_integrater_low_resolution())

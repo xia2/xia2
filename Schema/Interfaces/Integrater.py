@@ -150,9 +150,6 @@ class Integrater:
         self._intgr_reso_low = 0.0
         self._intgr_reso_user = False
 
-        # anomalous separation may be important for e.g. CORRECT.
-        self._intgr_anomalous = None
-
         # presence of ice rings - 0 indicates "no" anything else
         # indicates "yes". FIXME this should be able to identify
         # different resolution rings.
@@ -202,6 +199,9 @@ class Integrater:
         self._intgr_spacegroup_number = 0
         self._intgr_reindex_operator = None
         self._intgr_reindex_matrix = None
+
+        # extra information which could be helpful for integration
+        self._intgr_anomalous = False        
                 
         return
 
