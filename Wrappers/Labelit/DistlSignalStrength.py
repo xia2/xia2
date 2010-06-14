@@ -104,15 +104,34 @@ def DistlSignalStrength(DriverType = None):
 
             output = self.get_all_output()
 
-            for o in output:
-                if 'Area in pixel' in o:
-                    print o[:-1]
-                if 'Peak' in o:
-                    print o[:-1]
-                    
-                l = o.split()
+            self._peaks = []
 
-            return
+            peak_xy = None
+            peak_sn = None
+
+            for o in output:
+
+                if not 'Peak' in o:
+                    continue
+
+                if 'signal-to-noise' in o:
+                    assert(peak_xy is None)
+                    peak_sn = float(o.split('=')[-1])
+
+                elif 'position' in o:
+                    assert(peak_sn)
+                    l = o.replace('=', ' ').split()
+                    peak_xy = float(l[3]), float(l[5])
+
+                    # it appears that the printpeaks coordinate system is
+                    # swapped w.r.t. the distl one...
+
+                    self._peaks.append((peak_xy[1], peak_xy[0], peak_sn))
+
+                    peak_xy = None
+                    peak_sn = None
+                    
+            return self._peaks
 
         def get_statistics(self):
             return self._statistics
@@ -129,6 +148,8 @@ if __name__ == '__main__':
 
     d = DistlSignalStrength()
     d.set_image(sys.argv[1])
-    d.find_peaks()
+    peaks = d.find_peaks()
 
+    for m in peaks:
+        print '%6.1f %6.1f %6.1f' % m
 

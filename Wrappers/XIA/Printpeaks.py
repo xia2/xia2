@@ -303,6 +303,4 @@ if __name__ == '__main__':
     peaks = p.get_maxima()
 
     for m in peaks:
-        x, y, i = m
-        if x < 0 or x > 2048 or y < 0 or y > 2048:
-            print '%f %f %f' % m
+        print '%6.1f %6.1f %6.1f' % m
