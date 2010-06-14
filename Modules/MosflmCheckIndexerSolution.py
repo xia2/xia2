@@ -32,7 +32,7 @@ from Experts.MatrixExpert import format_matrix
 
 from Wrappers.Labelit.DistlSignalStrength import DistlSignalStrength
 
-use_distl = True
+use_distl = False
 
 # cctbx stuff
 
