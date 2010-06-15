@@ -32,11 +32,13 @@ Modules/Xia2html/icons/info.png -text
 Modules/Xia2html/icons/warning.png -text
 Schema/Doc/Structure.pdf -text
 Schema/Interfaces/Doc/Interfaces.pdf -text
+Toolkit/BackstopMask.py -text
 Toolkit/KBScale.py -text
 Toolkit/MultiMerger.py -text
 Toolkit/PlayPen/TestMinimise.py -text
 Toolkit/PolyFitter.py -text
 Toolkit/__init__.py -text
+Toolkit/backstop-mask-i03-15may10.dat -text
 Toolkit/multi.py -text
 Wrappers/CCP4/Doc/Chooch.pdf -text
 Wrappers/CCP4/Doc/Combat.pdf -text
