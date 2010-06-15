@@ -103,9 +103,18 @@ def read_site_file(site_file):
     mx21, my21, cx21, cy21 = compute_fit(distances, d21)
     mx34, my34, cx34, cy34 = compute_fit(distances, d34)
 
-    # and return
+    # now print fits etc
 
-    
+    for j in range(len(distances)):
+        d = distances[j]
+        p2 = (mx2 * d + cx2, my2 * d + cy2)
+        p3 = (mx3 * d + cx3, my3 * d + cy3)
+
+        o2 = coordinates[1][j]
+        o3 = coordinates[2][j]
+
+        print '%6.1f %6.1f %6.1f - %6.1f %6.1f %6.1f %6.1f - %6.1f %6.1f' % \
+              (d, o2[0], o2[1], p2[0], p2[1], o3[0], o3[1], p3[0], p3[1])
 
 if __name__ == '__main__':
 
