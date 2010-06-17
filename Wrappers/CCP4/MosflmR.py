@@ -2552,6 +2552,14 @@ def MosflmR(DriverType = None):
                 else:
                     self.input('resolution %f' % self._intgr_reso_high)
 
+            if Flags.get_mask():
+                mask = Flags.get_mask().calculate_mask_mosflm(
+                    self.get_header())
+                record = 'limits quad'
+                for m in mask:
+                    record += ' %.1f %.1f' % m
+                self.input(record)
+
             # set up the integration
             self.input('postref fix all')
             # fudge this needs to be fixed. FIXME!
@@ -3105,6 +3113,14 @@ def MosflmR(DriverType = None):
                                                          self._intgr_reso_low))
                     else:
                         job.input('resolution %f' % self._intgr_reso_high)
+
+                if Flags.get_mask():
+                    mask = Flags.get_mask().calculate_mask_mosflm(
+                        self.get_header())
+                    record = 'limits quad'
+                    for m in mask:
+                        record += ' %.1f %.1f' % m
+                    job.input(record)
 
                 # set up the integration
                 job.input('postref fix all')

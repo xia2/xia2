@@ -23,6 +23,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Handlers.Environment import get_number_cpus
+from Toolkit.BackstopMask import BackstopMask
 
 class _Flags:
     '''A singleton to manage boolean flags.'''
@@ -37,6 +38,7 @@ class _Flags:
         self._uniform_sd = True
         self._smart_scaling = True
         self._chef = True
+        self._mask = None
         self._automatch = False
         self._reversephi = False
         self._no_lattice_test = False
@@ -431,6 +433,13 @@ class _Flags:
 
     def get_free_total(self):
         return self._free_total   
+
+    def set_mask(self, mask):
+        self._mask = BackstopMask(mask)       
+        return
+
+    def get_mask(self):
+        return self._mask
 
     def set_ispyb_xml_out(self, ispyb_xml_out):
         self._ispyb_xml_out = ispyb_xml_out

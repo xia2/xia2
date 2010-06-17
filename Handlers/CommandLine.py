@@ -106,6 +106,7 @@ class _CommandLine(Object):
         self._read_quick()
         self._read_smart_scaling()
         self._read_chef()
+        self._read_mask()
         self._read_automatch()
         self._read_reversephi()
         self._read_no_lattice_test()
@@ -1187,6 +1188,26 @@ class _CommandLine(Object):
 
     def _help_free_total(self):
         return '-free_total N'
+
+    def _read_mask(self):
+        try:
+            index = sys.argv.index('-mask')
+        except ValueError, e:
+            self._mask = None
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_mask(sys.argv[index + 1])
+            
+        return
+
+    def get_mask(self):
+        return self._mask
+
+    def _help_free_fraction(self):
+        return '-free_fraction N'
 
     def _read_fixed_628(self):
         try:
