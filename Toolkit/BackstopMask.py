@@ -66,7 +66,64 @@ def directions(o, t):
 
     return result
 
-def read_site_file(site_file, distance):
+def dot(a, b):
+    return a[0] * b[0] + a[1] * b[1]
+
+def line_intersect_rectangle(o, d, nx, ny):
+    '''Calculate where a line starting at origin o and heading in direction d
+    intersects rectangle bounded by (0,0), (nx, 0), (nx, ny), (0, ny).'''
+
+    # requirements are:
+    #
+    # direction not perpendicular to axis:
+    #  intersection is within range:
+    #    direction to intersection point is positive:
+    #      return this
+
+    assert(math.fabs(dot(d, d) - 1) < 0.001)
+
+    if d[0] != 0.0:
+        intersection = o[1] - (o[0] / d[0]) * d[1]
+        if 0 <= intersection <= ny:
+            if dot((0.0 - o[0], intersection - o[1]), d) > 0.0:
+                return (0.0, intersection)
+                   
+        intersection = o[1] - ((o[0] - nx) / d[0]) * d[1]
+        if 0 <= intersection <= ny:
+            if dot((nx - o[0], intersection - o[1]), d) > 0.0:
+                return (nx, intersection)
+
+    if d[1] != 0.0:
+        intersection = o[0] - (o[1] / d[1]) * d[0]
+        if 0 <= intersection <= nx:
+            if dot((intersection - o[0], 0.0 - o[1]), d) > 0.0:
+                return (intersection, 0.0)
+
+        intersection = o[0] - ((o[1] - ny) / d[1]) * d[0]
+        if 0 <= intersection <= nx:
+            if dot((intersection - o[0], ny - o[1]), d) > 0.0:
+                return (intersection, ny)
+
+    raise RuntimeError, 'intersection not found'
+
+def determine_intersections(p2, p3, d21, d34, nx, ny):
+    '''Compute the points where the edges of the back stop meet the edge
+    of the image. Returns p1, p4. This will work by calculating the angles
+    to the corners and the angle which is in between the angles to the corners
+    modulo 2pi.'''
+
+    a21 = math.atan2(d21[1], d21[0])
+
+    
+    
+
+    
+    a34 = math.atan2(d34[1], d34[0])
+
+    
+    
+
+def read_site_file(site_file, distance, nx = 3072, ny = 3072):
     '''Parse a site file containing records which begin:
 
     distance x1 y1 x2 y2 x3 y3 x4 y4 (nonsense)
@@ -126,8 +183,28 @@ def read_site_file(site_file, distance):
     print 'P3: %6.1f %6.1f' % p3
     print 'P4: %6.1f %6.1f' % p4
 
+def work_line_intersect_angle():
+
+    import random
+
+    for j in range(1000):
+        o = (2.0 * random.random(), 2.0 * random.random())
+        t = 2.0 * math.pi * random.random()
+        d = (math.cos(t), math.sin(t))
+
+        i = line_intersect_rectangle(o, d, 2, 2)
+
+        x = (i[0] - o[0], i[1] - o[1])
+
+        assert(0.0 <= i[0] <= 2.0)
+        assert(0.0 <= i[1] <= 2.0)
+
+        assert(math.fabs(
+            (dot(x, d) / math.sqrt(dot(x, x) * dot(d, d))) - 1) < 0.001)
+
+    return
+
 if __name__ == '__main__':
 
-    read_site_file(sys.argv[1], float(sys.argv[2]))
-    
-    
+    # read_site_file(sys.argv[1], float(sys.argv[2]))
+    pass
