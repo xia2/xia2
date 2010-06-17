@@ -106,6 +106,60 @@ def line_intersect_rectangle(o, d, nx, ny):
 
     raise RuntimeError, 'intersection not found'
 
+def invert_2x2(a, b, c, d):
+
+    e = (a * d - b * c)
+    
+    return d / e, -b / e, -c / e, a / e
+
+def equation_of_line(p1, p2):
+    '''Determine a, b, c: ax + by + c = 0 passes through the two points
+    given.'''
+
+    # first check that the points are different
+    if (p1[0] == p2[0]) and (p1[1] == p2[1]):
+        raise RuntimeError, 'points are identical'
+
+    # then check for the special case: vertical line
+    if p1[0] == p2[0]:
+        return 1.0, 0.0, -1 * p1[0]
+
+    # then the special case of the horizontal line
+    if p1[1] == p2[1]:
+        return 0.0, 1.0, -1 * p1[1]
+    
+    # then for the special case k: p2 = k p1
+
+    if p1[0] != 0.0 and p1[1] != 0.0:
+        if (p2[1] / p1[1]) == (p2[0] / p1[0]):
+            return 1.0, p1[1] / p1[0], 0.0
+
+    # and then finally the general case
+    a, b, c, d = invert_2x2(p1[0], p1[1], p2[0], p2[1])
+    
+    return - (a + b), - (c + d), 1
+
+def work_equation_of_line():
+    import random
+
+    assert(equation_of_line((1.0, 0.0), (2.0, 0.0)) == (0.0, 1.0, 0.0))
+    assert(equation_of_line((1.0, 2.0), (2.0, 2.0)) == (0.0, 1.0, -2.0))
+
+    assert(equation_of_line((0.0, 0.0), (0.0, 2.0)) == (1.0, 0.0, 0.0))
+    assert(equation_of_line((2.0, 1.0), (2.0, 2.0)) == (1.0, 0.0, -2.0))
+
+    for j in range(1000):
+        p1 = (2.0 * random.random(), 2.0 * random.random())
+        p2 = (2.0 * random.random(), 2.0 * random.random())
+
+        a, b, c = equation_of_line(p1, p2)
+
+        d1 = a * p1[0] + b * p1[1] + c
+        d2 = a * p2[0] + b * p2[1] + c
+
+        assert(math.fabs(d1) < 0.001)
+        assert(math.fabs(d2) < 0.001)
+
 class BackstopMask:
     '''A class to handle the calculation of back stop masks, from a
     set of masks as a function of distance derived from inspection
@@ -185,6 +239,58 @@ class BackstopMask:
         return tuple([self.to_mosflm_frame(header, p) \
                       for p in self.calculate_mask(header)])
 
+    def rectangle(self, header):
+        '''Return a configured rectangle object to test whether pixels are
+        within the backstop region.'''
+
+        p1, p2, p3, p4 = self.calculate_mask(header)
+
+        return rectangle(p1, p2, p3, p4)
+
+class rectangle:
+    '''A class to represent a rectange.'''
+
+    def __init__(self, p1, p2, p3, p4):
+        self._l12 = equation_of_line(p1, p2)
+        self._l23 = equation_of_line(p2, p3)
+        self._l34 = equation_of_line(p3, p4)
+        self._l41 = equation_of_line(p4, p1)
+
+        centre = (0.25 * (p1[0] + p2[0] + p3[0] + p4[0]),
+                  0.25 * (p1[1] + p2[1] + p3[1] + p4[1]))
+
+        self._evaluate(self._l12, centre)
+        self._evaluate(self._l23, centre)
+        self._evaluate(self._l34, centre)
+        self._evaluate(self._l41, centre)
+
+        self._inside = self._evaluate(self._l12, centre)
+
+        # now test!
+
+        assert(self._inside * self._evaluate(self._l23, centre) > 0.0)
+        assert(self._inside * self._evaluate(self._l34, centre) > 0.0)
+        assert(self._inside * self._evaluate(self._l41, centre) > 0.0)
+
+        return
+
+    def _evaluate(self, abc, p):
+        a, b, c = abc
+        result = a * p[0] + b * p[1] + c
+        print result
+        return result
+        
+    def is_inside(self, p):
+        if self._inside * self._evaluate(self._l12, p) < 0.0:
+            return False
+        if self._inside * self._evaluate(self._l23, p) < 0.0:
+            return False
+        if self._inside * self._evaluate(self._l34, p) < 0.0:
+            return False
+        if self._inside * self._evaluate(self._l41, p) < 0.0:
+            return False
+        return True
+
 def work_line_intersect_angle():
 
     import random
@@ -205,6 +311,9 @@ def work_line_intersect_angle():
             (dot(x, d) / math.sqrt(dot(x, x) * dot(d, d))) - 1) < 0.001)
 
     return
+
+if __name__ == '__main_work__':
+    work_equation_of_line()
 
 if __name__ == '__main__':
 
@@ -234,4 +343,10 @@ if __name__ == '__main__':
     
     print format_limits(bm.calculate_mask_mosflm(header))
 
+    # what follows currently will fail
+
+    r = bm.rectangle(header)
+
+    print r.is_inside((0.0, 0.0))
+    print r.is_inside((0.5 * header['size'][0], 0.5 * header['size'][1]))
     
