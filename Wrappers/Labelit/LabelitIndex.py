@@ -192,7 +192,6 @@ def LabelitIndex(DriverType = None, indxr_print = True):
                 
                 out.write('beam_search_scope = %f\n' % \
                           self._beam_search_scope)
-
             # check to see if this is an image plate *or* the
             # wavelength corresponds to Cu KA (1.54A) or Cr KA (2.29 A).
             # numbers from rigaku americas web page.
