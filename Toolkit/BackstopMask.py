@@ -106,23 +106,6 @@ def line_intersect_rectangle(o, d, nx, ny):
 
     raise RuntimeError, 'intersection not found'
 
-def determine_intersections(p2, p3, d21, d34, nx, ny):
-    '''Compute the points where the edges of the back stop meet the edge
-    of the image. Returns p1, p4. This will work by calculating the angles
-    to the corners and the angle which is in between the angles to the corners
-    modulo 2pi.'''
-
-    a21 = math.atan2(d21[1], d21[0])
-
-    
-    
-
-    
-    a34 = math.atan2(d34[1], d34[0])
-
-    
-    
-
 def read_site_file(site_file, distance, nx = 3072, ny = 3072):
     '''Parse a site file containing records which begin:
 
@@ -131,7 +114,8 @@ def read_site_file(site_file, distance, nx = 3072, ny = 3072):
     where distance is in mm, coordinates are in pixels. Will return origins and
     directions for positions 2 and 3, and directions for the vectors 2 -> 1
     and 3 -> 4. Currently hard-coded for a Q315 - could do much better by
-    passing in an actual image as an argument.'''
+    passing in an actual image as an argument. Now returns four corners of
+    the backstop region.'''
 
     # first read out the file
 
@@ -171,17 +155,10 @@ def read_site_file(site_file, distance, nx = 3072, ny = 3072):
 
     # now extrapolate the directions
 
-    d1 = p2[0] / d21[0]
-    d4 = p3[0] / d34[0]
+    p1 = line_intersect_rectangle(p2, d21, nx, ny)
+    p4 = line_intersect_rectangle(p3, d34, nx, ny)
 
-    p1 = (p2[0] - d1 * d21[0], p2[1] - d1 * d21[1])
-    p4 = (p3[0] - d4 * d34[0], p3[1] - d4 * d34[1])
-
-    print 'Distance: %.1f'
-    print 'P1: %6.1f %6.1f' % p1
-    print 'P2: %6.1f %6.1f' % p2
-    print 'P3: %6.1f %6.1f' % p3
-    print 'P4: %6.1f %6.1f' % p4
+    return p1, p2, p3, p4
 
 def work_line_intersect_angle():
 
@@ -204,7 +181,12 @@ def work_line_intersect_angle():
 
     return
 
+def to_mosflm_frame(p, dx, dy):
+    '''Convert coordinate p in ADSC frame to Mosflm frame in mm.'''
+
+    return (p[1] * dy, p[0] * dx)
+
 if __name__ == '__main__':
 
-    # read_site_file(sys.argv[1], float(sys.argv[2]))
-    pass
+    for p in read_site_file(sys.argv[1], float(sys.argv[2])):
+        print '%6.2f %6.2f' % to_mosflm_frame(p, 0.1026, 0.1026)
