@@ -66,14 +66,15 @@ def directions(o, t):
 
     return result
 
-def read_site_file(site_file):
+def read_site_file(site_file, distance):
     '''Parse a site file containing records which begin:
 
     distance x1 y1 x2 y2 x3 y3 x4 y4 (nonsense)
 
     where distance is in mm, coordinates are in pixels. Will return origins and
     directions for positions 2 and 3, and directions for the vectors 2 -> 1
-    and 3 -> 4.'''
+    and 3 -> 4. Currently hard-coded for a Q315 - could do much better by
+    passing in an actual image as an argument.'''
 
     # first read out the file
 
@@ -103,21 +104,30 @@ def read_site_file(site_file):
     mx21, my21, cx21, cy21 = compute_fit(distances, d21)
     mx34, my34, cx34, cy34 = compute_fit(distances, d34)
 
-    # now print fits etc
+    # now compute the fits
 
-    for j in range(len(distances)):
-        d = distances[j]
-        p2 = (mx2 * d + cx2, my2 * d + cy2)
-        p3 = (mx3 * d + cx3, my3 * d + cy3)
+    p2 = (mx2 * distance + cx2, my2 * distance + cy2)
+    p3 = (mx3 * distance + cx3, my3 * distance + cy3)
 
-        o2 = coordinates[1][j]
-        o3 = coordinates[2][j]
+    d21 = (mx21 * distance + cx21, my21 * distance + cy21)
+    d34 = (mx34 * distance + cx34, my34 * distance + cy34)
 
-        print '%6.1f %6.1f %6.1f - %6.1f %6.1f %6.1f %6.1f - %6.1f %6.1f' % \
-              (d, o2[0], o2[1], p2[0], p2[1], o3[0], o3[1], p3[0], p3[1])
+    # now extrapolate the directions
+
+    d1 = p2[0] / d21[0]
+    d4 = p3[0] / d34[0]
+
+    p1 = (p2[0] - d1 * d21[0], p2[1] - d1 * d21[1])
+    p4 = (p3[0] - d4 * d34[0], p3[1] - d4 * d34[1])
+
+    print 'Distance: %.1f'
+    print 'P1: %6.1f %6.1f' % p1
+    print 'P2: %6.1f %6.1f' % p2
+    print 'P3: %6.1f %6.1f' % p3
+    print 'P4: %6.1f %6.1f' % p4
 
 if __name__ == '__main__':
 
-    read_site_file(sys.argv[1])
+    read_site_file(sys.argv[1], float(sys.argv[2]))
     
     
