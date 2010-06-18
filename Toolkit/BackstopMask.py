@@ -14,6 +14,15 @@
 import math
 import os
 import sys
+import binascii
+
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
+
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
+
+from Modules.UnpackByteOffset import unpack_values, pack_values
 
 def mmcc(ds, xs, ys):
     '''Fit a straight line
@@ -245,6 +254,54 @@ class BackstopMask:
         return tuple([self.to_mosflm_frame(header, p) \
                       for p in self.calculate_mask(header)])
 
+    def apply_mask_xds(self, header, cbf_in, cbf_out):
+        '''Apply the calculated backstop mask to a BKGINIT.cbf - do this
+        immediately after the INIT step.'''
+
+        r = self.rectangle(header)
+
+        data = open(cbf_in, 'r').read()
+    
+        start_tag = binascii.unhexlify('0c1a04d5')
+        
+        data_offset = data.find(start_tag) + 4
+        
+        cbf_header = data[:data.find(start_tag)]
+
+        fast = 0
+        slow = 0
+        length = 0
+        
+        for record in cbf_header.split('\n'):
+            if 'X-Binary-Size-Fastest-Dimension' in record:
+                fast = int(record.split()[-1])
+            elif 'X-Binary-Size-Second-Dimension' in record:
+                slow = int(record.split()[-1])
+            elif 'X-Binary-Number-of-Elements' in record:
+                length = int(record.split()[-1])
+
+        assert(length == fast * slow)
+        assert(fast == int(header['size'][0]))
+        assert(slow == int(header['size'][1]))
+        
+        values = unpack_values(data[data_offset:], length)
+
+        # now mask out the backstop region
+
+        for j in range(len(values)):
+            x = j % fast
+            y = (j - x) / slow
+            if r.is_inside((x + 0.5, y + 0.5)):
+                values[j] = -3
+
+        # and write out the updated file
+
+        result = cbf_header + start_tag + pack_values(values)
+
+        open(cbf_out, 'w').write(result)
+
+        return
+
     def rectangle(self, header):
         '''Return a configured rectangle object to test whether pixels are
         within the backstop region.'''
@@ -340,20 +397,11 @@ if __name__ == '__main__':
     
     print format_limits(bm.calculate_mask_mosflm(header))
 
-    # what follows currently will fail
-
-    r = bm.rectangle(header)
-
-    nx, ny = tuple(map(int, header['size']))
-
-    for j in range(0, ny, 32):
-        for k in range(0, nx, 32):
-            if r.is_inside((k, j)):
-                print ' ',
-            else:
-                print '.',
-        print ' '
-        
+    if len(sys.argv) == 5:
+        cbf_in = sys.argv[3]
+        cbf_out = sys.argv[4]
+        bm.apply_mask_xds(header, cbf_in, cbf_out)
+    
 
 
             
