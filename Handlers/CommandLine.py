@@ -1193,7 +1193,6 @@ class _CommandLine(Object):
         try:
             index = sys.argv.index('-mask')
         except ValueError, e:
-            self._mask = None
             return
 
         if index < 0:
@@ -1206,8 +1205,8 @@ class _CommandLine(Object):
     def get_mask(self):
         return self._mask
 
-    def _help_free_fraction(self):
-        return '-free_fraction N'
+    def _help_mask(self):
+        return '-mask mask.dat'
 
     def _read_fixed_628(self):
         try:
