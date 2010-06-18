@@ -122,11 +122,17 @@ def equation_of_line(p1, p2):
 
     # then check for the special case: vertical line
     if p1[0] == p2[0]:
-        return 1.0, 0.0, -1 * p1[0]
-
+        if p1[1] > p2[1]:
+            return -1.0, 0.0, -1.0 * p1[0]
+        else:
+            return 1.0, 0.0, -1.0 * p1[0]
+    
     # then the special case of the horizontal line
     if p1[1] == p2[1]:
-        return 0.0, 1.0, -1 * p1[1]
+        if p1[0] > p2[0]:
+            return 0.0, -1.0, -1.0 * p1[1]
+        else:
+            return 0.0, 1.0, -1.0 * p1[1]
     
     # then for the special case k: p2 = k p1
 
@@ -259,35 +265,26 @@ class rectangle:
         centre = (0.25 * (p1[0] + p2[0] + p3[0] + p4[0]),
                   0.25 * (p1[1] + p2[1] + p3[1] + p4[1]))
 
-        self._evaluate(self._l12, centre)
-        self._evaluate(self._l23, centre)
-        self._evaluate(self._l34, centre)
-        self._evaluate(self._l41, centre)
-
-        self._inside = self._evaluate(self._l12, centre)
-
-        # now test!
-
-        assert(self._inside * self._evaluate(self._l23, centre) > 0.0)
-        assert(self._inside * self._evaluate(self._l34, centre) > 0.0)
-        assert(self._inside * self._evaluate(self._l41, centre) > 0.0)
+        self._in12 = self._evaluate(self._l12, centre)
+        self._in23 = self._evaluate(self._l23, centre)
+        self._in34 = self._evaluate(self._l34, centre)
+        self._in41 = self._evaluate(self._l41, centre)
 
         return
 
     def _evaluate(self, abc, p):
         a, b, c = abc
-        result = a * p[0] + b * p[1] + c
-        print result
-        return result
+        r = a * p[0] + b * p[1] + c
+        return r
         
     def is_inside(self, p):
-        if self._inside * self._evaluate(self._l12, p) < 0.0:
+        if self._in12 * self._evaluate(self._l12, p) < 0.0:
             return False
-        if self._inside * self._evaluate(self._l23, p) < 0.0:
+        if self._in23 * self._evaluate(self._l23, p) < 0.0:
             return False
-        if self._inside * self._evaluate(self._l34, p) < 0.0:
+        if self._in34 * self._evaluate(self._l34, p) < 0.0:
             return False
-        if self._inside * self._evaluate(self._l41, p) < 0.0:
+        if self._in41 * self._evaluate(self._l41, p) < 0.0:
             return False
         return True
 
@@ -347,6 +344,18 @@ if __name__ == '__main__':
 
     r = bm.rectangle(header)
 
-    print r.is_inside((0.0, 0.0))
-    print r.is_inside((0.5 * header['size'][0], 0.5 * header['size'][1]))
+    nx, ny = tuple(map(int, header['size']))
+
+    for j in range(0, ny, 32):
+        for k in range(0, nx, 32):
+            if r.is_inside((k, j)):
+                print ' ',
+            else:
+                print '.',
+        print ' '
+        
+
+
+            
+    
     
