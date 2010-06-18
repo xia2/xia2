@@ -171,6 +171,11 @@ def XDSInit(DriverType = None):
 
             return
 
+        def reload(self):
+            '''Reload the output data files...'''
+            for file in self._output_data_files_list:
+                self._output_data_files[file] = open(os.path.join(
+                    self.get_working_directory(), file), 'rb').read()
 
     return XDSInitWrapper()
 

@@ -248,6 +248,25 @@ class XDSIndexerII(FrameProcessor,
 
         init.run()
 
+        # at this stage, need to (perhaps) modify the BKGINIT.cbf image
+        # to mark out the back stop
+
+        if Flags.get_mask():
+
+            Debug.write('Applying mask to BKGINIT.pck')
+
+            # copy the original file
+            cbf_old = os.path.join(init.get_working_directory(),
+                                   'BKGINIT.cbf')
+            cbf_save = os.path.join(init.get_working_directory(),
+                                    'BKGINIT.sav')
+            shutil.copyfile(cbf_old, cbf_save)
+
+            # modify the file to give the new mask
+            Flags.get_mask().apply_mask_xds(self.get_header(),
+                                            cbf_save, cbf_old)
+            init.reload()
+
         for file in ['BLANK.cbf',
                      'BKGINIT.cbf',
                      'GAIN.cbf']:

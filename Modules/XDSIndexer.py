@@ -16,6 +16,7 @@
 import os
 import sys
 import math
+import shutil
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
@@ -286,12 +287,31 @@ class XDSIndexer(FrameProcessor,
 
         init.run()
 
+        # at this stage, need to (perhaps) modify the BKGINIT.cbf image
+        # to mark out the back stop
+
+        if Flags.get_mask():
+
+            Debug.write('Applying mask to BKGINIT.pck')
+
+            # copy the original file
+            cbf_old = os.path.join(init.get_working_directory(),
+                                   'BKGINIT.cbf')
+            cbf_save = os.path.join(init.get_working_directory(),
+                                    'BKGINIT.sav')
+            shutil.copyfile(cbf_old, cbf_save)
+
+            # modify the file to give the new mask
+            Flags.get_mask().apply_mask_xds(self.get_header(),
+                                            cbf_save, cbf_old)
+
+            init.reload()
+
         for file in ['BLANK.cbf',
                      'BKGINIT.cbf',
                      'GAIN.cbf']:
             self._data_files[file] = init.get_output_data_file(file)
         
-
         # next start to process these - then colspot
 
         colspot = self.Colspot()
