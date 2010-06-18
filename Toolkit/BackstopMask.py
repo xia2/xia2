@@ -196,6 +196,8 @@ class BackstopMask:
         
         for record in open(site_file):
             values = map(float, record.split()[:9])
+            if not values:
+                continue
             distances.append(values[0])
             for j in range(4):
                 if not j in coordinates:
