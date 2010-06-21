@@ -11,6 +11,17 @@
 # backstop. Initially this will be coded for the backstop on Diamond Light
 # Source beamline I03
 
+'''Code for backstop masking. In the first instance this will just be for a
+single quadrilateral mask as per Diamond phase I MX beamlines. The input is a
+table which contains the following:
+
+  distance x1 y1 x2 y2 x3 y3 x4 y4
+
+from which a backstop mask for the input images is calculated. N.B. positions
+1, 4 are assumed to be on the edge of the image, 2, 3 close to the direct beam
+position. The positions may be read from ADXV and will be applied to both XDS
+and Mosflm.'''
+
 import math
 import os
 import sys
