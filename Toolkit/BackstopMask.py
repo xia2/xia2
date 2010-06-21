@@ -26,6 +26,7 @@ import math
 import os
 import sys
 import binascii
+import time
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
@@ -299,14 +300,26 @@ class BackstopMask:
 
         values = unpack_values(data[data_offset:], length)
 
-        # now mask out the backstop region
+        # now mask out the backstop region - badly!
 
-        for j in range(len(values)):
-            x = j % fast
-            y = (j - x) / slow
-            if r.is_inside((x + 0.5, y + 0.5)):
-                values[j] = -3
+        if False:
 
+            for j in range(len(values)):
+                x = j % fast
+                y = (j - x) / slow
+                if r.is_inside((x + 0.5, y + 0.5)):
+                    values[j] = -3
+
+        # or perhaps mask it out a little more cleverly
+
+        limits = r.limits()
+
+        for x in range(int(limits[0]), int(limits[1]) + 1):
+            for y in range(int(limits[2]), int(limits[3]) + 1):
+                j = y * fast + x
+                if r.is_inside((x + 0.5, y + 0.5)):
+                    values[j] = -3
+            
         # and write out the updated file
 
         result = cbf_header + start_tag + pack_values(values)
@@ -327,6 +340,9 @@ class rectangle:
     '''A class to represent a rectange.'''
 
     def __init__(self, p1, p2, p3, p4):
+
+        self._points = p1, p2, p3, p4
+
         self._l12 = equation_of_line(p1, p2)
         self._l23 = equation_of_line(p2, p3)
         self._l34 = equation_of_line(p3, p4)
@@ -346,6 +362,12 @@ class rectangle:
         a, b, c = abc
         r = a * p[0] + b * p[1] + c
         return r
+
+    def limits(self):
+        xs = [p[0] for p in self._points]
+        ys = [p[1] for p in self._points]
+
+        return min(xs), max(xs), min(ys), max(ys)
         
     def is_inside(self, p):
         if self._in12 * self._evaluate(self._l12, p) < 0.0:
