@@ -353,7 +353,15 @@ def write_xinfo(filename, path, template = None):
     start = os.getcwd()
     os.chdir(directory)
 
-    rummage(path)
+    # if we have given a template and directory on the command line, just
+    # look there (i.e. not in the subdirectories)
+
+    if CommandLine.get_template() and CommandLine.get_directory():
+        visit(None, CommandLine.get_directory(),
+              os.listdir(CommandLine.get_directory()))
+    else:
+        rummage(path)
+        
     fout = open(filename, 'w')
     print_sweeps(fout)
 
