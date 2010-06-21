@@ -28,7 +28,7 @@ def pack_values(data):
             current = d
             continue
         
-        packed += struct.pack('<h', -2147483648)
+        packed += struct.pack('<i', -2147483648)
         packed += struct.pack('<q', delta)
         current = d
 
@@ -76,7 +76,7 @@ def unpack_values(data, length):
     return values
 
 def unpack_tiff(filename):
-    data = open(filename, 'r'),read()
+    data = open(filename, 'rb'),read()
     header = data[:4096]
     data = data[4096:]
 
@@ -100,7 +100,7 @@ def work():
 
 def unpackbyteoffset(filename):
 
-    data = open(filename, 'r').read()
+    data = open(filename, 'rb').read()
 
     start_tag = binascii.unhexlify('0c1a04d5')
 

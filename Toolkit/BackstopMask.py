@@ -273,8 +273,8 @@ class BackstopMask:
 
         r = self.rectangle(header)
 
-        data = open(cbf_in, 'r').read()
-    
+        data = open(cbf_in, 'rb').read()
+
         start_tag = binascii.unhexlify('0c1a04d5')
         
         data_offset = data.find(start_tag) + 4
@@ -296,7 +296,7 @@ class BackstopMask:
         assert(length == fast * slow)
         assert(fast == int(header['size'][0]))
         assert(slow == int(header['size'][1]))
-        
+
         values = unpack_values(data[data_offset:], length)
 
         # now mask out the backstop region
