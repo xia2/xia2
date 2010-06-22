@@ -508,10 +508,10 @@ def standard_mask(detector):
                 'LIMITS EXCLUDE 0.1 104.6 209.0 105.1']
 
     if 'adsc q315' in detector:
-        return ['LIMITS EXCLUDE 104.6 0.1 105.1 314.0',
-                'LIMITS EXCLUDE 209.4 0.1 210.0 314.0',
-                'LIMITS EXCLUDE 0.1 104.6 314.0 105.1',
-                'LIMITS EXCLUDE 0.1 209.4 314.0 210.0']
+        return ['LIMITS EXCLUDE 104.8 0.1 105.3 314.6',
+                'LIMITS EXCLUDE 209.8 0.1 210.4 314.6',
+                'LIMITS EXCLUDE 0.1 104.8 314.6 105.3',
+                'LIMITS EXCLUDE 0.1 209.8 314.6 210.4']
     
     # unknown detector
     
