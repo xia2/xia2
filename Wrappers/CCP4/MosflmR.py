@@ -456,7 +456,15 @@ def MosflmR(DriverType = None):
 
             self._mosflm_spot_file = 'spots.dat'
 
-            # and transform it to a standard reference frame
+            # and transform it to a standard reference frame - that being
+            # phi x y i/sigma where phi is probably in the middle of the image
+            # and x, y are the PIXEL positions in the fast, slow directions.
+            # 
+            # (i)   reset the spot list
+            # (ii)  transform all of the spots which were found
+            # (iii) store these in the list
+            #
+            # N.B. this won't be the list used for autoindexing!
 
             return
         
