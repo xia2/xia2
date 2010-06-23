@@ -237,6 +237,9 @@ class Indexer:
         self._indxr_resolution_estimate = 0.0
         self._indxr_low_resolution = 0.0
 
+        # spot list in an as yet to be defined standard reference frame
+        self._indxr_spot_list = None
+
         # error information
         self._indxr_error = None
 
@@ -554,6 +557,13 @@ class Indexer:
 
         self.index()
         return self._indxr_mosaic
+
+    def get_indexer_spot_list(self):
+        '''Get the list of spots from autoindexing in the standard reference
+        frame.'''
+
+        self.index()
+        return self._indxr_spot_list 
 
     def get_indexer_ice(self):
         '''Get an idea of whether this is icy - 0, no - 1, yes.'''

@@ -319,6 +319,7 @@ def MosflmR(DriverType = None):
             # local parameters used in autoindexing
             self._mosflm_autoindex_sol = 0
             self._mosflm_autoindex_thresh = None
+            self._mosflm_spot_file = None
 
             # local parameters used in cell refinement
             self._mosflm_cell_ref_images = None
@@ -390,6 +391,74 @@ def MosflmR(DriverType = None):
             Chatter.write('Estimate gain of %5.2f' % self._mosflm_gain)
             
             return
+
+        def _find_spots(self, images = None):
+            '''Find spots on all of the images selected for autoindexing.'''
+
+            self.reset()
+
+            if images:
+                _images = images
+            else:
+
+                _images = []
+                for i in self._indxr_images:
+                    for j in i:
+                        if not j in _images:
+                            _images.append(j)
+                    
+            _images.sort()
+
+            auto_logfiler(self)
+
+            self.start()
+
+            self.input('template "%s"' % self.get_template())
+            self.input('directory "%s"' % self.get_directory())
+
+            if self.get_beam_prov() == 'user':
+                self.input('beam %f %f' % self.get_beam())
+
+            if self.get_wavelength_prov() == 'user':
+                self.input('wavelength %f' % self.get_wavelength())
+
+            if self.get_distance_prov() == 'user':
+                self.input('distance %f' % self.get_distance())
+
+            for i in _images:
+
+                self.input(
+                    'findspots local find %d file spots.dat' % i)
+
+            self.input('go')
+
+            self.close_wait()
+
+            # gather up some parameters found in the spot finding, which could
+            # be useful for other analysis ...
+
+            output = self.get_all_output()
+
+            intgr_params = { }
+
+            for o in output:
+                if 'parameters have been set to' in o:
+                    intgr_params['raster'] = map(
+                        int, o.split()[-5:])
+                    
+                if '(currently SEPARATION' in o:
+                    intgr_params['separation'] = map(
+                        float, o.replace(')', '').split()[-2:])
+                
+            self._indxr_payload['mosflm_integration_parameters'] = intgr_params
+
+            # now recover the spot list 
+
+            self._mosflm_spot_file = 'spots.dat'
+
+            # and transform it to a standard reference frame
+
+            return
         
         def _index_prepare(self):
 
@@ -400,6 +469,11 @@ def MosflmR(DriverType = None):
                    Flags.get_microcrystal():
                 self._mosflm_autoindex_thresh = 5
                 
+            # FIXME perform the spot finding in here, record the spots in
+            # a file named "spots" (say) then also transform them to a
+            # standard reference frame for later analysis. That would be
+            # self._find_spots() then.
+
             return
 
         def _index_select_images(self):
@@ -519,6 +593,11 @@ def MosflmR(DriverType = None):
             '''Implement the indexer interface.'''
 
             Citations.cite('mosflm')
+
+            # FIXME verify that the spot finding found some spots (and throw
+            # an exception if not!) then perform the indexing on this
+            # spot list. N.B. this would provide the opportunity to index
+            # multiple lattices in a relatively straightforward manner.
 
             self.reset()
 
@@ -926,7 +1005,8 @@ def MosflmR(DriverType = None):
             '''Get out the parameters from autoindexing without using the
             result - this is probably ok as it is quite quick ;o).'''
 
-            # reset the log file tracking and whatnot
+            # reset the log file tracking and whatnot - FIXME this should
+            # use the find_spots method...
 
             self.reset()
 
