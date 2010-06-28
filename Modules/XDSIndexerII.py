@@ -437,6 +437,9 @@ class XDSIndexerII(FrameProcessor,
                 elif 'insufficient percentage (< 70%)' in str(e):
                     done = idxref.run(ignore_errors = True)                    
                     Debug.write('XDS unhappy but solution probably ok')
+                elif 'insufficient percentage (< 50%)' in str(e):
+                    done = idxref.run(ignore_errors = True)                    
+                    Debug.write('XDS unhappy but solution probably ok')
                 else:
                     raise e
 
