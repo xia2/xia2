@@ -1,3 +1,25 @@
 Refactoring Mosflm Wrapper
 --------------------------
 
+Currently the wrapper Mosflm.py includes all sorts of things. In particular
+there are two wrappers which are largely identical (Mosflm.py, MosflmR.py) 
+which each contain functionality for:
+
+ - indexing
+ - selection of images
+ - cell refinement
+ - integration
+ - testing lattices
+
+And so on. It also inherits from Integrater, Indexer and FrameProcessor, 
+which is messy. A much better idea would be to have a single wrapper class
+Mosflm.py which does not expose any "standard" interfaces but instead has
+methods for indexing, cell refinement &c. separately. This can then be wrapped
+to produce MosflmIntegraters &c. as per the other packages.
+
+Now, what would be good would be to try and generalise a little more - add
+code which is relatively common to other classes (e.g. image selection) which 
+can be inherited from provided that said class also inherits from #
+FrameProcessor (say) so things like image headers are present. I need to 
+be *absolutely* sure that there is no ambiguity in the inheritance.
+
