@@ -1,0 +1,10 @@
+Notes when refactoring scalers.
+-------------------------------
+
+Would be useful to have a standard mediator class which could contain and 
+cache the information from the integraters (and hold the adjustments, e.g.
+from rebatching)
+
+This should be used directly by the scaler interface, which should also make
+standard much of the common code from the ccp4 scaler and the xds one, for 
+things like deciding on the standard indexing origin etc.
