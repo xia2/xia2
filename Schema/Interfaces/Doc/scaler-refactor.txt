@@ -8,3 +8,48 @@ from rebatching)
 This should be used directly by the scaler interface, which should also make
 standard much of the common code from the ccp4 scaler and the xds one, for 
 things like deciding on the standard indexing origin etc.
+
+From #718 CCP4 Scaler needs refactoring
+
+250+ revisions, 3000+ lines of Python, more rat's nests per byte than everything but control.f from Mosflm. It's well overdue for a refactor.
+
+This is probably equally true for the XDSScaler too...
+
+The intention of what this should do is defined in sections 3.3, 3.5 and 
+4.3 of my thesis. Essentially it should do the following for preparation:
+
+ - ensure that all data is processed lattice compatible with pointgroup
+ - ensure that all pointgroup conclusions are the same
+ - ensure that all indexing conventions are the same
+ - sort together the measurements in data collection order
+ - prepare the chef input
+
+Then for the scaling:
+
+ - determine the best scaling model
+ - scale the data
+ - optimise the merging
+ - perform the final merging
+ - merge each data set separately for merging stats
+ - remerge but don't to get the unmerged data for chef and scalepack
+ - decide resolution limits
+
+Then to finish up:
+
+ - merge all of the resulting data files
+ - look for twinning and so on
+ - unify the cell constants (averaging)
+ - tidy up the reflection files
+ - decide on likely spacegroups (this could occur earlier)
+
+In the future it would be nice to be able to perform some of the final 
+analysis more cleverly. N.B. this should also be done for XDS, ideally 
+using the same code base. This would possibly also be useful as a stand-alone 
+tool (EDNA, anyone?) which could take scaled measurements and run analysis 
+for NCS and what-have-you. That smells like research though.
+
+Primarily, the main thing was to pull a dictionary out into a class, which 
+should reduce the size of a few large functions, which will increase the 
+clarity of the code.
+
+Also test out all of the scaling models properly.

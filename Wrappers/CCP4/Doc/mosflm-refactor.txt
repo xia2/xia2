@@ -23,3 +23,15 @@ can be inherited from provided that said class also inherits from #
 FrameProcessor (say) so things like image headers are present. I need to 
 be *absolutely* sure that there is no ambiguity in the inheritance.
 
+Also:
+
+#1020 Separate out spot finding and indexing
+
+This will mean I can (i) avoid refinding spots to test the lattice and (ii) perhaps implement more potent indexing for e.g. microcrystal cases.
+
+c/f Mosflm FINDSPOTS and AUTOINDEX keywords.
+
+Should really implement a MosflmIndexerIIA for this as a separate MODULE which uses the Mosflm wrapper. May involve (and justifies) some redesigning.
+
+Allocating to C7 with intention of looking at this next run.
+
