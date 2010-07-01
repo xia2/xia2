@@ -129,18 +129,12 @@ vector<char> compress(vector<int> values)
 vector<int> uncompress(vector<char> packed)
 {
   vector<int> values(0);
-
-  int delta;
   int current = 0;
-
-  unsigned int j;
+  unsigned int j = 0;
   short s;
   char c;
   int i;
-
   bool le = little_endian();
-
-  j = 0;
 
   while (j < packed.size())
     {
