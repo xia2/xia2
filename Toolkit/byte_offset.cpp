@@ -1,9 +1,23 @@
+/*
+ * byte_offset.cpp
+ * 
+ * An implementation of the byte_offset compression scheme used with CBF 
+ * images with the hopeful intention of replacing existing Python code for 
+ * doing this with something quicker. Main routines are: 
+ *
+ * vector<char> compress(vector<int>)
+ * vector<int> uncompress(vector<char>)
+ * 
+ */ 
+
 #include <iostream>
 #include <vector>
 #include <cstdlib>
 #include <ctime>
 
 using namespace std;
+
+// unions to assist in byte manipulation
 
 typedef union {
   char b[2];
@@ -14,6 +28,8 @@ typedef union {
   char b[4];
   short i;
 } u_i;
+
+// functions for byte swapping
 
 void byte_swap_short(char * b)
 {
@@ -36,6 +52,8 @@ void byte_swap_int(char * b)
   return;
 }
 
+// helper function: is this machine little endian? CBF files are
+
 bool little_endian()
 {
   int i = 0x1;
@@ -49,6 +67,8 @@ bool little_endian()
       return true;
     }
 }
+
+// main functions
 
 vector<char> compress(const vector<int> values)
 {
@@ -183,10 +203,14 @@ vector<int> uncompress(const vector<char> packed)
   return values;
 } 
 
+// helper for timing tests
+
 double ms(clock_t t1, clock_t t2)
 {
   return 1000.0 * (t2 - t1) / CLOCKS_PER_SEC;
 }
+
+// demo / test code
 
 int main(int argc,
 	 char ** argv)
