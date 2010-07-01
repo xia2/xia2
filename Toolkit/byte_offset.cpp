@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <cstdlib>
 
 using namespace std;
 
@@ -125,6 +126,68 @@ vector<char> compress(vector<int> values)
   return packed;
 }
 
+vector<int> uncompress(vector<char> packed)
+{
+  vector<int> values(0);
+
+  int delta;
+  int current = 0;
+
+  unsigned int j;
+  short s;
+  char c;
+  int i;
+
+  bool le = little_endian();
+
+  j = 0;
+
+  while (j < packed.size())
+    {
+      c = packed[j];
+      j += 1;
+
+      if (c != -128)
+	{
+	  current += c;
+	  values.push_back(current);
+	  continue;
+	}
+
+      ((u_s *) & s)[0].b[0] = packed[j];
+      ((u_s *) & s)[0].b[1] = packed[j + 1];
+      j += 2;
+      
+      if (!le) 
+	{
+	  byte_swap_short((char *) &s);
+	}
+
+      if (s != -32768)
+	{
+	  current += s;
+	  values.push_back(current);
+	  continue;
+	}
+	  
+      ((u_i *) & i)[0].b[0] = packed[j];
+      ((u_i *) & i)[0].b[1] = packed[j + 1];
+      ((u_i *) & i)[0].b[2] = packed[j + 2];
+      ((u_i *) & i)[0].b[3] = packed[j + 3];
+      j += 4;
+      
+      if (!le) 
+	{
+	  byte_swap_int((char *) &i);
+	}
+
+      current += i;
+      values.push_back(current);
+    }
+
+  return values;
+} 
+
 int main(int argc,
 	 char ** argv)
 {
@@ -135,7 +198,7 @@ int main(int argc,
 
   for (j = 0; j < 100; j ++)
     {
-      values.push_back(j);
+      values.push_back((rand() & 0xffff));
     }
 
   if (little_endian())
@@ -148,10 +211,11 @@ int main(int argc,
     }
 
   vector<char> packed = compress(values);
+  vector<int> unpacked = uncompress(packed);
 
-  for (j = 0; j < packed.size(); j ++)
+  for (j = 0; j < unpacked.size(); j ++)
     {
-      cout << (int) packed[j] << endl;
+      cout << unpacked[j] << "\t" << values[j] << endl;
     }
 
   return 0;
