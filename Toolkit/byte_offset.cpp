@@ -26,7 +26,7 @@ typedef union {
 
 typedef union {
   char b[4];
-  short i;
+  int i;
 } u_i;
 
 // functions for byte swapping
