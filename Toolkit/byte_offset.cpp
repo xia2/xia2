@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <cstdlib>
+#include <ctime>
 
 using namespace std;
 
@@ -49,7 +50,7 @@ bool little_endian()
     }
 }
 
-vector<char> compress(vector<int> values)
+vector<char> compress(const vector<int> values)
 {
   vector<char> packed(0);
   int current = 0;
@@ -126,7 +127,7 @@ vector<char> compress(vector<int> values)
   return packed;
 }
 
-vector<int> uncompress(vector<char> packed)
+vector<int> uncompress(const vector<char> packed)
 {
   vector<int> values(0);
   int current = 0;
@@ -182,6 +183,11 @@ vector<int> uncompress(vector<char> packed)
   return values;
 } 
 
+double ms(clock_t t1, clock_t t2)
+{
+  return 1000.0 * (t2 - t1) / CLOCKS_PER_SEC;
+}
+
 int main(int argc,
 	 char ** argv)
 {
@@ -189,27 +195,33 @@ int main(int argc,
   vector<int> values(0);
 
   unsigned int j;
+  unsigned int size = 4096 * 4096;
+  clock_t start;
 
-  for (j = 0; j < 100; j ++)
+  start = clock();
+
+  for (j = 0; j < size; j ++)
     {
       values.push_back((rand() & 0xffff));
     }
 
-  if (little_endian())
-    {
-      cout << "Little endian" << endl;
-    }
-  else
-    {
-      cout << "Big endian" << endl;
-    }
+  cout << "Generating: " << ms(start, clock()) << endl;
 
+  start = clock();
   vector<char> packed = compress(values);
+  cout << "Packing:    " << ms(start, clock()) << endl;
+
+
+  start = clock();
   vector<int> unpacked = uncompress(packed);
+  cout << "Unpacking:  " << ms(start, clock()) << endl;
 
   for (j = 0; j < unpacked.size(); j ++)
     {
-      cout << unpacked[j] << "\t" << values[j] << endl;
+      if (unpacked[j] != values[j])
+	{
+	  cout << "Error for index " << j << endl;
+	}
     }
 
   return 0;
