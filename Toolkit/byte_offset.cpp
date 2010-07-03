@@ -85,7 +85,7 @@ vector<char> compress(const vector<int> values)
     {
       delta = values[j] - current;
 
-      if ((-127 < delta) && (delta < 127))
+      if ((-127 <= delta) && (delta <= 127))
 	{
 	  c = (char) delta;
 	  packed.push_back(c);
@@ -95,7 +95,7 @@ vector<char> compress(const vector<int> values)
 
       packed.push_back(-128);
 
-      if ((-32767 < delta) && (delta < 32767))
+      if ((-32767 <= delta) && (delta <= 32767))
 	{
 	  s = (short) delta;
 	  b = ((u_s *) & s)[0].b;
@@ -122,7 +122,7 @@ vector<char> compress(const vector<int> values)
       packed.push_back(b[0]);
       packed.push_back(b[1]);
       
-      if ((-2147483647 < delta) && (delta < 2147483647))
+      if ((-2147483647 <= delta) && (delta <= 2147483647))
 	{
 	  i = delta;
 	  b = ((u_i *) & i)[0].b;
