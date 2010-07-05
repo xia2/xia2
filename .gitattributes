@@ -63,14 +63,17 @@ Wrappers/XDS/XDSCorrectR.py -text
 Wrappers/XDS/XScaleR.py -text
 Wrappers/XIA/Doc/Printheader.pdf -text
 Wrappers/dTREK/Doc/dTREK.pdf -text
+html/talks/chef/12287/12287.ps -text
 html/talks/chef/12287/completeness_infl.dat -text
 html/talks/chef/12287/completeness_lrem.dat -text
 html/talks/chef/12287/completeness_peak.dat -text
 html/talks/chef/12287/rcp.dat -text
 html/talks/chef/hpa/completeness.dat -text
+html/talks/chef/hpa/hpa.ps -text
 html/talks/chef/hpa/rcp.dat -text
 html/talks/chef/thau/completeness.dat -text
 html/talks/chef/thau/rcp.dat -text
+html/talks/chef/thau/thau.ps -text
 html/xia2-new-logo.gif -text
 html/xia2-new-logo.psd -text
 lib/statlib/__init__.py -text
