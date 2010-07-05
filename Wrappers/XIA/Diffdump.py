@@ -125,6 +125,14 @@ detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('rigaku', 2084, 45):'rigaku saturn 944',
                   ('rigaku', 1042, 90):'rigaku saturn 944 2x2 binned'}
 
+def read_A200(image):
+    '''Read the header from a Rigaku A200 image. This is to work around the
+    diffdump program falling over with such images.'''
+
+    raise RuntimeError, 'this needs implementing!'
+    
+    pass
+
 # FIXME get proper specifications for these detectors...
 
 def Diffdump(DriverType = None):
