@@ -35,36 +35,36 @@ class ReadHeaderADSC(ReadHeader):
         
         date = header['DATE']
 
-        exposure_time = float(header['TIME'])
-        distance = float(header['DISTANCE'])
-        wavelength = float(header['WAVELENGTH'])
+        self.exposure_time_s = float(header['TIME'])
+        self.distance_mm = float(header['DISTANCE'])
+        self.wavelength_angstroms = float(header['WAVELENGTH'])
 
         pixel_size = float(header['PIXEL_SIZE'])
-        width = float(header['SIZE1'])
-        height = float(header['SIZE2'])
-        pixel_depth = 2
+
+        self.pixel_size_mm_fast = pixel_size
+        self.pixel_size_mm_slow = pixel_size
         
-        osc_start = float(header['OSC_START'])
-        osc_range = float(header['OSC_RANGE'])
-        two_theta = float(header['TWO_THETA'])
+        self.image_size_pixels_fast = float(header['SIZE1'])
+        self.image_size_pixels_slow = float(header['SIZE2'])
+        self.pixel_depth_bytes = 2
+        
+        self.osc_start_deg = float(header['OSC_START'])
+        self.osc_range_deg = float(header['OSC_RANGE'])
+        self.angle_twotheta_deg = float(header['TWO_THETA'])
+        self.angle_kappa_deg = 0.0
+        self.angle_chi_deg = 0.0
+        
+        self.detector_serial_number = int(header['DETECTOR_SN'])
 
-        detector_sn = int(header['DETECTOR_SN'])
+        self.image_offset = int(header['IMAGE_PEDESTAL'])
+        self.maximum_value = int(header['CCD_IMAGE_SATURATION'])
 
-        image_offset = int(header['IMAGE_PEDESTAL'])
-        maximum_value = int(header['CCD_IMAGE_SATURATION'])
+        # FIXME this should probably check with the fast and slow directions.
 
-        # then transform them the way I want
+        self.beam_centre_pixels_fast = beam_centre_y_mm / pixel_size
+        self.beam_centre_pixels_slow = beam_centre_x_mm / pixel_size
 
-        image_size_pixels_fast = width
-        image_size_pixels_slow = height
 
-        pixel_size_mm_fast = pixel_size
-        pixel_size_mm_slow = pixel_size
-
-        beam_centre_pixels_fast = beam_centre_y_mm
-        beam_centre_pixels_slow = beam_centre_x_mm
-
-        # then store them
 
         
 

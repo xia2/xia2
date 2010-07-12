@@ -107,7 +107,7 @@ class ReadHeader(object):
         self._pixel_size_mm_slow = None
         self._header_length = None
         self._image_length = None
-        self._pixel_depth = None
+        self._pixel_depth_bytes = None
 
         self._detector_gain = None
         self._image_offset = None
@@ -273,6 +273,34 @@ class ReadHeader(object):
     pixel_size_mm_slow = property(set_pixel_size_mm_slow,
                                   get_pixel_size_mm_slow)
 
+    def set_header_length(self, header_length):
+        self._header_length = header_length
+        return
+
+    def get_header_length(self):
+        return self._header_length
+
+    header_length = property(set_header_length, get_header_length)
+
+    def set_image_length(self, image_length):
+        self._image_length = image_length
+        return
+
+    def get_image_length(self):
+        return self._image_length
+
+    image_length = property(set_image_length, get_image_length)
+
+    def set_pixel_depth_bytes(self, pixel_depth_bytes):
+        self._pixel_depth_bytes = pixel_depth_bytes
+        return
+
+    def get_pixel_depth_bytes(self):
+        return self._pixel_depth_bytes
+
+    pixel_depth_bytes = property(set_pixel_depth_bytes,
+                                 get_pixel_depth_bytes)
+
     def set_detector_gain(self, detector_gain):
         self._detector_gain = detector_gain
         return
@@ -281,6 +309,24 @@ class ReadHeader(object):
         return self._detector_gain
 
     detector_gain = property(set_detector_gain, get_detector_gain)
+
+    def set_image_offset(self, image_offset):
+        self._image_offset = image_offset
+        return
+
+    def get_image_offset(self):
+        return self._image_offset
+
+    image_offset = property(set_image_offset, get_image_offset)
+
+    def set_maximum_value(self, maximum_value):
+        self._maximum_value = maximum_value
+        return
+
+    def get_maximum_value(self):
+        return self._maximum_value
+
+    maximum_value = property(set_maximum_value, get_maximum_value)
 
     def set_osc_start_deg(self, osc_start_deg):
         self._osc_start_deg = osc_start_deg
