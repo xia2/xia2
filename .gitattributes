@@ -41,6 +41,7 @@ Toolkit/PolyFitter.py -text
 Toolkit/ReadHeader/ReadHeader.py -text
 Toolkit/ReadHeader/ReadHeaderA200.py -text
 Toolkit/ReadHeader/ReadHeaderADSC.py -text
+Toolkit/ReadHeader/ReadHeaderFactory.py -text
 Toolkit/ReadHeader/ReadHeaderMARCCD.py -text
 Toolkit/ReadHeader/ReadHeaderMARIP.py -text
 Toolkit/ReadHeader/ReadHeaderPILATUS.py -text
