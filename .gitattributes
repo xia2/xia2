@@ -38,6 +38,14 @@ Toolkit/KBScale.py -text
 Toolkit/MultiMerger.py -text
 Toolkit/PlayPen/TestMinimise.py -text
 Toolkit/PolyFitter.py -text
+Toolkit/ReadHeader/ReadHeader.py -text
+Toolkit/ReadHeader/ReadHeaderA200.py -text
+Toolkit/ReadHeader/ReadHeaderADSC.py -text
+Toolkit/ReadHeader/ReadHeaderMARCCD.py -text
+Toolkit/ReadHeader/ReadHeaderMARIP.py -text
+Toolkit/ReadHeader/ReadHeaderPILATUS.py -text
+Toolkit/ReadHeader/ReadHeaderRAXIS.py -text
+Toolkit/ReadHeader/ReadHeaderSMV.py -text
 Toolkit/__init__.py -text
 Toolkit/backstop-mask-i03-15may10.dat -text
 Toolkit/byte_offset.cpp -text
