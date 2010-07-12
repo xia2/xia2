@@ -30,8 +30,8 @@ class ReadHeaderADSC(ReadHeader):
 
         size, header = ReadHeaderSMV(image)
 
-        beam_centre_x_mm = float(header['BEAM_CENTRE_X'])
-        beam_centre_y_mm = float(header['BEAM_CENTRE_Y'])
+        beam_centre_x_mm = float(header['BEAM_CENTER_X'])
+        beam_centre_y_mm = float(header['BEAM_CENTER_Y'])
         
         date = header['DATE']
 
@@ -44,13 +44,13 @@ class ReadHeaderADSC(ReadHeader):
         self.pixel_size_mm_fast = pixel_size
         self.pixel_size_mm_slow = pixel_size
         
-        self.image_size_pixels_fast = float(header['SIZE1'])
-        self.image_size_pixels_slow = float(header['SIZE2'])
+        self.image_size_pixels_fast = int(header['SIZE1'])
+        self.image_size_pixels_slow = int(header['SIZE2'])
         self.pixel_depth_bytes = 2
         
         self.osc_start_deg = float(header['OSC_START'])
         self.osc_range_deg = float(header['OSC_RANGE'])
-        self.angle_twotheta_deg = float(header['TWO_THETA'])
+        self.angle_twotheta_deg = float(header['TWOTHETA'])
         self.angle_kappa_deg = 0.0
         self.angle_chi_deg = 0.0
         
@@ -64,8 +64,11 @@ class ReadHeaderADSC(ReadHeader):
         self.beam_centre_pixels_fast = beam_centre_y_mm / pixel_size
         self.beam_centre_pixels_slow = beam_centre_x_mm / pixel_size
 
-
-
-        
-
         return
+
+
+if __name__ == '__main__':
+
+    import sys
+
+    print ReadHeaderADSC(sys.argv[1])
