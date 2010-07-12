@@ -60,7 +60,7 @@ detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('rigaku', 2084, 45):'rigaku saturn 944',
                   ('rigaku', 1042, 90):'rigaku saturn 944 2x2 binned'}
 
-class ReadHeader:
+class ReadHeader(object):
     '''A generic class to handle the reading and handling of image
     headers. N.B. this can handle transformation to a standard reference
     frame, which will be defined in terms of the fast and slow direction of
@@ -96,8 +96,8 @@ class ReadHeader:
 
         # matters relating to the beam centre
         
-        self._beam_position_pixels_fast = None
-        self._beam_position_pixels_slow = None
+        self._beam_centre_pixels_fast = None
+        self._beam_centre_pixels_slow = None
 
         # matters relating to the detector
 
@@ -105,8 +105,13 @@ class ReadHeader:
         self._image_size_pixels_slow = None
         self._pixel_size_mm_fast = None
         self._pixel_size_mm_slow = None
+        self._header_length = None
+        self._image_length = None
+        self._pixel_depth = None
 
         self._detector_gain = None
+        self._image_offset = None
+        self._maximum_value = None
 
         # matters relating to this oscillation
 
@@ -124,7 +129,8 @@ class ReadHeader:
         self._axis_name = None
 
         # the orientation of the beam, rotation axis and detector in the
-        # experimental frame
+        # experimental frame. N.B. many of these will be hard coded with
+        # standard assumptions for that detector. 
         
         self._axis_direction = None
         self._beam_direction = None
@@ -139,6 +145,263 @@ class ReadHeader:
         self._detector_serial_number = None
         
         return
+
+    # begin very boring getter and setter code - using properties to make
+    # the resulting code a little tidier.
+
+    def set_epoch_unix(self, epoch_unix):
+        self._epoch_unix = epoch_unix
+        return
+
+    def get_epoch_unix(self):
+        return self._epoch_unix
+
+    epoch_unix = property(set_epoch_unix, get_epoch_unix)
+
+    def set_epoch_ms(self, epoch_ms):
+        self._epoch_ms = epoch_ms
+        return
+
+    def get_epoch_ms(self):
+        return self._epoch_ms
+
+    epoch_ms = property(set_epoch_ms, get_epoch_ms)
+
+    def set_date_gregorian(self, date_gregorian):
+        self._date_gregorian = date_gregorian
+        return
+
+    def get_date_gregorian(self):
+        return self._date_gregorian
+
+    date_gregorian = property(set_date_gregorian, get_date_gregorian)
+
+    def set_date_struct(self, date_struct):
+        self._date_struct = date_struct
+        return
+
+    def get_date_struct(self):
+        return self._date_struct
+
+    date_struct = property(set_date_struct, get_date_struct)
+
+    def set_exposure_time_s(self, exposure_time_s):
+        self._exposure_time_s = exposure_time_s
+        return
+
+    def get_exposure_time_s(self):
+        return self._exposure_time_s
+
+    exposure_time_s = property(set_exposure_time_s, get_exposure_time_s)
+
+    def set_wavelength_angstroms(self, wavelength_angstroms):
+        self._wavelength_angstroms = wavelength_angstroms
+        return
+
+    def get_wavelength_angstroms(self):
+        return self._wavelength_angstroms
+
+    wavelength_angstroms = property(set_wavelength_angstroms,
+                                    get_wavelength_angstroms)
+
+    def set_distance_mm(self, distance_mm):
+        self._distance_mm = distance_mm
+        return
+
+    def get_distance_mm(self):
+        return self._distance_mm
+
+    distance_mm = property(set_distance_mm, get_distance_mm)
+
+    def set_beam_centre_pixels_fast(self, beam_centre_pixels_fast):
+        self._beam_centre_pixels_fast = beam_centre_pixels_fast
+        return
+
+    def get_beam_centre_pixels_fast(self):
+        return self._beam_centre_pixels_fast
+
+    beam_centre_pixels_fast = property(set_beam_centre_pixels_fast,
+                                       get_beam_centre_pixels_fast)
+
+    def set_beam_centre_pixels_slow(self, beam_centre_pixels_slow):
+        self._beam_centre_pixels_slow = beam_centre_pixels_slow
+        return
+
+    def get_beam_centre_pixels_slow(self):
+        return self._beam_centre_pixels_slow
+
+    beam_centre_pixels_slow = property(set_beam_centre_pixels_slow,
+                                       get_beam_centre_pixels_slow)
+
+    def set_image_size_pixels_fast(self, image_size_pixels_fast):
+        self._image_size_pixels_fast = image_size_pixels_fast
+        return
+
+    def get_image_size_pixels_fast(self):
+        return self._image_size_pixels_fast
+
+    image_size_pixels_fast = property(set_image_size_pixels_fast,
+                                      get_image_size_pixels_fast)
+
+    def set_image_size_pixels_slow(self, image_size_pixels_slow):
+        self._image_size_pixels_slow = image_size_pixels_slow
+        return
+
+    def get_image_size_pixels_slow(self):
+        return self._image_size_pixels_slow
+
+    image_size_pixels_slow = property(set_image_size_pixels_slow,
+                                      get_image_size_pixels_slow)
+
+    def set_pixel_size_mm_fast(self, pixel_size_mm_fast):
+        self._pixel_size_mm_fast = pixel_size_mm_fast
+        return
+
+    def get_pixel_size_mm_fast(self):
+        return self._pixel_size_mm_fast
+
+    pixel_size_mm_fast = property(set_pixel_size_mm_fast,
+                                  get_pixel_size_mm_fast)
+
+    def set_pixel_size_mm_slow(self, pixel_size_mm_slow):
+        self._pixel_size_mm_slow = pixel_size_mm_slow
+        return
+
+    def get_pixel_size_mm_slow(self):
+        return self._pixel_size_mm_slow
+
+    pixel_size_mm_slow = property(set_pixel_size_mm_slow,
+                                  get_pixel_size_mm_slow)
+
+    def set_detector_gain(self, detector_gain):
+        self._detector_gain = detector_gain
+        return
+
+    def get_detector_gain(self):
+        return self._detector_gain
+
+    detector_gain = property(set_detector_gain, get_detector_gain)
+
+    def set_osc_start_deg(self, osc_start_deg):
+        self._osc_start_deg = osc_start_deg
+        return
+
+    def get_osc_start_deg(self):
+        return self._osc_start_deg
+
+    osc_start_deg = property(set_osc_start_deg, get_osc_start_deg)
+
+    def set_osc_width_deg(self, osc_width_deg):
+        self._osc_width_deg = osc_width_deg
+        return
+
+    def get_osc_width_deg(self):
+        return self._osc_width_deg
+
+    osc_width_deg = property(set_osc_width_deg, get_osc_width_deg)
+
+    def set_angle_twotheta_deg(self, angle_twotheta_deg):
+        self._angle_twotheta_deg = angle_twotheta_deg
+        return
+
+    def get_angle_twotheta_deg(self):
+        return self._angle_twotheta_deg
+
+    angle_twotheta_deg = property(set_angle_twotheta_deg,
+                                  get_angle_twotheta_deg)
+
+    def set_angle_kappa_deg(self, angle_kappa_deg):
+        self._angle_kappa_deg = angle_kappa_deg
+        return
+
+    def get_angle_kappa_deg(self):
+        return self._angle_kappa_deg
+
+    angle_kappa_deg = property(set_angle_kappa_deg, get_angle_kappa_deg)
+
+    def set_angle_chi_deg(self, angle_chi_deg):
+        self._angle_chi_deg = angle_chi_deg
+        return
+
+    def get_angle_chi_deg(self):
+        return self._angle_chi_deg
+
+    angle_chi_deg = property(set_angle_chi_deg, get_angle_chi_deg)
+
+    def set_axis_name(self, axis_name):
+        self._axis_name = axis_name
+        return
+
+    def get_axis_name(self):
+        return self._axis_name
+
+    axis_name = property(set_axis_name, get_axis_name)
+
+    def set_axis_direction(self, axis_direction):
+        self._axis_direction = axis_direction
+        return
+
+    def get_axis_direction(self):
+        return self._axis_direction
+
+    axis_direction = property(set_axis_direction, get_axis_direction)
+
+    def set_beam_direction(self, beam_direction):
+        self._beam_direction = beam_direction
+        return
+
+    def get_beam_direction(self):
+        return self._beam_direction
+
+    beam_direction = property(set_beam_direction, get_beam_direction)
+
+    def set_fast_direction(self, fast_direction):
+        self._fast_direction = fast_direction
+        return
+
+    def get_fast_direction(self):
+        return self._fast_direction
+
+    fast_direction = property(set_fast_direction, get_fast_direction)
+
+    def set_slow_direction(self, slow_direction):
+        self._slow_direction = slow_direction
+        return
+
+    def get_slow_direction(self):
+        return self._slow_direction
+
+    slow_direction = property(set_slow_direction, get_slow_direction)
+
+    def set_detector_name(self, detector_name):
+        self._detector_name = detector_name
+        return
+
+    def get_detector_name(self):
+        return self._detector_name
+
+    detector_name = property(set_detector_name, get_detector_name)
+
+    def set_detector_format(self, detector_format):
+        self._detector_format = detector_format
+        return
+
+    def get_detector_format(self):
+        return self._detector_format
+
+    detector_format = property(set_detector_format, get_detector_format)
+
+    def set_detector_serial_number(self, detector_serial_number):
+        self._detector_serial_number = detector_serial_number
+        return
+
+    def get_detector_serial_number(self):
+        return self._detector_serial_number
+
+    detector_serial_number = property(set_detector_serial_number,
+                                      get_detector_serial_number)
+
+    # end of boring getter and setter code
 
     def _struct_to_epoch(self, struct = None, ms = None):
         '''Get the epoch from a date structure.'''
