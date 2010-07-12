@@ -76,4 +76,5 @@ if __name__ == '__main__':
 
     import sys
 
-    print ReadHeaderADSC(sys.argv[1])
+    for arg in sys.argv[1:]:
+        print ReadHeaderADSC(arg)
