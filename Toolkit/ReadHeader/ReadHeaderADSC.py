@@ -26,8 +26,6 @@ class ReadHeaderADSC(ReadHeader):
     def _read_adsc_header(self, image):
         '''Read the contents of the header of this image.'''
 
-        # first: boring, fetch the things we want and rename them
-
         size, header = ReadHeaderSMV(image)
 
         beam_centre_x_mm = float(header['BEAM_CENTER_X'])
@@ -50,19 +48,21 @@ class ReadHeaderADSC(ReadHeader):
         
         self.osc_start_deg = float(header['OSC_START'])
         self.osc_range_deg = float(header['OSC_RANGE'])
-        self.angle_twotheta_deg = float(header['TWOTHETA'])
+        self.angle_twotheta_deg = float(header.get('TWOTHETA', '0.0'))
         self.angle_kappa_deg = 0.0
         self.angle_chi_deg = 0.0
         
         self.detector_serial_number = int(header['DETECTOR_SN'])
 
-        self.image_offset = int(header['IMAGE_PEDESTAL'])
+        self.image_offset = int(header.get('IMAGE_PEDESTAL', '0'))
         self.maximum_value = int(header['CCD_IMAGE_SATURATION'])
 
         # FIXME this should probably check with the fast and slow directions.
 
         self.beam_centre_pixels_fast = beam_centre_y_mm / pixel_size
         self.beam_centre_pixels_slow = beam_centre_x_mm / pixel_size
+
+        self.header_length = size
 
         return
 

@@ -480,11 +480,21 @@ class ReadHeader(object):
     def __str__(self):
         '''Print a summary of what we know about this image.'''
 
-        return 'Image size: %d x %d' % \
-               (self.image_size_pixels_fast, self.image_size_pixels_slow)
+        result = 'Image size:  %6d x %6d\n' % \
+                 (self.image_size_pixels_fast, self.image_size_pixels_slow)
+        result += 'Pixel size:  %.4f x %.4f\n' % \
+                  (self.pixel_size_mm_fast, self.pixel_size_mm_slow)
+        result += 'Distance:    %.1f\n' % self.distance_mm
+        result += 'Wavelength:  %.5f\n' % self.wavelength_angstroms
+        result += 'Exposure:    %.3f\n' % self.exposure_time_s
+        result += 'Oscillation: %.3f -> %.3f\n' % (
+            self.osc_start_deg, self.osc_start_deg + self.osc_range_deg)
+        result += 'Trusted:     %d -> %d\n' % (self.image_offset,
+                                               self.maximum_value)
+        result += 'Beam:        %.1f %.1f\n' % (self.beam_centre_pixels_fast,
+                                                self.beam_centre_pixels_slow)
 
-
-    
+        return result
 
         
 
