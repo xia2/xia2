@@ -12,6 +12,8 @@
 from ReadHeader import ReadHeader
 from ReadHeaderSMV import ReadHeaderSMV
 
+import time
+
 class ReadHeaderADSC(ReadHeader):
     '''A class to read ADSC image headers.'''
 
@@ -32,6 +34,9 @@ class ReadHeaderADSC(ReadHeader):
         beam_centre_y_mm = float(header['BEAM_CENTER_Y'])
         
         date = header['DATE']
+
+        self.date_struct = time.strptime(date)
+        self.epoch_ms = 0
 
         self.exposure_time_s = float(header['TIME'])
         self.distance_mm = float(header['DISTANCE'])

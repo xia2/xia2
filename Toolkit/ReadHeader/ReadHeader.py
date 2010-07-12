@@ -178,6 +178,8 @@ class ReadHeader(object):
 
     def set_date_struct(self, date_struct):
         self._date_struct = date_struct
+        self._date_gregorian = self._struct_to_date()
+        self._epoch_unix = self._struct_to_epoch()
         return
 
     def get_date_struct(self):
@@ -493,8 +495,10 @@ class ReadHeader(object):
                                                self.maximum_value)
         result += 'Beam:        %.1f %.1f\n' % (self.beam_centre_pixels_fast,
                                                 self.beam_centre_pixels_slow)
+        result += 'Date:        %s\n' % self.date_gregorian
 
         return result
 
         
+
 
