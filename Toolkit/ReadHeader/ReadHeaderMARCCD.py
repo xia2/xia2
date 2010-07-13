@@ -18,6 +18,7 @@ import math
 import exceptions
 import binascii
 import struct
+import array
 
 from ReadHeader import ReadHeader
 
