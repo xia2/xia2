@@ -496,6 +496,7 @@ class ReadHeader(object):
         result += 'Beam:        %.1f %.1f\n' % (self.beam_centre_pixels_fast,
                                                 self.beam_centre_pixels_slow)
         result += 'Date:        %s\n' % self.date_gregorian
+        result += 'Serial No:   %s\n' % self.detector_serial_number
 
         return result
 

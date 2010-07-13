@@ -57,7 +57,7 @@ class ReadHeaderADSC(ReadHeader):
         self.angle_kappa_deg = 0.0
         self.angle_chi_deg = 0.0
         
-        self.detector_serial_number = int(header['DETECTOR_SN'])
+        self.detector_serial_number = header['DETECTOR_SN']
 
         self.image_offset = int(header.get('IMAGE_PEDESTAL', '0'))
         self.maximum_value = int(header['CCD_IMAGE_SATURATION'])
