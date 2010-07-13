@@ -109,6 +109,12 @@ class ReadHeaderMARCCD(ReadHeader):
         self.beam_centre_pixels_fast = 0.001 * header_signed_ints[161]
         self.beam_centre_pixels_slow = 0.001 * header_signed_ints[162]
 
+        # Workaround: some beamlines store this position in mm despite the
+        # fact that this according to the specification should be in pixels -
+        # check if it would make more sense in pixels.
+
+        self._check_marccd_beam_in_pixels()
+
         self.header_length = 4096
 
         datestring = marccd_header_bytes[1376:1408].strip()
@@ -129,6 +135,32 @@ class ReadHeaderMARCCD(ReadHeader):
         for record in comments.split('\n'):
             if 'Detector Serial Number' in record:
                 self.detector_serial_number = record.split()[-1]
+
+        return
+
+    def _check_marccd_beam_in_pixels(self):
+        '''Check that the beam centre we read is probably in pixels not mm.'''
+
+        bx = self.beam_centre_pixels_fast
+        by = self.beam_centre_pixels_slow
+
+        nx = self.image_size_pixels_fast
+        ny = self.image_size_pixels_slow
+
+        dx = self.pixel_size_mm_fast
+        dy = self.pixel_size_mm_slow
+        
+        distance_if_pixels = math.sqrt((bx - 0.5 * nx) * (bx - 0.5 * nx) + 
+                                       (by - 0.5 * ny) * (by - 0.5 * ny))
+
+        distance_if_mm = math.sqrt(
+            (bx / dx - 0.5 * nx) * (bx / dx - 0.5 * nx) + 
+            (by / dy - 0.5 * ny) * (by / dy - 0.5 * ny))
+
+        if distance_if_pixels > 0.25 * math.sqrt(nx * nx + ny * ny) and \
+           distance_if_mm < 0.25 * math.sqrt(nx * nx + ny * ny):
+            self.beam_centre_pixels_fast /= dx
+            self.beam_centre_pixels_slow /= dy
 
         return
 
