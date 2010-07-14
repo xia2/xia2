@@ -40,6 +40,7 @@ from Decorators.DecoratorFactory import DecoratorFactory
 from lib.Guff import transpose_loggraph, mean_sd
 from Wrappers.CCP4.Mtzdump import Mtzdump
 from Experts.WedgeExpert import digest_wedges
+from lib.statlib.stats import ttest_1samp, ttest_rel
 
 from Handlers.Streams import Chatter, Stdout
 
@@ -210,6 +211,12 @@ def Chef(DriverType = None,
             meaningless and (ii) we are trying to decide if there is a
             significant gradient there. N.B. does however assume that the
             dose increments are UNIFORM.'''
+
+            # FIXME in here, replace the crude comparison with sigma with a
+            # distribution comparison - values about the mean, values about
+            # a straight line fit: are they drawn from the same distribution.
+            # If definately not then the hypothesis of some radiation damage
+            # is suggested?
 
             sx = 0.0
             sy = 0.0

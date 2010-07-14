@@ -444,6 +444,13 @@ def Diffdump(DriverType = None):
                    'ccd' in self._header['detector_class']:
                     self._header['detector'] = 'marccd'
 
+                # currently diffdump swaps x, y in beam centre output
+                if self._header['detector_class'] == 'pilatus 2M':
+                    x, y = self._header['beam']
+                    self._header['beam'] = y, x
+                    x, y = self._header['raw_beam']
+                    self._header['raw_beam'] = y, x
+
             else:
                 self._header['detector_class'] = 'unknown'
 
