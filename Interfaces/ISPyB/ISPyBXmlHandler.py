@@ -12,6 +12,14 @@
 
 import time
 import os
+import sys
+
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
+
+from Handlers.Files import FileHandler
 
 class _ISPyBXmlHandler:
 
@@ -207,6 +215,8 @@ class _ISPyBXmlHandler:
 
                 if not type(reflection_file) == type(''):
                     continue
+
+                reflection_file = FileHandler.get_data_file(reflection_file)
                 
                 fout.write(
                     '<AutoProcProgramAttachment><fileType>Result')
