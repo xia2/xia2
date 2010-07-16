@@ -52,7 +52,7 @@ class ReadHeaderADSC(ReadHeader):
         self.pixel_depth_bytes = 2
         
         self.osc_start_deg = float(header['OSC_START'])
-        self.osc_range_deg = float(header['OSC_RANGE'])
+        self.osc_width_deg = float(header['OSC_RANGE'])
         self.angle_twotheta_deg = float(header.get('TWOTHETA', '0.0'))
         self.angle_kappa_deg = 0.0
         self.angle_chi_deg = 0.0

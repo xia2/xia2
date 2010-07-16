@@ -64,12 +64,12 @@ class ReadHeaderMARIP(ReadHeader):
         if header_signed_ints[10] != header_signed_ints[11]:
             self.axis_name = 'phi'
             self.osc_start_deg = 0.001 * header_signed_ints[10]
-            self.osc_range_deg = 0.001 * (header_signed_ints[11] -
+            self.osc_width_deg = 0.001 * (header_signed_ints[11] -
                                           header_signed_ints[10])
         else:
             self.axis_name = 'omega'
             self.osc_start_deg = 0.001 * header_signed_ints[12]
-            self.osc_range_deg = 0.001 * (header_signed_ints[13] -
+            self.osc_width_deg = 0.001 * (header_signed_ints[13] -
                                           header_signed_ints[12])
             
         self.angle_twotheta_deg = 0.001 * header_signed_ints[15]

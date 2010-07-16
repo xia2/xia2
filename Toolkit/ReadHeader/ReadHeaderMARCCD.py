@@ -95,9 +95,9 @@ class ReadHeaderMARCCD(ReadHeader):
 
         if header_signed_ints[175 + axis]:
             osc_end = 0.001 * header_signed_ints[175 + axis]
-            self.osc_range_deg = osc_end - self.osc_start_deg
+            self.osc_width_deg = osc_end - self.osc_start_deg
         else:
-            self.osc_range_deg = 0.001 * header_signed_ints[184]
+            self.osc_width_deg = 0.001 * header_signed_ints[184]
             
         self.angle_twotheta_deg = 0.001 * header_signed_ints[167]
         self.angle_kappa_deg = 0.001 * header_signed_ints[170]

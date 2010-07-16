@@ -64,7 +64,7 @@ class ReadHeaderRAXIS(ReadHeader):
             '>f', raxis_header[524:528])[0]
         osc_end_deg = struct.unpack(
             '>f', raxis_header[528:532])[0]
-        self.osc_range_deg = osc_end_deg - self.osc_start_deg
+        self.osc_width_deg = osc_end_deg - self.osc_start_deg
             
         self.angle_twotheta_deg = struct.unpack(
             '>f', raxis_header[556:560])[0]
