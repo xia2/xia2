@@ -39,7 +39,7 @@ class ReadHeaderA200(ReadHeader):
         self.exposure_time_s = 0.0
         distance_index = header['CCD_GONIO_NAMES'].split().index('Distance')
         self.distance_mm = float(
-            header['CCD_GONIO_VALUES'][distance_index])
+            header['CCD_GONIO_VALUES'].split()[distance_index])
         self.wavelength_angstroms = float(header['SCAN_WAVELENGTH'])
 
         pixel_xy = map(
