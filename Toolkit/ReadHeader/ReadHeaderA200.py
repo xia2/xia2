@@ -36,7 +36,9 @@ class ReadHeaderA200(ReadHeader):
         self.date_struct = (1970, 1, 1, 1, 1, 1, 1, 1, -1)
         self.epoch_ms = 0
 
-        self.exposure_time_s = 0.0
+        # ROTATION= start end incr time nosc ndark ndarkup dlim ndc ndcup
+
+        self.exposure_time_s = float(header['ROTATION'].split()[3])
         distance_index = header['CCD_GONIO_NAMES'].split().index('Distance')
         self.distance_mm = float(
             header['CCD_GONIO_VALUES'].split()[distance_index])
