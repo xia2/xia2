@@ -41,7 +41,7 @@ from Handlers.Streams import Debug
 from XDSIdxrefHelpers import _parse_idxref_lp, _parse_idxref_lp_distance_etc, \
      _parse_idxref_lp_subtree
 
-from Experts.LatticeExpert import SortLattices
+from Experts.LatticeExpert import SortLattices, ApplyLattice
 
 # global flags 
 from Handlers.Flags import Flags
@@ -326,6 +326,14 @@ def XDSIdxref(DriverType = None):
                 # or any value (< 200) if we have been provided the
                 # input unit cell... but # 2731
 
+                # FIXME the cell MUST be constrained externally (i.e. in
+                # here, not by XDS) to correspond to the Bravais lattice
+                # constraints
+
+                cell, dist = ApplyLattice(lattice, cell)
+
+                Debug.write('Apply constraints for %s: %.3f' % (lattice, dist))
+
                 # if we "know" the answer, well just go ahead with that
 
                 if self._symm and self._cell and \
@@ -414,7 +422,8 @@ def XDSIdxref(DriverType = None):
                 sorted_list = SortLattices(list)
 
                 self._symm = lattice_to_spacegroup_number(sorted_list[0][0])
-                self._cell = sorted_list[0][1]
+                self._cell = ApplyLattice(sorted_list[0][0],
+                                          sorted_list[0][1])[0]
 
                 return False
             
