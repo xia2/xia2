@@ -58,6 +58,7 @@ class ReadHeaderCBF(ReadHeader):
         image_order = tuple(map(int, i1['_array_structure_list.precedence']))
         image_dim = tuple(map(int, i1['_array_structure_list.dimension']))
 
+        # assume for the moment that this is fast, slow
         assert(image_order in [(1, 2), (2, 1)])
 
         overload = int(i1['_array_intensities.overload'])
@@ -68,47 +69,51 @@ class ReadHeaderCBF(ReadHeader):
         # this is YYYY-MM-DDTHH:MM:SS
         date_str = i1['_diffrn_scan_frame.date']
 
-        
-        
-        if True:
-            return
-        
-        beam_centre_x_mm = float(header['BEAM_CENTER_X'])
-        beam_centre_y_mm = float(header['BEAM_CENTER_Y'])
-        
-        date = header['DATE']
+        scan_names = i1['_diffrn_scan_axis.axis_id']
+        idx = scan_names.index('GONIOMETER_PHI')
+        angle_start = float(i1['_diffrn_scan_axis.angle_start'][idx])
+        angle_width = float(i1['_diffrn_scan_axis.angle_increment'][idx])
 
-        self.date_struct = time.strptime(date)
+        serial = i1['_diffrn_detector.id']
+
+        # begin hacky mess to get the beam centre out...
+        axis_names = i1['_axis.id']
+        idx = axis_names.index('ELEMENT_X')
+        beam_centre_x_mm = -1 * float(i1['_axis.offset[1]'][idx])
+        beam_centre_y_mm = float(i1['_axis.offset[2]'][idx])
+        
+        self.date_struct = time.strptime(date_str, '%Y-%m-%dT%H:%M:%S')
         self.epoch_ms = 0
 
-        self.exposure_time_s = float(header['TIME'])
-        self.distance_mm = float(header['DISTANCE'])
-        self.wavelength_angstroms = float(header['WAVELENGTH'])
+        self.exposure_time_s = exposure_time
+        self.distance_mm = distance
+        self.wavelength_angstroms = wavelength
 
-        self.pixel_size_mm_fast = pixel_size
-        self.pixel_size_mm_slow = pixel_size
+        # these were in m - why?!
+        self.pixel_size_mm_fast = 1000 * pixel_dim[0]
+        self.pixel_size_mm_slow = 1000 * pixel_dim[1]
         
-        self.image_size_pixels_fast = int(header['SIZE1'])
-        self.image_size_pixels_slow = int(header['SIZE2'])
+        self.image_size_pixels_fast = image_dim[0]
+        self.image_size_pixels_slow = image_dim[1]
         self.pixel_depth_bytes = 2
         
-        self.osc_start_deg = float(header['OSC_START'])
-        self.osc_width_deg = float(header['OSC_RANGE'])
-        self.angle_twotheta_deg = float(header.get('TWOTHETA', '0.0'))
+        self.osc_start_deg = angle_start
+        self.osc_width_deg = angle_width
+        self.angle_twotheta_deg = 0.0
         self.angle_kappa_deg = 0.0
         self.angle_chi_deg = 0.0
         
-        self.detector_serial_number = header['DETECTOR_SN']
+        self.detector_serial_number = serial
 
-        self.image_offset = int(header.get('IMAGE_PEDESTAL', '0'))
-        self.maximum_value = int(header['CCD_IMAGE_SATURATION'])
+        self.image_offset = 0
+        self.maximum_value = 65535
 
         # FIXME this should probably check with the fast and slow directions.
 
-        self.beam_centre_pixels_fast = beam_centre_y_mm / pixel_size
-        self.beam_centre_pixels_slow = beam_centre_x_mm / pixel_size
+        self.beam_centre_pixels_fast = beam_centre_y_mm / (pixel_dim[1])
+        self.beam_centre_pixels_slow = beam_centre_x_mm / (pixel_dim[0])
 
-        self.header_length = size
+        self.header_length = 0
 
         return
 
@@ -118,4 +123,4 @@ if __name__ == '__main__':
     import sys
 
     for arg in sys.argv[1:]:
-        ReadHeaderCBF(arg)
+        print ReadHeaderCBF(arg)
