@@ -41,7 +41,7 @@ from Handlers.Streams import Debug
 from XDSIdxrefHelpers import _parse_idxref_lp, _parse_idxref_lp_distance_etc, \
      _parse_idxref_lp_subtree
 
-from Experts.LatticeExpert import SortLattices, ApplyLattice
+from Experts.LatticeExpert import SortLattices
 
 # global flags 
 from Handlers.Flags import Flags
@@ -330,16 +330,13 @@ def XDSIdxref(DriverType = None):
                 # here, not by XDS) to correspond to the Bravais lattice
                 # constraints
 
-                cell, dist = ApplyLattice(lattice, cell)
-
-                Debug.write('Apply constraints for %s: %.3f' % (lattice, dist))
-
                 # if we "know" the answer, well just go ahead with that
 
                 if self._symm and self._cell and \
                        self._indxr_user_input_lattice:
 
-                    if self._compare_cell(self._cell, cell):
+                    if self._compare_cell(self._cell, cell) and \
+                           lattice_to_spacegroup_number(lattice) == self._symm:
                         if self._indexing_solutions.has_key(lattice):
                             if self._indexing_solutions[lattice][
                                 'goodness'] < fit:
@@ -350,7 +347,8 @@ def XDSIdxref(DriverType = None):
                             'cell':cell}
 
                 else:
-                    if fit < 40.0 or (self._cell and fit < 200.0):
+                    if fit < 40.0 or (self._cell and fit < 200.0) \
+                           or (self._symm and fit < 200.0):
                         # bug 2417 - if we have an input lattice then we
                         # don't want to include anything higher symmetry
                         # in the results table...
@@ -422,8 +420,7 @@ def XDSIdxref(DriverType = None):
                 sorted_list = SortLattices(list)
 
                 self._symm = lattice_to_spacegroup_number(sorted_list[0][0])
-                self._cell = ApplyLattice(sorted_list[0][0],
-                                          sorted_list[0][1])[0]
+                self._cell = sorted_list[0][1]
 
                 return False
             
