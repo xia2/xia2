@@ -45,6 +45,7 @@ Toolkit/ReadHeader/ReadHeaderFactory.py -text
 Toolkit/ReadHeader/ReadHeaderMARCCD.py -text
 Toolkit/ReadHeader/ReadHeaderMARIP.py -text
 Toolkit/ReadHeader/ReadHeaderPILATUS.py -text
+Toolkit/ReadHeader/ReadHeaderPILATUSMiniCBF.py -text
 Toolkit/ReadHeader/ReadHeaderRAXIS.py -text
 Toolkit/ReadHeader/ReadHeaderSMV.py -text
 Toolkit/__init__.py -text
