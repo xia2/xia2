@@ -45,8 +45,12 @@ class ReadHeaderCBF(ReadHeader):
         fout.write(header_text)
         fout.close()
 
-        # N.B. file:/ needed in here so as not to confuse the urllib on windows systems
-        cif = CifFile.ReadCif('file:/%s' % fname)
+        # N.B. file:/ needed in here so as not to confuse the urllib on
+        # windows systems
+        if os.name == 'nt':
+            cif = CifFile.ReadCif('file:/%s' % fname)
+        else:
+            cif = CifFile.ReadCif(fname)
 
         os.remove(fname)
 
