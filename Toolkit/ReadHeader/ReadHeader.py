@@ -491,6 +491,7 @@ class ReadHeader(object):
         result += 'Exposure:    %.3f\n' % self.exposure_time_s
         result += 'Oscillation: %.3f -> %.3f\n' % (
             self.osc_start_deg, self.osc_start_deg + self.osc_width_deg)
+        result += 'Two Theta:   %.3f\n' % self.angle_twotheta_deg
         result += 'Trusted:     %d -> %d\n' % (self.image_offset,
                                                self.maximum_value)
         result += 'Beam:        %.1f %.1f\n' % (self.beam_centre_pixels_fast,
