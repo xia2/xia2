@@ -52,6 +52,8 @@ class ReadHeaderCBF(ReadHeader):
         else:
             cif = CifFile.ReadCif(fname)
 
+        print cif
+
         os.remove(fname)
 
         # now pull the information from the image header...
@@ -115,8 +117,8 @@ class ReadHeaderCBF(ReadHeader):
 
         # FIXME this should probably check with the fast and slow directions.
 
-        self.beam_centre_pixels_fast = beam_centre_y_mm / (pixel_dim[1])
-        self.beam_centre_pixels_slow = beam_centre_x_mm / (pixel_dim[0])
+        self.beam_centre_pixels_fast = beam_centre_y_mm / (1000 * pixel_dim[1])
+        self.beam_centre_pixels_slow = beam_centre_x_mm / (1000 * pixel_dim[0])
 
         self.header_length = 0
 
