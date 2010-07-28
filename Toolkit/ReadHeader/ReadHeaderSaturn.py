@@ -55,9 +55,11 @@ class ReadHeaderSaturn(ReadHeader):
         self.pixel_depth_bytes = 2
 
         scan_rotation = map(float, header['SCAN_ROTATION'].split())
+
+        # FIXME verify that this is correct in other definitions
         
         self.osc_start_deg = scan_rotation[0]
-        self.osc_width_deg = scan_rotation[1]
+        self.osc_width_deg = scan_rotation[2]
 
         # FIXME assume that this is in place for the moment
 
