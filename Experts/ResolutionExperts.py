@@ -602,24 +602,32 @@ def find_blank(hklin):
     # look at the mean and sd
 
     blank = []
+    good = []
     
     for batch in sorted(isig):
         m, s = meansd(isig[batch])
         if m < 1:
             blank.append(batch)
+        else:
+            good.append(batch)
 
     # finally delete temp file
     os.remove(hklout)
 
-    return blank
+    return blank, good
 
 def remove_blank(hklin, hklout):
     '''Find and remove blank batches from the file. Returns hklin if no
     blanks.'''
 
-    blanks = find_blank(hklin)
+    blanks, goods = find_blank(hklin)
 
     if not blanks:
+        return hklin
+
+    # if mostly blank return hklin too...
+    if len(blanks) > len(goods):
+        Debug.write('%d blank vs. %d good: ignore' % (len(blanks), len(goods)))
         return hklin
 
     rb = Rebatch()
