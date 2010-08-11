@@ -11,11 +11,18 @@ import sys
 
 def parse_xparm(xparm_file):
     '''Read an xparm file, return the rotation axis and beam vector in the
-    XDS coordinate frame.'''
+    XDS coordinate frame. Also the vector in this same coordinate frame to
+    the start of the first pixel on the detector.'''
 
     values = map(float, open(xparm_file, 'r').read().split())
 
-    return tuple(values[3:6]), tuple(values[7:10])
+    ra = tuple(values[3:6])
+    beam = tuple(values[7:10])
+    px, py = values[12], values[13]
+    ox, oy = values[15], values[16]
+    x_to_d = - px * ox, - py * oy, values[14]
+
+    return ra, beam, x_to_d
 
 def xds_to_cbf(xparm_file):
     '''Given an XDS XPARM file, return a matrix which will transform from
@@ -31,7 +38,7 @@ def xds_to_cbf(xparm_file):
     #
     # well that's ok then...
 
-    ra, beam = parse_xparm(xparm_file)
+    ra, beam, x_to_d = parse_xparm(xparm_file)
 
     # make them vectors
 
@@ -102,6 +109,10 @@ def xds_to_cbf(xparm_file):
     print 'New beam vector'
 
     print '%10.7f %10.7f %10.7f' % (_m * beam).elems
+
+    print 'To detector origin i.e. start of the first pixel'
+
+    print '%10.4f %10.4f %10.4f' % (_m * x_to_d).elems
 
     # now need to consider the position of the detector etc. to derive the
     # new direct beam centre...
