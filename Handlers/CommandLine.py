@@ -949,6 +949,11 @@ class _CommandLine(Object):
         if '-chef' in sys.argv:
             Flags.set_chef(True)
             Debug.write('Chef mode selected')
+
+        if '-nochef' in sys.argv:
+            Flags.set_chef(False)
+            Debug.write('Chef mode deselected')
+
         return
 
     def _read_automatch(self):
