@@ -18,6 +18,8 @@ def parse_xparm(xparm_file):
 
     ra = tuple(values[3:6])
     beam = tuple(values[7:10])
+
+    # calculation of the true detector origin
     px, py = values[12], values[13]
     ox, oy = values[15], values[16]
     x_to_d = - px * ox, - py * oy, values[14]
@@ -116,6 +118,41 @@ def xds_to_cbf(xparm_file):
 
     # now need to consider the position of the detector etc. to derive the
     # new direct beam centre...
+
+    # so that would be the distance between the sample and the
+    # detector plane in the direction of the direct beam. 
+
+    n = _m * matrix.col([0, 0, 1])
+    n = n / math.sqrt(n.dot())
+
+    D = _m * x_to_d
+    
+    d = n.dot(D)
+
+    b = _m * beam
+    b = b / math.sqrt(b.dot())
+
+    # this will be the exact position where the beam strikes the
+    # detector face - in the CBF coordinate frame
+    B = b * (d / (b.dot(n)))
+
+    print '%10.4f %10.4f %10.4f' % B.elems
+
+    # which I now need to convert to coordinates on the detector face!
+
+    o = B - D
+
+    # which is what w.r.t. the transformed x, y axes? - easy we know this
+    # transformation - it's the inverse rotation!
+
+    _o = _m.inverse() * o
+
+    print '%10.4f %10.4f %10.4f' % _o.elems
+    
+    # right that's enough for today
+
+
+    
     
     m = matrix.sqr([x[0], x[1], x[2],
                     y[0], y[1], y[2],
