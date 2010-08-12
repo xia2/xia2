@@ -22,9 +22,14 @@ def parse_xparm(xparm_file):
     # calculation of the true detector origin
     px, py = values[12], values[13]
     ox, oy = values[15], values[16]
+
+    # question - what is the refined distance defined as *precisely* -
+    # the distance from the crystal to the detector origin?! - if it's
+    # mrad off, it will essentially make *no* difference
+    
     x_to_d = - px * ox, - py * oy, values[14]
 
-    return ra, beam, x_to_d
+    return ra, beam, x_to_d, (px, py), values[14]
 
 def xds_to_cbf(xparm_file):
     '''Given an XDS XPARM file, return a matrix which will transform from
@@ -40,12 +45,45 @@ def xds_to_cbf(xparm_file):
     #
     # well that's ok then...
 
-    ra, beam, x_to_d = parse_xparm(xparm_file)
+    ra, beam, x_to_d, pixel, distance = parse_xparm(xparm_file)
 
     # make them vectors
 
     ra = matrix.col(ra)
     beam = matrix.col(beam)
+    x_to_d = matrix.col(x_to_d)
+
+    if False:
+
+        # try to reproduce the beam centre
+        
+        distance = x_to_d[2]
+        nbeam = math.sqrt(beam.dot())
+        
+        bx_to_d = beam * distance / beam.elems[2]
+        offset = bx_to_d - matrix.col(x_to_d)
+        
+        # ok this reproduces the correct beam centre - why can't I get this
+        # below?!
+
+        print 'Refined beam centre in pixels'
+        print offset.elems[0] / pixel[0], offset.elems[1] / pixel[1]
+
+    if False:
+
+        # assert: distance is in direction of beam: convert to distance to
+        # origin
+        
+        d1 = distance * beam / math.sqrt(beam.dot())
+        d2 = d1.elems[2]
+        
+        x_to_d = x_to_d[0], x_to_d[1], d2
+
+        print 'New distance: %.3f' % d2
+
+    wavelength = 1.0 / math.sqrt(beam.dot())
+
+    print 'Wavelength: %.5f' % wavelength
 
     # then unit vectors
 
@@ -89,7 +127,13 @@ def xds_to_cbf(xparm_file):
 
     _m_z = _ra_z.axis_and_angle_as_r3_rotation_matrix(- _a_z)
 
+    # _m is matrix to rotate FROM xds coordinate frame TO cbf reference frame
+
     _m = _m_z * _m_x
+
+    # verify that this is a rotation i.e. has determinant +1.
+
+    assert(math.fabs(_m.determinant() - 1.0) < 1.0e-7)
 
     # now rotate the original things thus, to ensure that they are behaving
     # themselves.
@@ -100,7 +144,8 @@ def xds_to_cbf(xparm_file):
 
     # then see how things behave when we look at the rest of the environment
 
-    print 'new laboratory frame axes (detector axes)'
+    print 'Following is in CBF reference frame'
+    print 'New laboratory frame axes (detector axes, then normal)'
 
     print '%10.7f %10.7f %10.7f' % (_m * matrix.col([1, 0, 0])).elems
     print '%10.7f %10.7f %10.7f' % (_m * matrix.col([0, 1, 0])).elems
@@ -123,12 +168,14 @@ def xds_to_cbf(xparm_file):
     # detector plane in the direction of the direct beam. 
 
     n = _m * matrix.col([0, 0, 1])
+
     n = n / math.sqrt(n.dot())
 
     D = _m * x_to_d
     
     d = n.dot(D)
 
+    # calculate beam unit vector in cbf coordinate frame
     b = _m * beam
     b = b / math.sqrt(b.dot())
 
@@ -148,26 +195,14 @@ def xds_to_cbf(xparm_file):
     _o = _m.inverse() * o
 
     print '%10.4f %10.4f %10.4f' % _o.elems
+
+    # check the result is in the detector plane
+    assert(math.fabs(_o.elems[2]) < 1.0e-7)
+
+    # right that's enough for today - though would be nice to plot the
+    # refined beam coordinates.
+
+    print _o.elems[0] / pixel[0], _o.elems[1] / pixel[1]
     
-    # right that's enough for today
-
-
-    
-    
-    m = matrix.sqr([x[0], x[1], x[2],
-                    y[0], y[1], y[2],
-                    z[0], z[1], z[2]])
-
-    _beam = m * beam
-    _nbeam = m.inverse() * (0, 0, 1)
-    _ra = m.inverse() * (1, 0, 0)
-
-    det_x = m * matrix.col((1, 0, 0))
-    det_y = m * matrix.col((0, 1, 0))
-    det_z = m * matrix.col((0, 0, 1))
-    det_n = det_x.cross(det_y)
-
-
-
 if __name__ == '__main__':
     xds_to_cbf(sys.argv[1])
