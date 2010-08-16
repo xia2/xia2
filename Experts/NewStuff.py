@@ -20,6 +20,7 @@ def parse_xparm(xparm_file):
     beam = tuple(values[7:10])
 
     # calculation of the true detector origin
+    nx, ny = int(values[10]), int(values[11])
     px, py = values[12], values[13]
     ox, oy = values[15], values[16]
 
@@ -29,7 +30,7 @@ def parse_xparm(xparm_file):
     
     x_to_d = - px * ox, - py * oy, values[14]
 
-    return ra, beam, x_to_d, (px, py), values[14]
+    return ra, beam, x_to_d, (px, py), values[14], (nx, ny)
 
 def xds_to_cbf(xparm_file):
     '''Given an XDS XPARM file, return a matrix which will transform from
@@ -45,13 +46,14 @@ def xds_to_cbf(xparm_file):
     #
     # well that's ok then...
 
-    ra, beam, x_to_d, pixel, distance = parse_xparm(xparm_file)
+    ra, beam, x_to_d, pixel, distance, nxny = parse_xparm(xparm_file)
 
     # make them vectors
 
     ra = matrix.col(ra)
     beam = matrix.col(beam)
     x_to_d = matrix.col(x_to_d)
+    nx, ny = nxny
 
     if False:
 
@@ -200,9 +202,83 @@ def xds_to_cbf(xparm_file):
     assert(math.fabs(_o.elems[2]) < 1.0e-7)
 
     # right that's enough for today - though would be nice to plot the
-    # refined beam coordinates.
+    # refined beam coordinates. OK that would be these then...
 
     print _o.elems[0] / pixel[0], _o.elems[1] / pixel[1]
-    
+
+    # now to calculate e.g. Mosflm corrections - TILT, TWIST, CCOMEGA
+    # which are in 1/100 degrees for the first two, degrees for the
+    # third.
+
+    # to do this though we need to make the reference frame beam centric -
+    # that is, rotate to ensure that the direct beam is along a cartesian
+    # axis.
+
+    # TILT - rotation about HORIZONTAL
+    # TWIST - rotation about VERTICAL
+    # CCOMEGA - rotation of detector about BEAM
+
+    # first rotate about vertical axis
+
+    _b = b
+    _bt = matrix.col([0.0, 0.0, 1.0])
+    _r = matrix.col([1.0, 0.0, 0.0])
+
+    _v = _b.cross(_r)
+    _a = _b.angle(_bt)
+
+    cbf_to_mos = _v.axis_and_angle_as_r3_rotation_matrix(- _a)
+
+    print '%10.7f %10.7f %10.7f' % _v.elems
+    print 'angle: %f degrees' % (_a * 180.0 / math.pi)
+
+    print '%10.7f %10.7f %10.7f' % (cbf_to_mos * _b).elems
+    print '%10.7f %10.7f %10.7f' % (cbf_to_mos * _r).elems
+
+    # now rotate everything else - in particular the detector origin, the
+    # axes and the position on the detector where the direct beam hits
+    # (which I assume is done in terms of pixel coordinates, converted
+    # to mm...)
+
+    # first attempt to get an accurate detector origin in the new (mosflm)
+    # reference frame
+
+    __o = cbf_to_mos * D
+
+    print '%10.4f %10.4f %10.4f' % __o.elems
+
+    __b = cbf_to_mos * B
+
+    print '%10.4f %10.4f %10.4f' % __b.elems
+
+    # get the new detector axes
+
+    __x = cbf_to_mos * _m * matrix.col([1.0, 0.0, 0.0])
+    __y = cbf_to_mos * _m * matrix.col([0.0, 1.0, 0.0])
+
+    # now want to get the displacement from where the beam strikes the
+    # detector to the origin w.r.t. these detector axes
+
+    print '%10.7f %10.7f %10.7f' % __x.elems
+    print '%10.7f %10.7f %10.7f' % __y.elems
+
+    print 'Beam centre offset'
+
+    __beam = cbf_to_mos * (B - D)
+
+    print '%10.7f %10.7f %10.7f' % __beam.elems    
+
+    mos_to_det = (cbf_to_mos * _m * matrix.sqr([1.0, 0.0, 0.0,
+                                                0.0, 1.0, 0.0,
+                                                0.0, 0.0, 1.0])).inverse()
+
+    print 'On detector coordinate frame'
+    print '%10.7f %10.7f %10.7f' % (mos_to_det * __beam).elems
+
+    x, y, z = (mos_to_det * __beam).elems
+
+    print 'Mosflm beam centre'
+    print '%10.4f %10.4f' % (nx * pixel[0] - x, ny * pixel[1] - y)
+        
 if __name__ == '__main__':
     xds_to_cbf(sys.argv[1])
