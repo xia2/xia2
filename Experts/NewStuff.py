@@ -277,8 +277,10 @@ def xds_to_cbf(xparm_file):
 
     x, y, z = (mos_to_det * __beam).elems
 
-    print 'Mosflm beam centre'
-    print '%10.4f %10.4f' % (nx * pixel[0] - x, ny * pixel[1] - y)
+    print 'Mosflm beam centre, which is swapped around w.r.t. XDS'
+    print '%10.4f %10.4f' % (y, x)
+
+    # now to try to calculate the TILT and TWIST from these...
         
 if __name__ == '__main__':
     xds_to_cbf(sys.argv[1])
