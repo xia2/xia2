@@ -5,6 +5,7 @@ Applications/print_labelit_exception -text
 Applications/print_labelit_exception.py -text
 Data/NMol/mattprob_params.dat -text svneol=native#unset
 Experts/Doc/FindImages.pdf -text
+Experts/example.xparm -text
 Handlers/Doc/CommandLine.pdf -text
 Handlers/Doc/Decision.pdf -text
 Handlers/Doc/Syminfo.pdf -text
