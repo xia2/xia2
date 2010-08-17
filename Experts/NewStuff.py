@@ -302,11 +302,16 @@ def xds_to_cbf(xparm_file):
     print '%10.7f %10.7f %10.7f' % (mos_to_up * __x).elems
     print '%10.7f %10.7f %10.7f' % (mos_to_up * __y).elems
 
-    tilt = 100.0 * 180.0 * (mos_to_up * __x).angle(cx) / math.pi
-    twist = 100.0 * 180.0 * (mos_to_up * __y).angle(cy) / math.pi
+    tilt = 100.0 * 180.0 * (mos_to_up * __y).angle(cy) / math.pi
+    twist = - 100.0 * 180.0 * (mos_to_up * __x).angle(cx) / math.pi
 
-    print 'Tilt and twist: (not sure about reference frame though)'
+    print 'Tilt and twist ... I think:'
     print '%.1f %.1f' % (tilt, twist)
+
+    # finally really would like to get a clue as to how the rotation axis is
+    # misaligned and hence, how to calculate missetting angles as a function of
+    # oscillation angle. N.B. will need to assume a datum point, so assert
+    # misseting angles at phi 0.0 are 0.0, 0.0, ccomega.
         
 if __name__ == '__main__':
     xds_to_cbf(sys.argv[1])
