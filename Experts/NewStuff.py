@@ -280,7 +280,33 @@ def xds_to_cbf(xparm_file):
     print 'Mosflm beam centre, which is swapped around w.r.t. XDS'
     print '%10.4f %10.4f' % (y, x)
 
-    # now to try to calculate the TILT and TWIST from these...
+    # now to try to calculate the TILT and TWIST from these... best way would
+    # be to rotate the detector axes to put the vertical in the right plane
+    # etc - since ccomega will be soaked up elsewhere. then can just use
+    # vector.angle. This should be simply a rotation about (0, 0, 1).
+
+    cx = matrix.col([1.0, 0.0, 0.0])
+    cy = matrix.col([0.0, 1.0, 0.0])
+    cz = matrix.col([0.0, 0.0, 1.0])
+
+    fast = matrix.col([__x.elems[0], __x.elems[1], 0.0])
+    fast = fast / math.sqrt(fast.dot())
+
+    slow = matrix.col([__y.elems[0], __y.elems[1], 0.0])
+    slow = slow / math.sqrt(slow.dot())
+
+    a = 0.5 * (fast.angle(cx) + slow.angle(cy))
+
+    mos_to_up = cz.axis_and_angle_as_r3_rotation_matrix( - a)
+
+    print '%10.7f %10.7f %10.7f' % (mos_to_up * __x).elems
+    print '%10.7f %10.7f %10.7f' % (mos_to_up * __y).elems
+
+    tilt = 100.0 * 180.0 * (mos_to_up * __x).angle(cx) / math.pi
+    twist = 100.0 * 180.0 * (mos_to_up * __y).angle(cy) / math.pi
+
+    print 'Tilt and twist: (not sure about reference frame though)'
+    print '%.1f %.1f' % (tilt, twist)
         
 if __name__ == '__main__':
     xds_to_cbf(sys.argv[1])
