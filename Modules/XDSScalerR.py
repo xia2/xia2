@@ -1202,8 +1202,10 @@ class XDSScalerR(Scaler):
                 
                 if not user_resolution_limits.has_key(input['dname']):
                     user_resolution_limits[input['dname']] = dmin
+                    self._resolution_limits[input['dname']] = dmin
                 elif dmin < user_resolution_limits[input['dname']]:
                     user_resolution_limits[input['dname']] = dmin
+                    self._resolution_limits[input['dname']] = dmin
 
         self._tmp_scaled_refl_files = { }
 
