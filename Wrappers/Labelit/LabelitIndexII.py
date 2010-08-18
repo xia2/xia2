@@ -181,6 +181,8 @@ def LabelitIndexII(DriverType = None, indxr_print = True):
             # only write things out if they have been overridden
             # from what is in the header...
 
+            out.write('distl_minimum_number_spots_for_indexing = 1\n')
+
             if self.get_distance_prov() == 'user':
                 out.write('autoindex_override_distance = %f\n' %
                           self.get_distance())
@@ -264,14 +266,23 @@ def LabelitIndexII(DriverType = None, indxr_print = True):
 
         def _index_select_images(self):
             '''Select correct images based on image headers. This will in
-            general use the first 20 frames. N.B. only if they have good
+            general use the 20 frames. N.B. only if they have good
             spots on them!'''
 
             phi_width = self.get_header_item('phi_width')
             images = self.get_matching_images()
 
-            for image in sorted(images)[:20]:
+            # N.B. now bodging this to use up to 20 frames which have decent
+            # spots on, spaced from throughout the data set.
 
+            spacing = max(1, int(len(images) / 20))
+
+            selected = []
+
+            for j in range(0, len(images), spacing):
+                selected.append(images[j])
+
+            for image in selected[:20]:
                 ld = LabelitDistl()
                 ld.set_working_directory(self.get_working_directory())
                 auto_logfiler(ld)
@@ -280,7 +291,7 @@ def LabelitIndexII(DriverType = None, indxr_print = True):
                 spots = ld.get_statistics(
                     self.get_image_name(image))['spots_good']
                 Debug.write('Image %d good spots %d' % (image, spots))
-                if spots > 0:
+                if spots > 10:
                     self.add_indexer_image_wedge(image)
 
             return
