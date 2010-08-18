@@ -1443,6 +1443,16 @@ class CCP4ScalerR(Scaler):
 
             input = self._sweep_information[epoch]
 
+            intgr = input['integrater']
+
+            if intgr.get_integrater_user_resolution():
+                dmin = intgr.get_integrater_high_resolution()
+                
+                if not user_resolution_limits.has_key(input['dname']):
+                    user_resolution_limits[input['dname']] = dmin
+                elif dmin < user_resolution_limits[input['dname']]:
+                    user_resolution_limits[input['dname']] = dmin
+
             start, end = (min(input['batches']), max(input['batches']))
 
             if input['dname'] in self._resolution_limits:

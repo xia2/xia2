@@ -1205,7 +1205,7 @@ def Mosflm(DriverType = None):
                 # check that the selected unit cell matches - and if
                 # not raise a "horrible" exception
 
-                if self._indxr_input_cell:
+                if self._indxr_input_cell and False:
                 
                     for o in output:
                         if 'Final cell (after refinement)' in o:

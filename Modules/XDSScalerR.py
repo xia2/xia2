@@ -1191,6 +1191,20 @@ class XDSScalerR(Scaler):
 
         user_resolution_limits = { }
 
+        for epoch in self._sweep_information.keys():
+            
+            input = self._sweep_information[epoch]
+
+            intgr = input['integrater']
+
+            if intgr.get_integrater_user_resolution():
+                dmin = intgr.get_integrater_high_resolution()
+                
+                if not user_resolution_limits.has_key(input['dname']):
+                    user_resolution_limits[input['dname']] = dmin
+                elif dmin < user_resolution_limits[input['dname']]:
+                    user_resolution_limits[input['dname']] = dmin
+
         self._tmp_scaled_refl_files = { }
 
         self._scalr_statistics = { }
