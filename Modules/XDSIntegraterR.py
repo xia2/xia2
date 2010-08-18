@@ -394,7 +394,14 @@ class XDSIntegraterR(FrameProcessor,
         defpix.set_data_range(self._intgr_wedge[0],
                               self._intgr_wedge[1])
 
-        if self.get_integrater_low_resolution():
+        if self.get_integrater_high_resolution() > 0.0 and \
+               self.get_integrater_user_resolution():
+            Debug.write('User defined resolution limit %.2f' % \
+                        self.get_integrater_high_resolution())
+            defpix.set_resolution_high(self.get_integrater_high_resolution())
+            defpix.set_resolution_low(self.get_integrater_low_resolution())
+
+        elif self.get_integrater_low_resolution():
             Debug.write('Setting low resolution limit in DEFPIX to %.2f' % \
                         self.get_integrater_low_resolution())
             defpix.set_resolution_high(0.0)

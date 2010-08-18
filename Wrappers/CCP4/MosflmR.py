@@ -3791,15 +3791,20 @@ def MosflmR(DriverType = None):
                    self._mosflm_best_hklfile
 
         # overload these methods as we don't want the resolution range
-        # feeding back...
+        # feeding back... aha - but we may want to assign them
+        # from outside!
         
         def set_integrater_resolution(self, dmin, dmax, user = False):
-            pass
+            if user:
+                Integrater.set_integrater_resolution(self, dmin, dmax, user)
+            return
         
         def set_integrater_high_resolution(self, dmin, user = False):
-            pass
+            if user:
+                Integrater.set_integrater_high_resolution(self, dmin, user)
+            return
         
-        def set_integrater_low_resolution(self, dmax):
+        def set_integrater_low_resolution(self, dmax, user = False):
             self._intgr_reso_low = dmax
             return
       
