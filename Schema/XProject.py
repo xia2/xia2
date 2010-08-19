@@ -200,8 +200,31 @@ class XProject(Object):
                     dmin = Flags.get_resolution_high()
                     dmax = Flags.get_resolution_low()
 
+                # want to be able to locally override the resolution limits
+                # for this sweep while leaving the rest for the data set
+                # in tact...
+
                 for sweep_name in crystals[crystal]['sweeps'].keys():
                     sweep_info = crystals[crystal]['sweeps'][sweep_name]
+
+                    dmin_old = dmin
+                    dmax_old = dmax
+                    replace = False
+                    
+                    if 'resolution' in sweep_info:
+                        
+                        values = map(float, sweep_info['resolution'])
+                        if len(values) == 1:
+                            dmin = values[0]
+                        elif len(values) == 2:
+                            dmin = min(values)
+                            dmax = max(values)
+                        else:
+                            raise RuntimeError, \
+                                  'bad resolution for sweep %s' % sweep_name
+
+                        replace = True
+                        
                     if sweep_info['wavelength'] == wavelength:
                         xw.add_sweep(
                             sweep_name,
@@ -220,6 +243,9 @@ class XProject(Object):
                             user_lattice = lattice,
                             user_cell = cell,
                             epoch = sweep_info.get('epoch', 0))
+
+                    dmin = dmin_old
+                    dmax = dmax_old
                 
                 xc.add_wavelength(xw)
 
