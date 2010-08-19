@@ -211,9 +211,9 @@ class XProject(Object):
                     dmax_old = dmax
                     replace = False
                     
-                    if 'resolution' in sweep_info:
+                    if 'RESOLUTION' in sweep_info:
                         
-                        values = map(float, sweep_info['resolution'])
+                        values = map(float, sweep_info['RESOLUTION'].split())
                         if len(values) == 1:
                             dmin = values[0]
                         elif len(values) == 2:
