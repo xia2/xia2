@@ -12,6 +12,14 @@
 #
 # then that's everyone
 
+def ReadHeaderFactory(image):
+    '''Interrogate image, return a ReadHeader implementation suitable for this
+    type.'''
+
+    pass
+
+# then helpers
+
 def is_smv(filename):
     # file begins { newline HEADER_BYTES
 
