@@ -11,3 +11,29 @@
 # then check for mar ccd
 #
 # then that's everyone
+
+def is_smv(filename):
+    # file begins { newline HEADER_BYTES
+
+    pass
+
+def is_marcd(filename):
+    
+    
+    pass
+
+def is_smv_adsc(filename):
+    pass
+
+def is_smv_rigaku(filename):
+    pass
+
+def is_raxis(filename):
+    pass
+
+def is_real_cbf(filename):
+    pass
+
+def is_mini_cbf(filename):
+    pass
+
