@@ -3332,6 +3332,8 @@ def Mosflm(DriverType = None):
                     raise RuntimeError, 'serious mosflm error - inspect %s' % \
                           self.get_log_file()
 
+            mosaics = []
+
             for i in range(len(output)):
                 o = output[i]
 
@@ -3341,6 +3343,9 @@ def Mosflm(DriverType = None):
                         integrated_images_first = batch
                     if batch > integrated_images_last:
                         integrated_images_last = batch
+
+                if 'Smoothed value for refined mosaic' in o:
+                    mosaics.append(float(o.split()[-1]))
 
                 if 'ERROR IN DETECTOR GAIN' in o:
 
@@ -3439,6 +3444,9 @@ def Mosflm(DriverType = None):
             self._intgr_batches_out = (integrated_images_first,
                                        integrated_images_last)
 
+            self.set_integrater_mosaic_min_mean_max(
+                min(mosaics), sum(mosaics) / len(mosaics), max(mosaics))
+
             Chatter.write('Processed batches %d to %d' % \
                           self._intgr_batches_out)
 
@@ -3493,6 +3501,9 @@ def Mosflm(DriverType = None):
                 '"O" => overloaded  "#" => many bad  "." => blank') 
             Chatter.write(
                 '"@" => abandoned') 
+
+            Chatter.write('Mosaic spread: %.3f < %.3f < %.3f' % \
+                          self.get_integrater_mosaic_min_mean_max())
 
             # gather the statistics from the postrefinement
 
@@ -3902,6 +3913,8 @@ def Mosflm(DriverType = None):
                 thread.start()
                 threads.append(thread)
 
+            mosaics = []
+            
             for j in range(parallel):
                 thread = threads[j]
                 thread.stop()
@@ -3949,6 +3962,9 @@ def Mosflm(DriverType = None):
                         if batch > last_integrated_batch:
                             last_integrated_batch = batch
 
+                    if 'Smoothed value for refined mosaic' in o:
+                        mosaics.append(float(o.split()[-1]))
+                            
                     if 'ERROR IN DETECTOR GAIN' in o:
 
                         # ignore for photon counting detectors
@@ -4085,6 +4101,9 @@ def Mosflm(DriverType = None):
             self._intgr_batches_out = (first_integrated_batch,
                                        last_integrated_batch)
 
+            self.set_integrater_mosaic_min_mean_max(
+                min(mosaics), sum(mosaics) / len(mosaics), max(mosaics))
+
             Chatter.write('Processed batches %d to %d' % \
                           self._intgr_batches_out)
 
@@ -4105,6 +4124,9 @@ def Mosflm(DriverType = None):
                 '"O" => overloaded  "#" => many bad  "." => blank') 
             Chatter.write(
                 '"@" => abandoned') 
+
+            Chatter.write('Mosaic spread: %.3f < %.3f < %.3f' % \
+                          self.get_integrater_mosaic_min_mean_max())
 
             # gather the statistics from the postrefinement for all sweeps
 

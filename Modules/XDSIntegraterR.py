@@ -484,6 +484,14 @@ class XDSIntegraterR(FrameProcessor,
 
         self._integrate_parameters = integrate.get_updates()
 
+        # record the mosaic spread &c.
+
+        m_min, m_mean, m_max = integrate.get_mosaic()
+        self.set_integrater_mosaic_min_mean_max(m_min, m_mean, m_max)
+
+        Chatter.write('Mosaic spread: %.3f < %.3f < %.3f' % \
+                      self.get_integrater_mosaic_min_mean_max())
+
         return
 
     def _integrate_finish(self):

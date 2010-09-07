@@ -371,7 +371,6 @@ class XDSIntegrater(FrameProcessor,
              'directory':dirname,
              'resolution':'%.2f' % self._intgr_reso_high})
 
-
         first_image_in_wedge = self.get_image_name(self._intgr_wedge[0])
 
         defpix = self.Defpix()
@@ -475,6 +474,14 @@ class XDSIntegrater(FrameProcessor,
         # sensible resolution limit will achieve this??
 
         self._integrate_parameters = integrate.get_updates()
+
+        # record the mosaic spread &c.
+
+        m_min, m_mean, m_max = integrate.get_mosaic()
+        self.set_integrater_mosaic_min_mean_max(m_min, m_mean, m_max)
+
+        Chatter.write('Mosaic spread: %.3f < %.3f < %.3f' % \
+                      self.get_integrater_mosaic_min_mean_max())
 
         return
 

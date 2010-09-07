@@ -202,6 +202,11 @@ class Integrater:
 
         # extra information which could be helpful for integration
         self._intgr_anomalous = False        
+
+        # mosaic spread information
+        self._intgr_mosaic_min = None
+        self._intgr_mosaic_mean = None
+        self._intgr_mosaic_max = None
                 
         return
 
@@ -437,6 +442,16 @@ class Integrater:
         self._intgr_reso_low = dmax
         self.set_integrater_done(False)
         return
+
+    def set_integrater_mosaic_min_mean_max(self, m_min, m_mean, m_max):
+        self._intgr_mosaic_min = m_min
+        self._intgr_mosaic_mean = m_mean
+        self._intgr_mosaic_max = m_max
+        return
+
+    def get_integrater_mosaic_min_mean_max(self):
+        return self._intgr_mosaic_min, self._intgr_mosaic_mean, \
+               self._intgr_mosaic_max 
 
     # getters and setters for program specific parameters
     # => values kept in dictionary
