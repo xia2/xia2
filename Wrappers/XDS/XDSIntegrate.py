@@ -94,6 +94,13 @@ def XDSIntegrate(DriverType = None):
 
             self._integrate_hkl = None
 
+            # FIXME these will also be wanted by the full integrater
+            # interface I guess?
+
+            self._mean_mosaic = None
+            self._min_mosaic = None
+            self._max_mosaic = None
+            
             return
 
         # getter and setter for input / output data
@@ -121,6 +128,9 @@ def XDSIntegrate(DriverType = None):
 
         def get_updates(self):
             return copy.deepcopy(self._updates)
+
+        def get_mosaic(self):
+            return self._min_mosaic, self._mean_mosaic, self._max_mosaic
 
         def run(self):
             '''Run integrate.'''
@@ -258,11 +268,24 @@ def XDSIntegrate(DriverType = None):
 
             space_group_number = 0
 
+            mosaics = []
+
             for o in open(os.path.join(
                 self.get_working_directory(),
                 'INTEGRATE.LP')).readlines():
                 if 'SPACE_GROUP_NUMBER' in o:
                     space_group_number = int(o.split()[-1])
+                if 'CRYSTAL MOSAICITY (DEGREES)' in o:
+                    mosaic = float(o.split()[-1])
+                    mosaics.append(mosaic)
+
+            self._min_mosaic = min(mosaics)
+            self._max_mosaic = max(mosaics)
+            self._mean_mosaic = sum(mosaics) / len(mosaics)
+
+            Debug.write(
+                'Mosaic spread range: %.3f %.3f %.3f' % \
+                (self._min_mosaic, self._mean_mosaic, self._max_mosaic))
 
             stats = _parse_integrate_lp(os.path.join(
                 self.get_working_directory(),
