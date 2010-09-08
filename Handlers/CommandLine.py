@@ -180,13 +180,6 @@ class _CommandLine(Object):
         # want to explain exactly what is wrong...
 
         try:
-            self._read_xinfo()
-        except exceptions.Exception, e:
-            traceback.print_exc(file = open('xia2-xinfo.error', 'w'))
-            raise RuntimeError, '%s (%s)' % \
-                  (self._help_xinfo(), str(e))
-
-        try:
             self._read_ehtpx_xml_out()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -309,6 +302,13 @@ class _CommandLine(Object):
         # FIXME add some consistency checks in here e.g. that there are
         # images assigned, there is a lattice assigned if cell constants
         # are given and so on
+
+        try:
+            self._read_xinfo()
+        except exceptions.Exception, e:
+            traceback.print_exc(file = open('xia2-xinfo.error', 'w'))
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_xinfo(), str(e))
 
         return
 

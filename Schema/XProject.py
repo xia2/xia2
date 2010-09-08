@@ -137,6 +137,8 @@ class XProject(Object):
             # user assigned spacegroup
             if crystals[crystal].has_key('user_spacegroup'):
                 xc.set_user_spacegroup(crystals[crystal]['user_spacegroup'])
+            elif Flags.get_spacegroup():
+                xc.set_user_spacegroup(Flags.get_spacegroup())
 
             for wavelength in crystals[crystal]['wavelengths'].keys():
                 # FIXME 29/NOV/06 in here need to be able to cope with
@@ -177,6 +179,8 @@ class XProject(Object):
                 if crystals[crystal].has_key('user_spacegroup'):
                     lattice = Syminfo.get_lattice(
                         crystals[crystal]['user_spacegroup'])
+                elif Flags.get_spacegroup():
+                    lattice = Syminfo.get_lattice(Flags.get_spacegroup())
                 elif Flags.get_lattice():
                     lattice = Flags.get_lattice()
                 else:
