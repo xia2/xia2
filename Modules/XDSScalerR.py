@@ -699,7 +699,7 @@ class XDSScalerR(Scaler):
             Debug.write('Using HKLREF %s' % self._reference)
 
             md = self._factory.Mtzdump()
-            md.set_hklin(self.get_scaler_reference_reflection_file())
+            md.set_hklin(Flags.get_reference_reflection_file())
             md.dump()
 
             self._spacegroup = Syminfo.spacegroup_name_to_number(
