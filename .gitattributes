@@ -51,6 +51,7 @@ Toolkit/ReadHeader/ReadHeaderPILATUSMiniCBF.py -text
 Toolkit/ReadHeader/ReadHeaderRAXIS.py -text
 Toolkit/ReadHeader/ReadHeaderSMV.py -text
 Toolkit/ReadHeader/ReadHeaderSaturn.py -text
+Toolkit/XDS2CBF.py -text
 Toolkit/__init__.py -text
 Toolkit/backstop-mask-i03-15may10.dat -text
 Toolkit/byte_offset.cpp -text

@@ -868,21 +868,7 @@ if __name__ == '__main__':
     print 'Mn(I/sig):  %.2f' % m.resolution_merged_isigma(log = l_misigma)
     print 'Comp:       %.2f' % m.resolution_completeness(limit = 0.5,
                                                          log = l_comp)
-    l_rmerge = 'R%s_rmerge' % name
-    l_comp = 'R%s_comp' % name
-    l_isigma = 'R%s_isigma' % name
-    l_misigma = 'R%s_misigma' % name
 
-    m.reindex('-k,h,l')
-    m.calculate_resolution_ranges(nbins = nbins)    
-
-    print 'Resolutions:'
-    print 'Rmerge:     %.2f' % m.resolution_rmerge(limit = 1.0,
-                                                   log = l_rmerge)
-    print 'I/sig:      %.2f' % m.resolution_unmerged_isigma(log = l_isigma)
-    print 'Mn(I/sig):  %.2f' % m.resolution_merged_isigma(log = l_misigma)
-    print 'Comp:       %.2f' % m.resolution_completeness(limit = 0.5,
-                                                         log = l_comp)
     
 
 

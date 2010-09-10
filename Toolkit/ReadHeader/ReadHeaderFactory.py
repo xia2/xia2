@@ -25,9 +25,8 @@ def is_smv(filename):
 
     pass
 
-def is_marcd(filename):
-    
-    
+def is_marcd(filename):    
+   
     pass
 
 def is_smv_adsc(filename):
