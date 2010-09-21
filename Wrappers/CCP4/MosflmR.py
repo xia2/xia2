@@ -190,6 +190,7 @@
 
 import os
 import sys
+import shutil
 import math
 import exceptions
 
@@ -3095,6 +3096,13 @@ def MosflmR(DriverType = None):
                 job.set_working_directory(wd)
 
                 auto_logfiler(job)
+
+                # copy in the clibd/syminfo.lib to the working directory
+                syminfo = os.path.join(os.environ['CLIBD'], 'syminfo.lib')
+                shutil.copyfile(syminfo, os.path.join(wd, 'syminfo.lib'))
+
+                # then tell the job about it
+                job.set_working_environment('CLIBD', wd)
 
                 # create the starting point
                 f = open(os.path.join(wd, 'xiaintegrate.mat'), 'w')
