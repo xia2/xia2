@@ -63,6 +63,37 @@ def get_hklin_files():
 
     return hklin_files
 
+def get_number_cpus():
+    '''Portably get the number of processor cores available.'''
+
+    # Windows NT derived platforms
+
+    if os.name == 'nt':
+        return int(os.environ['NUMBER_OF_PROCESSORS'])
+    
+    # linux
+
+    if os.path.exists('/proc/cpuinfo'):
+        n_cpu = 0
+
+        for record in open('/proc/cpuinfo', 'r').readlines():
+            if not record.strip():
+                continue
+            if 'processor' in record.split()[0]:
+                n_cpu += 1
+
+        return n_cpu
+
+    # os X
+
+    output = subprocess.Popen(['system_profiler', 'SPHardwareDataType'],
+                              stdout = subprocess.PIPE).communicate()[0]
+    for record in output.split('\n'):
+        if 'Total Number Of Cores' in record:
+            return int(record.split()[-1])
+
+    return -1
+
 def parse_standard_input():
     '''Read and parse the standard input. Return as a dictionary.'''
 
@@ -78,6 +109,8 @@ def parse_standard_input():
     base_column = None
 
     title = None
+
+    ncpu = guess_number_cpus()
 
     for record in sys.stdin.readlines():
 
@@ -142,9 +175,16 @@ def parse_standard_input():
 
             base_column = tokens[1].replace('BASE=', '')
 
+        #### KEYWORD TITLE ####
+
         elif key == 'TITL':
             keyword = tokens[0]
             title = record[len(keyword):].strip()
+
+        #### KEYWORD NCPU
+
+        elif key == 'NCPU':
+            ncpu = int(record.split()[-1])
 
     # check that these values are sound - where they are needed...
     # assert(base_column)
@@ -163,7 +203,8 @@ def parse_standard_input():
         'resolution_high':resolution_high,
         'resolution_low':resolution_low,
         'base_column':base_column,
-        'title':title
+        'title':title,
+        'ncpu':ncpu
         }
 
     return results
@@ -183,6 +224,10 @@ def main():
 
     # copy the information across from the standard input dictionary to
     # the PyChef instance.
+
+    pychef.set_ncpu(standard_input['ncpu'])
+
+    print 'Using %d threads' % standard_input['ncpu']
 
     if standard_input['base_column']:
         pychef.set_base_column(standard_input['base_column'])

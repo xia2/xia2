@@ -54,6 +54,8 @@ class PyChef:
 
         self._title = None
 
+        self._ncpu = 1
+
         return
         
     def set_base_column(self, base_column):
@@ -108,6 +110,11 @@ class PyChef:
 
     def set_title(self, title):
         self._title = title
+        return
+
+    def set_ncpu(self, ncpu):
+        '''Set the number of cpus to be used for parallel processing.'''
+        self._ncpu = ncpu
         return
 
     def init(self):
