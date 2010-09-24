@@ -110,7 +110,7 @@ def parse_standard_input():
 
     title = None
 
-    ncpu = guess_number_cpus()
+    ncpu = get_number_cpus()
 
     for record in sys.stdin.readlines():
 

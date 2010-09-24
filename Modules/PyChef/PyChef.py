@@ -16,6 +16,7 @@ import sys
 import math
 import os
 import time
+import threading
 
 from PyChefHelpers import get_mtz_column_list, compute_unique_reflections
 
@@ -920,4 +921,204 @@ class PyChef:
         print '$$'
 
         return
+
+    # threaded functions to improve speed of above calculations
+    
+    def calculate_completeness_vs_dose_anomalous(self, reflections, hkls):
+        '''Compute arrays of number vs. dose for anomalous data for
+        these named reflections.'''
+
+        iplus_count = []
+        iminus_count = []
+        ieither_count = []
+        iboth_count = []
+        
+        nsteps = 1 + int(
+            (self._range_max - self._range_min) / self._range_width)
+        
+        for j in range(nsteps):
+            iplus_count.append(0)
+            iminus_count.append(0)
+            ieither_count.append(0)
+            iboth_count.append(0)
+            
+        for hkl in hkls:
+            base_min_iplus = self._range_max + self._range_width
+            base_min_iminus = self._range_max + self._range_width
+                
+            for pm, base, i, sigi in reflections[hkl]:
+                if sg.is_centric(hkl):
+                    if base < base_min_iplus:
+                        base_min_iplus = base
+                    if base < base_min_iminus:
+                        base_min_iminus = base
+                elif pm:
+                    if base < base_min_iplus:
+                        base_min_iplus = base
+                else:
+                    if base < base_min_iminus:
+                        base_min_iminus = base
+
+            start_iplus = int((base_min_iplus - self._range_min)
+                              / self._range_width)
+                
+            start_iminus = int((base_min_iminus - self._range_min)
+                               / self._range_width)
+
+            if start_iplus < nsteps:
+                iplus_count[start_iplus] += 1
+            if start_iminus < nsteps:
+                iminus_count[start_iminus] += 1
+            if min(start_iplus, start_iminus) < nsteps:
+                ieither_count[min(start_iplus, start_iminus)] += 1
+            if max(start_iplus, start_iminus) < nsteps:
+                iboth_count[max(start_iplus, start_iminus)] += 1
+
+        for j in range(1, nsteps):
+            iplus_count[j] += iplus_count[j - 1]
+            iminus_count[j] += iminus_count[j - 1]
+            ieither_count[j] += ieither_count[j - 1]
+            iboth_count[j] += iboth_count[j - 1]
+
+        return iplus_count, iminus_count, iboth_count, ieither_count
+
+    def parallel_calculate_completeness_vs_dose_anomalous(self, reflections):
+        '''Compute arrays of completeness vs. dose for anomalous data for
+        these reflections. This version will split the reflections into
+        different chunks and accumulate afterwards.'''
+
+        uc = self._unit_cells[(crystal_name, dataset_name)]
+        sg = self._space_groups[(crystal_name, dataset_name)]
+        
+        nref = len(compute_unique_reflections(uc, sg, self._anomalous,
+                                              self._resolution_high,
+                                              self._resolution_low))
+        
+        nref_n = len(compute_unique_reflections(uc, sg, False,
+                                                self._resolution_high,
+                                                self._resolution_low))
+        
+        iplus_count = []
+        iminus_count = []
+        ieither_count = []
+        iboth_count = []
+        
+        nsteps = 1 + int(
+            (self._range_max - self._range_min) / self._range_width)
+        
+        for j in range(nsteps):
+            iplus_count.append(0)
+            iminus_count.append(0)
+            ieither_count.append(0)
+            iboth_count.append(0)
+
+        hkls = list(reflections)
+
+        chunk_size = len(hkls) / self._ncpu
+
+        chunks = [hkls[j: j + chunk_size] \
+                  for j in range(0, len(hkls), chunk_size)]
+
+        # here need to spawn parallel threads 
+            
+        for hkl in reflections:
+            base_min_iplus = self._range_max + self._range_width
+            base_min_iminus = self._range_max + self._range_width
+                
+            for pm, base, i, sigi in reflections[hkl]:
+                if sg.is_centric(hkl):
+                    if base < base_min_iplus:
+                        base_min_iplus = base
+                    if base < base_min_iminus:
+                        base_min_iminus = base
+                elif pm:
+                    if base < base_min_iplus:
+                        base_min_iplus = base
+                else:
+                    if base < base_min_iminus:
+                        base_min_iminus = base
+
+            start_iplus = int((base_min_iplus - self._range_min)
+                              / self._range_width)
+                
+            start_iminus = int((base_min_iminus - self._range_min)
+                               / self._range_width)
+
+            if start_iplus < nsteps:
+                iplus_count[start_iplus] += 1
+            if start_iminus < nsteps:
+                iminus_count[start_iminus] += 1
+            if min(start_iplus, start_iminus) < nsteps:
+                ieither_count[min(start_iplus, start_iminus)] += 1
+            if max(start_iplus, start_iminus) < nsteps:
+                iboth_count[max(start_iplus, start_iminus)] += 1
+
+        # now sum up
+
+        for j in range(1, nsteps):
+            iplus_count[j] += iplus_count[j - 1]
+            iminus_count[j] += iminus_count[j - 1]
+            ieither_count[j] += ieither_count[j - 1]
+            iboth_count[j] += iboth_count[j - 1]
+
+        # now compute this as fractions
+
+        comp_iplus = [ip / float(nref_n) for ip in iplus_count]
+        comp_iminus = [im / float(nref_n) for im in iminus_count]
+        comp_ieither = [ie / float(nref_n) for ie in iplus_count]
+        comp_iboth = [ib / float(nref_n) for ib in iplus_count]
+
+        # and return
+
+        return comp_iplus, comp_iminus, comp_ieither, comp_iboth
+
+    def help_calculate_completeness_vs_dose_anomalous(self, reflections, hkls):
+
+        iplus_count = []
+        iminus_count = []
+        ieither_count = []
+        iboth_count = []
+        
+        nsteps = 1 + int(
+            (self._range_max - self._range_min) / self._range_width)
+        
+        for j in range(nsteps):
+            iplus_count.append(0)
+            iminus_count.append(0)
+            ieither_count.append(0)
+            iboth_count.append(0)
+
+        for hkl in hkls:
+            base_min_iplus = self._range_max + self._range_width
+            base_min_iminus = self._range_max + self._range_width
+                
+            for pm, base, i, sigi in reflections[hkl]:
+                if sg.is_centric(hkl):
+                    if base < base_min_iplus:
+                        base_min_iplus = base
+                    if base < base_min_iminus:
+                        base_min_iminus = base
+                elif pm:
+                    if base < base_min_iplus:
+                        base_min_iplus = base
+                else:
+                    if base < base_min_iminus:
+                        base_min_iminus = base
+
+            start_iplus = int((base_min_iplus - self._range_min)
+                              / self._range_width)
+                
+            start_iminus = int((base_min_iminus - self._range_min)
+                               / self._range_width)
+
+            if start_iplus < nsteps:
+                iplus_count[start_iplus] += 1
+            if start_iminus < nsteps:
+                iminus_count[start_iminus] += 1
+            if min(start_iplus, start_iminus) < nsteps:
+                ieither_count[min(start_iplus, start_iminus)] += 1
+            if max(start_iplus, start_iminus) < nsteps:
+                iboth_count[max(start_iplus, start_iminus)] += 1
+        
+        return iplus_count, iminus_count, iboth_count, ieither_count
     
