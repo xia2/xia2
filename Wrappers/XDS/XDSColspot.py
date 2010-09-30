@@ -146,6 +146,11 @@ def XDSColspot(DriverType = None):
             xds_inp.write('BACKGROUND_RANGE=%d %d\n' % \
                           self._background_range)
 
+            # microcrystals have very mall spots, perhaps?
+
+            if Flags.get_microcrystal():
+                xds_inp.write('MINIMUM_NUMBER_OF_PIXELS_IN_A_SPOT=1\n')
+
             xds_inp.close()
             
             # copy the input file...
