@@ -277,7 +277,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False):
     result.append('INCIDENT_BEAM_DIRECTION=0.0 0.0 1.0')
 
     if synchrotron:
-        result.append('FRACTION_OF_POLARIZATION=0.95')
+        result.append('FRACTION_OF_POLARIZATION=0.99')
         result.append('POLARIZATION_PLANE_NORMAL=%s' % \
                       detector_to_polarization_plane_normal[detector])
     else:
