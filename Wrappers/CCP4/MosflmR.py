@@ -2873,8 +2873,12 @@ def MosflmR(DriverType = None):
             self._intgr_batches_out = (integrated_images_first,
                                        integrated_images_last)
 
-            self.set_integrater_mosaic_min_mean_max(
-                min(mosaics), sum(mosaics) / len(mosaics), max(mosaics))
+            if mosaics:
+                self.set_integrater_mosaic_min_mean_max(
+                    min(mosaics), sum(mosaics) / len(mosaics), max(mosaics))
+            else:
+                m = indxr.get_indexer_mosaic()
+                self.set_integrater_mosaic_min_mean_max(m, m, m)
 
             Chatter.write('Processed batches %d to %d' % \
                           self._intgr_batches_out)
