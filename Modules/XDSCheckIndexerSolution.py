@@ -150,6 +150,9 @@ def xds_check_indexer_solution(xparm_file,
         if not l:
             continue
 
+        if len(l) != 7:
+            raise RuntimeError, 'error reading spot index'
+
         X, Y, i = map(float, l[:3])
         h, k, l = map(int, l[-3:])
 
