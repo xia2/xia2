@@ -275,6 +275,12 @@ def digest_template(template, images):
     prefix = common_prefix(strings)
     offset = 0
 
+    # boom! need to make sure that we have not digested too much so that the
+    # first image is number 0:
+    #
+    # https://sourceforge.net/tracker/?func=detail&atid=1019527&\
+    # aid=3080972&group_id=211879
+
     if prefix:
         offset = int(prefix + '0' * (length - len(prefix)))
         template = template.replace(len(prefix) * '#', prefix, 1)
