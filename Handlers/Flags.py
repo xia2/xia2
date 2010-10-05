@@ -51,6 +51,9 @@ class _Flags:
         except:
             self._parallel = 0
         self._xparallel = 0
+
+        self._min_images = 10
+        
         self._batch_scale = False
 
         # File from which to copy the FreeR_flag column
@@ -374,6 +377,13 @@ class _Flags:
 
     def get_parallel(self):
         return self._parallel
+
+    def set_min_images(self, min_images):
+        self._min_images = min_images
+        return
+
+    def get_min_images(self):
+        return self._min_images
 
     def set_xparallel(self, xparallel):
         self._xparallel = xparallel

@@ -198,6 +198,12 @@ class _CommandLine(Object):
                   (self._help_parallel(), str(e))
 
         try:
+            self._read_min_images()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_min_images(), str(e))
+
+        try:
             self._read_xparallel()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -541,6 +547,24 @@ class _CommandLine(Object):
 
     def _help_parallel(self):
         return '-parallel N'
+
+    def _read_min_images(self):
+        try:
+            index = sys.argv.index('-min_images')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_min_images(int(sys.argv[index + 1]))
+        Debug.write('Min No. images / sweep set to %d' % \
+                    Flags.get_min_images())
+            
+        return
+
+    def _help_min_images(self):
+        return '-min_images N'
 
     def _read_xparallel(self):
         try:

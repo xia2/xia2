@@ -288,7 +288,7 @@ def print_sweeps(out = sys.stdout):
 
             # require at least 10 images to represent a sweep...
             
-            if len(s.get_images()) < 10:
+            if len(s.get_images()) < Flags.get_min_images():
                 continue
 
             j += 1
