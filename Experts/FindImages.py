@@ -20,9 +20,9 @@
 #                 than FindImages - perhaps ImageExpert?
 # FIXME 04/OCT/06 when the image name is all numbers like 999_1_001 need to 
 #                 assume that the extension is the number, BEFORE testing any
-#                 of the ther possibilities...
-# 
-# 
+#                 of the other possibilities...
+# FIXME 04/OCT/10 when we have images 200-299 (say) don't merge th2 2 with
+#                 the template - you end up with batch 0.
 # 
 
 import sys
@@ -261,6 +261,30 @@ def common_prefix(strings):
             
     return common
 
+def ensure_no_batches_numbered_zero(template, images, offset):
+    '''Working in collaboration with digest_template, ensure that none of
+    the images end up being numbered 0, and if they do try to add last digit of
+    template section. Finally, if this extra character is not a digit raise
+    an exception.'''
+
+    if min(images) > 0:
+        return template, images, offset
+
+    prefix = template.split('#')[0]
+    suffix = template.split('#')[-1]
+    hashes = template.count('#')
+
+    while min(images) == 0:
+        add = int(prefix[-1]) * int(math.pow(10, hashes))
+        offset -= add
+        hashes += 1
+        prefix = prefix[:-1]
+        images = [add + i for i in images]
+
+    template = '%s%s%s' % (prefix, '#' * hashes, suffix)
+    
+    return template, images, offset
+        
 def digest_template(template, images):
     '''Digest the template and image numbers to copy as much of the
     common characters in the numbers as possible to the template to
@@ -275,16 +299,13 @@ def digest_template(template, images):
     prefix = common_prefix(strings)
     offset = 0
 
-    # boom! need to make sure that we have not digested too much so that the
-    # first image is number 0:
-    #
-    # https://sourceforge.net/tracker/?func=detail&atid=1019527&\
-    # aid=3080972&group_id=211879
-
     if prefix:
         offset = int(prefix + '0' * (length - len(prefix)))
         template = template.replace(len(prefix) * '#', prefix, 1)
         images = [int(s.replace(prefix, '', 1)) for s in strings]
+
+    template, images, offset = ensure_no_batches_numbered_zero(
+        template, images, offset)
 
     return template, images, offset
     
