@@ -105,6 +105,7 @@ class _CommandLine(Object):
         self._read_small_molecule()
         self._read_quick()
         self._read_smart_scaling()
+        self._read_8way()
         self._read_chef()
         self._read_mask()
         self._read_automatch()
@@ -989,6 +990,13 @@ class _CommandLine(Object):
         if '-smart_scaling' in sys.argv:
             Flags.set_smart_scaling(True)
             Debug.write('Smart scaling mode selected')
+        return
+
+    def _read_8way(self):
+
+        if '-8way' in sys.argv:
+            Flags.set_8way(True)
+            Debug.write('8-way scaling mode selected')
         return
 
     def _read_chef(self):

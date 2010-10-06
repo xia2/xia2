@@ -346,27 +346,6 @@ class CCP4Scaler(Scaler):
         if converge_decay - converge_def > 1.0:
             decay = False
 
-        # full fat, with and without tails correction (ff, fft)
-
-        play = False
-        if play:
-
-            rmerge_ff, converge_ff = self._assess_scaling_model(
-                tails = False, bfactor = True, secondary = True)
-            rmerge_fft, converge_fft = self._assess_scaling_model(
-                tails = True, bfactor = True, secondary = True)
-
-            Debug.write(
-                'Scaling optimisation: simpl tails absor decay  all  all+t')
-            Debug.write(
-                'Residuals:            %5.3f %5.3f %5.3f %5.3f %5.3f %5.3f' % \
-                (rmerge_def, rmerge_tails, rmerge_abs, rmerge_decay,
-                 rmerge_ff, rmerge_fft))
-            Debug.write(
-                'Convergence:          %5.3f %5.3f %5.3f %5.3f %5.3f %5.3f' % \
-                (converge_def, converge_tails, converge_abs, converge_decay,
-                 converge_ff, converge_fft))
-
         # then summarise the choices...
 
         if absorption:
@@ -390,24 +369,81 @@ class CCP4Scaler(Scaler):
 
         self._scalr_corrections = True
 
-        # then add a brute-force analysis just to be sure...
+        return
 
-        if True:
+    def _determine_best_scale_model_8way(self):
+        '''Determine the best set of corrections to apply to the data,
+        testing all eight permutations.'''
+
+        # if we have already defined the best scaling model just return
+
+        if self._scalr_corrections:
             return
 
+        # or see if we set one on the command line...
+
+        if Flags.get_scale_model():
+            self._scalr_correct_absorption = Flags.get_scale_model_absorption()
+            self._scalr_correct_partiality = Flags.get_scale_model_partiality()
+            self._scalr_correct_decay = Flags.get_scale_model_decay()
+            
+            self._scalr_corrections = True
+
+            return
+
+        Debug.write('Optimising scaling corrections...')
+
+        # central preparation stuff
+
+        epochs = sorted(self._sweep_information.keys())
+
+        rmerge_def, converge_def = self._assess_scaling_model(
+            tails = False, bfactor = False, secondary = False)
+                                                              
         results = { }
 
-        for tails in True, False:
-            for bfactor in True, False:
-                for secondary in True, False:
-                    rmerge, converge = self._assess_scaling_model(
-                        tails = tails, bfactor = bfactor,
-                        secondary = secondary)
-                    results[(tails, bfactor, secondary)] = rmerge, converge
+        consider = []
 
-        for t, b, s in sorted(results):
-            r, c = results[(t, b, s)]
-            Debug.write('%s %s %s %.3f %.3f' % (t, b, s, r, c))
+        # don't rerun False, False, False...
+        
+        for partiality in True, False:
+            for decay in True, False:
+                for absorption in True, False:
+                    if partiality or decay or absorption:
+                        r, c = self._assess_scaling_model(
+                            tails = partiality, bfactor = decay,
+                            secondary = absorption)
+                    else:
+                        r, c = rmerge_def, converge_def
+                        
+                    results[(partiality, decay, absorption)] = r, c
+                    if c - converge_def < 1.0:
+                        consider.append(
+                            (r, partiality, decay, absorption))
+
+        consider.sort()
+        rmerge, partiality, decay, absorption = consider[0]
+        
+        if absorption:
+            Debug.write('Absorption correction: on')
+        else:
+            Debug.write('Absorption correction: off')
+
+        if partiality:
+            Debug.write('Partiality correction: on')
+        else:
+            Debug.write('Partiality correction: off')
+
+        if decay:
+            Debug.write('Decay correction: on')
+        else:
+            Debug.write('Decay correction: off')
+
+        self._scalr_correct_absorption = absorption
+        self._scalr_correct_partiality = partiality
+        self._scalr_correct_decay = decay
+
+        self._scalr_corrections = True
 
         return
 
@@ -1825,7 +1861,10 @@ class CCP4Scaler(Scaler):
         # first decide on a scaling model... perhaps
 
         if Flags.get_smart_scaling():
-            self._determine_best_scale_model()
+            if Flags.get_8way():
+                self._determine_best_scale_model_8way()
+            else:
+                self._determine_best_scale_model()
 
         if self._scalr_corrections:
             Journal.block(

@@ -20,8 +20,6 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.path.join(os.environ['XIA2_ROOT']) in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
-
-
 from Wrappers.XDS.XDS import xds_read_xparm
 
 def parse_xparm(xparm_file):
