@@ -198,6 +198,12 @@ class _CommandLine(Object):
                   (self._help_parallel(), str(e))
 
         try:
+            self._read_serial()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_serial(), str(e))
+
+        try:
             self._read_min_images()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -547,6 +553,23 @@ class _CommandLine(Object):
 
     def _help_parallel(self):
         return '-parallel N'
+
+    def _read_serial(self):
+        try:
+            index = sys.argv.index('-serial')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_parallel(1)
+        Debug.write('Serial set (i.e. 1 CPU)')
+            
+        return
+
+    def _help_serial(self):
+        return '-serial N'
 
     def _read_min_images(self):
         try:
