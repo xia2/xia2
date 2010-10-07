@@ -409,6 +409,13 @@ def Diffdump(DriverType = None):
                     self._header['phi_end'] = phi[1]
                     self._header['phi_width'] = phi[1] - phi[0]
 
+                if 'Two Theta value' in o:
+                    try:
+                        two_theta = float(o.split(':')[1].split()[0])
+                        self._header['two_theta'] = two_theta
+                    except ValueError, e:
+                        self._header['two_theta'] = 0.0
+                    
             # check to see if the beam centre needs to be converted
             # from pixels to mm - e.g. MAR 300 images from APS ID 23
 
@@ -555,3 +562,4 @@ if __name__ == '__main__':
             print 'Detector class: %s' % header['detector_class']
             print 'Epochs:        %.3f' % header['epoch']
             print 'Exposure time: %.3f' % header['exposure_time']
+            print 'Two theta:     %.3f' % header['two_theta']

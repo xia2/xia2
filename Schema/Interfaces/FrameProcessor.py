@@ -22,6 +22,10 @@
 #                 object in here, to allow all of this information
 #                 to be pulled automatically...
 #                 No, don't do this, it will overcomplicate things.
+# 
+# FIXME 07/OCT/10 Start adding support for a two-theta offset in the analysis.
+#       N.B. this will involve a two-theta angle (fine) and axis (less fine).
+# 
 
 import os
 import sys
@@ -57,6 +61,8 @@ class FrameProcessor:
         self._fp_distance = None
         self._fp_beam = None
         self._fp_reversephi = False
+        self._fp_two_theta = 0.0
+        self._fp_two_theta_prov = None
 
         self._fp_wavelength_prov = None
         self._fp_distance_prov = None
@@ -205,6 +211,17 @@ class FrameProcessor:
     def get_reversephi(self):
         return self._fp_reversephi
 
+    def set_two_theta(self, two_theta = True):
+        self._fp_two_theta = two_theta
+        self._fp_two_theta_prov = 'user'
+        return
+
+    def get_two_theta(self):
+        return self._fp_two_theta
+
+    def get_two_theta_prov(self):
+        return self._fp_two_theta_prov
+
     def set_header(self, header):
         self._fp_header = header
         return
@@ -283,6 +300,9 @@ class FrameProcessor:
         if self._fp_beam_prov is None:
             self._fp_beam = tuple(map(float, self._fp_header['beam']))
             self._fp_beam_prov = 'header'
+        if self._fp_two_theta_prov is None:
+            self._fp_two_theta = self._fp_header['two_theta']
+            self._fp_two_theta_prov = 'header'
 
         return
 
