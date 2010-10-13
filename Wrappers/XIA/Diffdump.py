@@ -412,7 +412,7 @@ def Diffdump(DriverType = None):
                 if 'Two Theta value' in o:
                     try:
                         two_theta = float(o.split(':')[1].split()[0])
-                        self._header['two_theta'] = two_theta
+                        self._header['two_theta'] = two_theta * -1.0
                     except ValueError, e:
                         self._header['two_theta'] = 0.0
                     

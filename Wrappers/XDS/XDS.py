@@ -95,6 +95,31 @@ def xds_check_error(xds_output_list):
 
     return
 
+def detector_axis_apply_two_theta_rotation(axis_string, header):
+    '''Apply a rotation in degrees to this detector axis given as a string
+    containing a list of three floating point values. Return as same.
+    Header given as this definition may depend on the detector / instrument
+    type.'''
+
+    two_theta = header['two_theta'] * math.pi / 180.
+
+    axis = map(float, axis_string.split())
+
+    assert(len(axis) == 3)
+
+    # assertion - this is a rotation about X (first coordinate) ergo will not
+    # change this. Nope. Looks like it is a rotation about Y. Which makes
+    # sense for a laboratory source...
+
+    ct = math.cos(two_theta)
+    st = math.sin(two_theta)
+
+    new_axis = (axis[0] * ct + axis[2] * st,
+                axis[1],
+                axis[2] * ct - axis[0] * st)
+
+    return '%.3f %.3f %.3f' % new_axis
+
 def header_to_xds(header, synchrotron = None, reversephi = False):
     '''A function to take an input header dictionary from Diffdump
     and generate a list of records to start XDS - see Doc/INP.txt.'''
@@ -240,11 +265,29 @@ def header_to_xds(header, synchrotron = None, reversephi = False):
                    detector_to_minimum_trusted[detector],
                    detector_to_overload[detector]))
 
-    result.append('DIRECTION_OF_DETECTOR_X-AXIS=%s' % \
-                  detector_to_x_axis[detector])
+    if not detector in ['raxis', 'saturn'] and \
+       math.fabs(header['two_theta']) > 1.0:
+        raise RuntimeError, 'two theta offset not supported for %s' % detector
 
-    result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%s' % \
-                  detector_to_y_axis[detector])
+    if detector in ['raxis', 'saturn']:
+
+        result.append(
+            'DIRECTION_OF_DETECTOR_X-AXIS=%s' % \
+            detector_axis_apply_two_theta_rotation(
+            detector_to_x_axis[detector], header))
+
+        result.append(
+            'DIRECTION_OF_DETECTOR_Y-AXIS=%s' % \
+            detector_axis_apply_two_theta_rotation(
+            detector_to_y_axis[detector], header))
+
+    else:
+        
+        result.append('DIRECTION_OF_DETECTOR_X-AXIS=%s' % \
+                      detector_to_x_axis[detector])
+
+        result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%s' % \
+                      detector_to_y_axis[detector])
 
     if detector_class_is_square[detector_class]:
         result.append('TRUSTED_REGION=0.0 1.41')

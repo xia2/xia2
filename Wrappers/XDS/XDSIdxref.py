@@ -216,6 +216,9 @@ def XDSIdxref(DriverType = None):
             if self.get_wavelength():
                 image_header['wavelength'] = self.get_wavelength()
 
+            if self.get_two_theta():
+                image_header['two_theta'] = self.get_two_theta()
+
             header = header_to_xds(image_header, reversephi = self._reversephi)
 
             xds_inp = open(os.path.join(self.get_working_directory(),

@@ -112,6 +112,9 @@ def XDSXycorr(DriverType = None):
             if self.get_wavelength():
                 image_header['wavelength'] = self.get_wavelength()
 
+            if self.get_two_theta():
+                image_header['two_theta'] = self.get_two_theta()
+
             header = header_to_xds(image_header)
 
 

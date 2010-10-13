@@ -211,7 +211,7 @@ class FrameProcessor:
     def get_reversephi(self):
         return self._fp_reversephi
 
-    def set_two_theta(self, two_theta = True):
+    def set_two_theta(self, two_theta):
         self._fp_two_theta = two_theta
         self._fp_two_theta_prov = 'user'
         return
@@ -324,16 +324,15 @@ class FrameProcessor:
 if __name__ == '__main__':
     # run a quick test
 
+    import sys
 
-    fp = FrameProcessor(os.path.join(os.environ['XIA2_ROOT'],
-                                     'Data', 'Test', 'Images',
-                                     '12287_1_E1_001.img'))
+    fp = FrameProcessor(sys.argv[1])
 
     print fp.get_beam()
     print fp.get_wavelength()
     print fp.get_header()
     print fp.get_matching_images()
-    
+    print fp.get_two_theta()
     
 
     
