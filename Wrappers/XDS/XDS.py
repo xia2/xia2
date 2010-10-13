@@ -101,7 +101,9 @@ def detector_axis_apply_two_theta_rotation(axis_string, header):
     Header given as this definition may depend on the detector / instrument
     type.'''
 
-    two_theta = header['two_theta'] * math.pi / 180.
+    # is theta the wrong sign, as I record from diffdump? I think so.
+
+    two_theta = -1 * header['two_theta'] * math.pi / 180.
 
     axis = map(float, axis_string.split())
 
@@ -116,7 +118,7 @@ def detector_axis_apply_two_theta_rotation(axis_string, header):
 
     new_axis = (axis[0] * ct + axis[2] * st,
                 axis[1],
-                axis[2] * ct - axis[0] * st)
+                - axis[0] * st + axis[2] * ct)
 
     return '%.3f %.3f %.3f' % new_axis
 
