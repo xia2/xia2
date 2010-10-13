@@ -122,9 +122,10 @@ detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('saturn', 1042, 90):'rigaku saturn 944 2x2 binned',
                   ('rigaku', 2048, 45):'rigaku saturn 92',
                   ('rigaku', 1024, 90):'rigaku saturn 92 2x2 binned',
+                  ('rigaku', 1042, 35):'rigaku saturn 724',
+                  ('rigaku', 1042, 70):'rigaku saturn 724 2x2 binned',
                   ('rigaku', 2084, 45):'rigaku saturn 944',
                   ('rigaku', 1042, 90):'rigaku saturn 944 2x2 binned',
-                  ('rigaku', 1042, 70):'rigaku saturn 724 2x2 binned',
                   ('rigaku', 1042, 89):'rigaku saturn 944 2x2 binned'}
 
 def read_A200(image):

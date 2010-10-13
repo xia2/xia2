@@ -208,8 +208,10 @@ def header_to_xds(header, synchrotron = None, reversephi = False):
         'pilatus 2M':True,
         'rigaku saturn 92 2x2 binned':True,
         'rigaku saturn 944 2x2 binned':True,
+        'rigaku saturn 724 2x2 binned':True,
         'rigaku saturn 92':True,
         'rigaku saturn 944':True,
+        'rigaku saturn 724':True,
         'raxis IV':True}
 
     # FIXME not sure if this is correct...
