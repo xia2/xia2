@@ -1323,7 +1323,10 @@ class XDSScalerR(Scaler):
             if not os.path.exists(hkl_copy):
                 shutil.copyfile(hklin, hkl_copy)
 
-            m.calculate_resolution_ranges(nbins = 100)
+            if Flags.get_small_molecule():
+                m.calculate_resolution_ranges(nbins = 10)
+            else:
+                m.calculate_resolution_ranges(nbins = 100)
 
             r_comp = m.resolution_completeness(log = log_completeness)
             r_rm = m.resolution_rmerge(log = log_rmerge)

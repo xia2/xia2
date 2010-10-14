@@ -718,6 +718,9 @@ class merger:
 
         if limit == 0.0:
             return 1.0 / math.sqrt(max(s_s))
+
+        if limit > max(rmerge_s):
+            return 1.0 / math.sqrt(max(s_s))
         
         rmerge_f = log_inv_fit(s_s, rmerge_s, 10)
 
@@ -748,7 +751,11 @@ class merger:
 
         isigma_s = get_positive_values(
             [self.calculate_unmerged_isigma(bin) for bin in bins])
+        
         s_s = [1.0 / (r[0] * r[0]) for r in ranges][:len(isigma_s)]
+
+        if min(isigma_s) > limit:
+            return 1.0 / math.sqrt(max(s_s))
         
         isigma_f = log_fit(s_s, isigma_s, 10)
 
@@ -781,6 +788,12 @@ class merger:
             [self.calculate_merged_isigma(bin) for bin in bins])
         s_s = [1.0 / (r[0] * r[0]) for r in ranges][:len(misigma_s)]
         
+        if min(misigma_s) > limit:
+            return 1.0 / math.sqrt(max(s_s))
+
+        for j, s in enumerate(s_s):
+            print 1.0 / math.sqrt(s), misigma_s[j]
+
         misigma_f = log_fit(s_s, misigma_s, 10)
         
         if log:
@@ -819,6 +832,9 @@ class merger:
         comp_s = [self.calculate_completeness(j) for j, bin in enumerate(
             reversed(bins))]
         
+        if min(comp_s) > limit:
+            return 1.0 / math.sqrt(max(s_s))
+
         comp_f = fit(s_s, comp_s, 10)
         
         rlimit = limit * max(comp_s)
