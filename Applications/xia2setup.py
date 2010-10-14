@@ -130,7 +130,7 @@ def get_sweep(f):
             known_sweeps[key] = sweeplist
 
     except exceptions.Exception, e:
-        print 'Exception: %s' % str(e)
+        print 'Exception: %s (%s)' % (str(e), f)
 
     return
 
