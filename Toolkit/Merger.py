@@ -791,9 +791,6 @@ class merger:
         if min(misigma_s) > limit:
             return 1.0 / math.sqrt(max(s_s))
 
-        for j, s in enumerate(s_s):
-            print 1.0 / math.sqrt(s), misigma_s[j]
-
         misigma_f = log_fit(s_s, misigma_s, 10)
         
         if log:
