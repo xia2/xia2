@@ -362,6 +362,9 @@ def Pointless(DriverType = None):
             self.input('systematicabsences off')
             self.input('setting symmetry-based')
 
+            if Flags.get_small_molecule() and False:
+                self.input('chirality nonchiral')
+
             # change 23/OCT/06 if there is an input laue group, use this
             if self._input_laue_group:
                 self.input('lauegroup %s' % self._input_laue_group)
@@ -585,6 +588,9 @@ def Pointless(DriverType = None):
 
             self.input('lauegroup hklin')
             self.input('setting symmetry-based')
+            
+            if Flags.get_small_molecule() and False:
+                self.input('chirality nonchiral')
 
             self.close_wait()
 
