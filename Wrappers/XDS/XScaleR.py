@@ -303,10 +303,14 @@ def XScaleR(DriverType = None,
                         line.replace('%', '').split()[5])
 
                 # trac #419 - if the data sets are not correctly indexed,
-                # throw an exception
+                # throw an exception. N.B. this will only work if the
+                # data sets are moderately complete (i.e. there are more
+                # than a handful of common reflections) - which may not be
+                # the case in MULTICRYSTAL mode.
 
                 if ' !!! WARNING !!! ' in line and \
-                   'SOME CORRELATION FACTORS ARE DANGEROUSLY SMALL' in line:
+                       not Flags.get_microcrystal() and \
+                       'CORRELATION FACTORS ARE DANGEROUSLY SMALL' in line:
                     raise RuntimeError, 'reindexing error: %s' % \
                           os.path.join(self.get_working_directory(),
                                        'XSCALE.LP')
