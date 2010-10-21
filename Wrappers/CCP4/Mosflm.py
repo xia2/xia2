@@ -1155,12 +1155,19 @@ def Mosflm(DriverType = None):
             if self._mosflm_autoindex_sol:
                 self._mosflm_autoindex_sol = 0
 
-            self.input('mosaic estimate')
-            self.input('go')
+            # trac 1150 - want to estimate mosaic spread from all images then
+            # calculate the average - though what happens if one of the chosen
+            # images is BLANK? 
+
+            for i in _images:
+                self.input('mosaic estimate %d' % i)
+                self.input('go')
 
             self.close_wait()
 
             output = self.get_all_output()
+
+            mosaic_spreads = []
 
             for o in output:
                 if 'Final cell (after refinement)' in o:
@@ -1276,7 +1283,8 @@ def Mosflm(DriverType = None):
                 # is needed
 
                 if 'The mosaicity has been estimated' in o:
-                    self._indxr_mosaic = float(o.split('>')[1].split()[0])
+                    ms = float(o.split('>')[1].split()[0])
+                    mosaic_spreads.append(ms)
 
                 # alternatively this could have failed - which happens
                 # sometimes...
@@ -1307,7 +1315,11 @@ def Mosflm(DriverType = None):
                         'Mosaic estimation failed, so guessing at %4.2f' % \
                         phi_width)
 
-                    self._indxr_mosaic = phi_width
+                    # only consider this if we have thus far no idea on the
+                    # mosaic spread...
+
+                    if not mosaic_spreads:
+                        mosaic_spreads.append(phi_width)
 
                 # mosflm doesn't refine this in autoindexing...
                 if 'Crystal to detector distance of' in o:
@@ -1338,6 +1350,10 @@ def Mosflm(DriverType = None):
                 if '99% have resolution' in o:
                     self._indxr_resolution_estimate = float(
                         o.split()[-2])
+
+            # compute mosaic as mean(mosaic_spreads)
+
+            self._indxr_mosaic = sum(mosaic_spreads) / len(mosaic_spreads)
 
             # FIXME this needs to be picked up by the integrater
             # interface which uses this Indexer, if it's a mosflm
