@@ -255,6 +255,9 @@ def Diffdump(DriverType = None):
             # results were ok, so get all of the output out
             output = self.get_all_output()
 
+            if len(output) == 1:
+                raise RuntimeError, 'diffdump failed'
+
             if debug:
                 print '! all diffdump output follows'
                 for o in output:
@@ -565,3 +568,4 @@ if __name__ == '__main__':
             print 'Epochs:        %.3f' % header['epoch']
             print 'Exposure time: %.3f' % header['exposure_time']
             print 'Two theta:     %.3f' % header['two_theta']
+
