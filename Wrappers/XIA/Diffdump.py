@@ -190,6 +190,8 @@ def failover_cbf(cbf_file):
                 ')', '').replace(',', '').split()[2:4])
             header['beam'] = beam_pixels[1] * header['pixel'][1], \
                              beam_pixels[0] * header['pixel'][0]
+            header['raw_beam'] = beam_pixels[1] * header['pixel'][1], \
+                                 beam_pixels[0] * header['pixel'][0]
             continue
 
         # try to get the date etc. literally.
