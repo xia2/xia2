@@ -142,12 +142,6 @@ def failover_cbf(cbf_file):
     '''CBF files from the latest update to the PILATUS detector cause a
     segmentation fault in diffdump. This is a workaround.'''
 
-    # need to assign:
-    # 
-    # 
-    # header['size']
-    # header['pixel']
-
     header = { }
 
     header['two_theta'] = 0.0
@@ -159,7 +153,7 @@ def failover_cbf(cbf_file):
         if 'PILATUS 2M' in record:
             header['detector_class'] = 'pilatus 2M'
             header['detector'] = 'dectris'
-            header['size'] = 1475, 1679
+            header['size'] = (1679, 1475)
             continue
 
         if 'Start_angle' in record:
@@ -658,8 +652,9 @@ if __name__ == '__main__':
             print 'Wavelength: %6.4f    Distance:   %6.2f' % \
                   (header['wavelength'], header['distance'])
             # print 'Gain: %f' % gain
-            print 'Pixel size: %f %f' % header['pixel']
-            print 'Beam centre: %f %f' % header['beam']
+            print 'Pixel size:    %f %f' % header['pixel']
+            print 'Size:          %d %d' % header['size']
+            print 'Beam centre:   %f %f' % header['beam']
             print 'Detector class: %s' % header['detector_class']
             print 'Epochs:        %.3f' % header['epoch']
             print 'Exposure time: %.3f' % header['exposure_time']
