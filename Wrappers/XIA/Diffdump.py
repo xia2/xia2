@@ -138,6 +138,77 @@ def read_A200(image):
 
 # FIXME get proper specifications for these detectors...
 
+def failover_cbf(cbf_file):
+    '''CBF files from the latest update to the PILATUS detector cause a
+    segmentation fault in diffdump. This is a workaround.'''
+
+    # need to assign:
+    # 
+    # 
+    # header['size']
+    # header['pixel']
+
+    header = { }
+
+    header['two_theta'] = 0.0
+
+    for record in open(cbf_file):
+        if '_array_data.data' in record:
+            break
+
+        if 'PILATUS 2M' in record:
+            header['detector_class'] = 'pilatus 2M'
+            header['detector'] = 'dectris'
+            header['size'] = 1475, 1679
+            continue
+
+        if 'Start_angle' in record:
+            header['phi_start'] = float(record.split()[-2])
+            continue
+
+        if 'Angle_increment' in record:
+            header['phi_width'] = float(record.split()[-2])
+            header['phi_end'] = header['phi_start'] + header['phi_width']
+            continue
+
+        if 'Exposure_period' in record:
+            header['exposure_time'] = float(record.split()[-2])
+            continue
+
+        if 'Detector_distance' in record:
+            header['distance'] = 1000 * float(record.split()[-2])
+            continue
+
+        if 'Wavelength' in record:
+            header['wavelength'] = float(record.split()[-2])
+            continue
+
+        if 'Pixel_size' in record:
+            header['pixel'] = 1000 * float(record.split()[2]), \
+                              1000 * float(record.split()[5])
+            continue
+
+        if 'Beam_xy' in record:
+            beam_pixels = map(float, record.replace('(', '').replace(
+                ')', '').replace(',', '').split()[2:4])
+            header['beam'] = beam_pixels[0] * header['pixel'][0], \
+                             beam_pixels[1] * header['pixel'][1]
+            continue
+
+        # try to get the date etc. literally.
+
+        try:
+            datestring = record.split()[-1].split('.')[0]
+            format = '%Y-%b-%dT%H:%M:%S'
+            struct_time = time.strptime(datestring, format)
+            header['date'] = time.asctime(struct_time)
+            header['epoch'] = time.mktime(struct_time)
+            
+        except:
+            pass
+
+    return header
+
 def Diffdump(DriverType = None):
     '''A factory for wrappers for the diffdump.'''
 
@@ -250,13 +321,19 @@ def Diffdump(DriverType = None):
             self.start()
             self.close_wait()
 
-            #self.check_for_errors()            
+            # why is this commented out?
+            # self.check_for_errors()            
 
             # results were ok, so get all of the output out
             output = self.get_all_output()
 
             if len(output) == 1:
-                raise RuntimeError, 'diffdump failed'
+                if not '.cbf' in self._image[-4:]:
+                    raise RuntimeError, 'diffdump failed'
+                else:
+                    self._header = failover_cbf(self._image)
+                    HeaderCache.put(self._image, self._header)
+                    return copy.deepcopy(self._header)
 
             if debug:
                 print '! all diffdump output follows'
