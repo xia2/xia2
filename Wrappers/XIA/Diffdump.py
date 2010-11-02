@@ -189,10 +189,13 @@ def failover_cbf(cbf_file):
             continue
 
         if 'Beam_xy' in record:
+
+            # N.B. this is swapped again for historical reasons
+            
             beam_pixels = map(float, record.replace('(', '').replace(
                 ')', '').replace(',', '').split()[2:4])
-            header['beam'] = beam_pixels[0] * header['pixel'][0], \
-                             beam_pixels[1] * header['pixel'][1]
+            header['beam'] = beam_pixels[1] * header['pixel'][1], \
+                             beam_pixels[0] * header['pixel'][0]
             continue
 
         # try to get the date etc. literally.
@@ -200,6 +203,16 @@ def failover_cbf(cbf_file):
         try:
             datestring = record.split()[-1].split('.')[0]
             format = '%Y-%b-%dT%H:%M:%S'
+            struct_time = time.strptime(datestring, format)
+            header['date'] = time.asctime(struct_time)
+            header['epoch'] = time.mktime(struct_time)
+            
+        except:
+            pass
+
+        try:
+            datestring = record.replace('#', '').strip().split('.')[0]
+            format = '%Y/%b/%d %H:%M:%S'
             struct_time = time.strptime(datestring, format)
             header['date'] = time.asctime(struct_time)
             header['epoch'] = time.mktime(struct_time)
@@ -317,6 +330,19 @@ def Diffdump(DriverType = None):
                 raise RuntimeError, 'image %s does not exist' % \
                       self._image
 
+            # consider using more recent code to read these images in
+            # first instance, to replace diffdump
+
+            try:
+                if '.cbf' in self._image[-4:]:
+                    header = failover_cbf(self._image)
+                    assert(header['detector_class'] == 'pilatus 2M')
+                    self._header = header
+                    HeaderCache.put(self._image, self._header)
+                    return copy.deepcopy(self._header)
+            except:
+                pass
+
             self.add_command_line(self._image)
             self.start()
             self.close_wait()
@@ -326,14 +352,6 @@ def Diffdump(DriverType = None):
 
             # results were ok, so get all of the output out
             output = self.get_all_output()
-
-            if len(output) == 1:
-                if not '.cbf' in self._image[-4:]:
-                    raise RuntimeError, 'diffdump failed'
-                else:
-                    self._header = failover_cbf(self._image)
-                    HeaderCache.put(self._image, self._header)
-                    return copy.deepcopy(self._header)
 
             if debug:
                 print '! all diffdump output follows'
@@ -641,6 +659,7 @@ if __name__ == '__main__':
                   (header['wavelength'], header['distance'])
             # print 'Gain: %f' % gain
             print 'Pixel size: %f %f' % header['pixel']
+            print 'Beam centre: %f %f' % header['beam']
             print 'Detector class: %s' % header['detector_class']
             print 'Epochs:        %.3f' % header['epoch']
             print 'Exposure time: %.3f' % header['exposure_time']
