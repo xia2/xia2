@@ -156,6 +156,12 @@ def failover_cbf(cbf_file):
             header['size'] = (1679, 1475)
             continue
 
+        if 'PILATUS 6M' in record:
+            header['detector_class'] = 'pilatus 6M'
+            header['detector'] = 'dectris'
+            header['size'] = (2527, 2463)
+            continue
+
         if 'Start_angle' in record:
             header['phi_start'] = float(record.split()[-2])
             continue
@@ -332,7 +338,8 @@ def Diffdump(DriverType = None):
             try:
                 if '.cbf' in self._image[-4:]:
                     header = failover_cbf(self._image)
-                    assert(header['detector_class'] == 'pilatus 2M')
+                    assert(header['detector_class'] in \
+                           ['pilatus 2M', 'pilatus 6M'])
                     self._header = header
                     HeaderCache.put(self._image, self._header)
                     return copy.deepcopy(self._header)
