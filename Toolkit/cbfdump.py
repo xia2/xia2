@@ -87,14 +87,13 @@ if __name__ == '__main__':
 
     start = time.time()
 
-    for j in range(1000):
+    j = 0
+    for image in sys.argv[1:]:
+        print image
+        cbfdump(image, do_print = True)
 
-        for image in sys.argv[1:]:
-            # print image
-            cbfdump(image)
-
-        print j
+        j += 1
 
     end = time.time()
 
-    print '%f' % (end - start)
+    print 'Reading %d headers took %.1fs' % (j, end - start)
