@@ -97,3 +97,4 @@ if __name__ == '__main__':
     end = time.time()
 
     print 'Reading %d headers took %.1fs' % (j, end - start)
+
