@@ -206,6 +206,30 @@ class _ISPyBXmlHandler:
                     fout.write('<AutoProcIntegration>\n')
                     cell = sweep.get_integrater_cell()
                     self.write_cell(fout, cell)
+
+                    # FIXME this is naughty
+                    intgr = sweep._get_integrater()
+
+                    start, end = intgr.get_integrater_wedge()
+
+                    fout.write('<startImageNumber>%d</startImageNumber>' % \
+                               start)
+
+                    fout.write('<endImageNumber>%d</endImageNumber>' % \
+                               end)
+
+                    # FIXME this is naughty
+                    indxr = sweep._get_indexer()
+
+                    fout.write(
+                        '<refinedDetectorDistance>%f</refinedDetectorDistance>' % \
+                        indxr.get_indexer_distance())
+
+                    beam = indxr.get_indexer_beam()
+
+                    fout.write('<refinedXBeam>%f</refinedXBeam>' % beam[0])
+                    fout.write('<refinedYBeam>%f</refinedYBeam>' % beam[1])
+                    
                     fout.write('</AutoProcIntegration>\n')
                     fout.write('</AutoProcIntegrationContainer>\n')
                                

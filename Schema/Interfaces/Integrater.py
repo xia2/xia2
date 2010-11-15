@@ -392,6 +392,11 @@ class Integrater:
         
         return
 
+    def get_integrater_wedge(self):
+        '''Get the wedge of images assigned to this integrater.'''
+
+        return self._intgr_wedge
+
     def get_integrater_resolution(self):
         '''Get both resolution limits, high then low.'''
         return self._intgr_reso_high, self._intgr_reso_low
