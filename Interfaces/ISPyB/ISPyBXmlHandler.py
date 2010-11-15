@@ -36,7 +36,13 @@ class _ISPyBXmlHandler:
             'Anomalous completeness':'anomalousCompleteness',
             'Anomalous multiplicity':'anomalousMultiplicity',
             'Total observations':'nTotalObservations',
+            'Total unique':'nTotalUniqueObservations',
             'Rmerge':'rMerge',
+            'Rmeas(I)':'rMeasAllIPlusIMinus',
+            'Rmeas(I+,-)':'rMeasWithinIPlusIMinus',
+            'Rpim(I)':'rPimAllIPlusIMinus',
+            'Rpim(I+/-)':'rPimWithinIPlusIMinus',
+            'Partial Bias':'fractionalPartialBias',
             'I/sigma':'meanIOverSigI',
             }
                     
@@ -162,7 +168,13 @@ class _ISPyBXmlHandler:
                     'Rmerge',
                     'Anomalous completeness',
                     'Anomalous multiplicity',
-                    'Total observations'
+                    'Total observations',
+                    'Total unique',
+                    'Rmeas(I)',
+                    'Rmeas(I+,-)',
+                    'Rpim(I)',
+                    'Rpim(I+/-)',
+                    'Partial Bias'
                     ]
 
                 for k in keys:
