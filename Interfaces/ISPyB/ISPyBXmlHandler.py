@@ -112,7 +112,7 @@ class _ISPyBXmlHandler:
 
             out_name = self._name_map[name]
 
-            if out_name in ['nTotalObservations']:
+            if out_name in ['nTotalObservations', 'nTotalUniqueObservations']:
                 fout.write('<%s>%d</%s>' % \
                            (out_name, int(stats_dict[name]), out_name))
             else:
