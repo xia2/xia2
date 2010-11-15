@@ -59,8 +59,8 @@ def cbfdump(cbf_image, do_print = False):
     # fast and slow directions?
     
     origin = detector.get_pixel_coordinates(0, 0)
-    fast = detector.get_pixel_coordinates(1, 0)
-    slow = detector.get_pixel_coordinates(0, 1)
+    fast = detector.get_pixel_coordinates(0, 1)
+    slow = detector.get_pixel_coordinates(1, 0)
     
     dfast = [fast[j] - origin[j] for j in range(3)]
     dslow = [slow[j] - origin[j] for j in range(3)]
