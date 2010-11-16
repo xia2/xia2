@@ -35,6 +35,13 @@ Modules/Xia2html/icons/warning.png -text
 Schema/Doc/Structure.pdf -text
 Schema/Interfaces/Doc/Interfaces.pdf -text
 Schema/Interfaces/Doc/scaler-refactor.txt -text
+Schema/Interfaces/NextGeneration/dip.py -text
+Schema/Interfaces/NextGeneration/index.py -text
+Schema/Interfaces/NextGeneration/index_test.py -text
+Schema/Interfaces/NextGeneration/integrate.py -text
+Schema/Interfaces/NextGeneration/labelit.py -text
+Schema/Interfaces/NextGeneration/mosflm.py -text
+Schema/Interfaces/NextGeneration/processing_plugin.py -text
 Toolkit/BackstopMask.py -text
 Toolkit/KBScale.py -text
 Toolkit/MultiMerger.py -text
