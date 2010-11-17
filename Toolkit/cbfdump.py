@@ -74,6 +74,13 @@ def cbfdump(cbf_image, do_print = False):
     if do_print: print 'Fast direction: %.2f %.2f %.2f' % fast
     if do_print: print 'Slow direction: %.2f %.2f %.2f' % slow
 
+    if hasattr(detector, 'get_detector_axis_fast'):
+
+        if do_print: print 'CBF fast: %.2f %.2f %.2f' % \
+           tuple(detector.get_detector_axis_fast())
+        if do_print: print 'CBF slow: %.2f %.2f %.2f' % \
+           tuple(detector.get_detector_axis_slow())
+        
     detector.__swig_destroy__(detector)
     del(detector)
 
@@ -89,10 +96,9 @@ if __name__ == '__main__':
 
     j = 0
     for image in sys.argv[1:]:
-        print image
-        cbfdump(image, do_print = True)
-
-        j += 1
+         print image
+         cbfdump(image, do_print = True)
+         j += 1
 
     end = time.time()
 
