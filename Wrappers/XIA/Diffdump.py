@@ -269,15 +269,33 @@ def Diffdump(DriverType = None):
             # allow for milliseconds
             ms = 0.0
 
+            struct_time = None
             try:
-                if self._header['detector'] == 'dectris':
-                    format = '%Y/%b/%d %H:%M:%S'
+                format = '%Y/%b/%d %H:%M:%S'
+                ms = 0.001 * int(datestring.split('.')[1])
+                _datestring = datestring.split('.')[0]
+                struct_time = time.strptime(_datestring, format)
+            except:
+                struct_time = None
+
+            # ADSC CBF format
+
+            if not struct_time:
+                try:
+                    format = '%d/%m/%Y %H:%M:%S'
                     ms = 0.001 * int(datestring.split('.')[1])
                     datestring = datestring.split('.')[0]
                     struct_time = time.strptime(datestring, format)
-                else:
+                except:
+                    struct_time = None
+
+            if not struct_time:
+                try:
                     struct_time = time.strptime(datestring)
-            except:
+                except:
+                    struct_time = None
+
+            if not struct_time:
                 # this may be a mar format date...
                 # MMDDhhmmYYYY.ss - go figure
                 # or it could also be the format from
@@ -649,6 +667,7 @@ if __name__ == '__main__':
     
     else:
         for image in sys.argv[1:]:
+            p = Diffdump()
             p.set_image(image)
 
             header = p.readheader()
@@ -662,10 +681,10 @@ if __name__ == '__main__':
                   (header['wavelength'], header['distance'])
             # print 'Gain: %f' % gain
             print 'Pixel size:    %f %f' % header['pixel']
-            print 'Size:          %d %d' % header['size']
-            print 'Beam centre:   %f %f' % header['beam']
+            print 'Size:          %d %d' % tuple(header['size'])
+            print 'Beam centre:   %f %f' % tuple(header['beam'])
             print 'Detector class: %s' % header['detector_class']
-            print 'Epochs:        %.3f' % header['epoch']
+            print 'Epoch:         %.3f' % header['epoch']
             print 'Exposure time: %.3f' % header['exposure_time']
             print 'Two theta:     %.3f' % header['two_theta']
 
