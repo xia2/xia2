@@ -35,6 +35,7 @@ Modules/Xia2html/icons/warning.png -text
 Schema/Doc/Structure.pdf -text
 Schema/Interfaces/Doc/Interfaces.pdf -text
 Schema/Interfaces/Doc/scaler-refactor.txt -text
+Schema/Interfaces/NextGeneration/design.txt -text
 Schema/Interfaces/NextGeneration/dip.py -text
 Schema/Interfaces/NextGeneration/index.py -text
 Schema/Interfaces/NextGeneration/index_test.py -text
