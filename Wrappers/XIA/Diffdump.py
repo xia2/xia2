@@ -284,8 +284,8 @@ def Diffdump(DriverType = None):
                 try:
                     format = '%d/%m/%Y %H:%M:%S'
                     ms = 0.001 * int(datestring.split('.')[1])
-                    datestring = datestring.split('.')[0]
-                    struct_time = time.strptime(datestring, format)
+                    _datestring = datestring.split('.')[0]
+                    struct_time = time.strptime(_datestring, format)
                 except:
                     struct_time = None
 
@@ -311,7 +311,6 @@ def Diffdump(DriverType = None):
                     d = datetime.datetime(year, month, day,
                                           hour, minute, second)
                     struct_time = d.timetuple()
-
                 else:
                     struct_time = time.strptime(datestring,
                                                 '%d-%b-%Y %H:%M:%S')
