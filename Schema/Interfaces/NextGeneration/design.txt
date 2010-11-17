@@ -21,12 +21,22 @@ Implementations
 
 Implementations of these interfaces must do so by inheriting from the
 interface class and implementing the protected methods. In cases where there
-are dependencies the order of inheritance will be important.
+are dependencies the order of inheritance will be important. Essentially the
+idea is that the interface will present a standard API on the outside which is
+the fulfilled however inside - if this involves coordinate transformations then
+so be it. 
+
+One interesting side-effect is that by inheriting from an interface it is 
+possible to register that an implementation is available without having to 
+have any code inside the implementation.
 
 Implementation Registry
 -----------------------
 
-
+If we have more than one implementation and they all do essentially the 
+same thing, it should be possible to ask the registry for an implementation 
+and just use it. However, in the favourite cup example above, we also need to
+be able to specify which implmentation.
 
 
 
