@@ -39,7 +39,7 @@ from Handlers.Streams import Debug
 
 # specific helper stuff
 from XDSIdxrefHelpers import _parse_idxref_lp, _parse_idxref_lp_distance_etc, \
-     _parse_idxref_lp_subtree
+     _parse_idxref_lp_subtree, _parse_idxref_index_origin
 
 from Experts.LatticeExpert import SortLattices
 
@@ -314,6 +314,31 @@ def XDSIdxref(DriverType = None):
                     self._index_tree_problem = True
                     for j in sorted(st):
                         Debug.write('%2d: %5d' % (j, st[j]))
+
+            # print out some (perhaps dire) warnings about the beam centre
+            # if there is really any ambiguity...
+
+            origins = _parse_idxref_index_origin(lp)
+
+            assert((0, 0, 0) in origins)
+
+            quality_0 = origins[(0, 0, 0)][0]
+
+            alternatives = []
+
+            for hkl in origins:
+                if hkl == (0, 0, 0):
+                    continue
+                if origins[hkl][0] < 4 * quality_0:
+                    quality, delta, beam_x, beam_y = origins[hkl]
+                    alternatives.append((hkl[0], hkl[1], hkl[2],
+                                         quality, beam_x, beam_y))
+
+            if alternatives:
+                Debug.write('Alternative indexing possible:')
+                for alternative in alternatives:
+                    Debug.write('... %3d %3d %3d %4.1f %6.1f %6.1f' % \
+                                alternative)
 
             for j in range(1, 45):
                 if not self._idxref_data.has_key(j):
