@@ -22,7 +22,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Experts.LatticeExpert import ApplyLattice
 
 def _parse_idxref_lp_distance_etc(lp_file_lines):
-    '''Parse the LP file for refined diatance, beam centre and so on...'''
+    '''Parse the LP file for refined distance, beam centre and so on...'''
 
     beam = None
     diatance = None
@@ -40,6 +40,32 @@ def _parse_idxref_lp_distance_etc(lp_file_lines):
                 distance *= -1
 
     return beam, distance
+
+def _parse_idxref_index_origin(lp_file_lines):
+    '''Parse the LP file for the possible index origin etc.'''
+
+    origins = { }
+
+    i = 0
+    while i < len(lp_file_lines):
+        line = lp_file_lines[i]
+        i += 1
+        if 'INDEX_' in line and 'QUALITY' in line and 'DELTA' in line:
+            while not 'SELECTED' in line:
+                line = lp_file_lines[i]
+                i += 1
+                try:
+                    hkl = tuple(map(int, line.split()[:3]))
+                    quality, delta, xd, yd = tuple(
+                        map(float, line.split()[3:7]))
+                    origins[hkl] = quality, delta, xd, yd
+                except:
+                    pass
+
+            return origins
+
+
+    raise RuntimeError, 'should never reach this point'
 
 def _parse_idxref_lp(lp_file_lines):
     '''Parse the list of lines from idxref.lp.'''
@@ -117,7 +143,9 @@ def _parse_idxref_lp_subtree(lp_file_lines):
 
 if __name__ == '__main__':
 
-    st = _parse_idxref_lp_subtree(open(sys.argv[1], 'r').readlines())
+    origins = _parse_idxref_index_origin(open(sys.argv[1], 'r').readlines())
 
-    for j in sorted(st):
-        print j, st[j]
+    print '  H   K   L    GOF  Delta  Beam Centre'
+    for hkl in origins:
+        print '%3d %3d %3d' % hkl, '%6.1f %6.1f %6.1f %6.1f' % origins[hkl]
+    
