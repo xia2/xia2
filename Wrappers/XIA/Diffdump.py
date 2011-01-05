@@ -147,6 +147,7 @@ def failover_cbf(cbf_file):
     header['two_theta'] = 0.0
 
     for record in open(cbf_file):
+
         if '_array_data.data' in record:
             break
 
@@ -168,7 +169,6 @@ def failover_cbf(cbf_file):
 
         if 'Angle_increment' in record:
             header['phi_width'] = float(record.split()[-2])
-            header['phi_end'] = header['phi_start'] + header['phi_width']
             continue
 
         if 'Exposure_period' in record:
@@ -211,7 +211,7 @@ def failover_cbf(cbf_file):
             
         except:
             pass
-
+        
         try:
             datestring = record.replace('#', '').strip().split('.')[0]
             format = '%Y/%b/%d %H:%M:%S'
@@ -221,6 +221,9 @@ def failover_cbf(cbf_file):
             
         except:
             pass
+    
+    # clean up to cope with ESRF header randomisation
+    header['phi_end'] = header['phi_start'] + header['phi_width']
 
     return header
 
