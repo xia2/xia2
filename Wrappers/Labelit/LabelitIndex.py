@@ -704,8 +704,11 @@ def LabelitIndex(DriverType = None, indxr_print = True):
             if self.get_indexer_sweep().get_user_lattice():
                 return
 
-            status, lattice, matrix, cell = mosflm_check_indexer_solution(
-                self)
+            try:
+                status, lattice, matrix, cell = mosflm_check_indexer_solution(
+                    self)
+            except:
+                status = None
 
             if status is None:
 
