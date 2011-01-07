@@ -436,6 +436,11 @@ class XDSIndexer(FrameProcessor,
         while not done:
             try:
                 done = idxref.run()
+
+                # N.B. in here if the IDXREF step was being run in the first
+                # pass done is FALSE however there should be a refined
+                # P1 orientation matrix etc. available - so keep it!
+                
             except XDSException, e:
                 # inspect this - if we have complaints about not
                 # enough reflections indexed, and we have a target

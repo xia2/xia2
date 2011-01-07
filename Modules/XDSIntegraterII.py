@@ -10,16 +10,17 @@
 # A second generation XDS integrater which will be used as a testbed for
 # improving the processing with XDS, including:
 #
-# - process in correct lattice or P1?
-# - reprocess to the correct resolution limit or no?
-# - use postrefined orientation for integration or no?
-# - refine the reflection widths etc?
+# - process in P1 then reindex.
+# - do not reintegrate to a new resolution limit.
+# - use postrefined orientation for integration.
+# - refine the reflection widths etc.
 # - what to refine during integration, postrefinement?
 # - properly implementing the postrefinement tests in a general way.
 # 
 # This should end up being better than the first generation XDS integrater.
 #
-#
+# N.B. this will need to be able to get the refined P1 orientation matrix from
+# the indexing => change needed to the indexer interface too.
 
 import os
 import sys
