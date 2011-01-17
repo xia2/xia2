@@ -47,6 +47,14 @@ class _Flags:
         self._harrison_clock = False
         self._migrate_data = False
         self._trust_timestaps = False
+
+        # XDS specific things - to help with handling tricky data sets
+
+        self._xparm = None
+        self._xparm_beam_vector = None
+        self._xparm_rotation_axis = None
+        self._xparm_origin = None
+        
 	try:
             self._parallel = get_number_cpus()
         except:
@@ -385,6 +393,34 @@ class _Flags:
 
     def get_parallel(self):
         return self._parallel
+
+    def set_xparm(self, xparm):
+
+        self._xparm = xparm
+        
+        tokens = map(float, open(xparm, 'r').read().split())
+
+        rotation_axis = tuple(tokens[3:6])
+        beam_vector = tuple(tokens[7:10])
+        origin = tuple(tokens[15:17])
+
+        self._xparm_origin = origin
+        self._xparm_beam_vector = beam_vector
+        self._xparm_rotation_axis = rotation_axis
+        
+        return
+
+    def get_xparm(self):
+        return self._xparm
+
+    def get_xparm_origin(self):
+        return self._xparm_origin
+
+    def get_xparm_rotation_axis(self):
+        return self._xparm_rotation_axis
+
+    def get_xparm_beam_vector(self):
+        return self._xparm_beam_vector
 
     def set_min_images(self, min_images):
         self._min_images = min_images

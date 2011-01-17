@@ -122,7 +122,8 @@ def detector_axis_apply_two_theta_rotation(axis_string, header):
 
     return '%.3f %.3f %.3f' % new_axis
 
-def header_to_xds(header, synchrotron = None, reversephi = False):
+def header_to_xds(header, synchrotron = None, reversephi = False,
+                  refined_beam_vector = None, refined_rotation_axis = None):
     '''A function to take an input header dictionary from Diffdump
     and generate a list of records to start XDS - see Doc/INP.txt.'''
 
@@ -318,10 +319,19 @@ def header_to_xds(header, synchrotron = None, reversephi = False):
     result.append('OSCILLATION_RANGE=%4.2f' % (header['phi_end'] -
                                                header['phi_start']))
     result.append('X-RAY_WAVELENGTH=%8.6f' % header['wavelength'])
-    result.append('ROTATION_AXIS= %s' % \
-                  detector_to_rotation_axis[detector])
 
-    result.append('INCIDENT_BEAM_DIRECTION=0.0 0.0 1.0')
+    if refined_rotation_axis:
+        result.append('ROTATION_AXIS= %f %f %f' % \
+                      refined_rotation_axis)
+    else:
+        result.append('ROTATION_AXIS= %s' % \
+                      detector_to_rotation_axis[detector])
+
+    if refined_beam_vector:
+        result.append('INCIDENT_BEAM_DIRECTION=%f %f %f' % \
+                      refined_beam_vector)
+    else:
+        result.append('INCIDENT_BEAM_DIRECTION=0.0 0.0 1.0')
 
     if synchrotron:
         result.append('FRACTION_OF_POLARIZATION=0.99')

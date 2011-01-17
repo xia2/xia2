@@ -83,6 +83,10 @@ def XDSIdxref(DriverType = None):
 
             self._org = [0.0, 0.0]
 
+            self._refined_origin = None
+            self._refined_beam_vector = None
+            self._refined_rotation_axis = None
+
             self._starting_angle = 0.0
             self._starting_frame = 0
 
@@ -190,6 +194,30 @@ def XDSIdxref(DriverType = None):
         def set_beam_centre(self, x, y):
             self._org = float(x), float(y)
 
+        # this needs setting up (optionally) from refined results from
+        # elsewhere
+
+        def set_refined_origin(self, refined_origin):
+            self._refined_origin = refined_origin
+            return
+
+        def get_refined_origin(self):
+            return self._refined_origin
+
+        def set_refined_beam_vector(self, refined_beam_vector):
+            self._refined_beam_vector = refined_beam_vector
+            return
+
+        def get_refined_beam_vector(self):
+            return self._refined_beam_vector
+
+        def set_refined_rotation_axis(self, refined_rotation_axis):
+            self._refined_rotation_axis = refined_rotation_axis
+            return
+
+        def get_refined_rotation_axis(self):
+            return self._refined_rotation_axis
+
         def set_data_range(self, start, end):
             self._data_range = (start, end)
 
@@ -219,7 +247,10 @@ def XDSIdxref(DriverType = None):
             if self.get_two_theta():
                 image_header['two_theta'] = self.get_two_theta()
 
-            header = header_to_xds(image_header, reversephi = self._reversephi)
+            header = header_to_xds(
+                image_header, reversephi = self._reversephi,
+                refined_beam_vector = self._refined_beam_vector,
+                refined_rotation_axis = self._refined_rotation_axis)
 
             xds_inp = open(os.path.join(self.get_working_directory(),
                                         'XDS.INP'), 'w')
@@ -230,9 +261,13 @@ def XDSIdxref(DriverType = None):
                           self._parallel) 
             
             # FIXME this needs to be calculated from the beam centre...
-            
-            xds_inp.write('ORGX=%f ORGY=%f\n' % \
-                          tuple(self._org))
+
+            if self._refined_origin:
+                xds_inp.write('ORGX=%f ORGY=%f\n' % \
+                              tuple(self._refined_origin))
+            else:
+                xds_inp.write('ORGX=%f ORGY=%f\n' % \
+                              tuple(self._org))
 
             if self._starting_frame and self._starting_angle:
                 xds_inp.write('STARTING_FRAME=%d\n' % \

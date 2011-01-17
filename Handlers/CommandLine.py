@@ -205,6 +205,12 @@ class _CommandLine(Object):
                   (self._help_serial(), str(e))
 
         try:
+            self._read_xparm()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_xparm(), str(e))
+
+        try:
             self._read_min_images()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -537,6 +543,29 @@ class _CommandLine(Object):
     def get_xinfo(self):
         '''Return the XProject.'''
         return self._xinfo
+
+    def _read_xparm(self):
+        try:
+            index = sys.argv.index('-xparm')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_xparm(sys.argv[index + 1])
+
+        Debug.write('Rotation axis: %.6f %.6f %.6f' % \
+            Flags.get_xparm_rotation_axis())
+        Debug.write('Beam vector: %.6f %.6f %.6f' % \
+            Flags.get_xparm_beam_vector())
+        Debug.write('Origin: %.2f %.2f' % \
+            Flags.get_xparm_origin())
+            
+        return
+
+    def _help_xparm(self):
+        return '-xparm N'
 
     def _read_parallel(self):
         try:

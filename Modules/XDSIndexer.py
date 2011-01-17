@@ -155,6 +155,12 @@ class XDSIndexer(FrameProcessor,
             Debug.write('Setting reversephi for IDXREF')
             idxref.set_reversephi()
 
+        # if we have a refined set of parameters to apply, apply these
+        if Flags.get_xparm():
+            idxref.set_refined_origin(Flags.get_xparm_origin())
+            idxref.set_refined_beam_vector(Flags.get_xparm_beam_vector())
+            idxref.set_refined_rotation_axis(Flags.get_xparm_rotation_axis())
+
         auto_logfiler(idxref, 'IDXREF')
 
         return idxref
