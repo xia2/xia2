@@ -70,6 +70,8 @@ class XDSIndexer(FrameProcessor,
         # admin junk
         self._working_directory = os.getcwd()
 
+        self._background_images = None
+
         # place to store working data
         self._data_files = { }
 
@@ -286,8 +288,14 @@ class XDSIndexer(FrameProcessor,
             init.set_input_data_file(file, self._data_files[file])
 
         init.set_data_range(first, last)
-        init.set_background_range(self._indxr_images[0][0],
-                                  self._indxr_images[0][1])
+
+        if self._background_images:
+            init.set_background_range(self._background_images[0],
+                                      self._background_images[1])
+        else:    
+            init.set_background_range(self._indxr_images[0][0],
+                                      self._indxr_images[0][1])
+            
         for block in self._indxr_images:
             init.add_spot_range(block[0], block[1])
 
@@ -474,9 +482,10 @@ class XDSIndexer(FrameProcessor,
                         if math.fabs(cell[j + 3] - original_cell[j + 3]) \
                                > 2.0 and not Flags.get_relax():
                             Debug.write('XDS unhappy and solution wrong')
-                            raise e                        
+                            raise e
                     Debug.write('XDS unhappy but solution ok')
-                elif 'insufficient percentage (< 70%)' in str(e):
+                elif 'insufficient percentage (< 70%)' in str(e) or \
+                         'insufficient percentage (< 50%)' in str(e):
                     done = idxref.run(ignore_errors = True)                    
                     Debug.write('XDS unhappy but solution probably ok')
                 else:

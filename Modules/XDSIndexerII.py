@@ -73,6 +73,13 @@ class XDSIndexerII(XDSIndexer):
             Debug.write('Phi width 0.0? Assuming 1.0!')
             phi_width = 1.0
 
+        # use five degrees for the background calculation
+
+        five_deg = int(round(5.0 / phi_width)) - 1
+
+        if five_deg < 5:
+            five_deg = 5
+
         images = self.get_matching_images()
 
         # characterise the images - are there just two (e.g. dna-style
@@ -88,6 +95,13 @@ class XDSIndexerII(XDSIndexer):
                     (min(images), max(images)))
         
         self.add_indexer_image_wedge((min(images), max(images)))
+
+        # FIXME this should have a wrapper function!
+
+        if min(images) + five_deg in images:
+            self._background_images = (min(images), min(images) + five_deg)
+        else:
+            self._background_images = (min(images), max(images))
 
         # FIXME this also needs to generate a list of images to use for
         # the background calculation as this is currently bodged a little
