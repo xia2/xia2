@@ -38,7 +38,7 @@ class _Flags:
         self._uniform_sd = True
         self._smart_scaling = True
         self._8way = False
-        self._chef = True
+        self._chef = False
         self._mask = None
         self._automatch = False
         self._reversephi = False
