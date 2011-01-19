@@ -76,7 +76,6 @@ Wrappers/CCP4/Doc/Scala.pdf -text
 Wrappers/CCP4/Doc/Sortmtz.pdf -text
 Wrappers/CCP4/Doc/mosflm-refactor.txt -text
 Wrappers/CCP4/MosflmR.py -text
-Wrappers/CCP4/MosflmReadHeader.py -text
 Wrappers/Labelit/DistlSignalStrength.py -text
 Wrappers/Labelit/Doc/LabelitDistl.pdf -text
 Wrappers/Labelit/Doc/LabelitScreen.pdf -text
