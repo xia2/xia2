@@ -44,7 +44,6 @@ class _Flags:
         self._reversephi = False
         self._no_lattice_test = False
         self._fiddle_sd = False
-        self._harrison_clock = False
         self._migrate_data = False
         self._trust_timestaps = False
 
@@ -343,13 +342,6 @@ class _Flags:
 
     def get_fiddle_sd(self):
         return self._fiddle_sd
-
-    def set_harrison_clock(self, harrison_clock):
-        self._harrison_clock = harrison_clock
-        return
-
-    def get_harrison_clock(self):
-        return self._harrison_clock
 
     def set_relax(self, relax):
         self._relax = relax

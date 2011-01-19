@@ -112,7 +112,6 @@ class _CommandLine(Object):
         self._read_reversephi()
         self._read_no_lattice_test()
         self._read_fiddle_sd()
-        self._read_harrison_clock()
         self._read_no_relax()
         self._read_norefine()
         self._read_noremove()        
@@ -983,10 +982,6 @@ class _CommandLine(Object):
             
         return
 
-    # FIXMEREMOVE
-    def _help_rmerge(self):
-        return '-rmerge N'
-
     def _read_ehtpx_xml_out(self):
         try:
             index = sys.argv.index('-ehtpx_xml_out')
@@ -1183,14 +1178,6 @@ class _CommandLine(Object):
             Flags.set_fiddle_sd(True)
             self._understood.append(sys.argv.index('-fiddle_sd'))
             Debug.write('[deprecated] Fiddle SD (3D) mode selected')
-        return
-
-    def _read_harrison_clock(self):
-
-        if '-harrison_clock' in sys.argv:
-            Flags.set_harrison_clock(True)
-            self._understood.append(sys.argv.index('-harrison_clock'))
-            Debug.write('[development] Harrison Clock mode on')
         return
 
     def _read_no_relax(self):

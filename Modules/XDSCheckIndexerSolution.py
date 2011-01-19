@@ -135,14 +135,11 @@ def xds_check_indexer_solution(xparm_file,
     absent = 0
     total = 0
 
-    half_h = 0
-    half_k = 0
-    half_l = 0
-
-    # at the moment this is getting a little involved, so allow to switch off
-    # this new functionality for the moment
-    
-    harrison_clock = not Flags.get_harrison_clock()
+    # 20110119 removing references to this half-lattice test as I am not
+    # sure I have any test cases where this is used. Perhaps will need to
+    # reinstate this at some point in the future. N.B. this used to refer
+    # to the harrison clock, removing as a part of the decrufting mandated
+    # in trac #1284.
 
     for record in open(spot_file, 'r').readlines():
         l = record.split()
@@ -203,61 +200,12 @@ def xds_check_indexer_solution(xparm_file,
 
             continue
 
-        if not harrison_clock:
-
-            if math.fabs(dhkl[0] - 0.5) < 0.1 and \
-                   dhkl[1] < 0.1 and dhkl[2] < 0.1:
-                half_h += 1
-                
-            if math.fabs(dhkl[1] - 0.5) < 0.1 and \
-                   dhkl[0] < 0.1 and dhkl[2] < 0.1:
-                half_k += 1
-
-            if math.fabs(dhkl[2] - 0.5) < 0.1 and \
-                   dhkl[0] < 0.1 and dhkl[1] < 0.1:
-                half_l += 1
-
     # now, if the number of absences is substantial, need to consider
     # transforming this to a primitive basis
 
     Debug.write('Absent: %d  vs.  Present: %d Total: %d' % \
                 (absent, present, total))
 
-    if not harrison_clock:
-
-        Debug.write('Half-H: %d Half-K: %d Half-L: %d' % \
-                    (half_h, half_k, half_l))
-
-        # check if it looks like we may half a half-axis someplace...
-
-        cell_a = cell[0]
-        cell_b = cell[1]
-        cell_c = cell[2]
-        cell_al = cell[3]
-        cell_be = cell[4]
-        cell_ga = cell[5]
-        
-        double = False
-
-        sd_h = math.sqrt(half_h)
-        if (half_h - 3 * sd_h) / total > 0.008:
-            double = True
-            cell_a *= 2
-        
-        sd_k = math.sqrt(half_k)
-        if (half_k - 3 * sd_k) / total > 0.008:
-            double = True
-            cell_b *= 2
-        
-        sd_l = math.sqrt(half_l)
-        if (half_l - 3 * sd_l) / total > 0.008:
-            double = True
-            cell_c *= 2
-            
-        if double:
-            cell = cell_a, cell_b, cell_c, cell_al, cell_be, cell_ga
-            return s2l(space_group_number), tuple(cell)
-                
     # now see if this is compatible with a centred lattice or suggests
     # a primitive basis is correct
 
