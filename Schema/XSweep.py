@@ -144,8 +144,8 @@ from Experts.Filenames import expand_path
 from Wrappers.XIA.Diffdump import Diffdump
 
 # access to factory classes
-import Modules.IndexerFactory as IndexerFactory
-import Modules.IntegraterFactory as IntegraterFactory
+import Modules.Indexer.IndexerFactory as IndexerFactory
+import Modules.Integrater.IntegraterFactory as IntegraterFactory
 
 class XSweep(Object):
     '''An object representation of the sweep.'''

@@ -36,7 +36,7 @@ from Experts.FindImages import image2template, find_matching_images, \
 from Schema.Object import Object
 
 # delegation of lazy-evaluation calculations
-from Modules.IndexerFactory import Indexer
+from Modules.Indexer.IndexerFactory import Indexer
 
 # image header reading functionality
 from Wrappers.XIA.Diffdump import Diffdump

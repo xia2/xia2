@@ -17,13 +17,13 @@ Modules/Doc/IndexerFactory.pdf -text
 Modules/Doc/XDSIndexer.pdf -text
 Modules/Doc/XDSIntegrater.pdf -text
 Modules/Indexer/__init__.py -text
+Modules/Integrater/XDSIntegraterR.py -text
 Modules/Integrater/__init__.py -text
 Modules/SPOT.XDS -text svneol=unset#application/octet-stream
 Modules/Scaler/CCP4ScalerR.py -text
 Modules/Scaler/XDSScalerR.py -text
 Modules/Scaler/__init__.py -text
 Modules/TTT.py -text
-Modules/XDSIntegraterR.py -text
 Modules/XPARM.XDS -text svneol=unset#application/octet-stream
 Modules/Xia2html/extras/JLogGraph.jar -text
 Modules/Xia2html/icons/img_abandoned.png -text

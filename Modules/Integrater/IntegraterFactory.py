@@ -15,11 +15,9 @@ import copy
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
-if not os.environ.has_key('XIA2CORE_ROOT'):
-    raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
-sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
-sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
 
 from Wrappers.CCP4 import Mosflm
 from Wrappers.CCP4 import MosflmR
@@ -27,10 +25,10 @@ from Handlers.Streams import Debug
 from Handlers.Flags import Flags
 from Handlers.PipelineSelection import get_preferences, add_preference
 
-from Modules.XDSIntegrater import XDSIntegrater
-from Modules.XDSIntegraterR import XDSIntegraterR
+from Modules.Integrater.XDSIntegrater import XDSIntegrater
+from Modules.Integrater.XDSIntegraterR import XDSIntegraterR
 
-from NullIntegrater import NullIntegrater
+from Modules.Integrater.NullIntegrater import NullIntegrater
 
 from Exceptions.NotAvailableError import NotAvailableError
 
