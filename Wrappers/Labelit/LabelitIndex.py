@@ -116,7 +116,8 @@ from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Citations import Citations
 from Handlers.Flags import Flags
 from Modules.IceId import IceId
-from Modules.MosflmCheckIndexerSolution import mosflm_check_indexer_solution
+from Modules.Indexer.MosflmCheckIndexerSolution import \
+     mosflm_check_indexer_solution
 
 def LabelitIndex(DriverType = None, indxr_print = True):
     '''Factory for LabelitIndex wrapper classes, with the specified

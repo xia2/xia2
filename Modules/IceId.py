@@ -23,9 +23,8 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
 from Wrappers.XIA.Diffdump import Diffdump
-# from Wrappers.XIA.Printpeaks import Printpeaks
-from MosflmCheckIndexerSolution import locate_maxima
 
+from Modules.Indexer.MosflmCheckIndexerSolution import locate_maxima
 from Modules.Resolution import compute_resolution
 
 # first a couple of jiffy calculation subroutines

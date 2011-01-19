@@ -218,7 +218,8 @@ from Modules.IceId import IceId
 # cell refinement image helpers
 
 from Modules.CellRefImageSelect import identify_perpendicular_axes
-from Modules.MosflmCheckIndexerSolution import mosflm_check_indexer_solution
+from Modules.Indexer.MosflmCheckIndexerSolution import \
+     mosflm_check_indexer_solution
 
 # jiffy functions for means, standard deviations and outliers
 
