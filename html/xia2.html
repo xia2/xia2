@@ -441,6 +441,22 @@ END PROJECT TS01
       <li>Small bug fix / improvement in XDS indexer implementation.</li>
       <li>Capability to ptovide refined experimental geometry <i>via</i>
 	XDS GXPARM.XDS - useful for polycrystal data reduction.</li>
+      <li>Now check what you tell the program, viz:
+<pre>
+gw56@ws050 nonsense]$ xia2 -3d -nonsense /data/gw56/dl/Cowan/Insulin/insulin/
+Traceback (most recent call last):
+  File "/home/gw56/svn/xia2/Applications/xia2.py", line 45, in 
+    from xia2setup import write_xinfo
+  File "/home/gw56/svn/xia2/Applications/xia2setup.py", line 35, in 
+    from Handlers.CommandLine import CommandLine
+  File "/home/gw56/svn/xia2/Handlers/CommandLine.py", line 1513, in 
+    CommandLine.setup()
+  File "/home/gw56/svn/xia2/Handlers/CommandLine.py", line 349, in setup
+    raise RuntimeError, nonsense
+RuntimeError: Unknown command-line options: -nonsense
+</pre>
+	and complain if you type in something xia2 does not understand.
+      </li>
     </ul>
 
 
@@ -985,7 +1001,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Tue Jan 18 09:30:14 GMT 2011
+Last modified: Wed Jan 19 09:23:37 GMT 2011
 <!-- hhmts end -->
   </body>
 </html>
