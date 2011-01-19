@@ -17,7 +17,10 @@ Modules/Doc/Indexer.pdf -text
 Modules/Doc/IndexerFactory.pdf -text
 Modules/Doc/XDSIndexer.pdf -text
 Modules/Doc/XDSIntegrater.pdf -text
+Modules/Indexer/__init__.py -text
+Modules/Integrater/__init__.py -text
 Modules/SPOT.XDS -text svneol=unset#application/octet-stream
+Modules/Scaler/__init__.py -text
 Modules/TTT.py -text
 Modules/XDSIntegraterR.py -text
 Modules/XDSScalerR.py -text

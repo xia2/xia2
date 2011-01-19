@@ -49,7 +49,7 @@ from Schema.Exceptions.BadLatticeError import BadLatticeError
 # indexing functionality if not already provided - even if it is
 # we still need to reindex with XDS.
 
-from Modules.XDSIndexer import XDSIndexer
+from Modules.Indexer.XDSIndexer import XDSIndexer
 
 # odds and sods that are needed
 

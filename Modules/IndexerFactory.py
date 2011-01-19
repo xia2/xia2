@@ -44,8 +44,8 @@ sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 from Wrappers.Labelit.LabelitIndex import LabelitIndex
 from Wrappers.Labelit.LabelitIndexII import LabelitIndexII
 from Wrappers.CCP4.Mosflm import Mosflm
-from Modules.XDSIndexer import XDSIndexer
-from Modules.XDSIndexerII import XDSIndexerII
+from Modules.Indexer.XDSIndexer import XDSIndexer
+from Modules.Indexer.XDSIndexerII import XDSIndexerII
 
 from Exceptions.NotAvailableError import NotAvailableError
 from Handlers.Streams import Debug
