@@ -146,18 +146,6 @@ def mosflm_check_indexer_solution(indexer):
 
     images.sort()
 
-    if False:
-
-        all_images = indexer.get_matching_images()
-        
-        images = [min(all_images)]
-        step = nint(5.0 / phi)
-        next = images[0] + step
-        
-        while next in all_images:
-            images.append(next)
-            next += step
-
     # now construct the reciprocal-space peak list n.b. should
     # really run this in parallel...
 
