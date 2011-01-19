@@ -80,7 +80,7 @@ from Object import Object
 
 from Wrappers.CCP4.Othercell import Othercell
 from Handlers.Environment import Environment
-from Modules.ScalerFactory import Scaler
+from Modules.Scaler.ScalerFactory import Scaler
 from Handlers.Syminfo import Syminfo
 from Handlers.Flags import Flags
 from Handlers.Files import FileHandler

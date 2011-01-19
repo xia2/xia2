@@ -11,7 +11,6 @@ Handlers/Doc/CommandLine.pdf -text
 Handlers/Doc/Decision.pdf -text
 Handlers/Doc/Syminfo.pdf -text
 Handlers/Doc/Xinfo.pdf -text
-Modules/CCP4ScalerR.py -text
 Modules/Doc/CCP4ScalerImplementation.pdf -text
 Modules/Doc/Indexer.pdf -text
 Modules/Doc/IndexerFactory.pdf -text
@@ -20,10 +19,11 @@ Modules/Doc/XDSIntegrater.pdf -text
 Modules/Indexer/__init__.py -text
 Modules/Integrater/__init__.py -text
 Modules/SPOT.XDS -text svneol=unset#application/octet-stream
+Modules/Scaler/CCP4ScalerR.py -text
+Modules/Scaler/XDSScalerR.py -text
 Modules/Scaler/__init__.py -text
 Modules/TTT.py -text
 Modules/XDSIntegraterR.py -text
-Modules/XDSScalerR.py -text
 Modules/XPARM.XDS -text svneol=unset#application/octet-stream
 Modules/Xia2html/extras/JLogGraph.jar -text
 Modules/Xia2html/icons/img_abandoned.png -text

@@ -60,14 +60,13 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Schema.Interfaces.Scaler import Scaler
 
 # other tools that this will need
-from Modules.XDSPointgroup import XDSPointgroup
-from Modules.XDSScalerHelpers import XDSScalerHelper
+from Modules.Scaler.XDSScalerHelpers import XDSScalerHelper
 
 # program wrappers that we will need
 
 from Wrappers.XDS.XScaleR import XScaleR as _XScale
 from Wrappers.XDS.Cellparm import Cellparm as _Cellparm
-from TTT import ttt
+from Modules.TTT import ttt
 
 from Wrappers.CCP4.CCP4Factory import CCP4Factory
 
@@ -85,9 +84,10 @@ from Experts.SymmetryExpert import symop_to_mat, compose_matrices_r
 
 # stuff I have nicked from the CCP4 Scaler implementation
 from CCP4ScalerHelpers import _resolution_estimate
-from CCP4InterRadiationDamageDetector import CCP4InterRadiationDamageDetector
+from Modules.CCP4InterRadiationDamageDetector import \
+     CCP4InterRadiationDamageDetector
 from Experts.ResolutionExperts import determine_scaled_resolution
-from DoseAccumulate import accumulate
+from Modules.DoseAccumulate import accumulate
 
 # new resolution limit code
 from Toolkit.Merger import merger

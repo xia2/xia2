@@ -60,8 +60,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Schema.Interfaces.Scaler import Scaler
 
 # other tools that this will need
-from Modules.XDSPointgroup import XDSPointgroup
-from Modules.XDSScalerHelpers import XDSScalerHelper
+from Modules.Scaler.XDSScalerHelpers import XDSScalerHelper
 
 # program wrappers that we will need
 
@@ -84,9 +83,10 @@ from Experts.SymmetryExpert import symop_to_mat, compose_matrices_r
 
 # stuff I have nicked from the CCP4 Scaler implementation
 from CCP4ScalerHelpers import _resolution_estimate
-from CCP4InterRadiationDamageDetector import CCP4InterRadiationDamageDetector
+from Modules.CCP4InterRadiationDamageDetector import \
+     CCP4InterRadiationDamageDetector
 from Experts.ResolutionExperts import determine_scaled_resolution
-from DoseAccumulate import accumulate
+from Modules.DoseAccumulate import accumulate
 
 # newly implemented CCTBX powered functions to replace xia2 binaries
 from Functions.add_dose_time_to_mtz import add_dose_time_to_mtz
