@@ -1,4 +1,4 @@
-# CellRefImageSelect.py
+# FindFreeFlag.py
 # Maintained by G.Winter
 # 11th July 2008
 # 
