@@ -306,12 +306,6 @@ class _CommandLine(Object):
                   (self._help_completeness(), str(e))
 
         try:
-            self._read_cellref_mode()
-        except exceptions.Exception, e:
-            raise RuntimeError, '%s (%s)' % \
-                  (self._help_cellref_mode(), str(e))
-
-        try:
             self._read_scale_model()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -1068,27 +1062,6 @@ class _CommandLine(Object):
             
         return
 
-    def _read_cellref_mode(self):
-        try:
-            index = sys.argv.index('-cellref_mode')
-        except ValueError, e:
-            return
-
-        if index < 0:
-            raise RuntimeError, 'negative index'
-
-        self._understood.append(index)
-        self._understood.append(index + 1)
-
-        Flags.set_cellref_mode(sys.argv[index + 1])
-        Debug.write('Cell refinement mode (2D) set to %s' % \
-                    Flags.get_cellref_mode())
-
-        return
-
-    def _help_cellref_mode(self):
-        return '-cellref_mode (default|parallel|orthogonal|both)'
-
     def _read_scale_model(self):
         try:
             index = sys.argv.index('-scale_model')
@@ -1105,9 +1078,6 @@ class _CommandLine(Object):
         Debug.write('Scaling model set to: %s' % Flags.get_scale_model())
 
         return
-
-    def _help_cellref_mode(self):
-        return '-cellref_mode (default|parallel|orthogonal|both)'
 
     def _read_quick(self):
 

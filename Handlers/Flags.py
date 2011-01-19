@@ -107,9 +107,6 @@ class _Flags:
         self._resolution_low = None
         self._resolution_high = None
 
-        # and these for the mosflm implementation
-        self._cellref_mode = 'dumb'
-
         # and these are general rejection criteria
         self._rejection_threshold = 1.5
         self._i_over_sigma_limit = 2.0
@@ -186,16 +183,6 @@ class _Flags:
 
     # the end of such matters
 
-    def set_cellref_mode(self, cellref_mode):
-        if not cellref_mode in ['default', 'parallel',
-                                'orthogonal', 'both',
-                                'new', 'dumb']:
-            raise RuntimeError, 'cellref_mode %s unknown' % cellref_mode
-
-        self._cellref_mode = cellref_mode
-
-        return
-
     ### SETTING OF RESOLUTION LIMITS #### bug # 3183
 
     def set_resolution_high(self, resolution):
@@ -262,9 +249,6 @@ class _Flags:
 
     def get_cell(self):
         return self._cell
-
-    def get_cellref_mode(self):
-        return self._cellref_mode
 
     def set_quick(self, quick):
         self._quick = quick

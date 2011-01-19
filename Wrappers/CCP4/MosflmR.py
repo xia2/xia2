@@ -2135,9 +2135,7 @@ def MosflmR(DriverType = None):
                 # look for overall cell refinement failure
 
                 if 'Processing will be aborted' in o:
-
                     raise BadLatticeError, 'cell refinement failed'
-                    
                 
                 # look to store the rms deviations on a per-image basis
                 # this may be used to decide what to do about "inaccurate
@@ -2281,13 +2279,10 @@ def MosflmR(DriverType = None):
                     Debug.write(
                         'However, will continue to integration.')
                         
-
 		if 'One or more cell parameters has changed by more' in o:
                     # this is a more severe example of the above problem...
                     Debug.write(
                         'Cell refinement is unstable...')
-
-                    # so decide what to do about it...
 
                     raise BadLatticeError, 'Cell refinement failed'
 

@@ -522,289 +522,7 @@ def Mosflm(DriverType = None):
 
             return
 
-        def _intelligent_refine_select_images_parallel(self):
-            '''Return wedges around phi points where the reciprocal
-            cell axes are close to being parallel to the detector
-            face. Assumes beam axis (Z) perpendicular to detector face.'''
-
-            indxr = self.get_integrater_indexer()
-            lattice = indxr.get_indexer_lattice()
-            mosaic = indxr.get_indexer_mosaic()
-            matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
-
-            input_matrix = ''
-            for m in matrix:
-                input_matrix += '%s\n' % m
-
-            # compute the primitive triclinic unit cell
-
-            astar, bstar, cstar = get_reciprocal_space_primitive_matrix(
-                lattice, input_matrix, self.get_working_directory())
-
-            # iterate over the possible phi angles recorded in the
-            # headers and find min(|R(p)a.Z|) etc. 
-
-            images = self.get_matching_images()
-            images.sort()
-
-            phi_width = self.get_header_item('phi_width')
-            phi_start = self.get_header_item('phi_start')
-
-            half_width = int(max(2, 0.75 * mosaic / phi_width))
-
-            # looking for minima in axiz.Z => parallel to detector face
-
-            best_dot_a = 1.0e6
-            best_image_a = None
-            best_dot_b = 1.0e6
-            best_image_b = None
-            best_dot_c = 1.0e6
-            best_image_c = None
-
-            # only look at the middle of the images to guarantee that the
-            # complete wedges are available
-
-            for i in images[half_width + 1:- (half_width + 1)]:
-                
-                header = self._mosflm_get_header(i)
-
-                dtor = 180.0 / (4.0 * math.atan(1.0))
-
-                phi = 0.5 * header['phi_width'] + header['phi_start']
-
-                # only consider first 180 degrees
-                if phi > 180.0 + phi_start:
-                    break
-
-                c = math.cos(phi / dtor)
-                s = math.sin(phi / dtor)
-                
-                dot_a = math.fabs(-s * astar[0] + c * astar[2])
-                dot_b = math.fabs(-s * bstar[0] + c * bstar[2])
-                dot_c = math.fabs(-s * cstar[0] + c * cstar[2])
-
-                if dot_a < best_dot_a:
-                    best_dot_a = dot_a
-                    best_image_a = i
-                if dot_b < best_dot_b:
-                    best_dot_b = dot_b
-                    best_image_b = i
-                if dot_c < best_dot_c:
-                    best_dot_c = dot_c
-                    best_image_c = i
-
-            # next build up wedges around these phi values - ignoring 
-            # the fact that these may overlap... this should be worried
-            # about at a higher level or indeed just ignored...
-
-            wedges = []
-
-            wedges.append((best_image_a - half_width,
-                           best_image_a + half_width))
-            wedges.append((best_image_b - half_width,
-                           best_image_b + half_width))
-            wedges.append((best_image_c - half_width,
-                           best_image_c + half_width))
-
-            Debug.write('Selected images for cell refinement:')
-            for w in wedges:
-                Debug.write('[%d -> %d]' % w)
-
-            return wedges
-
-
-        def _new_refine_select_images(self):
-            '''Link function through to identify_perpendicular_axes.'''
-
-            indxr = self.get_integrater_indexer()
-            lattice = indxr.get_indexer_lattice()
-            mosaic = indxr.get_indexer_mosaic()
-            matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
-
-            input_matrix = ''
-            for m in matrix:
-                input_matrix += '%s\n' % m
-
-            # get the list of possible phi ranges
-
-            images = self.get_matching_images()
-            images.sort()
-
-            phi_width = self.get_header_item('phi_width')
-            phi_start = self.get_header_item('phi_start')
-            phi_end = phi_start + phi_width * (len(images) - 1)
-
-            half_width = int(max(2, 0.75 * mosaic / phi_width))
-
-            # find the best image centres to use
-
-            input_matrix = ''
-            for m in matrix:
-                input_matrix += '%s\n' % m
-
-            r = identify_perpendicular_axes(phi_start, phi_end, phi_width,
-                                            self.get_wavelength(), lattice,
-                                            input_matrix)
-
-            Debug.write('CR Image identification:')
-            Debug.write('A: %.2f %.2f %4d' % (r[0], r[3], r[6] + images[0]))
-            Debug.write('B: %.2f %.2f %4d' % (r[1], r[4], r[7] + images[0]))
-            Debug.write('C: %.2f %.2f %4d' % (r[2], r[5], r[8] + images[0]))
-
-            ia, ib, ic = r[-3:]
-
-            ia += images[0]
-            ib += images[0]
-            ic += images[0]
-
-            # now try to construct the wedges around this
-
-            # NB need to consider the case where the wedge is too
-            # small...
-
-            wedges = []
-
-            if (ia - half_width) in images and \
-               (ia + half_width) in images:
-                wedges.append((ia - half_width, ia + half_width))
-            elif ia - half_width < min(images):
-                wedges.append((images[0], images[0] + 2 * half_width))
-            elif ia + half_width > max(images):
-                wedges.append((images[-1] - 2 * half_width, images[-1]))
-            else:
-                raise RuntimeError, 'unexpected conclusion...'
-
-            if (ib - half_width) in images and \
-               (ib + half_width) in images:
-                wedges.append((ib - half_width, ib + half_width))
-            elif ib - half_width < min(images):
-                wedges.append((images[0], images[0] + 2 * half_width))
-            elif ib + half_width > max(images):
-                wedges.append((images[-1] - 2 * half_width, images[-1]))
-            else:
-                raise RuntimeError, 'unexpected conclusion...'
-
-            if (ic - half_width) in images and \
-               (ic + half_width) in images:
-                wedges.append((ic - half_width, ic + half_width))
-            elif ic - half_width < min(images):
-                wedges.append((images[0], images[0] + 2 * half_width))
-            elif ic + half_width > max(images):
-                wedges.append((images[-1] - 2 * half_width, images[-1]))
-            else:
-                raise RuntimeError, 'unexpected conclusion...'
-
-            # now redue these to fewer wedges if appropriate...
-
-            wedges.sort()
-
-            new_wedges = [wedges[0]]
-
-            for j in range(1, len(wedges)):
-                if wedges[j][0] <= new_wedges[-1][1]:
-                    # just extend the end wedge - have to replace
-                    new = (new_wedges[-1][0], wedges[j][1])
-                    new_wedges[-1] = new
-                else:
-                    new_wedges.append(wedges[j])
-
-            Debug.write('Selected images for cell refinement:')
-            for w in new_wedges:
-                Debug.write('[%d -> %d]' % w)
-
-            return new_wedges
-
-        def _intelligent_refine_select_images_ortho(self):
-            '''Return wedges around phi points where the reciprocal
-            cell axes are close to being perpendicular to the detector
-            face. Assumes beam axis (Z) perpendicular to detector face.'''
-
-            indxr = self.get_integrater_indexer()
-            lattice = indxr.get_indexer_lattice()
-            mosaic = indxr.get_indexer_mosaic()
-            matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
-
-            input_matrix = ''
-            for m in matrix:
-                input_matrix += '%s\n' % m
-
-            # compute the primitive triclinic unit cell
-
-            astar, bstar, cstar = get_reciprocal_space_primitive_matrix(
-                lattice, input_matrix, self.get_working_directory())
-
-            # iterate over the possible phi angles recorded in the
-            # headers and find min(|R(p)a.Z|) etc. 
-
-            images = self.get_matching_images()
-            images.sort()
-
-            phi_width = self.get_header_item('phi_width')
-            phi_start = self.get_header_item('phi_start')
-
-            half_width = int(max(2, 0.75 * mosaic / phi_width))
-
-            # looking for minima in axiz.Z => parallel to detector face
-
-            best_dot_a = 0.0
-            best_image_a = None
-            best_dot_b = 0.0
-            best_image_b = None
-            best_dot_c = 0.0
-            best_image_c = None
-
-            # only look at the middle of the images to guarantee that the
-            # complete wedges are available
-
-            for i in images[half_width + 1:- (half_width + 1)]:
-                
-                header = self._mosflm_get_header(i)
-
-                dtor = 180.0 / (4.0 * math.atan(1.0))
-
-                phi = 0.5 * header['phi_width'] + header['phi_start']
-
-                # only consider first 180 degrees
-                if phi > 180.0 + phi_start:
-                    break
-            
-                c = math.cos(phi / dtor)
-                s = math.sin(phi / dtor)
-                
-                dot_a = math.fabs(-s * astar[0] + c * astar[2])
-                dot_b = math.fabs(-s * bstar[0] + c * bstar[2])
-                dot_c = math.fabs(-s * cstar[0] + c * cstar[2])
-
-                if dot_a > best_dot_a:
-                    best_dot_a = dot_a
-                    best_image_a = i
-                if dot_b > best_dot_b:
-                    best_dot_b = dot_b
-                    best_image_b = i
-                if dot_c > best_dot_c:
-                    best_dot_c = dot_c
-                    best_image_c = i
-
-            # next build up wedges around these phi values - ignoring 
-            # the fact that these may overlap... this should be worried
-            # about at a higher level or indeed just ignored...
-
-            wedges = []
-
-            wedges.append((best_image_a - half_width,
-                           best_image_a + half_width))
-            wedges.append((best_image_b - half_width,
-                           best_image_b + half_width))
-            wedges.append((best_image_c - half_width,
-                           best_image_c + half_width))
-
-            Debug.write('Selected images for cell refinement:')
-            for w in wedges:
-                Debug.write('[%d -> %d]' % w)
-
-            return wedges
-
-        def _refine_select_images_dumb(self, mosaic):
+        def _refine_select_images(self, mosaic):
             '''Select images for cell refinement based on image headers.'''
 
             # this will always use three wedges with spacing 45 degrees
@@ -868,144 +586,6 @@ def Mosflm(DriverType = None):
 
             return cell_ref_images
 
-
-        def _refine_select_images(self, num_wedges, mosaic):
-            '''Select images for cell refinement based on image headers.'''
-
-            # call the intelligent version...
-
-            cell_ref_images = []
-
-            cellref_mode = Flags.get_cellref_mode()
-
-            if cellref_mode == 'new':
-                return self._new_refine_select_images()
-
-            if cellref_mode == 'dumb':
-                return self._refine_select_images_dumb(mosaic)
-
-            if cellref_mode == 'both' or cellref_mode == 'parallel':
-                for wedge in self._intelligent_refine_select_images_parallel():
-                    if not wedge in cell_ref_images:
-                        cell_ref_images.append(wedge)
-            if cellref_mode == 'both' or cellref_mode == 'orthogonal':
-                for wedge in self._intelligent_refine_select_images_ortho():
-                    if not wedge in cell_ref_images:
-                        cell_ref_images.append(wedge)
-                    
-            if cellref_mode != 'default':
-                return cell_ref_images
-
-            # first select the images to use for cell refinement
-            # if spacegroup >= 75 use one wedge of 2-3 * mosaic spread, min
-            # 3 images, else use two wedges of this size as near as possible
-            # to 90 degrees separated. However, is this reliable enough?
-            # FIXME this needs to be established, in particular in the case
-            # where the lattice is wrongly assigned
-
-            # WARNING this will fail if phi width was 0 - should
-            # never happen though
-
-            if num_wedges > 3:
-                # allow a rerun later on, perhaps? c/f integrating TS01
-                # where this failure is an indication that lattice != oI
-                self._mosflm_cell_ref_images = None
-                raise RuntimeError, 'cannot cope with more than 3 wedges'
-
-            phi_width = self.get_header_item('phi_width')
-
-            # FIXME what to do if phi_width is 0.0? set it
-            # to 1.0! This should be safe enough... though a warning
-            # would not go amiss...
-
-            if phi_width == 0.0:
-                Chatter.write('Phi width 0.0? Assuming 1.0!')
-                phi_width = 1.0
-            
-            min_images = max(4, int(2 * mosaic / phi_width))
-            
-            # next select what we need from the list...
-
-            images = self.get_matching_images()
-
-            # bug # 2344 - does this every really help, other than
-            # being totally literal? if num_wedges == 3 then this
-            # will probably just end up using all images...
-            if len(images) < num_wedges * min_images and num_wedges == 2:
-                raise RuntimeError, 'not enough images to refine unit cell'
-
-            cell_ref_images = []
-            cell_ref_images.append((images[0], images[min_images - 1]))
-
-            # FIXME 23/OCT/06 need to be able to cope with more than two
-            # wedges - in this case have the spread evenly between 0 and
-            # 90 degrees as that measures all of the required unit cell
-            # vectors..
-
-            if num_wedges == 2:
-                ideal_last = int(90.0 / phi_width) + min_images
-                if ideal_last in images:
-                    cell_ref_images.append(
-                        (images[ideal_last - min_images + 1],
-                         images[ideal_last]))
-                else:
-                    # there aren't 90 degrees of images
-                    cell_ref_images.append((images[-min_images],
-                                            images[-1]))
-
-            elif num_wedges == 3:
-                ideal_middle = int(45.0 / phi_width) + min_images
-                if ideal_middle in images:
-                    cell_ref_images.append((images[ideal_middle - min_images],
-                                            images[ideal_middle - 1]))
-                else:
-                    # there aren't 45 degrees of images
-                    # bug # 2344 - we may be trying to reduce data from
-                    # a partial data set, in which case it is important to
-                    # give this a proper go... now Mosflm can take
-                    # up to 30 frames for postrefinement and I have
-                    # found that 3 x 10 is better than 2 x 15, so
-                    # if this is all you have, then go ahead. Now,
-                    # if the spacegroup is less than 75 then it is
-                    # likely that the refined cell parameters may not
-                    # be perfect, but they will probably be good enough,
-                    # so allow for a little slack (like say up to 0.2A
-                    # or 1% or something...)
-                    # raise RuntimeError, \
-                    # 'not enough data to do 3 wedge cell refinement'
-
-                    lattice = self.get_integrater_indexer().get_indexer_lattice()
-                    spacegroup_number = lattice_to_spacegroup(lattice)
-
-                    Chatter.write('Less than 45 degrees so using %d images!' %
-                                  min(30, len(images)))
-                        
-                    if len(images) <= 30:
-                        # use all 30 images for cell refinement
-                        cell_ref_images = [(min(images), max(images))]
-
-                    else:
-                        # set this to first ten, middle ten and last ten images
-                        middle = len(images) / 2
-                        cell_ref_images = [(images[0], images[9]),
-                                           (images[middle - 4], images[middle + 5]),
-                                           (images[-10], images[-1])]
-
-                        return cell_ref_images
-
-                ideal_last = int(90.0 / phi_width) + min_images
-
-                if ideal_last in images:
-                    cell_ref_images.append((images[ideal_last - min_images],
-                                            images[ideal_last]))
-                else:
-                    # there aren't 90 degrees of images
-                    cell_ref_images.append((images[-min_images],
-                                            images[-1]))
-                
-
-            return cell_ref_images
-                            
         def _index(self):
             '''Implement the indexer interface.'''
 
@@ -1581,14 +1161,8 @@ def Mosflm(DriverType = None):
                 mosaic = indxr.get_indexer_mosaic()
                 spacegroup_number = lattice_to_spacegroup(lattice)
 
-                # FIXME is this ignored now?
-                if spacegroup_number >= 75:
-                    num_wedges = 1
-                else:
-                    num_wedges = 2
-
                 self._mosflm_cell_ref_images = self._refine_select_images(
-                    num_wedges, mosaic)
+                    mosaic)
 
             indxr = self.get_integrater_indexer()
 
@@ -2332,21 +1906,9 @@ def Mosflm(DriverType = None):
             # example is very low resolution, so don't worry too hard
             # about it!
 
-            if spacegroup_number >= 75:
-                num_wedges = 1
-            else:
-                num_wedges = 2
-
-            # FIXME 23/OCT/06 should only do this if the images are not
-            # already assigned - for instance, in the case where the cell
-            # refinement fails and more images are added after that failure
-            # need to be able to cope with not changing them at this stage...
-
-            # self._mosflm_cell_ref_images = None
-
             if not self._mosflm_cell_ref_images:
                 self._mosflm_cell_ref_images = self._refine_select_images(
-                    num_wedges, mosaic)
+                    mosaic)
 
             # write the matrix file in xiaindex.mat
 
@@ -2549,35 +2111,7 @@ def Mosflm(DriverType = None):
 
                 # look for overall cell refinement failure
                 if 'Processing will be aborted' in o:
-
-                    # perhaps try this with more images?
-                    
-                    if len(self._mosflm_cell_ref_images) < 3 and \
-                           Flags.get_cellref_mode() == 'default':
-                        # set this up to be more images
-                        new_cell_ref_images = self._refine_select_images(
-                            len(self._mosflm_cell_ref_images) + 1,
-                            mosaic)
-
-                        old_cell_ref_images = self._mosflm_cell_ref_images
-
-                        # check to see if the old images are the same as the
-                        # new ones - if they are, die
-
-                        if old_cell_ref_images == new_cell_ref_images:
-                            raise BadLatticeError, 'Cell refinement failed'
-                        
-                        self._mosflm_cell_ref_images = new_cell_ref_images
-
-                        self.set_integrater_prepare_done(False)
-
-                        Debug.write(
-                            'Repeating cell refinement with more data.')
-
-                        return
-                    else:
-                        raise BadLatticeError, 'cell refinement failed'
-                    
+                    raise BadLatticeError, 'cell refinement failed'
                 
                 # look to store the rms deviations on a per-image basis
                 # this may be used to decide what to do about "inaccurate
@@ -2681,50 +2215,7 @@ def Mosflm(DriverType = None):
                 if 'is greater than the maximum allowed' in o and \
                        'FINAL weighted residual' in o:
                    
-                    # the weighted residual is too high - this suggests
-                    # a poor indexing solution - jump out and redo
-                    
-                    Debug.write('Large weighted residual...')
-                    
-                    if len(self._mosflm_cell_ref_images) < 3 and \
-                           Flags.get_cellref_mode() == 'default':
-                        # set this up to be more images
-                        new_cell_ref_images = self._refine_select_images(
-                            len(self._mosflm_cell_ref_images) + 1,
-                            mosaic)
-                        
-                        old_cell_ref_images = self._mosflm_cell_ref_images
-
-                        # check to see if the old images are the same as the
-                        # new ones - if they are, die
-
-                        if old_cell_ref_images == new_cell_ref_images:
-                            raise BadLatticeError, 'Cell refinement failed'
-                        
-                        self._mosflm_cell_ref_images = new_cell_ref_images
-                        
-                        # set a flag to say cell refinement needs rerunning
-                        # c/f Integrator.py
-                        self.set_integrater_prepare_done(False)
-                        
-                        # tell the user what is going on
-
-                        Debug.write(
-                            'Repeating cell refinement with more data.')
-
-                        # don't update the indexer - the results could be
-                        # wrong!
-                        
-                        return
-                    
-                    else:
-                        # Debug.write(
-                        # 'Integration will be aborted because of this.')
-                        
-                        # raise BadLatticeError, 'cell refinement failed: ' + \
-                        # 'inaccurate cell parameters'
-
-                        Debug.write('Ignoring inaccurate cell parameters')
+                    Debug.write('Large weighted residual... ignoring')
                     
                 if 'INACCURATE CELL PARAMETERS' in o:
                     
@@ -2761,91 +2252,13 @@ def Mosflm(DriverType = None):
                     for p in parameters:
                         Debug.write('... %s' % p)
 
-                    # decide what to do about this...
-                    # if this is all cell parameters, abort, else
-		    # consider using more data...
-
-                    # see how many wedges we are using - if it's 3 already
-                    # then there is probably something more important
-                    # wrong. If it is fewer than this then try again!
-
-                    if len(self._mosflm_cell_ref_images) < 3 and \
-                           Flags.get_cellref_mode() == 'default':
-                        
-                        # set this up to be more images
-                        new_cell_ref_images = self._refine_select_images(
-                            len(self._mosflm_cell_ref_images) + 1,
-                            mosaic)
-
-                        old_cell_ref_images = self._mosflm_cell_ref_images
-
-                        # check to see if the old images are the same as the
-                        # new ones - if they are, die
-
-                        if old_cell_ref_images == new_cell_ref_images:
-                            raise BadLatticeError, 'Cell refinement failed'
-                        
-                        self._mosflm_cell_ref_images = new_cell_ref_images
-
-                        # set a flag to say cell refinement needs rerunning
-                        # c/f Integrator.py
-                        self.set_integrater_prepare_done(False)
-
-                        # tell the user what is going on
-
-                        Debug.write(
-                            'Repeating cell refinement with more data.')
-
-                        # don't update the indexer - the results could be
-                        # wrong!
-
-                        return
-
-                    else:
-                        Debug.write(
-                            'However, will continue to integration.')
-                        
-
 		if 'One or more cell parameters has changed by more' in o:
                     # this is a more severe example of the above problem...
                     Debug.write(
                         'Cell refinement is unstable...')
 
-                    # so decide what to do about it...
-
-                    if len(self._mosflm_cell_ref_images) <= 3:
-                        # set this up to be more images
-                        new_cell_ref_images = self._refine_select_images(
-                            len(self._mosflm_cell_ref_images) + 1,
-                            mosaic)
-
-                        old_cell_ref_images = self._mosflm_cell_ref_images
-
-                        # check to see if the old images are the same as the
-                        # new ones - if they are, die
-
-                        if old_cell_ref_images == new_cell_ref_images:
-                            raise BadLatticeError, 'Cell refinement failed'
-
-                        self._mosflm_cell_ref_images = new_cell_ref_images
-
-                        self.set_integrater_prepare_done(False)
-
-                        Debug.write(
-                            'Repeating cell refinement with more data.')
-
-                        return
-
-                    else:
-
-                        # Debug.write(
-                        # 'Integration will be aborted because of this.')
-                        
-                        Debug.write('Ignoring unstable cell parameters')
-                        
-                        # raise BadLatticeError, 'cell refinement failed: ' + \
-                        # 'unstable cell refinement'
-
+                    raise BadLatticeError, 'Cell refinement failed'
+                    
                 # other possible problems in the cell refinement - a
                 # negative mosaic spread, for instance
 
@@ -2855,58 +2268,7 @@ def Mosflm(DriverType = None):
                         Debug.write('Negative mosaic spread (%5.2f)' %
                                     mosaic)
 
-                        # FIXME this needs to be updated to allow for the
-                        # fact that the number of wedges used may be
-                        # fixed as the "cleverly selected" few ...
-
-                        if len(self._mosflm_cell_ref_images) < 3:
-                            # set this up to be more images
-                            # erm... only if we are using the old mode
-                            # of image selection...
-
-                            cellref_mode = Flags.get_cellref_mode()
-
-                            if cellref_mode == 'default': 
-                                new_cref_images = self._refine_select_images(
-                                    len(self._mosflm_cell_ref_images) + 1,
-                                    mosaic)
-                                self._mosflm_cell_ref_images = new_cref_images
-                            else:
-                                # fix the mosaic spread in postrefinement
-                                # at the value from autoindexing
-                                Debug.write(
-                                    'Mosaic spread refining negative => fix!')
-                                self._mosflm_postref_fix_mosaic = True
-                                
-                            
-                            self.set_integrater_prepare_done(False)
-                            
-                            if cellref_mode == 'default':
-                                Debug.write(
-                                    'Repeating refinement with more data.')
-                            else:
-                                Debug.write(
-                                    'Repeating refinement with mosaic fixed.')
-                                
-
-                            return
-
-                        else:
-
-                            # Debug.write(
-                            # 'Integration will be aborted because of this.')
-                            # Debug.write(
-                            # 'Mosaic spread refining negative => fix!')
-                            # self._mosflm_postref_fix_mosaic = True
-
-                            # FIXME - in here want to perhaps consider trying
-                            # to double the mosaic spread and giving it
-                            # another go... may get messy though..!
-                            
-                            # raise BadLatticeError, 'refinement failed: ' + \
-                            # 'negative mosaic spread'
-
-                            raise NegativeMosaicError, 'refinement failed'
+                        raise NegativeMosaicError, 'refinement failed'
 
             parse_cycle = 1
             parse_image = 0
