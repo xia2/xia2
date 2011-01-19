@@ -91,7 +91,6 @@ from NMolLib import compute_nmol, compute_solvent
 if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'Interfaces'))
 
-from eHTPX.EHTPXXmlHandler import EHTPXXmlHandler
 from ISPyB.ISPyBXmlHandler import ISPyBXmlHandler
 
 def sort_o_dict(dict, metric):
@@ -259,8 +258,6 @@ class XCrystal(Object):
 
         result = 'Crystal: %s\n' % self._name
 
-        EHTPXXmlHandler.add_crystal(self._name)
-        
         if Flags.get_ispyb_xml_out():
             ISPyBXmlHandler.add_xcrystal(self)
         
@@ -326,14 +323,6 @@ class XCrystal(Object):
                     save_stats_overall[s] = statistics_all[key][s][0]
                     save_stats_high[s] = statistics_all[key][s][-1]
 
-            EHTPXXmlHandler.set_crystal_statistics(xname,
-                                                   '%s:overall' % dname,
-                                                   save_stats_overall)
-
-            EHTPXXmlHandler.set_crystal_statistics(xname,
-                                                   '%s:high' % dname,
-                                                   save_stats_high)
-                    
             result += '\n'
 
         # then print out some "derived" information based on the
@@ -343,8 +332,6 @@ class XCrystal(Object):
         cell = self._get_scaler().get_scaler_cell()
         spacegroups = self._get_scaler().get_scaler_likely_spacegroups()
 
-        EHTPXXmlHandler.set_crystal_cell(xname, cell, spacegroups)
-        
         spacegroup = spacegroups[0]
         resolution = self._get_scaler().get_scaler_highest_resolution()
 
@@ -396,14 +383,11 @@ class XCrystal(Object):
                             reflections[wavelength])
                         result += 'Scaled reflections (%s): %s\n' % \
                                   (wavelength, target)
-                        EHTPXXmlHandler.add_crystal_reflection_file(
-                            xname, target)
                     
                 else:
                     target = FileHandler.get_data_file(
                         reflections)
                     result += 'Scaled reflections: %s\n' % target
-                    EHTPXXmlHandler.add_crystal_reflection_file(xname, target)
 
         # and now some site information... maybe
         if self._ha_info and False:

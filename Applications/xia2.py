@@ -41,7 +41,6 @@ from XIA2Version import Version
 if not os.path.join(os.environ['XIA2_ROOT'], 'Interfaces') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'Interfaces'))
 
-from eHTPX.EHTPXXmlHandler import EHTPXXmlHandler
 from xia2setup import write_xinfo
 
 # CCTBX bits I want
@@ -219,10 +218,6 @@ def xia2():
     # delete all of the temporary mtz files...
     cleanup()
 
-    # write out the e-htpx XML, perhaps
-    if CommandLine.get_ehtpx_xml_out():
-        EHTPXXmlHandler.write_xml(CommandLine.get_ehtpx_xml_out())
-
     # and the summary file
     summary_records = CommandLine.get_xinfo().summarise()
 
@@ -261,7 +256,6 @@ def help():
     sys.stdout.write('\nCommand-line options to xia2:\n')
     sys.stdout.write('[-parallel 4] (automatic)\n')
     sys.stdout.write('[-resolution 2.8] (say, applies to all sweeps)\n')
-    sys.stdout.write('[-ehtpx_xml_out foo.xml]\n')
     sys.stdout.write('[-freer_file free.mtz]\n')
     sys.stdout.write('[-reference_reflection_file free.mtz]\n')
     sys.stdout.write('[-spacegroup C2] (for example)\n')

@@ -41,7 +41,8 @@
 # 
 # 15/MAY/07 - FIXED need to add flag -ehtpx_xml_out which will enable 
 #             writing of e-HTPX xml for the data reduction portal. This
-#             should be provided the path on which to write the file.
+#             should be provided the path on which to write the file. N.B.
+#             this has subsequently been removed 19/JAN/2011.
 
 import sys
 import os
@@ -176,15 +177,6 @@ class _CommandLine(Object):
             raise RuntimeError, '%s (%s)' % \
                   (self._help_crystal_name(), str(e))
         
-        # FIXME why is this commented out??! - uncomment this though may
-        # want to explain exactly what is wrong...
-
-        try:
-            self._read_ehtpx_xml_out()
-        except exceptions.Exception, e:
-            raise RuntimeError, '%s (%s)' % \
-                  (self._help_ehtpx_xml_out(), str(e))
-
         try:
             self._read_ispyb_xml_out()
         except exceptions.Exception, e:
@@ -976,32 +968,6 @@ class _CommandLine(Object):
             
         return
 
-    def _read_ehtpx_xml_out(self):
-        try:
-            index = sys.argv.index('-ehtpx_xml_out')
-        except ValueError, e:
-            self._ehtpx_xml_out = None
-            return
-
-        if index < 0:
-            raise RuntimeError, 'negative index'
-
-        self._understood.append(index)
-        self._understood.append(index + 1)
-
-        # FIXME shouldn't this go through flags?!
-        self._ehtpx_xml_out = sys.argv[index + 1]
-        Debug.write('e-HTPX XML output set to %s' % sys.argv[index + 1])
-            
-        return
-
-    def _help_ehtpx_xml_out(self):
-        return '-ehtpx_xml_out project.xml'
-
-    def get_ehtpx_xml_out(self):
-        '''Return the ehtpx xml out file.'''
-        return self._ehtpx_xml_out
-    
     def _read_ispyb_xml_out(self):
         try:
             index = sys.argv.index('-ispyb_xml_out')
