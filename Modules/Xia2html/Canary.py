@@ -20,7 +20,7 @@ types of content (Section, List etc).
 Similarly Section objects can also have Sections, Lists and so on added
 to them in a similar fashion."""
 
-__cvs_id__ = "$Id: Canary.py,v 1.14 2010/01/11 18:43:54 pjx Exp $"
+__cvs_id__ = "$Id$"
 __version__ = "0.0.3"
 
 #######################################################################

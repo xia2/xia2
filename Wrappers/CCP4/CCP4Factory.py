@@ -41,7 +41,7 @@ from Wrappers.CCP4.Matthews_coef import Matthews_coef as _Matthews_coef
 from Wrappers.XIA.Chef import Chef as _Chef
 from Wrappers.XIA.Doser import Doser as _Doser
 
-from lib.Guff import auto_logfiler
+from lib.bits import auto_logfiler
 
 class CCP4Factory:
     '''A class to provide CCP4 program wrappers.'''

@@ -34,7 +34,7 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
-from lib.Guff import inherits_from
+from lib.bits import inherits_from
 
 class StrategyElement:
     '''An element of a strategy, that is a wedge to measure.'''

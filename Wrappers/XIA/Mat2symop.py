@@ -30,7 +30,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Driver.DriverFactory import DriverFactory
 
-from lib.Guff import nint
+from lib.bits import nint
 
 def Mat2symop(DriverType = None):
     '''A factory for mat2symop wrappers.'''

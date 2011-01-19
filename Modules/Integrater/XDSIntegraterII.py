@@ -59,7 +59,7 @@ from Modules.Indexer.XDSIndexer import XDSIndexer
 
 # odds and sods that are needed
 
-from lib.Guff import auto_logfiler
+from lib.bits import auto_logfiler
 from Handlers.Streams import Chatter, Debug
 from Handlers.Flags import Flags
 from Handlers.Files import FileHandler

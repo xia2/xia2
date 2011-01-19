@@ -43,7 +43,7 @@ from Modules.Scalepack2Mtz import Scalepack2Mtz
 from Modules.Mtz2Scalepack import Mtz2Scalepack
 from Modules.XDS2Mtz import XDS2Mtz
 
-from lib.Guff import is_mtz_file, is_xds_file, is_scalepack_file
+from lib.bits import is_mtz_file, is_xds_file, is_scalepack_file
 from lib.NMolLib import compute_nmol, compute_solvent
 
 from Handlers.Streams import Chatter, Debug

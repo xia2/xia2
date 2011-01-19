@@ -116,7 +116,7 @@ from Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
 from Wrappers.Labelit.LabelitDistl import LabelitDistl
 from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
 
-from lib.Guff import auto_logfiler
+from lib.bits import auto_logfiler
 from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Citations import Citations
 from Handlers.Flags import Flags

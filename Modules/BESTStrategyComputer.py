@@ -33,7 +33,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
-from lib.Guff import auto_logfiler
+from lib.bits import auto_logfiler
 
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 from Schema.Interfaces.StrategyComputer import StrategyComputer

@@ -190,7 +190,7 @@ from MosflmHelpers import _happy_integrate_lp, \
 from Modules.GainEstimater import gain
 from Handlers.Files import FileHandler
 
-from lib.Guff import auto_logfiler, mean_sd
+from lib.bits import auto_logfiler, mean_sd
 from lib.SymmetryLib import lattice_to_spacegroup
 
 from Experts.MatrixExpert import transmogrify_matrix, \

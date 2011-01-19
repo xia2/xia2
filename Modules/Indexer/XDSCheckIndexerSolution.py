@@ -27,7 +27,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Wrappers.XDS.XDS import xds_read_xparm
 from Handlers.Streams import Debug
 from Handlers.Flags import Flags
-from lib.Guff import nint
+from lib.bits import nint
 
 # cctbx stuff
 

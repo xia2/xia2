@@ -10,7 +10,7 @@
 # Provide classes and functions for extracting information from
 # text files based on pattern matching
 #
-__cvs_id__ = "$Id: Magpie.py,v 1.6 2009/12/22 16:14:10 pjx Exp $"
+__cvs_id__ = "$Id$"
 __version__ = "0.0.1"
 
 #######################################################################

@@ -61,7 +61,7 @@ from CCP4InterRadiationDamageDetector import CCP4InterRadiationDamageDetector
 
 # jiffys
 
-from lib.Guff import auto_logfiler
+from lib.bits import auto_logfiler
 
 class Scalepack2Mtz:
     '''A jiffy class to enable transformation between scalepack format

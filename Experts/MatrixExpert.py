@@ -33,7 +33,7 @@ from Wrappers.CCP4.Othercell import Othercell
 from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
 from lib.SymmetryLib import lattice_to_spacegroup
 from Handlers.Syminfo import Syminfo
-from lib.Guff import auto_logfiler
+from lib.bits import auto_logfiler
 from Handlers.Streams import Debug
 
 from ReferenceFrame import mosflm_to_xia2, xia2_to_mosflm

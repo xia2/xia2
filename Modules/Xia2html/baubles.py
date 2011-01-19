@@ -40,7 +40,7 @@ import os
 import re
 import time
 
-__cvs_id__ = "$Id: baubles.py,v 1.3 2009/12/10 15:45:14 pjx Exp $"
+__cvs_id__ = "$Id$"
 __version__ = "0.0.8"
 __diamond_version__ = "0.0.1"
 

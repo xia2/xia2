@@ -77,7 +77,7 @@ Xia2doc class is used to build the output HTML document, and
 IntegrationStatusReporter class is used to help with generating HTML
 specific to the sweeps."""
 
-__cvs_id__ = "$Id: Xia2html.py,v 1.109 2010/01/11 15:52:00 pjx Exp $"
+__cvs_id__ = "$Id$"
 __version__ = "0.0.5"
 
 #######################################################################

@@ -37,7 +37,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
-from lib.Guff import transpose_loggraph, mean_sd
+from lib.bits import transpose_loggraph, mean_sd
 from Wrappers.CCP4.Mtzdump import Mtzdump
 from Experts.WedgeExpert import digest_wedges
 from lib.statlib.stats import ttest_1samp, ttest_rel

@@ -25,7 +25,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Wrappers.XIA.Printpeaks import Printpeaks
 from Wrappers.XIA.Diffdump import Diffdump
 from Handlers.Streams import Debug
-from lib.Guff import nint
+from lib.bits import nint
 from Experts.MatrixExpert import format_matrix
 
 # optional labelit stuff

@@ -54,7 +54,7 @@ from Driver.DriverFactory import DriverFactory
 from Experts.MatrixExpert import get_reciprocal_space_primitive_matrix, \
      dot, mat2vec
 
-from lib.Guff import nint
+from lib.bits import nint
 
 def find_best_images(lattice, matrix, phi_start, phi_end, phi_width,
                      first_image, mosaic):

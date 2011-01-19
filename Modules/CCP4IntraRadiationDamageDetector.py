@@ -73,7 +73,7 @@ from Wrappers.CCP4.Scala import Scala as _Scala
 from Handlers.Streams import Chatter
 from Handlers.Files import FileHandler
 
-from lib.Guff import auto_logfiler, transpose_loggraph
+from lib.bits import auto_logfiler, transpose_loggraph
 from lib.MathLib import linear_fit_ml
 
 ############## CALCULATIONS #################

@@ -147,8 +147,8 @@ from Handlers.Flags import Flags
 from Handlers.Syminfo import Syminfo
 
 # jiffys
-from lib.Guff import is_mtz_file, nifty_power_of_ten, auto_logfiler
-from lib.Guff import transpose_loggraph, nint
+from lib.bits import is_mtz_file, nifty_power_of_ten, auto_logfiler
+from lib.bits import transpose_loggraph, nint
 from lib.SymmetryLib import lattices_in_order
 
 from CCP4ScalerHelpers import _resolution_estimate, \

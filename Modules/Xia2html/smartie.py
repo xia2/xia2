@@ -26,7 +26,7 @@ for a 'smart logfile browser'.
 Some additional documentation material is also available in the file
 smartie_overview.html."""
 
-__cvs_id__ = "$Id: smartie.py,v 1.1 2009/11/12 18:43:07 pjx Exp $"
+__cvs_id__ = "$Id$"
 __version__ = "0.0.15"
 
 #######################################################################

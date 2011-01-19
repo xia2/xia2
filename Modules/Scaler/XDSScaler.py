@@ -70,8 +70,8 @@ from Wrappers.XDS.Cellparm import Cellparm as _Cellparm
 from Wrappers.CCP4.CCP4Factory import CCP4Factory
 
 # random odds and sods - the resolution estimate should be somewhere better
-from lib.Guff import auto_logfiler, transpose_loggraph, is_mtz_file
-from lib.Guff import nifty_power_of_ten
+from lib.bits import auto_logfiler, transpose_loggraph, is_mtz_file
+from lib.bits import nifty_power_of_ten
 from lib.SymmetryLib import lattices_in_order
 from Handlers.Citations import Citations
 from Handlers.Syminfo import Syminfo

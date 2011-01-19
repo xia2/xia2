@@ -17,7 +17,7 @@ import math
 
 from Wrappers.CCP4.Mtzdump import Mtzdump
 from Wrappers.CCP4.Rebatch import Rebatch
-from lib.Guff import auto_logfiler
+from lib.bits import auto_logfiler
 from Handlers.Streams import Chatter, Debug
 from Handlers.Files import FileHandler
 from Handlers.Flags import Flags
