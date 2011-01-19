@@ -73,6 +73,7 @@ class _CommandLine(Object):
         Object.__init__(self)
 
         self._argv = []
+        self._understood = []
 
         return
 
@@ -101,7 +102,6 @@ class _CommandLine(Object):
         self._read_uniform_sd()
         self._read_trust_timestamps()
         self._read_batch_scale()
-        self._read_old_mosflm()
         self._read_small_molecule()
         self._read_quick()
         self._read_smart_scaling()
@@ -329,6 +329,25 @@ class _CommandLine(Object):
             raise RuntimeError, '%s (%s)' % \
                   (self._help_xinfo(), str(e))
 
+
+        # finally, check that all arguments were read and raise an exception
+        # if any of them were nonsense.
+
+        nonsense = 'Unknown command-line options:'
+        was_nonsense = False
+
+        for j, argv in enumerate(sys.argv):
+            if j == 0:
+                continue
+            if argv[0] != '-':
+                continue
+            if not j in self._understood:
+                nonsense += ' %s' % argv
+                was_nonsense = True
+
+        if was_nonsense:
+            raise RuntimeError, nonsense
+
         return
 
     # command line parsers, getters and help functions.
@@ -361,6 +380,9 @@ class _CommandLine(Object):
                    (float(beam[0]), float(beam[1])))
 
         self._beam = (float(beam[0]), float(beam[1]))
+
+        self._understood.append(index)
+        self._understood.append(index + 1)
 
         Debug.write('Beam read from command line as %f %f' % \
                     self._beam)
@@ -398,6 +420,9 @@ class _CommandLine(Object):
 
         self.write('first_last passed in on command line as %d, %d' % \
                    self._first_last)
+
+        self._understood.append(index)
+        self._understood.append(index + 1)
 
         Debug.write('First & last image: %d %d' % self._first_last)
 
@@ -446,6 +471,9 @@ class _CommandLine(Object):
         self._default_directory = directory
         self._default_image = image
 
+        self._understood.append(index)
+        self._understood.append(index + 1)
+
         Debug.write('Interpreted from image %s:' % image)
         Debug.write('Template %s' % template)
         Debug.write('Directory %s' % directory)
@@ -461,6 +489,9 @@ class _CommandLine(Object):
             return
 
         self._default_atom_name = sys.argv[index + 1]
+
+        self._understood.append(index)
+        self._understood.append(index + 1)
 
         Debug.write('Heavy atom: %s' % \
                     self._default_atom_name)
@@ -483,6 +514,8 @@ class _CommandLine(Object):
 
         self._default_project_name = sys.argv[index + 1]
 
+        self._understood.append(index)
+        self._understood.append(index + 1)
         Debug.write('Project: %s' % self._default_project_name)
         
         return
@@ -502,6 +535,9 @@ class _CommandLine(Object):
             return
 
         self._default_crystal_name = sys.argv[index + 1]
+
+        self._understood.append(index)
+        self._understood.append(index + 1)        
         Debug.write('Crystal: %s' % self._default_crystal_name)
         
         return
@@ -523,6 +559,9 @@ class _CommandLine(Object):
         if index < 0:
             raise RuntimeError, 'negative index (no xinfo file name given)'
 
+        self._understood.append(index)
+        self._understood.append(index + 1)
+        
         self._xinfo = XProject(sys.argv[index + 1])
 
         Debug.write(60 * '-')
@@ -555,6 +594,9 @@ class _CommandLine(Object):
 
         Flags.set_xparm(sys.argv[index + 1])
 
+        self._understood.append(index)
+        self._understood.append(index + 1)
+        
         Debug.write('Rotation axis: %.6f %.6f %.6f' % \
             Flags.get_xparm_rotation_axis())
         Debug.write('Beam vector: %.6f %.6f %.6f' % \
@@ -576,6 +618,13 @@ class _CommandLine(Object):
         if index < 0:
             raise RuntimeError, 'negative index'
 
+        if int(sys.argv[index + 1]) < 0:
+            raise RuntimeError, 'negative number of processors: %s' % \
+                  sys.argv[index + 1]
+
+        self._understood.append(index)
+        self._understood.append(index + 1)
+        
         Flags.set_parallel(int(sys.argv[index + 1]))
         Debug.write('Parallel set to %d' % Flags.get_parallel())
             
@@ -610,6 +659,9 @@ class _CommandLine(Object):
         if index < 0:
             raise RuntimeError, 'negative index'
 
+        self._understood.append(index)
+        self._understood.append(index + 1)
+
         Flags.set_min_images(int(sys.argv[index + 1]))
         Debug.write('Min No. images / sweep set to %d' % \
                     Flags.get_min_images())
@@ -628,6 +680,9 @@ class _CommandLine(Object):
         if index < 0:
             raise RuntimeError, 'negative index'
 
+        self._understood.append(index)
+        self._understood.append(index + 1)
+
         Flags.set_xparallel(int(sys.argv[index + 1]))
         Debug.write('XParallel set to %d' % Flags.get_xparallel())
             
@@ -644,6 +699,9 @@ class _CommandLine(Object):
 
         if index < 0:
             raise RuntimeError, 'negative index'
+
+        self._understood.append(index)
+        self._understood.append(index + 1)
 
         Flags.set_spacegroup(sys.argv[index + 1])
         Debug.write('Spacegroup set to %s' % sys.argv[index + 1])
@@ -671,6 +729,9 @@ class _CommandLine(Object):
             dmin = float(resolution)
             dmax = None
 
+        self._understood.append(index)
+        self._understood.append(index + 1)
+
         Flags.set_resolution_high(dmin)
         Flags.set_resolution_low(dmax)
 
@@ -693,6 +754,9 @@ class _CommandLine(Object):
         if index < 0:
             raise RuntimeError, 'negative index'
 
+        self._understood.append(index)
+        self._understood.append(index + 1)
+
         Flags.set_z_min(float(sys.argv[index + 1]))
         Debug.write('Z min set to %f' % Flags.get_z_min())
             
@@ -710,8 +774,11 @@ class _CommandLine(Object):
         if index < 0:
             raise RuntimeError, 'negative index'
 
+        self._understood.append(index)
+        self._understood.append(index + 1)
+
         Flags.set_scala_secondary(float(sys.argv[index + 1]))
-        Debug.write('Z min set to %f' % Flags.get_scala_secondary())
+        Debug.write('Scala secondary set to %f' % Flags.get_scala_secondary())
             
         return
 
@@ -728,6 +795,10 @@ class _CommandLine(Object):
             raise RuntimeError, 'negative index'
 
         Flags.set_freer_file(sys.argv[index + 1])
+
+        self._understood.append(index)
+        self._understood.append(index + 1)
+
         Debug.write('FreeR_flag column taken from %s' %
                     Flags.get_freer_file())
 
@@ -756,6 +827,10 @@ class _CommandLine(Object):
             raise RuntimeError, 'negative index'
 
         Flags.set_reference_reflection_file(sys.argv[index + 1])
+
+        self._understood.append(index)
+        self._understood.append(index + 1)
+
         Debug.write('Reference reflection file: %s' %
                     Flags.get_reference_reflection_file())
             
@@ -772,6 +847,9 @@ class _CommandLine(Object):
 
         if index < 0:
             raise RuntimeError, 'negative index'
+
+        self._understood.append(index)
+        self._understood.append(index + 1)
 
         Flags.set_rejection_threshold(float(sys.argv[index + 1]))
         Debug.write('Rejection threshold set to %f' % \
@@ -791,6 +869,9 @@ class _CommandLine(Object):
         if index < 0:
             raise RuntimeError, 'negative index'
 
+        self._understood.append(index)
+        self._understood.append(index + 1)
+
         Flags.set_i_over_sigma_limit(float(sys.argv[index + 1]))
         Debug.write('I/sigma limit set to %f' % \
                     Flags.get_i_over_sigma_limit())
@@ -808,6 +889,9 @@ class _CommandLine(Object):
 
         if index < 0:
             raise RuntimeError, 'negative index'
+
+        self._understood.append(index)
+        self._understood.append(index + 1)
 
         Flags.set_isigma(float(sys.argv[index + 1]))
         Debug.write('I/sigma limit set to %f' % \
@@ -827,6 +911,9 @@ class _CommandLine(Object):
         if index < 0:
             raise RuntimeError, 'negative index'
 
+        self._understood.append(index)
+        self._understood.append(index + 1)
+
         Flags.set_misigma(float(sys.argv[index + 1]))
         Debug.write('Merged I/sigma limit set to %f' % \
                     Flags.get_misigma())
@@ -844,6 +931,9 @@ class _CommandLine(Object):
 
         if index < 0:
             raise RuntimeError, 'negative index'
+
+        self._understood.append(index)
+        self._understood.append(index + 1)
 
         Flags.set_completeness(float(sys.argv[index + 1]))
         Debug.write('Completeness limit set to %f' % \
@@ -863,6 +953,9 @@ class _CommandLine(Object):
         if index < 0:
             raise RuntimeError, 'negative index'
 
+        self._understood.append(index)
+        self._understood.append(index + 1)
+
         Flags.set_rmerge(float(sys.argv[index + 1]))
         Debug.write('Rmerge limit set to %f' % \
                     Flags.get_rmerge())
@@ -877,6 +970,7 @@ class _CommandLine(Object):
         if '-microcrystal' in sys.argv:
             Flags.set_microcrystal()
             Debug.write('Microcrystal mode on')
+            self._understood.append(sys.argv.index('-microcrystal'))
             
         return
 
@@ -885,9 +979,11 @@ class _CommandLine(Object):
         if '-failover' in sys.argv:
             Flags.set_failover()
             Debug.write('Failover mode on')
+            self._understood.append(sys.argv.index('-failover'))
             
         return
 
+    # FIXMEREMOVE
     def _help_rmerge(self):
         return '-rmerge N'
 
@@ -901,6 +997,10 @@ class _CommandLine(Object):
         if index < 0:
             raise RuntimeError, 'negative index'
 
+        self._understood.append(index)
+        self._understood.append(index + 1)
+
+        # FIXME shouldn't this go through flags?!
         self._ehtpx_xml_out = sys.argv[index + 1]
         Debug.write('e-HTPX XML output set to %s' % sys.argv[index + 1])
             
@@ -923,6 +1023,8 @@ class _CommandLine(Object):
         if index < 0:
             raise RuntimeError, 'negative index'
 
+        self._understood.append(index)
+        self._understood.append(index + 1)
         Flags.set_ispyb_xml_out(sys.argv[index + 1])
         Debug.write('ISPyB XML output set to %s' % sys.argv[index + 1])
             
@@ -949,6 +1051,8 @@ class _CommandLine(Object):
         if '-trust_timestamps' in sys.argv:
             Flags.set_trust_timestamps(True)
             Debug.write('Trust timestamps on')
+            self._understood.append(sys.argv.index('-trust_timestamps'))
+            
         return
 
     def _read_batch_scale(self):
@@ -956,13 +1060,8 @@ class _CommandLine(Object):
         if '-batch_scale' in sys.argv:
             Flags.set_batch_scale(True)
             Debug.write('Batch scaling mode on')
-        return
-
-    def _read_old_mosflm(self):
-
-        if '-old_mosflm' in sys.argv:
-            Flags.set_old_mosflm(True)
-            Debug.write('Old Mosflm selected')
+            self._understood.append(sys.argv.index('-batch_scale'))
+            
         return
 
     def _read_small_molecule(self):
@@ -970,6 +1069,8 @@ class _CommandLine(Object):
         if '-small_molecule' in sys.argv:
             Flags.set_small_molecule(True)
             Debug.write('Small molecule selected')
+            self._understood.append(sys.argv.index('-small_molecule'))
+            
         return
 
     def _read_cellref_mode(self):
@@ -980,6 +1081,9 @@ class _CommandLine(Object):
 
         if index < 0:
             raise RuntimeError, 'negative index'
+
+        self._understood.append(index)
+        self._understood.append(index + 1)
 
         Flags.set_cellref_mode(sys.argv[index + 1])
         Debug.write('Cell refinement mode (2D) set to %s' % \
@@ -998,6 +1102,9 @@ class _CommandLine(Object):
 
         if index < 0:
             raise RuntimeError, 'negative index'
+
+        self._understood.append(index)
+        self._understood.append(index + 1)
 
         Flags.set_scale_model(sys.argv[index + 1])
         Debug.write('Scaling model set to: %s' % Flags.get_scale_model())
@@ -1019,6 +1126,8 @@ class _CommandLine(Object):
         if '-smart_scaling' in sys.argv:
             Flags.set_smart_scaling(True)
             Debug.write('Smart scaling mode selected')
+            self._understood.append(sys.argv.index('-smart_scaling'))
+            
         return
 
     def _read_8way(self):
@@ -1026,16 +1135,20 @@ class _CommandLine(Object):
         if '-8way' in sys.argv:
             Flags.set_8way(True)
             Debug.write('8-way scaling mode selected')
+            self._understood.append(sys.argv.index('-8way'))
+            
         return
 
     def _read_chef(self):
 
         if '-chef' in sys.argv:
             Flags.set_chef(True)
+            self._understood.append(sys.argv.index('-chef'))
             Debug.write('Chef mode selected')
 
         if '-nochef' in sys.argv:
             Flags.set_chef(False)
+            self._understood.append(sys.argv.index('-nochef'))           
             Debug.write('Chef mode deselected')
 
         return
@@ -1044,6 +1157,7 @@ class _CommandLine(Object):
 
         if '-automatch' in sys.argv:
             Flags.set_automatch(True)
+            self._understood.append(sys.argv.index('-automatch'))            
             Debug.write('Automatch mode selected')
         return
 
@@ -1051,6 +1165,7 @@ class _CommandLine(Object):
 
         if '-reversephi' in sys.argv:
             Flags.set_reversephi(True)
+            self._understood.append(sys.argv.index('-reversephi'))         
             Debug.write('Reversephi mode selected')
         return
 
@@ -1058,6 +1173,7 @@ class _CommandLine(Object):
 
         if '-no_lattice_test' in sys.argv:
             Flags.set_no_lattice_test(True)
+            self._understood.append(sys.argv.index('-no_lattice_test'))
             Debug.write('No lattice test mode selected')
         return
 
@@ -1065,6 +1181,7 @@ class _CommandLine(Object):
 
         if '-fiddle_sd' in sys.argv:
             Flags.set_fiddle_sd(True)
+            self._understood.append(sys.argv.index('-fiddle_sd'))
             Debug.write('[deprecated] Fiddle SD (3D) mode selected')
         return
 
@@ -1072,6 +1189,7 @@ class _CommandLine(Object):
 
         if '-harrison_clock' in sys.argv:
             Flags.set_harrison_clock(True)
+            self._understood.append(sys.argv.index('-harrison_clock'))
             Debug.write('[development] Harrison Clock mode on')
         return
 
@@ -1079,6 +1197,7 @@ class _CommandLine(Object):
 
         if '-no_relax' in sys.argv:
             Flags.set_relax(False)
+            self._understood.append(sys.argv.index('-no_relax'))
             Debug.write('XDS relax about indexing selected')
         return
 
@@ -1086,6 +1205,7 @@ class _CommandLine(Object):
 
         if '-zero_dose' in sys.argv:
             Flags.set_zero_dose(True)
+            self._understood.append(sys.argv.index('-zero_dose'))
             Debug.write('Zero-dose mode (XDS/XSCALE) selected')
         return
 
@@ -1093,9 +1213,11 @@ class _CommandLine(Object):
 
         if '-no_correct' in sys.argv:
             Flags.set_no_correct(True)
+            self._understood.append(sys.argv.index('-no_correct'))
             Debug.write('No-correct mode (XDS/XSCALE) selected')
         elif '-yes_correct' in sys.argv:
             Flags.set_no_correct(False)
+            self._understood.append(sys.argv.index('-correct'))
             Debug.write('Yes-correct mode (XDS/XSCALE) selected')
         return
 
@@ -1103,6 +1225,7 @@ class _CommandLine(Object):
 
         if '-norefine' in sys.argv:
             Flags.set_refine(False)
+            self._understood.append(sys.argv.index('-norefine'))
             # FIXME what does this do??? - switch off orientation refinement
             # in integration
         return
@@ -1110,6 +1233,7 @@ class _CommandLine(Object):
     def _read_noremove(self):
 
         if '-noremove' in sys.argv:
+            self._understood.append(sys.argv.index('-noremove'))
             Flags.set_remove(False)
         return
 
@@ -1118,7 +1242,9 @@ class _CommandLine(Object):
         if '-2dold' in sys.argv:
             add_preference('integrater', 'mosflm')
             add_preference('scaler', 'ccp4')
+            self._understood.append(sys.argv.index('-2dold'))
             Debug.write('2D pipeline selected')
+            
         return
 
     def _read_2dr(self):
@@ -1126,6 +1252,10 @@ class _CommandLine(Object):
         if '-2dr' in sys.argv or '-2d' in sys.argv:
             add_preference('integrater', 'mosflmr')
             add_preference('scaler', 'ccp4r')
+            if '-2d' in sys.argv:
+                self._understood.append(sys.argv.index('-2d'))
+            if '-2dr' in sys.argv:
+                self._understood.append(sys.argv.index('-2dr'))
             Debug.write('2DR pipeline selected')
         return
 
@@ -1134,6 +1264,7 @@ class _CommandLine(Object):
         if '-3dold' in sys.argv:
             add_preference('integrater', 'xds')
             add_preference('scaler', 'xds')
+            self._understood.append(sys.argv.index('-3dold'))
             Debug.write('3D pipeline selected')
         return
 
@@ -1142,6 +1273,10 @@ class _CommandLine(Object):
         if '-3dr' in sys.argv or '-3d' in sys.argv:
             add_preference('integrater', 'xdsr')
             add_preference('scaler', 'xdsr')
+            if '-3d' in sys.argv:
+                self._understood.append(sys.argv.index('-3d'))
+            if '-3dr' in sys.argv:
+                self._understood.append(sys.argv.index('-3dr'))
             Debug.write('3DR pipeline selected')
         return
 
@@ -1151,6 +1286,7 @@ class _CommandLine(Object):
             add_preference('indexer', 'xdsii')
             add_preference('integrater', 'xds')
             add_preference('scaler', 'xds')
+            self._understood.append(sys.argv.index('-3diiold'))            
             Debug.write('3D II pipeline (XDS IDXREF all images) selected')
         return
 
@@ -1160,6 +1296,10 @@ class _CommandLine(Object):
             add_preference('indexer', 'xdsii')
             add_preference('integrater', 'xdsr')
             add_preference('scaler', 'xdsr')
+            if '-3dii' in sys.argv:
+                self._understood.append(sys.argv.index('-3dii'))
+            if '-3diir' in sys.argv:
+                self._understood.append(sys.argv.index('-3diir'))            
             Debug.write('3D II R pipeline (XDS IDXREF all images) selected')
         return
 
@@ -1168,6 +1308,7 @@ class _CommandLine(Object):
         if '-debug' in sys.argv:
             # join the debug stream to the main output
             Debug.join(Chatter)
+            self._understood.append(sys.argv.index('-debug'))
             Debug.write('Debugging output switched on')
         return
 
@@ -1175,6 +1316,7 @@ class _CommandLine(Object):
 
         if '-interactive' in sys.argv:
             Flags.set_interactive(True)
+            self._understood.append(sys.argv.index('-interactive'))
             Debug.write('Interactive indexing ON')
             
         return
@@ -1182,6 +1324,7 @@ class _CommandLine(Object):
     def _read_egg(self):
 
         if '-egg' in sys.argv:
+            self._understood.append(sys.argv.index('-egg'))            
             Flags.set_egg(True)
             
         return
@@ -1190,6 +1333,7 @@ class _CommandLine(Object):
 
         if '-no_uniform_sd' in sys.argv:
             Flags.set_uniform_sd(False)
+            self._understood.append(sys.argv.index('-no_uniform_sd'))        
             Debug.write('Uniform SD OFF')
             
         return
@@ -1198,6 +1342,7 @@ class _CommandLine(Object):
 
         if '-migrate_data' in sys.argv:
             Flags.set_migrate_data(True)
+            self._understood.append(sys.argv.index('-migrate_data'))          
             Debug.write('Data migration switched on')
         return
 
@@ -1235,6 +1380,9 @@ class _CommandLine(Object):
         self.write('Cell passed on the command line: ' + \
                    format % _cell)
 
+        self._understood.append(index)
+        self._understood.append(index + 1)
+
         Debug.write('Cell read from command line:' + \
                     format % _cell)
 
@@ -1253,6 +1401,9 @@ class _CommandLine(Object):
         if index < 0:
             raise RuntimeError, 'negative index'
 
+        self._understood.append(index)
+        self._understood.append(index + 1)
+
         Flags.set_free_fraction(float(sys.argv[index + 1]))
         Debug.write('Free fraction set to %f' % Flags.get_free_fraction())
             
@@ -1269,6 +1420,9 @@ class _CommandLine(Object):
 
         if index < 0:
             raise RuntimeError, 'negative index'
+
+        self._understood.append(index)
+        self._understood.append(index + 1)
 
         Flags.set_free_total(int(sys.argv[index + 1]))
         Debug.write('Free total set to %f' % Flags.get_free_total())
@@ -1287,6 +1441,8 @@ class _CommandLine(Object):
         if index < 0:
             raise RuntimeError, 'negative index'
 
+        self._understood.append(index)
+        self._understood.append(index + 1)
         Flags.set_mask(sys.argv[index + 1])
             
         return
@@ -1306,6 +1462,7 @@ class _CommandLine(Object):
         if index < 0:
             raise RuntimeError, 'negative index'
 
+        self._understood.append(index)
         Flags.set_fixed_628()
             
         return
@@ -1322,7 +1479,10 @@ class _CommandLine(Object):
 
         indexer = sys.argv[index + 1]
         add_preference('indexer', indexer)
-            
+        self._understood.append(index)
+        self._understood.append(index + 1)
+        return
+    
     def _read_integrater(self):
 
         try:
@@ -1332,6 +1492,9 @@ class _CommandLine(Object):
 
         integrater = sys.argv[index + 1]
         add_preference('integrater', integrater)
+        self._understood.append(index)
+        self._understood.append(index + 1)
+        return
             
     def _read_scaler(self):
 
@@ -1342,7 +1505,9 @@ class _CommandLine(Object):
 
         scaler = sys.argv[index + 1]
         add_preference('scaler', scaler)
-            
+        self._understood.append(index)
+        self._understood.append(index + 1)
+        return
 
 CommandLine = _CommandLine()
 CommandLine.setup()

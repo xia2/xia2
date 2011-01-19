@@ -110,7 +110,6 @@ class _Flags:
 
         # and these for the mosflm implementation
         self._cellref_mode = 'dumb'
-        self._old_mosflm = False
 
         # and these are general rejection criteria
         self._rejection_threshold = 1.5
@@ -372,13 +371,6 @@ class _Flags:
 
     def get_trust_timestamps(self):
         return self._trust_timestamps
-
-    def set_old_mosflm(self, old_mosflm):
-        self._old_mosflm = old_mosflm
-        return
-
-    def get_old_mosflm(self):
-        return self._old_mosflm
 
     def set_small_molecule(self, small_molecule):
         self._small_molecule = small_molecule
