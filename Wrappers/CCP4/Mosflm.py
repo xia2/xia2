@@ -32,47 +32,6 @@
 # gain and definately images to process. A resolution limit may also be
 # supplied.
 # 
-# The following are good example scripts of how this could work:
-# 
-# [autoindexing + cell refinement]
-# 
-# ipmosflm << eof
-# beam 108.9 105.0
-# directory /data/graeme/12287
-# template 12287_1_E1_###.img
-# autoindex dps image 1   ! can add refine after dps
-# autoindex dps image 60  ! can add refine after dps
-# mosaic estimate
-# newmat index.mat
-# go
-# ! cell refinement stuff - needs more than 2 images
-# newmat refined.mat
-# postref multi segments 2
-# process 1 3
-# go
-# process 58 60
-# go
-# eof
-# 
-# [integration]
-# 
-# ipmosflm hklout 12287_1_E1.mtz << eof
-# resolution 1.65
-# beam 108.9 105.0
-# directory /data/graeme/12287
-# template 12287_1_E1_###.img
-# matrix refined.mat
-# mosaic 0.51
-# limits esclude   0.9 103.9 208.9 105.5
-# limits exclude 103.5   4.4 106.0 209.0
-# limits quadriateral 110.6 105.5 107.2 105.8 104.4 4.7 108.7 4.7
-# gain 0.13
-# separation close
-# postref fix all
-# process 1 60
-# go
-# eof
-# 
 # FIXED 16/AUG/06 the distortion & raster parameters decided on in the 
 # cell refinement stages need to be recycled to use in integration. This is
 # demonstrated by running an interactive (through the GUI) mosflm autoindex

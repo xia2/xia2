@@ -81,7 +81,6 @@ from Object import Object
 from Wrappers.CCP4.Othercell import Othercell
 from Handlers.Environment import Environment
 from Modules.ScalerFactory import Scaler
-from Modules.SubstructureFinderFactory import SubstructureFinder
 from Handlers.Syminfo import Syminfo
 from Handlers.Flags import Flags
 from Handlers.Files import FileHandler
@@ -237,7 +236,6 @@ class XCrystal(Object):
         # hooks to dangle command interfaces from
 
         self._scaler = None
-        self._substructure_finder = None
 
         # things to store input reflections which are used to define
         # the setting... this will be passed into the Scaler if
@@ -388,15 +386,6 @@ class XCrystal(Object):
                     target = FileHandler.get_data_file(
                         reflections)
                     result += 'Scaled reflections: %s\n' % target
-
-        # and now some site information... maybe
-        if self._ha_info and False:
-            
-	    try:
-                result += 'HA Sites %s\n' % str(self._get_substructure_finder(
-                    ).substructure_find_get_sites())
-	    except:
-                result += 'No sites - sorry!\n'
 
         if Flags.get_ispyb_xml_out():
             ISPyBXmlHandler.write_xml(Flags.get_ispyb_xml_out())
@@ -758,42 +747,6 @@ class XCrystal(Object):
                 self._scaler.add_scaler_integrater(i)
 
         return self._scaler
-
-    def _get_substructure_finder(self):
-        if self._substructure_finder is None:
-            self._substructure_finder = SubstructureFinder()
-
-            # set up a sensible working directory
-            self._substructure_finder.set_working_directory(
-                Environment.generate_directory([self._name,
-                                                'substructure_find']))
-
-            self._substructure_finder.substructure_find_set_scaler(
-		self._get_scaler())
-
-            # set up all of the derived information...
-
-            atoms = self._ha_info.keys()
-
-            if len(atoms) > 1:
-                raise RuntimeError, 'more than one atom type'
-
-            info = self._ha_info[atoms[0]]
-
-            self._substructure_finder.substructure_find_set_atom(atoms[0])
-            if info.get_number_total():
-                self._substructure_finder.substructure_find_set_n_sites(
-		    info.get_number_total())
-            else:
-                self._substructure_finder.substructure_find_set_n_sites(
-                    info.get_number_per_monomer() * self._nmol)
-
-            self._substructure_finder.substructure_find_set_spacegroup(
-                self._get_scaler().get_scaler_likely_spacegroups()[0])
-
-            self._substructure_finder.substructure_find_set_name(self._name)
-
-        return self._substructure_finder
 
 if __name__ == '__main__':
     # lm = _lattice_manager('aP', (43.62, 52.27, 116.4, 103, 100.7, 90.03))
