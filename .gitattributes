@@ -77,7 +77,6 @@ Wrappers/CCP4/Doc/Mtzdump.pdf -text
 Wrappers/CCP4/Doc/Reindex.pdf -text
 Wrappers/CCP4/Doc/Scala.pdf -text
 Wrappers/CCP4/Doc/Sortmtz.pdf -text
-Wrappers/CCP4/Doc/mosflm-refactor.txt -text
 Wrappers/CCP4/MosflmR.py -text
 Wrappers/Labelit/DistlSignalStrength.py -text
 Wrappers/Labelit/Doc/LabelitDistl.pdf -text
@@ -85,10 +84,8 @@ Wrappers/Labelit/Doc/LabelitScreen.pdf -text
 Wrappers/Labelit/Doc/LabelitStats_distl.pdf -text
 Wrappers/Labelit/LabelitIndexII.py -text
 Wrappers/Labelit/LabelitMosflmMatrix.py -text
-Wrappers/XDS/Doc/xds-wrappers.pdf -text
 Wrappers/XDS/XDSCorrectR.py -text
 Wrappers/XDS/XScaleR.py -text
-Wrappers/XIA/Doc/Printheader.pdf -text
 Wrappers/dTREK/Doc/dTREK.pdf -text
 html/xia2-new-logo.gif -text
 html/xia2-new-logo.psd -text
