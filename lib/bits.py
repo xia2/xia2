@@ -82,6 +82,29 @@ def mean_sd(list_of_numbers):
     sd /= len(list_of_numbers)
     return (mean, math.sqrt(sd))    
 
+# FIXNE redundant
+
+def meansd(values):
+    mean = sum(values) / len(values)
+    var = sum([(v - mean) * (v - mean) for v in values]) / len(values)
+    return mean, math.sqrt(var)
+
+def remove_outliers(values, limit):
+    result = []
+    outliers = []
+    for j in range(len(values)):
+        scratch = []
+        for k in range(len(values)):
+            if j != k:
+                scratch.append(values[k])
+        m, s = meansd(scratch)
+        if math.fabs(values[j] - m) / s <= limit * s:
+            result.append(values[j])
+        else:
+            outliers.append(values[j])
+
+    return result, outliers
+
 ##### START MESSY CODE #####
 
 _run_number = 0
