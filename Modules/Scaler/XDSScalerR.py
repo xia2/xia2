@@ -93,7 +93,7 @@ from Modules.DoseAccumulate import accumulate
 from Toolkit.Merger import merger
 
 # newly implemented CCTBX powered functions to replace xia2 binaries
-from Functions.add_dose_time_to_mtz import add_dose_time_to_mtz
+from Modules.Scaler.add_dose_time_to_mtz import add_dose_time_to_mtz
 
 class XDSScalerR(Scaler):
     '''An implementation of the xia2 Scaler interface implemented with

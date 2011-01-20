@@ -164,7 +164,7 @@ from Experts.ResolutionExperts import determine_scaled_resolution
 from Toolkit.Merger import merger
 
 # newly implemented CCTBX powered functions to replace xia2 binaries
-from Functions.add_dose_time_to_mtz import add_dose_time_to_mtz
+from Modules.Scaler.add_dose_time_to_mtz import add_dose_time_to_mtz
 
 class CCP4ScalerR(Scaler):
     '''An implementation of the Scaler interface using CCP4 programs.'''
