@@ -26,7 +26,7 @@ class _Citations:
 
         dom = xml.dom.minidom.parse(os.path.join(
             os.environ['XIA2_ROOT'],
-            'Data', 'Citations', 'citations.lib'))
+            'Data', 'citations.lib'))
         citations = dom.getElementsByTagName(
             'citations')[0].getElementsByTagName('citation')
         for citation in citations:

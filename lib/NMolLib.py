@@ -4,18 +4,14 @@
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
-
-
 #
-# 21/SEP/06
-
 # NMol per ASU Calculations based on the Kantardjieff & Rupp method.
 # 
 # Implementing the cell volume calculations of Kantardjieff and Rupp,
-# Protein Science volume 12, 2002. Uses "mattprob_params.dat" from
+# Protein Science volume 12, 2002. Uses "nmol-params.dat" from
 # http://www-structure.llnl.gov/mattprob
 #
-# Relies on $XIA2_ROOT/Data/NMol/mattprob_params.dat
+# Relies on $XIA2_ROOT/Data/nmol-params.dat
 
 import os, sys, math
 
@@ -30,9 +26,8 @@ from Handlers.Streams import Chatter
 from Wrappers.CCP4.Matthews_coef import Matthews_coef
 
 if not os.path.exists(os.path.join(os.environ['XIA2_ROOT'],
-                                   'Data', 'NMol',
-                                   'mattprob_params.dat')):
-    raise RuntimeError, 'mattprob_params.dat not found'
+                                   'Data', 'nmol-params.dat')):
+    raise RuntimeError, 'nmol-params.dat not found'
 
 def unit_cell_volume(cell_a, cell_b, cell_c,
                      cell_alpha, cell_beta, cell_gamma):
@@ -92,8 +87,7 @@ def sequence_mass(sequence):
 def compute_nmol_from_volume(volume, mass, resolution):
 
     file = open(os.path.join(os.environ['XIA2_ROOT'],
-                             'Data', 'NMol',
-                             'mattprob_params.dat'), 'r')
+                             'Data', 'nmol-params.dat'), 'r')
 
     while 1:
         line = file.readline()

@@ -2524,7 +2524,7 @@ def Mosflm(DriverType = None):
                 
                 for record in open(os.path.join(
                     os.environ['XIA2_ROOT'],
-                    'Data', 'Ice','Rings.dat')).readlines():
+                    'Data', 'ice-rings.dat')).readlines():
                     
                     resol = tuple(map(float, record.split()[:2]))
                     self.input('resolution exclude %.2f %.2f' % (resol))
@@ -3100,7 +3100,7 @@ def Mosflm(DriverType = None):
                     
                     for record in open(os.path.join(
                         os.environ['XIA2_ROOT'],
-                        'Data', 'Ice','Rings.dat')).readlines():
+                        'Data', 'ice-rings.dat')).readlines():
                     
                         resol = tuple(map(float, record.split()[:2]))
                         job.input('resolution exclude %.2f %.2f' % (resol))
