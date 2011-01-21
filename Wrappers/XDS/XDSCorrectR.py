@@ -50,7 +50,7 @@ def XDSCorrectR(DriverType = None):
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
-    class XDSCorrectWrapper(DriverInstance.__class__,
+    class XDSCorrectRWrapper(DriverInstance.__class__,
                             FrameProcessor):
         '''A wrapper for wrapping XDS in correct mode.'''
 
@@ -223,6 +223,9 @@ def XDSCorrectR(DriverType = None):
             if self.get_wavelength():
                 image_header['wavelength'] = self.get_wavelength()
 
+            if self.get_two_theta():
+                image_header['two_theta'] = self.get_two_theta()
+
             header = header_to_xds(image_header)
 
             xds_inp = open(os.path.join(self.get_working_directory(),
@@ -364,11 +367,11 @@ def XDSCorrectR(DriverType = None):
 
             return
 
-    return XDSCorrectWrapper()
+    return XDSCorrectRWrapper()
 
 if __name__ == '__main__':
 
-    correct = XDSCorrect()
+    correct = XDSCorrectR()
     directory = os.path.join(os.environ['XIA2_ROOT'],
                              'Data', 'Test', 'Images')
 

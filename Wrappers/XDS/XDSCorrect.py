@@ -275,14 +275,9 @@ def XDSCorrect(DriverType = None):
             xds_inp.write('DATA_RANGE=%d %d\n' % self._data_range)
             # xds_inp.write('MINIMUM_ZETA=0.1\n')
             # include the resolution range, perhaps
-            if self._resolution_high > 0.0:
+            if self._resolution_high or self._resolution_low:
                 xds_inp.write('INCLUDE_RESOLUTION_RANGE=%.2f %.2f\n' % \
                               (self._resolution_low, self._resolution_high))
-
-            # for spot_range in self._spot_range:
-            # xds_inp.write('SPOT_RANGE=%d %d\n' % spot_range)
-            # xds_inp.write('BACKGROUND_RANGE=%d %d\n' % \
-            # self._background_range)
 
             if self._anomalous:
                 xds_inp.write('FRIEDEL\'S_LAW=FALSE\n')
@@ -360,11 +355,6 @@ def XDSCorrect(DriverType = None):
                 Debug.write(format % tuple(self._results['reindex_op']))
                 self._reindex_used = self._results['reindex_op']
 
-            # and calculate the resolution limit from the
-            # output reflection file... N.B. assume that INTEGRATE was
-            # run in the same directory as CORRECT is now being -
-            # not very tidy though. FIXME, perhaps?
-            
             s, r = digest(bin_o_tron(xds_integrate_hkl_to_list(
                 os.path.join(self.get_working_directory(), 'INTEGRATE.HKL'))))
             self._results['resolution_estimate'] = r
