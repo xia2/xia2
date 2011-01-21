@@ -111,6 +111,9 @@ from Schema.Interfaces.Indexer import Indexer
 from Wrappers.Labelit.LabelitMosflmScript import LabelitMosflmScript
 from Wrappers.Labelit.LabelitStats_distl import LabelitStats_distl
 
+from Modules.Indexer.IndexerSelectImages import index_select_images_lone, \
+     index_select_images_user
+
 from lib.bits import auto_logfiler
 from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Citations import Citations
@@ -251,70 +254,18 @@ def LabelitIndex(DriverType = None, indxr_print = True):
         def _index_select_images(self):
             '''Select correct images based on image headers.'''
 
-            # FIXME perhaps this should be somewhere central, because
-            # Mosflm will share the same implementation
-
             phi_width = self.get_header_item('phi_width')
             images = self.get_matching_images()
 
-            if len(images) < 4:
-                for image in images:
-                    self.add_indexer_image_wedge(image)
-
-                return
-
-            Debug.write('Selected image %s' % images[0])
-
-            self.add_indexer_image_wedge(images[0])
-
-            offset = images[0] - 1
-
-            if offset + int(90.0 / phi_width) in images:
-                Debug.write('Selected image %s' % (offset +
-                                                   int(45.0 / phi_width)))
-                Debug.write('Selected image %s' % (offset +
-                                                   int(90.0 / phi_width)))
-                self.add_indexer_image_wedge(offset + int(45.0 / phi_width))
-                self.add_indexer_image_wedge(offset + int(90.0 / phi_width))
-            else:
-                middle = len(images) / 2
-                if len(images) >= 3:
-                    Debug.write('Selected image %s' % images[middle])
-                    self.add_indexer_image_wedge(images[middle])
-                Debug.write('Selected image %s' % images[-1])
-                self.add_indexer_image_wedge(images[-1])
-
-            # ok, if running interactively, allow user to override these...
-
             if Flags.get_interactive():
-                images = self.get_indexer_images()
-                images_list = '%d' % images[0][0]
-                for image in images[1:]:
-                    images_list += ', %d' % image[0]
-            
-                Chatter.write('Existing images for indexing: %s' % \
-                              images_list)
+                selected_images = index_select_images_user(phi_width, images,
+                                                           Chatter)
+            else:
+                selected_images = index_select_images_lone(phi_width, images)
 
-                while True:
-
-                    record = raw_input('>')
-                    
-                    if not record.strip():
-                        return
-                    
-                    try:
-                        images = map(int, record.replace(',', ' ').split())
-                        images_list = '%d' % images[0]
-                        for image in images[1:]:
-                            images_list += ', %d' % image
-            
-                        Chatter.write('New images for indexing: %s' % \
-                                      images_list)
-                        self.set_indexer_image_wedges(images)
-                        return
-                        
-                    except ValueError, e:
-                        pass
+            for image in selected_images:
+                Debug.write('Selected image %s' % image)
+                self.add_indexer_image_wedge(image)
 
             return
 

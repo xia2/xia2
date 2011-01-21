@@ -58,6 +58,11 @@ from MosflmHelpers import _happy_integrate_lp, \
      _get_indexing_solution_number, detector_class_to_mosflm, \
      _parse_summary_file
 
+# things we are moving towards...
+
+from Modules.Indexer.IndexerSelectImages import index_select_images_lone, \
+     index_select_images_user
+
 from Modules.GainEstimater import gain
 from Handlers.Files import FileHandler
 
@@ -190,59 +195,15 @@ def Mosflm(DriverType = None,
             phi_width = self.get_header_item('phi_width')
             images = self.get_matching_images()
 
-            Debug.write('Selected image %s' % images[0])
-
-            self.add_indexer_image_wedge(images[0])
-
-            offset = images[0] - 1
-
-            if offset + int(90.0 / phi_width) in images:
-                Debug.write('Selected image %s' % (offset +
-                                                   int(45.0 / phi_width)))
-                Debug.write('Selected image %s' % (offset +
-                                                   int(90.0 / phi_width)))
-                self.add_indexer_image_wedge(offset + int(45.0 / phi_width))
-                self.add_indexer_image_wedge(offset + int(90.0 / phi_width))
-                
-            else:
-                middle = len(images) / 2
-                if len(images) >= 3:
-                    Debug.write('Selected image %s' % images[middle])
-                    self.add_indexer_image_wedge(images[middle])
-                Debug.write('Selected image %s' % images[-1])
-                self.add_indexer_image_wedge(images[-1])
-
-            # ok, if running interactively, allow user to override these...
-
             if Flags.get_interactive():
-                images = self.get_indexer_images()
-                images_list = '%d' % images[0][0]
-                for image in images[1:]:
-                    images_list += ', %d' % image[0]
-            
-                Chatter.write('Existing images for indexing: %s' % \
-                              images_list)
+                selected_images = index_select_images_user(phi_width, images,
+                                                           Chatter)
+            else:
+                selected_images = index_select_images_lone(phi_width, images)
 
-                while True:
-
-                    record = raw_input('>')
-                    
-                    if not record.strip():
-                        return
-                    
-                    try:
-                        images = map(int, record.replace(',', ' ').split())
-                        images_list = '%d' % images[0]
-                        for image in images[1:]:
-                            images_list += ', %d' % image
-            
-                        Chatter.write('New images for indexing: %s' % \
-                                      images_list)
-                        self.set_indexer_image_wedges(images)
-                        return
-                        
-                    except ValueError, e:
-                        pass
+            for image in selected_images:
+                Debug.write('Selected image %s' % image)
+                self.add_indexer_image_wedge(image)
 
             return
 

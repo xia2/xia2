@@ -494,7 +494,6 @@ class Indexer:
         
         return
 
-
     def get_indexer_images(self):
         return self._indxr_images
 
