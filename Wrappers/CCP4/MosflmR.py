@@ -137,7 +137,6 @@ def MosflmR(DriverType = None):
             self._mosflm_cell_ref_images = None
             self._mosflm_cell_ref_resolution = None
             self._mosflm_cell_ref_double_mosaic = False
-
             # belt + braces for very troublesome cases - this will only
             # be used in failover / microcrystal mode
             self._mosflm_cell_ref_add_autoindex = False
@@ -244,7 +243,7 @@ def MosflmR(DriverType = None):
             return
         
         def _index_prepare(self):
-
+			
             if self._indxr_images == []:
                 self._index_select_images()
 
@@ -264,6 +263,8 @@ def MosflmR(DriverType = None):
 
             if Flags.get_small_molecule():
                 return self._index_select_images_small_molecule()
+            if Flags.get_microcrystal():
+                return self._index_select_images_microcrystal()
 
             phi_width = self.get_header_item('phi_width')
             images = self.get_matching_images()
@@ -288,6 +289,38 @@ def MosflmR(DriverType = None):
                     self.add_indexer_image_wedge(images[middle])
                 Debug.write('Selected image %s' % images[-1])
                 self.add_indexer_image_wedge(images[-1])
+
+            # ok, if running interactively, allow user to override these...
+
+            if Flags.get_interactive():
+                images = self.get_indexer_images()
+                images_list = '%d' % images[0][0]
+                for image in images[1:]:
+                    images_list += ', %d' % image[0]
+            
+                Chatter.write('Existing images for indexing: %s' % \
+                              images_list)
+
+                while True:
+
+                    record = raw_input('>')
+                    
+                    if not record.strip():
+                        return
+                    
+                    try:
+                        images = map(int, record.replace(',', ' ').split())
+                        images_list = '%d' % images[0]
+                        for image in images[1:]:
+                            images_list += ', %d' % image
+            
+                        Chatter.write('New images for indexing: %s' % \
+                                      images_list)
+                        self.set_indexer_image_wedges(images)
+                        return
+                        
+                    except ValueError, e:
+                        pass
 
             return
 
@@ -315,6 +348,25 @@ def MosflmR(DriverType = None):
 
                 Debug.write('Selected image %s' % image_number)
                 self.add_indexer_image_wedge(image_number)
+
+            return
+
+        def _index_select_images_microcrystal(self):
+            '''Select images for more difficult cases e.g. microcrystal
+            work. Will apply (up to) 20 images to the task.'''
+
+            phi_width = self.get_header_item('phi_width')
+            images = self.get_matching_images()
+
+            spacing = max(1, int(len(images) / 20))
+
+            selected = []
+
+            for j in range(0, len(images), spacing):
+                selected.append(images[j])
+
+            for image in selected[:20]:
+                self.add_indexer_image_wedge(image)
 
             return
 
@@ -505,12 +557,19 @@ def MosflmR(DriverType = None):
             if self._mosflm_autoindex_sol:
                 self._mosflm_autoindex_sol = 0
 
-            self.input('mosaic estimate')
-            self.input('go')
+            # trac 1150 - want to estimate mosaic spread from all images then
+            # calculate the average - though what happens if one of the chosen
+            # images is BLANK? 
+
+            for i in _images:
+                self.input('mosaic estimate %d' % i)
+                self.input('go')
 
             self.close_wait()
 
             output = self.get_all_output()
+
+            mosaic_spreads = []
 
             for o in output:
                 if 'Final cell (after refinement)' in o:
@@ -554,6 +613,8 @@ def MosflmR(DriverType = None):
                     
                 # check that the selected unit cell matches - and if
                 # not raise a "horrible" exception
+
+                # FIXME why are these and "False" commented out - see also in (e)
 
                 if self._indxr_input_cell:
                 
@@ -625,7 +686,8 @@ def MosflmR(DriverType = None):
                 # is needed
 
                 if 'The mosaicity has been estimated' in o:
-                    self._indxr_mosaic = float(o.split('>')[1].split()[0])
+                    ms = float(o.split('>')[1].split()[0])
+                    mosaic_spreads.append(ms)
 
                 # alternatively this could have failed - which happens
                 # sometimes...
@@ -635,7 +697,13 @@ def MosflmR(DriverType = None):
                     # mosflm built on linux in CCP4 6.0.1...
                     # FIXME this should be a specific kind of
                     # exception e.g. an IndexError
-                    raise IndexingError, 'mosaicity estimation failed'
+                    # if microcrystal mode, just assume for the moment mosaic
+                    # spread is 0.5 degrees...
+
+                    if Flags.get_microcrystal():
+                        self._indxr_mosaic = 0.5
+                    else:
+                        raise IndexingError, 'mosaicity estimation failed'
 
                 # or it may alternatively look like this...
 
@@ -649,7 +717,11 @@ def MosflmR(DriverType = None):
                         'Mosaic estimation failed, so guessing at %4.2f' % \
                         phi_width)
 
-                    self._indxr_mosaic = phi_width
+                    # only consider this if we have thus far no idea on the
+                    # mosaic spread...
+
+                    if not mosaic_spreads:
+                        mosaic_spreads.append(phi_width)
 
                 # mosflm doesn't refine this in autoindexing...
                 if 'Crystal to detector distance of' in o:
@@ -679,6 +751,10 @@ def MosflmR(DriverType = None):
                 if '99% have resolution' in o:
                     self._indxr_resolution_estimate = float(
                         o.split()[-2])
+
+            # compute mosaic as mean(mosaic_spreads)
+
+            self._indxr_mosaic = sum(mosaic_spreads) / len(mosaic_spreads)
 
             self._indxr_payload['mosflm_integration_parameters'] = intgr_params
                                                                  
@@ -722,20 +798,19 @@ def MosflmR(DriverType = None):
 
             if self.get_indexer_sweep().get_user_lattice():
                 return
+
+            try:
+                status, lattice, matrix, cell = mosflm_check_indexer_solution(
+                    self)
+            except:
+                status = None
             
-            status, lattice, matrix, cell = mosflm_check_indexer_solution(
-                self)
-
             if status is None:
-
                 # basis is primitive
-
                 return
 
             if status is False:
-
                 # basis is centred, and passes test
-
                 return
 
             # ok need to update internals...
@@ -1481,8 +1556,6 @@ def MosflmR(DriverType = None):
             if mosaic < 0.25 * self.get_header_item('phi_width'):
                 mosaic = 0.25 * self.get_header_item('phi_width')
                 
-            # check to see if there is a special mosflm beam around!
-
             if indxr.get_indexer_payload('mosflm_beam_centre'):
                 beam = indxr.get_indexer_payload('mosflm_beam_centre')
 
@@ -1513,6 +1586,12 @@ def MosflmR(DriverType = None):
                 self.set_indexer_beam(beam)
 
             spacegroup_number = lattice_to_spacegroup(lattice)
+
+            # FIXME surely these have been assigned further up?!
+
+            if not self._mosflm_cell_ref_images:
+                self._mosflm_cell_ref_images = self._refine_select_images(
+                    mosaic)
 
             f = open(os.path.join(self.get_working_directory(),
                                   'xiaindex-%s.mat' % lattice), 'w')
@@ -1937,7 +2016,7 @@ def MosflmR(DriverType = None):
                     self.set_integrater_parameter(
                         'mosflm', 'raster',
                         '%d %d %d %d %d' % tuple(integration_params['raster']))
-                    
+
             indxr.set_indexer_payload('mosflm_integration_parameters', None)
 
             spacegroup_number = lattice_to_spacegroup(lattice)

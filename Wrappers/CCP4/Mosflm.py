@@ -131,11 +131,15 @@ def Mosflm(DriverType = None):
             # local parameters used in autoindexing
             self._mosflm_autoindex_sol = 0
             self._mosflm_autoindex_thresh = None
+            self._mosflm_spot_file = None
 
             # local parameters used in cell refinement
             self._mosflm_cell_ref_images = None
             self._mosflm_cell_ref_resolution = None
             self._mosflm_cell_ref_double_mosaic = False
+            # belt + braces for very troublesome cases - this will only
+            # be used in failover / microcrystal mode
+            self._mosflm_cell_ref_add_autoindex = False
 
             # and the calculation of the missetting angles
             self._mosflm_misset_expert = None
@@ -162,15 +166,96 @@ def Mosflm(DriverType = None):
             dd.set_image(name)
             return dd.readheader()
 
+        def _find_spots(self, images = None):
+            '''Find spots on all of the images selected for autoindexing.'''
+
+            self.reset()
+
+            if images:
+                _images = images
+            else:
+
+                _images = []
+                for i in self._indxr_images:
+                    for j in i:
+                        if not j in _images:
+                            _images.append(j)
+                    
+            _images.sort()
+
+            auto_logfiler(self)
+
+            self.start()
+
+            self.input('template "%s"' % self.get_template())
+            self.input('directory "%s"' % self.get_directory())
+
+            if self.get_beam_prov() == 'user':
+                self.input('beam %f %f' % self.get_beam())
+
+            if self.get_wavelength_prov() == 'user':
+                self.input('wavelength %f' % self.get_wavelength())
+
+            if self.get_distance_prov() == 'user':
+                self.input('distance %f' % self.get_distance())
+
+            for i in _images:
+
+                self.input(
+                    'findspots local find %d file spots.dat' % i)
+
+            self.input('go')
+
+            self.close_wait()
+
+            # gather up some parameters found in the spot finding, which could
+            # be useful for other analysis ...
+
+            output = self.get_all_output()
+
+            intgr_params = { }
+
+            for o in output:
+                if 'parameters have been set to' in o:
+                    intgr_params['raster'] = map(
+                        int, o.split()[-5:])
+                    
+                if '(currently SEPARATION' in o:
+                    intgr_params['separation'] = map(
+                        float, o.replace(')', '').split()[-2:])
+                
+            self._indxr_payload['mosflm_integration_parameters'] = intgr_params
+
+            # now recover the spot list 
+
+            self._mosflm_spot_file = 'spots.dat'
+
+            # and transform it to a standard reference frame - that being
+            # phi x y i/sigma where phi is probably in the middle of the image
+            # and x, y are the PIXEL positions in the fast, slow directions.
+            # 
+            # (i)   reset the spot list
+            # (ii)  transform all of the spots which were found
+            # (iii) store these in the list
+            #
+            # N.B. this won't be the list used for autoindexing!
+
+            return
+        
         def _index_prepare(self):
-            
+			
             if self._indxr_images == []:
                 self._index_select_images()
 
             if self._mosflm_autoindex_thresh is None and \
                    Flags.get_microcrystal():
                 self._mosflm_autoindex_thresh = 5
-                                
+                
+            # FIXME perform the spot finding in here, record the spots in
+            # a file named "spots" (say) then also transform them to a
+            # standard reference frame for later analysis. That would be
+            # self._find_spots() then.
+
             return
 
         def _index_select_images(self):
@@ -178,12 +263,8 @@ def Mosflm(DriverType = None):
 
             if Flags.get_small_molecule():
                 return self._index_select_images_small_molecule()
-
             if Flags.get_microcrystal():
                 return self._index_select_images_microcrystal()
-
-            # FIXME perhaps this should be somewhere central, because
-            # Mosflm will share the same implementation
 
             phi_width = self.get_header_item('phi_width')
             images = self.get_matching_images()
@@ -292,30 +373,19 @@ def Mosflm(DriverType = None):
         def _refine_select_images(self, mosaic):
             '''Select images for cell refinement based on image headers.'''
 
-            # this will always use three wedges with spacing 45 degrees
-            # or as close as possible to this...
-
             cell_ref_images = []
 
             phi_width = self.get_header_item('phi_width')
-
             min_images = max(3, int(2 * mosaic / phi_width))
-
-            # mosflm can only run with 30 frames - that is 3 x (9 + 1)
-            # because we include the end points.
 
             if min_images > 9:
                 min_images = 9
             
-            # next select what we need from the list...
-
             images = self.get_matching_images()
 
             if len(images) < 3 * min_images:
                 cell_ref_images.append((min(images), max(images)))
                 return cell_ref_images
-
-            # add the first wedge of data to use
 
             cell_ref_images = []
             cell_ref_images.append((images[0], images[min_images - 1]))
@@ -335,14 +405,34 @@ def Mosflm(DriverType = None):
                                         middle - 2 + min_images))
                 cell_ref_images.append((images[-min_images],
                                         images[-1]))
-                
 
+            return cell_ref_images
+                            
+        def _refine_select_twenty(self, mosaic):
+            '''Select images for cell refinement - first 20 in the sweep.'''
+
+            cell_ref_images = []
+
+            images = self.get_matching_images()
+
+            cell_ref_images = []
+
+            if len(images) > 20:
+                cell_ref_images.append((images[0], images[19]))
+            else:
+                cell_ref_images.append((images[0], images[-1]))
+                
             return cell_ref_images
 
         def _index(self):
             '''Implement the indexer interface.'''
 
             Citations.cite('mosflm')
+
+            # FIXME verify that the spot finding found some spots (and throw
+            # an exception if not!) then perform the indexing on this
+            # spot list. N.B. this would provide the opportunity to index
+            # multiple lattices in a relatively straightforward manner.
 
             self.reset()
 
@@ -521,11 +611,12 @@ def Mosflm(DriverType = None):
                             self._indxr_input_lattice]:
                             del(self._indxr_other_lattice_cell[k])
                     
-
                 # check that the selected unit cell matches - and if
                 # not raise a "horrible" exception
 
-                if self._indxr_input_cell and False:
+                # FIXME why are these and "False" commented out - see also in (e)
+
+                if self._indxr_input_cell:
                 
                     for o in output:
                         if 'Final cell (after refinement)' in o:
@@ -542,7 +633,7 @@ def Mosflm(DriverType = None):
 
             except RuntimeError, e:
                 # check if mosflm rejected a solution we have it
-                if 'horribl' in str(e) and False:
+                if 'horribl' in str(e):
                     # ok it did - time to break out the big guns...
                     if not self._indxr_input_cell:
                         raise RuntimeError, \
@@ -606,7 +697,6 @@ def Mosflm(DriverType = None):
                     # mosflm built on linux in CCP4 6.0.1...
                     # FIXME this should be a specific kind of
                     # exception e.g. an IndexError
-
                     # if microcrystal mode, just assume for the moment mosaic
                     # spread is 0.5 degrees...
 
@@ -644,7 +734,6 @@ def Mosflm(DriverType = None):
                    and 'does NOT agree with' in o:
                     self._indxr_refined_distance = self.get_distance()
                 
-
                 # record raster parameters and so on, useful for the
                 # cell refinement etc - this will be added to a
                 # payload dictionary of mosflm integration keywords
@@ -717,9 +806,11 @@ def Mosflm(DriverType = None):
                 status = None
             
             if status is None:
+                # basis is primitive
                 return
 
             if status is False:
+                # basis is centred, and passes test
                 return
 
             # ok need to update internals...
@@ -745,7 +836,8 @@ def Mosflm(DriverType = None):
             '''Get out the parameters from autoindexing without using the
             result - this is probably ok as it is quite quick ;o).'''
 
-            # reset the log file tracking and whatnot
+            # reset the log file tracking and whatnot - FIXME this should
+            # use the find_spots method...
 
             self.reset()
 
@@ -853,10 +945,6 @@ def Mosflm(DriverType = None):
             why this is needed to be run again, set self._intgr_prepare_done
             as False.'''
 
-            # before we do anything we perhaps need to shorten the image
-            # numbers so that they fit in the output - this is done
-            # using the frameprocessors digest_template method.
-
             self.digest_template()
 
             if not self._mosflm_gain and self.get_gain():
@@ -867,23 +955,16 @@ def Mosflm(DriverType = None):
             if 'pilatus' in self.get_header_item('detector_class'):
                 self._mosflm_gain = 1.0
 
-            # try performing the cell refinement in P1 first and then
-            # in the correct setting ... not sure how to "insulate" this
-            # from errors in the cell refinement though... if this
-            # phase decided that the results were much worse a
-            # BadLatticeError would have to be raised...
-
-            # in here need to select the images we are going to be using
-            # before we do anything else...
-
             if not self._mosflm_cell_ref_images:
                 indxr = self.get_integrater_indexer()
-                lattice = indxr.get_indexer_lattice()
                 mosaic = indxr.get_indexer_mosaic()
-                spacegroup_number = lattice_to_spacegroup(lattice)
 
-                self._mosflm_cell_ref_images = self._refine_select_images(
-                    mosaic)
+                if Flags.get_microcrystal():
+                    self._mosflm_cell_ref_images = self._refine_select_twenty(
+                        mosaic)
+                else:
+                    self._mosflm_cell_ref_images = self._refine_select_images(
+                        mosaic)
 
             indxr = self.get_integrater_indexer()
 
@@ -969,13 +1050,12 @@ def Mosflm(DriverType = None):
                     auto_logfiler(self)
                     rms_deviations_p1, br_p1 = self._mosflm_test_refine_cell(
                         'aP')
-
+                    
                 self.reset()
                 auto_logfiler(self)
                 rms_deviations, br = self._mosflm_refine_cell()
 
             except NegativeMosaicError, nme:
-
                 # need to handle cases where the mosaic spread refines to
                 # a negative value when the lattice is right - this could
                 # be caused by the starting value being too small so
@@ -1072,7 +1152,8 @@ def Mosflm(DriverType = None):
                             (ratio / len(ratios)))
 
                 if (ratio / (max(cycles) * len(images))) > \
-                       Flags.get_rejection_threshold():
+                       Flags.get_rejection_threshold() and \
+                       not self.get_integrater_sweep().get_user_lattice():
                     raise BadLatticeError, 'incorrect lattice constraints'
 
             else:
@@ -1274,18 +1355,36 @@ def Mosflm(DriverType = None):
             # if set, use the resolution for cell refinement - see
             # bug # 2078...
             
-            if self._mosflm_cell_ref_resolution:
+            if self._mosflm_cell_ref_resolution and not \
+                   Flags.get_microcrystal():
                 self.input('resolution %f' % \
                            self._mosflm_cell_ref_resolution)
 
             if self._mosflm_postref_fix_mosaic:
                 self.input('postref fix mosaic')
 
+            if Flags.get_microcrystal():
+                self.input('postref sdfac 2.0')
+                
             # note well that the beam centre is coming from indexing so
             # should be already properly handled
 
             if self.get_wavelength_prov() == 'user':
                 self.input('wavelength %f' % self.get_wavelength())
+
+            # belt + braces mode - only to be used when considering failover,
+            # will run an additional step of autoindexing prior to cell
+            # refinement, to be used only after proving that not going it
+            # will result in cell refinement failure - will use the first
+            # wedge... N.B. this is only useful if the indexer is Labelit
+            # not Mosflm...
+
+            if self._mosflm_cell_ref_add_autoindex:
+                assert(Flags.get_failover())
+                cri = self._mosflm_cell_ref_images[0]
+                for j in range(cri[0], 1 + cri[1]):
+                    self.input('autoindex dps refine image %d' % j)
+                self.input('go')
 
             # get all of the stored parameter values
             parameters = self.get_integrater_parameters('mosflm')
@@ -1488,6 +1587,8 @@ def Mosflm(DriverType = None):
 
             spacegroup_number = lattice_to_spacegroup(lattice)
 
+            # FIXME surely these have been assigned further up?!
+
             if not self._mosflm_cell_ref_images:
                 self._mosflm_cell_ref_images = self._refine_select_images(
                     mosaic)
@@ -1541,12 +1642,29 @@ def Mosflm(DriverType = None):
             # if set, use the resolution for cell refinement - see
             # bug # 2078...
             
-            if self._mosflm_cell_ref_resolution:
+            if self._mosflm_cell_ref_resolution and not \
+                   Flags.get_microcrystal():
                 self.input('resolution %f' % \
                            self._mosflm_cell_ref_resolution)
 
+            if Flags.get_microcrystal():
+                self.input('postref sdfac 2.0')
+
             if self.get_wavelength_prov() == 'user':
                 self.input('wavelength %f' % self.get_wavelength())
+
+            # belt + braces mode - only to be used when considering failover,
+            # will run an additional step of autoindexing prior to cell
+            # refinement, to be used only after proving that not going it
+            # will result in cell refinement failure - will use the first
+            # wedge...
+
+            if self._mosflm_cell_ref_add_autoindex:
+                assert(Flags.get_failover())
+                cri = self._mosflm_cell_ref_images[0]
+                for j in range(cri[0], 1 + cri[1]):
+                    self.input('autoindex dps refine image %d' % j)
+                self.input('go')
 
             parameters = self.get_integrater_parameters('mosflm')
 
@@ -1603,6 +1721,13 @@ def Mosflm(DriverType = None):
                     cell_refinement_ok = True
                     
             if not cell_refinement_ok:
+                if Flags.get_failover() and not \
+                       self._mosflm_cell_ref_add_autoindex:
+                    Debug.write('Repeating cell refinement...')
+                    self.set_integrater_prepare_done(False)
+                    self._mosflm_cell_ref_add_autoindex = True
+                    return [0.0], [0.0]
+                
                 Chatter.write(
                     'Looks like cell refinement failed - more follows...')
 
@@ -1728,18 +1853,22 @@ def Mosflm(DriverType = None):
                     for p in parameters:
                         Debug.write('... %s' % p)
 
+                    Debug.write(
+                        'However, will continue to integration.')
+                        
 		if 'One or more cell parameters has changed by more' in o:
                     # this is a more severe example of the above problem...
                     Debug.write(
                         'Cell refinement is unstable...')
 
                     raise BadLatticeError, 'Cell refinement failed'
-                    
+
                 # other possible problems in the cell refinement - a
                 # negative mosaic spread, for instance
 
                 if 'Refined mosaic spread (excluding safety factor)' in o:
                     mosaic = float(o.split()[-1])
+
                     if mosaic < 0.05:
                         Debug.write('Negative mosaic spread (%5.2f)' %
                                     mosaic)
@@ -2029,19 +2158,25 @@ def Mosflm(DriverType = None):
             # add an extra chunk of orientation refinement
 
             if Flags.get_microcrystal():
-            
                 a = self._intgr_wedge[0] - offset
-                if self._intgr_wedge[0] - self._intgr_wedge[1] > 20:
+                if self._intgr_wedge[1] - self._intgr_wedge[0] > 20:
                     b = a + 20
                 else:
                     b = self._intgr_wedge[1] - offset
+
                 self.input('postref segment 1 fix all')
                 self.input('process %d %d' % (a, b))
                 self.input('go')
                 self.input('postref nosegment')
 
-            self.input('process %d %d' % (self._intgr_wedge[0] - offset,
-                                          self._intgr_wedge[1] - offset))
+                self.input('process %d %d block %d' % \
+                           (self._intgr_wedge[0] - offset,
+                            self._intgr_wedge[1] - offset,
+                            1 + self._intgr_wedge[1] - self._intgr_wedge[0]))
+                                            
+            else:
+                self.input('process %d %d' % (self._intgr_wedge[0] - offset,
+                                              self._intgr_wedge[1] - offset))
                 
             self.input('go')
 
@@ -2083,7 +2218,7 @@ def Mosflm(DriverType = None):
 
                     if 'pilatus' in self.get_header_item('detector_class'):
                         continue
-                    
+
                     # look for the correct gain
                     for j in range(i, i + 10):
                         if output[j].split()[:2] == ['set', 'to']:
@@ -2141,8 +2276,12 @@ def Mosflm(DriverType = None):
                 # profile and running again...
                 
                 if 'BGSIG too large' in o:
+                    if not self._mosflm_refine_profiles:
+                        raise RuntimeError, 'BGSIG error with profiles fixed'
+                    
                     Debug.write(
                         'BGSIG error detected - try fixing profile...')
+                    
                     self._mosflm_refine_profiles = False
                     self.set_integrater_done(False)
 
@@ -2165,6 +2304,9 @@ def Mosflm(DriverType = None):
                     raise RuntimeError, \
                           'integration failed: reason unknown (log %s)' % \
                           self.get_log_file()
+
+            if not self._mosflm_hklout:
+                raise RuntimeError, 'processing abandoned'
 
             self._intgr_batches_out = (integrated_images_first,
                                        integrated_images_last)
@@ -2568,9 +2710,6 @@ def Mosflm(DriverType = None):
                 detector_height = self._fp_header['size'][1] * \
                                   self._fp_header['pixel'][1]
                 
-                # fixme this will probably not work well for non-square
-                # detectors... like the pilatus?!
-
                 lim_x = 0.5 * detector_width
                 lim_y = 0.5 * detector_height
                 
@@ -2650,7 +2789,7 @@ def Mosflm(DriverType = None):
                 threads.append(thread)
 
             mosaics = []
-            
+
             for j in range(parallel):
                 thread = threads[j]
                 thread.stop()
@@ -2707,7 +2846,7 @@ def Mosflm(DriverType = None):
                         
                         if 'pilatus' in self.get_header_item('detector_class'):
                             continue
-                    
+
                         # look for the correct gain
                         for j in range(i, i + 10):
                             if output[j].split()[:2] == ['set', 'to']:
