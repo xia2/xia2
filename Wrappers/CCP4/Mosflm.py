@@ -112,13 +112,10 @@ def Mosflm(DriverType = None,
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
 
-            if Flags.get_automatch():
-                self.set_executable(os.path.join(
-                    os.environ['CCP4'], 'bin', 'ipmosflm.test'))
+            # FIXME should this be "hard" coded as the ccp4 one?
 
-            else:
-                self.set_executable(os.path.join(
-                    os.environ['CCP4'], 'bin', 'ipmosflm'))
+            self.set_executable(os.path.join(
+                os.environ['CCP4'], 'bin', 'ipmosflm'))
                 
             FrameProcessor.__init__(self)
             Indexer.__init__(self)
@@ -126,7 +123,6 @@ def Mosflm(DriverType = None,
 
             # store the Driver instance used for this for use when working
             # in parallel - use with DriverFactory.Driver(DriverType)
-
             self._mosflm_driver_type = DriverType
 
             # local parameters used in autoindexing
@@ -138,6 +134,7 @@ def Mosflm(DriverType = None,
             self._mosflm_cell_ref_images = None
             self._mosflm_cell_ref_resolution = None
             self._mosflm_cell_ref_double_mosaic = False
+            
             # belt + braces for very troublesome cases - this will only
             # be used in failover / microcrystal mode
             self._mosflm_cell_ref_add_autoindex = False
@@ -169,82 +166,6 @@ def Mosflm(DriverType = None,
             dd = Diffdump()
             dd.set_image(name)
             return dd.readheader()
-
-        def _find_spots(self, images = None):
-            '''Find spots on all of the images selected for autoindexing.'''
-
-            self.reset()
-
-            if images:
-                _images = images
-            else:
-
-                _images = []
-                for i in self._indxr_images:
-                    for j in i:
-                        if not j in _images:
-                            _images.append(j)
-                    
-            _images.sort()
-
-            auto_logfiler(self)
-
-            self.start()
-
-            self.input('template "%s"' % self.get_template())
-            self.input('directory "%s"' % self.get_directory())
-
-            if self.get_beam_prov() == 'user':
-                self.input('beam %f %f' % self.get_beam())
-
-            if self.get_wavelength_prov() == 'user':
-                self.input('wavelength %f' % self.get_wavelength())
-
-            if self.get_distance_prov() == 'user':
-                self.input('distance %f' % self.get_distance())
-
-            for i in _images:
-
-                self.input(
-                    'findspots local find %d file spots.dat' % i)
-
-            self.input('go')
-
-            self.close_wait()
-
-            # gather up some parameters found in the spot finding, which could
-            # be useful for other analysis ...
-
-            output = self.get_all_output()
-
-            intgr_params = { }
-
-            for o in output:
-                if 'parameters have been set to' in o:
-                    intgr_params['raster'] = map(
-                        int, o.split()[-5:])
-                    
-                if '(currently SEPARATION' in o:
-                    intgr_params['separation'] = map(
-                        float, o.replace(')', '').split()[-2:])
-                
-            self._indxr_payload['mosflm_integration_parameters'] = intgr_params
-
-            # now recover the spot list 
-
-            self._mosflm_spot_file = 'spots.dat'
-
-            # and transform it to a standard reference frame - that being
-            # phi x y i/sigma where phi is probably in the middle of the image
-            # and x, y are the PIXEL positions in the fast, slow directions.
-            # 
-            # (i)   reset the spot list
-            # (ii)  transform all of the spots which were found
-            # (iii) store these in the list
-            #
-            # N.B. this won't be the list used for autoindexing!
-
-            return
         
         def _index_prepare(self):
 			
@@ -255,11 +176,6 @@ def Mosflm(DriverType = None,
                    Flags.get_microcrystal():
                 self._mosflm_autoindex_thresh = 5
                 
-            # FIXME perform the spot finding in here, record the spots in
-            # a file named "spots" (say) then also transform them to a
-            # standard reference frame for later analysis. That would be
-            # self._find_spots() then.
-
             return
 
         def _index_select_images(self):
@@ -267,6 +183,7 @@ def Mosflm(DriverType = None,
 
             if Flags.get_small_molecule():
                 return self._index_select_images_small_molecule()
+
             if Flags.get_microcrystal():
                 return self._index_select_images_microcrystal()
 
@@ -286,6 +203,7 @@ def Mosflm(DriverType = None,
                                                    int(90.0 / phi_width)))
                 self.add_indexer_image_wedge(offset + int(45.0 / phi_width))
                 self.add_indexer_image_wedge(offset + int(90.0 / phi_width))
+                
             else:
                 middle = len(images) / 2
                 if len(images) >= 3:
