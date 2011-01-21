@@ -378,7 +378,6 @@ class XDSIntegraterR(FrameProcessor,
              'directory':dirname,
              'resolution':'%.2f' % self._intgr_reso_high})
 
-
         first_image_in_wedge = self.get_image_name(self._intgr_wedge[0])
 
         defpix = self.Defpix()
@@ -515,8 +514,8 @@ class XDSIntegraterR(FrameProcessor,
             self.set_integrater_done(False)
 
         if not self.get_integrater_reindex_matrix() and not self._intgr_cell \
-               and not Flags.get_no_lattice_test() and not \
-               self.get_integrater_sweep().get_user_lattice():
+               and not Flags.get_no_lattice_test() and \
+               not self.get_integrater_sweep().get_user_lattice():
             correct = self.Correct()
 
             correct.set_data_range(self._intgr_wedge[0],
