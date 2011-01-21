@@ -31,7 +31,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Wrappers.XDS.XDSDefpix import XDSDefpix as _Defpix
 from Wrappers.XDS.XDSIntegrate import XDSIntegrate as _Integrate
-from Wrappers.XDS.XDSCorrectR import XDSCorrectR as _Correct
+from Wrappers.XDS.XDSCorrect import XDSCorrect as _Correct
 
 # helper functions
 
@@ -170,6 +170,10 @@ class XDSIntegraterR(FrameProcessor,
             correct.set_resolution_high(0.0)
             correct.set_resolution_low(
                 self.get_integrater_low_resolution())
+
+        # since we are the "R" integrater...
+
+        correct.set_new_resolution_mode()
             
         auto_logfiler(correct, 'CORRECT')
         
