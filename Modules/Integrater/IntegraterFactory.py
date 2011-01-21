@@ -20,7 +20,6 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
 from Wrappers.CCP4 import Mosflm
-from Wrappers.CCP4 import MosflmR
 from Handlers.Streams import Debug
 from Handlers.Flags import Flags
 from Handlers.PipelineSelection import get_preferences, add_preference
@@ -118,7 +117,7 @@ def Integrater():
 
     if not integrater and (not preselection or preselection == 'mosflmr'):
         try:
-            integrater = MosflmR.MosflmR()
+            integrater = Mosflm.Mosflm(new_resolution_mode = True)
             Debug.write('Using MosflmR Integrater')
             add_preference('scaler', 'ccp4r')
         except NotAvailableError, e:

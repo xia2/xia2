@@ -95,7 +95,8 @@ from Modules.Indexer.MosflmCheckIndexerSolution import \
 
 from lib.bits import meansd, remove_outliers
 
-def Mosflm(DriverType = None):
+def Mosflm(DriverType = None,
+           new_resolution_mode = False):
     '''A factory for MosflmWrapper classes.'''
 
     DriverInstance = DriverFactory.Driver(DriverType)
@@ -156,6 +157,9 @@ def Mosflm(DriverType = None):
             self._mosflm_best_parfile = None
             self._mosflm_best_datfile = None
             self._mosflm_best_hklfile = None
+
+            # merging Mosflm.py and MosflmR.py - this tells me which we are...
+            self._new_resolution_mode = new_resolution_mode
 
             return
 
@@ -2415,28 +2419,26 @@ def Mosflm(DriverType = None):
                                             postref_log)            
 
             # if we have not processed to a given resolution, fix
-            # the limit for future reference
+            # the limit for future reference - only if NOT 
+            # self._new_resolution_mode... c/f loss of MosflmR.py
 
-            # bug # 2040 - this is one place where we could cut out the
-            # middle-man and make things quicker, by not resetting the
-            # resolution limit...
+            if not self._new_resolution_mode:
+                if not self._intgr_reso_high and not Flags.get_quick():
+                    resolution = decide_integration_resolution_limit(output)
 
-            if not self._intgr_reso_high and not Flags.get_quick():
-                resolution = decide_integration_resolution_limit(output)
-
-                Debug.write('Old method resolution limit: %.2f' % resolution)
+                    Debug.write('Old method resolution limit: %.2f' % resolution)
                 
-                if not Flags.get_small_molecule():
+                    if not Flags.get_small_molecule():
 
-                    s, r = digest(bin_o_tron(mosflm_mtz_to_list(
-                        self._mosflm_hklout)))
+                        s, r = digest(bin_o_tron(mosflm_mtz_to_list(
+                            self._mosflm_hklout)))
                     
-                    Debug.write('New method resolution limit: %.2f' % r)
+                        Debug.write('New method resolution limit: %.2f' % r)
                 
-                    resolution = r
+                        resolution = r
 
-                self.set_integrater_high_resolution(resolution)
-                Chatter.write('Set resolution limit: %5.2f' % resolution)
+                    self.set_integrater_high_resolution(resolution)
+                    Chatter.write('Set resolution limit: %5.2f' % resolution)
                 
             return self._mosflm_hklout
 
@@ -3080,14 +3082,16 @@ def Mosflm(DriverType = None):
 
             self._mosflm_hklout = hklout
 
-            if not self._intgr_reso_high and not Flags.get_quick():
-                s, r = digest(bin_o_tron(mosflm_mtz_to_list(
-                    self._mosflm_hklout)))
+            if not self._new_resolution_mode:
 
-                Debug.write('New method resolution limit: %.2f' % r)
-                
-                self.set_integrater_high_resolution(r)
-                Chatter.write('Set resolution limit: %5.2f' % r)
+                if not self._intgr_reso_high and not Flags.get_quick():
+                    s, r = digest(bin_o_tron(mosflm_mtz_to_list(
+                        self._mosflm_hklout)))
+
+                    Debug.write('New method resolution limit: %.2f' % r)
+                    
+                    self.set_integrater_high_resolution(r)
+                    Chatter.write('Set resolution limit: %5.2f' % r)
                 
             return self._mosflm_hklout
         
@@ -3295,5 +3299,25 @@ def Mosflm(DriverType = None):
             return self._mosflm_best_datfile, self._mosflm_best_parfile, \
                    self._mosflm_best_hklfile
 
+        if new_resolution_mode:
+
+            # overload these methods as we don't want the resolution range
+            # feeding back... aha - but we may want to assign them
+            # from outside!
+        
+            def set_integrater_resolution(self, dmin, dmax, user = False):
+                if user:
+                    Integrater.set_integrater_resolution(self, dmin, dmax, user)
+                return
+        
+            def set_integrater_high_resolution(self, dmin, user = False):
+                if user:
+                    Integrater.set_integrater_high_resolution(self, dmin, user)
+                return
+        
+            def set_integrater_low_resolution(self, dmax, user = False):
+                self._intgr_reso_low = dmax
+                return
+      
     return MosflmWrapper()
 
