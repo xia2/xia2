@@ -42,8 +42,8 @@ def index_select_images_user(phi_width, images, out_stream):
     for image in images[1:]:
         images_list += ', %d' % image
             
-    stream.write('Existing images for indexing: %s' % \
-                 images_list)
+    out_stream.write('Existing images for indexing: %s' % \
+                     images_list)
 
     while True:
 
@@ -58,8 +58,8 @@ def index_select_images_user(phi_width, images, out_stream):
             for image in images[1:]:
                 images_list += ', %d' % image
             
-            stream.write('New images for indexing: %s' % \
-                         images_list)
+            out_stream.write('New images for indexing: %s' % \
+                             images_list)
 
             return images
                         
