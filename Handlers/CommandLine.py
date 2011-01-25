@@ -627,6 +627,8 @@ class _CommandLine(Object):
         if index < 0:
             raise RuntimeError, 'negative index'
 
+        self._understood.append(index)
+
         Flags.set_parallel(1)
         Debug.write('Serial set (i.e. 1 CPU)')
             
