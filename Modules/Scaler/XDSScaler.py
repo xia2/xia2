@@ -90,6 +90,7 @@ from Modules.DoseAccumulate import accumulate
 
 # newly implemented CCTBX powered functions to replace xia2 binaries
 from Modules.Scaler.add_dose_time_to_mtz import add_dose_time_to_mtz
+from Modules.Scaler.compute_average_unit_cell import compute_average_unit_cell
 
 class XDSScaler(Scaler):
     '''An implementation of the xia2 Scaler interface implemented with
@@ -1303,9 +1304,9 @@ class XDSScaler(Scaler):
 
         # finally work through all of the reflection files we have
         # been given and compute the correct spacegroup and an
-        # average unit cell... using CELLPARM
+        # average unit cell... 
 
-        cellparm = self.Cellparm()
+        unit_cell_list = []
 
         for epoch in self._sweep_information.keys():
             integrater = self._sweep_information[epoch]['integrater']
@@ -1317,10 +1318,10 @@ class XDSScaler(Scaler):
                          cell[0], cell[1], cell[2],
                          cell[3], cell[4], cell[5]))
             Debug.write('=> %d reflections' % n_ref)
-            
-            cellparm.add_cell(cell, n_ref)
 
-        self._scalr_cell = cellparm.get_cell()
+            unit_cell_list.append((cell, n_ref))
+            
+        self._scalr_cell = compute_average_unit_cell(unit_cell_list)
 
         Debug.write('Determined unit cell: %.2f %.2f %.2f %.2f %.2f %.2f' % \
                     tuple(self._scalr_cell))

@@ -94,6 +94,7 @@ from Toolkit.Merger import merger
 
 # newly implemented CCTBX powered functions to replace xia2 binaries
 from Modules.Scaler.add_dose_time_to_mtz import add_dose_time_to_mtz
+from Modules.Scaler.compute_average_unit_cell import compute_average_unit_cell
 
 class XDSScalerR(Scaler):
     '''An implementation of the xia2 Scaler interface implemented with
@@ -963,17 +964,9 @@ class XDSScalerR(Scaler):
 
         # finally work through all of the reflection files we have
         # been given and compute the correct spacegroup and an
-        # average unit cell... using CELLPARM - or perhaps not...
-        # CELLPARM can't cope with loads of data sets!
+        # average unit cell...
 
-        w_tot = 0.0
-        
-        a_tot = 0.0
-        b_tot = 0.0
-        c_tot = 0.0
-        alpha_tot = 0.0
-        beta_tot = 0.0
-        gamma_tot = 0.0
+        unit_cell_list = []
 
         for epoch in self._sweep_information.keys():
             integrater = self._sweep_information[epoch]['integrater']
@@ -986,17 +979,9 @@ class XDSScalerR(Scaler):
                          cell[3], cell[4], cell[5]))
             Debug.write('=> %d reflections' % n_ref)
 
-            w_tot += n_ref
-            a_tot += cell[0] * n_ref
-            b_tot += cell[1] * n_ref
-            c_tot += cell[2] * n_ref
-            alpha_tot += cell[3] * n_ref
-            beta_tot += cell[4] * n_ref
-            gamma_tot += cell[5] * n_ref
+            unit_cell_list.append((cell, n_ref))
             
-        self._scalr_cell = (a_tot / w_tot, b_tot / w_tot, c_tot / w_tot, 
-                            alpha_tot / w_tot, beta_tot / w_tot,
-                            gamma_tot / w_tot)
+        self._scalr_cell = compute_average_unit_cell(unit_cell_list)
 
         self._resolution_limits = { }
         
