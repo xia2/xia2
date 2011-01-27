@@ -268,7 +268,7 @@ class CCP4ScalerR(Scaler):
 
             sc_tst.add_run(start, end, pname = input['pname'],
                            xname = input['xname'], dname = input['dname'],
-                           exclude = False)
+                           exclude = False, name = input['sweep_name'])
             
         if self.get_scaler_anomalous():
             sc_tst.set_anomalous()
@@ -1521,11 +1521,13 @@ class CCP4ScalerR(Scaler):
                            xname = input['xname'],
                            dname = input['dname'],
                            exclude = False,
-                           resolution = resolution)
+                           resolution = resolution,
+                           name = input['sweep_name'])
             else:
                 sc.add_run(start, end, pname = input['pname'],
                            xname = input['xname'],
-                           dname = input['dname'])
+                           dname = input['dname'],
+                           name = input['sweep_name'])
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled_test.mtz' % \
@@ -1729,7 +1731,8 @@ class CCP4ScalerR(Scaler):
                        xname = input['xname'],
                        dname = input['dname'],
                        exclude = False,
-                       resolution = run_resolution_limit)
+                       resolution = run_resolution_limit,
+                       name = input['sweep_name'])
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled.mtz' % \
@@ -1824,7 +1827,9 @@ class CCP4ScalerR(Scaler):
                        xname = input['xname'],
                        dname = input['dname'],
                        exclude = False,
-                       resolution = run_resolution_limit)
+                       resolution = run_resolution_limit,
+                       name = input['sweep_name'])
+            
             if not input['dname'] in self._wavelengths_in_order:
                 self._wavelengths_in_order.append(input['dname'])
             
@@ -1864,7 +1869,9 @@ class CCP4ScalerR(Scaler):
                        xname = input['xname'],
                        dname = input['dname'],
                        exclude = False,
-                       resolution = run_resolution_limit)
+                       resolution = run_resolution_limit,
+                       name = input['sweep_name'])
+            
             if not input['dname'] in self._wavelengths_in_order:
                 self._wavelengths_in_order.append(input['dname'])
 

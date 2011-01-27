@@ -1754,7 +1754,8 @@ class XDSScalerR(Scaler):
             start, end = (min(input['batches']), max(input['batches']))
             sc.add_run(start, end, pname = input['pname'],
                        xname = input['xname'],
-                       dname = input['dname'])
+                       dname = input['dname'],
+                       name = input['sweep_name'])
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled.mtz' % \
@@ -1908,7 +1909,8 @@ class XDSScalerR(Scaler):
                        xname = input['xname'],
                        dname = input['dname'],
                        exclude = False,
-                       resolution = run_resolution_limit)
+                       resolution = run_resolution_limit,
+                       name = input['sweep_name'])
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled.mtz' % \
@@ -2087,7 +2089,8 @@ class XDSScalerR(Scaler):
                        xname = input['xname'],
                        dname = input['dname'],
                        exclude = False,
-                       resolution = run_resolution_limit)
+                       resolution = run_resolution_limit,
+                       name = input['sweep_name'])
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_temp.mtz' % \

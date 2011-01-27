@@ -229,12 +229,13 @@ def Scala(DriverType = None,
 
         def add_run(self, start, end,
                     pname = None, xname = None, dname = None,
-                    exclude = False, resolution = 0.0):
+                    exclude = False, resolution = 0.0,
+                    name = None):
             '''Add another run to the run table, optionally not including
             it in the scaling - for solution to bug 2229.'''
 
             self._runs.append((start, end, pname, xname, dname,
-                               exclude, resolution))
+                               exclude, resolution, name))
             return
 
         def add_sd_correction(self, set, sdfac, sdadd, sdb = 0.0):
@@ -663,6 +664,10 @@ def Scala(DriverType = None,
             for run in self._runs:
                 run_number += 1
 
+                if run[7]:
+                    Debug.write('Run %d corresponds to sweep %s' % \
+                                (run_number, run[7]))
+
                 if run[5]:
                     continue
 
@@ -922,6 +927,10 @@ def Scala(DriverType = None,
             run_number = 0
             for run in self._runs:
                 run_number += 1
+
+                if run[7]:
+                    Debug.write('Run %d corresponds to sweep %s' % \
+                                (run_number, run[7]))
 
                 if run[5]:
                     continue
