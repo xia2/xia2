@@ -88,12 +88,6 @@ def Scala(DriverType = None,
           decay_correction = None):
     '''A factory for ScalaWrapper classes.'''
 
-    # Debug.write('Scala factory:')
-    # Debug.write('Partiality %s Absorption %s Decay %s' % \
-    # (partiality_correction,
-    # absorption_correction,
-    # decay_correction))
-
     DriverInstance = DriverFactory.Driver(DriverType)
     CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, 'ccp4')
 
@@ -126,9 +120,7 @@ def Scala(DriverType = None,
                 raise RuntimeError, 'Scala version not found'
 
             if version <= 30225:
-                self._new_scala = False
-            else:
-                self._new_scala = True
+                raise RuntimeError, 'scala version not supported'
 
             # clear all the header junk
             self.reset()
@@ -227,9 +219,6 @@ def Scala(DriverType = None,
             return
 
         # getter and setter methods
-
-        def get_new_scala(self):
-            return self._new_scala
 
         def set_project_info(self, pname, xname, dname):
             '''Only use this for the merge() method.'''
@@ -655,57 +644,26 @@ def Scala(DriverType = None,
                 self.add_command_line(self._scalepack)
 
             self.start()
-            # for the harvesting information
-            # self.input('usecwd')
-                
-            # fixme this works ok for UC1 but won't handle anything
-            # more sophisticated FIXME FIXME 27/OCT/06 how is this
-            # still in here???
-            # self.input('run 1 all')
             self.input('bins 20')
 
             run_number = 0
             for run in self._runs:
                 run_number += 1
 
-                if self._new_scala:
-
-                    # the new style, don't even mention the run...
-
-                    if not run[5]:
-                        self.input('run %d batch %d to %d' % (run_number,
-                                                              run[0], run[1]))
-
-                    if run[6] != 0.0 and not run[5]:
-                        self.input('resolution run %d high %f' % \
-                                   (run_number, run[6]))
-
-                else:
-
-                    # code this up the old way - define the run then
-                    # explicitly exclude it...
-                    
+                if not run[5]:
                     self.input('run %d batch %d to %d' % (run_number,
                                                           run[0], run[1]))
-                    if run[5]:
-                        # we want this run excluding from the scaling...
-                        self.input('exclude run %d batch %d to %d' % \
-                                   (run_number,
-                                    run[0], run[1]))
 
-                    if run[6] != 0.0:
-                        # also want to impose a resolution limit for this
-                        # run... this is to support quick mode - bug # 2040
-                        self.input('resolution run %d high %f' % \
-                                   (run_number, run[6]))
+                if run[6] != 0.0 and not run[5]:
+                    self.input('resolution run %d high %f' % \
+                               (run_number, run[6]))
 
-                    
             # put in the pname, xname, dname stuff
             run_number = 0
             for run in self._runs:
                 run_number += 1
 
-                if self._new_scala and run[5]:
+                if run[5]:
                     continue
 
                 self.input('name run %d project %s crystal %s dataset %s' % \
@@ -767,8 +725,6 @@ def Scala(DriverType = None,
                 pass
 
             self.input('cycles %d' % self._cycles)
-
-            assert(self._new_scala)
 
             if self._sd_parameters_auto:
                 if Flags.get_uniform_sd():
@@ -867,7 +823,7 @@ def Scala(DriverType = None,
             for run in self._runs:
                 # cope with case where two runs make one dataset...
                 if not run[4] in datasets:
-                    if self._new_scala and run[5]:
+                    if run[5]:
                         pass
                     else:
                         datasets.append(run[4])
@@ -954,44 +910,20 @@ def Scala(DriverType = None,
             for run in self._runs:
                 run_number += 1
 
-                if self._new_scala:
-
-                    # the new style, don't even mention the run...
-                    
-                    if not run[5]:
-                        self.input('run %d batch %d to %d' % (run_number,
-                                                              run[0], run[1]))
-
-                    if run[6] != 0.0 and not run[5]:
-                        self.input('resolution run %d high %f' % \
-                                   (run_number, run[6]))
-
-                else:
-
-                    # code this up the old way - define the run then
-                    # explicitly exclude it...
-                    
+                if not run[5]:
                     self.input('run %d batch %d to %d' % (run_number,
                                                           run[0], run[1]))
-                    if run[5]:
-                        # we want this run excluding from the scaling...
-                        self.input('exclude run %d batch %d to %d' % \
-                                   (run_number,
-                                    run[0], run[1]))
 
-                    if run[6] != 0.0:
-                        # also want to impose a resolution limit for this
-                        # run... this is to support quick mode - bug # 2040
-                        self.input('resolution run %d high %f' % \
-                                   (run_number, run[6]))
+                if run[6] != 0.0 and not run[5]:
+                    self.input('resolution run %d high %f' % \
+                               (run_number, run[6]))
 
-                    
             # put in the pname, xname, dname stuff
             run_number = 0
             for run in self._runs:
                 run_number += 1
 
-                if self._new_scala and run[5]:
+                if run[5]:
                     continue
 
                 self.input('name run %d project %s crystal %s dataset %s' % \
@@ -1011,38 +943,24 @@ def Scala(DriverType = None,
             # parameters in the merging step...
 
             if not self._sd_parameters:
-                if self._new_scala:
-                    self.input(
-                        'sdcorrection fixsdb noadjust norefine both 1.0 0.0')
-                else:
-                    self.input(
-                        'sdcorrection noadjust both 1.0 0.0')
+                self.input(
+                    'sdcorrection fixsdb noadjust norefine both 1.0 0.0')
                                     
             for key in self._sd_parameters:
                 # the input order for these is sdfac, sdB, sdadd...
                 parameters = self._sd_parameters[key]
 
                 if key == 'both' and parameters == (1.0, 0.0, 0.0):
-                    # use the FIXED default
-                    if self._new_scala:
-                        self.input(
-                            'sdcorrection fixsdb noadjust norefine both ' + \
-                            '1.0 0.0')
-                    else:
-                        self.input(
-                            'sdcorrection noadjust both 1.0 0.0')
+                    self.input(
+                        'sdcorrection fixsdb noadjust norefine both ' + \
+                        '1.0 0.0')
                         
                     continue
                         
-                if self._new_scala:
-                    self.input(
-                        'sdcorrection fixsdb adjust norefine %s %f %f %f' % \
-                        (key, parameters[0], parameters[2],
-                         parameters[1]))
-                else:
-                    self.input('sdcorrection %s %f %f %f' % \
-                               (key, parameters[0], parameters[2],
-                                parameters[1]))
+                self.input(
+                    'sdcorrection fixsdb adjust norefine %s %f %f %f' % \
+                    (key, parameters[0], parameters[2],
+                     parameters[1]))
 
             if self._anomalous:
                 self.input('anomalous on')
@@ -1112,7 +1030,7 @@ def Scala(DriverType = None,
             for run in self._runs:
                 # cope with case where two runs make one dataset...
                 if not run[4] in datasets:
-                    if self._new_scala and run[5]:
+                    if run[5]:
                         pass
                     else:
                         datasets.append(run[4])

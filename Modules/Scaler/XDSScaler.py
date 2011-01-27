@@ -464,16 +464,10 @@ class XDSScaler(Scaler):
                 # duplicates (i.e. ~ 60 degrees, say) then this
                 # may be output as - not a number -> trap for this.
                 
-                if sc.get_new_scala():
-                    if info['7_SigmaFull'][j] == '-':
-                        s_full = 0.0
-                    else:
-                        s_full = float(info['7_SigmaFull'][j])
+                if info['7_SigmaFull'][j] == '-':
+                    s_full = 0.0
                 else:
-                    if info['7_Sigma'] == '-':
-                        s_full = 0.0
-                    else:
-                        s_full = float(info['7_Sigma'][j])                    
+                    s_full = float(info['7_SigmaFull'][j])
 
                 n_tot = n_full
 
@@ -2303,16 +2297,10 @@ class XDSScaler(Scaler):
                 n_full = int(info['5_Number'][j])
                 I_full = float(info['4_Irms'][j])
                 
-                if sc.get_new_scala():
-                    if info['7_SigmaFull'][j] == '-':
-                        s_full = 0.0
-                    else:
-                        s_full = float(info['7_SigmaFull'][j])
+                if info['7_SigmaFull'][j] == '-':
+                    s_full = 0.0
                 else:
-                    if info['7_Sigma'] == '-':
-                        s_full = 0.0
-                    else:
-                        s_full = float(info['7_Sigma'][j])                    
+                    s_full = float(info['7_SigmaFull'][j])
 
                 i_tot = I_full
                 s_tot = s_full
