@@ -48,6 +48,7 @@ Schema/Interfaces/NextGeneration/labelit.py -text
 Schema/Interfaces/NextGeneration/mosflm.py -text
 Schema/Interfaces/NextGeneration/processing_plugin.py -text
 Toolkit/BackstopMask.py -text
+Toolkit/ComputeU.py -text
 Toolkit/KBScale.py -text
 Toolkit/MultiMerger.py -text
 Toolkit/PlayPen/TestMinimise.py -text
