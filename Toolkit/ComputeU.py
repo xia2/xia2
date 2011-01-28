@@ -121,6 +121,16 @@ def remove_absences(indices, space_group_name):
 
     return present_indices
 
+def to_degrees(angles):
+    '''Convert a list of angles from radians to degrees, modulo 360.'''
+    degrees = []
+    for a in angles:
+        d = r2d * a
+        if d < 0:
+            d += 360
+        degrees.append(d)
+    return degrees
+
 def compute_psi(indices, rotation_axis, UB_matrix, wavelength, dmin):
     '''For each reflection, return the psi-angle of rotation about the
     given axis where it will be in reflecting position. N.B. in each
@@ -133,7 +143,7 @@ def compute_psi(indices, rotation_axis, UB_matrix, wavelength, dmin):
 
     for hkl in indices:
         if ra(hkl):
-            psi_indices[hkl] = ra.get_intersection_angles()
+            psi_indices[hkl] = to_degrees(ra.get_intersection_angles())
 
     return psi_indices
 
@@ -150,8 +160,8 @@ def test_psi_angles(roi, psi_indices):
 
         for psi_test in psi_indices[hkl]:
             for psi_second in psi_indices[second]:
-                if math.fabs(r2d * psi_second - r2d * psi_test) < 1.0:
-                    print hkl, second, r2d * psi_test, r2d * psi_second
+                if math.fabs(psi_second - psi_test) < 1.0:
+                    print hkl, second, psi_test, psi_second
                 
 if __name__ == '__main__':
 
@@ -168,6 +178,12 @@ if __name__ == '__main__':
 
     indices = generate_indices(unit_cell_constants, dmin)
 
+    indices = remove_absences(indices, 'P65')
+
     psi_indices = compute_psi(indices, A * roi, A, wavelength, dmin)
 
-    test_psi_angles(roi, psi_indices)
+    # test_psi_angles(roi, psi_indices)
+
+    for hkl in psi_indices:
+        for angle in psi_indices[hkl]:
+            print '%6.2f %3d %3d %3d' % (angle, hkl[0], hkl[1], hkl[2])
