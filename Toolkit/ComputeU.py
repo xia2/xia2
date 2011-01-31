@@ -71,8 +71,8 @@ def compute_UB_matrix(unit_cell_constants, energy_kev, roi, azi):
 
     # compute known positions of rotated reciprocal space positions
 
-    r_roi = matrix.col([- _roi_l * math.sin(theta), 0,
-                        _roi_l * math.cos(theta)])
+    r_roi = matrix.col([_roi_l * math.sin(- theta), 0,
+                        _roi_l * math.cos(- theta)])
 
     r_azi = matrix.col([_azi_l * math.sin(d_theta - theta), 0,
                         _azi_l * math.cos(d_theta - theta)])
