@@ -28,13 +28,13 @@ def busing_levy(x1, x2, rx1, rx2):
 
     e1 = x1.normalize()
     e2 = (x2 - (e1 * x2.dot(e1))).normalize()
-    e3 = e1.cross(e2)
+    e3 = e1.cross(e2).normalize()
 
     # now compute the rotated basis
 
     r1 = rx1.normalize()
-    r2 = (rx2 - (r1 * rx2.dot(e1))).normalize()
-    r3 = r1.cross(r2)
+    r2 = (rx2 - (r1 * rx2.dot(r1))).normalize()
+    r3 = r1.cross(r2).normalize()
 
     # now compose a matrix from these
 
@@ -160,7 +160,7 @@ def test_psi_angles(roi, psi_indices):
 
         for psi_test in psi_indices[hkl]:
             for psi_second in psi_indices[second]:
-                if math.fabs(psi_second - psi_test) < 1.0:
+                if math.fabs(psi_second - psi_test) < 360.0:
                     print hkl, second, psi_test, psi_second
                 
 if __name__ == '__main__':
@@ -182,8 +182,8 @@ if __name__ == '__main__':
 
     psi_indices = compute_psi(indices, A * roi, A, wavelength, dmin)
 
-    # test_psi_angles(roi, psi_indices)
-
     for hkl in psi_indices:
         for angle in psi_indices[hkl]:
             print '%6.2f %3d %3d %3d' % (angle, hkl[0], hkl[1], hkl[2])
+
+    # test_psi_angles(roi, psi_indices)
