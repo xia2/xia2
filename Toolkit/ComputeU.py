@@ -69,13 +69,16 @@ def compute_UB_matrix(unit_cell_constants, energy_kev, roi, azi):
 
     d_theta = _roi.angle(_azi)
 
-    # compute known positions of rotated reciprocal space positions
+    # compute known positions of rotated reciprocal space positions -
+    # taking the 'x' axis as theta = 0 and 'z' upwards.
 
-    r_roi = matrix.col([_roi_l * math.sin(- theta), 0,
-                        _roi_l * math.cos(- theta)])
+    pi_over_2 = math.pi / 2
 
-    r_azi = matrix.col([_azi_l * math.sin(d_theta - theta), 0,
-                        _azi_l * math.cos(d_theta - theta)])
+    r_roi = matrix.col([_roi_l * math.sin(pi_over_2 + theta), 0,
+                        _roi_l * math.cos(pi_over_2 + theta)])
+
+    r_azi = matrix.col([_azi_l * math.sin(pi_over_2 + theta - d_theta), 0,
+                        _azi_l * math.cos(pi_over_2 + theta - d_theta)])
 
     U = busing_levy(_roi, _azi, r_roi, r_azi)
 
@@ -147,7 +150,7 @@ def compute_psi(indices, rotation_axis, UB_matrix, wavelength, dmin):
 
     return psi_indices
 
-def test_psi_angles(roi, psi_indices):
+def test_psi_angles(roi, psi_indices, window):
     '''Test when two reflections are in reflecting position whos indices
     add to the reflection of interest. In first pass, allow for being within
     one degree of each other.'''
@@ -160,8 +163,10 @@ def test_psi_angles(roi, psi_indices):
 
         for psi_test in psi_indices[hkl]:
             for psi_second in psi_indices[second]:
-                if math.fabs(psi_second - psi_test) < 360.0:
-                    print hkl, second, psi_test, psi_second
+                if math.fabs(psi_second - psi_test) < window:
+                    print '[%2d %2d %2d]' % hkl, \
+                          '[%2d %2d %2d]' % second, \
+                          '%6.2f' % psi_test, ' %6.2f' % psi_second
                 
 if __name__ == '__main__':
 
@@ -170,6 +175,8 @@ if __name__ == '__main__':
 
     roi = (0, 0, 4)
     azi = (0, 1, 0)
+
+    window = 0.1 * r2d
 
     A = compute_UB_matrix(unit_cell_constants, energy_kev, roi, azi)
 
@@ -182,8 +189,11 @@ if __name__ == '__main__':
 
     psi_indices = compute_psi(indices, A * roi, A, wavelength, dmin)
 
-    for hkl in psi_indices:
-        for angle in psi_indices[hkl]:
-            print '%6.2f %3d %3d %3d' % (angle, hkl[0], hkl[1], hkl[2])
+    do_print = False
 
-    # test_psi_angles(roi, psi_indices)
+    if do_print:
+        for hkl in psi_indices:
+            for angle in psi_indices[hkl]:
+                print '%6.2f %3d %3d %3d' % (angle, hkl[0], hkl[1], hkl[2])
+
+    test_psi_angles(roi, psi_indices, window)
