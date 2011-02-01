@@ -154,6 +154,8 @@ def test_psi_angles(roi, psi_indices, window):
     '''Test when two reflections are in reflecting position whos indices
     add to the reflection of interest. In first pass, allow for being within
     one degree of each other.'''
+
+    pairs = []
     
     for hkl in psi_indices:
         second = (roi[0] - hkl[0], roi[1] - hkl[1], roi[2] - hkl[2])
@@ -163,10 +165,13 @@ def test_psi_angles(roi, psi_indices, window):
 
         for psi_test in psi_indices[hkl]:
             for psi_second in psi_indices[second]:
-                if math.fabs(psi_second - psi_test) < window:
-                    print '[%2d %2d %2d]' % hkl, \
-                          '[%2d %2d %2d]' % second, \
-                          '%6.2f' % psi_test, ' %6.2f' % psi_second
+                spacing = math.fabs(psi_second - psi_test)
+                if 360.0 - spacing < spacing:
+                    spacing = 360.0 - spacing
+                if spacing < window:
+                    pairs.append((hkl, second, psi_test, psi_second))
+                    
+    return pairs
                 
 if __name__ == '__main__':
 
@@ -196,4 +201,9 @@ if __name__ == '__main__':
             for angle in psi_indices[hkl]:
                 print '%6.2f %3d %3d %3d' % (angle, hkl[0], hkl[1], hkl[2])
 
-    test_psi_angles(roi, psi_indices, window)
+    pairs = test_psi_angles(roi, psi_indices, window)
+    for hkl, second, psi_test, psi_second in pairs:
+        print '[%2d %2d %2d]' % hkl, \
+              '[%2d %2d %2d]' % second, \
+              '%6.2f' % psi_test, ' %6.2f' % psi_second
+
