@@ -153,7 +153,7 @@ def compute_psi(indices, rotation_axis, UB_matrix, wavelength, dmin):
 def test_psi_angles(roi, psi_indices, window):
     '''Test when two reflections are in reflecting position whos indices
     add to the reflection of interest. In first pass, allow for being within
-    one degree of each other.'''
+    (window) degrees of each other.'''
 
     pairs = []
     
@@ -176,21 +176,26 @@ def test_psi_angles(roi, psi_indices, window):
 if __name__ == '__main__':
 
     unit_cell_constants = (3.573, 3.573, 5.643, 90, 90, 120)
-    energy_kev = 5.993 
+    energy_kev = 5.993
 
     roi = (0, 0, 4)
     azi = (0, 1, 0)
-
-    window = 0.1 * r2d
-
-    A = compute_UB_matrix(unit_cell_constants, energy_kev, roi, azi)
 
     wavelength = a2kev / energy_kev
     dmin = 0.5 * wavelength
 
     indices = generate_indices(unit_cell_constants, dmin)
 
+    if not roi in indices:
+        raise RuntimeError, 'reflection %2d %2d %2d cannot be observed' % roi
+
+    indices.remove(roi)
+
     indices = remove_absences(indices, 'P65')
+
+    window = 0.1 * r2d
+
+    A = compute_UB_matrix(unit_cell_constants, energy_kev, roi, azi)
 
     psi_indices = compute_psi(indices, A * roi, A, wavelength, dmin)
 
