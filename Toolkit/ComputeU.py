@@ -150,7 +150,7 @@ def compute_psi(indices, rotation_axis, UB_matrix, wavelength, dmin):
 
     return psi_indices
 
-def test_psi_angles(roi, psi_indices, window):
+def test_psi_angles(roi, psi_indices):
     '''Test when two reflections are in reflecting position whos indices
     add to the reflection of interest. In first pass, allow for being within
     (window) degrees of each other.'''
@@ -164,51 +164,49 @@ def test_psi_angles(roi, psi_indices, window):
             continue
 
         for psi_test in psi_indices[hkl]:
-            for psi_second in psi_indices[second]:
-                spacing = math.fabs(psi_second - psi_test)
-                if 360.0 - spacing < spacing:
-                    spacing = 360.0 - spacing
-                if spacing < window:
-                    pairs.append((hkl, second, psi_test, psi_second))
-                    
+            pairs.append((hkl, second, psi_test))
+
     return pairs
                 
 if __name__ == '__main__':
 
     unit_cell_constants = (3.573, 3.573, 5.643, 90, 90, 120)
-    energy_kev = 5.993
-
     roi = (0, 0, 4)
     azi = (0, 1, 0)
+    # energy_kev = 5.993
 
-    wavelength = a2kev / energy_kev
-    dmin = 0.5 * wavelength
+    for j in range(1000):
+        energy_kev = 5.5 + j * 0.001
 
-    indices = generate_indices(unit_cell_constants, dmin)
+        wavelength = a2kev / energy_kev
+        dmin = 0.5 * wavelength
 
-    if not roi in indices:
-        raise RuntimeError, 'reflection %2d %2d %2d cannot be observed' % roi
+        indices = generate_indices(unit_cell_constants, dmin)
 
-    indices.remove(roi)
+        if not roi in indices:
+            raise RuntimeError, 'reflection %2d %2d %2d cannot be observed' % roi
 
-    indices = remove_absences(indices, 'P65')
+        indices.remove(roi)
+    
+        indices = remove_absences(indices, 'P65')
 
-    window = 0.1 * r2d
+        A = compute_UB_matrix(unit_cell_constants, energy_kev, roi, azi)
 
-    A = compute_UB_matrix(unit_cell_constants, energy_kev, roi, azi)
+        psi_indices = compute_psi(indices, A * roi, A, wavelength, dmin)
 
-    psi_indices = compute_psi(indices, A * roi, A, wavelength, dmin)
+        do_print = False
 
-    do_print = False
+        if do_print:
+            for hkl in psi_indices:
+                for angle in psi_indices[hkl]:
+                    print '%6.2f %3d %3d %3d' % (angle, hkl[0], hkl[1], hkl[2])
 
-    if do_print:
-        for hkl in psi_indices:
-            for angle in psi_indices[hkl]:
-                print '%6.2f %3d %3d %3d' % (angle, hkl[0], hkl[1], hkl[2])
 
-    pairs = test_psi_angles(roi, psi_indices, window)
-    for hkl, second, psi_test, psi_second in pairs:
-        print '[%2d %2d %2d]' % hkl, \
-              '[%2d %2d %2d]' % second, \
-              '%6.2f' % psi_test, ' %6.2f' % psi_second
+        do_print_pairs = True
 
+        if do_print_pairs:
+            pairs = test_psi_angles(roi, psi_indices)
+            for hkl, second, psi_test in pairs:
+                print energy_kev, psi_test
+
+    
