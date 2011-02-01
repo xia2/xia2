@@ -57,6 +57,7 @@ if not os.path.join(os.environ['XIA2_ROOT']) in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Handlers.Streams import Debug
+from Handlers.Flags import Flags
 
 def _xds_version(xds_output_list):
     '''Return the version of XDS which has been run.'''
@@ -71,6 +72,9 @@ def _xds_version(xds_output_list):
 
 def xds_check_version_supported(xds_output_list):
     '''Check that the XDS version is supported.'''
+
+    if not Flags.get_check_xds_version():
+        return
 
     xds_version = _xds_version(xds_output_list)
 

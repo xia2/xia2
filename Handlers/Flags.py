@@ -46,6 +46,7 @@ class _Flags:
         self._fiddle_sd = False
         self._migrate_data = False
         self._trust_timestaps = False
+        self._check_xds_version = False
 
         # XDS specific things - to help with handling tricky data sets
 
@@ -347,6 +348,13 @@ class _Flags:
 
     def get_trust_timestamps(self):
         return self._trust_timestamps
+
+    def set_check_xds_version(self, check_xds_version):
+        self._check_xds_version = check_xds_version
+        return
+
+    def get_check_xds_version(self):
+        return self._check_xds_version
 
     def set_small_molecule(self, small_molecule):
         self._small_molecule = small_molecule

@@ -102,6 +102,7 @@ class _CommandLine(Object):
         self._read_egg()
         self._read_uniform_sd()
         self._read_trust_timestamps()
+        self._read_check_xds_version()
         self._read_batch_scale()
         self._read_small_molecule()
         self._read_quick()
@@ -1009,6 +1010,15 @@ class _CommandLine(Object):
             Flags.set_trust_timestamps(True)
             Debug.write('Trust timestamps on')
             self._understood.append(sys.argv.index('-trust_timestamps'))
+            
+        return
+
+    def _read_check_xds_version(self):
+
+        if '-check_xds_version' in sys.argv:
+            Flags.set_check_xds_version(True)
+            Debug.write('Check XDS version on')
+            self._understood.append(sys.argv.index('-check_xds_version'))
             
         return
 
