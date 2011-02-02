@@ -2559,6 +2559,9 @@ class XDSScaler(Scaler):
             truncate.set_hklout(hklout)
             truncate.truncate()
 
+            Debug.write('%d absent reflections in %s removed' % \
+                        (truncate.get_nabsent(), wavelength))
+
             b_factor = truncate.get_b_factor()
 
             # record the b factor somewhere (hopefully) useful...

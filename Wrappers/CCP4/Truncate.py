@@ -16,6 +16,10 @@
 # 
 # FIXME 16/NOV/06 need to be able to get the estimates B factor from the
 #                 Wilson plot and also second moment stuff, perhaps?
+#
+# FIXME 02/FEB/11 read the number of reflections excluded from the data set
+#                 as systematic absences and verify that this is equal to
+#                 the number of reflections going in - number coming out.
 
 import os
 import sys
@@ -26,6 +30,12 @@ if not os.environ.has_key('XIA2CORE_ROOT'):
 if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
+
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
+
+if not os.path.join(os.environ['XIA2_ROOT']) in sys.path:
+    sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
@@ -61,6 +71,13 @@ def Truncate(DriverType = None):
             self._wilson_fit_m = 0.0
             self._wilson_fit_m_sd = 0.0
             self._wilson_fit_range = None
+
+            # numbers of reflections in and out, and number of absences
+            # counted
+
+            self._nref_in = 0
+            self._nref_out = 0
+            self._nabsent = 0
             
             return
 
@@ -111,7 +128,15 @@ def Truncate(DriverType = None):
 
                 raise RuntimeError, 'truncate failure'
 
-            # FIXME need to parse the output for interesting things here!
+            # parse the output for interesting things, including the
+            # numbers of reflections in and out (isn't that a standard CCP4
+            # report?) and the number of absent reflections.
+
+            self._nref_in, self._nref_out = self.read_nref_hklin_hklout(
+                self.get_all_output())
+
+            # FIXME guess I should be reading this properly...
+            self._nabsent = self._nref_in - self._nref_out
 
             for line in self.get_all_output():
                 if 'Least squares straight line gives' in line:
@@ -169,4 +194,47 @@ def Truncate(DriverType = None):
         def get_moments(self):
             return self._moments
 
+        def get_nref_in(self):
+            return self._nref_in
+
+        def get_nref_out(self):
+            return self._nref_out
+
+        def get_nabsent(self):
+            return self._nabsent
+
+        def read_nref_hklin_hklout(self, records):
+            '''Look to see how many reflections came in through HKLIN, and
+            how many went out again in HKLOUT.'''
+
+            nref_in = 0
+            nref_out = 0
+            
+            current_logical = None
+            
+            for record in records:
+                if 'Logical Name' in record:
+                    current_logical = record.split()[2]
+                    assert(current_logical in ['HKLIN', 'HKLOUT', 'SYMINFO'])
+
+                if 'Number of Reflections' in record:
+                    if current_logical == 'HKLIN':
+                        nref_in = int(record.split()[-1])
+                    elif current_logical == 'HKLOUT':
+                        nref_out = int(record.split()[-1])
+
+            return nref_in, nref_out
+
     return TruncateWrapper()
+
+if __name__ == '__main__':
+
+    truncate = Truncate()
+    truncate.set_hklin(sys.argv[1])
+    truncate.set_hklout(sys.argv[2])
+    truncate.truncate()
+
+    print truncate.get_nref_in(), truncate.get_nref_out(), \
+          truncate.get_nabsent()
+
+    
