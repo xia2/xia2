@@ -2858,6 +2858,9 @@ class CCP4Scaler(Scaler):
                 t.set_hklout(hklout)
                 t.truncate()
 
+                Debug.write('%d absent reflections in %s removed' % \
+                            (t.get_nabsent(), wavelength))
+
                 b_factor = t.get_b_factor()
 
                 # look for the second moment information...
