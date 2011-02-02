@@ -459,6 +459,23 @@ RuntimeError: Unknown command-line options: -nonsense
       </li>
       <li>Removed a <i>lot</i> of cruft from the xia2 code base in preparation
 	for some more substantial refactoring.</li>
+      <li>Found bug which meant that the labelit beam centre computed in the 
+	setup phase was not used - mostly this is not important, unless you are
+	using -3dii.</li>
+      <li>Added -ice command-line argument, which will exclude measurements
+	from regions which are typically where ice rings land. Will need to 
+	add more subtle mechanism which will allow specific regions to be
+	excluded.</li>
+      <li>Specifying resolution with 3d(r) pipeline now works correctly.</li>
+      <li>Removed XDS version check by default, which was annoying every new
+	year. If you would like to check that the XDS version is explicitly
+	supported, add -check_xds_version to the command-line.</li>
+      <li>Added table of scala runs to sweep name in the debug output, helpful
+	for reviewing in polycrystal data reduction cases.</li>
+      <li>Mosaic spread used from Mosflm is now average of all images, not the
+	first or last image.</li>
+      <li>Fixed header reading for new Pilatus instruments at DLS and 
+	elsewhere.</li>
     </ul>
 
 
@@ -1003,7 +1020,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Wed Jan 19 11:16:54 GMT 2011
+Last modified: Wed Feb  2 09:40:29 GMT 2011
 <!-- hhmts end -->
   </body>
 </html>
