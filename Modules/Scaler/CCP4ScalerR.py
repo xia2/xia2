@@ -2158,7 +2158,7 @@ class CCP4ScalerR(Scaler):
                 t.truncate()
 
                 Debug.write('%d absent reflections in %s removed' % \
-                            (t.get_nabsent(), wavelength))
+                            (t.get_nabsent(), key))
 
                 b_factor = t.get_b_factor()
 
