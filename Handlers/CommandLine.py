@@ -99,6 +99,7 @@ class _CommandLine(Object):
 
         self._read_debug()
         self._read_interactive()
+        self._read_ice()
         self._read_egg()
         self._read_uniform_sd()
         self._read_trust_timestamps()
@@ -1253,6 +1254,15 @@ class _CommandLine(Object):
             Flags.set_interactive(True)
             self._understood.append(sys.argv.index('-interactive'))
             Debug.write('Interactive indexing ON')
+            
+        return
+
+    def _read_ice(self):
+
+        if '-ice' in sys.argv:
+            Flags.set_ice(True)
+            self._understood.append(sys.argv.index('-ice'))
+            Debug.write('Ice ring exclusion ON')
             
         return
 

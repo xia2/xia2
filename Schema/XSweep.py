@@ -96,6 +96,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Handlers.Streams import Chatter, Debug
 from Handlers.Files import FileHandler
+from Handlers.Flags import Flags
 from Handlers.Environment import Environment
 
 # See FIXME Integrater interface definition, 27/SEP/06
@@ -650,6 +651,13 @@ class XSweep(Object):
 
                 self._integrater.set_integrater_ice(
                     self._get_indexer().get_indexer_ice())
+
+                # or if we have been told this on the command-line -
+                # N.B. should really add a mechanism to specify the ice
+                # rings we want removing, #1317.
+
+                if Flags.get_ice():
+                    self._integrater.set_integrater_ice(Flags.get_ice())
 
             # set the working directory for this, based on the hierarchy
             # defined herein...
