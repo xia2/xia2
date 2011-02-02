@@ -652,9 +652,10 @@ def LabelitIndex(DriverType = None, indxr_print = True):
 
             if self._indxr_input_lattice:
                 return
-            
-            if self.get_indexer_sweep().get_user_lattice():
-                return
+
+            if self.get_indexer_sweep():
+                if self.get_indexer_sweep().get_user_lattice():
+                    return
 
             try:
                 status, lattice, matrix, cell = mosflm_check_indexer_solution(
