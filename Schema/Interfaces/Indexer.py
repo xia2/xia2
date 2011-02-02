@@ -180,14 +180,15 @@ class _IndexerHelper:
         self._sorted_list = SortLattices(lattices)
         return
 
-    def eliminate(self):
+    def eliminate(self, indxr_print = True):
         '''Eliminate the highest currently allowed lattice.'''
 
         if len(self._sorted_list) <= 1:
             raise RuntimeError, 'cannot eliminate only solution'
 
-        Chatter.write('Eliminating indexing solution:')
-        Chatter.write(self.repr()[0])
+        if indxr_print:
+            Chatter.write('Eliminating indexing solution:')
+            Chatter.write(self.repr()[0])
 
         self._sorted_list = self._sorted_list[1:]
 
@@ -340,7 +341,7 @@ class Indexer:
     # the next solution down.
     # ----------------------------------------------------------
 
-    def eliminate(self):
+    def eliminate(self, indxr_print = True):
         '''Eliminate the current solution for autoindexing.'''
 
         if not self._indxr_helper:
@@ -354,16 +355,16 @@ class Indexer:
         if self._indxr_user_input_lattice:
             raise RuntimeError, 'eliminating user supplied lattice'
 
-        self._indxr_helper.eliminate()
+        self._indxr_helper.eliminate(indxr_print = indxr_print)
         self.set_indexer_done(False)
 
         return
 
-    def _indxr_replace(self, lattice, cell):
+    def _indxr_replace(self, lattice, cell, indxr_print = True):
         '''Replace the highest symmetry in the solution table with this...
         Only use this method if you REALLY know what you are doing!'''
 
-        self._indxr_helper.eliminate()
+        self._indxr_helper.eliminate(indxr_print = indxr_print)
         self._indxr_helper.insert(lattice, cell)
         
 

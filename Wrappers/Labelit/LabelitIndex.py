@@ -683,7 +683,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
             Debug.write('Inserting solution: %s ' % lattice + 
                         '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % cell)
 
-            self._indxr_replace(lattice, cell)
+            self._indxr_replace(lattice, cell, indxr_print = self._indxr_print)
             
             self._indxr_payload['mosflm_orientation_matrix'] = matrix
 
