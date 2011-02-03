@@ -2484,101 +2484,52 @@ class XDSScaler(Scaler):
         if len(self._tmp_scaled_refl_files.keys()) == 0:
             raise RuntimeError, 'no reflection files stored'
 
-        for wavelength in self._tmp_scaled_refl_files.keys():
+        if not Flags.get_small_molecule():
+            for wavelength in self._tmp_scaled_refl_files.keys():
 
-            hklin = self._tmp_scaled_refl_files[wavelength]
+                hklin = self._tmp_scaled_refl_files[wavelength]
 
-            # perhaps reindex first?
-
-            # FIXED in here need to check if the spacegroup
-            # needs assigning e.g. from P 2 2 2 to P 21 21 21
-            # bug 2511
+                truncate = self._factory.Truncate()
+                truncate.set_hklin(hklin)
+                
+                if self.get_scaler_anomalous():
+                    truncate.set_anomalous(True)
+                else:
+                    truncate.set_anomalous(False)
+                    
+                FileHandler.record_log_file('%s %s %s truncate' % \
+                                            (self._common_pname,
+                                             self._common_xname,
+                                             wavelength),
+                                            truncate.get_log_file())
             
-            if self._scalr_reindex_operator != 'h,k,l' and False:
-
                 hklout = os.path.join(self.get_working_directory(),
-                                      '%s_reindexed.mtz' % wavelength)
-                FileHandler.record_temporary_file(hklout)
-
-                Debug.write('Reindexing operator = %s' % \
-                            self._scalr_reindex_operator)
+                                      '%s_truncated.mtz' % wavelength)
                 
-                reindex = self._factory.Reindex()
-                reindex.set_hklin(hklin)
-                reindex.set_spacegroup(self._scalr_likely_spacegroups[0])
-                reindex.set_operator(self._scalr_reindex_operator)
-                reindex.set_hklout(hklout)
-                reindex.reindex()
-                hklin = hklout
-
-                # record the updated cell parameters...
-                # they should be the same in all files so...
-                Debug.write(
-                    'Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f' % \
-                    tuple(reindex.get_cell()))
-                self._scalr_cell = tuple(reindex.get_cell())
-
-            elif False:
-            
-                # just assign the spacegroup - note that this may be
-                # a worthless step, but never mind...
-
-                hklout = os.path.join(self.get_working_directory(),
-                                      '%s_reindexed.mtz' % wavelength)
-                FileHandler.record_temporary_file(hklout)
-
-                Debug.write('Setting spacegroup = %s' % \
-                            self._scalr_likely_spacegroups[0])
+                truncate.set_hklout(hklout)
+                truncate.truncate()
                 
-                reindex = self._factory.Reindex()
-                reindex.set_hklin(hklin)
-                reindex.set_spacegroup(self._scalr_likely_spacegroups[0])
-                reindex.set_hklout(hklout)
-                reindex.reindex()
-                hklin = hklout
-
-            Debug.write('Now skipping the post-merge reindex step...')
-
-            truncate = self._factory.Truncate()
-            truncate.set_hklin(hklin)
-
-            if self.get_scaler_anomalous():
-                truncate.set_anomalous(True)
-            else:
-                truncate.set_anomalous(False)
+                Debug.write('%d absent reflections in %s removed' % \
+                            (truncate.get_nabsent(), wavelength))
                 
-            FileHandler.record_log_file('%s %s %s truncate' % \
-                                        (self._common_pname,
-                                         self._common_xname,
-                                         wavelength),
-                                        truncate.get_log_file())
+                b_factor = truncate.get_b_factor()
             
-            hklout = os.path.join(self.get_working_directory(),
-                                  '%s_truncated.mtz' % wavelength)
-
-            truncate.set_hklout(hklout)
-            truncate.truncate()
-
-            Debug.write('%d absent reflections in %s removed' % \
-                        (truncate.get_nabsent(), wavelength))
-
-            b_factor = truncate.get_b_factor()
-
-            # record the b factor somewhere (hopefully) useful...
-
-            self._scalr_statistics[
-                (self._common_pname, self._common_xname, wavelength)
-                ]['Wilson B factor'] = [b_factor]
+                # record the b factor somewhere (hopefully) useful...
+                
+                self._scalr_statistics[
+                    (self._common_pname, self._common_xname, wavelength)
+                    ]['Wilson B factor'] = [b_factor]
             
-            # look for the second moment information...
-            moments = truncate.get_moments()
-            # for j in range(len(moments['MomentZ2'])):
-            # pass
-
-            # and record the reflection file..
-            self._tmp_scaled_refl_files[wavelength] = hklout
-
-        # copy across the reindexed unit cell
+                # look for the second moment information...
+                moments = truncate.get_moments()
+                # for j in range(len(moments['MomentZ2'])):
+                # pass
+                
+                # and record the reflection file..
+                self._tmp_scaled_refl_files[wavelength] = hklout
+                
+        # copy across the reindexed unit cell - should not need
+        # to do this, it was reindexed already #1330.
 
         self._scalr_cell = self._reindexed_cell
             

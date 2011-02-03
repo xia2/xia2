@@ -2127,50 +2127,53 @@ class XDSScalerR(Scaler):
         if len(self._tmp_scaled_refl_files.keys()) == 0:
             raise RuntimeError, 'no reflection files stored'
 
-        for wavelength in self._tmp_scaled_refl_files.keys():
+        if not Flags.get_small_molecule():
 
-            hklin = self._tmp_scaled_refl_files[wavelength]
+            for wavelength in self._tmp_scaled_refl_files.keys():
 
-            truncate = self._factory.Truncate()
-            truncate.set_hklin(hklin)
+                hklin = self._tmp_scaled_refl_files[wavelength]
 
-            if self.get_scaler_anomalous():
-                truncate.set_anomalous(True)
-            else:
-                truncate.set_anomalous(False)
+                truncate = self._factory.Truncate()
+                truncate.set_hklin(hklin)
+
+                if self.get_scaler_anomalous():
+                    truncate.set_anomalous(True)
+                else:
+                    truncate.set_anomalous(False)
                 
-            FileHandler.record_log_file('%s %s %s truncate' % \
-                                        (self._common_pname,
-                                         self._common_xname,
-                                         wavelength),
-                                        truncate.get_log_file())
+                FileHandler.record_log_file('%s %s %s truncate' % \
+                                            (self._common_pname,
+                                             self._common_xname,
+                                             wavelength),
+                                            truncate.get_log_file())
+                
+                hklout = os.path.join(self.get_working_directory(),
+                                      '%s_truncated.mtz' % wavelength)
+
+                truncate.set_hklout(hklout)
+                truncate.truncate()
+
+                Debug.write('%d absent reflections in %s removed' % \
+                            (truncate.get_nabsent(), wavelength))
+
+                b_factor = truncate.get_b_factor()
+
+                # record the b factor somewhere (hopefully) useful...
+
+                self._scalr_statistics[
+                    (self._common_pname, self._common_xname, wavelength)
+                    ]['Wilson B factor'] = [b_factor]
             
-            hklout = os.path.join(self.get_working_directory(),
-                                  '%s_truncated.mtz' % wavelength)
+                # look for the second moment information...
+                moments = truncate.get_moments()
+                # for j in range(len(moments['MomentZ2'])):
+                # pass
 
-            truncate.set_hklout(hklout)
-            truncate.truncate()
+                # and record the reflection file..
+                self._tmp_scaled_refl_files[wavelength] = hklout
 
-            Debug.write('%d absent reflections in %s removed' % \
-                        (truncate.get_nabsent(), wavelength))
-
-            b_factor = truncate.get_b_factor()
-
-            # record the b factor somewhere (hopefully) useful...
-
-            self._scalr_statistics[
-                (self._common_pname, self._common_xname, wavelength)
-                ]['Wilson B factor'] = [b_factor]
-            
-            # look for the second moment information...
-            moments = truncate.get_moments()
-            # for j in range(len(moments['MomentZ2'])):
-            # pass
-
-            # and record the reflection file..
-            self._tmp_scaled_refl_files[wavelength] = hklout
-
-        # copy across the reindexed unit cell
+        # copy across the reindexed unit cell - messy is this correct?
+        # #1330.
 
         self._scalr_cell = self._reindexed_cell
             
