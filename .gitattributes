@@ -54,6 +54,8 @@ Toolkit/MultiMerger.py -text
 Toolkit/PlayPen/TestMinimise.py -text
 Toolkit/PlayPen/x1334.lp -text
 Toolkit/PlayPen/x1334.py -text
+Toolkit/PlayPen/x1335.lp -text
+Toolkit/PlayPen/x1335.py -text
 Toolkit/PolyFitter.py -text
 Toolkit/ReadHeader/ReadHeader.py -text
 Toolkit/ReadHeader/ReadHeaderA200.py -text
