@@ -51,9 +51,9 @@ Toolkit/BackstopMask.py -text
 Toolkit/ComputeU.py -text
 Toolkit/KBScale.py -text
 Toolkit/MultiMerger.py -text
-Toolkit/PlayPen/AUTOMATIC_DEFAULT_WAVE1_SWEEP1_INTEGRATE.log -text
 Toolkit/PlayPen/TestMinimise.py -text
-Toolkit/PlayPen/parse_integrate_com.py -text
+Toolkit/PlayPen/x1334.lp -text
+Toolkit/PlayPen/x1334.py -text
 Toolkit/PolyFitter.py -text
 Toolkit/ReadHeader/ReadHeader.py -text
 Toolkit/ReadHeader/ReadHeaderA200.py -text
