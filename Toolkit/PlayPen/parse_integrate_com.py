@@ -1,7 +1,44 @@
 import math
 import sys
 
-    
+def parse_profile(profile_lines, dx = 9, dy = 9, dz = 9):
+    '''Parse profiles to an array of values.'''
+
+    offblock = 2
+    offline = 3
+
+    assert(dx == 9)
+    assert(dy == 9)
+    assert(dz == 9)
+
+    sum_xd = 0.0
+    sum_yd = 0.0
+    sum_zd = 0.0
+    sum_d = 0.0
+
+    for islice in range(dz):
+        for irow in range(dy):
+            for icol in range(dx):
+                iblock = islice / 3
+                record = profile_lines[offblock * (1 + iblock) +
+                                       dy * iblock + irow]
+                ichunk = islice % 3
+                itoken = offline * (ichunk + 1) + 3 * dx * ichunk + icol * 3
+                token = record[itoken:itoken + 3]
+
+                x = icol - 4
+                y = irow - 4
+                z = islice - 4
+
+                d = int(token)
+
+                sum_d += d
+
+                sum_xd += x * d
+                sum_yd += y * d
+                sum_zd += z * d
+
+    return sum_xd / sum_d, sum_yd / sum_d, sum_zd / sum_d
 
 def integrate_compute_com(integrate_lp, dx = 9, dy = 9, dz = 9):
     '''From the records in INTEGRATE.LP, compute the centre of mass as a
@@ -23,8 +60,6 @@ def integrate_compute_com(integrate_lp, dx = 9, dy = 9, dz = 9):
             image_block = tuple(
                 map(int, record.replace('...', '').split()[-2:]))
 
-            print image_block
-        
         if 'AVERAGE THREE-DIMENSIONAL PROFILE' in record:
             i = j + 1
 
@@ -36,9 +71,9 @@ def integrate_compute_com(integrate_lp, dx = 9, dy = 9, dz = 9):
 
             profiles[image_block] = profile_text
 
-            print len(profiles[image_block])
+            print '%4d %4d:' % image_block, '%5.3f %5.3f %5.3f' % \
+                  parse_profile(profile_text)
 
-    print profile_text
 
 if __name__ == '__main__':
 
