@@ -2342,7 +2342,8 @@ class XDSScalerR(Scaler):
 
         # next have a look for radiation damage... if more than one wavelength
 
-        if len(self._tmp_scaled_refl_files.keys()) > 1:
+        if len(self._tmp_scaled_refl_files.keys()) > 1 and \
+               not Flags.get_small_molecule():
             crd = CCP4InterRadiationDamageDetector()
 
             crd.set_working_directory(self.get_working_directory())
