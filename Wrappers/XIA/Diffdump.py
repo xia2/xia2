@@ -176,7 +176,7 @@ def failover_cbf(cbf_file):
             continue
 
         if 'Detector_distance' in record:
-            header['distance'] = 1000 * float(record.split()[-2])
+            header['distance'] = 1000 * float(record.split()[2])
             continue
 
         if 'Wavelength' in record:
