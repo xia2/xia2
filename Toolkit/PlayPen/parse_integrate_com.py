@@ -51,6 +51,7 @@ def integrate_compute_com(integrate_lp, dx = 9, dy = 9, dz = 9):
     profiles = { }
 
     image_block = None
+    nref = 0
 
     records = open(integrate_lp).readlines()
 
@@ -61,6 +62,7 @@ def integrate_compute_com(integrate_lp, dx = 9, dy = 9, dz = 9):
                 map(int, record.replace('...', '').split()[-2:]))
 
         if 'AVERAGE THREE-DIMENSIONAL PROFILE' in record:
+            nref = int(record.split()[5])
             i = j + 1
 
             profile_text = []
@@ -71,8 +73,8 @@ def integrate_compute_com(integrate_lp, dx = 9, dy = 9, dz = 9):
 
             profiles[image_block] = profile_text
 
-            print '%4d %4d:' % image_block, '%5.3f %5.3f %5.3f' % \
-                  parse_profile(profile_text)
+            print '%4d %4d: ' % image_block, '%5d' % nref, \
+                  '%6.3f %6.3f %6.3f' % parse_profile(profile_text)
 
 
 if __name__ == '__main__':
