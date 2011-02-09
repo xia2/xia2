@@ -58,7 +58,7 @@ def PrintpeaksMosflm(DriverType = None):
             self._peaks = { }
             return
 
-        def get_maxima(self):
+        def get_maxima(self, threshold = 5.0):
             '''Run diffdump, printpeaks to get a list of diffraction maxima
             at their image positions, to allow for further analysis.'''
 
@@ -97,6 +97,9 @@ def PrintpeaksMosflm(DriverType = None):
             output = open(os.path.join(self.get_working_directory(),
                                        spot_file)).readlines()
 
+            os.remove(os.path.join(self.get_working_directory(),
+                                   spot_file))
+
             peaks = []
 
             for record in output[3:-2]:
@@ -106,6 +109,9 @@ def PrintpeaksMosflm(DriverType = None):
                 i = float(lst[4]) / float(lst[5])
                 x /= pixel[0]
                 y /= pixel[1]
+
+                if i < threshold:
+                    continue
 
                 # this is Mosflm right? Swap X & Y!!
 

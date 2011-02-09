@@ -193,7 +193,8 @@ def mosflm_check_indexer_solution(indexer):
     # to transform the Bravais lattice to an assumed spacegroup and hence
     # to a cctbx spacegroup!
 
-    lists = [spots_r_j[j] for j in spots_r_j]
+    # lists = [spots_r_j[j] for j in spots_r_j]
+    lists = []
     lists.append(spots_r)
 
     for l in lists:
@@ -309,7 +310,7 @@ if __name__ == '__main__':
 
     # run a test!
 
-    from Modules.IndexerFactory import Indexer
+    from Modules.Indexer.IndexerFactory import Indexer
 
     i = Indexer()
     
