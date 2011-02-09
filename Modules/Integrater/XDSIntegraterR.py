@@ -741,15 +741,14 @@ class XDSIntegraterR(FrameProcessor,
 
             phi_width = self.get_header_item('phi_width')
 
-            pixel = math.sqrt(0.25 * 0.25 + \
-                              p1_deviations[0] * p1_deviations[0])
-            phi = math.sqrt(0.25 * phi_width * 0.25 * phi_width + \
+            pixel = p1_deviations[0]
+            phi = math.sqrt(0.05 * 0.05 + \
                             p1_deviations[1] * p1_deviations[1])
             
             threshold = Flags.get_rejection_threshold()
 
-            Debug.write('RMSD ratio: %.2f' % correct_deviations[0] / pixel)
-            Debug.write('RMSPhi ratio: %.2f' % correct_deviations[1] / phi)
+            Debug.write('RMSD ratio: %.2f' % (correct_deviations[0] / pixel))
+            Debug.write('RMSPhi ratio: %.2f' % (correct_deviations[1] / phi))
                         
             if correct_deviations[0] / pixel > threshold and \
                    correct_deviations[1] / phi > threshold:
