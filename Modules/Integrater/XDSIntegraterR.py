@@ -747,6 +747,10 @@ class XDSIntegraterR(FrameProcessor,
                             p1_deviations[1] * p1_deviations[1])
             
             threshold = Flags.get_rejection_threshold()
+
+            Debug.write('RMSD ratio: %.2f' % correct_deviations[0] / pixel)
+            Debug.write('RMSPhi ratio: %.2f' % correct_deviations[1] / phi)
+                        
             if correct_deviations[0] / pixel > threshold and \
                    correct_deviations[1] / phi > threshold:
                 Chatter.write(
