@@ -820,8 +820,9 @@ class XDSIntegrater(FrameProcessor,
 
             phi_width = self.get_header_item('phi_width')
 
-            pixel = math.sqrt(0.5 * 0.5 + p1_deviations[0] * p1_deviations[0])
-            phi = math.sqrt(0.5 * phi_width * 0.5 * phi_width + \
+            pixel = math.sqrt(0.25 * 0.25 + \
+                              p1_deviations[0] * p1_deviations[0])
+            phi = math.sqrt(0.25 * phi_width * 0.25 * phi_width + \
                             p1_deviations[1] * p1_deviations[1])
 
             threshold = Flags.get_rejection_threshold()
