@@ -34,10 +34,10 @@ from Diffdump import Diffdump
 from PrintpeaksMosflm import PrintpeaksMosflm
 
 def Printpeaks(DriverType = None):
-    return PrintpeaksMosflm(DriverType = DriverType)
-
-def PrintpeaksOld(DriverType = None):
     '''A factory for wrappers for the printpeaks.'''
+
+    if not 'XIA2_USE_PRINTPEAKS' in os.environ:
+        return PrintpeaksMosflm(DriverType = DriverType)
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
