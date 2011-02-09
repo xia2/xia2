@@ -815,10 +815,19 @@ class XDSIntegrater(FrameProcessor,
                               correct.get_result('rmsd_phi'))
 
         if p1_deviations:
-            # compare and reject if both > 50% higher
+            # compare and reject if both > 50% higher - though adding a little
+            # flexibility - 0.5 pixel / osc width slack.
+
+            phi_width = self.get_header_item('phi_width')
+
+            pixel = math.sqrt(0.5 * 0.5 + p1_deviations[0] * p1_deviations[0])
+            phi = math.sqrt(phi_width * phi_width + \
+                            p1_deviations[1] * p1_deviations[1])
+
             threshold = Flags.get_rejection_threshold()
-            if correct_deviations[0] / p1_deviations[0] > threshold and \
-                   correct_deviations[1] / p1_deviations[1] > threshold:
+            if correct_deviations[0] / pixel > threshold and \
+                   correct_deviations[1] / phi > threshold:
+
                 Chatter.write(
                 'Eliminating this indexing solution as postrefinement')
                 Chatter.write(
