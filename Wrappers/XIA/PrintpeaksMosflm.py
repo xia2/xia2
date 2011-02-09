@@ -1,15 +1,12 @@
 #!/usr/bin/env python
-# Printpeaks.py
-#   Copyright (C) 2007 CCLRC, Graeme Winter
+# PrintpeaksMosflm.py
+#   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
 #
-# 29th November 2007
+# A replacement for the printpeaks tool and wrapper, using Mosflm.
 # 
-# A wrapper for the program "printpeaks" derived from the DiffractionImage
-# code in XIA1 by Francois Remacle.
-#
 
 import os
 import sys
@@ -31,19 +28,25 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Driver.DriverFactory import DriverFactory
 from Diffdump import Diffdump
 
-def Printpeaks(DriverType = None):
-    '''A factory for wrappers for the printpeaks.'''
+from Experts.FindImages import image2template_directory, image2image, \
+     template_number2image
+
+def PrintpeaksMosflm(DriverType = None):
+    '''A factory for wrappers for the printpeaks/mosflm.'''
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
-    class PrintpeaksWrapper(DriverInstance.__class__):
-        '''Provide access to the functionality in printpeaks.'''
+    class PrintpeaksMosflmWrapper(DriverInstance.__class__):
+        '''Provide access to the spot finding functionality in Mosflm.'''
 
         def __init__(self):
             DriverInstance.__class__.__init__(self)
 
-            self.set_executable('printpeaks')
+            self.set_executable('ipmosflm')
             
+            if 'BINSORT_SCR' in os.environ:
+                self.set_working_directory(os.environ['BINSORT_SCR'])
+
             self._image = None
             self._peaks = { }
 
@@ -73,32 +76,40 @@ def Printpeaks(DriverType = None):
             beam = header['raw_beam']
             pixel = header['pixel']
 
-            self.add_command_line(self._image)
+            template, directory = image2template_directory(self._image)
+            image_number = image2image(os.path.split(self._image)[-1])
+
+            spot_file = '%s.spt' % template_number2image(
+                template, image_number)
+
             self.start()
+
+            self.input('template "%s"' % template)
+            self.input('directory "%s"' % directory)
+            self.input('findspots local find %d file %s' % \
+                       (image_number, spot_file))
+            self.input('go')
+
             self.close_wait()
 
             self.check_for_errors()            
 
-            # results were ok, so get all of the output out
-            output = self.get_all_output()
+            output = open(os.path.join(self.get_working_directory(),
+                                       spot_file)).readlines()
 
             peaks = []
 
-            for record in output:
-
-                if not 'Peak' in record[:4]:
-                    continue
-                
-                lst = record.replace(':', ' ').split()
-                x = float(lst[4])
-                y = float(lst[6])
-                i = float(lst[-1])
-                x += beam[0]
-                y += beam[1]
+            for record in output[3:-2]:
+                lst = record.split()
+                x = float(lst[0])
+                y = float(lst[1])
+                i = float(lst[4]) / float(lst[5])
                 x /= pixel[0]
                 y /= pixel[1]
 
-                peaks.append((x, y, i))
+                # this is Mosflm right? Swap X & Y!!
+
+                peaks.append((y, x, i))
 
             return peaks
 
@@ -113,25 +124,11 @@ def Printpeaks(DriverType = None):
                 raise RuntimeError, 'image %s does not exist' % \
                       self._image
 
-            self.add_command_line(self._image)
-            self.start()
-            self.close_wait()
-
-            self.check_for_errors()            
-
-            # results were ok, so get all of the output out
-            output = self.get_all_output()
-
+            _peaks = self.get_maxima()
             peaks = []
 
-            self._peaks = { }
-
-            for record in output:
-
-                if not 'Peak' in record[:4]:
-                    continue
-
-                intensity = float(record.split(':')[-1])
+            for peak in _peaks:
+                intensity = peak[2]
                 peaks.append(intensity)
 
             # now construct the histogram
@@ -179,73 +176,20 @@ def Printpeaks(DriverType = None):
                 raise RuntimeError, 'image %s does not exist' % \
                       self._image
 
-            self.add_command_line('-th')
-            self.add_command_line('10')
-            self.add_command_line(self._image)
-            self.start()
-            self.close_wait()
-
-            self.check_for_errors()            
-
-            # results were ok, so get all of the output out
-            output = self.get_all_output()
+            _peaks = self.get_maxima()
 
             peaks = []
 
-            self._peaks = { }
-
-            for record in output:
-
-                if not 'Peak' in record[:4]:
-                    continue
-
-                intensity = float(record.split(':')[-1])
-                peaks.append(intensity)
-
-            print len(peaks), max(peaks)
+            for peak in _peaks:
+                if peak[2] > 10:
+                    peaks.append(peak)
 
             if len(peaks) < 10:
                 return 'blank'
 
             return 'ok'
         
-        def getpeaks(self):
-            '''Just get the list of peaks out, as (x, y, i).'''
-
-            if not self._image:
-                raise RuntimeError, 'image not set'
-
-            if not os.path.exists(self._image):
-                raise RuntimeError, 'image %s does not exist' % \
-                      self._image
-
-            self.add_command_line(self._image)
-            self.start()
-            self.close_wait()
-
-            self.check_for_errors()            
-
-            # results were ok, so get all of the output out
-            output = self.get_all_output()
-
-            peaks = []
-
-            for record in output:
-
-                if not 'Peak' in record[:4]:
-                    continue
-
-                lst = record.split(':')
-
-                x = float(lst[1].split()[0])
-                y = float(lst[2].split()[0])
-                i = float(lst[4])
-                
-                peaks.append((x, y, i))
-
-            return peaks
-
-    return PrintpeaksWrapper()
+    return PrintpeaksMosflmWrapper()
 
 if __name__ == '__main-old__':
 

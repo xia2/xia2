@@ -175,6 +175,22 @@ def template_directory_number2image(template, directory, number):
 
     return image
 
+def template_number2image(template, number):
+    '''Construct the an image from the template and image number.'''
+
+    length = template.count('#')
+
+    # check that the number will fit in the template
+
+    if (math.pow(10, length) - 1) < number:
+        raise RuntimeError, 'number too big for template'
+
+    format = '%%0%dd' % length
+
+    image = template.replace('#' * length, format % number)
+
+    return image
+
 def headers2sweep_ids(header_dict):
     '''Get a list of sweep ids (first images) from the header list.'''
 

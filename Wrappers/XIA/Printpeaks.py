@@ -31,7 +31,12 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Driver.DriverFactory import DriverFactory
 from Diffdump import Diffdump
 
+from PrintpeaksMosflm import PrintpeaksMosflm
+
 def Printpeaks(DriverType = None):
+    return PrintpeaksMosflm(DriverType = DriverType)
+
+def PrintpeaksOld(DriverType = None):
     '''A factory for wrappers for the printpeaks.'''
 
     DriverInstance = DriverFactory.Driver(DriverType)
