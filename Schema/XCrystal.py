@@ -207,6 +207,62 @@ def _print_lattice(lattice):
     print 'Number: %s     Lattice: %s' % (lattice['number'], 
                                           lattice['lattice'])
 
+def format_statistics(statistics):
+    '''Format for printing statistics from data processing, removing from
+    the main XCrystal __repr__ method. See DLS #1291'''
+
+    available = statistics.keys()
+
+    keys = [
+        'High resolution limit',
+        'Low resolution limit',
+        'Completeness',
+        'Multiplicity',
+        'I/sigma',
+        'Rmerge',
+        'Rmeas(I)',
+        'Rmeas(I+/-)',
+        'Rpim(I)',
+        'Rpim(I+/-)',
+        'Wilson B factor',
+        'Partial bias',
+        'Anomalous completeness',
+        'Anomalous multiplicity',
+        'Anomalous correlation',
+        'Anomalous slope',
+        'Total observations',
+        'Total unique']
+
+    formats = {
+        'High resolution limit':'%6.2f\t%6.2f\t%6.2f',
+        'Low resolution limit':'%6.2f\t%6.2f\t%6.2f',
+        'Completeness':'%5.1f\t%5.1f\t%5.1f',
+        'Multiplicity':'%5.1f\t%5.1f\t%5.1f',
+        'I/sigma':'%5.1f\t%5.1f\t%5.1f',
+        'Rmerge':'%5.3f\t%5.3f\t%5.3f',
+        'Rmeas(I)':'%5.3f\t%5.3f\t%5.3f',
+        'Rmeas(I+/-)':'%5.3f\t%5.3f\t%5.3f',
+        'Rpim(I)':'%5.3f\t%5.3f\t%5.3f',
+        'Rpim(I+/-)':'%5.3f\t%5.3f\t%5.3f',
+        'Wilson B factor':'%.3f',
+        'Partial bias':'%5.3f\t%5.3f\t%5.3f',
+        'Anomalous completeness':'%5.1f\t%5.1f\t%5.1f',
+        'Anomalous multiplicity':'%5.1f\t%5.1f\t%5.1f',
+        'Anomalous correlation':'%6.3f\t%6.3f\t%6.3f',
+        'Anomalous slope':'%5.3f\t%5.3f\t%5.3f',
+        'Total observations':'%d\t%d\t%d',
+        'Total unique':'%d\t%d\t%d'
+        }
+
+    
+    result = ''
+
+    for k in keys:
+        if k in available:
+            result += k.ljust(40) + formats[k] % tuple(statistics[k]) + '\n'
+
+    return result
+
 class XCrystal(Object):
     '''An object to maintain all of the information about a crystal. This
     will contain the experimental information in XWavelength objects,
@@ -275,6 +331,12 @@ class XCrystal(Object):
             pname, xname, dname = key
 
             result += 'For %s/%s/%s\n' % key
+
+            result += format_statistics(statistics_all[key])
+            
+            if True:
+                continue
+            
             available = statistics_all[key].keys()
 
             stats = []

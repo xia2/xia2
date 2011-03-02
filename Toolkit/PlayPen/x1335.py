@@ -59,4 +59,4 @@ def get_ccs(xscale_lp):
 if __name__ == '__main__':
 
     get_ccs(sys.argv[1])
-                
+    
