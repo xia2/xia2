@@ -259,7 +259,8 @@ def format_statistics(statistics):
 
     for k in keys:
         if k in available:
-            result += k.ljust(40) + formats[k] % tuple(statistics[k]) + '\n'
+            result += k.ljust(40) + '\t' + \
+                      formats[k] % tuple(statistics[k]) + '\n'
 
     return result
 
