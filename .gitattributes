@@ -4,6 +4,7 @@ Applications/Doc/xia2setup.pdf -text
 Applications/cbfdump -text
 Applications/print_labelit_exception -text
 Applications/print_labelit_exception.py -text
+Applications/x1335 -text
 Experts/Doc/FindImages.pdf -text
 Experts/example.xparm -text
 Handlers/Doc/CommandLine.pdf -text
