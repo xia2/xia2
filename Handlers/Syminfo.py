@@ -215,35 +215,35 @@ class _Syminfo(Object):
             number = self.spacegroup_name_to_number(spacegroup)
 
         return self._symop[number]['operations']
-    
+
+    def get_subgroups(self, spacegroup):
+        '''Get the list of spacegroups which are included entirely in this
+        spacegroup.'''
+
+        try:
+            number = int(spacegroup)
+        except ValueError, e:
+            number = self.spacegroup_name_to_number(spacegroup)
+
+        symops = self._symop[number]['operations']
+
+        subgroups = []
+
+        for j in range(230):
+            sub = True
+            for s in self._symop[j + 1]['operations']:
+                if not s in symops:
+                    sub = False
+            if sub:
+                subgroups.append(self.spacegroup_number_to_name(j + 1))
+
+        return subgroups
+                
 Syminfo = _Syminfo()
     
-if __name__ == '__main__X':
-    # run a couple of tests.
-
-    if False:
-        # for number in Syminfo.get_spacegroup_numbers():
-        info = Syminfo.get_syminfo(number)
-
-        print '%4d %8s %2s [%2s]' % \
-              (number, info['name'], info['lattice'],
-               Syminfo.get_lattice(info['name']))
-    
-    print Syminfo.get_symops('P22121')
-    print Syminfo.get_symops('P212121')
-    print Syminfo.spacegroup_number_to_name(75)
-    print Syminfo.get_pointgroup('P43212')
-    print Syminfo.get_pointgroup('C2')
-    print Syminfo.get_pointgroup('P1')
-
-    for number in Syminfo.get_spacegroup_numbers():
-        spag = Syminfo.spacegroup_number_to_name(number)
-        pg = Syminfo.get_pointgroup(spag)
-
-        print '%4d %8s %8s'  % (number, spag, pg)
-
 if __name__ == '__main__':
     for arg in sys.argv[1:]:
-        print arg, Syminfo.get_lattice(int(arg))
+        for spacegroup in Syminfo.get_subgroups(arg):
+            print spacegroup
 
     
