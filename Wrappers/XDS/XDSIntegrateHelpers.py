@@ -69,10 +69,10 @@ def _parse_integrate_lp(filename):
             oscillation_range = float(file_contents[i].split()[1])
 
         if 'PROCESSING OF IMAGES' in file_contents[i]:
-            list = file_contents[i].split()
-            block_start_finish = (int(list[3]), int(list[5]))
+            lst = file_contents[i].split()
+            block_start_finish = (int(lst[3]), int(lst[5]))
 
-            block_images = [j for j in range(int(list[3]), int(list[5]) + 1)]
+            block_images = [j for j in range(int(lst[3]), int(lst[5]) + 1)]
 
         # look for explicitly per-image information
         if 'IMAGE IER  SCALE' in file_contents[i]:
