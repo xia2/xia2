@@ -26,6 +26,21 @@ def get_ccs(xscale_lp):
 
             break
 
+    if not file_names:
+        for j, record in enumerate(records):
+            if 'SET# INTENSITY  ACCEPTED REJECTED' in record:
+                
+                k = j + 1
+                
+                while len(records[k].split()) == 5:
+                    values = records[k].split()
+                    file_names[int(values[0])] = values[-1]
+                    
+                    k += 1
+                    
+                break
+
+
     for j, record in enumerate(records):
 
         if 'CORRELATIONS BETWEEN INPUT DATA SETS' in record:

@@ -149,7 +149,7 @@ class _IndexerHelper:
 
         lattices = [(k, lattice_cell_dict[k])
                     for k in lattice_cell_dict.keys()]
-        
+
         self._sorted_list = SortLattices(lattices)
 
         return
