@@ -163,7 +163,10 @@ def XDSIntegrate(DriverType = None):
                           self._parallel) 
             if Flags.get_xparallel() > 1:
                 xds_inp.write('MAXIMUM_NUMBER_OF_JOBS=%d\n' % \
-                              Flags.get_xparallel()) 
+                              Flags.get_xparallel())
+
+            if not Flags.get_profile():
+                xds_inp.write('PROFILE_FITTING=FALSE\n')
 
             # write out lots of output
             xds_inp.write('TEST=2\n')

@@ -116,6 +116,7 @@ class _CommandLine(Object):
         self._read_no_lattice_test()
         self._read_fiddle_sd()
         self._read_no_relax()
+        self._read_no_profile()
         self._read_norefine()
         self._read_noremove()        
         self._read_2d()
@@ -1137,6 +1138,14 @@ class _CommandLine(Object):
             Debug.write('XDS relax about indexing selected')
         return
 
+    def _read_no_profile(self):
+
+        if '-no_profile' in sys.argv:
+            Flags.set_profile(False)
+            self._understood.append(sys.argv.index('-no_profile'))
+            Debug.write('XDS profile fitting OFF')
+        return
+
     def _read_zero_dose(self):
 
         if '-zero_dose' in sys.argv:
@@ -1151,7 +1160,7 @@ class _CommandLine(Object):
             Flags.set_no_correct(True)
             self._understood.append(sys.argv.index('-no_correct'))
             Debug.write('No-correct mode (XDS/XSCALE) selected')
-        elif '-yes_correct' in sys.argv:
+        elif '-correct' in sys.argv:
             Flags.set_no_correct(False)
             self._understood.append(sys.argv.index('-correct'))
             Debug.write('Yes-correct mode (XDS/XSCALE) selected')
