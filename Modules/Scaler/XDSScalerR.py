@@ -782,10 +782,22 @@ class XDSScalerR(Scaler):
             scala = self._factory.Scala()            
             scala.set_hklin(hklin)
             scala.set_hklout(self._reference)
-            if Flags.get_microcrystal():
-                scala.quick_scale(constant = True)
+
+            # FIXME in here should really work w.r.t. unmerged measurements
+            # and skip this merging step which can fail with small molecule P1
+            # two theta offset data...
+            
+            if False:
+
+                scala.set_onlymerge()
+                scala.merge()
+
             else:
-                scala.quick_scale()                
+
+                if Flags.get_microcrystal():
+                    scala.quick_scale(constant = True)
+                else:
+                    scala.quick_scale()                
 
 
         if self._reference:
