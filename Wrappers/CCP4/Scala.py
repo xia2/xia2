@@ -1090,7 +1090,8 @@ def Scala(DriverType = None,
 
             # assert here that there is only one dataset in the input...
 
-            self.input('run 1 all')
+            self.input('run 1 batch 1 to 10000')
+            # self.input('run 1 all')
             if constant:
                 self.input('scales constant')
                 self.input('exclude sdmin 0.5')
