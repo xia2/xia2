@@ -2194,7 +2194,7 @@ def Mosflm(DriverType = None,
             self._intgr_batches_out = (integrated_images_first,
                                        integrated_images_last)
 
-            if mosaics:
+            if mosaics and len(mosaics) > 0:
                 self.set_integrater_mosaic_min_mean_max(
                     min(mosaics), sum(mosaics) / len(mosaics), max(mosaics))
             else:
