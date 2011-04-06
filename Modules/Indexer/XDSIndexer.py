@@ -225,7 +225,7 @@ class XDSIndexer(FrameProcessor,
             else:
 
                 # add some half-way anyway
-                first = (len(images) / 2) - (block_size / 2) + images[0] - 1
+                first = (len(images) // 2) - (block_size // 2) + images[0] - 1
                 last = first + block_size - 1
 
                 Debug.write('Adding images for indexer: %d -> %d' % \

@@ -276,14 +276,14 @@ def Mosflm(DriverType = None,
             ideal_last = int(90.0 / phi_width) + min_images
 
             if ideal_last < len(images):
-                ideal_middle = int(45.0 / phi_width) - min_images / 2
+                ideal_middle = int(45.0 / phi_width) - min_images // 2
                 cell_ref_images.append((images[ideal_middle - 1],
                                         images[ideal_middle - 2 + min_images]))
                 cell_ref_images.append((images[ideal_last - min_images],
                                         images[ideal_last]))
 
             else:
-                middle = int((max(images) + min(images) - min_images) / 2)
+                middle = int((max(images) + min(images) - min_images) // 2)
                 cell_ref_images.append((middle - 1,
                                         middle - 2 + min_images))
                 cell_ref_images.append((images[-min_images],
@@ -2421,7 +2421,7 @@ def Mosflm(DriverType = None,
             chunks = []
 
             while left_images > 0:
-                size = left_images / left_chunks
+                size = left_images // left_chunks
                 chunks.append((start, start + size - 1))
                 start += size
                 left_images -= size
@@ -2857,8 +2857,13 @@ def Mosflm(DriverType = None,
             self._intgr_batches_out = (first_integrated_batch,
                                        last_integrated_batch)
 
-            self.set_integrater_mosaic_min_mean_max(
-                min(mosaics), sum(mosaics) / len(mosaics), max(mosaics))
+
+            if mosaics and len(mosaics) > 0:
+                self.set_integrater_mosaic_min_mean_max(
+                    min(mosaics), sum(mosaics) / len(mosaics), max(mosaics))
+            else:
+                m = indxr.get_indexer_mosaic()
+                self.set_integrater_mosaic_min_mean_max(m, m, m)
 
             Chatter.write('Processed batches %d to %d' % \
                           self._intgr_batches_out)

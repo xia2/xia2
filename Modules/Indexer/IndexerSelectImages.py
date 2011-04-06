@@ -24,7 +24,7 @@ def index_select_images_lone(phi_width, images):
         selected_images.append(offset + int(90.0 / phi_width))
         
     else:
-        middle = len(images) / 2 - 1
+        middle = len(images) // 2 - 1
         if len(images) >= 3:
             selected_images.append(images[middle])
         selected_images.append(images[-1])

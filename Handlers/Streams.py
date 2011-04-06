@@ -104,7 +104,7 @@ class _Stream:
             return
 
         l = len(comment)
-        m = (size - (l + 2)) / 2
+        m = (size - (l + 2)) // 2
         n = size - (l + 2 + m)
         self.write('%s %s %s' % ('-' * m, comment, '-' * n))
         return

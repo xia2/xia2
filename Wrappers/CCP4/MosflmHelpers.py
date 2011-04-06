@@ -538,7 +538,7 @@ def _parse_summary_file(filename):
 
     keys = [column.lower() for column in refined_columns]
 
-    for j in range(len(refined_values) / ncol):
+    for j in range(len(refined_values) // ncol):
         image = int(round(refined_values[j * ncol]))
 
         d = { }
@@ -555,7 +555,7 @@ def _parse_summary_file(filename):
 
     keys = [column.lower() for column in postref_columns]
 
-    for j in range(len(postref_values) / ncol):
+    for j in range(len(postref_values) // ncol):
         image = int(round(postref_values[j * ncol]))
 
         d = { }

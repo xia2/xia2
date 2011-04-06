@@ -344,7 +344,7 @@ def XDSIdxref(DriverType = None):
 
             if 2 in st:
             
-                if st[2] > st[1] / 10:
+                if st[2] > st[1] / 10.0:
                     Debug.write('Look closely at autoindexing solution!')
                     self._index_tree_problem = True
                     for j in sorted(st):
