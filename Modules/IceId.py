@@ -145,7 +145,13 @@ class IceId:
         # p = Printpeaks()
         # p.set_image(self._image)
         # peaks = p.getpeaks()
-        peaks = locate_maxima(self._image)
+
+        # sometimes at the moment mosflm find spots fails => failover this...
+
+        try:
+            peaks = locate_maxima(self._image)
+        except IOError, e:
+            return 0.0
 
         # now do some sums...
 
