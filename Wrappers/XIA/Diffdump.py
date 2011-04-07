@@ -211,14 +211,28 @@ def failover_cbf(cbf_file):
             
         except:
             pass
+
+        try:
+
+            if not 'date' in header:
+                datestring = record.split()[-1].split('.')[0]
+                format = '%Y-%m-%dT%H:%M:%S'
+                struct_time = time.strptime(datestring, format)
+                header['date'] = time.asctime(struct_time)
+                header['epoch'] = time.mktime(struct_time)
+            
+        except:
+            pass
         
         try:
-            datestring = record.replace('#', '').strip().split('.')[0]
-            format = '%Y/%b/%d %H:%M:%S'
-            struct_time = time.strptime(datestring, format)
-            header['date'] = time.asctime(struct_time)
-            header['epoch'] = time.mktime(struct_time)
-            
+
+            if not 'date' in header:
+                datestring = record.replace('#', '').strip().split('.')[0]
+                format = '%Y/%b/%d %H:%M:%S'
+                struct_time = time.strptime(datestring, format)
+                header['date'] = time.asctime(struct_time)
+                header['epoch'] = time.mktime(struct_time)
+                
         except:
             pass
     
