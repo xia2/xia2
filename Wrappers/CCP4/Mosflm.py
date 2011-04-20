@@ -369,6 +369,9 @@ def Mosflm(DriverType = None,
                     self.get_header_item('detector_class'))
                 self.input('detector %s reversephi' % detector)
 
+            if 'pilatus' in self.get_header_item('detector_class'):
+                self.input('detector pilatus')
+
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())
             self.input('newmat xiaindex.mat')
@@ -738,6 +741,9 @@ def Mosflm(DriverType = None,
                 detector = detector_class_to_mosflm(
                     self.get_header_item('detector_class'))
                 self.input('detector %s reversephi' % detector)
+
+            if 'pilatus' in self.get_header_item('detector_class'):
+                self.input('detector pilatus')
 
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())
@@ -1213,6 +1219,9 @@ def Mosflm(DriverType = None,
                     self.get_header_item('detector_class'))
                 self.input('detector %s reversephi' % detector)
 
+            if 'pilatus' in self.get_header_item('detector_class'):
+                self.input('detector pilatus')
+
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())
 
@@ -1493,6 +1502,9 @@ def Mosflm(DriverType = None,
                 detector = detector_class_to_mosflm(
                     self.get_header_item('detector_class'))
                 self.input('detector %s reversephi' % detector)
+
+            if 'pilatus' in self.get_header_item('detector_class'):
+                self.input('detector pilatus')
 
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())
@@ -1950,6 +1962,9 @@ def Mosflm(DriverType = None,
                 detector = detector_class_to_mosflm(
                     self.get_header_item('detector_class'))
                 self.input('detector %s reversephi' % detector)
+
+            if 'pilatus' in self.get_header_item('detector_class'):
+                self.input('detector pilatus')
 
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())
@@ -2496,6 +2511,9 @@ def Mosflm(DriverType = None,
                         self.get_header_item('detector_class'))
                     job.input('detector %s reversephi' % detector)
 
+                if 'pilatus' in self.get_header_item('detector_class'):
+                    job.input('detector pilatus')
+
                 job.input('template "%s"' % self.get_template())
                 job.input('directory "%s"' % self.get_directory())
 
@@ -3041,6 +3059,9 @@ def Mosflm(DriverType = None,
                     self.get_header_item('detector_class'))
                 self.input('detector %s reversephi' % detector)
 
+            if 'pilatus' in self.get_header_item('detector_class'):
+                self.input('detector pilatus')
+
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())
 
@@ -3094,6 +3115,9 @@ def Mosflm(DriverType = None,
                 detector = detector_class_to_mosflm(
                     self.get_header_item('detector_class'))
                 self.input('detector %s reversephi' % detector)
+
+            if 'pilatus' in self.get_header_item('detector_class'):
+                self.input('detector pilatus')
 
             self.input('template "%s"' % self.get_template())
             self.input('directory "%s"' % self.get_directory())
