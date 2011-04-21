@@ -98,7 +98,8 @@ def Scala(DriverType = None,
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
 
-            self.set_executable('scala')
+            self.set_executable(os.path.join(
+                os.environ.get('CBIN', ''), 'scala'))
 
             self.start()
             try:

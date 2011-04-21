@@ -34,7 +34,8 @@ def F2mtz(DriverType = None):
         def __init__(self):
             CCP4DriverInstance.__class__.__init__(self)
 
-            self.set_executable('f2mtz')
+            self.set_executable(os.path.join(
+                os.environ.get('CBIN', ''), 'f2mtz'))
 
             self._cell = None
             self._symmetry = None

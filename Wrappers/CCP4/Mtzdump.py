@@ -40,7 +40,9 @@ def Mtzdump(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            self.set_executable('mtzdump')
+
+            self.set_executable(os.path.join(
+                os.environ.get('CBIN', ''), 'mtzdump'))            
 
             self._header = { }
             self._header['datasets'] = []

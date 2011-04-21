@@ -38,7 +38,9 @@ def Mtzutils(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            self.set_executable('mtzutils')
+            
+            self.set_executable(os.path.join(
+                os.environ.get('CBIN', ''), 'mtzutils'))            
 
             self._resolution_limit_high = 0.0
             self._resolution_limit_low = 100.0

@@ -35,7 +35,9 @@ def Mtz2various(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            self.set_executable('mtz2various')
+            
+            self.set_executable(os.path.join(
+                os.environ.get('CBIN', ''), 'mtz2various'))            
 
             # this will allow extraction of specific intensities
             # from a multi-set reflection file

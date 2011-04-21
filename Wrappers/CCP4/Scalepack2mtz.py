@@ -34,7 +34,9 @@ def Scalepack2mtz(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            self.set_executable('scalepack2mtz')
+            
+            self.set_executable(os.path.join(
+                os.environ.get('CBIN', ''), 'scalepack2mtz'))
 
             # specific information
             self._pname = None

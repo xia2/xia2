@@ -33,7 +33,8 @@ def Ecalc(DriverType = None):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
 
-            self.set_executable('ecalc')
+            self.set_executable(os.path.join(
+                os.environ.get('CBIN', ''), 'ecalc'))
 
             self._labin_f = 'F'
             self._labin_sigf = 'SIGF'

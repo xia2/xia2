@@ -34,7 +34,8 @@ def Peakmax(DriverType = None):
         def __init__(self):
             CCP4DriverInstance.__class__.__init__(self)
 
-            self.set_executable('peakmax')
+            self.set_executable(os.path.join(
+                os.environ.get('CBIN', ''), 'peakmax'))
 
             self._rms = 0.0
 

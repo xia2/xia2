@@ -32,7 +32,9 @@ def Freerflag(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            self.set_executable('freerflag')
+
+            self.set_executable(os.path.join(
+                os.environ.get('CBIN', ''), 'freerflag'))            
 
             self._free_fraction = 0.05
 

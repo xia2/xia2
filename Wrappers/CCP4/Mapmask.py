@@ -35,7 +35,8 @@ def Mapmask(DriverType = None):
         def __init__(self):
             CCP4DriverInstance.__class__.__init__(self)
 
-            self.set_executable('mapmask')
+            self.set_executable(os.path.join(
+                os.environ.get('CBIN', ''), 'mapmask'))            
 
             self._symmetry = None
 

@@ -34,7 +34,8 @@ def Fft(DriverType = None):
         def __init__(self):
             CCP4DriverInstance.__class__.__init__(self)
 
-            self.set_executable('fft')
+            self.set_executable(os.path.join(
+                os.environ.get('CBIN', ''), 'fft'))            
 
             self._symmetry = None
             self._dmin = 0.0

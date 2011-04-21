@@ -161,7 +161,7 @@ def Pointless(DriverType = None):
             CCP4DriverInstance.__class__.__init__(self)
 
             self.set_executable(os.path.join(
-                os.environ['CCP4'], 'bin', 'pointless'))
+                os.environ.get('CBIN', ''), 'pointless'))
 
             self._input_laue_group = None
 

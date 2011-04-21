@@ -41,7 +41,8 @@ def Polarrfn(DriverType = None):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
 
-            self.set_executable('polarrfn')
+            self.set_executable(os.path.join(
+                os.environ.get('CBIN', ''), 'polarrfn'))
 
             self._labin_f = 'F'
             self._labin_sigf = 'SIGF'

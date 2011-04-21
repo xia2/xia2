@@ -38,7 +38,9 @@ def Rebatch(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            self.set_executable('rebatch')
+
+            self.set_executable(os.path.join(
+                os.environ.get('CBIN', ''), 'rebatch'))            
 
             self._first_batch = 0
             self._add_batch = 0

@@ -41,7 +41,9 @@ def Matthews_coef(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            self.set_executable('matthews_coef')
+
+            self.set_executable(os.path.join(
+                os.environ.get('CBIN', ''), 'matthews_coef'))            
 
             self._nmol = 1
             self._nres = 0

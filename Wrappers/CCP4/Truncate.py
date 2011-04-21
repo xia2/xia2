@@ -55,13 +55,14 @@ def Truncate(DriverType = None):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
 
+            self.set_executable(os.path.join(
+                os.environ.get('CBIN', ''), 'truncate'))
+
             self._anomalous = False
             self._nres = 0
 
             # should we do wilson scaling?
             self._wilson = True
-
-            self.set_executable('truncate')
 
             self._b_factor = 0.0
             self._moments = None

@@ -72,8 +72,8 @@ def Othercell(DriverType = None):
             DriverInstance.__class__.__init__(self)
 
             self.set_executable(os.path.join(
-                os.environ['CCP4'], 'bin', 'othercell'))
-
+                os.environ.get('CBIN', ''), 'othercell'))
+            
             self._initial_cell = []
             self._initial_lattice_type = None
 
