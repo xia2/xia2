@@ -33,6 +33,10 @@ from Experts.MatrixExpert import format_matrix
 
 from Wrappers.Labelit.DistlSignalStrength import DistlSignalStrength
 
+# things we can work on...
+
+from Wrappers.CCP4.MosflmWrapper import MosflmWrapper
+
 use_distl = False
 
 # cctbx stuff
@@ -304,6 +308,15 @@ def mosflm_check_indexer_solution(indexer):
 
     # N.B. same should be applied to the same calculations for the XDS
     # version of this.
+
+    if Flags.get_primitive():
+        mw = MosflmWrapper()
+
+        images = indexer.get_indexer_images()
+
+        print images
+        
+        # mw.integrate_single_images(indexer, 
 
     return True, lattice_p, new_matrix, (a, b, c, alpha, beta, gamma)
         

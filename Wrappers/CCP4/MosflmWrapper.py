@@ -31,7 +31,6 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
-from Background.Background import Background
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
 
@@ -39,13 +38,12 @@ from Decorators.DecoratorFactory import DecoratorFactory
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # output streams &c.
-
 from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Citations import Citations
 from Handlers.Flags import Flags
-
 from Handlers.Files import FileHandler
 
+# odds and ends
 from lib.bits import auto_logfiler, mean_sd, remove_outliers, meansd
 from lib.SymmetryLib import lattice_to_spacegroup
 
@@ -150,8 +148,11 @@ def MosflmWrapper(DriverType = None):
             genfile = os.path.join(os.environ['BINSORT_SCR'],
                                    '%d_mosflm.gen' % self.get_xpid())
 
-            self.input('genfile %s' % genfile)                
-            self.input('go')
+            self.input('genfile %s' % genfile)
+
+            for i in images:
+                self.input('process %d %d')
+                self.input('go')
 
             # that should be everything 
             self.close_wait()
