@@ -33,6 +33,7 @@ class _Flags:
 
     def __init__(self):
         self._quick = False
+        self._primitive = False
         self._interactive = False
         self._ice = False
         self._egg = False
@@ -259,6 +260,13 @@ class _Flags:
 
     def get_quick(self):
         return self._quick
+
+    def set_primitive(self, primitive):
+        self._primitive = primitive
+        return
+
+    def get_primitive(self):
+        return self._primitive
 
     def set_interactive(self, interactive):
         self._interactive = interactive

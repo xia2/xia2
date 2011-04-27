@@ -107,6 +107,7 @@ class _CommandLine(Object):
         self._read_batch_scale()
         self._read_small_molecule()
         self._read_quick()
+        self._read_primitive()
         self._read_smart_scaling()
         self._read_8way()
         self._read_chef()
@@ -1064,6 +1065,15 @@ class _CommandLine(Object):
         if '-quick' in sys.argv:
             Flags.set_quick(True)
             Debug.write('Quick mode selected')
+            self._understood.append(sys.argv.index('-quick'))
+        return
+
+    def _read_primitive(self):
+
+        if '-primitive' in sys.argv:
+            Flags.set_primitive(True)
+            Debug.write('Primitive mode selected')
+            self._understood.append(sys.argv.index('-primitive'))
         return
 
     def _read_smart_scaling(self):

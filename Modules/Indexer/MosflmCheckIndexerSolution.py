@@ -25,6 +25,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Wrappers.XIA.Printpeaks import Printpeaks
 from Wrappers.XIA.Diffdump import Diffdump
 from Handlers.Streams import Debug
+from Handlers.Flags import Flags
 from lib.bits import nint
 from Experts.MatrixExpert import format_matrix
 
@@ -240,7 +241,7 @@ def mosflm_check_indexer_solution(indexer):
             Debug.write('Not enough spots found for analysis')
             return False, None, None, None
             
-        if (absent - 3 * sd) / total < 0.008:
+        if (absent - 3 * sd) / total < 0.008 and not Flags.get_primitive():
             return False, None, None, None
 
     # in here need to calculate the new orientation matrix for the
