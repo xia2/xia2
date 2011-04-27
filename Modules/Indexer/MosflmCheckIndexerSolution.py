@@ -245,7 +245,7 @@ def mosflm_check_indexer_solution(indexer):
             Debug.write('Not enough spots found for analysis')
             return False, None, None, None
             
-        if (absent - 3 * sd) / total < 0.008 and not Flags.get_primitive():
+        if (absent - 3 * sd) / total < 0.008:
             return False, None, None, None
 
     # in here need to calculate the new orientation matrix for the
@@ -308,15 +308,6 @@ def mosflm_check_indexer_solution(indexer):
 
     # N.B. same should be applied to the same calculations for the XDS
     # version of this.
-
-    if Flags.get_primitive():
-        mw = MosflmWrapper()
-
-        images = indexer.get_indexer_images()
-
-        print images
-        
-        # mw.integrate_single_images(indexer, 
 
     return True, lattice_p, new_matrix, (a, b, c, alpha, beta, gamma)
         
