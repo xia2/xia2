@@ -551,7 +551,10 @@ if __name__ == '__main__':
     lattice = sys.argv[1]
     mosflm_a_matrix = open(sys.argv[2]).read()
 
-    mosflm_matrix_centred_to_primitive(lattice, mosflm_a_matrix)
+    result = mosflm_matrix_centred_to_primitive(lattice, mosflm_a_matrix)
+
+    for r in result:
+        print r
        
 
     
