@@ -1,0 +1,54 @@
+import math
+import sys
+import os
+
+from iotbx import mtz
+from cctbx import sgtbx
+from cctbx import crystal
+from cctbx import uctbx
+from scitbx import matrix
+
+def measure(hklin, spacegroup):
+    '''Look at HKLIN, see how strong the absences (according to the given
+    spacegroup) are... looking for IPR / SIGIPR.'''
+
+    mtz_obj = mtz.object(hklin)
+
+    sg = sgtbx.space_group_symbols(spacegroup).hall()
+    mi = mtz_obj.extract_miller_indices()
+    sg_m = mtz_obj.space_group()
+
+    ipr_column = None
+    sigipr_column = None
+
+    for crystal in mtz_obj.crystals():
+        for dataset in crystal.datasets():
+            for column in dataset.columns():
+
+                if column.label() == 'IPR':
+                    ipr_column = column
+                elif column.label() == 'SIGIPR':
+                    sigipr_column = column
+
+    assert(ipr_column != None)
+    assert(sigipr_column != None)
+
+    ipr_values = ipr_column.extract_values(not_a_number_substitute = 0.0)    
+    sigipr_values = sigipr_column.extract_values(not_a_number_substitute = 0.0)
+
+    for j in range(mi.size()):
+        hkl = mi[j]
+
+        if sg.is_sys_absent(hkl):
+            print 'A %f' % (ipr_values[j] / sigipr_values[j])
+        else:
+            print 'P %f' % (ipr_values[j] / sigipr_values[j])
+
+if __name__ == '__main__':
+
+    hklin = sys.argv[1]
+    spacegroup = sys.argv[2]
+
+    measure(hklin, spacegroup)
+
+    

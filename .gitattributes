@@ -17,6 +17,7 @@ Modules/Doc/IndexerFactory.pdf -text
 Modules/Doc/XDSIndexer.pdf -text
 Modules/Doc/XDSIntegrater.pdf -text
 Modules/Indexer/IndexerSelectImages.py -text
+Modules/Indexer/MosflmIntegrateAbsences.py -text
 Modules/Indexer/__init__.py -text
 Modules/Integrater/XDSIntegraterR.py -text
 Modules/Integrater/__init__.py -text
