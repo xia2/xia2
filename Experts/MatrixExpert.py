@@ -476,8 +476,6 @@ def mosflm_matrix_centred_to_primitive(lattice, mosflm_a_matrix):
 
     rtod = 180.0 / math.pi
 
-    print mosflm_a_matrix
-
     if not (sg.n_ltr() - 1):
         return mosflm_a_matrix
 
@@ -546,36 +544,12 @@ def mosflm_matrix_centred_to_primitive(lattice, mosflm_a_matrix):
                   format_matrix((a, b, c, alpha, beta, gamma),
                                 amat, umat.elems).split('\n')]
 
-
-    print format_matrix((a, b, c, alpha, beta, gamma), amat, umat.elems)
-    
     return new_matrix
 
 if __name__ == '__main__':
 
-    mosflm_a_matrix = '''  0.00932281  0.00606102 -0.00374105
- -0.01568750 -0.00912359 -0.00231064
- -0.01310706  0.01523088 0.000104606
-       0.000       0.000       0.000
-  0.41493863  0.32307385 -0.85055818
- -0.69821783 -0.48631958 -0.52534288
- -0.58336764  0.81185994  0.02378314
-     43.6062     52.2237    222.7522     90.0000     90.0000     90.0000
-       0.000       0.000       0.000'''
-
-    lattice = 'oI'
-
-    mosflm_a_matrix = '''  0.00416371-0.000878151  0.01141955
- 0.000845416 -0.01390810 -0.01372496
-  0.00121685  0.01266757 -0.01427741
-       0.000       0.000       0.000
-  0.94212375 -0.04662883  0.33200691
-  0.19129236 -0.73850496 -0.64654285
-  0.27533629  0.67263376 -0.68684332
-    228.3207     52.6672     44.1390     90.0000    100.5917     90.0000
-       0.000       0.000       0.000'''
-
-    lattice = 'mC'
+    lattice = sys.argv[1]
+    mosflm_a_matrix = open(sys.argv[2]).read()
 
     mosflm_matrix_centred_to_primitive(lattice, mosflm_a_matrix)
        
