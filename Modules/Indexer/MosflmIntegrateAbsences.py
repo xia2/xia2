@@ -14,7 +14,7 @@ def measure(hklin, spacegroup):
 
     mtz_obj = mtz.object(hklin)
 
-    sg = sgtbx.space_group_symbols(spacegroup).hall()
+    sg = sgtbx.space_group(sgtbx.space_group_symbols(spacegroup).hall())
     mi = mtz_obj.extract_miller_indices()
     sg_m = mtz_obj.space_group()
 
@@ -36,13 +36,19 @@ def measure(hklin, spacegroup):
     ipr_values = ipr_column.extract_values(not_a_number_substitute = 0.0)    
     sigipr_values = sigipr_column.extract_values(not_a_number_substitute = 0.0)
 
+    present = []
+    absent = []
+
     for j in range(mi.size()):
         hkl = mi[j]
 
         if sg.is_sys_absent(hkl):
-            print 'A %f' % (ipr_values[j] / sigipr_values[j])
+            absent.append(ipr_values[j] / sigipr_values[j])
         else:
-            print 'P %f' % (ipr_values[j] / sigipr_values[j])
+            present.append(ipr_values[j] / sigipr_values[j])
+
+    print 'A: %f' % (sum(absent) / len(absent))
+    print 'P: %f' % (sum(present) / len(present))
 
 if __name__ == '__main__':
 
