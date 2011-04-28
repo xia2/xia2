@@ -28,6 +28,7 @@ from Handlers.Streams import Debug
 from Handlers.Flags import Flags
 from lib.bits import nint
 from Experts.MatrixExpert import format_matrix
+from Experts.LatticeExpert import l2s, s2l
 
 # optional labelit stuff
 
@@ -78,26 +79,6 @@ def locate_maxima(image):
         peaks = pp.get_maxima()
 
     return peaks
-
-def s2l(spacegroup):
-    lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5, 
-                             'oP':16, 'oC':20, 'oF':22,
-                             'oI':23, 'tP':75, 'tI':79,
-                             'hP':143, 'hR':146, 'cP':195,
-                             'cF':196, 'cI':197}
-
-    spacegroup_to_lattice = { }
-    for k in lattice_to_spacegroup.keys():
-        spacegroup_to_lattice[lattice_to_spacegroup[k]] = k
-    return spacegroup_to_lattice[spacegroup]
-
-def l2s(lattice):
-    lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5, 
-                             'oP':16, 'oC':20, 'oF':22,
-                             'oI':23, 'tP':75, 'tI':79,
-                             'hP':143, 'hR':146, 'cP':195,
-                             'cF':196, 'cI':197}
-    return lattice_to_spacegroup[lattice]
 
 def mosflm_check_indexer_solution(indexer):
 

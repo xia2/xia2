@@ -14,6 +14,9 @@ import os
 import sys
 import math
 
+from cctbx import sgtbx
+from cctbx import crystal
+from cctbx import uctbx
 from scitbx import matrix
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
@@ -29,6 +32,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
 from Experts.SymmetryExpert import symop_to_mat, mat_to_symop
+from Experts.LatticeExpert import l2s, s2l
 from Wrappers.CCP4.Othercell import Othercell
 from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
 from lib.SymmetryLib import lattice_to_spacegroup
@@ -461,179 +465,119 @@ def reindex_sym_related(A, A_ref):
     reindex = mat_to_symop(R)
     return reindex
 
-if __name__ == '__main__Q':
+def mosflm_matrix_centred_to_primitive(lattice, mosflm_a_matrix):
+    '''Convert a mosflm orientation matrix from a centred setting to a
+    primitive one (i.e. same lattice, but without the centering operations,
+    which therefore corresponds to a different basis).'''
 
-    matrix = '''  0.00935462  0.00605920 -0.00373825
- -0.01567190 -0.00910857 -0.00231642
- -0.01308909  0.01523636 0.000101829
-       0.000       0.000       0.000
-  0.41650556  0.32303609 -0.84980633
- -0.69777617 -0.48560794 -0.52658650
- -0.58277915  0.81230081  0.02314848
-     43.6220     52.2332    222.7219     90.0000     90.0000     90.0000
-       0.000       0.000       0.000
-'''
+    space_group_number = l2s(lattice)
+    spacegroup = sgtbx.space_group_symbols(space_group_number).hall()
+    sg = sgtbx.space_group(spacegroup)
 
-    a, b, c = mosflm_a_matrix_to_real_space(0.979741, 'oI', matrix)
+    rtod = 180.0 / math.pi
 
-    print math.sqrt(dot(a, a))
-    print math.sqrt(dot(b, b))
-    print math.sqrt(dot(c, c))
+    print mosflm_a_matrix
 
-    newmat = transmogrify_matrix('oI', matrix, 'aP', 0.979741)
+    if not (sg.n_ltr() - 1):
+        return mosflm_a_matrix
 
-    print newmat
+    cell, amat, umat = parse_matrix(mosflm_a_matrix)
 
-if __name__ == '__main_old__':
+    # first derive the wavelength 
 
-    matrix = ''' -0.00417059 -0.00089426 -0.01139821
- -0.00084328 -0.01388561  0.01379631
- -0.00121258  0.01273236  0.01424531
-      -0.099       0.451      -0.013
- -0.94263428 -0.04741397 -0.33044314
- -0.19059871 -0.73622239  0.64934635
- -0.27406719  0.67507666  0.68495023
-    228.0796     52.5895     44.1177     90.0000    100.6078     90.0000
-     -0.0985      0.4512     -0.0134'''
-
-    print transmogrify_matrix('mC', matrix, 'aP')
+    mi = matrix.sqr(amat)
+    m = mi.inverse()
     
-    a, b, c = get_real_space_primitive_matrix('mC', matrix)
+    A = matrix.col(m.elems[0:3])
+    B = matrix.col(m.elems[3:6])
+    C = matrix.col(m.elems[6:9])
 
-    print math.sqrt(dot(a, a)), math.sqrt(dot(b, b)), math.sqrt(dot(c, c))
+    a = math.sqrt(A.dot())
+    b = math.sqrt(B.dot())
+    c = math.sqrt(C.dot())
 
-    # to get the phi values am most interested in Ra.Z, Rb.Z, Rc.Z.
-    # this is trivial to calculate:
-    # R(t)x.z = 0 => x_1 sin(t) = x_3 cos(t) => t = atan(x_3 / x_1)
+    alpha = rtod * B.angle(C)
+    beta = rtod * C.angle(A)
+    gamma = rtod * A.angle(B)
 
-    dtor = 180.0 / (4.0 * math.atan(1.0))
+    wavelength = ((cell[0] / a) + (cell[1] / b) + (cell[2] / c)) / 3.0
 
-    print dtor * math.atan(a[2] / a[0]), dtor * math.atan(b[2] / b[0]), \
-          dtor * math.atan(c[2] / c[0])
+    # then use this to rescale the A matrix
 
-if __name__ == '__main_dtrek__':
-
-    # this lot should end up as a unit test which tests out the
-    # b matrix, cell inversion, rotations and so on - the end
-    # cell should be identical to the beginning one!
-
-    a = 57.8349
-    b = 77.2950
-    c = 86.7453
-    alpha = 90.0
-    beta = 90.0
-    gamma = 90.0
-
-    bmat = b_matrix(a, b, c, alpha, beta, gamma)
-    m = matmul(rot_z(-18.467), matmul(rot_y(-3.227),
-                                      matmul(rot_x(-55.432), bmat)))
-    u = matmul(m, invert(bmat))
-    print '%.6f %.6f %.6f\n%.6f %.6f %.6f\n%.6f %.6f %.6f\n' % tuple(u)
-    rm = invert(m)
-    print '%.6f %.6f %.6f\n%.6f %.6f %.6f\n%.6f %.6f %.6f\n' % tuple(rm)
-
-    cell = transpose(rm)
-    print math.sqrt(cell[0] * cell[0] + cell[1] * cell[1] + cell[2] * cell[2])
-    print math.sqrt(cell[3] * cell[3] + cell[4] * cell[4] + cell[5] * cell[5])
-    print math.sqrt(cell[6] * cell[6] + cell[7] * cell[7] + cell[8] * cell[8])
+    mi = matrix.sqr([a / wavelength for a in amat])
+    m = mi.inverse()
     
-    _a, _b, _c = tuple(mat2vec(rm))
+    sgp = sg.build_derived_group(True, False)
+    lattice_p = s2l(sgp.type().number())
+    symm = crystal.symmetry(unit_cell = cell,
+                            space_group = sgp)
 
-    dtor = 180.0 / (4.0 * math.atan(1.0))
+    rdx = symm.change_of_basis_op_to_best_cell()
+    symm_new = symm.change_basis(rdx)
 
-    print math.acos(dot(_b, _c) / math.sqrt(dot(_b, _b) * dot(_c, _c))) * dtor
-    print math.acos(dot(_c, _a) / math.sqrt(dot(_a, _a) * dot(_c, _c))) * dtor
-    print math.acos(dot(_a, _b) / math.sqrt(dot(_a, _a) * dot(_b, _b))) * dtor
+    # now apply this to the reciprocal-space orientation matrix mi
+
+    cb_op = rdx
+    R = cb_op.c_inv().r().as_rational().as_float().transpose().inverse()
+    mi_r = mi * R
+
+    # now re-derive the cell constants, just to be sure
+
+    m_r = mi_r.inverse()
+    Ar = matrix.col(m_r.elems[0:3])
+    Br = matrix.col(m_r.elems[3:6])
+    Cr = matrix.col(m_r.elems[6:9])
+
+    a = math.sqrt(Ar.dot())
+    b = math.sqrt(Br.dot())
+    c = math.sqrt(Cr.dot())
+
+    alpha = rtod * Br.angle(Cr)
+    beta = rtod * Cr.angle(Ar)
+    gamma = rtod * Ar.angle(Br)
+
+    cell = uctbx.unit_cell((a, b, c, alpha, beta, gamma))
+
+    amat = [wavelength * e for e in mi_r.elems]
+    bmat = matrix.sqr(cell.fractionalization_matrix())
+    umat = mi_r * bmat.inverse()
+
+    new_matrix = ['%s\n' % r for r in \
+                  format_matrix((a, b, c, alpha, beta, gamma),
+                                amat, umat.elems).split('\n')]
+
+
+    print format_matrix((a, b, c, alpha, beta, gamma), amat, umat.elems)
     
-
-if __name__ == '__main_xds__':
-
-    m = (0.00095924, 0.01043167, 0.00642292,
-         0.00537416, 0.00667498, -0.00892183,
-         -0.01604217, 0.00285989, -0.00260477)
-
-    # unrefined
-    m = (0.000957550, 0.01040052, 0.00641526,
-         0.00536470, 0.00665505, -0.00891111,
-         -0.01601392, 0.00285135, -0.00260164)
-    
-    m2 = []
-    for k in m:
-        m2.append(k / 0.9795)
-    m = tuple(m2)
-    cell = tuple(invert(m))
-    print '%.4f %.4f %.4f\n%.4f %.4f %.4f\n%.4f %.4f %.4f\n' % cell
-    print math.sqrt(cell[0] * cell[0] + cell[1] * cell[1] + cell[2] * cell[2])
-    print math.sqrt(cell[3] * cell[3] + cell[4] * cell[4] + cell[5] * cell[5])
-    print math.sqrt(cell[6] * cell[6] + cell[7] * cell[7] + cell[8] * cell[8])
-
-    r = (0, 0, 1, 0, 1, 0, -1, 0, 0)
-
-    print '%.6f %.6f %.6f\n%.6f %.6f %.6f\n%.6f %.6f %.6f\n' % tuple(matmul(r, cell))
-
-if __name__ == '__main__j':
-    if len(sys.argv) < 3:
-
-        lattice = 'mC'
-
-        matrix = ''' -0.00417059 -0.00089426 -0.01139821
- -0.00084328 -0.01388561  0.01379631
- -0.00121258  0.01273236  0.01424531
-      -0.099       0.451      -0.013
- -0.94263428 -0.04741397 -0.33044314
- -0.19059871 -0.73622239  0.64934635
- -0.27406719  0.67507666  0.68495023
-    228.0796     52.5895     44.1177     90.0000    100.6078     90.0000
-     -0.0985      0.4512     -0.0134'''
-
-    else:
-        lattice = sys.argv[1]
-        matrix = open(sys.argv[2], 'r').read()
-
-    print '%.2f %.2f %.2f' % find_primitive_axes(
-        lattice, matrix)
-
-    print '%.2f %.2f %.2f' % find_primitive_reciprocal_axes(
-        lattice, matrix)
-    
-if __name__ == '__main__vecmul':
-    M = (0, 1, 0, 1, 0, 0, 0, 0, 1)
-    v = (1, 2, 3)
-
-    print '%f %f %f' % tuple(matvecmul(M, v))
-    
-    M = (2, 0, 0, 0, 2, 0, 0, 0, 2)
-    
-    print '%f %f %f' % tuple(matvecmul(M, v))    
+    return new_matrix
 
 if __name__ == '__main__':
-    U1 = map(float, '''0.8773    0.3578   -0.3200
-    -0.2248    0.8953    0.3845
-    0.4241   -0.2654    0.8659'''.split())
 
-    U2 = map(float, '''0.3543   -0.8799   -0.3166
-    0.8969    0.2240    0.3813
-    -0.2646   -0.4191    0.8685'''.split())
+    mosflm_a_matrix = '''  0.00932281  0.00606102 -0.00374105
+ -0.01568750 -0.00912359 -0.00231064
+ -0.01310706  0.01523088 0.000104606
+       0.000       0.000       0.000
+  0.41493863  0.32307385 -0.85055818
+ -0.69821783 -0.48631958 -0.52534288
+ -0.58336764  0.81185994  0.02378314
+     43.6062     52.2237    222.7522     90.0000     90.0000     90.0000
+       0.000       0.000       0.000'''
 
-    R1 = rot_x(55.0)
+    lattice = 'oI'
 
-    print mat_to_symop(matmul(U1, transpose(U1)))
-    print mat_to_symop(matmul(U1, invert(U1)))
-    X1 = mat_to_symop(matmul(U1, invert(U2)))
+    mosflm_a_matrix = '''  0.00416371-0.000878151  0.01141955
+ 0.000845416 -0.01390810 -0.01372496
+  0.00121685  0.01266757 -0.01427741
+       0.000       0.000       0.000
+  0.94212375 -0.04662883  0.33200691
+  0.19129236 -0.73850496 -0.64654285
+  0.27533629  0.67263376 -0.68684332
+    228.3207     52.6672     44.1390     90.0000    100.5917     90.0000
+       0.000       0.000       0.000'''
 
-    sys.path.append(os.path.join(os.environ['XIA2_ROOT'],
-                                 'Handlers'))
-    from Syminfo import Syminfo
+    lattice = 'mC'
 
-    for symop in Syminfo.get_symops(Syminfo.get_pointgroup('P43212')):
-        s2 = symop.replace('X', 'h').replace('Y', 'k').replace('Z', 'l')
-        if s2 == X1:
-            print 'found it! %s' % s2
-    
-
-    # m1 = symop_to_mat(mat_to_symop(matmul(U1, invert(U2))))
-
-    # print matmul(m1, U2)
-    # print U1
+    mosflm_matrix_centred_to_primitive(lattice, mosflm_a_matrix)
+       
 
     
