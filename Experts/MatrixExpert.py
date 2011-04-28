@@ -554,7 +554,7 @@ if __name__ == '__main__':
     result = mosflm_matrix_centred_to_primitive(lattice, mosflm_a_matrix)
 
     for r in result:
-        print r
+        print r[:-1]
        
 
     
