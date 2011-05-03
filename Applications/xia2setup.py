@@ -183,10 +183,11 @@ def print_sweeps(out = sys.stdout):
         sweeps.sort()
         for s in sweeps:
 
-            if len(s.get_images()) < 5:
+            if len(s.get_images()) < Flags.get_min_images():
                 continue
 
             wavelength = s.get_wavelength()
+
             if not wavelength in wavelengths:
                 wavelengths.append(wavelength)
 
