@@ -119,6 +119,8 @@ def check_environment():
     except KeyError, e:
         pass
 
+    Chatter.write('Build: $Revision$')
+
     return
 
 if not os.environ.has_key('XIA2_ROOT'):
