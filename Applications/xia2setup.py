@@ -21,6 +21,7 @@ import os
 import sys
 import exceptions
 import time
+import traceback
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
@@ -131,6 +132,7 @@ def get_sweep(f):
 
     except exceptions.Exception, e:
         print 'Exception: %s (%s)' % (str(e), f)
+        # traceback.print_exc(file = sys.stdout)
 
     return
 

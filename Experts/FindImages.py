@@ -50,6 +50,7 @@ def image2template(filename):
     # the patterns in the order I want to test them
 
     pattern_keys = [r'([^\.]*)\.([0-9]+)\Z',
+                    r'([^\.]*)\.([0-9]+)(.*)',
                     r'(.*)_([0-9]*)\.(.*)',
                     r'(.*?)([0-9]*)\.(.*)']
 
@@ -57,6 +58,7 @@ def image2template(filename):
     # the format strings to put the file name back together
 
     patterns = {r'([^\.]*)\.([0-9]+)\Z':'%s.%s%s',
+                r'([^\.]*)\.([0-9]+)(.*)':'%s.%s%s',                
                 r'(.*)_([0-9]*)\.(.*)':'%s_%s.%s',
                 r'(.*?)([0-9]*)\.(.*)':'%s%s.%s'}
 
@@ -136,9 +138,10 @@ def find_matching_images(template, directory):
     # change 30/may/2008 - now escape the template in this search to cope with
     # file templates with special characters in them, such as "+" -
     # fix to a problem reported by Joel B.
-    
+
     length = template.count('#')
-    regexp_text = re.escape(template).replace('\\#' * length, '([0-9]{%d})' % length)
+    regexp_text = re.escape(template).replace(
+        '\\#' * length, '([0-9]{%d})' % length)
     regexp = re.compile(regexp_text)
 
     images = []
