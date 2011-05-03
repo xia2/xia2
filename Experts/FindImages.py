@@ -91,6 +91,7 @@ def image2image(filename):
     # the patterns in the order I want to test them
 
     pattern_keys = [r'([^\.]*)\.([0-9]+)\Z',
+                    r'([^\.]*)\.([0-9]+)(.*)',
                     r'(.*)_([0-9]*)\.(.*)',
                     r'(.*?)([0-9]*)\.(.*)']
 
