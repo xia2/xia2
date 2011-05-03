@@ -119,7 +119,13 @@ def check_environment():
     except KeyError, e:
         pass
 
-    Chatter.write('Build: $Revision$')
+    revision = '$Revision$'
+    if len(revision.split()) > 1:
+        revision = revision.split()[1]
+    else:
+        revision = 'not set'
+        
+    Chatter.write('Build: %s' % revision)
 
     return
 
