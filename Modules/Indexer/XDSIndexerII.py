@@ -87,9 +87,10 @@ class XDSIndexerII(XDSIndexer):
         # former then we have a problem, as we want *all* the images in the
         # sweep...
 
-        if len(images) < 3:
+        if len(images) < 3 and len(images) < Flags.get_min_images():
             raise RuntimeError, \
-                  'This INDEXER cannot be used for only 2 images'
+                  'This INDEXER cannot be used for only %d images' % \
+                  len(images)
 
         Debug.write('Adding images for indexer: %d -> %d' % \
                     (min(images), max(images)))
