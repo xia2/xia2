@@ -165,11 +165,6 @@ def ccs_to_R(xscale_lp):
 
     spaces.sort()
 
-    fout = open('x1335.S', 'w')
-    for s in spaces:
-        fout.write('%f\n' % s[0])
-    fout.close()
-    
     dmax = 0.01
 
     sets = []
