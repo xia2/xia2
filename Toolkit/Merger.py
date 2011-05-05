@@ -740,6 +740,59 @@ class merger:
 
         return r_rmerge
 
+    def new_resolution_unmerged_isigma(self, limit = None, log = None):
+        '''Compute a resolution limit where either I/sigma = 1.0 (limit if
+        set) or the full extent of the data.'''
+
+        if limit is None:
+            limit = Flags.get_isigma()
+
+        bins, ranges = self.get_resolution_bins()
+
+        isigma_s = get_positive_values(
+            [self.calculate_unmerged_isigma(bin) for bin in bins])
+        
+        s_s = [1.0 / (r[0] * r[0]) for r in ranges][:len(isigma_s)]
+
+        if min(isigma_s) > limit:
+            return 1.0 / math.sqrt(max(s_s))
+
+        for _l, s in enumerate(isigma_s):
+            if s < limit:
+                break
+
+        if _l > 10 and _l < (len(isigma_s) - 10):
+            start = _l - 10
+            end = _l + 10
+        elif _l <= 10:
+            start = 0
+            end = 20
+        elif _l >= (len(isigma_s) - 10):
+            start = -20
+            end = -1
+
+        _s_s = s_s[start:end]
+        _isigma_s = isigma_s[start:end]
+        
+        _isigma_f = log_fit(_s_s, _isigma_s, 3)
+
+        if log:
+            fout = open(log, 'w')
+            for j, s in enumerate(_s_s):
+                d = 1.0 / math.sqrt(s)
+                o = _isigma_s[j]
+                m = _isigma_f[j]
+                fout.write('%f %f %f %f\n' % (s, d, o, m))
+            fout.close()
+        
+        try:
+            r_isigma = 1.0 / math.sqrt(interpolate_value(_s_s, _isigma_f,
+                                                         limit))
+        except:
+            r_isigma = 1.0 / math.sqrt(max(_s_s))
+
+        return r_isigma
+
     def resolution_unmerged_isigma(self, limit = None, log = None):
         '''Compute a resolution limit where either I/sigma = 1.0 (limit if
         set) or the full extent of the data.'''
@@ -774,6 +827,58 @@ class merger:
             r_isigma = 1.0 / math.sqrt(max(s_s))
 
         return r_isigma
+
+    def new_resolution_merged_isigma(self, limit = None, log = None):
+        '''Compute a resolution limit where either Mn(I/sigma) = 1.0 (limit if
+        set) or the full extent of the data.'''
+
+        if limit is None:
+            limit = Flags.get_misigma()
+
+        bins, ranges = self.get_resolution_bins()
+
+        misigma_s = get_positive_values(
+            [self.calculate_merged_isigma(bin) for bin in bins])
+        s_s = [1.0 / (r[0] * r[0]) for r in ranges][:len(misigma_s)]
+        
+        if min(misigma_s) > limit:
+            return 1.0 / math.sqrt(max(s_s))
+
+        for _l, s in enumerate(misigma_s):
+            if s < limit:
+                break
+
+        if _l > 10 and _l < (len(misigma_s) - 10):
+            start = _l - 10
+            end = _l + 10
+        elif _l <= 10:
+            start = 0
+            end = 20
+        elif _l >= (len(misigma_s) - 10):
+            start = -20
+            end = -1
+
+        _s_s = s_s[start:end]
+        _misigma_s = misigma_s[start:end]
+        
+        _misigma_f = log_fit(_s_s, _misigma_s, 3)
+
+        if log:
+            fout = open(log, 'w')
+            for j, s in enumerate(_s_s):
+                d = 1.0 / math.sqrt(s)
+                o = _misigma_s[j]
+                m = _misigma_f[j]
+                fout.write('%f %f %f %f\n' % (s, d, o, m))
+            fout.close()
+        
+        try:
+            r_misigma = 1.0 / math.sqrt(interpolate_value(_s_s, _misigma_f,
+                                                          limit))
+        except:
+            r_misigma = 1.0 / math.sqrt(max(_s_s))
+
+        return r_misigma
 
     def resolution_merged_isigma(self, limit = None, log = None):
         '''Compute a resolution limit where either Mn(I/sigma) = 1.0 (limit if
@@ -852,7 +957,6 @@ class merger:
             r_comp = 1.0 / math.sqrt(max(s_s))
 
         return r_comp
-        
 
 if __name__ == '__main__':
 
@@ -879,8 +983,10 @@ if __name__ == '__main__':
                                                    log = l_rmerge)
     print 'I/sig:      %.2f' % m.resolution_unmerged_isigma(log = l_isigma)
     print 'Mn(I/sig):  %.2f' % m.resolution_merged_isigma(log = l_misigma)
-    print 'Comp:       %.2f' % m.resolution_completeness(limit = 0.5,
-                                                         log = l_comp)
+
+    if False:
+        print 'Comp:       %.2f' % m.resolution_completeness(limit = 0.5,
+                                                             log = l_comp)
 
     
 
