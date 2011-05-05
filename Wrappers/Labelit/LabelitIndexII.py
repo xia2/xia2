@@ -276,7 +276,7 @@ def LabelitIndexII(DriverType = None, indxr_print = True):
             # N.B. now bodging this to use up to 20 frames which have decent
             # spots on, spaced from throughout the data set.
 
-            spacing = max(1, int(len(images) / 20))
+            spacing = max(1, int(len(images) // 20))
 
             selected = []
 
