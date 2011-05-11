@@ -1713,7 +1713,7 @@ class CCP4ScalerR(Scaler):
                                                      self._common_xname),
                                     sc.get_log_file())
 
-        sc.set_resolution(self._scalr_highest_resolution)
+        highest_resolution = 100.0
 
         sc.set_hklin(self._prepared_reflections)
         
@@ -1727,12 +1727,17 @@ class CCP4ScalerR(Scaler):
 
             run_resolution_limit = self._resolution_limits[input['dname']]
 
+            if run_resolution_limit < highest_resolution:
+                highest_resolution = run_resolution_limit
+
             sc.add_run(start, end, pname = input['pname'],
                        xname = input['xname'],
                        dname = input['dname'],
                        exclude = False,
                        resolution = run_resolution_limit,
                        name = input['sweep_name'])
+
+        sc.set_resolution(highest_resolution)
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled.mtz' % \
