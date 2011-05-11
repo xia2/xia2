@@ -1440,13 +1440,13 @@ class CCP4ScalerRefactor(Scaler):
                                                      self._common_xname),
                                     sc.get_log_file())
 
-        sc.set_resolution(self._scalr_highest_resolution)
-
         sc.set_hklin(self._prepared_reflections)
         
         scales_file = '%s_final.scales' % self._common_xname
 
         sc.set_new_scales_file(scales_file)
+
+        highest_resolution = 100.0
 
         for epoch in epochs:
             input = self._sweep_information[epoch]
@@ -1454,12 +1454,17 @@ class CCP4ScalerRefactor(Scaler):
 
             run_resolution_limit = self._resolution_limits[input['dname']]
 
+            if run_resolution_limit < highest_resolution:
+                highest_resolution = run_resolution_limit
+
             sc.add_run(start, end, pname = input['pname'],
                        xname = input['xname'],
                        dname = input['dname'],
                        exclude = False,
                        resolution = run_resolution_limit,
                        name = input['sweep_name'])
+
+        sc.set_resolution(highest_resolution)
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled.mtz' % \
