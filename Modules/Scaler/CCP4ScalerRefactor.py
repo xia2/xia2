@@ -9,119 +9,6 @@
 # 
 # An implementation of the Scaler interface using CCP4 programs.
 # 
-# FIXED 21/SEP/06 this needs to have a working directory property
-#                 so we can specify where it is being run... 
-#                 This should also be inherited by the "child" jobs...
-# 
-# FIXED 25/SEP/06 need to include pointgroup determination in the pipeline
-#                 though this will begin to impact on the lattice management
-#                 stuff in XCrystal. This has now been in for a while,
-#                 but needs to be connected to the Indexer to ensure that
-#                 an eliminated pointgroup is not selected.
-# 
-# ----- 27/SEP/06 need to define a reference wavelength for the anomalous
-#                 dispersive differences. This is best assigned at this 
-#                 level as the wavelength with the smallest |f'| + |f''|
-#                 or something:
-# 
-#                 BASE keyword to scala - BASE [crystal xname] dataset dname
-# 
-#                 This defaults to the data set with the shortest wavelength.
-#  
-# FIXED 27/OCT/06 need to make sure that the pointless run in here does not
-#                 select a symmetry for the crystal which has been eliminated
-#                 already... this will be fixed as a part of FIXME 28/NOV/06
-#                 below (pertaining to fedback.)
-# 
-# FIXME 31/OCT/06 need to make the scaling do the following:
-#                 (1)  assert a sensible resolution limit.
-#                 (2)  twiddle the sd parameters to get the flattest
-#                      error curve possible.
-#                 (3)  limit by batch in radiation damage terms - or -
-#                 (3a) switch on zero-dose extrapolation.
-#                 (4)  eliminate badly radiation damaged data in different
-#                      sweeps.
-#
-# ----- 01/NOV/06 should probably sort together all data for a particular
-#                 wavelength before running pointless - this will probably
-#                 give better statistics from that program.
-#  
-# FIXED 03/NOV/06 need to merge the first sweep in whatever pointgroup we 
-#                 think is correct, and then reindex the rest of this data
-#                 using the first one as a reference, and then perform the 
-#                 scaling based on this. TS02 breaks on the unit cell check
-#                 at the CAD phase below.
-#
-# FIXED 03/NOV/06 should check that the reflection files have consistent
-#                 unit cell parameters going in to scaling. c/f FIXME above.
-#                 This is now handled.
-# 
-# FIXED 06/NOV/06 this is more complicated than I at first thought, since
-#                 pointless will not reindex into the correct symmetry a 
-#                 set which is indexed in a different pointgroup - this
-#                 means for TS03 that the system barfs. The only way to
-#                 fix this I can see is to move the reindexing step a little
-#                 later, so that this works against post-pointlessed (thus,
-#                 indexed in the "correct" pointgroup) data which can then
-#                 be correctly re-set... shockingly this seems to work fine!
-# 
-# FIXED 06/NOV/06 need also to investigate the systematic absences and reset
-#                 to a standard setting (pointless does this) if appropriate.
-#                 If it's P43212 or P41212 then I need to decide what is 
-#                 best to do... provide a list - this is in hand.
-# 
-# FIXED 15/NOV/06 need to add a FreeR column to the reflection file.
-#
-# FIXED 16/NOV/06 also need to run pointless on the final data sets to
-#                 have a stab at the correct spacegroup, e.g. P212121.
-#
-# FIXME 20/NOV/06 do not want to go refining the standard error parameters
-#                 in cases where there is radiation damage - this will cause
-#                 nasty things to happen, since the spread really is larger
-#                 than the errors. This is systematic! E.g. TS03.
-# 
-# ----- 28/NOV/06 implement 0-dose extrapolation if apropriate (i.e.
-#                 multiplicity > say 6 and radiation damage detected)
-#                 [(1) does not work with MAD
-#                  (2) Phil E says no!]
-#
-# FIXME 28/NOV/06 implement feedback to the indexing from the pointgroup
-#                 determination. See FIXME's in Scaler, Indexer, Integrater
-#                 interface specifications.
-#
-# FIXED 30/NOV/06 need to limit the amount of data used to run pointless
-#                 with - there should be no advantage in using more than
-#                 180 degrees...
-# 
-# FIXED 04/DEC/06 move the working directory stuff to the interface definition.
-#
-# FIXME 05/DEC/06 need to make sure that there is no radiation damage before
-#                 trying to optimise the error parameters. This includes
-#                 between sweeps, and is a big and important thing! This could
-#                 be done by looking at the overall Rmerge, or the highest
-#                 resolution shell.
-# 
-# FIXED 02/DEC/08 need to make this more clever with the scaling model - this
-#                 will mean testing it out... at the moment the Scala wrapper
-#                 allows this by setting the secondary, cycles, tails and 
-#                 b_factor can be set, using:
-#
-#                 scala.set_cycles(5)
-#                 scala.set_scaling_parameters('rotation', 5, 4) - spacing, abs
-#                 scala.set_bfactor(bfactor = True, brotation = 20.0)
-#                 scala.set_tails(tails = False) - or True
-# 
-#                 This should not therefore be too hard to implement with the
-#                 proper determination of a scaling model. Do I care about the
-#                 convergence measurement? Should probably return this ...
-#
-#                 This will be implemented in a determine_best_scale_model
-#                 method. This should work as follows:
-#
-#                 Test individual corrections. If any of them suck, don't use
-#                 them in combinatorials otherwise give them a fair chance.
-#                 Then use the simplest model which is as good as (i.e. within
-#                 3% of, on average) the best model.
 
 import os
 import sys
@@ -224,7 +111,6 @@ class CCP4ScalerRefactor(Scaler):
         if not self._scalr_corrections:
             scala = self._factory.Scala()
         else:
-
             scala =  self._factory.Scala(
                 partiality_correction = self._scalr_correct_partiality,
                 absorption_correction = self._scalr_correct_absorption,
@@ -233,9 +119,6 @@ class CCP4ScalerRefactor(Scaler):
         scala.set_sd_parameters_auto()
 
         if Flags.get_microcrystal():
-
-            # fiddly little data sets - allow more rapid scaling...
-            
             scala.set_scaling_parameters('rotation', 2.0)
             if self._scalr_correct_decay:
                 scala.set_bfactor(bfactor = True, brotation = 2.0)
@@ -244,6 +127,29 @@ class CCP4ScalerRefactor(Scaler):
 
     def _pointless_indexer_jiffy(self, hklin, indexer):
         return self._helper.pointless_indexer_jiffy(hklin, indexer)
+
+    def _check_pname_xname(self):
+        '''Check that the protein and crystal names are common across
+        all of the epochs.'''
+
+        epochs = sorted(self._sweep_information)
+        
+        self._common_pname = self._sweep_information[epochs[0]]['pname']
+        self._common_xname = self._sweep_information[epochs[0]]['xname']
+
+        for epoch in epochs:
+            pname = self._sweep_information[epoch]['pname']
+            if self._common_pname != pname:
+                raise RuntimeError, 'all data must have a common project name'
+            xname = self._sweep_information[epoch]['xname']
+            if self._common_xname != xname:
+                raise RuntimeError, \
+                      'all data for scaling must come from one crystal'
+
+        self._scalr_pname = self._common_pname
+        self._scalr_xname = self._common_xname
+
+        return
 
     def _assess_scaling_model(self, tails, bfactor, secondary):
         
@@ -312,7 +218,6 @@ class CCP4ScalerRefactor(Scaler):
         epochs = sorted(self._sweep_information.keys())
 
         # test corrections, compare Rmerge, accept if converge and helpful
-        # shouldn't this be an eight-way comparison?
 
         partiality = True
         absorption = True
@@ -351,20 +256,9 @@ class CCP4ScalerRefactor(Scaler):
 
         # then summarise the choices...
 
-        if absorption:
-            Debug.write('Absorption correction: on')
-        else:
-            Debug.write('Absorption correction: off')
-
-        if partiality:
-            Debug.write('Partiality correction: on')
-        else:
-            Debug.write('Partiality correction: off')
-
-        if decay:
-            Debug.write('Decay correction: on')
-        else:
-            Debug.write('Decay correction: off')
+        Debug.write('Absorption correction: %s' % absorption)
+        Debug.write('Partiality correction: %s' % partiality)
+        Debug.write('Decay correction: %s' % decay)
 
         self._scalr_correct_absorption = absorption
         self._scalr_correct_partiality = partiality
@@ -427,102 +321,15 @@ class CCP4ScalerRefactor(Scaler):
         consider.sort()
         rmerge, partiality, decay, absorption = consider[0]
         
-        if absorption:
-            Debug.write('Absorption correction: on')
-        else:
-            Debug.write('Absorption correction: off')
-
-        if partiality:
-            Debug.write('Partiality correction: on')
-        else:
-            Debug.write('Partiality correction: off')
-
-        if decay:
-            Debug.write('Decay correction: on')
-        else:
-            Debug.write('Decay correction: off')
+        Debug.write('Absorption correction: %s' % absorption)
+        Debug.write('Partiality correction: %s' % partiality)
+        Debug.write('Decay correction: %s' % decay)
 
         self._scalr_correct_absorption = absorption
         self._scalr_correct_partiality = partiality
         self._scalr_correct_decay = decay
 
         self._scalr_corrections = True
-
-        return
-
-    def _decide_chef_cutoff_epochs(self):
-        '''Analyse the mode of data collection and set a list of points
-        during data collection (as epochs) where it would be sensible to
-        consider cutting off the data collection. Criteria: difference
-        measurements made in wedges should be paired, whole wedges only.'''
-
-        # N.B. for SAD data or native, any image can be the last...
-
-        dnames = []
-
-        for epoch in sorted(self._scalr_integraters):
-            intgr = self._scalr_integraters[epoch]
-            pname, xname, dname = intgr.get_integrater_project_info()
-            if not dname in dnames:
-                dnames.append(dname)
-
-        # first ask if more than one wavelength was measured
-
-        if len(dnames) > 1:
-            # we have MAD data, or more than one logical wavelength anyway
-            # i.e. SIRAS or RIP
-            multi = True
-        else:
-            # all of the data belongs to a single logical data set
-            multi = False
-                
-        # next ask "are the data measured in wedges" (i.e. individual sweeps)
-        # for this use the batch number vs. epoch table - if the batch numbers
-        # increase monotonically, then wedges were not used in the data
-        # collection
-
-        epoch_to_batch = { }
-        for epoch in sorted(self._scalr_integraters):
-            intgr = self._scalr_integraters[epoch]
-            image_to_epoch = intgr.get_integrater_sweep(
-                ).get_image_to_epoch()
-            offset = self._sweep_information[epoch]['batch_offset']
-            for i in image_to_epoch:
-                epoch_to_batch[image_to_epoch[i]] = offset + i
-        
-        monotonic = True
-
-        b0 = epoch_to_batch[sorted(epoch_to_batch)[0]]
-
-        for e in sorted(epoch_to_batch)[1:]:
-            b = epoch_to_batch[e]
-            if b > b0:
-                b0 = b
-                continue
-            if b < b0:
-                # we have out-of-order batches
-                monotonic = False
-
-        # print out a digest of this...
-
-        Debug.write('Wedges: %s  Multiwavelength: %s' % (not monotonic, multi))
-
-        # then "chunkify" - if multi is false and wedges is false, then this
-        # will simply return / set a list of all epochs. If multi and not
-        # wedges, then consider the end of every wavelength. Elsewise need to
-        # divide up the data into the wedges, which would be the points
-        # at which the monotonicness is broken above. 
-
-        # and finally group the results - how to pass this back (as a list of
-        # integrated doses I guess is the only way to go...?) - Since these
-        # will be the measurements read from the Chef plots then this should
-        # be ok. N.B. when the analysis is performed I will need to look
-        # also at the estimation of the "sigma" for the decision about a
-        # substantial change...
-
-        # Ergo will need a hash table of epoch_to_dose...
-
-        # I thought that this was all sorted?! FIXME #883
 
         return
 
@@ -537,11 +344,8 @@ class CCP4ScalerRefactor(Scaler):
         batch_groups = { }
         resolutions = { }
 
-        # FIXME need to estimate the inscribed circle resolution from the
-        # image header information - the lowest for each group will be used
-        # for the analysis... Actually - this will be the lowest resolution
-        # of all of the integrater resolutions *and* all of the inscribed
-        # circle resolutions...
+        # Resolution will be the lowest resolution of all of the integrater
+        # resolutions *and* all of the inscribed circle resolutions...
 
         for epoch in sorted(self._sweep_information):
             header = self._sweep_information[epoch]['header']
@@ -568,9 +372,6 @@ class CCP4ScalerRefactor(Scaler):
 
             detector_width = header['size'][0] * header['pixel'][0] 
             detector_height = header['size'][1] * header['pixel'][1]
-
-            # some debugging information to work out what is happening
-            # for SFGH! /0 error...
 
             Debug.write('Detector dimensions: %d x %d' % tuple(header['size']))
             Debug.write('Pixel dimensions: %.5f %.5f' % tuple(header['pixel']))
@@ -644,7 +445,7 @@ class CCP4ScalerRefactor(Scaler):
             self._chef_analysis_groups[rate[0]] = []
             self._chef_analysis_times[rate[0]] = rate[1]
             Debug.write('Dose group %d (%s s)' % rate)
-            Debug.write('Resolution limit: %.2f' % resolutions[rate[0]])
+            Debug.write('Resolution limit: %.3f' % resolutions[rate[0]])
             self._chef_analysis_resolutions[rate[0]] = resolutions[rate[0]]
             for wave in wavelengths:
                 if (wave, rate[0]) in groups:
@@ -732,7 +533,7 @@ class CCP4ScalerRefactor(Scaler):
             # here about whether this works or no? 4FEB10
 
         except RuntimeError, e:
-            pass
+            Debug.write('Error occurred: %s' % str(e))
 
         # next check through the reflection files that they are all MTZ
         # format - if not raise an exception.
@@ -741,36 +542,12 @@ class CCP4ScalerRefactor(Scaler):
         epochs = self._sweep_information.keys()
 
         for epoch in epochs:
-            if not is_mtz_file(self._sweep_information[epoch][
-                'integrater'].get_integrater_reflections()):
-                raise RuntimeError, \
-                      'input file %s not MTZ format' % \
-                      self._sweep_information[epoch][
-                    'integrater'].get_integrater_reflections()
+            hkl = self._sweep_information[epoch][
+                'integrater'].get_integrater_reflections()
+            if not is_mtz_file(hkl):
+                raise RuntimeError, 'input file %s not MTZ format' % hkl
 
-        # FIXME why is this global? 4FEB10 - in fact, why is this
-        # test not performed in the scaler interface?
-
-        self._common_pname = self._sweep_information[epochs[0]]['pname']
-        self._common_xname = self._sweep_information[epochs[0]]['xname']
-
-        # FIXME the checks in here need to be moved to an earlier
-        # stage in the processing
-
-        for epoch in epochs:
-            pname = self._sweep_information[epoch]['pname']
-            if self._common_pname != pname:
-                raise RuntimeError, 'all data must have a common project name'
-            xname = self._sweep_information[epoch]['xname']
-            if self._common_xname != xname:
-                raise RuntimeError, \
-                      'all data for scaling must come from one crystal'
-
-        # record the project and crystal in the scaler interface - for
-        # future reference
-
-        self._scalr_pname = self._common_pname
-        self._scalr_xname = self._common_xname
+        self._check_pname_xname()
 
         # ------------------------------------------------------------
         # FIXME ensure that the lattices are all the same - and if not
@@ -791,12 +568,6 @@ class CCP4ScalerRefactor(Scaler):
                 intgr = self._sweep_information[epoch]['integrater']
                 hklin = intgr.get_integrater_reflections()
                 indxr = intgr.get_integrater_indexer()
-
-                # FIXME in here should check first if the pointgroup is
-                # the one given by the user - if it is not available
-                # despite being possible (i.e. pointless with give a
-                # -ve Z score for a C2 case for an I222 lattice...)
-                # it will be rejected perhaps... we don't want pointgroup.
 
                 if self._scalr_input_pointgroup:
                     pointgroup = self._scalr_input_pointgroup
@@ -820,22 +591,12 @@ class CCP4ScalerRefactor(Scaler):
 
                 if ntr:
 
-                    # FIXME bug # 3373 - if there is a need to reindex
-                    # the lattice, I guess that the reindexing operator
-                    # should not be conidered right? This is causing
-                    # problems for TM0343_11636_2d where it seems
-                    # quite capable of processing in C2221 and then
-                    # reindexing to P21.
-
                     reindex_op = 'h,k,l'
                     intgr.set_integrater_reindex_operator(
                         reindex_op, compose = False)
                     
                     need_to_return = True
-            
-            # bug # 2433 - need to ensure that all of the lattice
-            # conclusions were the same...
-            
+                        
             if len(lattices) > 1:
                 ordered_lattices = []
                 for l in lattices_in_order():
@@ -883,6 +644,7 @@ class CCP4ScalerRefactor(Scaler):
         if self.get_scaler_reference_reflection_file():
             self._reference = self.get_scaler_reference_reflection_file()
             Chatter.write('Using HKLREF %s' % self._reference)
+
         elif Flags.get_reference_reflection_file():
             self._reference = Flags.get_reference_reflection_file()
             Chatter.write('Using HKLREF %s' % self._reference)
@@ -950,10 +712,6 @@ class CCP4ScalerRefactor(Scaler):
             else:
                 pointgroup = self._scalr_input_pointgroup
                 reindex_op = 'h,k,l'                
-
-            # FIXME_ABQ
-            # compare pointgroup to the one which was given by the user,
-            # forcing it to be so if necessary?
 
             Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
@@ -1061,19 +819,11 @@ class CCP4ScalerRefactor(Scaler):
                     
                     if ntr:
                         
-                        # FIXME bug # 3373
-                        
                         reindex_op = 'h,k,l'
                         integrater.set_integrater_reindex_operator(
                             reindex_op, compose = False)
                         
                         need_to_return = True
-
-            # FIXME_ABQ
-            # compare pointgroup to the one which was given by the user,
-            # forcing it to be so if necessary?
-
-            # OK, let's see what we can see. 
 
             if self._scalr_input_pointgroup:
                 Debug.write('Using input pointgroup: %s' % \
@@ -1160,15 +910,6 @@ class CCP4ScalerRefactor(Scaler):
 
                 Debug.write('Reindexing analysis of %s' % pl.get_hklin())
                 
-                # FIXED here - do I need to contemplate reindexing
-                # the reflections? if not, don't bother - could be an
-                # expensive waste of time for large reflection files
-                # (think Ed Mitchell data...) - delegated to the Integrater
-                # to manage...
-                
-                # get the correct pointgroup etc - though the pointgroup
-                # should not be used and should the same as is already set...
-                # right??
                 pointgroup = pl.get_pointgroup()
                 reindex_op = pl.get_reindex_operator()
                 
@@ -1207,7 +948,7 @@ class CCP4ScalerRefactor(Scaler):
                           (self._reference,
                            integrater.get_integrater_reflections())
 
-                # check that the cell is isomorphous - that is, it
+                # check that the cell is isomorphous - that is, the unit cell
                 # differs by < 10% from the reference one
 
                 for j in range(6):
@@ -1237,8 +978,6 @@ class CCP4ScalerRefactor(Scaler):
             md.dump()
 
             if self._sweep_information[epoch]['batches'] == [0, 0]:
-                # get them from the mtz dump output
-                
                 Chatter.write('Getting batches from %s' % hklin)
                 batches = md.get_batches()
                 self._sweep_information[epoch]['batches'] = [min(batches),
@@ -1246,16 +985,10 @@ class CCP4ScalerRefactor(Scaler):
                 Chatter.write('=> %d to %d' % (min(batches),
                                                max(batches)))
 
-            # FIXME here check that this matches up with the input,
-            # if we have both sources of batch information
-
             batches = self._sweep_information[epoch]['batches']
             if 1 + max(batches) - min(batches) > max_batches:
                 max_batches = max(batches) - min(batches) + 1
             
-            # FIXME assert that there will only be one dataset in this
-            # reflection file
-
             datasets = md.get_datasets()
 
             Debug.write('In reflection file %s found:' % hklin)
@@ -1291,8 +1024,6 @@ class CCP4ScalerRefactor(Scaler):
 
             FileHandler.record_temporary_file(hklout)
 
-            # record this for future reference - will be needed in the
-            # radiation damage analysis...
             first_batch = min(self._sweep_information[epoch]['batches'])
             self._sweep_information[epoch][
                 'batch_offset'] = counter * max_batches - first_batch + 1
@@ -1303,16 +1034,12 @@ class CCP4ScalerRefactor(Scaler):
 
             new_batches = rb.rebatch()
 
-            # update the "input information"
-
             self._sweep_information[epoch]['hklin'] = hklout
             self._sweep_information[epoch]['batches'] = new_batches
 
-            # update the counter & recycle
-
             counter += 1
 
-        # now output a doser input file - just for kicks ;o)
+        # now output a doser input file
 
         fout = open(os.path.join(self.get_working_directory(),
                                  'doser.in'), 'w')
@@ -1364,7 +1091,6 @@ class CCP4ScalerRefactor(Scaler):
             if len(self._sweep_information.keys()) > 1:
                 p.set_hklin(hklin)
             else:
-                # permit the use of pointless preparation...
                 epoch = self._sweep_information.keys()[0]
                 p.set_hklin(_prepare_pointless_hklin(
                     self.get_working_directory(),
@@ -1484,7 +1210,6 @@ class CCP4ScalerRefactor(Scaler):
         
         if Flags.get_chef():
             self._sweep_information_to_chef()
-            self._decide_chef_cutoff_epochs()
 
         # first scale the data and output unmerged, to decide the
         # most sensible resolution limits - at the moment this works
@@ -1633,7 +1358,7 @@ class CCP4ScalerRefactor(Scaler):
                 self._resolution_limits[dataset] = resolution
                 if resolution < highest_resolution:
                     highest_resolution = resolution
-                Chatter.write('Resolution limit for %s: %5.2f' % \
+                Chatter.write('Resolution limit for %s: %5.3f' % \
                               (dataset, resolution))
                 continue
 
@@ -1672,7 +1397,7 @@ class CCP4ScalerRefactor(Scaler):
 
             resolution = max([r_comp, r_rm, r_uis, r_mis])
 
-            Debug.write('Resolution for sweep %s: %.2f' % \
+            Debug.write('Resolution for sweep %s: %.3f' % \
                         (dataset, resolution))
                         
             # the old version of this code...
@@ -1689,12 +1414,12 @@ class CCP4ScalerRefactor(Scaler):
             if resolution < highest_resolution:
                 highest_resolution = resolution
 
-            Chatter.write('Resolution limit for %s: %5.2f' % \
+            Chatter.write('Resolution limit for %s: %5.3f' % \
                           (dataset, self._resolution_limits[dataset]))
 
         self._scalr_highest_resolution = highest_resolution
 
-        Debug.write('Scaler highest resolution set to %5.2f' % \
+        Debug.write('Scaler highest resolution set to %5.3f' % \
                     highest_resolution)
         
         if not self.get_scaler_done():
@@ -1926,7 +1651,7 @@ class CCP4ScalerRefactor(Scaler):
             resolution = self._chef_analysis_resolutions[group]
 
             Debug.write('Preparing chef analysis group %d' % group)
-            Debug.write('N.B. to resolution %.2f' % resolution)
+            Debug.write('N.B. to resolution %.3f' % resolution)
 
             bits = { }
 
@@ -2083,41 +1808,6 @@ class CCP4ScalerRefactor(Scaler):
             Debug.write('Moving %s to %s' % \
                         ('%s.keep' % harvest_copy, harvest_copy))
             
-        return
-
-    def _scale_finish_ami(self):
-        '''Finish off the scaling, this time using AMI.'''
-
-        ami = AnalyseMyIntensities()
-        ami.set_working_directory(self.get_working_directory())
-
-        for wavelength in self._wavelengths_in_order:
-            hklin = self._tmp_scaled_refl_files[wavelength]
-            ami.add_hklin(hklin)
-
-        if self.get_scaler_anomalous():
-            ami.set_anomalous(True)
-
-        hklout = os.path.join(self.get_working_directory(),
-                              '%s_%s_free.mtz' % (self._common_pname,
-                                                  self._common_xname))
-
-        ami.set_hklout(hklout)
-
-        ami.analyse_input_hklin()
-        ami.merge_analyse()
-
-        # get the results out...
-
-        truncate_statistics = ami.get_truncate_statistics()
-
-        for k in truncate_statistics.keys():
-            j, project_info = k
-            self._scalr_statistics[project_info][
-                'Wilson B factor'] = truncate_statistics[k]['Wilson B factor']
-
-        FileHandler.record_data_file(hklout)
-
         return
 
     def _scale_finish(self):
