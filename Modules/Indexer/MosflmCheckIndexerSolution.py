@@ -94,7 +94,7 @@ def mosflm_check_indexer_solution(indexer):
 
     sg = sgtbx.space_group(spacegroup)
 
-    if not (sg.n_ltr() - 1):
+    if not (sg.n_ltr() - 1) or True:
         # primitive solution - just return ... something
         return None, None, None, None
 
