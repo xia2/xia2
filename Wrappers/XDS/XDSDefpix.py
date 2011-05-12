@@ -33,7 +33,7 @@ from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
 from XDS import header_to_xds, xds_check_version_supported
-from Handlers.Streams import Debug
+from Handlers.Streams import Debug, Chatter
 
 def XDSDefpix(DriverType = None):
 
@@ -165,6 +165,18 @@ def XDSDefpix(DriverType = None):
                                          'DEFPIX.LP'),
                             os.path.join(self.get_working_directory(),
                                          '%d_DEFPIX.LP' % self.get_xpid()))
+
+            # check the resolution asked for is achievable (if set)
+            for record in open(os.path.join(self.get_working_directory(),
+                                            'DEFPIX.LP')):
+                if 'RESOLUTION RANGE RECORDED BY DETECTOR' in record:
+                    real_high = float(record.split()[-1])
+                    if self._resolution_high:
+                        if real_high > self._resolution_high + 0.01:
+                            Chatter.write(
+                                'Warning: resolution limited to %.2f' % \
+                                real_high)
+            
 
             # gather the output files
 
