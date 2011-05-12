@@ -126,6 +126,7 @@ class XDSScalerR(Scaler):
         self._chef_analysis_resolutions = { }
 
         self._resolution_limits = { }
+        self._user_resolution_limits = { }
 
         # scaling correction choices - may be set one on the command line...
 
@@ -1200,6 +1201,7 @@ class XDSScalerR(Scaler):
                 if not user_resolution_limits.has_key(input['dname']):
                     user_resolution_limits[input['dname']] = dmin
                     self._resolution_limits[input['dname']] = dmin
+                    self._user_resolution_limits[dname] = True
                 elif dmin < user_resolution_limits[input['dname']]:
                     user_resolution_limits[input['dname']] = dmin
                     self._resolution_limits[input['dname']] = dmin
@@ -1336,13 +1338,15 @@ class XDSScalerR(Scaler):
                           (sname, resolution))
 
             # N.B. below should really reset so that the scaling is re-run
-            # to the assigned limit...
+            # to the assigned limit... also note that if the resolution limit
+            # is user assigned need to use it verbatim.
 
             if not dname in self._resolution_limits:
                 self._resolution_limits[dname] = resolution
                 self.set_scaler_done(False)                
             else:
-                if resolution < self._resolution_limits[dname]:
+                if resolution < self._resolution_limits[dname] and not \
+                       self._user_resolution_limits.get(dname, False):
                     self._resolution_limits[dname] = resolution
                     self.set_scaler_done(False)
 
