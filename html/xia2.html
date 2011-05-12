@@ -45,13 +45,13 @@
 
     <h1>Download</h1>
 
-    <p>The current version, 0.3.3.0 can be obtained by following these 
+    <p>The current version, 0.3.3.1 can be obtained by following these 
       links:</p>
 
     <ul>
-      <li><a href="xia2-0.3.3.0.zip">Windows (as .zip file)</a></li>
-      <li><a href="xia2-0.3.3.0.tar.bz2">Unix (as .tar.bz2 file)</a></li>
-      <li><a href="xia2-0.3.3.0.tar.gz">Unix (as .tar.gz file)</a></li>
+      <li><a href="xia2-0.3.3.1.zip">Windows (as .zip file)</a></li>
+      <li><a href="xia2-0.3.3.1.tar.bz2">Unix (as .tar.bz2 file)</a></li>
+      <li><a href="xia2-0.3.3.1.tar.gz">Unix (as .tar.gz file)</a></li>
     </ul>
 
     <p>The second of these is licensed as per the CCP4 standard license.
@@ -68,8 +68,8 @@
     <p>Since everything is precompiled, the only requirement is to unpack the
       directory somewhere and edit the directory setup.bat, setup.csh or
       setup.sh appropriately, for instance setting XIA2_HOME as 
-      /opt/px/xia/xia-0.3.3.0 if you unpacked the tarball in /opt/px/xia.
-      Note that this includes the xia-0.3.3.0 directory!</p>
+      /opt/px/xia/xia-0.3.3.1 if you unpacked the tarball in /opt/px/xia.
+      Note that this includes the xia-0.3.3.1 directory!</p>
 
     <p>All that is then needed is to source this setup file and the application
       xia2 should be available. One more recent change is that I am using 
@@ -434,6 +434,18 @@ END PROJECT TS01
       data from multiple crystals, however this is on the to-do list.</p>
     
     <h1>Release Notes</h1>
+
+    <p>Changes since 0.3.3.0</p>
+    <ul>
+      <li>Handle division in updated CCTBX.</li>
+      <li>Squash bug with -3d and -resolution.</li>
+      <li>Squash bug with resolution and -2d, result slightly different to 
+	that reported.</li>
+      <li>Trap weirdness with XDS reindexing, causes problems sometimes 
+	trying to process in C2 from P222 not P2 as you would hope!</li>
+      <li>Adjustments to cope with excludively narrow sweeps i.e. all 3 
+	image sweeps.</li>
+    </ul>
 
     <p>Changes since 0.3.2.0</p>
     <ul>
@@ -1025,7 +1037,7 @@ xia2 -ehtpx_xml_out project.xml
     <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
 <!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
 <!-- hhmts start -->
-Last modified: Wed Feb  9 15:05:56 GMT 2011
+Last modified: Thu May 12 15:00:08 BST 2011
 <!-- hhmts end -->
   </body>
 </html>
