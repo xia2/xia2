@@ -48,6 +48,7 @@ from Handlers.Flags import Flags
 
 # helpful expertise from elsewhere
 from Experts.SymmetryExpert import lattice_to_spacegroup_number
+from Experts.LatticeExpert import s2l
 
 def XDSIdxref(DriverType = None):
 
@@ -423,7 +424,7 @@ def XDSIdxref(DriverType = None):
                                     'Ignoring solution with lattice %s' % \
                                     lattice)
                                 continue
-                            
+
                         if self._indexing_solutions.has_key(lattice):
                             if self._indexing_solutions[lattice][
                                 'goodness'] < fit:
@@ -432,6 +433,23 @@ def XDSIdxref(DriverType = None):
                         self._indexing_solutions[lattice] = {
                             'goodness':fit,
                             'cell':cell}
+
+            # postprocess this list, to remove lattice solutions which are
+            # lower symmetry but higher penalty than the putative correct
+            # one, if self._symm is set...
+
+            if self._symm:
+                max_p = self._indexing_solutions[
+                    s2l(self._symm)]['goodness']
+                to_remove = []
+                for lattice in self._indexing_solutions:
+                    if self._indexing_solutions[lattice]['goodness'] > max_p:
+                        to_remove.append(lattice)
+                for lattice in to_remove:
+                    Debug.write('Ignoring solution with lattice %s' % \
+                                lattice)
+                    del(self._indexing_solutions[lattice])
+                
 
             # get the highest symmetry "acceptable" solution
             
