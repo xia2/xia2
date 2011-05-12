@@ -1322,17 +1322,23 @@ class XDSScalerR(Scaler):
             if not os.path.exists(hkl_copy):
                 shutil.copyfile(hklin, hkl_copy)
 
-            if Flags.get_small_molecule():
-                m.calculate_resolution_ranges(nbins = 10)
+            # let's properly listen to the user's resolution limit needs...
+
+            if self._user_resolution_limits.get(dname, False):
+                resolution = self._resolution_limits[dname]
+
             else:
-                m.calculate_resolution_ranges(nbins = 100)
+                if Flags.get_small_molecule():
+                    m.calculate_resolution_ranges(nbins = 10)
+                else:
+                    m.calculate_resolution_ranges(nbins = 100)
 
-            r_comp = m.resolution_completeness(log = log_completeness)
-            r_rm = m.resolution_rmerge(log = log_rmerge)
-            r_uis = m.resolution_unmerged_isigma(log = log_isigma)
-            r_mis = m.resolution_merged_isigma(log = log_misigma)
-
-            resolution = max([r_comp, r_rm, r_uis, r_mis])
+                r_comp = m.resolution_completeness(log = log_completeness)
+                r_rm = m.resolution_rmerge(log = log_rmerge)
+                r_uis = m.resolution_unmerged_isigma(log = log_isigma)
+                r_mis = m.resolution_merged_isigma(log = log_misigma)
+                
+                resolution = max([r_comp, r_rm, r_uis, r_mis])
 
             Chatter.write('Resolution for sweep %s: %.2f' % \
                           (sname, resolution))
@@ -1345,8 +1351,7 @@ class XDSScalerR(Scaler):
                 self._resolution_limits[dname] = resolution
                 self.set_scaler_done(False)                
             else:
-                if resolution < self._resolution_limits[dname] and not \
-                       self._user_resolution_limits.get(dname, False):
+                if resolution < self._resolution_limits[dname]:
                     self._resolution_limits[dname] = resolution
                     self.set_scaler_done(False)
 
@@ -1809,7 +1814,7 @@ class XDSScalerR(Scaler):
 
         for dataset in resolution_info.keys():
 
-            if user_resolution_limits.has_key(dataset):
+            if dataset in user_resolution_limits:
                 resolution = user_resolution_limits[dataset]
                 self._resolution_limits[dataset] = resolution
                 if resolution < highest_resolution:
