@@ -131,8 +131,11 @@
 # 0.3.2.0 -
 #
 # 0.3.3.0 - 
+# 
+# 0.3.3.1 - fixed a bunch of things relating to resolution limits (-2d 
+#           weirdness, -3d + -resolution) and changes to cctbx division.
 
-VersionNumber = "0.3.3.0"
+VersionNumber = "0.3.3.1"
 Version = "XIA2 %s" % VersionNumber
 CVSTag = "xia2-%s" % VersionNumber.replace('.', '_')
 Directory = "xia2-%s" % VersionNumber
