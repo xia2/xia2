@@ -439,7 +439,7 @@ def XDSIdxref(DriverType = None):
             # one, if self._symm is set...
 
             if self._symm:
-                max_p = self._indexing_solutions[
+                max_p = 2.0 * self._indexing_solutions[
                     s2l(self._symm)]['goodness']
                 to_remove = []
                 for lattice in self._indexing_solutions:
