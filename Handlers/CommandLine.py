@@ -296,6 +296,12 @@ class _CommandLine(Object):
                   (self._help_failover(), str(e))
 
         try:
+            self._read_blend()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_blend(), str(e))
+
+        try:
             self._read_completeness()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -971,6 +977,15 @@ class _CommandLine(Object):
             Flags.set_failover()
             Debug.write('Failover mode on')
             self._understood.append(sys.argv.index('-failover'))
+            
+        return
+
+    def _read_blend(self):
+
+        if '-blend' in sys.argv:
+            Flags.set_blend()
+            Debug.write('Blend mode on')
+            self._understood.append(sys.argv.index('-blend'))
             
         return
 

@@ -471,6 +471,12 @@ class XDSIntegraterR(FrameProcessor,
                                     os.path.join(self.get_working_directory(),
                                                  'INTEGRATE.LP'))
 
+        # record INTEGRATE.HKL for e.g. BLEND.
+         
+        FileHandler.record_more_data_file(
+            '%s %s %s %s INTEGRATE' % (pname, xname, dname, sweep),
+            os.path.join(self.get_working_directory(), 'INTEGRATE.HKL'))
+
         # and copy the first pass INTEGRATE.HKL...
 
         lattice = self._intgr_indexer.get_indexer_lattice()

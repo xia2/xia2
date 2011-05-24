@@ -1114,6 +1114,14 @@ def Mosflm(DriverType = None,
                     self._intgr_hklout = self._mosflm_integrate()
                 self._mosflm_hklout = self._intgr_hklout
 
+                # record integration output for e.g. BLEND.
+         
+                sweep = self.get_integrater_sweep_name()
+                if sweep:
+                    FileHandler.record_more_data_file(
+                        '%s %s %s %s INTEGRATE' % (pname, xname, dname, sweep),
+                        self._intgr_hklout)
+
             except IntegrationError, e:
                 if 'negative mosaic spread' in str(e):
                     if self._mosflm_postref_fix_mosaic:

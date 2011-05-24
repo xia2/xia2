@@ -469,6 +469,12 @@ class XDSIntegrater(FrameProcessor,
             shutil.copyfile(os.path.join(here, 'INTEGRATE.HKL'),
                             os.path.join(here, 'INTEGRATE-%s.HKL' % lattice))
 
+        # record INTEGRATE.HKL for e.g. BLEND.
+         
+        FileHandler.record_more_data_file(
+            '%s %s %s %s INTEGRATE' % (pname, xname, dname, sweep),
+            os.path.join(self.get_working_directory(), 'INTEGRATE.HKL'))
+
         # should the existence of these require that I rerun the
         # integration or can we assume that the application of a
         # sensible resolution limit will achieve this??
