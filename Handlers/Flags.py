@@ -61,6 +61,7 @@ class _Flags:
             self._parallel = get_number_cpus()
         except:
             self._parallel = 0
+            
         self._xparallel = 0
 
         self._min_images = 10

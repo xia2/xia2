@@ -160,10 +160,25 @@ def XDSIntegrate(DriverType = None):
             # what are we doing?
             xds_inp.write('JOB=INTEGRATE\n')
             xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
-                          self._parallel) 
+                          self._parallel)
+            
             if Flags.get_xparallel() > 1:
                 xds_inp.write('MAXIMUM_NUMBER_OF_JOBS=%d\n' % \
                               Flags.get_xparallel())
+                
+            elif Flags.get_xparallel() == -1:
+                # want e.g. 10 degree chunks
+
+                chunk_width = 10.0
+                
+                nchunks = int(
+                    (self._data_range[1] - self._data_range[0] + 1) * \
+                    (image_header['phi_end'] - image_header['phi_start']) /
+                    chunk_width)
+
+                Debug.write('Xparallel: -1 using %d chunks' % nchunks)
+                
+                xds_inp.write('MAXIMUM_NUMBER_OF_JOBS=%d\n' % nchunks)
 
             if not Flags.get_profile():
                 xds_inp.write('PROFILE_FITTING=FALSE\n')
