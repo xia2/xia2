@@ -167,9 +167,7 @@ def XDSIntegrate(DriverType = None):
                               Flags.get_xparallel())
                 
             elif Flags.get_xparallel() == -1:
-                # want e.g. 10 degree chunks
-
-                chunk_width = 10.0
+                chunk_width = 30.0
                 
                 nchunks = int(
                     (self._data_range[1] - self._data_range[0] + 1) * \
