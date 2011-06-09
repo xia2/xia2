@@ -28,11 +28,10 @@ def cc(a, b):
 
 if __name__ == '__main__':
 
-    i = 20.0
+    i = 1.0
 
-
-    for p_N in range(5):
-        N = int(10 * math.pow(10, p_N))
+    for p_N in range(9):
+        N = int(10 * math.pow(2, p_N))
         
         print N
         pop = population(N, i)

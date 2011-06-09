@@ -2,6 +2,20 @@ import math
 import sys
 import copy
 
+def mean_isigma(hkl_file):
+
+    # fixme this needs to work to a given resolution
+
+    isigmas = []
+    
+    for record in open(hkl_file):
+        if '!' in record[:1]:
+            continue
+        values = record.split()[3:5]
+        isigmas.append((float(values[0]) / float(values[1])))
+
+    return sum(isigmas) / len(isigmas)
+
 def get_ccs(xscale_lp):
 
     ccs = { }
@@ -67,10 +81,13 @@ def get_ccs(xscale_lp):
 
     for j in range(xmax):
         ccs[(j + 1, j + 1)] = (0, 0)
-        print '%4d %6.4f %s' % (j + 1,
-                                sum([ccs[(i + 1, j + 1)][1]
-                                     for i in range(xmax)]) / (xmax - 1),
-                                file_names[j + 1])
+
+        isigma = mean_isigma(file_names[j + 1])
+        
+        print '%4d %6.4f %6.2f %s' % (j + 1,
+                                      sum([ccs[(i + 1, j + 1)][1]
+                                           for i in range(xmax)]) / (xmax - 1),
+                                      isigma, file_names[j + 1])
 
 def ccs_to_R(xscale_lp):
 
