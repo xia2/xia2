@@ -110,7 +110,7 @@ def print_results(results):
     fout.write('set term pos col\n')
     fout.write('set out "plot.ps"\n')
     fout.write('set xlabel "batch"\n')
-    fout.write('set xlabel "rmerge"\n')
+    fout.write('set ylabel "rmerge"\n')
     
     fout.write('plot "plot.dat" using 1:2 with lines title "run 1"')
     for j in runs[1:]:
@@ -121,3 +121,7 @@ if __name__ == '__main__':
 
     print_results(understand(rummage(parse_ccp4_loggraph(
         open(sys.argv[1]).readlines()))))
+
+    os.system('gnuplot plot.gnu')
+    os.system('ps2pdf plot.ps')
+    
