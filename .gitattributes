@@ -4,6 +4,7 @@ Applications/Doc/xia2setup.pdf -text
 Applications/cbfdump -text
 Applications/print_labelit_exception -text
 Applications/print_labelit_exception.py -text
+Applications/scala2gnuplot -text
 Applications/test_image_header -text
 Applications/test_image_header.py -text
 Applications/x1335 -text
