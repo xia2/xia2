@@ -61,6 +61,8 @@ def cbfdump(cbf_image, do_print = False):
     origin = detector.get_pixel_coordinates(0, 0)
     fast = detector.get_pixel_coordinates(0, 1)
     slow = detector.get_pixel_coordinates(1, 0)
+
+    if do_print: print 'Origin:     %.2f %.2f %.2f' % tuple(origin)
     
     dfast = [fast[j] - origin[j] for j in range(3)]
     dslow = [slow[j] - origin[j] for j in range(3)]

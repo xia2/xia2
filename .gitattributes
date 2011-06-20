@@ -82,7 +82,9 @@ Toolkit/XDS2CBF.py -text
 Toolkit/__init__.py -text
 Toolkit/backstop-mask-i03-15may10.dat -text
 Toolkit/byte_offset.cpp -text
+Toolkit/cbf_dookie.py -text
 Toolkit/cbfdump.py -text
+Toolkit/metatemplate.txt -text
 Toolkit/multi.py -text
 Wrappers/CCP4/Doc/Chooch.pdf -text
 Wrappers/CCP4/Doc/Combat.pdf -text
