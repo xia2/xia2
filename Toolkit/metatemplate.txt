@@ -184,6 +184,13 @@ _array_structure_list_axis.displacement_increment
  ELEMENT_Y ELEMENT_Y 0.0 -%(pixel_y).4f
 
 loop_
+_array_element_size.array_id
+_array_element_size.index
+_array_element_size.size
+ ARRAY1 1 0.000172
+ ARRAY1 2 0.000172
+
+loop_
 _array_intensities.array_id
 _array_intensities.binary_id
 _array_intensities.linearity
