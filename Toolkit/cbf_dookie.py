@@ -30,8 +30,8 @@ def zoop(beam_pixel):
     
     beamline = 'dls'
     xtal_id = 'xtal001'
-    detector_id = 'p6m'
-    detector_name = 'p6m-at-dls'
+    detector_id = 'Pilatus6M'
+    detector_name = 'DLS-I03-P6M'
     pixel = (0.172, 0.172)
 
     beam = (beam_pixel[0] * pixel[0], beam_pixel[1] * pixel[1])
@@ -96,7 +96,7 @@ def understand_minicbf(cbf_file):
         elif name == 'Wavelength':
             Wavelength = float(tokens[1])
         elif name == 'Detector_distance':
-            Detector_distance = float(tokens[1])
+            Detector_distance = float(tokens[1]) * 1000.0
         elif name == 'Beam_xy':
             Beam_x = float(tokens[1])
             Beam_y = float(tokens[2])
