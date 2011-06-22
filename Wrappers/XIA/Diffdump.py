@@ -138,6 +138,91 @@ def read_A200(image):
 
 # FIXME get proper specifications for these detectors...
 
+import pycbf
+
+def find_detector_id(cbf_handle):
+
+    detector_id = ''
+
+    cbf_handle.rewind_datablock()
+    nblocks = cbf_handle.count_datablocks()
+
+    for j in range(nblocks):
+        cbf_handle.select_datablock(0)
+
+    ncat = cbf_handle.count_categories()
+
+    for j in range(ncat):
+        cbf_handle.select_category(j)
+
+        if not cbf_handle.category_name() == 'diffrn_detector':
+            continue
+
+        nrows = cbf_handle.count_rows()
+        ncols = cbf_handle.count_columns()
+
+        cbf_handle.rewind_column()
+
+        while True:
+            if cbf_handle.column_name() == 'id':
+                detector_id = cbf_handle.get_value()
+                break
+            try:
+                cbf_handle.next_column()
+            except:
+                break
+
+    return detector_id
+
+def failover_full_cbf(cbf_file):
+    '''Use pycbf library to read full cbf file description.'''
+
+    header = { }
+
+    cbf_handle = pycbf.cbf_handle_struct()
+    cbf_handle.read_file(cbf_file, pycbf.MSG_DIGEST)
+
+    detector_id_map = {'Pilatus2M':'pilatus 2M',
+                       'Pilatus6M':'pilatus 6M'}
+
+    header['detector_class'] = detector_id_map[find_detector_id(cbf_handle)]
+    header['detector'] = 'dectris'
+
+    cbf_handle.rewind_datablock()
+    
+    detector = cbf_handle.construct_detector(0)
+
+    # FIXME need to check that this is doing something sensible...!
+
+    header['beam'] = tuple(map(math.fabs, detector.get_beam_center()[2:]))
+    detector_normal = tuple(detector.get_detector_normal())
+    
+    gonio = cbf_handle.construct_goniometer()
+    
+    axis = tuple(gonio.get_rotation_axis())
+    angles = tuple(gonio.get_rotation_range())
+
+    header['distance'] = detector.get_detector_distance()
+    header['pixel'] = (detector.get_inferred_pixel_size(1),
+                       detector.get_inferred_pixel_size(2))
+
+    header['phi_start'], header['phi_width'] = angles
+    header['phi_end'] = header['phi_start'] + header['phi_width']
+    
+
+    year, month, day, hour, minute, second, x = cbf_handle.get_datestamp()
+    struct_time = datetime.datetime(year, month, day,
+                                    hour, minute, second).timetuple()
+    
+    header['date'] = time.asctime(struct_time)
+    header['epoch'] = cbf_handle.get_timestamp()[0]
+    header['size'] = tuple(cbf_handle.get_image_size(0))
+    header['exposure_time'] = cbf_handle.get_integration_time()
+    header['wavelength'] = cbf_handle.get_wavelength()
+    header['two_theta'] = 0.0
+
+    return header
+
 def failover_cbf(cbf_file):
     '''CBF files from the latest update to the PILATUS detector cause a
     segmentation fault in diffdump. This is a workaround.'''
@@ -378,6 +463,13 @@ def Diffdump(DriverType = None):
                     HeaderCache.put(self._image, self._header)
                     return copy.deepcopy(self._header)
             except:
+                if '.cbf' in self._image[-4:]:
+                    header = failover_full_cbf(self._image)
+                    assert(header['detector_class'] in \
+                           ['pilatus 2M', 'pilatus 6M'])
+                    self._header = header
+                    HeaderCache.put(self._image, self._header)
+                    return copy.deepcopy(self._header)
                 pass
 
             self.add_command_line(self._image)

@@ -9,16 +9,53 @@ import sys
 import pycbf
 import math
 
+def find_detector_id(cbf_handle):
+
+    detector_id = ''
+
+    cbf_handle.rewind_datablock()
+    nblocks = cbf_handle.count_datablocks()
+
+    for j in range(nblocks):
+        cbf_handle.select_datablock(0)
+
+    ncat = cbf_handle.count_categories()
+
+    for j in range(ncat):
+        cbf_handle.select_category(j)
+
+        if not cbf_handle.category_name() == 'diffrn_detector':
+            continue
+
+        nrows = cbf_handle.count_rows()
+        ncols = cbf_handle.count_columns()
+
+        cbf_handle.rewind_column()
+
+        while True:
+            if cbf_handle.column_name() == 'id':
+                detector_id = cbf_handle.get_value()
+                break
+            try:
+                cbf_handle.next_column()
+            except:
+                break
+
+    return detector_id
+    
 def cbfdump(cbf_image, do_print = False):
 
     cbf_handle = pycbf.cbf_handle_struct()
     cbf_handle.read_file(cbf_image, pycbf.MSG_DIGEST)
+
+    detector_id = find_detector_id(cbf_handle)
 
     cbf_handle.rewind_datablock()
     
     detector = cbf_handle.construct_detector(0)
 
     beam = detector.get_beam_center()
+
     beam_pixel = tuple(beam[:2])
     beam_mm = tuple(beam[2:])
     detector_normal = tuple(detector.get_detector_normal())
@@ -32,6 +69,7 @@ def cbfdump(cbf_image, do_print = False):
     angles = tuple(gonio.get_rotation_range())
     
     date = cbf_handle.get_datestamp()
+
     time = cbf_handle.get_timestamp()
     size = tuple(cbf_handle.get_image_size(0))
     exposure = cbf_handle.get_integration_time()
