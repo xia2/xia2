@@ -2,6 +2,7 @@
 Applications/Doc/xia2scan.pdf -text
 Applications/Doc/xia2setup.pdf -text
 Applications/cbfdump -text
+Applications/cbfdump.bat -text
 Applications/print_labelit_exception -text
 Applications/print_labelit_exception.py -text
 Applications/scala2gnuplot -text
