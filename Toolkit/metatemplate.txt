@@ -97,7 +97,8 @@ _diffrn_measurement.diffrn_id
 _diffrn_measurement.id
 _diffrn_measurement.number_of_axes
 _diffrn_measurement.method
- %(beamline)s GONIOMETER 1 rotation
+_diffrn_measurement.sample_detector_distance
+ %(beamline)s GONIOMETER 1 rotation _dist_
 
 loop_
 _diffrn_measurement_axis.measurement_id
@@ -162,7 +163,7 @@ _axis.offset[1] _axis.offset[2] _axis.offset[3]
  DETECTOR_Z       translation detector . 0 0 -1 0 0 0
  DETECTOR_Y       translation detector DETECTOR_Z 0 1 0 0 0 0
  DETECTOR_X       translation detector DETECTOR_Y 1 0 0 0 0 0
- ELEMENT_X        translation detector DETECTOR_X 1 0 0 %(beam_x).2f -%(beam_y).2f 0
+ ELEMENT_X        translation detector DETECTOR_X 1 0 0 -%(beam_x).2f %(beam_y).2f 0
  ELEMENT_Y        translation detector ELEMENT_X 0 1 0 0 0 0
 
 loop_
