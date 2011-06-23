@@ -183,10 +183,17 @@ def failover_full_cbf(cbf_file):
     cbf_handle.read_file(cbf_file, pycbf.MSG_DIGEST)
 
     detector_id_map = {'Pilatus2M':'pilatus 2M',
-                       'Pilatus6M':'pilatus 6M'}
+                       'Pilatus6M':'pilatus 6M',
+                       'ADSCQ315-SN920':'adsc q315 2x2 binned'}
 
     header['detector_class'] = detector_id_map[find_detector_id(cbf_handle)]
-    header['detector'] = 'dectris'
+
+    if 'Pilatus' in header['detector_class']:
+        header['detector'] = 'dectris'
+    elif 'adsc' in header['detector_class']:
+        header['detector'] = 'adsc'
+    else:
+        raise RuntimeError, 'unknown detector %s' % header['detector_class']
 
     cbf_handle.rewind_datablock()
     
@@ -465,8 +472,6 @@ def Diffdump(DriverType = None):
             except:
                 if '.cbf' in self._image[-4:]:
                     header = failover_full_cbf(self._image)
-                    assert(header['detector_class'] in \
-                           ['pilatus 2M', 'pilatus 6M'])
                     self._header = header
                     HeaderCache.put(self._image, self._header)
                     return copy.deepcopy(self._header)
