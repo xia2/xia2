@@ -241,7 +241,7 @@ def failover_full_cbf(cbf_file):
     
     for j in range(3):
         cbf_handle.find_column('vector[%d]' % (j + 1))
-        beam_direction.append(float(cbf_handle.get_value()))
+        beam_direction.append(cbf_handle.get_doublevalue())
 
     return header
 
