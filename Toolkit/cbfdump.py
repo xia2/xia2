@@ -50,8 +50,6 @@ def cbfdump(cbf_image, do_print = False):
 
     detector_id = find_detector_id(cbf_handle)
 
-    help(cbf_handle)
-
     cbf_handle.rewind_datablock()
 
     # find the direct beam vector - takes a few steps
