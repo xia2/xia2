@@ -42,7 +42,7 @@ def find_detector_id(cbf_handle):
                 break
 
     return detector_id
-    
+
 def cbfdump(cbf_image, do_print = False):
 
     cbf_handle = pycbf.cbf_handle_struct()
@@ -51,6 +51,21 @@ def cbfdump(cbf_image, do_print = False):
     detector_id = find_detector_id(cbf_handle)
 
     cbf_handle.rewind_datablock()
+
+    # find the direct beam vector - takes a few steps
+    cbf_handle.find_category('axis')
+
+    # find record with equipment = source
+    cbf_handle.find_column('equipment')
+    cbf_handle.find_row('source')
+
+    # then get the vector and offset from this
+    
+    beam_direction = []
+    
+    for j in range(3):
+        cbf_handle.find_column('vector[%d]' % (j + 1))
+        beam_direction.append(float(cbf_handle.get_value()))
     
     detector = cbf_handle.construct_detector(0)
 
@@ -84,6 +99,7 @@ def cbfdump(cbf_image, do_print = False):
     if do_print: print 'Exposure:   %.2f' % exposure
     if do_print: print 'Overload:   %d' % int(overload)
     if do_print: print 'Beam:       %.2f %.2f' % beam_mm
+    if do_print: print 'Beam:       %.2f %.2f %.2f' % tuple(beam_direction)
     
     if do_print: print 'Goniometer:'
     if do_print: print 'Axis:       %.2f %.2f %.2f' % axis

@@ -228,6 +228,21 @@ def failover_full_cbf(cbf_file):
     header['wavelength'] = cbf_handle.get_wavelength()
     header['two_theta'] = 0.0
 
+    # find the direct beam vector - takes a few steps
+    cbf_handle.find_category('axis')
+
+    # find record with equipment = source
+    cbf_handle.find_column('equipment')
+    cbf_handle.find_row('source')
+
+    # then get the vector and offset from this
+    
+    beam_direction = []
+    
+    for j in range(3):
+        cbf_handle.find_column('vector[%d]' % (j + 1))
+        beam_direction.append(float(cbf_handle.get_value()))
+
     return header
 
 def failover_cbf(cbf_file):
