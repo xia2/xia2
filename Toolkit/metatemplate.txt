@@ -15,8 +15,8 @@
 @ X_dimension       _wide_
 @ Y_dimension       _high_
 @ Wavelength        _wave_
-@ Detector_distance _dist_
 #
+# Detector_distance _dist_
 # Beam_x            _beam_x_
 # Beam_y            _beam_y_
 # 
@@ -99,7 +99,7 @@ _diffrn_measurement.id
 _diffrn_measurement.number_of_axes
 _diffrn_measurement.method
 _diffrn_measurement.sample_detector_distance
- %(beamline)s GONIOMETER 1 rotation _dist_
+ %(beamline)s GONIOMETER 1 rotation %(distance).2f
 
 loop_
 _diffrn_measurement_axis.measurement_id
@@ -114,10 +114,6 @@ _diffrn_radiation_wavelength.wavelength
 _diffrn_radiation_wavelength.wt
  WAVELENGTH1 _wave_ 1
 
-# these values should probably be updated from the results of postrefinement
-# Erk! the value for DISTANCE _dist_ needs to be NEGATIVE here - will need to 
-# adjust the mx settings?- a test _dist_ -_dist_
-
 loop_
 _diffrn_scan_axis.scan_id
 _diffrn_scan_axis.axis_id
@@ -128,7 +124,7 @@ _diffrn_scan_axis.displacement_start
 _diffrn_scan_axis.displacement_range
 _diffrn_scan_axis.displacement_increment
  SCAN1 GONIOMETER_OMEGA _omega_ _domega_ _domega_ 0.0 0.0 0.0
- SCAN1 DETECTOR_Z 0.0 0.0 0.0 _dist_ 0.0 0.0
+ SCAN1 DETECTOR_Z 0.0 0.0 0.0 %(distance).2f 0.0 0.0
  SCAN1 DETECTOR_Y 0.0 0.0 0.0 0.0 0.0 0.0
  SCAN1 DETECTOR_X 0.0 0.0 0.0 0.0 0.0 0.0
 
@@ -147,7 +143,7 @@ _diffrn_scan_frame_axis.axis_id
 _diffrn_scan_frame_axis.angle
 _diffrn_scan_frame_axis.displacement
  FRAME1 GONIOMETER_OMEGA _omega_ 0.0
- FRAME1 DETECTOR_Z 0.0 _dist_
+ FRAME1 DETECTOR_Z 0.0 %(distance).2f
  FRAME1 DETECTOR_Y 0.0 0.0
  FRAME1 DETECTOR_X 0.0 0.0
 

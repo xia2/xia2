@@ -8,7 +8,7 @@ import os
 metatemplate = 'metatemplate.txt'
 
 def create_template_simple(beamline, xtal_id, detector_id, detector_name,
-                           beam, pixel):
+                           beam, pixel, distance):
     '''Return a cbf template configured for the generation of full cbf
     images. This is the simple version which does not look at previous
     data sets.'''
@@ -23,21 +23,23 @@ def create_template_simple(beamline, xtal_id, detector_id, detector_name,
         "beam_x":beam[0],
         "beam_y":beam[1],
         "pixel_x":pixel[0],
-        "pixel_y":pixel[1]
+        "pixel_y":pixel[1],
+        "distance":distance
         }
 
-def zoop(beam_pixel):
+def zoop(beam_pixel, distance):
     
     beamline = 'dls'
     xtal_id = 'xtal001'
     detector_id = 'Pilatus6M'
     detector_name = 'DLS-I03-P6M'
     pixel = (0.172, 0.172)
+    distance_mm = 1000.0 * distance
 
     beam = (beam_pixel[0] * pixel[0], beam_pixel[1] * pixel[1])
 
     return create_template_simple(beamline, xtal_id, detector_id,
-                                  detector_name, beam, pixel)
+                                  detector_name, beam, pixel, distance_mm)
 
 def split_header(cbf_file):
     return open(cbf_file).read().split('--CIF-BINARY-FORMAT-SECTION--')[0]
@@ -96,12 +98,12 @@ def understand_minicbf(cbf_file):
         elif name == 'Wavelength':
             Wavelength = float(tokens[1])
         elif name == 'Detector_distance':
-            Detector_distance = float(tokens[1]) * 1000.0
+            Detector_distance = float(tokens[1])
         elif name == 'Beam_xy':
             Beam_x = float(tokens[1])
             Beam_y = float(tokens[2])
 
-    template = zoop((Beam_x, Beam_y))
+    template = zoop((Beam_x, Beam_y), Detector_distance)
 
     map1 = {'Exposure_time':Exposure_time,
             'Exposure_period':Exposure_period,
@@ -113,7 +115,6 @@ def understand_minicbf(cbf_file):
             'X_dimension':X_dimension,
             'Y_dimension':Y_dimension,
             'Wavelength':Wavelength,
-            'Detector_distance':Detector_distance,
             'Beam_x':Beam_x,
             'Beam_y':Beam_y}
     
