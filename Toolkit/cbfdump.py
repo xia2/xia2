@@ -196,7 +196,10 @@ def cbfdump(cbf_image, do_print = False):
     date = cbf_handle.get_datestamp()
 
     time = cbf_handle.get_timestamp()
-    size = tuple(cbf_handle.get_image_size(0))
+
+    # this method returns slow then fast dimensions i.e. (y, x)
+    
+    size = tuple(reversed(cbf_handle.get_image_size(0)))
     exposure = cbf_handle.get_integration_time()
     overload = cbf_handle.get_overload(0)
     wavelength = cbf_handle.get_wavelength()
@@ -278,7 +281,8 @@ def cbfdump(cbf_image, do_print = False):
     y = _B.dot(_s)
 
     if do_print: print 'Computed:   %.2f %.2f' % (x, y)
-        
+    if do_print: print 'Size:       %.2f %.2f' % (size[0] * pixel[0],
+                                                  size[1] * pixel[1])
     detector.__swig_destroy__(detector)
     del(detector)
 
