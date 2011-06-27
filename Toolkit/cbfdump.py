@@ -179,10 +179,14 @@ def cbfdump(cbf_image, do_print = False):
     
     detector = cbf_handle.construct_detector(0)
 
+    # this returns slow fast slow fast pixels pixels mm mm 
+
     beam = detector.get_beam_center()
 
-    beam_pixel = tuple(beam[:2])
-    beam_mm = tuple(beam[2:])
+    help(detector)
+    
+    beam_pixel = tuple(reversed(beam[:2]))
+    beam_mm = tuple(reversed(beam[2:]))
     detector_normal = tuple(detector.get_detector_normal())
     distance = detector.get_detector_distance()
     pixel = (detector.get_inferred_pixel_size(1),
