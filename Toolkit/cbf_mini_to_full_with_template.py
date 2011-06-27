@@ -5,7 +5,8 @@ import math
 import string
 import os
 
-metatemplate = 'metatemplate.txt'
+metatemplate = os.path.join(os.environ['XIA2_ROOT'],
+                            'Toolkit', 'metatemplate.txt')
 
 def create_template_simple(beamline, xtal_id, detector_id, detector_name,
                            beam, pixel, distance):
