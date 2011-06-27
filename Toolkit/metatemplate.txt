@@ -15,9 +15,10 @@
 @ X_dimension       _wide_
 @ Y_dimension       _high_
 @ Wavelength        _wave_
-@ Beam_x            _beam_x_
-@ Beam_y            _beam_y_
 @ Detector_distance _dist_
+#
+# Beam_x            _beam_x_
+# Beam_y            _beam_y_
 # 
 # These items will be pre-populated in the template so need not be included:
 # 
