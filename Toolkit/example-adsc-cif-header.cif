@@ -1,0 +1,173 @@
+###CBF: VERSION 1.5
+# CBF file written by CBFlib v0.7.8
+
+data_image_1
+
+_diffrn.id DS1
+
+_diffrn_source.diffrn_id DS1
+_diffrn_source.source synchrotron
+_diffrn_source.type 'dls crystallography'
+
+_diffrn_radiation.diffrn_id DS1
+_diffrn_radiation.wavelength_id L1
+
+_diffrn_radiation_wavelength.id L1
+_diffrn_radiation_wavelength.wavelength 1.488000
+_diffrn_radiation_wavelength.wt 1.0
+
+_diffrn_measurement.diffrn_id DS1
+_diffrn_measurement.id GONIOMETER
+_diffrn_measurement.method oscillation
+_diffrn_measurement.number_of_axes 1
+_diffrn_measurement.sample_detector_distance 116.0000
+
+_diffrn_measurement_axis.measurement_id GONIOMETER
+_diffrn_measurement_axis.axis_id GONIOMETER_PHI
+
+_diffrn_scan.id SCAN1
+_diffrn_scan.frame_id_start FRAME1
+_diffrn_scan.frame_id_end FRAME1
+_diffrn_scan.frames 1
+
+loop_
+_diffrn_scan_axis.scan_id
+_diffrn_scan_axis.axis_id
+_diffrn_scan_axis.angle_start
+_diffrn_scan_axis.angle_range
+_diffrn_scan_axis.angle_increment
+_diffrn_scan_axis.displacement_start
+_diffrn_scan_axis.displacement_range
+_diffrn_scan_axis.displacement_increment
+ SCAN1 GONIOMETER_PHI 0.00 0.50 0.50 0.00 0.00 0.00
+ SCAN1 DETECTOR_Z 0.00 0.00 0.00 116.00 0.00 0.00
+ SCAN1 DETECTOR_Y 0.00 0.00 0.00 0.00 0.00 0.00
+ SCAN1 DETECTOR_X 0.00 0.00 0.00 0.00 0.00 0.00
+ SCAN1 DETECTOR_PITCH 0.00 0.00 0.00 0.00 0.00 0.00
+
+_diffrn_scan_frame.frame_id FRAME1
+_diffrn_scan_frame.frame_number 1
+_diffrn_scan_frame.integration_time 0.5000
+_diffrn_scan_frame.date 2010-07-16T16:27:51
+
+loop_
+_diffrn_scan_frame_axis.frame_id
+_diffrn_scan_frame_axis.axis_id
+_diffrn_scan_frame_axis.angle
+_diffrn_scan_frame_axis.displacement
+ FRAME1 GONIOMETER_PHI 0.00 0.00
+ FRAME1 DETECTOR_Z 0.00 116.00
+ FRAME1 DETECTOR_Y 0.00 0.00
+ FRAME1 DETECTOR_X 0.00 0.00
+ FRAME1 DETECTOR_PITCH 0.00 0.00
+
+loop_
+_axis.id
+_axis.type
+_axis.equipment
+_axis.depends_on
+_axis.vector[1]
+_axis.vector[2]
+_axis.vector[3]
+_axis.offset[1]
+_axis.offset[2]
+_axis.offset[3]
+ GONIOMETER_PHI rotation goniometer . 1 0 0 . . .
+ SOURCE general source . 0 0 1 . . .
+ GRAVITY general gravity . 0 -1 0 . . .
+ DETECTOR_Z translation detector . 0 0 -1 0 0 0
+ DETECTOR_Y translation detector DETECTOR_Z 0 1 0 0 0 0
+ DETECTOR_X translation detector DETECTOR_Y 1 0 0 0 0 0
+ DETECTOR_PITCH rotation detector DETECTOR_X 0 1 0 0 0 0
+ ELEMENT_X translation detector DETECTOR_PITCH 1 0 0 -157.999 157.549 0
+ ELEMENT_Y translation detector ELEMENT_X 0 1 0 0 0 0
+
+_diffrn_detector.id ADSCQ315-SN920
+_diffrn_detector.diffrn_id DS1
+_diffrn_detector.type 'ADSC QUANTUM315'
+_diffrn_detector.details 'bin 2x2 hardware'
+_diffrn_detector.number_of_axes 4
+
+loop_
+_diffrn_detector_axis.detector_id
+_diffrn_detector_axis.axis_id
+ ADSCQ315-SN920 DETECTOR_X
+ ADSCQ315-SN920 DETECTOR_Y
+ ADSCQ315-SN920 DETECTOR_Z
+ ADSCQ315-SN920 DETECTOR_PITCH
+
+_diffrn_detector_element.id ELEMENT1
+_diffrn_detector_element.detector_id ADSCQ315-SN920
+
+_diffrn_data_frame.id frame_1
+_diffrn_data_frame.detector_element_id ELEMENT1
+_diffrn_data_frame.detector_id ADSCQ315-SN920
+_diffrn_data_frame.array_id image_1
+_diffrn_data_frame.binary_id 1
+_diffrn_data_frame.details
+;
+HEADER_BYTES=  512;
+DIM=2;
+BYTE_ORDER=little_endian;
+TYPE=unsigned_short;
+PIXEL_SIZE=0.1026;
+BIN=2x2;
+ADC=fast;
+DETECTOR_SN=920;
+DATE=Fri Jul 16 16:27:51 2010;
+TIME=0.50;
+DISTANCE=116.000;
+OSC_RANGE=0.500;
+PHI=0.000;
+OSC_START=0.000;
+TWOTHETA=0.000;
+AXIS=phi;
+WAVELENGTH=1.4880;
+BEAM_CENTER_X=157.999;
+BEAM_CENTER_Y=157.484;
+CREV=1;
+CCD=TH7899;
+BIN_TYPE=HW;
+ACC_TIME=1750;
+UNIF_PED=1500;
+IMAGE_PEDESTAL=40;
+SIZE1=3072;
+SIZE2=3072;
+CCD_IMAGE_SATURATION=65535;
+;
+
+
+loop_
+_array_structure_list.array_id
+_array_structure_list.index
+_array_structure_list.dimension
+_array_structure_list.precedence
+_array_structure_list.direction
+_array_structure_list.axis_set_id
+ image_1 1 3072 1 increasing ELEMENT_X
+ image_1 2 3072 2 increasing ELEMENT_Y
+
+loop_
+_array_element_size.array_id
+_array_element_size.index
+_array_element_size.size
+ image_1 1 102.600e-6
+ image_1 2 102.600e-6
+
+loop_
+_array_structure_list_axis.axis_set_id
+_array_structure_list_axis.axis_id
+_array_structure_list_axis.displacement
+_array_structure_list_axis.displacement_increment
+ ELEMENT_X ELEMENT_X 0.000000 0.102600
+ ELEMENT_Y ELEMENT_Y 0.000000 -0.102600
+
+_array_intensities.array_id image_1
+_array_intensities.binary_id 1
+_array_intensities.linearity linear
+_array_intensities.gain 1.21
+_array_intensities.overload 65535
+_array_intensities.undefined_value 0
+_array_intensities.pixel_slow_bin_size 2
+_array_intensities.pixel_fast_bin_size 2
+
