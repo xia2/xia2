@@ -8,6 +8,7 @@
 import sys
 import pycbf
 import math
+from scitbx import matrix
 
 def find_detector_id(cbf_handle):
 
@@ -103,7 +104,7 @@ def test_example_adsc_cif_header():
     assert(math.fabs(detector_normal[2] - 1.0) < 0.01)
     
     assert(math.fabs(exposure - 0.5) < 0.01)
-    assert(int(overload) = 65535)
+    assert(int(overload) == 65535)
 
     if do_print: print 'Beam:       %.2f %.2f' % beam_mm
     if do_print: print 'Beam:       %.2f %.2f %.2f' % tuple(beam_direction)
@@ -151,8 +152,6 @@ def test_example_adsc_cif_header():
     del(gonio)
 
     return
-
-    
 
 def cbfdump(cbf_image, do_print = False):
 
@@ -247,6 +246,38 @@ def cbfdump(cbf_image, do_print = False):
            tuple(detector.get_detector_axis_fast())
         if do_print: print 'CBF slow: %.2f %.2f %.2f' % \
            tuple(detector.get_detector_axis_slow())
+
+    # now also compute the position on the detector where the beam will
+    # actually strike the detector - this will be the intersection of the
+    # source vector with the plane defined by fast and slow passing through
+    # the detector origin. Then return this position on the detector in mm.
+    # 
+    # unit vectors -
+    # _b - beam
+    # _n - detector normal
+    # _f, _s - fast and slow directions on the detector
+    #
+    # full vectors -
+    # _O - displacement of origin
+    # _D - displacement to intersection of beam with detector plane
+    # _B - displacement from origin to said intersection
+
+    _b = matrix.col(beam_direction) / math.sqrt(
+        matrix.col(beam_direction).dot())
+    _n = matrix.col(detector_normal) / math.sqrt(
+        matrix.col(detector_normal).dot())
+    _f = matrix.col(fast) / math.sqrt(matrix.col(fast).dot())
+    _s = matrix.col(slow) / math.sqrt(matrix.col(slow).dot())
+
+    _O = matrix.col(origin)
+    _D = _b * (_O.dot(_n) / _b.dot(_n))
+
+    _B = _D - _O
+
+    x = _B.dot(_f)
+    y = _B.dot(_s)
+
+    if do_print: print 'Computed:   %.2f %.2f' % (x, y)
         
     detector.__swig_destroy__(detector)
     del(detector)
