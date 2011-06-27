@@ -183,8 +183,6 @@ def cbfdump(cbf_image, do_print = False):
 
     beam = detector.get_beam_center()
 
-    help(detector)
-    
     beam_pixel = tuple(reversed(beam[:2]))
     beam_mm = tuple(reversed(beam[2:]))
     detector_normal = tuple(detector.get_detector_normal())
