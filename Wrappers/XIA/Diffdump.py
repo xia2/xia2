@@ -246,6 +246,12 @@ def failover_full_cbf(cbf_file):
     # FIXME in here add in code to compute from first principles the beam
     # centre etc.
 
+    detector.__swig_destroy__(detector)
+    del(detector)
+
+    gonio.__swig_destroy__(gonio)
+    del(gonio)
+
     return header
 
 def failover_cbf(cbf_file):
