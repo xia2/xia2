@@ -243,6 +243,9 @@ def failover_full_cbf(cbf_file):
         cbf_handle.find_column('vector[%d]' % (j + 1))
         beam_direction.append(cbf_handle.get_doublevalue())
 
+    # FIXME in here add in code to compute from first principles the beam
+    # centre etc.
+
     return header
 
 def failover_cbf(cbf_file):

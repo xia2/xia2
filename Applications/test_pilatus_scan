@@ -1,0 +1,3 @@
+#!/bin/bash
+
+cctbx.python ${XIA2_ROOT}/Toolkit/test_pilatus_scan.py $@

@@ -9,6 +9,7 @@ Applications/print_labelit_exception.py -text
 Applications/scala2gnuplot -text
 Applications/test_image_header -text
 Applications/test_image_header.py -text
+Applications/test_pilatus_scan -text
 Applications/x1335 -text
 Experts/Doc/FindImages.pdf -text
 Experts/example.xparm -text
@@ -89,6 +90,7 @@ Toolkit/cbfdump.py -text
 Toolkit/example-adsc-cif-header.cif -text
 Toolkit/metatemplate.txt -text
 Toolkit/multi.py -text
+Toolkit/test_pilatus_scan.py -text
 Wrappers/CCP4/Doc/Chooch.pdf -text
 Wrappers/CCP4/Doc/Combat.pdf -text
 Wrappers/CCP4/Doc/General.pdf -text
