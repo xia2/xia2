@@ -161,14 +161,6 @@ def determine_effective_scan_axis(gonio):
 
     R = matrix.rec(x + y + z, (3, 3)).transpose()
 
-    RF = matrix.col(
-        (0.643, -0.766, 0.0)).axis_and_angle_as_r3_rotation_matrix(
-        30, deg = True)
-
-    RO = matrix.col(
-        (1.0, 0.0, 0.0)).axis_and_angle_as_r3_rotation_matrix(
-        24.45, deg = True)
-
     x1 = gonio.rotate_vector(1.0, 1, 0, 0)
     y1 = gonio.rotate_vector(1.0, 0, 1, 0)
     z1 = gonio.rotate_vector(1.0, 0, 0, 1)
@@ -179,7 +171,7 @@ def determine_effective_scan_axis(gonio):
 
     rot = r3_rotation_axis_and_angle_from_matrix(RA)
 
-    return rot.axis
+    return rot.axis, rot.angle(deg = True)
 
 def cbfdump(cbf_image, do_print = False):
 
@@ -220,7 +212,7 @@ def cbfdump(cbf_image, do_print = False):
     
     gonio = cbf_handle.construct_goniometer()
 
-    real_axis = determine_effective_scan_axis(gonio)
+    real_axis, real_angle = determine_effective_scan_axis(gonio)
 
     axis = tuple(gonio.get_rotation_axis())
     angles = tuple(gonio.get_rotation_range())
@@ -250,6 +242,7 @@ def cbfdump(cbf_image, do_print = False):
     if do_print: print 'Axis:       %.2f %.2f %.2f' % axis
     if do_print: print 'Real axis:  %.2f %.2f %.2f' % real_axis
     if do_print: print 'Angles:     %.2f %.2f' % angles
+    if do_print: print 'Real angle: %.2f' % real_angle
     
     if do_print: print 'Experiment:'
     if do_print: print 'Wavelength: %.5f' % wavelength
