@@ -88,6 +88,7 @@ Toolkit/byte_offset.cpp -text
 Toolkit/cbf_mini_to_full_with_template.py -text
 Toolkit/cbfdump.py -text
 Toolkit/example-adsc-cif-header.cif -text
+Toolkit/fred_header.cbf -text
 Toolkit/metatemplate.txt -text
 Toolkit/multi.py -text
 Toolkit/test_pilatus_scan.py -text
