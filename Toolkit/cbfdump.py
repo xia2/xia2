@@ -9,6 +9,7 @@ import sys
 import pycbf
 import math
 from scitbx import matrix
+from scitbx.math import r3_rotation_axis_and_angle_from_matrix
 
 def find_detector_id(cbf_handle):
 
@@ -82,7 +83,7 @@ def test_example_adsc_cif_header():
              detector.get_inferred_pixel_size(2))
     
     gonio = cbf_handle.construct_goniometer()
-    
+
     axis = tuple(gonio.get_rotation_axis())
     angles = tuple(gonio.get_rotation_range())
     
@@ -153,6 +154,41 @@ def test_example_adsc_cif_header():
 
     return
 
+def play_with_gonio(gonio):
+    x = gonio.rotate_vector(0.0, 1, 0, 0)
+    y = gonio.rotate_vector(0.0, 0, 1, 0)
+    z = gonio.rotate_vector(0.0, 0, 0, 1)
+
+    R = matrix.rec(x + y + z, (3, 3)).transpose()
+
+    RF = matrix.col(
+        (0.643, -0.766, 0.0)).axis_and_angle_as_r3_rotation_matrix(
+        30, deg = True)
+
+    RO = matrix.col(
+        (1.0, 0.0, 0.0)).axis_and_angle_as_r3_rotation_matrix(
+        24.45, deg = True)
+
+    print R
+    print RF * RO
+    print RF * RO * R.inverse()
+
+    x1 = gonio.rotate_vector(1.0, 1, 0, 0)
+    y1 = gonio.rotate_vector(1.0, 0, 1, 0)
+    z1 = gonio.rotate_vector(1.0, 0, 0, 1)
+
+    R1 = matrix.rec(x1 + y1 + z1, (3, 3)).transpose()
+
+    RA = R1 * R.inverse()
+
+    rot = r3_rotation_axis_and_angle_from_matrix(RA)
+
+    print rot.axis
+
+    print RF * matrix.col((1, 0, 0))
+
+    return    
+
 def cbfdump(cbf_image, do_print = False):
 
     cbf_handle = pycbf.cbf_handle_struct()
@@ -191,7 +227,9 @@ def cbfdump(cbf_image, do_print = False):
              detector.get_inferred_pixel_size(2))
     
     gonio = cbf_handle.construct_goniometer()
-    
+
+    # play_with_gonio(gonio)
+
     axis = tuple(gonio.get_rotation_axis())
     angles = tuple(gonio.get_rotation_range())
     
