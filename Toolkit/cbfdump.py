@@ -154,7 +154,7 @@ def test_example_adsc_cif_header():
 
     return
 
-def play_with_gonio(gonio):
+def determine_effective_scan_axis(gonio):
     x = gonio.rotate_vector(0.0, 1, 0, 0)
     y = gonio.rotate_vector(0.0, 0, 1, 0)
     z = gonio.rotate_vector(0.0, 0, 0, 1)
@@ -169,10 +169,6 @@ def play_with_gonio(gonio):
         (1.0, 0.0, 0.0)).axis_and_angle_as_r3_rotation_matrix(
         24.45, deg = True)
 
-    print R
-    print RF * RO
-    print RF * RO * R.inverse()
-
     x1 = gonio.rotate_vector(1.0, 1, 0, 0)
     y1 = gonio.rotate_vector(1.0, 0, 1, 0)
     z1 = gonio.rotate_vector(1.0, 0, 0, 1)
@@ -183,11 +179,7 @@ def play_with_gonio(gonio):
 
     rot = r3_rotation_axis_and_angle_from_matrix(RA)
 
-    print rot.axis
-
-    print RF * matrix.col((1, 0, 0))
-
-    return    
+    return rot.axis
 
 def cbfdump(cbf_image, do_print = False):
 
@@ -228,7 +220,7 @@ def cbfdump(cbf_image, do_print = False):
     
     gonio = cbf_handle.construct_goniometer()
 
-    # play_with_gonio(gonio)
+    real_axis = determine_effective_scan_axis(gonio)
 
     axis = tuple(gonio.get_rotation_axis())
     angles = tuple(gonio.get_rotation_range())
@@ -256,6 +248,7 @@ def cbfdump(cbf_image, do_print = False):
     
     if do_print: print 'Goniometer:'
     if do_print: print 'Axis:       %.2f %.2f %.2f' % axis
+    if do_print: print 'Real axis:  %.2f %.2f %.2f' % real_axis
     if do_print: print 'Angles:     %.2f %.2f' % angles
     
     if do_print: print 'Experiment:'
