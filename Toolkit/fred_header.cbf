@@ -63,11 +63,12 @@ _diffrn_detector.diffrn_id
 _diffrn_detector.id
 _diffrn_detector.type
 _diffrn_detector.number_of_axes
-DLS_I04-1 i04-1-p2m 'Pilatus2M' 3
+DLS_I04-1 i04-1-p2m 'Pilatus2M' 4
 
 loop_
 _diffrn_detector_axis.detector_id
 _diffrn_detector_axis.axis_id
+i04-1-p2m DETECTOR_2T
 i04-1-p2m DETECTOR_X
 i04-1-p2m DETECTOR_Y
 i04-1-p2m DETECTOR_Z
@@ -124,6 +125,7 @@ _diffrn_scan_axis.displacement_range
 _diffrn_scan_axis.displacement_increment
 SCAN1 GONIOMETER_FRED  30.0000 0.0 0.0 0.0 0.0 0.0
 SCAN1 GONIOMETER_OMEGA 24.4499 0.0500 0.0500 0.0 0.0 0.0
+SCAN1 DETECTOR_2T 30.0 0.0 0.0 0.0 0.0 0.0
 SCAN1 DETECTOR_Z 0.0 0.0 0.0 800.02 0.0 0.0
 SCAN1 DETECTOR_Y 0.0 0.0 0.0 0.0 0.0 0.0
 SCAN1 DETECTOR_X 0.0 0.0 0.0 0.0 0.0 0.0
@@ -144,6 +146,7 @@ _diffrn_scan_frame_axis.angle
 _diffrn_scan_frame_axis.displacement
 FRAME1 GONIOMETER_FRED  30.0 0.0
 FRAME1 GONIOMETER_OMEGA 24.4499 0.0
+FRAME1 DETECTOR_2T 30.0 0.0
 FRAME1 DETECTOR_Z 0.0 800.02
 FRAME1 DETECTOR_Y 0.0 0.0
 FRAME1 DETECTOR_X 0.0 0.0
@@ -159,7 +162,8 @@ GONIOMETER_FRED  rotation goniometer . 0.643 -0.766 0 . . .
 GONIOMETER_OMEGA rotation goniometer GONIOMETER_FRED 1 0 0 . . .
 SOURCE           general source . 0 0 1 . . .
 GRAVITY          general gravity . 0 -1 0 . . .
-DETECTOR_Z       translation detector . 0 0 -1 0 0 0
+DETECTOR_2T      rotation    detector . 1 0 0 0 0 0 
+DETECTOR_Z       translation detector DETECTOR_2T 0 0 -1 0 0 0
 DETECTOR_Y       translation detector DETECTOR_Z 0 1 0 0 0 0
 DETECTOR_X       translation detector DETECTOR_Y 1 0 0 0 0 0
 ELEMENT_X        translation detector DETECTOR_X 1 0 0 -126.30 144.39 0
