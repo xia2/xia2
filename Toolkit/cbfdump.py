@@ -33,6 +33,7 @@ def find_detector_id(cbf_handle):
         ncols = cbf_handle.count_columns()
 
         cbf_handle.rewind_column()
+        cbf_handle.rewind_row()
 
         while True:
             if cbf_handle.column_name() == 'id':
@@ -44,6 +45,67 @@ def find_detector_id(cbf_handle):
                 break
 
     return detector_id
+
+def print_axes(cbf_handle):
+
+    # help(cbf_handle)
+
+    cbf_handle.rewind_datablock()
+    nblocks = cbf_handle.count_datablocks()
+
+    cbf_handle.find_category('axis')
+
+    nrows = cbf_handle.count_rows()
+    ncols = cbf_handle.count_columns()
+
+    cbf_handle.rewind_column()
+
+    axes = []
+    types = { }
+
+    for j in range(ncols):
+        print cbf_handle.column_name(),
+        try:
+            cbf_handle.next_column()
+        except:
+            break
+            
+
+    print ''
+        
+    while True:
+        cbf_handle.rewind_column()
+        for j in range(ncols):
+
+            try:
+                print cbf_handle.get_value(),
+
+                if cbf_handle.column_name() == 'id':
+                    axes.append(cbf_handle.get_value())
+                if cbf_handle.column_name() == 'type':
+                    types[axes[-1]] = cbf_handle.get_value()
+                
+                cbf_handle.next_column()
+            except:
+                break
+        print ''
+        
+        try:
+            cbf_handle.next_row()
+        except:
+            break
+
+
+    for axis in axes:
+        if not types[axis] in ['rotation', 'translation']:
+            continue
+        try:
+            setting = tuple(cbf_handle.get_axis_setting(axis))
+            print '%s %f %f (%s)' % (axis, setting[0], setting[1], types[axis])
+        except:
+            print '%s not found' % axis
+            
+    return
 
 def test_example_adsc_cif_header():
     '''A unit test to ensure that the reading of CIF headers using pycbf
@@ -120,7 +182,7 @@ def test_example_adsc_cif_header():
     # now need to dig out the detector axes
     # perhaps bodge this by looking at the displacements of pixels in the
     # fast and slow directions?
-    
+
     origin = detector.get_pixel_coordinates(0, 0)
     fast = detector.get_pixel_coordinates(0, 1)
     slow = detector.get_pixel_coordinates(1, 0)
@@ -177,6 +239,8 @@ def cbfdump(cbf_image, do_print = False):
 
     cbf_handle = pycbf.cbf_handle_struct()
     cbf_handle.read_file(cbf_image, pycbf.MSG_DIGEST)
+
+    # print_axes(cbf_handle)
 
     detector_id = find_detector_id(cbf_handle)
 

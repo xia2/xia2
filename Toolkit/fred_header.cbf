@@ -160,14 +160,14 @@ _axis.vector[1] _axis.vector[2] _axis.vector[3]
 _axis.offset[1] _axis.offset[2] _axis.offset[3]
 GONIOMETER_FRED  rotation goniometer . 0.643 -0.766 0 . . .
 GONIOMETER_OMEGA rotation goniometer GONIOMETER_FRED 1 0 0 . . .
-SOURCE           general source . 0 0 1 . . .
-GRAVITY          general gravity . 0 -1 0 . . .
 DETECTOR_2T      rotation    detector . 1 0 0 0 0 0 
 DETECTOR_Z       translation detector DETECTOR_2T 0 0 -1 0 0 0
 DETECTOR_Y       translation detector DETECTOR_Z 0 1 0 0 0 0
 DETECTOR_X       translation detector DETECTOR_Y 1 0 0 0 0 0
 ELEMENT_X        translation detector DETECTOR_X 1 0 0 -126.30 144.39 0
 ELEMENT_Y        translation detector ELEMENT_X 0 1 0 0 0 0
+SOURCE           general source . 0 0 1 . . .
+GRAVITY          general gravity . 0 -1 0 . . .
 
 loop_
 _array_structure_list.array_id
