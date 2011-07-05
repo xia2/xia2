@@ -196,8 +196,7 @@ def symop_to_mat(symop):
 
 def mat_to_symop(mat):
     mat2symop = Mat2symop()
-    result = mat2symop.convert(mat).strip()
-    return result
+    return mat2symop.convert(mat).strip()
 
 def lattice_to_spacegroup_number(lattice):
     '''Return the spacegroup number corresponding to the lowest symmetry
