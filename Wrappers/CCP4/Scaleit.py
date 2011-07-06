@@ -147,9 +147,9 @@ def Scaleit(DriverType = None):
                     (self._columns[0], self._columns[1])
 
             if self._anomalous:
-                groups = len(self._columns) / 4
+                groups = len(self._columns) // 4
             else:
-                groups = len(self._columns) / 2                
+                groups = len(self._columns) // 2                
 
             for j in range(groups):
 
