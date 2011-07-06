@@ -722,7 +722,7 @@ class merger:
         if limit > max(rmerge_s):
             return 1.0 / math.sqrt(max(s_s))
         
-        rmerge_f = log_inv_fit(s_s, rmerge_s, 10)
+        rmerge_f = log_inv_fit(s_s, rmerge_s, 6)
 
         if log:
             fout = open(log, 'w')
@@ -810,7 +810,7 @@ class merger:
         if min(isigma_s) > limit:
             return 1.0 / math.sqrt(max(s_s))
         
-        isigma_f = log_fit(s_s, isigma_s, 10)
+        isigma_f = log_fit(s_s, isigma_s, 6)
 
         if log:
             fout = open(log, 'w')
@@ -896,7 +896,7 @@ class merger:
         if min(misigma_s) > limit:
             return 1.0 / math.sqrt(max(s_s))
 
-        misigma_f = log_fit(s_s, misigma_s, 10)
+        misigma_f = log_fit(s_s, misigma_s, 6)
         
         if log:
             fout = open(log, 'w')
@@ -937,7 +937,7 @@ class merger:
         if min(comp_s) > limit:
             return 1.0 / math.sqrt(max(s_s))
 
-        comp_f = fit(s_s, comp_s, 10)
+        comp_f = fit(s_s, comp_s, 6)
         
         rlimit = limit * max(comp_s)
 
