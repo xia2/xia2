@@ -142,7 +142,8 @@ from Handlers.Streams import Chatter, Debug
 from Handlers.Flags import Flags
 
 # this was rather complicated - now simpler!
-from lib.SymmetryLib import lauegroup_to_lattice, spacegroup_name_xHM_to_old
+from lib.SymmetryLib import lauegroup_to_lattice, spacegroup_name_xHM_to_old, \
+     clean_reindex_operator
 
 # XDS_ASCII meddling things
 from Modules.XDS_ASCII import remove_misfits
@@ -439,8 +440,9 @@ def Pointless(DriverType = None):
                     'TotalProb')[0].childNodes[0].data)
                 self._reindex_matrix = map(float, best.getElementsByTagName(
                     'ReindexMatrix')[0].childNodes[0].data.split())
-                self._reindex_operator = best.getElementsByTagName(
-                    'ReindexOperator')[0].childNodes[0].data.strip()
+                self._reindex_operator = clean_reindex_operator(
+                    best.getElementsByTagName(
+                    'ReindexOperator')[0].childNodes[0].data.strip())
 
             else:
 
@@ -500,8 +502,9 @@ def Pointless(DriverType = None):
                     self._reindex_matrix = map(float, 
                                                index.getElementsByTagName(
                         'ReindexMatrix')[0].childNodes[0].data.split())
-                    self._reindex_operator = index.getElementsByTagName(
-                        'ReindexOperator')[0].childNodes[0].data.strip()
+                    self._reindex_operator = clean_reindex_operator(
+                        index.getElementsByTagName(
+                        'ReindexOperator')[0].childNodes[0].data.strip())
                 else:
 
                     # no alternative indexing is possible so just

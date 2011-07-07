@@ -28,8 +28,8 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
-from Wrappers.XIA.Mat2symop import Mat2symop
-from Wrappers.XIA.Symop2mat import Symop2mat
+# from Wrappers.XIA.Mat2symop import Mat2symop
+# from Wrappers.XIA.Symop2mat import Symop2mat
 from Handlers.Syminfo import Syminfo
 
 def _gen_rot_mat_x(theta_deg):
@@ -181,24 +181,24 @@ def compose_matrices_r(mat_a, mat_b):
 def compose_symops(a, b):
     '''Compose operation c, which is applying b then a.'''
 
-    symop2mat = Symop2mat()
-    mat_a = symop2mat.convert(a)
-    mat_b = symop2mat.convert(b)
+    # symop2mat = Symop2mat()
+    mat_a = symop_to_mat(a)
+    mat_b = symop_to_mat(b)
 
     mat_c = _multiply_symmetry_matrix(mat_a, mat_b)
 
-    mat2symop = Mat2symop()
-    result = mat2symop.convert(mat_c).strip()
+    # mat2symop = Mat2symop()
+    result = mat_to_symop(mat_c).strip()
 
     return result
 
-def old_symop_to_mat(symop):
-    symop2mat = Symop2mat()
-    return symop2mat.convert(symop)
-
-def old_mat_to_symop(mat):
-    mat2symop = Mat2symop()
-    return mat2symop.convert(mat).strip()
+#def old_symop_to_mat(symop):
+#    symop2mat = Symop2mat()
+#    return symop2mat.convert(symop)
+#
+#def old_mat_to_symop(mat):
+#    mat2symop = Mat2symop()
+#    return mat2symop.convert(mat).strip()
 
 def symop_to_mat(symop):
     return matrix.sqr(sgtbx.rt_mx(
