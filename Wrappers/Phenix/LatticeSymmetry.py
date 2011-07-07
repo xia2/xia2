@@ -27,8 +27,6 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Driver.DriverFactory import DriverFactory
 
-from Wrappers.XIA.Symop2mat import Symop2mat
-
 from lib.SymmetryLib import lauegroup_to_lattice
 from Handlers.Syminfo import Syminfo
 
