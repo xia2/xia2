@@ -11,6 +11,7 @@ Applications/test_image_header -text
 Applications/test_image_header.py -text
 Applications/test_pilatus_scan -text
 Applications/x1335 -text
+Attic/Attic1.py -text
 Experts/Doc/FindImages.pdf -text
 Experts/TestSymmetryExpert.py -text
 Experts/example.xparm -text
