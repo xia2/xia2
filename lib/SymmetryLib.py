@@ -117,6 +117,9 @@ def spacegroup_name_old_to_xHM(old):
         raise RuntimeError, 'spacegroup %s unknown' % old
 
     return mapping[old]
+
+def clean_reindex_operator(symop):
+    return str(symop).replace('[', '').replace(']', '')
     
 def get_all_spacegroups_short():
     '''Get a list of all short spacegroup names.'''
