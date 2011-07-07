@@ -56,7 +56,8 @@ def vec2mat(vectors):
 
 # generic mathematical calculations for 3-vectors
 
-# FIXME cite PRE as the source here for these rotns
+# FIXME cite PRE as the source here for these rotns - N.B. these should be
+# replaced with CCTBX code.
 
 def rot_x(theta):
     '''Rotation matrix about Y of theta degrees.'''

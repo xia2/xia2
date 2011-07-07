@@ -32,64 +32,15 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 # from Wrappers.XIA.Symop2mat import Symop2mat
 from Handlers.Syminfo import Syminfo
 
-def _gen_rot_mat_x(theta_deg):
-    '''Compute a matrix (stored as e11 e12 e13 e22 e23...) for a rotation
-    of theta about x. Theta in degrees.'''
-
-    pi = 4.0 * math.atan(1.0)
-
-    d_to_r = pi / 180.0
-
-    theta = theta_deg * d_to_r
-
-    c_t = math.cos(theta)
-    s_t = math.sin(theta)
-
-    return [1.0, 0.0, 0.0,
-            0.0, c_t, -s_t,
-            0.0, s_t, c_t]
-
-def _gen_rot_mat_y(theta_deg):
-    '''Compute a matrix (stored as e11 e12 e13 e22 e23...) for a rotation
-    of theta about y. Theta in degrees.'''
-
-    pi = 4.0 * math.atan(1.0)
-
-    d_to_r = pi / 180.0
-
-    theta = theta_deg * d_to_r
-
-    c_t = math.cos(theta)
-    s_t = math.sin(theta)
-
-    return [c_t, 0.0, s_t,
-            0.0, 1.0, 0.0,
-            -s_t, 0.0, c_t]
-
-def _gen_rot_mat_z(theta_deg):
-    '''Compute a matrix (stored as e11 e12 e13 e22 e23...) for a rotation
-    of theta about z. Theta in degrees.'''
-
-    pi = 4.0 * math.atan(1.0)
-
-    d_to_r = pi / 180.0
-
-    theta = theta_deg * d_to_r
-
-    c_t = math.cos(theta)
-    s_t = math.sin(theta)
-
-    return [c_t, -s_t, 0.0,
-            s_t, c_t, 0.0,
-            0.0, 0.0, 1.0]
-
 def gen_rot_mat_euler(alpha, beta, gamma):
     '''Compute a rotation matrix (stored as e11 e12 e13 e22 e23...)
     as product R(x, gamma).R(y, beta).R(z, alpha).'''
 
-    rz = _gen_rot_mat_z(alpha)
-    ry = _gen_rot_mat_y(beta)
-    rx = _gen_rot_mat_x(gamma)
+    from MatrixExpert import rot_x, rot_y, rot_z
+
+    rz = rot_z(alpha)
+    ry = rot_y(beta)
+    rx = rot_x(gamma)
 
     r = _multiply_symmetry_matrix(ry, rz)
     return _multiply_symmetry_matrix(rx, r)
