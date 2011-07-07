@@ -1944,19 +1944,13 @@ class XDSScaler(Scaler):
             chef_hklins = []
             
             for wave in bits:
-                d = self._factory.Doser()
                 hklin = bits[wave][0]
                 hklout = '%s_dose.mtz' % hklin[:-4]
-                # d.set_hklin(hklin)
-                # d.set_hklout(hklout)
-                # d.set_doses(doses)
-                # d.run()
 
                 add_dose_time_to_mtz(hklin = hklin, hklout = hklout,
                                      doses = doses)
 
                 chef_hklins.append(hklout)
-                # FileHandler.record_temporary_file(hklout)
 
             # then run chef with this - no analysis as yet, but to record
             # the log file to chef_groupN_analysis or something and be

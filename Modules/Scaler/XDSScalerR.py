@@ -1701,7 +1701,6 @@ class XDSScalerR(Scaler):
             chef_hklins = []
             
             for wave in bits:
-                d = self._factory.Doser()
                 hklin = bits[wave][0]
                 hklout = '%s_dose.mtz' % hklin[:-4]
 
