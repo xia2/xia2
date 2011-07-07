@@ -13,6 +13,8 @@
 import os
 import sys
 import math
+from scitbx import matrix
+from cctbx import sgtbx
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -190,13 +192,20 @@ def compose_symops(a, b):
 
     return result
 
-def symop_to_mat(symop):
+def old_symop_to_mat(symop):
     symop2mat = Symop2mat()
     return symop2mat.convert(symop)
 
-def mat_to_symop(mat):
+def old_mat_to_symop(mat):
     mat2symop = Mat2symop()
     return mat2symop.convert(mat).strip()
+
+def symop_to_mat(symop):
+    return matrix.sqr(sgtbx.rt_mx(
+        sgtbx.parse_string(symop)).as_double_array()[:9]).transpose().elems
+
+def mat_to_symop(mat):
+    return sgtbx.rt_mx(matrix.sqr(mat).transpose(), (0, 0, 0)).as_xyz()
 
 def lattice_to_spacegroup_number(lattice):
     '''Return the spacegroup number corresponding to the lowest symmetry
