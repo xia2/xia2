@@ -124,6 +124,8 @@ class _CommandLine(Object):
         self._read_2dr()
         self._read_3d()
         self._read_3dr()
+        self._read_3di()
+        self._read_3dir()
         self._read_3dii()
         self._read_3diir()
         self._read_migrate_data()
@@ -1247,6 +1249,29 @@ class _CommandLine(Object):
                 self._understood.append(sys.argv.index('-3d'))
             if '-3dr' in sys.argv:
                 self._understood.append(sys.argv.index('-3dr'))
+            Debug.write('3DR pipeline selected')
+        return
+
+    def _read_3di(self):
+
+        if '-3diold' in sys.argv:
+            add_preference('indexer', 'xds')
+            add_preference('integrater', 'xds')
+            add_preference('scaler', 'xds')
+            self._understood.append(sys.argv.index('-3dold'))
+            Debug.write('3D pipeline selected')
+        return
+
+    def _read_3dir(self):
+
+        if '-3dir' in sys.argv or '-3di' in sys.argv:
+            add_preference('indexer', 'xds')
+            add_preference('integrater', 'xdsr')
+            add_preference('scaler', 'xdsr')
+            if '-3di' in sys.argv:
+                self._understood.append(sys.argv.index('-3di'))
+            if '-3dir' in sys.argv:
+                self._understood.append(sys.argv.index('-3dir'))
             Debug.write('3DR pipeline selected')
         return
 
