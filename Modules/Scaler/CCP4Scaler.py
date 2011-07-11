@@ -980,63 +980,7 @@ class CCP4Scaler(Scaler):
             integrater.set_integrater_spacegroup_number(
                 Syminfo.spacegroup_name_to_number(pointgroup))
             
-            hklin = integrater.get_integrater_reflections()
-            hklout = os.path.join(
-                self.get_working_directory(),
-                '%s_ref_srt.mtz' % os.path.split(hklin)[-1][:-4])
-            
-            # we will want to delete this one exit
-            FileHandler.record_temporary_file(hklout)
-            
-            s = self._factory.Sortmtz()
-            s.set_hklout(hklout)
-            s.add_hklin(hklin)
-            s.sort()
-            
-            # now quickly merge the reflections
-            
-            hklin = hklout
-            self._reference = os.path.join(
-                self.get_working_directory(),
-                os.path.split(hklin)[-1].replace('_ref_srt.mtz',
-                                                 '_ref.mtz'))
-            
-            # need to remember this hklout - it will be the reference
-            # reflection file for all of the reindexing below...
-            
-            Debug.write('Quickly scaling reference data set: %s' % \
-                          os.path.split(hklin)[-1])
-            Debug.write('to give indexing standard')
-            
-            qsc = self._updated_scala()
-            qsc.set_hklin(hklin)
-            qsc.set_hklout(self._reference)
-            qsc.quick_scale()
-            
-            # we will want to delete this one exit
-            FileHandler.record_temporary_file(qsc.get_hklout())
-            
-            # for the moment ignore all of the scaling statistics and whatnot!
-
-            # then check that the unit cells &c. in these reflection files
-            # correspond to those rescribed in the indexers belonging to the
-            # parent integraters.
-            
-            # at this stage (see FIXED from 25/SEP/06) I need to run pointless
-            # to assess the likely pointgroup. This, unfortunately, will need
-            # to tie into the .xinfo hierarchy, as the crystal lattice
-            # management takes place in there...
-            # also need to make sure that the results from each sweep match
-            # up...
-
-            # FIXED 27/OCT/06 need a hook in here to the integrater->indexer
-            # to inspect the lattices which have ben contemplated (read tested)
-            # because it is quite possible that pointless will come up with
-            # a solution which has already been eliminated in the data
-            # reduction (e.g. TS01 native being reindexed to I222.)
-
-            # FIXED 06/NOV/06 first run through this with the reference ignored
-            # to get the reflections reindexed into the correct pointgroup
+            self._reference = integrater.get_integrater_reflections()
 
         # ---------- REINDEX ALL DATA TO CORRECT POINTGROUP ----------
 
@@ -1153,7 +1097,7 @@ class CCP4Scaler(Scaler):
             # check that HKLREF is merged... and that it contains only one
             # dataset
 
-            if md.get_batches():
+            if md.get_batches() and False:
                 raise RuntimeError, 'reference reflection file %s unmerged' % \
                       self._reference
 

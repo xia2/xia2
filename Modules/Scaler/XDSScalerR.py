@@ -763,43 +763,7 @@ class XDSScalerR(Scaler):
             pointless.set_hklout(hklout)
             pointless.xds_to_mtz()
 
-            hklin = hklout
-            
-            hklout = os.path.join(self.get_working_directory(),
-                                  'xds-pointgroup-reference-sorted.mtz')
-            FileHandler.record_temporary_file(hklout)
-
-            sortmtz = self._factory.Sortmtz()
-            sortmtz.add_hklin(hklin)
-            sortmtz.set_hklout(hklout)
-            sortmtz.sort(vrset = -99999999.0)
-
-            hklin = hklout
-
-            self._reference = os.path.join(self.get_working_directory(),
-                                           'xds-pointgroup-reference.mtz')
-            FileHandler.record_temporary_file(self._reference)            
-
-            scala = self._factory.Scala()            
-            scala.set_hklin(hklin)
-            scala.set_hklout(self._reference)
-
-            # FIXME in here should really work w.r.t. unmerged measurements
-            # and skip this merging step which can fail with small molecule P1
-            # two theta offset data...
-            
-            if False:
-
-                scala.set_onlymerge()
-                scala.merge()
-
-            else:
-
-                if Flags.get_microcrystal():
-                    scala.quick_scale(constant = True)
-                else:
-                    scala.quick_scale()                
-
+            self._reference = hklout
 
         if self._reference:
 

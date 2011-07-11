@@ -968,43 +968,7 @@ class CCP4ScalerR(Scaler):
             integrater.set_integrater_spacegroup_number(
                 Syminfo.spacegroup_name_to_number(pointgroup))
             
-            hklin = integrater.get_integrater_reflections()
-            hklout = os.path.join(
-                self.get_working_directory(),
-                '%s_ref_srt.mtz' % os.path.split(hklin)[-1][:-4])
-            
-            # we will want to delete this one exit
-            FileHandler.record_temporary_file(hklout)
-            
-            s = self._factory.Sortmtz()
-            s.set_hklout(hklout)
-            s.add_hklin(hklin)
-            s.sort()
-            
-            # now quickly merge the reflections
-            
-            hklin = hklout
-            self._reference = os.path.join(
-                self.get_working_directory(),
-                os.path.split(hklin)[-1].replace('_ref_srt.mtz',
-                                                 '_ref.mtz'))
-            
-            # need to remember this hklout - it will be the reference
-            # reflection file for all of the reindexing below...
-            
-            Debug.write('Quickly scaling reference data set: %s' % \
-                          os.path.split(hklin)[-1])
-            Debug.write('to give indexing standard')
-            
-            qsc = self._updated_scala()
-            qsc.set_hklin(hklin)
-            qsc.set_hklout(self._reference)
-            if Flags.get_microcrystal():
-                qsc.quick_scale(constant = True)
-            else:
-                qsc.quick_scale()                
-            
-            FileHandler.record_temporary_file(qsc.get_hklout())
+            self._reference = integrater.get_integrater_reflections()
             
         # ---------- REINDEX ALL DATA TO CORRECT POINTGROUP ----------
 
@@ -1111,7 +1075,7 @@ class CCP4ScalerR(Scaler):
             # check that HKLREF is merged... and that it contains only one
             # dataset
 
-            if md.get_batches():
+            if md.get_batches() and False:
                 raise RuntimeError, 'reference reflection file %s unmerged' % \
                       self._reference
 
