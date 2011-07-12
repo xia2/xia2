@@ -31,29 +31,27 @@ def get_list_of_symops():
 
     return set(symops)
 
+def dont_get_list_of_symops():
+    return ['1/2*z,-y+1/2*z,x']
+
 def new_symop_to_mat(symop):
-    return matrix.sqr(sgtbx.rt_mx(
-        sgtbx.parse_string(symop)).as_double_array()[:9]).transpose().elems
+    return matrix.sqr(sgtbx.change_of_basis_op(
+        symop).c().as_double_array()[:9]).transpose().elems
 
 def new_mat_to_symop(mat):
-    return sgtbx.rt_mx(matrix.sqr(mat).transpose(), (0, 0, 0)).as_xyz()
+    return sgtbx.change_of_basis_op(sgtbx.rt_mx(
+        matrix.sqr(mat).transpose(), (0, 0, 0), r_den = 12)).as_xyz()
 
 def work_mat_symop():
 
     for symop in get_list_of_symops():
-
         mat = symop_to_mat(symop)
         symop2 = mat_to_symop(mat)
         mat2 = symop_to_mat(symop2)
         mat3 = new_symop_to_mat(symop2)
 
-        compare_matrices(mat, mat2)
-        compare_matrices(mat, mat3)
-
-        symop3 = new_mat_to_symop(mat)
-        mat4 = new_symop_to_mat(symop3)
-        compare_matrices(mat, mat4)
-
+        # mat = new_symop_to_mat(symop)
+        # symop2 = new_mat_to_symop(mat)
 
     return
 
