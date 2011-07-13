@@ -143,36 +143,14 @@ def compose_symops(a, b):
 
     return result
 
-#def old_symop_to_mat(symop):
-#    symop2mat = Symop2mat()
-#    return symop2mat.convert(symop)
-#
-#def old_mat_to_symop(mat):
-#    mat2symop = Mat2symop()
-#    return mat2symop.convert(mat).strip()
-
-# this assumes it is a rotation
-
-def symop_to_mat(symop):
-    return matrix.sqr(sgtbx.rt_mx(
-        sgtbx.parse_string(symop)).as_double_array()[:9]).transpose().elems
-
-# this does not
-
 def symop_to_mat(symop):
     return matrix.sqr(sgtbx.change_of_basis_op(
         symop).c().as_double_array()[:9]).elems
 
-# but this is not necessarily the inverse :o(
-
-def mat_to_symop(mat):
-    return sgtbx.rt_mx(matrix.sqr(mat).transpose(), (0, 0, 0)).as_xyz()
-
-# but it seems that this is!
-
 def mat_to_symop(mat):
     return sgtbx.change_of_basis_op(sgtbx.rt_mx(
-        matrix.sqr(mat).transpose(), (0, 0, 0), r_den = 12)).as_xyz()
+        matrix.sqr(mat).transpose(), (0, 0, 0),
+        r_den = 12, t_den = 144)).as_xyz()
 
 def lattice_to_spacegroup_number(lattice):
     '''Return the spacegroup number corresponding to the lowest symmetry
