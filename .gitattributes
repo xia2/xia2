@@ -58,6 +58,7 @@ Schema/Interfaces/NextGeneration/labelit.py -text
 Schema/Interfaces/NextGeneration/mosflm.py -text
 Schema/Interfaces/NextGeneration/processing_plugin.py -text
 Schema/Tests/TestXGoniometer.py -text
+Schema/Tests/phi_scan.cbf -text svneol=unset#unset
 Schema/XBeam.py -text
 Schema/XDetector.py -text
 Schema/XGoniometer.py -text
