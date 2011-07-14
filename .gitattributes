@@ -58,10 +58,12 @@ Schema/Interfaces/NextGeneration/labelit.py -text
 Schema/Interfaces/NextGeneration/mosflm.py -text
 Schema/Interfaces/NextGeneration/processing_plugin.py -text
 Schema/Tests/TestXGoniometer.py -text
+Schema/Tests/omega_scan.cbf -text svneol=unset#unset
 Schema/Tests/phi_scan.cbf -text svneol=unset#unset
 Schema/XBeam.py -text
 Schema/XDetector.py -text
 Schema/XGoniometer.py -text
+Schema/XGoniometerHelpers.py -text
 Schema/XScan.py -text
 Toolkit/BackstopMask.py -text
 Toolkit/ComputeU.py -text

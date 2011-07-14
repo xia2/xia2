@@ -8,9 +8,13 @@
 # Tests for the XGoniometer class.
 
 import math
+import os
+import sys
 
-from XGoniometer import XGoniometer
-from XGoniometer import XGoniometerFactory
+sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
+
+from Schema.XGoniometer import XGoniometer
+from Schema.XGoniometer import XGoniometerFactory
 
 def compare_tuples(a, b, tol = 1.0e-6):
     
@@ -75,6 +79,23 @@ def TestXGoniometer():
 
     assert(compare_tuples(kappa.get_axis(), axis))
     assert(not compare_tuples(kappa.get_fixed(), fixed))
+
+    cbf = XGoniometerFactory.imgCIF('phi_scan.cbf')
+
+    print cbf
+
+    kappa = XGoniometerFactory.Kappa(50.0, -10.0, 30.0, 0.0, '-y', 'phi')
+
+    print kappa
+
+    cbf = XGoniometerFactory.imgCIF('omega_scan.cbf')
+
+    print cbf
+
+    kappa = XGoniometerFactory.Kappa(50.0, -10.0, 30.0, 20.0, '-y', 'omega')
+
+    print kappa
+
 
 if __name__ == '__main__':
 

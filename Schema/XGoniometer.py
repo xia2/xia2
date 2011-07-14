@@ -10,7 +10,11 @@
 # of the XSweep classes.
 
 import math
+import pycbf
 from scitbx import matrix
+from scitbx.math import r3_rotation_axis_and_angle_from_matrix
+
+from XGoniometerHelpers import cbf_gonio_to_effective_axis_fixed
 
 class XGoniometer:
     '''A class to represent the rotation axis for a standard rotation
@@ -43,6 +47,14 @@ class XGoniometer:
         self._fixed = matrix.sqr(fixed)
 
         return
+
+    def __repr__(self):
+        '''Generate a useful-to-print representation.'''
+
+        f_axis = '%6.3f %6.3f %6.3f\n'
+        f_fixed = 3 * f_axis
+
+        return f_axis % self._axis.elems + f_fixed % self._fixed.elems
 
     def get_axis(self):
         '''Get the values for the rotation axis.'''
@@ -132,6 +144,26 @@ class XGoniometerFactory:
 
         return
 
+    @staticmethod
+    def imgCIF(cif_file):
+        '''Initialize a goniometer model from an imgCIF file.'''
+
+        cbf_handle = pycbf.cbf_handle_struct()
+        cbf_handle.read_file(cif_file, pycbf.MSG_DIGEST)
+
+        cbf_gonio = cbf_handle.construct_goniometer()
+
+        axis, fixed = cbf_gonio_to_effective_axis_fixed(cbf_gonio)
+
+        return XGoniometer(axis.elems, fixed.elems)
+
+    @staticmethod
+    def CBF(cbf_file):
+        '''Initialize a goniometer model from a CBF file.'''
+
+        return imgCIF(cbf_file)
+        
+    
 
         
     
