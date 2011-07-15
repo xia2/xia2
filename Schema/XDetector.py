@@ -124,8 +124,8 @@ class XDetectorFactory:
         pass
 
     @staticmethod
-    def SimpleDetector(distance, beam_centre, fast_direction, slow_direction,
-                       pixel_size, image_size, overload, mask):
+    def Simple(distance, beam_centre, fast_direction, slow_direction,
+               pixel_size, image_size, overload, mask):
         '''Construct a simple detector at a given distance from the sample
         along the direct beam presumed to be aligned with -z, offset by the
         beam centre - the directions of which are given by the fast and slow
@@ -155,6 +155,88 @@ class XDetectorFactory:
         return XDetector(origin.elems, fast.elems, slow.elems, pixel_size,
                          image_size, overload, mask)
 
+    @staticmethod
+    def TwoTheta(distance, beam_centre, fast_direction, slow_direction,
+                 two_theta_direction, two_theta_angle,
+                 pixel_size, image_size, overload, mask):
+        '''Construct a simple detector at a given distance from the sample
+        along the direct beam presumed to be aligned with -z, offset by the
+        beam centre - the directions of which are given by the fast and slow
+        directions, which are themselves given as +x, +y, -x, -y. The pixel
+        size is given in mm in the fast and slow directions and the image size
+        is given in pixels in the same order. Everything else is the same as
+        for the main reference frame. Also given are the direction of the
+        two-theta axis and the angle in degrees by which the detector is
+        moved.'''
 
+        assert(fast_direction in ['-x', '+y', '+x', '-y'])
+        assert(slow_direction in ['-x', '+y', '+x', '-y'])
+        assert(two_theta_direction in ['-x', '+y', '+x', '-y'])
+
+        assert(fast_direction[1] != slow_direction[1])
+
+        direction_map = {
+            '+x':(1.0, 0.0, 0.0),
+            '-x':(-1.0, 0.0, 0.0),
+            '+y':(0.0, 1.0, 0.0),
+            '-y':(0.0, -1.0, 0.0)
+            }
+
+        fast = matrix.col(direction_map[fast_direction])
+        slow = matrix.col(direction_map[slow_direction])
+
+        origin = matrix.col((0, 0, -1)) * distance - \
+                 fast * beam_centre[0] - slow * beam_centre[1]
+
+        two_theta = matrix.col(direction_map[two_theta_direction])
+
+        R = two_theta.axis_and_angle_as_r3_rotation_matrix(two_theta_angle,
+                                                           deg = True)
+
+        return XDetector((R * origin).elems, (R * fast).elems,
+                         (R * slow).elems, pixel_size, image_size,
+                         overload, mask)
+
+    @staticmethod
+    def imgCIF(cif_file):
+        '''Initialize a detector model from an imgCIF file.'''
+
+        cbf_handle = pycbf.cbf_handle_struct()
+        cbf_handle.read_file(cif_file, pycbf.MSG_DIGEST)
+
+        detector = cbf_handle.construct_detector(0)
+        
+        pixel = (detector.get_inferred_pixel_size(1),
+                 detector.get_inferred_pixel_size(2))
+
+        # FIXME can probably simplify the code which follows below by
+        # making proper use of cctbx vector calls - should not be as
+        # complex as it appears to be...
+
+        origin = detector.get_pixel_coordinates(0, 0)
+        fast = detector.get_pixel_coordinates(0, 1)
+        slow = detector.get_pixel_coordinates(1, 0)
+        
+        dfast = [fast[j] - origin[j] for j in range(3)]
+        dslow = [slow[j] - origin[j] for j in range(3)]
+        
+        lfast = math.sqrt(sum([dfast[j] * dfast[j] for j in range(3)]))
+        lslow = math.sqrt(sum([dslow[j] * dslow[j] for j in range(3)]))
+        
+        fast = tuple([dfast[j] / lfast for j in range(3)])
+        slow = tuple([dslow[j] / lslow for j in range(3)])
+
+        size = tuple(reversed(cbf_handle.get_image_size(0)))
+        overload = cbf_handle.get_overload(0)
+        
+        return XDetector(origin, fast, slow, pixel,
+                         size, overload, [])
+
+    @staticmethod
+    def CBF(cbf_file):
+        '''Initialize a detector model from a CBF file.'''
+
+        return imgCIF(cbf_file)
+        
     
         

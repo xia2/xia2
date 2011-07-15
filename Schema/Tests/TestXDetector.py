@@ -19,10 +19,20 @@ from Schema.XDetector import XDetectorFactory
 def TestXDetector():
     '''A test class for the XDetector class.'''
 
-    d = XDetectorFactory.SimpleDetector(100.0, (45.0, 52.0), '+x', '-y',
-                                        (0.172, 0.172), (516, 590), 1024, [])
+    d = XDetectorFactory.Simple(100.0, (45.0, 52.0), '+x', '-y',
+                                (0.172, 0.172), (516, 590), 1024, [])
 
     print d
+
+    t = XDetectorFactory.TwoTheta(100.0, (45.0, 52.0), '+x', '-y', '+x', 30,
+                                  (0.172, 0.172), (516, 590), 1024, [])
+
+    print t
+
+    c = XDetectorFactory.imgCIF('phi_scan.cbf')
+
+    print c
+
 
 if __name__ == '__main__':
 
