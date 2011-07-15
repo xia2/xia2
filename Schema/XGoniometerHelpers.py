@@ -37,14 +37,15 @@ def cbf_gonio_to_effective_axis_fixed(cbf_gonio):
     rot = r3_rotation_axis_and_angle_from_matrix(RA)
 
     # Then, given this, determine the component of the scan which is fixed -
-    # which will need to be with respect to the unrotated axis.
+    # which will need to be with respect to the unrotated axis. N.B. this
+    # will not be unique, but should be correct modulo a free rotation about
+    # the shifted axis.
 
-    start_angle = tuple(cbf_gonio.get_rotation_range())[0]
+    start = cbf_gonio.get_rotation_range()[0]
 
     axis = matrix.col(rot.axis)
 
-    RI = (R.inverse() * axis).axis_and_angle_as_r3_rotation_matrix(
-        start_angle, deg = True)
+    S = axis.axis_and_angle_as_r3_rotation_matrix(start, deg = True)
 
-    return axis, RI
+    return axis, S.inverse() * R
 
