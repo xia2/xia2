@@ -54,6 +54,14 @@ class XDetector:
 
         return
 
+    def __repr__(self):
+        '''Generate a useful-to-print representation.'''
+
+        f_3 = '%6.3f %6.3f %6.3f\n'
+
+        return f_3 % self._origin.elems + f_3 % self._fast.elems + \
+               f_3 % self._slow.elems
+
     def get_origin(self):
         '''Get the detector origin.'''
         
