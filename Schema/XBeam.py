@@ -20,19 +20,33 @@ class XBeam:
     monochromatic (ii) that the beam is reasonably parallel. In the first
     instance the only parameters are direction and wavelength, however over
     time the intention is to add polarization, size, divergence, transmission
-    etc.'''
+    etc. Turns out we need the polarization plane and fraction in the first
+    instance.'''
 
-    def __init__(self, direction, wavelength):
+    def __init__(self, direction, polarization_fraction, polarization_plane,
+                 wavelength):
         '''Initialize the beam model, with the direction of the beam (i.e.
         towards the source) given in the CBF coordinate frame and the
         wavelength in Angstroms.'''
 
         assert(len(direction) == 3)
+        assert(len(polarization_plane) == 3)
         
         self._direction = matrix.col(direction)
+        self._polarization_plane = matrix.col(polarization_plane)
+        self._polarization_fraction = polarization_fraction
         self._wavelength = wavelength
         
         return
+
+    def __repr__(self):
+        '''Generate a useful-to-print representation.'''
+
+        f_axis = '%6.3f %6.3f %6.3f\n'
+
+        return f_axis % self._direction.elems + \
+               f_axis % self._polarization_plane.elems + \
+               '%.6f\n' % self._wavelength
 
     def get_direction(self):
         '''Get the beam direction.'''
@@ -60,13 +74,19 @@ class XBeamFactory:
     @staticmethod
     def Simple(wavelength):
         '''Construct a beam object on the principle that the beam is aligned
-        with the +z axis, as is quite normal.'''
+        with the +z axis, as is quite normal. Also assume the beam has
+        polarization fraction 0.999 and is polarized in the x-z plane.'''
 
-        return XBeam((0.0, 0.0, 1.0), wavelength)
+        return XBeam((0.0, 0.0, 1.0), (0.0, 1.0, 0.0), 0.999, wavelength)
 
     @staticmethod
     def imgCIF(cif_file):
-        '''Initialize a detector model from an imgCIF file.'''
+        '''Initialize a detector model from an imgCIF file. N.B. the
+        definition of the polarization plane is not completely helpful
+        in this - it is the angle between the polarization plane and the
+        +Y laboratory frame vector.'''
+
+        d2r = math.pi / 180.0
 
         cbf_handle = pycbf.cbf_handle_struct()
         cbf_handle.read_file(cif_file, pycbf.MSG_DIGEST)
@@ -87,7 +107,12 @@ class XBeamFactory:
         # and the wavelength
         wavelength = cbf_handle.get_wavelength()
 
-        return XBeam(direction, wavelength)
+        # and information about the polarization
+        polar_fraction, polar_angle = cbf_handle.get_polarization()
+        polar_plane_normal = (
+            math.sin(polar_angle * d2r), math.cos(polar_angle * d2r), 0.0)
+        
+        return XBeam(direction, polar_fraction, polar_plane_normal, wavelength)
 
     @staticmethod
     def CBF(cbf_file):
