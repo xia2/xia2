@@ -107,7 +107,9 @@ class XBeamFactory:
         # and the wavelength
         wavelength = cbf_handle.get_wavelength()
 
-        # and information about the polarization
+        # and information about the polarization - FIXME this should probably
+        # be a rotation about the beam not about the Z axis.
+        
         polar_fraction, polar_angle = cbf_handle.get_polarization()
         polar_plane_normal = (
             math.sin(polar_angle * d2r), math.cos(polar_angle * d2r), 0.0)
