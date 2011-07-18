@@ -72,8 +72,6 @@ def cbfdump(cbf_image, do_print = False):
 
     detector_id = find_detector_id(cbf_handle)
 
-    cbf_handle.rewind_datablock()
-
     # find the direct beam vector - takes a few steps
     cbf_handle.find_category('axis')
 
@@ -88,6 +86,15 @@ def cbfdump(cbf_image, do_print = False):
     for j in range(3):
         cbf_handle.find_column('vector[%d]' % (j + 1))
         beam_direction.append(cbf_handle.get_doublevalue())
+
+    # and calculate the polarization plane normal vector, which is
+    # presumed to be in the x / y plane? it is certainly given as an angle
+    # from +y
+
+    polarization_ratio, polarization_norm = cbf_handle.get_polarization()
+    polarization_plane_normal = (math.sin(polarization_norm * math.pi / 180.0),
+                                 math.cos(polarization_norm * math.pi / 180.0),
+                                 0.0)
     
     detector = cbf_handle.construct_detector(0)
 
@@ -129,6 +136,8 @@ def cbfdump(cbf_image, do_print = False):
     if do_print: print 'Overload:   %d' % int(overload)
     if do_print: print 'Beam:       %.2f %.2f' % beam_mm
     if do_print: print 'Beam:       %.2f %.2f %.2f' % tuple(beam_direction)
+    if do_print: print 'Polariz.:   %.2f %.2f %.2f' % \
+       tuple(polarization_plane_normal)
     
     if do_print: print 'Goniometer:'
     if do_print: print 'Axis:       %.2f %.2f %.2f' % axis
