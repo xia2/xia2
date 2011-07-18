@@ -155,6 +155,9 @@ class XGoniometerFactory:
 
         axis, fixed = cbf_gonio_to_effective_axis_fixed(cbf_gonio)
 
+        cbf_gonio.__swig_destroy__(cbf_gonio)
+        del(cbf_gonio)
+
         return XGoniometer(axis.elems, fixed.elems)
 
     @staticmethod

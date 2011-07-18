@@ -33,6 +33,10 @@ def TestXDetector():
 
     print c
 
+def WorkXDetector():
+
+    for j in range(10000):
+        c = XDetectorFactory.imgCIF('phi_scan.cbf')
 
 if __name__ == '__main__':
 

@@ -228,7 +228,10 @@ class XDetectorFactory:
 
         size = tuple(reversed(cbf_handle.get_image_size(0)))
         overload = cbf_handle.get_overload(0)
-        
+
+        detector.__swig_destroy__(detector)
+        del(detector)
+
         return XDetector(origin, fast, slow, pixel,
                          size, overload, [])
 
