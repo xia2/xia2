@@ -14,6 +14,7 @@ import imp
 
 from RegistryHelpers import InheritsFromFormat
 from RegistryHelpers import LookForFormatClasses
+from RegistryHelpers import LoadFormatClass
 
 class _Registry:
     '''A class to handle all of the recognised image formats within xia2
@@ -36,9 +37,10 @@ class _Registry:
         for files starting with Format and ending in .py to allow user
         extensibility.'''
 
-        for f in LookForFormatClasses():
-            
-        
+        for format_class in LookForFormatClasses():
+            LoadFormatClass(format_class)
+
+        return
 
     def add(self, format):
         '''Register a new image format with the registry. N.B. to work
@@ -46,7 +48,8 @@ class _Registry:
 
         assert(InheritsFromFormat(format))
 
-        self._formats.append(format)
+        if not format in self._formats:
+            self._formats.append(format)
 
         return
 

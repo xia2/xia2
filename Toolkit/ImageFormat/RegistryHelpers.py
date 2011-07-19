@@ -8,6 +8,8 @@
 # Things to help the ImageFormat registry to work.
 
 import os
+import imp
+import exceptions
 
 def InheritsFromFormat(PutativeFormatClass):
     '''Check that the PutativeFormatClass inherits on some level from a class
@@ -61,24 +63,31 @@ def LookForFormatClasses():
 
     return format_classes
 
+def LoadFormatClass(FormatClass):
+    '''Load a format class module, which will trigger the automated self
+    registration. This module will not therefore need to publish anything
+    as the module will self publish. The idea being that these format classes
+    were found by the search procedure above.'''
+
+    format_class_name = os.path.split(FormatClass)[-1][:-3]
+    format_class_path = os.path.split(FormatClass)[0]
+
+    module, path, description = imp.find_module(format_class_name,
+                                                [format_class_path])
+
+    try:
+        imp.load_module(format_class_name, module, path, description)
+    except exceptions.Exception, e:
+        print e
+    finally:
+        module.close()
+
+    return 
+
 if __name__ == '__main__':
 
-    import imp
-
     for f in LookForFormatClasses():
-        print f
-
-        name = os.path.split(f)[-1][:-3]
-        path = os.path.split(f)[0]
-
-        m, p, d = imp.find_module(name, [path])
-
-        try:
-            print imp.load_module(name, m, p, d)
-        except:
-            pass
-        finally:
-            m.close()
+        LoadFormatClass(f)
             
 
 
