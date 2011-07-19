@@ -9,17 +9,42 @@
 # this is useful for i.e. identifying the best tool to read a given range 
 # of image formats.
 
+import os
+import imp
+
+from RegistryHelpers import InheritsFromFormat
+from RegistryHelpers import LookForFormatClasses
+
 class _Registry:
     '''A class to handle all of the recognised image formats within xia2
     working towards the generalization project in #1555 and specifically
     to address the requirements in #1573.'''
 
     def __init__(self):
+        '''Set myself up - N.B. this could trigger a directory search for
+        different Format classes to auto-register them.'''
+
         self._formats = []
+
+        self.setup()
+
         return
 
+    def setup(self):
+        '''Look to import format defining modules from around the place -
+        this will look in $XIA2_ROOT/Toolkit/ImageFormat and $HOME/.xia2/
+        for files starting with Format and ending in .py to allow user
+        extensibility.'''
+
+        for f in LookForFormatClasses():
+            
+        
+
     def add(self, format):
-        '''Register a new image format with the registry.'''
+        '''Register a new image format with the registry. N.B. to work
+        this object must be inherited from the base Format class.'''
+
+        assert(InheritsFromFormat(format))
 
         self._formats.append(format)
 
@@ -43,9 +68,9 @@ class _Registry:
 
         return scores[-1][1]
 
-    
+Registry = Registry()
 
-        
+
             
         
         
