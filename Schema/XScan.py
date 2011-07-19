@@ -33,3 +33,5 @@ class XScan:
 
         pass
         
+class XScanFactory:
+    pass
