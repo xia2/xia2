@@ -48,25 +48,6 @@ class Format:
 
     __metaclass__ = _MetaFormat
 
-    def __init__(self, image_file):
-        '''Initialize a class instance from an image file.'''
-        
-        assert(Format.understand(image_file) > 0)
-
-        self.setup(image_file)
-
-        self._xgoniometer_instance = None
-        self._xdetector_instance = None
-        self._xbeam_instance = None
-        self._xscan_instance = None
-
-        self._xgoniometer_factory = XGoniometerFactory
-        self._xdetector_factory = XDetectorFactory
-        self._xbeam_factory = XBeamFactory
-        self._xscan_factory = XScanFactory
-        
-        return
-
     @staticmethod
     def understand(image_file):
         '''Overload this to publish whether this class instance understands
@@ -77,6 +58,23 @@ class Format:
         instrument and you are given a different example return 0.'''
         
         return 0
+
+    def __init__(self, image_file):
+        '''Initialize a class instance from an image file.'''
+        
+        self._xgoniometer_instance = None
+        self._xdetector_instance = None
+        self._xbeam_instance = None
+        self._xscan_instance = None
+
+        self._xgoniometer_factory = XGoniometerFactory
+        self._xdetector_factory = XDetectorFactory
+        self._xbeam_factory = XBeamFactory
+        self._xscan_factory = XScanFactory
+
+        self.setup(image_file)
+
+        return
 
     def setup(self, image_file):
         '''Read the image file, construct the information which we will be
@@ -135,6 +133,11 @@ class Format:
 
         return self._xscan_instance
 
+    def get_image_file(self):
+        '''Get the image file provided to the constructor.'''
+
+        return self._image_file
+
     # methods which must be overloaded in order to produce a useful Format
     # class implementation
 
@@ -154,25 +157,25 @@ class Format:
 
         return
 
-    def _xgoniometer(self, image_file):
+    def _xgoniometer(self):
         '''Overload this method to read the image file however you like so
         long as the result is an XGoniometer.'''
 
         raise RuntimeError, 'overload me'
 
-    def _xdetector(self, image_file):
+    def _xdetector(self):
         '''Overload this method to read the image file however you like so
         long as the result is an XDetector.'''
 
         raise RuntimeError, 'overload me'
 
-    def _xbeam(self, image_file):
+    def _xbeam(self):
         '''Overload this method to read the image file however you like so
         long as the result is an XBeam.'''
 
         raise RuntimeError, 'overload me'
 
-    def _xscan(self, image_file):
+    def _xscan(self):
         '''Overload this method to read the image file however you like so
         long as the result is an XScan.'''
 

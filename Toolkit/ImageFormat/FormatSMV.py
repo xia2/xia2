@@ -25,14 +25,6 @@ class FormatSMV(Format):
     manufacturer and will be interpreted by subclasses of this class. Note
     also that every line is finished with a semicolon.'''
 
-    def __init__(self, image_file):
-        '''Initialise the image structure from the given file.'''
-        
-        assert(FormatSMV.understand(image_file) > 0)
-        Format.__init__(self, image_file)
-
-        return
-
     @staticmethod
     def understand(image_file):
         '''Check to see if this looks like an SMV format image, i.e. we can
@@ -43,29 +35,47 @@ class FormatSMV(Format):
 
         return 0
 
-    def _start(self, image_file):
-        '''Open the image file, read the image header, copy the key / value
-        pairs into an internal dictionary self._header_dictionary along with
-        the length of the header in bytes self._header_size.'''
-
-        header_size = int(open(image_file, 'rb').read(45).split('\n')[1])
+    @staticmethod
+    def get_smv_header(image_file):
+        header_size = int(open(image_file, 'rb').read(45).split(
+            '\n')[1].split('=')[1].replace(';', '').strip())
         header_text = open(image_file, 'rb').read(header_size)
 
-        # check we have the whole header in here...
+        # check we have the whole header in here... it is contained within { }
+        
         assert('}' in header_text)
 
-        self._header_size = header_size
-        self._header_dictionary = { }
+        header_dictionary = { }
 
         for record in header_text.split('\n'):
             if not '=' in record:
                 continue
 
-            key, value = record.split('=')
+            key, value = record.replace(';', '').split('=')
 
-            self._header_dictionary[key.strip()] = value.strip()
+            header_dictionary[key.strip()] = value.strip()
+
+        return header_size, header_dictionary
+
+    def __init__(self, image_file):
+        '''Initialise the image structure from the given file.'''
+        
+        assert(FormatSMV.understand(image_file) > 0)
+
+        Format.__init__(self, image_file)
 
         return
+
+    def _start(self, image_file):
+        '''Open the image file, read the image header, copy the key / value
+        pairs into an internal dictionary self._header_dictionary along with
+        the length of the header in bytes self._header_size.'''
+
+        self._header_size, self._header_dictionary = FormatSMV.get_smv_header(
+            image_file)
+
+        return
+
 
     
 

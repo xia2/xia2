@@ -20,7 +20,15 @@ from Toolkit.ImageFormat.Registry import Registry
 def TestRegistry(files):
     '''Print the class which claims to work with each file.'''
     for f in files:
-        print Registry.find(f).__name__
+        format = Registry.find(f)
+
+        print format.__name__
+
+        if format.understand(f) >= 2:
+            i = format(f)
+            print i.get_xbeam()
+            print i.get_xgoniometer()
+            print i.get_xdetector()
 
 if __name__ == '__main__':
     
