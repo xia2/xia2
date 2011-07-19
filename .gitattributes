@@ -76,6 +76,7 @@ Toolkit/ImageFormat/FormatRAXIS.py -text
 Toolkit/ImageFormat/FormatSMV.py -text
 Toolkit/ImageFormat/FormatTIFF.py -text
 Toolkit/ImageFormat/Registry.py -text
+Toolkit/ImageFormat/RegistryHelpers.py -text
 Toolkit/KBScale.py -text
 Toolkit/MultiMerger.py -text
 Toolkit/PlayPen/ExperimentSetup.py -text
