@@ -117,11 +117,38 @@ class XBeamFactory:
         return XBeam(direction, polar_fraction, polar_plane_normal, wavelength)
 
     @staticmethod
-    def CBF(cbf_file):
-        '''Initialize a beam model from a CBF file.'''
-        
-        return imgCIF(cbf_file)
-    
+    def imgCIF_H(cbf_handle):
+        '''Initialize a detector model from an imgCIF file. N.B. the
+        definition of the polarization plane is not completely helpful
+        in this - it is the angle between the polarization plane and the
+        +Y laboratory frame vector. This example works from a cbf_handle,
+        which is already configured.'''
 
+        d2r = math.pi / 180.0
+
+        cbf_handle.find_category('axis')
+
+        # find record with equipment = source
+        cbf_handle.find_column('equipment')
+        cbf_handle.find_row('source')
         
+        # then get the vector and offset from this
+        direction = []
+        
+        for j in range(3):
+            cbf_handle.find_column('vector[%d]' % (j + 1))
+            direction.append(cbf_handle.get_doublevalue())
+
+        # and the wavelength
+        wavelength = cbf_handle.get_wavelength()
+
+        # and information about the polarization - FIXME this should probably
+        # be a rotation about the beam not about the Z axis.
+        
+        polar_fraction, polar_angle = cbf_handle.get_polarization()
+        polar_plane_normal = (
+            math.sin(polar_angle * d2r), math.cos(polar_angle * d2r), 0.0)
+        
+        return XBeam(direction, polar_fraction, polar_plane_normal, wavelength)
+
         

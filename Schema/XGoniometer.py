@@ -157,14 +157,25 @@ class XGoniometerFactory:
 
         cbf_gonio.__swig_destroy__(cbf_gonio)
         del(cbf_gonio)
-
+        
         return XGoniometer(axis.elems, fixed.elems)
 
     @staticmethod
-    def CBF(cbf_file):
-        '''Initialize a goniometer model from a CBF file.'''
+    def imgCIF_H(cbf_handle):
+        '''Initialize a goniometer model from an imgCIF file handle, where
+        it is assumed that the file has already been read.'''
 
-        return imgCIF(cbf_file)
+        cbf_gonio = cbf_handle.construct_goniometer()
+
+        axis, fixed = cbf_gonio_to_effective_axis_fixed(cbf_gonio)
+
+        cbf_gonio.__swig_destroy__(cbf_gonio)
+        del(cbf_gonio)
+
+        return XGoniometer(axis.elems, fixed.elems)
+
+        
+
         
     
 

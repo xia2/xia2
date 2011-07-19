@@ -235,11 +235,44 @@ class XDetectorFactory:
         return XDetector(origin, fast, slow, pixel,
                          size, overload, [])
 
-    @staticmethod
-    def CBF(cbf_file):
-        '''Initialize a detector model from a CBF file.'''
 
-        return imgCIF(cbf_file)
+    @staticmethod
+    def imgCIF_H(cbf_handle):
+        '''Initialize a detector model from an imgCIF file handle, where it
+        is assumed that the file has already been read.'''
+
+        detector = cbf_handle.construct_detector(0)
+        
+        pixel = (detector.get_inferred_pixel_size(1),
+                 detector.get_inferred_pixel_size(2))
+
+        # FIXME can probably simplify the code which follows below by
+        # making proper use of cctbx vector calls - should not be as
+        # complex as it appears to be...
+
+        origin = detector.get_pixel_coordinates(0, 0)
+        fast = detector.get_pixel_coordinates(0, 1)
+        slow = detector.get_pixel_coordinates(1, 0)
+        
+        dfast = [fast[j] - origin[j] for j in range(3)]
+        dslow = [slow[j] - origin[j] for j in range(3)]
+        
+        lfast = math.sqrt(sum([dfast[j] * dfast[j] for j in range(3)]))
+        lslow = math.sqrt(sum([dslow[j] * dslow[j] for j in range(3)]))
+        
+        fast = tuple([dfast[j] / lfast for j in range(3)])
+        slow = tuple([dslow[j] / lslow for j in range(3)])
+
+        size = tuple(reversed(cbf_handle.get_image_size(0)))
+        overload = cbf_handle.get_overload(0)
+
+        detector.__swig_destroy__(detector)
+        del(detector)
+
+        return XDetector(origin, fast, slow, pixel,
+                         size, overload, [])
+
+
         
     
         
