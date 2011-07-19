@@ -27,8 +27,6 @@ from Schema.XDetector import XDetector, XDetectorFactory
 from Schema.XBeam import XBeam, XBeamFactory
 from Schema.XScan import XScan, XScanFactory
 
-from Registry import Registry
-
 class _MetaFormat(type):
     '''A metaclass for the Format base class (and hence all format classes)
     to allow autoregistration of the class implementations.'''
@@ -36,6 +34,7 @@ class _MetaFormat(type):
     def __init__(self, name, bases, attributes):
         super(_MetaFormat, self).__init__(name, bases, attributes)
 
+        from Toolkit.ImageFormat.Registry import Registry
         Registry.add(self)
 
         return

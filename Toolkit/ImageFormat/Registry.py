@@ -10,7 +10,9 @@
 # of image formats.
 
 import os
+import sys
 import imp
+import inspect
 
 from RegistryHelpers import InheritsFromFormat
 from RegistryHelpers import LookForFormatClasses
@@ -27,6 +29,8 @@ class _Registry:
 
         self._formats = []
 
+        self._setup = False
+
         return
 
     def setup(self):
@@ -35,8 +39,13 @@ class _Registry:
         for files starting with Format and ending in .py to allow user
         extensibility.'''
 
+        if self._setup:
+            return
+
         for format_class in LookForFormatClasses():
             LoadFormatClass(format_class)
+
+        self._setup = True
 
         return
 
@@ -60,6 +69,8 @@ class _Registry:
         '''More useful - find the best format handler in the registry for your
         image file. N.B. this is in principle a factory function.'''
 
+        self.setup()
+
         scores = []
 
         for format in self._formats:
@@ -69,8 +80,26 @@ class _Registry:
 
         return scores[-1][1]
 
-Registry = _Registry()
-Registry.setup()
+class Registry:
+    '''A class to turn the registry above into a singleton, so that we
+    can work around some of the more knotty dependency loops which come
+    out of things like this. This is something of a boiler plate.'''
 
-        
-        
+    __instance = None
+
+    def __init__(self):
+
+        if Registry.__instance is None:
+            Registry.__instance = _Registry()
+        return
+
+    def __call__(self):
+        return self
+
+    def __getattr__(self, attr):
+        return getattr(self.__instance, attr)
+
+    def __setattr__(self, attr, value):
+        return setattr(self.__instance, attr, value)
+
+Registry = Registry()
