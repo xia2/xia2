@@ -27,8 +27,6 @@ class _Registry:
 
         self._formats = []
 
-        self.setup()
-
         return
 
     def setup(self):
@@ -71,9 +69,8 @@ class _Registry:
 
         return scores[-1][1]
 
-Registry = Registry()
+Registry = _Registry()
+Registry.setup()
 
-
-            
         
         

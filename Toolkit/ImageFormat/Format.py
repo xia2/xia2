@@ -22,9 +22,10 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 # first - import access to all of the factories that we will be needing
 
-from Schema.XGoniometer import XGoniometerFactory
-from Schema.XDetector import XDetectorFactory
-from Schema.XBeam import XBeamFactory
+from Schema.XGoniometer import XGoniometer, XGoniometerFactory
+from Schema.XDetector import XDetector, XDetectorFactory
+from Schema.XBeam import XBeam, XBeamFactory
+from Schema.XScan import XScan, XScanFactory
 
 from Registry import Registry
 
@@ -48,7 +49,131 @@ class Format:
 
     __metaclass__ = _MetaFormat
 
-    def __init__(self):
-        pass
+    def __init__(self, image_file):
+        '''Initialize a class instance from an image file.'''
+        
+        assert(understand(image_file) > 0)
 
+        self.setup(image_file)
+
+        self._xgoniometer_instance = None
+        self._xdetector_instance = None
+        self._xbeam_instance = None
+        self._xscan_instance = None
+        
+        return
+
+    @staticmethod
+    def understand(image_file):
+        '''Overload this to publish whether this class instance understands
+        a given file. N.B. to say that we really understand it, return a
+        positive number. To say in a subclass that you understand it better
+        then return a larger number, for example checking the detector serial
+        number. Finally, if you are writing this subclass for a given
+        instrument and you are given a different example return 0.'''
+        
+        return 0
+
+    def setup(self, image_file):
+        '''Read the image file, construct the information which we will be
+        wanting about the experiment from this. N.B. in your implementation
+        of this you will probably want to make use of the static methods
+        below and probably add some format parsing code too. Please also keep
+        in mind that your implementation may be further subclassed by
+        someone else.'''
+
+        try:
+            self._start(image_file)
+            
+            xgoniometer_instance = self._xgoniometer()
+            assert(isinstance(xgoniometer_instance, XGoniometer))
+            self._xgoniometer_instance = xgoniometer_instance
+            
+            xdetector_instance = self._xdetector()
+            assert(isinstance(xdetector_instance, XDetector))
+            self._xdetector_instance = xdetector_instance
+            
+            xbeam_instance = self._xbeam()
+            assert(isinstance(xbeam_instance, XBeam))
+            self._xbeam_instance = xbeam_instance
+            
+            xscan_instance = self._xscan()
+            assert(isinstance(xscan_instance, XScan))
+            self._xscan_instance = xscan_instance
+            
+
+        finally:
+            self._end()
+
+        return
+
+    def get_xgoniometer(self):
+        '''Get the standard XGoniometer instance which was derived from the
+        image headers.'''
+
+        return self._xgoniometer_instance
+
+    def get_xdetector(self):
+        '''Get the standard XDetector instance which was derived from the
+        image headers.'''
+
+        return self._xdetector_instance
+
+    def get_xbeam(self):
+        '''Get the standard XBeam instance which was derived from the image
+        headers.'''
+
+        return self._xbeam_instance
+
+    def get_xscan(self):
+        '''Get the standard XScan instance which was derived from the image
+        headers.'''
+
+        return self._xscan_instance
+
+    # methods which must be overloaded in order to produce a useful Format
+    # class implementation
+
+    def _start(self, image_file):
+        '''Start code for handling this image file, which may open a link
+        to it once, say, and pass this around within the implementation.
+        How you use this is up to you, though you probably want to overload
+        it...'''
+
+        self._image_file = image_file
+
+        return 
+
+    def _end(self):
+        '''Clean up things - keeping in mind that this should run even in the
+        case of an exception being raised.'''
+
+        return
+
+    def _xgoniometer(self, image_file):
+        '''Overload this method to read the image file however you like so
+        long as the result is an XGoniometer.'''
+
+        raise RuntimeError, 'overload me'
+
+    def _xdetector(self, image_file):
+        '''Overload this method to read the image file however you like so
+        long as the result is an XDetector.'''
+
+        raise RuntimeError, 'overload me'
+
+    def _xbeam(self, image_file):
+        '''Overload this method to read the image file however you like so
+        long as the result is an XBeam.'''
+
+        raise RuntimeError, 'overload me'
+
+    def _xscan(self, image_file):
+        '''Overload this method to read the image file however you like so
+        long as the result is an XScan.'''
+
+        raise RuntimeError, 'overload me'
+
+    # links to static factory methods
+    
     

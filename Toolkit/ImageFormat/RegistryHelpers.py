@@ -8,8 +8,10 @@
 # Things to help the ImageFormat registry to work.
 
 import os
+import sys
 import imp
 import exceptions
+import traceback
 
 def InheritsFromFormat(PutativeFormatClass):
     '''Check that the PutativeFormatClass inherits on some level from a class
@@ -78,7 +80,7 @@ def LoadFormatClass(FormatClass):
     try:
         imp.load_module(format_class_name, module, path, description)
     except exceptions.Exception, e:
-        print e
+        traceback.print_exc(sys.stderr)
     finally:
         module.close()
 
