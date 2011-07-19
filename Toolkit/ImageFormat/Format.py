@@ -52,7 +52,7 @@ class Format:
     def __init__(self, image_file):
         '''Initialize a class instance from an image file.'''
         
-        assert(understand(image_file) > 0)
+        assert(Format.understand(image_file) > 0)
 
         self.setup(image_file)
 
@@ -60,6 +60,11 @@ class Format:
         self._xdetector_instance = None
         self._xbeam_instance = None
         self._xscan_instance = None
+
+        self._xgoniometer_factory = XGoniometerFactory
+        self._xdetector_factory = XDetectorFactory
+        self._xbeam_factory = XBeamFactory
+        self._xscan_factory = XScanFactory
         
         return
 
@@ -174,6 +179,5 @@ class Format:
 
         raise RuntimeError, 'overload me'
 
-    # links to static factory methods
     
     
