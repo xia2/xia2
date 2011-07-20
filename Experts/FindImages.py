@@ -161,6 +161,8 @@ def template_directory_number2image(template, directory, number):
     '''Construct the full path to an image from the template, directory
     and image number.'''
 
+    # FIXME why does this duplicate code shown below??
+
     length = template.count('#')
 
     # check that the number will fit in the template
