@@ -60,6 +60,26 @@ Schema/Interfaces/NextGeneration/processing_plugin.py -text
 Schema/Tests/TestXBeam.py -text
 Schema/Tests/TestXDetector.py -text
 Schema/Tests/TestXGoniometer.py -text
+Schema/Tests/image_001.dat -text
+Schema/Tests/image_002.dat -text
+Schema/Tests/image_003.dat -text
+Schema/Tests/image_004.dat -text
+Schema/Tests/image_005.dat -text
+Schema/Tests/image_006.dat -text
+Schema/Tests/image_007.dat -text
+Schema/Tests/image_008.dat -text
+Schema/Tests/image_009.dat -text
+Schema/Tests/image_010.dat -text
+Schema/Tests/image_011.dat -text
+Schema/Tests/image_012.dat -text
+Schema/Tests/image_013.dat -text
+Schema/Tests/image_014.dat -text
+Schema/Tests/image_015.dat -text
+Schema/Tests/image_016.dat -text
+Schema/Tests/image_017.dat -text
+Schema/Tests/image_018.dat -text
+Schema/Tests/image_019.dat -text
+Schema/Tests/image_020.dat -text
 Schema/Tests/omega_scan.cbf -text svneol=unset#unset
 Schema/Tests/phi_scan.cbf -text svneol=unset#unset
 Schema/XBeam.py -text
