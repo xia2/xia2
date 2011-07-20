@@ -64,10 +64,6 @@ def work_xscan_factory():
         template, directory, j + 1), XScanHelperImageFormats.FORMAT_CBF,
         1.0, j) for j in range(20)]
 
-    # we can join them up but it is not really all that nice!
-    
-    print sum(xscans[1:], xscans[0])
-
     xscans.reverse()
 
     try:
@@ -78,11 +74,17 @@ def work_xscan_factory():
 
     xscans.sort()
     print sum(xscans[1:], xscans[0])
-    
-    
 
-    
+    a = XScanFactory.Sum(xscans[:10])
+    b = XScanFactory.Sum(xscans[10:])
 
+    print a + b
+
+    filename = XScanHelperImageFiles.template_directory_index_to_image(
+        template, directory, 1)
+
+    assert(len(XScanFactory.Search(filename)) == 20)
+    
 if __name__ == '__main__':
 
     work_helper_image_files()

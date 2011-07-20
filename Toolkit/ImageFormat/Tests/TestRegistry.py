@@ -55,6 +55,7 @@ def TestRegistry2(files):
         print i.get_xbeam()
         print i.get_xgoniometer()
         print i.get_xdetector()
+        print i.get_xscan()
 
     return time.time() - s 
 

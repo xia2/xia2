@@ -14,6 +14,8 @@ import sys
 import pycbf
 import math
 import copy
+import time
+import datetime
 
 from XScanHelpers import XScanHelperImageFiles
 from XScanHelpers import XScanHelperImageFormats
@@ -53,8 +55,10 @@ class XScan:
         return
 
     def __repr__(self):
+
         return '%s\n' % os.path.join(self._directory, self._template) + \
-               '%d -> %d' % (self._image_range)
+               '%d -> %d\n' % (self._image_range) + \
+               '%s' % self.get_image_time(self._image_range[0])
 
     def __cmp__(self, other):
         '''Comparison of this scan with another - which should be generally
@@ -120,6 +124,12 @@ class XScan:
         '''Get the epoch for this image.'''
         return self._epochs[index]
 
+    def get_image_time(self, index):
+        '''Get the time for this which is the epoch translated into a human
+        readable form.'''
+
+        return time.asctime(time.gmtime(self._epochs[index]))
+
 class XScanFactory:
     '''A factory for XScan instances, to help with constructing the classes
     in a set of common circumstances.'''
@@ -136,5 +146,64 @@ class XScanFactory:
             template, directory, index) == filename)
         
         return XScan(template, directory, format, (index, index),
-                     exposure_time, {index:exposure_time})
+                     exposure_time, {index:epoch})
 
+    @staticmethod
+    def Sum(xscans):
+        '''Sum a list of scans wrapping the sligtly clumsy idiomatic method:
+        sum(xscans[1:], xscans[0]).'''
+
+        for xscan in xscans:
+            assert(xscan.__class__ == XScan)
+
+        return sum(xscans[1:], xscans[0])
+
+    @staticmethod
+    def Search(filename):
+        '''Get a list of files which appear to match the template and
+        directory implied by the input filename. This could well be used
+        to get a list of image headers to read and hence construct XScans
+        from.'''
+
+        template, directory = \
+                  XScanHelperImageFiles.image_to_template_directory(filename)
+
+        indices = XScanHelperImageFiles.template_directory_to_indices(
+            template, directory)
+
+        return [XScanHelperImageFiles.template_directory_index_to_image(
+            template, directory, index) for index in indices]
+
+    @staticmethod
+    def Format(name):
+        '''Return the correct format token for a given name, for example:
+
+        cbf, CBF
+        smv, SMV
+        tiff, tif, TIFF
+        raxis, RAXIS
+        mar, MAR
+
+        to the appropriate static token which will be used as a handle
+        everywhere else in this.'''
+        
+        if name.upper() == 'CBF':
+            return XScanHelperImageFormats.FORMAT_CBF
+        elif name.upper() == 'SMV':
+            return XScanHelperImageFormats.FORMAT_SMV
+        elif name.upper() == 'TIF' or name.upper() == 'TIFF':
+            return XScanHelperImageFormats.FORMAT_TIFF
+        elif name.upper() == 'RAXIS':
+            return XScanHelperImageFormats.FORMAT_RAXIS
+        elif name.upper() == 'MAR':
+            return XScanHelperImageFormats.FORMAT_MAR
+
+        raise RuntimeError, 'name %s not known' % name
+
+    @staticmethod
+    def Epoch(date_string):
+        '''Interpret a standard time string and get the corresponding epoch.'''
+
+        return time.mktime(time.strptime(date_string))
+
+            

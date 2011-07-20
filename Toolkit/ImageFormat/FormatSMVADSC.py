@@ -83,8 +83,16 @@ class FormatSMVADSC(FormatSMV):
         return self._xbeam_factory.Simple(wavelength)
 
     def _xscan(self):
+        '''Return the scan information for this image.'''
 
-        return self._xscan_factory.Simple()
+        format = self._xscan_factory.Format('smv') 
+        time = float(self._header_dictionary['TIME'])
+        epoch = self._xscan_factory.Epoch(self._header_dictionary['DATE'])
+
+        return self._xscan_factory.Single(
+            self._image_file, format, time, epoch)
+
+    
 
     
         

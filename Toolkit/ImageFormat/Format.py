@@ -61,6 +61,8 @@ class Format:
 
     def __init__(self, image_file):
         '''Initialize a class instance from an image file.'''
+
+        self._image_file = image_file
         
         self._xgoniometer_instance = None
         self._xdetector_instance = None
@@ -72,11 +74,11 @@ class Format:
         self._xbeam_factory = XBeamFactory
         self._xscan_factory = XScanFactory
 
-        self.setup(image_file)
+        self.setup()
 
         return
 
-    def setup(self, image_file):
+    def setup(self):
         '''Read the image file, construct the information which we will be
         wanting about the experiment from this. N.B. in your implementation
         of this you will probably want to make use of the static methods
@@ -85,7 +87,7 @@ class Format:
         someone else.'''
 
         try:
-            self._start(image_file)
+            self._start()
             
             xgoniometer_instance = self._xgoniometer()
             assert(isinstance(xgoniometer_instance, XGoniometer))
@@ -141,13 +143,11 @@ class Format:
     # methods which must be overloaded in order to produce a useful Format
     # class implementation
 
-    def _start(self, image_file):
+    def _start(self):
         '''Start code for handling this image file, which may open a link
         to it once, say, and pass this around within the implementation.
         How you use this is up to you, though you probably want to overload
         it...'''
-
-        self._image_file = image_file
 
         return 
 

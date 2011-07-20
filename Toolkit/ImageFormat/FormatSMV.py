@@ -66,13 +66,13 @@ class FormatSMV(Format):
 
         return
 
-    def _start(self, image_file):
+    def _start(self):
         '''Open the image file, read the image header, copy the key / value
         pairs into an internal dictionary self._header_dictionary along with
         the length of the header in bytes self._header_size.'''
 
         self._header_size, self._header_dictionary = FormatSMV.get_smv_header(
-            image_file)
+            self._image_file)
 
         return
 
