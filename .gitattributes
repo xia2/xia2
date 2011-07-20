@@ -60,6 +60,7 @@ Schema/Interfaces/NextGeneration/processing_plugin.py -text
 Schema/Tests/TestXBeam.py -text
 Schema/Tests/TestXDetector.py -text
 Schema/Tests/TestXGoniometer.py -text
+Schema/Tests/TestXScan.py -text
 Schema/Tests/image_001.dat -text
 Schema/Tests/image_002.dat -text
 Schema/Tests/image_003.dat -text
@@ -87,6 +88,7 @@ Schema/XDetector.py -text
 Schema/XGoniometer.py -text
 Schema/XGoniometerHelpers.py -text
 Schema/XScan.py -text
+Schema/XScanHelpers.py -text
 Toolkit/BackstopMask.py -text
 Toolkit/ComputeU.py -text
 Toolkit/ImageFormat/Format.py -text

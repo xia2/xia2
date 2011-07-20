@@ -77,7 +77,7 @@ class XBeamFactory:
         with the +z axis, as is quite normal. Also assume the beam has
         polarization fraction 0.999 and is polarized in the x-z plane.'''
 
-        return XBeam((0.0, 0.0, 1.0), (0.0, 1.0, 0.0), 0.999, wavelength)
+        return XBeam((0.0, 0.0, 1.0), 0.999, (0.0, 1.0, 0.0), wavelength)
 
     @staticmethod
     def imgCIF(cif_file):

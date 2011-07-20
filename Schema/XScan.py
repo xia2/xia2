@@ -31,7 +31,13 @@ class XScan:
         presume in here that the images must exist when the XScan object is
         constructed.'''
 
-        pass
+        
+
+
         
 class XScanFactory:
-    pass
+
+    @staticmethod
+    def Simple():
+        return XScan('template', 'directory', 'image_range', 'exposure_time',
+                     'format', 'epochs')
