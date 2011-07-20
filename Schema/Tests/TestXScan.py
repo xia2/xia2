@@ -57,12 +57,31 @@ def work_xscan_factory():
     '''Test out the XScanFactory.'''
 
     directory = os.path.join(os.environ['XIA2_ROOT'], 'Schema', 'Tests')
-    filename = os.path.join(directory, 'image_001.dat')
+    template = 'image_###.dat'
 
-    xs = XScanFactory.Single(filename, XScanHelperImageFormats.FORMAT_CBF,
-                             1.0, time.time())
+    xscans = [XScanFactory.Single(
+        XScanHelperImageFiles.template_directory_index_to_image(
+        template, directory, j + 1), XScanHelperImageFormats.FORMAT_CBF,
+        1.0, j) for j in range(20)]
 
-    print xs
+    # we can join them up but it is not really all that nice!
+    
+    print sum(xscans[1:], xscans[0])
+
+    xscans.reverse()
+
+    try:
+        print sum(xscans[1:], xscans[0])
+        print 'I should not see this message'
+    except AssertionError, e:
+        pass
+
+    xscans.sort()
+    print sum(xscans[1:], xscans[0])
+    
+    
+
+    
 
 if __name__ == '__main__':
 

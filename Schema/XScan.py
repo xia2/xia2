@@ -13,6 +13,7 @@ import os
 import sys
 import pycbf
 import math
+import copy
 
 from XScanHelpers import XScanHelperImageFiles
 from XScanHelpers import XScanHelperImageFormats
@@ -55,6 +56,37 @@ class XScan:
         return '%s\n' % os.path.join(self._directory, self._template) + \
                '%d -> %d' % (self._image_range)
 
+    def __cmp__(self, other):
+        '''Comparison of this scan with another - which should be generally
+        comparable, to allow for sorting.'''
+
+        assert(self._template == other.get_template())
+        assert(self._directory == other.get_directory())
+        assert(self._format == other.get_format())
+        assert(self._exposure_time == other.get_exposure_time())
+
+        return self._image_range[0] - other.get_image_range()[0]
+
+    def __add__(self, other):
+        '''Return a new sweep which cosists of the contents of this sweep and
+        the contents of the other sweep, provided that they are consistent -
+        if they are not consistent (i.e. do not share the template, directory,
+        format, exposure time and follow from one another) then an
+        AssertionError will result.'''
+
+        assert(self._template == other.get_template())
+        assert(self._directory == other.get_directory())
+        assert(self._format == other.get_format())
+        assert(self._exposure_time == other.get_exposure_time())
+        assert(self._image_range[1] + 1 == other.get_image_range()[0])
+
+        new_image_range = (self._image_range[0], other.get_image_range()[1])
+        new_epochs = copy.deepcopy(self._epochs)
+        new_epochs.update(other.get_epochs())
+
+        return XScan(self._template, self._directory, self._format,
+                     new_image_range, self._exposure_time, new_epochs)
+                     
     def get_template(self):
         '''Get the scan template.'''
         return self._template
