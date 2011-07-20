@@ -10,11 +10,14 @@
 import math
 import os
 import sys
+import time
 
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Schema.XScan import XScan
+from Schema.XScan import XScanFactory
 from Schema.XScanHelpers import XScanHelperImageFiles
+from Schema.XScanHelpers import XScanHelperImageFormats
 
 def work_helper_image_files():
     '''Test the static methods in XScanHelperImageFiles.'''
@@ -24,27 +27,48 @@ def work_helper_image_files():
     directory = os.path.join(os.environ['XIA2_ROOT'], 'Schema', 'Tests')
     template = 'image_###.dat'
 
-    assert(len(helper.template_directory_to_indices(
+    assert(len(XScanHelperImageFiles.template_directory_to_indices(
         template, directory)) == 20)
 
-    assert(helper.template_directory_index_to_image(template, directory, 1) ==
-           os.path.join(directory, 'image_001.dat'))
+    assert(XScanHelperImageFiles.template_directory_index_to_image(
+        template, directory, 1) == os.path.join(directory, 'image_001.dat'))
 
-    assert(helper.template_index_to_image(template, 1) == 'image_001.dat')
+    assert(XScanHelperImageFiles.template_index_to_image(
+        template, 1) == 'image_001.dat')
 
-    assert(helper.image_to_template_directory(
+    assert(XScanHelperImageFiles.image_to_template_directory(
         os.path.join(directory, 'image_001.dat')) == (template, directory))
-
-    assert(helper.image_to_index('image_001.dat') == 1)
-
-    assert(helper.image_to_template('image_001.dat') == 'image_###.dat')
+    
+    assert(XScanHelperImageFiles.image_to_index('image_001.dat') == 1)
+    
+    assert(XScanHelperImageFiles.image_to_template(
+        'image_001.dat') == 'image_###.dat')
     
     return
 
+def work_helper_image_formats():
+    '''Test the static methods and properties in XScanHelperImageFormats.'''
+
+    assert(XScanHelperImageFormats.check_format(
+        XScanHelperImageFormats.FORMAT_CBF))
+    assert(not(XScanHelperImageFormats.check_format('CBF')))
+
+def work_xscan_factory():
+    '''Test out the XScanFactory.'''
+
+    directory = os.path.join(os.environ['XIA2_ROOT'], 'Schema', 'Tests')
+    filename = os.path.join(directory, 'image_001.dat')
+
+    xs = XScanFactory.Single(filename, XScanHelperImageFormats.FORMAT_CBF,
+                             1.0, time.time())
+
+    print xs
 
 if __name__ == '__main__':
 
     work_helper_image_files()
+    work_helper_image_formats()
+    work_xscan_factory()
 
     
 

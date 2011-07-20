@@ -9,17 +9,22 @@
 # in internal ticket #1555. This is not designed to be used outside of the 
 # XSweep classes.
 
+import os
+import sys
 import pycbf
 import math
+
+from XScanHelpers import XScanHelperImageFiles
+from XScanHelpers import XScanHelperImageFormats
 
 class XScan:
     '''A class to represent the scan used to perform a rotation method X-ray
     diffraction experiment. In essence this is the information provided to the
     camera on where the images should go, how long the exposures should be
     and how the frames are formatted.'''
-
-    def __init__(self, template, directory, image_range, exposure_time,
-                 format, epochs):
+    
+    def __init__(self, template, directory, format, image_range,
+                 exposure_time, epochs):
         '''Construct a new scan class, which represents the information given
         to the camera to perform the diffraction experiment. N.B. though some
         of this information could be derived from image headers within the
@@ -31,13 +36,73 @@ class XScan:
         presume in here that the images must exist when the XScan object is
         constructed.'''
 
+        assert('#' in template)
+        assert(os.path.exists(directory))
+        assert(XScanHelperImageFormats.check_format(format))
+        assert(len(image_range) == 2)
+        assert(len(epochs) == (image_range[1] - image_range[0] + 1))
         
-
-
+        self._template = template
+        self._directory = directory
+        self._format = format
+        self._image_range = image_range
+        self._exposure_time = exposure_time
+        self._epochs = epochs
         
+        return
+
+    def __repr__(self):
+        return '%s\n' % os.path.join(self._directory, self._template) + \
+               '%d -> %d' % (self._image_range)
+
+    def get_template(self):
+        '''Get the scan template.'''
+        return self._template
+
+    def get_directory(self):
+        '''Get the scan directory.'''
+        return self._directory
+
+    def get_format(self):
+        '''Get the image format for the images.'''
+        return self._format
+
+    def get_image_range(self):
+        '''Get the image range (i.e. start, end inclusive) for this scan.'''
+        return self._image_range
+
+    def get_exposure_time(self):
+        '''Get the exposure time used for these images.'''
+        return self._exposure_time
+
+    def get_epochs(self):
+        '''Return the dictionary containing the image epochs.'''
+        return self._epochs
+
+    def get_image_name(self, index):
+        '''Get the full image name for this image index.'''
+        return XScanHelperImageFiles.template_directory_index_to_image(
+            self._template, self._directory, self._image)
+
+    def get_image_epoch(self, index):
+        '''Get the epoch for this image.'''
+        return self._epochs[index]
+
 class XScanFactory:
+    '''A factory for XScan instances, to help with constructing the classes
+    in a set of common circumstances.'''
 
     @staticmethod
-    def Simple():
-        return XScan('template', 'directory', 'image_range', 'exposure_time',
-                     'format', 'epochs')
+    def Single(filename, format, exposure_time, epoch):
+        '''Construct an XScan instance for a single image.'''
+
+        template, directory = \
+                  XScanHelperImageFiles.image_to_template_directory(filename)
+        index = XScanHelperImageFiles.image_to_index(filename)
+
+        assert(XScanHelperImageFiles.template_directory_index_to_image(
+            template, directory, index) == filename)
+        
+        return XScan(template, directory, format, (index, index),
+                     exposure_time, {index:exposure_time})
+

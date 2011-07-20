@@ -64,7 +64,29 @@ class XScanHelperImageFiles:
         '''Construct the image file name from the template and file index.'''
         return template_number2image(template, index)
 
+class XScanHelperImageFormats:
+    '''A helper class which enxapsulates the allowed and supported image
+    formats namely CBF, TIFF, SMV, RAXIS, MAR. N.B. there will be some
+    crosstalk between this class and the ImageFormat classes.'''
+
+    FORMAT_CBF = 'FORMAT_CBF'
+    FORMAT_TIFF = 'FORMAT_TIFF'
+    FORMAT_SMV = 'FORMAT_SMV'
+    FORMAT_RAXIS = 'FORMAT_RAXIS'
+    FORMAT_MAR = 'FORMAT_MAR'
+
+    @staticmethod
+    def check_format(format):
+        if format in [XScanHelperImageFormats.FORMAT_CBF,
+                      XScanHelperImageFormats.FORMAT_TIFF,
+                      XScanHelperImageFormats.FORMAT_SMV,
+                      XScanHelperImageFormats.FORMAT_RAXIS,
+                      XScanHelperImageFormats.FORMAT_MAR]:
+            return True
+
+        return False
 
     
+            
 
     
