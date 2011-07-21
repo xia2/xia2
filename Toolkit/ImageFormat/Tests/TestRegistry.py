@@ -59,10 +59,35 @@ def TestRegistry2(files):
 
     return time.time() - s 
 
+def TestRegistry3(files):
+    '''First find the class, then read every frame with it, then add the scans
+    together to make sure that they all make sense.'''
+
+    s = time.time()
+    
+    format = Registry.find(files[0])
+
+    scan = format(files[0]).get_xscan()
+
+    for f in files[1:]:
+
+        i = format(f)
+
+        scan += i.get_xscan()
+
+    print scan
+    print scan[:len(scan) // 2]
+    print scan[:]
+    print scan[:len(scan)]
+    print scan[1 + len(scan) // 2:]
+
+    return time.time() - s 
+
 if __name__ == '__main__':
     
-    t1 = TestRegistry(sys.argv[1:])
-    t2 = TestRegistry2(sys.argv[1:])
+    # t = TestRegistry(sys.argv[1:])
+    # t = TestRegistry2(sys.argv[1:])
+    t = TestRegistry3(sys.argv[1:])
 
-    print t1, t2
+    print t
 

@@ -102,6 +102,16 @@ class XScan:
                      new_image_range, self._exposure_time,
                      self._oscillation, new_epochs)
 
+    def __len__(self):
+        '''Implement the len(s) call - will return the total number of images
+        in the scan, which should mean that copying using
+
+        c = s[:len(s)]
+
+        should do something meaningful.'''
+
+        return self._image_range[1] - self._image_range[0] + 1
+
     def __getitem__(self, index):
         '''Implement ability to get an XScan object corresponding to a single
         image in the scan. N.B. this is slightly complex as we need to support
