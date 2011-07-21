@@ -88,9 +88,11 @@ class FormatSMVADSC(FormatSMV):
         format = self._xscan_factory.Format('smv') 
         time = float(self._header_dictionary['TIME'])
         epoch = self._xscan_factory.Epoch(self._header_dictionary['DATE'])
+        osc_start = float(self._header_dictionary['OSC_START'])
+        osc_range = float(self._header_dictionary['OSC_RANGE'])
 
         return self._xscan_factory.Single(
-            self._image_file, format, time, epoch)
+            self._image_file, format, time, osc_start, osc_range, epoch)
 
     
 
