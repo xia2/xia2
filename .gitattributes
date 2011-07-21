@@ -91,6 +91,7 @@ Schema/XScan.py -text
 Schema/XScanHelpers.py -text
 Toolkit/BackstopMask.py -text
 Toolkit/ComputeU.py -text
+Toolkit/ImageFormat/Doc/adding_new_formats.txt -text
 Toolkit/ImageFormat/Format.py -text
 Toolkit/ImageFormat/FormatCBF.py -text
 Toolkit/ImageFormat/FormatMAR.py -text
