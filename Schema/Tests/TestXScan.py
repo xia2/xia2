@@ -62,7 +62,7 @@ def work_xscan_factory():
     xscans = [XScanFactory.Single(
         XScanHelperImageFiles.template_directory_index_to_image(
         template, directory, j + 1), XScanHelperImageFormats.FORMAT_CBF,
-        1.0, j) for j in range(20)]
+        1.0, 18 + 0.5 * j, 0.5, j) for j in range(20)]
 
     xscans.reverse()
 
@@ -84,6 +84,9 @@ def work_xscan_factory():
         template, directory, 1)
 
     assert(len(XScanFactory.Search(filename)) == 20)
+
+    print (a + b)[1:5]
+    print (a + b)[:10]
     
 if __name__ == '__main__':
 

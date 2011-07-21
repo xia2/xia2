@@ -27,7 +27,7 @@ class XScan:
     and how the frames are formatted.'''
     
     def __init__(self, template, directory, format, image_range,
-                 exposure_time, epochs):
+                 exposure_time, oscillation, epochs):
         '''Construct a new scan class, which represents the information given
         to the camera to perform the diffraction experiment. N.B. though some
         of this information could be derived from image headers within the
@@ -37,12 +37,16 @@ class XScan:
         epochs are passed in as dictionaries incexed by image numbers in
         range image_range[0] to image_range[1] inclusive however (iii) do not
         presume in here that the images must exist when the XScan object is
-        constructed.'''
+        constructed. N.B. also now include the oscillation as a (start, width)
+        tuple corresponding to the first image in the scan. It is implied that
+        subsequent images will be continuous with this, sharing the same
+        oscillation width.'''
 
         assert('#' in template)
         assert(os.path.exists(directory))
         assert(XScanHelperImageFormats.check_format(format))
         assert(len(image_range) == 2)
+        assert(len(oscillation) == 2)
         assert(len(epochs) == (image_range[1] - image_range[0] + 1))
         
         self._template = template
@@ -50,6 +54,7 @@ class XScan:
         self._format = format
         self._image_range = image_range
         self._exposure_time = exposure_time
+        self._oscillation = oscillation
         self._epochs = epochs
         
         return
@@ -58,6 +63,7 @@ class XScan:
 
         return '%s\n' % os.path.join(self._directory, self._template) + \
                '%d -> %d\n' % (self._image_range) + \
+               '%.3f -> %.3f\n' % (self.get_oscillation_range()) + \
                '%s' % self.get_image_time(self._image_range[0])
 
     def __cmp__(self, other):
@@ -83,13 +89,63 @@ class XScan:
         assert(self._format == other.get_format())
         assert(self._exposure_time == other.get_exposure_time())
         assert(self._image_range[1] + 1 == other.get_image_range()[0])
+        assert(math.fabs(self.get_oscillation_range()[1] -
+                         other.get_oscillation_range()[0]) < 0.001)
+        assert(math.fabs(self.get_oscillation()[1] -
+                         other.get_oscillation()[1]) < 0.001)
 
         new_image_range = (self._image_range[0], other.get_image_range()[1])
         new_epochs = copy.deepcopy(self._epochs)
         new_epochs.update(other.get_epochs())
 
         return XScan(self._template, self._directory, self._format,
-                     new_image_range, self._exposure_time, new_epochs)
+                     new_image_range, self._exposure_time,
+                     self._oscillation, new_epochs)
+
+    def __getitem__(self, index):
+        '''Implement ability to get an XScan object corresponding to a single
+        image in the scan. N.B. this is slightly complex as we need to support
+        single indices and slice objects. If index has attribute start is
+        assumed to be a slice. N.B. these all operate on the IMAGE INDEX
+        rather than behaving like a list.'''
+
+        if type(index) == type(1):
+
+            assert(not index < self._image_range[0])
+            assert(not index > self._image_range[1])
+            
+            return XScan(self._template, self._directory, self._format,
+                         (index, index), self._exposure_time,
+                         self.get_oscillation(index),
+                         {index:self._epochs[index]})
+
+        if hasattr(index, 'start'):
+            assert(index.step is None)
+
+            start = index.start
+            stop = index.stop
+
+            # work around unspecified image ranges i.e. [:10]
+
+            if start == 0:
+                start = self._image_range[0]
+                
+            if stop == sys.maxint:
+                stop = self._image_range[1]
+
+            assert(not start < self._image_range[0])
+            assert(not stop > self._image_range[1])
+
+            new_epochs = { }
+
+            for i in range(start, stop + 1):
+                new_epochs[i] = self._epochs[i]
+
+            return XScan(self._template, self._directory, self._format,
+                         (start, stop), self._exposure_time,
+                         self.get_oscillation(start), new_epochs)
+
+        raise TypeError, 'useless index: %s' % type(index)
                      
     def get_template(self):
         '''Get the scan template.'''
@@ -111,6 +167,28 @@ class XScan:
         '''Get the exposure time used for these images.'''
         return self._exposure_time
 
+    def get_oscillation(self, index = None):
+        '''Get the oscillation start and width for a given frame in the
+        scan.'''
+
+        if index is None:
+            return self._oscillation
+
+        assert(not index < self._image_range[0])
+        assert(not index > self._image_range[1])
+
+        offset = (index - self._image_range[0]) * self._oscillation[1]
+        
+        return (self._oscillation[0] + offset, self._oscillation[1])
+
+    def get_oscillation_range(self):
+        '''Return the overall range of this scan.'''
+
+        range = (self._image_range[1] - self._image_range[0] + 1) * \
+                self._oscillation[1]
+        
+        return (self._oscillation[0], self._oscillation[0] + range)
+        
     def get_epochs(self):
         '''Return the dictionary containing the image epochs.'''
         return self._epochs
@@ -135,7 +213,7 @@ class XScanFactory:
     in a set of common circumstances.'''
 
     @staticmethod
-    def Single(filename, format, exposure_time, epoch):
+    def Single(filename, format, exposure_time, osc_start, osc_width, epoch):
         '''Construct an XScan instance for a single image.'''
 
         template, directory = \
@@ -146,7 +224,7 @@ class XScanFactory:
             template, directory, index) == filename)
         
         return XScan(template, directory, format, (index, index),
-                     exposure_time, {index:epoch})
+                     exposure_time, (osc_start, osc_width), {index:epoch})
 
     @staticmethod
     def Sum(xscans):
