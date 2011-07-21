@@ -237,6 +237,21 @@ class XScanFactory:
                      exposure_time, (osc_start, osc_width), {index:epoch})
 
     @staticmethod
+    def imgCIF(cif_file):
+        '''Initialize a scan model from an imgCIF file.'''
+
+        cbf_handle = pycbf.cbf_handle_struct()
+        cbf_handle.read_file(cif_file, pycbf.MSG_DIGEST)
+
+        raise RuntimeError, 'implement me'
+
+    def imgCIF_H(cbf_handle):
+        '''Initialize a scan model from an imgCIF file handle, where it is
+        assumed that the file has already been read.'''
+
+        raise RuntimeError, 'implement me'
+
+    @staticmethod
     def Sum(xscans):
         '''Sum a list of scans wrapping the sligtly clumsy idiomatic method:
         sum(xscans[1:], xscans[0]).'''

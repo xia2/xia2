@@ -16,10 +16,10 @@ class FormatSMVADSC(FormatSMV):
 
     @staticmethod
     def understand(image_file):
-        '''Check to see if this looks like an SMV format image, i.e. we can
-        make sense of it. Essentially that will be if it contains all of the
-        keys we are looking for and not some we are not (i.e. that belong to
-        a Rigaku Saturn.)'''
+        '''Check to see if this looks like an ADSC SMV format image, i.e. we 
+        can make sense of it. Essentially that will be if it contains all of
+        the keys we are looking for and not some we are not (i.e. that belong 
+        to a Rigaku Saturn.)'''
 
         if FormatSMV.understand(image_file) == 0:
             return 0
@@ -85,7 +85,7 @@ class FormatSMVADSC(FormatSMV):
     def _xscan(self):
         '''Return the scan information for this image.'''
 
-        format = self._xscan_factory.Format('smv') 
+        format = self._xscan_factory.Format('SMV') 
         time = float(self._header_dictionary['TIME'])
         epoch = self._xscan_factory.Epoch(self._header_dictionary['DATE'])
         osc_start = float(self._header_dictionary['OSC_START'])
@@ -94,9 +94,9 @@ class FormatSMVADSC(FormatSMV):
         return self._xscan_factory.Single(
             self._image_file, format, time, osc_start, osc_range, epoch)
 
-    
+if __name__ == '__main__':
 
-    
-        
-        
-    
+    import sys
+
+    for arg in sys.argv[1:]:
+        print FormatSMVADSC.understand(arg)
