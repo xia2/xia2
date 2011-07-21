@@ -303,10 +303,3 @@ class XScanFactory:
 
         raise RuntimeError, 'name %s not known' % name
 
-    @staticmethod
-    def Epoch(date_string):
-        '''Interpret a standard time string and get the corresponding epoch.'''
-
-        return time.mktime(time.strptime(date_string))
-
-            

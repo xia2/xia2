@@ -97,6 +97,17 @@ class XGoniometerFactory:
         return XGoniometer(axis, fixed)
 
     @staticmethod
+    def KnownAxis(axis):
+        '''Return an XGoniometer instance for a known rotation axis, assuming
+        that nothing is known about the fixed element of the rotation axis.'''
+
+        assert(len(axis) == 3)
+        
+        fixed = (1, 0, 0, 0, 1, 0, 0, 0, 1)
+        
+        return XGoniometer(axis, fixed)
+
+    @staticmethod
     def Kappa(alpha, omega, kappa, phi, direction, scan_axis):
         '''Return a kappa XGoniometer where omega is the primary axis (i,e.
         aligned with X in the CBF coordinate frame) and has the kappa arm

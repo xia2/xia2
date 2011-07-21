@@ -86,8 +86,8 @@ def TestRegistry3(files):
 if __name__ == '__main__':
     
     # t = TestRegistry(sys.argv[1:])
-    # t = TestRegistry2(sys.argv[1:])
-    t = TestRegistry3(sys.argv[1:])
+    t = TestRegistry2(sys.argv[1:])
+    # t = TestRegistry3(sys.argv[1:])
 
     print t
 

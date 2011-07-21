@@ -80,6 +80,15 @@ class XBeamFactory:
         return XBeam((0.0, 0.0, 1.0), 0.999, (0.0, 1.0, 0.0), wavelength)
 
     @staticmethod
+    def Complex(beam_direction, polarization_fraction,
+                polarization_plane_normal, wavelength):
+        '''Full access to the constructor for cases where we do know everything
+        that we need...'''
+
+        return XBeam(beam_direction, polarization_fraction,
+                     polarization_plane_normal, wavelength)
+
+    @staticmethod
     def imgCIF(cif_file):
         '''Initialize a detector model from an imgCIF file. N.B. the
         definition of the polarization plane is not completely helpful

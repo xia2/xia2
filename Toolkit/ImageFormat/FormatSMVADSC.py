@@ -8,6 +8,8 @@
 # An implementation of the SMV image reader for ADSC images. Inherits from
 # FormatSMV.
 
+import time
+
 from FormatSMV import FormatSMV
 
 class FormatSMVADSC(FormatSMV):
@@ -87,7 +89,7 @@ class FormatSMVADSC(FormatSMV):
 
         format = self._xscan_factory.Format('SMV') 
         time = float(self._header_dictionary['TIME'])
-        epoch = self._xscan_factory.Epoch(self._header_dictionary['DATE'])
+        epoch =  time.mktime(time.strptime(self._header_dictionary['DATE']))
         osc_start = float(self._header_dictionary['OSC_START'])
         osc_range = float(self._header_dictionary['OSC_RANGE'])
 

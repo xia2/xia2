@@ -198,6 +198,24 @@ class XDetectorFactory:
                          overload, mask)
 
     @staticmethod
+    def Complex(origin, fast, slow, pixel, size, overload):
+        '''A complex detector model, where you know exactly where everything
+        is. This is useful for implementation of the Rigaku Saturn header
+        format, as that is exactly what is in there. Origin, fast and slow are
+        vectors in the CBF reference frame, pixel is the dimensions as a tuple
+        as is size.'''
+
+        assert(len(origin) == 3)
+        assert(len(fast) == 3)
+        assert(len(slow) == 3)
+        assert(len(pixel) == 2)
+        assert(len(size) == 2)
+
+        return XDetector(origin, fast, slow, pixel,
+                         size, overload, [])
+
+
+    @staticmethod
     def imgCIF(cif_file):
         '''Initialize a detector model from an imgCIF file.'''
 
