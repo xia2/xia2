@@ -171,7 +171,7 @@ class FormatSMVRigakuSaturn(FormatSMV):
 
         exposure_time = rotation[3]
         osc_start = rotation[0]
-        osc_range = rotation[1]
+        osc_range = rotation[2]
 
         return self._xscan_factory.Single(
             self._image_file, format, exposure_time,
