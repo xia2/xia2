@@ -307,8 +307,16 @@ def print_sweeps(out = sys.stdout):
             out.write('DIRECTORY %s\n' % s.get_directory())
             out.write('IMAGE %s\n' % os.path.split(s.imagename(min(
                 s.get_images())))[-1])
-            out.write('START_END %d %d\n' % (min(s.get_images()),
-                                             max(s.get_images())))
+
+            if Flags.get_start_end():
+                start, end = Flags.get_start_end()
+                assert(not (start < min(s.get_images())))
+                assert(not (end > max(s.get_images())))
+                out.write('START_END %d %d\n' % (start, end))
+            else:
+                out.write('START_END %d %d\n' % (min(s.get_images()),
+                                                 max(s.get_images())))
+                
             out.write('EPOCH %d\n' % int(s.get_collect()[0]))
             cl_beam = CommandLine.get_beam()
             if cl_beam[0] or cl_beam[1]:

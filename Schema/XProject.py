@@ -223,6 +223,12 @@ class XProject(Object):
                         replace = True
                         
                     if sweep_info['wavelength'] == wavelength:
+                        
+                        frames_to_process = sweep_info.get('start_end')
+
+                        if not frames_to_process and Flags.get_start_end():
+                            frames_to_process = Flags.get_start_end()
+                        
                         xw.add_sweep(
                             sweep_name,
                             directory = sweep_info.get('DIRECTORY'),
@@ -236,7 +242,7 @@ class XProject(Object):
                             dmin = dmin, dmax = dmax,
                             polarization = float(sweep_info.get(
                             'POLARIZATION', 0.0)),
-                            frames_to_process = sweep_info.get('start_end'),
+                            frames_to_process = frames_to_process,
                             user_lattice = lattice,
                             user_cell = cell,
                             epoch = sweep_info.get('epoch', 0))

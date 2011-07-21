@@ -214,6 +214,12 @@ class _CommandLine(Object):
                   (self._help_min_images(), str(e))
 
         try:
+            self._read_start_end()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_start_end(), str(e))
+
+        try:
             self._read_xparallel()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -669,6 +675,31 @@ class _CommandLine(Object):
 
     def _help_min_images(self):
         return '-min_images N'
+
+    def _read_start_end(self):
+        try:
+            index = sys.argv.index('-start_end')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        if not '-image' in sys.argv:
+            raise RuntimeError, 'do not use start_end without -image'
+
+        self._understood.append(index)
+        self._understood.append(index + 1)
+
+        start, end = tuple(map(int, sys.argv[index + 1].split(',')))
+
+        Flags.set_start_end(start, end)
+        Debug.write('Start, end set to %d %d' % Flags.get_start_end())
+            
+        return
+
+    def _help_start_end(self):
+        return '-start_end start,end'
 
     def _read_xparallel(self):
         try:
