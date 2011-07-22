@@ -234,10 +234,14 @@ class XDetectorFactory:
         detector_normal = matrix.col(xparm_data['normal'])
         image_size = (xparm_data['nx'], xparm_data['ny'])
         pixel_size = (xparm_data['px'], xparm_data['py'])
-        detector_origin = (xparm_data['px'] * xparm_data['ox'],
+        detector_centre = (xparm_data['px'] * xparm_data['ox'],
                            xparm_data['py'] * xparm_data['oy'])
         detector_fast = matrix.col(xparm_data['x'])
         detector_slow = matrix.col(xparm_data['y'])
+
+        # compute the detector origin
+
+        raise RuntimeError, 'in here need to compute the position'
 
         # then convert directions to unit vectors
 
@@ -265,6 +269,7 @@ class XDetectorFactory:
         _m = compute_frame_rotation((x, y, z), (_x, _y, _z))
 
         # rotate all of the parameters from the XDS to CBF coordinate frame
+
         
 
 
