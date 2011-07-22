@@ -85,6 +85,7 @@ Schema/Tests/omega_scan.cbf -text svneol=unset#unset
 Schema/Tests/phi_scan.cbf -text svneol=unset#unset
 Schema/XBeam.py -text
 Schema/XDetector.py -text
+Schema/XDetectorHelpers.py -text
 Schema/XGoniometer.py -text
 Schema/XGoniometerHelpers.py -text
 Schema/XScan.py -text

@@ -10,11 +10,14 @@
 import math
 import os
 import sys
+from scitbx import matrix
 
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Schema.XDetector import XDetector
 from Schema.XDetector import XDetectorFactory
+from Schema.XDetectorHelpers import read_xds_xparm
+from Schema.XDetectorHelpers import compute_frame_rotation
 
 def TestXDetector():
     '''A test class for the XDetector class.'''
@@ -38,7 +41,22 @@ def WorkXDetector():
     for j in range(10000):
         c = XDetectorFactory.imgCIF('phi_scan.cbf')
 
+def WorkXDetectorHelpers():
+    compute_frame_rotation((matrix.col((1, 0, 0)),
+                            matrix.col((0, 1, 0)),
+                            matrix.col((0, 0, 1))),
+                           (matrix.col((1, 0, 0)),
+                            matrix.col((0, 1, 0)),
+                            matrix.col((0, 0, 1))))
+    
+    compute_frame_rotation((matrix.col((-1, 0, 0)),
+                            matrix.col((0, 0, 1)),
+                            matrix.col((0, 1, 0))),
+                           (matrix.col((1, 0, 0)),
+                            matrix.col((0, 1, 0)),
+                            matrix.col((0, 0, 1))))
+
 if __name__ == '__main__':
 
-    TestXDetector()
+    WorkXDetectorHelpers()
 

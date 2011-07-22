@@ -14,6 +14,9 @@ import pycbf
 from scitbx import matrix
 from scitbx.math import r3_rotation_axis_and_angle_from_matrix
 
+from XDetectorHelpers import read_xds_xparm
+from XDetectorHelpers import compute_frame_rotation
+
 class XDetector:
     '''A class to represent the area detector for a standard rotation geometry
     diffraction experiment. We assume (i) that the detector is flat (ii) that
@@ -213,6 +216,56 @@ class XDetectorFactory:
 
         return XDetector(origin, fast, slow, pixel,
                          size, overload, [])
+
+    @staticmethod
+    def XDS(xds_xparm_file):
+        '''Initialize a detector model from an XDS XPARM file, containing
+        a refined description from either indexing or postrefinement of a
+        single crystal diffraction data set. This method is largely for
+        testing and feedback.'''
+
+        xparm_data = read_xds_xparm(xds_xparm_file)
+
+        # fetch out the interesting things that we need
+
+        distance = xparm_data['distance']
+        axis = matrix.col(xparm_data['axis'])
+        beam = matrix.col(xparm_data['beam'])
+        detector_normal = matrix.col(xparm_data['normal'])
+        image_size = (xparm_data['nx'], xparm_data['ny'])
+        pixel_size = (xparm_data['px'], xparm_data['py'])
+        detector_origin = (xparm_data['px'] * xparm_data['ox'],
+                           xparm_data['py'] * xparm_data['oy'])
+        detector_fast = matrix.col(xparm_data['x'])
+        detector_slow = matrix.col(xparm_data['y'])
+
+        # then convert directions to unit vectors
+
+        axis = axis / math.sqrt(axis.dot())
+        beam = beam / math.sqrt(beam.dot())
+
+        # want to now calculate a rotation which will align the axis with
+        # the (1, 0, 0) vector, and the component of the beam vector
+        # perpendicular to this with (0, 0, 1) - for convenience then start
+        # by defining our current reference frame
+
+        x = ra
+        z = beam - (beam.dot(ra) * ra)
+        z = z / math.sqrt(z.dot())
+        y = z.cross(x)
+        
+        # and the target reference frame
+        
+        _x = matrix.col([1, 0, 0])
+        _y = matrix.col([0, 1, 0])
+        _z = matrix.col([0, 0, 1])
+
+        # now compute the rotations which need to be applied to move from
+
+        _m = compute_frame_rotation((x, y, z), (_x, _y, _z))
+
+        # rotate all of the parameters from the XDS to CBF coordinate frame
+        
 
 
     @staticmethod
