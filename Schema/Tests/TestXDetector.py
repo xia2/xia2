@@ -24,17 +24,12 @@ def TestXDetector():
 
     d = XDetectorFactory.Simple(100.0, (45.0, 52.0), '+x', '-y',
                                 (0.172, 0.172), (516, 590), 1024, [])
-
-    print d
-
     t = XDetectorFactory.TwoTheta(60.0, (35.0, 34.0), '+x', '+y', '+x', 30,
                                   (0.07, 0.07), (1042, 1042), 1024, [])
-
-    print t
-
     c = XDetectorFactory.imgCIF('phi_scan.cbf')
+    x = XDetectorFactory.XDS('example-xparm.xds')
 
-    print c
+    print x
 
 def WorkXDetector():
 
@@ -58,5 +53,6 @@ def WorkXDetectorHelpers():
 
 if __name__ == '__main__':
 
-    WorkXDetectorHelpers()
+    # WorkXDetectorHelpers()
+    TestXDetector()
 

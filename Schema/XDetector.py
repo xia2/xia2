@@ -241,7 +241,9 @@ class XDetectorFactory:
 
         # compute the detector origin
 
-        raise RuntimeError, 'in here need to compute the position'
+        origin_xds = distance * detector_normal
+        origin = origin_xds - (detector_centre[0] * detector_fast +
+                               detector_centre[1] * detector_slow)
 
         # then convert directions to unit vectors
 
@@ -253,8 +255,8 @@ class XDetectorFactory:
         # perpendicular to this with (0, 0, 1) - for convenience then start
         # by defining our current reference frame
 
-        x = ra
-        z = beam - (beam.dot(ra) * ra)
+        x = axis
+        z = beam - (beam.dot(axis) * axis)
         z = z / math.sqrt(z.dot())
         y = z.cross(x)
         
@@ -270,8 +272,14 @@ class XDetectorFactory:
 
         # rotate all of the parameters from the XDS to CBF coordinate frame
 
-        
+        c_origin = _m * origin
+        c_axis = _m * axis
+        c_beam = _m * beam
+        c_fast = _m * detector_fast
+        c_slow = _m * detector_slow
 
+        return XDetector(c_origin, c_fast, c_slow, pixel_size,
+                         image_size, 0, [])
 
     @staticmethod
     def imgCIF(cif_file):
