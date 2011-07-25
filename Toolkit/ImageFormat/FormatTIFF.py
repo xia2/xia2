@@ -12,15 +12,18 @@
 # and generate the experimental model representations.
 
 from Format import Format
-from FormatTiffHelpers import read_basic_tiff_header
-from FormatTiffHelpers import LITTLE_ENDIAN
-from FormatTiffHelpers import BIG_ENDIAN
+from FormatTIFFHelpers import read_basic_tiff_header
+from FormatTIFFHelpers import LITTLE_ENDIAN
+from FormatTIFFHelpers import BIG_ENDIAN
 
 class FormatTIFF(Format):
     '''An image reading class for TIFF format images i.e. those from Dectris
     and Rayonix, which start with a standard TIFF header (which is what is
     handled here) and have their own custom header following, which must
     be handled by the inheriting subclasses.'''
+
+    LITTLE_ENDIAN = LITTLE_ENDIAN
+    BIG_ENDIAN = BIG_ENDIAN
 
     @staticmethod
     def understand(image_file):
@@ -37,6 +40,17 @@ class FormatTIFF(Format):
 
         return 0
 
+    @staticmethod
+    def get_tiff_header(image_file):
+        '''Pun to get to the image header etc.'''
+
+        width, height, depth, header, order = read_basic_tiff_header(
+            image_file)
+
+        header_bytes = open(image_file, 'rb').read(header)
+
+        return width, height, depth // 8, order, header_bytes
+
     def __init__(self, image_file):
         '''Initialise the image structure from the given file.'''
         
@@ -51,12 +65,12 @@ class FormatTIFF(Format):
         for future inspection.'''
 
         width, height, depth, header, order = read_basic_tiff_header(
-            image_file)
+            self._image_file)
 
         self._tiff_width = width
         self._tiff_height = height
         self._tiff_depth = depth // 8
-        self._tiff_header_bytes = open(image_file, 'rb').read(header)
+        self._tiff_header_bytes = open(self._image_file, 'rb').read(header)
         self._tiff_byte_order = order
 
         return

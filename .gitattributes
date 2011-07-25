@@ -104,6 +104,7 @@ Toolkit/ImageFormat/FormatSMVRigakuSaturn.py -text
 Toolkit/ImageFormat/FormatSMVRigakuSaturnSN07400090.py -text
 Toolkit/ImageFormat/FormatTIFF.py -text
 Toolkit/ImageFormat/FormatTIFFHelpers.py -text
+Toolkit/ImageFormat/FormatTIFFRayonix.py -text
 Toolkit/ImageFormat/Registry.py -text
 Toolkit/ImageFormat/RegistryHelpers.py -text
 Toolkit/ImageFormat/Tests/TestRegistry.py -text
