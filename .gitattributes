@@ -61,6 +61,7 @@ Schema/Tests/TestXBeam.py -text
 Schema/Tests/TestXDetector.py -text
 Schema/Tests/TestXGoniometer.py -text
 Schema/Tests/TestXScan.py -text
+Schema/Tests/example-xparm.xds -text
 Schema/Tests/image_001.dat -text
 Schema/Tests/image_002.dat -text
 Schema/Tests/image_003.dat -text
