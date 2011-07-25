@@ -241,7 +241,7 @@ class XDetectorFactory:
 
         # compute the detector origin
 
-        origin_xds = distance * detector_normal
+        origin_xds = - distance * detector_normal
         origin = origin_xds - (detector_centre[0] * detector_fast +
                                detector_centre[1] * detector_slow)
 

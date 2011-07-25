@@ -29,6 +29,7 @@ def TestXDetector():
     c = XDetectorFactory.imgCIF('phi_scan.cbf')
     x = XDetectorFactory.XDS('example-xparm.xds')
 
+    print t
     print x
 
 def WorkXDetector():
