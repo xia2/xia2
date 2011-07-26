@@ -139,7 +139,7 @@ class FormatTIFFRayonix(FormatTIFF):
         '''Return the scan information for this image.'''
 
         format = self._xscan_factory.Format('TIFF') 
-        time = self._get_rayonix_times()[1]
+        exposure_time = self._get_rayonix_times()[1]
         epoch = time.mktime(self._get_rayonix_timestamp())
 
         starts, ends, offset, width = self._get_rayonix_scan_angles()
@@ -148,7 +148,8 @@ class FormatTIFFRayonix(FormatTIFF):
         osc_range = starts[offset] + width
 
         return self._xscan_factory.Single(
-            self._image_file, format, time, osc_start, osc_range, epoch)
+            self._image_file, format, exposure_time,
+            osc_start, osc_range, epoch)
 
     ####################################################################
     #                                                                  #
@@ -212,7 +213,7 @@ class FormatTIFFRayonix(FormatTIFF):
         hour = int(timestamp[4:6])
         minute = int(timestamp[6:8])
         year = int(timestamp[8:12])
-        second = int(timestamp[-2:])
+        second = int(timestamp[13:15])
         return datetime.datetime(year, month, day,
                                  hour, minute, second).timetuple()
 
