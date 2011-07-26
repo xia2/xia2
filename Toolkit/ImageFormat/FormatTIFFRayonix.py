@@ -131,7 +131,7 @@ class FormatTIFFRayonix(FormatTIFF):
         '''Return a simple model for the beam.'''
 
         wavelength = struct.unpack(
-            self._i, self._tiff_header_bytes[1932:1936])[0]
+            self._i, self._tiff_header_bytes[1932:1936])[0] * 1.0e-5
         
         return self._xbeam_factory.Simple(wavelength)
 
