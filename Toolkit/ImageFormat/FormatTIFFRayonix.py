@@ -9,6 +9,7 @@
 # FormatTIFF.
 
 import time
+import datetime
 import struct
 
 from FormatTIFF import FormatTIFF
@@ -79,37 +80,53 @@ class FormatTIFFRayonix(FormatTIFF):
     # FIXME have implemented none of those which follow...
     
     def _xgoniometer(self):
-        '''Return a model for goniometer corresponding to the values
-        stored in the image header.'''
+        '''Return a model for goniometer corresponding to the values stored
+        in the image header. In the first instance assume this is a single
+        axis annd raise exception otherwise.'''
 
-        
+        starts, ends, offset, width = self._get_rayonix_scan_angles()
+
+        for j in range(len(starts)):
+            if j != offset:
+                assert(starts[j] == 0.0)
+                assert(ends[j] == 0.0)
         
         return self._xgoniometer_factory.SingleAxis()
 
     def _xdetector(self):
-        '''Return a model for a simple detector, presuming no one has
-        one of these on a two-theta stage. Assert that the beam centre is
-        provided in the Mosflm coordinate frame.'''
+        '''Return a model for a simple detector, which at the moment insists
+        that the offsets and rotations are all 0.0.'''
 
-        distance = 0.001 * struct.unpack(
-            self._i, self._tiff_header_bytes[640:644])[0]
+        starts, ends, offset, width = self._get_rayonix_scan_angles()
+        rotations = self._get_rayonix_detector_rotations()
 
-        distance = float(self._header_dictionary['DISTANCE'])
-        beam_x = float(self._header_dictionary['BEAM_CENTER_X'])
-        beam_y = float(self._header_dictionary['BEAM_CENTER_Y'])
-        pixel_size = float(self._header_dictionary['PIXEL_SIZE'])
-        image_size = (float(self._header_dictionary['SIZE1']),
-                      float(self._header_dictionary['SIZE2']))
-        overload = 65535
+        # assert that two-theta offset is 0.0
+
+        assert(starts[0] == 0.0)
+        assert(ends[0] == 0.0)
+
+        # assert that the rotations are all 0.0
+
+        assert(rotations[0] == 0.0)
+        assert(rotations[1] == 0.0)
+        assert(rotations[2] == 0.0)
+
+        distance = self._get_rayonix_distance()
+        beam_x, beam_y = self._get_rayonix_beam_xy()
+        pixel_size = self._get_rayonix_pixel_size()
+        image_size = self._tiff_width, self._tiff_height
+        overload = struct.unpack(self._i, bytes[1128:1132])[0]
+
+        beam = beam_x * pixel_size[0], beam_y * pixel_size[1]
         
         return self._xdetector_factory.Simple(
-            distance, (beam_y, beam_x), '+x', '-y', (pixel_size, pixel_size),
+            distance, beam, '+x', '-y', pixel_size,
             image_size, overload, [])
 
     def _xbeam(self):
         '''Return a simple model for the beam.'''
 
-        wavelength = float(self._header_dictionary['WAVELENGTH'])
+        wavelength = struct.unpack(self._i, bytes[1932:1936])[0]
         
         return self._xbeam_factory.Simple(wavelength)
 
@@ -117,10 +134,13 @@ class FormatTIFFRayonix(FormatTIFF):
         '''Return the scan information for this image.'''
 
         format = self._xscan_factory.Format('TIFF') 
-        time = float(self._header_dictionary['TIME'])
-        epoch =  time.mktime(time.strptime(self._header_dictionary['DATE']))
-        osc_start = float(self._header_dictionary['OSC_START'])
-        osc_range = float(self._header_dictionary['OSC_RANGE'])
+        time = self._get_rayonix_times()[1]
+        epoch = time.mktime(self._get_rayonix_timestamp())
+
+        starts, ends, offset, width = self._get_rayonix_scan_angles()
+
+        osc_start = starts[offset]
+        osc_range = starts[offset] + width
 
         return self._xscan_factory.Single(
             self._image_file, format, time, osc_start, osc_range, epoch)
@@ -161,6 +181,14 @@ class FormatTIFFRayonix(FormatTIFF):
 
         return beam_x * 0.001, beam_y * 0.001
 
+    def _get_rayonix_pixel_size(self):
+        '''Get the pixel sizes in mm.'''
+
+        pixel_x, pixel_y = struct.unpack(
+            self._ii, self._tiff_header_bytes[1796:1804])[:2]
+
+        return pixel_x * 1.0e-6, pixel_y * 1.0e-6
+
     def _get_rayonix_times(self):
         '''Get the integration, exposure times in seconds.'''
 
@@ -168,6 +196,20 @@ class FormatTIFFRayonix(FormatTIFF):
             self._ii, self._tiff_header_bytes[1676:1684])[:2]
 
         return integration * 0.001, exposure * 0.001
+
+    def _get_rayonix_timestamp(self):
+        '''Get the image acquisition timestamp.'''
+
+        timestamp = self._tiff_header_bytes[2368:2400]
+
+        month = int(timestamp[:2])
+        day = int(timestamp[2:4])
+        hour = int(timestamp[4:6])
+        minute = int(timestamp[6:8])
+        year = int(timestamp[8:12])
+        second = int(timestamp[-2:])
+        return datetime.datetime(year, month, day,
+                                 hour, minute, second).timetuple()
 
     def _get_rayonix_scan_angles(self):
         '''Get the scan angles for: twotheta, omega, chi, kappa, phi, delta,
@@ -199,7 +241,7 @@ class FormatTIFFRayonix(FormatTIFF):
             
         return starts_degrees, ends_degrees, axis_offset, axis_range * 0.001
         
-    def get_detector_rotations(self):
+    def _get_rayonix_detector_rotations(self):
         '''Get the recorded rotx, roty, rotz of the detector - which in most
         cases will probably all be 0.0.'''
 
