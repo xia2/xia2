@@ -64,8 +64,6 @@ class FormatTIFFRayonix(FormatTIFF):
 
         assert(FormatTIFFRayonix.understand(image_file) > 0)
         
-        FormatTIFF.__init__(self, image_file)
-
         if self._tiff_byte_order == FormatTIFF.LITTLE_ENDIAN:
             self._I = '<I'
             self._i = '<i'
@@ -75,6 +73,8 @@ class FormatTIFFRayonix(FormatTIFF):
             self._i = '>i'
             self._ii = '>ii'
             
+        FormatTIFF.__init__(self, image_file)
+
         return
 
     # FIXME have implemented none of those which follow...
