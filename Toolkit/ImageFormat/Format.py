@@ -199,7 +199,7 @@ class Format:
 
         magic = open(filename, 'rb').read(2)
 
-        return magic[0] == 0x8b && magic[1] == 0x1f
+        return ord(magic[0]) == 0x1f and ord(magic[1]) == 0x8b
 
     
 

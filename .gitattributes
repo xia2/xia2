@@ -107,6 +107,7 @@ Toolkit/ImageFormat/FormatTIFFHelpers.py -text
 Toolkit/ImageFormat/FormatTIFFRayonix.py -text
 Toolkit/ImageFormat/Registry.py -text
 Toolkit/ImageFormat/RegistryHelpers.py -text
+Toolkit/ImageFormat/Tests/TestFormat.py -text
 Toolkit/ImageFormat/Tests/TestRegistry.py -text
 Toolkit/ImageFormat/__init__.py -text
 Toolkit/KBScale.py -text
