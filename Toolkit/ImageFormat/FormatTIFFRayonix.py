@@ -14,13 +14,15 @@ import struct
 from FormatTIFF import FormatTIFF
 
 class FormatTIFFRayonix(FormatTIFF):
-    '''A class for reading TIFF format Rayonix images, and correctly constructing
-    a model for the experiment from this.'''
+    '''A class for reading TIFF format Rayonix images, and correctly
+    constructing a model for the experiment from this.'''
 
     @staticmethod
     def understand(image_file):
         '''Check to see if this looks like an Rayonix TIFF format image,
-        i.e. we can make sense of it.'''
+        i.e. we can make sense of it. This simply checks that records which
+        describe the size of the image match with the TIFF records which do
+        the same.'''
 
         if FormatTIFF.understand(image_file) == 0:
             return 0
@@ -31,27 +33,24 @@ class FormatTIFFRayonix(FormatTIFF):
         assert(len(bytes) == 4096)
 
         if order == FormatTIFF.LITTLE_ENDIAN:
-            _width = struct.unpack('<I', bytes[1024 + 80:1024 + 84])[0]
-            _height = struct.unpack('<I', bytes[1024 + 84:1024 + 88])[0]
-            _depth = struct.unpack('<I', bytes[1024 + 88:1024 + 92])[0]
+            endian = '<'
         else:
-            _width = struct.unpack('>I', bytes[1024 + 80:1024 + 84])[0]
-            _height = struct.unpack('>I', bytes[1024 + 84:1024 + 88])[0]
-            _depth = struct.unpack('>I', bytes[1024 + 88:1024 + 92])[0]
+            endian = '>'
+
+        _I = endian + 'I'
+        _i = endian + 'i'
+
+        _width = struct.unpack(_I, bytes[1024 + 80:1024 + 84])[0]
+        _height = struct.unpack(_I, bytes[1024 + 84:1024 + 88])[0]
+        _depth = struct.unpack(_I, bytes[1024 + 88:1024 + 92])[0]
 
         if width != _width or height != _height or depth != _depth:
             return 0
 
-        if order == FormatTIFF.LITTLE_ENDIAN:
-            nimages = struct.unpack('<I', bytes[1024 + 112:1024 + 116])[0]
-            origin = struct.unpack('<I', bytes[1024 + 116:1024 + 120])[0]
-            orientation = struct.unpack('<I', bytes[1024 + 120:1024 + 124])[0]
-            view = struct.unpack('<I', bytes[1024 + 124:1024 + 128])[0]
-        else:
-            nimages = struct.unpack('>I', bytes[1024 + 112:1024 + 116])[0]
-            origin = struct.unpack('>I', bytes[1024 + 116:1024 + 120])[0]
-            orientation = struct.unpack('>I', bytes[1024 + 120:1024 + 124])[0]
-            view = struct.unpack('>I', bytes[1024 + 124:1024 + 128])[0]
+        nimages = struct.unpack(_I, bytes[1024 + 112:1024 + 116])[0]
+        origin = struct.unpack(_I, bytes[1024 + 116:1024 + 120])[0]
+        orientation = struct.unpack(_I, bytes[1024 + 120:1024 + 124])[0]
+        view = struct.unpack(_I, bytes[1024 + 124:1024 + 128])[0]
 
         if nimages != 1 or origin != 0 or orientation != 0 or view != 0:
             return 0
@@ -66,13 +65,24 @@ class FormatTIFFRayonix(FormatTIFF):
         
         FormatTIFF.__init__(self, image_file)
 
+        if self._tiff_byte_order == FormatTIFF.LITTLE_ENDIAN:
+            self._I = '<I'
+            self._i = '<i'
+            self._ii = '<ii'
+        else:
+            self._I = '>I'
+            self._i = '>i'
+            self._ii = '>ii'
+            
         return
 
     # FIXME have implemented none of those which follow...
     
     def _xgoniometer(self):
-        '''Return a model for a simple single-axis goniometer. This should
-        probably be checked against the image header.'''
+        '''Return a model for goniometer corresponding to the values
+        stored in the image header.'''
+
+        
         
         return self._xgoniometer_factory.SingleAxis()
 
@@ -80,6 +90,9 @@ class FormatTIFFRayonix(FormatTIFF):
         '''Return a model for a simple detector, presuming no one has
         one of these on a two-theta stage. Assert that the beam centre is
         provided in the Mosflm coordinate frame.'''
+
+        distance = 0.001 * struct.unpack(
+            self._i, self._tiff_header_bytes[640:644])[0]
 
         distance = float(self._header_dictionary['DISTANCE'])
         beam_x = float(self._header_dictionary['BEAM_CENTER_X'])
@@ -111,6 +124,106 @@ class FormatTIFFRayonix(FormatTIFF):
 
         return self._xscan_factory.Single(
             self._image_file, format, time, osc_start, osc_range, epoch)
+
+    ####################################################################
+    #                                                                  #
+    # Helper methods to get all of the values out of the TIFF header   #
+    # - separated out to assist with code clarity                      #
+    #                                                                  #
+    ####################################################################
+
+    def _get_rayonix_distance(self):
+        '''Look in the usual places for the detector distance, return this
+        as a float in mm.'''
+
+        distance = struct.unpack(
+            self._i, self._tiff_header_bytes[1664:1668])[0]
+
+        if distance != 0:
+            return distance * 0.001
+        
+        distance = struct.unpack(
+            self._i, self._tiff_header_bytes[1720:1724])[0]
+
+        if distance != 0:
+            return distance * 0.001
+
+        raise RuntimeError, 'cannot find distance in header'
+
+    def _get_rayonix_beam_xy(self):
+        '''Get the beam x, y positions which are defined in the standard
+        to be in pixels. X and Y are not defined by the documentation, so
+        taking as a given that these are horizontal and vertical. N.B.
+        the documentation states that the horizontal direction is fast.'''
+
+        beam_x, beam_y = struct.unpack(
+            self._ii, self._tiff_header_bytes[1668:1676])[:2]
+
+        return beam_x * 0.001, beam_y * 0.001
+
+    def _get_rayonix_times(self):
+        '''Get the integration, exposure times in seconds.'''
+
+        integration, exposure = struct.unpack(
+            self._ii, self._tiff_header_bytes[1676:1684])[:2]
+
+        return integration * 0.001, exposure * 0.001
+
+    def _get_rayonix_scan_angles(self):
+        '''Get the scan angles for: twotheta, omega, chi, kappa, phi, delta,
+        gamma. The exact definitions for these are somewhat poorly defined,
+        though I presume that they will come from some kind of standard
+        goniometer definition... Also returns the scan axis offset and
+        the apparent oscillation width, as these are sometimes not properly
+        recorded elsewhere.'''
+
+        if self._tiff_byte_order == FormatTIFF.LITTLE_ENDIAN:
+            iiiiiii = '<iiiiiii'
+        else:
+            iiiiiii = '>iiiiiii'
+
+        start_angles = struct.unpack(
+            iiiiiii, self._tiff_header_bytes[1692:1720])[:7]
+
+        end_angles = struct.unpack(
+            iiiiiii, self._tiff_header_bytes[1724:1752])[:7]
+
+        axis_offset = struct.unpack(
+            self._i, self._tiff_header_bytes[1756:1760])[0]
+
+        axis_range = struct.unpack(
+            self._i, self._tiff_header_bytes[1760:1764])[0]
+
+        starts_degrees = [s * 0.001 for s in start_angles]
+        ends_degrees = [e * 0.001 for e in end_angles]
+            
+        return starts_degrees, ends_degrees, axis_offset, axis_range * 0.001
+        
+    def get_detector_rotations(self):
+        '''Get the recorded rotx, roty, rotz of the detector - which in most
+        cases will probably all be 0.0.'''
+
+        if self._tiff_byte_order == FormatTIFF.LITTLE_ENDIAN:
+            iii = '<iii'
+        else:
+            iii = '>iii'
+
+        rot_angles = struct.unpack(
+            iii, self._tiff_header_bytes[1764:1776])[:3]
+
+        rot_degrees = [r * 0.001 for r in rot_angles]
+
+        return rot_degrees
+
+        
+        
+        
+
+
+
+
+
+
 
 if __name__ == '__main__':
 

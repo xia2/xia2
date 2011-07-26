@@ -181,5 +181,27 @@ class Format:
 
         raise RuntimeError, 'overload me'
 
+    ####################################################################
+    #                                                                  #
+    # Helper functions for dealing with compressed images.             #
+    #                                                                  #
+    ####################################################################
+
+    @staticmethod
+    def is_bz2(filename):
+        '''Check if a file pointed at by filename is bzip2 format.'''
+
+        return 'BZh' in open(filename, 'rb').read(3)
+
+    @staticmethod
+    def is_gzip(filename):
+        '''Check if a file pointed at by filename is gzip compressed.'''
+
+        magic = open(filename, 'rb').read(2)
+
+        return magic[0] == 0x8b && magic[1] == 0x1f
+
     
-    
+
+                
+        
