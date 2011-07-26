@@ -12,7 +12,7 @@ import time
 import datetime
 import struct
 
-from FormatTIFF import FormatTIFF
+from Toolkit.ImageFormat.FormatTIFF import FormatTIFF
 
 class FormatTIFFRayonix(FormatTIFF):
     '''A class for reading TIFF format Rayonix images, and correctly
