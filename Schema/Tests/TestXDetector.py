@@ -26,7 +26,7 @@ def TestXDetector():
                                 (0.172, 0.172), (516, 590), 1024, [])
     t = XDetectorFactory.TwoTheta(60.0, (35.0, 34.0), '+x', '+y', '+x', 30,
                                   (0.07, 0.07), (1042, 1042), 1024, [])
-    c = XDetectorFactory.imgCIF('phi_scan.cbf')
+    c = XDetectorFactory.imgCIF('phi_scan_001.cbf')
     x = XDetectorFactory.XDS('example-xparm.xds')
 
     print t

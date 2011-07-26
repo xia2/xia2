@@ -80,7 +80,7 @@ def TestXGoniometer():
     assert(compare_tuples(kappa.get_axis(), axis))
     assert(not compare_tuples(kappa.get_fixed(), fixed))
 
-    cbf = XGoniometerFactory.imgCIF('phi_scan.cbf')
+    cbf = XGoniometerFactory.imgCIF('phi_scan_001.cbf')
 
     print cbf
 

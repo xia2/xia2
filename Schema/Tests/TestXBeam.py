@@ -19,7 +19,7 @@ from Schema.XBeam import XBeamFactory
 def TestXBeam():
     '''A test class for the XBeam class.'''
 
-    cbf = XBeamFactory.imgCIF('phi_scan.cbf')
+    cbf = XBeamFactory.imgCIF('phi_scan_001.cbf')
 
     print cbf
 
