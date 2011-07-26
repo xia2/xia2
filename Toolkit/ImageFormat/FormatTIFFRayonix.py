@@ -145,7 +145,7 @@ class FormatTIFFRayonix(FormatTIFF):
         starts, ends, offset, width = self._get_rayonix_scan_angles()
 
         osc_start = starts[offset]
-        osc_range = starts[offset] + width
+        osc_range = width
 
         return self._xscan_factory.Single(
             self._image_file, format, exposure_time,
