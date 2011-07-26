@@ -13,11 +13,13 @@ import struct
 LITTLE_ENDIAN = 1234
 BIG_ENDIAN = 4321
 
+from Format import Format
+
 def tiff_byte_order(filename):
     '''Determine the byte order for the file from the magic numbers at the
     very start of the file.'''
 
-    four_bytes = open(filename, 'rb').read(4)
+    four_bytes = Format.open_file(filename, 'rb').read(4)
 
     if 'II' in four_bytes[:2]:
         assert(struct.unpack('<H', four_bytes[2:])[0] == 42)
@@ -43,7 +45,7 @@ def read_basic_tiff_header(filename):
     # OK then let's get started - and let's assume that the size is > 1 kb
     
     byte_order = tiff_byte_order(filename)
-    tiff_header = open(filename, 'rb').read(1024)
+    tiff_header = Format.open_file(filename, 'rb').read(1024)
 
     if byte_order == LITTLE_ENDIAN:
         _I = '<I'
@@ -139,7 +141,7 @@ if __name__ == '__main__':
 
         print '(%d x %d) @ %d + %d' % (width, height, depth, header)
 
-        tiff_header = open(arg, 'rb').read(header)
+        tiff_header = Format.open_file(arg, 'rb').read(header)
 
         text = read_tiff_image_description(tiff_header, order)        
 

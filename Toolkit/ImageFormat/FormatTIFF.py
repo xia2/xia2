@@ -11,10 +11,10 @@
 # readers which really will acquire the full image including header information
 # and generate the experimental model representations.
 
-from Format import Format
-from FormatTIFFHelpers import read_basic_tiff_header
-from FormatTIFFHelpers import LITTLE_ENDIAN
-from FormatTIFFHelpers import BIG_ENDIAN
+from Toolkit.ImageFormat.Format import Format
+from Toolkit.ImageFormat.FormatTIFFHelpers import read_basic_tiff_header
+from Toolkit.ImageFormat.FormatTIFFHelpers import LITTLE_ENDIAN
+from Toolkit.ImageFormat.FormatTIFFHelpers import BIG_ENDIAN
 
 class FormatTIFF(Format):
     '''An image reading class for TIFF format images i.e. those from Dectris
@@ -47,7 +47,7 @@ class FormatTIFF(Format):
         width, height, depth, header, order = read_basic_tiff_header(
             image_file)
 
-        header_bytes = open(image_file, 'rb').read(header)
+        header_bytes = FormatTIFF.open_file(image_file, 'rb').read(header)
 
         return width, height, depth // 8, order, header_bytes
 
@@ -70,7 +70,8 @@ class FormatTIFF(Format):
         self._tiff_width = width
         self._tiff_height = height
         self._tiff_depth = depth // 8
-        self._tiff_header_bytes = open(self._image_file, 'rb').read(header)
+        self._tiff_header_bytes = FormatTIFF.open_file(
+            self._image_file, 'rb').read(header)
         self._tiff_byte_order = order
 
         return

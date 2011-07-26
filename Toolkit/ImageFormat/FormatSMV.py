@@ -30,16 +30,17 @@ class FormatSMV(Format):
         '''Check to see if this looks like an SMV format image, i.e. we can
         make sense of it.'''
 
-        if open(image_file, 'rb').read(15) == '{\nHEADER_BYTES=':
+        if FormatSMV.open_file(image_file, 'rb').read(15) == \
+               '{\nHEADER_BYTES=':
             return 1
 
         return 0
 
     @staticmethod
     def get_smv_header(image_file):
-        header_size = int(open(image_file, 'rb').read(45).split(
+        header_size = int(FormatSMV.open_file(image_file, 'rb').read(45).split(
             '\n')[1].split('=')[1].replace(';', '').strip())
-        header_text = open(image_file, 'rb').read(header_size)
+        header_text = FormatSMV.open_file(image_file, 'rb').read(header_size)
 
         # check we have the whole header in here... it is contained within { }
         

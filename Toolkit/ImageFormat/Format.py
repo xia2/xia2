@@ -14,6 +14,8 @@
 
 import os
 import sys
+import bz2
+import gzip
 
 assert('XIA2_ROOT' in os.environ)
 
@@ -200,6 +202,18 @@ class Format:
         magic = open(filename, 'rb').read(2)
 
         return ord(magic[0]) == 0x1f and ord(magic[1]) == 0x8b
+
+    @staticmethod
+    def open_file(filename, mode = 'rb'):
+        '''Open file for reading, decompressing silently if necessary.'''
+
+        if Format.is_bz2(filename):
+            return bz2.BZ2File(filename, mode)
+
+        if Format.is_gzip(filename):
+            return gzip.GzipFile(filename, mode)
+
+        return open(filename, mode)
 
     
 
