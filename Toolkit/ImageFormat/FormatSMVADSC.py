@@ -88,13 +88,14 @@ class FormatSMVADSC(FormatSMV):
         '''Return the scan information for this image.'''
 
         format = self._xscan_factory.Format('SMV') 
-        time = float(self._header_dictionary['TIME'])
+        exposure_time = float(self._header_dictionary['TIME'])
         epoch =  time.mktime(time.strptime(self._header_dictionary['DATE']))
         osc_start = float(self._header_dictionary['OSC_START'])
         osc_range = float(self._header_dictionary['OSC_RANGE'])
 
         return self._xscan_factory.Single(
-            self._image_file, format, time, osc_start, osc_range, epoch)
+            self._image_file, format, exposure_time,
+            osc_start, osc_range, epoch)
 
 if __name__ == '__main__':
 
