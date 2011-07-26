@@ -83,7 +83,7 @@ Schema/Tests/image_018.dat -text
 Schema/Tests/image_019.dat -text
 Schema/Tests/image_020.dat -text
 Schema/Tests/omega_scan.cbf -text svneol=unset#unset
-Schema/Tests/phi_scan.cbf -text svneol=unset#unset
+Schema/Tests/phi_scan_001.cbf -text svneol=unset#unset
 Schema/XBeam.py -text
 Schema/XDetector.py -text
 Schema/XDetectorHelpers.py -text

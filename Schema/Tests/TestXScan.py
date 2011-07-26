@@ -87,6 +87,10 @@ def work_xscan_factory():
 
     print (a + b)[1:5]
     print (a + b)[:10]
+
+    cbf = os.path.join(directory, 'phi_scan_001.cbf')
+
+    print XScanFactory.imgCIF(cbf)
     
 if __name__ == '__main__':
 

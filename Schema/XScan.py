@@ -230,9 +230,6 @@ class XScanFactory:
                   XScanHelperImageFiles.image_to_template_directory(filename)
         index = XScanHelperImageFiles.image_to_index(filename)
 
-        assert(XScanHelperImageFiles.template_directory_index_to_image(
-            template, directory, index) == filename)
-        
         return XScan(template, directory, format, (index, index),
                      exposure_time, (osc_start, osc_width), {index:epoch})
 
@@ -243,13 +240,28 @@ class XScanFactory:
         cbf_handle = pycbf.cbf_handle_struct()
         cbf_handle.read_file(cif_file, pycbf.MSG_DIGEST)
 
-        raise RuntimeError, 'implement me'
-
-    def imgCIF_H(cbf_handle):
+        return XScanFactory.imgCIF_H(cif_file, cbf_handle)
+        
+    @staticmethod
+    def imgCIF_H(cif_file, cbf_handle):
         '''Initialize a scan model from an imgCIF file handle, where it is
         assumed that the file has already been read.'''
 
-        raise RuntimeError, 'implement me'
+        exposure = cbf_handle.get_integration_time()
+        timestamp = cbf_handle.get_timestamp()[0]
+
+        gonio = cbf_handle.construct_goniometer()
+        angles = tuple(gonio.get_rotation_range())
+        
+        template, directory = \
+                  XScanHelperImageFiles.image_to_template_directory(cif_file)
+        index = XScanHelperImageFiles.image_to_index(cif_file)
+        format = XScanHelperImageFormats.FORMAT_CBF
+        
+        gonio.__swig_destroy__(gonio)
+
+        return XScan(template, directory, format, (index, index),
+                     exposure, angles, {index:timestamp})
 
     @staticmethod
     def Sum(xscans):
