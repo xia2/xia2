@@ -45,42 +45,34 @@ def read_basic_tiff_header(filename):
     byte_order = tiff_byte_order(filename)
     tiff_header = open(filename, 'rb').read(1024)
 
-    offset = struct.unpack('<I', tiff_header[4:8])[0]
+    if byte_order == LITTLE_ENDIAN:
+        _I = '<I'
+        _H = '<H'
+    else:
+        _I = '>I'
+        _H = '>H'
+        
 
-    ntags = struct.unpack('<H', tiff_header[offset:offset + 2])[0]
+    offset = struct.unpack(_I, tiff_header[4:8])[0]
+
+    ntags = struct.unpack(_H, tiff_header[offset:offset + 2])[0]
     start = offset + 2
 
     for j in range(ntags):
-        if byte_order == LITTLE_ENDIAN:
-            type_desc = struct.unpack('<H', tiff_header[start:start + 2])[0]
-            start += 2
-            type_type = struct.unpack('<H', tiff_header[start:start + 2])[0]
-            start += 2
-            type_size = struct.unpack('<I', tiff_header[start:start + 4])[0]
+        type_desc = struct.unpack(_H, tiff_header[start:start + 2])[0]
+        start += 2
+        type_type = struct.unpack(_H, tiff_header[start:start + 2])[0]
+        start += 2
+        type_size = struct.unpack(_I, tiff_header[start:start + 4])[0]
+        start += 4
+        if type_type == 4:
+            type_offset_or_value = struct.unpack(
+                _I, tiff_header[start:start + 4])[0]
             start += 4
-            if type_type == 4:
-                type_offset_or_value = struct.unpack(
-                    '<I', tiff_header[start:start + 4])[0]
-                start += 4
-            elif type_type == 3:
-                type_offset_or_value = struct.unpack(
-                    '<H', tiff_header[start:start + 2])[0]
-                start += 4
-        else:
-            type_desc = struct.unpack('>H', tiff_header[start:start + 2])[0]
-            start += 2
-            type_type = struct.unpack('>H', tiff_header[start:start + 2])[0]
-            start += 2
-            type_size = struct.unpack('>I', tiff_header[start:start + 4])[0]
+        elif type_type == 3:
+            type_offset_or_value = struct.unpack(
+                _H, tiff_header[start:start + 2])[0]
             start += 4
-            if type_type == 4:
-                type_offset_or_value = struct.unpack(
-                    '>I', tiff_header[start:start + 4])[0]
-                start += 4
-            elif type_type == 3:
-                type_offset_or_value = struct.unpack(
-                    '>H', tiff_header[start:start + 2])[0]
-                start += 4
                 
         if type_desc == 256:
             image_width = type_offset_or_value
