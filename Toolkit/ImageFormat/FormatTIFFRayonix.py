@@ -64,7 +64,10 @@ class FormatTIFFRayonix(FormatTIFF):
 
         assert(FormatTIFFRayonix.understand(image_file) > 0)
         
-        if self._tiff_byte_order == FormatTIFF.LITTLE_ENDIAN:
+        width, height, depth, order, bytes = FormatTIFF.get_tiff_header(
+            image_file)
+
+        if order == FormatTIFF.LITTLE_ENDIAN:
             self._I = '<I'
             self._i = '<i'
             self._ii = '<ii'
