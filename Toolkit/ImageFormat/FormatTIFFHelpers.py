@@ -13,7 +13,7 @@ import struct
 LITTLE_ENDIAN = 1234
 BIG_ENDIAN = 4321
 
-from Format import Format
+from Toolkit.ImageFormat.Format import Format
 
 def tiff_byte_order(filename):
     '''Determine the byte order for the file from the magic numbers at the
