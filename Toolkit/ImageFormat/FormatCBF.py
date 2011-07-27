@@ -45,21 +45,13 @@ class FormatCBF(Format):
         
         assert(FormatCBF.understand(image_file) > 0)
 
-        self._mime_header = ''
-
-        for record in FormatCBF.open_file(image_file, 'rb'):
-            if 'X' in record[:1]:
-                self._mime_header += record
-            if 'X-Binary-Size-Padding' in record:
-                break
-
-        Format.__init__(self, image_file)
-
         return
 
     def _start(self):
         '''Open the image file, read the image header, copy it into memory
         for future inspection.'''
+
+        Format._start(self)
 
         self._cif_header = FormatCBF.get_cbf_header(self._image_file)
 
