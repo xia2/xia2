@@ -99,8 +99,10 @@ Toolkit/ComputeU.py -text
 Toolkit/ImageFormat/Doc/adding_new_formats.txt -text
 Toolkit/ImageFormat/Format.py -text
 Toolkit/ImageFormat/FormatCBF.py -text
-Toolkit/ImageFormat/FormatCBFPilatusFull.py -text
-Toolkit/ImageFormat/FormatCBFPilatusMini.py -text
+Toolkit/ImageFormat/FormatCBFFull.py -text
+Toolkit/ImageFormat/FormatCBFFullPilatus.py -text
+Toolkit/ImageFormat/FormatCBFMini.py -text
+Toolkit/ImageFormat/FormatCBFMiniPilatus.py -text
 Toolkit/ImageFormat/FormatMAR.py -text
 Toolkit/ImageFormat/FormatRAXIS.py -text
 Toolkit/ImageFormat/FormatSMV.py -text
