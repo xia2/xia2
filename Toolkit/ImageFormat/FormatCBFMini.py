@@ -66,8 +66,12 @@ class FormatCBFMini(FormatCBF):
 
             self._cif_header_dictionary[tokens[0]] = ' '.join(tokens[1:])
 
-        print self._cif_header_dictionary
-
+        for record in self._mime_header.split('\n'):
+            if not record.strip():
+                continue
+            token, value = record.split(':')
+            self._cif_header_dictionary[token.strip()] = value.strip()
+            
         return
 
 

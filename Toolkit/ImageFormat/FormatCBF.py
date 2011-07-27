@@ -45,6 +45,14 @@ class FormatCBF(Format):
         
         assert(FormatCBF.understand(image_file) > 0)
 
+        self._mime_header = ''
+
+        for record in FormatCBF.open_file(image_file, 'rb'):
+            if 'X' in record[:1]:
+                self._mime_header += record
+            if 'X-Binary-Size-Padding' in record:
+                break
+
         Format.__init__(self, image_file)
 
         return
@@ -54,6 +62,14 @@ class FormatCBF(Format):
         for future inspection.'''
 
         self._cif_header = FormatCBF.get_cbf_header(self._image_file)
+
+        self._mime_header = ''
+
+        for record in FormatCBF.open_file(self._image_file, 'rb'):
+            if 'X' in record[:1]:
+                self._mime_header += record
+            if 'X-Binary-Size-Padding' in record:
+                break
 
         return
 

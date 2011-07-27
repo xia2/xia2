@@ -10,7 +10,9 @@
 
 import time
 
-from FormatCBFMini import FormatCBFMini
+from Toolkit.ImageFormat.FormatCBFMini import FormatCBFMini
+from Toolkit.ImageFormat.FormatCBFMiniPilatusHelpers import \
+     get_pilatus_timestamp
 
 class FormatCBFMiniPilatus(FormatCBFMini):
     '''A class for reading mini CBF format Pilatus images, and correctly
@@ -48,8 +50,8 @@ class FormatCBFMiniPilatus(FormatCBFMini):
         probably be checked against the image header, though for miniCBF
         there are limited options for this.'''
 
-        # FIXME IMPLEMENT
-        
+        assert(not 'Phi' in self._cif_header_dictionary)
+
         return self._xgoniometer_factory.SingleAxis()
 
     def _xdetector(self):
@@ -57,32 +59,63 @@ class FormatCBFMiniPilatus(FormatCBFMini):
         one of these on a two-theta stage. Assert that the beam centre is
         provided in the Mosflm coordinate frame.'''
 
-        # FIXME IMPLEMENT
-        
+        distance = float(
+            self._cif_header_dictionary['Detector_distance'].split()[0])
+
+        beam_xy = self._cif_header_dictionary['Beam_xy'].replace(
+            '(', '').replace(')', '').replace(',', '').split()[:2]
+
+        beam_x, beam_y = map(float, beam_xy)
+
+        pixel_xy = self._cif_header_dictionary['Pixel_size'].replace(
+            'm', '').replace('x', '').split()
+
+        pixel_x, pixel_y = map(float, pixel_xy)
+
+        nx = int(
+            self._cif_header_dictionary['X-Binary-Size-Fastest-Dimension'])
+        ny = int(
+            self._cif_header_dictionary['X-Binary-Size-Second-Dimension'])
+
+        overload = int(
+            self._cif_header_dictionary['Count_cutoff'].split()[0])
+
         return self._xdetector_factory.Simple(
-            distance, (beam_y, beam_x), '+x', '-y', (pixel_size, pixel_size),
-            image_size, overload, [])
+            distance * 1000.0, (beam_x * pixel_x * 1000.0,
+                                beam_y * pixel_y * 1000.0), '+x', '-y',
+            (pixel_x, pixel_y), (nx, ny), overload, [])
 
     def _xbeam(self):
         '''Return a simple model for the beam.'''
 
-        # FIXME IMPLEMENT
+        wavelength = float(
+            self._cif_header_dictionary['Wavelength'].split()[0])
         
         return self._xbeam_factory.Simple(wavelength)
 
     def _xscan(self):
         '''Return the scan information for this image.'''
 
-        # FIXME IMPLEMENT
         format = self._xscan_factory.Format('CBF') 
+
+        exposure_time = float(
+            self._cif_header_dictionary['Exposure_period'].split()[0])
+
+        osc_start = float(
+            self._cif_header_dictionary['Start_angle'].split()[0])
+        osc_range = float(
+            self._cif_header_dictionary['Angle_increment'].split()[0])
+
+        timestamp = get_pilatus_timestamp(
+            self._cif_header_dictionary['timestamp'])
 
         return self._xscan_factory.Single(
             self._image_file, format, exposure_time,
-            osc_start, osc_range, epoch)
+            osc_start, osc_range, timestamp)
 
 if __name__ == '__main__':
 
     import sys
 
     for arg in sys.argv[1:]:
-        print FormatCBFADSC.understand(arg)
+        print FormatCBFMiniPilatus.understand(arg)
