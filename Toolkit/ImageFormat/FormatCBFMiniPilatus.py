@@ -13,6 +13,7 @@ import time
 from Toolkit.ImageFormat.FormatCBFMini import FormatCBFMini
 from Toolkit.ImageFormat.FormatCBFMiniPilatusHelpers import \
      get_pilatus_timestamp
+from Toolkit.ImageFormat.FormatPilatusHelpers import determine_pilatus_mask
 
 class FormatCBFMiniPilatus(FormatCBFMini):
     '''A class for reading mini CBF format Pilatus images, and correctly
@@ -80,11 +81,16 @@ class FormatCBFMiniPilatus(FormatCBFMini):
         overload = int(
             self._cif_header_dictionary['Count_cutoff'].split()[0])
 
-        return self._xdetector_factory.Simple(
+        xdetector = self._xdetector_factory.Simple(
             distance * 1000.0, (beam_x * pixel_x * 1000.0,
                                 beam_y * pixel_y * 1000.0), '+x', '-y',
             (pixel_x, pixel_y), (nx, ny), overload, [])
 
+        for f0, s0, f1, s1 in determine_pilatus_mask(xdetector):
+            xdetector.add_mask(f0, s0, f1, s1)
+
+        return xdetector
+        
     def _xbeam(self):
         '''Return a simple model for the beam.'''
 
