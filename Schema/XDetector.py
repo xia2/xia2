@@ -62,8 +62,11 @@ class XDetector:
 
         f_3 = '%6.3f %6.3f %6.3f\n'
 
+        m = '%4d %4d %4d %4d\n'
+
         return f_3 % self._origin.elems + f_3 % self._fast.elems + \
-               f_3 % self._slow.elems
+               f_3 % self._slow.elems + \
+               ''.join([m % _m for _m in self._mask])
 
     def get_origin(self):
         '''Get the detector origin.'''
@@ -115,6 +118,15 @@ class XDetector:
         should be excluded from measurements.'''
 
         return self._mask
+
+    def add_mask(self, f0, s0, f1, s1):
+        '''Add to the mask the region encompassed within the rectangle
+        (f0, s0) to (f1, s1) where the ordinates are in the fast and slow
+        directions respectively.'''
+
+        self._mask.append((f0, s0, f1, s1))
+
+        return
 
 class XDetectorFactory:
     '''A factory class for XDetector objects, which will encapsulate standard

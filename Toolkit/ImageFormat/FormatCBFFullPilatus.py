@@ -13,7 +13,7 @@ import exceptions
 from Toolkit.ImageFormat.FormatCBFFull import FormatCBFFull
 from Toolkit.ImageFormat.FormatPilatusHelpers import determine_pilatus_mask
 
-class FormatCBFFullPilatus(FormatCBF):
+class FormatCBFFullPilatus(FormatCBFFull):
     '''An image reading class for full CBF format images from Pilatus
     detectors.'''
 
@@ -29,9 +29,11 @@ class FormatCBFFullPilatus(FormatCBF):
 
         header = FormatCBFFull.get_cbf_header(image_file)
 
-        # FIXME need to figure out a mechanism to determine the actual
-        # detector type now to decide whether this is the detector of choice.
-        
+        for record in header.split('\n'):
+            if '_array_data.header_convention' in record and \
+                   'PILATUS' in record:
+                return 3
+
         return 0
 
     def __init__(self, image_file):
@@ -47,7 +49,7 @@ class FormatCBFFullPilatus(FormatCBF):
         '''Open the image file as a cbf file handle, and keep this somewhere
         safe.'''
 
-        FormatCBF._start(self)
+        FormatCBFFull._start(self)
 
         self._cbf_handle = pycbf.cbf_handle_struct()
         self._cbf_handle.read_file(self._image_file, pycbf.MSG_DIGEST)
@@ -59,8 +61,8 @@ class FormatCBFFullPilatus(FormatCBF):
 
         xdetector = self._xdetector_factory.imgCIF_H(self._cbf_handle)
 
-        for mask in determine_pilatus_mask(xdetector):
-            xdetector.add_mask(mask)
+        for f0, s0, f1, s1 in determine_pilatus_mask(xdetector):
+            xdetector.add_mask(f0, s0, f1, s1)
 
         return xdetector
 
@@ -69,6 +71,6 @@ if __name__ == '__main__':
     import sys
 
     for arg in sys.argv[1:]:
-        print FormatCBFFull.understand(arg)
+        print FormatCBFFullPilatus.understand(arg)
     
-k
+
