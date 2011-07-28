@@ -16,6 +16,7 @@ import os
 import sys
 import bz2
 import gzip
+import exceptions
 
 assert('XIA2_ROOT' in os.environ)
 
@@ -106,7 +107,9 @@ class Format:
             xscan_instance = self._xscan()
             assert(isinstance(xscan_instance, XScan))
             self._xscan_instance = xscan_instance
-            
+
+        except exceptions.Exception, e:
+            pass
 
         finally:
             self._end()

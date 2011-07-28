@@ -45,6 +45,8 @@ class FormatCBF(Format):
         
         assert(FormatCBF.understand(image_file) > 0)
 
+        Format.__init__(self, image_file)
+
         return
 
     def _start(self):
