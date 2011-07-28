@@ -105,6 +105,7 @@ Toolkit/ImageFormat/FormatCBFMini.py -text
 Toolkit/ImageFormat/FormatCBFMiniPilatus.py -text
 Toolkit/ImageFormat/FormatCBFMiniPilatusHelpers.py -text
 Toolkit/ImageFormat/FormatMAR.py -text
+Toolkit/ImageFormat/FormatPilatusHelpers.py -text
 Toolkit/ImageFormat/FormatRAXIS.py -text
 Toolkit/ImageFormat/FormatSMV.py -text
 Toolkit/ImageFormat/FormatSMVADSC.py -text
