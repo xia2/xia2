@@ -118,8 +118,13 @@ class XBeamFactory:
 
         # and information about the polarization - FIXME this should probably
         # be a rotation about the beam not about the Z axis.
-        
-        polar_fraction, polar_angle = cbf_handle.get_polarization()
+
+        try:
+            polar_fraction, polar_angle = cbf_handle.get_polarization()
+        except:
+            polar_fraction = 0.999
+            polar_angle = 0.0
+                
         polar_plane_normal = (
             math.sin(polar_angle * d2r), math.cos(polar_angle * d2r), 0.0)
         
@@ -154,7 +159,12 @@ class XBeamFactory:
         # and information about the polarization - FIXME this should probably
         # be a rotation about the beam not about the Z axis.
         
-        polar_fraction, polar_angle = cbf_handle.get_polarization()
+        try:
+            polar_fraction, polar_angle = cbf_handle.get_polarization()
+        except:
+            polar_fraction = 0.999
+            polar_angle = 0.0
+
         polar_plane_normal = (
             math.sin(polar_angle * d2r), math.cos(polar_angle * d2r), 0.0)
         

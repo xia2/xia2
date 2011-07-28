@@ -10,6 +10,7 @@
 # but will allow for extension for specific implementations of CBF.
 
 import pycbf
+import exceptions
 
 from Toolkit.ImageFormat.FormatCBF import FormatCBF
 

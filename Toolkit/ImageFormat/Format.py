@@ -17,6 +17,7 @@ import sys
 import bz2
 import gzip
 import exceptions
+import traceback
 
 assert('XIA2_ROOT' in os.environ)
 
@@ -103,14 +104,13 @@ class Format:
             xbeam_instance = self._xbeam()
             assert(isinstance(xbeam_instance, XBeam))
             self._xbeam_instance = xbeam_instance
-            
+
             xscan_instance = self._xscan()
             assert(isinstance(xscan_instance, XScan))
             self._xscan_instance = xscan_instance
 
         except exceptions.Exception, e:
-            pass
-
+            traceback.print_exc(sys.stderr)
         finally:
             self._end()
 
