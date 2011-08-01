@@ -423,9 +423,6 @@ class XSweep(Object):
                                                           image))
         return result
 
-    def get_header(self):
-        return copy.deepcopy(self._header)
-
     def get_epoch(self, image):
         '''Get the exposure epoch for this image.'''
 

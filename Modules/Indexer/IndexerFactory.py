@@ -68,12 +68,7 @@ def IndexerForXSweep(xsweep):
 
     crystal_lattice = xsweep.get_crystal_lattice()
 
-    # FIXME need to code something in here to make a "good" decision
-    # about the correct Indexer to return...
-
-    detector = xsweep.get_header()['detector_class']
-
-    indexer = Indexer(detector = detector)
+    indexer = Indexer()
 
     if crystal_lattice:
         # this is e.g. ('aP', (1.0, 2.0, 3.0, 90.0, 98.0, 88.0))
@@ -123,7 +118,7 @@ def IndexerForXSweep(xsweep):
 
 # FIXME need to provide framework for input passing
 
-def Indexer(detector = None):
+def Indexer():
     '''Create an instance of Indexer for use with a dataset.'''
 
     # FIXME need to check that these implement indexer
