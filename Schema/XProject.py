@@ -24,8 +24,6 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
-from Object import Object
-
 # hooks to all of the child objects
 
 from Schema.XCrystal import XCrystal
@@ -40,21 +38,15 @@ from Handlers.Syminfo import Syminfo
 # output stream
 from Handlers.Streams import Chatter, Debug
 
-class XProject(Object):
-    '''A versioning object representation of a complete project. This
-    will contain a dictionary of crystals.'''
+class XProject():
+    '''A representation of a complete project. This will contain a dictionary
+    of crystals.'''
 
     def __init__(self, xinfo_file = None):
-        Object.__init__(self)
 
         self._crystals = { }
         if xinfo_file:
-            #try:
             self.setup_from_xinfo_file(xinfo_file)
-            #except exceptions.Exception, e:
-            # there was an error in this .xinfo file...
-            #raise RuntimeError, 'Error "%s" parsing .xinfo file:\n%s' % \
-            # (str(e), open(xinfo_file, 'r').read())
         else:
             self._name = None
 

@@ -32,8 +32,6 @@ from Experts.FindImages import image2template, find_matching_images, \
      template_directory_number2image, image2template_directory, \
      headers2sweeps, headers2sweep_ids
 
-from Schema.Object import Object
-
 # image header reading functionality
 from Wrappers.XIA.Diffdump import Diffdump
 
@@ -66,7 +64,7 @@ def SweepFactory(template, directory, beam = None):
 
     return sweeps
 
-class Sweep(Object):
+class Sweep():
     '''A class to represent a single sweep of frames.'''
 
     def __init__(self,
@@ -78,8 +76,6 @@ class Sweep(Object):
         '''Initialise the sweep by inspecting the images. id_image
         defines the first image in this sweep, and hence the identity of
         the sweep of more than one are found which match.'''
-
-        Object.__init__(self)
 
         self._identity_attributes = ['_collect_start', '_collect_end',
                                      '_template', '_id_image']
@@ -165,9 +161,6 @@ class Sweep(Object):
             header = dd.readheader()
             self._headers[i] = header
 
-        self.write('reading %d headers took %s s' % (len(self._images),
-                                                     int(time.time() - t)))
-
         return
 
     def update(self):
@@ -229,8 +222,6 @@ class Sweep(Object):
             # to use the user value if provided
             if not self._beam:
                 self._beam = map(float, sweep['beam'])
-
-            self.reset()
 
         return
 

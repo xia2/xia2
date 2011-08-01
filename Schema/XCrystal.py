@@ -76,8 +76,6 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 if not os.path.join(os.environ['XIA2_ROOT'],'lib') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT'], 'lib'))
 
-from Object import Object
-
 from Wrappers.CCP4.Othercell import Othercell
 from Handlers.Environment import Environment
 from Modules.Scaler.ScalerFactory import Scaler
@@ -117,15 +115,13 @@ def sort_o_dict(dict, metric):
 
     return result
 
-class _lattice_manager(Object):
+class _lattice_manager():
     '''A class to manage lattice representations.'''
 
     def __init__(self, index_lattice, index_cell):
         '''Initialise the whole system from the original indexing
         results.'''
         
-        Object.__init__(self)
-
         self._allowed_lattices = { }
         self._allowed_lattice_order = []
         
@@ -150,25 +146,22 @@ class _lattice_manager(Object):
             raise RuntimeError, 'out of lattices'
 
         self._allowed_lattice_order = self._allowed_lattice_order[1:]
-        self.reset()
 
-class _aa_sequence(Object):
-    '''A versioned object to represent the amino acid sequence.'''
+class _aa_sequence():
+    '''An object to represent the amino acid sequence.'''
 
     def __init__(self, sequence):
-        Object.__init__(self)
         self._sequence = sequence
         return
 
     def set_sequence(self, sequence):
         self._sequence = sequence
-        self.reset()
         return
 
     def get_sequence(self):
         return self._sequence
 
-class _ha_info(Object):
+class _ha_info():
     '''A versioned class to represent the heavy atom information.'''
 
     # FIXME in theory we could have > 1 of these to represent e.g. different
@@ -177,7 +170,6 @@ class _ha_info(Object):
     # keep them in a list.)
 
     def __init__(self, atom, number_per_monomer = 0, number_total = 0):
-        Object.__init__(self)
         self._atom = atom
         self._number_per_monomer = number_per_monomer
         self._number_total = number_total
@@ -185,12 +177,10 @@ class _ha_info(Object):
 
     def set_number_per_monomer(self, number_per_monomer):
         self._number_per_monomer = number_per_monomer
-        self.reset()
         return
 
     def set_number_total(self, number_total):
         self._number_total = number_total
-        self.reset()
         return
 
     def get_atom(self):
@@ -264,13 +254,12 @@ def format_statistics(statistics):
 
     return result
 
-class XCrystal(Object):
+class XCrystal():
     '''An object to maintain all of the information about a crystal. This
     will contain the experimental information in XWavelength objects,
     and also amino acid sequence, heavy atom information.'''
 
     def __init__(self, name, project):
-        Object.__init__(self)
 
         self._name = name
 

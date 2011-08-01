@@ -82,9 +82,6 @@ import exceptions
 import copy
 import time
 
-# we all inherit from Object
-from Object import Object
-
 # allow output
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
@@ -148,7 +145,7 @@ from Wrappers.XIA.Diffdump import Diffdump
 import Modules.Indexer.IndexerFactory as IndexerFactory
 import Modules.Integrater.IntegraterFactory as IntegraterFactory
 
-class XSweep(Object):
+class XSweep():
     '''An object representation of the sweep.'''
 
     def __init__(self, name,
@@ -173,8 +170,6 @@ class XSweep(Object):
 
         # + check the wavelength is an XWavelength object
         #   raise an exception if not...
-
-        Object.__init__(self)
 
         if not wavelength.__class__.__name__ == 'XWavelength':
             pass

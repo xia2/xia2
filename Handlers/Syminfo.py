@@ -23,16 +23,11 @@ if not os.environ.has_key('XIA2CORE_ROOT'):
 
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
-from Schema.Object import Object
-
-class _Syminfo(Object):
+class _Syminfo():
     '''An object to retain symmetry information.'''
 
     def __init__(self):
         '''Initialise everything.'''
-
-        Object.__init__(self)
-
 
         self._parse_symop()
 

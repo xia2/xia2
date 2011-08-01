@@ -58,20 +58,17 @@ if not os.environ.has_key('XIA2CORE_ROOT'):
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
-from Schema.Object import Object
 from Experts.FindImages import image2template_directory
 from Schema.XProject import XProject
 from Handlers.Flags import Flags
 from Handlers.Streams import Chatter, Debug
 from Handlers.PipelineSelection import add_preference
 
-class _CommandLine(Object):
+class _CommandLine():
     '''A class to represent the command line input.'''
 
     def __init__(self):
         '''Initialise all of the information from the command line.'''
-
-        Object.__init__(self)
 
         self._argv = []
         self._understood = []
@@ -363,8 +360,6 @@ class _CommandLine(Object):
         try:
             index = sys.argv.index('-beam')
         except ValueError, e:
-            # the token is not on the command line
-            self.write('No beam passed in on the command line')
             self._beam = (0.0, 0.0)
             return
 
@@ -378,9 +373,6 @@ class _CommandLine(Object):
 
         if len(beam) != 2:
             raise RuntimeError, '-beam correct use "-beam x,y"'
-
-        self.write('Beam passed on the command line: %7.2f %7.2f' % \
-                   (float(beam[0]), float(beam[1])))
 
         self._beam = (float(beam[0]), float(beam[1]))
 
@@ -407,7 +399,6 @@ class _CommandLine(Object):
         try:
             index = sys.argv.index('-first_last')
         except ValueError, e:
-            self.write('No first_last passed in on command line')
             self._first_last = (-1, -1)
             return
 
@@ -420,9 +411,6 @@ class _CommandLine(Object):
             raise RuntimeError, '-first_last first,last'
 
         self._first_last = first, last
-
-        self.write('first_last passed in on command line as %d, %d' % \
-                   self._first_last)
 
         self._understood.append(index)
         self._understood.append(index + 1)
@@ -453,7 +441,6 @@ class _CommandLine(Object):
             self._default_template = None
             self._default_directory = None
             self._default_image = None
-            self.write('No image passed in on the command line')
             return
 
         image = sys.argv[index + 1]
@@ -555,7 +542,6 @@ class _CommandLine(Object):
         try:
             index = sys.argv.index('-xinfo')
         except ValueError, e:
-            self.write('No .xinfo passed in on command line')
             self._xinfo = None
             return
 
@@ -1389,8 +1375,6 @@ class _CommandLine(Object):
         try:
             index = sys.argv.index('-cell')
         except ValueError, e:
-            # the token is not on the command line
-            self.write('No cell passed in on the command line')
             return
 
         if index < 0:
@@ -1412,9 +1396,6 @@ class _CommandLine(Object):
 
         format = 6 * ' %7.2f'
         
-        self.write('Cell passed on the command line: ' + \
-                   format % _cell)
-
         self._understood.append(index)
         self._understood.append(index + 1)
 
