@@ -106,6 +106,18 @@ class XSweep2():
 
         return repr
 
+    def get_xgoniometer(self):
+        return self._xgoniometer
+
+    def get_xdetector(self):
+        return self._xdetector
+
+    def get_xbeam(self):
+        return self._xbeam
+
+    def get_xscan(self):
+        return self._xscan
+
     def get_image_name(self, number):
         '''Convert an image number into a name.'''
 
