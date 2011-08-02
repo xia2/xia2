@@ -28,7 +28,7 @@ from Modules.Integrater.XDSIntegrater import XDSIntegrater
 
 from Modules.Integrater.NullIntegrater import NullIntegrater
 
-from Exceptions.NotAvailableError import NotAvailableError
+from DriverExceptions.NotAvailableError import NotAvailableError
 
 # FIXME 06/SEP/06 this should take an implementation of indexer to 
 #                 help with the decision about which integrater to

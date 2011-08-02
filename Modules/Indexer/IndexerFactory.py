@@ -45,7 +45,7 @@ from Wrappers.CCP4.Mosflm import Mosflm
 from Modules.Indexer.XDSIndexer import XDSIndexer
 from Modules.Indexer.XDSIndexerII import XDSIndexerII
 
-from Exceptions.NotAvailableError import NotAvailableError
+from DriverExceptions.NotAvailableError import NotAvailableError
 from Handlers.Streams import Debug
 from Handlers.Flags import Flags
 from Handlers.PipelineSelection import get_preferences

@@ -35,7 +35,7 @@ from Handlers.PipelineSelection import get_preferences, add_preference
 
 # other odds and ends
 
-from Exceptions.NotAvailableError import NotAvailableError
+from DriverExceptions.NotAvailableError import NotAvailableError
 from Handlers.Streams import Debug
 
 def Scaler():
