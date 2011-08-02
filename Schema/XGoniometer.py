@@ -56,6 +56,18 @@ class XGoniometer:
 
         return f_axis % self._axis.elems + f_fixed % self._fixed.elems
 
+    def __cmp__(self, other):
+        '''Compare this rotation axis with another.'''
+
+        angle = self._axis.angle(other.get_axis_c())
+
+        if angle < -1.0e-6:
+            return -1
+        elif angle > 1.0e-6:
+            return 1
+
+        return 0
+
     def get_axis(self):
         '''Get the values for the rotation axis.'''
         

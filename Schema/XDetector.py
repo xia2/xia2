@@ -68,6 +68,49 @@ class XDetector:
                f_3 % self._slow.elems + \
                ''.join([m % _m for _m in self._mask])
 
+    def __cmp__(self, other):
+        '''Compare two XDetector instances.'''
+
+        angle = self._origin.angle(other.get_origin_c())
+
+        if angle < -1.0e-6:
+            return -1
+        elif angle > 1.0e-6:
+            return 1
+        
+        dlength = self._origin.dot() - other.get_origin_c().dot()
+
+        if dlength < -1.0e-6:
+            return -1
+        elif dlength > 1.0e-6:
+            return 1
+        
+        angle = self._fast.angle(other.get_fast_c())
+
+        if angle < -1.0e-6:
+            return -1
+        elif angle > 1.0e-6:
+            return 1
+        
+        angle = self._slow.angle(other.get_slow_c())
+
+        if angle < -1.0e-6:
+            return -1
+        elif angle > 1.0e-6:
+            return 1
+
+        if self._image_size[0] < other.get_image_size()[0]:
+            return -1
+        elif self._image_size[0] > other.get_image_size()[0]:
+            return 1
+        
+        if self._image_size[1] < other.get_image_size()[1]:
+            return -1
+        elif self._image_size[1] > other.get_image_size()[1]:
+            return 1
+        
+        return 0
+
     def get_origin(self):
         '''Get the detector origin.'''
         
