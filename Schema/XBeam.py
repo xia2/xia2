@@ -48,6 +48,26 @@ class XBeam:
                f_axis % self._polarization_plane.elems + \
                '%.6f\n' % self._wavelength
 
+    def __cmp__(self, other):
+        '''Comparison of XBeam instances - to ensure for instance two of these
+        objects come from the same sweep.'''
+
+        angle = self._direction.angle(other.get_direction_c())
+
+        if angle < -1.0e-6:
+            return -1
+        if angle > 1.0e-6:
+            return 1
+
+        dwavelength = self._wavelength - other.get_wavelength()
+
+        if dwavelength < -1.0e-6:
+            return -1
+        if dwavelength > 1.0e-6:
+            return 1
+
+        return 0
+
     def get_direction(self):
         '''Get the beam direction.'''
         
