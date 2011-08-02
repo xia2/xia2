@@ -94,6 +94,7 @@ Schema/XGoniometer.py -text
 Schema/XGoniometerHelpers.py -text
 Schema/XScan.py -text
 Schema/XScanHelpers.py -text
+Schema/XSweep2XDS.py -text
 Toolkit/BackstopMask.py -text
 Toolkit/ComputeU.py -text
 Toolkit/ImageFormat/Doc/adding_new_formats.txt -text
