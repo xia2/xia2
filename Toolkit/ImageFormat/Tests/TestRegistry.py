@@ -47,6 +47,10 @@ def TestRegistry2(files):
     
     format = Registry.find(files[0])
 
+    b0 = format(files[0]).get_xbeam()
+    g0 = format(files[0]).get_xgoniometer()
+    d0 = format(files[0]).get_xdetector()
+
     for f in files:
 
         print f
@@ -57,6 +61,9 @@ def TestRegistry2(files):
         print i.get_xdetector()
         print i.get_xscan()
 
+        print i.get_xbeam() == b0, i.get_xgoniometer() == g0, \
+              i.get_xdetector() == d0
+        
     return time.time() - s 
 
 def TestRegistry3(files):

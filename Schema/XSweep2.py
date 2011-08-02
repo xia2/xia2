@@ -34,7 +34,7 @@ from Experts.FindImages import image2template, find_matching_images, \
 from Experts.Filenames import expand_path
 
 # image header reading functionality
-from Wrappers.XIA.Diffdump import Diffdump
+from Toolkit.ImageFormat.Registry import Registry
 
 # access to factory classes
 import Modules.Indexer.IndexerFactory as IndexerFactory
@@ -660,31 +660,69 @@ class XSweep2():
 
         return lattice
     
+class XSweep2Factory:
+    '''A factory for XSweep2 instances, which can be constructed from e.g.
+    a list of image files or alternatively an existing sweep with a subset of
+    images.'''
 
-if __name__ == '__main__':
+    @staticmethod
+    def FromX(xgoniometer_instance, xdetector_instance, xbeam_instance,
+              xscan_instance):
+        '''Construct an XSweep2 instance from already assembled Xthing
+        instances.'''
 
-    # directory = os.path.join(os.environ['XIA2_ROOT'],
-    # 'Data', 'Test', 'Images')
+        pass
+        
 
-    directory = os.path.join('z:', 'data', '12287')
+    @staticmethod
+    def FromImages(list_of_images):
+        '''From a list of images, construct sweep or raise exception if the
+        images logically belong to more than one sweep. N.B. the images must
+        exist.'''
+
+        for image in list_of_images:
+            assert(os.path.exists(image))
+
+        list_of_images.sort()
+
+        format = Registry.find(list_of_images[0])
+
+        # verify that these are all the same format i.e. that they are all
+        # understood equally well by the format instance.
+
+        format_score = format.understand(list_of_images[0])
+
+        for image in list_of_images:
+            assert(format.understand(image) == format_score)
+
+        i = format(list_of_images[0])
+
+        beam = i.get_xbeam()
+        gonio = i.get_xgoniometer()
+        det = i.get_xdetector()
+        scan = i.get_xscan()
+
+        # now verify that they share the same detector position, rotation axis
+        # and beam properties.
+
+        scans = [scan]
+
+        for image in list_of_images[1:]:
+            i = format(image)
+            assert(beam == i.get_xbeam())
+            assert(gonio == i.get_xgoniometer())
+            assert(det == i.get_xdetector())
+            scans.append(i,get_xscan())
+
+        for s in sorted(scans)[1:]:
+            scan += s
+
+        return XSweep2Factory.FromX(gonio, det, beam, scan)
+
     
-    image = '12287_1_E1_001.img'
+        
 
-    xs = XSweep('DEMO', None, directory, image)
+        
 
-    xs_descr = str(xs)
-
-    Chatter.write('.')
-    for record in xs_descr.split('\n'):
-        Chatter.write(record.strip())
-
-    Chatter.write('.')
-
-    Chatter.write('Refined beam is: %6.2f %6.2f' % xs.get_indexer_beam())
-    Chatter.write('Distance:        %6.2f' % xs.get_indexer_distance())
-    Chatter.write('Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-                  xs.get_indexer_cell())
-    Chatter.write('Lattice: %s' % xs.get_indexer_lattice())
-    Chatter.write('Mosaic: %6.2f' % xs.get_indexer_mosaic())
-    Chatter.write('Hklout: %s' % xs.get_integrater_reflections())
-    
+        
+        

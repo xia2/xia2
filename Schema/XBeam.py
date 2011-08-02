@@ -56,14 +56,14 @@ class XBeam:
 
         if angle < -1.0e-6:
             return -1
-        if angle > 1.0e-6:
+        elif angle > 1.0e-6:
             return 1
 
         dwavelength = self._wavelength - other.get_wavelength()
 
         if dwavelength < -1.0e-6:
             return -1
-        if dwavelength > 1.0e-6:
+        elif dwavelength > 1.0e-6:
             return 1
 
         return 0
