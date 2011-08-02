@@ -126,10 +126,15 @@ class XSweep2():
 
     def get_reversephi(self):
         '''Get whether this is a reverse-phi sweep...'''
+        
+        if self._xscan.get_oscillation()[1] < 0:
+            return True
+        
         return False
 
     def get_image_to_epoch(self):
         '''Get the image to epoch mapping table.'''
+        
         return copy.deepcopy(self._xscan.get_epochs())
 
     # to see if we have been instructed...
@@ -192,7 +197,7 @@ class XSweep2():
         return self._resolution_low
 
     def get_polarization(self):
-        return self._polarization
+        return self._xbeam.get_polarization_fraction()
 
     def get_name(self):
         return self._name
@@ -237,10 +242,9 @@ class XSweep2():
                                                 self.get_name(),
                                                 'index']))
 
-            if self._frames_to_process:
-                frames = self._frames_to_process
-                self._indexer.set_frame_wedge(frames[0],
-                                              frames[1])
+            frames = self._xscan.get_image_range()
+            self._indexer.set_frame_wedge(frames[0],
+                                          frames[1])
 
             self._indexer.set_indexer_sweep_name(self._name)
 
@@ -309,14 +313,16 @@ class XSweep2():
                 self._integrater.set_integrater_parameters(
                     global_integration_parameters.get_parameters(crystal_id))
 
-            # frames to process...
+            # frames to process... looks here like we have multiple definitions
+            # of the wedge somehow...
 
-            if self._frames_to_process:
-                frames = self._frames_to_process
-                self._integrater.set_integrater_wedge(frames[0],
-                                                      frames[1])
-                self._integrater.set_frame_wedge(frames[0],
-                                                 frames[1])
+            frames = self._xscan.get_image_range()
+            self._indexer.set_frame_wedge(frames[0],
+                                          frames[1])
+            self._integrater.set_integrater_wedge(frames[0],
+                                                  frames[1])
+            self._integrater.set_frame_wedge(frames[0],
+                                             frames[1])
 
         return self._integrater
 
@@ -445,7 +451,7 @@ class XSweep2Factory:
         for s in sorted(scans)[1:]:
             scan += s
 
-        return XSweep2Factory.FromX(gonio, det, beam, scan)
+        return XSweep2Factory.FromX(name, wavelength, gonio, det, beam, scan)
 
     
         
