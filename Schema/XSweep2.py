@@ -404,8 +404,8 @@ class XSweep2Factory:
         '''Construct an XSweep2 instance from already assembled Xthing
         instances, along with a name and an XWavelength instance.'''
 
-        return XSweep(name, wavelength, xgoniometer_instance,
-                      xdetector_instance, xbeam_instance, xscan_instance)
+        return XSweep2(name, wavelength, xgoniometer_instance,
+                       xdetector_instance, xbeam_instance, xscan_instance)
 
     @staticmethod
     def FromImages(name, wavelength, list_of_images):
@@ -446,16 +446,45 @@ class XSweep2Factory:
             assert(beam == i.get_xbeam())
             assert(gonio == i.get_xgoniometer())
             assert(det == i.get_xdetector())
-            scans.append(i,get_xscan())
+            scans.append(i.get_xscan())
 
         for s in sorted(scans)[1:]:
             scan += s
 
         return XSweep2Factory.FromX(name, wavelength, gonio, det, beam, scan)
 
-    
-        
+if __name__ == '__main__':
 
+    # run some tests
+
+    class XProject:
+        def __init__(self):
+            pass
+        def get_name(self):
+            return 'fakeproject'
+
+    class XCrystal:
+        def __init__(self):
+            pass
+        def get_name(self):
+            return 'fakecrystal'
+        def get_anomalous(self):
+            return False
+        def get_project(self):
+            return XProject()
+        def get_lattice(self):
+            return None
+
+    class XWavelength:
+        def __init__(self):
+            pass
+        def get_name(self):
+            return 'fakewavelength'
+        def get_wavelength(self):
+            return math.pi / 4
+        
+    print XSweep2Factory.FromImages(
+        'noddy', XWavelength(), sys.argv[1:])
         
 
         

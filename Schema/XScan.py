@@ -90,9 +90,9 @@ class XScan:
         assert(self._exposure_time == other.get_exposure_time())
         assert(self._image_range[1] + 1 == other.get_image_range()[0])
         assert(math.fabs(self.get_oscillation_range()[1] -
-                         other.get_oscillation_range()[0]) < 0.001)
+                         other.get_oscillation_range()[0]) < 0.01)
         assert(math.fabs(self.get_oscillation()[1] -
-                         other.get_oscillation()[1]) < 0.001)
+                         other.get_oscillation()[1]) < 0.01)
 
         new_image_range = (self._image_range[0], other.get_image_range()[1])
         new_epochs = copy.deepcopy(self._epochs)
