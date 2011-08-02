@@ -68,19 +68,22 @@ class XBeam:
 
         return 0
 
-    def get_direction(self):
-        '''Get the beam direction.'''
-        
+    def get_direction(self):        
         return self._direction.elems
 
     def get_direction_c(self):
-        '''Get the beam direction as a cctbx vector.'''
-
         return self._direction
 
-    def get_wavelength(self):
-        '''Get the wavelength in Angstroms.'''
+    def get_polarization_plane(self):
+        return self._polarization_plane.elems
 
+    def get_polarization_plane_c(self):
+        return self._polarization_plane
+
+    def get_polarization_fraction(self):
+        return self._polarization_fraction
+
+    def get_wavelength(self):
         return self._wavelength
 
 class XBeamFactory:
