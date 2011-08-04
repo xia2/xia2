@@ -46,6 +46,11 @@ def find_detector_id(cbf_handle):
 
     return detector_id
 
+def find_undefined_value(cbf_handle):
+    cbf_handle.find_category('array_intensities')
+    cbf_handle.find_column('undefined_value')
+    return cbf_handle.get_doublevalue()
+
 def determine_effective_scan_axis(gonio):
     x = gonio.rotate_vector(0.0, 1, 0, 0)
     y = gonio.rotate_vector(0.0, 0, 1, 0)
@@ -125,6 +130,7 @@ def cbfdump(cbf_image, do_print = False):
     size = tuple(reversed(cbf_handle.get_image_size(0)))
     exposure = cbf_handle.get_integration_time()
     overload = cbf_handle.get_overload(0)
+    underload = find_undefined_value(cbf_handle)
     wavelength = cbf_handle.get_wavelength()
     
     if do_print: print 'Detector information:'
@@ -134,6 +140,7 @@ def cbfdump(cbf_image, do_print = False):
     if do_print: print 'Normal:     %.2f %.2f %.2f' % detector_normal
     if do_print: print 'Exposure:   %.2f' % exposure
     if do_print: print 'Overload:   %d' % int(overload)
+    if do_print: print 'Underload:  %d' % int(underload)
     if do_print: print 'Beam:       %.2f %.2f' % beam_mm
     if do_print: print 'Beam:       %.2f %.2f %.2f' % tuple(beam_direction)
     if do_print: print 'Polariz.:   %.2f %.2f %.2f' % \
