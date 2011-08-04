@@ -63,7 +63,7 @@ class FormatCBFFull(FormatCBF):
     def _xdetector(self):
         '''Return a working XDetector instance.'''
 
-        return self._xdetector_factory.imgCIF_H(self._cbf_handle)
+        return self._xdetector_factory.imgCIF_H(self._cbf_handle, 'unknown')
 
     def _xbeam(self):
         '''Return a working XBeam instance.'''

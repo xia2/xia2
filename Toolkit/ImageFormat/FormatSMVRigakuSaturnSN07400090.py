@@ -108,8 +108,8 @@ class FormatSMVRigakuSaturnSN07400090(FormatSMVRigakuSaturn):
         underload = 0
 
         return self._xdetector_factory.Complex(
-            detector_origin.elems, detector_fast.elems, detector_slow.elems,
-            pixel_size, image_size, (underload, overload))
+            'CCD', detector_origin.elems, detector_fast.elems,
+            detector_slow.elems, pixel_size, image_size, (underload, overload))
 
 if __name__ == '__main__':
 

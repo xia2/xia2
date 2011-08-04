@@ -75,8 +75,8 @@ class FormatSMVADSC(FormatSMV):
         underload = 0
         
         return self._xdetector_factory.Simple(
-            distance, (beam_y, beam_x), '+x', '-y', (pixel_size, pixel_size),
-            image_size, (underload, overload), [])
+            'CCD', distance, (beam_y, beam_x), '+x', '-y',
+            (pixel_size, pixel_size), image_size, (underload, overload), [])
 
     def _xbeam(self):
         '''Return a simple model for the beam.'''

@@ -99,3 +99,25 @@ def find_undefined_value(cbf_handle):
     cbf_handle.find_category('array_intensities')
     cbf_handle.find_column('undefined_value')
     return cbf_handle.get_doublevalue()
+
+class XDetectorHelperSensors:
+    '''A helper class which allows enumeration of detector sensor technologies
+    which should help in identifying specific detectors when needed. These are
+    currently limited to IMAGE_PLATE CCD PAD.'''
+
+    SENSOR_CCD = 'SENSOR_CCD'
+    SENSOR_PAD = 'SENSOR_PAD'
+    SENSOR_IMAGE_IMAGE = 'SENSOR_IMAGE_PLATE'
+    SENSOR_UNDEFINED = 'SENSOR_UNDEFINED'
+
+    @staticmethod
+    def check_sensor(sensor_type):
+        if sensor_type in [XDetectorHelperSensors.SENSOR_CCD,
+                           XDetectorHelperSensors.SENSOR_PAD,
+                           XDetectorHelperSensors.SENSOR_IMAGE_IMAGE,
+                           XDetectorHelperSensors.SENSOR_UNDEFINED]:
+            return True
+        return False
+
+    
+    

@@ -83,8 +83,8 @@ class FormatCBFMiniPilatus(FormatCBFMini):
         underload = -1
 
         xdetector = self._xdetector_factory.Simple(
-            distance * 1000.0, (beam_x * pixel_x * 1000.0,
-                                beam_y * pixel_y * 1000.0), '+x', '-y',
+            'PAD', distance * 1000.0, (beam_x * pixel_x * 1000.0,
+                                       beam_y * pixel_y * 1000.0), '+x', '-y',
             (pixel_x, pixel_y), (nx, ny), (underload, overload), [])
 
         for f0, s0, f1, s1 in determine_pilatus_mask(xdetector):

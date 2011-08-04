@@ -59,7 +59,8 @@ class FormatCBFFullPilatus(FormatCBFFull):
     def _xdetector(self):
         '''Return a working XDetector instance, with added mask regions.'''
 
-        xdetector = self._xdetector_factory.imgCIF_H(self._cbf_handle)
+        xdetector = self._xdetector_factory.imgCIF_H(self._cbf_handle,
+                                                     'PAD')
 
         for f0, s0, f1, s1 in determine_pilatus_mask(xdetector):
             xdetector.add_mask(f0, s0, f1, s1)

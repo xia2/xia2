@@ -14,6 +14,7 @@ import pycbf
 from scitbx import matrix
 from scitbx.math import r3_rotation_axis_and_angle_from_matrix
 
+from XDetectorHelpers import XDetectorHelperSensors
 from XDetectorHelpers import read_xds_xparm
 from XDetectorHelpers import find_undefined_value
 from XDetectorHelpers import compute_frame_rotation
@@ -24,9 +25,10 @@ class XDetector:
     the detector is rectangular and (iii) that it is fixed in position for the
     duration of the experiment.'''
 
-    def __init__(self, origin, fast, slow, pixel_size, image_size,
+    def __init__(self, sensor, origin, fast, slow, pixel_size, image_size,
                  trusted_range, mask):
-        '''Initialize the detector, with the origin (i.e. the outer corner of
+        '''Initialize the detector, with the sensor type (i.e. the detector
+        technology) as well as the origin (i.e. the outer corner of
         the zeroth pixel in the image) provided in mm, the fast and slow
         directions provided as unit vectors, the pixel size given as a tuple
         of fast, slow in mm, the image size given as fast, slow in pixels,
@@ -38,6 +40,7 @@ class XDetector:
         pixel positions marking the extreme limits of the region to be
         excluded in the fast and slow directions.'''
 
+        assert(XDetectorHelperSensors.check_sensor(sensor))
         assert(len(origin) == 3)
         assert(len(fast) == 3)
         assert(len(slow) == 3)
@@ -49,6 +52,7 @@ class XDetector:
         for m in mask:
             assert(len(m) == 4)
 
+        self._sensor = sensor
         self._origin = matrix.col(origin)
         self._fast = matrix.col(fast)
         self._slow = matrix.col(slow)
@@ -66,10 +70,11 @@ class XDetector:
 
         m = '%4d %4d %4d %4d\n'
 
-        trusted = '%d < I < %d\n' % (self._trusted_range[0],
-                                     self._trusted_range[1])
+        start = '%s %d < I < %d\n' % (self._sensor,
+                                      self._trusted_range[0],
+                                      self._trusted_range[1])
         
-        return trusted + f_3 % self._origin.elems + f_3 % self._fast.elems + \
+        return start + f_3 % self._origin.elems + f_3 % self._fast.elems + \
                f_3 % self._slow.elems + \
                ''.join([m % _m for _m in self._mask])
 
@@ -115,6 +120,11 @@ class XDetector:
             return 1
         
         return 0
+
+    def get_sensor(self):
+        '''Get the sensor type, a static string defined in XDetectorHelpers.'''
+
+        return self._sensor
 
     def get_origin(self):
         '''Get the detector origin.'''
@@ -187,7 +197,7 @@ class XDetectorFactory:
         pass
 
     @staticmethod
-    def Simple(distance, beam_centre, fast_direction, slow_direction,
+    def Simple(sensor, distance, beam_centre, fast_direction, slow_direction,
                pixel_size, image_size, trusted_range, mask):
         '''Construct a simple detector at a given distance from the sample
         along the direct beam presumed to be aligned with -z, offset by the
@@ -215,11 +225,12 @@ class XDetectorFactory:
         origin = matrix.col((0, 0, -1)) * distance - \
                  fast * beam_centre[0] - slow * beam_centre[1]
 
-        return XDetector(origin.elems, fast.elems, slow.elems, pixel_size,
+        return XDetector(XDetectorFactory.Sensor(sensor),
+                         origin.elems, fast.elems, slow.elems, pixel_size,
                          image_size, trusted_range, mask)
 
     @staticmethod
-    def TwoTheta(distance, beam_centre, fast_direction, slow_direction,
+    def TwoTheta(sensor, distance, beam_centre, fast_direction, slow_direction,
                  two_theta_direction, two_theta_angle,
                  pixel_size, image_size, trusted_range, mask):
         '''Construct a simple detector at a given distance from the sample
@@ -256,12 +267,13 @@ class XDetectorFactory:
         R = two_theta.axis_and_angle_as_r3_rotation_matrix(two_theta_angle,
                                                            deg = True)
 
-        return XDetector((R * origin).elems, (R * fast).elems,
+        return XDetector(XDetectorFactory.Sensor(sensor),
+                         (R * origin).elems, (R * fast).elems,
                          (R * slow).elems, pixel_size, image_size,
                          trusted_range, mask)
 
     @staticmethod
-    def Complex(origin, fast, slow, pixel, size, trusted_range):
+    def Complex(sensor, origin, fast, slow, pixel, size, trusted_range):
         '''A complex detector model, where you know exactly where everything
         is. This is useful for implementation of the Rigaku Saturn header
         format, as that is exactly what is in there. Origin, fast and slow are
@@ -274,7 +286,8 @@ class XDetectorFactory:
         assert(len(pixel) == 2)
         assert(len(size) == 2)
 
-        return XDetector(origin, fast, slow, pixel,
+        return XDetector(XDetectorFactory.Sensor(sensor),
+                         origin, fast, slow, pixel,
                          size, trusted_range, [])
 
     @staticmethod
@@ -338,11 +351,12 @@ class XDetectorFactory:
         c_fast = _m * detector_fast
         c_slow = _m * detector_slow
 
-        return XDetector(c_origin, c_fast, c_slow, pixel_size,
+        return XDetector(XDetectorFactory.Sensor('undefined'),
+                         c_origin, c_fast, c_slow, pixel_size,
                          image_size, (0, 0), [])
 
     @staticmethod
-    def imgCIF(cif_file):
+    def imgCIF(cif_file, sensor):
         '''Initialize a detector model from an imgCIF file.'''
 
         cbf_handle = pycbf.cbf_handle_struct()
@@ -377,11 +391,12 @@ class XDetectorFactory:
         detector.__swig_destroy__(detector)
         del(detector)
 
-        return XDetector(origin, fast, slow, pixel,
+        return XDetector(XDetectorFactory.Sensor(sensor),
+                         origin, fast, slow, pixel,
                          size, (underload, overload), [])
 
     @staticmethod
-    def imgCIF_H(cbf_handle):
+    def imgCIF_H(cbf_handle, sensor):
         '''Initialize a detector model from an imgCIF file handle, where it
         is assumed that the file has already been read.'''
 
@@ -414,8 +429,34 @@ class XDetectorFactory:
         detector.__swig_destroy__(detector)
         del(detector)
 
-        return XDetector(origin, fast, slow, pixel,
+        return XDetector(XDetectorFactory.Sensor(sensor),
+                         origin, fast, slow, pixel,
                          size, (underload, overload), [])
+
+    @staticmethod
+    def Sensor(name):
+        '''Return the correct sensor token for a given name, for example:
+
+        ccd, CCD
+        image_plate, IMAGE_PLATE
+        pad, PAD
+
+        to the appropriate static token which will be used as a handle
+        everywhere else in this. Also allow existing token to be passed in.'''
+
+        if XDetectorHelperSensors.check_sensor(name):
+            return name
+        
+        if name.upper() == 'PAD':
+            return XDetectorHelperSensors.SENSOR_PAD
+        elif name.upper() == 'CCD':
+            return XDetectorHelperSensors.SENSOR_CCD
+        elif name.upper() == 'IMAGE_PLATE':
+            return XDetectorHelperSensors.SENSOR_IMAGE_PLATE
+        elif name.upper() == 'UNDEFINED':
+            return XDetectorHelperSensors.SENSOR_UNDEFINED
+
+        raise RuntimeError, 'name %s not known' % name
 
 
         

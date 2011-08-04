@@ -125,7 +125,7 @@ class FormatTIFFRayonix(FormatTIFF):
         beam = beam_x * pixel_size[0], beam_y * pixel_size[1]
         
         return self._xdetector_factory.Simple(
-            distance, beam, '+x', '-y', pixel_size,
+            'CCD', distance, beam, '+x', '-y', pixel_size,
             image_size, (underload, overload), [])
 
     def _xbeam(self):
