@@ -15,6 +15,7 @@ from scitbx import matrix
 from scitbx.math import r3_rotation_axis_and_angle_from_matrix
 
 from XDetectorHelpers import read_xds_xparm
+from XDetectorHelpers import find_undefined_value
 from XDetectorHelpers import compute_frame_rotation
 
 class XDetector:
@@ -24,12 +25,13 @@ class XDetector:
     duration of the experiment.'''
 
     def __init__(self, origin, fast, slow, pixel_size, image_size,
-                 overload, mask):
+                 trusted_range, mask):
         '''Initialize the detector, with the origin (i.e. the outer corner of
         the zeroth pixel in the image) provided in mm, the fast and slow
         directions provided as unit vectors, the pixel size given as a tuple
         of fast, slow in mm, the image size given as fast, slow in pixels,
-        the overload given in counts and the mask given as a list of
+        the trusted_range given in counts (i.e. minimum to maximum counts
+        considered reliable) and the mask given as a list of
 
         fi, si, fj, sj
 
@@ -52,7 +54,7 @@ class XDetector:
         self._slow = matrix.col(slow)
         self._pixel_size = pixel_size
         self._image_size = image_size
-        self._overload = overload
+        self._trusted_range = trusted_range
         self._mask = mask
 
         return
@@ -64,7 +66,10 @@ class XDetector:
 
         m = '%4d %4d %4d %4d\n'
 
-        return f_3 % self._origin.elems + f_3 % self._fast.elems + \
+        trusted = '%d < I < %d\n' % (self._trusted_range[0],
+                                     self._trusted_range[1])
+        
+        return trusted + f_3 % self._origin.elems + f_3 % self._fast.elems + \
                f_3 % self._slow.elems + \
                ''.join([m % _m for _m in self._mask])
 
@@ -151,10 +156,10 @@ class XDetector:
 
         return self._image_size
 
-    def get_overload(self):
-        '''Get the number of counts identified as an overloaded pixel.'''
+    def get_trusted_range(self):
+        '''Get the number of counts identified as the trusted_range.'''
 
-        return self._overload
+        return self._trusted_range
 
     def get_mask(self):
         '''Return a list of rectangular regions on the image in pixels which
@@ -183,7 +188,7 @@ class XDetectorFactory:
 
     @staticmethod
     def Simple(distance, beam_centre, fast_direction, slow_direction,
-               pixel_size, image_size, overload, mask):
+               pixel_size, image_size, trusted_range, mask):
         '''Construct a simple detector at a given distance from the sample
         along the direct beam presumed to be aligned with -z, offset by the
         beam centre - the directions of which are given by the fast and slow
@@ -211,12 +216,12 @@ class XDetectorFactory:
                  fast * beam_centre[0] - slow * beam_centre[1]
 
         return XDetector(origin.elems, fast.elems, slow.elems, pixel_size,
-                         image_size, overload, mask)
+                         image_size, trusted_range, mask)
 
     @staticmethod
     def TwoTheta(distance, beam_centre, fast_direction, slow_direction,
                  two_theta_direction, two_theta_angle,
-                 pixel_size, image_size, overload, mask):
+                 pixel_size, image_size, trusted_range, mask):
         '''Construct a simple detector at a given distance from the sample
         along the direct beam presumed to be aligned with -z, offset by the
         beam centre - the directions of which are given by the fast and slow
@@ -253,10 +258,10 @@ class XDetectorFactory:
 
         return XDetector((R * origin).elems, (R * fast).elems,
                          (R * slow).elems, pixel_size, image_size,
-                         overload, mask)
+                         trusted_range, mask)
 
     @staticmethod
-    def Complex(origin, fast, slow, pixel, size, overload):
+    def Complex(origin, fast, slow, pixel, size, trusted_range):
         '''A complex detector model, where you know exactly where everything
         is. This is useful for implementation of the Rigaku Saturn header
         format, as that is exactly what is in there. Origin, fast and slow are
@@ -270,7 +275,7 @@ class XDetectorFactory:
         assert(len(size) == 2)
 
         return XDetector(origin, fast, slow, pixel,
-                         size, overload, [])
+                         size, trusted_range, [])
 
     @staticmethod
     def XDS(xds_xparm_file):
@@ -334,7 +339,7 @@ class XDetectorFactory:
         c_slow = _m * detector_slow
 
         return XDetector(c_origin, c_fast, c_slow, pixel_size,
-                         image_size, 0, [])
+                         image_size, (0, 0), [])
 
     @staticmethod
     def imgCIF(cif_file):
@@ -366,14 +371,14 @@ class XDetectorFactory:
         slow = tuple([dslow[j] / lslow for j in range(3)])
 
         size = tuple(reversed(cbf_handle.get_image_size(0)))
+        underload = find_undefined_value(cbf_handle)
         overload = cbf_handle.get_overload(0)
 
         detector.__swig_destroy__(detector)
         del(detector)
 
         return XDetector(origin, fast, slow, pixel,
-                         size, overload, [])
-
+                         size, (underload, overload), [])
 
     @staticmethod
     def imgCIF_H(cbf_handle):
@@ -403,13 +408,14 @@ class XDetectorFactory:
         slow = tuple([dslow[j] / lslow for j in range(3)])
 
         size = tuple(reversed(cbf_handle.get_image_size(0)))
+        underload = find_undefined_value(cbf_handle)
         overload = cbf_handle.get_overload(0)
 
         detector.__swig_destroy__(detector)
         del(detector)
 
         return XDetector(origin, fast, slow, pixel,
-                         size, overload, [])
+                         size, (underload, overload), [])
 
 
         

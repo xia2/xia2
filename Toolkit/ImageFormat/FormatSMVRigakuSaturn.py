@@ -138,10 +138,11 @@ class FormatSMVRigakuSaturn(FormatSMV):
             detector_origin = translations[j] + detector_origin
 
         overload = int(self._header_dictionary['SATURATED_VALUE'])
+        underload = 0
 
         return self._xdetector_factory.Complex(
             detector_origin.elems, detector_fast.elems, detector_slow.elems,
-            pixel_size, image_size, overload)
+            pixel_size, image_size, (underload, overload))
 
     def _xbeam(self):
         '''Return a simple model for the beam.'''

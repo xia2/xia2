@@ -80,11 +80,12 @@ class FormatCBFMiniPilatus(FormatCBFMini):
 
         overload = int(
             self._cif_header_dictionary['Count_cutoff'].split()[0])
+        underload = -1
 
         xdetector = self._xdetector_factory.Simple(
             distance * 1000.0, (beam_x * pixel_x * 1000.0,
                                 beam_y * pixel_y * 1000.0), '+x', '-y',
-            (pixel_x, pixel_y), (nx, ny), overload, [])
+            (pixel_x, pixel_y), (nx, ny), (underload, overload), [])
 
         for f0, s0, f1, s1 in determine_pilatus_mask(xdetector):
             xdetector.add_mask(f0, s0, f1, s1)

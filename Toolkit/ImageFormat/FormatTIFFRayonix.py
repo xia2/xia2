@@ -120,12 +120,13 @@ class FormatTIFFRayonix(FormatTIFF):
         image_size = self._tiff_width, self._tiff_height
         overload = struct.unpack(
             self._i, self._tiff_header_bytes[1128:1132])[0]
+        underload = 0
 
         beam = beam_x * pixel_size[0], beam_y * pixel_size[1]
         
         return self._xdetector_factory.Simple(
             distance, beam, '+x', '-y', pixel_size,
-            image_size, overload, [])
+            image_size, (underload, overload), [])
 
     def _xbeam(self):
         '''Return a simple model for the beam.'''
