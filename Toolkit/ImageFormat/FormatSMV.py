@@ -11,7 +11,7 @@
 # readers which really will acquire the full image including header information
 # and generate the experimental model representations.
 
-from Format import Format
+from Toolkit.ImageFormat.Format import Format
 
 class FormatSMV(Format):
     '''An image reading class for SMV format images i.e. those from ADSC and

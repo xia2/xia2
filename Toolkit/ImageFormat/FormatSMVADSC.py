@@ -10,7 +10,7 @@
 
 import time
 
-from FormatSMV import FormatSMV
+from Toolkit.ImageFormat.FormatSMV import FormatSMV
 
 class FormatSMVADSC(FormatSMV):
     '''A class for reading SMV format ADSC images, and correctly constructing
