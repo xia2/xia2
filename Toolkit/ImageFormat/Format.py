@@ -14,8 +14,17 @@
 
 import os
 import sys
-import bz2
-import gzip
+
+try:
+    import bz2
+except:
+    bz2 = None
+
+try:
+    import gzip
+except:
+    gzip = None
+    
 import exceptions
 import traceback
 
@@ -211,9 +220,17 @@ class Format:
         '''Open file for reading, decompressing silently if necessary.'''
 
         if Format.is_bz2(filename):
+
+            if bz2 is None:
+                raise RuntimeError, 'bz2 file provided without bz2 module'
+            
             return bz2.BZ2File(filename, mode)
 
         if Format.is_gzip(filename):
+
+            if gzip is None:
+                raise RuntimeError, 'gz file provided without gzip module'
+
             return gzip.GzipFile(filename, mode)
 
         return open(filename, mode)
