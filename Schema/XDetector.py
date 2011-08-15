@@ -453,8 +453,8 @@ class XDetectorFactory:
             return XDetectorHelperSensors.SENSOR_CCD
         elif name.upper() == 'IMAGE_PLATE':
             return XDetectorHelperSensors.SENSOR_IMAGE_PLATE
-        elif name.upper() == 'UNDEFINED':
-            return XDetectorHelperSensors.SENSOR_UNDEFINED
+        elif name.upper() == 'UNKNOWN':
+            return XDetectorHelperSensors.SENSOR_UNKNOWN
 
         raise RuntimeError, 'name %s not known' % name
 

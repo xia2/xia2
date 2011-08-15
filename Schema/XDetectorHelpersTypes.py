@@ -56,9 +56,21 @@ class XDetectorHelpersTypes:
     def get(self, sensor, fast, slow, df, ds):
         '''Look up a name for a detector with this sensor type (listed in
         XDetectorHelpers) these image dimensions in the fast and slow
-        directions, these corresponding pixel sizes, in microns (integers).'''
+        directions, these corresponding pixel sizes, in microns (integers).
+        If the sensor is unknown, all sensor types will be tested - be warned
+        if there are duplicates.'''
 
         sensor = XDetectorFactory.Sensor(sensor)
+
+        if sensor == XDetectorHelperSensors.SENSOR_UNKNOWN:
+            for s in XDetectorHelperSensors.all():
+                try:
+                    return self.get(s, fast, slow, df, ds)
+                except:
+                    pass
+
+            raise RuntimeError, 'detector %s %d %d %d %d unknown' % \
+                  (sensor, fast, slow, df, ds)
 
         if (sensor, fast, slow, df, ds) in self._detectors:
             return self._detectors[(sensor, fast, slow, df, ds)]
