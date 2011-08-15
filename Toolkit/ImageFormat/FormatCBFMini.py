@@ -34,6 +34,9 @@ class FormatCBFMini(FormatCBF):
             if '_array_data.header_convention' in record and \
                    'PILATUS' in record:
                 return 2
+            if '_array_data.header_convention' in record and \
+                   'SLS' in record:
+                return 2
 
         return 0
 
@@ -60,7 +63,7 @@ class FormatCBFMini(FormatCBF):
             if not '#' in record[:1]:
                 continue
 
-            if len(record[1:].split()) == 1:
+            if len(record[1:].split()) <= 2 and record.count(':') == 2:
                 self._cif_header_dictionary['timestamp'] = record[1:].strip()
                 continue
             

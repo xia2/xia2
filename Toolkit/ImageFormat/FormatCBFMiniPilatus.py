@@ -33,6 +33,9 @@ class FormatCBFMiniPilatus(FormatCBFMini):
             if '_array_data.header_convention' in record and \
                    'PILATUS' in record:
                 return 3
+            if '_array_data.header_convention' in record and \
+                   'SLS' in record:
+                return 3
         
         return 0
 
@@ -51,7 +54,8 @@ class FormatCBFMiniPilatus(FormatCBFMini):
         probably be checked against the image header, though for miniCBF
         there are limited options for this.'''
 
-        assert(not 'Phi' in self._cif_header_dictionary)
+        if 'Phi' in self._cif_header_dictionary:
+            assert(float(self._cif_header_dictionary['Phi'].split()[0]) == 0.0)
 
         return self._xgoniometer_factory.SingleAxis()
 
