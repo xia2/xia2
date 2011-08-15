@@ -107,14 +107,14 @@ class XDetectorHelperSensors:
 
     SENSOR_CCD = 'SENSOR_CCD'
     SENSOR_PAD = 'SENSOR_PAD'
-    SENSOR_IMAGE_IMAGE = 'SENSOR_IMAGE_PLATE'
+    SENSOR_IMAGE_PLATE = 'SENSOR_IMAGE_PLATE'
     SENSOR_UNDEFINED = 'SENSOR_UNDEFINED'
 
     @staticmethod
     def check_sensor(sensor_type):
         if sensor_type in [XDetectorHelperSensors.SENSOR_CCD,
                            XDetectorHelperSensors.SENSOR_PAD,
-                           XDetectorHelperSensors.SENSOR_IMAGE_IMAGE,
+                           XDetectorHelperSensors.SENSOR_IMAGE_PLATE,
                            XDetectorHelperSensors.SENSOR_UNDEFINED]:
             return True
         return False

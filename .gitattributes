@@ -15,6 +15,7 @@ Applications/test_image_header.py -text
 Applications/test_pilatus_scan -text
 Applications/x1335 -text
 Attic/Attic1.py -text
+Data/detectors.lib -text
 Experts/Doc/FindImages.pdf -text
 Experts/TestSymmetryExpert.py -text
 Experts/example.xparm -text
@@ -90,6 +91,7 @@ Schema/Tests/phi_scan_001.cbf -text svneol=unset#unset
 Schema/XBeam.py -text
 Schema/XDetector.py -text
 Schema/XDetectorHelpers.py -text
+Schema/XDetectorHelpersTypes.py -text
 Schema/XGoniometer.py -text
 Schema/XGoniometerHelpers.py -text
 Schema/XScan.py -text

@@ -26,6 +26,9 @@ class XSweep2XDS:
 
         print self._xsweep.get_xdetector()
 
+        print self._xsweep.get_xdetector().get_pixel_size()
+        print self._xsweep.get_xdetector().get_image_size()
+
 if __name__ == '__main__':
 
     # run some tests
