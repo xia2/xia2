@@ -11,6 +11,7 @@ import os
 import sys
 
 from XSweep2 import XSweep2
+from XDetectorHelpersTypes import XDetectorHelpersTypes
 
 class XSweep2XDS:
     '''A class to export contents of an XSweep2 as XDS.INP.'''
@@ -24,10 +25,13 @@ class XSweep2XDS:
 
         print self._xsweep.get_xscan().get_format()
 
-        print self._xsweep.get_xdetector()
+        sensor = self._xsweep.get_xdetector().get_sensor()
+        fast, slow = map(int, self._xsweep.get_xdetector().get_image_size())
+        f, s = self._xsweep.get_xdetector().get_pixel_size()
+        df = int(1000 * f)
+        ds = int(1000 * s)
 
-        print self._xsweep.get_xdetector().get_pixel_size()
-        print self._xsweep.get_xdetector().get_image_size()
+        print XDetectorHelpersTypes.get(sensor, fast, slow, df, ds)
 
 if __name__ == '__main__':
 
