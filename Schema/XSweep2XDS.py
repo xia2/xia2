@@ -58,10 +58,10 @@ class XSweep2XDS:
         print 'DETECTOR=%s MINIMUM_VALID_PIXEL_VALUE=%d OVERLOAD=%d' % \
               (detector, trusted[0] + 1, trusted[1])
 
-        print 'DIRECTION_OF_DETECTOR_X-AXIS= %.2f %.2f %.2f' % \
+        print 'DIRECTION_OF_DETECTOR_X-AXIS= %.3f %.3f %.3f' % \
               (R * self._xsweep.get_xdetector().get_fast_c()).elems
 
-        print 'DIRECTION_OF_DETECTOR_Y-AXIS= %.2f %.2f %.2f' % \
+        print 'DIRECTION_OF_DETECTOR_Y-AXIS= %.3f %.3f %.3f' % \
               (R * self._xsweep.get_xdetector().get_slow_c()).elems
 
         print 'NX=%d NY=%d QX=%.4f QY=%.4f' % (fast, slow, f, s)
@@ -74,22 +74,24 @@ class XSweep2XDS:
         beam = R * self._xsweep.get_xbeam().get_direction_c() / \
                math.sqrt(self._xsweep.get_xbeam().get_direction_c().dot())
         centre = -(origin - origin.dot(N) * N)
+        x = centre.dot(F)
+        y = centre.dot(S)
 
         print 'DETECTOR_DISTANCE= %.3f' % origin.dot(N)
-        print 'ORGX= %.1f ORGY= %.1f' % (centre[0] / f, centre[1] / s)
-        print 'ROTATION_AXIS= %.2f %.2f %.2f' % \
+        print 'ORGX= %.1f ORGY= %.1f' % (x / f, y / s)
+        print 'ROTATION_AXIS= %.3f %.3f %.3f' % \
               self._xsweep.get_xgoniometer().get_axis()
-        print 'STARTING_ANGLE= %.2f' % \
+        print 'STARTING_ANGLE= %.3f' % \
               self._xsweep.get_xscan().get_oscillation()[0]
-        print 'OSCILLATION_RANGE= %.2f' % \
+        print 'OSCILLATION_RANGE= %.3f' % \
               self._xsweep.get_xscan().get_oscillation()[1]
         print 'X-RAY_WAVELENGTH= %.5f' % \
               self._xsweep.get_xbeam().get_wavelength()
-        print 'INCIDENT_BEAM_DIRECTION= %.2f %.2f %.2f' % \
+        print 'INCIDENT_BEAM_DIRECTION= %.3f %.3f %.3f' % \
               (- beam).elems
         print 'FRACTION_OF_POLARIZATION= %.3f' % \
               self._xsweep.get_xbeam().get_polarization_fraction()
-        print 'POLARIZATION_PLANE_NORMAL= %.2f %.2f %.2f' % \
+        print 'POLARIZATION_PLANE_NORMAL= %.3f %.3f %.3f' % \
               self._xsweep.get_xbeam().get_polarization_plane()
         print 'NAME_TEMPLATE_OF_DATA_FRAMES= %s' % os.path.join(
             self._xsweep.get_xscan().get_directory(),             

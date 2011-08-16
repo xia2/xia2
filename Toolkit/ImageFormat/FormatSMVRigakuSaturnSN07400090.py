@@ -48,7 +48,7 @@ class FormatSMVRigakuSaturnSN07400090(FormatSMVRigakuSaturn):
         '''Return a model for the detector, allowing for two-theta offsets
         and the detector position. This will be rather more complex... and
         overloads the definition for the general Rigaku Saturn detector by
-        swapping the fast and slow directions.'''
+        rotating the detector by -90 degrees about the beam.'''
 
         detector_name = self._header_dictionary[
             'DETECTOR_NAMES'].split()[0].strip()
@@ -56,8 +56,11 @@ class FormatSMVRigakuSaturnSN07400090(FormatSMVRigakuSaturn):
         detector_axes = map(float, self._header_dictionary[
             '%sDETECTOR_VECTORS' % detector_name].split())
 
-        detector_slow = matrix.col(tuple(detector_axes[:3]))
-        detector_fast = matrix.col(tuple(detector_axes[3:]))
+        R = matrix.col((0, 0, 1)).axis_and_angle_as_r3_rotation_matrix(
+            -90, deg = True)
+        
+        detector_fast = R * matrix.col(tuple(detector_axes[:3]))
+        detector_slow = R * matrix.col(tuple(detector_axes[3:]))
 
         beam_pixels = map(float, self._header_dictionary[
             '%sSPATIAL_DISTORTION_INFO' % detector_name].split()[:2])
