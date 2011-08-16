@@ -73,7 +73,7 @@ class XSweep2XDS:
         origin = R * self._xsweep.get_xdetector().get_origin_c()
         beam = R * self._xsweep.get_xbeam().get_direction_c() / \
                math.sqrt(self._xsweep.get_xbeam().get_direction_c().dot())
-        centre = -(origin - origin.dot(beam) * beam)
+        centre = -(origin - origin.dot(N) * N)
 
         print 'DETECTOR_DISTANCE= %.3f' % origin.dot(N)
         print 'ORGX= %.1f ORGY= %.1f' % (centre[0] / f, centre[1] / s)
