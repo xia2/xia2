@@ -9,9 +9,26 @@
 
 import os
 import sys
+import math
+from scitbx import matrix
 
 from XSweep2 import XSweep2
 from XDetectorHelpersTypes import XDetectorHelpersTypes
+
+def xds_detector_name(xia2_name):
+    '''Translate from a xia2 name from the detector library to an XDS detector
+    name.'''
+
+    if 'pilatus' in xia2_name:
+        return 'PILATUS'
+    if 'rayonix' in xia2_name:
+        return 'CCDCHESS'
+    if 'adsc' in xia2_name:
+        return 'ADSC'
+    if 'saturn' in xia2_name:
+        return 'SATURN'
+
+    raise RuntimeError, 'detector %s unknown' % xia2_name
 
 class XSweep2XDS:
     '''A class to export contents of an XSweep2 as XDS.INP.'''
@@ -23,15 +40,41 @@ class XSweep2XDS:
 
     def XDS(self):
 
-        print self._xsweep.get_xscan().get_format()
-
         sensor = self._xsweep.get_xdetector().get_sensor()
         fast, slow = map(int, self._xsweep.get_xdetector().get_image_size())
         f, s = self._xsweep.get_xdetector().get_pixel_size()
         df = int(1000 * f)
         ds = int(1000 * s)
 
-        print XDetectorHelpersTypes.get(sensor, fast, slow, df, ds)
+        # FIXME probably need to rotate by pi about the X axis
+
+        R = matrix.col((1.0, 0.0, 0.0)).axis_and_angle_as_r3_rotation_matrix(
+            180.0, deg = True)
+
+        detector = xds_detector_name(
+            XDetectorHelpersTypes.get(sensor, fast, slow, df, ds))
+        trusted = self._xsweep.get_xdetector().get_trusted_range()
+
+        print 'DETECTOR=%s MINIMUM_VALID_PIXEL_VALUE=%d OVERLOAD=%d' % \
+              (detector, trusted[0] + 1, trusted[1])
+
+        print 'DIRECTION_OF_DETECTOR_X-AXIS= %.2f %.2f %.2f' % \
+              (R * self._xsweep.get_xdetector().get_fast_c()).elems
+
+        print 'DIRECTION_OF_DETECTOR_Y-AXIS= %.2f %.2f %.2f' % \
+              (R * self._xsweep.get_xdetector().get_slow_c()).elems
+
+        print 'NX=%d NY=%d QX=%.4f QY=%.4f' % (fast, slow, f, s)
+
+        origin = R * self._xsweep.get_xdetector().get_origin_c()
+        beam = R * self._xsweep.get_xbeam().get_direction_c() / \
+               math.sqrt(self._xsweep.get_xbeam().get_direction_c().dot())
+        centre = -(origin - origin.dot(beam) * beam)
+
+        print 'DETECTOR_DISTANCE=%.3f' % origin.dot(beam)
+        print 'ORGX=%.1f ORGY=%.1f' % (centre[0] / f, centre[1] / s)
+        print 'ROTATION_AXIS= %.2f %.2f %.2f' % \
+              self._xsweep.get_xgoniometer().get_axis()
 
 if __name__ == '__main__':
 
