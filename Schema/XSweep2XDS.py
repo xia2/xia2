@@ -96,9 +96,15 @@ class XSweep2XDS:
         print 'NAME_TEMPLATE_OF_DATA_FRAMES= %s' % os.path.join(
             self._xsweep.get_xscan().get_directory(),             
             self._xsweep.get_xscan().get_template().replace('#', '?'))
-        print 'DATA_RANGE= %d %d' % \
-              self._xsweep.get_xscan().get_image_range()
-        print 'JOB=XYCORR INIT COLSPOT IDXREF'
+        print 'TRUSTED_REGION= 0.0 1.41'
+
+        start_end = self._xsweep.get_xscan().get_image_range()
+
+        if start_end[0] == 0:
+            start_end = (1, start_end[1])
+
+        print 'DATA_RANGE= %d %d' % start_end
+        print 'JOB=XYCORR INIT COLSPOT IDXREF DEFPIX INTEGRATE CORRECT'
         
 if __name__ == '__main__':
 
