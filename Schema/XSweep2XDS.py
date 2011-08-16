@@ -93,13 +93,10 @@ class XSweep2XDS:
               self._xsweep.get_xbeam().get_polarization_plane()
         print 'NAME_TEMPLATE_OF_DATA_FRAMES= %s' % os.path.join(
             self._xsweep.get_xscan().get_directory(),             
-            self._xsweep.get_xscan().get_template().replace('?', '#'))
+            self._xsweep.get_xscan().get_template().replace('#', '?'))
         print 'DATA_RANGE= %d %d' % \
               self._xsweep.get_xscan().get_image_range()
         print 'JOB=XYCORR INIT COLSPOT IDXREF'
-
-        
-
         
 if __name__ == '__main__':
 
