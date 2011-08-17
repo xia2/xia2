@@ -137,7 +137,7 @@ class FormatSMVRigakuSaturn(FormatSMV):
             detector_origin = rotations[j] * detector_origin
             detector_origin = translations[j] + detector_origin
 
-        overload = int(self._header_dictionary['SATURATED_VALUE'])
+        overload = int(float(self._header_dictionary['SATURATED_VALUE']))
         underload = 0
 
         return self._xdetector_factory.Complex(
