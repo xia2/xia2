@@ -58,6 +58,9 @@ class XSweep2XDS:
         print 'DETECTOR=%s MINIMUM_VALID_PIXEL_VALUE=%d OVERLOAD=%d' % \
               (detector, trusted[0] + 1, trusted[1])
 
+        if detector == 'PILATUS':
+            print 'SENSOR_THICKNESS= 0.32'
+
         print 'DIRECTION_OF_DETECTOR_X-AXIS= %.3f %.3f %.3f' % \
               (R * self._xsweep.get_xdetector().get_fast_c()).elems
 
