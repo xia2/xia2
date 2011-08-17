@@ -177,12 +177,12 @@ class XDetector:
 
         return self._mask
 
-    def add_mask(self, f0, s0, f1, s1):
+    def add_mask(self, f0, f1, s0, s1):
         '''Add to the mask the region encompassed within the rectangle
         (f0, s0) to (f1, s1) where the ordinates are in the fast and slow
         directions respectively.'''
 
-        self._mask.append((f0, s0, f1, s1))
+        self._mask.append((f0, f1, s0, s1))
 
         return
 

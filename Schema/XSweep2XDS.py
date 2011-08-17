@@ -97,6 +97,9 @@ class XSweep2XDS:
             self._xsweep.get_xscan().get_directory(),             
             self._xsweep.get_xscan().get_template().replace('#', '?'))
         print 'TRUSTED_REGION= 0.0 1.41'
+        for f0, f1, s0, s1 in self._xsweep.get_xdetector().get_mask():
+            print 'UNTRUSTED_RECTANGLE= %d %d %d %d' % \
+                  (f0 - 1, f1 + 1, s0 - 1, s1 + 1)
 
         start_end = self._xsweep.get_xscan().get_image_range()
 
