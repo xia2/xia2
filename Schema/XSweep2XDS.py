@@ -83,7 +83,7 @@ class XSweep2XDS:
         print 'DETECTOR_DISTANCE= %.3f' % origin.dot(N)
         print 'ORGX= %.1f ORGY= %.1f' % (x / f, y / s)
         print 'ROTATION_AXIS= %.3f %.3f %.3f' % \
-              self._xsweep.get_xgoniometer().get_axis()
+              (R * self._xsweep.get_xgoniometer().get_axis_c()).elems
         print 'STARTING_ANGLE= %.3f' % \
               self._xsweep.get_xscan().get_oscillation()[0]
         print 'OSCILLATION_RANGE= %.3f' % \
