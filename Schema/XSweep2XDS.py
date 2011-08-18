@@ -27,6 +27,8 @@ def xds_detector_name(xia2_name):
         return 'ADSC'
     if 'saturn' in xia2_name:
         return 'SATURN'
+    if 'raxis' in xia2_name:
+        return 'RAXIS'
 
     raise RuntimeError, 'detector %s unknown' % xia2_name
 

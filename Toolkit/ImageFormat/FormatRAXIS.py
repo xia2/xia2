@@ -70,6 +70,11 @@
 # Then some more chunder follows - however I don't think it contains anything
 # useful. So need to read first 1K of the image header.
 
+import time
+import datetime
+import struct
+import math
+
 from Toolkit.ImageFormat.Format import Format
 
 class FormatRAXIS(Format):
@@ -92,7 +97,7 @@ class FormatRAXIS(Format):
 
         return
 
-    def _setup(self):
+    def _start(self):
         self._header_bytes = open(self._image_file).read(1024)
 
         if self._header_bytes[812:822].strip() == 'SGI':
@@ -108,5 +113,119 @@ class FormatRAXIS(Format):
         '''Return a model for the goniometer from the values stored in the
         header. Assumes same reference frame as is used for the Saturn
         instrument.'''
+
+        # OK for the moment I am not completely clear on how omega, chi and
+        # phi are defined so for the moment assert (i) that only one rotation
+        # axis has a non-zero offset (ii) that this is the scan axis and
+        # (iii) that this is aligned with (1, 0, 0) in the file... N.B.
+        # with these scanners it is (I believe) always the case that the
+        # (1, 0, 0) direction points downwards from the sample to the
+        # goniometer.
+
+        i = self._i
+        f = self._f
+        header = self._header_bytes
+
+        n_axes = struct.unpack(i, header[856:860])[0]
+        scan_axis = struct.unpack(i, header[980:984])[0]
+
+        for j in range(n_axes):
+
+            axis_x = struct.unpack(f, header[860 + j * 12:864 + j * 12])[0]
+            axis_y = struct.unpack(f, header[864 + j * 12:868 + j * 12])[0]
+            axis_z = struct.unpack(f, header[868 + j * 12:872 + j * 12])[0]
+
+            axis_start = struct.unpack(f, header[920 + j * 4:924 + j * 4])[0]
+            axis_end = struct.unpack(f, header[940 + j * 4:944 + j * 4])[0]
+            axis_offset = struct.unpack(f, header[960 + j * 4:964 + j * 4])[0]
+
+            if j == scan_axis:
+                assert(math.fabs(axis_x - 1) < 0.001)
+                assert(math.fabs(axis_y) < 0.001)
+                assert(math.fabs(axis_z) < 0.001)
+            else:
+                assert(math.fabs(axis_start) < 0.001)
+                assert(math.fabs(axis_end) < 0.001)
+
+        return self._xgoniometer_factory.SingleAxis()
+
+    def _xdetector(self):
+        '''Return a model for the detector as defined in the image header,
+        with the additional knowledge about how things are arranged i.e. that
+        the principle rotation axis vector points from the sample downwards.'''
+
+        # As above will have to make a bunch of assumptions about how the
+        # detector is set up, namely that the rotation axis points downwards,
+        # the fast axis points along and the slow axis points up. These will
+        # (as well as I can understand) be asserted. Also assuming that the
+        # two-theta axis is along (1, 0, 0) which is all that makes sense.
+            
+        i = self._i
+        f = self._f
+        header = self._header_bytes
+
+        det_h = struct.unpack(i, header[832:836])[0]
+        det_v = struct.unpack(i, header[836:840])[0]
+        det_f = struct.unpack(i, header[840:844])[0]
+
+        assert(det_h == 0)
+        assert(det_v == 0)
+        assert(det_f == 0)
+
+        nx = struct.unpack(i, header[768:772])[0]
+        ny = struct.unpack(i, header[772:776])[0]
+
+        dx = struct.unpack(f, header[776:780])[0]
+        dy = struct.unpack(f, header[780:784])[0]
+
+        distance = struct.unpack(f, header[344:348])[0]
+        two_theta = struct.unpack(f, header[556:560])[0]
+        
+        beam_x = struct.unpack(f, header[540:544])[0]
+        beam_y = struct.unpack(f, header[544:548])[0]
+
+        beam = (beam_x * dx, beam_y * dy)
+
+        return self._xdetector_factory.TwoTheta(
+            'IMAGE_PLATE', distance, beam, '+y', '-x', '+x', two_theta,
+            (dx, dy), (nx, ny), (0, 1000000), [])
+
+    def _xbeam(self):
+        '''Return a simple model for the beam. This assumes a laboratory source
+        which has an unpolarized beam.'''
+
+        wavelength = struct.unpack(self._f, self._header_bytes[292:296])[0]
+        
+        return self._xbeam_factory.Complex((0.0, 0.0, 1.0), 0.5,
+                                           (0.0, 1.0, 0.0), wavelength)
+
+    def _xscan(self):
+        '''Return the scan information for this image.'''
+
+        i = self._i
+        f = self._f
+        header = self._header_bytes
+
+        format = self._xscan_factory.Format('RAXIS') 
+        exposure_time = struct.unpack(f, header[536:540])[0]
+
+        y, m, d = map(int, header[256:268].strip().split('-'))
+        
+        epoch = time.mktime(datetime.datetime(y, m, d, 0, 0, 0).timetuple())
+
+        s = struct.unpack(i, header[980:984])[0]
+
+        osc_start = struct.unpack(f, header[920 + s * 4:924 + s * 4])[0]
+        osc_end = struct.unpack(f, header[940 + s * 4:944 + s * 4])[0]
+
+        osc_range = osc_end - osc_start
+
+        return self._xscan_factory.Single(
+            self._image_file, format, exposure_time,
+            osc_start, osc_range, epoch)
+
+    
+
+    
 
         

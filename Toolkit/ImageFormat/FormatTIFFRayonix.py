@@ -264,16 +264,6 @@ class FormatTIFFRayonix(FormatTIFF):
 
         return rot_degrees
 
-        
-        
-        
-
-
-
-
-
-
-
 if __name__ == '__main__':
 
     import sys
