@@ -144,8 +144,8 @@ class FormatRAXIS(Format):
                 assert(math.fabs(axis_y) < 0.001)
                 assert(math.fabs(axis_z) < 0.001)
             else:
-                assert(math.fabs(axis_start) < 0.001)
-                assert(math.fabs(axis_end) < 0.001)
+                assert(math.fabs(axis_start % 180.0) < 0.001)
+                assert(math.fabs(axis_end % 180.0) < 0.001)
 
         return self._xgoniometer_factory.SingleAxis()
 
