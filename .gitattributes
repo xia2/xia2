@@ -9,6 +9,7 @@ Applications/print_labelit_exception.py -text
 Applications/pydiffdump -text
 Applications/pydiffdump.bat -text
 Applications/pydiffdump.py -text
+Applications/pydiffdump2xds -text
 Applications/scala2gnuplot -text
 Applications/test_image_header -text
 Applications/test_image_header.py -text
