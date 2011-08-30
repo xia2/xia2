@@ -93,6 +93,10 @@ class FrameProcessor:
 
     def set_frame_wedge(self, start, end):
         '''Set the allowed range of images for processing.'''
+
+        start = start - self._fp_offset
+        end = end - self._fp_offset
+        
         self._fp_wedge = start, end
         
         if self._fp_matching_images:    
@@ -303,6 +307,8 @@ class FrameProcessor:
         if self._fp_two_theta_prov is None:
             self._fp_two_theta = self._fp_header['two_theta']
             self._fp_two_theta_prov = 'header'
+
+        self.digest_template()
 
         return
 

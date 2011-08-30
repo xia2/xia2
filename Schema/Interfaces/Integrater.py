@@ -373,7 +373,10 @@ class Integrater:
 
     def set_integrater_wedge(self, start, end):
         '''Set the wedge of images to process.'''
-        
+
+        start = start - self.get_frame_offset()
+        end = end - self.get_frame_offset()
+
         self._intgr_wedge = (start, end)
 
         # get the epoch for the sweep if not already defined
