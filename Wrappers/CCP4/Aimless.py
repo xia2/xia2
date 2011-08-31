@@ -1,66 +1,15 @@
 #!/usr/bin/env python
-# Scala.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
+# Aimless.py
+#   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
 #
-# 5th June 2006
+# 31st August 2011
 # 
-# A wrapper for the CCP4 program Scala, for scaling & merging reflections.
-# 
-# Provides:
-# 
-# Scaling of reflection data from Mosflm and other programs.
-# Merging of unmerged reflection data.
-# Characterisazion of data from scaling statistics.
-# 
-# Versions:
-# 
-# Since this will be a complex interface, the first stage is to satisfy the
-# most simple scaling requirements, which is to say taking exactly one
-# dataset from Mosflm via Sortmtz and scaling this. This will produce
-# the appropriate statistics. This corresponds to Simple 1 in the use case
-# documentation.
-# 
-# FIXME 27/OCT/06 need to update the use case documentation - where is this?
-#                 in Wrappers/CCP4/Doc I presume...
-# 
-# FIXED 06/NOV/06 need to update the interface to also allow a quick scaling
-#                 option, to use in the case (well illustrated by TS02) where
-#                 pointless needs to reindex data sets to a standard defined
-#                 by the first reflection file...
-# 
-#                 Recipe is "cycles 6" "run 1 all"
-#                 "scales rotation spacing 10" 
-#
-# FIXME 20/NOV/06 need to input the resolution on a per-run basis, e.g.
-#                 "resolution run 1 1.65" &c. This should make the summaries
-#                 at the end internally useful. Have contacted Phil Evans
-#                 about this and he seems prepared to write out the
-#                 summary using the last populated bin for the outer bin,
-#                 and I assume the last populated bin for the overall range.
-#                 Having arbitrary resolution ranges would make comparison
-#                 of the scaling statistics between resolutions tricky.
-# 
-# FIXME 27/NOV/06 provide ability to use 0-dose extrapolation using the
-#                 ZERODOSE keyword - however this only works with exactly
-#                 one run, so the data would have to be scaled separately
-#                 then rescaled with, say, scaleit. This should, however,
-#                 only be done if the multiplicity is higher than say 6.
-# 
-#
-# FIXME 15/JAN/07 selection of "reference" (BASE) wavelength... from
-#                 http://www.ccp4.ac.uk/courses/
-#                 proceedings/1997/p_evans/main.html
-#  
-#                 Choose reference set: this should be (in order of importance)
-#                 (a) the most complete
-#                 (b) the most accurate
-#                 (c) remote from the anomalous edge
-#
-#                 Worth thinking about...                  
-
+# A wrapper for the CCP4 program Aimless, for scaling & merging reflections.
+# This is a replacement for the more venerable program Scala, and shares the
+# same interface as the Scala wrapper. Mostly.
 
 import os
 import sys
@@ -82,46 +31,33 @@ from Handlers.Streams import Debug
 from Handlers.Flags import Flags
 from Experts.ResolutionExperts import linear
 
-def Scala(DriverType = None,
-          partiality_correction = None,
-          absorption_correction = None,
-          decay_correction = None):
-    '''A factory for ScalaWrapper classes.'''
+def Aimless(DriverType = None,
+            partiality_correction = None,
+            absorption_correction = None,
+            decay_correction = None):
+    '''A factory for AimlessWrapper classes.'''
 
     DriverInstance = DriverFactory.Driver(DriverType)
     CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, 'ccp4')
 
-    class ScalaWrapper(CCP4DriverInstance.__class__):
-        '''A wrapper for Scala, using the CCP4-ified Driver.'''
+    class AimlessWrapper(CCP4DriverInstance.__class__):
+        '''A wrapper for Aimless, using the CCP4-ified Driver.'''
 
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
 
             self.set_executable(os.path.join(
-                os.environ.get('CBIN', ''), 'scala'))
+                os.environ.get('CBIN', ''), 'aimless'))
 
             self.start()
             try:
                 self.close_wait()
             except RuntimeError, e:
-                # this is an expected error - will complain can't
-                # read hklin
                 pass
 
-            version_header = self.get_all_output()
-            version = -1
-            for record in version_header:
-                if 'Version' in record:
-                    s = record.replace('*', '').split()[-1]
-                    a, b, c = map(int, s.split('.'))
-                    version = a * 10000 + b * 100 + c
-
-            if version == -1:
-                raise RuntimeError, 'Scala version not found'
-
-            if version <= 30225:
-                raise RuntimeError, 'scala version not supported'
+            # FIXME (i) check program exists and (ii) version is known -
+            # if not then default back in the calling code to using scala.
 
             # clear all the header junk
             self.reset()
@@ -178,32 +114,12 @@ def Scala(DriverType = None,
             else:
                 self._secondary = 0
 
-            # this defines how many cycles of
-            # scaling we're allowing before convergence - make this
-            # a much larger number for bug # 2008
             self._cycles = 100
-
-            # less common parameters - see scala manual page:
-            # (C line 1800)
-            #
-            # "Some alternatives
-            #  >> Recommended usual case
-            #  scales rotation spacing 5 secondary 6 bfactor off tails
-            #
-            #  >> If you have radiation damage, you need a Bfactor,
-            #  >>  but a Bfactor at coarser intervals is more stable
-            #  scales  rotation spacing 5 secondary 6  tails \
-            #     bfactor on brotation spacing 20
-            #  tie bfactor 0.5 - restraining the Bfactor also helps"
-
             self._brotation = None
             self._bfactor_tie = None
             
-            # standard error parameters - now a dictionary to handle
-            # multiple runs
             self._sd_parameters = { }
 
-            # completely automatic error fiddling
             self._sd_parameters_auto = False
             
             self._project_crystal_dataset = { }
