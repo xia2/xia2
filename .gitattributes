@@ -154,6 +154,7 @@ Toolkit/backstop-mask-i03-15may10.dat -text
 Toolkit/byte_offset.cpp -text
 Toolkit/cbf_mini_to_full_with_template.py -text
 Toolkit/cbfdump.py -text
+Toolkit/dxtbx/readme.txt -text
 Toolkit/example-adsc-cif-header.cif -text
 Toolkit/fred_header.cbf -text
 Toolkit/metatemplate.txt -text
