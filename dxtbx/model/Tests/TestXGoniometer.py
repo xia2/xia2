@@ -13,8 +13,8 @@ import sys
 
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
-from Schema.XGoniometer import XGoniometer
-from Schema.XGoniometer import XGoniometerFactory
+from dxtbx.model.XGoniometer import XGoniometer
+from dxtbx.model.XGoniometer import XGoniometerFactory
 
 def compare_tuples(a, b, tol = 1.0e-6):
     

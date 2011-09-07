@@ -13,8 +13,8 @@ import sys
 
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
-from Schema.XBeam import XBeam
-from Schema.XBeam import XBeamFactory
+from dxtbx.model.XBeam import XBeam
+from dxtbx.model.XBeam import XBeamFactory
 
 def TestXBeam():
     '''A test class for the XBeam class.'''

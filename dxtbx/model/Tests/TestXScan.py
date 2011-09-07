@@ -14,17 +14,19 @@ import time
 
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
-from Schema.XScan import XScan
-from Schema.XScan import XScanFactory
-from Schema.XScanHelpers import XScanHelperImageFiles
-from Schema.XScanHelpers import XScanHelperImageFormats
+from dxtbx.model.XScan import XScan
+from dxtbx.model.XScan import XScanFactory
+from dxtbx.model.XScanHelpers import XScanHelperImageFiles
+from dxtbx.model.XScanHelpers import XScanHelperImageFormats
 
 def work_helper_image_files():
     '''Test the static methods in XScanHelperImageFiles.'''
 
     helper = XScanHelperImageFiles()
 
-    directory = os.path.join(os.environ['XIA2_ROOT'], 'Schema', 'Tests')
+    directory = os.path.join(os.environ['XIA2_ROOT'], 'dxtbx', 'model',
+                             'Tests')
+    
     template = 'image_###.dat'
 
     assert(len(XScanHelperImageFiles.template_directory_to_indices(
@@ -56,7 +58,9 @@ def work_helper_image_formats():
 def work_xscan_factory():
     '''Test out the XScanFactory.'''
 
-    directory = os.path.join(os.environ['XIA2_ROOT'], 'Schema', 'Tests')
+    directory = os.path.join(os.environ['XIA2_ROOT'], 'dxtbx', 'model',
+                             'Tests')
+    
     template = 'image_###.dat'
 
     xscans = [XScanFactory.Single(

@@ -14,10 +14,10 @@ from scitbx import matrix
 
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
-from Schema.XDetector import XDetector
-from Schema.XDetector import XDetectorFactory
-from Schema.XDetectorHelpers import read_xds_xparm
-from Schema.XDetectorHelpers import compute_frame_rotation
+from dxtbx.model.XDetector import XDetector
+from dxtbx.model.XDetector import XDetectorFactory
+from dxtbx.model.XDetectorHelpers import read_xds_xparm
+from dxtbx.model.XDetectorHelpers import compute_frame_rotation
 
 def TestXDetector():
     '''A test class for the XDetector class.'''

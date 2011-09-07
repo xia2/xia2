@@ -62,33 +62,6 @@ Schema/Interfaces/NextGeneration/integrate.py -text
 Schema/Interfaces/NextGeneration/labelit.py -text
 Schema/Interfaces/NextGeneration/mosflm.py -text
 Schema/Interfaces/NextGeneration/processing_plugin.py -text
-Schema/Tests/TestXBeam.py -text
-Schema/Tests/TestXDetector.py -text
-Schema/Tests/TestXGoniometer.py -text
-Schema/Tests/TestXScan.py -text
-Schema/Tests/example-xparm.xds -text
-Schema/Tests/image_001.dat -text
-Schema/Tests/image_002.dat -text
-Schema/Tests/image_003.dat -text
-Schema/Tests/image_004.dat -text
-Schema/Tests/image_005.dat -text
-Schema/Tests/image_006.dat -text
-Schema/Tests/image_007.dat -text
-Schema/Tests/image_008.dat -text
-Schema/Tests/image_009.dat -text
-Schema/Tests/image_010.dat -text
-Schema/Tests/image_011.dat -text
-Schema/Tests/image_012.dat -text
-Schema/Tests/image_013.dat -text
-Schema/Tests/image_014.dat -text
-Schema/Tests/image_015.dat -text
-Schema/Tests/image_016.dat -text
-Schema/Tests/image_017.dat -text
-Schema/Tests/image_018.dat -text
-Schema/Tests/image_019.dat -text
-Schema/Tests/image_020.dat -text
-Schema/Tests/omega_scan.cbf -text svneol=unset#unset
-Schema/Tests/phi_scan_001.cbf -text svneol=unset#unset
 Toolkit/BackstopMask.py -text
 Toolkit/ComputeU.py -text
 Toolkit/KBScale.py -text
@@ -168,6 +141,33 @@ dxtbx/format/RegistryHelpers.py -text
 dxtbx/format/Tests/TestFormat.py -text
 dxtbx/format/Tests/TestRegistry.py -text
 dxtbx/format/__init__.py -text
+dxtbx/model/Tests/TestXBeam.py -text
+dxtbx/model/Tests/TestXDetector.py -text
+dxtbx/model/Tests/TestXGoniometer.py -text
+dxtbx/model/Tests/TestXScan.py -text
+dxtbx/model/Tests/example-xparm.xds -text
+dxtbx/model/Tests/image_001.dat -text
+dxtbx/model/Tests/image_002.dat -text
+dxtbx/model/Tests/image_003.dat -text
+dxtbx/model/Tests/image_004.dat -text
+dxtbx/model/Tests/image_005.dat -text
+dxtbx/model/Tests/image_006.dat -text
+dxtbx/model/Tests/image_007.dat -text
+dxtbx/model/Tests/image_008.dat -text
+dxtbx/model/Tests/image_009.dat -text
+dxtbx/model/Tests/image_010.dat -text
+dxtbx/model/Tests/image_011.dat -text
+dxtbx/model/Tests/image_012.dat -text
+dxtbx/model/Tests/image_013.dat -text
+dxtbx/model/Tests/image_014.dat -text
+dxtbx/model/Tests/image_015.dat -text
+dxtbx/model/Tests/image_016.dat -text
+dxtbx/model/Tests/image_017.dat -text
+dxtbx/model/Tests/image_018.dat -text
+dxtbx/model/Tests/image_019.dat -text
+dxtbx/model/Tests/image_020.dat -text
+dxtbx/model/Tests/omega_scan.cbf -text svneol=unset#unset
+dxtbx/model/Tests/phi_scan_001.cbf -text svneol=unset#unset
 dxtbx/model/XBeam.py -text
 dxtbx/model/XDetector.py -text
 dxtbx/model/XDetectorHelpers.py -text
