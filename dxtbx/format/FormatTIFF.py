@@ -11,10 +11,10 @@
 # which really will acquire the full image including header information
 # and generate the experimental model representations.
 
-from Toolkit.ImageFormat.Format import Format
-from Toolkit.ImageFormat.FormatTIFFHelpers import read_basic_tiff_header
-from Toolkit.ImageFormat.FormatTIFFHelpers import LITTLE_ENDIAN
-from Toolkit.ImageFormat.FormatTIFFHelpers import BIG_ENDIAN
+from dxtbx.format.Format import Format
+from dxtbx.format.FormatTIFFHelpers import read_basic_tiff_header
+from dxtbx.format.FormatTIFFHelpers import LITTLE_ENDIAN
+from dxtbx.format.FormatTIFFHelpers import BIG_ENDIAN
 
 class FormatTIFF(Format):
     '''An image reading class for TIFF format images i.e. those from Dectris

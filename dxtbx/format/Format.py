@@ -47,7 +47,7 @@ class _MetaFormat(type):
     def __init__(self, name, bases, attributes):
         super(_MetaFormat, self).__init__(name, bases, attributes)
 
-        from Toolkit.ImageFormat.Registry import Registry
+        from dxtbx.format.Registry import Registry
         Registry.add(self)
 
         return

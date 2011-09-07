@@ -8,7 +8,7 @@
 # Base implementation of CBF formats - which is just really a place holder
 # which will tell you whether something is a CBF file (or no.)
 
-from Toolkit.ImageFormat.Format import Format
+from dxtbx.format.Format import Format
 
 class FormatCBF(Format):
     '''An image reading class for CBF format images i.e. those from Dectris

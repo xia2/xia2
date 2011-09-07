@@ -9,7 +9,7 @@
 # this will read the header and populate a dictionary of the keyword / value
 # pairs.
 
-from Toolkit.ImageFormat.FormatCBF import FormatCBF
+from dxtbx.format.FormatCBF import FormatCBF
 
 class FormatCBFMini(FormatCBF):
     '''An image reading class for mini CBF format images i.e. those from

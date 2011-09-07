@@ -11,7 +11,7 @@
 import time
 from scitbx import matrix
 
-from Toolkit.ImageFormat.FormatSMV import FormatSMV
+from dxtbx.format.FormatSMV import FormatSMV
 
 class FormatSMVRigakuSaturn(FormatSMV):
     '''A class for reading SMV format Rigaku Saturn images, and correctly

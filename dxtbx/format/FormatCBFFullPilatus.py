@@ -10,8 +10,8 @@
 import pycbf
 import exceptions
 
-from Toolkit.ImageFormat.FormatCBFFull import FormatCBFFull
-from Toolkit.ImageFormat.FormatPilatusHelpers import determine_pilatus_mask
+from dxtbx.format.FormatCBFFull import FormatCBFFull
+from dxtbx.format.FormatPilatusHelpers import determine_pilatus_mask
 
 class FormatCBFFullPilatus(FormatCBFFull):
     '''An image reading class for full CBF format images from Pilatus

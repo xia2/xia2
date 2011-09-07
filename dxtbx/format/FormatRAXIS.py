@@ -75,7 +75,7 @@ import datetime
 import struct
 import math
 
-from Toolkit.ImageFormat.Format import Format
+from dxtbx.format.Format import Format
 
 class FormatRAXIS(Format):
     '''A class to support the RAXIS detector format from Rigaku.'''

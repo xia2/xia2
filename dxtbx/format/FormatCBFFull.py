@@ -12,7 +12,7 @@
 import pycbf
 import exceptions
 
-from Toolkit.ImageFormat.FormatCBF import FormatCBF
+from dxtbx.format.FormatCBF import FormatCBF
 
 class FormatCBFFull(FormatCBF):
     '''An image reading class for full CBF format images i.e. those from
