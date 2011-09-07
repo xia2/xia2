@@ -35,10 +35,10 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 # first - import access to all of the factories that we will be needing
 
-from Schema.XGoniometer import XGoniometer, XGoniometerFactory
-from Schema.XDetector import XDetector, XDetectorFactory
-from Schema.XBeam import XBeam, XBeamFactory
-from Schema.XScan import XScan, XScanFactory
+from dxtbx.model.XGoniometer import XGoniometer, XGoniometerFactory
+from dxtbx.model.XDetector import XDetector, XDetectorFactory
+from dxtbx.model.XBeam import XBeam, XBeamFactory
+from dxtbx.model.XScan import XScan, XScanFactory
 
 class _MetaFormat(type):
     '''A metaclass for the Format base class (and hence all format classes)
