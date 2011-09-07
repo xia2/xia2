@@ -39,8 +39,7 @@ def LookForFormatClasses():
     format_classes = []
     file_names = []
 
-    xia2_format_dir = os.path.join(os.environ['XIA2_ROOT'], 'Toolkit',
-                                   'ImageFormat')
+    xia2_format_dir = os.path.join(os.environ['XIA2_ROOT'], 'dxtbx', 'format')
 
     if os.name == 'nt':
         home = os.path.join(os.environ['HOMEDRIVE'],

@@ -56,7 +56,7 @@ let's call the class something clear like FormatSMVRigakuSaturn.py:
     # An implementation of the SMV image reader for Rigaku Saturn images.
     # Inherits from FormatSMV.
 
-     from FormatSMV import FormatSMV
+    from FormatSMV import FormatSMV
 
     class FormatSMVRigakuSaturn(FormatSMV):
         '''A class for reading SMV format Rigaku Saturn images, and correctly
@@ -68,8 +68,7 @@ let's call the class something clear like FormatSMVRigakuSaturn.py:
     import sys
     assert (os.environ['XIA2_ROOT'] in sys.path)
 
-    FormatRoot = os.path.append(os.environ['XIA2_ROOT'], 'Toolkit', 
-                                'ImageFormat')
+    FormatRoot = os.path.append(os.environ['XIA2_ROOT'], 'dxtbx', 'format')
 
     if not FormatRoot in sys.path:
         sys.path.append(FormatRoot)

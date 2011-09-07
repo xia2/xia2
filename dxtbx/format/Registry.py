@@ -35,9 +35,8 @@ class _Registry:
 
     def setup(self):
         '''Look to import format defining modules from around the place -
-        this will look in $XIA2_ROOT/Toolkit/ImageFormat and $HOME/.xia2/
-        for files starting with Format and ending in .py to allow user
-        extensibility.'''
+        this will look in dxtbx/format and $HOME/.xia2/ for files starting
+        with Format and ending in .py to allow user extensibility.'''
 
         if self._setup:
             return
