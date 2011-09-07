@@ -176,6 +176,7 @@ dxtbx/model/XGoniometer.py -text
 dxtbx/model/XGoniometerHelpers.py -text
 dxtbx/model/XScan.py -text
 dxtbx/model/XScanHelpers.py -text
+dxtbx/model/__init__.py -text
 dxtbx/readme.txt -text
 html/xia2-new-logo.gif -text
 html/xia2-new-logo.psd -text
