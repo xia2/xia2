@@ -17,7 +17,7 @@ assert('XIA2_ROOT' in os.environ)
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
-from Toolkit.ImageFormat.Registry import Registry
+from dxtbx.format.Registry import Registry
 
 def pydiffdump(files):
     '''Print the class which claims to work with each file.'''
