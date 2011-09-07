@@ -89,7 +89,6 @@ Schema/Tests/image_019.dat -text
 Schema/Tests/image_020.dat -text
 Schema/Tests/omega_scan.cbf -text svneol=unset#unset
 Schema/Tests/phi_scan_001.cbf -text svneol=unset#unset
-Schema/XSweep2XDS.py -text
 Toolkit/BackstopMask.py -text
 Toolkit/ComputeU.py -text
 Toolkit/KBScale.py -text
@@ -144,6 +143,7 @@ Wrappers/Labelit/LabelitMosflmMatrix.py -text
 Wrappers/XDS/XScaleR.py -text
 Wrappers/dTREK/Doc/dTREK.pdf -text
 dxtbx/__init__.py -text
+dxtbx/example/to_xds.py -text
 dxtbx/format/Doc/adding_new_formats.txt -text
 dxtbx/format/Format.py -text
 dxtbx/format/FormatCBF.py -text
