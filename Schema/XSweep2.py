@@ -34,7 +34,7 @@ from Experts.FindImages import image2template, find_matching_images, \
 from Experts.Filenames import expand_path
 
 # image header reading functionality
-from Toolkit.ImageFormat.Registry import Registry
+from dxtbx.format.Registry import Registry
 
 # access to factory classes
 import Modules.Indexer.IndexerFactory as IndexerFactory
