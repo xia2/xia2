@@ -122,6 +122,7 @@ Toolkit/backstop-mask-i03-15may10.dat -text
 Toolkit/byte_offset.cpp -text
 Toolkit/cbf_mini_to_full_with_template.py -text
 Toolkit/cbfdump.py -text
+Toolkit/dxtbx/__init__.py -text
 Toolkit/dxtbx/format/Doc/adding_new_formats.txt -text
 Toolkit/dxtbx/format/Format.py -text
 Toolkit/dxtbx/format/FormatCBF.py -text
