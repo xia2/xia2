@@ -512,6 +512,10 @@ def standard_mask(detector):
                 'LIMITS EXCLUDE 209.8 0.1 210.4 314.6',
                 'LIMITS EXCLUDE 0.1 104.8 314.6 105.3',
                 'LIMITS EXCLUDE 0.1 209.8 314.6 210.4']
+
+    # FIXME add pilatus 2M, 6M - #1632
+
+    
     
     # unknown detector
     
