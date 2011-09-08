@@ -7,7 +7,9 @@
 #  
 # A model for the detector for the "updated experimental model" project
 # documented in internal ticket #1555. This is not designed to be used outside
-# of the XSweep classes.
+# of the XSweep classes. N.B. this should probably be generalized for non
+# flat detectors, or composite detectors constructed from a number of flat
+# elements.
 
 import math
 import pycbf
