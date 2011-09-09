@@ -15,12 +15,12 @@ import sys
 from iotbx import mtz
 from cctbx.array_family import flex
 
-def rebatch(hklin, hklout, blah):
+def rebatch(hklin, hklout, first_batch):
     '''Need to implement: include batch range, exclude batches, add N to
     batches, start batches at N.'''
 
     mtz_obj = mtz.object(file_name = hklin)
-    
+
     batch_column = None
     batch_dataset = None
 
@@ -39,8 +39,15 @@ def rebatch(hklin, hklout, blah):
 
     valid = flex.bool()
 
-    # modify batch columns
+    # modify batch columns, and also the batch headers
 
+    if first_batch != None:
+        offset = first_batch - min(batch_column_values)
+        batch_column_values = batch_column_values + offset
+
+        for batch in mtz_obj.batches():
+            batch.set_num(int(batch.num() + offset))
+            
     # done modifying
     
     batch_column.set_values(values = batch_column_values,
@@ -50,3 +57,11 @@ def rebatch(hklin, hklout, blah):
     
     mtz_obj.write(file_name = hklout)
 
+if __name__ == '__main__':
+
+    import sys
+
+    hklin = sys.argv[1]
+    hklout = 'arse.mtz'
+
+    rebatch(hklin, hklout, first_batch = 1001)
