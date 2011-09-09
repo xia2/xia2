@@ -515,7 +515,8 @@ def standard_mask(detector):
 
     # FIXME add pilatus 2M, 6M - #1632
 
-    
+    if 'pilatus 6M' in detector:
+        return []
     
     # unknown detector
     
