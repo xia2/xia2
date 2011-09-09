@@ -231,7 +231,7 @@ def XScaleR(DriverType = None,
                             self._transposed_input[wave]['hkl'][j])
                         xscale_inp.write(
                             'INCLUDE_RESOLUTION_RANGE= %.2f %.2f\n' % \
-                            (resolution[0], resolution[1]))
+                            (resolution[1], resolution[0]))
 
                     else:
                         xscale_inp.write(
