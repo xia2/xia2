@@ -253,7 +253,7 @@ def XScale(DriverType = None,
                         'INPUT_FILE=%s XDS_ASCII\n' % \
                         self._transposed_input[wave]['hkl'][j])
                     xscale_inp.write(
-                        'INCLUDE_RESOLUTION_RANGE= %.2f %.2f' % \
+                        'INCLUDE_RESOLUTION_RANGE= %.2f %.2f\n' % \
                         (self._transposed_input[wave]['resol'][j][1],
                          self._transposed_input[wave]['resol'][j][0]))
                     
