@@ -227,9 +227,11 @@ def XScaleR(DriverType = None,
 
                     if resolution[0]:
                         xscale_inp.write(
-                            'INPUT_FILE=%s XDS_ASCII %.2f %.2f\n' % \
-                            (self._transposed_input[wave]['hkl'][j],
-                             resolution[1], resolution[0]))
+                            'INPUT_FILE=%s XDS_ASCII\n' % \
+                            self._transposed_input[wave]['hkl'][j])
+                        xscale_inp.write(
+                            'INCLUDE_RESOLUTION_RANGE= %.2f %.2f' % \
+                            (resolution[0], resolution[1]))
 
                     else:
                         xscale_inp.write(
