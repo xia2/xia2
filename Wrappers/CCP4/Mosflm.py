@@ -2474,8 +2474,10 @@ def Mosflm(DriverType = None,
                 # then tell the job about it
                 job.set_working_environment('CLIBD', wd)
 
+                l = indxr.get_indexer_lattice()
+
                 # create the starting point
-                f = open(os.path.join(wd, 'xiaintegrate.mat'), 'w')
+                f = open(os.path.join(wd, 'xiaintegrate-%s.mat' % l), 'w')
                 for m in matrix:
                     f.write(m)
                 f.close()
@@ -2544,7 +2546,7 @@ def Mosflm(DriverType = None,
                     job.input(m)
 
                 # suggestion from HRP 10/AUG/09
-                job.input('matrix xiaintegrate.mat')
+                job.input('matrix xiaintegrate-%s.mat' % l)
                 # job.input('target xiaintegrate.mat')
 
                 job.input('beam %f %f' % beam)

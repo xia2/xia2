@@ -513,10 +513,33 @@ def standard_mask(detector):
                 'LIMITS EXCLUDE 0.1 104.8 314.6 105.3',
                 'LIMITS EXCLUDE 0.1 209.8 314.6 210.4']
 
-    # FIXME add pilatus 2M, 6M - #1632
-
     if 'pilatus 6M' in detector:
-        return []
+        return ['LIMITS EXCLUDE 83.9 85.0 0.2 434.6',
+                'LIMITS EXCLUDE 168.9 169.9 0.2 434.6',
+                'LIMITS EXCLUDE 253.9 254.9 0.2 434.6',
+                'LIMITS EXCLUDE 338.8 339.9 0.2 434.6',
+                'LIMITS EXCLUDE 0.2 423.6 33.7 36.5',
+                'LIMITS EXCLUDE 0.2 423.6 70.2 72.9',
+                'LIMITS EXCLUDE 0.2 423.6 106.6 109.4',
+                'LIMITS EXCLUDE 0.2 423.6 143.1 145.9',
+                'LIMITS EXCLUDE 0.2 423.6 179.6 182.3',
+                'LIMITS EXCLUDE 0.2 423.6 216.0 218.8',
+                'LIMITS EXCLUDE 0.2 423.6 252.5 255.2',
+                'LIMITS EXCLUDE 0.2 423.6 289.0 291.7',
+                'LIMITS EXCLUDE 0.2 423.6 325.4 328.2',
+                'LIMITS EXCLUDE 0.2 423.6 361.9 364.6', 
+                'LIMITS EXCLUDE 0.2 423.6 398.4 401.1']
+
+    if 'pilatus 2M' in detector:
+        return ['LIMITS EXCLUDE 83.9 85.0 0.2 288.8',
+                'LIMITS EXCLUDE 168.9 169.9 0.2 288.8',
+                'LIMITS EXCLUDE 0.2 253.7 33.7 36.5',
+                'LIMITS EXCLUDE 0.2 253.7 70.2 72.9',
+                'LIMITS EXCLUDE 0.2 253.7 106.6 109.4',
+                'LIMITS EXCLUDE 0.2 253.7 143.1 145.9',
+                'LIMITS EXCLUDE 0.2 253.7 179.6 182.3',
+                'LIMITS EXCLUDE 0.2 253.7 216.0 218.8',
+                'LIMITS EXCLUDE 0.2 253.7 252.5 255.2']
     
     # unknown detector
     
