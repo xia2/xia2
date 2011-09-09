@@ -250,11 +250,13 @@ def XScale(DriverType = None,
                     # should check that the files exists though...
 
                     xscale_inp.write(
-                        'INPUT_FILE=%s XDS_ASCII %.2f %.2f\n' % \
-                        (self._transposed_input[wave]['hkl'][j],
-                         self._transposed_input[wave]['resol'][j][1],
+                        'INPUT_FILE=%s XDS_ASCII\n' % \
+                        self._transposed_input[wave]['hkl'][j])
+                    xscale_inp.write(
+                        'INCLUDE_RESOLUTION_RANGE= %.2f %.2f' % \
+                        (self._transposed_input[wave]['resol'][j][1],
                          self._transposed_input[wave]['resol'][j][0]))
-
+                    
 	            # FIXME this needs to be removed before being used again
            	    # in anger!
                     # xscale_inp.write('CORRECTIONS=DECAY ABSORPTION\n')
