@@ -650,7 +650,7 @@ def Aimless(DriverType = None,
 
             if self._sd_parameters_auto:
                 if Flags.get_uniform_sd():
-                    self.input('sdcorrection uniform')
+                    self.input('sdcorrection same')
                         
             else:
 
