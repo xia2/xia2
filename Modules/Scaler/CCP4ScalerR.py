@@ -195,8 +195,6 @@ class CCP4ScalerR(Scaler):
         # useful handles...!
 
         self._prepared_reflections = None
-        self._common_pname = None
-        self._common_xname = None
 
         self._reference = None
 
@@ -751,26 +749,20 @@ class CCP4ScalerR(Scaler):
         # FIXME why is this global? 4FEB10 - in fact, why is this
         # test not performed in the scaler interface?
 
-        self._common_pname = self._sweep_information[epochs[0]]['pname']
-        self._common_xname = self._sweep_information[epochs[0]]['xname']
+        self._scalr_pname = self._sweep_information[epochs[0]]['pname']
+        self._scalr_xname = self._sweep_information[epochs[0]]['xname']
 
         # FIXME the checks in here need to be moved to an earlier
         # stage in the processing
 
         for epoch in epochs:
             pname = self._sweep_information[epoch]['pname']
-            if self._common_pname != pname:
+            if self._scalr_pname != pname:
                 raise RuntimeError, 'all data must have a common project name'
             xname = self._sweep_information[epoch]['xname']
-            if self._common_xname != xname:
+            if self._scalr_xname != xname:
                 raise RuntimeError, \
                       'all data for scaling must come from one crystal'
-
-        # record the project and crystal in the scaler interface - for
-        # future reference
-
-        self._scalr_pname = self._common_pname
-        self._scalr_xname = self._common_xname
 
         # ------------------------------------------------------------
         # FIXME ensure that the lattices are all the same - and if not
@@ -1300,7 +1292,7 @@ class CCP4ScalerR(Scaler):
 
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s_sorted.mtz' % \
-                              (self._common_pname, self._common_xname))
+                              (self._scalr_pname, self._scalr_xname))
 
         
         s.set_hklout(hklout)
@@ -1321,8 +1313,8 @@ class CCP4ScalerR(Scaler):
             p = self._factory.Pointless()
 
             FileHandler.record_log_file('%s %s pointless' % \
-                                        (self._common_pname,
-                                         self._common_xname),
+                                        (self._scalr_pname,
+                                         self._scalr_xname),
                                         p.get_log_file())
 
             if len(self._sweep_information.keys()) > 1:
@@ -1457,7 +1449,7 @@ class CCP4ScalerR(Scaler):
 
         sc.set_chef_unmerged(True)
 
-        scales_file = '%s.scales' % self._common_xname
+        scales_file = '%s.scales' % self._scalr_xname
 
         sc.set_new_scales_file(scales_file)
 
@@ -1495,7 +1487,7 @@ class CCP4ScalerR(Scaler):
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled_test.mtz' % \
-                                   (self._common_pname, self._common_xname)))
+                                   (self._scalr_pname, self._scalr_xname)))
         
         if self.get_scaler_anomalous():
             sc.set_anomalous()
@@ -1673,15 +1665,15 @@ class CCP4ScalerR(Scaler):
 
         sc = self._updated_scala()
 
-        FileHandler.record_log_file('%s %s scala' % (self._common_pname,
-                                                     self._common_xname),
+        FileHandler.record_log_file('%s %s scala' % (self._scalr_pname,
+                                                     self._scalr_xname),
                                     sc.get_log_file())
 
         highest_resolution = 100.0
 
         sc.set_hklin(self._prepared_reflections)
         
-        scales_file = '%s_final.scales' % self._common_xname
+        scales_file = '%s_final.scales' % self._scalr_xname
 
         sc.set_new_scales_file(scales_file)
 
@@ -1705,7 +1697,7 @@ class CCP4ScalerR(Scaler):
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled.mtz' % \
-                                   (self._common_pname, self._common_xname)))
+                                   (self._scalr_pname, self._scalr_xname)))
         
         if self.get_scaler_anomalous():
             sc.set_anomalous()
@@ -1805,8 +1797,8 @@ class CCP4ScalerR(Scaler):
         sc.set_hklout(os.path.join(self.get_working_directory(), 'temp.mtz'))
         sc.set_scalepack(os.path.join(self.get_working_directory(),
                                       '%s_%s_unmerged.sca' % \
-                                      (self._common_pname,
-                                       self._common_xname)))
+                                      (self._scalr_pname,
+                                       self._scalr_xname)))
 
         if self.get_scaler_anomalous():
             sc.set_anomalous()
@@ -1846,8 +1838,8 @@ class CCP4ScalerR(Scaler):
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_chef.mtz' % \
-                                   (self._common_pname,
-                                    self._common_xname)))
+                                   (self._scalr_pname,
+                                    self._scalr_xname)))
         
         sc.set_chef_unmerged(True)
 
@@ -1948,7 +1940,7 @@ class CCP4ScalerR(Scaler):
 
             chef = self._factory.Chef()
 
-            chef.set_title('%s Group %d' % (self._common_xname, group + 1))
+            chef.set_title('%s Group %d' % (self._scalr_xname, group + 1))
 
             dose_step = self._chef_analysis_times[group] / \
                         self._chef_dose_factor
@@ -1970,7 +1962,7 @@ class CCP4ScalerR(Scaler):
             chef.run()
 
             FileHandler.record_log_file(
-                '%s chef %d' % (self._common_xname, group + 1),
+                '%s chef %d' % (self._scalr_xname, group + 1),
                 chef.get_log_file())
 
         # FIXME ALSO need to copy the harvest information in this cycle
@@ -2066,8 +2058,8 @@ class CCP4ScalerR(Scaler):
             ami.set_anomalous(True)
 
         hklout = os.path.join(self.get_working_directory(),
-                              '%s_%s_free.mtz' % (self._common_pname,
-                                                  self._common_xname))
+                              '%s_%s_free.mtz' % (self._scalr_pname,
+                                                  self._scalr_xname))
 
         ami.set_hklout(hklout)
 
@@ -2110,8 +2102,8 @@ class CCP4ScalerR(Scaler):
                 # instance of this string FIXME 27/OCT/06
 
                 FileHandler.record_log_file('%s %s %s truncate' % \
-                                            (self._common_pname,
-                                             self._common_xname,
+                                            (self._scalr_pname,
+                                             self._scalr_xname,
                                              key),
                                             t.get_log_file())
 
@@ -2137,7 +2129,7 @@ class CCP4ScalerR(Scaler):
                 # record the b factor somewhere (hopefully) useful...
 
                 self._scalr_statistics[
-                    (self._common_pname, self._common_xname, key)
+                    (self._scalr_pname, self._scalr_xname, key)
                     ]['Wilson B factor'] = [b_factor]
 
                 # replace old with the new version which has F's in it 
@@ -2218,8 +2210,8 @@ class CCP4ScalerR(Scaler):
                 c.add_hklin(file)
         
             hklout = os.path.join(self.get_working_directory(),
-                                  '%s_%s_merged.mtz' % (self._common_pname,
-                                                        self._common_xname))
+                                  '%s_%s_merged.mtz' % (self._scalr_pname,
+                                                        self._scalr_xname))
 
             Debug.write('Merging all data sets to %s' % hklout)
 
@@ -2248,8 +2240,8 @@ class CCP4ScalerR(Scaler):
         # then go for it!
 
         hklout = os.path.join(self.get_working_directory(),
-                              '%s_%s_free_temp.mtz' % (self._common_pname,
-                                                       self._common_xname))
+                              '%s_%s_free_temp.mtz' % (self._scalr_pname,
+                                                       self._scalr_xname))
 
         FileHandler.record_temporary_file(hklout)
 
@@ -2306,8 +2298,8 @@ class CCP4ScalerR(Scaler):
 
         hklin = hklout
         hklout = os.path.join(self.get_working_directory(),
-                              '%s_%s_free.mtz' % (self._common_pname,
-                                                  self._common_xname))
+                              '%s_%s_free.mtz' % (self._scalr_pname,
+                                                  self._scalr_xname))
 
         # default fraction of 0.05
         free_fraction = 0.05
@@ -2379,7 +2371,7 @@ class CCP4ScalerR(Scaler):
                 status = crd.detect()
 
                 Chatter.write('')
-                Chatter.banner('Local Scaling %s' % self._common_xname)
+                Chatter.banner('Local Scaling %s' % self._scalr_xname)
                 for s in status:
                     Chatter.write('%s %s' % s)
                 Chatter.banner('')       

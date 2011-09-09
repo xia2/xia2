@@ -102,9 +102,6 @@ class XDSScaler(Scaler):
 
         self._sweep_information = { }
 
-        self._common_pname = None
-        self._common_xname = None
-
         self._reference = None
 
         # spacegroup and unit cell information - these will be
@@ -903,23 +900,17 @@ class XDSScaler(Scaler):
             # 'integrater'].get_integrater_reflections()
             pass
 
-        self._common_pname = self._sweep_information[epochs[0]]['pname']
-        self._common_xname = self._sweep_information[epochs[0]]['xname']
+        self._scalr_pname = self._sweep_information[epochs[0]]['pname']
+        self._scalr_xname = self._sweep_information[epochs[0]]['xname']
         
         for epoch in epochs:
             pname = self._sweep_information[epoch]['pname']
-            if self._common_pname != pname:
+            if self._scalr_pname != pname:
                 raise RuntimeError, 'all data must have a common project name'
             xname = self._sweep_information[epoch]['xname']
-            if self._common_xname != xname:
+            if self._scalr_xname != xname:
                 raise RuntimeError, \
                       'all data for scaling must come from one crystal'
-
-        # record the project and crystal in the scaler interface - for
-        # future reference
-
-        self._scalr_pname = self._common_pname
-        self._scalr_xname = self._common_xname
 
         # if there is more than one sweep then compare the lattices
         # and eliminate all but the lowest symmetry examples if
@@ -1534,8 +1525,8 @@ class XDSScaler(Scaler):
 
         project_info = { }
         for epoch in self._sweep_information.keys():
-            pname = self._common_pname
-            xname = self._common_xname
+            pname = self._scalr_pname
+            xname = self._scalr_xname
             dname = self._sweep_information[epoch]['dname']
             reflections = os.path.split(
                 self._sweep_information[epoch]['prepared_reflections'])[-1]
@@ -1715,7 +1706,7 @@ class XDSScaler(Scaler):
 
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s_sorted.mtz' % \
-                              (self._common_pname, self._common_xname))
+                              (self._scalr_pname, self._scalr_xname))
         
         s.set_hklout(hklout)
 
@@ -1748,8 +1739,8 @@ class XDSScaler(Scaler):
             pointless.decide_spacegroup()
 
             FileHandler.record_log_file('%s %s pointless' % \
-                                        (self._common_pname,
-                                         self._common_xname),
+                                        (self._scalr_pname,
+                                         self._scalr_xname),
                                         pointless.get_log_file())
 
             # get one spacegroup and so on which will be used for
@@ -1789,7 +1780,7 @@ class XDSScaler(Scaler):
         hklin = self._prepared_reflections
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s_reindex.mtz' % \
-                              (self._common_pname, self._common_xname))
+                              (self._scalr_pname, self._scalr_xname))
 
         FileHandler.record_temporary_file(hklout)
         
@@ -1805,7 +1796,7 @@ class XDSScaler(Scaler):
         hklin = hklout
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s_sorted.mtz' % \
-                              (self._common_pname, self._common_xname))
+                              (self._scalr_pname, self._scalr_xname))
 
         s = self._factory.Sortmtz()        
         s.set_hklin(hklin)
@@ -1940,7 +1931,7 @@ class XDSScaler(Scaler):
 
             chef = self._factory.Chef()
 
-            chef.set_title('%s Group %d' % (self._common_xname, group + 1))
+            chef.set_title('%s Group %d' % (self._scalr_xname, group + 1))
 
             dose_step = self._chef_analysis_times[group] / \
                         self._chef_dose_factor
@@ -1965,7 +1956,7 @@ class XDSScaler(Scaler):
             chef.run()
 
             FileHandler.record_log_file(
-                '%s chef %d' % (self._common_xname, group + 1),
+                '%s chef %d' % (self._scalr_xname, group + 1),
                 chef.get_log_file())
         
         # this is #181 so figure this out first...
@@ -1989,7 +1980,7 @@ class XDSScaler(Scaler):
         sc = self._factory.Scala()
         sc.set_hklin(self._prepared_reflections)
 
-        scales_file = '%s.scales' % self._common_xname
+        scales_file = '%s.scales' % self._scalr_xname
         sc.set_new_scales_file(scales_file)        
 
         for epoch in epochs:
@@ -2002,7 +1993,7 @@ class XDSScaler(Scaler):
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled.mtz' % \
-                                   (self._common_pname, self._common_xname)))
+                                   (self._scalr_pname, self._scalr_xname)))
         
         if self.get_scaler_anomalous():
             sc.set_anomalous()
@@ -2205,12 +2196,12 @@ class XDSScaler(Scaler):
         # tight loop - initially just rerun the scaling with all of the
         # "right" parameters...
         
-        scales_file = '%s_final.scales' % self._common_xname
+        scales_file = '%s_final.scales' % self._scalr_xname
 
         sc = self._factory.Scala()
 
-        FileHandler.record_log_file('%s %s scala' % (self._common_pname,
-                                                     self._common_xname),
+        FileHandler.record_log_file('%s %s scala' % (self._scalr_pname,
+                                                     self._scalr_xname),
                                     sc.get_log_file())
 
         sc.set_resolution(best_resolution)
@@ -2242,7 +2233,7 @@ class XDSScaler(Scaler):
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled.mtz' % \
-                                   (self._common_pname, self._common_xname)))
+                                   (self._scalr_pname, self._scalr_xname)))
         
         if self.get_scaler_anomalous():
             sc.set_anomalous()
@@ -2397,8 +2388,8 @@ class XDSScaler(Scaler):
         sc.set_hklin(self._prepared_reflections)
         sc.set_scalepack(os.path.join(self.get_working_directory(),
                                       '%s_%s_unmerged.sca' % \
-                                      (self._common_pname,
-                                       self._common_xname)))
+                                      (self._scalr_pname,
+                                       self._scalr_xname)))
 
         # this is now handled more elegantly by the Scala wrapper
         
@@ -2425,7 +2416,7 @@ class XDSScaler(Scaler):
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_temp.mtz' % \
-                                   (self._common_pname, self._common_xname)))
+                                   (self._scalr_pname, self._scalr_xname)))
         
         if self.get_scaler_anomalous():
             sc.set_anomalous()
@@ -2472,8 +2463,8 @@ class XDSScaler(Scaler):
                     truncate.set_anomalous(False)
                     
                 FileHandler.record_log_file('%s %s %s truncate' % \
-                                            (self._common_pname,
-                                             self._common_xname,
+                                            (self._scalr_pname,
+                                             self._scalr_xname,
                                              wavelength),
                                             truncate.get_log_file())
             
@@ -2491,7 +2482,7 @@ class XDSScaler(Scaler):
                 # record the b factor somewhere (hopefully) useful...
                 
                 self._scalr_statistics[
-                    (self._common_pname, self._common_xname, wavelength)
+                    (self._scalr_pname, self._scalr_xname, wavelength)
                     ]['Wilson B factor'] = [b_factor]
             
                 # look for the second moment information...
@@ -2534,8 +2525,8 @@ class XDSScaler(Scaler):
                 
             # now merge the reflection files together...
             hklout = os.path.join(self.get_working_directory(),
-                                  '%s_%s_merged.mtz' % (self._common_pname,
-                                                        self._common_xname))
+                                  '%s_%s_merged.mtz' % (self._scalr_pname,
+                                                        self._scalr_xname))
             FileHandler.record_temporary_file(hklout)
 
             Debug.write('Merging all data sets to %s' % hklout)
@@ -2564,8 +2555,8 @@ class XDSScaler(Scaler):
         # file with the free column added.
 
         hklout = os.path.join(self.get_working_directory(),
-                              '%s_%s_free_temp.mtz' % (self._common_pname,
-                                                       self._common_xname))
+                              '%s_%s_free_temp.mtz' % (self._scalr_pname,
+                                                       self._scalr_xname))
 
         FileHandler.record_temporary_file(hklout)
         
@@ -2622,8 +2613,8 @@ class XDSScaler(Scaler):
 
         hklin = hklout
         hklout = os.path.join(self.get_working_directory(),
-                              '%s_%s_free.mtz' % (self._common_pname,
-                                                  self._common_xname))
+                              '%s_%s_free.mtz' % (self._scalr_pname,
+                                                  self._scalr_xname))
 
         # default fraction of 0.05
         free_fraction = 0.05
@@ -2692,7 +2683,7 @@ class XDSScaler(Scaler):
             
             Chatter.write('')
             # Chatter.write('Inter-wavelength B and R-factor analysis:')
-            Chatter.banner('Local Scaling %s' % self._common_xname)
+            Chatter.banner('Local Scaling %s' % self._scalr_xname)
             for s in status:
                 Chatter.write('%s %s' % s)
             # Chatter.write('')
