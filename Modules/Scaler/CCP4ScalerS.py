@@ -53,7 +53,7 @@ from Toolkit.Merger import merger
 # newly implemented CCTBX powered functions to replace xia2 binaries
 from Modules.Scaler.add_dose_time_to_mtz import add_dose_time_to_mtz
 
-class CCP4ScalerR(Scaler):
+class CCP4ScalerS(Scaler):
     '''An implementation of the Scaler interface using CCP4 programs.'''
 
     def __init__(self):
