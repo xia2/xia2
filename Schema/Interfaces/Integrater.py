@@ -657,6 +657,11 @@ class Integrater:
 
     def get_integrater_spacegroup_number(self):
         return self._intgr_spacegroup_number
+
+    def integrater_reset_reindex_operator(self):
+        '''Reset the reindex operator.'''
+
+        return self.set_integrater_reindex_operator('h,k,l', compose = False)
         
     def set_integrater_reindex_operator(self, reindex_operator,
                                         compose = True):
