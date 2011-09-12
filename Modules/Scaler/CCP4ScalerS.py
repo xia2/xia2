@@ -656,16 +656,7 @@ class CCP4ScalerS(Scaler):
                 self.get_working_directory(),
                 hklin, self._sweep_information[first]['header'].get(
                 'phi_width', 0.0))
-            
-            pl = self._factory.Pointless()
-            pl.set_hklin(pointless_hklin)
-            pl.decide_pointgroup()
 
-            # FIXME this does not appear to be really used...
-            
-            pointgroup = pl.get_pointgroup()
-            reindex_op = pl.get_reindex_operator()
-            
             integrater = self._sweep_information[first]['integrater']
             indexer = integrater.get_integrater_indexer()
             
@@ -731,18 +722,7 @@ class CCP4ScalerS(Scaler):
                     self.get_working_directory(),
                     hklin, self._sweep_information[epoch]['header'].get(
                     'phi_width', 0.0))
-            
-                pl = self._factory.Pointless()
-                pl.set_hklin(pointless_hklin)
-                pl.decide_pointgroup()
 
-                # get the correct pointgroup etc.
-                pointgroup = pl.get_pointgroup()
-                reindex_op = pl.get_reindex_operator()
-
-                # flag to record whether I need to do some rerunning
-                rerun_pointless = False
-                
                 if indexer:
                     
                     pointgroup, reindex_op, ntr = \
@@ -761,6 +741,7 @@ class CCP4ScalerS(Scaler):
                 Debug.write('Using input pointgroup: %s' % \
                             self._scalr_input_pointgroup)
                 pointgroup = self._scalr_input_pointgroup
+                reindex_op = 'h,k,l'
 
             if not overall_pointgroup:
                 overall_pointgroup = pointgroup
@@ -1314,13 +1295,6 @@ class CCP4ScalerS(Scaler):
             Debug.write('Resolution for sweep %s: %.2f' % \
                         (dataset, resolution))
                         
-            # the old version of this code...
-
-            if False:
-                resolution = determine_scaled_resolution(
-                    reflection_files[dataset], 
-                    Flags.get_i_over_sigma_limit())[1]
-
             if not dataset in self._resolution_limits:
                 self._resolution_limits[dataset] = resolution
                 self.set_scaler_done(False)
@@ -1390,12 +1364,6 @@ class CCP4ScalerS(Scaler):
         sc.scale()
 
         Debug.write('Convergence at: %.1f cycles' % sc.get_convergence())
-
-        for dataset in resolution_info.keys():
-            if False:
-                print dataset
-                determine_scaled_resolution(
-                    reflection_files[dataset], 3.0)[1]
 
         data = sc.get_summary()
 

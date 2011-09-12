@@ -231,3 +231,114 @@ class CCP4ScalerHelper:
 
         return pointgroup, reindex_op, need_to_return
         
+# Sweep info class to replace dictionary... #884
+
+class SweepInformation:
+
+    def __init__(self, integrater):
+
+        self._project_info = integrater.get_integrater_project_info()
+        self._sweep_name = integrater.get_integrater_sweep_name()
+        self._integrater = integrater
+        self._batches = integrater.get_integrater_batches()
+
+        self._image_to_epoch = integrater.get_integrater_sweep(                
+            ).get_image_to_epoch()
+        self._image_to_dose = { }
+
+        return
+
+    def get_project_info(self):
+        return self._project_info
+
+    def get_sweep_name(self):
+        return self._sweep_name
+
+    def get_integrater(self):
+        return self._integrater
+        
+    def get_batches(self):
+        return self._batches
+
+    def get_batch_range(self):
+        return min(self._batches), max(self._batches)
+
+    def get_header(self):
+        return self._integrater.get_header()
+
+    def get_template(self):
+        return self._integrater.get_template()
+
+    def set_dose_information(self, epoch_to_dose):
+        for i in self._image_to_epoch:
+            e = self._image_to_epoch[i]
+            d = epoch_to_dose[e]
+            self._image_to_dose[i] = d
+
+        return
+
+    def get_circle_resolution(self):
+        '''Get the resolution of the inscribed circle used for this sweep.'''
+
+        header = self._integrater.get_header()
+        wavelength = self._integrater.get_wavelength()
+
+        detector_width = header['size'][0] * header['pixel'][0] 
+        detector_height = header['size'][1] * header['pixel'][1]
+
+        distance = self._integrater.get_integrater_indexer(
+            ).get_indexer_distance()
+
+        beam = self._integrater.get_integrater_indexer(
+            ).get_indexer_beam()
+
+        radius = min([beam[0], detector_width - beam[0],
+                      beam[1], detector_height - beam[1]])
+        
+        theta = 0.5 * math.atan(radius / distance)
+
+        return wavelength / (2 * math.sin(theta))
+        
+    def get_integrater_resolution(self):
+        return self._integrater.get_integrater_high_resolution()
+
+    def get_reflections(self):
+        return self._integrater.get_integrater_reflections()
+
+class SweepInformationHandler:
+
+    def __init__(self, epoch_to_integrater):
+        
+        self._sweep_information = { }
+
+        for epoch in epoch_to_integrater:
+            self._sweep_information[epoch] = SweepInformation(
+                epoch_to_integrater[epoch])
+
+        self._first = sorted(self._sweep_information)[0]
+
+        return
+
+    def get_epochs(self):
+        return sorted(self._sweep_information)
+
+    def get_sweep_information(self, epoch):
+        return self._sweep_information[epoch]
+
+    def get_project_info(self):
+        si = self._sweep_information(self._first)
+        pname, xname, dname = si.get_project_information()
+
+        for e in self._sweep_information:
+            si = self._sweep_information[e]
+
+            assert(e.get_project_info()[0] == pname)
+            assert(e.get_project_info()[1] == xname)
+        
+        return pname, xname
+
+    
+        
+
+        
+

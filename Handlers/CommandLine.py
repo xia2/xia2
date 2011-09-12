@@ -119,6 +119,7 @@ class _CommandLine():
         self._read_noremove()        
         self._read_2d()
         self._read_2dr()
+        self._read_2dt()
         self._read_3d()
         self._read_3dr()
         self._read_3di()
@@ -1240,12 +1241,22 @@ class _CommandLine():
 
         if '-2dr' in sys.argv or '-2d' in sys.argv:
             add_preference('integrater', 'mosflmr')
-            add_preference('scaler', 'ccp4r')
+            add_preference('scaler', 'ccp4s')
             if '-2d' in sys.argv:
                 self._understood.append(sys.argv.index('-2d'))
             if '-2dr' in sys.argv:
                 self._understood.append(sys.argv.index('-2dr'))
             Debug.write('2DR pipeline selected')
+        return
+
+    def _read_2dt(self):
+
+        if '-2dt' in sys.argv:
+            add_preference('integrater', 'mosflmr')
+            add_preference('scaler', 'ccp4r')
+            if '-2dt' in sys.argv:
+                self._understood.append(sys.argv.index('-2dt'))
+            Debug.write('2DR TEST pipeline selected')
         return
 
     def _read_3d(self):

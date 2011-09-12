@@ -233,6 +233,15 @@ def lattices_in_order():
 
     return [spacegroup_to_lattice[s] for s in spacegroups]
 
+def sort_lattices(lattices):
+    ordered_lattices = []
+    
+    for l in lattices_in_order():
+        if l in lattices:
+            ordered_lattices.append(l)
+            
+    return ordered_lattices
+    
 def lauegroup_to_lattice(lauegroup):
     '''Convert a Laue group representation (from pointless, e.g. I m m m)
     to something useful, like the implied crystal lattice (in this
