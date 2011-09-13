@@ -386,10 +386,9 @@ class CCP4ScalerR(Scaler):
                     pointgroup = self._scalr_input_pointgroup
                     reindex_op = 'h,k,l'
                     ntr = False
+                    
                 else:
-                
-                    pointless_hklin = _prepare_pointless_hklin(
-                        self.get_working_directory(),
+                    pointless_hklin = self._prepare_pointless_hklin(
                         hklin, si.get_header()['phi_width'])
                     
                     pointgroup, reindex_op, ntr = \
@@ -417,9 +416,7 @@ class CCP4ScalerR(Scaler):
                 for epoch in self._sweep_handler.get_epochs():
 
                     si = self._sweep_handler.get_sweep_information(epoch)
-                    intgr = si.get_integrater()
-                    hklin = intgr.get_integrater_reflections()
-                    indxr = intgr.get_integrater_indexer()
+                    indxr = si.get_integrater().get_integrater_indexer()
                     sname = si.get_sweep_name()
                     
                     state = indxr.set_indexer_asserted_lattice(
@@ -471,8 +468,7 @@ class CCP4ScalerR(Scaler):
             
             # prepare pointless hklin makes something much smaller...
             
-            pointless_hklin = _prepare_pointless_hklin(
-                self.get_working_directory(),
+            pointless_hklin = self._prepare_pointless_hklin(
                 hklin, header['phi_width'])
             
             integrater = si.get_integrater()
@@ -521,6 +517,7 @@ class CCP4ScalerR(Scaler):
             hklout = os.path.join(
                 self.get_working_directory(),
                 os.path.split(hklin)[-1].replace('.mtz', '_rdx.mtz'))
+
             FileHandler.record_temporary_file(hklout)
 
             integrater = si.get_integrater()
@@ -532,8 +529,7 @@ class CCP4ScalerR(Scaler):
 
             else:
 
-                pointless_hklin = _prepare_pointless_hklin(
-                    self.get_working_directory(),
+                pointless_hklin = self._prepare_pointless_hklin(
                     hklin, si.get_header()['phi_width'])
             
                 if indexer:
@@ -599,8 +595,7 @@ class CCP4ScalerR(Scaler):
                 si = self._sweep_handler.get_sweep_information(epoch)
                 hklin = si.get_reflections()
 
-                pl.set_hklin(_prepare_pointless_hklin(
-                    self.get_working_directory(),
+                pl.set_hklin(self._prepare_pointless_hklin(
                     hklin, si.get_header()['phi_width']))
 
                 hklout = os.path.join(
@@ -765,8 +760,7 @@ class CCP4ScalerR(Scaler):
             else:
                 # permit the use of pointless preparation...
                 epoch = self._sweep_handler.get_epochs()[0]
-                p.set_hklin(_prepare_pointless_hklin(
-                    self.get_working_directory(),
+                p.set_hklin(self._prepare_pointless_hklin(
                     hklin, self._sweep_handler.get_sweep_information(
                     epoch).get_reflections()))
 
@@ -1626,5 +1620,9 @@ class CCP4ScalerR(Scaler):
             raise RuntimeError, 'batch %d found in multiple sweeps' % batch
         
         return epochs[0]
+
+    def _prepare_pointless_hklin(self, hklin, phi_width):
+        return _prepare_pointless_hklin(self.get_working_directory(),
+                                        hklin, phi_width)
 
     
