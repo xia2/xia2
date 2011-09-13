@@ -149,7 +149,6 @@ class CCP4ScalerR(Scaler):
             pname, xname, dname = si.get_project_info()
             sname = si.get_sweep_name()
             
-
             sc_tst.add_run(start, end, pname = pname,
                            xname = xname, dname = dname,
                            exclude = False, name = sname)
@@ -537,14 +536,6 @@ class CCP4ScalerR(Scaler):
                     self.get_working_directory(),
                     hklin, si.get_header()['phi_width'])
             
-                pl = self._factory.Pointless()
-                pl.set_hklin(pointless_hklin)
-                pl.decide_pointgroup()
-
-                # get the correct pointgroup etc.
-                pointgroup = pl.get_pointgroup()
-                reindex_op = pl.get_reindex_operator()
-
                 if indexer:
                     
                     pointgroup, reindex_op, ntr = \
