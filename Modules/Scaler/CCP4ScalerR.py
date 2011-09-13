@@ -601,16 +601,16 @@ class CCP4ScalerR(Scaler):
             # then compute the pointgroup from this...
 
             # ---------- REINDEX TO CORRECT (REFERENCE) SETTING ----------
-            
-            for epoch in self._sweep_information:
+
+            for epoch in self._sweep_handler.get_epochs():
                 pl = self._factory.Pointless()
-                hklin = self._sweep_information[epoch][
-                    'integrater'].get_integrater_reflections()
+
+                si = self._sweep_handler.get_sweep_information(epoch)
+                hklin = si.get_reflections()
 
                 pl.set_hklin(_prepare_pointless_hklin(
                     self.get_working_directory(),
-                    hklin, self._sweep_information[epoch]['header'].get(
-                    'phi_width', 0.0)))
+                    hklin, si.get_header()['phi_width']))
 
                 hklout = os.path.join(
                     self.get_working_directory(),
@@ -635,7 +635,7 @@ class CCP4ScalerR(Scaler):
 
                 # apply this...
 
-                integrater = self._sweep_information[epoch]['integrater']
+                integrater = si.get_integrater()
                 
                 integrater.set_integrater_reindex_operator(reindex_op)
                 integrater.set_integrater_spacegroup_number(
@@ -673,28 +673,19 @@ class CCP4ScalerR(Scaler):
             
         max_batches = 0
         
-        for epoch in self._sweep_information:
+        for epoch in self._sweep_handler.get_epochs():
 
             # keep a count of the maximum number of batches in a block -
             # this will be used to make rebatch work below.
 
-            hklin = self._sweep_information[epoch][
-                'integrater'].get_integrater_reflections()
+            si = self._sweep_handler.get_sweep_information(epoch)
+            hklin = si.get_reflections()
 
             md = self._factory.Mtzdump()
             md.set_hklin(hklin)
             md.dump()
 
-            if self._sweep_information[epoch]['batches'] == [0, 0]:
-                # get them from the mtz dump output
-                
-                Chatter.write('Getting batches from %s' % hklin)
-                batches = md.get_batches()
-                self._sweep_information[epoch]['batches'] = [min(batches),
-                                                             max(batches)]
-                Chatter.write('=> %d to %d' % (min(batches), max(batches)))
-
-            batches = self._sweep_information[epoch]['batches']
+            batches = si.get_batches()
             if 1 + max(batches) - min(batches) > max_batches:
                 max_batches = max(batches) - min(batches) + 1
             
@@ -712,19 +703,17 @@ class CCP4ScalerR(Scaler):
         # then rebatch the files, to make sure that the batch numbers are
         # in the same order as the epochs of data collection.
 
-        epochs = sorted(self._sweep_information)
-
         counter = 0
 
-        for epoch in epochs:
+        for epoch in self._sweep_handler.get_epochs():
+
+            si = self._sweep_handler.get_sweep_information(epoch)
+            
             rb = self._factory.Rebatch()
 
-            hklin = self._sweep_information[epoch][
-                'integrater'].get_integrater_reflections()
+            hklin = si.get_reflections()
 
-            pname = self._sweep_information[epoch]['pname']
-            xname = self._sweep_information[epoch]['xname']
-            dname = self._sweep_information[epoch]['dname']
+            pname, xname, dname = si.get_project_info()
 
             hklout = os.path.join(self.get_working_directory(),
                                   '%s_%s_%s_%d.mtz' % \
@@ -732,9 +721,8 @@ class CCP4ScalerR(Scaler):
 
             FileHandler.record_temporary_file(hklout)
 
-            first_batch = min(self._sweep_information[epoch]['batches'])
-            self._sweep_information[epoch][
-                'batch_offset'] = counter * max_batches - first_batch + 1
+            first_batch = min(si.get_batches())
+            si.set_batch_offset(counter * max_batches - first_batch + 1)
 
             rb.set_hklin(hklin)
             rb.set_first_batch(counter * max_batches + 1)
@@ -744,31 +732,12 @@ class CCP4ScalerR(Scaler):
 
             # update the "input information"
 
-            self._sweep_information[epoch]['hklin'] = hklout
-            self._sweep_information[epoch]['batches'] = new_batches
+            si.set_reflections(hklout)
+            si.set_batches(new_batches)
 
             # update the counter & recycle
 
             counter += 1
-
-        # now output a doser input file - just for kicks ;o)
-
-        fout = open(os.path.join(self.get_working_directory(),
-                                 'doser.in'), 'w')
-
-        for epoch in self._sweep_information:
-            i2d = self._sweep_information[epoch]['image_to_dose']
-            i2e = self._sweep_information[epoch]['image_to_epoch']
-            offset = self._sweep_information[epoch]['batch_offset']
-            images = sorted(i2d)
-            for i in images:
-                fout.write('batch %d dose %f time %f\n' % \
-                           (i + offset, i2d[i], i2e[i]))
-
-        fout.close()
-
-        Debug.write('Wrote DOSER information to %s' % \
-                    os.path.join(self.get_working_directory(), 'doser.in'))
 
         s = self._factory.Sortmtz()
 
@@ -779,8 +748,9 @@ class CCP4ScalerR(Scaler):
         
         s.set_hklout(hklout)
 
-        for epoch in epochs:
-            s.add_hklin(self._sweep_information[epoch]['hklin'])
+        for epoch in self._sweep_handler.get_epochs():
+            s.add_hklin(self._sweep_handler.get_sweep_information(
+                epoch).get_reflections())
 
         s.sort()
 
@@ -799,15 +769,15 @@ class CCP4ScalerR(Scaler):
                                          self._scalr_xname),
                                         p.get_log_file())
 
-            if len(self._sweep_information) > 1:
+            if len(self._sweep_handler.get_epochs()) > 1:
                 p.set_hklin(hklin)
             else:
                 # permit the use of pointless preparation...
-                epoch = self._sweep_information.keys()[0]
+                epoch = self._sweep_handler.get_epochs()[0]
                 p.set_hklin(_prepare_pointless_hklin(
                     self.get_working_directory(),
-                    hklin, self._sweep_information[epoch]['header'].get(
-                    'phi_width', 0.0)))
+                    hklin, self._sweep_handler.get_sweep_information(
+                    epoch).get_reflections()))
 
             if self._scalr_input_spacegroup:
                 Debug.write('Assigning user input spacegroup: %s' % \
@@ -893,8 +863,8 @@ class CCP4ScalerR(Scaler):
     def _scale(self):
         '''Perform all of the operations required to deliver the scaled
         data.'''
-
-        epochs = sorted(self._sweep_information)
+        
+        epochs = self._sweep_handler.get_epochs()
 
         if Flags.get_smart_scaling():
             if Flags.get_8way():
@@ -929,33 +899,29 @@ class CCP4ScalerR(Scaler):
 
         for epoch in epochs:
 
-            input = self._sweep_information[epoch]
-
-            intgr = input['integrater']
+            si = self._sweep_handler.get_sweep_information(epoch)
+            pname, xname, dname = si.get_project_info()
+            sname = si.get_sweep_name()
+            intgr = si.get_integrater()
 
             if intgr.get_integrater_user_resolution():
                 dmin = intgr.get_integrater_high_resolution()
                 
-                if not user_resolution_limits.has_key(input['dname']):
-                    user_resolution_limits[input['dname']] = dmin
-                elif dmin < user_resolution_limits[input['dname']]:
-                    user_resolution_limits[input['dname']] = dmin
+                if not user_resolution_limits.has_key(dname):
+                    user_resolution_limits[dname] = dmin
+                elif dmin < user_resolution_limits[dname]:
+                    user_resolution_limits[dname] = dmin
 
-            start, end = (min(input['batches']), max(input['batches']))
+            start, end = si.get_batch_range()
 
-            if input['dname'] in self._resolution_limits:
-                resolution = self._resolution_limits[input['dname']]
-                sc.add_run(start, end, pname = input['pname'],
-                           xname = input['xname'],
-                           dname = input['dname'],
-                           exclude = False,
-                           resolution = resolution,
-                           name = input['sweep_name'])
+            if dname in self._resolution_limits:
+                resolution = self._resolution_limits[dname]
+                sc.add_run(start, end, pname = pname, xname = xname,
+                           dname = dname, exclude = False,
+                           resolution = resolution, name = sname)
             else:
-                sc.add_run(start, end, pname = input['pname'],
-                           xname = input['xname'],
-                           dname = input['dname'],
-                           name = input['sweep_name'])
+                sc.add_run(start, end, pname = pname, xname = xname,
+                           dname = dname, name = sname)
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled_test.mtz' % \
@@ -1150,20 +1116,20 @@ class CCP4ScalerR(Scaler):
         sc.set_new_scales_file(scales_file)
 
         for epoch in epochs:
-            input = self._sweep_information[epoch]
-            start, end = (min(input['batches']), max(input['batches']))
 
-            run_resolution_limit = self._resolution_limits[input['dname']]
+            si = self._sweep_handler.get_sweep_information(epoch)
+            pname, xname, dname = si.get_project_info()
+            sname = si.get_sweep_name()
+            start, end = si.get_batch_range()
+
+            run_resolution_limit = self._resolution_limits[dname]
 
             if run_resolution_limit < highest_resolution:
                 highest_resolution = run_resolution_limit
 
-            sc.add_run(start, end, pname = input['pname'],
-                       xname = input['xname'],
-                       dname = input['dname'],
-                       exclude = False,
-                       resolution = run_resolution_limit,
-                       name = input['sweep_name'])
+            sc.add_run(start, end, pname = pname, xname = xname,
+                       dname = dname, exclude = False,
+                       resolution = run_resolution_limit, name = xname)
 
         sc.set_resolution(highest_resolution)
 
@@ -1251,20 +1217,19 @@ class CCP4ScalerR(Scaler):
         self._wavelengths_in_order = []
         
         for epoch in epochs:
-            input = self._sweep_information[epoch]
-            start, end = (min(input['batches']), max(input['batches']))
+            si = self._sweep_handler.get_sweep_information(epoch)
+            pname, xname, dname = si.get_project_info()
+            sname = si.get_sweep_name()
+            start, end = si.get_batch_range()
 
-            run_resolution_limit = self._resolution_limits[input['dname']]
+            run_resolution_limit = self._resolution_limits[dname]
 
-            sc.add_run(start, end, pname = input['pname'],
-                       xname = input['xname'],
-                       dname = input['dname'],
-                       exclude = False,
-                       resolution = run_resolution_limit,
-                       name = input['sweep_name'])
+            sc.add_run(start, end, pname = pname, xname = xname,
+                       dname = dname, exclude = False,
+                       resolution = run_resolution_limit, name = sname)
             
-            if not input['dname'] in self._wavelengths_in_order:
-                self._wavelengths_in_order.append(input['dname'])
+            if not dname in self._wavelengths_in_order:
+                self._wavelengths_in_order.append(dname)
             
         sc.set_hklout(os.path.join(self.get_working_directory(), 'temp.mtz'))
         sc.set_scalepack(os.path.join(self.get_working_directory(),
@@ -1293,20 +1258,20 @@ class CCP4ScalerR(Scaler):
         self._wavelengths_in_order = []
         
         for epoch in epochs:
-            input = self._sweep_information[epoch]
-            start, end = (min(input['batches']), max(input['batches']))
 
-            run_resolution_limit = self._resolution_limits[input['dname']]
+            si = self._sweep_handler.get_sweep_information(epoch)
+            pname, xname, dname = si.get_project_info()
+            sname = si.get_sweep_name()
+            start, end = si.get_batch_range()
 
-            sc.add_run(start, end, pname = input['pname'],
-                       xname = input['xname'],
-                       dname = input['dname'],
-                       exclude = False,
-                       resolution = run_resolution_limit,
-                       name = input['sweep_name'])
+            run_resolution_limit = self._resolution_limits[dname]
+
+            sc.add_run(start, end, pname = pname, xname = xname,
+                       dname = dname, exclude = False,
+                       resolution = run_resolution_limit, name = sname)
             
-            if not input['dname'] in self._wavelengths_in_order:
-                self._wavelengths_in_order.append(input['dname'])
+            if not dname in self._wavelengths_in_order:
+                self._wavelengths_in_order.append(dname)
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_chef.mtz' % \
@@ -1322,34 +1287,35 @@ class CCP4ScalerR(Scaler):
         reflection_files = sc.get_scaled_reflection_files()
 
         for key in self._scalr_statistics:
-            pname, xname, dname = key
+            _pname, _xname, _dname = key
 
             harvest_copy = os.path.join(os.environ['HARVESTHOME'],
-                                        'DepositFiles', pname,
-                                        '%s.scala' % dname)
+                                        'DepositFiles', _pname,
+                                        '%s.scala' % _dname)
 
             sc = self._updated_scala()
             sc.set_hklin(self._prepared_reflections)
             sc.set_scales_file(scales_file)
 
             for epoch in epochs:
-                input = self._sweep_information[epoch]
-                start, end = (min(input['batches']), max(input['batches']))
-                if dname == input['dname']:
-                    sc.add_run(start, end, pname = input['pname'],
-                               xname = input['xname'],
-                               dname = input['dname'],
-                               exclude = False)
+
+                si = self._sweep_handler.get_sweep_information(epoch)
+                pname, xname, dname = si.get_project_info()
+                sname = si.get_sweep_name()
+                start, end = si.get_batch_range()
+                
+
+                if dname == _dname:
+                    sc.add_run(start, end, pname = pname, xname = xname,
+                               dname = dname, exclude = False, name = xname)
                 else:
-                    sc.add_run(start, end, pname = input['pname'],
-                               xname = input['xname'],
-                               dname = input['dname'],
-                               exclude = True)                    
+                    sc.add_run(start, end, pname = pname, xname = xname,
+                               dname = dname, exclude = True, name = xname)
 
                 sc.set_resolution(self._resolution_limits[dname])
 
             sc.set_hklout(os.path.join(self.get_working_directory(),
-                                           'temp.mtz'))
+                                       'temp.mtz'))
                 
             if self.get_scaler_anomalous():
                 sc.set_anomalous()
@@ -1660,13 +1626,10 @@ class CCP4ScalerR(Scaler):
 
         epochs = []
 
-        for epoch in self._sweep_information:
-
-            if batch in self._sweep_information[epoch]['batches']:
+        for epoch in self._sweep_handler.get_epochs():
+            si = self._sweep_handler.get_sweep_information(epoch)
+            if batch in si.get_batches():
                 epochs.append(epoch)
-
-        if not epochs:
-            raise RuntimeError, 'batch %d not found' % batch
 
         if len(epochs) > 1:
             raise RuntimeError, 'batch %d found in multiple sweeps' % batch

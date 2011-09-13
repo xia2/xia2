@@ -62,7 +62,7 @@ def Scaler():
     if not scaler and \
        (not preselection or preselection == 'ccp4r'):
         try:
-            scaler = CCP4ScalerS()
+            scaler = CCP4ScalerR()
             Debug.write('Using CCP4R Scaler')
         except NotAvailableError, e:
             if preselection == 'ccp4r':

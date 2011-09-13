@@ -241,10 +241,13 @@ class SweepInformation:
         self._sweep_name = integrater.get_integrater_sweep_name()
         self._integrater = integrater
         self._batches = integrater.get_integrater_batches()
+        self._batch_offset = 0
 
         self._image_to_epoch = integrater.get_integrater_sweep(                
             ).get_image_to_epoch()
         self._image_to_dose = { }
+
+        self._reflections = None
 
         return
 
@@ -259,6 +262,17 @@ class SweepInformation:
         
     def get_batches(self):
         return self._batches
+
+    def set_batches(self, batches):
+        self._batches = batches
+        return
+
+    def set_batch_offset(self, batch_offset):
+        self._batch_offset = batch_offset
+        return
+
+    def get_batch_offset(self):
+        return self._batch_offset
 
     def get_batch_range(self):
         return min(self._batches), max(self._batches)
@@ -303,7 +317,16 @@ class SweepInformation:
         return self._integrater.get_integrater_high_resolution()
 
     def get_reflections(self):
-        return self._integrater.get_integrater_reflections()
+        if self._reflections:
+            return self._reflections
+        else:
+            return self._integrater.get_integrater_reflections()            
+
+    def set_reflections(self, reflections):
+        self._reflections = reflections
+        return
+
+    
 
 class SweepInformationHandler:
 
@@ -326,14 +349,14 @@ class SweepInformationHandler:
         return self._sweep_information[epoch]
 
     def get_project_info(self):
-        si = self._sweep_information(self._first)
-        pname, xname, dname = si.get_project_information()
+        si = self._sweep_information[self._first]
+        pname, xname, dname = si.get_project_info()
 
         for e in self._sweep_information:
             si = self._sweep_information[e]
 
-            assert(e.get_project_info()[0] == pname)
-            assert(e.get_project_info()[1] == xname)
+            assert(si.get_project_info()[0] == pname)
+            assert(si.get_project_info()[1] == xname)
         
         return pname, xname
 
