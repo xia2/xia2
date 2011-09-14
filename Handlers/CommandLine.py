@@ -119,6 +119,7 @@ class _CommandLine():
         self._read_noremove()        
         self._read_2d()
         self._read_2dr()
+        self._read_2dir()
         self._read_2dt()
         self._read_3d()
         self._read_3dr()
@@ -1246,6 +1247,19 @@ class _CommandLine():
                 self._understood.append(sys.argv.index('-2d'))
             if '-2dr' in sys.argv:
                 self._understood.append(sys.argv.index('-2dr'))
+            Debug.write('2DR pipeline selected')
+        return
+
+    def _read_2dir(self):
+
+        if '-2dir' in sys.argv or '-2di' in sys.argv:
+            add_preference('indexer', 'mosflm')
+            add_preference('integrater', 'mosflmr')
+            add_preference('scaler', 'ccp4s')
+            if '-2di' in sys.argv:
+                self._understood.append(sys.argv.index('-2di'))
+            if '-2dir' in sys.argv:
+                self._understood.append(sys.argv.index('-2dir'))
             Debug.write('2DR pipeline selected')
         return
 
