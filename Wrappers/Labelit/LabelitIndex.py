@@ -83,6 +83,7 @@
 import os
 import sys
 import copy
+import shutil
 import math
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
@@ -196,8 +197,6 @@ def LabelitIndex(DriverType = None, indxr_print = True):
                 
                 out.write('beam_search_scope = %f\n' % \
                           self._beam_search_scope)
-                out.write('autoindex_override_beam = (%f, %f)\n' % \
-                          self.get_beam())
 
             # check to see if this is an image plate *or* the
             # wavelength corresponds to Cu KA (1.54A) or Cr KA (2.29 A).
@@ -377,6 +376,12 @@ def LabelitIndex(DriverType = None, indxr_print = True):
 
             self._write_dataset_preferences()
 
+            shutil.copyfile(os.path.join(self.get_working_directory(),
+                                         'dataset_preferences.py'),
+                            os.path.join(self.get_working_directory(),
+                                         '%d_dataset_preferences.py' % \
+                                         self.get_xpid()))
+            
             self.start()
             self.close_wait()
 
