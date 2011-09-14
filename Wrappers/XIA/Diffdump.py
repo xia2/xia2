@@ -689,9 +689,15 @@ def Diffdump(DriverType = None):
                     new_beam = (beam[0] * pixel[0], beam[1] * pixel[1])
                     self._header['beam'] = new_beam
 
-            # FIXME here - if the beam centre is exactly 0.0, 0.0,
-            # then perhaps reset it to the centre of the image?
-            
+            # check beam centre is sensible i.e. not NULL
+
+            if math.fabs(self._header['beam'][0]) < 0.01 and \
+               math.fabs(self._header['beam'][1]) < 0.01:
+		size = self._header['size']
+                pixel = self._header['pixel']
+                self._header['beam'] = (0.5 * size[0] * pixel[0], 
+                                        0.5 * size[1] * pixel[1])
+
             if self._header.has_key('detector') and \
                self._header.has_key('pixel') and \
                self._header.has_key('size'):
