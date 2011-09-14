@@ -407,7 +407,7 @@ class CCP4ScalerR(Scaler):
             
             if len(lattices) > 1:
 
-                correct_lattice = sort_lattice(lattices)[0]
+                correct_lattice = sort_lattices(lattices)[0]
                 
                 Chatter.write('Correct lattice asserted to be %s' % \
                               correct_lattice)
@@ -540,7 +540,7 @@ class CCP4ScalerR(Scaler):
                     
                     if ntr:
                         
-                        intgr.integrater_reset_reindex_operator()
+                        integrater.integrater_reset_reindex_operator()
                         need_to_return = True
 
             if self._scalr_input_pointgroup:
@@ -762,7 +762,7 @@ class CCP4ScalerR(Scaler):
                 epoch = self._sweep_handler.get_epochs()[0]
                 p.set_hklin(self._prepare_pointless_hklin(
                     hklin, self._sweep_handler.get_sweep_information(
-                    epoch).get_reflections()))
+                    epoch).get_header()['phi_width']))
 
             if self._scalr_input_spacegroup:
                 Debug.write('Assigning user input spacegroup: %s' % \
