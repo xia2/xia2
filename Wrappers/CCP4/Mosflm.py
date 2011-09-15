@@ -1318,7 +1318,7 @@ def Mosflm(DriverType = None,
             genfile = os.path.join(os.environ['BINSORT_SCR'],
                                    '%d_mosflm.gen' % self.get_xpid())
 
-            # self.input('genfile %s' % genfile)
+            self.input('genfile %s' % genfile)
             
             for cri in self._mosflm_cell_ref_images:
                 self.input('process %d %d' % cri)
@@ -1600,7 +1600,7 @@ def Mosflm(DriverType = None,
             genfile = os.path.join(os.environ['BINSORT_SCR'],
                                    '%d_mosflm.gen' % self.get_xpid())
 
-            # self.input('genfile %s' % genfile)
+            self.input('genfile %s' % genfile)
 
             for cri in self._mosflm_cell_ref_images:
                 self.input('process %d %d' % cri)
@@ -2059,7 +2059,7 @@ def Mosflm(DriverType = None,
             genfile = os.path.join(os.environ['BINSORT_SCR'],
                                    '%d_mosflm.gen' % self.get_xpid())
 
-            # self.input('genfile %s' % genfile)
+            self.input('genfile %s' % genfile)
 
             # add an extra chunk of orientation refinement
 
@@ -2660,7 +2660,7 @@ def Mosflm(DriverType = None,
                                        '%d_%d_mosflm.gen' %
                                        (self.get_xpid(), j))
 
-                # job.input('genfile %s' % genfile)
+                job.input('genfile %s' % genfile)
 
                 job.input('process %d %d' % chunks[j])
                 
