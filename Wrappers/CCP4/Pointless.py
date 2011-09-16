@@ -349,7 +349,7 @@ def Pointless(DriverType = None):
                 self.add_command_line(self._xdsin)
 
             self.add_command_line('xmlout')
-            self.add_command_line('pointless.xml')
+            self.add_command_line('%d_pointless.xml' % self.get_xpid())
 
             if self._hklref:
                 self.add_command_line('hklref')
@@ -418,7 +418,7 @@ def Pointless(DriverType = None):
             # or something.
 
             xml_file = os.path.join(self.get_working_directory(),
-                                    'pointless.xml')
+                                    '%d_pointless.xml' % self.get_xpid())
 
             # catch the case sometimes on ppc mac where pointless adds
             # an extra .xml on the end...
@@ -582,7 +582,7 @@ def Pointless(DriverType = None):
                 self.add_command_line(self._xdsin)
 
             self.add_command_line('xmlout')
-            self.add_command_line('pointless.xml')
+            self.add_command_line('%d_pointless.xml' % self.get_xpid())
 
             self.add_command_line('hklout')
             self.add_command_line('pointless.mtz')
@@ -603,7 +603,7 @@ def Pointless(DriverType = None):
             hklin_spacegroup = ''
 
             xml_file = os.path.join(self.get_working_directory(),
-                                    'pointless.xml')
+                                    '%d_pointless.xml' % self.get_xpid())
 
             if not os.path.exists(xml_file) and \
                os.path.exists('%s.xml' % xml_file):
