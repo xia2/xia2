@@ -13,6 +13,8 @@
 import os
 import sys
 import shutil
+import math
+from cctbx.uctbx import unit_cell
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -352,6 +354,19 @@ def XDSCorrect(DriverType = None):
                 self.get_working_directory(),
                 'CORRECT.LP'))
 
+            # check that the unit cell is comparable to what went in i.e.
+            # the volume is the same to within a factor of 10 (which is
+            # extremely generous and should only spot gross errors)
+
+            original = unit_cell(self._cell)
+            refined = unit_cell(self._results['cell'])
+
+            if original.volume() / refined.volume() > 10:
+                raise RuntimeError, 'catastrophic change in unit cell volume'
+
+            if refined.volume() / original.volume() > 10:
+                raise RuntimeError, 'catastrophic change in unit cell volume'
+                
             # record reindex operation used for future reference... this
             # is to trap trac #419
 
