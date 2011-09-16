@@ -48,6 +48,9 @@ def gen_rot_mat_euler(alpha, beta, gamma):
 def _multiply_symmetry_matrix(a, b):
     '''compute a * b, for e.g. h_ = a * b * h, e.g. apply b before a.'''
 
+    if True:
+        return (matrix.sqr(a) * matrix.sqr(b)).elems
+
     result = []
 
     result.append(a[0] * b[0] +
@@ -149,7 +152,7 @@ def symop_to_mat(symop):
 
 def mat_to_symop(mat):
     return sgtbx.change_of_basis_op(sgtbx.rt_mx(
-        matrix.sqr(mat).transpose(), (0, 0, 0),
+        matrix.sqr(mat), (0, 0, 0),
         r_den = 12, t_den = 144)).as_xyz()
 
 def lattice_to_spacegroup_number(lattice):
@@ -188,62 +191,9 @@ def modulo(m, x):
 
 if __name__ == '__main__':
 
-    # a = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    # i = [1, 0, 0, 0, 1, 0, 0, 0, 1]
-    # j = [0, 1, 0, 0, 0, 1, 1, 0, 0]
-    # k = [0, 0, 1, 1, 0, 0, 0, 1, 0]
+    s = compose_symops('-y,x+y,z', 'h,k,l')
+    m = symop_to_mat(s)
 
-    # print compose_symops('h,k,l', 'h,k,l')
-    # print compose_symops('k,l,h', 'l,h,k')
-    # print compose_symops('k,l,h', '2h,k,l')
+    assert(s == mat_to_symop(m))
 
-    # print compose_symops('1/2h+1/2k,-3/2h+1/2k,l', 'h,k,l')
-
-    # symops = Syminfo.get_symops(sys.argv[1])
-    # cell = tuple(map(float, sys.argv[2:8]))
-
-    symops = [symop_to_mat(s) for s in Syminfo.get_symops(sys.argv[1])]
-
-    # add inverse operations too...
-    inverse = []
-
-    for s in symops:
-        inverse.append([-1 * j for j in s])
-
-    symops += inverse
     
-    from MatrixExpert import matvecmul, invert
-
-    # pull the SCALE1,2,3 records from the pdb file and
-    # compose the initial transformation matrix
-
-    pdb = sys.argv[2]
-
-    matrix = []
-
-    for record in open(pdb, 'r').readlines():
-        if 'SCALE' in record[:5]:
-            for token in record.split()[1:4]:
-                matrix.append(float(token))
-
-    if len(matrix) != 9:
-        raise RuntimeError, 'broken matrix'
-
-    # compose the inverse transformation matrix
-
-    inverse = invert(matrix)
-
-    for record in sys.stdin.readlines():
-        x, y, z, o = tuple(map(float, record.split()))
-        v = matvecmul(matrix, (x, y, z))
-
-        # reduce this to fractional coordinates
-        
-        v2 = reduce(symops, v)
-
-        # expand this back to orthogonal coordinates
-        
-        x, y, z = matvecmul(inverse, v2)
-        print '%6.2f %6.2f %6.2f %6.2f' % (x, y, z, o)
-                    
-
