@@ -71,6 +71,7 @@ Toolkit/MultiMerger.py -text
 Toolkit/PlayPen/ExperimentSetup.py -text
 Toolkit/PlayPen/TestMinimise.py -text
 Toolkit/PlayPen/cc.py -text
+Toolkit/PlayPen/erzatz_symmetry.py -text
 Toolkit/PlayPen/mosflm_rms.py -text
 Toolkit/PlayPen/mtz2nxs.py -text
 Toolkit/PlayPen/scala2gnuplot.py -text
