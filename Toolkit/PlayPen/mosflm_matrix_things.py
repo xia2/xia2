@@ -60,7 +60,7 @@ def calculate_wavelength(unit_cell, mosflm_a_matrix):
                   unit_cell[1] / math.sqrt(b.dot()) + \
                   unit_cell[2] / math.sqrt(c.dot())) / 3.0
 
-    return 1.0 / wavelength
+    return wavelength
                   
 def generate_lattice_options(unit_cell, space_group_name):
     cs = crystal.symmetry(
@@ -103,7 +103,7 @@ def print_reindex(reindex):
 def compute_u(mosflm_a_matrix, unit_cell, wavelength):
 
     uc = uctbx.unit_cell(unit_cell)
-    A = wavelength * matrix.sqr(mosflm_a_matrix)
+    A = (1.0 / wavelength) * matrix.sqr(mosflm_a_matrix)
     B = matrix.sqr(uc.orthogonalization_matrix()).inverse()
 
     return A * B.inverse()
@@ -113,7 +113,7 @@ def macguffin(mosflm_matrix, space_group_name):
     cell, a, u = parse_matrix(mosflm_matrix)
 
     wavelength = calculate_wavelength(cell, a)
-
+    
     options = generate_lattice_options(cell, space_group_name)
 
     for o_space_group_name, o_unit_cell, reindex in options:
@@ -121,10 +121,8 @@ def macguffin(mosflm_matrix, space_group_name):
 
         print o_space_group_name
         print format_matrix(o_unit_cell, o_a, o_u)
-        print_cell(o_unit_cell)
-        print_cell(mosflm_a_to_cell(o_a, wavelength))
-
-        print compute_u(o_a, o_unit_cell, wavelength).determinant()
+        # print_cell(o_unit_cell)
+        # print_cell(mosflm_a_to_cell(o_a, wavelength))
 
 
 if __name__ == '__main__':
