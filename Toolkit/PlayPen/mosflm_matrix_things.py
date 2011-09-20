@@ -31,6 +31,18 @@ def format_matrix(cell, a, u):
     return matrix_format % tuple(a) + misset + matrix_format % tuple(u) + \
            cell_format % tuple(cell) + misset
 
+def mosflm_a_to_cell(mosflm_a_matrix, wavelength):
+    real_a = matrix.sqr(mosflm_a_matrix).inverse()
+
+    a = wavelength * matrix.col(real_a.elems[0:3])
+    b = wavelength * matrix.col(real_a.elems[3:6])
+    c = wavelength * matrix.col(real_a.elems[6:9])
+
+    r2d = 180.0 / math.pi
+
+    return math.sqrt(a.dot()), math.sqrt(b.dot()), math.sqrt(c.dot()), \
+           b.angle(c) * r2d, c.angle(a) * r2d, a.angle(b) * r2d
+
 def calculate_wavelength(unit_cell, mosflm_a_matrix):
     real_a = matrix.sqr(mosflm_a_matrix).inverse()
 
@@ -60,8 +72,8 @@ def generate_lattice_options(unit_cell, space_group_name):
     result = []
 
     for item in groups.result_groups:
-        o_unit_cell = item['ref_subsym'].unit_cell().parameters()
-        o_space_group_name = item['ref_subsym'].space_group().type(
+        o_unit_cell = item['best_subsym'].unit_cell().parameters()
+        o_space_group_name = item['best_subsym'].space_group().type(
             ).universal_hermann_mauguin_symbol()
         reindex = item['cb_op_inp_best'].c().r().as_double()
 
@@ -73,9 +85,9 @@ def apply_reindex_operation(mosflm_a_matrix, mosflm_u_matrix, reindex):
     
     a = matrix.sqr(mosflm_a_matrix)
     u = matrix.sqr(mosflm_u_matrix)
-    r = matrix.sqr(reindex)
+    r = matrix.sqr(reindex).transpose()
 
-    return r.inverse() * a, r * u
+    return a * r, u
 
 def macguffin(mosflm_matrix, space_group_name):
 
@@ -89,8 +101,11 @@ def macguffin(mosflm_matrix, space_group_name):
         o_a, o_u = apply_reindex_operation(a, u, reindex)
 
         print o_space_group_name
-        print format_matrix(o_unit_cell, o_a, o_u)
-    
+
+        print '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % o_unit_cell
+        print '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % mosflm_a_to_cell(
+            o_a, wavelength)
+
 if __name__ == '__main__':
 
     macguffin(open(sys.argv[1]).read(), sys.argv[2])
