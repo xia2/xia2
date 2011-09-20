@@ -289,6 +289,8 @@ def super_test_deux(mosflm_lp_file):
 
         output = run_job('ipmosflm', [], commands)
 
+        open('%s.log' % spacegroup, 'w').write(''.join(output))
+
         rmsds = get_mosflm_rmsd(output)
 
         m, s = meansd([rmsds[image] for image in sorted(rmsds)])
