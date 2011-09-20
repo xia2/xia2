@@ -13,3 +13,6 @@ for item in groups.result_groups:
     print '%20s' % spacegroup_name, '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
           cell, reindex
 
+    print '%6.3f %6.3f %6.3f\n%6.3f %6.3f %6.3f\n%6.3f %6.3f %6.3f' % \
+          item['cb_op_inp_best'].c().r().as_double()
+

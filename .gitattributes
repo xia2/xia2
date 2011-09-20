@@ -73,6 +73,7 @@ Toolkit/PlayPen/TestMinimise.py -text
 Toolkit/PlayPen/cc.py -text
 Toolkit/PlayPen/erzatz_symmetry.py -text
 Toolkit/PlayPen/lattice_play.py -text
+Toolkit/PlayPen/mosflm_matrix_things.py -text
 Toolkit/PlayPen/mosflm_rms.py -text
 Toolkit/PlayPen/mtz2nxs.py -text
 Toolkit/PlayPen/scala2gnuplot.py -text
