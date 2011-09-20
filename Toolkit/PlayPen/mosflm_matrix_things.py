@@ -250,7 +250,9 @@ def super_test():
 
         m, s = meansd([rmsds[image] for image in sorted(rmsds)])
 
-        print '%10s %.3f %.3f' % (spacegroup, m, s)
+        print '%10s %.3f %.3f' % (spacegroup, m, s), \
+              '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+              parse_mosflm_matrix(matrix)[0]
 
 def get_mosflm_commands(lines_of_input):
     '''Get the commands which were sent to Mosflm.'''
@@ -295,7 +297,9 @@ def super_test_deux(mosflm_lp_file):
 
         m, s = meansd([rmsds[image] for image in sorted(rmsds)])
 
-        print '%10s %.3f %.3f' % (spacegroup, m, s)
+        print '%10s %.3f %.3f' % (spacegroup, m, s), \
+              '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+              tuple(parse_matrix(matrix)[0])
 
 if __name__ == '__main__':
 
