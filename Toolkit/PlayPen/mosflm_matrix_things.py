@@ -67,15 +67,18 @@ def generate_lattice_options(unit_cell, space_group_name):
         unit_cell = unit_cell,
         space_group_symbol = space_group_name)
 
+    original_reindex = cs.change_of_basis_op_to_minimum_cell()
+
     groups = metric_subgroups(input_symmetry = cs, max_delta = 0.0)
 
     result = []
 
-    for item in groups.result_groups:
-        o_unit_cell = item['best_subsym'].unit_cell().parameters()
-        o_space_group_name = item['best_subsym'].space_group().type(
+    for item in groups.result_groups:        
+        o_unit_cell = item['ref_subsym'].unit_cell().parameters()
+        o_space_group_name = item['ref_subsym'].space_group().type(
             ).universal_hermann_mauguin_symbol()
-        reindex = item['cb_op_inp_best'].c().r().as_double()
+        reindex = (item['subsym'].space_group_info().type().cb_op(
+            ) * original_reindex).c().r().as_double()
 
         result.append((o_space_group_name, o_unit_cell, reindex))
 
@@ -87,7 +90,15 @@ def apply_reindex_operation(mosflm_a_matrix, mosflm_u_matrix, reindex):
     u = matrix.sqr(mosflm_u_matrix)
     r = matrix.sqr(reindex).transpose()
 
-    return a * r, u
+    return a * r, u * r
+
+def print_cell(cell):
+    print '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % cell
+    return
+
+def print_reindex(reindex):
+    print '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f % 6.2f %6.2f %6.2f' % reindex
+    return
 
 def macguffin(mosflm_matrix, space_group_name):
 
@@ -101,10 +112,9 @@ def macguffin(mosflm_matrix, space_group_name):
         o_a, o_u = apply_reindex_operation(a, u, reindex)
 
         print o_space_group_name
-
-        print '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % o_unit_cell
-        print '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % mosflm_a_to_cell(
-            o_a, wavelength)
+        # print format_matrix(o_unit_cell, o_a, o_u)
+        print_cell(o_unit_cell)
+        print_cell(mosflm_a_to_cell(o_a, wavelength))
 
 if __name__ == '__main__':
 
