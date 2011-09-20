@@ -1,12 +1,67 @@
 import os
 import sys
 import math
+import subprocess
 
 from cctbx import sgtbx
 from cctbx import crystal
 from cctbx import uctbx
 from scitbx import matrix
 from cctbx.sgtbx.lattice_symmetry import metric_subgroups
+
+def run_job(executable, arguments = [], stdin = [], working_directory = None):
+    '''Run a program with some command-line arguments and some input,
+    then return the standard output when it is finished.'''
+
+    if working_directory is None:
+        working_directory = os.getcwd()
+
+    command_line = '%s' % executable
+    for arg in arguments:
+        command_line += ' "%s"' % arg
+
+    popen = subprocess.Popen(command_line,
+                             bufsize = 1,
+                             stdin = subprocess.PIPE,
+                             stdout = subprocess.PIPE,
+                             stderr = subprocess.STDOUT,
+                             cwd = working_directory,
+                             universal_newlines = True,
+                             shell = True)
+
+    for record in stdin:
+        popen.stdin.write('%s\n' % record)
+
+    popen.stdin.close()
+
+    output = []
+
+    while True:
+        record = popen.stdout.readline()
+        if not record:
+            break
+
+        output.append(record)
+
+    return output
+
+def meansd(values):
+    mean = sum(values) / len(values)
+    var = sum([(v - mean) * (v - mean) for v in values]) / len(values)
+    return mean, math.sqrt(var)
+
+def get_mosflm_rmsd(records):
+    rmsd = { }
+    current_image = None
+
+    for record in records:
+        if 'Processing Image' in record:
+            current_image = int(record.split()[2])
+
+        if 'Rms Resid' in record:
+            rmsd[current_image] = float(record.split()[-2])
+
+    return rmsd
 
 def parse_matrix(matrix_text):
 
@@ -73,10 +128,15 @@ def generate_lattice_options(unit_cell, space_group_name):
 
     result = []
 
-    for item in groups.result_groups:        
-        o_unit_cell = item['ref_subsym'].unit_cell().parameters()
-        o_space_group_name = item['ref_subsym'].space_group().type(
-            ).universal_hermann_mauguin_symbol()
+    for item in groups.result_groups:
+
+        cs = item['ref_subsym']
+        
+        o_unit_cell = cs.unit_cell().parameters()
+
+        sg = cs.space_group().build_derived_acentric_group()
+        
+        o_space_group_name = sg.type().universal_hermann_mauguin_symbol()
         reindex = (item['subsym'].space_group_info().type().cb_op(
             ) * original_reindex).c().r().as_double()
 
@@ -91,14 +151,6 @@ def apply_reindex_operation(mosflm_a_matrix, mosflm_u_matrix, reindex):
     r = matrix.sqr(reindex).transpose()
 
     return a * r, u * r
-
-def print_cell(cell):
-    print '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % cell
-    return
-
-def print_reindex(reindex):
-    print '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f % 6.2f %6.2f %6.2f' % reindex
-    return
 
 def compute_u(mosflm_a_matrix, unit_cell, wavelength):
 
@@ -116,17 +168,135 @@ def macguffin(mosflm_matrix, space_group_name):
     
     options = generate_lattice_options(cell, space_group_name)
 
+    results = []
+
     for o_space_group_name, o_unit_cell, reindex in options:
         o_a, o_u = apply_reindex_operation(a, u, reindex)
 
-        print o_space_group_name
-        print format_matrix(o_unit_cell, o_a, o_u)
-        # print_cell(o_unit_cell)
-        # print_cell(mosflm_a_to_cell(o_a, wavelength))
+        results.append((spacegroup_long_to_short(o_space_group_name), 
+                        format_matrix(o_unit_cell, o_a, o_u)))
 
+    return results
+
+def spacegroup_long_to_short(spacegroup_name):
+
+    if ':' in spacegroup_name:
+        spacegroup_name = spacegroup_name.split(
+            ':')[0].replace('R', 'H').strip()
+    
+    for record in open(os.path.join(os.environ['CLIBD'], 'symop.lib')):
+        if ' ' in record[:1]:
+            continue
+
+        tokens = record.split()
+
+        short_name = tokens[3]
+        long_name = record.split('\'')[1]
+
+        if long_name == spacegroup_name:
+            return short_name
+
+    raise RuntimeError, 'can not find %s' % spacegroup_name
+
+def super_test():
+
+    original_commands = '''template "insulin_1_0##.img"
+    directory "/data/graeme/test/demo"
+    matrix %s.mat
+    beam 94.329000 94.497600
+    distance 159.720000
+    symmetry %s
+    mosaic 0.250000
+    resolution 1.850000
+    wavelength 0.979000
+    !parameters from autoindex run
+    raster 19 21 11 6 6
+    separation 0.650000 0.730000
+    separation close
+    refinement residual 15
+    refinement include partials
+    limits xscan 94.003200 yscan 94.003200
+    postref multi segments 3 repeat 10
+    postref maxresidual 5.0
+    process 1 3
+    go
+    process 20 22
+    go
+    process 43 45
+    go
+    '''
+
+    original_matrix = ''' -0.00729930 -0.00995677  0.00173476
+  0.01009847 -0.00709839  0.00174938
+-0.000409412  0.00242942  0.01222117
+       0.000       0.000       0.000
+ -0.58548911 -0.79864911  0.13914780
+  0.81001486 -0.56937347  0.14032030
+ -0.03283962  0.19486779  0.98027960
+     78.5272     78.5272     78.5272     90.0000     90.0000     90.0000
+       0.000       0.000       0.000
+'''
+
+    original_spacegroup = 'I23'
+
+    for spacegroup, matrix in macguffin(original_matrix, original_spacegroup):
+        open('%s.mat' % spacegroup, 'w').write(matrix)
+
+        commands = (original_commands % (spacegroup, spacegroup)).split('\n')
+
+        output = run_job('ipmosflm', [], commands)
+
+        rmsds = get_mosflm_rmsd(output)
+
+        m, s = meansd([rmsds[image] for image in sorted(rmsds)])
+
+        print '%10s %.3f %.3f' % (spacegroup, m, s)
+
+def get_mosflm_commands(lines_of_input):
+    '''Get the commands which were sent to Mosflm.'''
+
+    result = []
+
+    for line in lines_of_input:
+        if '===>' in line:
+            result.append(line.replace('===>', '').strip())
+        if 'MOSFLM =>' in line:
+            result.append(line.replace('MOSFLM =>', '').strip())
+
+    return result
+
+def super_test_deux(mosflm_lp_file):
+
+    commands = get_mosflm_commands(open(mosflm_lp_file).readlines())
+
+    original_commands = []
+
+    for c in commands:
+        if 'matrix' in c:
+            original_commands.append('matrix %s.mat')
+            original_matrix = open(c.split()[-1]).read()
+        elif 'symmetry' in c:
+            original_commands.append('symmetry %s')
+            original_spacegroup = c.split()[-1]
+        else:
+            original_commands.append(c)
+
+    for spacegroup, matrix in macguffin(original_matrix, original_spacegroup):
+        open('%s.mat' % spacegroup, 'w').write(matrix)
+
+        commands = ('\n'.join(original_commands) % (spacegroup, spacegroup)
+                    ).split('\n')
+
+        output = run_job('ipmosflm', [], commands)
+
+        rmsds = get_mosflm_rmsd(output)
+
+        m, s = meansd([rmsds[image] for image in sorted(rmsds)])
+
+        print '%10s %.3f %.3f' % (spacegroup, m, s)
 
 if __name__ == '__main__':
 
-    macguffin(open(sys.argv[1]).read(), sys.argv[2])
+    super_test_deux(sys.argv[1])
 
     
