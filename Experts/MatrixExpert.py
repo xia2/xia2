@@ -241,6 +241,8 @@ def transmogrify_matrix(lattice, matrix, target_lattice,
     if 'lattice_symmetry' in o.get_executable():
         op = transpose(op)
 
+    # why is only one of the matrices inverted?!
+
     a = matmul(invert(op), a)
     u = matmul(op, u)
 
