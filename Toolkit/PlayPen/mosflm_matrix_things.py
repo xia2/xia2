@@ -50,6 +50,11 @@ def meansd(values):
     var = sum([(v - mean) * (v - mean) for v in values]) / len(values)
     return mean, math.sqrt(var)
 
+def get_mosflm_cell(records):
+    for record in records:
+        if 'Refined cell' in record:
+            return tuple(map(float, record.split()[-6:]))
+
 def get_mosflm_rmsd(records):
     rmsd = { }
     current_image = None
@@ -131,16 +136,33 @@ def generate_lattice_options(unit_cell, space_group_name):
     for item in groups.result_groups:
 
         cs = item['ref_subsym']
-        
-        o_unit_cell = cs.unit_cell().parameters()
 
-        sg = cs.space_group().build_derived_acentric_group()
-        
-        o_space_group_name = sg.type().universal_hermann_mauguin_symbol()
-        reindex = (item['subsym'].space_group_info().type().cb_op(
-            ) * original_reindex).c().r().as_double()
+        convert_to_best_cell = True
 
-        result.append((o_space_group_name, o_unit_cell, reindex))
+        if convert_to_best_cell:
+            cb = cs.change_of_basis_op_to_best_cell(
+                best_monoclinic_beta = False)
+            cs_best = cs.change_basis(cb)
+
+            o_unit_cell = cs_best.unit_cell().parameters()
+            sg = cs_best.space_group().build_derived_acentric_group()
+        
+            o_space_group_name = sg.type().universal_hermann_mauguin_symbol()
+            reindex = (cb * item['subsym'].space_group_info().type().cb_op(
+                ) * original_reindex).c().r().as_double()
+            
+            result.append((o_space_group_name, o_unit_cell, reindex))
+
+        else:
+        
+            o_unit_cell = cs.unit_cell().parameters()
+            sg = cs.space_group().build_derived_acentric_group()
+        
+            o_space_group_name = sg.type().universal_hermann_mauguin_symbol()
+            reindex = (item['subsym'].space_group_info().type().cb_op(
+                ) * original_reindex).c().r().as_double()
+            
+            result.append((o_space_group_name, o_unit_cell, reindex))
 
     return result
 
@@ -173,6 +195,11 @@ def macguffin(mosflm_matrix, space_group_name):
     for o_space_group_name, o_unit_cell, reindex in options:
         o_a, o_u = apply_reindex_operation(a, u, reindex)
 
+        if False:
+            print '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % o_unit_cell
+            print '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % mosflm_a_to_cell(
+                o_a, wavelength)
+            
         results.append((spacegroup_long_to_short(o_space_group_name), 
                         format_matrix(o_unit_cell, o_a, o_u)))
 
@@ -267,6 +294,9 @@ def get_mosflm_commands(lines_of_input):
 
     return result
 
+def nint(a):
+    return int(round(a) - 0.5) + (a > 0)
+
 def super_test_deux(mosflm_lp_file):
 
     commands = get_mosflm_commands(open(mosflm_lp_file).readlines())
@@ -284,22 +314,29 @@ def super_test_deux(mosflm_lp_file):
             original_commands.append(c)
 
     for spacegroup, matrix in macguffin(original_matrix, original_spacegroup):
-        open('%s.mat' % spacegroup, 'w').write(matrix)
 
-        commands = ('\n'.join(original_commands) % (spacegroup, spacegroup)
+        cell = tuple(parse_matrix(matrix)[0])
+
+        name = '%s-%d-%d-%d-%d-%d-%d' % (spacegroup, cell[0], cell[1],
+                                         cell[2], cell[3], cell[4], cell[5])
+
+        open('%s.mat' % name, 'w').write(matrix)
+
+        commands = ('\n'.join(original_commands) % (name, spacegroup)
                     ).split('\n')
 
         output = run_job('ipmosflm', [], commands)
 
-        open('%s.log' % spacegroup, 'w').write(''.join(output))
+        open('%s.log' % name, 'w').write(''.join(output))
 
         rmsds = get_mosflm_rmsd(output)
+
+        cell = get_mosflm_cell(output)
 
         m, s = meansd([rmsds[image] for image in sorted(rmsds)])
 
         print '%10s %.3f %.3f' % (spacegroup, m, s), \
-              '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-              tuple(parse_matrix(matrix)[0])
+              '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % tuple(cell)
 
 if __name__ == '__main__':
 
