@@ -40,7 +40,7 @@ from lib.SymmetryLib import lattices_in_order, sort_lattices
 
 from CCP4ScalerHelpers import _resolution_estimate, \
      _prepare_pointless_hklin, _fraction_difference, \
-     CCP4ScalerHelper, SweepInformationHandler
+     CCP4ScalerHelper, SweepInformationHandler, erzatz_resolution
 
 from Modules.CCP4InterRadiationDamageDetector import \
      CCP4InterRadiationDamageDetector
@@ -134,6 +134,12 @@ class CCP4ScalerR(Scaler):
         sc_tst.set_tails(tails = tails)
         sc_tst.set_bfactor(bfactor = bfactor)
 
+        batch_ranges = [self._sweep_handler.get_sweep_information(
+            epoch).get_batch_range() for epoch in epochs]
+
+        resolutions = erzatz_resolution(self._prepared_reflections,
+                                        batch_ranges)
+
         if secondary:
             sc_tst.set_scaling_parameters(
                 'rotation', secondary = Flags.get_scala_secondary())
@@ -146,12 +152,14 @@ class CCP4ScalerR(Scaler):
             
             start, end = si.get_batch_range()
 
+            resolution = resolutions[(start, end)]
+
             pname, xname, dname = si.get_project_info()
             sname = si.get_sweep_name()
             
             sc_tst.add_run(start, end, pname = pname,
-                           xname = xname, dname = dname,
-                           exclude = False, name = sname)
+                           xname = xname, dname = dname, exclude = False,
+                           resolution = resolution, name = sname)
             
             if self.get_scaler_anomalous():
                 sc_tst.set_anomalous()

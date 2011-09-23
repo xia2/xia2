@@ -14,6 +14,7 @@
 
 import os
 import math
+from iotbx import mtz
 
 from Wrappers.CCP4.Mtzdump import Mtzdump
 from Wrappers.CCP4.Rebatch import Rebatch
@@ -24,6 +25,9 @@ from Handlers.Flags import Flags
 from Experts.ResolutionExperts import remove_blank
 
 ############ JIFFY FUNCTIONS #################
+
+def nint(a):
+    return int(round(a) - 0.5) + (a > 0)
 
 def _resolution_estimate(ordered_pair_list, cutoff):
     '''Come up with a linearly interpolated estimate of resolution at
@@ -60,6 +64,93 @@ def _resolution_estimate(ordered_pair_list, cutoff):
 
     return resolution
 
+def erzatz_resolution(reflection_file, batch_ranges):
+    
+    mtz_obj = mtz.object(reflection_file)
+
+    miller = mtz_obj.extract_miller_indices()
+    dmax, dmin = mtz_obj.max_min_resolution()
+
+    ipr_column = None
+    sigipr_column = None
+    batch_column = None
+
+    uc = None
+
+    for crystal in mtz_obj.crystals():
+
+        if crystal.name() == 'HKL_Base':
+            continue
+        
+        uc = crystal.unit_cell()
+
+        for dataset in crystal.datasets():
+            for column in dataset.columns():
+
+                if column.label() == 'IPR':
+                    ipr_column = column
+                elif column.label() == 'SIGIPR':
+                    sigipr_column = column
+                elif column.label() == 'BATCH':
+                    batch_column = column
+
+    assert(ipr_column)
+    assert(sigipr_column)
+    assert(batch_column)
+
+    ipr_values = ipr_column.extract_values()
+    sigipr_values = sigipr_column.extract_values()
+    batch_values = batch_column.extract_values()
+
+    batches = [nint(b) for b in batch_values]
+
+    resolutions = { }
+
+    for start, end in batch_ranges:
+
+        d = []
+        isig = []
+
+        for j in range(miller.size()):
+
+            if batches[j] < start:
+                continue
+            if batches[j] > end:
+                continue
+            
+            d.append(uc.d(miller[j]))
+            isig.append(ipr_values[j] / sigipr_values[j])
+
+        resolutions[(start, end)] = compute_resolution(dmax, dmin, d, isig)
+
+    return resolutions
+
+def meansd(values):
+    mean = sum(values) / len(values)
+    var = sum([(v - mean) * (v - mean) for v in values]) / len(values)
+    return mean, math.sqrt(var)
+
+def compute_resolution(dmax, dmin, d, isig):
+    bins = { }
+
+    smax = 1.0 / (dmax * dmax)
+    smin = 1.0 / (dmin * dmin)
+
+    for j in range(len(d)):
+        s = 1.0 / (d[j] * d[j])
+        n = nint(100.0 * (s - smax) / (smin - smax))
+        if not n in bins:
+            bins[n] = []
+        bins[n].append(isig[j])
+
+    for b in sorted(bins):
+        s = smax + b * (smin - smax) / 100.0
+        misig = meansd(bins[b])[0]
+        if misig < 1.0:
+            return 1.0 / math.sqrt(s)
+
+    return dmin
+        
 def _prepare_pointless_hklin(working_directory,
                              hklin,
                              phi_width):
