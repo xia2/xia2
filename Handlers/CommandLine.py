@@ -319,6 +319,12 @@ class _CommandLine():
             raise RuntimeError, '%s (%s)' % \
                   (self._help_scale_model(), str(e))
 
+        try:
+            self._read_rmerge_target()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_rmerge_target(), str(e))
+
         # FIXME add some consistency checks in here e.g. that there are
         # images assigned, there is a lattice assigned if cell constants
         # are given and so on
@@ -1092,6 +1098,23 @@ class _CommandLine():
 
         Flags.set_scale_model(sys.argv[index + 1])
         Debug.write('Scaling model set to: %s' % Flags.get_scale_model())
+
+        return
+
+    def _read_rmerge_target(self):
+        try:
+            index = sys.argv.index('-rmerge_target')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        self._understood.append(index)
+        self._understood.append(index + 1)
+
+        Flags.set_rmerge_target(sys.argv[index + 1])
+        Debug.write('Scaling model set to: %s' % Flags.get_rmerge_target())
 
         return
 

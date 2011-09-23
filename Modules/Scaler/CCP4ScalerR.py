@@ -171,8 +171,11 @@ class CCP4ScalerR(Scaler):
         # compute average Rmerge, number of cycles to converge - these are
         # what will form the basis of the comparison
 
+        target = {'overall':0, 'low':1, 'high':2}
+
         converge_tst = sc_tst.get_convergence()
-        rmerges_tst = [data_tst[k]['Rmerge'][0] for k in data_tst]
+        rmerges_tst = [data_tst[k]['Rmerge'][target[
+            Flags.get_rmerge_target()]] for k in data_tst]
         rmerge_tst = sum(rmerges_tst) / len(rmerges_tst)
 
         return rmerge_tst, converge_tst
@@ -1297,7 +1300,6 @@ class CCP4ScalerR(Scaler):
                 sname = si.get_sweep_name()
                 start, end = si.get_batch_range()
                 
-
                 if dname == _dname:
                     sc.add_run(start, end, pname = pname, xname = xname,
                                dname = dname, exclude = False, name = xname)
@@ -1305,7 +1307,7 @@ class CCP4ScalerR(Scaler):
                     sc.add_run(start, end, pname = pname, xname = xname,
                                dname = dname, exclude = True, name = xname)
 
-                sc.set_resolution(self._resolution_limits[dname])
+                sc.set_resolution(self._resolution_limits[_dname])
 
             sc.set_hklout(os.path.join(self.get_working_directory(),
                                        'temp.mtz'))

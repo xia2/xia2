@@ -97,6 +97,8 @@ class _Flags:
         self._scale_model_absorption = False
         self._scale_model_partiality = False
 
+        self._rmerge_target = 'overall'
+
         # options to support the -spacegroup flag - the spacegroup is
         # set from this, the lattice and pointgroup derived from such
         self._spacegroup = None
@@ -142,6 +144,14 @@ class _Flags:
 
     def get_batch_scale(self):
         return self._batch_scale
+
+    def set_rmerge_target(self, rmerge_target):
+        assert(rmerge_target in ['low', 'high', 'overall'])
+        self._rmerge_target = rmerge_target
+        return
+
+    def get_rmerge_target(self):
+        return self._rmerge_target
 
     # matters relating to the manual definition of a scaling model
 
