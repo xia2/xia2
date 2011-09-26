@@ -134,11 +134,7 @@ class CCP4ScalerR(Scaler):
         sc_tst.set_tails(tails = tails)
         sc_tst.set_bfactor(bfactor = bfactor)
 
-        batch_ranges = [self._sweep_handler.get_sweep_information(
-            epoch).get_batch_range() for epoch in epochs]
-
-        resolutions = erzatz_resolution(self._prepared_reflections,
-                                        batch_ranges)
+        resolutions = self._resolution_limit_estimates
 
         if secondary:
             sc_tst.set_scaling_parameters(
@@ -293,7 +289,7 @@ class CCP4ScalerR(Scaler):
 
         consider = []
 
-        # don't rerun False, False, False...
+        log_results = []
         
         for partiality in True, False:
             for decay in True, False:
@@ -306,10 +302,20 @@ class CCP4ScalerR(Scaler):
                         r, c = rmerge_def, converge_def
                         
                     results[(partiality, decay, absorption)] = r, c
+
+                    log_results.append((partiality, decay, absorption, r, c))
+
                     if c - converge_def < 1.0:
                         consider.append(
                             (r, partiality, decay, absorption))
 
+
+        Debug.write('. Tails  Decay   Abs   R(%s)    C' % \
+                    Flags.get_rmerge_target())
+
+        for result in log_results:
+            Debug.write('. %5s %5s %5s %.3f %.2f' % result)
+            
         consider.sort()
         rmerge, partiality, decay, absorption = consider[0]
         
@@ -853,6 +859,16 @@ class CCP4ScalerR(Scaler):
         self._prepared_reflections = s.get_hklout()
 
         self._resolution_limits = { }
+
+        # store central resolution limit estimates
+
+        batch_ranges = [self._sweep_handler.get_sweep_information(
+            epoch).get_batch_range() for epoch in
+                        self._sweep_handler.get_epochs()]
+
+        self._resolution_limit_estimates = erzatz_resolution(
+            self._prepared_reflections, batch_ranges)
+
 
         return
 
