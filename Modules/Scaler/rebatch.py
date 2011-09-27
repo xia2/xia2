@@ -57,6 +57,79 @@ def rebatch(hklin, hklout, first_batch):
     
     mtz_obj.write(file_name = hklout)
 
+def copy_r_file(hklin, hklout):
+
+    mtz_obj = mtz.object(file_name = hklin)
+    mtz_out = mtz.object()
+
+    mtz_out.set_space_group(mtz_obj.space_group())
+
+    for batch in mtz_obj.batches():
+        if batch.num() % 2 == 0:
+            batch_out = mtz_out.add_batch()
+            batch_out.set_num(batch.num())
+            batch_out.set_title(batch.title())
+            batch_out.set_gonlab(batch.gonlab())
+            batch_out.set_ndet(batch.ndet())
+            batch_out.set_phixyz(batch.phixyz())
+            batch_out.set_detlm(batch.detlm())
+
+    batch_column = None
+
+    for crystal in mtz_obj.crystals():
+
+        crystal_out = mtz_out.add_crystal(
+            crystal.name(), crystal.project_name(), crystal.unit_cell())
+
+        for dataset in crystal.datasets():
+
+            dataset_out = crystal_out.add_dataset(dataset.name(),
+                                                  dataset.wavelength())
+            
+            for column in dataset.columns():
+
+                dataset_out.add_column(column.label(), column.type())
+                
+                if column.label() == 'BATCH':
+                    batch_column = column
+
+    if not batch_column:
+        raise RuntimeError, 'no BATCH column found in %s' % hklin
+
+    batch_column_values = batch_column.extract_values(
+        not_a_number_substitute = -1)
+
+    valid = flex.bool()
+
+    remove = []
+
+    for j, b in enumerate(batch_column_values):
+        if b % 2 != 0:
+            remove.append(j)
+
+    remove.reverse()
+
+    mi = mtz_obj.extract_miller_indices()
+
+    for r in remove:
+        del(mi[r])
+
+    mtz_out.replace_miller_indices(mi)
+
+    for crystal in mtz_obj.crystals():
+        for dataset in crystal.datasets():
+            for column in dataset.columns():
+                values = column.extract_values(
+                    not_a_number_substitute = -999999)
+                for r in remove:
+                    del(values[r])
+                mtz_out.get_column(column.label()).set_values(
+                    values = values, selection_valid = valid)
+    
+    mtz_out.write(file_name = hklout)
+
+    return
+
 if __name__ == '__main__':
 
     import sys
@@ -64,4 +137,4 @@ if __name__ == '__main__':
     hklin = sys.argv[1]
     hklout = 'arse.mtz'
 
-    rebatch(hklin, hklout, first_batch = 1001)
+    copy_r_file(hklin, hklout)

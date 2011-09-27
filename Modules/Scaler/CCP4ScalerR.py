@@ -128,6 +128,8 @@ class CCP4ScalerR(Scaler):
         epochs = self._sweep_handler.get_epochs()
         
         sc_tst = self._updated_scala()
+        sc_tst.set_cycles(5)
+        
         sc_tst.set_hklin(self._prepared_reflections)
         sc_tst.set_hklout('temp.mtz')
         
@@ -160,7 +162,14 @@ class CCP4ScalerR(Scaler):
             if self.get_scaler_anomalous():
                 sc_tst.set_anomalous()
 
-        sc_tst.scale()
+        try:
+            sc_tst.scale()
+        except RuntimeError, e:
+            if 'scaling not converged' in str(e):
+                return -1, -1
+            if 'negative scales' in str(e):
+                return -1, -1
+            raise e
 
         data_tst = sc_tst.get_summary()
 
@@ -305,7 +314,7 @@ class CCP4ScalerR(Scaler):
 
                     log_results.append((partiality, decay, absorption, r, c))
 
-                    if c - converge_def < 1.0:
+                    if c - converge_def < 1.0 and c > 0:
                         consider.append(
                             (r, partiality, decay, absorption))
 
