@@ -40,6 +40,7 @@ Modules/Scaler/CCP4ScalerS.py -text
 Modules/Scaler/XDSScalerR.py -text
 Modules/Scaler/__init__.py -text
 Modules/Scaler/compute_average_unit_cell.py -text
+Modules/Scaler/patch.cpp -text
 Modules/Scaler/rebatch.py -text
 Modules/TTT.py -text
 Modules/XPARM.XDS -text svneol=unset#application/octet-stream

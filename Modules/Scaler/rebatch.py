@@ -60,6 +60,7 @@ def rebatch(hklin, hklout, first_batch):
 def copy_r_file(hklin, hklout):
 
     mtz_obj = mtz.object(file_name = hklin)
+    
     mtz_out = mtz.object()
 
     mtz_out.set_space_group(mtz_obj.space_group())
@@ -109,16 +110,10 @@ def copy_r_file(hklin, hklout):
 
     remove.reverse()
 
-    mi = mtz_obj.extract_miller_indices()
-
-    for r in remove:
-        del(mi[r])
-
-    mtz_out.replace_miller_indices(mi)
-
     for crystal in mtz_obj.crystals():
         for dataset in crystal.datasets():
             for column in dataset.columns():
+                print column.label()
                 values = column.extract_values(
                     not_a_number_substitute = -999999)
                 for r in remove:
