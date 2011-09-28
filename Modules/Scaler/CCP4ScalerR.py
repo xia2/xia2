@@ -169,8 +169,6 @@ class CCP4ScalerR(Scaler):
                 return -1, -1
             if 'negative scales' in str(e):
                 return -1, -1
-            if 'positive gradient' in str(e):
-                return -1, -1
             raise e
 
         data_tst = sc_tst.get_summary()
@@ -180,7 +178,13 @@ class CCP4ScalerR(Scaler):
 
         target = {'overall':0, 'low':1, 'high':2}
 
-        converge_tst = sc_tst.get_convergence()
+        try:
+            converge_tst = sc_tst.get_convergence()
+        except RuntimeError, e:
+            if 'positive gradient' in str(e):
+                return -1, -1
+            raise e
+            
         rmerges_tst = [data_tst[k]['Rmerge'][target[
             Flags.get_rmerge_target()]] for k in data_tst]
         rmerge_tst = sum(rmerges_tst) / len(rmerges_tst)
