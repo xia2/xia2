@@ -143,7 +143,25 @@ def compute_resolution(dmax, dmin, d, isig):
             bins[n] = []
         bins[n].append(isig[j])
 
+    # compute starting point i.e. maximum point on the curve, to cope with
+    # cases where low resolution has low I / sigma - see #1690.
+
+    max_misig = 0.0
+    max_bin = 0
+
     for b in sorted(bins):
+        s = smax + b * (smin - smax) / 100.0
+        misig = meansd(bins[b])[0]
+
+        if misig > max_misig:
+            max_misig = misig
+            max_bin = b
+
+    for b in sorted(bins):
+
+        if b < max_bin:
+            continue
+        
         s = smax + b * (smin - smax) / 100.0
         misig = meansd(bins[b])[0]
         if misig < 1.0:
