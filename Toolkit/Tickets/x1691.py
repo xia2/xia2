@@ -66,6 +66,14 @@ def get_out_rfactors(records):
 
     return rfactors
 
+def get_time(records):
+    for record in records:
+        if 'Times: User:' in record:
+            return float(record.replace('s', '').split()[2]) + \
+                   float(record.replace('s', '').split()[4])
+
+    raise RuntimeError, 'time not found'
+
 def random_fraction(fraction, candidates):
     return random_selection(fraction * len(candidates), candidates)
 
@@ -139,8 +147,9 @@ def test_rerun_scala(scala_log_file):
                       run_commands)
 
         rfactors = get_out_rfactors(log)
+        time = get_time(log)
 
-        print scales_command
+        print '%s %.2f' % (scales_command, time)
 
         for dataset in sorted(rfactors):
             print '%s' % dataset, '%.3f %.3f %.3f' % rfactors[dataset]
