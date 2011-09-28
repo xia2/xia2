@@ -1,6 +1,7 @@
 * text=auto !eol
 Applications/Doc/xia2scan.pdf -text
 Applications/Doc/xia2setup.pdf -text
+Applications/__init__.py -text
 Applications/cbf_mini_to_full_cbf_with_template -text
 Applications/cbfdump -text
 Applications/cbfdump.bat -text
