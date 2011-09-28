@@ -16,6 +16,7 @@ Applications/test_image_header -text
 Applications/test_image_header.py -text
 Applications/test_pilatus_scan -text
 Applications/x1335 -text
+Applications/x1691 -text
 Attic/Attic1.py -text
 Data/detectors.lib -text
 Experts/Doc/FindImages.pdf -text

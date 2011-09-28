@@ -169,6 +169,8 @@ class CCP4ScalerR(Scaler):
                 return -1, -1
             if 'negative scales' in str(e):
                 return -1, -1
+            if 'positive gradient' in str(e):
+                return -1, -1
             raise e
 
         data_tst = sc_tst.get_summary()
