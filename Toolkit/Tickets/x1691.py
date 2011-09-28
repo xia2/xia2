@@ -232,7 +232,7 @@ if __name__ == '__main__':
             if model == correct:
                 n_correct += 1
 
-        print '%.1f %d' % fraction, n_correct)
+        print '%.1f %d' % (fraction, n_correct)
 
         
     
