@@ -98,6 +98,7 @@ Toolkit/ReadHeader/ReadHeaderRAXIS.py -text
 Toolkit/ReadHeader/ReadHeaderSMV.py -text
 Toolkit/ReadHeader/ReadHeaderSaturn.py -text
 Toolkit/Tickets/x1690.py -text
+Toolkit/Tickets/x1691.py -text
 Toolkit/XDS2CBF.py -text
 Toolkit/__init__.py -text
 Toolkit/backstop-mask-i03-15may10.dat -text
