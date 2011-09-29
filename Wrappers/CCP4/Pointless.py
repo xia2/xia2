@@ -175,6 +175,7 @@ def Pointless(DriverType = None):
             self._confidence = 0.0
             self._hklref = None
             self._xdsin = None
+            self._probably_twinned = False
 
             # pname, xname, dname stuff for when we are copying reflections
             self._pname = None
@@ -410,6 +411,9 @@ def Pointless(DriverType = None):
                     raise RuntimeError, \
                           'reindexing against a reference with ' + \
                           'different symmetry'
+
+                if 'L-test suggests that the data may be twinned' in o:
+                    self._probably_twinned = True
 
             # parse the XML file for the information I need...
             # FIXME this needs documenting - I am using xml.dom.minidom.
@@ -714,6 +718,9 @@ def Pointless(DriverType = None):
 
         def get_cell(self):
             return self._cell
+
+        def get_probably_twinned(self):
+            return self._probably_twinned
 
         def get_spacegroup_reindex_operator(self):
             return self._spacegroup_reindex_operator
