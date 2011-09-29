@@ -577,7 +577,7 @@ def _parse_summary_file(filename):
         result[image] = d
             
     postref_columns = tokens[5].split()
-    postref_values = map(float, tokens[7].split())
+    postref_values = map(float, tokens[7].replace('******', ' 0.0 ').split())
 
     ncol = len(postref_columns)
 
