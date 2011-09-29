@@ -560,7 +560,7 @@ def _parse_summary_file(filename):
     result = { }
 
     refined_columns = tokens[1].split()
-    refined_values = map(float, tokens[3].split())
+    refined_values = map(float, tokens[3].replace('******', ' 0.0 ').split())
 
     ncol = len(refined_columns)
 

@@ -1652,6 +1652,9 @@ def Mosflm(DriverType = None,
 
                 if 'Processing will be aborted' in o:
                     raise BadLatticeError, 'cell refinement failed'
+
+                if 'An unrecoverable error has occurred in MOSFLM' in o:
+                    raise BadLatticeError, 'cell refinement failed'
                 
                 if 'Processing Image' in o:
                     new_image_counter = int(o.split()[2])
