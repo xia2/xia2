@@ -473,67 +473,6 @@ class CCP4ScalerR(Scaler):
             self.set_scaler_prepare_done(False)
             return
 
-        # need to merge the first reflection file in the "correct" pointgroup,
-        # so that the others can be reindexed against this (if no reference)
-
-        if self.get_scaler_reference_reflection_file():
-            self._reference = self.get_scaler_reference_reflection_file()
-            Chatter.write('Using HKLREF %s' % self._reference)
-
-        elif Flags.get_reference_reflection_file():
-            self._reference = Flags.get_reference_reflection_file()
-            Chatter.write('Using HKLREF %s' % self._reference)
-            
-        if len(self._sweep_handler.get_epochs()) > 1 and \
-               not self._reference:
-
-            # ---------- PREPARE REFERENCE SET ----------
-            
-            first = self._sweep_handler.get_epochs()[0]
-
-            si = self._sweep_handler.get_sweep_information(first)
-            
-            Debug.write('Preparing reference data set from first sweep')
-            
-            hklin = si.get_reflections()
-            header = si.get_header()
-            
-            # prepare pointless hklin makes something much smaller...
-            
-            pointless_hklin = self._prepare_pointless_hklin(
-                hklin, header['phi_width'])
-            
-            integrater = si.get_integrater()
-            indexer = integrater.get_integrater_indexer()
-            
-            if indexer and not self._scalr_input_pointgroup:
-
-                pointgroup, reindex_op, ntr, pt = \
-                            self._pointless_indexer_jiffy(
-                    pointless_hklin, indexer)
-
-                if ntr:
-                    
-                    intgr.integrater_reset_reindex_operator()
-                    need_to_return = True
-
-            else:
-                pointgroup = self._scalr_input_pointgroup
-                reindex_op = 'h,k,l'                
-
-            Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
-
-            if self._scalr_input_pointgroup:
-                Debug.write('Using input pointgroup: %s' % \
-                              self._scalr_input_pointgroup)
-                pointgroup = self._scalr_input_pointgroup
-
-            integrater.set_integrater_reindex_operator(reindex_op)
-            integrater.set_integrater_spacegroup_number(
-                Syminfo.spacegroup_name_to_number(pointgroup))
-            
-            self._reference = integrater.get_integrater_reflections()
-            
         # ---------- REINDEX ALL DATA TO CORRECT POINTGROUP ----------
 
         # all should share the same pointgroup, unless twinned... in which
@@ -603,7 +542,8 @@ class CCP4ScalerR(Scaler):
 
         if len(pointgroup_set) > 1:
             Debug.write('Probably twinned, pointgroups: %s' % \
-                        ' '.join(pointgroup_set))
+                        ' '.join([p.replace(' ', '') for p in \
+                                  list(pointgroup_set)]))
             numbers = [Syminfo.spacegroup_name_to_number(s) for s in \
                        pointgroup_set]
             overall_pointgroup = Syminfo.spacegroup_number_to_name(
@@ -621,16 +561,34 @@ class CCP4ScalerR(Scaler):
         for epoch in self._sweep_handler.get_epochs():
             si = self._sweep_handler.get_sweep_information(epoch)
 
+            integrater = si.get_integrater()
+
             integrater.set_integrater_reindex_operator(
                 reindex_ops[epoch])
             integrater.set_integrater_spacegroup_number(
                 Syminfo.spacegroup_name_to_number(overall_pointgroup))
-            
+
         if need_to_return:
             self.set_scaler_done(False)
             self.set_scaler_prepare_done(False)
             return
 
+        if self.get_scaler_reference_reflection_file():
+            self._reference = self.get_scaler_reference_reflection_file()
+            Chatter.write('Using HKLREF %s' % self._reference)
+
+        elif Flags.get_reference_reflection_file():
+            self._reference = Flags.get_reference_reflection_file()
+            Chatter.write('Using HKLREF %s' % self._reference)
+            
+        if len(self._sweep_handler.get_epochs()) > 1 and \
+               not self._reference:
+
+            first = self._sweep_handler.get_epochs()[0]
+            si = self._sweep_handler.get_sweep_information(first)
+            integrater = si.get_integrater()
+            self._reference = integrater.get_integrater_reflections()
+ 
         if self._reference:
 
             md = self._factory.Mtzdump()
@@ -761,7 +719,6 @@ class CCP4ScalerR(Scaler):
         for epoch in self._sweep_handler.get_epochs():
 
             si = self._sweep_handler.get_sweep_information(epoch)
-            
             rb = self._factory.Rebatch()
 
             hklin = si.get_reflections()
@@ -797,7 +754,6 @@ class CCP4ScalerR(Scaler):
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s_sorted.mtz' % \
                               (self._scalr_pname, self._scalr_xname))
-
         
         s.set_hklout(hklout)
 
