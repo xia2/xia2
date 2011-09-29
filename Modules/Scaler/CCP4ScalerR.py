@@ -423,7 +423,7 @@ class CCP4ScalerR(Scaler):
                     pointless_hklin = self._prepare_pointless_hklin(
                         hklin, si.get_header()['phi_width'])
                     
-                    pointgroup, reindex_op, ntr = \
+                    pointgroup, reindex_op, ntr, pt = \
                                 self._pointless_indexer_jiffy(
                         pointless_hklin, indxr)
 
@@ -508,7 +508,7 @@ class CCP4ScalerR(Scaler):
             
             if indexer and not self._scalr_input_pointgroup:
 
-                pointgroup, reindex_op, ntr = \
+                pointgroup, reindex_op, ntr, pt = \
                             self._pointless_indexer_jiffy(
                     pointless_hklin, indexer)
 
@@ -536,9 +536,12 @@ class CCP4ScalerR(Scaler):
             
         # ---------- REINDEX ALL DATA TO CORRECT POINTGROUP ----------
 
-        # all should share the same pointgroup
-        
-        overall_pointgroup = None
+        # all should share the same pointgroup, unless twinned... in which
+        # case force them to be...
+
+        pointgroups = { }
+        reindex_ops = { }
+        probably_twinned = False
 
         need_to_return = False
         
@@ -557,7 +560,8 @@ class CCP4ScalerR(Scaler):
 
             if self._scalr_input_pointgroup:
                 pointgroup = self._scalr_input_pointgroup
-                reindex_op = 'h,k,l'
+                reindex_ops[epoch] = 'h,k,l'
+                pt = False
 
             else:
 
@@ -566,7 +570,7 @@ class CCP4ScalerR(Scaler):
             
                 if indexer:
                     
-                    pointgroup, reindex_op, ntr = \
+                    pointgroup, reindex_op, ntr, pt = \
                                 self._pointless_indexer_jiffy(
                         pointless_hklin, indexer)
                     
@@ -575,21 +579,52 @@ class CCP4ScalerR(Scaler):
                         integrater.integrater_reset_reindex_operator()
                         need_to_return = True
 
+                reindex_ops[epoch] = reindex_op
+
             if self._scalr_input_pointgroup:
                 Debug.write('Using input pointgroup: %s' % \
                             self._scalr_input_pointgroup)
                 pointgroup = self._scalr_input_pointgroup
 
-            if not overall_pointgroup:
-                overall_pointgroup = pointgroup
-            if overall_pointgroup != pointgroup:
-                raise RuntimeError, 'non uniform pointgroups'
-            
+            if pt and not probably_twinned:
+                probably_twinned = True
+                
             Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
-            integrater.set_integrater_reindex_operator(reindex_op)
+            pointgroups[epoch] = pointgroup
+
+        overall_pointgroup = None
+
+        pointgroup_set = set([pointgroups[e] for e in pointgroups])
+
+        if len(pointgroup_set) > 1 and \
+           not probably_twinned:
+            raise RuntimeError, 'non uniform pointgroups'
+
+        if len(pointgroup_set) > 1:
+            Debug.write('Probably twinned, pointgroups: %s' % \
+                        ' '.join(pointgroup_set))
+            numbers = [Syminfo.spacegroup_name_to_number(s) for s in \
+                       pointgroup_set]
+            overall_pointgroup = Syminfo.spacegroup_number_to_name(
+                min(numbers))
+            self._scalr_input_pointgroup = overall_pointgroup
+
+            Chatter.write('Twinning detected, assume pointgroup %s' % \
+                          overall_pointgroup)
+            
+            need_to_return = True
+            
+        else:
+            overall_pointgroup = pointgroup_set.pop()
+
+        for epoch in self._sweep_handler.get_epochs():
+            si = self._sweep_handler.get_sweep_information(epoch)
+
+            integrater.set_integrater_reindex_operator(
+                reindex_ops[epoch])
             integrater.set_integrater_spacegroup_number(
-                Syminfo.spacegroup_name_to_number(pointgroup))
+                Syminfo.spacegroup_name_to_number(overall_pointgroup))
             
         if need_to_return:
             self.set_scaler_done(False)

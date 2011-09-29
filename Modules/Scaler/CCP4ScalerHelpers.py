@@ -267,6 +267,7 @@ class CCP4ScalerHelper:
         (in the blue corner) and the Indexer, in the red corner.'''
 
         need_to_return = False
+        probably_twinned = False
 
         pointless = self.Pointless()
         pointless.set_hklin(hklin)
@@ -335,10 +336,11 @@ class CCP4ScalerHelper:
 
         pointgroup = pointless.get_pointgroup()
         reindex_op = pointless.get_reindex_operator()
+        probably_twinned = pointless.get_probably_twinned()
         
         Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
-        return pointgroup, reindex_op, need_to_return
+        return pointgroup, reindex_op, need_to_return, probably_twinned
         
 # Sweep info class to replace dictionary... #884
 
