@@ -126,7 +126,6 @@ Wrappers/Labelit/LabelitIndexII.py -text
 Wrappers/Labelit/LabelitMosflmMatrix.py -text
 Wrappers/XDS/XScaleR.py -text
 Wrappers/dTREK/Doc/dTREK.pdf -text
-/development-branch-please-do-not-use -text
 dxtbx/__init__.py -text
 dxtbx/example/to_xds.py -text
 dxtbx/format/Doc/adding_new_formats.txt -text
