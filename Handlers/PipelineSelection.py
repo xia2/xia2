@@ -19,30 +19,31 @@ def check(key, value):
     # this should be current!
 
     allowed_indexers = ['mosflm', 'labelit', 'labelitii', 'xds', 'xdsii']
-    allowed_integraters = ['mosflmr', 'xdsr']
-    allowed_scalers = ['ccp4r', 'xdsr']
-
-    potential_indexers = ['mosflm', 'labelit', 'labelitii', 'xds', 'xdsii']
-    potential_integraters = ['mosflmr', 'xdsr']
-    potential_scalers = ['ccp4r', 'xdsr']
+    allowed_integraters = ['mosflmr', 'xdsr', 'mosflm', 'xds']
+    allowed_scalers = ['ccp4r', 'xdsr', 'ccp4', 'xds']
 
     if key == 'indexer':
-        if not value in potential_indexers:
-            raise RuntimeError, 'indexer %s unknown' % value
         if not value in allowed_indexers:
-            raise RuntimeError, 'indexer %s not supported yet' % value
+            raise RuntimeError, 'indexer %s unknown' % value
+        return value
 
     if key == 'integrater':
-        if not value in potential_integraters:
-            raise RuntimeError, 'integrater %s unknown' % value
         if not value in allowed_integraters:
-            raise RuntimeError, 'integrater %s not supported yet' % value        
+            raise RuntimeError, 'integrater %s unknown' % value
+        if value == 'mosflm':
+            return 'mosflmr'
+        if value == 'xds':
+            return 'xdsr'
+        return value
 
     if key == 'scaler':
-        if not value in potential_scalers:
-            raise RuntimeError, 'scaler %s unknown' % value
         if not value in allowed_scalers:
-            raise RuntimeError, 'scaler %s not supported yet' % value
+            raise RuntimeError, 'scaler %s unknown' % value
+        if value == 'ccp4':
+            return 'ccp4r'
+        if value == 'xds':
+            return 'xdsr'
+        return value
 
     return
 
@@ -61,7 +62,7 @@ def add_preference(key, value):
 
     global preferences
 
-    check(key, value)
+    value = check(key, value)
 
     if preferences.has_key(key):
         if preferences[key] != value:
@@ -109,9 +110,12 @@ def parse_preferences(file, preferences):
         if line[0] == '!' or line[0] == '#' or not line.split():
             continue
 
-        check(line.split(':')[0].strip(), line.split(':')[1].strip())
+        key = line.split(':')[0].strip()
+        value = line.split(':')[1].strip()
 
-        preferences[line.split(':')[0].strip()] = line.split(':')[1].strip()
+        value = check(key, value)
+
+        add_preference(key, value)
 
     return preferences
 
