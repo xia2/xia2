@@ -38,8 +38,6 @@ class _Flags:
         self._ice = False
         self._egg = False
         self._uniform_sd = True
-        self._smart_scaling = True
-        self._8way = False
         self._chef = False
         self._mask = None
         self._automatch = False
@@ -97,7 +95,7 @@ class _Flags:
         self._scale_model_absorption = False
         self._scale_model_partiality = False
 
-        self._rmerge_target = 'overall'
+        self._rmerge_target = 'low'
 
         # options to support the -spacegroup flag - the spacegroup is
         # set from this, the lattice and pointgroup derived from such
@@ -308,20 +306,6 @@ class _Flags:
 
     def get_uniform_sd(self):
         return self._uniform_sd
-
-    def set_smart_scaling(self, smart_scaling):
-        self._smart_scaling = smart_scaling
-        return
-
-    def get_smart_scaling(self):
-        return self._smart_scaling
-
-    def set_8way(self, _8way):
-        self._8way = _8way
-        return
-
-    def get_8way(self):
-        return self._8way
 
     def set_chef(self, chef):
         self._chef = chef

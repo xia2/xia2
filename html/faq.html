@@ -9,7 +9,8 @@
 
     <h3>Will there be a GUI?</h3>
 
-    <p>A CCP4i interface for xia2 is in development.</p>
+    <p>A CCP4i interface for xia2 is available, which generates xinfo files. 
+      This is however slightly harder to use than the command line.</p>
 
     <h3>How long does it take?</h3>
 
@@ -43,22 +44,8 @@
       <li>MAR image plate detectors</li>
       <li>RAXIS IV image plate detectors</li>
       <li>Rigaku Saturn CCD detectors</li>
+      <li>Pilatus 2M and 6M pixel array detectors</li>
     </ul>
-
-    <!-- 
-    <p>and I think that RAXIS IV image plate detectors work as well - however
-      I do not have data to routinely test against. If you have a different
-      detector you would like supporting (which writes out <i>corrected</i>
-      images, please get in touch - ideally with a test data set of insulin
-      or lysozyme for me to work with.</p> -->
-
-    <h3>Scaling 180 degrees of cubic inculin fails - why?</h3>
-
-    <p>Unfortunately xia2 reads the loggraph output from Scala - which 
-      cannot cope with a Mn(I)/sigma > 99.99 - which highly redundant cubic 
-      insulin data often has. I am working on a fix for this, however, the
-      "best" solution is to fix the offending format statement in Scala, 
-      and a patch has been submitted.</p>
 
     <h3>Why does it do so many redundant reindexing jobs?</h3>
 
@@ -78,29 +65,6 @@
 
     <h1>Error Questions</h1>
     
-    <h3>What does this weird error mean?</h3>
-
-    <pre>
-"/opt/px/xia/xia2-0.2.2.3/xia2dpa-0.2.2.3/Modules/CCP4ScalerImplementation.py", 
-line 828, in _refine_sd_parameters
-     rms_full, rms_partial = self._refine_sd_parameters_remerge(
-   File 
-"/opt/px/xia/xia2-0.2.2.3/xia2dpa-0.2.2.3/Modules/CCP4ScalerImplementation.py", 
-line 689, in _refine_sd_parameters_remerge
-     loggraph = sc.parse_ccp4_loggraph()
-   File 
-"/opt/px/xia/xia2-0.2.2.3/xia2core-0.2.2.1/Python/Decorators/CCP4Decorator.py", 
-line 384, in parse_ccp4_loggraph
-     record.append(data.pop())
-IndexError: pop from empty list
-</pre>
-
-    <p>This is a result of two columns merging - most commonly Mn(I/sigma)
-      in the scala loggraph output being greater than 99.99, and sometimes
-      occurs when you have measured high redundancy S-SAD data. This is a 
-      bug which has been reported to CCP4, and a workaround is included
-      in version 0.2.2.4 and later of xia2.</p>
-
     <h3>What does error getting status meean?</h3>
 
     <p>This usually - with a CCP4 program - indicates that the output
@@ -114,11 +78,5 @@ GFORTRAN_UNBUFFERED_ALL=1
     
     <p>to your environment.</p>
 
-    <hr>
-    <address><a href="mailto:g.winter@dl.ac.uk"></a></address>
-<!-- Created: Wed Nov 29 09:59:12 GMT Standard Time 2006 -->
-<!-- hhmts start -->
-Last modified: Wed Jan 17 15:26:43 GMT Standard Time 2007
-<!-- hhmts end -->
   </body>
 </html>

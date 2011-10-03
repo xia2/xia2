@@ -145,53 +145,6 @@
 # wrapper, so perhaps I will have to actually implement CCP4Scaler, 
 # XDSScaler &c., which will be a composite class which performs the operation,
 # using wrapper classes for the different programs...
-# 
-# FIXED 02/NOV/06 need to move this over to the same framework as in 
-#                 Integrater - that is, prepare_scale, do_scale both until
-#                 happiness has arrived - this could be complicated but 
-#                 is really the only way to structure it...
-# 
-#                 Will also allow for a certain amount of iteration, but 
-#                 not repetition of e.g. sorting, reindexing (unless
-#                 necessary.)
-#
-# FIXME 21/NOV/06 add information about spacegroups. This should perhaps
-#                 come from an analysis of the systematic absences, but 
-#                 may just be "all spacegroups in this point group."
-#                 For instance, get_all_likely_spacegroups(),
-#                 get_likely_spacegroup(), get_all_less_likely_spacegroups().
-#                 Also want to be able to return some information about
-#                 the resolution of the sample and also the rough B factor.
-#                 Method names will need some thinking about! Also want
-#                 the unit cell information.
-# 
-# FIXED 28/NOV/06 also need to plumb this back to the Indexer(s) so that 
-#                 they can discuss what the correct lattice.
-#
-# FIXME 28/NOV/06 should use all of the data for all sweeps within one 
-#                 crystal for deciding on the correct pointgroup (e.g.
-#                 some kind of composite decision) - or - should at least
-#                 verify that all solutions agree (raise an exception if
-#                 not?)
-#
-# FIXME 07/FEB/07 need to be able to call scale() without checking status
-#                 and also provide for a NULL Scaler implementation.
-#                 This change could have a significant impact on the 
-#                 workflow...
-#
-# FIXME 12/FEB/07 need to add format translation services, so in the event
-#                 that an implementation only partially populates the
-#                 reflection file dictionary the rest can be generated if
-#                 they are asked for... this could be complex.
-# 
-# FIXME 28/JUN/07 need to be able to take in a reference reflection file
-#                 in here too to provide the correct setting, spacegroup
-#                 and FreeR column. c/f changes to XCrystal.
-# 
-# FIXME 01/JUN/09 need to be a little smarter about the scaling model to apply
-#                 to the data... so encode the chosen corrections (DLS
-#                 trac ticket #162)
-# 
 
 import os
 import sys

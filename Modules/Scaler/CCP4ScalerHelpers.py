@@ -273,64 +273,56 @@ class CCP4ScalerHelper:
         pointless.set_hklin(hklin)
         pointless.decide_pointgroup()
         
-        if indexer:
-            rerun_pointless = False
+        rerun_pointless = False
 
-            possible = pointless.get_possible_lattices()
+        possible = pointless.get_possible_lattices()
 
-            correct_lattice = None
+        correct_lattice = None
 
-            Debug.write('Possible lattices (pointless):')
-            lattices = ''
-            for lattice in possible:
-                lattices += '%s ' % lattice
-            Debug.write(lattices)
+        Debug.write('Possible lattices (pointless):')
 
-            for lattice in possible:
-                state = indexer.set_indexer_asserted_lattice(lattice)
-                if state == 'correct':
-                            
-                    Debug.write(
-                        'Agreed lattice %s' % lattice)
-                    correct_lattice = lattice
-                    
-                    break
-                
-                elif state == 'impossible':
-                    Debug.write(
-                        'Rejected lattice %s' % lattice)
-                    
-                    rerun_pointless = True
-                    
-                    continue
-                
-                elif state == 'possible':
-                    Debug.write(
-                        'Accepted lattice %s ...' % lattice)
-                    Debug.write(
-                        '... will reprocess accordingly')
-                    
-                    need_to_return = True
-                    
-                    correct_lattice = lattice
-                    
-                    break
-
-            if correct_lattice == None:
-                # this is an odd turn of events which may have been brought
-                # about by the user assigning a lower spacegroup than is
-                # true, which will give it a negative Z score but it may
-                # stull be "true".
-
-                correct_lattice = indexer.get_indexer_lattice()
-                rerun_pointless = True
+        Debug.write(' '.join(possible))
+        
+        for lattice in possible:
+            state = indexer.set_indexer_asserted_lattice(lattice)
+            if state == 'correct':
                 
                 Debug.write(
-                    'No solution found: assuming lattice from indexer')
+                    'Agreed lattice %s' % lattice)
+                correct_lattice = lattice
+                
+                break
+                
+            elif state == 'impossible':
+                Debug.write(
+                    'Rejected lattice %s' % lattice)
+                
+                rerun_pointless = True
+                
+                continue
+                
+            elif state == 'possible':
+                Debug.write(
+                    'Accepted lattice %s ...' % lattice)
+                Debug.write(
+                    '... will reprocess accordingly')
+                
+                need_to_return = True
+                
+                correct_lattice = lattice
+                
+                break
+
+        if correct_lattice == None:
+            correct_lattice = indexer.get_indexer_lattice()
+            rerun_pointless = True
+                
+            Debug.write(
+                'No solution found: assuming lattice from indexer')
                     
-            if rerun_pointless:
-                pointless.set_correct_lattice(correct_lattice)
-                pointless.decide_pointgroup()
+        if rerun_pointless:
+            pointless.set_correct_lattice(correct_lattice)
+            pointless.decide_pointgroup()
 
         Debug.write('Pointless analysis of %s' % pointless.get_hklin())
 

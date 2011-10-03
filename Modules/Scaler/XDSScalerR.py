@@ -124,10 +124,6 @@ class XDSScalerR(Scaler):
         '''Create a Xscale wrapper from _Xscale - set the working directory
         and log file stuff as a part of this...'''
 
-        # N.B. in here if the best scaling model has been applied, need
-        # to apply it as part of the constructor, else just give back the
-        # default "apply all corrections" XSCALE...
-        
         xscale = _XScale()
 
         if self._scalr_corrections:
@@ -165,64 +161,55 @@ class XDSScalerR(Scaler):
             
         pointless.decide_pointgroup()
         
-        if indexer:
-            rerun_pointless = False
+        rerun_pointless = False
 
-            possible = pointless.get_possible_lattices()
+        possible = pointless.get_possible_lattices()
 
-            correct_lattice = None
+        correct_lattice = None
 
-            Debug.write('Possible lattices (pointless):')
-            lattices = ''
-            for lattice in possible:
-                lattices += '%s ' % lattice
-            Debug.write(lattices)
+        Debug.write('Possible lattices (pointless):')
+        Debug.write(' '.join(possible))
 
-            for lattice in possible:
-                state = indexer.set_indexer_asserted_lattice(lattice)
-                if state == 'correct':
-                            
-                    Debug.write(
-                        'Agreed lattice %s' % lattice)
-                    correct_lattice = lattice
-                    
-                    break
+        for lattice in possible:
+            state = indexer.set_indexer_asserted_lattice(lattice)
+            if state == 'correct':
                 
-                elif state == 'impossible':
-                    Debug.write(
-                        'Rejected lattice %s' % lattice)
-                    
-                    rerun_pointless = True
-                    
-                    continue
-                
-                elif state == 'possible':
-                    Debug.write(
-                        'Accepted lattice %s ...' % lattice)
-                    Debug.write(
-                        '... will reprocess accordingly')
-                    
-                    need_to_return = True
-                    
-                    correct_lattice = lattice
-                    
-                    break
-
-            if correct_lattice == None:
-                # this is an odd turn of events which may have been brought
-                # about by the user assigning a lower spacegroup than is
-                # true, which will give it a negative Z score but it may
-                # stull be "true".
-
-                correct_lattice = indexer.get_indexer_lattice()
-                rerun_pointless = True
-                    
                 Debug.write(
-                    'No solution found: assuming lattice from indexer')
+                    'Agreed lattice %s' % lattice)
+                correct_lattice = lattice
                 
-            if rerun_pointless:
-                pointless.set_correct_lattice(correct_lattice)
-                pointless.decide_pointgroup()
+                break
+            
+            elif state == 'impossible':
+                Debug.write(
+                    'Rejected lattice %s' % lattice)
+                
+                rerun_pointless = True
+                
+                continue
+            
+            elif state == 'possible':
+                Debug.write(
+                    'Accepted lattice %s ...' % lattice)
+                Debug.write(
+                    '... will reprocess accordingly')
+                
+                need_to_return = True
+                
+                correct_lattice = lattice
+                
+                break
+
+        if correct_lattice == None:
+            correct_lattice = indexer.get_indexer_lattice()
+            rerun_pointless = True
+            
+            Debug.write(
+                'No solution found: assuming lattice from indexer')
+            
+        if rerun_pointless:
+            pointless.set_correct_lattice(correct_lattice)
+            pointless.decide_pointgroup()
 
         Debug.write('Pointless analysis of %s' % pointless.get_hklin())
 
@@ -232,80 +219,6 @@ class XDSScalerR(Scaler):
         Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
         return pointgroup, reindex_op, need_to_return
-
-    def _decide_chef_cutoff_epochs(self):
-        '''Analyse the mode of data collection and set a list of points
-        during data collection (as epochs) where it would be sensible to
-        consider cutting off the data collection. Criteria: difference
-        measurements made in wedges should be paired, whole wedges only.'''
-
-        # N.B. for SAD data or native, any image can be the last...
-
-        dnames = []
-
-        for epoch in sorted(self._scalr_integraters):
-            intgr = self._scalr_integraters[epoch]
-            pname, xname, dname = intgr.get_integrater_project_info()
-            if not dname in dnames:
-                dnames.append(dname)
-
-        # first ask if more than one wavelength was measured
-
-        if len(dnames) > 1:
-            # we have MAD data, or more than one logical wavelength anyway
-            # i.e. SIRAS or RIP
-            multi = True
-        else:
-            # all of the data belongs to a single logical data set
-            multi = False
-                
-        # next ask "are the data measured in wedges" (i.e. individual sweeps)
-        # for this use the batch number vs. epoch table - if the batch numbers
-        # increase monotonically, then wedges were not used in the data
-        # collection
-
-        epoch_to_batch = { }
-        for epoch in sorted(self._scalr_integraters):
-            intgr = self._scalr_integraters[epoch]
-            image_to_epoch = intgr.get_integrater_sweep(
-                ).get_image_to_epoch()
-            offset = self._sweep_information[epoch]['batch_offset']
-            for i in image_to_epoch:
-                epoch_to_batch[image_to_epoch[i]] = offset + i
-        
-        monotonic = True
-
-        b0 = epoch_to_batch[sorted(epoch_to_batch)[0]]
-
-        for e in sorted(epoch_to_batch)[1:]:
-            b = epoch_to_batch[e]
-            if b > b0:
-                b0 = b
-                continue
-            if b < b0:
-                # we have out-of-order batches
-                monotonic = False
-
-        # print out a digest of this...
-
-        Debug.write('Wedges: %s  Multiwavelength: %s' % (not monotonic, multi))
-
-        # then "chunkify" - if multi is false and wedges is false, then this
-        # will simply return / set a list of all epochs. If multi and not
-        # wedges, then consider the end of every wavelength. Elsewise need to
-        # divide up the data into the wedges, which would be the points
-        # at which the monotonicness is broken above. 
-
-        # and finally group the results - how to pass this back (as a list of
-        # integrated doses I guess is the only way to go...?) - Since these
-        # will be the measurements read from the Chef plots then this should
-        # be ok. N.B. when the analysis is performed I will need to look
-        # also at the estimation of the "sigma" for the decision about a
-        # substantial change...
-
-        # Ergo will need a hash table of epoch_to_dose...
-
-        return
 
     def _sweep_information_to_chef(self):
         '''Analyse the sweep_information data structure to work out which
@@ -898,10 +811,6 @@ class XDSScalerR(Scaler):
             self.set_scaler_prepare_done(False)
             return
 
-        # finally work through all of the reflection files we have
-        # been given and compute the correct spacegroup and an
-        # average unit cell...
-
         unit_cell_list = []
 
         for epoch in self._sweep_information.keys():
@@ -1092,18 +1001,6 @@ class XDSScalerR(Scaler):
 
         # now get the reflection files out and merge them with scala
 
-        # in here I need to unpack and copy the reflection files to separate
-        # out the reflections from each sweep. This will mean that I can
-        # get the original batch numbers (well nearly) from COMBAT which
-        # *therefore* means that I can reorder the Rmerge values from
-        # scala in order of collected batch, as per the analysis in
-        # CCP4 Scaler and in the intra radiation damage analysis. However,
-        # this will mean that I have to add in some additional batch
-        # information to ensure that the scaling works correctly, and probably
-        # add in the wavelength information as well...
-
-        # bug # 2461
-
         output_files = xscale.get_output_reflection_files()
         wavelength_names = output_files.keys()
 
@@ -1133,23 +1030,8 @@ class XDSScalerR(Scaler):
 
         self._scalr_statistics = { }
 
-        # FIXED in here I need to get the spacegroup and reindexing
-        # operator to put the reflections in the standard setting from
-        # all reflections merged together rather than from each
-        # wavelength separately. I will therefore need to include the
-        # rebatch-and-sort-together shuffle from CCP4 scaler
-        # implementation.
-
         max_batches = 0
         mtz_dict = { } 
-
-        # FIXME in here want to make use of the helper to ensure that the
-        # pname xname dname stuff is added and also reshuffle the data
-        # into epoch order (which may be fiddly) then merge thus
-        # for radiation damage analysis...
-
-        # create the mapping table from reflection file name (the end
-        # thereof) to pane/xname/dname.
 
         project_info = { }
         for epoch in self._sweep_information.keys():
@@ -1160,12 +1042,6 @@ class XDSScalerR(Scaler):
                 self._sweep_information[epoch]['prepared_reflections'])[-1]
             project_info[reflections] = (pname, xname, dname)
 
-        # note in here - combat may use different scale factors for each
-        # data set, but the merging by scala will have scales constant
-        # which will assign a different constant scale factor for each
-        # run, which should correct for any differences in factor introduced
-        # here...
-            
         for epoch in self._sweep_information.keys():
             self._sweep_information[epoch]['scaled_reflections'] = None
 
@@ -1178,11 +1054,6 @@ class XDSScalerR(Scaler):
             ref = xsh.split_and_convert_xscale_output(
                 hklin, 'SCALED_', project_info, 1.0 / scale_factor)
 
-            # this loop is working through the reflection files we
-            # have, then looking for the epoch it belongs to (hash
-            # table would be better...) then assigning the scaled
-            # reflection file appropriately...
-
             for hklout in ref.keys():
                 for epoch in self._sweep_information.keys():
                     if os.path.split(self._sweep_information[epoch][
@@ -1194,25 +1065,11 @@ class XDSScalerR(Scaler):
                         self._sweep_information[epoch][
                             'scaled_reflections'] = ref[hklout]
                      
-        # now I have a list of reflection files in MTZ format linked
-        # to the original reflection files from the integrater - which
-        # means I can do the rebatch shuffle prior to merging in Scala.
-        
-        # have defined a new method in the scala wrapper called "multi_merge"
-        # to enable this.
-
-        # prior to these calculations, let's do some thinking about
-        # resolution limits...
-
         for epoch in self._sweep_information.keys():
             hklin = self._sweep_information[epoch]['scaled_reflections']
             dname = self._sweep_information[epoch]['dname']
             sname = self._sweep_information[epoch]['sweep_name']
 
-            # figure resolutions as: max(r_comp, r_rm, r_uis, r_mis)
-            # where these come from the calculations below. Then, for a given
-            # wavelength, pick the highest resolution limit.
-            
             log_completeness = os.path.join(self.get_working_directory(),
                                       '%s-completeness.log' % sname)
 
@@ -1266,10 +1123,6 @@ class XDSScalerR(Scaler):
             Chatter.write('Resolution for sweep %s: %.2f' % \
                           (sname, resolution))
 
-            # N.B. below should really reset so that the scaling is re-run
-            # to the assigned limit... also note that if the resolution limit
-            # is user assigned need to use it verbatim.
-
             if not dname in self._resolution_limits:
                 self._resolution_limits[dname] = resolution
                 self.set_scaler_done(False)                
@@ -1283,14 +1136,9 @@ class XDSScalerR(Scaler):
             Debug.write('Returning as scaling not finished...')
             return
 
-        # first the rebatch / sortmtz shuffle
-        
         max_batches = 0
         
         for epoch in self._sweep_information.keys():
-
-            # keep a count of the maximum number of batches in a block -
-            # this will be used to make rebatch work below.
 
             hklin = self._sweep_information[epoch]['scaled_reflections']
 
@@ -1299,8 +1147,7 @@ class XDSScalerR(Scaler):
             md.dump()
 
             if self._sweep_information[epoch]['batches'] == [0, 0]:
-                # get them from the mtz dump output
-                
+
                 Chatter.write('Getting batches from %s' % hklin)
                 batches = md.get_batches()
                 self._sweep_information[epoch]['batches'] = [min(batches),
@@ -1308,16 +1155,10 @@ class XDSScalerR(Scaler):
                 Chatter.write('=> %d to %d' % (min(batches),
                                                max(batches)))
 
-            # FIXME here check that this matches up with the input,
-            # if we have both sources of batch information
-
             batches = self._sweep_information[epoch]['batches']
             if 1 + max(batches) - min(batches) > max_batches:
                 max_batches = max(batches) - min(batches) + 1
             
-            # FIXME assert that there will only be one dataset in this
-            # reflection file
-
             datasets = md.get_datasets()
 
             Debug.write('In reflection file %s found:' % hklin)
@@ -1326,26 +1167,11 @@ class XDSScalerR(Scaler):
             
             dataset_info = md.get_dataset_info(datasets[0])
 
-            # FIXME should also confirm the batch numbers from this
-            # reflection file...
-
-            # now make the comparison - FIXME this needs to be implemented
-            # FIXME also - if the pname, xname, dname is not defined by
-            # this time, make a note of this so that it can be included
-            # at a later stage.
-
         Debug.write('Biggest sweep has %d batches' % max_batches)
         max_batches = nifty_power_of_ten(max_batches)
     
-        # then rebatch the files, to make sure that the batch numbers are
-        # in the same order as the epochs of data collection.
-
         epochs = self._sweep_information.keys()
         epochs.sort()
-
-        # need to check that the batches are all sensible numbers
-        # so run rebatch on them! note here that we will need new
-        # MTZ files to store the output...
 
         counter = 0
 
@@ -1400,16 +1226,8 @@ class XDSScalerR(Scaler):
 
             counter += 1
 
-        # now parse the structure of the data to write out how they should
-        # be examined by chef... N.B. this was moved from the top of this
-        # method see trac #200.
-
         if Flags.get_chef():
             self._sweep_information_to_chef()
-            self._decide_chef_cutoff_epochs()
-
-        # then sort the files together, making sure that the resulting
-        # reflection file looks right.
 
         s = self._factory.Sortmtz()
 
@@ -1425,13 +1243,6 @@ class XDSScalerR(Scaler):
         s.sort(vrset = -99999999.0)
 
         self._prepared_reflections = hklout
-
-        # if we have a reference reflection file then use this for all
-        # of the spacegroup information (remember that we have
-        # reindexed already) else inspect the absences...
-
-        # figure out the correct reindexing operator using this reflection
-        # file
 
         if self.get_scaler_reference_reflection_file():
             md = self._factory.Mtzdump()
@@ -1452,9 +1263,6 @@ class XDSScalerR(Scaler):
                                          self._scalr_xname),
                                         pointless.get_log_file())
 
-            # get one spacegroup and so on which will be used for
-            # all of the reflection files...
-            
             spacegroups = pointless.get_likely_spacegroups()
             reindex_operator = pointless.get_spacegroup_reindex_operator()
 
@@ -1463,10 +1271,6 @@ class XDSScalerR(Scaler):
                             self._scalr_input_spacegroup)
                 spacegroups = [self._scalr_input_spacegroup]
                 reindex_operator = 'h,k,l'
-
-        # save these for later - we will reindex the merged
-        # data after scaling - the first of these will be used
-        # as correct so spacegroup assignment should just work...
 
         self._scalr_likely_spacegroups = spacegroups
         spacegroup = self._scalr_likely_spacegroups[0]
@@ -1480,11 +1284,6 @@ class XDSScalerR(Scaler):
         Chatter.write(
             'Reindexing to first spacegroup setting: %s (%s)' % \
             (spacegroup, reindex_operator))
-
-        # FIXME don't save this for later - apply it now, should be
-        # safe as the measurements should now be on a sensible scale...
-
-        Debug.write('Reindexing the data before merging now...')
 
         hklin = self._prepared_reflections
         hklout = os.path.join(self.get_working_directory(),
@@ -1500,8 +1299,6 @@ class XDSScalerR(Scaler):
         ri.set_operator(reindex_operator)
         ri.reindex()
 
-        # then sort the bloody file again!
-
         hklin = hklout
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s_sorted.mtz' % \
@@ -1515,22 +1312,6 @@ class XDSScalerR(Scaler):
 
         self._prepared_reflections = hklout
 
-        # N.B. for the chef output will also need to reindex the sorted
-        # input files to the sorting step above, so that they can be
-        # analysed with chef. N.B. this may also involve sorting together
-        # the sweeps afterwards (hell, why not merge it into a single step?)
-        # of the sweeps which (i) belong to the same wavelength and (ii)
-        # are comparable in terms of exposure time per degree and distance.
-
-        # ok, in here want to:
-        #
-        #  - chop out the batches which belong to different chef analysis
-        #    groups
-        #  - sort together comparison groups (i.e. inverse-beam pairs)
-        #  - add the DOSE information using doser and @doser.in
-        #  - run the chef analysis
-        #  - mark the chef log files for saving in the LogFiles directory
-
         doses = { }
 
         for epoch in self._sweep_information.keys():
@@ -1541,10 +1322,6 @@ class XDSScalerR(Scaler):
             for i in images:
                 batch = i + offset
                 doses[batch] = i2d[i]
-
-        # now output a doser input file - just for kicks ;o) - at this point
-        # the offsets should be known so this should be ok - where this was
-        # before the batch offsets were not known...
 
         fout = open(os.path.join(self.get_working_directory(),
                                  'doser.in'), 'w')
@@ -1561,22 +1338,10 @@ class XDSScalerR(Scaler):
 
         fout.close()
 
-        # the maximum dose should be one image higher than the "real"
-        # maximum dose to give a little breathing room - this is achieved
-        # by incrementing this by one image worth of dose...
-
         all_doses = sorted([doses[b] for b in doses])
         dose_max = all_doses[-1] + (all_doses[-1] - all_doses[-2])
 
-        # now perform the chef analysis for each dose rate group - this
-        # can harmlessly include the running of doser on each little bit
-
         for group in sorted(self._chef_analysis_groups):
-            # for each wavelength in this analysis group, get the batch
-            # ranges wanted for the comparison, chop them out of the
-            # given reflection file in the dictionary above, then
-            # sort them back together to e.g. chef_group_%s_WAVE.mtz
-            # keeping a track of this of course
 
             resolution = self._chef_analysis_resolutions[group]
 
@@ -1594,9 +1359,6 @@ class XDSScalerR(Scaler):
                                           'chef_%d_%s.mtz' % \
                                           (group, wave))
 
-                # All of the data is in the one MTZ file as it has not
-                # yet been separated into wavelengths by Scala
-                
                 hklin = self._prepared_reflections
                 rb = self._factory.Rebatch()
                 rb.set_hklin(hklin)
@@ -1610,16 +1372,12 @@ class XDSScalerR(Scaler):
                 FileHandler.record_temporary_file(hklout)
                 FileHandler.record_temporary_file(hklout_all)
 
-            # now sort these together
             for wave in bits:
                 s = self._factory.Sortmtz()
                 s.set_hklout(bits[wave][0])
                 for hklin in bits[wave][1:]:
                     s.add_hklin(hklin)
                 s.sort()
-
-            # now add the doser information to all of these sorted files
-            # and record these as input files to chef... 
 
             chef_hklins = []
             
@@ -1631,12 +1389,6 @@ class XDSScalerR(Scaler):
                                      doses = doses)
 
                 chef_hklins.append(hklout)
-
-            # then run chef with this - no analysis as yet, but to record
-            # the log file to chef_groupN_analysis or something and be
-            # sure that it finds it's way to the LogFiles directory.
-            
-            # then feed the results to chef
 
             chef = self._factory.Chef()
 
@@ -1652,9 +1404,6 @@ class XDSScalerR(Scaler):
             chef.set_anomalous(anomalous)
             chef.set_resolution(resolution)
 
-            # work around a possible failure to read the dose profiles
-            # correctly
-
             if min(all_doses) < max(all_doses):
                 chef.set_width(dose_step)
                 chef.set_max(dose_max)
@@ -1668,23 +1417,10 @@ class XDSScalerR(Scaler):
                 '%s chef %d' % (self._scalr_xname, group + 1),
                 chef.get_log_file())
         
-        # this is #181 so figure this out first...
-
-        # record the updated cell parameters...
-        # they should be the same in all files so... aah - if I set
-        # this in here it may break the scaling if the data are also
-        # reindexed! :o(
         Debug.write(
             'Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f' % \
             tuple(ri.get_cell()))
         self._reindexed_cell = tuple(ri.get_cell())
-
-        # Debug.write('Reindex operator: %s' % reindex_operator)
-        # Debug.write('Will save this for later')
-
-        # FIXME in here want to use REINDEX on the output of COMBAT
-        # to get the setting right - in which case I will be able to
-        # write out unmerged reflection files later on...
 
         sc = self._factory.Scala()
         sc.set_hklin(self._prepared_reflections)
@@ -1721,15 +1457,9 @@ class XDSScalerR(Scaler):
                 resolution_info[dataset] = transpose_loggraph(
                     loggraph[key])
 
-        # next compute resolution limits for each dataset.
-
-        # self._resolution_limits = { }
-
         reflection_files = sc.get_scaled_reflection_files()
 
         highest_resolution = 100.0
-
-        # check in here that there is actually some data to scale..!
 
         if len(resolution_info.keys()) == 0:
             raise RuntimeError, 'no resolution info'
@@ -1767,20 +1497,12 @@ class XDSScalerR(Scaler):
         Debug.write('Scaler highest resolution set to %5.2f' % \
                       highest_resolution)
 
-        # Ok, now we have the resolution limit stuff, need to work through
-        # all of the integraters which belong to this set and if the
-        # resolution defined for a given dataset is found to be lower
-        # than the high resolution limit of the integrater, then reset
-        # that limit, assert that the scaling and preparation is needed and
-        # at the end return.
-
         best_resolution = 100.0
 
         for epoch in self._scalr_integraters.keys():
             intgr = self._scalr_integraters[epoch]
             pname, xname, dname = intgr.get_integrater_project_info()
 
-            # check the resolution limit for this integrater
             dmin = intgr.get_integrater_high_resolution()
 
             Debug.write('Integrater (%s) resolution limit: %.2f' % \
@@ -1788,8 +1510,6 @@ class XDSScalerR(Scaler):
 
             if self._resolution_limits[dname] < best_resolution:
                 best_resolution = self._resolution_limits[dname]
-
-        # if we need to redo the scaling, return to allow this to happen
 
         if not self.get_scaler_done():
             Debug.write('Returning as scaling not finished...')
@@ -1803,8 +1523,6 @@ class XDSScalerR(Scaler):
                 batch_info[dataset] = transpose_loggraph(
                     loggraph[key])
 
-        # perform some analysis of these results
-
         average_completeness = 0.0
 
         for k in data.keys():
@@ -1816,13 +1534,6 @@ class XDSScalerR(Scaler):
 
         # ---------- FINAL SCALING ----------
 
-        # assert the resolution limits in the integraters - beware, this
-        # means that the reflection files will probably have to be
-        # regenerated (integration restarted!) and so we will have to
-        # build in some "fudge factor" to ensure we don't get stuck in a
-        # tight loop - initially just rerun the scaling with all of the
-        # "right" parameters...
-        
         scales_file = '%s_final.scales' % self._scalr_xname
 
         sc = self._factory.Scala()
@@ -1835,8 +1546,6 @@ class XDSScalerR(Scaler):
         sc.set_hklin(self._prepared_reflections)
         sc.set_new_scales_file(scales_file)
 
-        # this is now handled more elegantly by the Scala wrapper
-        
         if sdadd_full == 0.0 and sdb_full == 0.0:
             pass
         else:
@@ -1868,8 +1577,6 @@ class XDSScalerR(Scaler):
 
         loggraph = sc.parse_ccp4_loggraph()
 
-        # look for the standard deviation graphs - see FIXME 31/OCT/06
-
         standard_deviation_info = { }
 
         for key in loggraph.keys():
@@ -1899,11 +1606,6 @@ class XDSScalerR(Scaler):
 
                 Debug.write('%.1f %d %.2f' % (I_full, n_full, s_full))
 
-        # look also for a sensible resolution limit for this data set -
-        # that is, the place where I/sigma is about two for the highest
-        # resolution data set - this should be a multiple of 0.05 A just
-        # to keep the output tidy...
-
         resolution_info = { }
 
         for key in loggraph.keys():
@@ -1927,25 +1629,15 @@ class XDSScalerR(Scaler):
         
         self._scalr_statistics = data
 
-        # FIXED this is not correct for multi-wavelength data...
-        # it should be now!
-
         self._tmp_scaled_refl_files = copy.deepcopy(
             sc.get_scaled_reflection_files())
 
         self._scalr_scaled_reflection_files = { }
         
-        # compute a "standard unit cell" - FIXME perhaps - looks like
-        # sortmtz will already assign somehow a standard unit cell -
-        # interesting!
-
         # convert reflection files to .sca format - use mtz2various for this
 
         self._scalr_scaled_reflection_files['sca'] = { }
 
-        # this is confusing as it implicitly iterates over the keys of the
-        # dictionary
-        
         for key in self._tmp_scaled_refl_files:
             file = self._tmp_scaled_refl_files[key]
             scaout = '%s.sca' % file[:-4]
@@ -1958,11 +1650,6 @@ class XDSScalerR(Scaler):
             self._scalr_scaled_reflection_files['sca'][key] = scaout
 
             FileHandler.record_data_file(scaout)
-
-        # finally repeat the merging again (!) but keeping the
-        # wavelengths separate to generate the statistics on a
-        # per-wavelength basis - note that we do not want the
-        # reflection files here... bug# 2229
 
         for key in self._scalr_statistics:
             pname, xname, dname = key
@@ -1986,9 +1673,6 @@ class XDSScalerR(Scaler):
                                dname = input['dname'],
                                exclude = True)                    
 
-                # set the resolution limit to what we decided above...
-                # by the time we get this far this should have been what
-                # was used...
                 sc.set_resolution(self._resolution_limits[dname])
 
             sc.set_hklout(os.path.join(self.get_working_directory(),
@@ -2000,7 +1684,6 @@ class XDSScalerR(Scaler):
             sc.multi_merge()
             stats = sc.get_summary()
 
-            # this should just work ... by magic!
             self._scalr_statistics[key] = stats[key]
 
         self._scalr_highest_resolution = best_resolution
@@ -2043,8 +1726,6 @@ class XDSScalerR(Scaler):
             sc.set_anomalous()
 
         sc.multi_merge()
-
-        # mark the temp files for deletion... etc.
 
         self._scalr_scaled_reflection_files['sca_unmerged'] = { }
 
@@ -2120,16 +1801,7 @@ class XDSScalerR(Scaler):
 
         self._scalr_cell = self._reindexed_cell
             
-        # and cad together into a single data set - recalling that we already
-        # have a standard unit cell... and remembering where the files go...
-
-        # self._scalr_scaled_reflection_files = { }
-
         if len(self._tmp_scaled_refl_files.keys()) > 1:
-
-            # for each reflection file I need to (1) ensure that the
-            # spacegroup is uniformly set and (2) ensure that
-            # the column names are appropriately relabelled.
 
             reflection_files = { }
 
@@ -2163,12 +1835,6 @@ class XDSScalerR(Scaler):
 
         else:
 
-            # we don't need to explicitly merge it, since that's just
-            # silly ;o)
-
-            # however this doesn't allow for the renaming below in the free
-            # flag adding step! Doh!
-            
             self._scalr_scaled_reflection_files[
                 'mtz_merged'] = self._tmp_scaled_refl_files[
                 self._tmp_scaled_refl_files.keys()[0]]
@@ -2304,11 +1970,9 @@ class XDSScalerR(Scaler):
             status = crd.detect()
             
             Chatter.write('')
-            # Chatter.write('Inter-wavelength B and R-factor analysis:')
             Chatter.banner('Local Scaling %s' % self._scalr_xname)
             for s in status:
                 Chatter.write('%s %s' % s)
-            # Chatter.write('')
             Chatter.banner('')
 
         return

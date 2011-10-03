@@ -103,7 +103,7 @@ class CCP4ScalerR(Scaler):
             scala = self._factory.Scala()
         else:
 
-            scala =  self._factory.Scala(
+            scala = self._factory.Scala(
                 partiality_correction = self._scalr_correct_partiality,
                 absorption_correction = self._scalr_correct_absorption,
                 decay_correction = self._scalr_correct_decay)
@@ -190,90 +190,6 @@ class CCP4ScalerR(Scaler):
         rmerge_tst = sum(rmerges_tst) / len(rmerges_tst)
 
         return rmerge_tst, converge_tst
-
-    def _determine_best_scale_model(self):
-        '''Determine the best set of corrections to apply to the data.'''
-
-        # if we have already defined the best scaling model just return
-
-        if self._scalr_corrections:
-            return
-
-        # or see if we set one on the command line...
-
-        if Flags.get_scale_model():
-            self._scalr_correct_absorption = Flags.get_scale_model_absorption()
-            self._scalr_correct_partiality = Flags.get_scale_model_partiality()
-            self._scalr_correct_decay = Flags.get_scale_model_decay()
-            
-            self._scalr_corrections = True
-
-            return
-
-        Debug.write('Optimising scaling corrections...')
-
-        # test corrections, compare Rmerge, accept if converge and helpful
-        # shouldn't this be an eight-way comparison?
-
-        partiality = True
-        absorption = True
-        decay = True
-
-        rmerge_def, converge_def = self._assess_scaling_model(
-            tails = False, bfactor = False, secondary = False)
-                                                              
-        rmerge_abs, converge_abs = self._assess_scaling_model(
-            tails = False, bfactor = False, secondary = True)
-
-        if ((rmerge_abs - rmerge_def) / rmerge_def) > 0.03:
-            absorption = False
-        if converge_abs - converge_def > 1.0:
-            absorption = False
-
-        # then test the partiality correction...
-
-        rmerge_tails, converge_tails = self._assess_scaling_model(
-            tails = True, bfactor = False, secondary = False)
-
-        if ((rmerge_tails - rmerge_def) / rmerge_def) > 0.03:
-            partiality = False
-        if converge_tails - converge_def > 1.0:
-            partiality = False
-
-        # finally test the decay correction
-
-        rmerge_decay, converge_decay  = self._assess_scaling_model(
-            tails = False, bfactor = True, secondary = False)
-
-        if ((rmerge_decay - rmerge_def) / rmerge_def) > 0.03:
-            decay = False
-        if converge_decay - converge_def > 1.0:
-            decay = False
-
-        # then summarise the choices...
-
-        if absorption:
-            Debug.write('Absorption correction: on')
-        else:
-            Debug.write('Absorption correction: off')
-
-        if partiality:
-            Debug.write('Partiality correction: on')
-        else:
-            Debug.write('Partiality correction: off')
-
-        if decay:
-            Debug.write('Decay correction: on')
-        else:
-            Debug.write('Decay correction: off')
-
-        self._scalr_correct_absorption = absorption
-        self._scalr_correct_partiality = partiality
-        self._scalr_correct_decay = decay
-
-        self._scalr_corrections = True
-
-        return
 
     def _determine_best_scale_model_8way(self):
         '''Determine the best set of corrections to apply to the data,
@@ -507,16 +423,14 @@ class CCP4ScalerR(Scaler):
                 pointless_hklin = self._prepare_pointless_hklin(
                     hklin, si.get_header()['phi_width'])
             
-                if indexer:
-                    
-                    pointgroup, reindex_op, ntr, pt = \
-                                self._pointless_indexer_jiffy(
-                        pointless_hklin, indexer)
-                    
-                    if ntr:
+                pointgroup, reindex_op, ntr, pt = \
+                            self._pointless_indexer_jiffy(
+                    pointless_hklin, indexer)
+                
+                if ntr:
                         
-                        integrater.integrater_reset_reindex_operator()
-                        need_to_return = True
+                    integrater.integrater_reset_reindex_operator()
+                    need_to_return = True
 
                 reindex_ops[epoch] = reindex_op
 
@@ -884,11 +798,7 @@ class CCP4ScalerR(Scaler):
         
         epochs = self._sweep_handler.get_epochs()
 
-        if Flags.get_smart_scaling():
-            if Flags.get_8way():
-                self._determine_best_scale_model_8way()
-            else:
-                self._determine_best_scale_model()
+        self._determine_best_scale_model_8way()
 
         if self._scalr_corrections:
             Journal.block(
@@ -947,11 +857,6 @@ class CCP4ScalerR(Scaler):
         
         if self.get_scaler_anomalous():
             sc.set_anomalous()
-
-        # ok in tricky mode may want to be able to remove a run / sweep from
-        # the scaling - this will be caused by a bad batch error (or perhaps
-        # a negative scale) - will need to identify the sweep, then remove
-        # it...
 
         if Flags.get_failover():
 
@@ -1013,10 +918,6 @@ class CCP4ScalerR(Scaler):
         loggraph = sc.parse_ccp4_loggraph()
         
         resolution_info = { }
-
-        # this returns a dictionary of files that I will use to calculate
-        # the resolution limits... N.B. these are now unmerged reflection
-        # files to allow more clever calculations
 
         reflection_files = sc.get_scaled_reflection_files()
 
@@ -1360,41 +1261,6 @@ class CCP4ScalerR(Scaler):
             
         return
 
-    def _scale_finish_ami(self):
-        '''Finish off the scaling, this time using AMI.'''
-
-        ami = AnalyseMyIntensities()
-        ami.set_working_directory(self.get_working_directory())
-
-        for wavelength in self._wavelengths_in_order:
-            hklin = self._tmp_scaled_refl_files[wavelength]
-            ami.add_hklin(hklin)
-
-        if self.get_scaler_anomalous():
-            ami.set_anomalous(True)
-
-        hklout = os.path.join(self.get_working_directory(),
-                              '%s_%s_free.mtz' % (self._scalr_pname,
-                                                  self._scalr_xname))
-
-        ami.set_hklout(hklout)
-
-        ami.analyse_input_hklin()
-        ami.merge_analyse()
-
-        # get the results out...
-
-        truncate_statistics = ami.get_truncate_statistics()
-
-        for k in truncate_statistics:
-            j, project_info = k
-            self._scalr_statistics[project_info][
-                'Wilson B factor'] = truncate_statistics[k]['Wilson B factor']
-
-        FileHandler.record_data_file(hklout)
-
-        return
-
     def _scale_finish(self):
         '''Finish off the scaling... This needs to be replaced with a
         call to AMI.'''
@@ -1449,15 +1315,6 @@ class CCP4ScalerR(Scaler):
                     ]['Wilson B factor'] = [b_factor]
 
                 self._tmp_scaled_refl_files[key] = hklout
-
-        average_cell_a = 0.0
-        average_cell_b = 0.0
-        average_cell_c = 0.0
-        average_cell_alpha = 0.0
-        average_cell_beta = 0.0
-        average_cell_gamma = 0.0
-
-        average_cell_nref = 0
 
         ami = AnalyseMyIntensities()
         ami.set_working_directory(self.get_working_directory())

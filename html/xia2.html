@@ -45,31 +45,28 @@
 
     <h1>Download</h1>
 
-    <p>The current version, 0.3.3.1 can be obtained by following these 
+    <p>The current version, 0.3.3.3 can be obtained by following these 
       links:</p>
 
     <ul>
-      <li><a href="xia2-0.3.3.1.zip">Windows (as .zip file)</a></li>
-      <li><a href="xia2-0.3.3.1.tar.bz2">Unix (as .tar.bz2 file)</a></li>
-      <li><a href="xia2-0.3.3.1.tar.gz">Unix (as .tar.gz file)</a></li>
+      <li><a href="xia2-0.3.3.3.zip">Windows (as .zip file)</a></li>
+      <li><a href="xia2-0.3.3.3.tar.bz2">Unix (as .tar.bz2 file)</a></li>
+      <li><a href="xia2-0.3.3.3.tar.gz">Unix (as .tar.gz file)</a></li>
     </ul>
 
     <p>The second of these is licensed as per the CCP4 standard license.
       The second tarball should be unpacked in the same place as the first.</p>
 
     <p>All of the files are the same, simply packed for different platforms.
-      Inside are a number of precompiled jiffy programs and pointless and
-      othercell (also available from the CCP4 
-      <a href="http://www.ccp4.ac.uk/prerelease_page.php">prerelease</a>
-      pages) for convenience.</p>
+    </p>
 
     <h1>Installation</h1>
 
     <p>Since everything is precompiled, the only requirement is to unpack the
       directory somewhere and edit the directory setup.bat, setup.csh or
       setup.sh appropriately, for instance setting XIA2_HOME as 
-      /opt/px/xia/xia-0.3.3.1 if you unpacked the tarball in /opt/px/xia.
-      Note that this includes the xia-0.3.3.1 directory!</p>
+      /opt/px/xia/xia-0.3.3.3 if you unpacked the tarball in /opt/px/xia.
+      Note that this includes the xia-0.3.3.3 directory!</p>
 
     <p>All that is then needed is to source this setup file and the application
       xia2 should be available. One more recent change is that I am using 
@@ -158,7 +155,7 @@ Command-line options to xia2:
       <li><a href="MAD.xinfo">MAD data</a></li>
     </ul>
 
-    <p>More examples can be found in $DPA_ROOT/examples. Remember - you need 
+    <p>More examples can be found in $XIA2_ROOT/examples. Remember - you need 
       to tell xia2 where to find your data! Answers to frequently asked
       questions can be found <a href="faq.html">here</a>.</p>
 
@@ -430,18 +427,26 @@ END PROJECT TS01
     <p>This is a particularly complex example, but it illustrates the 
       capability of the system well. There are data from two cystals, one 
       native and the other selenomethionated. The native set is measured in 
-      two sweeps. Currently (version 0.3.1.6) no attempt is made to combine 
-      data from multiple crystals, however this is on the to-do list.</p>
+      two sweeps. Currently (version 0.3.3.3) no attempt is made to 
+      intelligently combine data from multiple crystals, however this is on 
+      the to-do list.</p>
     
     <h1>Release Notes</h1>
 
     <p>Changes since 0.3.3.2</p>
     <ul>
+      <li>Many bug fixes as a result of implementing a comprehensive testing 
+	`scheme.</li>
       <li>Support for full cbf format, making use of cbflib Python bindings 
         pycbf now included in cctbx releases.</li>
       <li>Merged functionality from XDSIntegraterR into XDSIntegrater, removed
         duplicate code. Will make for more maintainable suite in the future.
       </li>
+      <li>Improved 2d pipeline scaling, now tests 8 permutations.</li>
+      <li>Improved handling of twinned data for multiple sweeps.</li>
+      <li>Fixed occasional bugs with multiple sweeps, reindexing trigonal 
+	data sets with XDS.</li>
+      <li>Removed "old" scaling modes, 2d and 3d, as these were unhelpful.</li>
     </ul>     
 
     <p>Changes since 0.3.3.1</p>
@@ -1027,14 +1032,11 @@ xia2 -ehtpx_xml_out project.xml
       Python-2.4.4.tgz) then doing ./configure /where/I/want/it then
       make, make install.</p>
 
-    <h2>OS X 10.4</h2>
+    <h2>OS X.4 - X.6</h2>
 
     <p>The only potential problem with this platform is that the Python 
-      which comes as standard is 2.3 - however a universal binary is 
-      available from 
-      <a href="http://www.python.org/download/releases/2.4.4/">here</a>,
-      which should sort out any problems. Just follow the instructions in 
-      the disk image.</p>
+      which comes as standard is 2.3 - however since you need cctbx.python 
+      anyway the problem has gone away.</p>
 
     <h2>Windows XP</h2>
 
@@ -1049,12 +1051,6 @@ xia2 -ehtpx_xml_out project.xml
     <p>The mosflm binary which comes with 
       <a href="http://www.mrc-lmb.cam.ac.uk/harry/imosflm/index.html">
 	iMosflm</a> works well with xia2.</p>
-    <hr>
 
-    <address><a href="mailto:g.winter@dl.ac.uk">Graeme Winter</a></address>
-<!-- Created: Thu Nov 23 10:24:11 GMT 2006 -->
-<!-- hhmts start -->
-Last modified: Thu Jun  9 14:22:48 BST 2011
-<!-- hhmts end -->
   </body>
 </html>

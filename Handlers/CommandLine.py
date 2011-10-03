@@ -105,8 +105,6 @@ class _CommandLine():
         self._read_small_molecule()
         self._read_quick()
         self._read_primitive()
-        self._read_smart_scaling()
-        self._read_8way()
         self._read_chef()
         self._read_mask()
         self._read_automatch()
@@ -117,14 +115,10 @@ class _CommandLine():
         self._read_no_profile()
         self._read_norefine()
         self._read_noremove()        
-        self._read_2d()
         self._read_2dr()
         self._read_2dir()
-        self._read_3d()
         self._read_3dr()
-        self._read_3di()
         self._read_3dir()
-        self._read_3dii()
         self._read_3diir()
         self._read_migrate_data()
         self._read_zero_dose()
@@ -1134,24 +1128,6 @@ class _CommandLine():
             self._understood.append(sys.argv.index('-primitive'))
         return
 
-    def _read_smart_scaling(self):
-
-        if '-smart_scaling' in sys.argv:
-            Flags.set_smart_scaling(True)
-            Debug.write('Smart scaling mode selected')
-            self._understood.append(sys.argv.index('-smart_scaling'))
-            
-        return
-
-    def _read_8way(self):
-
-        if '-8way' in sys.argv:
-            Flags.set_8way(True)
-            Debug.write('8-way scaling mode selected')
-            self._understood.append(sys.argv.index('-8way'))
-            
-        return
-
     def _read_chef(self):
 
         if '-chef' in sys.argv:
@@ -1250,16 +1226,6 @@ class _CommandLine():
             Flags.set_remove(False)
         return
 
-    def _read_2d(self):
-
-        if '-2dold' in sys.argv:
-            add_preference('integrater', 'mosflm')
-            add_preference('scaler', 'ccp4')
-            self._understood.append(sys.argv.index('-2dold'))
-            Debug.write('2D pipeline selected')
-            
-        return
-
     def _read_2dr(self):
 
         if '-2dr' in sys.argv or '-2d' in sys.argv:
@@ -1285,15 +1251,6 @@ class _CommandLine():
             Debug.write('2DR pipeline selected')
         return
 
-    def _read_3d(self):
-
-        if '-3dold' in sys.argv:
-            add_preference('integrater', 'xds')
-            add_preference('scaler', 'xds')
-            self._understood.append(sys.argv.index('-3dold'))
-            Debug.write('3D pipeline selected')
-        return
-
     def _read_3dr(self):
 
         if '-3dr' in sys.argv or '-3d' in sys.argv:
@@ -1304,16 +1261,6 @@ class _CommandLine():
             if '-3dr' in sys.argv:
                 self._understood.append(sys.argv.index('-3dr'))
             Debug.write('3DR pipeline selected')
-        return
-
-    def _read_3di(self):
-
-        if '-3diold' in sys.argv:
-            add_preference('indexer', 'xds')
-            add_preference('integrater', 'xds')
-            add_preference('scaler', 'xds')
-            self._understood.append(sys.argv.index('-3dold'))
-            Debug.write('3D pipeline selected')
         return
 
     def _read_3dir(self):
@@ -1327,16 +1274,6 @@ class _CommandLine():
             if '-3dir' in sys.argv:
                 self._understood.append(sys.argv.index('-3dir'))
             Debug.write('3DR pipeline selected')
-        return
-
-    def _read_3dii(self):
-
-        if '-3diiold' in sys.argv:
-            add_preference('indexer', 'xdsii')
-            add_preference('integrater', 'xds')
-            add_preference('scaler', 'xds')
-            self._understood.append(sys.argv.index('-3diiold'))            
-            Debug.write('3D II pipeline (XDS IDXREF all images) selected')
         return
 
     def _read_3diir(self):
