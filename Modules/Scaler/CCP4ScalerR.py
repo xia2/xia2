@@ -64,7 +64,7 @@ class CCP4ScalerR(Scaler):
         self._tmp_scaled_refl_files = { }
         self._wavelengths_in_order = []
         
-        self._resolution_limits = { }
+        self.__sweep_resolution_limits = { }
 
         # flags to keep track of the corrections we will be applying
 
@@ -778,7 +778,7 @@ class CCP4ScalerR(Scaler):
 
         self._prepared_reflections = s.get_hklout()
 
-        self._resolution_limits = { }
+        self._sweep_resolution_limits = { }
 
         # store central resolution limit estimates
 
@@ -842,8 +842,8 @@ class CCP4ScalerR(Scaler):
 
             start, end = si.get_batch_range()
 
-            if dname in self._resolution_limits:
-                resolution = self._resolution_limits[dname]
+            if (dname, sname) in self._sweep_resolution_limits:
+                resolution = self._sweep_resolution_limits[(dname, sname)]
                 sc.add_run(start, end, pname = pname, xname = xname,
                            dname = dname, exclude = False,
                            resolution = resolution, name = sname)
@@ -937,42 +937,60 @@ class CCP4ScalerR(Scaler):
         if len(resolution_info) == 0:
             raise RuntimeError, 'no resolution info'
 
-        for dataset in resolution_info:
+        for epoch in epochs:
 
-            if dataset in user_resolution_limits:
-                resolution = user_resolution_limits[dataset]
-                self._resolution_limits[dataset] = resolution
+            si = self._sweep_handler.get_sweep_information(epoch)
+            pname, xname, dname = si.get_project_info()
+            sname = si.get_sweep_name()
+            intgr = si.get_integrater()
+            start, end = si.get_batch_range()
+
+            if dname in user_resolution_limits:
+                resolution = user_resolution_limits[dname]
+                self._sweep_resolution_limits[(dname, sname)] = resolution
                 if resolution < highest_resolution:
                     highest_resolution = resolution
                 Chatter.write('Resolution limit for %s: %5.2f' % \
-                              (dataset, resolution))
+                              (dname, resolution))
                 continue
 
+            # extract the reflections for this sweep...
+
+            hklin = reflection_files[dname]
+            hklout = '%s_%s.mtz' % (reflection_files[dname][:-4], sname)
+
+            rb = self._factory.Rebatch()
+            rb.set_hklin(hklin)
+            rb.set_hklout(hklout)
+            rb.limit_batches(start, end)
+            
+            FileHandler.record_temporary_file(hklout)
+            
             log_completeness = os.path.join(self.get_working_directory(),
-                                      '%s-completeness.log' % dataset)
+                                            '%s-completeness.log' % dname)
 
             if os.path.exists(log_completeness):
                 log_completeness = None
             
             log_rmerge = os.path.join(self.get_working_directory(),
-                                      '%s-rmerge.log' % dataset)
-
+                                      '%s-rmerge.log' % dname)
+            
             if os.path.exists(log_rmerge):
                 log_rmerge = None
 
             log_isigma = os.path.join(self.get_working_directory(),
-                                      '%s-isigma.log' % dataset)
+                                      '%s-isigma.log' % dname)
 
             if os.path.exists(log_isigma):
                 log_isigma = None
             
             log_misigma = os.path.join(self.get_working_directory(),
-                                      '%s-misigma.log' % dataset)
+                                      '%s-misigma.log' % dname)
 
             if os.path.exists(log_misigma):
                 log_misigma = None
 
-            m = merger(reflection_files[dataset])
+            m = merger(hklout)
 
             m.calculate_resolution_ranges(nbins = 100)
 
@@ -984,24 +1002,18 @@ class CCP4ScalerR(Scaler):
             resolution = max([r_comp, r_rm, r_uis, r_mis])
 
             Debug.write('Resolution for sweep %s: %.2f' % \
-                        (dataset, resolution))
+                        (sname, resolution))
                         
-            # the old version of this code...
-
-            if False:
-                resolution = determine_scaled_resolution(
-                    reflection_files[dataset], 
-                    Flags.get_i_over_sigma_limit())[1]
-
-            if not dataset in self._resolution_limits:
-                self._resolution_limits[dataset] = resolution
+            if not (dname, sname) in self._sweep_resolution_limits:
+                self._sweep_resolution_limits[(dname, sname)] = resolution
                 self.set_scaler_done(False)
 
             if resolution < highest_resolution:
                 highest_resolution = resolution
 
-            Chatter.write('Resolution limit for %s: %5.2f' % \
-                          (dataset, self._resolution_limits[dataset]))
+            Chatter.write('Resolution limit for %s/%s: %5.2f' % \
+                          (dname, sname,
+                           self._sweep_resolution_limits[(dname, sname)]))
 
         self._scalr_highest_resolution = highest_resolution
 
@@ -1041,14 +1053,14 @@ class CCP4ScalerR(Scaler):
             sname = si.get_sweep_name()
             start, end = si.get_batch_range()
 
-            run_resolution_limit = self._resolution_limits[dname]
+            resolution_limit = self._sweep_resolution_limits[(dname, sname)]
 
-            if run_resolution_limit < highest_resolution:
-                highest_resolution = run_resolution_limit
+            if resolution_limit < highest_resolution:
+                highest_resolution = resolution_limit
 
             sc.add_run(start, end, pname = pname, xname = xname,
                        dname = dname, exclude = False,
-                       resolution = run_resolution_limit, name = xname)
+                       resolution = resolution_limit, name = xname)
 
         # sc.set_resolution(highest_resolution)
 
@@ -1141,11 +1153,11 @@ class CCP4ScalerR(Scaler):
             sname = si.get_sweep_name()
             start, end = si.get_batch_range()
 
-            run_resolution_limit = self._resolution_limits[dname]
+            resolution_limit = self._sweep_resolution_limits[(dname, sname)]
 
             sc.add_run(start, end, pname = pname, xname = xname,
                        dname = dname, exclude = False,
-                       resolution = run_resolution_limit, name = sname)
+                       resolution = resolution_limit, name = sname)
             
             if not dname in self._wavelengths_in_order:
                 self._wavelengths_in_order.append(dname)
@@ -1183,11 +1195,11 @@ class CCP4ScalerR(Scaler):
             sname = si.get_sweep_name()
             start, end = si.get_batch_range()
 
-            run_resolution_limit = self._resolution_limits[dname]
+            resolution_limit = self._sweep_resolution_limits[(dname, sname)]
 
             sc.add_run(start, end, pname = pname, xname = xname,
                        dname = dname, exclude = False,
-                       resolution = run_resolution_limit, name = sname)
+                       resolution = resolution_limit, name = sname)
             
             if not dname in self._wavelengths_in_order:
                 self._wavelengths_in_order.append(dname)
@@ -1224,13 +1236,13 @@ class CCP4ScalerR(Scaler):
                 start, end = si.get_batch_range()
                 
                 if dname == _dname:
+                    resolution = self._sweep_resolution_limits[(dname, sname)]
                     sc.add_run(start, end, pname = pname, xname = xname,
-                               dname = dname, exclude = False, name = xname)
+                               dname = dname, exclude = False,
+                               resolution = resolution, name = xname)
                 else:
                     sc.add_run(start, end, pname = pname, xname = xname,
                                dname = dname, exclude = True, name = xname)
-
-                sc.set_resolution(self._resolution_limits[_dname])
 
             sc.set_hklout(os.path.join(self.get_working_directory(),
                                        'temp.mtz'))
