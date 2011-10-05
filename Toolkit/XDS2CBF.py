@@ -40,8 +40,15 @@ def parse_xparm(xparm_file):
     ny = xdata['ny']
     x_to_d = - px * ox, - py * oy, distance
 
-    return ra, beam, x_to_d, (px, py), distance, (nx, ny)
+    return ra, beam, x_to_d, (px, py), distance, (nx, ny), \
+           xdata['x'], xdata['y']
 
+def get_abc_from_xparm(xparm_file):
+    
+    xdata = xds_read_xparm(xparm_file)
+
+    return xdata['a'], xdata['b'], xdata['c']
+    
 def XDS2CBF(xparm_file):
     '''Given an XDS XPARM file, return a matrix which will transform from
     XDS coordinates to CBF reference frame.'''
@@ -56,7 +63,7 @@ def XDS2CBF(xparm_file):
     #
     # well that's ok then...
 
-    ra, beam, x_to_d, pixel, distance, nxny = parse_xparm(xparm_file)
+    ra, beam, x_to_d, pixel, distance, nxny, dx, dy = parse_xparm(xparm_file)
 
     # make them vectors
 
@@ -162,12 +169,24 @@ def XDS2CBF(xparm_file):
 
     # print _o.elems[0] / pixel[0], _o.elems[1] / pixel[1]
 
-    _X = _m * _x
-    _Y = _m * _y
+    _X = _m * dx
+    _Y = _m * dy
 
     print 'Detector axes'
     print '%10.4f %10.4f %10.4f' % _X.elems
     print '%10.4f %10.4f %10.4f' % _Y.elems
+
+    a, b, c = get_abc_from_xparm(xparm_file)
+
+    _a = _m * a
+    _b = _m * b
+    _c = _m * c
+
+    UB = matrix.sqr(_a.elems + _b.elems + _c.elems).inverse()
+
+    print 'UB matrix'
+    print '%10.7f %10.7f %10.7f\n%10.7f %10.7f %10.7f\n%10.7f %10.7f %10.7f' % \
+          UB.elems
 
 
 if __name__ == '__main__':
