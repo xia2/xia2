@@ -100,7 +100,7 @@ def XDS2CBF(xparm_file, integrate_hkl):
 
     # ok then - #1 rotate about x ^ (1, 0, 0) - if they are not identical
 
-    if _x.dot(x):
+    if _x.angle(x):
         _ra_x = _x.cross(x)
         _a_x = _x.angle(x)
     else:
@@ -222,11 +222,11 @@ def XDS2CBF(xparm_file, integrate_hkl):
         j = R.dot(_Y)
         k = R.dot(_N)
 
-        print '%d %d %d %.3f %.3f %.3f %.3f %.3f %.3f' % \
-              (hkl[0], hkl[1], hkl[2], i, j, k,
-               xyz[0] * pixel[0], xyz[1] * pixel[1], phi)
+        if hkl == (-17, -10, 9):
 
-        break
+            print '%d %d %d %.3f %.3f %.3f %.3f %.3f %.3f' % \
+                  (hkl[0], hkl[1], hkl[2], i, j, k,
+                   xyz[0] * pixel[0], xyz[1] * pixel[1], phi)
 
 if __name__ == '__main__':
     XDS2CBF(sys.argv[1], sys.argv[2])
