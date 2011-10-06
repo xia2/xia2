@@ -38,10 +38,16 @@ def parse_xparm(xparm_file):
     oy = xdata['oy']
     nx = xdata['nx']
     ny = xdata['ny']
-    x_to_d = - px * ox, - py * oy, distance
+    x_to_d = - px * ox, - py * oy, - distance
 
-    return ra, beam, x_to_d, (px, py), distance, (nx, ny), \
-           xdata['x'], xdata['y']
+    x = xdata['x']
+    y = xdata['y']
+
+    x_to_d = - matrix.col(x) * px * ox + \
+             - matrix.col(y) * py * oy + \
+             distance * matrix.col(x).cross(matrix.col(y))
+
+    return ra, beam, x_to_d.elems, (px, py), distance, (nx, ny), x, y
 
 def get_abc_from_xparm(xparm_file):
     
@@ -49,7 +55,7 @@ def get_abc_from_xparm(xparm_file):
 
     return xdata['a'], xdata['b'], xdata['c']
     
-def XDS2CBF(xparm_file):
+def XDS2CBF(xparm_file, integrate_hkl):
     '''Given an XDS XPARM file, return a matrix which will transform from
     XDS coordinates to CBF reference frame.'''
 
@@ -143,6 +149,8 @@ def XDS2CBF(xparm_file):
     b = _m * beam
     b = b / math.sqrt(b.dot())
 
+    _beam = b
+
     # this will be the exact position where the beam strikes the
     # detector face - in the CBF coordinate frame
     B = b * (d / (b.dot(n)))
@@ -188,6 +196,53 @@ def XDS2CBF(xparm_file):
     print '%10.7f %10.7f %10.7f\n%10.7f %10.7f %10.7f\n%10.7f %10.7f %10.7f' % \
           UB.elems
 
+    start_angle = None
+    angle_range = None
+    start_frame = None
+
+    S0 = - (1 / wavelength) * _beam
+    O = _m * x_to_d
+
+    print O
+
+    _N = _x.cross(_y)
+
+    print O.dot(_N)
+
+    for record in open(integrate_hkl):
+        if '!' in record[:1]:
+            if '!STARTING_ANGLE' in record:
+                start_angle = float(record.split()[-1])
+            elif '!STARTING_FRAME' in record:
+                start_frame = float(record.split()[-1])
+            elif '!OSCILLATION_RANGE' in record:
+                angle_range = float(record.split()[-1])
+            continue
+
+        hkl = tuple(map(int, record.split()[:3]))
+        xyz = tuple(map(float, record.split()[5:8]))
+
+        phi = (xyz[2] - start_frame) * angle_range + start_angle
+
+        R = _x.axis_and_angle_as_r3_rotation_matrix(math.pi * phi / 180.0)
+
+        q = R * UB * hkl
+
+        p = S0 + q
+
+        print 20 * ' ', wavelength, 1.0 / wavelength, math.sqrt(p.dot())
+
+        p_ = p * (1.0 / math.sqrt(p.dot()))
+        P = p_ * (O.dot(_N) / (p_.dot(_N)))
+
+        R = P - O
+
+        i = R.dot(_X)
+        j = R.dot(_Y)
+        k = R.dot(_N)
+
+        print '%d %d %d %.3f %.3f %.3f' % (hkl[0], hkl[1], hkl[2], i, j, phi)
+
 
 if __name__ == '__main__':
-    XDS2CBF(sys.argv[1])
+    XDS2CBF(sys.argv[1], sys.argv[2])
