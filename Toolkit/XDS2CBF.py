@@ -180,6 +180,11 @@ def XDS2CBF(xparm_file, integrate_hkl):
 
     UB = matrix.sqr(_a.elems + _b.elems + _c.elems).inverse()
 
+    print 'UB matrix:'
+    print '%10.7f %10.7f %10.7f' % UB.elems[0:3]
+    print '%10.7f %10.7f %10.7f' % UB.elems[3:6]
+    print '%10.7f %10.7f %10.7f' % UB.elems[6:9]
+
     start_angle = None
     angle_range = None
     start_frame = None
@@ -220,7 +225,8 @@ def XDS2CBF(xparm_file, integrate_hkl):
         print '%d %d %d %.3f %.3f %.3f %.3f %.3f %.3f' % \
               (hkl[0], hkl[1], hkl[2], i, j, k,
                xyz[0] * pixel[0], xyz[1] * pixel[1], phi)
-        
+
+        break
 
 if __name__ == '__main__':
     XDS2CBF(sys.argv[1], sys.argv[2])
