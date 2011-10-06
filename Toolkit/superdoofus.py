@@ -58,6 +58,8 @@ def superdoofus(integrate_hkl, xparm_xds):
     Y = matrix.col(y)
     N = X.cross(Y)
 
+    distance = O.dot(N)
+
     start_angle = None
     angle_range = None
     start_frame = None
@@ -96,7 +98,7 @@ def superdoofus(integrate_hkl, xparm_xds):
               (hkl[0], hkl[1], hkl[2], i, j, k,
                xyz[0] * pxpy[0], xyz[1] * pxpy[1], phi)
         
-
+        break
 
 
 

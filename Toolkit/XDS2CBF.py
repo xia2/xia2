@@ -71,7 +71,7 @@ def XDS2CBF(xparm_file, integrate_hkl):
 
     ra, beam, x_to_d, pixel, distance, nxny, dx, dy = parse_xparm(xparm_file)
 
-    # make them vectors
+    # make them vectors etc.
 
     ra = matrix.col(ra)
     beam = matrix.col(beam)
@@ -88,7 +88,7 @@ def XDS2CBF(xparm_file, integrate_hkl):
     # frames.... first relabel so we know what we are trying to do
     
     x = ra
-    z = beam - (beam.dot(ra) * ra)
+    z = -1 * (beam - (beam.dot(ra) * ra))
     z = z / math.sqrt(z.dot())
     y = z.cross(x)
 
@@ -114,6 +114,7 @@ def XDS2CBF(xparm_file, integrate_hkl):
 
     _ra_z = _x
     _a_z = _z.angle(_m_x * z)
+
     _m_z = _ra_z.axis_and_angle_as_r3_rotation_matrix(- _a_z)
 
     # _m is matrix to rotate FROM xds coordinate frame TO cbf reference frame
@@ -137,48 +138,35 @@ def XDS2CBF(xparm_file, integrate_hkl):
     # now need to consider the position of the detector etc. to derive the
     # new direct beam centre...
 
+    _X = _m * dx
+    _Y = _m * dy
+    _N = _X.cross(_Y)
+
     # so that would be the distance between the sample and the
     # detector plane in the direction of the direct beam. 
 
-    n = _m * matrix.col([0, 0, 1])
-    n = n / math.sqrt(n.dot())
+    _beam = _m * beam
+
+    # D vector to detector origin, B vector to intersection of beam with det
+
     D = _m * x_to_d
-    d = n.dot(D)
+    d = _N.dot(D)
 
-    # calculate beam unit vector in cbf coordinate frame
-    b = _m * beam
-    b = b / math.sqrt(b.dot())
+    print 'Distance is %f' % d
 
-    _beam = b
-
-    # this will be the exact position where the beam strikes the
-    # detector face - in the CBF coordinate frame
-    B = b * (d / (b.dot(n)))
-
-    # print '%10.4f %10.4f %10.4f' % B.elems
-
-    # which I now need to convert to coordinates on the detector face!
+    B = _beam * (d / _beam.dot(_N))
 
     o = B - D
 
-    # which is what w.r.t. the transformed x, y axes? - easy we know this
-    # transformation - it's the inverse rotation!
-
-    _o = _m.inverse() * o
+    beam_x = o.dot(_X)
+    beam_y = o.dot(_Y)
+    beam_n = o.dot(_N)
 
     print 'Beam centre on the detector'
-    print '%10.4f %10.4f %10.4f' % _o.elems
+    print '%10.4f %10.4f %10.4f' % (beam_x, beam_y, beam_n)
 
     # check the result is in the detector plane
-    assert(math.fabs(_o.elems[2]) < 1.0e-7)
-
-    # right that's enough for today - though would be nice to plot the
-    # refined beam coordinates. OK that would be these then...
-
-    # print _o.elems[0] / pixel[0], _o.elems[1] / pixel[1]
-
-    _X = _m * dx
-    _Y = _m * dy
+    assert(math.fabs(beam_n) < 1.0e-7)
 
     print 'Detector axes'
     print '%10.4f %10.4f %10.4f' % _X.elems
@@ -192,22 +180,12 @@ def XDS2CBF(xparm_file, integrate_hkl):
 
     UB = matrix.sqr(_a.elems + _b.elems + _c.elems).inverse()
 
-    print 'UB matrix'
-    print '%10.7f %10.7f %10.7f\n%10.7f %10.7f %10.7f\n%10.7f %10.7f %10.7f' % \
-          UB.elems
-
     start_angle = None
     angle_range = None
     start_frame = None
 
-    S0 = - (1 / wavelength) * _beam
+    S0 = (1 / wavelength) * _beam
     O = _m * x_to_d
-
-    print O
-
-    _N = _x.cross(_y)
-
-    print O.dot(_N)
 
     for record in open(integrate_hkl):
         if '!' in record[:1]:
@@ -230,8 +208,6 @@ def XDS2CBF(xparm_file, integrate_hkl):
 
         p = S0 + q
 
-        print 20 * ' ', wavelength, 1.0 / wavelength, math.sqrt(p.dot())
-
         p_ = p * (1.0 / math.sqrt(p.dot()))
         P = p_ * (O.dot(_N) / (p_.dot(_N)))
 
@@ -241,8 +217,10 @@ def XDS2CBF(xparm_file, integrate_hkl):
         j = R.dot(_Y)
         k = R.dot(_N)
 
-        print '%d %d %d %.3f %.3f %.3f' % (hkl[0], hkl[1], hkl[2], i, j, phi)
-
+        print '%d %d %d %.3f %.3f %.3f %.3f %.3f %.3f' % \
+              (hkl[0], hkl[1], hkl[2], i, j, k,
+               xyz[0] * pixel[0], xyz[1] * pixel[1], phi)
+        
 
 if __name__ == '__main__':
     XDS2CBF(sys.argv[1], sys.argv[2])
