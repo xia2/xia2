@@ -1,13 +1,13 @@
 #!/usr/bin/env python
-# CCP4ScalerR.py
-#   Copyright (C) 2006 CCLRC, Graeme Winter
+# CCP4ScalerA.py
+#   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
 #
-# 21/SEP/06
+# 07/OCT/2011
 # 
-# An implementation of the Scaler interface using CCP4 programs.
+# An implementation of the Scaler interface using CCP4 programs and Aimless.
 # 
 
 import os
@@ -53,7 +53,7 @@ from Toolkit.Merger import merger
 # newly implemented CCTBX powered functions to replace xia2 binaries
 from Modules.Scaler.add_dose_time_to_mtz import add_dose_time_to_mtz
 
-class CCP4ScalerR(Scaler):
+class CCP4ScalerA(Scaler):
     '''An implementation of the Scaler interface using CCP4 programs.'''
 
     def __init__(self):
@@ -94,31 +94,31 @@ class CCP4ScalerR(Scaler):
     # this is an overload from the factory - it returns Scala set up with
     # the desired corrections
     
-    def _updated_scala(self):
-        '''Generate a correctly configured Scala...'''
+    def _updated_aimless(self):
+        '''Generate a correctly configured Aimless...'''
 
-        scala = None
+        aimless = None
         
         if not self._scalr_corrections:
-            scala = self._factory.Scala()
+            aimless = self._factory.Aimless()
         else:
 
-            scala = self._factory.Scala(
+            aimless = self._factory.Aimless(
                 partiality_correction = self._scalr_correct_partiality,
                 absorption_correction = self._scalr_correct_absorption,
                 decay_correction = self._scalr_correct_decay)
 
-        scala.set_sd_parameters_auto()
+        aimless.set_sd_parameters_auto()
 
         if Flags.get_microcrystal():
 
             # fiddly little data sets - allow more rapid scaling...
             
-            scala.set_scaling_parameters('rotation', 2.0)
+            aimless.set_scaling_parameters('rotation', 2.0)
             if self._scalr_correct_decay:
-                scala.set_bfactor(bfactor = True, brotation = 2.0)
+                aimless.set_bfactor(bfactor = True, brotation = 2.0)
         
-        return scala
+        return aimless
 
     def _pointless_indexer_jiffy(self, hklin, indexer):
         return self._helper.pointless_indexer_jiffy(hklin, indexer)
@@ -127,7 +127,7 @@ class CCP4ScalerR(Scaler):
         
         epochs = self._sweep_handler.get_epochs()
         
-        sc_tst = self._updated_scala()
+        sc_tst = self._updated_aimless()
         sc_tst.set_cycles(5)
         
         sc_tst.set_hklin(self._prepared_reflections)
@@ -140,7 +140,7 @@ class CCP4ScalerR(Scaler):
 
         if secondary:
             sc_tst.set_scaling_parameters(
-                'rotation', secondary = Flags.get_scala_secondary())
+                'rotation', secondary = Flags.get_aimless_secondary())
         else:
             sc_tst.set_scaling_parameters('rotation', secondary = 0)
 
@@ -820,7 +820,7 @@ class CCP4ScalerR(Scaler):
                 'scaling', self.get_scaler_xcrystal().get_name(), 'CCP4',
                 {'scaling model':'default'})
         
-        sc = self._updated_scala()
+        sc = self._updated_aimless()
         sc.set_hklin(self._prepared_reflections)
 
         sc.set_chef_unmerged(True)
@@ -1038,10 +1038,10 @@ class CCP4ScalerR(Scaler):
                 batch_info[dataset] = transpose_loggraph(
                     loggraph[key])
 
-        sc = self._updated_scala()
+        sc = self._updated_aimless()
 
-        FileHandler.record_log_file('%s %s scala' % (self._scalr_pname,
-                                                     self._scalr_xname),
+        FileHandler.record_log_file('%s %s aimless' % (self._scalr_pname,
+                                                       self._scalr_xname),
                                     sc.get_log_file())
 
         highest_resolution = 100.0
@@ -1147,7 +1147,7 @@ class CCP4ScalerR(Scaler):
 
             FileHandler.record_data_file(scaout)
 
-        sc = self._updated_scala()
+        sc = self._updated_aimless()
         sc.set_hklin(self._prepared_reflections)
         sc.set_scales_file(scales_file)
 
@@ -1188,7 +1188,7 @@ class CCP4ScalerR(Scaler):
                 key] = scalepack
             FileHandler.record_data_file(scalepack)
 
-        sc = self._updated_scala()
+        sc = self._updated_aimless()
         sc.set_hklin(self._prepared_reflections)
         sc.set_scales_file(scales_file)
 
@@ -1228,9 +1228,9 @@ class CCP4ScalerR(Scaler):
 
             harvest_copy = os.path.join(os.environ['HARVESTHOME'],
                                         'DepositFiles', _pname,
-                                        '%s.scala' % _dname)
+                                        '%s.aimless' % _dname)
 
-            sc = self._updated_scala()
+            sc = self._updated_aimless()
             sc.set_hklin(self._prepared_reflections)
             sc.set_scales_file(scales_file)
 
@@ -1271,7 +1271,7 @@ class CCP4ScalerR(Scaler):
 
             harvest_copy = os.path.join(os.environ['HARVESTHOME'],
                                         'DepositFiles', pname,
-                                        '%s.scala' % dname)
+                                        '%s.aimless' % dname)
 
             shutil.move('%s.keep' % harvest_copy, harvest_copy)
             Debug.write('Moving %s to %s' % \
