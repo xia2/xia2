@@ -5,9 +5,7 @@
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
 # 
-# 21/SEP/06 TEST RUN
-# 
-# Note that this is not production code... so fix it to be such!
+# 21/SEP/06 
 
 import os
 import sys
@@ -37,10 +35,6 @@ from Handlers.Streams import Debug
 
 def Scaler():
     '''Create a Scaler implementation.'''
-
-    # FIXED 08/JAN/07 this needs to be able to work out what the integraters
-    # were before it can decide what the most appropriate scaler is...
-    # this is now stored in a glbal preferences system.
 
     scaler = None
     preselection = get_preferences().get('scaler')
