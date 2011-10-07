@@ -102,7 +102,7 @@ class XSweep2():
         # add some stuff to implement the actual processing implicitly
         # FIXME implement this once it is ready!
 
-        # repr += 'MTZ file: %s\n' % self.get_integrater_reflections()
+        # repr += 'MTZ file: %s\n' % self.get_integrater_intensities()
 
         return repr
 
@@ -370,8 +370,8 @@ class XSweep2():
         except:
             return 0.0
 
-    def get_integrater_reflections(self):
-        reflections = self._get_integrater().get_integrater_reflections()
+    def get_integrater_intensities(self):
+        reflections = self._get_integrater().get_integrater_intensities()
         
         # look to see if there are any global integration parameters
         # we can store...

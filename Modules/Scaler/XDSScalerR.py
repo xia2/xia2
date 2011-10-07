@@ -172,7 +172,7 @@ class XDSScalerR(Scaler):
 
         for lattice in possible:
             state = indexer.set_indexer_asserted_lattice(lattice)
-            if state == 'correct':
+            if state == indexer.LATTICE_CORRECT:
                 
                 Debug.write(
                     'Agreed lattice %s' % lattice)
@@ -180,7 +180,7 @@ class XDSScalerR(Scaler):
                 
                 break
             
-            elif state == 'impossible':
+            elif state == indexer.LATTICE_IMPOSSIBLE:
                 Debug.write(
                     'Rejected lattice %s' % lattice)
                 
@@ -188,7 +188,7 @@ class XDSScalerR(Scaler):
                 
                 continue
             
-            elif state == 'possible':
+            elif state == indexer.LATTICE_POSSIBLE:
                 Debug.write(
                     'Accepted lattice %s ...' % lattice)
                 Debug.write(
@@ -429,7 +429,7 @@ class XDSScalerR(Scaler):
         for epoch in epochs:
             # check that this is XDS_ASCII format...
             # self._sweep_information[epoch][
-            # 'integrater'].get_integrater_reflections()
+            # 'integrater'].get_integrater_intensities()
             pass
 
         self._scalr_pname = self._sweep_information[epochs[0]]['pname']
@@ -464,7 +464,7 @@ class XDSScalerR(Scaler):
             for epoch in self._sweep_information.keys():
 
                 intgr = self._sweep_information[epoch]['integrater']
-                hklin = intgr.get_integrater_reflections()
+                hklin = intgr.get_integrater_intensities()
                 indxr = intgr.get_integrater_indexer()
 
                 if self._scalr_input_pointgroup:
@@ -477,6 +477,8 @@ class XDSScalerR(Scaler):
                     pointgroup, reindex_op, ntr = \
                                 self._pointless_indexer_jiffy(hklin, indxr)
                     
+                    Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
+                
                 lattice = Syminfo.get_lattice(pointgroup)
                     
                 if not lattice in lattices:
@@ -524,13 +526,13 @@ class XDSScalerR(Scaler):
                     
                     state = indexer.set_indexer_asserted_lattice(
                         correct_lattice)
-                    if state == 'correct':
+                    if state == indexer.LATTICE_CORRECT:
                         Debug.write('Lattice %s ok for sweep %s' % \
                                     (correct_lattice, sname))
-                    elif state == 'impossible':
+                    elif state == indexer.LATTICE_IMPOSSIBLE:
                         raise RuntimeError, 'Lattice %s impossible for %s' % \
                               (correct_lattice, sname)
-                    elif state == 'possible':
+                    elif state == indexer.LATTICE_POSSIBLE:
                         Debug.write('Lattice %s assigned for sweep %s' % \
                                     (correct_lattice, sname))
                         need_to_return = True
@@ -588,7 +590,7 @@ class XDSScalerR(Scaler):
 
             intgr = self._sweep_information[self._first_epoch]['integrater']
 
-            hklin = intgr.get_integrater_reflections()
+            hklin = intgr.get_integrater_intensities()
             indxr = intgr.get_integrater_indexer()
 
             if self._scalr_input_pointgroup:
@@ -601,6 +603,8 @@ class XDSScalerR(Scaler):
             else:
                 pointgroup, reindex_op, ntr = self._pointless_indexer_jiffy(
                     hklin, indxr)
+
+                Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
         
             reference_reindex_op = intgr.get_integrater_reindex_operator()
             
@@ -622,7 +626,7 @@ class XDSScalerR(Scaler):
             intgr.set_integrater_spacegroup_number(
                 Syminfo.spacegroup_name_to_number(pointgroup)) 
            
-            hklin = intgr.get_integrater_reflections()
+            hklin = intgr.get_integrater_intensities()
  
             hklout = os.path.join(self.get_working_directory(),
                                   'xds-pointgroup-reference-unsorted.mtz')
@@ -642,7 +646,7 @@ class XDSScalerR(Scaler):
             for epoch in self._sweep_information.keys():
 
                 intgr = self._sweep_information[epoch]['integrater']
-                hklin = intgr.get_integrater_reflections()
+                hklin = intgr.get_integrater_intensities()
                 indxr = intgr.get_integrater_indexer()
 
                 # in here need to consider what to do if the user has
@@ -680,7 +684,7 @@ class XDSScalerR(Scaler):
                 # convert the XDS_ASCII for this sweep to mtz - on the next
                 # get this should be in the correct setting...
 
-                hklin = intgr.get_integrater_reflections()
+                hklin = intgr.get_integrater_intensities()
                 hklout = os.path.join(self.get_working_directory(),
                                       'xds-pointgroup-unsorted.mtz')
                 FileHandler.record_temporary_file(hklout)
@@ -725,7 +729,7 @@ class XDSScalerR(Scaler):
 
                 dname = self._sweep_information[epoch]['dname']
                 sname = intgr.get_integrater_sweep_name()
-                hklin = intgr.get_integrater_reflections()
+                hklin = intgr.get_integrater_intensities()
                 hklout = os.path.join(self.get_working_directory(),
                                       '%s_%s.HKL' % (dname, sname))
 
@@ -749,7 +753,7 @@ class XDSScalerR(Scaler):
             FileHandler.record_temporary_file(hklout)
             
             pointless = self._factory.Pointless()
-            pointless.set_xdsin(intgr.get_integrater_reflections())
+            pointless.set_xdsin(intgr.get_integrater_intensities())
             pointless.set_hklout(hklout)
             pointless.xds_to_mtz()
             
@@ -791,7 +795,7 @@ class XDSScalerR(Scaler):
             intgr.set_integrater_spacegroup_number(
                 Syminfo.spacegroup_name_to_number(pointgroup))
             
-            hklin = intgr.get_integrater_reflections()
+            hklin = intgr.get_integrater_intensities()
             dname = self._sweep_information[epoch]['dname']
             hklout = os.path.join(self.get_working_directory(),
                                   '%s_%s.HKL' % (dname, sname))
@@ -1120,8 +1124,8 @@ class XDSScalerR(Scaler):
                 
                 resolution = max([r_comp, r_rm, r_uis, r_mis])
 
-            Chatter.write('Resolution for sweep %s: %.2f' % \
-                          (sname, resolution))
+            Chatter.write('Resolution for sweep %s/%s: %.2f' % \
+                          (dname, sname, resolution))
 
             if not dname in self._resolution_limits:
                 self._resolution_limits[dname] = resolution
@@ -1471,8 +1475,6 @@ class XDSScalerR(Scaler):
                 self._resolution_limits[dataset] = resolution
                 if resolution < highest_resolution:
                     highest_resolution = resolution
-                Chatter.write('Resolution limit for %s: %5.2f' % \
-                              (dataset, resolution))
                 continue
 
             if not dataset in self._resolution_limits:

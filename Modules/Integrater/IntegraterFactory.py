@@ -26,8 +26,6 @@ from Handlers.PipelineSelection import get_preferences, add_preference
 
 from Modules.Integrater.XDSIntegrater import XDSIntegrater
 
-from Modules.Integrater.NullIntegrater import NullIntegrater
-
 from DriverExceptions.NotAvailableError import NotAvailableError
 
 # FIXME 06/SEP/06 this should take an implementation of indexer to 
@@ -48,18 +46,10 @@ def IntegraterForXSweep(xsweep):
     if not xsweep.__class__.__name__ == 'XSweep':
         raise RuntimeError, 'XSweep instance needed'
 
-    # if we're working from preprocessed data, return a null
-    # Integrater pointing at that
-    
-    if xsweep._integrated_reflection_file:
-        integrater = NullIntegrater(xsweep._integrated_reflection_file)
-
-    else:
-        # return a real integrater
-        integrater = Integrater()
-        integrater.setup_from_image(os.path.join(xsweep.get_directory(),
-                                                 xsweep.get_image()))
-        integrater.set_integrater_sweep_name(xsweep.get_name())
+    integrater = Integrater()
+    integrater.setup_from_image(os.path.join(xsweep.get_directory(),
+                                             xsweep.get_image()))
+    integrater.set_integrater_sweep_name(xsweep.get_name())
 
     # copy across resolution limits
     if xsweep.get_resolution_high():
@@ -116,7 +106,7 @@ def Integrater():
 
     if not integrater and (not preselection or preselection == 'mosflmr'):
         try:
-            integrater = Mosflm.Mosflm(new_resolution_mode = True)
+            integrater = Mosflm.Mosflm()
             Debug.write('Using MosflmR Integrater')
             if not get_preferences().get('scaler'):
                 add_preference('scaler', 'ccp4r')
@@ -129,7 +119,7 @@ def Integrater():
     if not integrater and \
            (not preselection or preselection == 'xdsr'):
         try:
-            integrater = XDSIntegrater(new_resolution_mode = True)
+            integrater = XDSIntegrater()
             Debug.write('Using XDS Integrater in new resolution mode')
             add_preference('scaler', 'xdsr')
         except NotAvailableError, e:

@@ -152,7 +152,6 @@ class XSweep():
                  wavelength,
                  directory = None,
                  image = None,
-                 integrated_reflection_file = None,
                  beam = None,
                  reversephi = False,
                  distance = None,
@@ -178,8 +177,6 @@ class XSweep():
         # interpret this properly - e.g. map it to a full PATH.
 
         directory = expand_path(directory)
-        integrated_reflection_file = expand_path(
-            integrated_reflection_file)
 
         # bug # 2274 - maybe migrate the data to a local disk (this
         # will depend if el user has added -migrate_data to the cl)
@@ -191,7 +188,6 @@ class XSweep():
         self._directory = directory
         self._image = image
         self._reversephi = reversephi
-        self._integrated_reflection_file = integrated_reflection_file
         self._epoch = epoch
         self._user_lattice = user_lattice
         self._user_cell = user_cell
@@ -356,10 +352,9 @@ class XSweep():
             
         else:
 
-            if not self._integrated_reflection_file:
-                raise RuntimeError, \
-                      'integrated intensities or directory + ' + \
-                      'image needed to create XSweep'
+            raise RuntimeError, \
+                  'integrated intensities or directory + ' + \
+                  'image needed to create XSweep'
             
             # parse the reflection file header here to get the wavelength
             # out - put this in the header record...
@@ -453,9 +448,6 @@ class XSweep():
             repr += 'TEMPLATE %s\n' % self._template
         if self._directory:
             repr += 'DIRECTORY %s\n' % self._directory
-        if self._integrated_reflection_file:
-            repr += 'INTEGRATED REFLECTION FILE %s\n' % \
-                    self._integrated_reflection_file
             
         if self._header:
             # print some header information
@@ -480,7 +472,7 @@ class XSweep():
 
         # add some stuff to implement the actual processing implicitly
 
-        repr += 'MTZ file: %s\n' % self.get_integrater_reflections()
+        repr += 'MTZ file: %s\n' % self.get_integrater_intensities()
 
         return repr
 
@@ -635,21 +627,20 @@ class XSweep():
             # configure the integrater with the indexer - unless
             # we don't want to...
 
-            if not self._integrated_reflection_file:
-                self._integrater.set_integrater_indexer(self._get_indexer())
+            self._integrater.set_integrater_indexer(self._get_indexer())
 
-                # copy across "is this be icy" information... n.b. this
-                # could change the order of execution?
+            # copy across "is this be icy" information... n.b. this
+            # could change the order of execution?
 
-                self._integrater.set_integrater_ice(
-                    self._get_indexer().get_indexer_ice())
+            self._integrater.set_integrater_ice(
+                self._get_indexer().get_indexer_ice())
 
-                # or if we have been told this on the command-line -
-                # N.B. should really add a mechanism to specify the ice
-                # rings we want removing, #1317.
-
-                if Flags.get_ice():
-                    self._integrater.set_integrater_ice(Flags.get_ice())
+            # or if we have been told this on the command-line -
+            # N.B. should really add a mechanism to specify the ice
+            # rings we want removing, #1317.
+            
+            if Flags.get_ice():
+                self._integrater.set_integrater_ice(Flags.get_ice())
 
             # set the working directory for this, based on the hierarchy
             # defined herein...
@@ -747,8 +738,8 @@ class XSweep():
         except:
             return 0.0
 
-    def get_integrater_reflections(self):
-        reflections = self._get_integrater().get_integrater_reflections()
+    def get_integrater_intensities(self):
+        reflections = self._get_integrater().get_integrater_intensities()
         
         # look to see if there are any global integration parameters
         # we can store...
@@ -805,5 +796,5 @@ if __name__ == '__main__':
                   xs.get_indexer_cell())
     Chatter.write('Lattice: %s' % xs.get_indexer_lattice())
     Chatter.write('Mosaic: %6.2f' % xs.get_indexer_mosaic())
-    Chatter.write('Hklout: %s' % xs.get_integrater_reflections())
+    Chatter.write('Hklout: %s' % xs.get_integrater_intensities())
     

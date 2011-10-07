@@ -102,6 +102,7 @@ class Integrater:
         self._intgr_finish_done = False
 
         # the output reflections
+        self._intgr_hklout_raw = None
         self._intgr_hklout = None
 
         # a place to store the project, crystal, wavelength, sweep information
@@ -176,6 +177,7 @@ class Integrater:
             self._intgr_reso_high = 0.0
             self._intgr_reso_low = 0.0
             
+        self._intgr_hklout_raw = None
         self._intgr_hklout = None
         self._intgr_program_parameters = { }
 
@@ -482,8 +484,11 @@ class Integrater:
                         
                         Chatter.write('Rejecting bad lattice %s' % str(e))
                         self._intgr_indexer.eliminate()
-                        # self.set_integrater_prepare_done(False)
                         self._integrater_reset()
+
+                # FIXME x1698 - may be the case that _integrate() returns the
+                # raw intensities, _integrate_finish() returns intensities
+                # which may have been adjusted or corrected. See #1698 below.
 
                 Debug.write('Doing some integration...')
             
@@ -494,7 +499,8 @@ class Integrater:
 
                 try:
 
-                    self._intgr_hklout = self._integrate()
+                    #1698
+                    self._intgr_hklout_raw = self._integrate()
 
                 except BadLatticeError, e:
                     Chatter.write('Rejecting bad lattice %s' % str(e))
@@ -502,8 +508,6 @@ class Integrater:
                     Journal.banner('eliminated this lattice', size = 80)
                     
                     self._intgr_indexer.eliminate()
-                    # self.set_integrater_prepare_done(False)
-                    # self.set_integrater_done(False)
                     self._integrater_reset()
                     
             self.set_integrater_finish_done(True)
@@ -512,24 +516,25 @@ class Integrater:
                 # allow for the fact that postrefinement may be used
                 # to reject the lattice...
                 
-                self._integrate_finish()
+                self._intgr_hklout = self._integrate_finish()
                 
             except BadLatticeError, e:
                 Chatter.write('Uh oh! %s' % str(e))
                 self._intgr_indexer.eliminate()
                 self._integrater_reset()
-                # self.set_integrater_prepare_done(False)
-                # self.set_integrater_done(False)
-                # self.set_integrater_finish_done(False)
 
         return self._intgr_hklout
     
     def get_integrater_indexer(self):
         return self._intgr_indexer
 
-    def get_integrater_reflections(self):
+    def get_integrater_intensities(self):
         self.integrate()
         return self._intgr_hklout
+            
+    def get_integrater_raw_intensities(self):
+        self.integrate()
+        return self._intgr_hklout_raw
             
     def get_integrater_batches(self):
         self.integrate()        

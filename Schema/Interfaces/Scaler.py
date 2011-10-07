@@ -157,6 +157,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from lib.bits import inherits_from
+from lib.SymmetryLib import lauegroup_to_lattice, sort_lattices
 
 from Handlers.Streams import Chatter, Debug
 
@@ -240,6 +241,16 @@ class Scaler:
 
         return
 
+    # FIXME x1698 these not currently used yet
+
+    def _scale_list_likely_pointgroups(self, integrater):
+        raise RuntimeError, 'overload me'
+
+    def _scale_reindex_to_reference(self, reference, integrater):
+        raise RuntimeError, 'overload me'
+
+    # FIXME to here
+
     def _scale_prepare(self):
         raise RuntimeError, 'overload me'
 
@@ -256,10 +267,6 @@ class Scaler:
     def get_working_directory(self):
         return self._working_directory 
 
-    # to support assignment from the command line (or xinfo file) of the
-    # "correct" spacegroup - this will need to be respected by the
-    # Scaler implementations.
-
     def set_scaler_input_spacegroup(self, spacegroup):
         self._scalr_input_spacegroup = spacegroup
         return
@@ -273,9 +280,6 @@ class Scaler:
 
     def get_scaler_input_pointgroup(self):
         return self._scaler_input_pointgroup
-
-    # to support radiation damage analysis, for example, include a link
-    # back to the parent crystal
 
     def set_scaler_xcrystal(self, xcrystal):
         self._scalr_xcrystal = xcrystal
@@ -381,55 +385,25 @@ class Scaler:
     # everything is up-to-date...
 
     def get_scaler_prepare_done(self):
-
-        # this should perhaps iterate over all of the integraters
-        # as well??? FIXME need to make a proper decision about this...
-        
         return self._scalr_prepare_done
 
     def get_scaler_done(self):
-
         if not self.get_scaler_prepare_done():
             Debug.write('Resetting Scaler done as prepare not done')
             self.set_scaler_done(False)
-        
         return self._scalr_done
 
     def get_scaler_finish_done(self):
-
         if not self.get_scaler_done():
             Debug.write(
                 'Resetting scaler finish done as scaling not done')
             self.set_scaler_finish_done(False)
-        
         return self._scalr_finish_done
 
     def add_scaler_integrater(self, integrater):
         '''Add an integrater to this scaler, to provide the input.'''
 
-        # check that this integrater inherits from the Integrater
-        # interface, and also that all integraters come from the
-        # same source, e.g. the same implementation of Integrater.
-
-        # FIXME this needs doing
-
-        # check that the lattice &c. matches any existing integraters
-        # already in the system.
-
-        # FIXME this needs doing
-
-        # add this to the list.
-
-        # FIXME 27/OCT/06 sometimes the epoch for all frames will be
-        # zero - you have been warned!! perhaps in here there should be
-        # something derived from the image name - this would mean that
-        # then it is in alphabetical order, instead...
-
         epoch = integrater.get_integrater_epoch()
-
-        # this is ok if you have SAD data - e.g. the epoch is not
-        # important - so check also that there are other integraters
-        # already stored...
 
         if epoch == 0 and self._scalr_integraters:
             raise RuntimeError, 'multi-sweep integrater has epoch 0'
@@ -440,10 +414,101 @@ class Scaler:
 
         self._scalr_integraters[epoch] = integrater
 
-        # reset the scaler.
         self.scaler_reset()
 
         return
+
+    # FIXME x1698 these not currently used yet
+    
+    def _scale_setup_integrater(self, integrater):
+        '''Check that the pointgroup for a data set is consistent with
+        the lattice used for integration, then determine the pointgroup for
+        the data.'''
+
+        # FIXME will have to handle gracefully user provided pointgroup
+
+        pointgroups = self._scale_list_likely_pointgroups(integrater)
+        indexer = integrater.get_integrater_indexer()
+        lattices = [lauegroup_to_lattice(p) for p in pointgroups]
+
+        correct_lattice = None
+
+        for lattice in lattices:
+            state = indexer.set_indexer_asserted_lattice(lattice)
+
+            if state == indexer.LATTICE_CORRECT:
+                correct_lattice = lattice
+                break
+            
+            elif state == indexer.LATTICE_IMPOSSIBLE:
+                continue
+            
+            elif state == indexer.LATTICE_POSSIBLE:
+                currect_lattice = lattice
+                break
+
+        assert(correct_lattice)
+
+        # run this analysis again, which may respond in different conclusions
+        # if it triggers the reprocessing of the data with a new lattice
+
+        pointgroups = self._scale_list_likely_pointgroups(integrater)
+        lattices = [lauegroup_to_lattice(p) for p in pointgroups]
+
+        return pointgroups[lattices.index(correct_lattice)]
+                
+    def _scale_setup(self):
+        '''Set things up for scaling, in particular mediate pointgroup /
+        lattice with the indexers.'''
+        
+        assert(self._scalr_integraters)
+
+        epochs = sorted(self._scalr_integraters)
+        integraters = [self._scalr_integraters[e] for e in epochs]
+
+        pointgroups = [self._scale_setup_integrater(i) for i in integraters]
+        lattices = [lauegroup_to_lattice(p) for p in pointgroups]
+
+        unique_lattices = list(set(lattices))
+
+        # consider the situation that they arrived at more than one conclusion
+
+        if len(unique_lattices) > 1:
+            consensus_lattice = sort_lattices(unique_lattices)[0]
+
+            for integrater in integraters:
+                indexer = integrater.get_integrater_indexer()
+                state = indexer.set_indexer_asserted_lattice(consensus_lattice)
+            
+                assert(state != indexer.LATTICE_IMPOSSIBLE)
+
+        # then decide on the consensus pointgroup
+
+        pointgroups = set([])
+
+        for integrater in integraters:
+            pointgroups = self._scale_list_likely_pointgroups(integrater)
+            lattices = [lauegroup_to_lattice(p) for p in pointgroups]
+            poingroups.add(pointgroups[lattices.index(consensus_lattice)])
+        
+        # FIXME will need to handle twinned cases more gracefully sometime
+        # FIXME also need to "mend" the integrater set spacegroup API
+
+        assert(len(pointgroups) == 1)
+
+        for integrater in integraters:
+            integrater.set_integrater_spacegroup_number(pointgroup)
+
+        # now reindex to the correct setting
+
+        reference = integraters[0]
+
+        for integrater in integraters[1:]:
+            self._scale_reindex_to_reference(reference, integrater)
+
+        return pointgroups[0]
+            
+    # FIXME to here    
 
     def scale(self):
         '''Actually perform the scaling - this is delegated to the
@@ -452,18 +517,6 @@ class Scaler:
         if self._scalr_integraters == { }:
             raise RuntimeError, \
                   'no Integrater implementations assigned for scaling'
-
-        # FIXME 02/NOV/06 move this into a "while" loop controlled by the
-        # done flags, and also add a prepare step into the system as well,
-        # to enable things like sorting and friends to be considered
-        # separately to the actual scaling...
-
-        # FIXME these should be reset by the input - calls to the scale
-        # method should do nothing if the scaling has been done already
-
-        # 07/FEB/07 no longer assume that the scaling needs to be repeated...
-        # self._scalr_done = False
-        # self._scalr_prepare_done = False
 
         xname = self._scalr_xcrystal.get_name()
 
@@ -484,7 +537,6 @@ class Scaler:
             self._scalr_finish_done = True
             self._scale_finish()
 
-        # FIXME this result payload probably shouldn't exist...
         return self._scalr_result
 
     def get_scaled_reflections(self, format):

@@ -117,8 +117,6 @@ def XDSCorrect(DriverType = None):
             self._results = None
             self._remove = []
 
-            self._new_resolution_mode = False
-
             return
 
         # getter and setter for input / output data
@@ -129,9 +127,6 @@ def XDSCorrect(DriverType = None):
 
         def get_anomalous(self):
             return self._anomalous
-
-        def set_new_resolution_mode(self):
-            self._new_resolution_mode = True
 
         def set_spacegroup_number(self, spacegroup_number):
             self._spacegroup_number = spacegroup_number
@@ -374,14 +369,6 @@ def XDSCorrect(DriverType = None):
                 format = 'XDS applied reindex:' + 12 * ' %d'
                 Debug.write(format % tuple(self._results['reindex_op']))
                 self._reindex_used = self._results['reindex_op']
-
-            # FIXME this is messy, assuming that INTEGRATE.HKL is present...
-
-            if not self._new_resolution_mode:
-                s, r = digest(bin_o_tron(xds_integrate_hkl_to_list(
-                    os.path.join(self.get_working_directory(),
-                                 'INTEGRATE.HKL'))))
-                self._results['resolution_estimate'] = r
 
             # get the reflections to remove...
             for line in open(os.path.join(

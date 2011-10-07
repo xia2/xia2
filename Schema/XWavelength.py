@@ -160,7 +160,6 @@ class XWavelength():
         return result
 
     def add_sweep(self, name, directory = None, image = None,
-                  integrated_reflection_file = None,
                   beam = None, reversephi = False, distance = None, 
                   gain = 0.0, dmin = 0.0, dmax = 0.0, polarization = 0.0,
                   frames_to_process = None, user_lattice = None,
@@ -170,8 +169,6 @@ class XWavelength():
         self._sweeps.append(XSweep(name, self,
                                    directory = directory,
                                    image = image,
-                                   integrated_reflection_file = \
-                                   integrated_reflection_file,
                                    beam = beam,
                                    reversephi = False,
                                    distance = distance,

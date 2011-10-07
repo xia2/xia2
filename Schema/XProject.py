@@ -225,8 +225,6 @@ class XProject():
                             sweep_name,
                             directory = sweep_info.get('DIRECTORY'),
                             image = sweep_info.get('IMAGE'),
-                            integrated_reflection_file = \
-                            sweep_info.get('INTEGRATED_REFLECTION_FILE'),
                             beam = sweep_info.get('beam'),
                             reversephi = sweep_info.get('reversephi', False),
                             distance = sweep_info.get('distance'),

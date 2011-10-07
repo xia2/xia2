@@ -28,10 +28,6 @@
 # 
 # index() -> delegated to implementation._index()
 #
-# FIXED: getter methods should, if the results are NULL, initiate the index
-#        process to allow pure constructor based (functional?) programming.
-#        4/AUG/06 this is done.
-# 
 # Notes:
 # 
 # All properties of this class are prefixed with either indxr for protected
@@ -46,82 +42,6 @@
 # 
 # These need to be handled properly with helpful error messages.
 # 
-# FIXME 11/SEP/06 Also want to check that the resolution of the data is
-#                 better than (say) 3.5A, because below that Mosflm has 
-#                 trouble refining the cell etc. Could add a resolution 
-#                 estimate to the output of Indexer, which could either
-#                 invoke labelit.stats_distl or grep the results from 
-#                 the Mosflm output...
-#
-#                 Look for record "99% have resolution less than"...
-#                 or the resolution numbers in labelit.stats_distl.
-#                 use best numbers of all images used in indexing.
-#
-# FIXED 23/OCT/06 interesting new feature - want to be able to handle
-#                 storing all of the other solutions from indexing as
-#                 well as the chosen one, and also want to be able to
-#                 select the "best" solution in a more sensible manner...
-#
-#                 This means that the indexing should work as follows:
-#
-#                 - autoindex the diffraction pattern, allow the wrapper
-#                   or the program to assert a correct solution
-#                 - compare this correct solution against the highest symmetry
-#                   acceptable solution, and if it is not (e.g. because
-#                   something made a duff decision) then assert that the
-#                   cell, lattice is the higher symmetry and repeat
-#                 - record all possible indexing solutions somewhere
-#                 - provide a mechanism to say "this indexing solution
-#                   sucks" and repeat indexing with the next solution down
-#
-#                 Not trivial, but appropriate behaviour for an expert system!
-#                 This will require an _IndexerHelper class or some such,
-#                 to take over management of the list of possible lattices,
-#                 solution selection & elimination of "duff" choices.
-#
-#                 This is now done and appears to work pretty well...
-#
-# FIXED 03/NOV/06 need to add the standard "interface" loop structure to
-#                 the Indexer interface - move all of the image picking
-#                 stuff to a prepare method and everything else to an
-#                 index loop which will need to keep track of flags. This
-#                 has been pushed by the new improved Labelit which screws 
-#                 up on the beam centre selection...
-# 
-# FIXED 28/NOV/06 need to provide connnections so that the Indexer can 
-#                 "discuss" with the scaler what the most suitable lattice
-#                 is, e.g. including the pointgroup determination.
-#                 Implement this through something like
-#
-#                 set_indexer_asserted_lattice('tP')
-# 
-#                                              => will reset if this is
-#                                                 different (incompatible)
-#                                                 but reasonable and 
-#                                                 return True
-#                                              => will do nothing if this
-#                                                 is what we have already
-#                                                 and return True
-#                                              => will return False if
-#                                                 already eliminated
-#                                              => will raise exception if
-#                                                 impossible *
-# 
-#                 this could work with the aid of set_indexer_input_lattice
-#                 and the indexer helper get_all method (new.)
-# 
-#                 * actually it won't, because you cannot tell the difference
-#                   between eliminated and impossible!
-#
-#                 Ok, this is now implemented so what I now need is a test
-#                 case which will make use of this. Turns out that including
-#                 the new unit cell is too tricky and shouldn't be needed
-#                 anyway - removing...
-#
-#                 Update 05/DEC/06 actually this should return the resulting
-#                 lattice if it is changed or "None" if it isn't happy with
-#                 it - if something has changed we need to know, so that
-#                 we can leave the scaling and return to the data reduction.
 
 import os
 import sys
@@ -200,6 +120,10 @@ class Indexer:
     contract - what the implementation actually does is a matter for the
     implementation.'''
 
+    LATTICE_POSSIBLE = 'LATTICE_POSSIBLE'
+    LATTICE_IMPOSSIBLE = 'LATTICE_IMPOSSIBLE'
+    LATTICE_CORRECT = 'LATTICE_CORRECT'
+
     def __init__(self):
 
         # (optional) input parameters
@@ -249,6 +173,10 @@ class Indexer:
         self._indxr_payload = { }
 
         self._indxr_print = True
+
+        self.LATTICE_CORRECT = Indexer.LATTICE_CORRECT
+        self.LATTICE_POSSIBLE = Indexer.LATTICE_POSSIBLE
+        self.LATTICE_IMPOSSIBLE = Indexer.LATTICE_IMPOSSIBLE
 
         return
 
@@ -620,23 +548,20 @@ class Indexer:
         '''Assert that this lattice is correct - if this is allowed (i.e.
         is in the helpers list of kosher lattices) then it will be enabled.
         If this is different to the current favourite then processing
-        may ensue, otherwise nothing will happen, and True will be returned.
-        If the asserted lattice is not in the current list then False will
-        be returned and nothing will change.'''
+        may ensue, otherwise nothing will happen.'''
 
-        if not self._indxr_helper:
-            raise RuntimeError, 'no indexing performed yet'
+        assert(self._indxr_helper)
 
         all_lattices = self._indxr_helper.get_all()
 
         if not asserted_lattice in [l[0] for l in all_lattices]:
-            return 'impossible'
+            return self.LATTICE_IMPOSSIBLE
 
         # check if this is the top one - if so we don't need to
         # do anything
 
         if asserted_lattice == all_lattices[0][0]:
-            return 'correct'
+            return self.LATTICE_CORRECT
 
         # ok this means that we need to do something - work through
         # eliminating lattices until the "correct" one is found...
@@ -645,6 +570,6 @@ class Indexer:
             self._indxr_helper.eliminate()
             self.set_indexer_done(False)
 
-        return 'possible'
+        return self.LATTICE_POSSIBLE
 
     

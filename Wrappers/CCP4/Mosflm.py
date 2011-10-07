@@ -100,8 +100,7 @@ from Modules.Indexer.MosflmCheckIndexerSolution import \
 
 from lib.bits import meansd, remove_outliers
 
-def Mosflm(DriverType = None,
-           new_resolution_mode = False):
+def Mosflm(DriverType = None):
     '''A factory for MosflmWrapper classes.'''
 
     DriverInstance = DriverFactory.Driver(DriverType)
@@ -151,17 +150,9 @@ def Mosflm(DriverType = None,
             self._mosflm_refine_profiles = True
             self._mosflm_postref_fix_mosaic = False
             self._mosflm_rerun_integration = False
-            self._mosflm_hklout = ''
+            self._mosflm_hklout = None
 
             self._mosflm_gain = None
-
-            # things to support strategy calculation with BEST
-            self._mosflm_best_parfile = None
-            self._mosflm_best_datfile = None
-            self._mosflm_best_hklfile = None
-
-            # merging Mosflm.py and MosflmR.py - this tells me which we are...
-            self._new_resolution_mode = new_resolution_mode
 
             return
 
@@ -1109,18 +1100,17 @@ def Mosflm(DriverType = None,
                 if Flags.get_parallel() > 1:
                     Debug.write('Parallel integration: %d jobs' %
                                 Flags.get_parallel())
-                    self._intgr_hklout = self._mosflm_parallel_integrate()
+                    self._mosflm_hklout = self._mosflm_parallel_integrate()
                 else:
-                    self._intgr_hklout = self._mosflm_integrate()
-                self._mosflm_hklout = self._intgr_hklout
-
+                    self._mosflm_hklout = self._mosflm_integrate()
+                    
                 # record integration output for e.g. BLEND.
          
                 sweep = self.get_integrater_sweep_name()
                 if sweep:
                     FileHandler.record_more_data_file(
                         '%s %s %s %s INTEGRATE' % (pname, xname, dname, sweep),
-                        self._intgr_hklout)
+                        self._mosflm_hklout)
 
             except IntegrationError, e:
                 if 'negative mosaic spread' in str(e):
@@ -1139,17 +1129,15 @@ def Mosflm(DriverType = None,
                 Chatter.write('Need to rerun the integration...')
                 self.set_integrater_done(False)
 
-            return self._intgr_hklout
+            return self._mosflm_hklout
 
         def _integrate_finish(self):
             '''Finish the integration - if necessary performing reindexing
             based on the pointgroup and the reindexing operator.'''
 
-            # Check if we need to perform any reindexing... this will
-            # be the case if we have no reindexing operator and we
-            # are also in the correct pointgroup. Alternatively we may
-            # not have a spacegroup set as yet...
-
+            # FIXME this should rely on self.get_integrater_raw_intensities()
+            # not self._mosflm_hklout...
+            
             if self._intgr_reindex_operator is None and \
                self._intgr_spacegroup_number == lattice_to_spacegroup(
                 self.get_integrater_indexer().get_indexer_lattice()):
@@ -1177,10 +1165,8 @@ def Mosflm(DriverType = None,
 
             reindex.set_hklin(hklin)
             reindex.set_hklout(hklout)
-
             reindex.reindex()
 
-            self._intgr_hklout = hklout
             return hklout
 
         def _mosflm_test_refine_cell(self, test_lattice):
@@ -2323,28 +2309,6 @@ def Mosflm(DriverType = None,
                                              pname, xname, dname),
                                             postref_log)            
 
-            # if we have not processed to a given resolution, fix
-            # the limit for future reference - only if NOT 
-            # self._new_resolution_mode... c/f loss of MosflmR.py
-
-            if not self._new_resolution_mode:
-                if not self._intgr_reso_high and not Flags.get_quick():
-                    resolution = decide_integration_resolution_limit(output)
-
-                    Debug.write('Old method resolution limit: %.2f' % resolution)
-                
-                    if not Flags.get_small_molecule():
-
-                        s, r = digest(bin_o_tron(mosflm_mtz_to_list(
-                            self._mosflm_hklout)))
-                    
-                        Debug.write('New method resolution limit: %.2f' % r)
-                
-                        resolution = r
-
-                    self.set_integrater_high_resolution(resolution)
-                    Chatter.write('Set resolution limit: %5.2f' % resolution)
-                
             return self._mosflm_hklout
 
         def _mosflm_parallel_integrate(self):
@@ -2811,16 +2775,6 @@ def Mosflm(DriverType = None,
                         Debug.write('Integration output: %s' % hklout)
                         hklouts.append(hklout)
 
-                        # compute the corresponding reindex operation
-                        # from the local xiaintegrate.mat and the NEWMAT...
-                        # reindex_op = reindex_sym_related(
-                        # open(os.path.join(job.get_working_directory(),
-                        # 'processed.mat')).read(),
-                        # open(os.path.join(job.get_working_directory(),
-                        # 'xiaintegrate.mat')).read())
-                        
-                        # reindex_ops.append(reindex_op)
-
                     if 'Number of Reflections' in o:
                         nref += int(o.split()[-1])
 
@@ -2961,24 +2915,6 @@ def Mosflm(DriverType = None,
                                              pname, xname, dname),
                                             postref_log)
             
-            # sort together all of the hklout files in hklouts to get the
-            # final reflection file... FIXME, need to reindex each of these
-            # as well...
-
-            # new_hklouts = hklouts
-
-            # for j, hklin in enumerate(hklouts):
-            # reindex_op = reindex_ops[j]
-            # reindex = Reindex()
-            # reindex.set_working_directory(self.get_working_directory())
-            # auto_logfiler(reindex)                
-            # hklout = '%s_proc.mtz' % hklin[:-4]
-            # reindex.set_hklin(hklin)
-            # reindex.set_hklout(hklout)
-            # reindex.set_operator(reindex_op)
-            # reindex.reindex()
-            # new_hklouts.append(hklout)
-            
             hklouts.sort()
 
             hklout = os.path.join(self.get_working_directory(),
@@ -2997,17 +2933,6 @@ def Mosflm(DriverType = None,
 
             self._mosflm_hklout = hklout
 
-            if not self._new_resolution_mode:
-
-                if not self._intgr_reso_high and not Flags.get_quick():
-                    s, r = digest(bin_o_tron(mosflm_mtz_to_list(
-                        self._mosflm_hklout)))
-
-                    Debug.write('New method resolution limit: %.2f' % r)
-                    
-                    self.set_integrater_high_resolution(r)
-                    Chatter.write('Set resolution limit: %5.2f' % r)
-                
             return self._mosflm_hklout
         
         def _reorder_cell_refinement_images(self):
@@ -3026,219 +2951,19 @@ def Mosflm(DriverType = None,
             self._mosflm_cell_ref_images = cell_ref_images
             return
 
-        def generate_best_files(self, indxr, image_list):
-            '''Integrate a list of single images as numbers with the
-            BEST output switched on - this is to support the strategy
-            calculation. Also run an autoindex to get the bestfile.dat
-            file (the radial background) out.'''
-
-            # first autoindex to generate the .dat file
-
-            if not indxr.get_indexer_payload('mosflm_orientation_matrix'):
-                raise RuntimeError, 'indexer has no mosflm orientation'
-
-            lattice = indxr.get_indexer_lattice()
-            mosaic = indxr.get_indexer_mosaic()
-            cell = indxr.get_indexer_cell()
-            beam = indxr.get_indexer_beam()
-            distance = indxr.get_indexer_distance()
-            matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
-
-            integration_params = indxr.get_indexer_payload(
-                'mosflm_integration_parameters')
-            
-            if integration_params:
-                if integration_params.has_key('separation'):
-                    self.set_integrater_parameter(
-                        'mosflm', 'separation',
-                        '%f %f' % tuple(integration_params['separation']))
-                if integration_params.has_key('raster'):
-                    self.set_integrater_parameter(
-                        'mosflm', 'raster',
-                        '%d %d %d %d %d' % tuple(integration_params['raster']))
-                    
-            spacegroup_number = lattice_to_spacegroup(lattice)
-
-            f = open(os.path.join(self.get_working_directory(),
-                                  'xia-best-generate.mat'), 'w')
-            for m in matrix:
-                f.write(m)
-            f.close()
-
-            self.start()
-
-            if self.get_reversephi():
-                detector = detector_class_to_mosflm(
-                    self.get_header_item('detector_class'))
-                self.input('detector %s reversephi' % detector)
-
-            if 'pilatus' in self.get_header_item('detector_class'):
-                self.input('detector pilatus')
-
-            self.input('template "%s"' % self.get_template())
-            self.input('directory "%s"' % self.get_directory())
-
-            # generate the mask information from the detector class
-            mask = standard_mask(self._fp_header['detector_class'])
-            for m in mask:
-                self.input(m)
-
-            self.input('matrix xia-best-generate.mat')
-
-            self.input('beam %f %f' % beam)
-            self.input('distance %f' % distance)
-            self.input('symmetry %s' % spacegroup_number)
-            self.input('mosaic %f' % mosaic)
-
-            # note well that the beam centre is coming from indexing so
-            # should be already properly handled - likewise the distance
-            if self.get_wavelength_prov() == 'user':
-                self.input('wavelength %f' % self.get_wavelength())
-
-            # get all of the stored parameter values
-            parameters = self.get_integrater_parameters('mosflm')
-            for p in parameters.keys():
-                self.input('%s %s' % (p, str(parameters[p])))
-
-            # in here I need to get the GAIN parameter from the sweep
-            # or from somewhere in memory....
-
-            self.input('best on')
-            for image in image_list:
-                self.input('autoindex dps refine image %d' % image)
-            self.input('go')
-            self.input('best off')
-
-            # that should be everything 
-            self.close_wait()
-
-            # get the log file
-            output = self.get_all_output()
-
-            # then read in the .dat file...
-
-            self._mosflm_best_datfile = open(os.path.join(
-                self.get_working_directory(), 'bestfile.dat'), 'r').read()
-
-            # then integrate to get the .par and .hkl file
-
-            self.start()
-
-            if self.get_reversephi():
-                detector = detector_class_to_mosflm(
-                    self.get_header_item('detector_class'))
-                self.input('detector %s reversephi' % detector)
-
-            if 'pilatus' in self.get_header_item('detector_class'):
-                self.input('detector pilatus')
-
-            self.input('template "%s"' % self.get_template())
-            self.input('directory "%s"' % self.get_directory())
-
-            # generate the mask information from the detector class
-            mask = standard_mask(self._fp_header['detector_class'])
-            for m in mask:
-                self.input(m)
-
-            self.input('matrix xia-best-generate.mat')
-
-            self.input('beam %f %f' % beam)
-            self.input('distance %f' % distance)
-            self.input('symmetry %s' % spacegroup_number)
-            self.input('mosaic %f' % mosaic)
-
-            # note well that the beam centre is coming from indexing so
-            # should be already properly handled - likewise the distance
-            if self.get_wavelength_prov() == 'user':
-                self.input('wavelength %f' % self.get_wavelength())
-
-            # get all of the stored parameter values
-            parameters = self.get_integrater_parameters('mosflm')
-            for p in parameters.keys():
-                self.input('%s %s' % (p, str(parameters[p])))
-
-            # in here I need to get the GAIN parameter from the sweep
-            # or from somewhere in memory....
-
-            if self._mosflm_gain:
-                self.input('gain %5.2f' % self._mosflm_gain)
-
-            # check for resolution limits
-            if self._intgr_reso_high > 0.0:
-                self.input('resolution %f' % self._intgr_reso_high)
-
-            # set up the integration
-            self.input('postref fix all')
-
-            detector_width = self._fp_header['size'][0] * \
-                             self._fp_header['pixel'][0]
-            detector_height = self._fp_header['size'][1] * \
-                              self._fp_header['pixel'][1]
-
-            # lim_x = min(beam[0], detector_width - beam[0])
-            # lim_y = min(beam[1], detector_height - beam[1])
-
-            # self.input('limits xmin 0.0 xmax %.1f ymin 0.0 ymax %.1f' % \
-            # (lim_x, lim_y))            
-
-            lim_x = 0.5 * detector_width
-            lim_y = 0.5 * detector_height
-
-            Debug.write('Scanner limits: %.1f %.1f' % (lim_x, lim_y))
-            self.input('limits xscan %f yscan %f' % (lim_x, lim_y))
-
-            if self._mosflm_postref_fix_mosaic:
-                self.input('postref fix mosaic')
-                
-            self.input('separation close')
-
-            if self.get_header_item('detector') == 'raxis':
-                self.input('adcoffset 0')
-
-            self.input('best on')
-            for image in image_list:
-                self.input('process %d %d' % (image, image))
-                self.input('go')
-            self.input('best off')
-
-            # that should be everything 
-            self.close_wait()
-
-            # get the log file
-            output = self.get_all_output()
-
-            # read the output
-
-            # then read the resulting files into memory
-            # bestfile.par, bestfile.hkl.
-
-            self._mosflm_best_parfile = open(os.path.join(
-                self.get_working_directory(), 'bestfile.par'), 'r').read()
-            self._mosflm_best_hklfile = open(os.path.join(
-                self.get_working_directory(), 'bestfile.hkl'), 'r').read()
-
-            return self._mosflm_best_datfile, self._mosflm_best_parfile, \
-                   self._mosflm_best_hklfile
-
-        if new_resolution_mode:
-
-            # overload these methods as we don't want the resolution range
-            # feeding back... aha - but we may want to assign them
-            # from outside!
+        def set_integrater_resolution(self, dmin, dmax, user = False):
+            if user:
+                Integrater.set_integrater_resolution(self, dmin, dmax, user)
+            return
         
-            def set_integrater_resolution(self, dmin, dmax, user = False):
-                if user:
-                    Integrater.set_integrater_resolution(self, dmin, dmax, user)
-                return
+        def set_integrater_high_resolution(self, dmin, user = False):
+            if user:
+                Integrater.set_integrater_high_resolution(self, dmin, user)
+            return
         
-            def set_integrater_high_resolution(self, dmin, user = False):
-                if user:
-                    Integrater.set_integrater_high_resolution(self, dmin, user)
-                return
-        
-            def set_integrater_low_resolution(self, dmax, user = False):
-                self._intgr_reso_low = dmax
-                return
+        def set_integrater_low_resolution(self, dmax, user = False):
+            self._intgr_reso_low = dmax
+            return
       
     return MosflmWrapper()
 

@@ -264,7 +264,7 @@ class CCP4ScalerHelper:
 
     def pointless_indexer_jiffy(self, hklin, indexer):
         '''A jiffy to centralise the interactions between pointless
-        (in the blue corner) and the Indexer, in the red corner.'''
+        and the Indexer.'''
 
         need_to_return = False
         probably_twinned = False
@@ -285,30 +285,21 @@ class CCP4ScalerHelper:
         
         for lattice in possible:
             state = indexer.set_indexer_asserted_lattice(lattice)
-            if state == 'correct':
-                
-                Debug.write(
-                    'Agreed lattice %s' % lattice)
+            if state == indexer.LATTICE_CORRECT:
+                Debug.write('Agreed lattice %s' % lattice)
                 correct_lattice = lattice
                 
                 break
                 
-            elif state == 'impossible':
-                Debug.write(
-                    'Rejected lattice %s' % lattice)
-                
+            elif state == indexer.LATTICE_IMPOSSIBLE:
+                Debug.write('Rejected lattice %s' % lattice)
                 rerun_pointless = True
                 
                 continue
                 
-            elif state == 'possible':
-                Debug.write(
-                    'Accepted lattice %s ...' % lattice)
-                Debug.write(
-                    '... will reprocess accordingly')
-                
+            elif state == indexer.LATTICE_POSSIBLE:
+                Debug.write('Accepted lattice %s, will reprocess' % lattice)
                 need_to_return = True
-                
                 correct_lattice = lattice
                 
                 break
@@ -423,7 +414,7 @@ class SweepInformation:
         if self._reflections:
             return self._reflections
         else:
-            return self._integrater.get_integrater_reflections()            
+            return self._integrater.get_integrater_intensities()            
 
     def set_reflections(self, reflections):
         self._reflections = reflections

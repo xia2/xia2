@@ -327,7 +327,7 @@ class CCP4ScalerR(Scaler):
 
                 si = self._sweep_handler.get_sweep_information(epoch)
                 intgr = si.get_integrater()
-                hklin = intgr.get_integrater_reflections()
+                hklin = intgr.get_integrater_intensities()
                 indxr = intgr.get_integrater_indexer()
 
                 if self._scalr_input_pointgroup:
@@ -343,6 +343,8 @@ class CCP4ScalerR(Scaler):
                                 self._pointless_indexer_jiffy(
                         pointless_hklin, indxr)
 
+                    Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
+
                 lattice = Syminfo.get_lattice(pointgroup)
 
                 if not lattice in lattices:
@@ -354,6 +356,8 @@ class CCP4ScalerR(Scaler):
                     need_to_return = True
             
             if len(lattices) > 1:
+
+                # why not using pointless indexer jiffy??!
 
                 correct_lattice = sort_lattices(lattices)[0]
                 
@@ -370,13 +374,13 @@ class CCP4ScalerR(Scaler):
                     state = indxr.set_indexer_asserted_lattice(
                         correct_lattice)
 
-                    if state == 'correct':
+                    if state == indxr.LATTICE_CORRECT:
                         Chatter.write('Lattice %s ok for sweep %s' % \
                                       (correct_lattice, sname))
-                    elif state == 'impossible':
+                    elif state == indxr.LATTICE_IMPOSSIBLE:
                         raise RuntimeError, 'Lattice %s impossible for %s' \
                               % (correct_lattice, sname)
-                    elif state == 'possible':
+                    elif state == indxr.LATTICE_POSSIBLE:
                         Chatter.write('Lattice %s assigned for sweep %s' % \
                                       (correct_lattice, sname))
                         need_to_return = True
@@ -422,11 +426,13 @@ class CCP4ScalerR(Scaler):
 
                 pointless_hklin = self._prepare_pointless_hklin(
                     hklin, si.get_header()['phi_width'])
-            
+                
                 pointgroup, reindex_op, ntr, pt = \
                             self._pointless_indexer_jiffy(
                     pointless_hklin, indexer)
                 
+                Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
+
                 if ntr:
                         
                     integrater.integrater_reset_reindex_operator()
@@ -501,7 +507,7 @@ class CCP4ScalerR(Scaler):
             first = self._sweep_handler.get_epochs()[0]
             si = self._sweep_handler.get_sweep_information(first)
             integrater = si.get_integrater()
-            self._reference = integrater.get_integrater_reflections()
+            self._reference = integrater.get_integrater_intensities()
  
         if self._reference:
 
@@ -567,14 +573,14 @@ class CCP4ScalerR(Scaler):
                     Syminfo.spacegroup_name_to_number(pointgroup))
 
                 md = self._factory.Mtzdump()
-                md.set_hklin(integrater.get_integrater_reflections())
+                md.set_hklin(integrater.get_integrater_intensities())
                 md.dump()
 
                 datasets = md.get_datasets()
                 
                 if len(datasets) > 1:
                     raise RuntimeError, 'more than one dataset in %s' % \
-                          integrater.get_integrater_reflections()
+                          integrater.get_integrater_intensities()
             
                 # then get the unit cell, lattice etc.
                 
@@ -584,7 +590,7 @@ class CCP4ScalerR(Scaler):
                 if lattice != reference_lattice:
                     raise RuntimeError, 'lattices differ in %s and %s' % \
                           (self._reference,
-                           integrater.get_integrater_reflections())
+                           integrater.get_integrater_intensities())
 
                 for j in range(6):
                     if math.fabs((cell[j] - reference_cell[j]) /
@@ -592,7 +598,7 @@ class CCP4ScalerR(Scaler):
                         raise RuntimeError, \
                               'unit cell parameters differ in %s and %s' % \
                               (self._reference,
-                               integrater.get_integrater_reflections())
+                               integrater.get_integrater_intensities())
 
         # ---------- SORT TOGETHER DATA ----------
             
