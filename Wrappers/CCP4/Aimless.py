@@ -118,10 +118,6 @@ def Aimless(DriverType = None,
             self._brotation = None
             self._bfactor_tie = None
             
-            self._sd_parameters = { }
-
-            self._sd_parameters_auto = False
-            
             self._project_crystal_dataset = { }
             self._runs = []
 
@@ -153,24 +149,6 @@ def Aimless(DriverType = None,
 
             self._runs.append((start, end, pname, xname, dname,
                                exclude, resolution, name))
-            return
-
-        def add_sd_correction(self, set, sdfac, sdadd, sdb = 0.0):
-            '''Add a set of SD correction parameters for a given
-            set of reflections (initially set = full or partial.)'''
-
-            # FIXME 01/NOV/06 need also to be able to specify the
-            # run where this is needed - e.g. run 1, run 2...
-
-            if not set in ['full', 'partial', 'both']:
-                raise RuntimeError, 'set not known "%s"' % set
-
-            self._sd_parameters[set] = (sdfac, sdadd, sdb)
-            return
-
-        def set_sd_parameters_auto(self, sd_parameters_auto = True):
-            '''Switch on automatic sd parameters - requires new Scala.'''
-            self._sd_parameters_auto = sd_parameters_auto
             return
 
         def set_scalepack(self, scalepack):
@@ -378,8 +356,8 @@ def Aimless(DriverType = None,
             return bad_run, (min(runs_to_batches[bad_run]),
                              max(runs_to_batches[bad_run]))
 
-        def check_scala_error_negative_scale_run(self):
-            '''Check for a bad run giving a negative scale in Scala - this
+        def check_aimless_error_negative_scale_run(self):
+            '''Check for a bad run giving a negative scale in Aimless - this
             is particularly for the multi-crystal analysis.'''
 
             for record in self.get_all_output():
@@ -389,8 +367,8 @@ def Aimless(DriverType = None,
 
             return
         
-        def check_scala_errors(self):
-            '''Check for Scala specific errors. Raise RuntimeError if
+        def check_aimless_errors(self):
+            '''Check for Aimless specific errors. Raise RuntimeError if
             error is found.'''
 
             # FIXME in here I need to add a test for convergence
@@ -435,13 +413,13 @@ def Aimless(DriverType = None,
             try:
                 self.check_for_errors()
                 self.check_ccp4_errors()
-                self.check_scala_error_negative_scale_run()
-                self.check_scala_errors()
+                self.check_aimless_error_negative_scale_run()
+                self.check_aimless_errors()
 
                 status = self.get_ccp4_status()
 
                 if 'Error' in status:
-                    raise RuntimeError, '[SCALA] %s' % status
+                    raise RuntimeError, '[AIMLESS] %s' % status
                     
             except RuntimeError, e:
                 try:
@@ -504,12 +482,12 @@ def Aimless(DriverType = None,
             try:
                 self.check_for_errors()
                 self.check_ccp4_errors()
-                self.check_scala_errors()
+                self.check_aimless_errors()
 
                 status = self.get_ccp4_status()
 
                 if 'Error' in status:
-                    raise RuntimeError, '[SCALA] %s' % status
+                    raise RuntimeError, '[AIMLESS] %s' % status
                     
             except RuntimeError, e:
                 try:
@@ -648,31 +626,6 @@ def Aimless(DriverType = None,
 
             self.input('cycles %d' % self._cycles)
 
-            if self._sd_parameters_auto:
-                if Flags.get_uniform_sd():
-                    self.input('sdcorrection same')
-                        
-            else:
-
-                if not self._sd_parameters:
-                    
-                    self.input(
-                        'sdcorrection fixsdb adjust norefine both 2.0 0.02')
-                
-                for key in self._sd_parameters:
-                    # the input order for these is sdfac, sdB, sdadd...
-                    parameters = self._sd_parameters[key]
-
-                    if key == 'both' and parameters == (1.0, 0.0, 0.0):
-                        self.input(
-                            'sdcorrection fixsdb noadjust norefine ' + \
-                            'both 1.0 0.0')
-
-                    self.input(
-                        'sdcorrection fixsdb adjust norefine %s %f %f %f' % \
-                        (key, parameters[0], parameters[2],
-                         parameters[1]))
-
             if self._anomalous:
                 self.input('anomalous on')
             else:
@@ -696,15 +649,15 @@ def Aimless(DriverType = None,
             try:
                 self.check_for_errors()
                 self.check_ccp4_errors()
-                self.check_scala_error_negative_scale_run()
-                self.check_scala_errors()
+                self.check_aimless_error_negative_scale_run()
+                self.check_aimless_errors()
                 
                 status = self.get_ccp4_status()                
 
-                Debug.write('Scala status: %s' % status)
+                Debug.write('Aimless status: %s' % status)
 
                 if 'Error' in status:
-                    raise RuntimeError, '[SCALA] %s' % status
+                    raise RuntimeError, '[AIMLESS] %s' % status
 
             except RuntimeError, e:
                 try:
@@ -861,33 +814,6 @@ def Aimless(DriverType = None,
             self.input('scales constant')
             self.input('exclude sdmin 2.0')
 
-            if self._resolution_by_run != { }:
-                # FIXME 20/NOV/06 this needs implementing somehow...
-                pass
-
-            # I should probably leave in the scope for setting these
-            # parameters in the merging step...
-
-            if not self._sd_parameters:
-                self.input(
-                    'sdcorrection fixsdb noadjust norefine both 1.0 0.0')
-                                    
-            for key in self._sd_parameters:
-                # the input order for these is sdfac, sdB, sdadd...
-                parameters = self._sd_parameters[key]
-
-                if key == 'both' and parameters == (1.0, 0.0, 0.0):
-                    self.input(
-                        'sdcorrection fixsdb noadjust norefine both ' + \
-                        '1.0 0.0')
-                        
-                    continue
-                        
-                self.input(
-                    'sdcorrection fixsdb adjust norefine %s %f %f %f' % \
-                    (key, parameters[0], parameters[2],
-                     parameters[1]))
-
             if self._anomalous:
                 self.input('anomalous on')
             else:
@@ -908,14 +834,14 @@ def Aimless(DriverType = None,
             try:
                 self.check_for_errors()
                 self.check_ccp4_errors()
-                self.check_scala_errors()
+                self.check_aimless_errors()
                 
                 status = self.get_ccp4_status()                
 
-                Debug.write('Scala status: %s' % status)
+                Debug.write('Aimless status: %s' % status)
 
                 if 'Error' in status:
-                    raise RuntimeError, '[SCALA] %s' % status
+                    raise RuntimeError, '[AIMLESS] %s' % status
 
             except RuntimeError, e:
                 try:
@@ -1034,14 +960,14 @@ def Aimless(DriverType = None,
             try:
                 self.check_for_errors()
                 self.check_ccp4_errors()
-                self.check_scala_errors()
+                self.check_aimless_errors()
 
                 status = self.get_ccp4_status()                
 
-                Debug.write('Scala status: %s' % status)
+                Debug.write('Aimless status: %s' % status)
 
                 if 'Error' in status:
-                    raise RuntimeError, '[SCALA] %s' % status
+                    raise RuntimeError, '[AIMLESS] %s' % status
 
             except RuntimeError, e:
                 try:
@@ -1075,7 +1001,7 @@ def Aimless(DriverType = None,
             
         def get_scaled_reflection_files(self):
             '''Get the names of the actual scaled reflection files - note
-            that this is not the same as HKLOUT because Scala splits them
+            that this is not the same as HKLOUT because Aimless splits them
             up...'''
             return self._scalr_scaled_reflection_files
 
@@ -1093,7 +1019,7 @@ def Aimless(DriverType = None,
             # a mapper of names to allow standard names to be provided
             # and a clear order defined...
 
-            scala_names_to_standard = {
+            aimless_names_to_standard = {
                 'Anomalous completeness':'Anomalous completeness',
                 'Anomalous multiplicity':'Anomalous multiplicity',
                 'Completeness':'Completeness',
@@ -1136,16 +1062,16 @@ def Aimless(DriverType = None,
                                 continue
 
                             # trap things which have appeared in the
-                            # latest build of scala for ccp4 6.1
+                            # latest build of aimless for ccp4 6.1
 
-                            if not key in scala_names_to_standard.keys():
+                            if not key in aimless_names_to_standard.keys():
                                 i += 1
                                 line = output[i]
                                 continue
 
                             if key and not 'Infinity' in line \
                                    and not 'NaN' in line:
-                                summary[scala_names_to_standard[
+                                summary[aimless_names_to_standard[
                                     key]] = map(float, line[40:].replace(
                                     ' - ', ' 0.0 ').replace(
                                     ' -\n', ' 0.0 ').split())
@@ -1194,15 +1120,15 @@ def Aimless(DriverType = None,
 
             return result
 
-    return ScalaWrapper()
+    return AimlessWrapper()
 
 if __name__ == '__output_main__':
     # test parsing the output
 
     logfile = os.path.join(os.environ['XIA2_ROOT'],
-                           'Doc', 'Logfiles', 'scala.log')
+                           'Doc', 'Logfiles', 'aimless.log')
 
-    s = Scala()
+    s = Aimless()
     s.load_all_output(logfile)
 
     results = s.parse_ccp4_loggraph()
@@ -1224,7 +1150,7 @@ if __name__ == '__main_2_':
     # run a couple of tests - this will depend on the unit tests for
     # XIACore having been run...
 
-    s = Scala()
+    s = Aimless()
     
     hklin = os.path.join(os.environ['XIA2CORE_ROOT'],
                          'Python', 'UnitTest', '12287_1_E1_sorted.mtz')
@@ -1249,7 +1175,7 @@ if __name__ == '__main_2_':
 
     print s.scale()
 
-    s.write_log_file('scala.log')
+    s.write_log_file('aimless.log')
     
     results = s.parse_ccp4_loggraph()
 
@@ -1265,7 +1191,7 @@ if __name__ == '__main_2_':
 
 if __name__ == '__main__':
 
-    s = Scala()
+    s = Aimless()
     
     hklin = 'TS00_13185_sorted_INFL.mtz'
     hklout = 'TS00_13185_merged_INFL.mtz'
