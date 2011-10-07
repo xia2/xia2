@@ -31,6 +31,9 @@ def determine_effective_scan_axis(gonio):
 
     return rot.axis, rot.angle(deg = True)
 
+def nint(a):
+    return int(round(a) - 0.5) + (a > 0)
+
 def find_HKL(cbf_image):
 
     cbf_handle = pycbf.cbf_handle_struct()
@@ -127,6 +130,30 @@ def find_HKL(cbf_image):
 
         print '%d %d %d %.3f %.3f %.3f %.3f %.3f' % \
               (hkl[0], hkl[1], hkl[2], i, j, omega, i / pixel[0], j / pixel[1])
+
+    # finally, the inverse calculation - given a position on the detector,
+    # and omega setting, give the Miller index of the reflection
+
+    i = 193
+    j = 267
+    w = 42
+
+    # RUBI is (R * UB).inverse()
+
+    RUBI = (matrix.col(axis).axis_and_angle_as_r3_rotation_matrix(
+        math.pi * w / 180.0) * UB).inverse()
+
+    p = matrix.col(detector.get_pixel_coordinates(j, i)).normalize()
+
+    q = (1.0 / wavelength) * p - S0
+
+    h, k, l = map(nint, (RUBI * q).elems)
+
+    assert(h == -17)
+    assert(k == -10)
+    assert(l == 9)
+
+    print h, k, l
 
     detector.__swig_destroy__(detector)
     del(detector)
