@@ -111,6 +111,7 @@ Toolkit/find_HKL.py -text
 Toolkit/fred_header.cbf -text
 Toolkit/metatemplate.txt -text
 Toolkit/multi.py -text
+Toolkit/small.py -text
 Toolkit/superdoofus.py -text
 Toolkit/test_pilatus_scan.py -text
 Wrappers/CCP4/Doc/Chooch.pdf -text
