@@ -50,11 +50,25 @@ def Aimless(DriverType = None,
             self.set_executable(os.path.join(
                 os.environ.get('CBIN', ''), 'aimless'))
 
+            if not os.path.exists(self.get_executable()):
+                raise RuntimeError, 'aimless binary not found'
+
             self.start()
-            try:
-                self.close_wait()
-            except RuntimeError, e:
-                pass
+            self.close_wait()
+
+            version = None
+
+            for record in self.get_all_output():
+                if '##' in record and 'AIMLESS' in record:
+                    version = record.split()[5]
+
+            if not version:
+                raise RuntimeError, 'version not found'
+
+            version_numbers = map(int, version.split('.'))
+
+            assert(version_numbers[1] >= 1)
+            assert(version_numbers[2] >= 4)
 
             # FIXME (i) check program exists and (ii) version is known -
             # if not then default back in the calling code to using scala.
@@ -63,9 +77,10 @@ def Aimless(DriverType = None,
             self.reset()
 
             # input and output files
-            self._scalepack = None
+            self._scalepack = False
             self._chef_unmerged = False
-
+            self._unmerged_reflections = None
+            
             # scaling parameters
             self._resolution = None
 
@@ -121,9 +136,6 @@ def Aimless(DriverType = None,
             self._project_crystal_dataset = { }
             self._runs = []
 
-            # output of refined value
-            self._sd_factors = { } 
-
             # for adding data on merge - one dname
             self._pname = None
             self._xname = None
@@ -151,10 +163,7 @@ def Aimless(DriverType = None,
                                exclude, resolution, name))
             return
 
-        def set_scalepack(self, scalepack):
-            '''Set the output mode to POLISH UNMERGED to this
-            file.'''
-
+        def set_scalepack(self, scalepack = True):
             self._scalepack = scalepack
             return
 
@@ -258,42 +267,6 @@ def Aimless(DriverType = None,
             self._cycles = cycles
 
             return
-
-        def get_convergence(self):
-            '''Get the convergence rate from the program output - will
-            parse for this on demand.'''
-
-            if not self.get_all_output():
-                raise RuntimeError, 'cannot assess convergence'
-
-            max_shifts = []
-
-            for record in self.get_all_output():
-                if 'Mean and maximum shift' in record:
-                    shift = float(record.split()[6])
-                    max_shifts.append(math.log10(shift))
-
-            # now to the fitting of the straight line - surely I should
-            # put this kind of thing somewhere central?! yes, I probably
-            # should and don't call me Shirley!
-
-            x = []
-            y = []
-
-            for j in range(len(max_shifts)):
-                x.append(float(j + 1))
-                y.append(max_shifts[j])
-
-            m, c = linear(x, y)
-
-            # now check that the gradient is negative - if not, raise exception
-
-            if m >= 0:
-                raise RuntimeError, 'positive gradient: divergent'
-
-            x_intercept = (math.log10(0.3) - c) / m
-
-            return x_intercept
 
         def identify_negative_scale_run(self):
             '''Given the presence of a negative scale factor, try to
@@ -410,18 +383,20 @@ def Aimless(DriverType = None,
 
             # check for errors
 
-            try:
+            if True:
+                # try:
                 self.check_for_errors()
                 self.check_ccp4_errors()
                 self.check_aimless_error_negative_scale_run()
                 self.check_aimless_errors()
 
-                status = self.get_ccp4_status()
+                status = 'okey dokey'
 
                 if 'Error' in status:
                     raise RuntimeError, '[AIMLESS] %s' % status
-                    
-            except RuntimeError, e:
+
+            else:
+                # except RuntimeError, e:
                 try:
                     os.remove(self.get_hklout())
                 except:
@@ -447,25 +422,16 @@ def Aimless(DriverType = None,
             else:
                 self.set_task('Merging reflections from %s => scalepack %s' % \
                              (os.path.split(self.get_hklin())[-1],
-                              os.path.split(self._scalepack)[-1]))
+                              os.path.split(self.get_hklout())[-1]))
 
-                self.add_command_line('scalepack')
-                self.add_command_line(self._scalepack)
 
             self.start()
-            # for the harvesting information
-            # self.input('usecwd')
             self.input('bins 20')
             self.input('run 1 batch 1 to 10000')
             # self.input('run 1 all')
             self.input('scales constant')
             self.input('initial unity')
             self.input('sdcorrection both noadjust 1.0 0.0 0.0')
-
-            # if project name etc set. merging => only one run
-            if self._pname and self._xname and self._dname:
-                self.input('name run 1 project %s crystal %s dataset %s' % \
-                           (self._pname, self._xname, self._dname))
 
             if self._anomalous:
                 self.input('anomalous on')
@@ -495,19 +461,7 @@ def Aimless(DriverType = None,
                 except:
                     pass
 
-                if self._scalepack:
-                    try:
-                        os.remove(self._scalepack)
-                    except:
-                        pass
-
                 raise e
-
-            if self._scalepack:
-                try:
-                    os.remove(self.get_hklout())
-                except:
-                    pass
 
             return self.get_ccp4_status()
             
@@ -520,10 +474,6 @@ def Aimless(DriverType = None,
             if self._chef_unmerged and self._scalepack:
                 raise RuntimeError, 'CHEF and scalepack incompatible'
 
-            if self._new_scales_file:
-                self.add_command_line('SCALES')
-                self.add_command_line(self._new_scales_file)
-
             if self._onlymerge:
                 raise RuntimeError, 'use merge() method'
 
@@ -534,13 +484,13 @@ def Aimless(DriverType = None,
             else:
                 self.set_task('Scaling reflections from %s => scalepack %s' % \
                              (os.path.split(self.get_hklin())[-1],
-                              os.path.split(self._scalepack)[-1]))
-                             
-                self.add_command_line('scalepack')
-                self.add_command_line(self._scalepack)
+                              os.path.split(self.get_hklout())[-1]))
 
             self.start()
             self.input('bins 20')
+
+            if self._new_scales_file:
+                self.input('dump %s' % self._new_scales_file)
 
             run_number = 0
             for run in self._runs:
@@ -554,7 +504,6 @@ def Aimless(DriverType = None,
                     self.input('resolution run %d high %f' % \
                                (run_number, run[6]))
 
-            # put in the pname, xname, dname stuff
             run_number = 0
             for run in self._runs:
                 run_number += 1
@@ -565,9 +514,6 @@ def Aimless(DriverType = None,
 
                 if run[5]:
                     continue
-
-                self.input('name run %d project %s crystal %s dataset %s' % \
-                           (run_number, run[2], run[3], run[4]))
 
             # assemble the scales command
             if self._mode == 'rotation':
@@ -634,7 +580,7 @@ def Aimless(DriverType = None,
             if self._scalepack:
                 self.input('output polish unmerged')
             elif self._chef_unmerged:
-                self.input('output unmerged')
+                self.input('output unmerged together')
 
             # run using previously determined scales
 
@@ -646,62 +592,31 @@ def Aimless(DriverType = None,
 
             # check for errors
 
-            try:
+            if True:
+                # try:
                 self.check_for_errors()
                 self.check_ccp4_errors()
                 self.check_aimless_error_negative_scale_run()
                 self.check_aimless_errors()
                 
-                status = self.get_ccp4_status()                
+                status = 'okey dokey'
 
                 Debug.write('Aimless status: %s' % status)
 
                 if 'Error' in status:
                     raise RuntimeError, '[AIMLESS] %s' % status
 
-            except RuntimeError, e:
+            else:
+                # except RuntimeError, e:
                 try:
                     os.remove(self.get_hklout())
                 except:
                     pass
-
-                if self._scalepack:
-                    try:
-                        os.remove(self._scalepack)
-                    except:
-                        pass
 
                 raise e
 
-            # if we scaled to a scalepack file, delete the
-            # mtz file we created
-
-            if self._scalepack:
-                try:
-                    os.remove(self.get_hklout())
-                except:
-                    pass
-
             # here get a list of all output files...
             output = self.get_all_output()
-
-            # want to put these into a dictionary at some stage, keyed
-            # by the data set id. how this is implemented will depend
-            # on the number of datasets...
-
-            # FIXME file names on windows separate out path from
-            # drive with ":"... fixed! split on "Filename:"
-
-            # get a list of dataset names...
-
-            datasets = []
-            for run in self._runs:
-                # cope with case where two runs make one dataset...
-                if not run[4] in datasets:
-                    if run[5]:
-                        pass
-                    else:
-                        datasets.append(run[4])
 
             hklout_files = []
             hklout_dict = { }
@@ -712,44 +627,29 @@ def Aimless(DriverType = None,
                 # this is a potential source of problems - if the
                 # wavelength name has a _ in it then we are here stuffed!
                 
-                if 'WRITTEN OUTPUT MTZ FILE' in record:
-                    hklout = output[i + 1].split('Filename:')[-1].strip()
-                    if len(datasets) > 1:
-                        dname = hklout.split('_')[-1].replace('.mtz', '')
-                        if not dname in datasets:
-                            raise RuntimeError, 'unknown dataset %s' % dname
-                        hklout_dict[dname] = hklout
-                    elif len(datasets) > 0:
-                        hklout_dict[datasets[0]] = hklout
+                if 'Writing merged data for dataset' in record:
+
+                    if len(record.split()) == 9:
+                        hklout = output[i + 1].strip()
                     else:
-                        hklout_dict['only'] = hklout
+                        hklout = record.split()[9]
+                        
+                    dname = record.split()[6].split('/')[-1]
+                    hklout_dict[dname] = hklout
+                        
                     hklout_files.append(hklout)
 
-                # parse out the refined standard deviation factors 
+                elif 'Writing unmerged data for all datasets' in record:
+                    if len(record.split()) == 9:
+                        hklout = output[i + 1].strip()
+                    else:
+                        hklout = record.split()[9]
 
-                if 'Run    SdFac       SdB     SdAdd' in record:
-                    j = i + 2
+                    self._unmerged_reflections = hklout
 
-                    while not '=====' in output[j] and \
-                              not 'Layout' in output[j] and \
-                              not 'applet' in output[j]:
-                        lst = output[j].split()
-                        if lst:
-                            self._sd_factors[int(lst[0])] = map(float, lst[1:])
-
-                        j += 1
-            
             self._scalr_scaled_reflection_files = hklout_dict
 
-            if self._scalepack:
-                for k in hklout_dict.keys():
-                    try:
-                        os.remove(hklout_dict[k])
-                    except:
-                        pass
-
-
-            return self.get_ccp4_status()
+            return 'okey dokey'
 
         def multi_merge(self):
             '''Merge data from multiple runs - this is very similar to
@@ -758,10 +658,6 @@ def Aimless(DriverType = None,
             self.check_hklin()
             self.check_hklout()
 
-            if self._new_scales_file:
-                self.add_command_line('SCALES')
-                self.add_command_line(self._new_scales_file)
-
             if not self._scalepack:
                 self.set_task('Scaling reflections from %s => %s' % \
                              (os.path.split(self.get_hklin())[-1],
@@ -769,14 +665,14 @@ def Aimless(DriverType = None,
             else:
                 self.set_task('Scaling reflections from %s => scalepack %s' % \
                              (os.path.split(self.get_hklin())[-1],
-                              os.path.split(self._scalepack)[-1]))
+                              os.path.split(self.get_hklout())[-1]))
                              
-                self.add_command_line('scalepack')
-                self.add_command_line(self._scalepack)
-
             self.start()
 
             self.input('bins 20')
+
+            if self._new_scales_file:
+                self.input('dump "%s"' % self._new_scales_file)
 
             if self._resolution:
                 self.input('resolution %f' % self._resolution)
@@ -804,9 +700,6 @@ def Aimless(DriverType = None,
 
                 if run[5]:
                     continue
-
-                self.input('name run %d project %s crystal %s dataset %s' % \
-                           (run_number, run[2], run[3], run[4]))
 
             # we are only merging here so the scales command is
             # dead simple...
@@ -849,22 +742,7 @@ def Aimless(DriverType = None,
                 except:
                     pass
 
-                if self._scalepack:
-                    try:
-                        os.remove(self._scalepack)
-                    except:
-                        pass
-
                 raise e
-
-            # if we scaled to a scalepack file, delete the
-            # mtz file we created
-
-            if self._scalepack:
-                try:
-                    os.remove(self.get_hklout())
-                except:
-                    pass
 
             # here get a list of all output files...
             output = self.get_all_output()
@@ -907,14 +785,6 @@ def Aimless(DriverType = None,
             
             self._scalr_scaled_reflection_files = hklout_dict
 
-            if self._scalepack:
-                for k in hklout_dict.keys():
-                    try:
-                        os.remove(hklout_dict[k])
-                    except:
-                        pass
-
-
             return self.get_ccp4_status()
 
         def quick_scale(self, constant = False):
@@ -928,8 +798,6 @@ def Aimless(DriverType = None,
                            os.path.split(self.get_hklout())[-1]))
             
             self.start()
-            # for the harvesting information
-            self.input('usecwd')
 
             # assert here that there is only one dataset in the input...
 
@@ -975,12 +843,6 @@ def Aimless(DriverType = None,
                 except:
                     pass
 
-                if self._scalepack:
-                    try:
-                        os.remove(self._scalepack)
-                    except:
-                        pass
-
                 raise e
 
             output = self.get_all_output()
@@ -1004,6 +866,9 @@ def Aimless(DriverType = None,
             that this is not the same as HKLOUT because Aimless splits them
             up...'''
             return self._scalr_scaled_reflection_files
+
+        def get_unmerged_reflection_file(self):
+            return self._unmerged_reflections
 
         def get_summary(self):
             '''Get a summary of the data.'''
@@ -1031,7 +896,7 @@ def Aimless(DriverType = None,
                 'Mean((I)/sd(I))':'I/sigma',
                 'Mid-Slope of Anom Normal Probability':'Anomalous slope',
                 'Multiplicity':'Multiplicity',
-                'Rmerge':'Rmerge',
+                'Rmerge  (within I+/I-)':'Rmerge',
                 'Rmerge in top intensity bin':None,
                 'Rmeas (all I+ & I-)':'Rmeas(I)',
                 'Rmeas (within I+/I-)':'Rmeas(I+/-)',
@@ -1043,13 +908,21 @@ def Aimless(DriverType = None,
 
             for i in range(length):
                 line = output[i]
-                if 'Summary data for' in line:
-                    list = line.split()
-                    pname, xname, dname = list[4], list[6], list[8]
+
+                pxdnames = []
+
+                # summary output data can be written out in two ways, allow
+                # for this (i.e. if onlymerge only one sweep get different
+                # and scala like output)
+
+                if 'Summary data for' in line and not 'datasets' in line:
+                    lst = line.split()
+                    pname, xname, dname = lst[4], lst[6], lst[8]
                     summary = { }
                     i += 1
                     line = output[i]
-                    while not '=====' in line:
+
+                    while not 'Estimates of resolution limits' in line:
                         if len(line) > 40:
                             key = line[:40].strip()
                             
@@ -1062,7 +935,7 @@ def Aimless(DriverType = None,
                                 continue
 
                             # trap things which have appeared in the
-                            # latest build of aimless for ccp4 6.1
+                            # latest build of scala for ccp4 6.1
 
                             if not key in aimless_names_to_standard.keys():
                                 i += 1
@@ -1077,16 +950,53 @@ def Aimless(DriverType = None,
                                     ' -\n', ' 0.0 ').split())
                         i += 1
                         line = output[i]
-                    try:
+
+                    if None in summary:
                         del(summary[None])
-                    except KeyError, e:
-                        pass
+
                     total_summary[(pname, xname, dname)] = summary
+                
+                if 'Summary data for datasets' in line:
+                    j = i + 1
+                    while output[j].strip():
+                        lst = output[j].split()
+                        pname, xname, dname = lst[1], lst[3], lst[5]
+                        pxdnames.append((pname, xname, dname))
+                        total_summary[(pname, xname, dname)] = { }
+                        j += 1
+                        
+                    i = j + 1
+                    line = output[i]
+                    while not 'Estimates of resolution limits' in line:
+                        if len(line) > 40:
+                            key = line[:40].strip()
+                            
+                            if not key:
+                                i += 1
+                                line = output[i]
+                                continue
+
+                            if not key in aimless_names_to_standard.keys():
+                                i += 1
+                                line = output[i]
+                                continue
+
+                            name = aimless_names_to_standard[key]
+
+                            if key and not 'Infinity' in line \
+                                   and not 'NaN' in line:
+                                values = map(float, line[40:].replace(
+                                    ' - ', ' 0.0 ').replace(
+                                    ' -\n', ' 0.0 ').replace(
+                                    '-', ' -').split())
+                                for j, pxdname in enumerate(pxdnames):
+                                    total_summary[pxdname][name] = map(
+                                        float, values[3 * j:3 * j + 3])
+                                
+                        i += 1
+                        line = output[i]
 
             return total_summary
-
-        def get_sd_factors(self):
-            return self._sd_factors
 
         def get_rfactor_per_run(self):
             '''Get the Rfactors as a function of run for wavelengths with

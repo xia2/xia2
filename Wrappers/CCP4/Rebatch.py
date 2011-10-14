@@ -178,12 +178,12 @@ def Rebatch(DriverType = None):
             else:
                 command = 'batch all add %d' % self._add_batch
 
-            if self._pname and self._xname and self._dname:
-                command += ' pname %s xname %s dname %s' % (pname,
-                                                            xname,
-                                                            dname)
-
             self.input(command)
+
+            if self._pname and self._xname and self._dname:
+                command = 'batch all pname %s xname %s dname %s' % \
+                          (self._pname, self._xname, self._dname)
+                self.input(command)
 
             self.close_wait()
 
@@ -214,7 +214,7 @@ def Rebatch(DriverType = None):
                     m = output[j]
                     while not 'SUMMARY_END' in m:
                         l = m.split()
-                        if len(l) == 3:
+                        if len(l) >= 3:
                             batch = int(l[1])
                             if batch < min:
                                 min = batch

@@ -108,8 +108,6 @@ class CCP4ScalerA(Scaler):
                 absorption_correction = self._scalr_correct_absorption,
                 decay_correction = self._scalr_correct_decay)
 
-        aimless.set_sd_parameters_auto()
-
         if Flags.get_microcrystal():
 
             # fiddly little data sets - allow more rapid scaling...
@@ -140,7 +138,7 @@ class CCP4ScalerA(Scaler):
 
         if secondary:
             sc_tst.set_scaling_parameters(
-                'rotation', secondary = Flags.get_aimless_secondary())
+                'rotation', secondary = Flags.get_scala_secondary())
         else:
             sc_tst.set_scaling_parameters('rotation', secondary = 0)
 
@@ -155,16 +153,17 @@ class CCP4ScalerA(Scaler):
             pname, xname, dname = si.get_project_info()
             sname = si.get_sweep_name()
             
-            sc_tst.add_run(start, end, pname = pname,
-                           xname = xname, dname = dname, exclude = False,
+            sc_tst.add_run(start, end, exclude = False,
                            resolution = resolution, name = sname)
             
             if self.get_scaler_anomalous():
                 sc_tst.set_anomalous()
 
-        try:
+        if True:
+            # try:
             sc_tst.scale()
-        except RuntimeError, e:
+        else:
+            # except RuntimeError, e:
             if 'scaling not converged' in str(e):
                 return -1, -1
             if 'negative scales' in str(e):
@@ -178,18 +177,11 @@ class CCP4ScalerA(Scaler):
 
         target = {'overall':0, 'low':1, 'high':2}
 
-        try:
-            converge_tst = sc_tst.get_convergence()
-        except RuntimeError, e:
-            if 'positive gradient' in str(e):
-                return -1, -1
-            raise e
-            
         rmerges_tst = [data_tst[k]['Rmerge'][target[
             Flags.get_rmerge_target()]] for k in data_tst]
         rmerge_tst = sum(rmerges_tst) / len(rmerges_tst)
 
-        return rmerge_tst, converge_tst
+        return rmerge_tst
 
     def _determine_best_scale_model_8way(self):
         '''Determine the best set of corrections to apply to the data,
@@ -213,7 +205,7 @@ class CCP4ScalerA(Scaler):
 
         Debug.write('Optimising scaling corrections...')
 
-        rmerge_def, converge_def = self._assess_scaling_model(
+        rmerge_def = self._assess_scaling_model(
             tails = False, bfactor = False, secondary = False)
                                                               
         results = { }
@@ -226,26 +218,25 @@ class CCP4ScalerA(Scaler):
             for decay in True, False:
                 for absorption in True, False:
                     if partiality or decay or absorption:
-                        r, c = self._assess_scaling_model(
+                        r = self._assess_scaling_model(
                             tails = partiality, bfactor = decay,
                             secondary = absorption)
                     else:
-                        r, c = rmerge_def, converge_def
+                        r = rmerge_def
                         
-                    results[(partiality, decay, absorption)] = r, c
+                    results[(partiality, decay, absorption)] = r
 
-                    log_results.append((partiality, decay, absorption, r, c))
+                    log_results.append((partiality, decay, absorption, r))
 
-                    if c - converge_def < 1.0 and c > 0:
-                        consider.append(
-                            (r, partiality, decay, absorption))
+                    consider.append(
+                        (r, partiality, decay, absorption))
 
 
-        Debug.write('. Tails  Decay   Abs   R(%s)    C' % \
+        Debug.write('. Tails Decay  Abs  R(%s)' % \
                     Flags.get_rmerge_target())
 
         for result in log_results:
-            Debug.write('. %5s %5s %5s %.3f %.2f' % result)
+            Debug.write('. %5s %5s %5s %.3f' % result)
             
         consider.sort()
         rmerge, partiality, decay, absorption = consider[0]
@@ -656,6 +647,7 @@ class CCP4ScalerA(Scaler):
 
             rb.set_hklin(hklin)
             rb.set_first_batch(counter * max_batches + 1)
+            rb.set_project_info(pname, xname, dname)
             rb.set_hklout(hklout)
 
             new_batches = rb.rebatch()
@@ -850,12 +842,10 @@ class CCP4ScalerA(Scaler):
 
             if (dname, sname) in self._sweep_resolution_limits:
                 resolution = self._sweep_resolution_limits[(dname, sname)]
-                sc.add_run(start, end, pname = pname, xname = xname,
-                           dname = dname, exclude = False,
+                sc.add_run(start, end, exclude = False,
                            resolution = resolution, name = sname)
             else:
-                sc.add_run(start, end, pname = pname, xname = xname,
-                           dname = dname, name = sname)
+                sc.add_run(start, end, name = sname)
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled_test.mtz' % \
@@ -863,6 +853,8 @@ class CCP4ScalerA(Scaler):
         
         if self.get_scaler_anomalous():
             sc.set_anomalous()
+
+        # what follows, sucks
 
         if Flags.get_failover():
 
@@ -962,8 +954,9 @@ class CCP4ScalerA(Scaler):
 
             # extract the reflections for this sweep...
 
-            hklin = reflection_files[dname]
-            hklout = '%s_%s.mtz' % (reflection_files[dname][:-4], sname)
+            hklin = sc.get_unmerged_reflection_file()
+            hklout = os.path.join(self.get_working_directory(),
+                                  'resolution_%s_%s.mtz' % (dname, sname))
 
             rb = self._factory.Rebatch()
             rb.set_hklin(hklin)
@@ -1064,11 +1057,8 @@ class CCP4ScalerA(Scaler):
             if resolution_limit < highest_resolution:
                 highest_resolution = resolution_limit
 
-            sc.add_run(start, end, pname = pname, xname = xname,
-                       dname = dname, exclude = False,
+            sc.add_run(start, end, exclude = False,
                        resolution = resolution_limit, name = xname)
-
-        # sc.set_resolution(highest_resolution)
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled.mtz' % \
@@ -1078,8 +1068,6 @@ class CCP4ScalerA(Scaler):
             sc.set_anomalous()
 
         sc.scale()
-
-        Debug.write('Convergence at: %.1f cycles' % sc.get_convergence())
 
         for dataset in resolution_info:
             if False:
@@ -1115,15 +1103,6 @@ class CCP4ScalerA(Scaler):
                 batch_info[dataset] = transpose_loggraph(
                     loggraph[key])
 
-        sd_factors = sc.get_sd_factors()
-
-        Debug.write('Standard deviation factors')
-
-        for run in sorted(sd_factors):
-            record = [run] + list(sd_factors[run])
-            Debug.write('Run %d: %.3f %.3f %.3f %.3f %.3f %.3f' % \
-                        tuple(record))
-
         # finally put all of the results "somewhere useful"
         
         self._scalr_statistics = data
@@ -1135,11 +1114,11 @@ class CCP4ScalerA(Scaler):
         self._scalr_scaled_reflection_files['sca'] = { }
         
         for key in self._tmp_scaled_refl_files:
-            file = self._tmp_scaled_refl_files[key]
-            scaout = '%s.sca' % file[:-4]
+            f = self._tmp_scaled_refl_files[key]
+            scaout = '%s.sca' % f[:-4]
             
             m2v = self._factory.Mtz2various()
-            m2v.set_hklin(file)
+            m2v.set_hklin(f)
             m2v.set_hklout(scaout)
             m2v.convert()
 
@@ -1161,18 +1140,18 @@ class CCP4ScalerA(Scaler):
 
             resolution_limit = self._sweep_resolution_limits[(dname, sname)]
 
-            sc.add_run(start, end, pname = pname, xname = xname,
-                       dname = dname, exclude = False,
+            sc.add_run(start, end, exclude = False,
                        resolution = resolution_limit, name = sname)
             
             if not dname in self._wavelengths_in_order:
                 self._wavelengths_in_order.append(dname)
             
-        sc.set_hklout(os.path.join(self.get_working_directory(), 'temp.mtz'))
-        sc.set_scalepack(os.path.join(self.get_working_directory(),
-                                      '%s_%s_unmerged.sca' % \
-                                      (self._scalr_pname,
-                                       self._scalr_xname)))
+        sc.set_hklout(os.path.join(self.get_working_directory(),
+                                   '%s_%s_scaled.mtz' % \
+                                   (self._scalr_pname,
+                                    self._scalr_xname)))
+
+        sc.set_scalepack()
 
         if self.get_scaler_anomalous():
             sc.set_anomalous()
@@ -1180,10 +1159,10 @@ class CCP4ScalerA(Scaler):
 
         self._scalr_scaled_reflection_files['sca_unmerged'] = { }
         for key in self._tmp_scaled_refl_files:
-            file = self._tmp_scaled_refl_files[key]
-            scalepack = os.path.join(os.path.split(file)[0],
-                                     os.path.split(file)[1].replace(
-                '_scaled', '_unmerged').replace('.mtz', '.sca'))
+            f = self._tmp_scaled_refl_files[key]
+            scalepack = os.path.join(os.path.split(f)[0],
+                                     os.path.split(f)[1].replace(
+                '_scaled', '_scaled_unmerged').replace('.mtz', '.sca'))
             self._scalr_scaled_reflection_files['sca_unmerged'][
                 key] = scalepack
             FileHandler.record_data_file(scalepack)
@@ -1203,8 +1182,7 @@ class CCP4ScalerA(Scaler):
 
             resolution_limit = self._sweep_resolution_limits[(dname, sname)]
 
-            sc.add_run(start, end, pname = pname, xname = xname,
-                       dname = dname, exclude = False,
+            sc.add_run(start, end, exclude = False,
                        resolution = resolution_limit, name = sname)
             
             if not dname in self._wavelengths_in_order:
@@ -1223,60 +1201,6 @@ class CCP4ScalerA(Scaler):
 
         reflection_files = sc.get_scaled_reflection_files()
 
-        for key in self._scalr_statistics:
-            _pname, _xname, _dname = key
-
-            harvest_copy = os.path.join(os.environ['HARVESTHOME'],
-                                        'DepositFiles', _pname,
-                                        '%s.aimless' % _dname)
-
-            sc = self._updated_aimless()
-            sc.set_hklin(self._prepared_reflections)
-            sc.set_scales_file(scales_file)
-
-            for epoch in epochs:
-
-                si = self._sweep_handler.get_sweep_information(epoch)
-                pname, xname, dname = si.get_project_info()
-                sname = si.get_sweep_name()
-                start, end = si.get_batch_range()
-                
-                if dname == _dname:
-                    resolution = self._sweep_resolution_limits[(dname, sname)]
-                    sc.add_run(start, end, pname = pname, xname = xname,
-                               dname = dname, exclude = False,
-                               resolution = resolution, name = xname)
-                else:
-                    sc.add_run(start, end, pname = pname, xname = xname,
-                               dname = dname, exclude = True, name = xname)
-
-            sc.set_hklout(os.path.join(self.get_working_directory(),
-                                       'temp.mtz'))
-                
-            if self.get_scaler_anomalous():
-                sc.set_anomalous()
-                
-            sc.scale()
-            stats = sc.get_summary()
-
-            self._scalr_statistics[key] = stats[key]
-
-            shutil.copyfile(harvest_copy, '%s.keep' % harvest_copy)
-
-            Debug.write('Copying %s to %s' % \
-                        (harvest_copy, '%s.keep' % harvest_copy))
-
-        for key in self._scalr_statistics:
-            pname, xname, dname = key
-
-            harvest_copy = os.path.join(os.environ['HARVESTHOME'],
-                                        'DepositFiles', pname,
-                                        '%s.aimless' % dname)
-
-            shutil.move('%s.keep' % harvest_copy, harvest_copy)
-            Debug.write('Moving %s to %s' % \
-                        ('%s.keep' % harvest_copy, harvest_copy))
-            
         return
 
     def _scale_finish(self):
@@ -1286,11 +1210,10 @@ class CCP4ScalerA(Scaler):
         # convert I's to F's in Truncate
 
         if not Flags.get_small_molecule():
-
             for key in self._tmp_scaled_refl_files:
-                file = self._tmp_scaled_refl_files[key]
+                f = self._tmp_scaled_refl_files[key]
                 t = self._factory.Truncate()
-                t.set_hklin(file)
+                t.set_hklin(f)
                 
                 # bug # 2326
                 if self.get_scaler_anomalous():
@@ -1308,9 +1231,9 @@ class CCP4ScalerA(Scaler):
                                             t.get_log_file())
 
                 hklout = ''
-                for path in os.path.split(file)[:-1]:
+                for path in os.path.split(f)[:-1]:
                     hklout = os.path.join(hklout, path)
-                hklout = os.path.join(hklout, os.path.split(file)[-1].replace(
+                hklout = os.path.join(hklout, os.path.split(f)[-1].replace(
                     '_scaled', '_truncated'))
 
                 FileHandler.record_temporary_file(hklout)
@@ -1348,13 +1271,13 @@ class CCP4ScalerA(Scaler):
         self._scalr_cell = average_unit_cell
 
         for key in self._tmp_scaled_refl_files:
-            file = self._tmp_scaled_refl_files[key]
+            f = self._tmp_scaled_refl_files[key]
             
-            hklout = '%s_cad.mtz' % file[:-4]
+            hklout = '%s_cad.mtz' % f[:-4]
             FileHandler.record_temporary_file(hklout)
 
             c = self._factory.Cad()
-            c.add_hklin(file)
+            c.add_hklin(f)
             c.set_new_suffix(key)
             c.set_new_cell(average_unit_cell)
             c.set_hklout(hklout)
@@ -1365,8 +1288,8 @@ class CCP4ScalerA(Scaler):
         if len(self._tmp_scaled_refl_files) > 1:
             c = self._factory.Cad()
             for key in self._tmp_scaled_refl_files:
-                file = self._tmp_scaled_refl_files[key]
-                c.add_hklin(file)
+                f = self._tmp_scaled_refl_files[key]
+                c.add_hklin(f)
         
             hklout = os.path.join(self.get_working_directory(),
                                   '%s_%s_merged.mtz' % (self._scalr_pname,

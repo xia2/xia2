@@ -297,7 +297,10 @@ class _FileHandler:
         log_directory = Environment.generate_directory('LogFiles')
 
         # generate bioxhit XML in here...
-        self.generate_bioxhit_xml(log_directory)
+        try:
+            self.generate_bioxhit_xml(log_directory)
+        except exceptions.Exception, e:
+            out.write('Error generating bioxhit xml')
 
         for f in self._log_file_keys:
             filename = os.path.join(log_directory,

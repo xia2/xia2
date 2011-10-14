@@ -189,6 +189,13 @@ class PipelineInfo:
             "Scaling and correction of all measurements on the crystal",
             "<PROJECT>_<CRYSTAL>_scala.log",
             baublize=True)
+        self.addLogInfo(
+            "_aimless",
+            "aimless",
+            "Scaling and merging",
+            "Scaling and correction of all measurements on the crystal",
+            "<PROJECT>_<CRYSTAL>_aimless.log",
+            baublize=True)
         # Analysis
         self.addLogInfo(
             "_truncate",
