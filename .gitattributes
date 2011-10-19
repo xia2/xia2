@@ -72,6 +72,7 @@ Toolkit/MultiMerger.py -text
 Toolkit/PlayPen/ExperimentSetup.py -text
 Toolkit/PlayPen/TestMinimise.py -text
 Toolkit/PlayPen/cc.py -text
+Toolkit/PlayPen/centring.py -text
 Toolkit/PlayPen/empty_cbf.py -text
 Toolkit/PlayPen/erzatz_symmetry.py -text
 Toolkit/PlayPen/lattice_play.py -text
