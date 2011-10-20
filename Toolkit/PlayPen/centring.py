@@ -2,8 +2,10 @@ import os
 import sys
 import math
 from cctbx import uctbx
-from cctbx.sgtbx import space_group
+from cctbx.sgtbx import space_group, change_of_basis_op
 from cctbx.sgtbx import space_group_symbols
+from cctbx import crystal
+from scitbx import matrix
 
 def reflection_list(unit_cell_constants, high_resolution_limit):
 
@@ -70,23 +72,35 @@ def read_integrate_hkl(integrate_hkl):
 def mean_variance(values):
     mean = sum(values) / len(values)
     variance = sum([(v - mean) * (v - mean) for v in values]) / len(values)
-    return mean, variance
+    return mean, variance, math.sqrt(variance)
 
-def doohicky(integrate_hkl, space_group_name):
+def quartiles(values):
+    values.sort()
+    return tuple([values[i] for i in
+            [len(values) // 4, len(values) // 2, 3 * len(values) // 4]])
+
+def doohicky(integrate_hkl, space_group_name, symop):
 
     present = []
     absent = []
 
     sg = space_group(space_group_symbols(space_group_name).hall())
 
+    r = change_of_basis_op(symop)
+
     for hkl, isig in read_integrate_hkl(integrate_hkl):
-        if sg.is_sys_absent(hkl):
+        rhkl = tuple(map(int, r.c() * hkl))
+        if sg.is_sys_absent(rhkl):
             absent.append(isig[0])
         else:
             present.append(isig[0])
 
-    print 'Present: %f %f' % mean_variance(present)
-    print 'Absent:  %f %f' % mean_variance(absent)
+    print 'Present: %.2e %.2e %.2e' % mean_variance(present), \
+          '%.2e %.2e %.2e' % quartiles(present)
+    print 'Absent:  %.2e %.2e %.2e' % mean_variance(absent), \
+          '%.2e %.2e %.2e' % quartiles(absent)
+
 
 if __name__ == '__main__':
-    doohicky(sys.argv[1], sys.argv[2])
+
+    doohicky(sys.argv[1], sys.argv[2], sys.argv[3])
