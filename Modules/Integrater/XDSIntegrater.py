@@ -567,6 +567,10 @@ class XDSIntegrater(FrameProcessor,
                 self.get_working_directory(),
                 'CORRECT.LP'))
 
+            FileHandler.record_more_data_file(
+                '%s %s %s %s CORRECT' % (pname, xname, dname, sweep),
+                os.path.join(self.get_working_directory(), 'XDS_ASCII.HKL'))
+
             cell = correct.get_result('cell')
             cell_esd = correct.get_result('cell_esd')
 
