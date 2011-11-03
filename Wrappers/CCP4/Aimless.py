@@ -672,7 +672,7 @@ def Aimless(DriverType = None,
             self.input('bins 20')
 
             if self._new_scales_file:
-                self.input('dump "%s"' % self._new_scales_file)
+                self.input('dump %s' % self._new_scales_file)
 
             if self._resolution:
                 self.input('resolution %f' % self._resolution)
@@ -728,7 +728,7 @@ def Aimless(DriverType = None,
                 self.check_ccp4_errors()
                 self.check_aimless_errors()
                 
-                status = self.get_ccp4_status()                
+                status = 'okey dokey'
 
                 Debug.write('Aimless status: %s' % status)
 
@@ -784,7 +784,7 @@ def Aimless(DriverType = None,
             
             self._scalr_scaled_reflection_files = hklout_dict
 
-            return self.get_ccp4_status()
+            return 'okey dokey'
 
         def quick_scale(self, constant = False):
             '''Perform a quick scaling - to assess data quality & merging.'''
@@ -829,7 +829,7 @@ def Aimless(DriverType = None,
                 self.check_ccp4_errors()
                 self.check_aimless_errors()
 
-                status = self.get_ccp4_status()                
+                status ='okey dokey'
 
                 Debug.write('Aimless status: %s' % status)
 
@@ -858,7 +858,7 @@ def Aimless(DriverType = None,
                     
             # analyse the shifts
 
-            return self.get_ccp4_status()
+            return 'okey dokey'
             
         def get_scaled_reflection_files(self):
             '''Get the names of the actual scaled reflection files - note

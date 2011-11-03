@@ -1581,27 +1581,6 @@ class XDSScalerA(Scaler):
                 standard_deviation_info[dataset] = transpose_loggraph(
                     loggraph[key])
 
-        # write this in an interesting way...
-
-        for dataset in standard_deviation_info.keys():
-            info = standard_deviation_info[dataset]
-
-            Debug.write('Standard errors for %s' % dataset)
-
-            for j in range(len(info['1_Range'])):
-                n_full = int(info['5_Number'][j])
-                I_full = float(info['4_Irms'][j])
-                
-                if info['7_SigmaFull'][j] == '-':
-                    s_full = 0.0
-                else:
-                    s_full = float(info['7_SigmaFull'][j])
-
-                i_tot = I_full
-                s_tot = s_full
-
-                Debug.write('%.1f %d %.2f' % (I_full, n_full, s_full))
-
         resolution_info = { }
 
         for key in loggraph.keys():
@@ -1647,35 +1626,6 @@ class XDSScalerA(Scaler):
 
             FileHandler.record_data_file(scaout)
 
-        for key in self._scalr_statistics:
-            pname, xname, dname = key
-
-            sc = self._factory.Aimless()
-            sc.set_hklin(self._prepared_reflections)
-            sc.set_scales_file(scales_file)
-            sc.add_sd_correction('both', 1.0, sdadd_full, sdb_full)
-        
-            for epoch in epochs:
-                input = self._sweep_information[epoch]
-                start, end = (min(input['batches']), max(input['batches']))
-                if dname == input['dname']:
-                    sc.add_run(start, end, exclude = False)
-                else:
-                    sc.add_run(start, end, exclude = True)                    
-
-                sc.set_resolution(self._resolution_limits[dname])
-
-            sc.set_hklout(os.path.join(self.get_working_directory(),
-                                           'temp.mtz'))
-                
-            if self.get_scaler_anomalous():
-                sc.set_anomalous()
-                
-            sc.multi_merge()
-            stats = sc.get_summary()
-
-            self._scalr_statistics[key] = stats[key]
-
         self._scalr_highest_resolution = best_resolution
 
         # also output the unmerged scalepack format files...
@@ -1687,13 +1637,6 @@ class XDSScalerA(Scaler):
                                       '%s_%s_unmerged.sca' % \
                                       (self._scalr_pname,
                                        self._scalr_xname)))
-
-        # this is now handled more elegantly by the Aimless wrapper
-        
-        if sdadd_full == 0.0 and sdb_full == 0.0:
-            pass
-        else:
-            sc.add_sd_correction('both', 1.0, sdadd_full, sdb_full)
 
         for epoch in epochs:
             input = self._sweep_information[epoch]
