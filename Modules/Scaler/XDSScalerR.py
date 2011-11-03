@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# XDSScaler.py
+# XDSScalerR.py
 #   Copyright (C) 2007 CCLRC, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# XDSScaler.py
+# XDSScalerA.py
 #   Copyright (C) 2007 CCLRC, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
@@ -9,7 +9,7 @@
 #
 # This will provide the Scaler interface using XDS, pointless & CCP4 programs.
 # This will run XSCALE, and feed back to the XDSIntegrater and also run a
-# few other jiffys.
+# few other jiffys. Then Aimless for the merging...
 #
 
 import os
@@ -64,7 +64,7 @@ from Toolkit.Merger import merger
 from Modules.Scaler.add_dose_time_to_mtz import add_dose_time_to_mtz
 from Modules.Scaler.compute_average_unit_cell import compute_average_unit_cell
 
-class XDSScalerR(Scaler):
+class XDSScalerA(Scaler):
     '''An implementation of the xia2 Scaler interface implemented with
     xds and xscale, possibly with some help from a couple of CCP4
     programs like pointless and combat.'''
@@ -349,7 +349,6 @@ class XDSScalerR(Scaler):
 
         Citations.cite('xds')
         Citations.cite('ccp4')
-        Citations.cite('scala')
         Citations.cite('pointless')
 
         # GATHER phase - get the reflection files together... note that
@@ -1003,7 +1002,7 @@ class XDSScalerR(Scaler):
                     Chatter.write(record)
             return
 
-        # now get the reflection files out and merge them with scala
+        # now get the reflection files out and merge them with aimless
 
         output_files = xscale.get_output_reflection_files()
         wavelength_names = output_files.keys()
@@ -1217,6 +1216,7 @@ class XDSScalerR(Scaler):
 
             rb.set_hklin(hklin)
             rb.set_first_batch(counter * max_batches + 1)
+            rb.set_project_info(pname, xname, dname)
             rb.set_hklout(hklout)
 
             new_batches = rb.rebatch()
@@ -1426,7 +1426,7 @@ class XDSScalerR(Scaler):
             tuple(ri.get_cell()))
         self._reindexed_cell = tuple(ri.get_cell())
 
-        sc = self._factory.Scala()
+        sc = self._factory.Aimless()
         sc.set_hklin(self._prepared_reflections)
 
         scales_file = '%s.scales' % self._scalr_xname
@@ -1435,10 +1435,7 @@ class XDSScalerR(Scaler):
         for epoch in epochs:
             input = self._sweep_information[epoch]
             start, end = (min(input['batches']), max(input['batches']))
-            sc.add_run(start, end, pname = input['pname'],
-                       xname = input['xname'],
-                       dname = input['dname'],
-                       name = input['sweep_name'])
+            sc.add_run(start, end, name = input['sweep_name'])
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled.mtz' % \
@@ -1538,10 +1535,10 @@ class XDSScalerR(Scaler):
 
         scales_file = '%s_final.scales' % self._scalr_xname
 
-        sc = self._factory.Scala()
+        sc = self._factory.Aimless()
 
-        FileHandler.record_log_file('%s %s scala' % (self._scalr_pname,
-                                                     self._scalr_xname),
+        FileHandler.record_log_file('%s %s aimless' % (self._scalr_pname,
+                                                       self._scalr_xname),
                                     sc.get_log_file())
 
         sc.set_resolution(best_resolution)
@@ -1559,10 +1556,7 @@ class XDSScalerR(Scaler):
 
             run_resolution_limit = self._resolution_limits[input['dname']]
 
-            sc.add_run(start, end, pname = input['pname'],
-                       xname = input['xname'],
-                       dname = input['dname'],
-                       exclude = False,
+            sc.add_run(start, end, exclude = False,
                        resolution = run_resolution_limit,
                        name = input['sweep_name'])
 
@@ -1656,7 +1650,7 @@ class XDSScalerR(Scaler):
         for key in self._scalr_statistics:
             pname, xname, dname = key
 
-            sc = self._factory.Scala()
+            sc = self._factory.Aimless()
             sc.set_hklin(self._prepared_reflections)
             sc.set_scales_file(scales_file)
             sc.add_sd_correction('both', 1.0, sdadd_full, sdb_full)
@@ -1665,15 +1659,9 @@ class XDSScalerR(Scaler):
                 input = self._sweep_information[epoch]
                 start, end = (min(input['batches']), max(input['batches']))
                 if dname == input['dname']:
-                    sc.add_run(start, end, pname = input['pname'],
-                               xname = input['xname'],
-                               dname = input['dname'],
-                               exclude = False)
+                    sc.add_run(start, end, exclude = False)
                 else:
-                    sc.add_run(start, end, pname = input['pname'],
-                               xname = input['xname'],
-                               dname = input['dname'],
-                               exclude = True)                    
+                    sc.add_run(start, end, exclude = True)                    
 
                 sc.set_resolution(self._resolution_limits[dname])
 
@@ -1692,7 +1680,7 @@ class XDSScalerR(Scaler):
 
         # also output the unmerged scalepack format files...
 
-        sc = self._factory.Scala()
+        sc = self._factory.Aimless()
         sc.set_resolution(best_resolution)
         sc.set_hklin(self._prepared_reflections)
         sc.set_scalepack(os.path.join(self.get_working_directory(),
@@ -1700,7 +1688,7 @@ class XDSScalerR(Scaler):
                                       (self._scalr_pname,
                                        self._scalr_xname)))
 
-        # this is now handled more elegantly by the Scala wrapper
+        # this is now handled more elegantly by the Aimless wrapper
         
         if sdadd_full == 0.0 and sdb_full == 0.0:
             pass
@@ -1713,10 +1701,7 @@ class XDSScalerR(Scaler):
 
             run_resolution_limit = self._resolution_limits[input['dname']]
 
-            sc.add_run(start, end, pname = input['pname'],
-                       xname = input['xname'],
-                       dname = input['dname'],
-                       exclude = False,
+            sc.add_run(start, end, exclude = False,
                        resolution = run_resolution_limit,
                        name = input['sweep_name'])
 

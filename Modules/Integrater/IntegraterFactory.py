@@ -121,7 +121,6 @@ def Integrater():
         try:
             integrater = XDSIntegrater()
             Debug.write('Using XDS Integrater in new resolution mode')
-            add_preference('scaler', 'xdsr')
         except NotAvailableError, e:
             if preselection == 'xdsr':
                 raise RuntimeError, \

@@ -705,7 +705,6 @@ def Aimless(DriverType = None,
             # dead simple...
 
             self.input('scales constant')
-            self.input('exclude sdmin 2.0')
 
             if self._anomalous:
                 self.input('anomalous on')
