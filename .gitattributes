@@ -38,6 +38,7 @@ Modules/Integrater/__init__.py -text
 Modules/SPOT.XDS -text svneol=unset#application/octet-stream
 Modules/Scaler/CCP4ScalerA.py -text
 Modules/Scaler/CCP4ScalerR.py -text
+Modules/Scaler/XDSScalerA.py -text
 Modules/Scaler/XDSScalerR.py -text
 Modules/Scaler/__init__.py -text
 Modules/Scaler/compute_average_unit_cell.py -text
