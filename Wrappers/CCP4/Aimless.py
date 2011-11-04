@@ -769,18 +769,29 @@ def Aimless(DriverType = None,
             
             for i in range(len(output)):
                 record = output[i]
-                if 'WRITTEN OUTPUT MTZ FILE' in record:
-                    hklout = output[i + 1].split('Filename:')[-1].strip()
-                    if len(datasets) > 1:
-                        dname = hklout.split('_')[-1].replace('.mtz', '')
-                        if not dname in datasets:
-                            raise RuntimeError, 'unknown dataset %s' % dname
-                        hklout_dict[dname] = hklout
-                    elif len(datasets) > 0:
-                        hklout_dict[datasets[0]] = hklout
+
+                # this is a potential source of problems - if the
+                # wavelength name has a _ in it then we are here stuffed!
+                
+                if 'Writing merged data for dataset' in record:
+
+                    if len(record.split()) == 9:
+                        hklout = output[i + 1].strip()
                     else:
-                        hklout_dict['only'] = hklout
+                        hklout = record.split()[9]
+                        
+                    dname = record.split()[6].split('/')[-1]
+                    hklout_dict[dname] = hklout
+                        
                     hklout_files.append(hklout)
+
+                elif 'Writing unmerged data for all datasets' in record:
+                    if len(record.split()) == 9:
+                        hklout = output[i + 1].strip()
+                    else:
+                        hklout = record.split()[9]
+
+                    self._unmerged_reflections = hklout
             
             self._scalr_scaled_reflection_files = hklout_dict
 

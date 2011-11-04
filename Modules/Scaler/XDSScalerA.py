@@ -1609,23 +1609,6 @@ class XDSScalerA(Scaler):
 
         self._scalr_scaled_reflection_files = { }
         
-        # convert reflection files to .sca format - use mtz2various for this
-
-        self._scalr_scaled_reflection_files['sca'] = { }
-
-        for key in self._tmp_scaled_refl_files:
-            file = self._tmp_scaled_refl_files[key]
-            scaout = '%s.sca' % file[:-4]
-
-            m2v = self._factory.Mtz2various()
-            m2v.set_hklin(file)
-            m2v.set_hklout(scaout)
-            m2v.convert()
-
-            self._scalr_scaled_reflection_files['sca'][key] = scaout
-
-            FileHandler.record_data_file(scaout)
-
         self._scalr_highest_resolution = best_resolution
 
         # also output the unmerged scalepack format files...
@@ -1633,10 +1616,7 @@ class XDSScalerA(Scaler):
         sc = self._factory.Aimless()
         sc.set_resolution(best_resolution)
         sc.set_hklin(self._prepared_reflections)
-        sc.set_scalepack(os.path.join(self.get_working_directory(),
-                                      '%s_%s_unmerged.sca' % \
-                                      (self._scalr_pname,
-                                       self._scalr_xname)))
+        sc.set_scalepack()
 
         for epoch in epochs:
             input = self._sweep_information[epoch]
@@ -1649,8 +1629,9 @@ class XDSScalerA(Scaler):
                        name = input['sweep_name'])
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
-                                   '%s_%s_temp.mtz' % \
-                                   (self._scalr_pname, self._scalr_xname)))
+                                   '%s_%s_scaled.mtz' % \
+                                   (self._scalr_pname,
+                                    self._scalr_xname)))
         
         if self.get_scaler_anomalous():
             sc.set_anomalous()
@@ -1661,16 +1642,33 @@ class XDSScalerA(Scaler):
 
         for dataset in sc.get_scaled_reflection_files().keys():
             hklout = sc.get_scaled_reflection_files()[dataset]
-            FileHandler.record_temporary_file(hklout)
-            
+
             # then mark the scalepack files for copying...
 
             scalepack = os.path.join(os.path.split(hklout)[0],
                                      os.path.split(hklout)[1].replace(
-                '_temp', '_unmerged').replace('.mtz', '.sca'))
+                '_scaled', '_scaled_unmerged').replace('.mtz', '.sca'))
             self._scalr_scaled_reflection_files['sca_unmerged'][
                 dataset] = scalepack
             FileHandler.record_data_file(scalepack)
+
+        # convert reflection files to .sca format - use mtz2various for this
+
+        self._scalr_scaled_reflection_files['sca'] = { }
+
+        for key in self._tmp_scaled_refl_files:
+
+            f = self._tmp_scaled_refl_files[key]
+            scaout = '%s.sca' % f[:-4]
+
+            m2v = self._factory.Mtz2various()
+            m2v.set_hklin(f)
+            m2v.set_hklout(scaout)
+            m2v.convert()
+
+            self._scalr_scaled_reflection_files['sca'][key] = scaout
+
+            FileHandler.record_data_file(scaout)
                            
         return
 
