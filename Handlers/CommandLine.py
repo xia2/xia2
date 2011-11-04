@@ -121,6 +121,12 @@ class _CommandLine():
         self._read_3dr()
         self._read_3dir()
         self._read_3diir()
+
+        # FIXME really need to fix how this works out...
+        
+        self._read_3dar()
+        self._read_3dair()
+        self._read_3daiir()
         self._read_migrate_data()
         self._read_zero_dose()
         self._read_no_correct()
@@ -1298,6 +1304,44 @@ class _CommandLine():
             if '-3diir' in sys.argv:
                 self._understood.append(sys.argv.index('-3diir'))            
             Debug.write('3D II R pipeline (XDS IDXREF all images) selected')
+        return
+
+    def _read_3dar(self):
+
+        if '-3dar' in sys.argv or '-3da' in sys.argv:
+            add_preference('integrater', 'xdsr')
+            add_preference('scaler', 'xdsa')
+            if '-3da' in sys.argv:
+                self._understood.append(sys.argv.index('-3da'))
+            if '-3dar' in sys.argv:
+                self._understood.append(sys.argv.index('-3dar'))
+            Debug.write('3DAR pipeline selected')
+        return
+
+    def _read_3dair(self):
+
+        if '-3dair' in sys.argv or '-3dai' in sys.argv:
+            add_preference('indexer', 'xds')
+            add_preference('integrater', 'xdsr')
+            add_preference('scaler', 'xdsa')
+            if '-3dai' in sys.argv:
+                self._understood.append(sys.argv.index('-3dai'))
+            if '-3dair' in sys.argv:
+                self._understood.append(sys.argv.index('-3dair'))
+            Debug.write('3DAR pipeline selected')
+        return
+
+    def _read_3daiir(self):
+
+        if '-3daiir' in sys.argv or '-3daii' in sys.argv:
+            add_preference('indexer', 'xdsii')
+            add_preference('integrater', 'xdsr')
+            add_preference('scaler', 'xdsa')
+            if '-3daii' in sys.argv:
+                self._understood.append(sys.argv.index('-3daii'))
+            if '-3daiir' in sys.argv:
+                self._understood.append(sys.argv.index('-3daiir'))            
+            Debug.write('3DA II R pipeline (XDS IDXREF all images) selected')
         return
 
     def _read_debug(self):
