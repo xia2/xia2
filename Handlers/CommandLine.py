@@ -107,6 +107,7 @@ class _CommandLine():
         self._read_primitive()
         self._read_chef()
         self._read_mask()
+        self._read_modify_background()
         self._read_automatch()
         self._read_reversephi()
         self._read_no_lattice_test()
@@ -1497,6 +1498,21 @@ class _CommandLine():
 
     def _help_mask(self):
         return '-mask mask.dat'
+
+    def _read_modify_background(self):
+        try:
+            index = sys.argv.index('-modify_background')
+        except ValueError, e:
+            return
+
+        self._understood.append(index)
+
+        Flags.set_modify_background(True)
+            
+        return
+
+    def get_mask(self):
+        return self._mask
 
     def _read_fixed_628(self):
         try:

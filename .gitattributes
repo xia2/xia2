@@ -73,6 +73,7 @@ Toolkit/MultiMerger.py -text
 Toolkit/PlayPen/ExperimentSetup.py -text
 Toolkit/PlayPen/MendBKGINIT.py -text
 Toolkit/PlayPen/TestMinimise.py -text
+Toolkit/PlayPen/__init__.py -text
 Toolkit/PlayPen/cc.py -text
 Toolkit/PlayPen/centring.py -text
 Toolkit/PlayPen/empty_cbf.py -text

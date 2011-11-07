@@ -40,6 +40,7 @@ class _Flags:
         self._uniform_sd = True
         self._chef = False
         self._mask = None
+        self._modify_background = None
         self._automatch = False
         self._reversephi = False
         self._no_lattice_test = False
@@ -499,6 +500,13 @@ class _Flags:
 
     def get_mask(self):
         return self._mask
+
+    def set_modify_background(self, modify_background):
+        self._modify_background = modify_background
+        return
+
+    def get_modify_background(self):
+        return self._modify_background
 
     def set_ispyb_xml_out(self, ispyb_xml_out):
         self._ispyb_xml_out = ispyb_xml_out

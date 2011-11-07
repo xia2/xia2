@@ -40,6 +40,8 @@ from Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
 from Wrappers.XDS.XDS import XDSException
 from Modules.Indexer.XDSCheckIndexerSolution import xds_check_indexer_solution
 
+from Toolkit.PlayPen.MendBKGINIT import recompute_BKGINIT
+
 # interfaces that this must implement to be an indexer
 
 from Schema.Interfaces.Indexer import Indexer
@@ -318,6 +320,24 @@ class XDSIndexer(FrameProcessor,
             # modify the file to give the new mask
             Flags.get_mask().apply_mask_xds(self.get_header(),
                                             cbf_save, cbf_old)
+
+            init.reload()
+
+        # or mend background...
+
+        if Flags.get_modify_background():
+
+            Debug.write('Modifying background in BKGINIT.pck')
+
+            # copy the original file
+            cbf_old = os.path.join(init.get_working_directory(),
+                                   'BKGINIT.cbf')
+            cbf_save = os.path.join(init.get_working_directory(),
+                                    'BKGINIT.sav')
+            shutil.copyfile(cbf_old, cbf_save)
+
+            recompute_BKGINIT(cbf_save, os.path.join(
+                init.get_working_directory(), 'INIT.LP'), cbf_old)
 
             init.reload()
 
