@@ -1499,6 +1499,8 @@ class _CommandLine():
     def _help_mask(self):
         return '-mask mask.dat'
 
+    # DO NOT USE THE FOLLOWING OPTIONS
+
     def _read_modify_background(self):
         try:
             index = sys.argv.index('-modify_background')
