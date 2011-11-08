@@ -76,6 +76,7 @@ Toolkit/PlayPen/TestMinimise.py -text
 Toolkit/PlayPen/__init__.py -text
 Toolkit/PlayPen/cc.py -text
 Toolkit/PlayPen/centring.py -text
+Toolkit/PlayPen/densmap.py -text
 Toolkit/PlayPen/empty_cbf.py -text
 Toolkit/PlayPen/erzatz_symmetry.py -text
 Toolkit/PlayPen/lattice_play.py -text
