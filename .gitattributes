@@ -79,6 +79,7 @@ Toolkit/PlayPen/centring.py -text
 Toolkit/PlayPen/densmap.py -text
 Toolkit/PlayPen/empty_cbf.py -text
 Toolkit/PlayPen/erzatz_symmetry.py -text
+Toolkit/PlayPen/gxparm.xds -text
 Toolkit/PlayPen/lattice_play.py -text
 Toolkit/PlayPen/mosflm_matrix_things.py -text
 Toolkit/PlayPen/mosflm_rms.py -text
