@@ -31,11 +31,13 @@ def densmap(xparm_file, i, j, k):
     b = matrix.col(values[36:39])
     c = matrix.col(values[39:42])
 
+    UBi = matrix.sqr(values[33:42])
+
     origin = d * n - ox * qx * x - oy * qy * y
     fast = qx * x
     slow = qy * y
 
-    s0 = - (1 / wavelength) * beam
+    s0 = (1 / wavelength) * beam
 
     d2r = math.pi / 180.0
 
@@ -51,7 +53,8 @@ def densmap(xparm_file, i, j, k):
                 R = phiaxis.axis_and_angle_as_r3_rotation_matrix(
                     d2r * (phistart + __k * phiwidth))
                 q = R.inverse() * (s - s0)
-                print '%f %f %f' % (__i, __j, __k), '%f %f %f' % q.elems
+                print '%f %f %f' % (__i, __j, __k), '%f %f %f' % q.elems, \
+                      '%f %f %f' % (UBi * q).elems
 
 if __name__ == '__main__':
 
