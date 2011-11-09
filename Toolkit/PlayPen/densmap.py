@@ -35,21 +35,29 @@ def densmap(xparm_file, i, j, k):
     fast = qx * x
     slow = qy * y
 
-    s0 = (1 / wavelength) * beam
+    s0 = - (1 / wavelength) * beam
 
-    for _i in range(22):
-        for _j in range(22):
-            for _k in range(22):
-                r = origin + (i + 0.05 * _i) * fast + \
-                    (j + 0.05 * _j) * slow
+    d2r = math.pi / 180.0
+
+    for _i in range(21):
+        for _j in range(21):
+            for _k in range(21):
+                __i = i + 0.05 * _i
+                __j = j + 0.05 * _j
+                __k = k + 0.05 * _k
+                
+                r = origin + __i * fast + __j * slow
                 s = (1 / wavelength) * r.normalize()
                 R = phiaxis.axis_and_angle_as_r3_rotation_matrix(
-                    phistart + (k - istart + 0.05 * _k) * phiwidth, deg = True)
+                    d2r * (phistart + __k * phiwidth))
                 q = R.inverse() * (s - s0)
-                print '%f %f %f' % q.elems
+                print '%f %f %f' % (__i, __j, __k), '%f %f %f' % q.elems
 
 if __name__ == '__main__':
-    densmap('gxparm.xds', 0, 0, 0)
+
+    i, j, k = map(int, sys.argv[1:4])
+    
+    densmap('gxparm.xds', i, j, k)
 
     
                     
