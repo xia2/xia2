@@ -1,3 +1,3 @@
 #!/bin/bash
 
-cctbx.python ${XIA2_ROOT}/Schema/XSweep2XDS.py $@
+cctbx.python ${XIA2_ROOT}/dxtbx/example/to_xds.py $@
