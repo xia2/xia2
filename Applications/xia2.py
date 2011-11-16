@@ -126,6 +126,7 @@ def check_environment():
         revision = 'not set'
         
     Chatter.write('Build: %s' % revision)
+    Chatter.write('Contact: xia2.support@gmail.com')
 
     return
 
