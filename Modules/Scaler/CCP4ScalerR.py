@@ -444,6 +444,7 @@ class CCP4ScalerR(Scaler):
                 Debug.write('Using input pointgroup: %s' % \
                             self._scalr_input_pointgroup)
                 pointgroup = self._scalr_input_pointgroup
+                reindex_op = 'h,k,l'
 
             if pt and not probably_twinned:
                 probably_twinned = True

@@ -86,6 +86,7 @@ Toolkit/PlayPen/mosflm_rms.py -text
 Toolkit/PlayPen/mtz2nxs.py -text
 Toolkit/PlayPen/scala2gnuplot.py -text
 Toolkit/PlayPen/scale-play.py -text
+Toolkit/PlayPen/spot2q.py -text
 Toolkit/PlayPen/x1334.lp -text
 Toolkit/PlayPen/x1334.py -text
 Toolkit/PlayPen/x1335.lp -text
