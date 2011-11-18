@@ -86,7 +86,7 @@ def main():
         if n_indexed == 0:
             break
         unit_cell = get_unit_cell()
-        print '%5d %5d' % (n_indexed, n_unindexed), \
+        print '%3d %5d %5d' % (j, n_indexed, n_unindexed), \
               '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % unit_cell
         
 
