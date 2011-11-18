@@ -44,6 +44,9 @@ def compute_Q(xparm_target, xparm_move):
 
     m_t = matrix.sqr(a_t + b_t + c_t)
 
+    min_r = 180.0
+    min_ax = None
+
     for op in ['X,Y,Z', '-X,-Y,Z', '-X,Y,-Z', 'X,-Y,-Z',
                'Z,X,Y', 'Z,-X,-Y', '-Z,-X,Y', '-Z,X,-Y',
                'Y,Z,X', '-Y,Z,-X', 'Y,-Z,-X', '-Y,-Z,X']:
@@ -54,8 +57,16 @@ def compute_Q(xparm_target, xparm_move):
             print 'rejected %s' % op
             continue
         q_r = r3_rotation_axis_and_angle_from_matrix(q)
-        print '%8s' % op, '%6.3f %6.3f %6.3f' % q_r.axis, \
-              '%6.2f' % q_r.angle(deg = True)
+
+        if math.fabs(q_r.angle(deg = True)) < min_r:
+            if q_r.angle(deg = True) >= 0:
+                min_ax = q_r.axis
+                min_r = q_r.angle(deg = True)
+            else:
+                min_ax = (- matrix.col(q_r.axis)).elems
+                min_r = - q_r.angle(deg = True)
+                
+    print '%6.3f %6.3f %6.3f' % min_ax, '%6.2f' % min_r
 
 if __name__ == '__main__':
     compute_Q(sys.argv[1], sys.argv[2])
