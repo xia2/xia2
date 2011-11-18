@@ -85,6 +85,7 @@ Toolkit/PlayPen/mosflm_matrix_things.py -text
 Toolkit/PlayPen/mosflm_rms.py -text
 Toolkit/PlayPen/mtz2nxs.py -text
 Toolkit/PlayPen/rooster.py -text
+Toolkit/PlayPen/rotomat.py -text
 Toolkit/PlayPen/scala2gnuplot.py -text
 Toolkit/PlayPen/scale-play.py -text
 Toolkit/PlayPen/spot2q.py -text
