@@ -88,17 +88,29 @@ def compute_Q(xparm_target, xparm_move):
         if math.fabs(q.determinant() - 1) > 0.1:
             print 'rejected %s' % op
             continue
-        q_r = r3_rotation_axis_and_angle_from_matrix(q)
+        q_r = r3_rotation_axis_and_angle_from_matrix(q.inverse())
 
         if math.fabs(q_r.angle(deg = True)) < min_r:
             if q_r.angle(deg = True) >= 0:
                 min_ax = matrix.col(q_r.axis)
-                min_r = q_r.angle(deg = True)
+                min_r = q_r.angle(deg = True) 
             else:
                 min_ax = - matrix.col(q_r.axis)
                 min_r = - q_r.angle(deg = True)
                 
-    print '%6.3f %6.3f %6.3f' % (_M * min_ax).elems, '%6.2f' % min_r
+    return (_M * min_ax).elems, min_r
 
 if __name__ == '__main__':
-    compute_Q(sys.argv[1], sys.argv[2])
+
+    axes = [(1.0, 0.0, 0.0)]
+    angles = [0.0]
+    names = ['omega', 'kappa', 'phi']
+
+    for j in (2, 3), (1, 2):
+        axis, angle = compute_Q(sys.argv[j[0]], sys.argv[j[1]])
+        axes.append(axis)
+        angles.append(angle)
+
+    for j in range(3):
+        print '%6s' % names[j], '%6.3f %6.3f %6.3f' % axes[j], \
+              '%6.3f' % angles[j]

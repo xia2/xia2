@@ -1,3 +1,11 @@
+#!/usr/bin/env cctbx.python
+# find_HKL.py
+# 
+# An illustration of how to use cctbx code with imgCIF / cbf files, through
+# the pycbf API now included in cctbx. N.B. this does require some coordinate
+# frame changes (see below) and should work with the files from a Pilatus
+# 300K instrument collected during commissioning on I19 as ximg2701_00001.cbf.
+
 from scitbx import matrix
 import math
 import sys
@@ -6,11 +14,21 @@ import pycbf
 from rstbx.diffraction import rotation_angles
 from scitbx.math import r3_rotation_axis_and_angle_from_matrix
 
+# This was the known UB matrix, taken from XDS processing.
+
 UB = matrix.sqr([0.0144873, -0.0128813, -0.0002988,
                  -0.0128113, -0.0143530, -0.0024004,
                  0.0013736, 0.0019910, -0.0192366])
 
+# And this is a target reflection we are trying to find (which we know where
+# it is) on this image.
+
 hkl = (-17, -10, 9)
+
+# This is a "bodge" i.e. additional code needed to establish what the rotation
+# axis is from the setting matrix at the end and start of the image. N.B. this
+# should be mended in the pycbf API. N.B. also that this is not I think used
+# below...
 
 def determine_effective_scan_axis(gonio):
     x = gonio.rotate_vector(0.0, 1, 0, 0)
@@ -31,11 +49,14 @@ def determine_effective_scan_axis(gonio):
 
     return rot.axis, rot.angle(deg = True)
 
+# Why doesn't Python include a basic nearest integer?!
+
 def nint(a):
     return int(round(a) - 0.5) + (a > 0)
 
 def find_HKL(cbf_image):
 
+    # construct and link a cbf_handle to the image itself.
     cbf_handle = pycbf.cbf_handle_struct()
     cbf_handle.read_file(cbf_image, pycbf.MSG_DIGEST)
 
