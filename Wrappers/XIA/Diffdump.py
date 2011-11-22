@@ -42,6 +42,8 @@ import time
 import datetime
 import math
 import exceptions
+from scitbx import matrix
+from scitbx.math import r3_rotation_axis_and_angle_from_matrix
 
 if __name__ == '__main__':
     debug = False
@@ -174,6 +176,27 @@ def find_detector_id(cbf_handle):
 
     return detector_id
 
+def cbf_gonio_to_effective_axis(cbf_gonio):
+    '''Given a cbf goniometer handle, determine the real rotation axis.'''
+
+    x = cbf_gonio.rotate_vector(0.0, 1, 0, 0)
+    y = cbf_gonio.rotate_vector(0.0, 0, 1, 0)
+    z = cbf_gonio.rotate_vector(0.0, 0, 0, 1)
+
+    R = matrix.rec(x + y + z, (3, 3)).transpose()
+
+    x1 = cbf_gonio.rotate_vector(1.0, 1, 0, 0)
+    y1 = cbf_gonio.rotate_vector(1.0, 0, 1, 0)
+    z1 = cbf_gonio.rotate_vector(1.0, 0, 0, 1)
+
+    R1 = matrix.rec(x1 + y1 + z1, (3, 3)).transpose()
+
+    RA = R1 * R.inverse()
+
+    axis = r3_rotation_axis_and_angle_from_matrix(RA).axis
+
+    return axis
+
 def failover_full_cbf(cbf_file):
     '''Use pycbf library to read full cbf file description.'''
 
@@ -184,11 +207,12 @@ def failover_full_cbf(cbf_file):
 
     detector_id_map = {'Pilatus2M':'pilatus 2M',
                        'Pilatus6M':'pilatus 6M',
+                       'i19-p300k':'pilatus 300K',
                        'ADSCQ315-SN920':'adsc q315 2x2 binned'}
 
     header['detector_class'] = detector_id_map[find_detector_id(cbf_handle)]
 
-    if 'Pilatus' in header['detector_class']:
+    if 'pilatus' in header['detector_class']:
         header['detector'] = 'dectris'
     elif 'adsc' in header['detector_class']:
         header['detector'] = 'adsc'
@@ -216,7 +240,6 @@ def failover_full_cbf(cbf_file):
     header['phi_start'], header['phi_width'] = angles
     header['phi_end'] = header['phi_start'] + header['phi_width']
     
-
     year, month, day, hour, minute, second, x = cbf_handle.get_datestamp()
     struct_time = datetime.datetime(year, month, day,
                                     hour, minute, second).timetuple()
@@ -226,7 +249,31 @@ def failover_full_cbf(cbf_file):
     header['size'] = tuple(cbf_handle.get_image_size(0))
     header['exposure_time'] = cbf_handle.get_integration_time()
     header['wavelength'] = cbf_handle.get_wavelength()
-    header['two_theta'] = 0.0
+
+    # compute the true two-theta offset... which is kind-of going around
+    # the houses. oh and the real rotation axis.
+
+    origin = detector.get_pixel_coordinates(0, 0)
+    fast = detector.get_pixel_coordinates(0, 1)
+    slow = detector.get_pixel_coordinates(1, 0)
+    
+    dfast = matrix.col([fast[j] - origin[j] for j in range(3)]).normalize()
+    dslow = matrix.col([slow[j] - origin[j] for j in range(3)]).normalize()
+
+    dorigin = matrix.col(origin)
+    dnormal = dfast.cross(dslow)
+
+    centre = - (dorigin - dorigin.dot(dnormal) * dnormal)
+
+    f = centre.dot(dfast)
+    s = centre.dot(dslow)
+
+    header['fast_direction'] = dfast.elems
+    header['slow_direction'] = dslow.elems
+    header['detector_origin_mm'] = f, s
+
+    header['rotation_axis'] = cbf_gonio_to_effective_axis(gonio)
+    header['two_theta'] = dfast.angle(matrix.col((0.0, 1.0, 0.0)), deg = True)
 
     # find the direct beam vector - takes a few steps
     cbf_handle.find_category('axis')

@@ -31,6 +31,7 @@ import os
 import sys
 import exceptions
 import math
+from scitbx import matrix
 
 class XDSException(exceptions.Exception):
     def __init__(self, value):
@@ -211,6 +212,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
         'mar 135 ccd':False,
         'pilatus 6M':True,
         'pilatus 2M':True,
+        'pilatus 300K':True,
         'rigaku saturn 92 2x2 binned':True,
         'rigaku saturn 944 2x2 binned':True,
         'rigaku saturn 724 2x2 binned':True,
@@ -244,7 +246,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
     detector_to_polarization_plane_normal = {
         'mar':'0.0 1.0 0.0',
         'marccd':'0.0 1.0 0.0',
-        'dectris':'0.0 0.0 1.0',
+        'dectris':'0.0 1.0 0.0',
         'raxis':'1.0 0.0 0.0',
         'saturn':'0.0 1.0 0.0',
         'adsc':'0.0 1.0 0.0'}
@@ -274,8 +276,8 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
                    detector_to_minimum_trusted[detector],
                    detector_to_overload[detector]))
 
-    if not detector in ['raxis', 'saturn'] and \
-       math.fabs(header['two_theta']) > 1.0:
+    if not detector in ['raxis', 'saturn', 'dectris'] and \
+           math.fabs(header['two_theta']) > 1.0:
         raise RuntimeError, 'two theta offset not supported for %s' % detector
 
     if detector in ['raxis', 'saturn']:
@@ -289,6 +291,31 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
             'DIRECTION_OF_DETECTOR_Y-AXIS=%s' % \
             detector_axis_apply_two_theta_rotation(
             detector_to_y_axis[detector], header))
+
+    elif detector in ['dectris']:
+
+        # a warning to the reader - the following code has been tested
+        # only with full CBF Pilatus 300K images from Diamond Beamline I19.
+
+        if math.fabs(header['two_theta']) > 1.0:
+            assert('fast_direction' in header)
+            assert('slow_direction' in header)
+
+            fast_direction = tuple([-1 * d for d in header['fast_direction']])
+            slow_direction = tuple([d for d in header['slow_direction']])
+
+            result.append('DIRECTION_OF_DETECTOR_X-AXIS=%f %f %f' % \
+                          fast_direction)
+            
+            result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%f %f %f' % \
+                          slow_direction)
+
+        else:
+            result.append('DIRECTION_OF_DETECTOR_X-AXIS=%s' % \
+                          detector_to_x_axis[detector])
+            
+            result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%s' % \
+                          detector_to_y_axis[detector])
 
     else:
         
@@ -327,6 +354,10 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
     if refined_rotation_axis:
         result.append('ROTATION_AXIS= %f %f %f' % \
                       refined_rotation_axis)
+    elif 'rotation_axis' in header:
+        R = matrix.sqr((1, 0, 0, 0, -1, 0, 0, 0, -1))
+        result.append('ROTATION_AXIS= %.3f %.3f %.3f' % \
+                      (R * matrix.col(header['rotation_axis'])).elems)
     else:
         result.append('ROTATION_AXIS= %s' % \
                       detector_to_rotation_axis[detector])
@@ -404,6 +435,13 @@ def beam_centre_mosflm_to_xds(x, y, header):
     # is the same... you just have to swap x & y. I have checked this
     # and it is correct - the Mosflm frame has the x, y axes mirrored to
     # the traditional Cartesian frame.
+
+    # though if we have a two-theta offset we need to put the origin
+    # in as where the detector normal meets the crystal.
+
+    if 'detector_origin_mm' in header:
+        return header['detector_origin_mm'][0] / qx, \
+               header['detector_origin_mm'][1] / qy
 
     return py, px
 
