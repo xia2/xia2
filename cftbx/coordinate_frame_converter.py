@@ -40,6 +40,39 @@ class coordinate_frame_converter:
                 return parameter_value
         else:
             raise RuntimeError, 'convention %s not currently supported'
+
+        return 
+
+    def derive_beam_centre_pixels_fast_slow(self):
+        '''Derive the pixel position at which the direct beam would intersect
+        with the detector plane, and return this in terms of fast and slow.'''
+        
+        cfi = self._coordinate_frame_information
+
+        detector_origin = cfi.get('detector_origin')
+        detector_fast = cfi.get('detector_fast')
+        detector_slow = cfi.get('detector_slow')
+        sample_to_source = cfi.get('sample_to_source')
+        pixel_size_fast, pixel_size_slow = cfi.get(
+            'detector_pixel_size_fast_slow')
+
+        detector_normal = detector_fast.cross(detector_slow)
+
+        if not sample_to_source.dot(detector_normal):
+            raise RuntimeError, 'beam parallel to detector'
+
+        distance = detector_origin.dot(detector_normal)
+
+        sample_to_detector = sample_to_source * distance / \
+                             sample_to_source.dot(detector_normal)
+
+        beam_centre = sample_to_detector - detector_origin
+
+        beam_centre_fast_mm = beam_centre.dot(detector_fast)
+        beam_centre_slow_mm = beam_centre.dot(detector_slow)
+
+        return beam_centre_fast_mm / pixel_size_fast, \
+               beam_centre_slow_mm / pixel_size_slow 
         
     def __str__(self):
 
@@ -61,5 +94,4 @@ if __name__ == '__main__':
     cfc = coordinate_frame_converter(configuration_file)
 
     print cfc
-
     
