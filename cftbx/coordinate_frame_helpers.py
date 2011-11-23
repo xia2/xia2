@@ -1,13 +1,21 @@
+import math
+import os
+import sys
+from scitbx import matrix
+
 class coordinate_frame_information:
     '''A bucket class to store coordinate frame information.'''
 
     def __init__(self, detector_origin, detector_fast, detector_slow,
+                 detector_size_fast_slow, detector_pixel_size_fast_slow,
                  rotation_axis, sample_to_source, wavelength, 
                  real_space_a = None, real_space_b = None,
                  real_space_c = None):
         self._detector_origin = detector_origin
         self._detector_fast = detector_fast
         self._detector_slow = detector_slow
+        self._detector_size_fast_slow = detector_size_fast_slow
+        self._detector_pixel_size_fast_slow = detector_pixel_size_fast_slow
         self._rotation_axis = rotation_axis
         self._sample_to_source = sample_to_source
         self._wavelength = wavelength
@@ -42,6 +50,11 @@ class coordinate_frame_information:
 
     def get_real_space_c(self):
         return self._real_space_c
+
+    def get(self, parameter_name):
+        if not hasattr(self, '_%s' % parameter_name):
+            raise RuntimeError, 'no parameter %s' % parameter_name
+        return getattr(self, '_%s' % parameter_name)
 
 def is_xds_xparm(putative_xds_xparm_file):
     '''See if this file looks like an XDS XPARM file i.e. it consists of 42
@@ -95,7 +108,7 @@ def import_xds_xparm(xparm_file):
         
     RZ = _X.axis_and_angle_as_r3_rotation_matrix(- _Z.angle(RX * B))
 
-    R = _M_Z * _M_X
+    R = RZ * RX
 
     # now transform contents of the XPARM file to the form which we want to
     # return...
@@ -119,9 +132,9 @@ def import_xds_xparm(xparm_file):
     real_space_c = R * matrix.col(c)
     
     return coordinate_frame_information(
-        detector_origin, detector_fast, detector_slow, rotation_axis,
-        sample_to_source, wavelength, real_space_a, real_space_b,
-        real_space_c)
+        detector_origin, detector_fast, detector_slow, (nx, ny), (px, py),
+        rotation_axis, sample_to_source, wavelength,
+        real_space_a, real_space_b, real_space_c)
     
     
 

@@ -13,7 +13,6 @@ class coordinate_frame_converter:
     and attitude, detector origin, fast and slow directions and so on in
     a range of different program specific coordinate frames.'''
 
-    DTREK = 'd*TREK'
     CBF = 'CBF'
     XDS = 'XDS'
 
@@ -28,5 +27,39 @@ class coordinate_frame_converter:
             raise RuntimeError, 'unknown configuration file %s' % \
                   configuration_file
 
+        return
+
+    def get(self, parameter, convention = CBF):
+
+        parameter_value = self._coordinate_frame_information.get(parameter)
+
+        if convention == coordinate_frame_converter.CBF:
+            if hasattr(parameter_value, 'elems'):
+                return parameter_value.elems
+            else:
+                return parameter_value
+        else:
+            raise RuntimeError, 'convention %s not currently supported'
         
-        
+    def __str__(self):
+
+        return '\n'.join([
+            'detector origin: %.3f %.3f %.3f' % self.get('detector_origin'),
+            'detector fast: %6.3f %6.3f %6.3f' % self.get('detector_fast'),
+            'detector slow: %6.3f %6.3f %6.3f' % self.get('detector_slow'),
+            'rotation axis: %6.3f %6.3f %6.3f' % self.get('rotation_axis'),
+            '- s0 vector:   %6.3f %6.3f %6.3f' % self.get('sample_to_source')
+            ])
+
+if __name__ == '__main__':
+
+    if len(sys.argv) < 2:
+        raise RuntimeError, '%s configuration-file' % sys.argv[0]
+    
+    configuration_file = sys.argv[1]
+
+    cfc = coordinate_frame_converter(configuration_file)
+
+    print cfc
+
+    
