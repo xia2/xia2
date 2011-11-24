@@ -18,6 +18,8 @@ import os
 import sys
 import math
 
+sys.path.append(os.environ['XIA2_ROOT'])
+
 from cftbx.coordinate_frame_converter import coordinate_frame_converter
 from rstbx.diffraction import rotation_angles
 from cctbx.sgtbx import space_group
@@ -47,5 +49,33 @@ def generate_indices(unit_cell_constants, resolution_limit):
 
     return indices
 
+def main(configuration_file):
+    '''Perform the calculations needed for use case 1.1.'''
 
+    cfc = coordinate_frame_converter(configuration_file)
+    resolution = cfc.derive_detector_highest_resolution()
+
+    A = cfc.get_c('real_space_a')
+    B = cfc.get_c('real_space_b')
+    C = cfc.get_c('real_space_c')
+
+    a = A.length()
+    b = B.length()
+    c = C.length()
+    alpha = B.angle(C)
+    beta = C.angle(A)
+    gamma = A.angle(B)
+
+    indices = generate_indices((a, b, c, alpha, beta, gamma), resolution)
+
+    u, b = cfc.get_u_b(convention = cfc.ROSSMANN)
+    axis = cfc.get('rotation_axis', convention = cfc.ROSSMANN)
+
+    ub = u * b
+
+    wavelength = cfc.get('wavelength')
+
+    ra = rotation_angles(resolution, ub, wavelength, axis)
     
+if __name__ == '__main__':
+    main(sys.argv[1])
