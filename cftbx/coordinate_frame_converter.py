@@ -4,6 +4,7 @@ import sys
 
 from scitbx import matrix
 from cctbx import uctbx
+from cctbx import sgtbx
 
 from coordinate_frame_helpers import is_xds_xparm, import_xds_xparm
 
@@ -16,6 +17,7 @@ class coordinate_frame_converter:
 
     CBF = 'CBF'
     ROSSMANN = 'Rossmann'
+    MOSFLM = 'Mosflm'
 
     def __init__(self, configuration_file):
         '''Construct a coordinate frame converter from a configuration file.'''
@@ -45,6 +47,9 @@ class coordinate_frame_converter:
         elif convention == coordinate_frame_converter.ROSSMANN:
             R = self._coordinate_frame_information.R_to_Rossmann()
             return (R * parameter_value).elems
+        elif convention == coordinate_frame_converter.MOSFLM:
+            R = self._coordinate_frame_information.R_to_Mosflm()
+            return (R * parameter_value).elems
         else:
             raise RuntimeError, 'convention %s not currently supported' % \
                   convention
@@ -65,6 +70,9 @@ class coordinate_frame_converter:
             return R * parameter_value
         elif convention == coordinate_frame_converter.ROSSMANN:
             R = self._coordinate_frame_information.R_to_Rossmann()
+            return R * parameter_value
+        elif convention == coordinate_frame_converter.MOSFLM:
+            R = self._coordinate_frame_information.R_to_Mosflm()
             return R * parameter_value
         else:
             raise RuntimeError, 'convention %s not currently supported' % \
@@ -105,6 +113,8 @@ class coordinate_frame_converter:
             R = cfi.R_to_CBF()
         elif convention == coordinate_frame_converter.ROSSMANN:
             R = cfi.R_to_Rossmann()
+        elif convention == coordinate_frame_converter.MOSFLM:
+            R = cfi.R_to_Mosflm()
         else:
             raise RuntimeError, 'convention %s not currently supported' % \
                   convention
@@ -155,9 +165,24 @@ class coordinate_frame_converter:
 if __name__ == '__main__':
 
     if len(sys.argv) < 2:
-        raise RuntimeError, '%s configuration-file' % sys.argv[0]
+        raise RuntimeError, '%s configuration-file mosflm-matrix' % sys.argv[0]
     
     configuration_file = sys.argv[1]
 
     cfc = coordinate_frame_converter(configuration_file)
+
+    mosflm_matrix = matrix.sqr(
+        map(float, open(sys.argv[2]).read().split()[:9]))
+
+    u, b = cfc.get_u_b(convention = cfc.MOSFLM)
+
+    wavelength = cfc.get('wavelength')
+
+    mosflm_matrix = (1.0 / wavelength) * mosflm_matrix
+
+    matrix_format = '%8.5f %8.5f %8.5f\n%8.5f %8.5f %8.5f\n%8.5f %8.5f %8.5f'
+
+    print matrix_format % mosflm_matrix.elems
+    print matrix_format % (u * b).elems
+
 

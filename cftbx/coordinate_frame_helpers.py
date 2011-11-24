@@ -2,6 +2,7 @@ import math
 import os
 import sys
 from scitbx import matrix
+from cctbx import sgtbx
 
 class coordinate_frame_information:
     '''A bucket class to store coordinate frame information.'''
@@ -25,6 +26,7 @@ class coordinate_frame_information:
 
         self._R_to_CBF = None
         self._R_to_Rossmann = None
+        self._R_to_Mosflm = None
         
         return
 
@@ -77,6 +79,15 @@ class coordinate_frame_information:
                 self._rotation_axis, (0.0, 1.0, 0.0))
 
         return self._R_to_Rossmann
+
+    def R_to_Mosflm(self):
+
+        if not self._R_to_Mosflm:
+            self._R_to_Mosflm = align_reference_frame(
+                self._sample_to_source, (- 1.0, 0.0, 0.0),
+                self._rotation_axis, (0.0, 0.0, 1.0))
+
+        return self._R_to_Mosflm
 
 def align_reference_frame(primary_axis, primary_target,
                           secondary_axis, secondary_target):
@@ -232,5 +243,20 @@ def test_align_reference_frame():
         assert(math.fabs((m * primary_axis).elems[j] - 
                          matrix.col(primary_target).elems[j]) < 0.001)
 
+def find_closest_matrix(moving, target):
+    '''Work through lattice permutations to try to align moving with target,
+    with the metric of trace(inverse(moving) * target).'''
+
+    trace = 0.0
+    reindex = matrix.identity(3)
+    
+    for op in sgtbx.space_group_info('P422').type().group().all_ops():
+        moved = matrix.sqr(op.r().as_double()) * moving
+        if (moved.inverse() * target).trace() > trace:
+            trace = (moved.inverse() * target).trace()
+            reindex = matrix.sqr(op.r().as_double())
+            
+    return reindex
+    
 if __name__ == '__main__':
     test_align_reference_frame()
