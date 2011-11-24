@@ -31,7 +31,7 @@ def generate_indices(unit_cell_constants, resolution_limit):
 
     uc = unit_cell(unit_cell_constants)
 
-    maxh, maxk, maxl = uc.max_miller_indices(dmin)
+    maxh, maxk, maxl = uc.max_miller_indices(resolution_limit)
 
     indices = []
     
@@ -42,7 +42,7 @@ def generate_indices(unit_cell_constants, resolution_limit):
                 if h == 0 and k == 0 and l == 0:
                     continue
                 
-                if uc.d((h, k, l)) < dmin:
+                if uc.d((h, k, l)) < resolution_limit:
                     continue
 
                 indices.append((h, k, l))
@@ -62,20 +62,36 @@ def main(configuration_file):
     a = A.length()
     b = B.length()
     c = C.length()
-    alpha = B.angle(C)
-    beta = C.angle(A)
-    gamma = A.angle(B)
+    alpha = B.angle(C, deg = True)
+    beta = C.angle(A, deg = True)
+    gamma = A.angle(B, deg = True)
 
     indices = generate_indices((a, b, c, alpha, beta, gamma), resolution)
 
     u, b = cfc.get_u_b(convention = cfc.ROSSMANN)
     axis = cfc.get('rotation_axis', convention = cfc.ROSSMANN)
-
     ub = u * b
 
     wavelength = cfc.get('wavelength')
 
+    # work out which reflections should be observed (i.e. pass through the
+    # Ewald sphere)
+
     ra = rotation_angles(resolution, ub, wavelength, axis)
+
+    observed_reflections = []
+
+    for hkl in indices:
+        if ra(hkl):
+            for angle in ra.get_intersection_angles():
+                observed_reflections.append((hkl, angle))
+
+    for hkl, angle in observed_reflections:
+        print '%d %d %d' % hkl, '%.1f' % (180.0  * angle / math.pi)
+
+    # now work out which of these will intersect with the detector, and where
+
+    
     
 if __name__ == '__main__':
     main(sys.argv[1])
