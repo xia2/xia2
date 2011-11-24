@@ -188,6 +188,11 @@ class _Syminfo():
         except:
             pass
 
+        # check if this is a disputed spacegroup name
+
+        if ':' in spacegroup and 'H' in spacegroup:
+            spacegroup = spacegroup.split(':')[0].strip().replace('R', 'H')
+
         # next check to see if this is the long form
 
         if self._spacegroup_long_to_short.has_key(spacegroup):
