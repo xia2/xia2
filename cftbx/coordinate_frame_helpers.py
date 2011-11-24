@@ -22,6 +22,10 @@ class coordinate_frame_information:
         self._real_space_a = real_space_a
         self._real_space_b = real_space_b
         self._real_space_c = real_space_c
+
+        self._R_to_CBF = None
+        self._R_to_Rossmann = None
+        
         return
 
     def get_detector_origin(self):
@@ -46,7 +50,7 @@ class coordinate_frame_information:
         return self._real_space_a
 
     def get_real_space_b(self):
-        return self._real_space_c
+        return self._real_space_b
 
     def get_real_space_c(self):
         return self._real_space_c
@@ -55,6 +59,24 @@ class coordinate_frame_information:
         if not hasattr(self, '_%s' % parameter_name):
             raise RuntimeError, 'no parameter %s' % parameter_name
         return getattr(self, '_%s' % parameter_name)
+
+    def R_to_CBF(self):
+
+        if not self._R_to_CBF:
+            self._R_to_CBF = align_reference_frame(
+                self._rotation_axis, (1.0, 0.0, 0.0),
+                self._sample_to_source, (0.0, 0.0, 1.0))
+
+        return self._R_to_CBF
+
+    def R_to_Rossmann(self):
+
+        if not self._R_to_Rossmann:
+            self._R_to_Rossmann = align_reference_frame(
+                self._sample_to_source, (0.0, 0.0, - 1.0),
+                self._rotation_axis, (0.0, 1.0, 0.0))
+
+        return self._R_to_Rossmann
 
 def align_reference_frame(primary_axis, primary_target,
                           secondary_axis, secondary_target):

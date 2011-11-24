@@ -3,6 +3,7 @@ import os
 import sys
 
 from scitbx import matrix
+from cctbx import uctbx
 
 from coordinate_frame_helpers import is_xds_xparm, import_xds_xparm
 
@@ -14,7 +15,7 @@ class coordinate_frame_converter:
     a range of different program specific coordinate frames.'''
 
     CBF = 'CBF'
-    XDS = 'XDS'
+    ROSSMANN = 'Rossmann'
 
     def __init__(self, configuration_file):
         '''Construct a coordinate frame converter from a configuration file.'''
@@ -30,18 +31,85 @@ class coordinate_frame_converter:
         return
 
     def get(self, parameter, convention = CBF):
+        '''Get a parameter, in a given reference frame if a vector quantity,
+        as a Python basic type.'''
 
         parameter_value = self._coordinate_frame_information.get(parameter)
 
+        if not hasattr(parameter_value, 'elems'):
+            return parameter_value
+
         if convention == coordinate_frame_converter.CBF:
-            if hasattr(parameter_value, 'elems'):
-                return parameter_value.elems
-            else:
-                return parameter_value
+            R = self._coordinate_frame_information.R_to_CBF()
+            return (R * parameter_value).elems
+        elif convention == coordinate_frame_converter.ROSSMANN:
+            R = self._coordinate_frame_information.R_to_Rossmann()
+            return (R * parameter_value).elems
         else:
-            raise RuntimeError, 'convention %s not currently supported'
+            raise RuntimeError, 'convention %s not currently supported' % \
+                  convention
 
         return 
+
+    def get_c(self, parameter, convention = CBF):
+        '''Get the parameter, in the correct coordinate convention if a
+        vector, as a cctbx matrix.col or a floating point value.'''
+
+        parameter_value = self._coordinate_frame_information.get(parameter)
+
+        if not hasattr(parameter_value, 'elems'):
+            return parameter_value
+
+        if convention == coordinate_frame_converter.CBF:
+            R = self._coordinate_frame_information.R_to_CBF()
+            return R * parameter_value
+        elif convention == coordinate_frame_converter.ROSSMANN:
+            R = self._coordinate_frame_information.R_to_Rossmann()
+            return R * parameter_value
+        else:
+            raise RuntimeError, 'convention %s not currently supported' % \
+                  convention
+
+        return 
+
+    def get_u_b(self, convention = CBF):
+        '''Get the [U] and [B] matrices in the requested coordinate system.'''
+
+        cfi = self._coordinate_frame_information
+
+        if not cfi.get_real_space_a() or not cfi.get_real_space_b() or \
+           not cfi.get_real_space_c():
+            raise RuntimeError, 'orientation matrix information missing'
+
+        axis_a = cfi.get_real_space_a()
+        axis_b = cfi.get_real_space_b()
+        axis_c = cfi.get_real_space_c()
+
+        A = matrix.sqr(axis_a.elems +  axis_b.elems + axis_c.elems).inverse()
+
+        a = axis_a.length()
+        b = axis_b.length()
+        c = axis_c.length()
+
+        alpha = axis_b.angle(axis_c, deg = True)
+        beta = axis_c.angle(axis_a, deg = True)
+        gamma = axis_a.angle(axis_b, deg = True)
+
+        uc = uctbx.unit_cell((a, b, c, alpha, beta, gamma))
+
+        B = matrix.sqr(uc.fractionalization_matrix())
+
+        U = A * B.inverse()
+
+        if convention == coordinate_frame_converter.CBF:
+            R = cfi.R_to_CBF()
+        elif convention == coordinate_frame_converter.ROSSMANN:
+            R = cfi.R_to_Rossmann()
+        else:
+            raise RuntimeError, 'convention %s not currently supported' % \
+                  convention
+            
+        return R * U, B
 
     def derive_beam_centre_pixels_fast_slow(self):
         '''Derive the pixel position at which the direct beam would intersect
@@ -93,5 +161,3 @@ if __name__ == '__main__':
 
     cfc = coordinate_frame_converter(configuration_file)
 
-    print cfc
-    
