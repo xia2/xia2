@@ -143,6 +143,8 @@ Wrappers/dTREK/Doc/dTREK.pdf -text
 cftbx/coordinate_frame_converter.py -text
 cftbx/coordinate_frame_helpers.py -text
 cftbx/readme.txt -text
+cftbx/tests/example-mosflm.mat -text
+cftbx/tests/example-xparm.xds -text
 dxtbx/__init__.py -text
 dxtbx/example/to_xds.py -text
 dxtbx/format/Doc/adding_new_formats.txt -text
