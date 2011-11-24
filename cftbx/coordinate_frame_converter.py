@@ -151,7 +151,39 @@ class coordinate_frame_converter:
 
         return beam_centre_fast_mm / pixel_size_fast, \
                beam_centre_slow_mm / pixel_size_slow 
+
+    def derive_detector_highest_resolution(self):
+        '''Determine the highest resolution recorded on the detector, which
+        should be at one of the corners.'''
+ 
+        cfi = self._coordinate_frame_information
+
+        detector_origin = cfi.get('detector_origin')
+        detector_fast = cfi.get('detector_fast')
+        detector_slow = cfi.get('detector_slow')
+        sample_to_source = cfi.get('sample_to_source')
+        pixel_size_fast, pixel_size_slow = cfi.get(
+            'detector_pixel_size_fast_slow')
+        size_fast, size_slow = cfi.get(
+            'detector_size_fast_slow')
+
+        F = detector_origin + detector_fast * pixel_size_fast * size_fast
+        S = detector_origin + detector_slow * pixel_size_slow * size_slow
+        FS = F + S - detector_origin
+
+        detector_normal = detector_fast.cross(detector_slow)
+        distance = detector_origin.dot(detector_normal)
+
+        sample_to_detector = sample_to_source * distance / \
+                             sample_to_source.dot(detector_normal)
+
+        theta = 0.5 * max([sample_to_detector.angle(detector_origin),
+                           sample_to_detector.angle(F),
+                           sample_to_detector.angle(S),
+                           sample_to_detector.angle(FS)])
         
+        return cfi.get_wavelength() / (2.0 * math.sin(theta))
+
     def __str__(self):
 
         return '\n'.join([
@@ -170,6 +202,8 @@ if __name__ == '__main__':
     configuration_file = sys.argv[1]
 
     cfc = coordinate_frame_converter(configuration_file)
+
+    print 'Maximum resolution: %.2f' % cfc.derive_detector_highest_resolution()
 
     mosflm_matrix = matrix.sqr(
         map(float, open(sys.argv[2]).read().split()[:9]))

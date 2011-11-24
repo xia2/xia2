@@ -140,6 +140,7 @@ Wrappers/Labelit/LabelitIndexII.py -text
 Wrappers/Labelit/LabelitMosflmMatrix.py -text
 Wrappers/XDS/XScaleR.py -text
 Wrappers/dTREK/Doc/dTREK.pdf -text
+bitbx/uc1-1.py -text
 cftbx/__init__.py -text
 cftbx/coordinate_frame_converter.py -text
 cftbx/coordinate_frame_helpers.py -text
