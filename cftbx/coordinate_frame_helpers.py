@@ -56,6 +56,57 @@ class coordinate_frame_information:
             raise RuntimeError, 'no parameter %s' % parameter_name
         return getattr(self, '_%s' % parameter_name)
 
+def align_reference_frame(primary_axis, primary_target,
+                          secondary_axis, secondary_target):
+    '''Compute a rotation matrix R: R x primary_axis = primary_target and
+    R x secondary_axis places the secondary_axis in the plane perpendicular
+    to the primary_target, as close as possible to the secondary_target.
+    Require: primary_target orthogonal to secondary_target, primary axis
+    not colinear with secondary axis.'''
+
+    if type(primary_axis) == type(()) or type(primary_axis) == type([]):
+        primary_axis = matrix.col(primary_axis).normalize()
+    else:
+        primary_axis = primary_axis.normalize()
+
+    if type(primary_target) == type(()) or type(primary_target) == type([]):
+        primary_target = matrix.col(primary_target).normalize()
+    else:
+        primary_target = primary_target.normalize()
+
+    if type(secondary_axis) == type(()) or type(secondary_axis) == type([]):
+        secondary_axis = matrix.col(secondary_axis).normalize()
+    else:
+        secondary_axis = secondary_axis.normalize()
+
+    if type(secondary_target) == type(()) or \
+           type(secondary_target) == type([]):
+        secondary_target = matrix.col(secondary_target).normalize()
+    else:
+        secondary_target = secondary_target.normalize()
+
+    # check properties of input axes
+
+    assert(math.fabs(primary_axis.angle(secondary_axis) % math.pi) > 0.001)
+    assert(primary_target.dot(secondary_target) < 0.001)
+
+    if primary_target.angle(primary_axis) % math.pi:
+        axis_p = primary_target.cross(primary_axis)
+        angle_p = - primary_target.angle(primary_axis)
+        Rprimary = axis_p.axis_and_angle_as_r3_rotation_matrix(angle_p)
+    elif primary_target.angle(primary_axis) < 0:
+        axis_p = primary_axis.ortho().normalize()
+        angle_p = math.pi
+        Rprimary = axis_p.axis_and_angle_as_r3_rotation_matrix(angle_p)
+    else:
+        Rprimary = matrix.identity(3)
+
+    axis_s = primary_target
+    angle_s = - secondary_target.angle(secondary_axis)
+    Rsecondary = axis_s.axis_and_angle_as_r3_rotation_matrix(angle_s)
+
+    return Rsecondary * Rprimary
+        
 def is_xds_xparm(putative_xds_xparm_file):
     '''See if this file looks like an XDS XPARM file i.e. it consists of 42
     floating point values and nothing else.'''
@@ -100,15 +151,7 @@ def import_xds_xparm(xparm_file):
     _Y = matrix.col([0, 1, 0])
     _Z = matrix.col([0, 0, 1])
 
-    if _X.angle(A):
-        RX = (_X.cross(A)).axis_and_angle_as_r3_rotation_matrix(
-            - _X.angle(A))
-    else:
-        RX = matrix.sqr((1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0))
-        
-    RZ = _X.axis_and_angle_as_r3_rotation_matrix(- _Z.angle(RX * B))
-
-    R = RZ * RX
+    R = align_reference_frame(A, _X, B, _Z)
 
     # now transform contents of the XPARM file to the form which we want to
     # return...
@@ -136,6 +179,36 @@ def import_xds_xparm(xparm_file):
         rotation_axis, sample_to_source, wavelength,
         real_space_a, real_space_b, real_space_c)
     
+def test_align_reference_frame():
     
+    _i = (1, 0, 0)
+    _j = (0, 1, 0)
+    _k = (0, 0, 1)
+    
+    primary_axis = _i
+    primary_target = _i
+    secondary_axis = _k
+    secondary_target = _k
 
-    
+    m = align_reference_frame(primary_axis, primary_target,
+                              secondary_axis, secondary_target)
+
+    i = matrix.identity(3)
+
+    for j in range(9):
+        assert(math.fabs(m.elems[j] - i.elems[j]) < 0.001)
+
+    primary_axis = _j
+    primary_target = _i
+    secondary_axis = _k
+    secondary_target = _k
+
+    m = align_reference_frame(primary_axis, primary_target,
+                              secondary_axis, secondary_target)
+
+    for j in range(3):
+        assert(math.fabs((m * primary_axis).elems[j] - 
+                         matrix.col(primary_target).elems[j]) < 0.001)
+
+if __name__ == '__main__':
+    test_align_reference_frame()
