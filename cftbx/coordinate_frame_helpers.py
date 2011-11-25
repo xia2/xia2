@@ -11,7 +11,7 @@ class coordinate_frame_information:
                  detector_size_fast_slow, detector_pixel_size_fast_slow,
                  rotation_axis, sample_to_source, wavelength, 
                  real_space_a = None, real_space_b = None,
-                 real_space_c = None):
+                 real_space_c = None, space_group_number = None):
         self._detector_origin = detector_origin
         self._detector_fast = detector_fast
         self._detector_slow = detector_slow
@@ -23,6 +23,7 @@ class coordinate_frame_information:
         self._real_space_a = real_space_a
         self._real_space_b = real_space_b
         self._real_space_c = real_space_c
+        self._space_group_number = space_group_number
 
         self._R_to_CBF = None
         self._R_to_Rossmann = None
@@ -56,6 +57,9 @@ class coordinate_frame_information:
 
     def get_real_space_c(self):
         return self._real_space_c
+
+    def get_space_group_number(self):
+        return self._space_group_number
 
     def get(self, parameter_name):
         if not hasattr(self, '_%s' % parameter_name):
@@ -206,11 +210,12 @@ def import_xds_xparm(xparm_file):
     real_space_a = R * matrix.col(a)
     real_space_b = R * matrix.col(b)
     real_space_c = R * matrix.col(c)
+    space_group_number = int(values[26])
     
     return coordinate_frame_information(
         detector_origin, detector_fast, detector_slow, (nx, ny), (px, py),
         rotation_axis, sample_to_source, wavelength,
-        real_space_a, real_space_b, real_space_c)
+        real_space_a, real_space_b, real_space_c, space_group_number)
     
 def test_align_reference_frame():
     

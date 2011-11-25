@@ -18,11 +18,14 @@ import os
 import sys
 import math
 
-sys.path.append(os.environ['XIA2_ROOT'])
+assert('XIA2_ROOT' in os.environ)
+
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
 
 from cftbx.coordinate_frame_converter import coordinate_frame_converter
 from rstbx.diffraction import rotation_angles
-from cctbx.sgtbx import space_group
+from cctbx.sgtbx import space_group, space_group_symbols
 from cctbx.uctbx import unit_cell 
 
 def generate_indices(unit_cell_constants, resolution_limit):
@@ -49,26 +52,46 @@ def generate_indices(unit_cell_constants, resolution_limit):
 
     return indices
 
+def remove_absent_indices(indices, space_group_number):
+    '''From the given list of indices, remove those reflections which should
+    be systematic absences according to the given space group.'''
+
+    sg = space_group(space_group_symbols(space_group_number).hall())
+
+    present = []
+
+    for hkl in indices:
+        if not sg.is_sys_absent(hkl):
+            present.append(hkl)
+
+    return present
+
 def main(configuration_file):
     '''Perform the calculations needed for use case 1.1.'''
 
     cfc = coordinate_frame_converter(configuration_file)
-    resolution = cfc.derive_detector_highest_resolution()
+    dmin = cfc.derive_detector_highest_resolution()
+
+    # in principle this should come from the crystal model - should that
+    # crystal model record the cell parameters or derive them from the
+    # axis directions?
 
     A = cfc.get_c('real_space_a')
     B = cfc.get_c('real_space_b')
     C = cfc.get_c('real_space_c')
 
-    a = A.length()
-    b = B.length()
-    c = C.length()
-    alpha = B.angle(C, deg = True)
-    beta = C.angle(A, deg = True)
-    gamma = A.angle(B, deg = True)
+    cell = (A.length(), B.length(), C.length(), B.angle(C, deg = True),
+            C.angle(A, deg = True), A.angle(B, deg = True))
 
-    indices = generate_indices((a, b, c, alpha, beta, gamma), resolution)
+    # generate all of the possible indices, then pull out those which should
+    # be systematically absent
 
-    print '# possible indices: %s' % len(indices)
+    sg = cfc.get('space_group_number')
+
+    indices = remove_absent_indices(generate_indices(cell, dmin), sg)
+
+    # then get the UB matrix according to the Rossmann convention which
+    # is used within the Labelit code.
 
     u, b = cfc.get_u_b(convention = cfc.ROSSMANN)
     axis = cfc.get('rotation_axis', convention = cfc.ROSSMANN)
@@ -79,7 +102,7 @@ def main(configuration_file):
     # work out which reflections should be observed (i.e. pass through the
     # Ewald sphere)
 
-    ra = rotation_angles(resolution, ub, wavelength, axis)
+    ra = rotation_angles(dmin, ub, wavelength, axis)
 
     observed_reflections = []
 
@@ -87,8 +110,6 @@ def main(configuration_file):
         if ra(hkl):
             for angle in ra.get_intersection_angles():
                 observed_reflections.append((hkl, angle))
-
-    print '# observable indices: %s' % len(observed_reflections)
 
     # convert all of these to full scattering vectors in a laboratory frame
     # (for which I will use the CBF coordinate frame) and calculate which
@@ -99,7 +120,8 @@ def main(configuration_file):
     s0 = (- 1.0 / wavelength) * cfc.get_c('sample_to_source')
     ub = u * b
 
-    # need some detector properties for this as well...
+    # need some detector properties for this as well... this should be
+    # abstracted to a detector model.
 
     detector_origin = cfc.get_c('detector_origin')
     detector_fast = cfc.get_c('detector_fast')
@@ -130,8 +152,6 @@ def main(configuration_file):
             continue
 
         observed_reflection_positions.append((hkl, x, y, angle))
-
-    print '# observed indices: %s' % len(observed_reflection_positions)
 
     r2d = 180.0 / math.pi
 
