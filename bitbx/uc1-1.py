@@ -68,6 +68,8 @@ def main(configuration_file):
 
     indices = generate_indices((a, b, c, alpha, beta, gamma), resolution)
 
+    print '# possible indices: %s' % len(indices)
+
     u, b = cfc.get_u_b(convention = cfc.ROSSMANN)
     axis = cfc.get('rotation_axis', convention = cfc.ROSSMANN)
     ub = u * b
@@ -86,12 +88,55 @@ def main(configuration_file):
             for angle in ra.get_intersection_angles():
                 observed_reflections.append((hkl, angle))
 
+    print '# observable indices: %s' % len(observed_reflections)
+
+    # convert all of these to full scattering vectors in a laboratory frame
+    # (for which I will use the CBF coordinate frame) and calculate which
+    # will intersect with the detector
+
+    u, b = cfc.get_u_b()
+    axis = cfc.get_c('rotation_axis')
+    s0 = (- 1.0 / wavelength) * cfc.get_c('sample_to_source')
+    ub = u * b
+
+    # need some detector properties for this as well...
+
+    detector_origin = cfc.get_c('detector_origin')
+    detector_fast = cfc.get_c('detector_fast')
+    detector_slow = cfc.get_c('detector_slow')
+    sample_to_source = cfc.get_c('sample_to_source')
+    pixel_size_fast, pixel_size_slow = cfc.get('detector_pixel_size_fast_slow')
+    size_fast, size_slow = cfc.get('detector_size_fast_slow')
+
+    dimension_fast = size_fast * pixel_size_fast
+    dimension_slow = size_slow * pixel_size_slow
+
+    detector_normal = detector_fast.cross(detector_slow)
+    distance = detector_origin.dot(detector_normal)
+
+    observed_reflection_positions = []
+
     for hkl, angle in observed_reflections:
-        print '%d %d %d' % hkl, '%.1f' % (180.0  * angle / math.pi)
+        s = (ub * hkl).rotate(axis, angle)
+        q = (s + s0).normalize()
+        r = (q * distance / q.dot(detector_normal)) - detector_origin
+        
+        x = r.dot(detector_fast)
+        y = r.dot(detector_slow)
 
-    # now work out which of these will intersect with the detector, and where
+        if x < 0 or y < 0:
+            continue
+        if x > dimension_fast or y > dimension_slow:
+            continue
 
-    
+        observed_reflection_positions.append((hkl, x, y, angle))
+
+    print '# observed indices: %s' % len(observed_reflection_positions)
+
+    r2d = 180.0 / math.pi
+
+    for hkl, f, s, angle in observed_reflection_positions:
+        print '%d %d %d' % hkl, '%.4f %4f %2f' % (f, s, angle * r2d)
     
 if __name__ == '__main__':
     main(sys.argv[1])
