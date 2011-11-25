@@ -25,7 +25,7 @@ def work_helper_image_files():
     helper = scan_helper_image_files()
 
     directory = os.path.join(os.environ['XIA2_ROOT'], 'dxtbx', 'model',
-                             'Tests')
+                             'tests')
     
     template = 'image_###.dat'
 
@@ -59,7 +59,7 @@ def work_xscan_factory():
     '''Test out the scan_factory.'''
 
     directory = os.path.join(os.environ['XIA2_ROOT'], 'dxtbx', 'model',
-                             'Tests')
+                             'tests')
     
     template = 'image_###.dat'
     
