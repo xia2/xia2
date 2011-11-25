@@ -82,7 +82,7 @@ class FormatTIFFRayonix(FormatTIFF):
 
     # FIXME have implemented none of those which follow...
     
-    def _xgoniometer(self):
+    def _goniometer(self):
         '''Return a model for goniometer corresponding to the values stored
         in the image header. In the first instance assume this is a single
         axis annd raise exception otherwise.'''
@@ -94,9 +94,9 @@ class FormatTIFFRayonix(FormatTIFF):
                 assert(starts[j] == 0.0)
                 assert(ends[j] == 0.0)
         
-        return self._xgoniometer_factory.SingleAxis()
+        return self._goniometer_factory.single_axis()
 
-    def _xdetector(self):
+    def _detector(self):
         '''Return a model for a simple detector, which at the moment insists
         that the offsets and rotations are all 0.0.'''
 
@@ -124,22 +124,22 @@ class FormatTIFFRayonix(FormatTIFF):
 
         beam = beam_x * pixel_size[0], beam_y * pixel_size[1]
         
-        return self._xdetector_factory.Simple(
+        return self._detector_factory.simple(
             'CCD', distance, beam, '+x', '-y', pixel_size,
             image_size, (underload, overload), [])
 
-    def _xbeam(self):
+    def _beam(self):
         '''Return a simple model for the beam.'''
 
         wavelength = struct.unpack(
             self._i, self._tiff_header_bytes[1932:1936])[0] * 1.0e-5
         
-        return self._xbeam_factory.Simple(wavelength)
+        return self._beam_factory.simple(wavelength)
 
-    def _xscan(self):
+    def _scan(self):
         '''Return the scan information for this image.'''
 
-        format = self._xscan_factory.Format('TIFF') 
+        format = self._scan_factory.format('TIFF') 
         exposure_time = self._get_rayonix_times()[1]
         epoch = time.mktime(self._get_rayonix_timestamp())
 
@@ -148,7 +148,7 @@ class FormatTIFFRayonix(FormatTIFF):
         osc_start = starts[offset]
         osc_range = width
 
-        return self._xscan_factory.Single(
+        return self._scan_factory.single(
             self._image_file, format, exposure_time,
             osc_start, osc_range, epoch)
 

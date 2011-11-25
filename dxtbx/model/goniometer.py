@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# XGoniometer.py
+# goniometer.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
@@ -14,9 +14,9 @@ import pycbf
 from scitbx import matrix
 from scitbx.math import r3_rotation_axis_and_angle_from_matrix
 
-from XGoniometerHelpers import cbf_gonio_to_effective_axis_fixed
+from goniometer_helpers import cbf_gonio_to_effective_axis_fixed
 
-class XGoniometer:
+class goniometer:
     '''A class to represent the rotation axis for a standard rotation
     geometry diffraction data set.'''
 
@@ -88,8 +88,8 @@ class XGoniometer:
 
         return self._fixed
 
-class XGoniometerFactory:
-    '''A factory class for XGoniometer objects, which will encapsulate
+class goniometer_factory:
+    '''A factory class for goniometer objects, which will encapsulate
     some standard goniometer designs to make it a little easier to get
     started with all of this - for cases when we are not using a CBF.
     When we have a CBF just use that factory method and everything will be
@@ -99,29 +99,29 @@ class XGoniometerFactory:
         pass
 
     @staticmethod
-    def SingleAxis():
-        '''Construct a single axis XGoniometer which is canonical in the
+    def single_axis():
+        '''Construct a single axis goniometer which is canonical in the
         CBF reference frame.'''
 
         axis = (1, 0, 0)
         fixed = (1, 0, 0, 0, 1, 0, 0, 0, 1)
         
-        return XGoniometer(axis, fixed)
+        return goniometer(axis, fixed)
 
     @staticmethod
-    def KnownAxis(axis):
-        '''Return an XGoniometer instance for a known rotation axis, assuming
+    def known_axis(axis):
+        '''Return an goniometer instance for a known rotation axis, assuming
         that nothing is known about the fixed element of the rotation axis.'''
 
         assert(len(axis) == 3)
         
         fixed = (1, 0, 0, 0, 1, 0, 0, 0, 1)
         
-        return XGoniometer(axis, fixed)
+        return goniometer(axis, fixed)
 
     @staticmethod
-    def Kappa(alpha, omega, kappa, phi, direction, scan_axis):
-        '''Return a kappa XGoniometer where omega is the primary axis (i,e.
+    def kappa(alpha, omega, kappa, phi, direction, scan_axis):
+        '''Return a kappa goniometer where omega is the primary axis (i,e.
         aligned with X in the CBF coordinate frame) and has the kappa arm
         with angle alpha attached to it, aligned with -z, +y, +z or -y at
         omega = 0, that being the direction, which in turn has phi fixed to it
@@ -155,7 +155,7 @@ class XGoniometerFactory:
             K = _kappa.axis_and_angle_as_r3_rotation_matrix(kappa, deg = True)
             P = _phi.axis_and_angle_as_r3_rotation_matrix(phi, deg = True)
 
-            return XGoniometer(_omega.elems, (K * P).elems)
+            return goniometer(_omega.elems, (K * P).elems)
             
         elif scan_axis == 'phi':
 
@@ -163,7 +163,7 @@ class XGoniometerFactory:
             K = _kappa.axis_and_angle_as_r3_rotation_matrix(kappa, deg = True)
             I = (1, 0, 0, 0, 1, 0, 0, 0, 1)
 
-            return XGoniometer(O * K * _phi.elems, I)
+            return goniometer(O * K * _phi.elems, I)
 
         return
 
@@ -181,7 +181,7 @@ class XGoniometerFactory:
         cbf_gonio.__swig_destroy__(cbf_gonio)
         del(cbf_gonio)
         
-        return XGoniometer(axis.elems, fixed.elems)
+        return goniometer(axis.elems, fixed.elems)
 
     @staticmethod
     def imgCIF_H(cbf_handle):
@@ -195,7 +195,7 @@ class XGoniometerFactory:
         cbf_gonio.__swig_destroy__(cbf_gonio)
         del(cbf_gonio)
 
-        return XGoniometer(axis.elems, fixed.elems)
+        return goniometer(axis.elems, fixed.elems)
 
         
 

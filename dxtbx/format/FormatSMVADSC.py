@@ -54,13 +54,13 @@ class FormatSMVADSC(FormatSMV):
 
         return
     
-    def _xgoniometer(self):
+    def _goniometer(self):
         '''Return a model for a simple single-axis goniometer. This should
         probably be checked against the image header.'''
         
-        return self._xgoniometer_factory.SingleAxis()
+        return self._goniometer_factory.single_axis()
 
-    def _xdetector(self):
+    def _detector(self):
         '''Return a model for a simple detector, presuming no one has
         one of these on a two-theta stage. Assert that the beam centre is
         provided in the Mosflm coordinate frame.'''
@@ -74,27 +74,27 @@ class FormatSMVADSC(FormatSMV):
         overload = 65535
         underload = 0
         
-        return self._xdetector_factory.Simple(
+        return self._detector_factory.simple(
             'CCD', distance, (beam_y, beam_x), '+x', '-y',
             (pixel_size, pixel_size), image_size, (underload, overload), [])
 
-    def _xbeam(self):
+    def _beam(self):
         '''Return a simple model for the beam.'''
 
         wavelength = float(self._header_dictionary['WAVELENGTH'])
         
-        return self._xbeam_factory.Simple(wavelength)
+        return self._beam_factory.simple(wavelength)
 
-    def _xscan(self):
+    def _scan(self):
         '''Return the scan information for this image.'''
 
-        format = self._xscan_factory.Format('SMV') 
+        format = self._scan_factory.format('SMV') 
         exposure_time = float(self._header_dictionary['TIME'])
         epoch =  time.mktime(time.strptime(self._header_dictionary['DATE']))
         osc_start = float(self._header_dictionary['OSC_START'])
         osc_range = float(self._header_dictionary['OSC_RANGE'])
 
-        return self._xscan_factory.Single(
+        return self._scan_factory.single(
             self._image_file, format, exposure_time,
             osc_start, osc_range, epoch)
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# XBeam.py
+# beam.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
@@ -14,7 +14,7 @@ import pycbf
 from scitbx import matrix
 from scitbx.math import r3_rotation_axis_and_angle_from_matrix
 
-class XBeam:
+class beam:
     '''A class to represent the X-ray primary beam for a standard rotation
     geometry diffraction experiment. We assume (i) that the beam is
     monochromatic (ii) that the beam is reasonably parallel. In the first
@@ -49,7 +49,7 @@ class XBeam:
                '%.6f\n' % self._wavelength
 
     def __cmp__(self, other):
-        '''Comparison of XBeam instances - to ensure for instance two of these
+        '''Comparison of beam instances - to ensure for instance two of these
         objects come from the same sweep.'''
 
         angle = self._direction.angle(other.get_direction_c())
@@ -86,7 +86,7 @@ class XBeam:
     def get_wavelength(self):
         return self._wavelength
 
-class XBeamFactory:
+class beam_factory:
     '''A factory class for beam objects, which encapsulate standard beam
     models. In cases where a full cbf desctiption is available this
     will be used, otherwise simplified descriptions can be applied.'''
@@ -95,21 +95,21 @@ class XBeamFactory:
         pass
 
     @staticmethod
-    def Simple(wavelength):
+    def simple(wavelength):
         '''Construct a beam object on the principle that the beam is aligned
         with the +z axis, as is quite normal. Also assume the beam has
         polarization fraction 0.999 and is polarized in the x-z plane.'''
 
-        return XBeam((0.0, 0.0, 1.0), 0.999, (0.0, 1.0, 0.0), wavelength)
+        return beam((0.0, 0.0, 1.0), 0.999, (0.0, 1.0, 0.0), wavelength)
 
     @staticmethod
-    def Complex(beam_direction, polarization_fraction,
+    def complex(beam_direction, polarization_fraction,
                 polarization_plane_normal, wavelength):
         '''Full access to the constructor for cases where we do know everything
         that we need...'''
 
-        return XBeam(beam_direction, polarization_fraction,
-                     polarization_plane_normal, wavelength)
+        return beam(beam_direction, polarization_fraction,
+                    polarization_plane_normal, wavelength)
 
     @staticmethod
     def imgCIF(cif_file):
@@ -151,7 +151,7 @@ class XBeamFactory:
         polar_plane_normal = (
             math.sin(polar_angle * d2r), math.cos(polar_angle * d2r), 0.0)
         
-        return XBeam(direction, polar_fraction, polar_plane_normal, wavelength)
+        return beam(direction, polar_fraction, polar_plane_normal, wavelength)
 
     @staticmethod
     def imgCIF_H(cbf_handle):
@@ -191,6 +191,6 @@ class XBeamFactory:
         polar_plane_normal = (
             math.sin(polar_angle * d2r), math.cos(polar_angle * d2r), 0.0)
         
-        return XBeam(direction, polar_fraction, polar_plane_normal, wavelength)
+        return beam(direction, polar_fraction, polar_plane_normal, wavelength)
 
         

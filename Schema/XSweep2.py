@@ -45,10 +45,10 @@ class XSweep2():
 
     def __init__(self, name,
                  wavelength,
-                 xgoniometer_instance,
-                 xdetector_instance,
-                 xbeam_instance,
-                 xscan_instance,
+                 goniometer_instance,
+                 detector_instance,
+                 beam_instance,
+                 scan_instance,
                  resolution_high = None,
                  resolution_low = None,
                  user_lattice = None,
@@ -76,10 +76,10 @@ class XSweep2():
         self._indexer = None
         self._integrater = None
 
-        self._xgoniometer = xgoniometer_instance
-        self._xdetector = xdetector_instance
-        self._xbeam = xbeam_instance
-        self._xscan = xscan_instance
+        self._goniometer = goniometer_instance
+        self._detector = detector_instance
+        self._beam = beam_instance
+        self._scan = scan_instance
         
         return
     
@@ -93,11 +93,11 @@ class XSweep2():
         else:
             repr = 'SWEEP %s [WAVELENGTH UNDEFINED]\n' % self._name
 
-        repr += 'TEMPLATE %s\n' % self._xscan.get_template()
-        repr += 'DIRECTORY %s\n' % self._xscan.get_directory()
-        repr += 'EXPOSURE TIME %f\n' % self._xscan.get_exposure_time()
-        repr += 'PHI WIDTH %.2f\n' % self._xscan.get_oscillation()[1]
-        repr += 'IMAGES (USER) %d to %d\n' % self._xscan.get_image_range()
+        repr += 'TEMPLATE %s\n' % self._scan.get_template()
+        repr += 'DIRECTORY %s\n' % self._scan.get_directory()
+        repr += 'EXPOSURE TIME %f\n' % self._scan.get_exposure_time()
+        repr += 'PHI WIDTH %.2f\n' % self._scan.get_oscillation()[1]
+        repr += 'IMAGES (USER) %d to %d\n' % self._scan.get_image_range()
         
         # add some stuff to implement the actual processing implicitly
         # FIXME implement this once it is ready!
@@ -106,40 +106,40 @@ class XSweep2():
 
         return repr
 
-    def get_xgoniometer(self):
-        return self._xgoniometer
+    def get_goniometer(self):
+        return self._goniometer
 
-    def get_xdetector(self):
-        return self._xdetector
+    def get_detector(self):
+        return self._detector
 
-    def get_xbeam(self):
-        return self._xbeam
+    def get_beam(self):
+        return self._beam
 
-    def get_xscan(self):
-        return self._xscan
+    def get_scan(self):
+        return self._scan
 
     def get_image_name(self, number):
         '''Convert an image number into a name.'''
 
-        return self._xscan.get_image_name(number)
+        return self._scan.get_image_name(number)
 
     def get_all_image_names(self):
         '''Get a full list of all images in this sweep...'''
 
-        start, end = self._xscan.get_image_range()
+        start, end = self._scan.get_image_range()
         
-        return [self._xscan.get_image_name(image) \
+        return [self._scan.get_image_name(image) \
                 for image in range(start, end + 1)]
 
     def get_epoch(self, image):
         '''Get the exposure epoch for this image.'''
 
-        return self._xscan.get_image_epoch(image)
+        return self._scan.get_image_epoch(image)
 
     def get_reversephi(self):
         '''Get whether this is a reverse-phi sweep...'''
         
-        if self._xscan.get_oscillation()[1] < 0:
+        if self._scan.get_oscillation()[1] < 0:
             return True
         
         return False
@@ -147,7 +147,7 @@ class XSweep2():
     def get_image_to_epoch(self):
         '''Get the image to epoch mapping table.'''
         
-        return copy.deepcopy(self._xscan.get_epochs())
+        return copy.deepcopy(self._scan.get_epochs())
 
     # to see if we have been instructed...
 
@@ -161,27 +161,27 @@ class XSweep2():
 
         summary = ['Sweep: %s' % self._name]
 
-        summary.append('Files %s' % os.path.join(self._xscan.get_directory(),
-                                                 self._xscan.get_template()))
+        summary.append('Files %s' % os.path.join(self._scan.get_directory(),
+                                                 self._scan.get_template()))
 
-        summary.append('Images: %d to %d' % self._xscan.get_image_range())
+        summary.append('Images: %d to %d' % self._scan.get_image_range())
 
         # FIXME add some more interesting things in here...
 
         return summary
             
     def get_directory(self):
-        return self._xscan.get_directory()
+        return self._scan.get_directory()
 
     def get_image(self):
-        start, end = self._xscan.get_image_range()
+        start, end = self._scan.get_image_range()
         
-        return self._xscan.get_image_name(start)
+        return self._scan.get_image_name(start)
 
     def get_beam(self):
 
         # FIXME derive the beam centre in the coordinate frame (fast, slow)
-        # in mm - will need self._xbeam and self._xdetector
+        # in mm - will need self._beam and self._detector
         
         return beam
 
@@ -209,7 +209,7 @@ class XSweep2():
         return self._resolution_low
 
     def get_polarization(self):
-        return self._xbeam.get_polarization_fraction()
+        return self._beam.get_polarization_fraction()
 
     def get_name(self):
         return self._name
@@ -254,7 +254,7 @@ class XSweep2():
                                                 self.get_name(),
                                                 'index']))
 
-            frames = self._xscan.get_image_range()
+            frames = self._scan.get_image_range()
             self._indexer.set_frame_wedge(frames[0],
                                           frames[1])
 
@@ -328,7 +328,7 @@ class XSweep2():
             # frames to process... looks here like we have multiple definitions
             # of the wedge somehow...
 
-            frames = self._xscan.get_image_range()
+            frames = self._scan.get_image_range()
             self._indexer.set_frame_wedge(frames[0],
                                           frames[1])
             self._integrater.set_integrater_wedge(frames[0],
@@ -411,13 +411,13 @@ class XSweep2Factory:
     #                             resolution limits
 
     @staticmethod
-    def FromX(name, wavelength, xgoniometer_instance, xdetector_instance,
-              xbeam_instance, xscan_instance):
+    def FromX(name, wavelength, goniometer_instance, detector_instance,
+              beam_instance, scan_instance):
         '''Construct an XSweep2 instance from already assembled Xthing
         instances, along with a name and an XWavelength instance.'''
 
-        return XSweep2(name, wavelength, xgoniometer_instance,
-                       xdetector_instance, xbeam_instance, xscan_instance)
+        return XSweep2(name, wavelength, goniometer_instance,
+                       detector_instance, beam_instance, scan_instance)
 
     @staticmethod
     def FromImages(name, wavelength, list_of_images):
@@ -443,10 +443,10 @@ class XSweep2Factory:
 
         i = format(list_of_images[0])
 
-        beam = i.get_xbeam()
-        gonio = i.get_xgoniometer()
-        det = i.get_xdetector()
-        scan = i.get_xscan()
+        beam = i.get_beam()
+        gonio = i.get_goniometer()
+        det = i.get_detector()
+        scan = i.get_scan()
 
         # now verify that they share the same detector position, rotation axis
         # and beam properties.
@@ -455,10 +455,10 @@ class XSweep2Factory:
 
         for image in list_of_images[1:]:
             i = format(image)
-            assert(beam == i.get_xbeam())
-            assert(gonio == i.get_xgoniometer())
-            assert(det == i.get_xdetector())
-            scans.append(i.get_xscan())
+            assert(beam == i.get_beam())
+            assert(gonio == i.get_goniometer())
+            assert(det == i.get_detector())
+            scans.append(i.get_scan())
 
         for s in sorted(scans)[1:]:
             scan += s

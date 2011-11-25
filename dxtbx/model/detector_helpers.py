@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-# XDetectorHelpers.py
+# detector_helpers.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
 #  
-# Helpers for the XDetector class...
+# Helpers for the detector class...
 
 import math
 from scitbx import matrix
@@ -100,7 +100,7 @@ def find_undefined_value(cbf_handle):
     cbf_handle.find_column('undefined_value')
     return cbf_handle.get_doublevalue()
 
-class XDetectorHelperSensors:
+class detector_helper_sensors:
     '''A helper class which allows enumeration of detector sensor technologies
     which should help in identifying specific detectors when needed. These are
     currently limited to IMAGE_PLATE CCD PAD.'''
@@ -112,16 +112,16 @@ class XDetectorHelperSensors:
 
     @staticmethod
     def check_sensor(sensor_type):
-        if sensor_type in [XDetectorHelperSensors.SENSOR_CCD,
-                           XDetectorHelperSensors.SENSOR_PAD,
-                           XDetectorHelperSensors.SENSOR_IMAGE_PLATE,
-                           XDetectorHelperSensors.SENSOR_UNKNOWN]:
+        if sensor_type in [detector_helper_sensors.SENSOR_CCD,
+                           detector_helper_sensors.SENSOR_PAD,
+                           detector_helper_sensors.SENSOR_IMAGE_PLATE,
+                           detector_helper_sensors.SENSOR_UNKNOWN]:
             return True
         return False
 
     @staticmethod
     def all():
-        return [XDetectorHelperSensors.SENSOR_CCD,
-                XDetectorHelperSensors.SENSOR_PAD,
-                XDetectorHelperSensors.SENSOR_IMAGE_PLATE]
+        return [detector_helper_sensors.SENSOR_CCD,
+                detector_helper_sensors.SENSOR_PAD,
+                detector_helper_sensors.SENSOR_IMAGE_PLATE]
             

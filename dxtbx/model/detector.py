@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# XDetector.py
+# detector.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
@@ -16,12 +16,12 @@ import pycbf
 from scitbx import matrix
 from scitbx.math import r3_rotation_axis_and_angle_from_matrix
 
-from XDetectorHelpers import XDetectorHelperSensors
-from XDetectorHelpers import read_xds_xparm
-from XDetectorHelpers import find_undefined_value
-from XDetectorHelpers import compute_frame_rotation
+from detector_helpers import detector_helper_sensors
+from detector_helpers import read_xds_xparm
+from detector_helpers import find_undefined_value
+from detector_helpers import compute_frame_rotation
 
-class XDetector:
+class detector:
     '''A class to represent the area detector for a standard rotation geometry
     diffraction experiment. We assume (i) that the detector is flat (ii) that
     the detector is rectangular and (iii) that it is fixed in position for the
@@ -42,7 +42,7 @@ class XDetector:
         pixel positions marking the extreme limits of the region to be
         excluded in the fast and slow directions.'''
 
-        assert(XDetectorHelperSensors.check_sensor(sensor))
+        assert(detector_helper_sensors.check_sensor(sensor))
         assert(len(origin) == 3)
         assert(len(fast) == 3)
         assert(len(slow) == 3)
@@ -81,7 +81,7 @@ class XDetector:
                ''.join([m % _m for _m in self._mask])
 
     def __cmp__(self, other):
-        '''Compare two XDetector instances.'''
+        '''Compare two detector instances.'''
 
         angle = self._origin.angle(other.get_origin_c())
 
@@ -124,7 +124,7 @@ class XDetector:
         return 0
 
     def get_sensor(self):
-        '''Get the sensor type, a static string defined in XDetectorHelpers.'''
+        '''Get the sensor type, a static string defined in detector_helpers.'''
 
         return self._sensor
 
@@ -188,8 +188,8 @@ class XDetector:
 
         return
 
-class XDetectorFactory:
-    '''A factory class for XDetector objects, which will encapsulate standard
+class detector_factory:
+    '''A factory class for detector objects, which will encapsulate standard
     detector designs to make it a little easier to get started with these. In
     cases where a CBF image is provided a full description can be used, in
     other cases assumptions will be made about the experiment configuration.
@@ -199,7 +199,7 @@ class XDetectorFactory:
         pass
 
     @staticmethod
-    def Simple(sensor, distance, beam_centre, fast_direction, slow_direction,
+    def simple(sensor, distance, beam_centre, fast_direction, slow_direction,
                pixel_size, image_size, trusted_range, mask):
         '''Construct a simple detector at a given distance from the sample
         along the direct beam presumed to be aligned with -z, offset by the
@@ -227,14 +227,14 @@ class XDetectorFactory:
         origin = matrix.col((0, 0, -1)) * distance - \
                  fast * beam_centre[0] - slow * beam_centre[1]
 
-        return XDetector(XDetectorFactory.Sensor(sensor),
-                         origin.elems, fast.elems, slow.elems, pixel_size,
-                         image_size, trusted_range, mask)
+        return detector(detector_factory.sensor(sensor),
+                        origin.elems, fast.elems, slow.elems, pixel_size,
+                        image_size, trusted_range, mask)
 
     @staticmethod
-    def TwoTheta(sensor, distance, beam_centre, fast_direction, slow_direction,
-                 two_theta_direction, two_theta_angle,
-                 pixel_size, image_size, trusted_range, mask):
+    def two_theta(sensor, distance, beam_centre, fast_direction,
+                  slow_direction, two_theta_direction, two_theta_angle,
+                  pixel_size, image_size, trusted_range, mask):
         '''Construct a simple detector at a given distance from the sample
         along the direct beam presumed to be aligned with -z, offset by the
         beam centre - the directions of which are given by the fast and slow
@@ -269,13 +269,13 @@ class XDetectorFactory:
         R = two_theta.axis_and_angle_as_r3_rotation_matrix(two_theta_angle,
                                                            deg = True)
 
-        return XDetector(XDetectorFactory.Sensor(sensor),
-                         (R * origin).elems, (R * fast).elems,
-                         (R * slow).elems, pixel_size, image_size,
-                         trusted_range, mask)
+        return detector(detector_factory.sensor(sensor),
+                        (R * origin).elems, (R * fast).elems,
+                        (R * slow).elems, pixel_size, image_size,
+                        trusted_range, mask)
 
     @staticmethod
-    def Complex(sensor, origin, fast, slow, pixel, size, trusted_range):
+    def complex(sensor, origin, fast, slow, pixel, size, trusted_range):
         '''A complex detector model, where you know exactly where everything
         is. This is useful for implementation of the Rigaku Saturn header
         format, as that is exactly what is in there. Origin, fast and slow are
@@ -288,9 +288,9 @@ class XDetectorFactory:
         assert(len(pixel) == 2)
         assert(len(size) == 2)
 
-        return XDetector(XDetectorFactory.Sensor(sensor),
-                         origin, fast, slow, pixel,
-                         size, trusted_range, [])
+        return detector(detector_factory.sensor(sensor),
+                        origin, fast, slow, pixel,
+                        size, trusted_range, [])
 
     @staticmethod
     def XDS(xds_xparm_file):
@@ -353,9 +353,9 @@ class XDetectorFactory:
         c_fast = _m * detector_fast
         c_slow = _m * detector_slow
 
-        return XDetector(XDetectorFactory.Sensor('undefined'),
-                         c_origin, c_fast, c_slow, pixel_size,
-                         image_size, (0, 0), [])
+        return detector(detector_factory.sensor('unknown'),
+                        c_origin, c_fast, c_slow, pixel_size,
+                        image_size, (0, 0), [])
 
     @staticmethod
     def imgCIF(cif_file, sensor):
@@ -364,18 +364,18 @@ class XDetectorFactory:
         cbf_handle = pycbf.cbf_handle_struct()
         cbf_handle.read_file(cif_file, pycbf.MSG_DIGEST)
 
-        detector = cbf_handle.construct_detector(0)
+        cbf_detector = cbf_handle.construct_detector(0)
         
-        pixel = (detector.get_inferred_pixel_size(1),
-                 detector.get_inferred_pixel_size(2))
+        pixel = (cbf_detector.get_inferred_pixel_size(1),
+                 cbf_detector.get_inferred_pixel_size(2))
 
         # FIXME can probably simplify the code which follows below by
         # making proper use of cctbx vector calls - should not be as
         # complex as it appears to be...
 
-        origin = detector.get_pixel_coordinates(0, 0)
-        fast = detector.get_pixel_coordinates(0, 1)
-        slow = detector.get_pixel_coordinates(1, 0)
+        origin = cbf_detector.get_pixel_coordinates(0, 0)
+        fast = cbf_detector.get_pixel_coordinates(0, 1)
+        slow = cbf_detector.get_pixel_coordinates(1, 0)
         
         dfast = [fast[j] - origin[j] for j in range(3)]
         dslow = [slow[j] - origin[j] for j in range(3)]
@@ -390,30 +390,30 @@ class XDetectorFactory:
         underload = find_undefined_value(cbf_handle)
         overload = cbf_handle.get_overload(0)
 
-        detector.__swig_destroy__(detector)
-        del(detector)
+        cbf_detector.__swig_destroy__(cbf_detector)
+        del(cbf_detector)
 
-        return XDetector(XDetectorFactory.Sensor(sensor),
-                         origin, fast, slow, pixel,
-                         size, (underload, overload), [])
+        return detector(detector_factory.sensor(sensor),
+                        origin, fast, slow, pixel,
+                        size, (underload, overload), [])
 
     @staticmethod
     def imgCIF_H(cbf_handle, sensor):
         '''Initialize a detector model from an imgCIF file handle, where it
         is assumed that the file has already been read.'''
 
-        detector = cbf_handle.construct_detector(0)
+        cbf_detector = cbf_handle.construct_detector(0)
         
-        pixel = (detector.get_inferred_pixel_size(1),
-                 detector.get_inferred_pixel_size(2))
+        pixel = (cbf_detector.get_inferred_pixel_size(1),
+                 cbf_detector.get_inferred_pixel_size(2))
 
         # FIXME can probably simplify the code which follows below by
         # making proper use of cctbx vector calls - should not be as
         # complex as it appears to be...
 
-        origin = detector.get_pixel_coordinates(0, 0)
-        fast = detector.get_pixel_coordinates(0, 1)
-        slow = detector.get_pixel_coordinates(1, 0)
+        origin = cbf_detector.get_pixel_coordinates(0, 0)
+        fast = cbf_detector.get_pixel_coordinates(0, 1)
+        slow = cbf_detector.get_pixel_coordinates(1, 0)
         
         dfast = [fast[j] - origin[j] for j in range(3)]
         dslow = [slow[j] - origin[j] for j in range(3)]
@@ -428,15 +428,15 @@ class XDetectorFactory:
         underload = find_undefined_value(cbf_handle)
         overload = cbf_handle.get_overload(0)
 
-        detector.__swig_destroy__(detector)
-        del(detector)
+        cbf_detector.__swig_destroy__(cbf_detector)
+        del(cbf_detector)
 
-        return XDetector(XDetectorFactory.Sensor(sensor),
-                         origin, fast, slow, pixel,
-                         size, (underload, overload), [])
+        return detector(detector_factory.sensor(sensor),
+                        origin, fast, slow, pixel,
+                        size, (underload, overload), [])
 
     @staticmethod
-    def Sensor(name):
+    def sensor(name):
         '''Return the correct sensor token for a given name, for example:
 
         ccd, CCD
@@ -446,17 +446,17 @@ class XDetectorFactory:
         to the appropriate static token which will be used as a handle
         everywhere else in this. Also allow existing token to be passed in.'''
 
-        if XDetectorHelperSensors.check_sensor(name):
+        if detector_helper_sensors.check_sensor(name):
             return name
         
         if name.upper() == 'PAD':
-            return XDetectorHelperSensors.SENSOR_PAD
+            return detector_helper_sensors.SENSOR_PAD
         elif name.upper() == 'CCD':
-            return XDetectorHelperSensors.SENSOR_CCD
+            return detector_helper_sensors.SENSOR_CCD
         elif name.upper() == 'IMAGE_PLATE':
-            return XDetectorHelperSensors.SENSOR_IMAGE_PLATE
+            return detector_helper_sensors.SENSOR_IMAGE_PLATE
         elif name.upper() == 'UNKNOWN':
-            return XDetectorHelperSensors.SENSOR_UNKNOWN
+            return detector_helper_sensors.SENSOR_UNKNOWN
 
         raise RuntimeError, 'name %s not known' % name
 

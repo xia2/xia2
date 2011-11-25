@@ -34,9 +34,9 @@ def TestRegistry(files):
 
         if format.understand(f) >= 2:
             i = format(f)
-            print i.get_xbeam()
-            print i.get_xgoniometer()
-            print i.get_xdetector()
+            print i.get_beam()
+            print i.get_goniometer()
+            print i.get_detector()
 
     return time.time() - s
 
@@ -47,22 +47,22 @@ def TestRegistry2(files):
     
     format = Registry.find(files[0])
 
-    b0 = format(files[0]).get_xbeam()
-    g0 = format(files[0]).get_xgoniometer()
-    d0 = format(files[0]).get_xdetector()
+    b0 = format(files[0]).get_beam()
+    g0 = format(files[0]).get_goniometer()
+    d0 = format(files[0]).get_detector()
 
     for f in files:
 
         print f
         
         i = format(f)
-        print i.get_xbeam()
-        print i.get_xgoniometer()
-        print i.get_xdetector()
-        print i.get_xscan()
+        print i.get_beam()
+        print i.get_goniometer()
+        print i.get_detector()
+        print i.get_scan()
 
-        print i.get_xbeam() == b0, i.get_xgoniometer() == g0, \
-              i.get_xdetector() == d0
+        print i.get_beam() == b0, i.get_goniometer() == g0, \
+              i.get_detector() == d0
         
     return time.time() - s 
 
@@ -74,13 +74,13 @@ def TestRegistry3(files):
     
     format = Registry.find(files[0])
 
-    scan = format(files[0]).get_xscan()
+    scan = format(files[0]).get_scan()
 
     for f in files[1:]:
 
         i = format(f)
 
-        scan += i.get_xscan()
+        scan += i.get_scan()
 
     print scan
     print scan[:len(scan) // 2]

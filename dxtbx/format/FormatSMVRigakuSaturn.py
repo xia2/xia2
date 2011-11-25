@@ -67,7 +67,7 @@ class FormatSMVRigakuSaturn(FormatSMV):
 
         return
 
-    def _xgoniometer(self):
+    def _goniometer(self):
         '''Initialize the structure for the goniometer - this will need to
         correctly compose the axes given in the image header. In this case
         this is made rather straightforward as the image header has the
@@ -77,9 +77,9 @@ class FormatSMVRigakuSaturn(FormatSMV):
         axis = tuple(map(float, self._header_dictionary[
             'ROTATION_VECTOR'].split()))
 
-        return self._xgoniometer_factory.KnownAxis(axis)
+        return self._goniometer_factory.known_axis(axis)
 
-    def _xdetector(self):
+    def _detector(self):
         '''Return a model for the detector, allowing for two-theta offsets
         and the detector position. This will be rather more complex...'''
 
@@ -140,11 +140,11 @@ class FormatSMVRigakuSaturn(FormatSMV):
         overload = int(float(self._header_dictionary['SATURATED_VALUE']))
         underload = 0
 
-        return self._xdetector_factory.Complex(
+        return self._detector_factory.complex(
             'CCD', detector_origin.elems, detector_fast.elems,
             detector_slow.elems, pixel_size, image_size, (underload, overload))
 
-    def _xbeam(self):
+    def _beam(self):
         '''Return a simple model for the beam.'''
 
         beam_direction = map(float, self._header_dictionary[
@@ -158,15 +158,15 @@ class FormatSMVRigakuSaturn(FormatSMV):
         
         wavelength = float(self._header_dictionary['SCAN_WAVELENGTH'])
         
-        return self._xbeam_factory.Complex(
+        return self._beam_factory.complex(
             beam_direction, p_fraction, p_plane, wavelength)
 
-    def _xscan(self):
+    def _scan(self):
         '''Return the scan information for this image.'''
 
         rotation = map(float, self._header_dictionary['ROTATION'].split())
 
-        format = self._xscan_factory.Format('SMV') 
+        format = self._scan_factory.format('SMV') 
         epoch = time.mktime(time.strptime(self._header_dictionary[
             'DTREK_DATE_TIME'], '%d-%b-%Y %H:%M:%S'))
 
@@ -174,7 +174,7 @@ class FormatSMVRigakuSaturn(FormatSMV):
         osc_start = rotation[0]
         osc_range = rotation[2]
 
-        return self._xscan_factory.Single(
+        return self._scan_factory.single(
             self._image_file, format, exposure_time,
             osc_start, osc_range, epoch)
 

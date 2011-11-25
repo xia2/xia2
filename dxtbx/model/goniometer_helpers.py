@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-# XGoniometerHelpers.py
+# goniometer_helpers.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
 #  
-# Helper functions for XGoniometer
+# Helper functions for goniometer
 
 import math
 import pycbf

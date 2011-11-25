@@ -1,11 +1,12 @@
 #!/usr/bin/env python
-# XDetectorHelpersTypes.py
+# detector_helpers_types.py
+# 
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
 #  
-# Helpers for the XDetector class... this time enumerating all of the common
+# Helpers for the detector class... this time enumerating all of the common
 # detector types, hashed by the sensor type, image dimensions and pixel
 # dimensions. 
 
@@ -14,10 +15,10 @@ import sys
 
 assert('XIA2_ROOT') in os.environ
 
-from XDetectorHelpers import XDetectorHelperSensors
-from XDetector import XDetectorFactory
+from detector_helpers import detector_helper_sensors
+from detector import detector_factory
 
-class XDetectorHelpersTypes:
+class detector_helpers_types:
     '''A singleton class to help with identifying specific detectors used for
     macromolecular crystallography.'''
 
@@ -46,7 +47,7 @@ class XDetectorHelpersTypes:
 
             assert(len(tokens) == 6)
 
-            sensor = XDetectorFactory.Sensor(tokens[0])
+            sensor = detector_factory.sensor(tokens[0])
             fast, slow, df, ds = map(int, tokens[1:5])
 
             self._detectors[(sensor, fast, slow, df, ds)] = tokens[5]
@@ -55,15 +56,15 @@ class XDetectorHelpersTypes:
 
     def get(self, sensor, fast, slow, df, ds):
         '''Look up a name for a detector with this sensor type (listed in
-        XDetectorHelpers) these image dimensions in the fast and slow
+        detector_helpers) these image dimensions in the fast and slow
         directions, these corresponding pixel sizes, in microns (integers).
         If the sensor is unknown, all sensor types will be tested - be warned
         if there are duplicates.'''
 
-        sensor = XDetectorFactory.Sensor(sensor)
+        sensor = detector_factory.sensor(sensor)
 
-        if sensor == XDetectorHelperSensors.SENSOR_UNKNOWN:
-            for s in XDetectorHelperSensors.all():
+        if sensor == detector_helper_sensors.SENSOR_UNKNOWN:
+            for s in detector_helper_sensors.all():
                 try:
                     return self.get(s, fast, slow, df, ds)
                 except:
@@ -86,13 +87,13 @@ class XDetectorHelpersTypes:
         raise RuntimeError, 'detector %s %d %d %d %d unknown' % \
               (sensor, fast, slow, df, ds)
 
-XDetectorHelpersTypes = XDetectorHelpersTypes()
+detector_helpers_types = detector_helpers_types()
 
 if __name__ == '__main__':
     sensor = sys.argv[1]
     fast, slow, df, ds = map(int, sys.argv[2:6])
 
-    print XDetectorHelpersTypes.get(sensor, fast, slow, df, ds)
+    print detector_helpers_types.get(sensor, fast, slow, df, ds)
     
         
 

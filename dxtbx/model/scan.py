@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# XScan.py
+# scan.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
@@ -17,10 +17,10 @@ import copy
 import time
 import datetime
 
-from XScanHelpers import XScanHelperImageFiles
-from XScanHelpers import XScanHelperImageFormats
+from scan_helpers import scan_helper_image_files
+from scan_helpers import scan_helper_image_formats
 
-class XScan:
+class scan:
     '''A class to represent the scan used to perform a rotation method X-ray
     diffraction experiment. In essence this is the information provided to the
     camera on where the images should go, how long the exposures should be
@@ -33,10 +33,10 @@ class XScan:
         of this information could be derived from image headers within the
         class it was felt to be more flexible to expose that kind of cleverness
         in factory functions. (i) format must be one of the types enumerated
-        in XScanHelper.FORMAT_NAME (ii) Require that the exposure times and
+        in scan_helper.FORMAT_NAME (ii) Require that the exposure times and
         epochs are passed in as dictionaries incexed by image numbers in
         range image_range[0] to image_range[1] inclusive however (iii) do not
-        presume in here that the images must exist when the XScan object is
+        presume in here that the images must exist when the scan object is
         constructed. N.B. also now include the oscillation as a (start, width)
         tuple corresponding to the first image in the scan. It is implied that
         subsequent images will be continuous with this, sharing the same
@@ -44,7 +44,7 @@ class XScan:
 
         assert('#' in template)
         assert(os.path.exists(directory))
-        assert(XScanHelperImageFormats.check_format(format))
+        assert(scan_helper_image_formats.check_format(format))
         assert(len(image_range) == 2)
         assert(len(oscillation) == 2)
         assert(len(epochs) == (image_range[1] - image_range[0] + 1))
@@ -98,7 +98,7 @@ class XScan:
         new_epochs = copy.deepcopy(self._epochs)
         new_epochs.update(other.get_epochs())
 
-        return XScan(self._template, self._directory, self._format,
+        return scan(self._template, self._directory, self._format,
                      new_image_range, self._exposure_time,
                      self._oscillation, new_epochs)
 
@@ -113,7 +113,7 @@ class XScan:
         return self._image_range[1] - self._image_range[0] + 1
 
     def __getitem__(self, index):
-        '''Implement ability to get an XScan object corresponding to a single
+        '''Implement ability to get an scan object corresponding to a single
         image in the scan. N.B. this is slightly complex as we need to support
         single indices and slice objects. If index has attribute start is
         assumed to be a slice. N.B. these all operate on the IMAGE INDEX
@@ -124,7 +124,7 @@ class XScan:
             assert(not index < self._image_range[0])
             assert(not index > self._image_range[1])
             
-            return XScan(self._template, self._directory, self._format,
+            return scan(self._template, self._directory, self._format,
                          (index, index), self._exposure_time,
                          self.get_oscillation(index),
                          {index:self._epochs[index]})
@@ -151,7 +151,7 @@ class XScan:
             for i in range(start, stop + 1):
                 new_epochs[i] = self._epochs[i]
 
-            return XScan(self._template, self._directory, self._format,
+            return scan(self._template, self._directory, self._format,
                          (start, stop), self._exposure_time,
                          self.get_oscillation(start), new_epochs)
 
@@ -205,7 +205,7 @@ class XScan:
 
     def get_image_name(self, index):
         '''Get the full image name for this image index.'''
-        return XScanHelperImageFiles.template_directory_index_to_image(
+        return scan_helper_image_files.template_directory_index_to_image(
             self._template, self._directory, self._image)
 
     def get_image_epoch(self, index):
@@ -218,20 +218,20 @@ class XScan:
 
         return time.asctime(time.gmtime(self._epochs[index]))
 
-class XScanFactory:
-    '''A factory for XScan instances, to help with constructing the classes
+class scan_factory:
+    '''A factory for scan instances, to help with constructing the classes
     in a set of common circumstances.'''
 
     @staticmethod
-    def Single(filename, format, exposure_time, osc_start, osc_width, epoch):
-        '''Construct an XScan instance for a single image.'''
+    def single(filename, format, exposure_time, osc_start, osc_width, epoch):
+        '''Construct an scan instance for a single image.'''
 
         template, directory = \
-                  XScanHelperImageFiles.image_to_template_directory(filename)
-        index = XScanHelperImageFiles.image_to_index(filename)
+                  scan_helper_image_files.image_to_template_directory(filename)
+        index = scan_helper_image_files.image_to_index(filename)
 
-        return XScan(template, directory, format, (index, index),
-                     exposure_time, (osc_start, osc_width), {index:epoch})
+        return scan(template, directory, format, (index, index),
+                    exposure_time, (osc_start, osc_width), {index:epoch})
 
     @staticmethod
     def imgCIF(cif_file):
@@ -240,7 +240,7 @@ class XScanFactory:
         cbf_handle = pycbf.cbf_handle_struct()
         cbf_handle.read_file(cif_file, pycbf.MSG_DIGEST)
 
-        return XScanFactory.imgCIF_H(cif_file, cbf_handle)
+        return scan_factory.imgCIF_H(cif_file, cbf_handle)
         
     @staticmethod
     def imgCIF_H(cif_file, cbf_handle):
@@ -254,43 +254,40 @@ class XScanFactory:
         angles = tuple(gonio.get_rotation_range())
         
         template, directory = \
-                  XScanHelperImageFiles.image_to_template_directory(cif_file)
-        index = XScanHelperImageFiles.image_to_index(cif_file)
-        format = XScanHelperImageFormats.FORMAT_CBF
+                  scan_helper_image_files.image_to_template_directory(cif_file)
+        index = scan_helper_image_files.image_to_index(cif_file)
+        format = scan_helper_image_formats.FORMAT_CBF
         
         gonio.__swig_destroy__(gonio)
 
-        return XScan(template, directory, format, (index, index),
-                     exposure, angles, {index:timestamp})
+        return scan(template, directory, format, (index, index),
+                    exposure, angles, {index:timestamp})
 
     @staticmethod
-    def Sum(xscans):
+    def add(scans):
         '''Sum a list of scans wrapping the sligtly clumsy idiomatic method:
-        sum(xscans[1:], xscans[0]).'''
+        sum(scans[1:], scans[0]).'''
 
-        for xscan in xscans:
-            assert(xscan.__class__ == XScan)
-
-        return sum(xscans[1:], xscans[0])
+        return sum(scans[1:], scans[0])
 
     @staticmethod
-    def Search(filename):
+    def search(filename):
         '''Get a list of files which appear to match the template and
         directory implied by the input filename. This could well be used
-        to get a list of image headers to read and hence construct XScans
+        to get a list of image headers to read and hence construct scans
         from.'''
 
         template, directory = \
-                  XScanHelperImageFiles.image_to_template_directory(filename)
+                  scan_helper_image_files.image_to_template_directory(filename)
 
-        indices = XScanHelperImageFiles.template_directory_to_indices(
+        indices = scan_helper_image_files.template_directory_to_indices(
             template, directory)
 
-        return [XScanHelperImageFiles.template_directory_index_to_image(
+        return [scan_helper_image_files.template_directory_index_to_image(
             template, directory, index) for index in indices]
 
     @staticmethod
-    def Format(name):
+    def format(name):
         '''Return the correct format token for a given name, for example:
 
         cbf, CBF
@@ -303,15 +300,15 @@ class XScanFactory:
         everywhere else in this.'''
         
         if name.upper() == 'CBF':
-            return XScanHelperImageFormats.FORMAT_CBF
+            return scan_helper_image_formats.FORMAT_CBF
         elif name.upper() == 'SMV':
-            return XScanHelperImageFormats.FORMAT_SMV
+            return scan_helper_image_formats.FORMAT_SMV
         elif name.upper() == 'TIF' or name.upper() == 'TIFF':
-            return XScanHelperImageFormats.FORMAT_TIFF
+            return scan_helper_image_formats.FORMAT_TIFF
         elif name.upper() == 'RAXIS':
-            return XScanHelperImageFormats.FORMAT_RAXIS
+            return scan_helper_image_formats.FORMAT_RAXIS
         elif name.upper() == 'MAR':
-            return XScanHelperImageFormats.FORMAT_MAR
+            return scan_helper_image_formats.FORMAT_MAR
 
         raise RuntimeError, 'name %s not known' % name
 

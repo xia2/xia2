@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-# TestXBeam.py
+# test_beam.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
 #
-# Tests for the XBeam class.
+# Tests for the beam class.
 
 import math
 import os
@@ -13,18 +13,18 @@ import sys
 
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
-from dxtbx.model.XBeam import XBeam
-from dxtbx.model.XBeam import XBeamFactory
+from dxtbx.model.beam import beam
+from dxtbx.model.beam import beam_factory
 
-def TestXBeam():
-    '''A test class for the XBeam class.'''
+def test_beam():
+    '''A test class for the beam class.'''
 
-    cbf = XBeamFactory.imgCIF('phi_scan_001.cbf')
+    cbf = beam_factory.imgCIF('phi_scan_001.cbf')
 
     print cbf
 
 if __name__ == '__main__':
 
-    TestXBeam()
+    test_beam()
 
 

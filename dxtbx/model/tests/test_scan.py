@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-# TestXScan.py
+# test_scan.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
 #
-# Tests for the XScan class, and it's helper classes.
+# Tests for the scan class, and it's helper classes.
 
 import math
 import os
@@ -14,58 +14,58 @@ import time
 
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
-from dxtbx.model.XScan import XScan
-from dxtbx.model.XScan import XScanFactory
-from dxtbx.model.XScanHelpers import XScanHelperImageFiles
-from dxtbx.model.XScanHelpers import XScanHelperImageFormats
+from dxtbx.model.scan import scan
+from dxtbx.model.scan import scan_factory
+from dxtbx.model.scan_helpers import scan_helper_image_files
+from dxtbx.model.scan_helpers import scan_helper_image_formats
 
 def work_helper_image_files():
-    '''Test the static methods in XScanHelperImageFiles.'''
+    '''Test the static methods in scan_helper_image_files.'''
 
-    helper = XScanHelperImageFiles()
+    helper = scan_helper_image_files()
 
     directory = os.path.join(os.environ['XIA2_ROOT'], 'dxtbx', 'model',
                              'Tests')
     
     template = 'image_###.dat'
 
-    assert(len(XScanHelperImageFiles.template_directory_to_indices(
+    assert(len(scan_helper_image_files.template_directory_to_indices(
         template, directory)) == 20)
-
-    assert(XScanHelperImageFiles.template_directory_index_to_image(
+    
+    assert(scan_helper_image_files.template_directory_index_to_image(
         template, directory, 1) == os.path.join(directory, 'image_001.dat'))
-
-    assert(XScanHelperImageFiles.template_index_to_image(
+    
+    assert(scan_helper_image_files.template_index_to_image(
         template, 1) == 'image_001.dat')
-
-    assert(XScanHelperImageFiles.image_to_template_directory(
+    
+    assert(scan_helper_image_files.image_to_template_directory(
         os.path.join(directory, 'image_001.dat')) == (template, directory))
     
-    assert(XScanHelperImageFiles.image_to_index('image_001.dat') == 1)
+    assert(scan_helper_image_files.image_to_index('image_001.dat') == 1)
     
-    assert(XScanHelperImageFiles.image_to_template(
+    assert(scan_helper_image_files.image_to_template(
         'image_001.dat') == 'image_###.dat')
     
     return
 
 def work_helper_image_formats():
-    '''Test the static methods and properties in XScanHelperImageFormats.'''
-
-    assert(XScanHelperImageFormats.check_format(
-        XScanHelperImageFormats.FORMAT_CBF))
-    assert(not(XScanHelperImageFormats.check_format('CBF')))
-
+    '''Test the static methods and properties in scan_helper_image_formats.'''
+    
+    assert(scan_helper_image_formats.check_format(
+        scan_helper_image_formats.FORMAT_CBF))
+    assert(not(scan_helper_image_formats.check_format('CBF')))
+    
 def work_xscan_factory():
-    '''Test out the XScanFactory.'''
+    '''Test out the scan_factory.'''
 
     directory = os.path.join(os.environ['XIA2_ROOT'], 'dxtbx', 'model',
                              'Tests')
     
     template = 'image_###.dat'
-
-    xscans = [XScanFactory.Single(
-        XScanHelperImageFiles.template_directory_index_to_image(
-        template, directory, j + 1), XScanHelperImageFormats.FORMAT_CBF,
+    
+    xscans = [scan_factory.single(
+        scan_helper_image_files.template_directory_index_to_image(
+            template, directory, j + 1), scan_helper_image_formats.FORMAT_CBF,
         1.0, 18 + 0.5 * j, 0.5, j) for j in range(20)]
 
     xscans.reverse()
@@ -79,22 +79,22 @@ def work_xscan_factory():
     xscans.sort()
     print sum(xscans[1:], xscans[0])
 
-    a = XScanFactory.Sum(xscans[:10])
-    b = XScanFactory.Sum(xscans[10:])
+    a = scan_factory.add(xscans[:10])
+    b = scan_factory.add(xscans[10:])
 
     print a + b
 
-    filename = XScanHelperImageFiles.template_directory_index_to_image(
+    filename = scan_helper_image_files.template_directory_index_to_image(
         template, directory, 1)
-
-    assert(len(XScanFactory.Search(filename)) == 20)
+    
+    assert(len(scan_factory.search(filename)) == 20)
 
     print (a + b)[1:5]
     print (a + b)[:10]
 
     cbf = os.path.join(directory, 'phi_scan_001.cbf')
 
-    print XScanFactory.imgCIF(cbf)
+    print scan_factory.imgCIF(cbf)
     
 if __name__ == '__main__':
 

@@ -55,25 +55,25 @@ class FormatCBFFull(FormatCBF):
 
         return
 
-    def _xgoniometer(self):
-        '''Return a working XGoniometer instance.'''
+    def _goniometer(self):
+        '''Return a working goniometer instance.'''
 
-        return self._xgoniometer_factory.imgCIF_H(self._cbf_handle)
+        return self._goniometer_factory.imgCIF_H(self._cbf_handle)
 
-    def _xdetector(self):
-        '''Return a working XDetector instance.'''
+    def _detector(self):
+        '''Return a working detector instance.'''
 
-        return self._xdetector_factory.imgCIF_H(self._cbf_handle, 'unknown')
+        return self._detector_factory.imgCIF_H(self._cbf_handle, 'unknown')
 
-    def _xbeam(self):
-        '''Return a working XBeam instance.'''
+    def _beam(self):
+        '''Return a working beam instance.'''
 
-        return self._xbeam_factory.imgCIF_H(self._cbf_handle)
+        return self._beam_factory.imgCIF_H(self._cbf_handle)
 
-    def _xscan(self):
-        '''Return a working XScan instance.'''
+    def _scan(self):
+        '''Return a working scan instance.'''
 
-        return self._xscan_factory.imgCIF_H(self._image_file, self._cbf_handle)
+        return self._scan_factory.imgCIF_H(self._image_file, self._cbf_handle)
 
 if __name__ == '__main__':
 

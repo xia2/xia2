@@ -35,10 +35,10 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 # first - import access to all of the factories that we will be needing
 
-from dxtbx.model.XGoniometer import XGoniometer, XGoniometerFactory
-from dxtbx.model.XDetector import XDetector, XDetectorFactory
-from dxtbx.model.XBeam import XBeam, XBeamFactory
-from dxtbx.model.XScan import XScan, XScanFactory
+from dxtbx.model.goniometer import goniometer, goniometer_factory
+from dxtbx.model.detector import detector, detector_factory
+from dxtbx.model.beam import beam, beam_factory
+from dxtbx.model.scan import scan, scan_factory
 
 class _MetaFormat(type):
     '''A metaclass for the Format base class (and hence all format classes)
@@ -77,15 +77,15 @@ class Format:
 
         self._image_file = image_file
         
-        self._xgoniometer_instance = None
-        self._xdetector_instance = None
-        self._xbeam_instance = None
-        self._xscan_instance = None
+        self._goniometer_instance = None
+        self._detector_instance = None
+        self._beam_instance = None
+        self._scan_instance = None
 
-        self._xgoniometer_factory = XGoniometerFactory
-        self._xdetector_factory = XDetectorFactory
-        self._xbeam_factory = XBeamFactory
-        self._xscan_factory = XScanFactory
+        self._goniometer_factory = goniometer_factory
+        self._detector_factory = detector_factory
+        self._beam_factory = beam_factory
+        self._scan_factory = scan_factory
 
         self.setup()
 
@@ -102,21 +102,21 @@ class Format:
         try:
             self._start()
             
-            xgoniometer_instance = self._xgoniometer()
-            assert(isinstance(xgoniometer_instance, XGoniometer))
-            self._xgoniometer_instance = xgoniometer_instance
+            goniometer_instance = self._goniometer()
+            assert(isinstance(goniometer_instance, goniometer))
+            self._goniometer_instance = goniometer_instance
             
-            xdetector_instance = self._xdetector()
-            assert(isinstance(xdetector_instance, XDetector))
-            self._xdetector_instance = xdetector_instance
+            detector_instance = self._detector()
+            assert(isinstance(detector_instance, detector))
+            self._detector_instance = detector_instance
             
-            xbeam_instance = self._xbeam()
-            assert(isinstance(xbeam_instance, XBeam))
-            self._xbeam_instance = xbeam_instance
+            beam_instance = self._beam()
+            assert(isinstance(beam_instance, beam))
+            self._beam_instance = beam_instance
 
-            xscan_instance = self._xscan()
-            assert(isinstance(xscan_instance, XScan))
-            self._xscan_instance = xscan_instance
+            scan_instance = self._scan()
+            assert(isinstance(scan_instance, scan))
+            self._scan_instance = scan_instance
 
         except exceptions.Exception, e:
             traceback.print_exc(sys.stderr)
@@ -125,29 +125,29 @@ class Format:
 
         return
 
-    def get_xgoniometer(self):
-        '''Get the standard XGoniometer instance which was derived from the
+    def get_goniometer(self):
+        '''Get the standard goniometer instance which was derived from the
         image headers.'''
 
-        return self._xgoniometer_instance
+        return self._goniometer_instance
 
-    def get_xdetector(self):
-        '''Get the standard XDetector instance which was derived from the
+    def get_detector(self):
+        '''Get the standard detector instance which was derived from the
         image headers.'''
 
-        return self._xdetector_instance
+        return self._detector_instance
 
-    def get_xbeam(self):
-        '''Get the standard XBeam instance which was derived from the image
+    def get_beam(self):
+        '''Get the standard beam instance which was derived from the image
         headers.'''
 
-        return self._xbeam_instance
+        return self._beam_instance
 
-    def get_xscan(self):
-        '''Get the standard XScan instance which was derived from the image
+    def get_scan(self):
+        '''Get the standard scan instance which was derived from the image
         headers.'''
 
-        return self._xscan_instance
+        return self._scan_instance
 
     def get_image_file(self):
         '''Get the image file provided to the constructor.'''
@@ -171,27 +171,27 @@ class Format:
 
         return
 
-    def _xgoniometer(self):
+    def _goniometer(self):
         '''Overload this method to read the image file however you like so
-        long as the result is an XGoniometer.'''
+        long as the result is an goniometer.'''
 
         raise RuntimeError, 'overload me'
 
-    def _xdetector(self):
+    def _detector(self):
         '''Overload this method to read the image file however you like so
-        long as the result is an XDetector.'''
+        long as the result is an detector.'''
 
         raise RuntimeError, 'overload me'
 
-    def _xbeam(self):
+    def _beam(self):
         '''Overload this method to read the image file however you like so
-        long as the result is an XBeam.'''
+        long as the result is an beam.'''
 
         raise RuntimeError, 'overload me'
 
-    def _xscan(self):
+    def _scan(self):
         '''Overload this method to read the image file however you like so
-        long as the result is an XScan.'''
+        long as the result is an scan.'''
 
         raise RuntimeError, 'overload me'
 

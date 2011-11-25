@@ -109,7 +109,7 @@ class FormatRAXIS(Format):
 
         return
 
-    def _xgoniometer(self):
+    def _goniometer(self):
         '''Return a model for the goniometer from the values stored in the
         header. Assumes same reference frame as is used for the Saturn
         instrument.'''
@@ -147,9 +147,9 @@ class FormatRAXIS(Format):
                 assert(math.fabs(axis_start % 180.0) < 0.001)
                 assert(math.fabs(axis_end % 180.0) < 0.001)
 
-        return self._xgoniometer_factory.SingleAxis()
+        return self._goniometer_factory.single_axis()
 
-    def _xdetector(self):
+    def _detector(self):
         '''Return a model for the detector as defined in the image header,
         with the additional knowledge about how things are arranged i.e. that
         the principle rotation axis vector points from the sample downwards.'''
@@ -186,27 +186,27 @@ class FormatRAXIS(Format):
 
         beam = (beam_x * dx, beam_y * dy)
 
-        return self._xdetector_factory.TwoTheta(
+        return self._detector_factory.two_theta(
             'IMAGE_PLATE', distance, beam, '+y', '-x', '+x', two_theta,
             (dx, dy), (nx, ny), (0, 1000000), [])
 
-    def _xbeam(self):
+    def _beam(self):
         '''Return a simple model for the beam. This assumes a laboratory source
         which has an unpolarized beam.'''
 
         wavelength = struct.unpack(self._f, self._header_bytes[292:296])[0]
         
-        return self._xbeam_factory.Complex((0.0, 0.0, 1.0), 0.5,
-                                           (0.0, 1.0, 0.0), wavelength)
+        return self._beam_factory.complex((0.0, 0.0, 1.0), 0.5,
+                                          (0.0, 1.0, 0.0), wavelength)
 
-    def _xscan(self):
+    def _scan(self):
         '''Return the scan information for this image.'''
 
         i = self._i
         f = self._f
         header = self._header_bytes
 
-        format = self._xscan_factory.Format('RAXIS') 
+        format = self._scan_factory.format('RAXIS') 
         exposure_time = struct.unpack(f, header[536:540])[0]
 
         y, m, d = map(int, header[256:268].strip().split('-'))
@@ -220,7 +220,7 @@ class FormatRAXIS(Format):
 
         osc_range = osc_end - osc_start
 
-        return self._xscan_factory.Single(
+        return self._scan_factory.single(
             self._image_file, format, exposure_time,
             osc_start, osc_range, epoch)
 

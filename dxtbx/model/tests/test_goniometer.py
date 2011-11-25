@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-# TestXGoniometer.py
+# test_goniometer.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is 
 #   included in the root directory of this package.
 #
-# Tests for the XGoniometer class.
+# Tests for the goniometer class.
 
 import math
 import os
@@ -13,8 +13,8 @@ import sys
 
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
-from dxtbx.model.XGoniometer import XGoniometer
-from dxtbx.model.XGoniometer import XGoniometerFactory
+from dxtbx.model.goniometer import goniometer
+from dxtbx.model.goniometer import goniometer_factory
 
 def compare_tuples(a, b, tol = 1.0e-6):
     
@@ -26,13 +26,13 @@ def compare_tuples(a, b, tol = 1.0e-6):
 
     return True
 
-def TestXGoniometer():
-    '''A test class for the XGoniometer class.'''
+def test_goniometer():
+    '''A test class for the goniometer class.'''
 
     axis = (1, 0, 0)
     fixed = (1, 0, 0, 0, 1, 0, 0, 0, 1)
 
-    xg = XGoniometer(axis, fixed)
+    xg = goniometer(axis, fixed)
 
     assert(len(xg.get_axis()) == 3)
     assert(len(xg.get_fixed()) == 9)
@@ -40,7 +40,7 @@ def TestXGoniometer():
     assert(compare_tuples(xg.get_axis(), axis))
     assert(compare_tuples(xg.get_fixed(), fixed))
 
-    single = XGoniometerFactory.SingleAxis()
+    single = goniometer_factory.single_axis()
 
     assert(len(single.get_axis()) == 3)
     assert(len(single.get_fixed()) == 9)
@@ -48,7 +48,7 @@ def TestXGoniometer():
     assert(compare_tuples(single.get_axis(), axis))
     assert(compare_tuples(single.get_fixed(), fixed))
 
-    kappa = XGoniometerFactory.Kappa(50.0, 0.0, 0.0, 0.0, '-y', 'omega')
+    kappa = goniometer_factory.kappa(50.0, 0.0, 0.0, 0.0, '-y', 'omega')
 
     assert(len(single.get_axis()) == 3)
     assert(len(single.get_fixed()) == 9)
@@ -56,7 +56,7 @@ def TestXGoniometer():
     assert(compare_tuples(kappa.get_axis(), axis))
     assert(compare_tuples(kappa.get_fixed(), fixed))
 
-    kappa = XGoniometerFactory.Kappa(50.0, 0.0, 0.0, 0.0, '-y', 'omega')
+    kappa = goniometer_factory.kappa(50.0, 0.0, 0.0, 0.0, '-y', 'omega')
 
     assert(len(single.get_axis()) == 3)
     assert(len(single.get_fixed()) == 9)
@@ -64,7 +64,7 @@ def TestXGoniometer():
     assert(compare_tuples(kappa.get_axis(), axis))
     assert(compare_tuples(kappa.get_fixed(), fixed))
 
-    kappa = XGoniometerFactory.Kappa(50.0, 0.0, 0.0, 0.0, '-y', 'phi')
+    kappa = goniometer_factory.kappa(50.0, 0.0, 0.0, 0.0, '-y', 'phi')
 
     assert(len(single.get_axis()) == 3)
     assert(len(single.get_fixed()) == 9)
@@ -72,7 +72,7 @@ def TestXGoniometer():
     assert(compare_tuples(kappa.get_axis(), axis))
     assert(compare_tuples(kappa.get_fixed(), fixed))
 
-    kappa = XGoniometerFactory.Kappa(50.0, 0.0, 30.0, 0.0, '-y', 'omega')
+    kappa = goniometer_factory.kappa(50.0, 0.0, 30.0, 0.0, '-y', 'omega')
 
     assert(len(single.get_axis()) == 3)
     assert(len(single.get_fixed()) == 9)
@@ -80,23 +80,23 @@ def TestXGoniometer():
     assert(compare_tuples(kappa.get_axis(), axis))
     assert(not compare_tuples(kappa.get_fixed(), fixed))
 
-    cbf = XGoniometerFactory.imgCIF('phi_scan_001.cbf')
+    cbf = goniometer_factory.imgCIF('phi_scan_001.cbf')
 
     print cbf
 
-    kappa = XGoniometerFactory.Kappa(50.0, -10.0, 30.0, 0.0, '-y', 'phi')
+    kappa = goniometer_factory.kappa(50.0, -10.0, 30.0, 0.0, '-y', 'phi')
 
     print kappa
 
-    cbf = XGoniometerFactory.imgCIF('omega_scan.cbf')
+    cbf = goniometer_factory.imgCIF('omega_scan.cbf')
 
     print cbf
 
-    kappa = XGoniometerFactory.Kappa(50.0, -10.0, 30.0, 20.0, '-y', 'omega')
+    kappa = goniometer_factory.kappa(50.0, -10.0, 30.0, 20.0, '-y', 'omega')
 
     print kappa
 
 
 if __name__ == '__main__':
 
-    TestXGoniometer()
+    test_goniometer()

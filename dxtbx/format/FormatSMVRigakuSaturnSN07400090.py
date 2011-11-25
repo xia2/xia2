@@ -44,7 +44,7 @@ class FormatSMVRigakuSaturnSN07400090(FormatSMVRigakuSaturn):
 
         return 3
 
-    def _xdetector(self):
+    def _detector(self):
         '''Return a model for the detector, allowing for two-theta offsets
         and the detector position. This will be rather more complex... and
         overloads the definition for the general Rigaku Saturn detector by
@@ -110,7 +110,7 @@ class FormatSMVRigakuSaturnSN07400090(FormatSMVRigakuSaturn):
         overload = int(self._header_dictionary['SATURATED_VALUE'])
         underload = 0
 
-        return self._xdetector_factory.Complex(
+        return self._detector_factory.complex(
             'CCD', detector_origin.elems, detector_fast.elems,
             detector_slow.elems, pixel_size, image_size, (underload, overload))
 
