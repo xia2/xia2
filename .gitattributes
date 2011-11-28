@@ -84,6 +84,7 @@ Toolkit/PlayPen/lattice_play.py -text
 Toolkit/PlayPen/mosflm_matrix_things.py -text
 Toolkit/PlayPen/mosflm_rms.py -text
 Toolkit/PlayPen/mpsa/example/commands -text
+Toolkit/PlayPen/mpsa/readme.txt -text
 Toolkit/PlayPen/mpsa/src/Makefile -text
 Toolkit/PlayPen/mpsa/src/cloud_Command.c -text
 Toolkit/PlayPen/mpsa/src/cloud_Init.c -text
