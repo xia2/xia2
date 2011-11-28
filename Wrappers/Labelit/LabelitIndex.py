@@ -203,11 +203,11 @@ def LabelitIndex(DriverType = None, indxr_print = True):
             # numbers from rigaku americas web page.
 
             if math.fabs(self.get_wavelength() - 1.54) < 0.01:
-                out.write('distl_force_binning = True')
+                out.write('distl_force_binning = True\n')
                 out.write('distl_profile_bumpiness = 10\n')
                 out.write('distl_binned_image_spot_size = 10\n')
             if math.fabs(self.get_wavelength() - 2.29) < 0.01:
-                out.write('distl_force_binning = True')
+                out.write('distl_force_binning = True\n')
                 out.write('distl_profile_bumpiness = 10\n')
                 out.write('distl_binned_image_spot_size = 10\n')
 
