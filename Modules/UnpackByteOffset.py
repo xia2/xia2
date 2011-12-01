@@ -132,11 +132,40 @@ def unpackbyteoffset(filename):
 
     return hist, min(values), max(values)
 
+def sumbyteoffset(filename):
+
+    data = open(filename, 'rb').read()
+
+    start_tag = binascii.unhexlify('0c1a04d5')
+
+    data_offset = data.find(start_tag) + 4
+
+    header = data[:data.find(start_tag)].split('\n')
+
+    fast = 0
+    slow = 0
+    length = 0
+
+    for record in header:
+        if 'X-Binary-Size-Fastest-Dimension' in record:
+            fast = int(record.split()[-1])
+        if 'X-Binary-Size-Second-Dimension' in record:
+            slow = int(record.split()[-1])
+        if 'X-Binary-Number-of-Elements' in record:
+            length = int(record.split()[-1])
+
+    assert(length == fast * slow)
+
+    values = unpack_values(data[data_offset:], length)
+
+    assert(len(values) == length)
+
+    return sum(values), length
+
 if __name__ == '__main__':
 
-    hist, minimum, maximum = unpackbyteoffset(sys.argv[1])
+    for j, image in enumerate(sys.argv[1:]):
+        total, pixels = sumbyteoffset(image)
+        print j, total, pixels, image
 
-    for j in range(minimum, maximum + 1):
-        print j, hist[j]
 
-    # work()
