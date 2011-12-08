@@ -93,6 +93,15 @@ class coordinate_frame_information:
 
         return self._R_to_Mosflm
 
+def orthogonal_component(reference, changing):
+    '''Return unit vector corresponding to component of changing orthogonal to
+    reference.'''
+
+    r = reference.normalize()
+    c = changing.normalize()
+
+    return (c - c.dot(r) * r).normalize()
+
 def align_reference_frame(primary_axis, primary_target,
                           secondary_axis, secondary_target):
     '''Compute a rotation matrix R: R x primary_axis = primary_target and
@@ -139,7 +148,8 @@ def align_reference_frame(primary_axis, primary_target,
         Rprimary = matrix.identity(3)
 
     axis_s = primary_target
-    angle_s = - secondary_target.angle(secondary_axis)
+    angle_s = - orthogonal_component(axis_s, secondary_target).angle(
+        orthogonal_component(axis_s, secondary_axis))
     Rsecondary = axis_s.axis_and_angle_as_r3_rotation_matrix(angle_s)
 
     return Rsecondary * Rprimary
@@ -248,6 +258,22 @@ def test_align_reference_frame():
         assert(math.fabs((m * primary_axis).elems[j] - 
                          matrix.col(primary_target).elems[j]) < 0.001)
 
+def test_align_reference_frame_dw():
+
+    s = math.sqrt(0.5)
+
+    pa = [s, s, 0]
+    pt = [1, 0, 0]
+    sa = [- s, s, 0]
+    st = [0, 1, 0]
+
+    R = align_reference_frame(pa,pt,sa,st)
+
+    print R * pa
+    print pt
+    print R * sa
+    print st
+
 def find_closest_matrix(moving, target):
     '''Work through lattice permutations to try to align moving with target,
     with the metric of trace(inverse(moving) * target).'''
@@ -264,4 +290,4 @@ def find_closest_matrix(moving, target):
     return reindex
     
 if __name__ == '__main__':
-    test_align_reference_frame()
+    test_align_reference_frame_dw()
