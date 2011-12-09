@@ -1,6 +1,7 @@
 import math
 import os
 import sys
+import random
 from scitbx import matrix
 from cctbx import sgtbx
 
@@ -147,9 +148,15 @@ def align_reference_frame(primary_axis, primary_target,
     else:
         Rprimary = matrix.identity(3)
 
+    axis_r = secondary_target.cross(Rprimary * secondary_axis)
     axis_s = primary_target
-    angle_s = - orthogonal_component(axis_s, secondary_target).angle(
-        orthogonal_component(axis_s, secondary_axis))
+    if (axis_r.angle(primary_target) > 0.5 * math.pi):
+        angle_s = orthogonal_component(axis_s, secondary_target).angle(
+            orthogonal_component(axis_s, Rprimary * secondary_axis))
+    else:
+        angle_s = - orthogonal_component(axis_s, secondary_target).angle(
+            orthogonal_component(axis_s, Rprimary * secondary_axis))
+        
     Rsecondary = axis_s.axis_and_angle_as_r3_rotation_matrix(angle_s)
 
     return Rsecondary * Rprimary
@@ -274,6 +281,32 @@ def test_align_reference_frame_dw():
     print R * sa
     print st
 
+def random_orthogonal_vectors():
+    v1 = matrix.col((random.random(), random.random(),
+                     random.random())).normalize()
+    v2 = v1.ortho().normalize()
+
+    return v1, v2
+
+def test_align_reference_frame_brute():
+
+    for j in range(1000000):
+        m = random_orthogonal_vectors()
+        t = random_orthogonal_vectors()
+
+        assert(math.fabs(m[0].dot(m[1])) < 0.001)
+        assert(math.fabs(t[0].dot(t[1])) < 0.001)
+
+        R = align_reference_frame(m[0], t[0],
+                                  m[1], t[1])
+
+        r = (R * m[0], R * m[1])
+
+        assert(math.fabs(r[0].dot(t[0])) > 0.999)
+        assert(math.fabs(r[1].dot(t[1])) > 0.999)
+
+    return
+
 def find_closest_matrix(moving, target):
     '''Work through lattice permutations to try to align moving with target,
     with the metric of trace(inverse(moving) * target).'''
@@ -290,4 +323,4 @@ def find_closest_matrix(moving, target):
     return reindex
     
 if __name__ == '__main__':
-    test_align_reference_frame_dw()
+    test_align_reference_frame_brute()
