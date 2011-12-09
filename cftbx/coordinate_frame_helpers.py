@@ -290,7 +290,7 @@ def random_orthogonal_vectors():
 
 def test_align_reference_frame_brute():
 
-    for j in range(1000000):
+    for j in range(10000):
         m = random_orthogonal_vectors()
         t = random_orthogonal_vectors()
 
