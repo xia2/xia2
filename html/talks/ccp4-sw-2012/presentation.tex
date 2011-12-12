@@ -1,0 +1,64 @@
+\documentclass[slides,compress]{beamer}
+\usepackage{graphicx,amsmath,hyperref}
+\usepackage{verbatim}
+
+\usepackage[normalem]{ulem}
+
+\usepackage{tikz}
+\usetikzlibrary{%
+  arrows,%
+  shapes.misc,% wg. rounded rectangle
+  shapes.arrows,%
+  chains,%
+  matrix,%
+  positioning,% wg. " of "
+  scopes,%
+  decorations.pathmorphing,%
+  shadows%
+}
+
+\usetheme{default}
+\usecolortheme[]{dls} 
+
+\usefonttheme{structurebold}
+\useinnertheme{rectangles}
+
+\title{{\large You can't get the staff - an electronic alternative...}}
+
+\author{Graeme Winter}
+\institute{Diamond Light Source}
+\date{CCP4 Study Weekend 2012}
+
+\begin{document}
+
+\setbeamertemplate{background}{\includegraphics[width=\paperwidth,height=\paperheight]{diamond-background.png}}
+
+\setbeamertemplate{frametitle} {
+  \vskip 0.4cm
+  \begin{beamercolorbox}[sep=5pt,center,\insertframetitle]{frametitle}
+    \usebeamerfont{frametitle}\insertframetitle\par%
+  \end{beamercolorbox}
+}
+
+\frame{\maketitle}
+
+\frame{
+\frametitle{Overview}
+\begin{itemize}
+\item{Background}
+\item{What is xia2?}
+\item{What does it do and how do I use it?}
+\end{itemize}
+}
+
+\section{Background}
+
+\begin{frame}
+\frametitle{Before we start...}
+\begin{itemize}
+\item{No Mosflm, XDS, Scala, CCP4 = no xia2}
+\item{No Labelit, CCTBX, Pointless etc. = less xia2}
+\end{itemize}
+\end{frame}
+
+\end{document}
