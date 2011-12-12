@@ -4,23 +4,8 @@
 
 \usepackage[normalem]{ulem}
 
-\usepackage{tikz}
-\usetikzlibrary{%
-  arrows,%
-  shapes.misc,% wg. rounded rectangle
-  shapes.arrows,%
-  chains,%
-  matrix,%
-  positioning,% wg. " of "
-  scopes,%
-  decorations.pathmorphing,%
-  shadows%
-}
-
 \usetheme{default}
-\usecolortheme[]{dls} 
-
-\usefonttheme{structurebold}
+%\usefonttheme{structurebold}
 \useinnertheme{rectangles}
 
 \title{{\large You can't get the staff - an electronic alternative...}}
@@ -31,13 +16,9 @@
 
 \begin{document}
 
-\setbeamertemplate{background}{\includegraphics[width=\paperwidth,height=\paperheight]{diamond-background.png}}
-
-\setbeamertemplate{frametitle} {
-  \vskip 0.4cm
-  \begin{beamercolorbox}[sep=5pt,center,\insertframetitle]{frametitle}
-    \usebeamerfont{frametitle}\insertframetitle\par%
-  \end{beamercolorbox}
+\setbeamertemplate{background}{
+\includegraphics[width=\paperwidth,height=\paperheight]
+{diamond-background.png}
 }
 
 \frame{\maketitle}
@@ -48,6 +29,7 @@
 \item{Background}
 \item{What is xia2?}
 \item{What does it do and how do I use it?}
+
 \end{itemize}
 }
 
@@ -56,9 +38,75 @@
 \begin{frame}
 \frametitle{Before we start...}
 \begin{itemize}
-\item{No Mosflm, XDS, Scala, CCP4 = no xia2}
-\item{No Labelit, CCTBX, Pointless etc. = less xia2}
+\uncover<1->{\item{No MOSFLM, XDS, SCALA, CCP4}}
+\uncover<1->{\item{$\rightarrow$ no xia2}}
+\uncover<2->{\item{No LABELIT, CCTBX, POINTLESS etc.}}
+\uncover<2->{\item{$\rightarrow$ harder to write xia2, less reliable}}
 \end{itemize}
 \end{frame}
+
+\begin{frame}
+\frametitle{Acknowledgements}
+\begin{itemize}
+\item{Andrew Leslie, Harry Powell, Phil Evans, Wolfgang Kabsch, Kay Diederichs,
+Nick Sauter, Ralf Grosse-Kunstleve}
+\item{Alun Ashton, Dave Stuart, Diamond beamline staff, Miroslav Papiz, 
+Steve Prince, Colin Nave, xia2 users, providers of test data (esp. JCSG)}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Background}
+\begin{itemize}
+\uncover<1->{
+\item{Comprehensive, trusted software available}
+\item{Background of strong publications (esp. CCP4 study weekends)}
+\item{Massive advances in computing}
+\item{New synchrotron for UK}
+}
+\uncover<2->{
+\item{$\rightarrow$ a great time to develop automated data reduction}
+}
+\end{itemize}
+\end{frame}
+
+\section{What is xia2?}
+\begin{frame}
+\frametitle{What is xia2?}
+{\large
+\uncover<1->{\includegraphics[scale=0.125]{figures/xia2-in-a-nutshell.jpg}}
+\uncover<2->{
+\includegraphics[scale=0.05]{figures/example-diffraction-image-small.jpg} 
+\includegraphics[scale=0.05]{figures/example-diffraction-image-small.jpg}
+}
+\uncover<3->{$\rightarrow H K L I \sigma_{I}$}
+}
+\end{frame}
+
+\begin{frame}
+\frametitle{What is xia2?}
+\begin{itemize}
+\uncover<1->{
+\item{An \emph{expert} system to perform diffraction data and processing on 
+your behalf using your software}
+}
+\uncover<2->{
+\item{A system which can correctly handle multi-pass, multi-wavelength data
+sets}
+}
+\uncover<3->{
+\item{\emph{Not} a data processing package}
+}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Why ``you can't get the staff?''}
+
+\end{frame}
+
+
+
+
 
 \end{document}
