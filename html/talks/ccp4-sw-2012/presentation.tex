@@ -377,14 +377,74 @@ Total unique                  &       9552   &55    & 199 \\
 
 \begin{frame}
 \frametitle{Indexing}
+\begin{itemize}
+\item{Initial indexing with LABELIT}
+\item{Refine results with XDS indexing}
+\item{Use data based on general analysis @ 0, 45, 90 degrees}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Indexing}
+\hspace{3cm}
+\includegraphics[scale=0.5]{figures/no_images.pdf}
+\end{frame}
+
+\begin{frame}
+\frametitle{Indexing}
+\hspace{3cm}
+\includegraphics[scale=0.5]{figures/phi_spacing_45a.pdf}
+\end{frame}
+
+\begin{frame}
+\frametitle{Indexing}
+\hspace{3cm}
+\includegraphics[scale=0.5]{figures/phi_spacing_90a.pdf}
+\end{frame}
+
+\begin{frame}
+\frametitle{Indexing}
+\hspace{6cm}
+\includegraphics[scale=0.5]{figures/EwaldExplain.pdf}
+\end{frame}
+
+\begin{frame}
+\frametitle{Indexing}
+\hspace{6cm}
+\includegraphics[scale=0.5]{figures/Ewald2Image.pdf}
+\end{frame}
+
+\begin{frame}
+\frametitle{Indexing}
+\hspace{6cm}
+\includegraphics[scale=0.5]{figures/Ewald3Image.pdf}
 \end{frame}
 
 \begin{frame}
 \frametitle{Integration}
+\begin{itemize}
+\item{Integrate with lattice constraints applied}
+\item{Integrate to corners of detector}
+\item{If good reason, repeat integration e.g. with results of postrefinement}
+\item{Perform postrefinement in P1, assumed lattice - may reject lattice,
+feed back to indexing}
+\end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{Scaling}
+\begin{itemize}
+\item{Compare results of pointless with remaining allowed lattices:
+\begin{itemize}
+\item{If agree, proceed}
+\item{If lattice not allowed, consider next solution}
+\item{If solution lower symmetry than lattice, reject and return to indexing}
+\end{itemize}
+}
+\item{Ensure conclusions consistent}
+\item{Ensure consistent setting / origin choice}
+\item{Place data into data collection order}
+\end{itemize}
 \end{frame}
 
 \begin{frame}
