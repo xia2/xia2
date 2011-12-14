@@ -428,6 +428,7 @@ Total unique                  &       9552   &55    & 199 \\
 \item{If good reason, repeat integration e.g. with results of postrefinement}
 \item{Perform postrefinement in P1, assumed lattice - may reject lattice,
 feed back to indexing}
+\item{At the end of this we have LATTICE}
 \end{itemize}
 \end{frame}
 
@@ -442,17 +443,144 @@ feed back to indexing}
 \end{itemize}
 }
 \item{Ensure conclusions consistent}
+\item{Now have corrrect LAUE GROUP}
 \item{Ensure consistent setting / origin choice}
 \item{Place data into data collection order}
+\item{Analyse absences to decide likely SPACE GROUPs}
+\item{Decide scaling model\footnote{For XDS use not corrections in CORRECT,
+apply all corrections in XSCALE}}
 \end{itemize}
 \end{frame}
 
 \begin{frame}
-\frametitle{Merging}
+\frametitle{Scaling}
+\hspace{2cm}
+\includegraphics[scale=0.5]{figures/scaling-step-1.pdf}
 \end{frame}
 
+\begin{frame}
+\frametitle{Scaling}
+\hspace{2cm}
+\includegraphics[scale=0.5]{figures/scaling-step-2.pdf}
+\end{frame}
+
+\begin{frame}
+\frametitle{Scaling}
+\hspace{2cm}
+\includegraphics[scale=0.5]{figures/scaling-step-3.pdf}
+\end{frame}
+
+\begin{frame}
+\frametitle{Merging and analysis}
+\begin{itemize}
+\uncover<1->{
+\item{If using XDS for integration and XSCALE for scaling, data still merged
+with SCALA / AIMLESS}
+\item{Resolution limits calculated from the intensities, not program output}
+\item{``Downstream'' analysis (e.g. TRUNCATE and SFCHECK) identical}
+}
+\uncover<2->{\item{Working on scaling data direct from XDS with AIMLESS}}
+\end{itemize}
+\end{frame}
 
 \section{What decisions were made?}
+
+\begin{frame}[fragile]
+\frametitle{Indexing - LABELIT}
+{\small
+\begin{verbatim}
+Solution  Metric fit  rmsd  #spots  crystal_system   unit_cell 
+:)   9     0.2097 dg 0.327    533    tetragonal tP   42.32  42.32  39.28  ...
+:)   8     0.2097 dg 0.364    541  orthorhombic oP   39.29  42.28  42.33  ...
+:)   7     0.2097 dg 0.300    519    monoclinic mP   39.26  42.32  42.32  ...
+:)   6     0.1950 dg 0.299    523    monoclinic mP   39.26  42.33  42.31  ...
+:)   5     0.1307 dg 0.411    523  orthorhombic oC   59.71  59.91  39.31  ...
+:)   4     0.1307 dg 0.412    524    monoclinic mC   59.91  59.71  39.31  ...
+:)   3     0.0937 dg 0.429    524    monoclinic mC   59.71  59.91  39.30  ...
+:)   2     0.1010 dg 0.298    512    monoclinic mP   42.27  39.31  42.32  ...
+:)   1     0.0000 dg 0.291    509     triclinic aP   39.31  42.26  42.32  ...
+\end{verbatim}
+}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Indexing - IDXREF}
+{\small
+\begin{verbatim}
+ *  31        aP          0.0      39.1   42.1   42.1  90.0  90.0  89.9
+ *  44        aP          0.1      39.1   42.1   42.1  90.0  90.0  90.1
+ *  34        mP          0.7      39.1   42.1   42.1  90.0  90.1  90.0
+ *  20        mC          0.7      59.6   59.6   39.1  90.1  90.1  90.0
+ *  33        mP          0.8      39.1   42.1   42.1  90.0  90.1  90.0
+ *  25        mC          0.9      59.6   59.6   39.1  89.9  90.1  90.0
+ *  35        mP          1.7      42.1   39.1   42.1  90.0  90.0  90.1
+ *  23        oC          1.7      59.6   59.6   39.1  89.9  90.1  90.0
+ *  32        oP          1.8      39.1   42.1   42.1  90.0  90.0  90.1
+ *  21        tP          1.9      42.1   42.1   39.1  90.0  90.1  90.0
+    10        mC         79.5      57.5   57.4   42.1  90.0  90.0  94.2
+    13        oC         79.9      57.4   57.5   42.1  90.0  90.0  85.8
+    14        mC         79.9      57.4   57.5   42.1  90.0  90.0  85.8
+\end{verbatim}
+}
+\end{frame}
+
+\begin{frame}
+\frametitle{Testing lattice choice}
+\begin{itemize}
+\item{Perform postrefinement (MOSFLM and XDS) in P1 and putative lattice}
+\item{Compare R.M.S. deviation of observed / predicted centres}
+\item{Results comparable $\rightarrow$ lattice probably OK}
+\item{Results worse with lattice constraints $\rightarrow$ lattice probably
+wrong}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Testing lattice choice 1}
+{\small
+\begin{verbatim}
+ REFINED PARAMETERS:  DISTANCE BEAM ORIENTATION CELL AXIS                   
+ USING   27389 INDEXED SPOTS
+ STANDARD DEVIATION OF SPOT    POSITION (PIXELS)     1.28
+ STANDARD DEVIATION OF SPINDLE POSITION (DEGREES)    0.23
+...
+ UNIT CELL PARAMETERS     42.180    42.183    39.236  90.002  89.989  89.986
+ E.S.D. OF CELL PARAMETERS  1.8E-02 4.3E-02 1.5E-02 1.4E-02 1.0E-02 2.9E-02
+ SPACE GROUP NUMBER      1
+\end{verbatim}
+}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Testing lattice choice 2}
+{\small
+\begin{verbatim}
+ REFINED PARAMETERS:  DISTANCE BEAM ORIENTATION CELL AXIS                   
+ USING   27378 INDEXED SPOTS
+ STANDARD DEVIATION OF SPOT    POSITION (PIXELS)     1.29
+ STANDARD DEVIATION OF SPINDLE POSITION (DEGREES)    0.23
+...
+ UNIT CELL PARAMETERS     42.187    42.187    39.242  90.000  90.000  90.000
+ E.S.D. OF CELL PARAMETERS  1.6E-02 1.6E-02 1.2E-02 0.0E+00 0.0E+00 0.0E+00
+ SPACE GROUP NUMBER     75
+\end{verbatim}
+}
+\end{frame}
+
+\begin{frame}
+\frametitle{Lattice observations}
+\begin{itemize}
+\item{Selecting lattice from indexing safe, as tested and challenged}
+\item{However strong argument for performing all processing in P1:
+\begin{itemize}
+\item{Processing only performed once}
+\item{Incorrect constraints cannot break things}
+\item{Results generally comparable}
+\end{itemize}
+}
+\item{This is on the to-do list...}
+\end{itemize}
+\end{frame}
 
 \begin{frame}
 \frametitle{Resolution limits - default criteria}
