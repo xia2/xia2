@@ -70,7 +70,7 @@ BioXHit}
 \end{frame}
 
 \begin{frame}
-\frametitle{Background}
+\frametitle{Background (2005)}
 \begin{itemize}
 \uncover<1->{
 \item{Comprehensive, trusted software available}
@@ -85,6 +85,12 @@ BioXHit}
 \end{frame}
 
 \section{What is xia2?}
+
+\begin{frame}
+\begin{center}
+\Huge What is xia2?
+\end{center}
+\end{frame}
 
 \begin{frame}
 \frametitle{What is xia2?}
@@ -145,7 +151,7 @@ sets}
 
 \begin{frame}
 \frametitle{Using xia2}
-%{\centerline
+\begin{center}
 \begin{tabular}{c}
 {\huge
 xia2 -2d /here/are/my/data
@@ -157,20 +163,28 @@ xia2 -2d /here/are/my/data
 xia2 -3d /here/are/my/data
 }\\
 \end{tabular}
-%}
+\end{center}
 \end{frame}
 
 \begin{frame}
 \frametitle{Sorry...}
-\uncover<1-2>{\includegraphics[scale=0.1]{figures/keyboard.jpg}}
-\uncover<2-2>{\includegraphics[scale=0.15]{figures/terminal.png}}
-\uncover<3->{\includegraphics[scale=0.15]{figures/mouse.jpg}}
+\uncover<1-2>{\includegraphics[scale=0.25]{figures/keyboard.jpg}}
+\uncover<2-2>{\includegraphics[scale=0.25]{figures/terminal.png}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Sorry...}
+\begin{center}
+\includegraphics[scale=0.25]{figures/no-mouse.jpg}
+\end{center}
 \end{frame}
 
 \begin{frame}
 \frametitle{Options (1)}
 \begin{itemize}
 \item{-atom X - tell xia2 to separate anomalous pairs}
+\item{-2d - tell xia2 to use MOSFLM and SCALA}
+\item{-3d - tell xia2 to use XDS and XSCALE}
 \end{itemize}
 \end{frame}
 
@@ -179,8 +193,8 @@ xia2 -3d /here/are/my/data
 \begin{itemize}
 \uncover<1->{\item{Read all of the image headers then}}
 \uncover<2->{\item{Organise these into sweeps then}}
-\uncover<2->{\item{Organise these into wavelengths then}}
-\uncover<2->{\item{Assign all of these wavelengths to a crystal}}
+\uncover<3->{\item{Organise these into wavelengths then}}
+\uncover<4->{\item{Assign all of these wavelengths to a crystal}}
 \end{itemize}
 \end{frame}
 
@@ -241,12 +255,12 @@ END PROJECT AUTOMATIC
 \begin{frame}
 \frametitle{Understanding the experiment}
 \begin{itemize}
-\item{SWEEP: one ``scan'' of images, basic unit of processing}
+\item{SWEEP: one ``scan'' , basic unit of indexing / integration}
 \item{WAVELENGTH: container of SWEEPs}
 \item{WAVELENGTH: all H K L observations merged}
 \item{WAVELENGTH: CCP4 MTZ dataset}
 \item{CRYSTAL: contains WAVELENGTHs}
-\item{CRYSTAL: all data scaled at one}
+\item{CRYSTAL: all data, basic unit of scaling}
 \end{itemize}
 \end{frame}
 
@@ -266,10 +280,27 @@ END PROJECT AUTOMATIC
 \end{frame}
 
 \begin{frame}
+\frametitle{Example: data}
+\begin{center}
+\includegraphics[scale=0.35]{figures/3qrn-diffraction.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
 \frametitle{Example command line}
 { \huge
 xia2 -3d -atom Ba /dls/i02/data/...
 }
+\end{frame}
+
+\begin{frame}
+\frametitle{Output}
+\begin{itemize}
+\item{xia2.txt: everything you should read - including program citations}
+\item{xia2-debug.txt: everything you probably shouldn't}
+\item{LogFiles: you should look at these}
+\item{DataFiles: MTZ + erzatz scalepack}
+\end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -305,13 +336,13 @@ Total unique               &         9749  &  63 &     337\\
 \begin{frame}
 \frametitle{What to do next?}
 \begin{itemize}
-\item{Read automatic.xinfo}
+\item{Edit automatic.xinfo}
 \item{Only process first 200 frames}
 \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{What the program sees}
+\frametitle{Modify automatic.xinfo $\rightarrow$ modified.xinfo}
 {\small
 \begin{verbatim}
 BEGIN PROJECT AUTOMATIC
@@ -336,9 +367,9 @@ END PROJECT AUTOMATIC
 
 \begin{frame}
 \frametitle{Running again}
-{ \huge
-xia2 -3d -xinfo modified.xinfo
-}
+\begin{center}
+\huge xia2 -3d -xinfo modified.xinfo
+\end{center}
 \end{frame}
 
 \begin{frame}
@@ -374,6 +405,12 @@ Total unique                  &       9552   &55    & 199 \\
 \end{frame}
 
 \section{What did it do?}
+
+\begin{frame}
+\begin{center}
+\Huge What did it do? and why?
+\end{center}
+\end{frame}
 
 \begin{frame}
 \frametitle{Indexing}
@@ -484,6 +521,12 @@ with SCALA / AIMLESS}
 \end{frame}
 
 \section{What decisions were made?}
+
+\begin{frame}
+\begin{center}
+\Huge Decision making
+\end{center}
+\end{frame}
 
 \begin{frame}[fragile]
 \frametitle{Indexing - LABELIT}
@@ -614,11 +657,6 @@ wrong}
 \item{Run both - compare results, make up your own mind}
 }
 \end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{Where's the documentation?}
-\includegraphics[scale=0.33]{figures/xia2-in-a-nutshell.jpg}
 \end{frame}
 
 \section{Conclusions}
