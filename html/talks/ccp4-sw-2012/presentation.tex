@@ -81,6 +81,9 @@ BioXHit}
 \uncover<2->{
 \item{$\rightarrow$ a great time to develop automated data reduction}
 }
+\uncover<3->{
+\item{\emph{Also told that this is impossible and a waste of time}}
+}
 \end{itemize}
 \end{frame}
 
@@ -167,13 +170,13 @@ xia2 -3d /here/are/my/data
 \end{frame}
 
 \begin{frame}
-\frametitle{Sorry...}
+\frametitle{Command line}
 \uncover<1-2>{\includegraphics[scale=0.25]{figures/keyboard.jpg}}
 \uncover<2-2>{\includegraphics[scale=0.25]{figures/terminal.png}}
 \end{frame}
 
 \begin{frame}
-\frametitle{Sorry...}
+\frametitle{Not GUI}
 \begin{center}
 \includegraphics[scale=0.25]{figures/no-mouse.jpg}
 \end{center}
@@ -185,6 +188,7 @@ xia2 -3d /here/are/my/data
 \item{-atom X - tell xia2 to separate anomalous pairs}
 \item{-2d - tell xia2 to use MOSFLM and SCALA}
 \item{-3d - tell xia2 to use XDS and XSCALE}
+\item{-3dii - tell xia2 to use XDS and XSCALE, indexing with all images}
 \end{itemize}
 \end{frame}
 
@@ -229,7 +233,7 @@ xia2 -3d /here/are/my/data
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{What the program sees}
+\frametitle{What the program sees (automatic.xinfo)}
 {\small
 \begin{verbatim}
 BEGIN PROJECT AUTOMATIC
@@ -255,12 +259,12 @@ END PROJECT AUTOMATIC
 \begin{frame}
 \frametitle{Understanding the experiment}
 \begin{itemize}
-\item{SWEEP: one ``scan'' , basic unit of indexing / integration}
+\item{SWEEP: one ``scan'' - basic unit of indexing / integration}
 \item{WAVELENGTH: container of SWEEPs}
 \item{WAVELENGTH: all H K L observations merged}
 \item{WAVELENGTH: CCP4 MTZ dataset}
 \item{CRYSTAL: contains WAVELENGTHs}
-\item{CRYSTAL: all data, basic unit of scaling}
+\item{CRYSTAL: all data - basic unit of scaling}
 \end{itemize}
 \end{frame}
 
@@ -276,6 +280,7 @@ END PROJECT AUTOMATIC
 \item{Resolution limits}
 \end{itemize}
 }
+\item{Better sample used for deposition}
 \end{itemize}
 \end{frame}
 
@@ -289,7 +294,8 @@ END PROJECT AUTOMATIC
 \begin{frame}
 \frametitle{Example command line}
 { \huge
-xia2 -3d -atom Ba /dls/i02/data/...
+xia2 -3da\footnote{-3d, but using AIMLESS to merge, development option}
+ -atom Ba /dls/i02/data/...
 }
 \end{frame}
 
@@ -404,6 +410,17 @@ Total unique                  &       9552   &55    & 199 \\
 \end{itemize}
 \end{frame}
 
+\begin{frame}
+\frametitle{Options (2)}
+\begin{itemize}
+\item{-xinfo modified.xinfo - use specific input file}
+\item{-image /path/to/an/image.img - process specific scan}
+\item{-spacegroup spacegroup\_name - set the spacegroup name, e.g. P21}
+\item{-cell a,b,c,$\alpha$,$\beta$,$\gamma$ - set the cell constants} 
+\item{-small\_molecule - don't run things like TRUNCATE}
+\end{itemize}
+\end{frame}
+
 \section{What did it do?}
 
 \begin{frame}
@@ -415,7 +432,8 @@ Total unique                  &       9552   &55    & 199 \\
 \begin{frame}
 \frametitle{Indexing}
 \begin{itemize}
-\item{Initial indexing with LABELIT}
+\item{Initial indexing with LABELIT from 3 images\footnote{This is \emph{not}
+good for small molecule data}}
 \item{Refine results with XDS indexing}
 \item{Use data based on general analysis @ 0, 45, 90 degrees}
 \end{itemize}
@@ -466,6 +484,7 @@ Total unique                  &       9552   &55    & 199 \\
 \item{Perform postrefinement in P1, assumed lattice - may reject lattice,
 feed back to indexing}
 \item{At the end of this we have LATTICE}
+\item{If XDS, includes iterative elimination of outliers in CORRECT step}
 \end{itemize}
 \end{frame}
 
@@ -655,6 +674,9 @@ wrong}
 }
 \uncover<3->{
 \item{Run both - compare results, make up your own mind}
+}
+\uncover<4->{
+\item{Hint for small molecule: -3dii -small\_molecule}
 }
 \end{itemize}
 \end{frame}
