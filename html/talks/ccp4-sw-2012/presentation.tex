@@ -30,7 +30,7 @@
 \item{What is xia2?}
 \item{What does it do and how do I use it?}
 \item{What decisions does it make?}
-\item{Conclusions / summary}
+\item{Conclusions}
 \end{itemize}
 }
 
@@ -40,7 +40,7 @@
 \frametitle{Before we start...}
 \begin{itemize}
 \item{No 
-MOSFLM \footnote{A.G.W. Leslie, Acta Cryst. (2006) D62, 48-57},
+MOSFLM\footnote{A.G.W. Leslie, Acta Cryst. (2006) D62, 48-57},
 XDS\footnote{W. Kabsch, Acta Cryst. (2010) D66, 125-132}, 
 SCALA\footnote{P. Evans, Acta Cryst. (2006) D62, 72-82}, 
 CCP4\footnote{CCP4, Acta Cryst. (1994) D50, 760-763}
@@ -102,6 +102,11 @@ BioXHit}
 
 \begin{frame}
 \frametitle{What is xia2?}
+\includegraphics[scale=1]{figures/no-blackbox.png}
+\end{frame}
+
+\begin{frame}
+\frametitle{What is xia2?}
 {\large
 \uncover<1->{\includegraphics[scale=0.2]{figures/xia2-in-a-nutshell.jpg}}
 \uncover<2->{
@@ -116,8 +121,8 @@ BioXHit}
 \frametitle{What is xia2?}
 \begin{itemize}
 \uncover<1->{
-\item{An \emph{expert} system to perform diffraction data and processing on 
-your behalf using your software}
+\item{An \emph{expert} system to perform diffraction data processing 
+and analysis on your behalf using your software}
 }
 \uncover<2->{
 \item{A system which can correctly handle multi-pass, multi-wavelength data
@@ -308,16 +313,6 @@ xia2 -3d -atom Ba /dls/i02/data/...
 \end{frame}
 
 \begin{frame}
-\frametitle{Output}
-\begin{itemize}
-\item{xia2.txt: everything you should read - including program citations}
-\item{xia2-debug.txt: everything you probably shouldn't}
-\item{LogFiles: you should look at these}
-\item{DataFiles: MTZ + erzatz scalepack}
-\end{itemize}
-\end{frame}
-
-\begin{frame}
 \frametitle{Example results}
 \begin{tabular}{lccc}
 High resolution limit      &       \color{red}{1.25} &    6.45 &   1.25\\
@@ -342,7 +337,7 @@ Total unique               &         9749  &  63 &     337\\
 \end{frame}
 
 \begin{frame}
-\frametitle{Example command line (I cheated, I like AIMLESS)}
+\frametitle{Development option - using AIMLESS}
 { \huge
 xia2 -3da ...
 }
@@ -414,6 +409,58 @@ Anomalous slope               &       1.553  &0.000 & 0.000 \\
 Total observations            &       50875  &272   & 342 \\
 Total unique                  &       9552   &55    & 199 \\
 \end{tabular}
+\end{frame}
+
+\begin{frame}
+\frametitle{Output}
+\begin{itemize}
+\item{xia2.txt: everything you should read - including program citations}
+\item{xia2-debug.txt: everything you probably shouldn't}
+\item{LogFiles: you should look at these}
+\item{DataFiles: MTZ + erzatz scalepack}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Output}
+{\small
+\begin{verbatim}
+------------------- Autoindexing SWEEP1 --------------------
+All possible indexing solutions:
+tP  57.60  57.60 149.51  90.00  90.00  90.00
+oC  81.45  81.46 149.51  90.00  90.00  90.00
+oP  57.59  57.60 149.50  90.00  90.00  90.00
+mC  81.46  81.45 149.50  90.00  89.95  90.00
+mP  57.60  57.59 149.53  90.00  89.93  90.00
+aP  57.59  57.61 149.52  89.93  89.99  89.99
+Indexing solution:
+tP  57.60  57.60 149.51  90.00  90.00  90.00
+\end{verbatim}
+}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Output}
+{\small
+\begin{verbatim}
+-------------------- Integrating SWEEP1 --------------------
+Processed batches 1 to 450
+Weighted RMSD: 0.26 (0.09)
+Integration status per image (60/record):
+ooooooooooooooooooooooooooooooooooo.oooooooooooooooooooooooo
+ooooooooooooooooooooooo.ooooooooooooooooooo.ooooooo.oooooooo
+ooo.o.ooooooo.oooooooooooooooooooooooooooooooooooooooooooooo
+oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+oooooooooooooooooooo.ooooooooooooooooooooooooooooooooooooooo
+ooooooooooooooooooooooooooooooooooooooooooooooooooo.oooooooo
+ooooooooo.oooooooooo..ooo.oooooooooooooooooooo.ooooooooooooo
+oooooooooooooooooooo.oooooooo.
+"o" => good        "%" => ok        "!" => bad rmsd
+"O" => overloaded  "#" => many bad  "." => blank
+"@" => abandoned
+Mosaic spread: 0.140 < 0.189 < 0.290
+\end{verbatim}
+}
 \end{frame}
 
 \begin{frame}
