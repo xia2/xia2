@@ -259,7 +259,8 @@ def headers2sweeps(header_dict):
 
         if delta_lambda < 0.0001 and \
                delta_distance < 0.01 and \
-               min(delta_phi, 360.0 - delta_phi) < 0.01:
+               min(delta_phi, 360.0 - delta_phi) < 0.01 and \
+               i == current_sweep['images'][-1] + 1:
             # this is another image in the sweep
             # Debug.write('Image %d belongs to the sweep' % i)
             current_sweep['images'].append(i)
