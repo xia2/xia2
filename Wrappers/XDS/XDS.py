@@ -60,6 +60,9 @@ if not os.path.join(os.environ['XIA2_ROOT']) in sys.path:
 from Handlers.Streams import Debug
 from Handlers.Flags import Flags
 
+from dxtbx.format.FormatPilatusHelpers import pilatus_6M_mask, \
+     pilatus_2M_mask, pilatus_300K_mask
+
 def _xds_version(xds_output_list):
     '''Return the version of XDS which has been run.'''
 
@@ -380,28 +383,24 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
     # FIXME 11/DEC/06 this should depend on the wavelength
     result.append('AIR=0.001')
 
-    # dead regions of the detector for pilatus 6M
+    # dead regions of the detector for pilatus 6M, 2M, 300K etc.
 
-    if header['detector_class'] == 'pilatus 6M':
-
+    if 'pilatus' in header['detector_class']:
         result.append('SENSOR_THICKNESS=0.32')
         
-        result.append('UNTRUSTED_RECTANGLE= 488  494     1 2527')
-        result.append('UNTRUSTED_RECTANGLE= 982  988     1 2527')
-        result.append('UNTRUSTED_RECTANGLE=1476 1482     1 2527')
-        result.append('UNTRUSTED_RECTANGLE=1970 1976     1 2527')
-        result.append('UNTRUSTED_RECTANGLE=   1 2463   196  212')
-        result.append('UNTRUSTED_RECTANGLE=   1 2463   408  424')
-        result.append('UNTRUSTED_RECTANGLE=   1 2463   620  636')
-        result.append('UNTRUSTED_RECTANGLE=   1 2463   832  848')
-        result.append('UNTRUSTED_RECTANGLE=   1 2463  1044 1060')
-        result.append('UNTRUSTED_RECTANGLE=   1 2463  1256 1272')
-        result.append('UNTRUSTED_RECTANGLE=   1 2463  1468 1484')
-        result.append('UNTRUSTED_RECTANGLE=   1 2463  1680 1696')
-        result.append('UNTRUSTED_RECTANGLE=   1 2463  1892 1908')
-        result.append('UNTRUSTED_RECTANGLE=   1 2463  2104 2120')
-        result.append('UNTRUSTED_RECTANGLE=   1 2463  2316 2332')
+
+    if header['detector_class'] == 'pilatus 6M':
+        for limits in pilatus_6M_mask():        
+            result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(limits))
         
+    elif header['detector_class'] == 'pilatus 2M':
+        for limits in pilatus_2M_mask():        
+            result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(limits))
+
+    elif header['detector_class'] == 'pilatus 300K':
+        for limits in pilatus_300K_mask():        
+            result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(limits))
+
     return result
 
 def beam_centre_mosflm_to_xds(x, y, header):
