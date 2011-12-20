@@ -83,6 +83,35 @@ def Mtz2various(DriverType = None):
                     pass
             return
 
+        def convert_shelx(self):
+            '''Convert the input reflection file to SHELX hklf4 format.'''
+
+            self.check_hklin()
+            self.check_hklout()
+
+            self.start()
+
+            labin = 'I=I%s SIGI=SIGI%s ' % \
+                    (self._dataset_suffix, self._dataset_suffix)
+
+            self.input('output shelx')
+            self.input('labin %s' % labin)
+
+            self.close_wait()
+
+            output = self.get_all_output()
+
+            try:
+                self.check_for_errors()
+                self.check_ccp4_errors()
+
+            except RuntimeError, e:
+                try:
+                    os.remove(self.get_hklout())
+                except:
+                    pass
+            return
+
     return Mtz2variousWrapper()
 
 if __name__ == '__main__':

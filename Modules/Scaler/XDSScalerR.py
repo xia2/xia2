@@ -1637,8 +1637,10 @@ class XDSScalerR(Scaler):
         self._scalr_scaled_reflection_files = { }
         
         # convert reflection files to .sca format - use mtz2various for this
+        # also SHELX format if small molecule...
 
         self._scalr_scaled_reflection_files['sca'] = { }
+        self._scalr_scaled_reflection_files['hkl'] = { }
 
         for key in self._tmp_scaled_refl_files:
             file = self._tmp_scaled_refl_files[key]
@@ -1650,8 +1652,18 @@ class XDSScalerR(Scaler):
             m2v.convert()
 
             self._scalr_scaled_reflection_files['sca'][key] = scaout
-
             FileHandler.record_data_file(scaout)
+
+            if Flags.get_small_molecule():
+                hklout = '%s.hkl' % file[:-4]
+
+                m2v = self._factory.Mtz2various()
+                m2v.set_hklin(file)
+                m2v.set_hklout(hklout)
+                m2v.convert_shelx()
+
+                self._scalr_scaled_reflection_files['hkl'][key] = scaout
+                FileHandler.record_data_file(hklout)
 
         for key in self._scalr_statistics:
             pname, xname, dname = key
