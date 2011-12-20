@@ -1662,7 +1662,7 @@ class XDSScalerR(Scaler):
                 m2v.set_hklout(hklout)
                 m2v.convert_shelx()
 
-                self._scalr_scaled_reflection_files['hkl'][key] = scaout
+                self._scalr_scaled_reflection_files['hkl'][key] = hklout
                 FileHandler.record_data_file(hklout)
 
         for key in self._scalr_statistics:

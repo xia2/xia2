@@ -83,7 +83,7 @@ def Mtz2various(DriverType = None):
                     pass
             return
 
-        def convert_shelx(self):
+        def convert_shelx(self, unmerged = False):
             '''Convert the input reflection file to SHELX hklf4 format.'''
 
             self.check_hklin()
@@ -91,7 +91,7 @@ def Mtz2various(DriverType = None):
 
             self.start()
 
-            if self._dataset_suffix:
+            if self._dataset_suffix or unmerged:
                 labin = 'I=I%s SIGI=SIGI%s' % \
                         (self._dataset_suffix, self._dataset_suffix)
 
