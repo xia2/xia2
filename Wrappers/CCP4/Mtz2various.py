@@ -91,8 +91,12 @@ def Mtz2various(DriverType = None):
 
             self.start()
 
-            labin = 'I=I%s SIGI=SIGI%s ' % \
-                    (self._dataset_suffix, self._dataset_suffix)
+            if self._dataset_suffix:
+                labin = 'I=I%s SIGI=SIGI%s' % \
+                        (self._dataset_suffix, self._dataset_suffix)
+
+            else:
+                labin = 'I=IMEAN SIGI=SIGIMEAN'
 
             self.input('output shelx')
             self.input('labin %s' % labin)
