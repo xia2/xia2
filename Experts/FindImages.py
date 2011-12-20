@@ -212,8 +212,7 @@ def headers2sweep_ids(header_dict):
 def headers2sweeps(header_dict):
     '''Parse a dictionary of headers to produce a list of summaries.'''
 
-    images = header_dict.keys()
-    images.sort()
+    images = sorted(header_dict)
 
     if len(images) == 0:
         return []
@@ -223,11 +222,24 @@ def headers2sweeps(header_dict):
     current_sweep = copy.deepcopy(header_dict[images[0]])
     
     current_sweep['images'] = [images[0]]
+
+    # observation: in RIGAKU SATURN data sets the epoch is the same for
+    # all images => add the IMAGE NUMBER to this as a workaround if
+    # that format. See also RIGAKU_SATURN below.
+    
+    if 'rigaku saturn' in current_sweep['detector_class']:
+        current_sweep['epoch'] += images[0]
+
     current_sweep['collect_start'] = current_sweep['epoch']
     current_sweep['collect_end'] = current_sweep['epoch']
 
     for i in images[1:]:
         header = header_dict[i]
+
+        # RIGAKU_SATURN see above
+        
+        if 'rigaku saturn' in header['detector_class']:
+            header['epoch'] += i
 
         # if wavelength the same and distance the same and this image
         # follows in phi from the previous chappie then this is the
