@@ -1655,6 +1655,7 @@ class XDSScalerA(Scaler):
         # convert reflection files to .sca format - use mtz2various for this
 
         self._scalr_scaled_reflection_files['sca'] = { }
+        self._scalr_scaled_reflection_files['hkl'] = { }
 
         for key in self._tmp_scaled_refl_files:
 
@@ -1670,10 +1671,10 @@ class XDSScalerA(Scaler):
             FileHandler.record_data_file(scaout)
                            
             if Flags.get_small_molecule():
-                hklout = '%s.hkl' % file[:-4]
+                hklout = '%s.hkl' % f[:-4]
 
                 m2v = self._factory.Mtz2various()
-                m2v.set_hklin(file)
+                m2v.set_hklin(f)
                 m2v.set_hklout(hklout)
                 m2v.convert_shelx()
 
