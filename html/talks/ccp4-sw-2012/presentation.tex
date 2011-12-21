@@ -412,7 +412,7 @@ Total unique                  &       9552   &55    & 199 \\
 \end{frame}
 
 \begin{frame}
-\frametitle{Resolution}
+\frametitle{Resolution: much more in Lunchtime Bytes}
 \begin{itemize}
 \item{Data incomplete at high resolution}
 \item{Add RESOLUTION to xinfo file (in either SWEEP or WAVELENGTH}
@@ -556,7 +556,7 @@ with SCALA / AIMLESS}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Indexing - LABELIT}
+\frametitle{Decisions: Indexing - LABELIT}
 {\small
 \begin{verbatim}
 Solution  Metric fit  rmsd  #spots  crystal_system   unit_cell 
@@ -574,7 +574,7 @@ Solution  Metric fit  rmsd  #spots  crystal_system   unit_cell
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Indexing - IDXREF}
+\frametitle{Decisions: Indexing - IDXREF}
 {\small
 \begin{verbatim}
  *  31        aP          0.0      39.1   42.1   42.1  90.0  90.0  89.9
@@ -595,7 +595,7 @@ Solution  Metric fit  rmsd  #spots  crystal_system   unit_cell
 \end{frame}
 
 \begin{frame}
-\frametitle{Testing lattice choice}
+\frametitle{Decisions: Testing lattice choice}
 \begin{itemize}
 \item{Perform postrefinement (MOSFLM and XDS) in P1 and putative lattice}
 \item{Compare R.M.S. deviation of observed / predicted centres}
@@ -606,7 +606,7 @@ wrong}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Testing lattice choice 1}
+\frametitle{Decisions: Testing lattice choice 1}
 {\small
 \begin{verbatim}
  REFINED PARAMETERS:  DISTANCE BEAM ORIENTATION CELL AXIS                   
@@ -622,7 +622,7 @@ wrong}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Testing lattice choice 2}
+\frametitle{Decisions: Testing lattice choice 2}
 {\small
 \begin{verbatim}
  REFINED PARAMETERS:  DISTANCE BEAM ORIENTATION CELL AXIS                   
@@ -638,7 +638,7 @@ wrong}
 \end{frame}
 
 \begin{frame}
-\frametitle{Lattice observations}
+\frametitle{Decisions: Lattice observations}
 \begin{itemize}
 \item{Selecting lattice from indexing safe, as tested and challenged}
 \item{However strong argument for performing all processing in P1:
@@ -685,6 +685,9 @@ wrong}
 }
 \uncover<4->{
 \item{Hint for small molecule: -3dii -small\_molecule}
+}
+\uncover<5->{
+\item{-3d often works better for very fine $\phi$ sliced Pilatus data}
 }
 \end{itemize}
 \end{frame}
