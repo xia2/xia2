@@ -65,6 +65,10 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Driver.DriverFactory import DriverFactory
 from Handlers.Flags import Flags
 
+# replacement dxtbx for rigaku saturns sometimes
+from dxtbx.format.Registry import Registry
+from dxtbx.model.detector_helpers_types import detector_helpers_types
+
 def get_trust_timestamps():    
     return Flags.get_trust_timestamp()
 
@@ -404,6 +408,67 @@ def failover_cbf(cbf_file):
 
     return header
 
+last_format = None
+
+def failover_dxtbx(image_file):
+    '''Failover to use the dxtbx to read the image headers...'''
+
+    global last_format
+
+    if last_format:
+        iformat = last_format
+    else:
+        iformat = Registry.find(image_file)
+        
+    if iformat.understand(image_file) < 2:
+        raise RuntimeError, 'image file %s not understood by dxtbx' % \
+              image_file
+
+    last_format = iformat
+
+    i = iformat(image_file)
+
+    b = i.get_beam()
+    g = i.get_goniometer()
+    d = i.get_detector()
+    s = i.get_scan()
+
+    header = { }
+
+    fast, slow = map(int, d.get_image_size())
+    _f, _s = d.get_pixel_size()
+
+    F = d.get_fast_c()
+    S = d.get_slow_c()
+    N = F.cross(S)
+    
+    origin = d.get_origin_c()
+    beam = b.get_direction_c().normalize()
+    centre = - (origin - origin.dot(N) * N)
+
+    x = centre.dot(F)
+    y = centre.dot(S)
+
+    header['exposure_time'] = s.get_exposure_time()
+    header['distance'] = math.fabs(origin.dot(N))
+    header['two_theta'] = - beam.angle(N, deg = True)
+    header['raw_beam'] = x, y
+    header['phi_start'] = s.get_oscillation()[0]
+    header['phi_width'] = s.get_oscillation()[1]
+    header['phi_end'] = sum(s.get_oscillation())
+    header['pixel'] = _f, _s
+    header['beam'] = x, y
+    header['epoch'] = s.get_image_epoch(min(s.get_epochs()))
+    header['date'] = s.get_image_time(min(s.get_epochs()))
+    header['wavelength'] = b.get_wavelength()
+    header['size'] = fast, slow
+    detector_type = detector_helpers_types.get(
+        d.get_sensor(), fast, slow, int(1000 * _f), int(1000 * _s))
+    header['detector_class'] = detector_type.replace('-', ' ')
+    header['detector'] = detector_type.split('-')[0]
+
+    return header
+
 def Diffdump(DriverType = None):
     '''A factory for wrappers for the diffdump.'''
 
@@ -512,10 +577,6 @@ def Diffdump(DriverType = None):
         def readheader(self):
             '''Read the image header.'''
 
-            global detector_class
-            
-            # if we have the results already then don't bother
-            # with the program
             if self._header:
                 return copy.deepcopy(self._header)
 
@@ -523,6 +584,18 @@ def Diffdump(DriverType = None):
                 self._header = HeaderCache.get(self._image)
                 return copy.deepcopy(self._header)
 
+            try:
+                return readheader_diffdump(self)
+            except:
+                self._header = failover_dxtbx(self._image)
+                HeaderCache.put(self._image, self._header)
+                return copy.deepcopy(self._header)
+            
+        def readheader_diffdump(self):
+            '''Read the image header.'''
+
+            global detector_class
+            
             # check that the input file exists..
 
             if not os.path.exists(self._image):
@@ -861,6 +934,7 @@ if __name__ == '__main__':
             p.set_image(image)
 
             header = p.readheader()
+
             # gain = p.gain()
             
             print 'Frame %s collected at: %s' % \

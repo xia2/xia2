@@ -36,13 +36,13 @@ def pydiffdump(files):
             i = format(f)
 
             print 'Beam:'
-            print i.get_xbeam()
+            print i.get_beam()
             print 'Goniometer:'
-            print i.get_xgoniometer()
+            print i.get_goniometer()
             print 'Detector:'
-            print i.get_xdetector()
+            print i.get_detector()
             print 'Scan:'
-            print i.get_xscan()
+            print i.get_scan()
 
     return time.time() - s
 
