@@ -585,7 +585,7 @@ def Diffdump(DriverType = None):
                 return copy.deepcopy(self._header)
 
             try:
-                return self.readheader_diffdump(self)
+                return self.readheader_diffdump()
             except exceptions.Exception, e:
                 self._header = failover_dxtbx(self._image)
                 HeaderCache.put(self._image, self._header)
