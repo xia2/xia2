@@ -248,6 +248,18 @@ all images}
 \includegraphics[scale=0.25]{figures/christmas-tree-nothing-sweep.png}
 \end{frame}
 
+\begin{frame}
+\frametitle{Understanding the experiment}
+\begin{itemize}
+\item{SWEEP: one ``scan'' - basic unit of indexing / integration}
+\item{WAVELENGTH: container of SWEEPs}
+\item{WAVELENGTH: all H K L observations merged}
+\item{WAVELENGTH: CCP4 MTZ dataset}
+\item{CRYSTAL: contains WAVELENGTHs}
+\item{CRYSTAL: all data - basic unit of scaling}
+\end{itemize}
+\end{frame}
+
 \begin{frame}[fragile]
 \frametitle{What the program sees (automatic.xinfo)}
 {\small
@@ -270,18 +282,6 @@ END CRYSTAL DEFAULT
 END PROJECT AUTOMATIC
 \end{verbatim}
 }
-\end{frame}
-
-\begin{frame}
-\frametitle{Understanding the experiment}
-\begin{itemize}
-\item{SWEEP: one ``scan'' - basic unit of indexing / integration}
-\item{WAVELENGTH: container of SWEEPs}
-\item{WAVELENGTH: all H K L observations merged}
-\item{WAVELENGTH: CCP4 MTZ dataset}
-\item{CRYSTAL: contains WAVELENGTHs}
-\item{CRYSTAL: all data - basic unit of scaling}
-\end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -620,7 +620,8 @@ Solution  Metric fit  rmsd  #spots  crystal_system   unit_cell
 \item{Perform postrefinement (MOSFLM and XDS) in P1 and putative lattice}
 \item{Compare R.M.S. deviation of observed / predicted centres}
 \item{Results comparable $\rightarrow$ lattice probably OK}
-\item{Results worse with lattice constraints $\rightarrow$ lattice probablywrong}
+\item{Results worse with lattice constraints $\rightarrow$ lattice probably
+wrong}
 \end{itemize}
 \end{frame}
 
