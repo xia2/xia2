@@ -13,7 +13,6 @@
 # Generate full list of reflections to given resolution limit.
 # Compute intersection angles for all reflections given UB matrix etc.
 # Determine which of those will be recorded on the detector.
-# Hello from David Waterman.
 
 import os
 import sys

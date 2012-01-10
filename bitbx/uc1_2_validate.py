@@ -116,6 +116,10 @@ def validate_predictions(integrate_hkl, uc1_2):
     ann = ann_adaptor(data = reference, dim = 3, k = 1)
     ann.query(query)
 
+    dxs = []
+    dys = []
+    dzs = []
+
     for j in range(len(predictions)):
         c = ann.nn[j]
         if observations[c][0] == predictions[j][0]:
@@ -124,10 +128,18 @@ def validate_predictions(integrate_hkl, uc1_2):
             dy = observations[c][1][1] - predictions[j][1][1]
             dz = observations[c][1][2] - predictions[j][1][2]
 
-            print xyz[0], xyz[1], xyz[2], dx, dy, dz
+            dxs.append(dx)
+            dys.append(dy)
+            dzs.append(dz)
+
+    return meansd(dxs), meansd(dys), meansd(dzs)
             
 if __name__ == '__main__':
-    validate_predictions(sys.argv[1], sys.argv[2])
+    dx, dy, dz = validate_predictions(sys.argv[1], sys.argv[2])
+    print 'X: %.4f %.4f' % dx
+    print 'Y: %.4f %.4f' % dy
+    print 'Z: %.4f %.4f' % dz
+    
 
     
 
