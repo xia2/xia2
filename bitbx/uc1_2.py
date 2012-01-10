@@ -1,11 +1,11 @@
 #!/usr/bin/env cctbx.python
 # 
-# Biostruct-X Data Reduction Use Case 1.1:
+# Biostruct-X Data Reduction Use Case 1.2:
 # 
 # Given UB matrix, centring operation, generate a list of predictions as 
 # H K L x y phi. Also requires (clearly) a model for the detector positions
-# and the crystal lattice type. Alternatively (and simpler) assume lattice
-# is P1 and ignore centring.
+# and the crystal lattice type. This is aimed to help with identifying
+# locations on the images.
 #
 # Requires:
 #
@@ -26,7 +26,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from cftbx.coordinate_frame_converter import coordinate_frame_converter
 from rstbx.diffraction import rotation_angles
 from cctbx.sgtbx import space_group, space_group_symbols
-from cctbx.uctbx import unit_cell 
+from cctbx.uctbx import unit_cell
 
 def generate_indices(unit_cell_constants, resolution_limit):
     '''Generate all possible reflection indices out to a given resolution
@@ -66,10 +66,27 @@ def remove_absent_indices(indices, space_group_number):
 
     return present
 
+def parse_xds_xparm_scan_info(xparm_file):
+    '''Read an XDS XPARM file, get the scan information.'''
+
+    values = map(float, open(xparm_file).read().split())
+    
+    assert(len(values) == 42)
+
+    img_start = values[0]
+    osc_start = values[1]
+    osc_range = values[2]
+
+    return img_start, osc_start, osc_range
+
 def main(configuration_file):
     '''Perform the calculations needed for use case 1.1.'''
 
     cfc = coordinate_frame_converter(configuration_file)
+
+    img_start, osc_start, osc_range = parse_xds_xparm_scan_info(
+        configuration_file)
+    
     dmin = cfc.derive_detector_highest_resolution()
 
     # in principle this should come from the crystal model - should that
@@ -156,7 +173,8 @@ def main(configuration_file):
     r2d = 180.0 / math.pi
 
     for hkl, f, s, angle in observed_reflection_positions:
-        print '%d %d %d' % hkl, '%.4f %4f %2f' % (f, s, angle * r2d)
+        print '%d %d %d' % hkl, '%.4f %4f %2f' % (
+            f, s, img_start + ((angle * r2d) - osc_start) / osc_range)
     
 if __name__ == '__main__':
     main(sys.argv[1])
