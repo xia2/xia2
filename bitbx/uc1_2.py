@@ -184,4 +184,8 @@ def main(configuration_file, img_range):
             (img_start - 1) + ((angle * r2d) - osc_start) / osc_range)
     
 if __name__ == '__main__':
-    main(sys.argv[1], (int(sys.argv[2]), int(sys.argv[3])))
+    if len(sys.argv) != 4:
+        msg = "Requires 3 arguments: path/to/xparm.xds start_image_no end_image_no"
+        sys.exit(msg)
+    else:
+        main(sys.argv[1], (int(sys.argv[2]), int(sys.argv[3])))
