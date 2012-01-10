@@ -143,6 +143,7 @@ Wrappers/dTREK/Doc/dTREK.pdf -text
 bitbx/examples/integrate.hkl -text
 bitbx/examples/xparm-uc1-2.xds -text
 bitbx/examples/xparm.xds -text
+bitbx/readme.txt -text
 bitbx/uc1_1.py -text
 bitbx/uc1_2.py -text
 bitbx/uc1_2_validate.py -text
