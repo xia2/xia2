@@ -79,8 +79,10 @@ def parse_xds_xparm_scan_info(xparm_file):
 
     return img_start, osc_start, osc_range
 
-def main(configuration_file):
+def main(configuration_file, img_range):
     '''Perform the calculations needed for use case 1.1.'''
+
+    d2r = math.pi / 180.0
 
     cfc = coordinate_frame_converter(configuration_file)
 
@@ -88,6 +90,9 @@ def main(configuration_file):
         configuration_file)
     
     dmin = cfc.derive_detector_highest_resolution()
+
+    phi_start = ((img_range[0] - img_start) * osc_range + osc_start) * d2r
+    phi_end = ((img_range[1] - img_start + 1) * osc_range + osc_start) * d2r
 
     # in principle this should come from the crystal model - should that
     # crystal model record the cell parameters or derive them from the
@@ -126,7 +131,8 @@ def main(configuration_file):
     for hkl in indices:
         if ra(hkl):
             for angle in ra.get_intersection_angles():
-                observed_reflections.append((hkl, angle))
+                if angle >= phi_start and angle <= phi_end:
+                    observed_reflections.append((hkl, angle))
 
     # convert all of these to full scattering vectors in a laboratory frame
     # (for which I will use the CBF coordinate frame) and calculate which
@@ -174,7 +180,8 @@ def main(configuration_file):
 
     for hkl, f, s, angle in observed_reflection_positions:
         print '%d %d %d' % hkl, '%.4f %4f %2f' % (
-            f, s, img_start + ((angle * r2d) - osc_start) / osc_range)
+            f / pixel_size_fast, s / pixel_size_slow,
+            (img_start - 1) + ((angle * r2d) - osc_start) / osc_range)
     
 if __name__ == '__main__':
-    main(sys.argv[1])
+    main(sys.argv[1], (int(sys.argv[2]), int(sys.argv[3])))
