@@ -6,6 +6,7 @@
 # by means of computing a correlaton coefficient between the two.
 
 import math
+import sys
 import random
 from cctbx.array_family import flex
 from annlib_ext import AnnAdaptor as ann_adaptor
@@ -65,11 +66,68 @@ def test_ann():
         r = matrix.col([reference[3 * ann.nn[j] + k] for k in range(3)])
         offsets.append((q - r).length())
 
-    print meansd(offsets)
-        
+    return meansd(offsets)
 
+def read_integrate_hkl(integrate_hkl):
+
+    observations = []
+    
+    for record in open(integrate_hkl):
+        if '!' in record[:1]:
+            continue
+        values = record.split()
+        hkl = map(int, values[:3])
+        xyz = map(float, values[5:8])
+
+        observations.append((hkl, xyz))
+
+    return observations
+
+def read_uc1_2(uc1_2):
+    predictions = []
+
+    for record in open(uc1_2):
+        values = record.split()
+        hkl = map(int, values[:3])
+        xyz = map(float, values[3:6])
+
+        predictions.append((hkl, xyz))
+        
+    return predictions
+
+def validate_predictions(integrate_hkl, uc1_2):
+
+    observations = read_integrate_hkl(integrate_hkl)
+    predictions = read_uc1_2(uc1_2)
+
+    reference = flex.double()
+    query = flex.double()
+
+    for hkl, xyz in observations:
+        reference.append(xyz[0])
+        reference.append(xyz[1])
+        reference.append(xyz[2])
+
+    for hkl, xyz in predictions:
+        query.append(xyz[0])
+        query.append(xyz[1])
+        query.append(xyz[2])
+
+    ann = ann_adaptor(data = reference, dim = 3, k = 1)
+    ann.query(query)
+
+    for j in range(len(predictions)):
+        c = ann.nn[j]
+        if observations[c][0] == predictions[j][0]:
+            xyz = observations[c][1]
+            dx = observations[c][1][0] - predictions[j][1][0]
+            dy = observations[c][1][1] - predictions[j][1][1]
+            dz = observations[c][1][2] - predictions[j][1][2]
+
+            print xyz[0], xyz[1], xyz[2], dx, dy, dz
+            
 if __name__ == '__main__':
-    test_ann()
+    validate_predictions(sys.argv[1], sys.argv[2])
 
     
 
