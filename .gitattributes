@@ -143,6 +143,7 @@ Wrappers/dTREK/Doc/dTREK.pdf -text
 bitbx/examples/integrate.hkl -text
 bitbx/examples/xparm.xds -text
 bitbx/uc1_1.py -text
+bitbx/uc1_2.py -text
 cftbx/__init__.py -text
 cftbx/coordinate_frame_converter.py -text
 cftbx/coordinate_frame_helpers.py -text
