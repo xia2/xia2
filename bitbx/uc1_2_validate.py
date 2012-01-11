@@ -78,8 +78,9 @@ def read_integrate_hkl(integrate_hkl):
         values = record.split()
         hkl = map(int, values[:3])
         xyz = map(float, values[5:8])
+        isigma = map(float, values[3:5])
 
-        observations.append((hkl, xyz))
+        observations.append((hkl, xyz, isigma))
 
     return observations
 
@@ -90,8 +91,12 @@ def read_uc1_2(uc1_2):
         values = record.split()
         hkl = map(int, values[:3])
         xyz = map(float, values[3:6])
+        if len(values) >= 8:
+            isigma = map(float, values[6:8])
+        else:
+            isigma = (random.random(), random.random())
 
-        predictions.append((hkl, xyz))
+        predictions.append((hkl, xyz, isigma))
         
     return predictions
 
@@ -103,12 +108,12 @@ def validate_predictions(integrate_hkl, uc1_2):
     reference = flex.double()
     query = flex.double()
 
-    for hkl, xyz in observations:
+    for hkl, xyz, isigma in observations:
         reference.append(xyz[0])
         reference.append(xyz[1])
         reference.append(xyz[2])
 
-    for hkl, xyz in predictions:
+    for hkl, xyz, isigma in predictions:
         query.append(xyz[0])
         query.append(xyz[1])
         query.append(xyz[2])
@@ -119,6 +124,8 @@ def validate_predictions(integrate_hkl, uc1_2):
     dxs = []
     dys = []
     dzs = []
+    ivalues_o = []
+    ivalues_p = []
 
     for j in range(len(predictions)):
         c = ann.nn[j]
@@ -131,14 +138,17 @@ def validate_predictions(integrate_hkl, uc1_2):
             dxs.append(dx)
             dys.append(dy)
             dzs.append(dz)
+            ivalues_o.append(observations[c][2][0])
+            ivalues_p.append(predictions[j][2][0])
 
-    return meansd(dxs), meansd(dys), meansd(dzs)
+    return meansd(dxs), meansd(dys), meansd(dzs), cc(ivalues_o, ivalues_p)
             
 if __name__ == '__main__':
-    dx, dy, dz = validate_predictions(sys.argv[1], sys.argv[2])
+    dx, dy, dz, cc = validate_predictions(sys.argv[1], sys.argv[2])
     print 'X: %.4f %.4f' % dx
     print 'Y: %.4f %.4f' % dy
     print 'Z: %.4f %.4f' % dz
+    print 'CC: %.4f' % cc
     
 
     
