@@ -89,12 +89,9 @@ def read_uc1_2(uc1_2):
 
     for record in open(uc1_2):
         values = record.split()
-        hkl = map(int, values[:3])
-        xyz = map(float, values[3:6])
-        if len(values) >= 8:
-            isigma = map(float, values[6:8])
-        else:
-            isigma = (random.random(), random.random())
+        hkl = map(int, values[1:4])
+        xyz = float(values[7]), float(values[8]), float(values[5])
+        isigma = float(values[10]), float(values[12])
 
         predictions.append((hkl, xyz, isigma))
         
@@ -140,6 +137,7 @@ def validate_predictions(integrate_hkl, uc1_2):
             dzs.append(dz)
             ivalues_o.append(observations[c][2][0])
             ivalues_p.append(predictions[j][2][0])
+            print observations[c][2][0], predictions[j][2][0]
 
     return meansd(dxs), meansd(dys), meansd(dzs), cc(ivalues_o, ivalues_p)
             
