@@ -26,6 +26,7 @@ Handlers/Doc/CommandLine.pdf -text
 Handlers/Doc/Decision.pdf -text
 Handlers/Doc/Syminfo.pdf -text
 Handlers/Doc/Xinfo.pdf -text
+Handlers/Executables.py -text
 Modules/Doc/CCP4ScalerImplementation.pdf -text
 Modules/Doc/Indexer.pdf -text
 Modules/Doc/IndexerFactory.pdf -text
