@@ -63,6 +63,7 @@ from Schema.XProject import XProject
 from Handlers.Flags import Flags
 from Handlers.Streams import Chatter, Debug
 from Handlers.PipelineSelection import add_preference
+from Handlers.Executables import Executables
 
 class _CommandLine():
     '''A class to represent the command line input.'''
@@ -140,6 +141,7 @@ class _CommandLine():
         self._read_indexer()
         self._read_integrater()
         self._read_scaler()
+        self._read_executables()
 
         # flags relating to unfixed bugs...
         self._read_fixed_628()
@@ -1568,6 +1570,19 @@ class _CommandLine():
 
         scaler = sys.argv[index + 1]
         add_preference('scaler', scaler)
+        self._understood.append(index)
+        self._understood.append(index + 1)
+        return
+
+    def _read_executables(self):
+        try:
+            index = sys.argv.index('-executable')
+        except ValueError, e:
+            return
+        executable_string = sys.argv[index + 1]
+        assert('=' in executable_string)
+        executable, path = executable_string.split('=')
+        Executables.add(executable, path)
         self._understood.append(index)
         self._understood.append(index + 1)
         return

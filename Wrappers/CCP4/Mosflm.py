@@ -49,6 +49,7 @@ from Schema.Interfaces.Integrater import Integrater
 from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Citations import Citations
 from Handlers.Flags import Flags
+from Handlers.Executables import Executables
 
 # helpers
 
@@ -118,8 +119,11 @@ def Mosflm(DriverType = None):
 
             # FIXME should this be "hard" coded as the ccp4 one?
 
-            self.set_executable(os.path.join(
-                os.environ['CCP4'], 'bin', 'ipmosflm'))
+            if Executables.get('ipmosflm'):
+                self.set_executable(Executables.get('ipmosflm'))
+            else:
+                self.set_executable(os.path.join(
+                    os.environ['CCP4'], 'bin', 'ipmosflm'))
                 
             FrameProcessor.__init__(self)
             Indexer.__init__(self)
