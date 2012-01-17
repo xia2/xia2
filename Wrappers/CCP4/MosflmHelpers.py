@@ -514,6 +514,9 @@ def standard_mask(detector):
                 'LIMITS EXCLUDE 0.1 209.8 314.6 210.4']
 
     if 'pilatus 6M' in detector:
+        if True:
+            return []
+        
         return ['LIMITS EXCLUDE 83.9 85.0 0.2 434.6',
                 'LIMITS EXCLUDE 168.9 169.9 0.2 434.6',
                 'LIMITS EXCLUDE 253.9 254.9 0.2 434.6',
@@ -531,6 +534,8 @@ def standard_mask(detector):
                 'LIMITS EXCLUDE 0.2 423.6 398.4 401.1']
 
     if 'pilatus 2M' in detector:
+        if True:
+            return []
         return ['LIMITS EXCLUDE 83.9 85.0 0.2 288.8',
                 'LIMITS EXCLUDE 168.9 169.9 0.2 288.8',
                 'LIMITS EXCLUDE 0.2 253.7 33.7 36.5',
