@@ -128,16 +128,20 @@ def _parse_mosflm_integration_output(integration_output_list):
             per_image_stats[current_image]['mosaic'] = mosaic
 
         if 'Final rms residual:' in record:
-            residual = float(record.replace('mm', ' ').split()[3])
-            # FIXME to do this need to be able to compute the
-            # residual in pixels...
-            rmsd = residual / pixel_size
-            per_image_stats[current_image]['rmsd_pixel'] = rmsd
-            per_image_stats[current_image]['rmsd_phi'] = 0.0
-            if 'Weighted residual' in record:
-                weighted_residual = float(record.split()[-1])
-                per_image_stats[current_image][
-                    'weighted_residual'] = weighted_residual
+            if '*****' in record:
+                per_image_stats[current_image]['rmsd_pixel'] = 99.999
+                per_image_stats[current_image]['rmsd_phi'] = 0.0
+            else:
+                residual = float(record.replace('mm', ' ').split()[3])
+                # FIXME to do this need to be able to compute the
+                # residual in pixels...
+                rmsd = residual / pixel_size
+                per_image_stats[current_image]['rmsd_pixel'] = rmsd
+                per_image_stats[current_image]['rmsd_phi'] = 0.0
+                if 'Weighted residual' in record:
+                    weighted_residual = float(record.split()[-1])
+                    per_image_stats[current_image][
+                        'weighted_residual'] = weighted_residual
 
         if 'Real cell parameters' in record:
             cell = map(float, integration_output_list[i + 1].split())

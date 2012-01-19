@@ -34,6 +34,7 @@ from XDS import xds_check_error
 
 from Handlers.Flags import Flags
 from Handlers.Streams import Debug
+from XScaleHelpers import get_correlation_coefficients_and_group
 
 def XScaleR(DriverType = None,
             correct_decay = True,
@@ -311,11 +312,20 @@ def XScaleR(DriverType = None,
                 # the case in MULTICRYSTAL mode.
 
                 if ' !!! WARNING !!! ' in line and \
-                       not Flags.get_microcrystal() and \
                        'CORRELATION FACTORS ARE DANGEROUSLY SMALL' in line:
-                    raise RuntimeError, 'reindexing error: %s' % \
-                          os.path.join(self.get_working_directory(),
-                                       'XSCALE.LP')
+                    groups = get_correlation_coefficients_and_group(
+                        os.path.join(self.get_working_directory(),
+                                     'XSCALE.LP'))
+                    Debug.write('Low correlations - check data sets')
+                    for j, name in enumerate(groups):
+                        Debug.write('Group %d' % j)
+                        for file_name in groups[name]:
+                            Debug.write(file_name)
+                            
+                    if not Flags.get_microcrystal():
+                        raise RuntimeError, 'reindexing error: %s' % \
+                              os.path.join(self.get_working_directory(),
+                                           'XSCALE.LP')
                     
             return
 

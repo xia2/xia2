@@ -167,5 +167,6 @@ if __name__ == '__main__':
     for j, image in enumerate(sys.argv[1:]):
         total, pixels = sumbyteoffset(image)
         print j, total, pixels, image
+        sys.stdout.flush()
 
 
