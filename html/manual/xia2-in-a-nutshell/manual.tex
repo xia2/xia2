@@ -15,77 +15,83 @@
 
 \section{Background}
 
-\subsection{Before we start...}
+Users of macromolecular crystallography (MX) are well served in terms of
+data reduction software, with packages such as HKL2000, 
+Mosflm\footnote{A.G.W. Leslie, Acta Cryst. (2006) D62, 48-57},
+XDS\footnote{W. Kabsch, Acta Cryst. (2010) D66, 125-132} and 
+d*TREK generally available and commonly used. In the main, however, these
+programs require tha the user makes sensible decisions about the data 
+analysis to ensure that a useful result is reached. This manual describes
+a package, \emph{xia2}, which makes use of some of the aforementioned 
+software to reduce diffraction data automatically from images to scaled 
+intensities and structure factor amplitudes, with no user input.
+
+In 2005, when the \emph{xia2} project was initiated as part of the UK BBSRC
+e-Science project e-HTPX, multi-core machines were just becoming common, 
+detectors were getting faster and synchrotron beamlines were becoming 
+brighter. Against this background the downstream analysis (e.g. structure 
+solution and refinement) was streamlined and the level of expertise needed
+to use MX as a technique was reducing. At the same time mature software
+packages such as Mosflm, 
+Scala\footnote{P. Evans, Acta Cryst. (2006) D62, 72-82}, 
+CCP4\footnote{CCP4, Acta Cryst. (1994) D50, 760-763} 
+and XDS were available and a new 
+synchrotron facility was being built in the UK. The ground was therefore
+fertile for for the development of automated data reduction tools. Most 
+crucially, however, the author was told that this was impossible and a 
+waste of time - sufficient motivation for anyone.
+
+\section{Acknowledgements}
+
+Without the trusted and capable packes Mosflm, CCP4, Scala and XDS it would 
+clearly be impossible to develop \emph{xia2}. The author would therefore
+like to thank Andrew Leslie, Harry Powell, Phil Evans, Wolfgang Kabsch 
+and Kay Diederichs for their assistance in using their programs and 
+modifications they have made. In addition, more recent developments
+such as Labelit \footnote{N.K. Sauter et al. J. Appl. Cryst. (2004) 37, 
+399-409}, Pointless\footnote{P. Evans, Acta Cryst. (2006) D62, 72-82}
+and CCTBX\footnote{R.W. Grosse-Kunstleve et al. J. Appl. Cryst. (2002) 35, 
+126-136} have made the development of \emph{xia2} much more straightforward
+and the end product. The author would therefore like to additionally thank
+Nick Sauter and Ralf Grosee-Kunstleve for their help.
+
+Development of a package such as this is impossible without test data, for
+which the author would like to thank numerous users, particularly the 
+Joint Centre for Structural Genomics, for publishing the majority of their
+raw diffraction data. 
+
+During the course of \emph{xia2} development the project has been 
+supported by the UK BBSRC through the e-HTPX project, the EU Framework 6
+through the BioXHit project and most recently by Diamond Light Source.
+The software itself is open source, distributed under a BSD licence, but 
+relies on the user having correctly configured and licenced the necessary
+data analysis software, the details of which will be discussed shortly.
+
+\section{Introduction}
+
+In a nutshell, \emph{xia2} is an expert system to perform X-ray diffraction
+data processing on \emph{your} behalf, using \emph{your} software with little
+or no input from \emph{you}. It will correctly handle multi-pass, 
+multi-wavelength data sets as described later but crucially it is not a
+data processing package. Specifically, if you use \emph{xia2} in published
+work please include the references for the programs it has used, which are
+printed at the end of the output.
+
+The system was initially written to support remote access to synchrotron 
+facilities, however it may prove useful to anyone using MX, for example:
+
 \begin{itemize}
-\item{No 
-MOSFLM\footnote{A.G.W. Leslie, Acta Cryst. (2006) D62, 48-57},
-XDS\footnote{W. Kabsch, Acta Cryst. (2010) D66, 125-132}, 
-SCALA\footnote{P. Evans, Acta Cryst. (2006) D62, 72-82}, 
-CCP4\footnote{CCP4, Acta Cryst. (1994) D50, 760-763}
-}
-\item{$\rightarrow$ no xia2}
-\item{No 
-LABELIT\footnote{N.K. Sauter et al.
-J. Appl. Cryst. (2004) 37, 399-409},
-CCTBX\footnote{R.W. Grosse-Kunstleve et al.
-J. Appl. Cryst. (2002) 35, 126-136},
-POINTLESS\footnote{P. Evans, Acta Cryst. (2006) D62, 72-82}, 
-etc.}
-\item{$\rightarrow$ harder to write xia2, less reliable}
+\item{assisting new or novice users,}
+\item{giving a second opinion to experts,}
+\item{assisting busy users to allow them to focus on problem cases, or}
+\item{providing reproducible processing.}
 \end{itemize}
 
-\subsection{Acknowledgements}
-\begin{itemize}
-\item{Andrew Leslie, Harry Powell, Phil Evans, Wolfgang Kabsch, Kay Diederichs,
-Nick Sauter, Ralf Grosse-Kunstleve}
-\item{Alun Ashton, Dave Stuart, Diamond beamline staff, Miroslav Papiz, 
-Steve Prince, Colin Nave, xia2 users, providers of test data (esp. JCSG)}
-\item{Funding from Diamond Light Source, BBSRC e-Science e-HTPX project, 
-BioXHit}
-\end{itemize}
+\noindent
+The last of these may be most useful for users in a pharmacutical setting,
+or people wishing to test or benchmark equipment, for example beamline 
+scientists. In all cases however the usage of the program is the same.
 
-\subsection{Background (2005)}
-\begin{itemize}
-\item{Comprehensive, trusted software available}
-\item{Background of strong publications (esp. CCP4 study weekends)}
-\item{Massive advances in computing}
-\item{New synchrotron for UK}
-\item{$\rightarrow$ a great time to develop automated data reduction}
-\item{\emph{Also told that this is impossible and a waste of time}}
-\end{itemize}
-
-\section{What is xia2?}
-
-\subsection{What is xia2?}
-\includegraphics[scale=1]{figures/blackbox.png}
-\includegraphics[scale=0.2]{figures/xia2-in-a-nutshell.jpg}
-\includegraphics[scale=0.05]{figures/example-diffraction-image-small.jpg} 
-\includegraphics[scale=0.05]{figures/example-diffraction-image-small.jpg}
-{$\rightarrow H K L I \sigma_{I}$}
-
-\begin{itemize}
-\item{An \emph{expert} system to perform diffraction data processing 
-and analysis on \emph{your} behalf using \emph{your} software}
-\item{A system which can correctly handle multi-pass, multi-wavelength data
-sets}
-\item{\emph{Not} a data processing package}
-\end{itemize}
-
-\begin{itemize}
-\item{12 datasets / hour possible}
-\item{Limited help}
-\item{Human endurance}
-\item{Intended xia2 as tool to delegate data processing to}
-\end{itemize}
-
-\subsection{Why is this useful?}
-\begin{itemize}
-\item{Second opinion}
-\item{Allows you to focus on problem cases}
-\item{Help  busy / novice users}
-\item{Provides access to other tools}
-\item{Reproducible processing}
-\end{itemize}
 
 \section{Using xia2}
 
@@ -103,10 +109,9 @@ xia2 -3d /here/are/my/data
 \end{tabular}
 \end{center}
 
-\includegraphics[scale=0.25]{figures/keyboard.jpg}
-\includegraphics[scale=0.25]{figures/terminal.png}
+The program is used from the command-line, there is no GUI. In essence there
+are four command-line options which are useful on a daily basis:
 
-\subsection{Options (1)}
 \begin{itemize}
 \item{-atom X - tell xia2 to separate anomalous pairs i.e. $I(+) \ne I(-)$ in 
 scaling}
@@ -116,50 +121,53 @@ scaling}
 all images}
 \end{itemize}
 
-\subsection{How does it figure what to do?}
-\begin{itemize}
-\item{Read all of the image headers then}
-\item{Organise these into sweeps then}
-\item{Organise these into wavelengths then}
-\item{Assign all of these wavelengths to a crystal}
-\end{itemize}
+\noindent
+These specify in the broadest possible terms to the program the manner in
+which you would like the processing performed. The program will then read all 
+of the image headers found in \verb|/here/are/my/data| to organise the data, 
+first into sweeps, then into wavelengths, before assigning all of these
+wavelengths to a crystal.
 
-\subsection{How does it figure what to do?}
-\includegraphics[scale=0.4]{figures/bucket-of-images.jpg}
-\includegraphics[scale=0.25]{figures/christmas-tree-nothing-sweep.png}
+[FIXME FIGURE]
 
-\subsection{Understanding the experiment}
-\begin{itemize}
-\item{SWEEP: one ``scan'' - basic unit of indexing / integration}
-\item{WAVELENGTH: container of SWEEPs}
-\item{WAVELENGTH: all H K L observations merged}
-\item{WAVELENGTH: CCP4 MTZ dataset}
-\item{CRYSTAL: contains WAVELENGTHs}
-\item{CRYSTAL: all data - basic unit of scaling}
-\end{itemize}
+The data from the experiment is understood as follows. The SWEEP, which 
+corresponds to one ``scan,'' is the basic unit of indexing and integration.
+These are contained by WAVELENGTH objects which correspond to CCP4 MTZ 
+datasets, and will ultimately have unique Miller indices. For example, a low
+and high dose pass will be merged together. A CRYSTAL however contains all 
+of the data from the experiment and is the basic unit of data for scaling.
 
-\subsection{What the program sees (automatic.xinfo)}
+\begin{figure}
 {\small
 \begin{verbatim}
 BEGIN PROJECT AUTOMATIC
 BEGIN CRYSTAL DEFAULT
+
 BEGIN HA_INFO
 ATOM Ba
 END HA_INFO
+
 BEGIN WAVELENGTH SAD
 WAVELENGTH 0.979500
 END WAVELENGTH SAD
+
 BEGIN SWEEP SWEEP1
 WAVELENGTH SAD
 DIRECTORY /dls/i02/data/2011/mx1234-5
 IMAGE K5_M1S3_3_001.img
 START_END 1 450
 END SWEEP SWEEP1
+
 END CRYSTAL DEFAULT
 END PROJECT AUTOMATIC
 \end{verbatim}
 }
+\caption{The input file to the program, which is generated automatically, shows
+how the input data are understood. This may be adjusted and the program rerun,
+which will be covered in more detail later in the manual.}
+\end{figure}
 
+\section{Old stuff}
 
 \subsection{Example: 3QRN}
 \begin{itemize}
