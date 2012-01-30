@@ -2,7 +2,7 @@
 # XDSInit.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A wrapper to handle the JOB=INIT module in XDS.
@@ -22,7 +22,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'],
                     'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
-    
+
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
@@ -51,7 +51,7 @@ def XDSInit(DriverType = None):
             FrameProcessor.__init__(self)
 
             # now set myself up...
-            
+
             self.set_executable('xds')
 
             # generic bits
@@ -70,7 +70,7 @@ def XDSInit(DriverType = None):
             self._output_data_files_list = ['BKGINIT.cbf',
                                             'BLANK.cbf',
                                             'GAIN.cbf']
-            
+
             return
 
         # getter and setter for input / output data
@@ -120,7 +120,7 @@ def XDSInit(DriverType = None):
 
             # what are we doing?
             xds_inp.write('JOB=INIT\n')
-            
+
             for record in header:
                 xds_inp.write('%s\n' % record)
 
@@ -152,7 +152,7 @@ def XDSInit(DriverType = None):
                 open(os.path.join(
                     self.get_working_directory(), file), 'wb').write(
                     self._input_data_files[file])
-            
+
             self.start()
             self.close_wait()
 
@@ -188,7 +188,7 @@ if __name__ == '__main__':
     directory = os.path.join(os.environ['XIA2_ROOT'],
                              'Data', 'Test', 'Images')
 
-    
+
     init.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 
     for file in ['X-CORRECTIONS.cbf',
@@ -200,4 +200,3 @@ if __name__ == '__main__':
     init.add_spot_range(1, 1)
 
     init.run()
-

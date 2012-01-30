@@ -2,10 +2,10 @@
 # MosflmCheckIndexerSolution.py
 #   Copyright (C) 2009 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 # 12th May 2009
-# 
+#
 # Code to check the autoindex solution from mosflm for being
 # pseudo-centred (i.e. comes out as centered when it should not be)
 #
@@ -59,7 +59,7 @@ if (hasattr(matrix.rec, "rotate_around_origin")):
 def locate_maxima(image):
 
     global use_distl
-    
+
     if use_distl:
         try:
             dss = DistlSignalStrength()
@@ -71,7 +71,7 @@ def locate_maxima(image):
 
         except Exception, e:
             use_distl = False
-        
+
     if not use_distl:
 
         pp = Printpeaks()
@@ -103,9 +103,9 @@ def mosflm_check_indexer_solution(indexer):
 
     # N.B. in the calculation below I am using the Cambridge frame
     # and Mosflm definitions of X & Y...
-    
+
     m_elems = []
-    
+
     for record in m_matrix[:3]:
         record = record.replace('-', ' -')
         for e in map(float, record.split()):
@@ -113,7 +113,7 @@ def mosflm_check_indexer_solution(indexer):
 
     mi = matrix.sqr(m_elems)
     m = mi.inverse()
-    
+
     A = matrix.col(m.elems[0:3])
     B = matrix.col(m.elems[3:6])
     C = matrix.col(m.elems[6:9])
@@ -122,7 +122,7 @@ def mosflm_check_indexer_solution(indexer):
     # used for indexing, though can interrogate the FrameProcessor
     # interface of the indexer to put together a completely different
     # list if I like...
-    
+
     images = []
 
     for i in indexer.get_indexer_images():
@@ -138,7 +138,7 @@ def mosflm_check_indexer_solution(indexer):
     spots_r = []
 
     spots_r_j =  { }
-    
+
     for i in images:
         image = indexer.get_image_name(i)
         dd = Diffdump()
@@ -174,7 +174,7 @@ def mosflm_check_indexer_solution(indexer):
 
             spots_r.append(S.rotate(axis, - phi / rtod))
             spots_r_j[i].append(S.rotate(axis, - phi / rtod))
-            
+
     # now reindex the reciprocal space spot list and count - n.b. need
     # to transform the Bravais lattice to an assumed spacegroup and hence
     # to a cctbx spacegroup!
@@ -184,7 +184,7 @@ def mosflm_check_indexer_solution(indexer):
     lists.append(spots_r)
 
     for l in lists:
-        
+
         absent = 0
         present = 0
         total = 0
@@ -195,18 +195,18 @@ def mosflm_check_indexer_solution(indexer):
             total += 1
 
             ihkl = map(nint, hkl)
-            
+
             if math.fabs(hkl[0] - ihkl[0]) > 0.1:
                 continue
-            
+
             if math.fabs(hkl[1] - ihkl[1]) > 0.1:
                 continue
-            
+
             if math.fabs(hkl[2] - ihkl[2]) > 0.1:
                 continue
 
             # now determine if it is absent
-            
+
             if sg.is_sys_absent(ihkl):
                 absent += 1
             else:
@@ -225,7 +225,7 @@ def mosflm_check_indexer_solution(indexer):
 
             Debug.write('Not enough spots found for analysis')
             return False, None, None, None
-            
+
         if (absent - 3 * sd) / total < 0.008:
             return False, None, None, None
 
@@ -291,7 +291,7 @@ def mosflm_check_indexer_solution(indexer):
     # version of this.
 
     return True, lattice_p, new_matrix, (a, b, c, alpha, beta, gamma)
-        
+
 if __name__ == '__main__':
 
     # run a test!
@@ -299,7 +299,7 @@ if __name__ == '__main__':
     from Modules.Indexer.IndexerFactory import Indexer
 
     i = Indexer()
-    
+
     i.setup_from_image(sys.argv[1])
 
     print 'Refined beam is: %6.2f %6.2f' % i.get_indexer_beam()
@@ -307,7 +307,7 @@ if __name__ == '__main__':
     print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % i.get_indexer_cell()
     print 'Lattice: %s' % i.get_indexer_lattice()
     print 'Mosaic: %6.2f' % i.get_indexer_mosaic()
-    
+
     status = mosflm_check_indexer_solution(i)
 
     if status is True:

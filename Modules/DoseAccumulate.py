@@ -2,16 +2,16 @@
 # DoseAccumulate.py
 #   Copyright (C) 2007 STFC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A module to determine the accumulated dose as a function of exposure epoch
 # for a given set of images, assuming:
-# 
+#
 # (i)  the set is complete
 # (ii) the set come from a single (logical) crystal
 #
-# This is to work with fortran program "doser" and also to help fix 
+# This is to work with fortran program "doser" and also to help fix
 # Bug # 2798.
 #
 
@@ -110,13 +110,13 @@ if __name__ == '__main__':
         '13185_2_E2_###.img':1000,
         '13185_3_###.img':2000,
         'insulin_1_###.img':0,
-	'thau_hires_1_###.mccd':0,
-	'thau_lores_1_###.mccd':1000,
+        'thau_hires_1_###.mccd':0,
+        'thau_lores_1_###.mccd':1000,
         '27032_1_E1_###.mccd':0,
         '27032_1_E2_###.mccd':100,
         '27032_2_###.mccd':200
         }
-        
+
     batches = { }
 
     from Experts.FindImages import find_matching_images, \
@@ -154,6 +154,3 @@ if __name__ == '__main__':
     for e in epochs:
         print 'batch %d time %f dose %f' % \
               (batches[e], e - e0, dose[e])
-    
-
-                   

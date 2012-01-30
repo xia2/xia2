@@ -2,16 +2,16 @@
 # Mtzutils.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 
 
 #
 # 8th November 2006
-# 
-# A wrapper for the CCP4 program Mtzutils, specifically for trimming the 
+#
+# A wrapper for the CCP4 program Mtzutils, specifically for trimming the
 # resolution of an unmerged reflection file...
-# 
+#
 
 import os
 import sys
@@ -38,13 +38,13 @@ def Mtzutils(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            
+
             self.set_executable(os.path.join(
-                os.environ.get('CBIN', ''), 'mtzutils'))            
+                os.environ.get('CBIN', ''), 'mtzutils'))
 
             self._resolution_limit_high = 0.0
             self._resolution_limit_low = 100.0
-            
+
             return
 
         def set_resolution(self, resolution):
@@ -80,8 +80,7 @@ def Mtzutils(DriverType = None):
                 except:
                     pass
                 raise e
-                
-            return self.get_ccp4_status()
-            
-    return MtzutilsWrapper()
 
+            return self.get_ccp4_status()
+
+    return MtzutilsWrapper()

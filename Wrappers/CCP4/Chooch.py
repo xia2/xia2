@@ -2,7 +2,7 @@
 # Chooch.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A wrapper for Chooch, for use in deciding what has happened during
@@ -11,7 +11,7 @@
 #
 # 18th December 2006
 #
-# 
+#
 
 import os
 import sys
@@ -29,7 +29,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'],
                     'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
-    
+
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
@@ -76,7 +76,7 @@ def Chooch(DriverType = None):
         def __init__(self):
 
             DriverInstance.__class__.__init__(self)
-            
+
             self.set_executable('chooch')
             self._scan = None
             self._edge_table = { }
@@ -123,7 +123,7 @@ def Chooch(DriverType = None):
                     if '-------' in o:
                         collect = False
                         continue
-                    
+
                     name, energy, fp, fpp = tuple(map(string.strip,
                                                       o.split('|')[1:5]))
                     self._edge_table[name] = {
@@ -131,7 +131,7 @@ def Chooch(DriverType = None):
                         'fp':float(fp),
                         'fpp':float(fpp),
                         'wave':energy_to_wavelength(float(energy))}
-                
+
                 if 'energy' in o and 'f\'' in o and 'f\'\'' in o:
                     collect = True
 
@@ -155,7 +155,7 @@ def Chooch(DriverType = None):
                     fpp = d[1]
                     closest = math.fabs(w - wave)
 
-            return fp, fpp            
+            return fp, fpp
 
         def id_wavelength(self, wave):
             '''Try to identify a wavelength.'''
@@ -181,7 +181,7 @@ def Chooch(DriverType = None):
                     return 'HREM'
 
             return name.upper()
-                
+
     return ChoochWrapper()
 
 if __name__ == '__main__':
@@ -194,9 +194,9 @@ if __name__ == '__main__':
                                 'TM0486-9172-Se.raw'))
         c.set_atom('se')
         c.scan()
-        
+
         edges = c.get_edges()
-        
+
         for key in edges.keys():
             print '%s %6.2f %6.2f %8.6f' % (key,
                                             edges[key]['fp'],
@@ -214,9 +214,9 @@ if __name__ == '__main__':
                 c.set_scan(scan)
                 c.set_atom('se')
                 c.scan()
-            
+
                 edges = c.get_edges()
-            
+
                 for key in edges.keys():
                     print '%s %6.2f %6.2f %8.6f' % (key,
                                                     edges[key]['fp'],
@@ -226,5 +226,4 @@ if __name__ == '__main__':
                 print 'failed (%s)' % str(e)
 
 
-	    print ''
-            
+            print ''

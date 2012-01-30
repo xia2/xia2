@@ -1,9 +1,9 @@
 #!/usr/bin/env cctbx.python
 # MultiMerger.py
-# 
+#
 #   Copyright (C) 2010 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A playpen for figuring out merging multi-crystal merging... start by
@@ -23,7 +23,7 @@ from KBScale import lkb_scale
 
 def correlation_coefficient(a, b):
     '''Calculate the correlation coefficient between values a and b.'''
-    
+
     ma = sum(a) / len(a)
     mb = sum(b) / len(b)
 
@@ -44,7 +44,7 @@ class multi_merger:
 
     def __init__(self, hklin_list, reindex_op_list):
         '''Copy in list of reflection files, alternate indexing options.'''
-        
+
         self._hklin_list = hklin_list
         self._reindex_op_list = ['h,k,l']
         self._reindex_op_list.extend(reindex_op_list)
@@ -55,7 +55,7 @@ class multi_merger:
         self._merger_list = []
 
         self.setup()
-        
+
         return
 
     def get_mergers(self):
@@ -77,7 +77,7 @@ class multi_merger:
         be the indexing which gives the correlation coefficient.'''
 
         assert(file_no > 0)
-        
+
         m_ref = self._merger_list[0]
         m_work = self._merger_list[file_no]
 
@@ -115,19 +115,19 @@ class multi_merger:
         '''Compute the residual between related data sets.'''
 
         assert(file_no > 0)
-        
+
         m_ref = self._merger_list[0]
         m_work = self._merger_list[file_no]
-        
+
         r_ref = m_ref.get_merged_reflections()
         r_work = m_work.get_merged_reflections()
-            
+
         ref = []
         work = []
 
         r = 0.0
         d = 0.0
-        
+
         for hkl in r_ref:
             if hkl in r_work:
                 r += math.fabs(r_ref[hkl][0] - r_work[hkl][0])
@@ -142,16 +142,16 @@ class multi_merger:
         assert(j < len(self._merger_list))
 
         m_ref = self._merger_list[j]
-        
+
         r_ref = m_ref.get_merged_reflections()
         r_work = ext.get_merged_reflections()
-            
+
         ref = []
         work = []
 
         r = 0.0
         d = 0.0
-        
+
         for hkl in r_ref:
             if hkl in r_work:
                 r += math.fabs(r_ref[hkl][0] - r_work[hkl][0])
@@ -171,12 +171,12 @@ class multi_merger:
             m_ref = reference
         else:
             m_ref = self._merger_list[0]
-            
+
         m_work = self._merger_list[file_no]
-        
+
         r_ref = m_ref.get_merged_reflections()
         r_work = m_work.get_merged_reflections()
-            
+
         ref = []
         work = []
 
@@ -188,7 +188,7 @@ class multi_merger:
 
                 if r_work[hkl][0] / r_work[hkl][1] < 1:
                     continue
-                
+
                 d = m_work.resolution(hkl)
                 s = 1.0 / (d * d)
                 ref.append((s, r_ref[hkl][0]))
@@ -199,7 +199,7 @@ class multi_merger:
         m_work.apply_kb(k, b)
 
         return k, b
-        
+
     def unify_indexing(self):
         '''Unify the indexing conventions, to the first reflection file.'''
 
@@ -209,7 +209,7 @@ class multi_merger:
             # print 'File %s: %s' % (self._hklin_list[j], reindex)
 
         return
-    
+
     def scale_all(self, reference = None):
         '''Place all measurements on a common scale using kB scaling.'''
 
@@ -237,7 +237,7 @@ class multi_merger:
             m.apply_resolution_limit(r)
 
         return
-        
+
 if __name__ == '__main__':
 
     hklin_list = sys.argv[1:]
@@ -269,7 +269,7 @@ if __name__ == '__main__':
                                   m.calculate_rmerge())
 
     print 'Rescaling individual data sets to match full reference'
-    
+
     mm = multi_merger(hklin_list, reindex_op_list)
 
     mm.assign_resolution_unmerged_isigma(limit = 1.0)
@@ -295,7 +295,7 @@ if __name__ == '__main__':
         m.calculate_resolution_ranges(nbins = 100)
         r = m.resolution_unmerged_isigma(limit = 1.0)
         m.apply_resolution_limit(r)
-        
+
         print '%.3f %s %.3f %.3f' % (r_f[0], r_f[1],
                                      m.calculate_completeness(),
                                      m.calculate_rmerge())
@@ -338,7 +338,7 @@ if __name__ == '__main__':
 
     for j in range(len(hklin_list)):
         print '%s %.2f' % (hklin_list[j], totals[j] / scale)
-        
+
     p_list = [(totals[j], hklin_list[j]) for j in range(len(hklin_list))]
     p_list.sort()
 
@@ -347,4 +347,4 @@ if __name__ == '__main__':
 
     print 'AR PR hklin'
     for h in hklin_list:
-        print '%2d %2d %s' % (sorted_ar.index(h), sorted_pr.index(h), h) 
+        print '%2d %2d %s' % (sorted_ar.index(h), sorted_pr.index(h), h)

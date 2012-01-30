@@ -2,12 +2,12 @@
 # XDSIdxrefHelpers.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
-# Routines which help with working with XDS IDXREF - e.g. parsing the 
+#
+# Routines which help with working with XDS IDXREF - e.g. parsing the
 # output IDXREF.LP.
-# 
+#
 
 import math
 import os
@@ -88,7 +88,7 @@ def _parse_idxref_lp(lp_file_lines):
         # get the lattice character information - coding around the
         # non-standard possibility of mI, by simply ignoring it!
         # bug # 2355
-        
+
         if 'CHARACTER  LATTICE     OF FIT      a      b      c' in line:
             j = i + 1
             while lp_file_lines[j].strip() != "":
@@ -98,16 +98,16 @@ def _parse_idxref_lp(lp_file_lines):
 
                 # FIXME need to do something properly about this...
                 # bug # 2355
-                
+
                 if lattice == 'mI':
                     j += 1
                     continue
-                
+
                 fit = float(record[2])
                 cell = tuple(map(float, record[3:9]))
                 reindex_card = tuple(map(int, record[9:]))
                 constrained_cell = ApplyLattice(lattice, cell)[0]
-                
+
                 lattice_character_info[character] = {
                     'lattice':lattice,
                     'fit':fit,
@@ -148,4 +148,3 @@ if __name__ == '__main__':
     print '  H   K   L    GOF  Delta  Beam Centre'
     for hkl in origins:
         print '%3d %3d %3d' % hkl, '%6.1f %6.1f %6.1f %6.1f' % origins[hkl]
-    

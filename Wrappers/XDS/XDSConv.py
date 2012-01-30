@@ -2,7 +2,7 @@
 # XDSConv.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A wrapper to run xdsconv
@@ -22,7 +22,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'],
                     'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
-    
+
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
@@ -72,7 +72,7 @@ def XDSConv(DriverType = None):
         def parse_xds_ascii(self, file):
             '''Parse the XDS ascii file for interesting things.'''
 
-            results = { } 
+            results = { }
 
             for line in open(file, 'r').readlines():
                 if not line[0] == '!':
@@ -118,12 +118,12 @@ def XDSConv(DriverType = None):
             if len(self._input_file) > 49:
                 if len(os.path.split(self._input_file)[-1]) > 49:
                     raise RuntimeError, 'input file name too long'
-                
+
                 shutil.copyfile(
                     self._input_file,
                     os.path.join(self.get_working_directory(),
                                  os.path.split(self._input_file)[-1]))
-                
+
                 self._input_file = os.path.split(self._input_file)[-1]
 
             header = self.parse_xds_ascii(self._input_file)

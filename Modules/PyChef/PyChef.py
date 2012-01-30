@@ -1,13 +1,13 @@
 #!/usr/bin/env cctbx.python
 # PyChef.py
-# 
+#
 #   Copyright (C) 2009 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # A reimplementation of the FORTRAN program CHEF (Winter, PhD thesis)
-# into Python, using the CCTBX library. The idea is to analyse scaled 
+# into Python, using the CCTBX library. The idea is to analyse scaled
 # intensity measurements as a function of cumulative dose, to assess the
 # impact of radiation damage.
 #
@@ -45,7 +45,7 @@ class PyChef:
         # Dose / batch information for reporting purposes
 
         self._dose_information = { }
-        
+
         self._resolution_high = None
         self._resolution_low = None
 
@@ -58,7 +58,7 @@ class PyChef:
         self._ncpu = 1
 
         return
-        
+
     def set_base_column(self, base_column):
         '''Set the baseline for analysis: note well that this should
         be called before add_hklin, so that add_hklin can check that
@@ -132,7 +132,7 @@ class PyChef:
         overall_range_width = None
 
         for hklin in self._hklin_list:
-            
+
             mtz_obj = mtz.object(hklin)
 
             mi = mtz_obj.extract_miller_indices()
@@ -158,7 +158,7 @@ class PyChef:
             # chef does not care about systematic absences from e.g.
             # screw axes => patterson group not space group. No,
             # patterson group is always centric?!
-            
+
             sg = mtz_obj.space_group()
 
             # .build_derived_patterson_group()
@@ -169,7 +169,7 @@ class PyChef:
                 assert(symmetry == sg)
 
             # now have a rummage through to get the columns out that I want
-                
+
             base_column = None
             misym_column = None
             i_column = None
@@ -186,7 +186,7 @@ class PyChef:
 
                 if crystal.name() != 'HKL_base':
                     crystal_name = crystal.name()
-                
+
                 uc = crystal.unit_cell()
 
                 for dataset in crystal.datasets():
@@ -235,7 +235,7 @@ class PyChef:
 
                         if not batch in self._dose_information:
                             self._dose_information[batch] = dose, dataset_name
-                    
+
             print 'Reading in data from %s/%s' % (crystal_name, dataset_name)
             print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
                   tuple(uc.parameters())
@@ -254,12 +254,12 @@ class PyChef:
                 bases = sorted(set(base_values))
                 mean_shift = sum([bases[j + 1] - bases[j] for j in \
                                   range(len(bases) - 1)]) / (len(bases) - 1)
-                
+
                 if overall_range_width is None:
                     overall_range_width = mean_shift
                 if mean_shift < overall_range_width:
                     overall_range_width = mean_shift
-                    
+
             if overall_range_min == None:
                 overall_range_min = min_base
             else:
@@ -289,10 +289,10 @@ class PyChef:
 
                 if not i_values_valid[j]:
                     continue
-                
+
                 if not sigi_values_valid[j]:
                     continue
-                
+
                 h, k, l = mi[j]
                 base = base_values[j]
                 misym = misym_values[j]
@@ -312,7 +312,7 @@ class PyChef:
                 if self._resolution_high:
                     if uc.d([h, k, l]) < self._resolution_high:
                         continue
-                
+
                 if self._resolution_low:
                     if uc.d([h, k, l]) > self._resolution_low:
                         continue
@@ -365,7 +365,7 @@ class PyChef:
         # FIXME add warning if measurements don't reach the edge...
 
         return
-        
+
     def print_completeness_vs_dose(self):
         '''Print the completeness vs. dose for each input reflection file.
         This will need to read the MTZ file, get the dataset cell constants
@@ -390,7 +390,7 @@ class PyChef:
             nref = len(compute_unique_reflections(uc, sg, self._anomalous,
                                                   self._resolution_high,
                                                   self._resolution_low))
-            
+
             nref_n = len(compute_unique_reflections(uc, sg, False,
                                                     self._resolution_high,
                                                     self._resolution_low))
@@ -398,7 +398,7 @@ class PyChef:
             print 'Cumulative completeness analysis for %s/%s' % \
                   (crystal_name, dataset_name)
             print 'Expecting %d reflections' % nref
-            
+
             # Right, in here I need to get the lowest dose for a given
             # h, k, l and then add this reflection for completeness to all
             # high dose bins, as it is measured already. So, if it is
@@ -413,7 +413,7 @@ class PyChef:
             # a given reflection was recorded. Then iterate through this
             # list to see how many we have as a function of dose...
             #
-            # Ok, so after trying to implement this cleanly I think that the 
+            # Ok, so after trying to implement this cleanly I think that the
             # only way to do this is to actually read all of the reflections
             # in and store them in e.g. a dictionary. Could be expensive
             # for large data sets, but worry about that ... later. Can at
@@ -422,8 +422,8 @@ class PyChef:
 
             # this will be a dictionary indexed by the Miller indices and
             # containing anomalous flag (1: I+, 0:I- or native) baseline
-            # intensity values and the error estimate.. 
-            
+            # intensity values and the error estimate..
+
             # now construct the completeness tables for I or I+ & I-,
             # then populate from this list of lowest doses...
 
@@ -494,7 +494,7 @@ class PyChef:
                     iminus = iminus_count[j] / float(nref_n)
                     ieither = ieither_count[j] / float(nref_n)
                     iboth = iboth_count[j] / float(nref_n)
-                    
+
                     print '%8.1f %5.3f %5.3f %5.3f %5.3f' % \
                           (self._range_min + j * self._range_width,
                            iplus, iminus, ieither, iboth)
@@ -534,7 +534,7 @@ class PyChef:
 
                 for j in range(nsteps):
                     i = i_count[j] / float(nref)
-                    
+
                     print '%8.1f %5.3f' % \
                           (self._range_min + j * self._range_width, i)
 
@@ -563,10 +563,10 @@ class PyChef:
 
                     observations = self._reflections[
                         (crystal_name, dataset_name)][hkl]
-                    
+
                     iplus = []
                     iminus = []
-                    
+
                     for pm, base, i, sigi in observations:
                         if pm:
                             iplus.append((base, i, sigi))
@@ -593,7 +593,7 @@ class PyChef:
 
                     observations = self._reflections[
                         (crystal_name, dataset_name)][hkl]
-                    
+
 
                     for n, (pm, base, i, sigi) in enumerate(observations):
                         for _pm, _base, _i, _sigi in observations[n + 1:]:
@@ -608,7 +608,7 @@ class PyChef:
                   (self._base_column, crystal_name, dataset_name)
             print '$GRAPHS: Rd:N:1, 2: $$'
             print '%8s %5s $$ $$' % (self._base_column, 'Rd')
-            
+
             for j in range(nsteps):
                 d = self._range_width * j
                 if rd_bottom[j]:
@@ -641,7 +641,7 @@ class PyChef:
         nsteps = 1 + int(
             (self._range_max - self._range_min) / self._range_width)
 
-        # lay out the storage 
+        # lay out the storage
 
         for j in range(self._resolution_bins + 1):
 
@@ -649,7 +649,7 @@ class PyChef:
             rcp_bottom[j] = []
             isigma[j] = []
             count[j] = []
-            
+
             for k in range(nsteps):
                 rcp_top[j].append(0.0)
                 rcp_bottom[j].append(0.0)
@@ -661,7 +661,7 @@ class PyChef:
         for xname, dname in sorted(self._reflections):
 
             print 'Accumulating from %s %s' % (xname, dname)
-            
+
             for h, k, l in self._reflections[(xname, dname)]:
 
                 d = self._unit_cells[(xname, dname)].d([h, k, l])
@@ -669,7 +669,7 @@ class PyChef:
                 s = 1.0 / (d * d)
 
                 bin = int(self._resolution_bins * (s - smin) / (smax - smin))
-                
+
                 observations = self._reflections[(xname, dname)][(h, k, l)]
 
                 iplus = []
@@ -729,14 +729,14 @@ class PyChef:
                   self._title
 
         else:
-            print '$TABLE : Normalised radiation damage analysis:'            
+            print '$TABLE : Normalised radiation damage analysis:'
 
         print '$GRAPHS: Scp(d):N:1,%d: $$' % (self._resolution_bins + 2)
 
         columns = ''
         for j in range(self._resolution_bins):
             columns += ' S%d' % j
-        
+
         print '%s %s Scp(d) $$ $$' % (self._base_column, columns)
         format = '%8.1f %6.4f'
         for k in range(self._resolution_bins):
@@ -785,13 +785,13 @@ class PyChef:
         nsteps = 1 + int(
             (self._range_max - self._range_min) / self._range_width)
 
-        # lay out the storage 
+        # lay out the storage
 
         for j in range(self._resolution_bins + 1):
 
             rcp_top[j] = []
             rcp_bottom[j] = []
-            
+
             for k in range(nsteps):
                 rcp_top[j].append(0.0)
                 rcp_bottom[j].append(0.0)
@@ -801,7 +801,7 @@ class PyChef:
         for xname, dname in sorted(self._reflections):
 
             print 'Accumulating from %s %s' % (xname, dname)
-            
+
             for h, k, l in self._reflections[(xname, dname)]:
 
                 d = self._unit_cells[(xname, dname)].d([h, k, l])
@@ -809,7 +809,7 @@ class PyChef:
                 s = 1.0 / (d * d)
 
                 bin = int(self._resolution_bins * (s - smin) / (smax - smin))
-                
+
                 observations = self._reflections[(xname, dname)][(h, k, l)]
 
                 iplus = []
@@ -861,14 +861,14 @@ class PyChef:
                   self._title
 
         else:
-            print '$TABLE : Cumulative radiation damage analysis:'            
+            print '$TABLE : Cumulative radiation damage analysis:'
 
         print '$GRAPHS: Rcp(d):N:1,%d: $$' % (self._resolution_bins + 2)
 
         columns = ''
         for j in range(self._resolution_bins):
             columns += ' S%d' % j
-        
+
         print '%s %s Rcp(d) $$ $$' % (self._base_column, columns)
         format = '%8.1f %6.4f'
         for k in range(self._resolution_bins):
@@ -904,7 +904,7 @@ class PyChef:
         print '$$'
 
         return
-    
+
     def print_dose_profile(self):
 
         if not self._dose_information:
@@ -923,7 +923,7 @@ class PyChef:
         return
 
     # threaded functions to improve speed of above calculations
-    
+
     def calculate_completeness_vs_dose_anomalous(self, reflections, hkls):
         '''Compute arrays of number vs. dose for anomalous data for
         these named reflections.'''
@@ -932,20 +932,20 @@ class PyChef:
         iminus_count = []
         ieither_count = []
         iboth_count = []
-        
+
         nsteps = 1 + int(
             (self._range_max - self._range_min) / self._range_width)
-        
+
         for j in range(nsteps):
             iplus_count.append(0)
             iminus_count.append(0)
             ieither_count.append(0)
             iboth_count.append(0)
-            
+
         for hkl in hkls:
             base_min_iplus = self._range_max + self._range_width
             base_min_iminus = self._range_max + self._range_width
-                
+
             for pm, base, i, sigi in reflections[hkl]:
                 if sg.is_centric(hkl):
                     if base < base_min_iplus:
@@ -961,7 +961,7 @@ class PyChef:
 
             start_iplus = int((base_min_iplus - self._range_min)
                               / self._range_width)
-                
+
             start_iminus = int((base_min_iminus - self._range_min)
                                / self._range_width)
 
@@ -989,23 +989,23 @@ class PyChef:
 
         uc = self._unit_cells[(crystal_name, dataset_name)]
         sg = self._space_groups[(crystal_name, dataset_name)]
-        
+
         nref = len(compute_unique_reflections(uc, sg, self._anomalous,
                                               self._resolution_high,
                                               self._resolution_low))
-        
+
         nref_n = len(compute_unique_reflections(uc, sg, False,
                                                 self._resolution_high,
                                                 self._resolution_low))
-        
+
         iplus_count = []
         iminus_count = []
         ieither_count = []
         iboth_count = []
-        
+
         nsteps = 1 + int(
             (self._range_max - self._range_min) / self._range_width)
-        
+
         for j in range(nsteps):
             iplus_count.append(0)
             iminus_count.append(0)
@@ -1019,12 +1019,12 @@ class PyChef:
         chunks = [hkls[j: j + chunk_size] \
                   for j in range(0, len(hkls), chunk_size)]
 
-        # here need to spawn parallel threads 
-            
+        # here need to spawn parallel threads
+
         for hkl in reflections:
             base_min_iplus = self._range_max + self._range_width
             base_min_iminus = self._range_max + self._range_width
-                
+
             for pm, base, i, sigi in reflections[hkl]:
                 if sg.is_centric(hkl):
                     if base < base_min_iplus:
@@ -1040,7 +1040,7 @@ class PyChef:
 
             start_iplus = int((base_min_iplus - self._range_min)
                               / self._range_width)
-                
+
             start_iminus = int((base_min_iminus - self._range_min)
                                / self._range_width)
 
@@ -1078,10 +1078,10 @@ class PyChef:
         iminus_count = []
         ieither_count = []
         iboth_count = []
-        
+
         nsteps = 1 + int(
             (self._range_max - self._range_min) / self._range_width)
-        
+
         for j in range(nsteps):
             iplus_count.append(0)
             iminus_count.append(0)
@@ -1091,7 +1091,7 @@ class PyChef:
         for hkl in hkls:
             base_min_iplus = self._range_max + self._range_width
             base_min_iminus = self._range_max + self._range_width
-                
+
             for pm, base, i, sigi in reflections[hkl]:
                 if sg.is_centric(hkl):
                     if base < base_min_iplus:
@@ -1107,7 +1107,7 @@ class PyChef:
 
             start_iplus = int((base_min_iplus - self._range_min)
                               / self._range_width)
-                
+
             start_iminus = int((base_min_iminus - self._range_min)
                                / self._range_width)
 
@@ -1119,6 +1119,5 @@ class PyChef:
                 ieither_count[min(start_iplus, start_iminus)] += 1
             if max(start_iplus, start_iminus) < nsteps:
                 iboth_count[max(start_iplus, start_iminus)] += 1
-        
+
         return iplus_count, iminus_count, iboth_count, ieither_count
-    

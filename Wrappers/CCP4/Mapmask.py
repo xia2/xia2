@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # Mapmask.py
-# 
+#
 #   Copyright (C) 2008 STFC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # 23rd December 2008
-# 
+#
 # A wrapper for the CCP4 program mapmask
-# 
+#
 
 import os
 import sys
@@ -36,7 +36,7 @@ def Mapmask(DriverType = None):
             CCP4DriverInstance.__class__.__init__(self)
 
             self.set_executable(os.path.join(
-                os.environ.get('CBIN', ''), 'mapmask'))            
+                os.environ.get('CBIN', ''), 'mapmask'))
 
             self._symmetry = None
 
@@ -51,10 +51,10 @@ def Mapmask(DriverType = None):
             self.check_mapout()
 
             self.start()
-            
+
             if self._symmetry:
                 self.input('symmetry %s' % str(self._symmetry))
-                
+
             self.input('xyzlim asu')
 
             self.close_wait()
@@ -64,14 +64,14 @@ def Mapmask(DriverType = None):
         def mask_xyzin(self):
             self.check_mapin()
             self.check_xyzin()
-            
+
             self.check_mapout()
 
             self.start()
-            
+
             if self._symmetry:
                 self.input('symmetry %s' % str(self._symmetry))
-                
+
             self.input('xyzlim asu')
 
             self.close_wait()
@@ -88,4 +88,3 @@ if __name__ == '__main__':
     mapmask.set_mapout(sys.argv[2])
 
     print mapmask.mask_asu()
-    

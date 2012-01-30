@@ -43,7 +43,7 @@ class handler:
         return len(self._files)
 
 handler = handler(os.getcwd(), os.path.join(os.getcwd(), 'empty'))
-    
+
 def handle_directory(root, directory, files):
     for f in files:
         if not '.cbf' in f[-4:]:

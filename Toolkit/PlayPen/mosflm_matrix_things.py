@@ -83,9 +83,9 @@ def format_matrix(cell, a, u):
     matrix_format = ' %11.8f %11.8f %11.8f\n' + \
                     ' %11.8f %11.8f %11.8f\n' + \
                     ' %11.8f %11.8f %11.8f\n'
-    
+
     cell_format = ' %11.4f %11.4f %11.4f %11.4f %11.4f %11.4f\n'
-    
+
     misset = '       0.000       0.000       0.000\n'
 
     return matrix_format % tuple(a) + misset + matrix_format % tuple(u) + \
@@ -121,7 +121,7 @@ def calculate_wavelength(unit_cell, mosflm_a_matrix):
                   unit_cell[2] / math.sqrt(c.dot())) / 3.0
 
     return wavelength
-                  
+
 def generate_lattice_options(unit_cell, space_group_name):
     cs = crystal.symmetry(
         unit_cell = unit_cell,
@@ -146,28 +146,28 @@ def generate_lattice_options(unit_cell, space_group_name):
 
             o_unit_cell = cs_best.unit_cell().parameters()
             sg = cs_best.space_group().build_derived_acentric_group()
-        
+
             o_space_group_name = sg.type().universal_hermann_mauguin_symbol()
             reindex = (cb * item['subsym'].space_group_info().type().cb_op(
                 ) * original_reindex).c().r().as_double()
-            
+
             result.append((o_space_group_name, o_unit_cell, reindex))
 
         else:
-        
+
             o_unit_cell = cs.unit_cell().parameters()
             sg = cs.space_group().build_derived_acentric_group()
-        
+
             o_space_group_name = sg.type().universal_hermann_mauguin_symbol()
             reindex = (item['subsym'].space_group_info().type().cb_op(
                 ) * original_reindex).c().r().as_double()
-            
+
             result.append((o_space_group_name, o_unit_cell, reindex))
 
     return result
 
 def apply_reindex_operation(mosflm_a_matrix, mosflm_u_matrix, reindex):
-    
+
     a = matrix.sqr(mosflm_a_matrix)
     u = matrix.sqr(mosflm_u_matrix)
     r = matrix.sqr(reindex).transpose()
@@ -187,7 +187,7 @@ def macguffin(mosflm_matrix, space_group_name):
     cell, a, u = parse_matrix(mosflm_matrix)
 
     wavelength = calculate_wavelength(cell, a)
-    
+
     options = generate_lattice_options(cell, space_group_name)
 
     results = []
@@ -199,8 +199,8 @@ def macguffin(mosflm_matrix, space_group_name):
             print '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % o_unit_cell
             print '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % mosflm_a_to_cell(
                 o_a, wavelength)
-            
-        results.append((spacegroup_long_to_short(o_space_group_name), 
+
+        results.append((spacegroup_long_to_short(o_space_group_name),
                         format_matrix(o_unit_cell, o_a, o_u)))
 
     return results
@@ -210,7 +210,7 @@ def spacegroup_long_to_short(spacegroup_name):
     if ':' in spacegroup_name:
         spacegroup_name = spacegroup_name.split(
             ':')[0].replace('R', 'H').strip()
-    
+
     for record in open(os.path.join(os.environ['CLIBD'], 'symop.lib')):
         if ' ' in record[:1]:
             continue
@@ -341,5 +341,3 @@ def super_test_deux(mosflm_lp_file):
 if __name__ == '__main__':
 
     super_test_deux(sys.argv[1])
-
-    

@@ -2,9 +2,9 @@
 # XSweep2.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-#  
+#
 # A smarter plug-in replacement for the XSweep class which will allow more
 # straightforward extensibility as well as generally smarter handling of
 # detectors through the ImageFormat system and proper experiment description.
@@ -80,9 +80,9 @@ class XSweep2():
         self._detector = detector_instance
         self._beam = beam_instance
         self._scan = scan_instance
-        
+
         return
-    
+
     def __str__(self):
         return self.__repr__()
 
@@ -98,7 +98,7 @@ class XSweep2():
         repr += 'EXPOSURE TIME %f\n' % self._scan.get_exposure_time()
         repr += 'PHI WIDTH %.2f\n' % self._scan.get_oscillation()[1]
         repr += 'IMAGES (USER) %d to %d\n' % self._scan.get_image_range()
-        
+
         # add some stuff to implement the actual processing implicitly
         # FIXME implement this once it is ready!
 
@@ -127,7 +127,7 @@ class XSweep2():
         '''Get a full list of all images in this sweep...'''
 
         start, end = self._scan.get_image_range()
-        
+
         return [self._scan.get_image_name(image) \
                 for image in range(start, end + 1)]
 
@@ -138,15 +138,15 @@ class XSweep2():
 
     def get_reversephi(self):
         '''Get whether this is a reverse-phi sweep...'''
-        
+
         if self._scan.get_oscillation()[1] < 0:
             return True
-        
+
         return False
 
     def get_image_to_epoch(self):
         '''Get the image to epoch mapping table.'''
-        
+
         return copy.deepcopy(self._scan.get_epochs())
 
     # to see if we have been instructed...
@@ -155,7 +155,7 @@ class XSweep2():
         return self._user_lattice
 
     def get_user_cell(self):
-        return self._user_cell    
+        return self._user_cell
 
     def summarise(self):
 
@@ -169,20 +169,20 @@ class XSweep2():
         # FIXME add some more interesting things in here...
 
         return summary
-            
+
     def get_directory(self):
         return self._scan.get_directory()
 
     def get_image(self):
         start, end = self._scan.get_image_range()
-        
+
         return self._scan.get_image_name(start)
 
     def get_beam(self):
 
         # FIXME derive the beam centre in the coordinate frame (fast, slow)
         # in mm - will need self._beam and self._detector
-        
+
         return beam
 
     def get_distance(self):
@@ -215,7 +215,7 @@ class XSweep2():
         return self._name
 
     # These methods will be delegated down to Indexer and Integrater
-    # implementations, through the defined API. 
+    # implementations, through the defined API.
 
     def _get_indexer(self):
         '''Get my indexer, if set, else create a new one from the
@@ -230,7 +230,7 @@ class XSweep2():
 
                 if self._user_cell:
                     self._indexer.set_indexer_input_cell(self._user_cell)
-                    
+
             else:
                 if self._user_cell:
                     raise RuntimeError, 'cannot assign cell without lattice'
@@ -267,7 +267,7 @@ class XSweep2():
 
         if self._integrater == None:
             self._integrater = IntegraterFactory.IntegraterForXSweep(self)
-            
+
             self._integrater.set_integrater_indexer(self._get_indexer())
 
             self._integrater.set_integrater_ice(
@@ -315,7 +315,7 @@ class XSweep2():
 
             if self.get_polarization():
                 self._integrater.set_polarization(self.get_polarization())
-                
+
             # look to see if there are any global integration parameters
             # we can set...
 
@@ -372,7 +372,7 @@ class XSweep2():
 
     def get_integrater_intensities(self):
         reflections = self._get_integrater().get_integrater_intensities()
-        
+
         # look to see if there are any global integration parameters
         # we can store...
 
@@ -390,7 +390,7 @@ class XSweep2():
             # crystal_id)
             # Chatter.write('%s' % str(e))
             pass
-        
+
         return reflections
 
     def get_crystal_lattice(self):
@@ -401,7 +401,7 @@ class XSweep2():
             lattice = None
 
         return lattice
-    
+
 class XSweep2Factory:
     '''A factory for XSweep2 instances, which can be constructed from e.g.
     a list of image files or alternatively an existing sweep with a subset of
@@ -494,10 +494,6 @@ if __name__ == '__main__':
             return 'fakewavelength'
         def get_wavelength(self):
             return math.pi / 4
-        
+
     print XSweep2Factory.FromImages(
         'noddy', XWavelength(), sys.argv[1:])
-        
-
-        
-        

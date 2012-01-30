@@ -2,7 +2,7 @@
 # Filenames.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # An expert who knows about how file names are structured on a number of
@@ -57,13 +57,12 @@ def expand_path(path):
             windows_environment_vars_to_unix(path)))
     else:
         return os.path.expandvars(os.path.expanduser(path))
-            
+
 
 if __name__ == '__main__':
 
     if os.name == 'nt':
         print expand_path(r'%USERPROFILE%\test')
-        print expand_path(r'~\test')    
+        print expand_path(r'~\test')
     else:
-        print expand_path(r'~\test')    
-        
+        print expand_path(r'~\test')

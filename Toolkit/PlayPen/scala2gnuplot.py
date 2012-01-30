@@ -5,7 +5,7 @@ def parse_ccp4_loggraph(textlines):
     '''Look through the standard output of the program for
     CCP4 loggraph text. When this is found store it in a
     local dictionary to allow exploration.'''
-    
+
     # reset the loggraph store
     loggraph = { }
 
@@ -13,22 +13,22 @@ def parse_ccp4_loggraph(textlines):
         line = textlines[i]
         if '$TABLE' in line:
             n_dollar = line.count('$$')
-            
+
             current = line.split(':')[1].replace('>',
                                                  '').strip()
             loggraph[current] = { }
             loggraph[current]['columns'] = []
             loggraph[current]['data'] = []
-            
+
             loggraph_info = ''
-            
+
             while n_dollar < 4:
                 n_dollar += line.count('$$')
                 loggraph_info += line
-                
+
                 if n_dollar == 4:
                     break
-                        
+
                 i += 1
                 line = textlines[i]
 
@@ -46,8 +46,8 @@ def parse_ccp4_loggraph(textlines):
                 record = data[j].split()
                 if len(record) == columns:
                     loggraph[current]['data'].append(record)
-                    
-    return loggraph                
+
+    return loggraph
 
 def rummage(loggraphs):
     for name in loggraphs:
@@ -82,7 +82,7 @@ def understand(analysis_as_batch):
             run += 1
             results[run] = rmerges_this_run
             rmerges_this_run = { }
-            
+
         batch = b
         rmerges_this_run[b - runstart] = rmerges[j]
 
@@ -111,7 +111,7 @@ def print_results(results):
     fout.write('set out "plot.ps"\n')
     fout.write('set xlabel "batch"\n')
     fout.write('set ylabel "rmerge"\n')
-    
+
     fout.write('plot "plot.dat" using 1:2 with lines title "run 1"')
     for j in runs[1:]:
         fout.write(', "" using 1:%d with lines title "run %d"' % (j + 1, j))
@@ -124,4 +124,3 @@ if __name__ == '__main__':
 
     os.system('gnuplot plot.gnu')
     os.system('ps2pdf plot.ps')
-    

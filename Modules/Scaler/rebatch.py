@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # rebatch.py
-# 
+#
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # Replacement for CCP4 program rebatch, using cctbx Python.
-# 
+#
 
 import os
 import sys
@@ -47,20 +47,20 @@ def rebatch(hklin, hklout, first_batch):
 
         for batch in mtz_obj.batches():
             batch.set_num(int(batch.num() + offset))
-            
+
     # done modifying
-    
+
     batch_column.set_values(values = batch_column_values,
                             selection_valid = valid)
 
     # and write this lot out as hklout
-    
+
     mtz_obj.write(file_name = hklout)
 
 def copy_r_file(hklin, hklout):
 
     mtz_obj = mtz.object(file_name = hklin)
-    
+
     mtz_out = mtz.object()
 
     mtz_out.set_space_group(mtz_obj.space_group())
@@ -86,11 +86,11 @@ def copy_r_file(hklin, hklout):
 
             dataset_out = crystal_out.add_dataset(dataset.name(),
                                                   dataset.wavelength())
-            
+
             for column in dataset.columns():
 
                 dataset_out.add_column(column.label(), column.type())
-                
+
                 if column.label() == 'BATCH':
                     batch_column = column
 
@@ -120,7 +120,7 @@ def copy_r_file(hklin, hklout):
                     del(values[r])
                 mtz_out.get_column(column.label()).set_values(
                     values = values, selection_valid = valid)
-    
+
     mtz_out.write(file_name = hklout)
 
     return

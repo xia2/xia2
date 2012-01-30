@@ -2,18 +2,18 @@
 # Scaleit.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 27th October 2006
 #
 # A wrapper for the CCP4 program scaleit, for use when scaling together
 # multiple data sets from a single crystal.
-#  
+#
 # 15/JAN/07 FIXME - need to be able to cope with a native data set
 #                   scaled together with anomalous derivatives.
-# 
-# 
+#
+#
 
 import os
 import sys
@@ -100,17 +100,17 @@ def Scaleit(DriverType = None):
                         columns.append(column_info[i + j][0])
 
                     j += 4
-                    
+
                 elif type == 'F' and name.split('_')[0] == 'F' and \
                        not self._anomalous:
                     groups += 1
                     for i in range(2):
                         columns.append(column_info[i + j][0])
 
-                    j += 2          
+                    j += 2
                 else:
                     j += 1
-                
+
 
             # ok that should be all of the groups identified
 
@@ -128,7 +128,7 @@ def Scaleit(DriverType = None):
 
             # need to have a HKLOUT even if we do not want the
             # reflections...
-            
+
             self.check_hklout()
 
             if not self._columns:
@@ -149,7 +149,7 @@ def Scaleit(DriverType = None):
             if self._anomalous:
                 groups = len(self._columns) // 4
             else:
-                groups = len(self._columns) // 2                
+                groups = len(self._columns) // 2
 
             for j in range(groups):
 
@@ -177,7 +177,7 @@ def Scaleit(DriverType = None):
                 try:
                     os.remove(self.get_hklout())
                 except:
-                    pass            
+                    pass
 
                 raise e
 
@@ -206,7 +206,7 @@ def Scaleit(DriverType = None):
 
                 if 'APPLICATION OF SCALES AND ANALYSIS OF DIFFERENCES' in line:
                     current_derivative = -1
-                
+
                     while not 'SUMMARY_END' in line:
                         list = line.split()
                         if 'Derivative' in list:
@@ -233,7 +233,7 @@ def Scaleit(DriverType = None):
                         self._statistics['max_difference'] = max_difference
 
                 if 'THE TOTALS' in line:
-                    r_values.append(float(line.split()[6]))        
+                    r_values.append(float(line.split()[6]))
 
                 j += 1
 
@@ -242,7 +242,7 @@ def Scaleit(DriverType = None):
             for j in range(len(r_values)):
                 d = j + 1
                 self._statistics['b_factor'][d]['r'] = r_values[j]
-            
+
 
             return
 
@@ -257,7 +257,7 @@ if __name__ == '__main__':
     s = Scaleit()
 
     if len(sys.argv) == 1:
-        
+
         hklin = os.path.join(
             os.environ['X2TD_ROOT'],
             'Test', 'UnitTest', 'Wrappers', 'Scaleit',

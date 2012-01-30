@@ -54,7 +54,7 @@ class coordinate_frame_converter:
             raise RuntimeError, 'convention %s not currently supported' % \
                   convention
 
-        return 
+        return
 
     def get_c(self, parameter, convention = CBF):
         '''Get the parameter, in the correct coordinate convention if a
@@ -78,7 +78,7 @@ class coordinate_frame_converter:
             raise RuntimeError, 'convention %s not currently supported' % \
                   convention
 
-        return 
+        return
 
     def get_u_b(self, convention = CBF):
         '''Get the [U] and [B] matrices in the requested coordinate system.'''
@@ -118,13 +118,13 @@ class coordinate_frame_converter:
         else:
             raise RuntimeError, 'convention %s not currently supported' % \
                   convention
-            
+
         return R * U, B
 
     def derive_beam_centre_pixels_fast_slow(self):
         '''Derive the pixel position at which the direct beam would intersect
         with the detector plane, and return this in terms of fast and slow.'''
-        
+
         cfi = self._coordinate_frame_information
 
         detector_origin = cfi.get('detector_origin')
@@ -150,12 +150,12 @@ class coordinate_frame_converter:
         beam_centre_slow_mm = beam_centre.dot(detector_slow)
 
         return beam_centre_fast_mm / pixel_size_fast, \
-               beam_centre_slow_mm / pixel_size_slow 
+               beam_centre_slow_mm / pixel_size_slow
 
     def derive_detector_highest_resolution(self):
         '''Determine the highest resolution recorded on the detector, which
         should be at one of the corners.'''
- 
+
         cfi = self._coordinate_frame_information
 
         detector_origin = cfi.get('detector_origin')
@@ -181,7 +181,7 @@ class coordinate_frame_converter:
                            sample_to_detector.angle(F),
                            sample_to_detector.angle(S),
                            sample_to_detector.angle(FS)])
-        
+
         return cfi.get_wavelength() / (2.0 * math.sin(theta))
 
     def __str__(self):
@@ -198,7 +198,7 @@ if __name__ == '__main__':
 
     if len(sys.argv) < 2:
         raise RuntimeError, '%s configuration-file mosflm-matrix' % sys.argv[0]
-    
+
     configuration_file = sys.argv[1]
 
     cfc = coordinate_frame_converter(configuration_file)
@@ -218,5 +218,3 @@ if __name__ == '__main__':
 
     print matrix_format % mosflm_matrix.elems
     print matrix_format % (u * b).elems
-
-

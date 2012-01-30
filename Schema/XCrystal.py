@@ -2,56 +2,56 @@
 # XCrystal.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A versioning object representation of the toplevel crystal object,
-# which presents much of the overall interface of xia2dpa to the 
+# which presents much of the overall interface of xia2dpa to the
 # outside world.
-# 
+#
 # This will contain some information about the sequence, some information
 # about heavy atoms, some stuff about wavelengths. This will also, most
-# substantially, contain some really important stuff to do with 
+# substantially, contain some really important stuff to do with
 # managing the crystal lattice, for instance computing the correct
 # "average" value and also handling lattice changes during the data
 # reduction.
-# 
-# This latter function is delegated to a lower level object, the 
+#
+# This latter function is delegated to a lower level object, the
 # lattice manager which is contained in this module.
-# 
+#
 # This depends on:
-# 
+#
 # DPA/Wrappers/CCP4/Othercell
-# 
+#
 # FIXME 05/SEP/06 question - do I want to maintain a link to the unit cells
 #                 of am I better off just handling the possible lattices and
 #                 treating the unit cells as a separate problem? Maintaining
 #                 the actual unit cell during processing may be complex -
 #                 perhaps I am better off doing this after the event?
-# 
+#
 # FIXME 11/SEP/06 This needs to represent:
 #
 #  BEGIN CRYSTAL 12847
-#  
+#
 #  BEGIN AA_SEQUENCE
-#  
+#
 #  MKVKKWVTQDFPMVEESATVRECLHRMRQYQTNECIVKDREGHFRGVVNKEDLLDLDLDSSVFNKVSLPD
 #  FFVHEEDNITHALLLFLEHQEPYLPVVDEEMRLKGAVSLHDFLEALIEALAMDVPGIRFSVLLEDKPGEL
 #  RKVVDALALSNINILSVITTRSGDGKREVLIKVDAVDEGTLIKLFESLGIKIESIEKEEGF
-#  
+#
 #  END AA_SEQUENCE
-#  
+#
 #  BEGIN WAVELENGTH NATIVE
 #  WAVELENGTH 0.99187
 #  END WAVELENGTH NATIVE
-#  
+#
 #  BEGIN SWEEP NATIVE_HR
 #  WAVELENGTH NATIVE
 #
 #  ... &c. ...
 #
 # FIXME 20/NOV/06 want to be able to use this to calculate the likely number
-#                 of molecules per ASU and also the solvent content, to 
+#                 of molecules per ASU and also the solvent content, to
 #                 help with the links to the experimental phasing. Should
 #                 also pass back the spacegroup generated in data reduction
 #                 to this. Finally, should provide a user input to allow the
@@ -101,7 +101,7 @@ def sort_o_dict(dict, metric):
             self.tag = tag
             for key in guff.keys():
                 setattr(self, key, guff[key])
-        
+
         def __cmp__(self, other):
             return getattr(self, metric) < getattr(other, metric)
 
@@ -121,10 +121,10 @@ class _lattice_manager():
     def __init__(self, index_lattice, index_cell):
         '''Initialise the whole system from the original indexing
         results.'''
-        
+
         self._allowed_lattices = { }
         self._allowed_lattice_order = []
-        
+
         o = Othercell()
         o.set_cell(index_cell)
         o.set_lattice(index_lattice)
@@ -194,7 +194,7 @@ class _ha_info():
 
 def _print_lattice(lattice):
     print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % lattice['cell']
-    print 'Number: %s     Lattice: %s' % (lattice['number'], 
+    print 'Number: %s     Lattice: %s' % (lattice['number'],
                                           lattice['lattice'])
 
 def format_statistics(statistics):
@@ -244,7 +244,7 @@ def format_statistics(statistics):
         'Total unique':'%d\t%d\t%d'
         }
 
-    
+
     result = ''
 
     for k in keys:
@@ -304,7 +304,7 @@ class XCrystal():
 
         if Flags.get_ispyb_xml_out():
             ISPyBXmlHandler.add_xcrystal(self)
-        
+
         if self._aa_sequence:
             result += 'Sequence: %s\n' % self._aa_sequence.get_sequence()
         for wavelength in self._wavelengths.keys():
@@ -323,10 +323,10 @@ class XCrystal():
             result += 'For %s/%s/%s\n' % key
 
             result += format_statistics(statistics_all[key])
-            
+
             if True:
                 continue
-            
+
             available = statistics_all[key].keys()
 
             stats = []
@@ -387,10 +387,10 @@ class XCrystal():
 
         result += 'Assuming spacegroup: %s\n' % spacegroup
         if len(spacegroups) > 1:
-            result += 'Other likely alternatives are:\n' 
+            result += 'Other likely alternatives are:\n'
             for sg in spacegroups[1:]:
                 result += '%s\n' % sg
-                
+
         result += 'Unit cell:\n'
         result += '%7.3f %7.3f %7.3f\n%7.3f %7.3f %7.3f\n' % tuple(cell)
 
@@ -433,7 +433,7 @@ class XCrystal():
                             reflections[wavelength])
                         result += 'Scaled reflections (%s): %s\n' % \
                                   (wavelength, target)
-                    
+
                 else:
                     target = FileHandler.get_data_file(
                         reflections)
@@ -495,7 +495,7 @@ class XCrystal():
                     for value in statistics_all[key][s]:
                         result += '\t%s' % str(value)
                     summary.append(result)
-        
+
         cell = self._get_scaler().get_scaler_cell()
         spacegroup = self._get_scaler().get_scaler_likely_spacegroups()[0]
 
@@ -504,7 +504,7 @@ class XCrystal():
         summary.append('Spacegroup: %s' % spacegroup)
 
         return summary
-                       
+
     def set_reference_reflection_file(self, reference_reflection_file):
         '''Set a reference reflection file to use to standardise the
         setting, FreeR etc.'''
@@ -576,7 +576,7 @@ class XCrystal():
             if ha_info_dict.has_key('number_total'):
                 self._ha_info[atom].set_number_total(
                     ha_info_dict['number_total'])
-                
+
         else:
             # implant a new atom
             self._ha_info[atom] = _ha_info(atom)
@@ -586,7 +586,7 @@ class XCrystal():
             if ha_info_dict.has_key('number_total'):
                 self._ha_info[atom].set_number_total(
                     ha_info_dict['number_total'])
-        
+
         return
 
     def get_wavelength_names(self):
@@ -614,7 +614,7 @@ class XCrystal():
 
         if xwavelength.get_f_pr() != 0.0 or xwavelength.get_f_prpr() != 0.0:
             self._anomalous = True
-            
+
         return
 
     def remove_sweep(self, s):
@@ -624,7 +624,7 @@ class XCrystal():
             self._wavelengths[wave].remove_sweep(s)
 
         return
-            
+
     def _get_integraters(self):
         integraters = []
 
@@ -744,7 +744,7 @@ class XCrystal():
         if self._scaler is None:
 
             # in here check if
-            # 
+            #
             # (1) self._scaled_merged_reflections is set and
             # (2) there is no sweep information
             #
@@ -755,7 +755,7 @@ class XCrystal():
 
             # put an inverse link in place... to support RD analysis
             # involved change to Scaler interface definition
-            
+
             self._scaler.set_scaler_xcrystal(self)
 
             if self._anomalous:
@@ -769,18 +769,18 @@ class XCrystal():
             # set the reference reflection file, if we have one...
             if self._reference_reflection_file:
                 self._scaler.set_scaler_reference_reflection_file(
-                    self._reference_reflection_file)                    
+                    self._reference_reflection_file)
 
             # and FreeR file
             if self._freer_file:
                 self._scaler.set_scaler_freer_file(self._freer_file)
-                
+
             # and spacegroup information
             if self._user_spacegroup:
                 # compute the lattice and pointgroup from this...
-                
+
                 pointgroup = Syminfo.get_pointgroup(self._user_spacegroup)
-                
+
                 self._scaler.set_scaler_input_spacegroup(
                     self._user_spacegroup)
                 self._scaler.set_scaler_input_pointgroup(pointgroup)
@@ -790,7 +790,7 @@ class XCrystal():
                     Flags.get_spacegroup())
                 self._scaler.set_scaler_input_pointgroup(
                     Flags.get_pointgroup())
-                
+
             integraters = self._get_integraters()
 
             # then feed them to the scaler

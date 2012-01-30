@@ -2,18 +2,18 @@
 # Mtzdump.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 5th June 2006
-# 
+#
 # A wrapper for the CCP4 program mtzdump, for displaying the header
 # information from an MTZ file.
-# 
+#
 # Provides:
-# 
+#
 # The content of the MTZ file header, as a dictionary.
-# 
+#
 
 import os
 import sys
@@ -42,11 +42,11 @@ def Mtzdump(DriverType = None):
             CCP4DriverInstance.__class__.__init__(self)
 
             self.set_executable(os.path.join(
-                os.environ.get('CBIN', ''), 'mtzdump'))            
+                os.environ.get('CBIN', ''), 'mtzdump'))
 
             self._header = { }
             self._header['datasets'] = []
-            self._header['dataset_info'] = { } 
+            self._header['dataset_info'] = { }
 
             self._batch_header = { }
 
@@ -137,11 +137,11 @@ def Mtzdump(DriverType = None):
                             h, k, l = tuple(
                                 map(int, [output[j][4 * k + 1:4 * (k + 1) + 1]
                                           for k in range(3)]))
-                            
+
                             I, sig_I = tuple(map(float, record[3:5]))
-                            
+
                             intensities.append((h, k, l, I, sig_I))
-                        
+
                         j += 1
                 j += 1
 
@@ -212,16 +212,16 @@ def Mtzdump(DriverType = None):
 
             # general errors - SEGV and the like
             self.check_for_errors()
-            
+
             # ccp4 specific errors
             self.check_ccp4_errors()
-            
+
             # if we got this far then everything is probably peachy
             # so look for interesting information - resetting before we
             # start
 
             self._header['datasets'] = []
-            self._header['dataset_info'] = { } 
+            self._header['dataset_info'] = { }
 
             output = self.get_all_output()
 
@@ -241,7 +241,7 @@ def Mtzdump(DriverType = None):
                     batch = int(output[i + 1].split()[0])
                     if not batch in batches:
                         batches.append(batch)
-                
+
                 if 'Column Labels' in line:
                     # then the column labels are in two lines time...
                     labels = output[i + 2].strip().split()
@@ -259,7 +259,7 @@ def Mtzdump(DriverType = None):
 
                 if 'Space group' in line:
                     self._header['spacegroup'] = line.split('\'')[1].strip()
-                    
+
                 if 'Dataset ID, ' in line:
                     # then the project/crystal/dataset hierarchy
                     # follows with some cell/wavelength information
@@ -275,12 +275,12 @@ def Mtzdump(DriverType = None):
                         cell = map(float, output[5 * block + i + 5].strip(
                             ).split())
                         wavelength = float(output[5 * block + i + 6].strip())
-                        
+
                         dataset_id = '%s/%s/%s' % \
                                      (project, crystal, dataset)
 
                         if not dataset_id in self._header['datasets']:
-                        
+
                             self._header['datasets'].append(dataset_id)
                             self._header['dataset_info'][dataset_id] = { }
                             self._header['dataset_info'][
@@ -289,7 +289,7 @@ def Mtzdump(DriverType = None):
                                 dataset_id]['cell'] = cell
                             self._header['dataset_info'][
                                 dataset_id]['id'] = dataset_number
-                            
+
                         block += 1
 
                 if 'No. of reflections used in FILE STATISTICS' in line:
@@ -299,7 +299,7 @@ def Mtzdump(DriverType = None):
                     j = i + 6
 
                     line = output[j][:-1]
-                    
+
                     while not 'No. of reflections' in line:
                         if not line.strip() or '*****' in line:
                             j += 1
@@ -320,10 +320,10 @@ def Mtzdump(DriverType = None):
 
                         line = output[j][:-1]
                         j += 1
-                        
-                                    
+
+
             self._batches = batches
-                    
+
             # status token has a spare "of mtzdump" to get rid of
             return self.get_ccp4_status().replace('of mtzdump', '').strip()
 
@@ -337,10 +337,10 @@ def Mtzdump(DriverType = None):
 
             # general errors - SEGV and the like
             self.check_for_errors()
-            
+
             # ccp4 specific errors
             self.check_ccp4_errors()
-            
+
             output = self.get_all_output()
 
             length = len(output)
@@ -375,7 +375,7 @@ def Mtzdump(DriverType = None):
 
         def get_resolution_range(self):
             return self._resolution_range
-                
+
         def get_datasets(self):
             '''Return a list of available datasets.'''
             return self._header['datasets']
@@ -383,7 +383,7 @@ def Mtzdump(DriverType = None):
         def get_dataset_info(self, dataset):
             '''Get the cell, spacegroup & wavelength associated with
             a dataset. The dataset is specified by pname/xname/dname.'''
-            
+
             result = copy.deepcopy(self._header['dataset_info'][dataset])
             result['spacegroup'] = self._header['spacegroup']
             return result
@@ -438,7 +438,7 @@ if __name__ == '__main1__':
         print '%s (%s)' % c
 
     datasets = m.get_datasets()
-    
+
     for d in datasets:
         print '%s' % d
         info = m.get_dataset_info(d)
@@ -466,5 +466,3 @@ if __name__ == '__main__':
         print '=== batch %4d ===' % batch
         print '%.4f %.4f %.4f \n%.4f %.4f %.4f \n%.4f %.4f %.4f ' % \
               tuple(m.get_batch_header(batch)['umat'])
-
-    

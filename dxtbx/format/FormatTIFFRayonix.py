@@ -63,7 +63,7 @@ class FormatTIFFRayonix(FormatTIFF):
         proper model of the experiment.'''
 
         assert(FormatTIFFRayonix.understand(image_file) > 0)
-        
+
         width, height, depth, order, bytes = FormatTIFF.get_tiff_header(
             image_file)
 
@@ -75,13 +75,13 @@ class FormatTIFFRayonix(FormatTIFF):
             self._I = '>I'
             self._i = '>i'
             self._ii = '>ii'
-            
+
         FormatTIFF.__init__(self, image_file)
 
         return
 
     # FIXME have implemented none of those which follow...
-    
+
     def _goniometer(self):
         '''Return a model for goniometer corresponding to the values stored
         in the image header. In the first instance assume this is a single
@@ -93,7 +93,7 @@ class FormatTIFFRayonix(FormatTIFF):
             if j != offset:
                 assert(starts[j] == 0.0)
                 assert(ends[j] == 0.0)
-        
+
         return self._goniometer_factory.single_axis()
 
     def _detector(self):
@@ -123,7 +123,7 @@ class FormatTIFFRayonix(FormatTIFF):
         underload = 0
 
         beam = beam_x * pixel_size[0], beam_y * pixel_size[1]
-        
+
         return self._detector_factory.simple(
             'CCD', distance, beam, '+x', '-y', pixel_size,
             image_size, (underload, overload), [])
@@ -133,13 +133,13 @@ class FormatTIFFRayonix(FormatTIFF):
 
         wavelength = struct.unpack(
             self._i, self._tiff_header_bytes[1932:1936])[0] * 1.0e-5
-        
+
         return self._beam_factory.simple(wavelength)
 
     def _scan(self):
         '''Return the scan information for this image.'''
 
-        format = self._scan_factory.format('TIFF') 
+        format = self._scan_factory.format('TIFF')
         exposure_time = self._get_rayonix_times()[1]
         epoch = time.mktime(self._get_rayonix_timestamp())
 
@@ -168,7 +168,7 @@ class FormatTIFFRayonix(FormatTIFF):
 
         if distance != 0:
             return distance * 0.001
-        
+
         distance = struct.unpack(
             self._i, self._tiff_header_bytes[1720:1724])[0]
 
@@ -245,9 +245,9 @@ class FormatTIFFRayonix(FormatTIFF):
 
         starts_degrees = [s * 0.001 for s in start_angles]
         ends_degrees = [e * 0.001 for e in end_angles]
-            
+
         return starts_degrees, ends_degrees, axis_offset, axis_range * 0.001
-        
+
     def _get_rayonix_detector_rotations(self):
         '''Get the recorded rotx, roty, rotz of the detector - which in most
         cases will probably all be 0.0.'''

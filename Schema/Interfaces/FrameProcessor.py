@@ -2,30 +2,30 @@
 # FrameProcessor.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # An interface for programs which process X-Ray diffraction images.
 # This adds the code for handling the templates, directories etc.
 # but not the use of them e.g. the keyworded input.
-# 
+#
 # This is a virtual class - and should be inherited from only for the
 # purposes of using the methods.
-# 
+#
 # The following are considered critical to this class:
-# 
+#
 # Template, directory. Template in the form ### not ???
 # Distance (mm), wavelength (ang), beam centre (mm, mm),
 # image header information [general c/f diffdump output]
-# 
+#
 # FIXME 06/SEP/06 Need to be able to interface to the XSweep
 #                 object in here, to allow all of this information
 #                 to be pulled automatically...
 #                 No, don't do this, it will overcomplicate things.
-# 
+#
 # FIXME 07/OCT/10 Start adding support for a two-theta offset in the analysis.
 #       N.B. this will involve a two-theta angle (fine) and axis (less fine).
-# 
+#
 
 import os
 import sys
@@ -69,7 +69,7 @@ class FrameProcessor:
         self._fp_beam_prov = None
 
         self._fp_gain = 0.0
-        self._fp_polarization = 0.0        
+        self._fp_polarization = 0.0
 
         self._fp_header = { }
 
@@ -96,10 +96,10 @@ class FrameProcessor:
 
         start = start - self._fp_offset
         end = end - self._fp_offset
-        
+
         self._fp_wedge = start, end
-        
-        if self._fp_matching_images:    
+
+        if self._fp_matching_images:
             images = []
             for j in self._fp_matching_images:
                 if j < start or j > end:
@@ -121,26 +121,26 @@ class FrameProcessor:
             keys.sort()
             for k in keys:
                 Debug.write('%s = %s' % (k, str(self._fp_header[k])))
-            
+
             # populate wavelength, beam etc from this
 
             if self._fp_wavelength_prov is None or \
                             self._fp_wavelength_prov == 'header':
                 self._fp_wavelength = self._fp_header['wavelength']
                 self._fp_wavelength_prov = 'header'
-                
+
             if self._fp_distance_prov is None or \
                             self._fp_distance_prov == 'header':
                 self._fp_distance = self._fp_header['distance']
                 self._fp_distance_prov = 'header'
-                
+
             if self._fp_beam_prov is None or \
-                            self._fp_beam_prov == 'header':               
+                            self._fp_beam_prov == 'header':
                 self._fp_beam = tuple(map(float, self._fp_header['beam']))
                 self._fp_beam_prov = 'header'
-            
-            
-        return      
+
+
+        return
 
     def get_frame_wedge(self):
         return self._fp_wedge
@@ -261,12 +261,12 @@ class FrameProcessor:
         # self._setup_from_image(image)
 
         return image2image(image)
-                                               
+
     # FIXME should this be public??
     def setup_from_image(self, image):
         if self._fp_template and self._fp_directory:
             raise RuntimeError, 'FrameProcessor implementation already set up'
-        
+
         self._setup_from_image(image)
 
     # private methods
@@ -288,7 +288,7 @@ class FrameProcessor:
                     continue
                 images.append(j)
             self._fp_matching_images = images
-            
+
         # read the image header
         dd = Diffdump()
         dd.set_image(image)
@@ -339,6 +339,3 @@ if __name__ == '__main__':
     print fp.get_header()
     print fp.get_matching_images()
     print fp.get_two_theta()
-    
-
-    

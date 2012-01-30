@@ -1,9 +1,9 @@
 #!/usr/bin/env cctbx.python
 # BackstopMask.py
-# 
+#
 #   Copyright (C) 2010 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # The kernel of code to start to calculate backstop masks for Mosflm and
@@ -40,7 +40,7 @@ def mmcc(ds, xs, ys):
     '''Fit a straight line
 
     (x, y) = (mx, my) *  d + (cx, cy)
-    
+
     to ordinates x, y in xs, ys as a function of d in ds.'''
 
     assert(len(ds) == len(xs))
@@ -108,7 +108,7 @@ def line_intersect_rectangle(o, d, nx, ny):
         if 0 <= intersection <= ny:
             if dot((0.0 - o[0], intersection - o[1]), d) > 0.0:
                 return (0.0, intersection)
-                   
+
         intersection = o[1] - ((o[0] - nx) / d[0]) * d[1]
         if 0 <= intersection <= ny:
             if dot((nx - o[0], intersection - o[1]), d) > 0.0:
@@ -130,7 +130,7 @@ def line_intersect_rectangle(o, d, nx, ny):
 def invert_2x2(a, b, c, d):
 
     e = (a * d - b * c)
-    
+
     return d / e, -b / e, -c / e, a / e
 
 def equation_of_line(p1, p2):
@@ -147,14 +147,14 @@ def equation_of_line(p1, p2):
             return -1.0, 0.0, -1.0 * p1[0]
         else:
             return 1.0, 0.0, -1.0 * p1[0]
-    
+
     # then the special case of the horizontal line
     if p1[1] == p2[1]:
         if p1[0] > p2[0]:
             return 0.0, -1.0, -1.0 * p1[1]
         else:
             return 0.0, 1.0, -1.0 * p1[1]
-    
+
     # then for the special case k: p2 = k p1
 
     if p1[0] != 0.0 and p1[1] != 0.0:
@@ -163,7 +163,7 @@ def equation_of_line(p1, p2):
 
     # and then finally the general case
     a, b, c, d = invert_2x2(p1[0], p1[1], p2[0], p2[1])
-    
+
     return - (a + b), - (c + d), 1
 
 def work_equation_of_line():
@@ -194,18 +194,18 @@ class BackstopMask:
 
     def __init__(self, site_file):
         '''Parse a site file containing records which begin:
-        
+
         distance x1 y1 x2 y2 x3 y3 x4 y4 (nonsense)
-        
+
         where distance is in mm, coordinates are in pixels. Will return
         origins and directions for positions 2 and 3, and directions for
         the vectors 2 -> 1 and 3 -> 4.'''
 
         # first read out the file
-        
+
         distances = []
         coordinates = {}
-        
+
         for record in open(site_file):
             values = map(float, record.split()[:9])
             if not values:
@@ -247,7 +247,7 @@ class BackstopMask:
 
         d21 = (mx21 * distance + cx21, my21 * distance + cy21)
         d34 = (mx34 * distance + cx34, my34 * distance + cy34)
-        
+
         # now extrapolate the directions
 
         p1 = line_intersect_rectangle(p2, d21, nx, ny)
@@ -277,15 +277,15 @@ class BackstopMask:
         data = open(cbf_in, 'rb').read()
 
         start_tag = binascii.unhexlify('0c1a04d5')
-        
+
         data_offset = data.find(start_tag) + 4
-        
+
         cbf_header = data[:data.find(start_tag)]
 
         fast = 0
         slow = 0
         length = 0
-        
+
         for record in cbf_header.split('\n'):
             if 'X-Binary-Size-Fastest-Dimension' in record:
                 fast = int(record.split()[-1])
@@ -319,7 +319,7 @@ class BackstopMask:
                 j = y * fast + x
                 if r.is_inside((x + 0.5, y + 0.5)):
                     values[j] = -3
-            
+
         # and write out the updated file
 
         result = cbf_header + start_tag + pack_values(values)
@@ -368,7 +368,7 @@ class rectangle:
         ys = [p[1] for p in self._points]
 
         return min(xs), max(xs), min(ys), max(ys)
-        
+
     def is_inside(self, p):
         if self._in12 * self._evaluate(self._l12, p) < 0.0:
             return False
@@ -413,7 +413,7 @@ if __name__ == '__main__':
         sys.path.append(os.environ['XIA2_ROOT'])
 
     from Wrappers.XIA.Diffdump import Diffdump
-    
+
     bm = BackstopMask(sys.argv[1])
 
     dd = Diffdump()
@@ -429,16 +429,10 @@ if __name__ == '__main__':
             result += ' %.1f %.1f'% l
 
         return result
-    
+
     print format_limits(bm.calculate_mask_mosflm(header))
 
     if len(sys.argv) == 5:
         cbf_in = sys.argv[3]
         cbf_out = sys.argv[4]
         bm.apply_mask_xds(header, cbf_in, cbf_out)
-    
-
-
-            
-    
-    

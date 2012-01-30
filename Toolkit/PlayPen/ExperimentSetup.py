@@ -1,11 +1,11 @@
 #!/usr/bin/env cctbx.python
 # ExperimentSetup.py
-# 
+#
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # A class to wrap a refined model of the experimental geometry, i.e. the
 # location and attidude of the rotation axis, detector, any fixed rotation
 # axis components (i.e. in addition to the [U][B] matrix, the direction
@@ -24,7 +24,7 @@ class ExperimentSetup:
     image or from previous processing results i.e. an XPARM file.'''
 
     def __init__(self, cbf_file = None):
-        
+
         if cbf_file:
             return self._init_cbf(cbf_file)
 
@@ -40,7 +40,7 @@ class ExperimentSetup:
         self._wavelength = None
         self._size_fast = None
         self._size_slow = None
-        
+
         return
 
     # unit vector defining the rotation axis, in a right handed reference
@@ -125,28 +125,28 @@ class ExperimentSetup:
 
         # find the direct beam vector - takes a few steps
         cbf_handle.find_category('axis')
-        
+
         # find record with equipment = source
         cbf_handle.find_column('equipment')
         cbf_handle.find_row('source')
 
         # then get the vector and offset from this
-    
+
         beam = []
-        
+
         for j in range(3):
             cbf_handle.find_column('vector[%d]' % (j + 1))
             beam.append(cbf_handle.get_doublevalue())
 
         self.set_beam(beam)
-            
+
         detector = cbf_handle.construct_detector(0)
 
         # get the vector to the detector origin
 
         pixel = (detector.get_inferred_pixel_size(1),
                  detector.get_inferred_pixel_size(2))
-        
+
         origin = detector.get_pixel_coordinates(0, 0)
         fast = detector.get_pixel_coordinates(0, 1)
         slow = detector.get_pixel_coordinates(1, 0)
@@ -157,7 +157,7 @@ class ExperimentSetup:
         self.set_detector_origin(origin)
         self.set_detector_fast(dfast)
         self.set_detector_slow(dslow)
-        
+
         self.set_wavelength(cbf_handle.get_wavelength())
 
         size = tuple(reversed(cbf_handle.get_image_size(0)))
@@ -167,10 +167,10 @@ class ExperimentSetup:
 
         detector.__swig_destroy__(detector)
         del(detector)
-        
+
         gonio.__swig_destroy__(gonio)
         del(gonio)
-        
+
         return
 
     # helper functions
@@ -179,36 +179,36 @@ class ExperimentSetup:
         '''Determine the effective rotation axis for the goniometer
         by the difference in the rotation matrix from the end of the scan
         and the start. This is then transformed to a rotation.'''
-        
+
         x = gonio.rotate_vector(0.0, 1, 0, 0)
         y = gonio.rotate_vector(0.0, 0, 1, 0)
         z = gonio.rotate_vector(0.0, 0, 0, 1)
-        
+
         R = matrix.rec(x + y + z, (3, 3)).transpose()
-        
+
         x1 = gonio.rotate_vector(1.0, 1, 0, 0)
         y1 = gonio.rotate_vector(1.0, 0, 1, 0)
         z1 = gonio.rotate_vector(1.0, 0, 0, 1)
-        
+
         R1 = matrix.rec(x1 + y1 + z1, (3, 3)).transpose()
-        
+
         RA = R1 * R.inverse()
-        
+
         rot = r3_rotation_axis_and_angle_from_matrix(RA)
-        
+
         return rot.axis
-    
+
     def derive_beam_centre_mm_fast_slow(self):
         '''Compute the position on the detector where the beam will actually
         strike the detector - this will be the intersection of the source
         vector with the plane defined by fast and slow passing through the
         detector origin. Then return this position on the detector in mm.
-         
+
         unit vectors -
          _b - beam
          _n - detector normal
          _f, _s - fast and slow directions on the detector
-        
+
          full vectors -
          _O - displacement of origin
          _D - displacement to intersection of beam with detector plane
@@ -219,21 +219,21 @@ class ExperimentSetup:
         slow = matrix.col(self.get_detector_slow())
         origin = matrix.col(self.get_detector_origin())
         normal = fast.cross(slow)
-        
+
         _b = beam / math.sqrt(beam.dot())
-        
+
         _n = normal / math.sqrt(normal.dot())
         _f = fast / math.sqrt(fast.dot())
         _s = slow / math.sqrt(slow.dot())
 
         _O = origin
         _D = _b * (_O.dot(_n) / _b.dot(_n))
-        
+
         _B = _D - _O
-        
+
         x = _B.dot(_f)
         y = _B.dot(_s)
-        
+
         return x, y
 
 if __name__ == '__main__':

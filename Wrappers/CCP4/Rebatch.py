@@ -2,16 +2,16 @@
 # Rebatch.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 21/SEP/06
-# 
+#
 # A wrapper for the CCP4 program REBATCH.
-# 
+#
 # FIXME 30/NOV/06 need to add a facility to use this to select batches
 #                 from the input reflection file...
-# 
+#
 
 import os
 import sys
@@ -40,7 +40,7 @@ def Rebatch(DriverType = None):
             CCP4DriverInstance.__class__.__init__(self)
 
             self.set_executable(os.path.join(
-                os.environ.get('CBIN', ''), 'rebatch'))            
+                os.environ.get('CBIN', ''), 'rebatch'))
 
             self._first_batch = 0
             self._add_batch = 0
@@ -81,7 +81,7 @@ def Rebatch(DriverType = None):
                 raise RuntimeError, 'no batches to exclude'
 
             self.start()
-            
+
             for batch in sorted(self._exclude_batches):
                 self.input('batch %d reject' % batch)
 
@@ -103,7 +103,7 @@ def Rebatch(DriverType = None):
             output = self.get_all_output()
 
             return
-                
+
         def limit_batches(self, first, last):
             '''Limit the batches to first to last.'''
 
@@ -140,7 +140,7 @@ def Rebatch(DriverType = None):
 
             min = 10000000
             max = -10000000
-            
+
             for i in range(len(output)):
                 o = output[i]
                 if o.split()[:5] == ['Old', 'batch', 'New', 'batch', 'Max']:
@@ -156,10 +156,10 @@ def Rebatch(DriverType = None):
                                 max = batch
                         j += 1
                         m = output[j]
-            
+
             new_batches = (min, max)
 
-            return new_batches            
+            return new_batches
 
         def rebatch(self):
             self.check_hklin()
@@ -206,7 +206,7 @@ def Rebatch(DriverType = None):
 
             min = 10000000
             max = -10000000
-            
+
             for i in range(len(output)):
                 o = output[i]
                 if o.split()[:5] == ['Old', 'batch', 'New', 'batch', 'Max']:
@@ -222,7 +222,7 @@ def Rebatch(DriverType = None):
                                 max = batch
                         j += 1
                         m = output[j]
-            
+
             new_batches = (min, max)
 
             return new_batches

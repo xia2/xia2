@@ -2,11 +2,11 @@
 # Automask.py
 #   Copyright (C) 2008 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 17th March 2008
-# 
+#
 # A wrapper for the program "automask" derived from the DiffractionImage
 # code in XIA1 by Francois Remacle.
 #
@@ -42,13 +42,13 @@ def Automask(DriverType = None):
             DriverInstance.__class__.__init__(self)
 
             self.set_executable('automask')
-            
+
             self._image_list = []
             self._mask = { }
 
             # optional user input - to get the start position
             # right
-            
+
             self._beam_mm = None
             self._beam_pixel = None
 
@@ -63,13 +63,13 @@ def Automask(DriverType = None):
             self._size_x = None
             self._size_y = None
             self._distance = None
-            
+
             return
 
         def set_beam(self, x, y):
             '''Set the beam centre - in what units??? dunno. In the mosflm
             units - this will mod them to the diffdump pixel coordinates.'''
-            
+
             self._beam_mm = x, y
 
             # then convert to pixel coordinates - if available...
@@ -84,9 +84,9 @@ def Automask(DriverType = None):
 
             # if it is a later image, diffdump it and check that this is
             # ok - if not, raise ye exception while ye may
-            
+
             self._image_list.append(image)
-            
+
             return
 
         def automask(self):
@@ -98,8 +98,8 @@ def Automask(DriverType = None):
             for i in self._image_list:
                 self.add_command_line(i)
 
-            
-            
+
+
     return AutomaskWrapper()
 
 if __name__ == '__main__':
@@ -111,4 +111,3 @@ if __name__ == '__main__':
     a.add_image(os.path.join(directory, 'insulin_1_001.img'))
     a.add_image(os.path.join(directory, 'insulin_1_045.img'))
     a.automask()
-            

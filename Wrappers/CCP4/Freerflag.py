@@ -2,11 +2,11 @@
 # Freerflag.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 5th June 2006
-# 
+#
 
 import os
 import sys
@@ -34,7 +34,7 @@ def Freerflag(DriverType = None):
             CCP4DriverInstance.__class__.__init__(self)
 
             self.set_executable(os.path.join(
-                os.environ.get('CBIN', ''), 'freerflag'))            
+                os.environ.get('CBIN', ''), 'freerflag'))
 
             self._free_fraction = 0.05
 
@@ -53,7 +53,7 @@ def Freerflag(DriverType = None):
             self.close_wait()
             self.check_for_errors()
             self.check_ccp4_errors()
-            
+
             return
 
         def complete_free_flag(self):
@@ -66,8 +66,7 @@ def Freerflag(DriverType = None):
             self.close_wait()
             self.check_for_errors()
             self.check_ccp4_errors()
-            
-            return
-        
-    return FreerflagWrapper()
 
+            return
+
+    return FreerflagWrapper()

@@ -2,7 +2,7 @@
 # XDSIntegrate.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A wrapper to handle the JOB=INTEGRATE module in XDS.
@@ -24,7 +24,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'],
                     'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
-    
+
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
@@ -59,8 +59,8 @@ def XDSIntegrate(DriverType = None):
             DriverInstance.__class__.__init__(self)
             FrameProcessor.__init__(self)
 
-            # now set myself up...            
-            
+            # now set myself up...
+
             self._parallel = Flags.get_parallel()
 
             if self._parallel <= 1:
@@ -100,7 +100,7 @@ def XDSIntegrate(DriverType = None):
             self._mean_mosaic = None
             self._min_mosaic = None
             self._max_mosaic = None
-            
+
             return
 
         # getter and setter for input / output data
@@ -161,21 +161,21 @@ def XDSIntegrate(DriverType = None):
             xds_inp.write('JOB=INTEGRATE\n')
             xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
                           self._parallel)
-            
+
             if Flags.get_xparallel() > 1:
                 xds_inp.write('MAXIMUM_NUMBER_OF_JOBS=%d\n' % \
                               Flags.get_xparallel())
-                
+
             elif Flags.get_xparallel() == -1:
                 chunk_width = 30.0
-                
+
                 nchunks = int(
                     (self._data_range[1] - self._data_range[0] + 1) * \
                     (image_header['phi_end'] - image_header['phi_start']) /
                     chunk_width)
 
                 Debug.write('Xparallel: -1 using %d chunks' % nchunks)
-                
+
                 xds_inp.write('MAXIMUM_NUMBER_OF_JOBS=%d\n' % nchunks)
 
             if not Flags.get_profile():
@@ -187,7 +187,7 @@ def XDSIntegrate(DriverType = None):
             # hack for the moment for weak diffraction
             # Debug.write('Setting DELPHI=10.0 in XDS INTEGRATE')
             # xds_inp.write('DELPHI=10.0\n')
-            
+
 
             fixed_2401 = True
 
@@ -198,7 +198,7 @@ def XDSIntegrate(DriverType = None):
                     xds_inp.write('REFINE(INTEGRATE)=ORIENTATION CELL\n')
                 else:
                     Debug.write('Not refining ORIENTATION CELL')
-                    xds_inp.write('REFINE(INTEGRATE)=!\n')                
+                    xds_inp.write('REFINE(INTEGRATE)=!\n')
             else:
                 # bug 2420 - have found for some examples that the
                 # refinement is unstable - perhaps some of this is
@@ -216,7 +216,7 @@ def XDSIntegrate(DriverType = None):
                     'BEAM_DIVERGENCE=%f BEAM_DIVERGENCE_E.S.D.=%f' % \
                     (self._updates['BEAM_DIVERGENCE'],
                      self._updates['BEAM_DIVERGENCE_E.S.D.']))
-                
+
             if self._updates.has_key('REFLECTING_RANGE') and \
                    self._updates.has_key('REFLECTING_RANGE_E.S.D.'):
                 xds_inp.write(
@@ -227,7 +227,7 @@ def XDSIntegrate(DriverType = None):
                     'REFLECTING_RANGE=%f REFLECTING_RANGE_E.S.D.=%f' % \
                     (self._updates['REFLECTING_RANGE'],
                      self._updates['REFLECTING_RANGE_E.S.D.']))
-            
+
             for record in header:
                 xds_inp.write('%s\n' % record)
 
@@ -241,7 +241,7 @@ def XDSIntegrate(DriverType = None):
 
             xds_inp.write('DATA_RANGE=%d %d\n' % self._data_range)
             # xds_inp.write('MINIMUM_ZETA=0.1\n')
-            
+
             xds_inp.close()
 
             # copy the input file...
@@ -249,7 +249,7 @@ def XDSIntegrate(DriverType = None):
                                          'XDS.INP'),
                             os.path.join(self.get_working_directory(),
                                          '%d_INTEGRATE.INP' % self.get_xpid()))
-            
+
             # write the input data files...
 
             for file in self._input_data_files_list:
@@ -337,16 +337,16 @@ def XDSIntegrate(DriverType = None):
                 # only remove the extremes if there are enough values
                 # that this is meaningful... very good data may only have
                 # two values!
-                
+
                 if len(stddev_pixel) > 4:
                     stddev_pixel = stddev_pixel[1:-1]
 
                 low, high = min(stddev_pixel), \
-                            max(stddev_pixel)          
+                            max(stddev_pixel)
 
                 Chatter.write('Processed batches %d to %d' % \
                               (min(images), max(images)))
-                              
+
                 Chatter.write('Standard Deviation in pixel range: %f %f' % \
                               (low, high))
 
@@ -382,9 +382,9 @@ def XDSIntegrate(DriverType = None):
                 Chatter.write(
                     '"o" => good        "%" => ok        "!" => bad rmsd')
                 Chatter.write(
-                    '"O" => overloaded  "#" => many bad  "." => blank') 
+                    '"O" => overloaded  "#" => many bad  "." => blank')
                 Chatter.write(
-                    '"@" => abandoned') 
+                    '"@" => abandoned')
 
                 # next look for variations in the unit cell parameters
                 unit_cells = [stats[i]['unit_cell'] for i in images]
@@ -409,7 +409,7 @@ def XDSIntegrate(DriverType = None):
                                           uc_mean[j]
 
                 Chatter.write('Maximum relative deviation in cell: %.3f' % \
-                              max_rel_dev)                
+                              max_rel_dev)
 
             except KeyError, e:
                 Chatter.write('Refinement not performed...')
@@ -424,7 +424,7 @@ if __name__ == '__main__':
     directory = os.path.join(os.environ['XIA2_ROOT'],
                              'Data', 'Test', 'Images')
 
-    
+
     integrate.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 
     for file in ['X-CORRECTIONS.cbf',
@@ -434,9 +434,7 @@ if __name__ == '__main__':
                  'GAIN.cbf',
                  'XPARM.XDS']:
         integrate.set_input_data_file(file, open(file, 'rb').read())
-    
+
     integrate.set_data_range(1, 1)
 
     integrate.run()
-
-

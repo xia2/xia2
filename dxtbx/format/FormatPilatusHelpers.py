@@ -29,7 +29,7 @@ def pilatus_6M_mask():
 
 def pilatus_2M_mask():
     '''Hard coded mask regions for a Pilatus 2M detector.'''
-    
+
     return [[488, 494, 1, 1679],
             [982, 988, 1, 1679],
             [1, 1475, 196, 212],
@@ -53,7 +53,7 @@ def determine_pilatus_mask(xdetector):
 
     if size == (2463, 2527):
         return pilatus_6M_mask()
-        
+
     if size == (1475, 1679):
         return pilatus_2M_mask()
 
@@ -61,7 +61,3 @@ def determine_pilatus_mask(xdetector):
         return pilatus_300K_mask()
 
     raise RuntimeError, 'unknown image size: %d %d' % size
-
-
-
-        

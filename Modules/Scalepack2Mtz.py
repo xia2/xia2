@@ -1,38 +1,38 @@
 # Scalepack2Mtz.py
 # Maintained by G.Winter
 # 12th February 2007
-# 
+#
 # A module to carefully convert scalepack reflection files (merged or
 # unmerged) into properly structured MTZ files. This is based on the last
 # section of CCP4ScalerImplementation, as that does largely the same.
-# 
+#
 # This will:
-# 
+#
 # if (unmerged) combat -> scala for merging (else) convert to mtz
 # truncate all wavelengths
 # if (mad) compute cell, cad in cell, cad together
 # add freeR column
 # if (mad) look for inter radiation damage
-# 
+#
 # This assumes:
-# 
+#
 # Reflections are correctly indexed
 # One reflection file per wavelength
 # All files from same crystal and therefore project
-# 
+#
 # Should produce results similar to CCP4ScalerImplementation.
 #
 # Example data will come from xia2.
-# 
+#
 # Implementation fill follow line 1469++ of CCP4ScalerImplementation.
 #
 # Uses:
-# 
+#
 # scalepack2mtz wrapper for merged files
 # combat, sortmtz, scala for unmerged files
 # mtzdump, cad, freerflag to muddle with files
 # truncate to compute F's from I's.
-# 
+#
 
 import os
 import sys
@@ -82,10 +82,10 @@ class Scalepack2Mtz:
         self._dnames = []
 
         # cell and spacegroup information
-        
+
         self._cell = None
         self._spacegroup = None
-        
+
         return
 
     def set_working_directory(self, working_directory):
@@ -100,7 +100,7 @@ class Scalepack2Mtz:
     def set_cell(self, cell):
         self._cell = cell
         return
-        
+
     def set_spacegroup(self, spacegroup):
         self._spacegroup = spacegroup
         return
@@ -116,7 +116,7 @@ class Scalepack2Mtz:
 
         self._hklin_files[dname] = hklin
         self._dnames.append(dname)
-        
+
         return
 
     # factory methods...
@@ -183,7 +183,7 @@ class Scalepack2Mtz:
         freerflag = _Freerflag()
         freerflag.set_working_directory(self.get_working_directory())
         auto_logfiler(freerflag)
-        return freerflag    
+        return freerflag
 
     # helper functions
 
@@ -192,8 +192,8 @@ class Scalepack2Mtz:
         to PNAME_XNAME_merged_tmp_DNAME.mtz.'''
 
         scalepack_file = self._hklin_files[dname]
-        
-        s2m = self.Scalepack2mtz()        
+
+        s2m = self.Scalepack2mtz()
         s2m.set_hklin(scalepack_file)
         s2m.set_hklout(os.path.join(self.get_working_directory(),
                                     '%s_%s_merged_tmp_%s.mtz' % \
@@ -204,7 +204,7 @@ class Scalepack2Mtz:
         s2m.convert()
 
         return
-        
+
     def _unmerged_scalepack_to_mtz(self, dname):
         '''Convert an unmerged reflection file for dname from scalepack format
         to PNAME_XNAME_merged_tmp_DNAME.mtz.'''
@@ -226,7 +226,7 @@ class Scalepack2Mtz:
         c.set_cell(self._cell)
         c.set_project_info(self._pname, self._xname, dname)
         c.run()
-        
+
         # sort
 
         hklin = hklout
@@ -266,9 +266,9 @@ class Scalepack2Mtz:
         FileHandler.record_log_file('%s %s %s merge' % \
                                     (self._pname, self._xname, dname),
                                     sc.get_log_file())
-                
+
         return
-        
+
     def _decide_is_merged(self, file):
         '''Decide if the input file is merged, based on first 3 lines.'''
 
@@ -285,7 +285,7 @@ class Scalepack2Mtz:
 
         # unmerged scalepack from scala looks like number spacegroup,
         # symop, symop, symop...
-        
+
         if len(start[0].split()) > 2 and \
            len(start[1].split()) > 2 and \
            len(start[2].split()) > 2:
@@ -303,9 +303,9 @@ class Scalepack2Mtz:
 
         # inspect to see if it is merged
         merged = self._decide_is_merged(scalepack)
-        
+
         if merged:
-            s2m = self.Scalepack2mtz()        
+            s2m = self.Scalepack2mtz()
             s2m.set_hklin(scalepack)
             s2m.set_hklout(hklout)
             s2m.set_spacegroup(spacegroup)
@@ -315,15 +315,15 @@ class Scalepack2Mtz:
                 s2m.set_project_info(pname, xname, dname)
             s2m.convert()
 
-            return 
-            
+            return
+
         else:
 
             hklout_c = os.path.join(
                 self.get_working_directory(), 'combat-tmp.mtz')
-            
+
             FileHandler.record_temporary_file(hklout_c)
-            
+
             c = self.Combat()
             c.set_hklin(scalepack)
             c.set_hklout(hklout_c)
@@ -333,18 +333,18 @@ class Scalepack2Mtz:
                 pname, xname, dname = project_info
                 c.set_project_info(pname, xname, dname)
             c.run()
-        
+
             hklin = hklout_c
             hklout_s = os.path.join(
                 self.get_working_directory(), 'sortmtz-tmp.mtz')
-                                  
+
             FileHandler.record_temporary_file(hklout_s)
 
             s = self.Sortmtz()
             s.set_hklin(hklin)
             s.set_hklout(hklout_s)
             s.sort()
-            
+
             hklin = hklout_s
 
             sc = self.Scala()
@@ -361,7 +361,7 @@ class Scalepack2Mtz:
                       'loggraphs':sc.parse_ccp4_loggraph()}
 
             return result
-            
+
 
     def convert(self):
         '''Transmogrify the input scalepack files to mtz.'''
@@ -373,7 +373,7 @@ class Scalepack2Mtz:
 
             # inspect to see if it is merged
             merged = self._decide_is_merged(scalepack)
-            
+
             # if (unmerged) merge with combat, sortmts, scala - this is
             # implemented in _unmerged_scalepack_to_mtz - takes dname
 
@@ -385,9 +385,9 @@ class Scalepack2Mtz:
                 self._merged_scalepack_to_mtz(dname)
             else:
                 self._unmerged_scalepack_to_mtz(dname)
-                
+
             # truncate the reflections
-            
+
             hklin = hklout
 
             hklout = os.path.join(self.get_working_directory(),
@@ -411,9 +411,9 @@ class Scalepack2Mtz:
             hklout = os.path.join(self.get_working_directory(),
                                   '%s_%s_truncated_cad_tmp_%s.mtz' % \
                                   (self._pname, self._xname, dname))
-            
+
             FileHandler.record_temporary_file(hklout)
-            
+
             # need to assign the column labels here - this will probably
             # have to be a quick CAD run. This prevents duplicate column
             # names later on
@@ -423,7 +423,7 @@ class Scalepack2Mtz:
             c.set_hklout(hklout)
             c.set_new_suffix(dname)
             c.update()
-    
+
         # cad together
 
         c = self.Cad()
@@ -431,15 +431,15 @@ class Scalepack2Mtz:
             hklin = os.path.join(self.get_working_directory(),
                                  '%s_%s_truncated_cad_tmp_%s.mtz' % \
                                  (self._pname, self._xname, dname))
-            
+
             c.add_hklin(hklin)
-        
+
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s_merged.mtz' % (self._pname,
                                                     self._xname))
-        
+
         Chatter.write('Merging all data sets to %s' % hklout)
-        
+
         c.set_hklout(hklout)
         c.merge()
 
@@ -453,7 +453,7 @@ class Scalepack2Mtz:
                                                          self._xname))
 
         f.set_hklin(hklin)
-        f.set_hklout(hklout)        
+        f.set_hklout(hklout)
         f.add_free_flag()
 
         # if (mad) look for inter radiation damage
@@ -474,10 +474,10 @@ if __name__ == '__main__':
     s2m.add_hklin('INFL', os.path.join(data_directory,
                                        'TS00_13185_unmerged_INFL.sca'))
     s2m.add_hklin('LREM', os.path.join(data_directory,
-                                       'TS00_13185_unmerged_LREM.sca'))   
+                                       'TS00_13185_unmerged_LREM.sca'))
     s2m.add_hklin('PEAK', os.path.join(data_directory,
                                        'TS00_13185_unmerged_PEAK.sca'))
-    
+
     s2m.set_cell((57.73, 76.93, 86.57, 90.00, 90.00, 90.00))
     s2m.set_spacegroup('P212121')
     s2m.set_project_info('TS00', '13185')
@@ -495,14 +495,12 @@ if __name__ == '__main__':
     s2m.add_hklin('INFL', os.path.join(data_directory,
                                        'TS00_13185_scaled_INFL.sca'))
     s2m.add_hklin('LREM', os.path.join(data_directory,
-                                       'TS00_13185_scaled_LREM.sca'))   
+                                       'TS00_13185_scaled_LREM.sca'))
     s2m.add_hklin('PEAK', os.path.join(data_directory,
                                        'TS00_13185_scaled_PEAK.sca'))
-    
+
     s2m.set_cell((57.73, 76.93, 86.57, 90.00, 90.00, 90.00))
     s2m.set_spacegroup('P212121')
     s2m.set_project_info('TS00A', '13185')
 
     print s2m.convert()
-
-    

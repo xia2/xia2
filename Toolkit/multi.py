@@ -1,7 +1,7 @@
 from cctbx import uctbx
 from cctbx import sgtbx
 from cctbx import crystal
-from cctbx.sgtbx import lattice_symmetry 
+from cctbx.sgtbx import lattice_symmetry
 from cctbx.sgtbx import subgroups
 
 # first construct the input

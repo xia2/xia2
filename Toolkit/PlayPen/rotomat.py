@@ -8,7 +8,7 @@ from cctbx import sgtbx
 
 def parse_xds_xparm(xparm_file):
     values = map(float, open(xparm_file).read().split())
-    
+
     assert(len(values) == 42)
 
     starting_frame = int(values[0])
@@ -39,7 +39,7 @@ def op_to_mat(op):
 
 def determine_rotation_to_dtrek(xparm_file):
     values = map(float, open(xparm_file).read().split())
-    
+
     assert(len(values) == 42)
 
     axis = values[3:6]
@@ -66,7 +66,7 @@ def determine_rotation_to_dtrek(xparm_file):
     _M = _M_Z * _M_X
 
     return _M
-    
+
 def compute_Q(xparm_target, xparm_move):
 
     _M = determine_rotation_to_dtrek(xparm_target)
@@ -93,11 +93,11 @@ def compute_Q(xparm_target, xparm_move):
         if math.fabs(q_r.angle(deg = True)) < min_r:
             if q_r.angle(deg = True) >= 0:
                 min_ax = matrix.col(q_r.axis)
-                min_r = q_r.angle(deg = True) 
+                min_r = q_r.angle(deg = True)
             else:
                 min_ax = - matrix.col(q_r.axis)
                 min_r = - q_r.angle(deg = True)
-                
+
     return (_M * min_ax).elems, min_r
 
 if __name__ == '__main__':

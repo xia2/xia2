@@ -2,7 +2,7 @@
 # Chef.py
 #   Copyright (C) 2008 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 5th February 2008
@@ -10,13 +10,13 @@
 # A wrapper for the new program "chef". This has been developed for xia2
 # to analyse the bulk properties of intensity measurements, particularly
 # looking at how well they agree. The idea is that reflection files with
-# DOSE columns added in by DOSER may be inspected to determine the 
+# DOSE columns added in by DOSER may be inspected to determine the
 # dose / resolution envelope optimal for given analysis processes, viz:
-# 
+#
 # - substructure determination
 # - phase calculation
 # - density modification & refinement
-# 
+#
 # This should give "proper" resolution limits...
 
 import os
@@ -74,7 +74,7 @@ def Chef(DriverType = None,
             # reconstructs this) if available
 
             self._dose_profile = { }
-            
+
             self._title = None
 
             self._stream = stream
@@ -174,7 +174,7 @@ def Chef(DriverType = None,
                         k += 1
                         record = output[k]
 
-                        
+
                     self._completeness[dataset] = completeness
 
             # now jimmy these..
@@ -188,7 +188,7 @@ def Chef(DriverType = None,
                 ctable = { }
                 for c in completeness:
                     ctable[c[0]] = c[1]
-                
+
                 for dose in all_doses:
                     if dose in ctable:
                         cnew.append((dose, ctable[dose]))
@@ -252,7 +252,7 @@ def Chef(DriverType = None,
             m = sxy / sxx
             c = my - m * mx
 
-            # now calculate residual about this line            
+            # now calculate residual about this line
 
             ss = 0.0
 
@@ -260,7 +260,7 @@ def Chef(DriverType = None,
 
                 if not v:
                     continue
-                
+
                 _v = m * j + c
 
                 ss += (v - _v) * (v - _v)
@@ -272,7 +272,7 @@ def Chef(DriverType = None,
             var = 0.0
 
             for j, v in enumerate(values):
-                
+
                 if not v:
                     continue
 
@@ -283,7 +283,7 @@ def Chef(DriverType = None,
             # return sigma / sd
 
             return (var / (sd * sd)) / n
-        
+
         def parse(self):
             '''Parse the output of the chef run.'''
 
@@ -308,11 +308,11 @@ def Chef(DriverType = None,
                     rd_keys.append(key)
                     wavelength = key.split()[-1]
                     rd_data[wavelength] = transpose_loggraph(
-                        results[key])                    
+                        results[key])
 
                     values = map(float, rd_data[wavelength]['2_Rd'])
                     digest = self.digest_rd(values)
-                    
+
                     # stream.write('Rd score (%s): %.2f' % \
                     # (wavelength, digest))
 
@@ -337,7 +337,7 @@ def Chef(DriverType = None,
             dose_col = '1_DOSE'
 
             for dataset in comp_data:
-                
+
                 if '5_dI' in comp_data[dataset]:
                     i_col = '4_I'
 
@@ -352,7 +352,7 @@ def Chef(DriverType = None,
                 max_comp = max(map(float, completeness))
 
                 for j, dose in enumerate(comp_data[dataset][dose_col]):
-                    
+
                     comp = float(completeness[j])
 
                     if comp > (0.5 * max_comp) and not local_50:
@@ -417,7 +417,7 @@ def Chef(DriverType = None,
             for k in scp_data:
                 if 'Scp(d)' in k:
                     scp_key = k
-                    
+
             for j, d in enumerate(scp_data[dose_col]):
                 dose = float(d)
                 if dose >= lowest_50 and dose <= lowest_90:
@@ -492,7 +492,7 @@ def Chef(DriverType = None,
                 b = int(b)
                 d = float(self._dose_profile['2_DOSE'][j])
                 ds = self._dose_profile['3_DATASET'][j]
-                
+
                 dose_batch[d] = b
                 batch_dose[b] = d
                 batch_dataset[b] = ds
@@ -511,14 +511,14 @@ def Chef(DriverType = None,
             for d in doses[1:]:
 
                 b = dose_batch[d]
-                
+
                 if b < first_batch:
                     current = b
                     start_batches.append(current)
                     wedge_sizes[current] = 0
                     wedge_datasets[current] = batch_dataset[current]
                     is_monotonic = False
-                    
+
                 if b > first_batch + 1:
 
                     current = b
@@ -543,9 +543,9 @@ def Chef(DriverType = None,
                                exposure, wedge_datasets[batch]))
 
             return result
-                
+
     return ChefWrapper()
-        
+
 if __name__ == '__main_exec__':
     # then run a test...
 
@@ -628,7 +628,7 @@ if __name__ == '__main_exec__':
             break
 
     print 'Establish the baseline from %f to %f' % (start_min, end_min)
-        
+
 if __name__ == '__main__':
 
     # ok, in here (which will be "autoCHEF") this will inspect the MTZ
@@ -658,7 +658,7 @@ if __name__ == '__main__':
             dose_range = md.get_column_range('DOSE')[:2]
             if dose_range[0] != dose_range[1]:
                 dose_column = 'DOSE'
-            
+
         if 'BATCH' in columns and not dose_column:
             dose_column = 'BATCH'
 
@@ -683,8 +683,3 @@ if __name__ == '__main__':
     chef.write_log_file('chef.log')
     chef.set_anomalous(True)
     chef.run()
-
-    
-    
-
-    

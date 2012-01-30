@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # image_selector.py
 # Maintained by G.Winter
-# 
+#
 # A jiffy application to help with the determination of the best images
 # to use for cell refinement. This is to test possible assertions as
-# to which images will result in the smallest errors in the cell 
+# to which images will result in the smallest errors in the cell
 # parameters from the Mosflm cell refinement process.
-# 
+#
 # Requires:
 #
 # Crystal lattice (e.g. tP)
@@ -22,7 +22,7 @@
 #
 # Architectural Changes 8/OCT/07
 # ------------------------------
-# 
+#
 # Need to be able to do this faster so... use the cluster driver, define
 # the number of cpu resources we have, allocate storage for the problem
 # and results before we start then queue up and test each option - spawning
@@ -34,7 +34,7 @@
 # Will need a threading module.
 # And a ClusterDriver for SGE (can be handled by XIA2_DRIVERTYPE=cluster.sge)
 # and also a thread-safe storage container.
-# 
+#
 # Existing loops can be used to generate the problem within this class.
 # This will allow extension to include Labelit, Mosflm &c. more simply...
 # Start off with 1D FFT indexing programs - Mosflm, Labelit.
@@ -45,7 +45,7 @@ import math
 
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
-    
+
 if not os.environ['XIA2CORE_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
 
@@ -66,7 +66,7 @@ def find_best_images(lattice, matrix, phi_start, phi_end, phi_width,
 
     num_images = nint((phi_end - phi_start) / phi_width)
 
-    dtor = 180.0 / (4.0 * math.atan(1.0))    
+    dtor = 180.0 / (4.0 * math.atan(1.0))
 
     min_a = 0
     min_b = 0
@@ -80,7 +80,7 @@ def find_best_images(lattice, matrix, phi_start, phi_end, phi_width,
     max_a_val = 0.0
     max_b_val = 0.0
     max_c_val = 0.0
-    
+
 
     for j in range(num_images):
 
@@ -88,10 +88,10 @@ def find_best_images(lattice, matrix, phi_start, phi_end, phi_width,
 
         c = math.cos(phi / dtor)
         s = math.sin(phi / dtor)
-        
+
         dot_a = math.fabs(-s * astar[0] + c * astar[2])
         dot_b = math.fabs(-s * bstar[0] + c * bstar[2])
-        dot_c = math.fabs(-s * cstar[0] + c * cstar[2])        
+        dot_c = math.fabs(-s * cstar[0] + c * cstar[2])
 
         if dot_a < min_a_val:
             min_a = j
@@ -132,7 +132,7 @@ def find_best_images(lattice, matrix, phi_start, phi_end, phi_width,
 
     for i in best_images[1:]:
         handled = False
-        
+
         for j in range(len(wedges)):
             if (i - half) < wedges[j][1]:
                 # just stretch this wedge..
@@ -180,7 +180,7 @@ def matrix_diff(new, ref):
 
 def MosflmJiffy(DriverType = None):
 
-    DriverInstance = DriverFactory.Driver(DriverType)    
+    DriverInstance = DriverFactory.Driver(DriverType)
 
     class MosflmJiffyClass(DriverInstance.__class__):
         '''A wrapper for mosflm for a specific purpose.'''
@@ -188,7 +188,7 @@ def MosflmJiffy(DriverType = None):
         def __init__(self):
 
             DriverInstance.__class__.__init__(self)
-            
+
             self.set_executable('ipmosflm')
 
             self._image_range = None
@@ -201,7 +201,7 @@ def MosflmJiffy(DriverType = None):
             # this will be keyed by the wedge middle images
             # used for cell refinement and contain sigmas
             # for a b c alpha beta gamma
-            
+
             self._results = { }
 
         def set_image_range(self, image_range):
@@ -240,7 +240,7 @@ def MosflmJiffy(DriverType = None):
             id = ''
             for b in batches:
                 id += ' %d' % b
-            
+
             self.start()
 
             for record in self._commands:
@@ -248,7 +248,7 @@ def MosflmJiffy(DriverType = None):
 
             # do all calculations in P1 to assess the accuracy of the
             # basic autoindex procedure
-            
+
             self.input('symm p1')
             self.input('newmat p1.mat')
             for b in batches:
@@ -308,7 +308,7 @@ def MosflmJiffy(DriverType = None):
                   (id, sdr, sdp, sdis)
 
             return (sdi, sdp, sdi)
-            
+
 
         def run_batches_cr(self, batches):
             '''Run mosflm and get the results.'''
@@ -322,7 +322,7 @@ def MosflmJiffy(DriverType = None):
             id = ''
             for b in batches:
                 id += ' %d' % ((b[0] + b[1]) / 2)
-            
+
             self.start()
 
             for record in self._commands:
@@ -356,7 +356,7 @@ def MosflmJiffy(DriverType = None):
                 self.run_ai()
             else:
                 self.run_cr()
-                
+
         def run_ai(self):
 
             self._runs = 0
@@ -375,7 +375,7 @@ def MosflmJiffy(DriverType = None):
 
                 if i > 0:
                     break
-                
+
                 if self._num_wedges == 1:
                     w = self._wedge_width
                     batches = [i * w + f]
@@ -384,7 +384,7 @@ def MosflmJiffy(DriverType = None):
                         self.run_batches_ai(batches)
 
                     continue
-                
+
                 for j in range(i + 1, end + 1):
                     if self._num_wedges == 2:
                         w = self._wedge_width
@@ -398,7 +398,7 @@ def MosflmJiffy(DriverType = None):
                         if self._num_wedges == 3:
                             w = self._wedge_width
                             batches = [i * w + f, j * w + f, k * w + f]
-                            
+
                             self._results[
                                 i, j, k, 0] = \
                                 self.run_batches_ai(batches)
@@ -409,14 +409,14 @@ def MosflmJiffy(DriverType = None):
                                 w = self._wedge_width
                                 batches = [i * w + f, j * w + f,
                                            k * w + f, l * w + f]
-                                
+
                                 self._results[
                                     i, j, k, l] = \
                                     self.run_batches_cr(batches)
                                 continue
 
             print '%d runs' % self._runs
-                
+
         def run_cr(self):
 
             self._runs = 0
@@ -438,7 +438,7 @@ def MosflmJiffy(DriverType = None):
                         self.run_batches_cr(batches)
 
                     continue
-                
+
                 for j in range(i + 1, end + 1):
                     if self._num_wedges == 2:
                         w = self._wedge_width
@@ -455,7 +455,7 @@ def MosflmJiffy(DriverType = None):
                             batches = [(i * w + f, i * w + w),
                                        (j * w + f, j * w + w),
                                        (k * w + f, k * w + w)]
-                            
+
                             self._results[
                                 i, j, k, 0, 0, 0] = \
                                 self.run_batches_cr(batches)
@@ -468,7 +468,7 @@ def MosflmJiffy(DriverType = None):
                                            (j * w + f, j * w + w),
                                            (k * w + f, k * w + w),
                                            (l * w + f, l * w + w)]
-                                
+
                                 self._results[
                                     i, j, k, l, 0, 0] = \
                                     self.run_batches_cr(batches)
@@ -485,7 +485,7 @@ def MosflmJiffy(DriverType = None):
                                     self._results[
                                         i, j, k, l, m, 0] = \
                                         self.run_batches_cr(batches)
-                                    
+
                                     continue
 
                                 for n in range(m + 1, end + 5):
@@ -497,13 +497,13 @@ def MosflmJiffy(DriverType = None):
                                                    (l * w + f, l * w + w),
                                                    (m * w + f, m * w + w),
                                                    (n * w + f, n * w + w)]
-                                        
+
                                         self._results[
                                             i, j, k, l, m, n] = \
                                             self.run_batches_cr(batches)
 
             print '%d runs' % self._runs
-            
+
     return MosflmJiffyClass()
 
 if __name__ == '__main__':
@@ -524,8 +524,3 @@ if __name__ == '__main__':
         mj.set_reference_mat(sys.argv[6])
 
     mj.run()
-
-    
-
-                                    
-                                    

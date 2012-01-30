@@ -18,12 +18,9 @@ def screen():
         status = p.screen()
         print os.path.split(image)[-1], status
     t1 = time.time()
-    
+
     print 'Total time: %.1f' % (t1 - t0)
     print 'Per image: %.3f' % ((t1 - t0) / count)
 
 if __name__ == '__main__':
     screen()
-
-    
-    

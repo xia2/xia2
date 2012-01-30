@@ -25,7 +25,7 @@ def nint(a):
     return int(round(a) - 0.5) + (a > 0)
 
 def small(cbf_image):
-    
+
     cbf_handle = pycbf.cbf_handle_struct()
     cbf_handle.read_file(cbf_image, pycbf.MSG_DIGEST)
 
@@ -35,7 +35,7 @@ def small(cbf_image):
     cbf_handle.find_row('source')
 
     beam_direction = []
-    
+
     for j in range(3):
         cbf_handle.find_column('vector[%d]' % (j + 1))
         beam_direction.append(cbf_handle.get_doublevalue())
@@ -44,20 +44,20 @@ def small(cbf_image):
 
     detector = cbf_handle.construct_detector(0)
 
-    # this returns slow fast slow fast pixels pixels mm mm 
+    # this returns slow fast slow fast pixels pixels mm mm
 
     detector_normal = tuple(detector.get_detector_normal())
     distance = detector.get_detector_distance()
     pixel = (detector.get_inferred_pixel_size(1),
              detector.get_inferred_pixel_size(2))
-    
+
     gonio = cbf_handle.construct_goniometer()
 
     R = get_R(gonio)
 
     size = tuple(reversed(cbf_handle.get_image_size(0)))
     wavelength = cbf_handle.get_wavelength()
-    
+
     O = matrix.col(detector.get_pixel_coordinates(0, 0))
     fast = matrix.col(detector.get_pixel_coordinates(0, 1))
     slow = matrix.col(detector.get_pixel_coordinates(1, 0))
@@ -99,5 +99,3 @@ def small(cbf_image):
 if __name__ == '__main__':
 
     small(sys.argv[1])
-    
-    

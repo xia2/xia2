@@ -2,16 +2,16 @@
 # XWavelength.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A versioning object representing the wavelength level in the .xinfo
 # hierarchy. This will include all of the methods for performing operations
 # on a wavelength as well as stuff for integration with the rest of the
 # .xinfo hierarchy.
-# 
+#
 # The following are properties defined for an XWavelength object:
-# 
+#
 # wavelength
 # f_pr
 # f_prpr
@@ -24,9 +24,9 @@
 #                 pertaining to the lattice, because it is critcial that
 #                 all of the sweeps for a wavelength share the same
 #                 lattice.
-# 
+#
 # FIXME 05/SEP/06 also don't forget about ordering the sweeps in collection
-#                 order for the data reduction, to make sure that we 
+#                 order for the data reduction, to make sure that we
 #                 reduce the least damaged data first.
 
 from XSweep import XSweep
@@ -56,7 +56,7 @@ class XWavelength():
         self._f_prpr = f_prpr
         self._resolution_high = dmin
         self._resolution_low = dmax
-        
+
         # then create space to store things which are contained
         # in here - the sweeps
 
@@ -74,7 +74,7 @@ class XWavelength():
         result += 'Sweeps:\n'
 
         remove = []
-        
+
         for s in self._sweeps:
 
             # would be nice to put this somewhere else in the hierarchy - not
@@ -160,7 +160,7 @@ class XWavelength():
         return result
 
     def add_sweep(self, name, directory = None, image = None,
-                  beam = None, reversephi = False, distance = None, 
+                  beam = None, reversephi = False, distance = None,
                   gain = 0.0, dmin = 0.0, dmax = 0.0, polarization = 0.0,
                   frames_to_process = None, user_lattice = None,
                   user_cell = None, epoch = 0):
@@ -193,7 +193,7 @@ class XWavelength():
             self._sweeps.remove(sweep)
         except ValueError, e:
             pass
-        
+
         return
 
     def _get_integraters(self):
@@ -202,11 +202,10 @@ class XWavelength():
             integraters.append(s._get_integrater())
 
         return integraters
-    
+
     def _get_indexers(self):
         indexers = []
         for s in self._sweeps:
             indexers.append(s._get_indexer())
 
         return indexers
-    

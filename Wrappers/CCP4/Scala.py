@@ -2,37 +2,37 @@
 # Scala.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 5th June 2006
-# 
+#
 # A wrapper for the CCP4 program Scala, for scaling & merging reflections.
-# 
+#
 # Provides:
-# 
+#
 # Scaling of reflection data from Mosflm and other programs.
 # Merging of unmerged reflection data.
 # Characterisazion of data from scaling statistics.
-# 
+#
 # Versions:
-# 
+#
 # Since this will be a complex interface, the first stage is to satisfy the
 # most simple scaling requirements, which is to say taking exactly one
 # dataset from Mosflm via Sortmtz and scaling this. This will produce
 # the appropriate statistics. This corresponds to Simple 1 in the use case
 # documentation.
-# 
+#
 # FIXME 27/OCT/06 need to update the use case documentation - where is this?
 #                 in Wrappers/CCP4/Doc I presume...
-# 
+#
 # FIXED 06/NOV/06 need to update the interface to also allow a quick scaling
 #                 option, to use in the case (well illustrated by TS02) where
 #                 pointless needs to reindex data sets to a standard defined
 #                 by the first reflection file...
-# 
+#
 #                 Recipe is "cycles 6" "run 1 all"
-#                 "scales rotation spacing 10" 
+#                 "scales rotation spacing 10"
 #
 # FIXME 20/NOV/06 need to input the resolution on a per-run basis, e.g.
 #                 "resolution run 1 1.65" &c. This should make the summaries
@@ -42,24 +42,24 @@
 #                 and I assume the last populated bin for the overall range.
 #                 Having arbitrary resolution ranges would make comparison
 #                 of the scaling statistics between resolutions tricky.
-# 
+#
 # FIXME 27/NOV/06 provide ability to use 0-dose extrapolation using the
 #                 ZERODOSE keyword - however this only works with exactly
 #                 one run, so the data would have to be scaled separately
 #                 then rescaled with, say, scaleit. This should, however,
 #                 only be done if the multiplicity is higher than say 6.
-# 
+#
 #
 # FIXME 15/JAN/07 selection of "reference" (BASE) wavelength... from
 #                 http://www.ccp4.ac.uk/courses/
 #                 proceedings/1997/p_evans/main.html
-#  
+#
 #                 Choose reference set: this should be (in order of importance)
 #                 (a) the most complete
 #                 (b) the most accurate
 #                 (c) remote from the anomalous edge
 #
-#                 Worth thinking about...                  
+#                 Worth thinking about...
 
 
 import os
@@ -196,19 +196,19 @@ def Scala(DriverType = None,
 
             self._brotation = None
             self._bfactor_tie = None
-            
+
             # standard error parameters - now a dictionary to handle
             # multiple runs
             self._sd_parameters = { }
 
             # completely automatic error fiddling
             self._sd_parameters_auto = False
-            
+
             self._project_crystal_dataset = { }
             self._runs = []
 
             # output of refined value
-            self._sd_factors = { } 
+            self._sd_factors = { }
 
             # for adding data on merge - one dname
             self._pname = None
@@ -308,7 +308,7 @@ def Scala(DriverType = None,
 
             if brotation:
                 self._brotation = brotation
-                
+
             return
 
         def set_anomalous(self, anomalous = True):
@@ -416,7 +416,7 @@ def Scala(DriverType = None,
 
                 if run:
                     runs_to_batches[run].extend(map(int, record.split()))
-                
+
                 if 'shifted scale factor' in record and 'negative' in record:
                     tokens = record.split()
                     scale = tokens[tokens.index('factor') + 1]
@@ -447,7 +447,7 @@ def Scala(DriverType = None,
 
                 if run:
                     runs_to_batches[run].extend(map(int, record.split()))
-                
+
                 if 'No observations for parameter' in record:
                     bad_run = int(record.split()[-1])
 
@@ -464,7 +464,7 @@ def Scala(DriverType = None,
                           int(record.split()[-3])
 
             return
-        
+
         def check_scala_errors(self):
             '''Check for Scala specific errors. Raise RuntimeError if
             error is found.'''
@@ -486,7 +486,7 @@ def Scala(DriverType = None,
                     run, batches = self.identify_no_observations_run()
                     raise RuntimeError, 'no observations run %d: %d to %d' % \
                           (run, batches[0], batches[1])
-                          
+
             return
 
         def sum(self):
@@ -518,7 +518,7 @@ def Scala(DriverType = None,
 
                 if 'Error' in status:
                     raise RuntimeError, '[SCALA] %s' % status
-                    
+
             except RuntimeError, e:
                 try:
                     os.remove(self.get_hklout())
@@ -586,7 +586,7 @@ def Scala(DriverType = None,
 
                 if 'Error' in status:
                     raise RuntimeError, '[SCALA] %s' % status
-                    
+
             except RuntimeError, e:
                 try:
                     os.remove(self.get_hklout())
@@ -608,7 +608,7 @@ def Scala(DriverType = None,
                     pass
 
             return self.get_ccp4_status()
-            
+
         def scale(self):
             '''Actually perform the scaling.'''
 
@@ -633,7 +633,7 @@ def Scala(DriverType = None,
                 self.set_task('Scaling reflections from %s => scalepack %s' % \
                              (os.path.split(self.get_hklin())[-1],
                               os.path.split(self._scalepack)[-1]))
-                             
+
                 self.add_command_line('scalepack')
                 self.add_command_line(self._scalepack)
 
@@ -680,7 +680,7 @@ def Scala(DriverType = None,
                     if self._brotation:
                         scale_command += ' brotation %f' % \
                                          self._brotation
-                    
+
                 else:
                     scale_command += ' bfactor off'
 
@@ -692,7 +692,7 @@ def Scala(DriverType = None,
             else:
 
                 scale_command = 'scales batch'
-                    
+
                 if self._bfactor:
                     scale_command += ' bfactor on'
 
@@ -702,7 +702,7 @@ def Scala(DriverType = None,
                     else:
                         scale_command += ' brotation %f' % \
                                          self._spacing
-                    
+
                 else:
                     scale_command += ' bfactor off'
 
@@ -712,7 +712,7 @@ def Scala(DriverType = None,
                 self.input(scale_command)
 
             # Debug.write('Scaling command: "%s"' % scale_command)
-                
+
             # next any 'generic' parameters
 
             if self._resolution:
@@ -723,14 +723,14 @@ def Scala(DriverType = None,
             if self._sd_parameters_auto:
                 if Flags.get_uniform_sd():
                     self.input('sdcorrection uniform')
-                        
+
             else:
 
                 if not self._sd_parameters:
-                    
+
                     self.input(
                         'sdcorrection fixsdb adjust norefine both 2.0 0.02')
-                
+
                 for key in self._sd_parameters:
                     # the input order for these is sdfac, sdB, sdadd...
                     parameters = self._sd_parameters[key]
@@ -770,8 +770,8 @@ def Scala(DriverType = None,
                 self.check_ccp4_errors()
                 self.check_scala_error_negative_scale_run()
                 self.check_scala_errors()
-                
-                status = self.get_ccp4_status()                
+
+                status = self.get_ccp4_status()
 
                 Debug.write('Scala status: %s' % status)
 
@@ -824,13 +824,13 @@ def Scala(DriverType = None,
 
             hklout_files = []
             hklout_dict = { }
-            
+
             for i in range(len(output)):
                 record = output[i]
 
                 # this is a potential source of problems - if the
                 # wavelength name has a _ in it then we are here stuffed!
-                
+
                 if 'WRITTEN OUTPUT MTZ FILE' in record:
                     hklout = output[i + 1].split('Filename:')[-1].strip()
                     if len(datasets) > 1:
@@ -844,7 +844,7 @@ def Scala(DriverType = None,
                         hklout_dict['only'] = hklout
                     hklout_files.append(hklout)
 
-                # parse out the refined standard deviation factors 
+                # parse out the refined standard deviation factors
 
                 if 'Run    SdFac       SdB     SdAdd' in record:
                     j = i + 2
@@ -857,7 +857,7 @@ def Scala(DriverType = None,
                             self._sd_factors[int(lst[0])] = map(float, lst[1:])
 
                         j += 1
-            
+
             self._scalr_scaled_reflection_files = hklout_dict
 
             if self._scalepack:
@@ -889,7 +889,7 @@ def Scala(DriverType = None,
                 self.set_task('Scaling reflections from %s => scalepack %s' % \
                              (os.path.split(self.get_hklin())[-1],
                               os.path.split(self._scalepack)[-1]))
-                             
+
                 self.add_command_line('scalepack')
                 self.add_command_line(self._scalepack)
 
@@ -939,7 +939,7 @@ def Scala(DriverType = None,
             if not self._sd_parameters:
                 self.input(
                     'sdcorrection fixsdb noadjust norefine both 1.0 0.0')
-                                    
+
             for key in self._sd_parameters:
                 # the input order for these is sdfac, sdB, sdadd...
                 parameters = self._sd_parameters[key]
@@ -948,9 +948,9 @@ def Scala(DriverType = None,
                     self.input(
                         'sdcorrection fixsdb noadjust norefine both ' + \
                         '1.0 0.0')
-                        
+
                     continue
-                        
+
                 self.input(
                     'sdcorrection fixsdb adjust norefine %s %f %f %f' % \
                     (key, parameters[0], parameters[2],
@@ -977,8 +977,8 @@ def Scala(DriverType = None,
                 self.check_for_errors()
                 self.check_ccp4_errors()
                 self.check_scala_errors()
-                
-                status = self.get_ccp4_status()                
+
+                status = self.get_ccp4_status()
 
                 Debug.write('Scala status: %s' % status)
 
@@ -1031,7 +1031,7 @@ def Scala(DriverType = None,
 
             hklout_files = []
             hklout_dict = { }
-            
+
             for i in range(len(output)):
                 record = output[i]
                 if 'WRITTEN OUTPUT MTZ FILE' in record:
@@ -1046,7 +1046,7 @@ def Scala(DriverType = None,
                     else:
                         hklout_dict['only'] = hklout
                     hklout_files.append(hklout)
-            
+
             self._scalr_scaled_reflection_files = hklout_dict
 
             if self._scalepack:
@@ -1068,7 +1068,7 @@ def Scala(DriverType = None,
             self.set_task('Quickly scaling reflections from %s => %s' % \
                           (os.path.split(self.get_hklin())[-1],
                            os.path.split(self.get_hklout())[-1]))
-            
+
             self.start()
             # for the harvesting information
             self.input('usecwd')
@@ -1084,7 +1084,7 @@ def Scala(DriverType = None,
             else:
                 self.input('scales rotation spacing 10')
                 self.input('cycles 6')
-                
+
             # next any 'generic' parameters
 
             if self._resolution:
@@ -1104,7 +1104,7 @@ def Scala(DriverType = None,
                 self.check_ccp4_errors()
                 self.check_scala_errors()
 
-                status = self.get_ccp4_status()                
+                status = self.get_ccp4_status()
 
                 Debug.write('Scala status: %s' % status)
 
@@ -1136,11 +1136,11 @@ def Scala(DriverType = None,
                 if 'Mean and maximum shift/sd' in o:
                     mean_shift.append(float(o.split()[5]))
                     max_shift.append(float(o.split()[6]))
-                    
+
             # analyse the shifts
 
             return self.get_ccp4_status()
-            
+
         def get_scaled_reflection_files(self):
             '''Get the names of the actual scaled reflection files - note
             that this is not the same as HKLOUT because Scala splits them
@@ -1194,9 +1194,9 @@ def Scala(DriverType = None,
                     while not '=====' in line:
                         if len(line) > 40:
                             key = line[:40].strip()
-                            
+
                             # hack for bug # 2229 - to cope when
-                            # all data for a dataset is not included 
+                            # all data for a dataset is not included
 
                             if not key:
                                 i += 1
@@ -1242,15 +1242,15 @@ def Scala(DriverType = None,
                 if '$TABLE: Rmerge for each run, ' in record:
                     wavelength = record.replace(':', '').split()[-1]
                     result[wavelength] = []
-                    
+
                 if gathering and wavelength and 'Run' in record:
                     wavelength = None
                     gathering = False
                     continue
-                
+
                 if not wavelength:
                     continue
-                
+
                 if 'Overall' in record:
                     gathering = True
 
@@ -1278,7 +1278,7 @@ if __name__ == '__output_main__':
     print 'The following loggraphs were found'
     for k in results.keys():
         print k
-    
+
 
     summary = s.get_summary()
 
@@ -1293,7 +1293,7 @@ if __name__ == '__main_2_':
     # XIACore having been run...
 
     s = Scala()
-    
+
     hklin = os.path.join(os.environ['XIA2CORE_ROOT'],
                          'Python', 'UnitTest', '12287_1_E1_sorted.mtz')
 
@@ -1318,7 +1318,7 @@ if __name__ == '__main_2_':
     print s.scale()
 
     s.write_log_file('scala.log')
-    
+
     results = s.parse_ccp4_loggraph()
 
     print 'The following loggraphs were found'
@@ -1334,7 +1334,7 @@ if __name__ == '__main_2_':
 if __name__ == '__main__':
 
     s = Scala()
-    
+
     hklin = 'TS00_13185_sorted_INFL.mtz'
     hklout = 'TS00_13185_merged_INFL.mtz'
 
@@ -1346,7 +1346,7 @@ if __name__ == '__main__':
     s.merge()
 
     s.write_log_file('merge.log')
-    
+
     results = s.parse_ccp4_loggraph()
 
     print 'The following loggraphs were found'
@@ -1357,4 +1357,3 @@ if __name__ == '__main__':
 
     for k in summary.keys():
         print k, summary[k]
-    

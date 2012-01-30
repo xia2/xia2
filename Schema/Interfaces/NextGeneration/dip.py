@@ -63,6 +63,3 @@ class dip:
     # FIXME can add lots of nice methods here - automatically unroll from a
     # given image, find matching images, determine template automatically,
     # read image headers, check files exist, cache files somewhere locally etc.
-
-    
-        

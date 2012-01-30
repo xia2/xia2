@@ -2,11 +2,11 @@
 # PrintpeaksMosflm.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A replacement for the printpeaks tool and wrapper, using Mosflm.
-# 
+#
 
 import os
 import sys
@@ -43,7 +43,7 @@ def PrintpeaksMosflm(DriverType = None):
             DriverInstance.__class__.__init__(self)
 
             self.set_executable('ipmosflm')
-            
+
             if 'BINSORT_SCR' in os.environ:
                 self.set_working_directory(os.environ['BINSORT_SCR'])
 
@@ -92,7 +92,7 @@ def PrintpeaksMosflm(DriverType = None):
 
             self.close_wait()
 
-            self.check_for_errors()            
+            self.check_for_errors()
 
             output = open(os.path.join(self.get_working_directory(),
                                        spot_file)).readlines()
@@ -151,13 +151,13 @@ def PrintpeaksMosflm(DriverType = None):
                     limit *= 0.5
 
             else:
-                
+
                 for limit in [5, 10, 20, 50, 100, 200, 500, 1000]:
                     if limit > max_limit:
                         continue
                     self._peaks[float(limit)] = len(
                         [j for j in peaks if j > limit])
-                    
+
 
             return self._peaks
 
@@ -194,13 +194,13 @@ def PrintpeaksMosflm(DriverType = None):
                 return 'blank'
 
             return 'ok'
-        
+
     return PrintpeaksMosflmWrapper()
 
 if __name__ == '__main-old__':
 
     import time
-    
+
     def printer(peaks):
         keys = peaks.keys()
         keys.sort()
@@ -216,7 +216,7 @@ if __name__ == '__main-old__':
         p.set_image(image)
         peaks = p.printpeaks()
         printer(peaks)
-            
+
     else:
 
         # for image in sys.argv[1:]:

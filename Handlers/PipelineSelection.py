@@ -2,7 +2,7 @@
 # PipelineSelection.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A handler to manage the selection of pipelines through which to run xia2,
@@ -68,7 +68,7 @@ def add_preference(key, value):
         if preferences[key] != value:
             raise RuntimeError, 'setting %s to %s: already %s' % \
                   (key, value, preferences[key])
-        
+
     preferences[key] = value
 
     return
@@ -106,7 +106,7 @@ def parse_preferences(file, preferences):
         # all lower case
         line = line.lower()
 
-        # ignore comment lines    
+        # ignore comment lines
         if line[0] == '!' or line[0] == '#' or not line.split():
             continue
 
@@ -122,5 +122,3 @@ def parse_preferences(file, preferences):
 if __name__== '__main__':
 
     print search_for_preferences()
-
-    

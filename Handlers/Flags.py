@@ -2,11 +2,11 @@
 # Flags.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 4th May 2007
-# 
+#
 # A singleton to handle flags, which can be imported more easily
 # as it will not suffer the problems with circular references that
 # the CommandLine singleton suffers from.
@@ -55,17 +55,17 @@ class _Flags:
         self._xparm_beam_vector = None
         self._xparm_rotation_axis = None
         self._xparm_origin = None
-        
-	try:
+
+        try:
             self._parallel = get_number_cpus()
         except:
             self._parallel = 0
-            
+
         self._xparallel = 0
 
         self._min_images = 10
         self._start_end = None
-        
+
         self._batch_scale = False
 
         # File from which to copy the FreeR_flag column
@@ -105,7 +105,7 @@ class _Flags:
         self._lattice = None
 
         # scala secondary correction
-        self._scala_secondary = 6        
+        self._scala_secondary = 6
 
         # options to support the -cell option
         self._cell = None
@@ -134,7 +134,7 @@ class _Flags:
 
         # ISPyB things
         self._ispyb_xml_out = None
-        
+
         return
 
     def set_batch_scale(self, batch_scale):
@@ -163,7 +163,7 @@ class _Flags:
         self.set_scale_model_modulation('modulation' in scale_model)
         self.set_scale_model_absorption('absorption' in scale_model)
         self.set_scale_model_partiality('partiality' in scale_model)
-        
+
         return
 
     def get_scale_model(self):
@@ -207,14 +207,14 @@ class _Flags:
 
     def set_resolution_low(self, resolution):
         self._resolution_low = resolution
-        return    
+        return
 
     def get_resolution_high(self):
         return self._resolution_high
 
     def get_resolution_low(self):
         return self._resolution_low
-    
+
     def set_spacegroup(self, spacegroup):
         '''A handler for the command-line option -spacegroup - this will
         set the spacegroup and derive from this the pointgroup and lattice
@@ -395,7 +395,7 @@ class _Flags:
     def set_xparm(self, xparm):
 
         self._xparm = xparm
-        
+
         tokens = map(float, open(xparm, 'r').read().split())
 
         rotation_axis = tuple(tokens[3:6])
@@ -405,7 +405,7 @@ class _Flags:
         self._xparm_origin = origin
         self._xparm_beam_vector = beam_vector
         self._xparm_rotation_axis = rotation_axis
-        
+
         return
 
     def get_xparm(self):
@@ -492,10 +492,10 @@ class _Flags:
         return
 
     def get_free_total(self):
-        return self._free_total   
+        return self._free_total
 
     def set_mask(self, mask):
-        self._mask = BackstopMask(mask)       
+        self._mask = BackstopMask(mask)
         return
 
     def get_mask(self):
@@ -513,14 +513,14 @@ class _Flags:
         return
 
     def get_ispyb_xml_out(self):
-        return self._ispyb_xml_out   
+        return self._ispyb_xml_out
 
     def set_fixed_628(self):
         self._fixed_628 = True
         return
 
     def get_fixed_628(self):
-        return self._fixed_628   
+        return self._fixed_628
 
     def set_reference_reflection_file(self, reference_reflection_file):
         '''Set a new reference reflection file.'''
@@ -629,8 +629,3 @@ class _Flags:
         return self._no_correct
 
 Flags = _Flags()
-
-
-
-
-    

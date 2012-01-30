@@ -2,7 +2,7 @@
 # Cellparm.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A wrapper for the XDS jiffy program CELLPARM for computing average unit
@@ -24,7 +24,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'],
                     'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
-    
+
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
@@ -88,7 +88,7 @@ def Cellparm(DriverType = None):
                 for k in range(6):
                     average_cell[k] += cell[k]
                 number_cells += 1
-            
+
             cellparm_inp = open(os.path.join(
                 self.get_working_directory(), 'CELLPARM.INP'), 'w')
 
@@ -114,7 +114,7 @@ def Cellparm(DriverType = None):
             data = cellparm_lp.readlines()
 
             return map(float, data[-1].split()[:6])
-            
+
     return CellparmWrapper()
 
 if __name__ == '__main__':

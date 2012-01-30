@@ -2,13 +2,13 @@
 # MatrixExpert.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # 24th July 2007
-# 
+#
 # A small expert to handle orientation matrix calculations.
-# 
+#
 
 import os
 import sys
@@ -104,7 +104,7 @@ def b_matrix(a, b, c, alpha, beta, gamma):
 
     # invert the cell parameters
     # CITE: International Tables C Section 1.1
-    
+
     V = a * b * c * math.sqrt(1 - ca * ca - cb * cb - cg * cg +
                               2 * ca * cb * cg)
 
@@ -113,18 +113,18 @@ def b_matrix(a, b, c, alpha, beta, gamma):
     c_ = a * b * sg / V
 
     # NOTE well - these angles are in radians
-    
+
     alpha_ = math.acos((cb * cg - ca) / (sb * sg))
     beta_ = math.acos((ca * cg - cb) / (sa * sg))
     gamma_ = math.acos((ca * cb - cg) / (sa * sb))
- 
+
     ca_ = math.cos(alpha_)
     sa_ = math.sin(alpha_)
     cb_ = math.cos(beta_)
     sb_ = math.sin(beta_)
     cg_ = math.cos(gamma_)
     sg_ = math.sin(gamma_)
-   
+
     # NEXT construct the B matrix - CITE Pflugrath in Methods E 276
 
     return [a_, b_ * cg_, c_ * cb_,
@@ -158,11 +158,11 @@ def transpose(matrix):
     return [matrix[0], matrix[3], matrix[6],
             matrix[1], matrix[4], matrix[7],
             matrix[2], matrix[5], matrix[8]]
-            
+
 def det(matrix):
     vecs = mat2vec(matrix)
     return dot(vecs[0], cross(vecs[1], vecs[2]))
-    
+
 def matmul(b, a):
     avec = mat2vec(transpose(a))
     bvec = mat2vec(b)
@@ -207,9 +207,9 @@ def format_matrix(cell, a, u):
     matrix_format = ' %11.8f %11.8f %11.8f\n' + \
                     ' %11.8f %11.8f %11.8f\n' + \
                     ' %11.8f %11.8f %11.8f\n'
-    
+
     cell_format = ' %11.4f %11.4f %11.4f %11.4f %11.4f %11.4f\n'
-    
+
     misset = '       0.000       0.000       0.000\n'
 
     return matrix_format % tuple(a) + misset + matrix_format % tuple(u) + \
@@ -247,7 +247,7 @@ def transmogrify_matrix(lattice, matrix, target_lattice,
     u = matmul(op, u)
 
     # in here test that the given unit cell corresponds to the
-    # one calculated from the A matrix. 
+    # one calculated from the A matrix.
 
     anew = matscl(a, 1.0 / wavelength)
     reala = transpose(invert(anew))
@@ -267,7 +267,7 @@ def transmogrify_matrix(lattice, matrix, target_lattice,
 
     if math.fabs(lc - new_cell[2]) / new_cell[2] > 0.01:
         raise RuntimeError, 'cell check failed (wavelength != %f)' % \
-              wavelength    
+              wavelength
 
     return format_matrix(new_cell, a, u)
 
@@ -285,14 +285,14 @@ def _Othercell():
         Debug.write('Using othercell')
 
     return o
-    
+
 def get_real_space_primitive_matrix(lattice, matrix, wd = None):
     '''Get the primitive real space vectors for the unit cell and
     lattice type. Note that the resulting matrix will need to be
     scaled by a factor equal to the wavelength in Angstroms.'''
 
-    # parse the orientation matrix 
-    
+    # parse the orientation matrix
+
     cell, a, u = parse_matrix(matrix)
 
     # generate other possibilities
@@ -323,8 +323,8 @@ def get_real_space_primitive_matrix(lattice, matrix, wd = None):
 def get_reciprocal_space_primitive_matrix(lattice, matrix, wd = None):
     '''Get the primitive reciprocal space vectors for this matrix.'''
 
-    # parse the orientation matrix 
-    
+    # parse the orientation matrix
+
     cell, a, u = parse_matrix(matrix)
 
     # generate other possibilities
@@ -394,7 +394,7 @@ def mosflm_a_matrix_to_real_space(wavelength, lattice, matrix):
     ls = _Othercell()
     ls.set_cell(cell)
     ls.set_lattice(lattice)
-    
+
     # ls.set_spacegroup(spacegroup)
     # cell, reindex = ls.generate_primative_reindex()
     ls.generate()
@@ -427,12 +427,12 @@ def mosflm_a_matrix_to_real_space(wavelength, lattice, matrix):
     # FIXME in here add check that the unit cell lengths are within 1% of
     # the correct value - if they are not, raise an exception as the wavelength
     # provided is probably wrong...
-    
+
     la = math.sqrt(dot(ax, ax))
     lb = math.sqrt(dot(bx, bx))
     lc = math.sqrt(dot(cx, cx))
 
-    # print out values - the cell may have been reindexed. 
+    # print out values - the cell may have been reindexed.
 
     Debug.write('Reindexed cell lengths: %.3f %.3f %.3f' % \
                 (cell[0], cell[1], cell[2]))
@@ -464,7 +464,7 @@ def reindex_sym_related(A, A_ref):
     R = Amat_ref.inverse() * Amat
     Debug.write('%5.3f %5.3f %5.3f %5.3f %5.3f %5.3f %5.3f %5.3f %5.3f' % \
                 R.elems)
-    
+
     reindex = mat_to_symop(R)
     return reindex
 
@@ -484,11 +484,11 @@ def mosflm_matrix_centred_to_primitive(lattice, mosflm_a_matrix):
 
     cell, amat, umat = parse_matrix(mosflm_a_matrix)
 
-    # first derive the wavelength 
+    # first derive the wavelength
 
     mi = matrix.sqr(amat)
     m = mi.inverse()
-    
+
     A = matrix.col(m.elems[0:3])
     B = matrix.col(m.elems[3:6])
     C = matrix.col(m.elems[6:9])
@@ -507,7 +507,7 @@ def mosflm_matrix_centred_to_primitive(lattice, mosflm_a_matrix):
 
     mi = matrix.sqr([a / wavelength for a in amat])
     m = mi.inverse()
-    
+
     sgp = sg.build_derived_group(True, False)
     lattice_p = s2l(sgp.type().number())
     symm = crystal.symmetry(unit_cell = cell,
@@ -558,6 +558,3 @@ if __name__ == '__main__':
 
     for r in result:
         print r[:-1]
-       
-
-    

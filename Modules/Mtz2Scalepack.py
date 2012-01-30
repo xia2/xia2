@@ -1,10 +1,10 @@
 # Mtz2Scalepack.py
 # Maintained by G.Winter
 # 12th February 2007
-# 
-# A module to convert a reflection file in MTZ format into a number of 
+#
+# A module to convert a reflection file in MTZ format into a number of
 # scalepack files containing the I's - one per wavelength / dataset defined
-# in the input file, with names derived in the same way as for the 
+# in the input file, with names derived in the same way as for the
 # CCP4ScalerImplementation (e.g. PNAME_XNAME_scaled_DNAME.sca)
 #
 
@@ -19,7 +19,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
 from Wrappers.CCP4.Mtzdump import Mtzdump as _Mtzdump
-from Wrappers.CCP4.Mtz2various import Mtz2various as _Mtz2various 
+from Wrappers.CCP4.Mtz2various import Mtz2various as _Mtz2various
 
 class Mtz2Scalepack:
     '''A jiffy class to convert an MTZ file to scalepack merged format,
@@ -78,10 +78,10 @@ class Mtz2Scalepack:
             # this will look for I(+) etc columns.
             # possible problem warning - what happens if
             # this is given a reflection file
-            # 
+            #
             # (1) without I's only F's?
             # (2) not separated anomalous pairs???
-            
+
             m2 = self.Mtz2various()
             m2.set_hklin(self._hklin)
             m2.set_hklout(os.path.join(
@@ -103,9 +103,7 @@ if __name__ == '__main__':
                          'Test', 'UnitTest', 'Interfaces',
                          'Scaler', 'Merged', 'TS00_13185_merged_free.mtz')
 
-    
+
     m2s = Mtz2Scalepack()
     m2s.set_hklin(hklin)
     print m2s.convert()
-
-        

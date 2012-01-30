@@ -2,10 +2,10 @@
 # Files.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
-# A manager for files - this will record temporary and output files from 
+# A manager for files - this will record temporary and output files from
 # xia2, which can be used for composing a dump of "useful" files at the end
 # if processing.
 #
@@ -43,7 +43,7 @@ def get_xds_commands(lines_of_input):
     the line which goes ***** STEP ***** and **********. Love FORTRAN.'''
 
     collecting = False
-    
+
     result = []
 
     for l in lines_of_input:
@@ -136,7 +136,7 @@ class _FileHandler:
                                 os.path.join(self._data_migrate[directory],
                                              f))
                 migrated_dir += 1
-                
+
 
         Debug.write('Migrated %d files from %s to %s' % \
                     (migrated, directory, self._data_migrate[directory]))
@@ -148,7 +148,7 @@ class _FileHandler:
 
         end_time = time.time()
         duration = end_time - start_time
-        
+
         Debug.write('Migration took %s' % \
                     time.strftime("%Hh %Mm %Ss", time.gmtime(duration)))
 
@@ -165,7 +165,7 @@ class _FileHandler:
 
         # FIXME need to get the project name from someplace
         fout.write('<project_name>%s</project_name>' % 'unknown')
-        
+
         # now iterate through the "steps"
         for f in self._log_file_keys:
 
@@ -173,7 +173,7 @@ class _FileHandler:
 
             if 'postrefinement' in f:
                 continue
-            
+
             filename = os.path.join(target_directory,
                                     '%s.log' % f.replace(' ', '_'))
             original = self._log_files[f]
@@ -195,11 +195,11 @@ class _FileHandler:
                     continue
 
                 app_name = 'xds'
-                
+
             else:
                 app_name = os.path.split(
                     original)[-1].split('_')[1].replace('.log', '')
-                
+
             run_date = time.ctime(os.stat(original)[8])
 
             # generate the control input - read the input files for this
@@ -218,13 +218,13 @@ class _FileHandler:
 
             elif 'chef' in app_name:
                 commands, allfiles = get_ccp4_commands(
-                    open(original, 'r').readlines())             
+                    open(original, 'r').readlines())
                 input_files = []
                 output_files = []
 
             elif 'pointless' in app_name:
                 commands, allfiles = get_ccp4_commands(
-                    open(original, 'r').readlines())             
+                    open(original, 'r').readlines())
                 input_files = []
                 output_files = []
 
@@ -260,21 +260,21 @@ class _FileHandler:
                 fout.write('<file><file_ref>%s</file_ref></file>' % f)
             fout.write('</input_files>')
 
-            fout.write('<output_files>')            
+            fout.write('<output_files>')
             for f in output_files:
                 fout.write('<file><file_ref>%s</file_ref></file>' % f)
             fout.write('</output_files>')
 
             fout.write('<log_file>%s</log_file>' % filename)
-            
+
             fout.write('</step>')
 
         fout.write('</BioXHIT_data_tracking>')
         fout.close()
 
         return
-        
-        
+
+
     def cleanup(self):
         out = open('xia-files.txt', 'w')
         for f in self._temporary_files:
@@ -289,7 +289,7 @@ class _FileHandler:
             d = self._data_migrate[f]
             shutil.rmtree(d)
             out.write('Removed directory %s' % d)
-                
+
         for f in self._output_files:
             out.write('Output file (%s): %s\n' % f)
 
@@ -324,7 +324,7 @@ class _FileHandler:
 
             data_directory = Environment.generate_directory(
                 ('DataFiles', 'Integrate'))
-        
+
             for f in self._more_data_file_keys:
                 exten = self._more_data_files[f].split('.')[-1]
                 filename = os.path.join(data_directory,
@@ -384,5 +384,3 @@ if __name__ == '__main__':
     FileHandler.record_temporary_file('noexist.txt')
     open('junk.txt', 'w').write('junk!')
     FileHandler.record_temporary_file('junk.txt')
-    
-

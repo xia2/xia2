@@ -2,7 +2,7 @@
 # CCP4Factory.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 12/APR/07
@@ -55,7 +55,7 @@ class CCP4Factory:
         return
 
     def get_working_directory(self):
-        return self._working_directory 
+        return self._working_directory
 
     # factory methods...
 
@@ -204,7 +204,7 @@ class CCP4Factory:
         sfcheck.set_working_directory(self.get_working_directory())
         auto_logfiler(sfcheck)
         return sfcheck
-    
+
     def Matthews_coef(self):
         '''Create a Matthews_coef wrapper from _Matthews_coef - set the
         working directory and log file stuff as a part of this...'''
@@ -212,7 +212,7 @@ class CCP4Factory:
         matthews_coef.set_working_directory(self.get_working_directory())
         auto_logfiler(matthews_coef)
         return matthews_coef
-    
+
     def Chef(self):
         '''Create a Chef wrapper from _Chef - set the
         working directory and log file stuff as a part of this...'''
@@ -220,7 +220,3 @@ class CCP4Factory:
         chef.set_working_directory(self.get_working_directory())
         auto_logfiler(chef)
         return chef
-
-    
-    
-    

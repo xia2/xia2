@@ -43,7 +43,7 @@ def spot2q(xparm_file, spot_file):
     space_group_number = xparm_d['spacegroup']
     spacegroup = sgtbx.space_group_symbols(space_group_number).hall()
     sg = sgtbx.space_group(spacegroup)
-    
+
     wavelength = xparm_d['wavelength']
     distance = xparm_d['distance']
     beam = xparm_d['beam']
@@ -72,7 +72,7 @@ def spot2q(xparm_file, spot_file):
     off = Sd - D
 
     bx = ox + off.elems[0] / px
-    by = oy + off.elems[1] / py    
+    by = oy + off.elems[1] / py
 
     dtor = 180.0 / math.pi
 
@@ -115,8 +115,8 @@ def spot2q(xparm_file, spot_file):
 
         print '%.5f %.5f %.5f' % q
 
-    return 
-        
+    return
+
 if __name__ == '__main__':
 
     source = os.getcwd()
@@ -128,4 +128,3 @@ if __name__ == '__main__':
     spot = os.path.join(source, 'SPOT.XDS')
 
     spot2q(xparm, spot)
-

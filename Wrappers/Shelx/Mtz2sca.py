@@ -2,7 +2,7 @@
 # Mtz2sca.py
 #   Copyright (C) 2008 STFC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A wrapper for the jiffy program mtz2sca - this will help in copying
@@ -106,7 +106,7 @@ def Mtz2sca(DriverType = None):
                 else:
                     scaout = '%s.sca' % \
                              (os.path.split(self._hklin)[-1][:-4])
-                    
+
             if self._name:
                 p, P, m, M = self.find_name()
                 self.add_command_line('-p')

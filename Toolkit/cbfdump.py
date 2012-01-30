@@ -1,9 +1,9 @@
-# cbfdump.py 
-# 
+# cbfdump.py
+#
 # A little jiffy to read a cbf file and tell us what it finds...
-# 
+#
 # Based on pycbf from the CBFlib distribution.
-# 
+#
 
 import sys
 import pycbf
@@ -85,9 +85,9 @@ def cbfdump(cbf_image, do_print = False):
     cbf_handle.find_row('source')
 
     # then get the vector and offset from this
-    
+
     beam_direction = []
-    
+
     for j in range(3):
         cbf_handle.find_column('vector[%d]' % (j + 1))
         beam_direction.append(cbf_handle.get_doublevalue())
@@ -100,10 +100,10 @@ def cbfdump(cbf_image, do_print = False):
     polarization_plane_normal = (math.sin(polarization_norm * math.pi / 180.0),
                                  math.cos(polarization_norm * math.pi / 180.0),
                                  0.0)
-    
+
     detector = cbf_handle.construct_detector(0)
 
-    # this returns slow fast slow fast pixels pixels mm mm 
+    # this returns slow fast slow fast pixels pixels mm mm
 
     beam = detector.get_beam_center()
 
@@ -113,26 +113,26 @@ def cbfdump(cbf_image, do_print = False):
     distance = detector.get_detector_distance()
     pixel = (detector.get_inferred_pixel_size(1),
              detector.get_inferred_pixel_size(2))
-    
+
     gonio = cbf_handle.construct_goniometer()
 
     real_axis, real_angle = determine_effective_scan_axis(gonio)
 
     axis = tuple(gonio.get_rotation_axis())
     angles = tuple(gonio.get_rotation_range())
-    
+
     date = cbf_handle.get_datestamp()
 
     time = cbf_handle.get_timestamp()
 
     # this method returns slow then fast dimensions i.e. (y, x)
-    
+
     size = tuple(reversed(cbf_handle.get_image_size(0)))
     exposure = cbf_handle.get_integration_time()
     overload = cbf_handle.get_overload(0)
     underload = find_undefined_value(cbf_handle)
     wavelength = cbf_handle.get_wavelength()
-    
+
     if do_print: print 'Detector information:'
     if do_print: print 'Dimensions: %d %d' % size
     if do_print: print 'Pixel size: %.3f %.3f' % pixel
@@ -145,35 +145,35 @@ def cbfdump(cbf_image, do_print = False):
     if do_print: print 'Beam:       %.2f %.2f %.2f' % tuple(beam_direction)
     if do_print: print 'Polariz.:   %.2f %.2f %.2f' % \
        tuple(polarization_plane_normal)
-    
+
     if do_print: print 'Goniometer:'
     if do_print: print 'Axis:       %.2f %.2f %.2f' % axis
     if do_print: print 'Real axis:  %.2f %.2f %.2f' % real_axis
     if do_print: print 'Angles:     %.2f %.2f' % angles
     if do_print: print 'Real angle: %.2f' % real_angle
-    
+
     if do_print: print 'Experiment:'
     if do_print: print 'Wavelength: %.5f' % wavelength
-    
+
     # now need to dig out the detector axes
     # perhaps bodge this by looking at the displacements of pixels in the
     # fast and slow directions?
-    
+
     origin = detector.get_pixel_coordinates(0, 0)
     fast = detector.get_pixel_coordinates(0, 1)
     slow = detector.get_pixel_coordinates(1, 0)
 
     if do_print: print 'Origin:     %.2f %.2f %.2f' % tuple(origin)
-    
+
     dfast = [fast[j] - origin[j] for j in range(3)]
     dslow = [slow[j] - origin[j] for j in range(3)]
-    
+
     lfast = math.sqrt(sum([dfast[j] * dfast[j] for j in range(3)]))
     lslow = math.sqrt(sum([dslow[j] * dslow[j] for j in range(3)]))
-    
+
     fast = tuple([dfast[j] / lfast for j in range(3)])
     slow = tuple([dslow[j] / lslow for j in range(3)])
-    
+
     if do_print: print 'Fast direction: %.2f %.2f %.2f' % fast
     if do_print: print 'Slow direction: %.2f %.2f %.2f' % slow
 
@@ -188,7 +188,7 @@ def cbfdump(cbf_image, do_print = False):
     # actually strike the detector - this will be the intersection of the
     # source vector with the plane defined by fast and slow passing through
     # the detector origin. Then return this position on the detector in mm.
-    # 
+    #
     # unit vectors -
     # _b - beam
     # _n - detector normal
@@ -239,4 +239,3 @@ if __name__ == '__main__':
     end = time.time()
 
     print 'Reading %d headers took %.1fs' % (j, end - start)
-

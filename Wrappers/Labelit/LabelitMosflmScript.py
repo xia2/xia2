@@ -2,18 +2,18 @@
 # LabelitMosflmScript.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 18th July 2006
-# 
+#
 # An interface to the labelit program labelit.mosflm_script, used for
 # generating an integration script for Mosflm. In this case this is used
 # for generating the matrix file to make mosflm work. This will be added
 # to the Indexer payload in LabelitIndex.py.
-# 
-# 
-# 
+#
+#
+#
 
 import os
 import sys
@@ -27,7 +27,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'],
                     'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
-    
+
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
@@ -97,4 +97,3 @@ if __name__ == '__main__':
     lms.set_solution(9)
     for m in lms.calculate():
         print m[:-1]
-

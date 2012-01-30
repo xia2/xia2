@@ -333,7 +333,7 @@ class PipelineInfo:
                 return item
         # Nothing found
         return {}
-                
+
     def program(self,logfile):
         """Get the program name associated with a logfile"""
         data = self.lookupLogInfo(logfile)
@@ -548,7 +548,7 @@ class Xia2run:
     hierarchy can be accessed.
 
     In addition other methods access information about the xia2 run
-    (such as version, termination status, programs used and so on).   
+    (such as version, termination status, programs used and so on).
     The 'has_anomalous', 'multi_crystal' and 'xds_pipeline' methods
     give 'meta-information' about the run.
 
@@ -943,12 +943,12 @@ class Xia2run:
                             sweep.addIntegrationRun(integration_run)
                             print "SWEEPS> run assigned to sweep "+sweep.name()
                             break
-        # Store the raw text of the key to the symbols 
+        # Store the raw text of the key to the symbols
         print "POPULATE> INTEGRATION STATUS KEY"
         if xia2.count('integration_status_key'):
             self.__int_status_key = str(xia2['integration_status_key'][0])
         # Assign interwavelength analysis data
-        # Only crystals with more than one dataset will also 
+        # Only crystals with more than one dataset will also
         # have this information
         print "POPULATE> INTERWAVELENGTH ANALYSIS"
         i = 0
@@ -998,7 +998,7 @@ class Xia2run:
                 raise
         # Assign log files to crystals, datasets (and sweeps)
         print "POPULATE> ASSIGN LOG FILES TO CRYSTALS, DATASETS ..."
-                    
+
         for log in self.__logfiles:
             print "LOGFILE> checking "+str(log.basename())
             # Fetch the template
@@ -1258,7 +1258,7 @@ class Crystal:
 
     def __init__(self,name):
         """Create a new Crystal object
-        
+
         'name' is the name associated with the crystal in the
         xia2 run. Other data are added subsequently using the
         'set...Data' methods (e.g. 'setUnitCellData').
@@ -1300,7 +1300,7 @@ class Crystal:
 
         a    = Crystal.unit_cell()['a']
         beta = Crystal.unit_cell()['beta']
-        
+
         etc."""
         return self.__unit_cell
 
@@ -1435,10 +1435,10 @@ class Dataset(Magpie.Tabulator):
 
     For example, if the statistics table includes the following rows:
     ...
-    High resolution limit                    	1.21	5.41	1.21
-    Low resolution limit                     	39.15	39.15	1.24
+    High resolution limit                       1.21    5.41    1.21
+    Low resolution limit                        39.15   39.15   1.24
     ...
-    
+
     then these can be accessed using:
 
     Dataset['High resolution limit']
@@ -1468,9 +1468,9 @@ class Dataset(Magpie.Tabulator):
         'statistics_table' is the table of statistics from Scala
         for the dataset (reproduced in xia2.txt), which typically
         starts:
-        High resolution limit                    	1.21	5.41	1.21
-        Low resolution limit                     	39.15	39.15	1.24
-        Completeness                             	89.0	96.0	25.1
+        High resolution limit                           1.21    5.41    1.21
+        Low resolution limit                            39.15   39.15   1.24
+        Completeness                                    89.0    96.0    25.1
         ..etc etc.."""
         self.__name = str(name)
         self.__wavelength = None
@@ -1617,7 +1617,7 @@ class Sweep:
 
 # IntegrationRun
 #
-# Store and manage information about an integration run for a sweep        
+# Store and manage information about an integration run for a sweep
 class IntegrationRun:
     """Store information about an integration run for a sweep
 
@@ -1626,7 +1626,7 @@ class IntegrationRun:
     these integration passes, specifically: associated sweep name,
     the start and end batch numbers and the 'image status line' (i.e.
     the lines of characters representineg the status of each image)."""
-    
+
     def __init__(self,sweep_data):
         """Create and populate a new IntegrationRun object
 
@@ -1734,7 +1734,7 @@ class LogFile:
         Stores the names supplied for the associated project, crystal,
         dataset and sweep. If no sweep or dataset is associated with
         the log file then 'None' should be specified for that name.
-        
+
         The 'crystal', 'dataset' and 'sweep' are used to retrieve the
         assigned names."""
         self.__project = project
@@ -1950,7 +1950,7 @@ class RadiationDamageAnalysis:
         print "Radiation damage = "+str(radiation_damage)
         processor = Magpie.Magpie(verbose=False)
         # Set up patterns to match the text
-        # 
+        #
         # group
         # matches lines like:
         # Group 1: 2-wedge data collection
@@ -2042,7 +2042,7 @@ class Xia2doc:
     the xia2.html report as well as the xia2_html output directory
     and HTML versions of log files, It will also copy the Jloggraph.jar
     and icon files to the xia2_html directory.
-    
+
     The content of the report will be generated by an automatic
     invocation of either the reportRun() method (if the xia2 run appeared
     to be successful) or reportIncompleteRun() method (if it appeared to
@@ -2512,7 +2512,7 @@ class Xia2doc:
             filen = refln_file.basename()
             if refln_file.format() != last_format:
                 # New format encountered
-                # 
+                #
                 # Add a title row for the new format
                 refln_tbl.addRow([str(refln_file.format()).upper()+" files",""],
                                  css_classes='refln_format')
@@ -2725,7 +2725,7 @@ class Xia2doc:
                     start_batch = last_int_run.start_batch()
                     end_batch = last_int_run.end_batch()
                     sweep_section = dataset_section. \
-                        addSubsection(sweep.name() + 
+                        addSubsection(sweep.name() +
                                       ": batches " + start_batch +
                                       " to " + end_batch)
                     # Get the HTML representation of the status line

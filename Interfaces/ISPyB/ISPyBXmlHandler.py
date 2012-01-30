@@ -2,12 +2,12 @@
 # ISPyBXmlHandler.py
 #   Copyright (C) 2009 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # A handler to manage the data which needs to end up in the ISPyB xml out
 # file.
-# 
+#
 # 11th November 2009
 
 import time
@@ -45,7 +45,7 @@ class _ISPyBXmlHandler:
             'Partial Bias':'fractionalPartialBias',
             'I/sigma':'meanIOverSigI',
             }
-                    
+
         return
 
     def add_xcrystal(self, xcrystal):
@@ -73,7 +73,7 @@ class _ISPyBXmlHandler:
                    time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
 
         return
-        
+
     def write_cell(self, fout, cell):
         '''Write out a UNIT CELL as XML...'''
 
@@ -96,7 +96,7 @@ class _ISPyBXmlHandler:
         fout.write('<refinedCell_beta>%f</refinedCell_beta>' % cell[4])
         fout.write('<refinedCell_gamma>%f</refinedCell_gamma>' % cell[5])
 
-        return    
+        return
 
     def write_scaling_statistics(self, fout, scaling_stats_type, stats_dict):
         '''Write out the SCALING STATISTICS block...'''
@@ -187,7 +187,7 @@ class _ISPyBXmlHandler:
                 for j, name in enumerate(
                     ['overall', 'innerShell', 'outerShell']):
                     statistics_cache = { }
-                    
+
                     for s in stats:
                         if type(statistics_all[key][s]) == type([]):
                             statistics_cache[s] = statistics_all[key][s][j]
@@ -229,10 +229,10 @@ class _ISPyBXmlHandler:
 
                     fout.write('<refinedXBeam>%f</refinedXBeam>' % beam[0])
                     fout.write('<refinedYBeam>%f</refinedYBeam>' % beam[1])
-                    
+
                     fout.write('</AutoProcIntegration>\n')
                     fout.write('</AutoProcIntegrationContainer>\n')
-                               
+
             fout.write('</AutoProcScalingContainer>')
 
             # file unpacking nonsense
@@ -244,7 +244,7 @@ class _ISPyBXmlHandler:
                        % CommandLine.get_command_line())
             fout.write('<processingPrograms>xia2</processingPrograms>')
             fout.write('</AutoProcProgram>')
-            
+
             for k in reflection_files:
 
                 reflection_file = reflection_files[k]
@@ -253,7 +253,7 @@ class _ISPyBXmlHandler:
                     continue
 
                 reflection_file = FileHandler.get_data_file(reflection_file)
-                
+
                 fout.write(
                     '<AutoProcProgramAttachment><fileType>Result')
                 fout.write('</fileType><fileName>%s</fileName>' % \
@@ -269,14 +269,14 @@ class _ISPyBXmlHandler:
             fout.write('</fileType><fileName>xia2.txt</fileName>')
             fout.write('<filePath>%s</filePath>' % os.getcwd())
             fout.write('</AutoProcProgramAttachment>\n')
-                
+
             fout.write('</AutoProcProgramContainer>')
-            
+
         fout.write('</AutoProcContainer>\n')
         fout.close()
 
         return
-    
+
 ISPyBXmlHandler = _ISPyBXmlHandler()
 
 if __name__ == '__main__':

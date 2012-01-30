@@ -2,9 +2,9 @@
 # goniometer.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-#  
+#
 # A model for the goniometer for the "updated experimental model" project
 # documented in internal ticket #1555. This is not designed to be used outside
 # of the XSweep classes.
@@ -70,7 +70,7 @@ class goniometer:
 
     def get_axis(self):
         '''Get the values for the rotation axis.'''
-        
+
         return self._axis.elems
 
     def get_axis_c(self):
@@ -105,7 +105,7 @@ class goniometer_factory:
 
         axis = (1, 0, 0)
         fixed = (1, 0, 0, 0, 1, 0, 0, 0, 1)
-        
+
         return goniometer(axis, fixed)
 
     @staticmethod
@@ -114,9 +114,9 @@ class goniometer_factory:
         that nothing is known about the fixed element of the rotation axis.'''
 
         assert(len(axis) == 3)
-        
+
         fixed = (1, 0, 0, 0, 1, 0, 0, 0, 1)
-        
+
         return goniometer(axis, fixed)
 
     @staticmethod
@@ -156,7 +156,7 @@ class goniometer_factory:
             P = _phi.axis_and_angle_as_r3_rotation_matrix(phi, deg = True)
 
             return goniometer(_omega.elems, (K * P).elems)
-            
+
         elif scan_axis == 'phi':
 
             O = _omega.axis_and_angle_as_r3_rotation_matrix(omega, deg = True)
@@ -180,7 +180,7 @@ class goniometer_factory:
 
         cbf_gonio.__swig_destroy__(cbf_gonio)
         del(cbf_gonio)
-        
+
         return goniometer(axis.elems, fixed.elems)
 
     @staticmethod
@@ -196,12 +196,3 @@ class goniometer_factory:
         del(cbf_gonio)
 
         return goniometer(axis.elems, fixed.elems)
-
-        
-
-        
-    
-
-        
-    
-        

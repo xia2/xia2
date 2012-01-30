@@ -1,13 +1,13 @@
 # Scalepack2Mtz.py
 # Maintained by G.Winter
 # 18th June 2007
-# 
+#
 # A module to carefully convert XDS reflection files (merged or
-# unmerged) into properly structured MTZ files. This is based on 
+# unmerged) into properly structured MTZ files. This is based on
 # Scalepack2Mtz
-# 
+#
 # This will:
-# 
+#
 # if (unmerged) combat -> scala for merging (else) convert to mtz
 #
 
@@ -36,7 +36,7 @@ class XDS2Mtz:
         self._working_directory = os.getcwd()
         self._factory = CCP4Factory()
         return
-        
+
     # admin functions
 
     def set_working_directory(self, working_directory):
@@ -45,7 +45,7 @@ class XDS2Mtz:
         return
 
     def get_working_directory(self):
-        return self._working_directory 
+        return self._working_directory
 
     def _decide_is_merged(self, file):
         '''Take a look at file and see if it looks like an XDS merged
@@ -69,7 +69,7 @@ class XDS2Mtz:
 
         raise RuntimeError, 'cannot find MERGE token'
 
-    def xds_to_mtz(self, xds, hklout, 
+    def xds_to_mtz(self, xds, hklout,
                    anomalous,
                    spacegroup = None,
                    cell = None,
@@ -84,7 +84,7 @@ class XDS2Mtz:
             hklout_x = os.path.join(
                 self.get_working_directory(), 'xdsconv-tmp.mtz')
             FileHandler.record_temporary_file(hklout_x)
-            
+
             xdsconv = XDSConv()
             xdsconv.set_working_directory(self.get_working_directory())
             xdsconv.set_input_file(xds)
@@ -109,7 +109,7 @@ class XDS2Mtz:
             hklout_f = os.path.join(
                 self.get_working_directory(), 'f2mtz-tmp.mtz')
             FileHandler.record_temporary_file(hklout_f)
-            
+
             f2mtz = self._factory.F2mtz()
 
             f2mtz.set_hklin(hklout_x)
@@ -118,7 +118,7 @@ class XDS2Mtz:
             if project_info:
                 pname, xname, dname = project_info
                 f2mtz.set_project_info(pname, xname, dname)
-            
+
             f2mtz.set_cell(cell)
             f2mtz.set_symmetry(spacegroup)
 
@@ -131,16 +131,16 @@ class XDS2Mtz:
             cad.add_hklin(hklout_f)
             cad.set_hklout(hklout)
             cad.update()
-            
-            return 
+
+            return
 
         else:
 
             hklout_c = os.path.join(
                 self.get_working_directory(), 'combat-tmp.mtz')
-            
+
             FileHandler.record_temporary_file(hklout_c)
-            
+
             c = self._factory.Combat()
             c.set_hklin(xds)
             c.set_hklout(hklout_c)
@@ -152,18 +152,18 @@ class XDS2Mtz:
                 pname, xname, dname = project_info
                 c.set_project_info(pname, xname, dname)
             c.run()
-        
+
             hklin = hklout_c
             hklout_s = os.path.join(
                 self.get_working_directory(), 'sortmtz-tmp.mtz')
-                                  
+
             FileHandler.record_temporary_file(hklout_s)
 
             s = self._factory.Sortmtz()
             s.set_hklin(hklin)
             s.set_hklout(hklout_s)
             s.sort()
-            
+
             hklin = hklout_s
 
             sc = self._factory.Scala()
@@ -180,7 +180,7 @@ class XDS2Mtz:
                       'loggraphs':sc.parse_ccp4_loggraph()}
 
             return result
-           
+
 
 if __name__ == '__main__':
 
@@ -198,7 +198,3 @@ if __name__ == '__main__':
                        'merged_anom.mtz', True)
     xds2mtz.xds_to_mtz(os.path.join(merged_data, 'TS03_INFL_NAT.hkl'),
                        'merged_.nat.mtz', True)
-                       
-    
-        
-        

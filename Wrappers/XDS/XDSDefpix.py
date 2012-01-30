@@ -2,7 +2,7 @@
 # XDSDefpix.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A wrapper to handle the JOB=DEFPIX module in XDS.
@@ -22,7 +22,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'],
                     'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
-    
+
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
@@ -51,7 +51,7 @@ def XDSDefpix(DriverType = None):
             FrameProcessor.__init__(self)
 
             # now set myself up...
-            
+
             self.set_executable('xds')
 
             # generic bits
@@ -120,7 +120,7 @@ def XDSDefpix(DriverType = None):
 
             # what are we doing?
             xds_inp.write('JOB=DEFPIX\n')
-            
+
             for record in header:
                 xds_inp.write('%s\n' % record)
 
@@ -138,9 +138,9 @@ def XDSDefpix(DriverType = None):
             if self._resolution_high > 0.0 or self._resolution_low > 0.0:
                 xds_inp.write('INCLUDE_RESOLUTION_RANGE=%.2f %.2f\n' % \
                               (self._resolution_low, self._resolution_high))
-            
+
             xds_inp.close()
-            
+
 
             # copy the input file...
             shutil.copyfile(os.path.join(self.get_working_directory(),
@@ -176,7 +176,7 @@ def XDSDefpix(DriverType = None):
                             Chatter.write(
                                 'Warning: resolution limited to %.2f' % \
                                 real_high)
-            
+
 
             # gather the output files
 
@@ -194,7 +194,7 @@ if __name__ == '__main__':
     directory = os.path.join(os.environ['XIA2_ROOT'],
                              'Data', 'Test', 'Images')
 
-    
+
     defpix.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 
     for file in ['X-CORRECTIONS.cbf',
@@ -202,9 +202,7 @@ if __name__ == '__main__':
                  'BKGINIT.cbf',
                  'XPARM.XDS']:
         defpix.set_input_data_file(file, open(file, 'rb').read())
-            
+
     defpix.set_data_range(1, 1)
 
     defpix.run()
-
-

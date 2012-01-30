@@ -24,7 +24,7 @@ try:
     import gzip
 except:
     gzip = None
-    
+
 import exceptions
 import traceback
 
@@ -69,14 +69,14 @@ class Format:
         then return a larger number, for example checking the detector serial
         number. Finally, if you are writing this subclass for a given
         instrument and you are given a different example return 0.'''
-        
+
         return 0
 
     def __init__(self, image_file):
         '''Initialize a class instance from an image file.'''
 
         self._image_file = image_file
-        
+
         self._goniometer_instance = None
         self._detector_instance = None
         self._beam_instance = None
@@ -101,15 +101,15 @@ class Format:
 
         try:
             self._start()
-            
+
             goniometer_instance = self._goniometer()
             assert(isinstance(goniometer_instance, goniometer))
             self._goniometer_instance = goniometer_instance
-            
+
             detector_instance = self._detector()
             assert(isinstance(detector_instance, detector))
             self._detector_instance = detector_instance
-            
+
             beam_instance = self._beam()
             assert(isinstance(beam_instance, beam))
             self._beam_instance = beam_instance
@@ -163,7 +163,7 @@ class Format:
         How you use this is up to you, though you probably want to overload
         it...'''
 
-        return 
+        return
 
     def _end(self):
         '''Clean up things - keeping in mind that this should run even in the
@@ -223,7 +223,7 @@ class Format:
 
             if bz2 is None:
                 raise RuntimeError, 'bz2 file provided without bz2 module'
-            
+
             return bz2.BZ2File(filename, mode)
 
         if Format.is_gzip(filename):
@@ -234,8 +234,3 @@ class Format:
             return gzip.GzipFile(filename, mode)
 
         return open(filename, mode)
-
-    
-
-                
-        

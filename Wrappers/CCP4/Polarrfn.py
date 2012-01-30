@@ -2,11 +2,11 @@
 # Polarrfn.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 20th June 2007
-# 
+#
 
 import sys
 import os
@@ -56,10 +56,10 @@ def Polarrfn(DriverType = None):
         def set_labin(self, labin_f, labin_sigf):
             self._labin_f = labin_f
             self._labin_sigf = labin_sigf
-            return            
+            return
 
         def polarrfn(self):
-            
+
             self.check_hklin()
 
             self.start()
@@ -85,8 +85,8 @@ def Polarrfn(DriverType = None):
 
             peaks = { }
 
-            symops = { } 
-            
+            symops = { }
+
             while j < len(self.get_all_output()):
 
                 line = output[j]
@@ -136,7 +136,7 @@ def Polarrfn(DriverType = None):
                     if unique.has_key(key):
                         if unique[key] > p[3]:
                             continue
-                        
+
                     unique[key] = p[3]
                     if not key in keys:
                         keys.append(key)
@@ -202,5 +202,3 @@ if __name__ == '__main__':
     polar.set_hklin('temp.mtz')
     polar.set_labin('E', 'SIGE')
     polar.polarrfn()
-    
-    

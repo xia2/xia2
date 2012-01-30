@@ -29,7 +29,7 @@ class FormatCBFMini(FormatCBF):
 
         if '_diffrn.id' in header and '_diffrn_source' in header:
             return 0
-        
+
         for record in header.split('\n'):
             if '_array_data.header_convention' in record and \
                    'PILATUS' in record:
@@ -42,7 +42,7 @@ class FormatCBFMini(FormatCBF):
 
     def __init__(self, image_file):
         '''Initialise the image structure from the given file.'''
-        
+
         assert(FormatCBFMini.understand(image_file) > 0)
 
         FormatCBF.__init__(self, image_file)
@@ -66,7 +66,7 @@ class FormatCBFMini(FormatCBF):
             if len(record[1:].split()) <= 2 and record.count(':') == 2:
                 self._cif_header_dictionary['timestamp'] = record[1:].strip()
                 continue
-            
+
             tokens = record.replace('=', '').replace(':', '').split()[1:]
 
             self._cif_header_dictionary[tokens[0]] = ' '.join(tokens[1:])
@@ -76,11 +76,5 @@ class FormatCBFMini(FormatCBF):
                 continue
             token, value = record.split(':')
             self._cif_header_dictionary[token.strip()] = value.strip()
-            
+
         return
-
-
-
-    
-
-

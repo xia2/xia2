@@ -1,7 +1,7 @@
 # FindFreeFlag.py
 # Maintained by G.Winter
 # 11th July 2008
-# 
+#
 # A jiffy to try and identify the FreeR column in an MTZ file - will look for
 # FreeR_flag, then *free*, will check that the column type is 'I' and so
 # will be useful when an external reflection file is passed in for copying
@@ -62,7 +62,7 @@ def FindFreeFlag(hklin):
         return possibilities[0]
 
     raise RuntimeError, 'Multiple candidate FreeR_flag columns found'
-    
+
 if __name__ == '__main__':
 
     if len(sys.argv) < 2:

@@ -2,11 +2,11 @@
 # XDSIntegrater.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 14th December 2006
-# 
+#
 # An implementation of the Integrater interface using XDS. This depends on the
 # XDS wrappers to actually implement the functionality.
 #
@@ -68,7 +68,7 @@ class XDSIntegrater(FrameProcessor,
     def __init__(self):
 
         # set up the inherited objects
-        
+
         FrameProcessor.__init__(self)
         Integrater.__init__(self)
 
@@ -82,26 +82,26 @@ class XDSIntegrater(FrameProcessor,
 
         # place to store working data
         self._data_files = { }
-        
+
         # internal parameters to pass around
-        self._integrate_parameters = { } 
+        self._integrate_parameters = { }
 
         return
 
     # overload these methods as we don't want the resolution range
     # feeding back... aha - but we may want to assign them
     # from outside!
-    
+
     def set_integrater_resolution(self, dmin, dmax, user = False):
         if user:
             Integrater.set_integrater_resolution(self, dmin, dmax, user)
         return
-        
+
     def set_integrater_high_resolution(self, dmin, user = False):
         if user:
             Integrater.set_integrater_high_resolution(self, dmin, user)
         return
-        
+
     def set_integrater_low_resolution(self, dmax, user = False):
         self._intgr_reso_low = dmax
         return
@@ -113,7 +113,7 @@ class XDSIntegrater(FrameProcessor,
         return
 
     def get_working_directory(self):
-        return self._working_directory 
+        return self._working_directory
 
     def _set_integrater_reindex_operator_callback(self):
         '''If a REMOVE.HKL file exists in the working
@@ -181,16 +181,16 @@ class XDSIntegrater(FrameProcessor,
 
         if self.get_integrater_anomalous():
             correct.set_anomalous(True)
-    
+
         if self.get_integrater_low_resolution() > 0.0:
             Debug.write('Using low resolution limit: %.2f' % \
                         self.get_integrater_low_resolution())
             correct.set_resolution_high(0.0)
             correct.set_resolution_low(
                 self.get_integrater_low_resolution())
-                
+
         auto_logfiler(correct, 'CORRECT')
-        
+
         return correct
 
     # now some real functions, which do useful things
@@ -213,7 +213,7 @@ class XDSIntegrater(FrameProcessor,
             images = self.get_matching_images()
             self.set_integrater_wedge(min(images),
                                       max(images))
-            
+
         Debug.write('XDS INTEGRATE PREPARE:')
         Debug.write('Wavelength: %.6f' % self.get_wavelength())
         Debug.write('Distance: %.2f' % self.get_distance())
@@ -225,7 +225,7 @@ class XDSIntegrater(FrameProcessor,
 
             self._intgr_indexer.set_working_directory(
                 self.get_working_directory())
-            
+
             self._intgr_indexer.setup_from_image(self.get_image_name(
                 self._intgr_wedge[0]))
 
@@ -272,11 +272,11 @@ class XDSIntegrater(FrameProcessor,
             # is not a problem as all that will happen is that the
             # results will be re-got, no additional processing will
             # be performed...
-            
+
             self.set_integrater_indexer(XDSIndexer())
             self.get_integrater_indexer().set_indexer_sweep(
                 self.get_integrater_sweep())
-            
+
             # set the indexer up as per the frameprocessor interface...
             # this would usually happen within the IndexerFactory.
 
@@ -298,7 +298,7 @@ class XDSIntegrater(FrameProcessor,
             if self.get_reversephi():
                 Debug.write('Propogating reverse-phi...')
                 self._intgr_indexer.set_reversephi()
-            
+
             # now copy information from the old indexer to the new
             # one - lattice, cell, distance etc.
 
@@ -332,7 +332,7 @@ class XDSIntegrater(FrameProcessor,
             # worked correctly
 
             Debug.write('Rerunning indexing with XDS')
-            
+
             cell = self._intgr_indexer.get_indexer_cell()
             lattice = self._intgr_indexer.get_indexer_lattice()
 
@@ -347,15 +347,15 @@ class XDSIntegrater(FrameProcessor,
         # set a low resolution limit (which isn't really used...)
         # this should perhaps be done more intelligently from an
         # analysis of the spot list or something...?
-        
+
         if not self.get_integrater_low_resolution():
 
-            dmin = self._intgr_indexer.get_indexer_low_resolution()    
+            dmin = self._intgr_indexer.get_indexer_low_resolution()
             self.set_integrater_low_resolution(dmin)
 
             Debug.write('Low resolution set to: %s' % \
                         self.get_integrater_low_resolution())
-        
+
         # copy the data across
         self._data_files = copy.deepcopy(
             self._intgr_indexer.get_indexer_payload('xds_files'))
@@ -371,7 +371,7 @@ class XDSIntegrater(FrameProcessor,
         # CORRECT - c/f bug # 2695
         self._intgr_cell = None
         self._intgr_spacegroup_number = None
-        
+
         return
 
     def _integrate(self):
@@ -381,7 +381,7 @@ class XDSIntegrater(FrameProcessor,
         images_str = '%d to %d' % self._intgr_wedge
         cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % \
                    self._intgr_indexer.get_indexer_cell()
-        
+
         if len(self._fp_directory) <= 50:
             dirname = self._fp_directory
         else:
@@ -464,7 +464,7 @@ class XDSIntegrater(FrameProcessor,
         # the integration will not be repeated. As a side effect, this means
         # that GXPARM may not be used, which is not ideal, as it should be
         # considered.
-       
+
         if self._data_files.has_key('GXPARM.XDS') and fixed_2401:
             Debug.write('Using globally refined parameters')
             integrate.set_input_data_file(
@@ -496,7 +496,7 @@ class XDSIntegrater(FrameProcessor,
                             os.path.join(here, 'INTEGRATE-%s.HKL' % lattice))
 
         # record INTEGRATE.HKL for e.g. BLEND.
-         
+
         FileHandler.record_more_data_file(
             '%s %s %s %s INTEGRATE' % (pname, xname, dname, sweep),
             os.path.join(self.get_working_directory(), 'INTEGRATE.HKL'))
@@ -531,7 +531,7 @@ class XDSIntegrater(FrameProcessor,
 
         # fix for bug # 3264 -
         # if we have not run integration with refined parameters, make it so...
-        
+
         if not self._data_files.has_key('GXPARM.XDS'):
             Debug.write(
                 'Resetting integrater, to ensure refined orientation is used')
@@ -558,7 +558,7 @@ class XDSIntegrater(FrameProcessor,
             correct.run()
 
             # record the log file -
-            
+
             pname, xname, dname = self.get_integrater_project_info()
             sweep = self.get_integrater_sweep_name()
             FileHandler.record_log_file('%s %s %s %s CORRECT' % \
@@ -585,7 +585,7 @@ class XDSIntegrater(FrameProcessor,
 
             p1_deviations = (correct.get_result('rmsd_pixel'),
                              correct.get_result('rmsd_phi'))
-            
+
         # next run the postrefinement etc with the given
         # cell / lattice - this will be the assumed result...
 
@@ -593,7 +593,7 @@ class XDSIntegrater(FrameProcessor,
 
         correct.set_data_range(self._intgr_wedge[0],
                                self._intgr_wedge[1])
-        
+
         if self.get_polarization() > 0.0:
             correct.set_polarization(self.get_polarization())
 
@@ -612,7 +612,7 @@ class XDSIntegrater(FrameProcessor,
         # BUG # 3113 - new version of XDS will try and figure the
         # best spacegroup out from the intensities (and get it wrong!)
         # unless we set the spacegroup and cell explicitly
-        
+
         if not self.get_integrater_spacegroup_number():
             cell = self._intgr_indexer.get_indexer_cell()
             lattice = self._intgr_indexer.get_indexer_lattice()
@@ -628,7 +628,7 @@ class XDSIntegrater(FrameProcessor,
             Debug.write('Setting spacegroup to: %d' % spacegroup_number)
             Debug.write('Setting cell to: %.2f %.2f %.2f %.2f %.2f %.2f' % \
                         cell)
-            
+
         if self.get_integrater_reindex_matrix():
 
             # bug! if the lattice is not primitive the values in this
@@ -636,7 +636,7 @@ class XDSIntegrater(FrameProcessor,
             # depends on the Bravais lattice centering.
 
             lattice = self._intgr_indexer.get_indexer_lattice()
-            
+
             matrix = r_to_rt(self.get_integrater_reindex_matrix())
 
             if lattice[1] == 'P':
@@ -653,20 +653,20 @@ class XDSIntegrater(FrameProcessor,
 
             Debug.write('REIDX multiplier for lattice %s: %d' % \
                         (lattice, mult))
-            
+
             mult_matrix = [mult * m for m in matrix]
 
             Debug.write('REIDX set to %d %d %d %d %d %d %d %d %d %d %d %d' % \
                         tuple(mult_matrix))
             correct.set_reindex_matrix(mult_matrix)
-        
+
         correct.run()
 
         # erm. just to be sure
         if self.get_integrater_reindex_matrix() and \
                correct.get_reindex_used():
             raise RuntimeError, 'Reindex panic!'
-            
+
         # get the reindex operation used, which may be useful if none was
         # set but XDS decided to apply one, e.g. #419.
 
@@ -674,7 +674,7 @@ class XDSIntegrater(FrameProcessor,
                correct.get_reindex_used():
             # convert this reindex operation to h, k, l form: n.b. this
             # will involve dividing through by the lattice centring multiplier
-            
+
             matrix = rt_to_r(correct.get_reindex_used())
 
             lattice = self._intgr_indexer.get_indexer_lattice()
@@ -691,14 +691,14 @@ class XDSIntegrater(FrameProcessor,
             matrix = [m / mult for m in matrix]
 
             reindex_op = mat_to_symop(matrix)
-            
+
             # assign this to self: will this reset?! make for a leaky
             # anstraction and just assign this...
 
             # self.set_integrater_reindex_operator(reindex)
 
             self._intgr_reindex_operator = reindex_op
-            
+
 
         # record the log file -
 
@@ -773,10 +773,10 @@ class XDSIntegrater(FrameProcessor,
                             p1_deviations[1] * p1_deviations[1])
 
             threshold = Flags.get_rejection_threshold()
- 
+
             Debug.write('RMSD ratio: %.2f' % (correct_deviations[0] / pixel))
             Debug.write('RMSPhi ratio: %.2f' % (correct_deviations[1] / phi))
-            
+
             if correct_deviations[0] / pixel > threshold and \
                    correct_deviations[1] / phi > threshold:
 
@@ -794,7 +794,7 @@ class XDSIntegrater(FrameProcessor,
                 correct_remove = correct.get_remove()
                 current_remove = []
                 final_remove = []
-                
+
                 # first ensure that there are no duplicate entries...
                 if os.path.exists(os.path.join(
                     self.get_working_directory(),
@@ -804,7 +804,7 @@ class XDSIntegrater(FrameProcessor,
                         'REMOVE.HKL'), 'r').readlines():
                         h, k, l = map(int, line.split()[:3])
                         z = float(line.split()[3])
-                        
+
                         if not (h, k, l, z) in current_remove:
                             current_remove.append((h, k, l, z))
 
@@ -819,7 +819,7 @@ class XDSIntegrater(FrameProcessor,
                 else:
                     # we want to remove all of the new dodgy reflections
                     final_remove = correct_remove
-                    
+
                 remove_hkl = open(os.path.join(
                     self.get_working_directory(),
                     'REMOVE.HKL'), 'w')
@@ -855,10 +855,10 @@ class XDSIntegrater(FrameProcessor,
                             (rejected, z_min))
 
                 remove_hkl.close()
-                
+
                 # we want to rerun the finishing step so...
                 # unless we have added no new reflections
-                if used:                
+                if used:
                     self.set_integrater_finish_done(False)
 
         else:

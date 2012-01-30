@@ -23,11 +23,11 @@ def pydiffdump(files):
     '''Print the class which claims to work with each file.'''
 
     s = time.time()
-    
+
     for f in files:
 
         print f
-        
+
         format = Registry.find(f)
 
         print format.__name__
@@ -50,7 +50,7 @@ def pydiffdump_fast(files):
     '''First find the class, then read every frame with it.'''
 
     s = time.time()
-    
+
     format = Registry.find(files[0])
 
     scan = None
@@ -73,12 +73,11 @@ def pydiffdump_fast(files):
             scan += i.get_xscan()
 
     print scan
-        
-    return time.time() - s 
+
+    return time.time() - s
 
 if __name__ == '__main__':
-    
+
     t = pydiffdump(sys.argv[1:])
 
     print 'Reading %d headers took %.1fs' % (len(sys.argv[1:]), t)
-

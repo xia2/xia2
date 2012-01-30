@@ -7,7 +7,7 @@
 
 from cctbx.sgtbx import space_group
 from cctbx.sgtbx import space_group_symbols
-from cctbx.uctbx import unit_cell 
+from cctbx.uctbx import unit_cell
 from scitbx import matrix
 from rstbx.diffraction import rotation_angles
 import math
@@ -51,7 +51,7 @@ def compute_UB_matrix(unit_cell_constants, energy_kev, roi, azi):
     compute a [A] = [U][B] matrix.'''
 
     # initial conversions
-    wavelength = a2kev / energy_kev    
+    wavelength = a2kev / energy_kev
 
     uc = unit_cell(unit_cell_constants)
 
@@ -93,7 +93,7 @@ def generate_indices(unit_cell_constants, dmin):
     maxh, maxk, maxl = uc.max_miller_indices(dmin)
 
     indices = []
-    
+
     for h in range(-maxh, maxh + 1):
         for k in range(-maxk, maxk + 1):
             for l in range(-maxl, maxl + 1):
@@ -101,7 +101,7 @@ def generate_indices(unit_cell_constants, dmin):
                 # ignore reflection (0, 0, 0)
                 if h == 0 and k == 0 and l == 0:
                     continue
-                
+
                 if uc.d((h, k, l)) < dmin:
                     continue
 
@@ -156,10 +156,10 @@ def test_psi_angles(roi, psi_indices):
     (window) degrees of each other.'''
 
     pairs = []
-    
+
     for hkl in psi_indices:
         second = (roi[0] - hkl[0], roi[1] - hkl[1], roi[2] - hkl[2])
-        
+
         if not second in psi_indices:
             continue
 
@@ -167,7 +167,7 @@ def test_psi_angles(roi, psi_indices):
             pairs.append((hkl, second, psi_test))
 
     return pairs
-                
+
 if __name__ == '__main__':
 
     unit_cell_constants = (3.573, 3.573, 5.643, 90, 90, 120)
@@ -187,7 +187,7 @@ if __name__ == '__main__':
             raise RuntimeError, 'reflection %2d %2d %2d cannot be observed' % roi
 
         indices.remove(roi)
-    
+
         indices = remove_absences(indices, 'P65')
 
         A = compute_UB_matrix(unit_cell_constants, energy_kev, roi, azi)
@@ -208,5 +208,3 @@ if __name__ == '__main__':
             pairs = test_psi_angles(roi, psi_indices)
             for hkl, second, psi_test in pairs:
                 print energy_kev, psi_test
-
-    

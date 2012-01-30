@@ -1,14 +1,14 @@
 #!/usr/bin/env cctbx.python
 # ReadHeader.py
-# 
+#
 #   Copyright (C) 2010 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
-# A starting point for Python code to read image headers from a variety 
-# of normal image header types. Will be a replacement for the diffdump 
-# program and wrapper. 
+# A starting point for Python code to read image headers from a variety
+# of normal image header types. Will be a replacement for the diffdump
+# program and wrapper.
 
 import os
 import sys
@@ -81,21 +81,21 @@ class ReadHeader(object):
     def __init__(self):
 
         # matters relating to time
-        
+
         self._epoch_unix = None
         self._epoch_ms = None
         self._date_gregorian = None
         self._date_struct = None
-        
+
         self._exposure_time_s = None
 
         # matters relating to the experiment
-        
+
         self._wavelength_angstroms = None
         self._distance_mm = None
 
         # matters relating to the beam centre
-        
+
         self._beam_centre_pixels_fast = None
         self._beam_centre_pixels_slow = None
 
@@ -130,8 +130,8 @@ class ReadHeader(object):
 
         # the orientation of the beam, rotation axis and detector in the
         # experimental frame. N.B. many of these will be hard coded with
-        # standard assumptions for that detector. 
-        
+        # standard assumptions for that detector.
+
         self._axis_direction = None
         self._beam_direction = None
         self._fast_direction = None
@@ -139,11 +139,11 @@ class ReadHeader(object):
 
         # matters relating to this instrument - things which may be useful
         # for telling data processing programs what to do
-        
+
         self._detector_name = None
         self._detector_format = None
         self._detector_serial_number = None
-        
+
         return
 
     # begin very boring getter and setter code - using properties to make
@@ -456,7 +456,7 @@ class ReadHeader(object):
 
         if not struct:
             struct = self._date_struct
-            
+
         if not ms:
             ms = self._epoch_ms
 
@@ -470,7 +470,7 @@ class ReadHeader(object):
 
         if not struct:
             struct = self._date_struct
-            
+
         if not ms:
             ms = self._epoch_ms
 
@@ -500,7 +500,3 @@ class ReadHeader(object):
         result += 'Serial No:   %s\n' % self.detector_serial_number
 
         return result
-
-        
-
-

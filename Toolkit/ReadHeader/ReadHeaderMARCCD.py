@@ -1,9 +1,9 @@
 #!/usr/bin/env cctbx.python
 # ReadHeaderMARCCD.py
-# 
+#
 #   Copyright (C) 2010 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # Code to read an MARCCD image header and populate the contents of the standard
@@ -40,14 +40,14 @@ class ReadHeaderMARCCD(ReadHeader):
 
         # first determine if the header byte order is little endian or
         # big endian
-        
+
         byte_order = struct.unpack('I', marccd_header_bytes[28:32])[0]
 
         little_endian = 1234
         big_endian = 4321
 
         # if this is the native byte order it will have been correctly read
-        # as one or the other of these values 
+        # as one or the other of these values
 
         if byte_order == little_endian or byte_order == big_endian:
             header_unsigned_ints = struct.unpack('768I', marccd_header_bytes)
@@ -68,16 +68,16 @@ class ReadHeaderMARCCD(ReadHeader):
         self.image_size_pixels_fast = header_unsigned_ints[20]
         self.image_size_pixels_slow = header_unsigned_ints[21]
 
-        #self.date_struct = 
-        #self.epoch_ms = 
+        #self.date_struct =
+        #self.epoch_ms =
 
         self.exposure_time_s = 0.001 * header_unsigned_ints[164]
-        
+
         if header_unsigned_ints[160]:
             self.distance_mm = 0.001 * header_signed_ints[160]
         else:
             self.distance_mm = 0.001 * header_signed_ints[174]
-            
+
         self.wavelength_angstroms = 0.00001 * header_unsigned_ints[227]
 
         self.pixel_size_mm_fast = 0.000001 * header_unsigned_ints[193]
@@ -98,11 +98,11 @@ class ReadHeaderMARCCD(ReadHeader):
             self.osc_width_deg = osc_end - self.osc_start_deg
         else:
             self.osc_width_deg = 0.001 * header_signed_ints[184]
-            
+
         self.angle_twotheta_deg = 0.001 * header_signed_ints[167]
         self.angle_kappa_deg = 0.001 * header_signed_ints[170]
         self.angle_chi_deg = 0.001 * header_signed_ints[169]
-        
+
         self.image_offset = 0
         self.maximum_value = header_unsigned_ints[26]
 
@@ -129,7 +129,7 @@ class ReadHeaderMARCCD(ReadHeader):
                                              hour, minute, second).timetuple()
 
         self.detector_serial_number = 'N/A'
-        
+
         comments = marccd_header_bytes[1440:1440 + 512]
 
         for record in comments.split('\n'):
@@ -149,12 +149,12 @@ class ReadHeaderMARCCD(ReadHeader):
 
         dx = self.pixel_size_mm_fast
         dy = self.pixel_size_mm_slow
-        
-        distance_if_pixels = math.sqrt((bx - 0.5 * nx) * (bx - 0.5 * nx) + 
+
+        distance_if_pixels = math.sqrt((bx - 0.5 * nx) * (bx - 0.5 * nx) +
                                        (by - 0.5 * ny) * (by - 0.5 * ny))
 
         distance_if_mm = math.sqrt(
-            (bx / dx - 0.5 * nx) * (bx / dx - 0.5 * nx) + 
+            (bx / dx - 0.5 * nx) * (bx / dx - 0.5 * nx) +
             (by / dy - 0.5 * ny) * (by / dy - 0.5 * ny))
 
         if distance_if_pixels > 0.25 * math.sqrt(nx * nx + ny * ny) and \
@@ -170,5 +170,3 @@ if __name__ == '__main__':
 
     for arg in sys.argv[1:]:
         print ReadHeaderMARCCD(arg)
-        
-        

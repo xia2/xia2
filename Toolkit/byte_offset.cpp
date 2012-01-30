@@ -1,14 +1,14 @@
 /*
  * byte_offset.cpp
- * 
- * An implementation of the byte_offset compression scheme used with CBF 
- * images with the hopeful intention of replacing existing Python code for 
- * doing this with something quicker. Main routines are: 
+ *
+ * An implementation of the byte_offset compression scheme used with CBF
+ * images with the hopeful intention of replacing existing Python code for
+ * doing this with something quicker. Main routines are:
  *
  * vector<char> compress(vector<int>)
  * vector<int> uncompress(vector<char>)
- * 
- */ 
+ *
+ */
 
 #include <iostream>
 #include <vector>
@@ -86,59 +86,59 @@ vector<char> compress(const vector<int> values)
       delta = values[j] - current;
 
       if ((-127 <= delta) && (delta <= 127))
-	{
-	  c = (char) delta;
-	  packed.push_back(c);
-	  current += delta;
-	  continue;
-	}
+        {
+          c = (char) delta;
+          packed.push_back(c);
+          current += delta;
+          continue;
+        }
 
       packed.push_back(-128);
 
       if ((-32767 <= delta) && (delta <= 32767))
-	{
-	  s = (short) delta;
-	  b = ((u_s *) & s)[0].b;
+        {
+          s = (short) delta;
+          b = ((u_s *) & s)[0].b;
 
-	  if (!le) 
-	    {
-	      byte_swap_short(b);
-	    }
+          if (!le)
+            {
+              byte_swap_short(b);
+            }
 
-	  packed.push_back(b[0]);
-	  packed.push_back(b[1]);
-	  current += delta;
-	  continue;
-	}
+          packed.push_back(b[0]);
+          packed.push_back(b[1]);
+          current += delta;
+          continue;
+        }
 
       s = -32768;
       b = ((u_s *) & s)[0].b;
 
-      if (!le) 
-	{
-	  byte_swap_short(b);
-	}
-      
+      if (!le)
+        {
+          byte_swap_short(b);
+        }
+
       packed.push_back(b[0]);
       packed.push_back(b[1]);
-      
+
       if ((-2147483647 <= delta) && (delta <= 2147483647))
-	{
-	  i = delta;
-	  b = ((u_i *) & i)[0].b;
+        {
+          i = delta;
+          b = ((u_i *) & i)[0].b;
 
-	  if (!le) 
-	    {
-	      byte_swap_int(b);
-	    }
+          if (!le)
+            {
+              byte_swap_int(b);
+            }
 
-	  packed.push_back(b[0]);
-	  packed.push_back(b[1]);
-	  packed.push_back(b[2]);
-	  packed.push_back(b[3]);
-	  current += delta;
-	  continue;
-	}
+          packed.push_back(b[0]);
+          packed.push_back(b[1]);
+          packed.push_back(b[2]);
+          packed.push_back(b[3]);
+          current += delta;
+          continue;
+        }
 
       /* FIXME I should not get here */
 
@@ -163,45 +163,45 @@ vector<int> uncompress(const vector<char> packed)
       j += 1;
 
       if (c != -128)
-	{
-	  current += c;
-	  values.push_back(current);
-	  continue;
-	}
+        {
+          current += c;
+          values.push_back(current);
+          continue;
+        }
 
       ((u_s *) & s)[0].b[0] = packed[j];
       ((u_s *) & s)[0].b[1] = packed[j + 1];
       j += 2;
-      
-      if (!le) 
-	{
-	  byte_swap_short((char *) &s);
-	}
+
+      if (!le)
+        {
+          byte_swap_short((char *) &s);
+        }
 
       if (s != -32768)
-	{
-	  current += s;
-	  values.push_back(current);
-	  continue;
-	}
-	  
+        {
+          current += s;
+          values.push_back(current);
+          continue;
+        }
+
       ((u_i *) & i)[0].b[0] = packed[j];
       ((u_i *) & i)[0].b[1] = packed[j + 1];
       ((u_i *) & i)[0].b[2] = packed[j + 2];
       ((u_i *) & i)[0].b[3] = packed[j + 3];
       j += 4;
-      
-      if (!le) 
-	{
-	  byte_swap_int((char *) &i);
-	}
+
+      if (!le)
+        {
+          byte_swap_int((char *) &i);
+        }
 
       current += i;
       values.push_back(current);
     }
 
   return values;
-} 
+}
 
 // helper for timing tests
 
@@ -213,7 +213,7 @@ double ms(clock_t t1, clock_t t2)
 // demo / test code
 
 int main(int argc,
-	 char ** argv)
+         char ** argv)
 {
 
   vector<int> values(0);
@@ -243,11 +243,10 @@ int main(int argc,
   for (j = 0; j < unpacked.size(); j ++)
     {
       if (unpacked[j] != values[j])
-	{
-	  cout << "Error for index " << j << endl;
-	}
+        {
+          cout << "Error for index " << j << endl;
+        }
     }
 
   return 0;
 }
-  

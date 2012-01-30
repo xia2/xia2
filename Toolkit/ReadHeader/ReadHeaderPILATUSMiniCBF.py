@@ -1,9 +1,9 @@
 #!/usr/bin/env cctbx.python
 # ReadHeaderPILATUSMiniCBF.py
-# 
+#
 #   Copyright (C) 2010 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # Code to read a pilatus minicbf image header and populate the contents of
@@ -21,7 +21,7 @@ class ReadHeaderPILATUSMiniCBF(ReadHeader):
 
         if image:
             self._read_pilatus_minicbf(image)
-            
+
         return
 
     def _read_pilatus_minicbf(self, image):
@@ -52,7 +52,7 @@ class ReadHeaderPILATUSMiniCBF(ReadHeader):
                     self.epoch_ms = 0.001 * int(datestring.split('.')[1])
                 except ValueError, e:
                     pass
-                
+
                 continue
 
             if 'Exposure_time' in record:
@@ -106,4 +106,3 @@ if __name__ == '__main__':
 
     for arg in sys.argv[1:]:
         print ReadHeaderPILATUSMiniCBF(arg)
-    

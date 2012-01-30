@@ -44,9 +44,9 @@ def format_matrix(cell, a, u, misset):
     matrix_format = ' %11.8f %11.8f %11.8f\n' + \
                     ' %11.8f %11.8f %11.8f\n' + \
                     ' %11.8f %11.8f %11.8f\n'
-    
+
     cell_format = ' %11.4f %11.4f %11.4f %11.4f %11.4f %11.4f\n'
-    
+
     misset_format = ' %11.4f %11.4f %11.4f\n'
 
     return matrix_format % tuple(a) + \
@@ -66,7 +66,3 @@ if __name__ == '__main__':
         get_orientation_matrix(open(sys.argv[1], 'r').readlines())
     except exceptions.Exception, e:
         pass
-                                                      
-
-        
-                          

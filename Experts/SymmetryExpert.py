@@ -2,13 +2,13 @@
 # SymmetryExpert.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # 21st May 2007
-# 
+#
 # A small expert to handle symmetry calculations.
-# 
+#
 
 import os
 import sys
@@ -97,7 +97,7 @@ def r_to_rt(r):
     '''Convert R matrix to RT, assuming T=0.'''
 
     result = []
-    
+
     for i in range(3):
         for j in range(3):
             result.append(r[i * 3 + j])
@@ -118,7 +118,7 @@ def rt_to_r(rt):
 def compose_matrices_rt(mat_a, mat_b):
     '''Compose symmetry matrix files for XDS. These are 12 element
     matrices...'''
-            
+
     mat_c = _multiply_symmetry_matrix(rt_to_r(mat_a),
                                       rt_to_r(mat_b))
 
@@ -126,7 +126,7 @@ def compose_matrices_rt(mat_a, mat_b):
 
 def compose_matrices_r(mat_a, mat_b):
     '''Compose symmetry matrix applying b then a.'''
-            
+
     mat_c = _multiply_symmetry_matrix(mat_a,
                                       mat_b)
 
@@ -173,7 +173,7 @@ def lattice_to_spacegroup_number(lattice):
                                      'cP':195,
                                      'cF':196,
                                      'cI':197}
-    
+
     if not lattice in _lattice_to_spacegroup_number.keys():
         raise RuntimeError, 'lattice %s unknown' % lattice
 
@@ -187,7 +187,7 @@ def modulo(m, x):
     while x > m:
         x -= m
 
-    return x    
+    return x
 
 if __name__ == '__main__':
 
@@ -195,5 +195,3 @@ if __name__ == '__main__':
     m = symop_to_mat(s)
 
     assert(s == mat_to_symop(m))
-
-    

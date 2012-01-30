@@ -34,7 +34,7 @@ class FormatTIFF(Format):
             width, height, depth, header, order = read_basic_tiff_header(
                 image_file)
             return 1
-        
+
         except:
             pass
 
@@ -53,7 +53,7 @@ class FormatTIFF(Format):
 
     def __init__(self, image_file):
         '''Initialise the image structure from the given file.'''
-        
+
         assert(FormatTIFF.understand(image_file) > 0)
 
         Format.__init__(self, image_file)
@@ -75,7 +75,3 @@ class FormatTIFF(Format):
         self._tiff_byte_order = order
 
         return
-
-
-    
-

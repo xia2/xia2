@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # to_xds.py
-# 
+#
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-#  
+#
 # Print out the contents of the dxtbx understanding of a bunch of images to
 # an example XDS.INP file. This should illustrate the usage of the dxtbx
 # classes.
@@ -122,7 +122,7 @@ class to_xds:
         print 'POLARIZATION_PLANE_NORMAL= %.3f %.3f %.3f' % \
               self.get_beam().get_polarization_plane()
         print 'NAME_TEMPLATE_OF_DATA_FRAMES= %s' % os.path.join(
-            self.get_scan().get_directory(),             
+            self.get_scan().get_directory(),
             self.get_scan().get_template().replace('#', '?'))
         print 'TRUSTED_REGION= 0.0 1.41'
         for f0, f1, s0, s1 in self.get_detector().get_mask():
@@ -139,7 +139,7 @@ class to_xds:
 
 def factory(list_of_images):
     '''Instantiate the data model bits and pieces we need...'''
-    
+
     for image in list_of_images:
         assert(os.path.exists(image))
 
@@ -161,12 +161,12 @@ def factory(list_of_images):
     gonio = i.get_goniometer()
     det = i.get_detector()
     scan = i.get_scan()
-    
+
     # now verify that they share the same detector position, rotation axis
     # and beam properties.
-    
+
     scans = [scan]
-    
+
     for image in list_of_images[1:]:
         i = format(image)
         assert(beam == i.get_beam())
@@ -176,10 +176,10 @@ def factory(list_of_images):
 
     for s in sorted(scans)[1:]:
         scan += s
- 
+
     return gonio, det, beam, scan
-    
-        
+
+
 if __name__ == '__main__':
 
     # run some tests
@@ -189,7 +189,3 @@ if __name__ == '__main__':
     xsx = to_xds(gonio, det, beam, scan)
 
     xsx.XDS()
-        
-
-        
-    

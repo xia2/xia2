@@ -1,7 +1,7 @@
 #!/usr/bin/env cctbx.python
-# 
+#
 # TestMinimise.py - test the use of the minimisers in CCTBX, namely LBFGS.
-# 
+#
 
 import math
 import random
@@ -46,25 +46,25 @@ class refinery:
     def __init__(self):
         self.x = flex.double([1.0, 1.0, 1.0])
         self.y = flex.double()
-        
+
         self._a = random.random()
         self._b = random.random()
         self._c = random.random()
-        
+
         for j in range(100):
             self.y.append(myfunc(j, self._a, self._b, self._c))
-            
+
     def refine(self):
         l = lbfgs.run(target_evaluator = self)
         return
 
     def report(self):
-        
+
         print '%.3f %.3f %.3f' % (self.x[0], self.x[1], self.x[2])
         print '%.3f %.3f %.3f' % (self._a, self._b, self._c)
 
         return
-    
+
     def compute_functional_and_gradients(self):
         return residual(self.y, self.x), gradients(self.y, self.x)
 

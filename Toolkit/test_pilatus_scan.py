@@ -37,7 +37,7 @@ def failover_cbf(cbf_file):
             continue
 
         if 'Filter_transmission' in record:
-            header['transmission'] = float(record.split()[-1])            
+            header['transmission'] = float(record.split()[-1])
             continue
 
         if 'Exposure_period' in record:
@@ -60,7 +60,7 @@ def failover_cbf(cbf_file):
         if 'Beam_xy' in record:
 
             # N.B. this is swapped again for historical reasons
-            
+
             beam_pixels = map(float, record.replace('(', '').replace(
                 ')', '').replace(',', '').split()[2:4])
             header['beam'] = beam_pixels[1] * header['pixel'][1], \
@@ -77,7 +77,7 @@ def failover_cbf(cbf_file):
             struct_time = time.strptime(datestring, format)
             header['date'] = time.asctime(struct_time)
             header['epoch'] = time.mktime(struct_time)
-            
+
         except:
             pass
 
@@ -89,10 +89,10 @@ def failover_cbf(cbf_file):
                 struct_time = time.strptime(datestring, format)
                 header['date'] = time.asctime(struct_time)
                 header['epoch'] = time.mktime(struct_time)
-            
+
         except:
             pass
-        
+
         try:
 
             if not 'date' in header:
@@ -101,10 +101,10 @@ def failover_cbf(cbf_file):
                 struct_time = time.strptime(datestring, format)
                 header['date'] = time.asctime(struct_time)
                 header['epoch'] = time.mktime(struct_time)
-                
+
         except:
             pass
-    
+
     # clean up to cope with ESRF header randomisation
     header['phi_end'] = header['phi_start'] + header['phi_width']
 
@@ -119,16 +119,16 @@ def failover_full_cbf(cbf_file):
     cbf_handle.read_file(cbf_file, pycbf.MSG_DIGEST)
 
     cbf_handle.rewind_datablock()
-    
+
     detector = cbf_handle.construct_detector(0)
 
     # FIXME need to check that this is doing something sensible...!
 
     header['beam'] = tuple(map(math.fabs, detector.get_beam_center()[2:]))
     detector_normal = tuple(detector.get_detector_normal())
-    
+
     gonio = cbf_handle.construct_goniometer()
-    
+
     axis = tuple(gonio.get_rotation_axis())
     angles = tuple(gonio.get_rotation_range())
 
@@ -142,7 +142,7 @@ def failover_full_cbf(cbf_file):
     year, month, day, hour, minute, second, x = cbf_handle.get_datestamp()
     struct_time = datetime.datetime(year, month, day,
                                     hour, minute, second).timetuple()
-    
+
     header['date'] = time.asctime(struct_time)
     header['epoch'] = cbf_handle.get_timestamp()[0]
     header['size'] = tuple(cbf_handle.get_image_size(0))
@@ -158,9 +158,9 @@ def failover_full_cbf(cbf_file):
     cbf_handle.find_row('source')
 
     # then get the vector and offset from this
-    
+
     beam_direction = []
-    
+
     for j in range(3):
         cbf_handle.find_column('vector[%d]' % (j + 1))
         beam_direction.append(cbf_handle.get_doublevalue())
@@ -174,7 +174,7 @@ def failover_full_cbf(cbf_file):
     return header
 
 def test_pilatus_scan(list_of_minicbf_files):
-    
+
     minicbf_headers = [failover_cbf(minicbf_file) for minicbf_file in
                        list_of_minicbf_files]
 
@@ -195,7 +195,7 @@ def test_pilatus_scan(list_of_minicbf_files):
         print '%40s FAIL (%.3f to %.3f)' % ('Angle_increments'.ljust(40),
                                             min(Angle_increments),
                                             max(Angle_increments))
-        
+
     # check Start_angle and Angle_increment
 
     Start_angles = [header['phi_start'] for header in minicbf_headers]
@@ -213,7 +213,7 @@ def test_pilatus_scan(list_of_minicbf_files):
         print '%40s OK' % 'Start_angles'.ljust(40)
     else:
         print '%40s FAIL' % 'Start_angles'.ljust(40)
-    
+
     # check Detector_distance
 
     Detector_distances = [header['distance'] for header in minicbf_headers]
@@ -224,7 +224,7 @@ def test_pilatus_scan(list_of_minicbf_files):
         print '%40s FAIL (%.3f to %.3f)' % ('Detector_distances'.ljust(40),
                                             min(Detector_distances),
                                             max(Detector_distances))
-        
+
     # check Wavelength
 
     Wavelengths = [header['wavelength'] for header in minicbf_headers]
@@ -235,7 +235,7 @@ def test_pilatus_scan(list_of_minicbf_files):
         print '%40s FAIL (%.3f to %.3f)' % ('Wavelengths'.ljust(40),
                                             min(Wavelengths),
                                             max(Wavelengths))
-        
+
     # check Exposure_period
 
     Exposure_periods = [header['exposure_time'] for header in minicbf_headers]
@@ -263,12 +263,3 @@ def test_pilatus_scan(list_of_minicbf_files):
 if __name__ == '__main__':
 
     test_pilatus_scan(sys.argv[1:])
-
-    
-    
-        
-
-
-
-
-

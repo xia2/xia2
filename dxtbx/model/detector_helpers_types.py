@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # detector_helpers_types.py
-# 
+#
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-#  
+#
 # Helpers for the detector class... this time enumerating all of the common
 # detector types, hashed by the sensor type, image dimensions and pixel
-# dimensions. 
+# dimensions.
 
 import os
 import sys
@@ -26,7 +26,7 @@ class detector_helpers_types:
 
         detector_lib = os.path.join(os.environ['XIA2_ROOT'], 'Data',
                                     'detectors.lib')
-        
+
         if not os.path.exists(detector_lib):
             raise RuntimeError, 'detector library not found'
 
@@ -94,7 +94,3 @@ if __name__ == '__main__':
     fast, slow, df, ds = map(int, sys.argv[2:6])
 
     print detector_helpers_types.get(sensor, fast, slow, df, ds)
-    
-        
-
-            

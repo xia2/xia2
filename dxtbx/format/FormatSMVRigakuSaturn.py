@@ -62,7 +62,7 @@ class FormatSMVRigakuSaturn(FormatSMV):
         they contain everything pretty much we need...'''
 
         assert(FormatSMVRigakuSaturn.understand(image_file) > 0)
-        
+
         FormatSMV.__init__(self, image_file)
 
         return
@@ -149,15 +149,15 @@ class FormatSMVRigakuSaturn(FormatSMV):
 
         beam_direction = map(float, self._header_dictionary[
             'SOURCE_VECTORS'].split()[:3])
-        
+
         polarization = map(float, self._header_dictionary[
             'SOURCE_POLARZ'].split())
 
         p_fraction = polarization[0]
         p_plane = polarization[1:]
-        
+
         wavelength = float(self._header_dictionary['SCAN_WAVELENGTH'])
-        
+
         return self._beam_factory.complex(
             beam_direction, p_fraction, p_plane, wavelength)
 
@@ -166,7 +166,7 @@ class FormatSMVRigakuSaturn(FormatSMV):
 
         rotation = map(float, self._header_dictionary['ROTATION'].split())
 
-        format = self._scan_factory.format('SMV') 
+        format = self._scan_factory.format('SMV')
         epoch = time.mktime(time.strptime(self._header_dictionary[
             'DTREK_DATE_TIME'], '%d-%b-%Y %H:%M:%S'))
 

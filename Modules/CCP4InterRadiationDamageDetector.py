@@ -2,7 +2,7 @@
 # CCP4InterRadiationDamageDetector.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 15th January 2007
@@ -12,7 +12,7 @@
 # the scaling process.
 #
 # Will be used in:
-# 
+#
 # CCP4 Scaler, XDS Scaler.
 #
 # Uses:
@@ -38,7 +38,7 @@ from lib.bits import auto_logfiler
 # This will work by comparing the relative scale and b factors between
 # the data sets - presuming that they are input in a reasonable approximation
 # of collection order - and decide when radiation damage has become a problem.
-# Exactly what to do about this - that is the decision to be made by 
+# Exactly what to do about this - that is the decision to be made by
 # the calling routine.
 #
 # This will return a list of wavelengths which are "ok" and a list of ones
@@ -62,10 +62,10 @@ class CCP4InterRadiationDamageDetector:
     def set_anomalous(self, anomalous):
         self._anomalous = anomalous
         return
-    
+
     def get_hklin(self):
         return self._hklin
-    
+
     def check_hklin(self):
         if self._hklin is None:
             raise RuntimeError, 'hklin not defined'
@@ -73,25 +73,25 @@ class CCP4InterRadiationDamageDetector:
             raise RuntimeError, 'hklin %s does not exist' % self._hklin
 
         return
-        
+
     def set_hklout(self, hklout):
         self._hklout = hklout
         return
 
     def get_hklout(self):
         return self._hklout
-    
+
     def check_hklout(self):
         if self._hklout is None:
             raise RuntimeError, 'hklout not defined'
-        
+
         # check that these are different files!
-        
+
         if self._hklout == self._hklin:
             raise RuntimeError, 'hklout and hklin are the same file'
 
         return
-        
+
     def set_working_directory(self, working_directory):
         self._working_directory = working_directory
         pass
@@ -103,7 +103,7 @@ class CCP4InterRadiationDamageDetector:
         '''Detect radiation damage between wavelengths / datasets in a
         reflection file. Will assume that the input is in order of data
         collection. Will further assume that this is for MAD phasing.'''
-        
+
         self.check_hklin()
         self.check_hklout()
 
@@ -153,7 +153,7 @@ class CCP4InterRadiationDamageDetector:
         return status
 
 if __name__ == '__main__':
-    
+
     c = CCP4InterRadiationDamageDetector()
 
     hklin = os.path.join(
@@ -168,6 +168,3 @@ if __name__ == '__main__':
 
     for s in status:
         print '%s %s' % s
-
-
-    

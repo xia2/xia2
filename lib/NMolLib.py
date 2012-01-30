@@ -2,11 +2,11 @@
 # NMolLib.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # NMol per ASU Calculations based on the Kantardjieff & Rupp method.
-# 
+#
 # Implementing the cell volume calculations of Kantardjieff and Rupp,
 # Protein Science volume 12, 2002. Uses "nmol-params.dat" from
 # http://www-structure.llnl.gov/mattprob
@@ -41,14 +41,14 @@ def unit_cell_volume(cell_a, cell_b, cell_c,
     dtor = pi / 180.0
 
     # then compute the required sines and cosines
-    
+
     ca = math.cos(dtor * cell_alpha)
     cb = math.cos(dtor * cell_beta)
     cc = math.cos(dtor * cell_gamma)
 
     # finally evaluate the volume - this is simply the volume of a
     # parallelopiped
-    
+
     V = cell_a * cell_b * cell_c * math.sqrt(1 - ca * ca - cb * cb - cc * cc
                                              + 2 * ca * cb * cc)
     return V
@@ -76,7 +76,7 @@ def sequence_mass(sequence):
 
     # if input is simply a sequence length, return the appropriate
     # multiple
-    
+
     if type(sequence) == type(42):
         return 128.0 * sequence
 
@@ -93,7 +93,7 @@ def compute_nmol_from_volume(volume, mass, resolution):
         line = file.readline()
         if not line[0] == '#':
             break
-    
+
     resolutions = map(float, line.split(','))[:13]
     P0_list = map(float, file.readline().split(','))[:13]
     Vm_bar_list = map(float, file.readline().split(','))[:13]
@@ -111,7 +111,7 @@ def compute_nmol_from_volume(volume, mass, resolution):
         Chatter.write('Resolution higher than peak %f -> %f' % \
                       (resolution, resolutions[0]))
         resolution = resolutions[0]
-                            
+
 
     start = 0
 
@@ -134,7 +134,7 @@ def compute_nmol_from_volume(volume, mass, resolution):
 
     nmols = []
     pdfs = []
-    
+
     nmol = 1
     Vm = volume / (mass * nmol)
     while 1:
@@ -186,7 +186,7 @@ def compute_nmol(cell_a, cell_b, cell_c,
 
     # then pick the most likely probability and return the associated nmol
     # value
-    
+
     for i in range(len(nmols)):
         m = nmols[i]
         p = pdfs[i] / ptot
@@ -213,7 +213,7 @@ def compute_solvent(cell_a, cell_b, cell_c,
     m.compute_solvent()
 
     return m.get_solvent()
-    
+
 
 if __name__ == '__main__':
 

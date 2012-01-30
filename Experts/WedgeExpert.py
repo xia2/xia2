@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # WedgeExpert.py
-# 
+#
 #   Copyright (C) 2009 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # Some code to help figure out how the experiment was performed and tell
-# Chef where we could consider cutting the data at... N.B. this will now 
+# Chef where we could consider cutting the data at... N.B. this will now
 # take the digested wedges from the Chef wrapper.
 
 import math
@@ -18,7 +18,7 @@ def digest_wedges(wedges):
     '''Digest the wedges defined as a list of
 
     FIRST_DOSE FIRST_BATCH SIZE EXPOSURE DATASET
-    
+
     to a set of potential "stop" points, in terms of the doses. This will
     return a list of DOSE values which should be treated as LIMITS (i.e.
     d:d < DOSE ok).'''
@@ -38,22 +38,22 @@ def digest_wedges(wedges):
         if (dataset, batch) in doses:
             k_old = (dataset, batch)
             k_new = (dataset, batch + size)
-            
+
             sweep = doses[k_old]
             doses[k_new] = (sweep[0], sweep[1] + exposure * size)
 
             belonging_wedges[k_new] = belonging_wedges[k_old]
             belonging_wedges[k_new].append(w)
-            
+
             del(doses[k_old])
             del(belonging_wedges[k_old])
 
         else:
             end_dose = dose + exposure * (size - 1)
-            
+
             doses[(dataset, batch + size)] = (dose, end_dose)
             belonging_wedges[(dataset, batch + size)] = [w]
-            
+
     # now invert
 
     sweeps = { }
@@ -93,7 +93,7 @@ def digest_wedges(wedges):
             last_image = int(s[1])
 
             # Boom! this is wrong for inverse beam data sets
-            
+
             group_wedges[(dataset, last_image)] = all_wedges
 
         size = 0
@@ -119,7 +119,7 @@ def digest_wedges(wedges):
         for j in range(size):
 
             d_local = []
-            
+
             for s in g:
                 bw = belonging_wedges[sweeps[s]][j]
                 d_local.append(bw[0] + bw[2] * bw[3])
@@ -131,10 +131,8 @@ def digest_wedges(wedges):
 if __name__ == '__main__':
 
     wedges = pickle.loads(open('test.pkl').read())
-    
+
     dmaxes, group_report = digest_wedges(wedges)
 
     for gr in group_report:
         print gr
-
-    

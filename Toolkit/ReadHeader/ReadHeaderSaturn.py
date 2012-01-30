@@ -1,9 +1,9 @@
 #!/usr/bin/env cctbx.python
 # ReadHeaderSaturn.py
-# 
+#
 #   Copyright (C) 2010 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # Code to read an ADXV image header and populate the contents of the standard
@@ -32,7 +32,7 @@ class ReadHeaderSaturn(ReadHeader):
 
         beam_centre_pixels_xy = map(
             float, header['CCD_SPATIAL_BEAM_POSITION'].split())
-        
+
         self.date_struct = (1970, 1, 1, 1, 1, 1, 1, 1, -1)
         self.epoch_ms = 0
 
@@ -49,7 +49,7 @@ class ReadHeaderSaturn(ReadHeader):
 
         self.pixel_size_mm_fast = pixel_xy[0]
         self.pixel_size_mm_slow = pixel_xy[1]
-        
+
         self.image_size_pixels_fast = int(header['SIZE1'])
         self.image_size_pixels_slow = int(header['SIZE2'])
         self.pixel_depth_bytes = 2
@@ -57,7 +57,7 @@ class ReadHeaderSaturn(ReadHeader):
         scan_rotation = map(float, header['SCAN_ROTATION'].split())
 
         # FIXME verify that this is correct in other definitions
-        
+
         self.osc_start_deg = scan_rotation[0]
         self.osc_width_deg = scan_rotation[2]
 
@@ -68,10 +68,10 @@ class ReadHeaderSaturn(ReadHeader):
             header['CCD_GONIO_VALUES'].split()[twotheta_index])
 
         # and assume that these are not in the image header
-        
+
         self.angle_kappa_deg = 0.0
         self.angle_chi_deg = 0.0
-        
+
         self.detector_serial_number = header['CCD_SERIAL_NUMBER']
 
         self.image_offset = int(header.get('DARK_PEDESTAL', '0'))

@@ -35,4 +35,4 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         print_scale_factors(parse_integrate_scale_factors(sys.argv[1]))
     else:
-        print_scale_factors(parse_integrate_scale_factors())        
+        print_scale_factors(parse_integrate_scale_factors())

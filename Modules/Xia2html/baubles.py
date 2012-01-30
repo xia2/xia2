@@ -161,12 +161,12 @@ function open_full_logfile(name) {
     // Show the entire logfile
     var classname = name + "_logfile";
     setDisplayByClass(classname,"block");
-    
+
     // Show the controls for toggling between
     // summary and complete views
     classname = name + "_logfile_open_controls";
     setDisplayByClass(classname,"block");
-    
+
     // Hide the controls for accessing the logfile
     // when it's hidden
     classname = name + "_logfile_closed_controls";
@@ -183,12 +183,12 @@ function open_summary_logfile(name) {
     // Show the entire logfile
     var classname = name + "_logfile";
     setDisplayByClass(classname,"block");
-    
+
     // Show the controls for toggling between
     // summary and complete views
     classname = name + "_logfile_open_controls";
     setDisplayByClass(classname,"block");
-    
+
     // Hide the controls for accessing the logfile
     // when it's hidden
     classname = name + "_logfile_closed_controls";
@@ -204,12 +204,12 @@ function close_logfile(name)
     // Hide the entire logfile
     var classname = name + "_logfile";
     setDisplayByClass(classname,"none");
-    
+
     // Hide the controls for toggling between
     // summary and complete views
     classname = name + "_logfile_open_controls";
     setDisplayByClass(classname,"none");
-    
+
     // Show the controls for accessing the logfile
     // when it's hidden
     classname = name + "_logfile_closed_controls";
@@ -322,7 +322,7 @@ function setDisplayByClass(classname,value)
             classes = classes.split(" ");
             for (var k in classes) {
                 if (classes[k] == classname) {
-	            node.style.display = value;
+                    node.style.display = value;
                 }
             }
         }
@@ -448,7 +448,7 @@ def writeAdvancedLogfileFolder(html,logfile,program,n):
     """Write HTML and Javascript for an advanced program 'logfile folder'."""
 
     # Start up
-    name = identifyProgram(program).upper()+"_"+str(n)    
+    name = identifyProgram(program).upper()+"_"+str(n)
 
     # Find start and end of the program log
     prog_beg = program.get_startline()
@@ -460,17 +460,17 @@ def writeAdvancedLogfileFolder(html,logfile,program,n):
     # display
     html.write("\n<!-- Top-level visibility controls for "+str(name)+" -->\n\n")
     writeLogfileControls(html,name)
-    
+
     # Start writing the folder
     html.write("<!-- Start of the "+str(name)+" logfile -->\n")
     html.write("<div class=\""+str(name)+"_logfile\" style=\"display: none\">\n\n")
     html.write("<div class=\"logfile\">\n\n")
-    
+
     # Write the log file content as summaries interleaved with
     # non-summary blocks
     found_summary = False
     for i in range(0,logfile.nsummaries()):
-            
+
         if found_summary:
             # Check whether the next summary block starts
             # inside the current program
@@ -481,7 +481,7 @@ def writeAdvancedLogfileFolder(html,logfile,program,n):
                 logfilen,curr_line,prog_end))
                 # This is the end of the log - exit the loop
                 break
-                
+
             # Fetch the block before the summary
             writeLogfileNonSummary( \
                 html,name,smartie.retrieve(\
@@ -542,7 +542,7 @@ def writeAdvancedLogfileFolder(html,logfile,program,n):
 
 def writeLogfileControls(html,name):
     """Generate a set of 'visibility controls' for a logfile folder."""
-    
+
     html.write("<div class=\""+str(name)+"_logfile_closed_controls\">\n")
     html.write("   <!-- Controls available when logfile is completely hidden -->\n")
     html.write("   <p>\n")
@@ -640,7 +640,7 @@ def writeBanner(html,name,program,anchor):
 
 def writeDocumentationLink(html,program):
     """Write a link to the program documentation."""
-    
+
     if os.environ.has_key("CHTML"):
         name = identifyProgram(program).lower()+".html"
         docfile = os.path.join(os.environ["CHTML"],name)
@@ -716,7 +716,7 @@ class extendedpatternmatch(smartie.patternmatch):
     features. The idea is that these patterns can be used in
     a 'secondary processing step', in which additional data
     can be extracted for specific programs.
-    
+
     This class adds new patterns:
 
     issfcheckbanner: check for SFCHECK program banner
@@ -1005,10 +1005,10 @@ def plainTextMarkup(text):
     hyphen then those paragraphs will be gathered together into
     a bulleted list, with each paragraph being an item in the
     list.
-    
+
     Table: 'magic' tables are generated from plain text based on
     the following rules:
-    
+
     1) A data-field is a field, defined by a separator of at least
     two whitespaces, which contains either a numeric value, or
     '-' or '*'.
@@ -1018,7 +1018,7 @@ def plainTextMarkup(text):
 
     3) A data line is a line containing at least one trailing
     data-field. The data-count of a line is equal to the number of
-    trailing data-fields. 
+    trailing data-fields.
 
     4) A header line is a line consisting of at least one data or
     header field, where at least the last field on the line is a
@@ -1031,7 +1031,7 @@ def plainTextMarkup(text):
 
     6) Multiple consecutive tables with the same data-count are
     merged into a single table with a thin-separator between the
-    paragraphs. 
+    paragraphs.
     """
     lines = smartie.escape_xml_characters(text).split("\n");
     # split into paragraphs
@@ -1180,7 +1180,7 @@ def summariseGeneric(html,program):
 
 def summariseMatthews_Coef(html,program):
     """Generate a summary for a Matthews_Coef program object"""
-    
+
     if program.has_attribute("mol_weight"):
         html.write("<p>Molecular weight "+\
                    str(program.mol_weight)+"</p>")
@@ -1212,7 +1212,7 @@ def summariseRefmac(html,program):
         html.write("</table></div></p>\n")
     # Write a list of warnings
     summariseGeneric(html,program)
-    
+
 def summarisePhaser(html,program):
     """Generate a summary for a Phaser program object"""
 
@@ -1222,7 +1222,7 @@ def summarisePhaser(html,program):
                    str(program.phaser_module).title()+"</p>")
     # Write a list of warnings
     summariseGeneric(html,program)
-        
+
 ############################################################
 # Experimental conversion functions
 ############################################################

@@ -54,7 +54,7 @@ def run_xds(j):
 
     shutil.copyfile('IDXREF.LP', 'IDXREF.%d' % j)
     shutil.copyfile('XPARM.XDS', 'XPARM.%d' % j)
-    
+
     n_unindexed, n_indexed = split_spot_file(j)
 
     return n_unindexed, n_indexed
@@ -88,7 +88,7 @@ def main():
         unit_cell = get_unit_cell()
         print '%3d %5d %5d' % (j, n_indexed, n_unindexed), \
               '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % unit_cell
-        
+
 
 
 if __name__ == '__main__':

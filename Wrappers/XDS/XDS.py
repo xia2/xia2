@@ -2,15 +2,15 @@
 # XDS.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # This module is a generic wrapper for the basic components needed to make
-# XDS run, including writing the generic header information. This will 
+# XDS run, including writing the generic header information. This will
 # include the writing of the information from the image header, for instance,
 # and should support all image types defined in the Diffdump dictionary.
 # That is:
-# 
+#
 # detector_class = {('adsc', 2304, 81):'adsc q4',
 #                   ('adsc', 1502, 163):'adsc q4 2x2 binned',
 #                   ('adsc', 4096, 51):'adsc q210',
@@ -95,7 +95,7 @@ def xds_check_version_supported(xds_output_list):
 def xds_check_error(xds_output_list):
     '''Check for errors in XDS output and raise an exception if one is
     found.'''
-    
+
     for line in xds_output_list:
         if '!!!' in line and 'ERROR' in line:
             error = '[XDS] %s' % line.split('!!!')[2].strip().lower()
@@ -182,7 +182,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
 
     detector_to_x_axis = {
         'mar':'1.0 0.0 0.0',
-        'marccd':'1.0 0.0 0.0',        
+        'marccd':'1.0 0.0 0.0',
         'dectris':'1.0 0.0 0.0',
         'raxis':'1.0 0.0 0.0',
         'saturn':'-1.0 0.0 0.0',
@@ -190,8 +190,8 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
 
     detector_to_y_axis = {
         'mar':'0.0 1.0 0.0',
-        'marccd':'0.0 1.0 0.0',        
-        'dectris':'0.0 1.0 0.0',        
+        'marccd':'0.0 1.0 0.0',
+        'dectris':'0.0 1.0 0.0',
         'raxis':'0.0 -1.0 0.0',
         'saturn':'0.0 1.0 0.0',
         'adsc':'0.0 1.0 0.0'}
@@ -230,8 +230,8 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
 
         detector_to_rotation_axis = {
             'mar':'-1.0 0.0 0.0',
-            'marccd':'-1.0 0.0 0.0',        
-            'dectris':'-1.0 0.0 0.0',        
+            'marccd':'-1.0 0.0 0.0',
+            'dectris':'-1.0 0.0 0.0',
             'raxis':'0.0 -1.0 0.0',
             'saturn':'0.0 -1.0 0.0',
             'adsc':'-1.0 0.0 0.0'}
@@ -240,8 +240,8 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
 
         detector_to_rotation_axis = {
             'mar':'1.0 0.0 0.0',
-            'marccd':'1.0 0.0 0.0',        
-            'dectris':'1.0 0.0 0.0',        
+            'marccd':'1.0 0.0 0.0',
+            'dectris':'1.0 0.0 0.0',
             'raxis':'0.0 1.0 0.0',
             'saturn':'0.0 1.0 0.0',
             'adsc':'1.0 0.0 0.0'}
@@ -266,7 +266,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
             detector = 'raxis'
         else:
             detector = 'saturn'
-    
+
     detector_class = header['detector_class']
 
     result = []
@@ -309,19 +309,19 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
 
             result.append('DIRECTION_OF_DETECTOR_X-AXIS=%f %f %f' % \
                           fast_direction)
-            
+
             result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%f %f %f' % \
                           slow_direction)
 
         else:
             result.append('DIRECTION_OF_DETECTOR_X-AXIS=%s' % \
                           detector_to_x_axis[detector])
-            
+
             result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%s' % \
                           detector_to_y_axis[detector])
 
     else:
-        
+
         result.append('DIRECTION_OF_DETECTOR_X-AXIS=%s' % \
                       detector_to_x_axis[detector])
 
@@ -337,7 +337,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
         # width, height need to be swapped...
         result.append('NX=%d NY=%d QX=%6.6f QY=%6.6f' % \
                       (height, width, qx, qy))
-    else:        
+    else:
         result.append('NX=%d NY=%d QX=%6.6f QY=%6.6f' % \
                       (width, height, qx, qy))
 
@@ -349,7 +349,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
         result.append('DETECTOR_DISTANCE=%7.3f' % header['distance'])
     else:
         result.append('DETECTOR_DISTANCE=%7.3f' % (-1 * header['distance']))
-        
+
     result.append('OSCILLATION_RANGE=%4.2f' % (header['phi_end'] -
                                                header['phi_start']))
     result.append('X-RAY_WAVELENGTH=%8.6f' % header['wavelength'])
@@ -387,18 +387,18 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
 
     if 'pilatus' in header['detector_class']:
         result.append('SENSOR_THICKNESS=0.32')
-        
+
 
     if header['detector_class'] == 'pilatus 6M':
-        for limits in pilatus_6M_mask():        
+        for limits in pilatus_6M_mask():
             result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(limits))
-        
+
     elif header['detector_class'] == 'pilatus 2M':
-        for limits in pilatus_2M_mask():        
+        for limits in pilatus_2M_mask():
             result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(limits))
 
     elif header['detector_class'] == 'pilatus 300K':
-        for limits in pilatus_300K_mask():        
+        for limits in pilatus_300K_mask():
             result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(limits))
 
     return result
@@ -514,6 +514,6 @@ if __name__ == '__main__':
 
     else:
         dd.set_image(sys.argv[1])
-        
+
     for record in header_to_xds(dd.readheader()):
         print record

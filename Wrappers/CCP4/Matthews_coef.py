@@ -2,16 +2,16 @@
 # Matthews_coef.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 5th June 2006
-# 
+#
 # An example of an matthews_coef CCP4 program wrapper, which can be used
 # as the base for other wrappers.
-# 
+#
 # Provides:
-# 
+#
 # Solvent contents given a number of molecules, a sequence length and a unit
 # cell and symmetry.
 
@@ -43,7 +43,7 @@ def Matthews_coef(DriverType = None):
             CCP4DriverInstance.__class__.__init__(self)
 
             self.set_executable(os.path.join(
-                os.environ.get('CBIN', ''), 'matthews_coef'))            
+                os.environ.get('CBIN', ''), 'matthews_coef'))
 
             self._nmol = 1
             self._nres = 0
@@ -53,9 +53,9 @@ def Matthews_coef(DriverType = None):
             # results
 
             self._solvent = 0.0
-            
+
             return
-            
+
         # setters follow
 
         def set_nmol(self, nmol):
@@ -77,11 +77,11 @@ def Matthews_coef(DriverType = None):
         def compute_solvent(self):
 
             self.start()
-            
+
             self.input('cell %f %f %f %f %f %f' % tuple(self._cell))
 
             # cannot cope with spaces in the spacegroup!
-            
+
             self.input('symmetry %s' % self._spacegroup.replace(' ', ''))
             self.input('nres %d' % self._nres)
             self.input('nmol %d' % self._nmol)
@@ -119,6 +119,3 @@ if __name__ == '__main__':
     m.compute_solvent()
 
     print m.get_solvent()
-
-    
-    

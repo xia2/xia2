@@ -2,17 +2,17 @@
 # Reindex.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 5th June 2006
-# 
+#
 # A wrapper for the CCP4 program reindex.
-# 
+#
 # Provides:
-# 
+#
 # Reindexing functionality for MTZ formatted reflection files.
-# 
+#
 
 import os
 import sys
@@ -136,5 +136,3 @@ if __name__ == '__main__':
     r.set_spacegroup('P 4 2 2')
 
     print r.reindex()
-
-    

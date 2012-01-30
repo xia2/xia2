@@ -1,9 +1,9 @@
 #!/usr/bin/env cctbx.python
 # ReadHeaderMARIP.py
-# 
+#
 #   Copyright (C) 2010 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # Code to read an MAR image plate image header and populate the contents of
@@ -42,7 +42,7 @@ class ReadHeaderMARIP(ReadHeader):
         little_endian = 1234
 
         # if this is the native byte order it will have been correctly read
-        # as one or the other of these values 
+        # as one or the other of these values
 
         if byte_order == little_endian:
             header_signed_ints = struct.unpack('16i', marip_header_bytes[:64])
@@ -71,7 +71,7 @@ class ReadHeaderMARIP(ReadHeader):
             self.osc_start_deg = 0.001 * header_signed_ints[12]
             self.osc_width_deg = 0.001 * (header_signed_ints[13] -
                                           header_signed_ints[12])
-            
+
         self.angle_twotheta_deg = 0.001 * header_signed_ints[15]
         self.angle_kappa_deg = 0.0
         self.angle_chi_deg = 0.001 * header_signed_ints[14]
@@ -108,7 +108,7 @@ class ReadHeaderMARIP(ReadHeader):
                 y = float(record.split()[3])
                 self.beam_centre_pixels_fast = x / self.pixel_size_mm_fast
                 self.beam_centre_pixels_slow = y / self.pixel_size_mm_slow
-                
+
         return
 
 if __name__ == '__main__':
@@ -117,7 +117,3 @@ if __name__ == '__main__':
 
     for arg in sys.argv[1:]:
         print ReadHeaderMARIP(arg)
-        
-    
-
-        

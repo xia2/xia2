@@ -21,7 +21,7 @@ def recompute_BKGINIT(bkginit_in, init_lp, bkginit_out):
     fast = 0
     slow = 0
     length = 0
-    
+
     for record in cbf_header.split('\n'):
         if 'X-Binary-Size-Fastest-Dimension' in record:
             fast = int(record.split()[-1])
@@ -64,12 +64,12 @@ def recompute_BKGINIT(bkginit_in, init_lp, bkginit_out):
                                 pixels.append(p)
                     modified_pixel_values[s * fast + f] = int(
                                             sum(pixels) / len(pixels))
-                    
+
     open(bkginit_out, 'wb').write(cbf_header + start_tag +
                                   compress(modified_pixel_values))
 
-    return 
-                    
+    return
+
 if __name__ == '__main__':
 
     recompute_BKGINIT('BKGINIT.cbf', 'INIT.LP', sys.argv[1])

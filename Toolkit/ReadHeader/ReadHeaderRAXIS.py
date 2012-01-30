@@ -1,9 +1,9 @@
 #!/usr/bin/env cctbx.python
 # ReadHeaderRAXIS.py
-# 
+#
 #   Copyright (C) 2010 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # Code to read an MAR image plate image header and populate the contents of
@@ -44,7 +44,7 @@ class ReadHeaderRAXIS(ReadHeader):
 
         # also assert that X is the fast direction and Z (vertical)
         # is the slow direction
-        
+
         self.image_size_pixels_fast = struct.unpack(
             '>i', raxis_header[768:772])[0]
         self.image_size_pixels_slow = struct.unpack(
@@ -65,7 +65,7 @@ class ReadHeaderRAXIS(ReadHeader):
         osc_end_deg = struct.unpack(
             '>f', raxis_header[528:532])[0]
         self.osc_width_deg = osc_end_deg - self.osc_start_deg
-            
+
         self.angle_twotheta_deg = struct.unpack(
             '>f', raxis_header[556:560])[0]
         self.angle_kappa_deg = 0.0
@@ -93,11 +93,11 @@ class ReadHeaderRAXIS(ReadHeader):
         #
         # naxes = struct.unpack('>i', raxis_header[856:860])[0]
         # values = struct.unpack('>30f', raxis_header[860:980])
-        # 
+        #
         # (up to 5) * 3 values giving the dirctions of the axes then
-        # up to 5 starts, up to 5 ends, up to 5 offsets gives total 
+        # up to 5 starts, up to 5 ends, up to 5 offsets gives total
         # of 30 floats
-                
+
         return
 
 if __name__ == '__main__':
@@ -106,4 +106,3 @@ if __name__ == '__main__':
 
     for arg in sys.argv[1:]:
         print ReadHeaderRAXIS(arg)
-        

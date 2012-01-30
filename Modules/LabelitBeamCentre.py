@@ -2,14 +2,14 @@
 # LabelitBeamCentre.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-#  
+#
 # A module to get the "best" beam centre from a labelit run. This will be
 # used from within xia2setup.py as a key part of configuring the .xinfo
 # file.
-# 
-# Note well that this will check the input beam centres from the header to 
+#
+# Note well that this will check the input beam centres from the header to
 # see what they are before they start, and perhaps will set a sensible
 # input default (e.g. the middle of the image) for the labelit run.
 #
@@ -58,14 +58,11 @@ if __name__ == '__main__':
                              'Data', 'Test', 'Images', '12287_1_E1_001.img')
     else:
         image = sys.argv[1]
-        
+
     template, directory = image2template_directory(image)
-    
+
     sl = SweepFactory(template, directory)
 
     for s in sl:
 
         print '%6.2f %6.2f' % compute_beam_centre(s)
-
-
-                                                     

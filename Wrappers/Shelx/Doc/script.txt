@@ -10,5 +10,3 @@ eof
 
 shelxd TS03_fa
 shelxe TS03 TS03_fa -h -l4 -s0.46 -m20
-
-

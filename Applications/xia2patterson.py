@@ -2,7 +2,7 @@
 # xia2patterson
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 
 import sys
@@ -25,8 +25,8 @@ if __name__ == '__main__':
     # to provide much more in the way of command-line arguments
     #
     # options are:
-    # 
-    # -m hklin 
+    #
+    # -m hklin
     # -s symmetry
     # -l low resolution limit
     # -h high resolution limit
@@ -88,16 +88,16 @@ if __name__ == '__main__':
 
         if not os.path.isabs(hklin):
             hklin = os.path.join(os.getcwd(), hklin)
-            
+
         hklout = os.path.join(os.environ['CCP4_SCR'], 'x2p-cad.mtz')
-        
+
         cad = Cad()
         cad.set_working_directory(os.environ['CCP4_SCR'])
         cad.add_hklin(hklin)
         cad.set_hklout(hklout)
         cad.set_new_cell(unit_cell)
-        cad.update()    
-    
+        cad.update()
+
         hklin = hklout
 
     peaks = anomalous_patterson_jiffy(hklin, symmetry,
@@ -128,7 +128,7 @@ if __name__ == '__main__':
                 rx, ry, rz = r
 
                 if dmin:
-                    
+
                     if math.sqrt((x - rx) * (x - rx) +
                                  (y - ry) * (y - ry) +
                                  (z - rz) * (z - rz)) < dmin:
@@ -146,7 +146,3 @@ if __name__ == '__main__':
                   (sum(occs) / len(occs), len(occs))
         else:
             print 'No matching peaks found'
-                             
-                
-    
-

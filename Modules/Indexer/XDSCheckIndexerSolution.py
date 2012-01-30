@@ -1,13 +1,13 @@
 #!/usr/bin/env cctbx.python
 # XDSCheckIndexerSolution.py
-# 
+#
 #   Copyright (C) 2009 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # 11th May 2009
-# 
+#
 # Code to check the XDS solution from IDXREF for being pseudo-centred (i.e.
 # comes out as centered when it should not be)
 #
@@ -43,7 +43,7 @@ if (hasattr(matrix.rec, "rotate_around_origin")):
 # end workaround
 
 def s2l(spacegroup):
-    lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5, 
+    lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5,
                              'oP':16, 'oC':20, 'oF':22,
                              'oI':23, 'tP':75, 'tI':79,
                              'hP':143, 'hR':146, 'cP':195,
@@ -71,7 +71,7 @@ def xds_check_indexer_solution(xparm_file,
     space_group_number = xparm_d['spacegroup']
     spacegroup = sgtbx.space_group_symbols(space_group_number).hall()
     sg = sgtbx.space_group(spacegroup)
-    
+
     # now ask if it is centred - if not, just return the input solution
     # without testing...
 
@@ -119,7 +119,7 @@ def xds_check_indexer_solution(xparm_file,
     # plane - i.e. off.normal = 0
 
     bx = ox + off.elems[0] / px
-    by = oy + off.elems[1] / py    
+    by = oy + off.elems[1] / py
 
     dtor = 180.0 / math.pi
 
@@ -192,7 +192,7 @@ def xds_check_indexer_solution(xparm_file,
         if dhkl[0] < 0.1 and dhkl[1] < 0.1 and dhkl[2] < 0.1:
 
             # is it absent?
-            
+
             if sg.is_sys_absent(ihkl):
                 absent += 1
             else:
@@ -232,7 +232,7 @@ def xds_check_indexer_solution(xparm_file,
     cell_new = symm_new.unit_cell().parameters()
 
     return s2l(space_group_number_primitive), tuple(cell_new)
-    
+
 def is_centred(space_group_number):
     '''Test if space group # corresponds to a centred space group.'''
 
@@ -260,7 +260,7 @@ def xds_test_indexer_solution(xparm_file,
     space_group_number = xparm_d['spacegroup']
     spacegroup = sgtbx.space_group_symbols(space_group_number).hall()
     sg = sgtbx.space_group(spacegroup)
-    
+
     wavelength = xparm_d['wavelength']
     distance = xparm_d['distance']
     beam = xparm_d['beam']
@@ -289,7 +289,7 @@ def xds_test_indexer_solution(xparm_file,
     off = Sd - D
 
     bx = ox + off.elems[0] / px
-    by = oy + off.elems[1] / py    
+    by = oy + off.elems[1] / py
 
     dtor = 180.0 / math.pi
 
@@ -356,9 +356,9 @@ def xds_test_indexer_solution(xparm_file,
     for j in range(-h_size, h_size + 1):
         print '%5d %5d %5d %5d' % \
               (j, histogram_i[j], histogram_j[j], histogram_k[j])
-        
-    return 
-        
+
+    return
+
 if __name__ == '__main__':
 
     source = os.getcwd()
@@ -370,4 +370,3 @@ if __name__ == '__main__':
     spot = os.path.join(source, 'SPOT.XDS')
 
     xds_test_indexer_solution(xparm, spot)
-

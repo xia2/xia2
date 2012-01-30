@@ -2,14 +2,14 @@
 # IndexerFactory.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 13th June 2006
-# 
+#
 # A factory for Indexer class instances. This will return an indexer
 # suitable for using in the context defined in the input.
-# 
+#
 # 04/SEP/06 FIXME this needs to handle Mosflm, LabelitIndex as
 #           implementations of indexer, since the constructors will
 #           now raise an exception if the program is not available
@@ -17,13 +17,13 @@
 #           This module should also check that the class in question
 #           at some stage inherits from Schema/Interfaces/Indexer.py
 #           since that is the core definition.
-# 
+#
 # This supports the following Indexer implementations:
-# 
+#
 # Mosflm/Indexer
 # LabelitIndex/Indexer
 # XDS/Indexer
-# 
+#
 # And will make a decision based on the screen information if available.
 # Integral unit test was also out of date, because the interface has changed.
 
@@ -110,11 +110,11 @@ def IndexerForXSweep(xsweep):
         Debug.write('Indexer factory: Setting wavelength: %.6f' % \
                     xsweep.get_wavelength_value())
         indexer.set_wavelength(xsweep.get_wavelength_value())
-        
+
     indexer.set_indexer_sweep(xsweep)
-    
+
     return indexer
-    
+
 
 # FIXME need to provide framework for input passing
 
@@ -140,7 +140,7 @@ def Indexer():
         except NotAvailableError, e:
             if preselection:
                 raise RuntimeError, \
-                      'preselected indexer labelit not available'            
+                      'preselected indexer labelit not available'
             pass
 
     if not indexer and (not preselection or preselection == 'mosflm'):
@@ -177,7 +177,7 @@ def Indexer():
         except NotAvailableError, e:
             if preselection:
                 raise RuntimeError, \
-                      'preselected indexer labelit not available'            
+                      'preselected indexer labelit not available'
             pass
 
     if not indexer:
@@ -186,10 +186,10 @@ def Indexer():
     return indexer
 
 if __name__ == '__main__':
-    
-    directory = os.path.join(os.environ['X2TD_ROOT'], 
+
+    directory = os.path.join(os.environ['X2TD_ROOT'],
                              'DL', 'insulin', 'images')
-    
+
     i = Indexer()
 
     i.setup_from_image(os.path.join(directory, 'insulin_1_001.img'))
@@ -199,4 +199,3 @@ if __name__ == '__main__':
     print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % i.get_indexer_cell()
     print 'Lattice: %s' % i.get_indexer_lattice()
     print 'Mosaic: %6.2f' % i.get_indexer_mosaic()
-    

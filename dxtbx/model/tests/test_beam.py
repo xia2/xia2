@@ -2,7 +2,7 @@
 # test_beam.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # Tests for the beam class.
@@ -26,5 +26,3 @@ def test_beam():
 if __name__ == '__main__':
 
     test_beam()
-
-

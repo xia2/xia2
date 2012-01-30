@@ -7,7 +7,7 @@ def mean_isigma(hkl_file):
     # fixme this needs to work to a given resolution
 
     isigmas = []
-    
+
     for record in open(hkl_file):
         if '!' in record[:1]:
             continue
@@ -44,15 +44,15 @@ def get_ccs(xscale_lp):
     if not file_names:
         for j, record in enumerate(records):
             if 'SET# INTENSITY  ACCEPTED REJECTED' in record:
-                
+
                 k = j + 1
-                
+
                 while len(records[k].split()) == 5:
                     values = records[k].split()
                     file_names[int(values[0])] = values[-1]
-                    
+
                     k += 1
-                    
+
                 break
 
 
@@ -83,7 +83,7 @@ def get_ccs(xscale_lp):
         ccs[(j + 1, j + 1)] = (0, 0)
 
         isigma = mean_isigma(file_names[j + 1])
-        
+
         print '%4d %6.4f %6.2f %s' % (j + 1,
                                       sum([ccs[(i + 1, j + 1)][1]
                                            for i in range(xmax)]) / (xmax - 1),
@@ -117,15 +117,15 @@ def ccs_to_R(xscale_lp):
     if not file_names:
         for j, record in enumerate(records):
             if 'SET# INTENSITY  ACCEPTED REJECTED' in record:
-                
+
                 k = j + 1
-                
+
                 while len(records[k].split()) == 5:
                     values = records[k].split()
                     file_names[int(values[0])] = values[-1]
-                    
+
                     k += 1
-                    
+
                 break
 
 
@@ -155,7 +155,7 @@ def ccs_to_R(xscale_lp):
     tokens = []
 
     distances = {}
-    
+
     for j in range(xmax):
         for i in range(xmax):
             cc = ccs.get((i + 1, j + 1), (0, 1.0))[1]
@@ -185,7 +185,7 @@ def ccs_to_R(xscale_lp):
     dmax = 0.01
 
     sets = []
-    
+
     for s in spaces:
         if s[0] > dmax:
             break
@@ -196,7 +196,7 @@ def ccs_to_R(xscale_lp):
 
             if i in _s and j in _s:
                 continue
-            
+
             if i in _s:
                 _s.add(j)
                 continue
@@ -204,7 +204,7 @@ def ccs_to_R(xscale_lp):
             if j in _s:
                 _s.add(i)
                 continue
-                
+
         sets.append(set([i, j]))
 
     for _s in sorted(sets):
@@ -216,4 +216,3 @@ if __name__ == '__main__':
 
     get_ccs(sys.argv[1])
     ccs_to_R(sys.argv[1])
-    

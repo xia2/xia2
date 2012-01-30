@@ -2,16 +2,16 @@
 # Wilson.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 5th June 2006
-# 
-# An example of an wilson CCP4 program wrapper, which can be used as the 
+#
+# An example of an wilson CCP4 program wrapper, which can be used as the
 # base for other wrappers.
-# 
+#
 # Provides:
-# 
+#
 # A program which will generate an estimate of the B factor for a data set.
 # This data set needs to be udentified in the input. I will presume that the
 # columns to use are called F_${DATASET} and SIGF_${DATASET} in the same
@@ -81,7 +81,7 @@ def Wilson(DriverType = None):
             self.input('labin FP=F_%s SIGFP=SIGF_%s' % (self._dataset,
                                                         self._dataset))
             self.close_wait()
-            
+
             self.check_for_errors()
             self.check_ccp4_errors()
 

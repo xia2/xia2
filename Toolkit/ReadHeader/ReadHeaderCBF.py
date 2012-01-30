@@ -1,9 +1,9 @@
 #!/usr/bin/env cctbx.python
 # ReadHeaderCBF.py
-# 
+#
 #   Copyright (C) 2010 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # Code to read an ADXV image header and populate the contents of the standard
@@ -36,7 +36,7 @@ class ReadHeaderCBF(ReadHeader):
         # first copy to a temporary directory only the header information
 
         t = time.time()
-        
+
         image_data = open(image, 'rb').read()
         header_text = image_data[:image_data.index('_array_data.array_id')]
 
@@ -88,7 +88,7 @@ class ReadHeaderCBF(ReadHeader):
         idx = axis_names.index('ELEMENT_X')
         beam_centre_x_mm = -1 * float(i1['_axis.offset[1]'][idx])
         beam_centre_y_mm = float(i1['_axis.offset[2]'][idx])
-        
+
         self.date_struct = time.strptime(date_str, '%Y-%m-%dT%H:%M:%S')
         self.epoch_ms = 0
 
@@ -99,17 +99,17 @@ class ReadHeaderCBF(ReadHeader):
         # these were in m - why?!
         self.pixel_size_mm_fast = 1000 * pixel_dim[0]
         self.pixel_size_mm_slow = 1000 * pixel_dim[1]
-        
+
         self.image_size_pixels_fast = image_dim[0]
         self.image_size_pixels_slow = image_dim[1]
         self.pixel_depth_bytes = 2
-        
+
         self.osc_start_deg = angle_start
         self.osc_width_deg = angle_width
         self.angle_twotheta_deg = 0.0
         self.angle_kappa_deg = 0.0
         self.angle_chi_deg = 0.0
-        
+
         self.detector_serial_number = serial
 
         self.image_offset = 0

@@ -2,33 +2,33 @@
 # Othercell.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
-# A program wrapper for Phil Evan's program othercell (a part of 
+#
+# A program wrapper for Phil Evan's program othercell (a part of
 # pointless) for providing other reasonable lattice solutions
 # given a unit cell and lattice type (pcif)
-# 
+#
 # FIXME 24/AUG/06 this needs to be tied into the indexing possibilities...
-# 
+#
 # FIXME 08/SEP/06 this also needs to parse the xml coming from othercell.
 #                 - after some tinkering ot does, and also needed to mod
 #                   the xml output from othercell - hence the -gw suffix.
 #                 Done - but I need to decide what I want from this next.
-# 
+#
 # FIXME 08/SEP/06 would be nice to also apply the latice constraints on
 #                 the output unit cells, based on the standard numbers
-#                 in IUCR Tables A. For instance, if tP set alpha = 
+#                 in IUCR Tables A. For instance, if tP set alpha =
 #                 beta = gamma = 90.0 degrees.
 #
 #                 This will be spacegroup -> lattice: new_cell =
 #                 apply_lattice('tP', old_cell) [say] return new_cell.
-# 
+#
 # FIXME 08/SEP/06 want to feed the unit cell from autoindexing into this,
 #                 then write out the possibles with penalties to the
 #                 "chatter" stream. This should go into Indexer interface,
 #                 perhaps?
-# 
+#
 # FIXME 12/SEP/06 perhaps I should clean up, that is, delete the othercell.xml
 #                 file. Perhaps further, I should call it something random not
 #                 othercell.xml, in case I have two jobs running in one
@@ -46,7 +46,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'],
                     'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
-    
+
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
@@ -73,7 +73,7 @@ def Othercell(DriverType = None):
 
             self.set_executable(os.path.join(
                 os.environ.get('CBIN', ''), 'othercell'))
-            
+
             self._initial_cell = []
             self._initial_lattice_type = None
 
@@ -82,7 +82,7 @@ def Othercell(DriverType = None):
             self._lattices = []
             self._distortions = { }
             self._cells = { }
-            self._reindex_ops = { } 
+            self._reindex_ops = { }
 
             return
 
@@ -93,7 +93,7 @@ def Othercell(DriverType = None):
 
         def set_lattice(self, lattice):
             '''Set the full lattice - not just the centering operator!.'''
-            
+
             self._initial_lattice_type = lattice[1].lower()
 
             return
@@ -107,7 +107,7 @@ def Othercell(DriverType = None):
             self.start()
 
             self.input('%f %f %f %f %f %f' % tuple(self._initial_cell))
-            self.input('%s' % self._initial_lattice_type)            
+            self.input('%s' % self._initial_lattice_type)
             self.input('')
 
             self.close_wait()
@@ -126,7 +126,7 @@ def Othercell(DriverType = None):
                     continue
                 if 'within angular tolerance' in o:
                     continue
-                
+
                 lauegroup = o[:11].strip()
                 if not lauegroup:
                     continue
@@ -146,7 +146,7 @@ def Othercell(DriverType = None):
                     # there was some kind of mess made of the othercell
                     # output - this happens!
                     continue
-                
+
                 cell = tuple(map(float, o[11:45].split()))
                 distortion = float(o.split()[-2])
                 operator = o.split()[-1][1:-1]
@@ -162,7 +162,7 @@ def Othercell(DriverType = None):
                     self._distortions[lattice] = distortion
                     self._cells[lattice] = cell
                     self._reindex_ops[lattice] = operator
-                    
+
         def get_lattices(self):
             return self._lattices
 
@@ -172,7 +172,7 @@ def Othercell(DriverType = None):
         def get_reindex_op(self, lattice):
             return self._reindex_ops[lattice]
 
-            
+
     return OthercellWrapper()
 
 if __name__ == '__main__':
@@ -193,4 +193,3 @@ if __name__ == '__main__':
 
     o.get_cell('aP')
     o.get_reindex_op('aP')
-                

@@ -21,7 +21,7 @@ def reflection_list(unit_cell_constants, high_resolution_limit):
                 # ignore reflection (0, 0, 0)
                 if h == 0 and k == 0 and l == 0:
                     continue
-                
+
                 # and test the resolution limit
                 if uc.d((h, k, l)) < high_resolution_limit:
                     continue

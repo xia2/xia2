@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # xia2lattice.py
-# 
+#
 #   Copyright (C) 2008 STFC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A wrapper program to reproduce the results of autoindexing given a
@@ -41,7 +41,7 @@ def xia2lattice(cell, input_lattice = None, do_print = True):
         if not input_lattice in lattices:
             raise RuntimeError, 'no solution found for lattice %s' % \
                   input_lattice
-        
+
         distortion = ls.get_distortion(input_lattice)
         cell = ls.get_cell(input_lattice)
 
@@ -86,4 +86,3 @@ if __name__ == '__main__':
     else:
         raise RuntimeError, '%s (lattice|a b c alpha beta gamma)' % \
               sys.argv[0]
-    

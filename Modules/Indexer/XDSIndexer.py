@@ -2,15 +2,15 @@
 # XDSIndexer.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 # 13th December 2006
-# 
+#
 # An implementation of the Indexer interface using XDS. This depends on the
 # XDS wrappers to actually implement the functionality.
 #
 # 03/JAN/07 FIXME - once the indexing step is complete, all of the files
-#                   which are needed for integration should be placed in the 
+#                   which are needed for integration should be placed in the
 #                   indexer "payload".
 
 import os
@@ -60,7 +60,7 @@ class XDSIndexer(FrameProcessor,
     def __init__(self):
 
         # set up the inherited objects
-        
+
         FrameProcessor.__init__(self)
         Indexer.__init__(self)
 
@@ -86,7 +86,7 @@ class XDSIndexer(FrameProcessor,
         return
 
     def get_working_directory(self):
-        return self._working_directory 
+        return self._working_directory
 
     # factory functions
 
@@ -173,9 +173,9 @@ class XDSIndexer(FrameProcessor,
 
     def _index_select_images(self):
         '''Select correct images based on image headers.'''
-        
+
         phi_width = self.get_header_item('phi_width')
-        
+
         if phi_width == 0.0:
             Debug.write('Phi width 0.0? Assuming 1.0!')
             phi_width = 1.0
@@ -187,7 +187,7 @@ class XDSIndexer(FrameProcessor,
 
         if len(images) < 3:
             # work on the assumption that this is a reference pair
-        
+
             self.add_indexer_image_wedge(images[0])
             if len(images) > 1:
                 self.add_indexer_image_wedge(images[-1])
@@ -199,7 +199,7 @@ class XDSIndexer(FrameProcessor,
 
             # five degree blocks are excessive - especially if we have 0.1
             # degree oscillations => just use 5 image blocks...
-            
+
             block_size = 5
 
             Debug.write('Adding images for indexer: %d -> %d' % \
@@ -215,7 +215,7 @@ class XDSIndexer(FrameProcessor,
                              block_size - 1))
                 Debug.write('Adding images for indexer: %d -> %d' % \
                             (int(90.0 / phi_width) + images[0],
-                             int(90.0 / phi_width) + images[0] + 
+                             int(90.0 / phi_width) + images[0] +
                              block_size - 1))
                 self.add_indexer_image_wedge(
                     (int(45.0 / phi_width) + images[0],
@@ -223,7 +223,7 @@ class XDSIndexer(FrameProcessor,
                 self.add_indexer_image_wedge(
                     (int(90.0 / phi_width) + images[0],
                      int(90.0 / phi_width) + images[0] + block_size - 1))
-                
+
             else:
 
                 # add some half-way anyway
@@ -237,7 +237,7 @@ class XDSIndexer(FrameProcessor,
                             (images[- block_size], images[-1]))
                 self.add_indexer_image_wedge((images[- block_size],
                                               images[-1]))
-            
+
         return
 
     # do-er functions
@@ -257,7 +257,7 @@ class XDSIndexer(FrameProcessor,
             # override this...
             self._index_select_images()
             self.set_indexer_prepare_done(True)
-            
+
         all_images = self.get_matching_images()
 
         first = min(all_images)
@@ -294,10 +294,10 @@ class XDSIndexer(FrameProcessor,
         if self._background_images:
             init.set_background_range(self._background_images[0],
                                       self._background_images[1])
-        else:    
+        else:
             init.set_background_range(self._indxr_images[0][0],
                                       self._indxr_images[0][1])
-            
+
         for block in self._indxr_images:
             init.add_spot_range(block[0], block[1])
 
@@ -345,7 +345,7 @@ class XDSIndexer(FrameProcessor,
                      'BKGINIT.cbf',
                      'GAIN.cbf']:
             self._data_files[file] = init.get_output_data_file(file)
-        
+
         # next start to process these - then colspot
 
         colspot = self.Colspot()
@@ -389,7 +389,7 @@ class XDSIndexer(FrameProcessor,
 
         # then this is a proper autoindexing run - describe this
         # to the journal entry
-        
+
         if len(self._fp_directory) <= 50:
             dirname = self._fp_directory
         else:
@@ -401,12 +401,12 @@ class XDSIndexer(FrameProcessor,
                        'target lattice':self._indxr_input_lattice,
                        'template':self._fp_template,
                        'directory':dirname})
-                       
+
         idxref = self.Idxref()
 
         for file in ['SPOT.XDS']:
             idxref.set_input_data_file(file, self._data_files[file])
-            
+
         idxref.set_data_range(self._indxr_images[0][0],
                               self._indxr_images[0][1])
         idxref.set_background_range(self._indxr_images[0][0],
@@ -416,14 +416,14 @@ class XDSIndexer(FrameProcessor,
 
         for block in self._indxr_images[:1]:
             starting_frame = block[0]
-            
+
             dd = Diffdump()
             dd.set_image(self.get_image_name(starting_frame))
             starting_angle = dd.readheader()['phi_start']
 
             idxref.set_starting_frame(starting_frame)
             idxref.set_starting_angle(starting_angle)
-            
+
             idxref.add_spot_range(block[0], block[1])
 
         for block in self._indxr_images[1:]:
@@ -443,7 +443,7 @@ class XDSIndexer(FrameProcessor,
             Debug.write('Set lattice: %s' % self._indxr_input_lattice)
             Debug.write('Set cell: %f %f %f %f %f %f' % \
                         self._indxr_input_cell)
-            
+
             original_cell = self._indxr_input_cell
         elif self._indxr_input_lattice:
             idxref.set_indexer_input_lattice(self._indxr_input_lattice)
@@ -458,7 +458,7 @@ class XDSIndexer(FrameProcessor,
         mosflm_beam_centre = self.get_beam()
         xds_beam_centre = beam_centre_mosflm_to_xds(
             mosflm_beam_centre[0], mosflm_beam_centre[1], self.get_header())
-        
+
         idxref.set_beam_centre(xds_beam_centre[0],
                                xds_beam_centre[1])
 
@@ -474,7 +474,7 @@ class XDSIndexer(FrameProcessor,
                 # N.B. in here if the IDXREF step was being run in the first
                 # pass done is FALSE however there should be a refined
                 # P1 orientation matrix etc. available - so keep it!
-                
+
             except XDSException, e:
                 # inspect this - if we have complaints about not
                 # enough reflections indexed, and we have a target
@@ -487,7 +487,7 @@ class XDSIndexer(FrameProcessor,
                 elif ('insufficient percentage (< 70%)' in str(e) or
                       'insufficient percentage (< 50%)' in str(e)) and \
                          original_cell:
-                    done = idxref.run(ignore_errors = True)                    
+                    done = idxref.run(ignore_errors = True)
                     lattice, cell, mosaic = \
                              idxref.get_indexing_solution()
                     # compare solutions
@@ -506,7 +506,7 @@ class XDSIndexer(FrameProcessor,
                     Debug.write('XDS unhappy but solution ok')
                 elif 'insufficient percentage (< 70%)' in str(e) or \
                          'insufficient percentage (< 50%)' in str(e):
-                    done = idxref.run(ignore_errors = True)                    
+                    done = idxref.run(ignore_errors = True)
                     Debug.write('XDS unhappy but solution probably ok')
                 else:
                     raise e
@@ -540,14 +540,14 @@ class XDSIndexer(FrameProcessor,
         # ok, in here now ask if this solution was sensible!
 
         if not self.get_indexer_sweep().get_user_lattice():
-       
+
             lattice = self._indxr_lattice
             cell = self._indxr_cell
 
             lattice2, cell2 = xds_check_indexer_solution(
                 os.path.join(self.get_working_directory(), 'XPARM.XDS'),
                 os.path.join(self.get_working_directory(), 'SPOT.XDS'))
-            
+
             Debug.write('Centring analysis: %s => %s' % \
                         (lattice, lattice2))
 
@@ -560,12 +560,12 @@ class XDSIndexer(FrameProcessor,
 
             if (self._idxref_subtree_problem and (lattice2 != lattice)) or \
                    doubled_lattice:
-                            
+
                 # hmm.... looks like we don't agree on the correct result...
                 # update the putative correct result as input
-                
+
                 Debug.write('Detected pseudocentred lattice')
-                Debug.write('Inserting solution: %s ' % lattice2 + 
+                Debug.write('Inserting solution: %s ' % lattice2 +
                             '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % cell2)
 
                 self._indxr_replace(lattice2, cell2)
@@ -575,10 +575,10 @@ class XDSIndexer(FrameProcessor,
                             cell2)
 
                 # then rerun
-            
+
                 self.set_indexer_done(False)
                 return
-            
+
         # finally read through SPOT.XDS and XPARM.XDS to get an estimate
         # of the low resolution limit - this should be pretty straightforward
         # since what I want is the resolution of the lowest resolution indexed
@@ -596,7 +596,7 @@ class XDSIndexer(FrameProcessor,
 
         if distance < 0.0:
             distance *= -1
-        
+
         # then work through the spot list to find the lowest resolution spot
 
         dmax = 0.0
@@ -632,7 +632,7 @@ class XDSIndexer(FrameProcessor,
         self._indxr_low_resolution = dmax
 
         return
-        
+
 if __name__ == '__main_old__':
 
     # run a demo test
@@ -650,7 +650,7 @@ if __name__ == '__main_old__':
     xi.set_beam((108.9, 105.0))
 
     xi.index()
-    
+
     print 'Refined beam is: %6.2f %6.2f' % xi.get_indexer_beam()
     print 'Distance:        %6.2f' % xi.get_indexer_distance()
     print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % xi.get_indexer_cell()
@@ -667,10 +667,9 @@ if __name__ == '__main__':
     xi.setup_from_image(os.path.join(directory, 'insulin_1_001.img'))
 
     xi.index()
-    
+
     print 'Refined beam is: %6.2f %6.2f' % xi.get_indexer_beam()
     print 'Distance:        %6.2f' % xi.get_indexer_distance()
     print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % xi.get_indexer_cell()
     print 'Lattice: %s' % xi.get_indexer_lattice()
     print 'Mosaic: %6.2f' % xi.get_indexer_mosaic()
-    

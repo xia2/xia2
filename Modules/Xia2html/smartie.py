@@ -1,5 +1,5 @@
 #     smartie.py: CCP4 logfile parsing classes and functions
-#     Copyright (C) 2006-2007 Peter Briggs, Wanjuan Yang, CCLRC 
+#     Copyright (C) 2006-2007 Peter Briggs, Wanjuan Yang, CCLRC
 #
 #     This code is distributed under the terms and conditions of the
 #     CCP4 licence agreement as `Part 1' (Annex 2) software.
@@ -53,7 +53,7 @@ class buffer:
 
     The buffer object holds lines of text which are added
     a line at a time via the 'append' method."""
-    
+
     def __init__(self,maxsize=0):
         """Initialise a new buffer object.
 
@@ -71,7 +71,7 @@ class buffer:
     def __len__(self):
         """Builtin: return the number of lines stored in the buffer."""
         return len(self.__contents)
-        
+
     def append(self,line):
         """Append a line of text to the buffer.
 
@@ -81,19 +81,19 @@ class buffer:
             self.__contents = self.__contents[1:]
         # Remove trailing newline/end of line characters
         self.__contents.append(line.rstrip("\r\n"))
-        
+
     def len(self):
         """Return the number of lines currently stored.
 
         Deprecated: use len(table) instead."""
         return self.__len__()
-    
+
     def line(self,n):
         """Return the n'th line of text from the buffer.
-        
+
         The line will be returned without end-of-line characters."""
         return self.__contents[n]
-    
+
     def tail(self,n=10):
         """Return the 'tail' of the buffer.
 
@@ -107,14 +107,14 @@ class buffer:
         if nstart < 0:
             nstart = 0
         return self.contents(nstart,nend)
-    
+
     def getlines(self,n,m):
         """Return lines 'n' through to 'm' as a list.
 
         Return a set of lines starting from line index 'n' up to
         but not including line index 'm', as a list."""
         return self.__contents[n:m]
-        
+
     def contents(self,n,m):
         """Return lines 'n' through to 'm' as a string.
 
@@ -136,7 +136,7 @@ class buffer:
         for line in self.__contents:
             str = str + line + "\n"
         return str.rstrip("\n")
-    
+
     def clear(self):
         """Clear the buffer of all content.
 
@@ -154,7 +154,7 @@ class tablebuffer(buffer):
 
     This class extends the 'buffer' class with additional
     data and methods specialised for CCP4 tables."""
-    
+
     def __init__(self,maxsize=0):
         """Initialise a new tablebuffer object."""
         self.__hasTABLE = False
@@ -241,7 +241,7 @@ class logfile:
     There is also a list of CCP4 'summaries' that have been
     been found in the logfile. These are kept distinct from
     the logfile fragments above."""
-    
+
     def __init__(self,filename):
         """Initialise the logfile object."""
         # Source file
@@ -360,7 +360,7 @@ class logfile:
         that case, if tabletext is supplied then this is
         used to populate the table object; otherwise the
         new table object is empty."""
-        
+
         # FIXME should be internally accessible only?
         if thistable:
             # Table object supplied
@@ -401,12 +401,12 @@ class logfile:
         of table objects (argument 'table_list'), by finding
         the first table in the list which matches the supplied
         regular expression 'title_pattern'.
-    
+
         If there is more than one matching table then the 'index'
         argument specifies which of the list of matching tables
         should be returned. If index is out of range (or there are
         no matching tables) then return 'None'.
-        
+
         It calls the 'find_table_by_title' function."""
         return find_table_by_title(self.__tables,title_pattern,index)
 
@@ -424,7 +424,7 @@ class logfile:
 
         In either case if no table objects are found then an
         empty list is returned.
-        
+
         This method calls the 'find_tables_by_title' function."""
         if select_title == "":
             # Return everything
@@ -439,7 +439,7 @@ class logfile:
         Otherwise a new keytext object is created and
         populated with the contents of the name, junk_text
         and message arguments."""
-        
+
         # FIXME should be internally accessible only?
         if thiskeytext:
             # Table object supplied
@@ -466,11 +466,11 @@ class logfile:
 
     def addccp4i_info(self):
         """Add another ccp4i_info object to the logfile.
-        
+
         Creates a new ccp4i_info object and added to the
         list of fragments, and to the list of CCP4i information
         messages found in the logfile."""
-        
+
         # FIXME should be internally accessible only?
         # Make a new ccp4i_info object
         newccp4i_info = ccp4i_info()
@@ -626,7 +626,7 @@ class logfile:
         # Remove the converted fragment
         self.__fragments.remove(self.fragment(i))
         return prog
-        
+
 # fragment
 #
 # Abstract description of a generic logfile fragment
@@ -769,7 +769,7 @@ class fragment:
         self.__tables.append(newtable)
         self.__nonzero = True
         return newtable
-    
+
     def ntables(self):
         """Return the number of tables found in the fragment."""
         return len(self.__tables)
@@ -802,12 +802,12 @@ class fragment:
         of table objects (argument 'table_list'), by finding
         the first table in the list which matches the supplied
         regular expression 'title_pattern'.
-    
+
         If there is more than one matching table then the 'index'
         argument specifies which of the list of matching tables
         should be returned. If index is out of range (or there are
         no matching tables) then return 'None'.
-        
+
         It calls the 'find_table_by_title' function."""
         return find_table_by_title(self.__tables,title_pattern,index)
 
@@ -825,13 +825,13 @@ class fragment:
 
         In either case if no table objects are found then an
         empty list is returned.
-        
+
         This method calls the 'find_tables_by_title' function."""
         if select_title == "":
             # Return everything
             return copy.copy(self.__tables)
         return find_tables_by_title(self.__tables,select_title)
-    
+
     def addkeytext(self,name="",junk_text="",message=""):
         """Add a new keytext object to the fragment.
 
@@ -840,7 +840,7 @@ class fragment:
         The values of the parameters 'name', 'junk_text' and
         'message' will be used to initialise the new keytext
         object (one or more of these can be blank).
-        
+
         This method returns the new keytext object."""
         # FIXME should be internally accessible only?
         newkeytext = keytext(name,junk_text,message)
@@ -859,7 +859,7 @@ class fragment:
 
     def keytext(self,i):
         """Return the i'th keytext object.
-        
+
         For example: program.keytext(i) returns the i'th keytext
         object associated with the program object. The methods
         of the keytext class can then be used to drill down into
@@ -941,12 +941,12 @@ class program(fragment):
 
     name: the name of the program from the CCP4 banner, or
     equivalent.
-    
+
     version: the program version; for CCP4 programs, this is the
     version found in the program banner. For programs that don't
     explicitly give their own version number this will be the same
     as the CCP4 library version.
-    
+
     date: the date string found in the CCP4 banner; it is
     typically the last date that the source code file was
     committed to CVS. It is not the date that the program was
@@ -988,7 +988,7 @@ class program(fragment):
     In addition the program object also stores a list of the
     keyword input lines; this list can be retrieved directly
     using the 'keywords' method."""
-    
+
     def __init__(self):
         """Initialise a new program object."""
         # Initialise the base class
@@ -1001,7 +1001,7 @@ class program(fragment):
         self.__keywords = []
         # Dictionary of logical name/filename pairs
         self.__logicalnames = {}
-        
+
     def isprogram(self):
         """Return True if this represents a program logfile.
 
@@ -1013,7 +1013,7 @@ class program(fragment):
 
         Overrides the 'isfragment' method in the base class."""
         return False
-    
+
     def set_isccp4(self,isccp4):
         """Set whether the logfile fragment is from a CCP4 program or not.
 
@@ -1030,7 +1030,7 @@ class program(fragment):
         This returns True if the fragment of logfile appeared to
         be from a CCP4 program, and False otherwise."""
         return self.__isccp4
-        
+
     def set_termination(self,termination):
         """Set whether the logfile has a termination message.
 
@@ -1074,7 +1074,7 @@ class program(fragment):
         This adds a logical name and the associated filename to
         the dictionary of files that were reported as being opened
         in the logfile.
-        
+
         If the same logical name is added multiple times then only
         the last associated filename is kept."""
 
@@ -1129,7 +1129,7 @@ class table:
 
     The contents of the table can be output in the correct
     CCP4 format using the 'show' and 'jloggraph' methods."""
-    
+
     # Initialise the table object
     def __init__(self,tabletext=""):
         """Create a new table object.
@@ -1139,13 +1139,13 @@ class table:
         attempt to parse the table and populate itself using
         the supplied data.
 
-        If 'tabletext' cannot be interpreted as a table 
+        If 'tabletext' cannot be interpreted as a table
         then the table object will be 'empty' and will contain
         no data. In this case, if 'tabletext' consists of a
         single line with no trailing newline then the table
         object title will be set to 'tabletext'
         automatically."""
-        
+
         # Table attributes
         self.__title = ""
         self.__type = "GRAPHS" # Default to GRAPHS
@@ -1198,7 +1198,7 @@ class table:
         __buildtable extracts the various components of data from
         the supplied table text and populates the table object
         appropriately."""
-        
+
         # Set up the table object by parsing the
         # the supplied text
         tabledata = patternmatch().isccp4table(tabletext)
@@ -1225,7 +1225,7 @@ class table:
         items, which are then assigned to individual columns.
         Where possible data are stored using an appropriate
         type, either integer, float or string."""
-        
+
         # Parse the raw data and populate the table_column
         # objects for this table
         i = 0
@@ -1252,7 +1252,7 @@ class table:
         example if the table was incomplete or misformatted) then
         parse_error() will return True, otherwise it will be
         False."""
-        
+
         # Check the table_parse_error flag
         return self.__table_parse_error
 
@@ -1262,7 +1262,7 @@ class table:
         The raw table data is the original text (for example, the
         fragment of log file text) supplied to the object to
         populate itself from."""
-        
+
         # Store the "raw" table data
         self.__rawtable = rawtable
 
@@ -1298,7 +1298,7 @@ class table:
         This is currently one of two possible loggraph keywords,
         either GRAPHS or SCATTER. The keyword is an indication
         to plotting software of how the data should be displayed:
-        
+
         GRAPHS: line graphs, with data points joined by lines
         SCATTER: scatter plots, with data plotted as points.
 
@@ -1328,7 +1328,7 @@ class table:
         in the table."""
         if self.ncolumns() == 0:
             return 0
-        nrows = self.table_column(0).nrows()     
+        nrows = self.table_column(0).nrows()
         for i in range(1,self.ncolumns()):
             nrows = min(self.table_column(i).nrows(),nrows)
         return nrows
@@ -1388,7 +1388,7 @@ class table:
         table object (via the 'setdata' method) then setcolumns
         will also attempt to populate the columns from this
         data."""
-        
+
         # Store the column titles ("raw" format)
         # This is a list of white-space separated strings
         self.__columns = columns
@@ -1402,7 +1402,7 @@ class table:
 
     def columns(self):
         """Return the original column titles text string.
-        
+
         This method returns the 'raw' string that was supplied
         via the 'setcolumns' method, i.e. a single string with
         whitespace delimited column titles. Of itself this
@@ -1443,7 +1443,7 @@ class table:
         If table columns have also previously been defined
         then this method will further attempt to populate the
         columns with the data from the table body."""
-        
+
         # Store the data from the table ("raw" format)
         # This is a list of whitespace separated data items
         self.__data = data
@@ -1492,14 +1492,14 @@ class table:
 
     def add_data(self,rowdata):
         """Add a row of values to the table.
-        
+
         'rowdata' is a dictionary which specifies column
         names as keys defining the values to be appended. For
         example, if the table has columns called 'X', 'Y' and
         'Z', then rowdata might be defined as:
 
         rowdata = { 'X': 0.0, 'Y': 0.776, 'Z': 878 }
-        
+
         'Null' values (i.e. '*' character) will be added to
         columns not named to keep the table data well-formed.
         For example:
@@ -1659,7 +1659,7 @@ class table:
         The codebase argument should specify the full path for
         the JLogGraph.class and JLogCanvas.class files required
         to run the applet (typically this is $CCP4/bin/)."""
-        
+
         # Wraps the show method
         jloggraph = "<applet width=\""+str(width)+ \
                     "\" height=\""+str(height)+ \
@@ -1701,7 +1701,7 @@ class table:
         padding is not required then set it to False."""
 
         tabletext = ""
-        
+
         # Preamble for loggraph
         if loggraph:
             table_title = self.title()
@@ -1720,7 +1720,7 @@ class table:
                 tabletext = tabletext.rstrip(",")
                 tabletext = tabletext+":\n"
             tabletext = tabletext+"$$\n"
-        
+
         # Columns and rows
         ncolumns = self.ncolumns()
         if ncolumns > 0:
@@ -1737,7 +1737,7 @@ class table:
                         max_width = len(str(item))
                 if max_width >= len(self.table_column(i).title()):
                     # Put in an extra space again
-                    max_width = max_width+1 
+                    max_width = max_width+1
                 field_width.append(max_width)
         else:
             for i in range(0,ncolumns):
@@ -1774,7 +1774,7 @@ class table:
 
     def html(self,border=2):
         """Return the text of a table with HTML formatting.
-        
+
         This method returns the body of the table (column
         titles and column data) marked up as a HTML table.
         The width of the table can be controlled by setting
@@ -1826,10 +1826,10 @@ class table_graph:
     Tables in logfiles can contain any number of 'graphs',
     which are represented within smartie by table_graph
     objects.
-    
+
     A graph is defined by a title, a scaling type, and a
     collection of table_columns storing columns of data."""
-    
+
     # Initialise the table_graph object
     def __init__(self,title="",scaling="",column_list=[]):
         """Create a new table_graph object.
@@ -1843,7 +1843,7 @@ class table_graph:
         column in the list will form the 'x' axis of the graph
         when displayed, the others will be displayed on the
         'y' axis."""
-        
+
         self.__title = title
         self.__column_list = column_list
         self.__scaling = scaling
@@ -1879,7 +1879,7 @@ class table_graph:
 
     def setscaling(self,scaling):
         """Store the scaling description.
-        
+
         This is a string which should take one of three possible
         forms, and which is an instruction to the display
         program on how to scale the graph data for display.
@@ -1890,7 +1890,7 @@ class table_graph:
         the lowest limit on the y axis is 0s.
         'XMIN|XMAXxYMIN|YMAX' (where XMIN, XMAX and YMIN, YMAX are
         numbers) specifies the exact limits of both axes."""
-        
+
         self.__scaling = scaling
 
     def scaling(self):
@@ -1904,7 +1904,7 @@ class table_graph:
         e.g. '1,2,4,5'. Note that the column numbers are adjusted
         downwards by 1 to map onto Python numbering (which starts
         at zero)."""
-        
+
         self.__column_list = []
         for i in columns.split(","):
             if str(i).strip().isdigit():
@@ -1971,7 +1971,7 @@ class table_column:
         except ValueError:
             # Not a numerical value - store as a string
             value = item
-        # Add the data item as the correct type        
+        # Add the data item as the correct type
         self.__data.append(value)
 
     def data(self):
@@ -2030,14 +2030,14 @@ class ccp4i_info(fragment):
 
     'message': the text of the CCP4i information message."""
     # Initialise the ccp4i_info object
-    
+
     def __init__(self):
         # Initialise the base class
         fragment.__init__(self)
         # Initialise program-specific flags and
         # attributes
         self.set_attribute("message","")
-        
+
     def isccp4i_info(self):
         return True
 
@@ -2113,7 +2113,7 @@ class patternmatch:
     The patternmatch object provides a set of methods that can
     match various features that might be found in CCP4 logfiles,
     and logfiles from other programs. These are:
-    
+
     isccp4banner: check for CCP4 program banner
     isccp4termination: check for CCP4 program termination message
     isshelxbanner: check for SHELX program banner
@@ -2227,12 +2227,12 @@ class patternmatch:
         return a dictionary with the following keys:
 
         name: the name of the program from the CCP4 banner.
-    
+
         version: the program version; for CCP4 programs, this is the
         version found in the program banner. For programs that don't
         explicitly give their own version number this will be the same
         as the CCP4 library version.
-    
+
         date: the date string found in the CCP4 banner; it is
         typically the last date that the source code file was
         committed to CVS. (It is not the date that the program was
@@ -2292,7 +2292,7 @@ class patternmatch:
 
         termination_name: the program name as reported in the
         CCP4 termination message at the tail of the program log.
-        
+
         termination_message: the message text displayed in the
         CCP4 termination message, e.g. 'Normal termination'.
 
@@ -2333,25 +2333,25 @@ class patternmatch:
         'Phaser-style' banners look similar to CCP4 banners but
         contain some different information. They are also used by
         the 'pointless' program.
-    
+
         If the match fails then return False; if it succeeds then
         return a dictionary with the following keys:
 
         name: the name of the program from the banner.
-    
+
         version: the reported program version.
-    
+
         user: the user id that appears in the banner at runtime.
-    
+
         rundate: the date that the program run started at as
         reported in the program banner.
-    
+
         runtime: the time of day that the program run started at as
         reported in the program banner.
-    
+
         os: corresponds to the 'os type' as reported in the banner,
         for example 'linux'.
-    
+
         date: corresponds to the 'release date' of the program as
         reported in the banner.
 
@@ -2433,13 +2433,13 @@ class patternmatch:
     # Match old-style standard CCP4 program banner
     def isccp4banner_old(self,text):
         """Test if text matches an old-style CCP4 program banner.
-        
+
         'Old-style' banners come from versions of CCP4 predating
         version 4.1 of the suite.
 
         If the match fails then return False; if it succeeds then
         return a dictionary with the following keys:
-    
+
         name: the name of the program from the CCP4 banner.
 
         version: the program version; for CCP4 programs, this is the
@@ -2455,7 +2455,7 @@ class patternmatch:
         ccp4version: the CCP4 library version as it appears in the
         program banner. Typically this includes only the major and
         minor version numbers, but not the patch level.
-    
+
         user: the user id that appears in the CCP4 banner at runtime.
 
         runtime: the time of day that the program run started at as
@@ -2487,7 +2487,7 @@ class patternmatch:
             result["runtime"] = banner.group(6)
             result["nlines"] = banner.group(0).count("\n")
         return result
-    
+
     # Match CCP4 keytext i.e. $TEXT ...
     def isccp4keytext(self,text):
         """Test if text matches CCP4 keytext message ($TEXT).
@@ -2496,7 +2496,7 @@ class patternmatch:
         return a dictionary with the following keys:
 
         name: the message 'name' or identifier
-        
+
         junk_text: 'junk' text provided by the program (normally ignored)
 
         message: the message text
@@ -2529,13 +2529,13 @@ class patternmatch:
         logfile
 
         title: the title of the table.
-        
+
         type: the table type.
-        
+
         graphs: the text of the $GRAPHS portion of the table text.
 
         columns: the text of the column headers in the table.
-        
+
         text: the 'junk' text after the column headers and before the
         actual table data.
 
@@ -2663,23 +2663,23 @@ class patternmatch:
     #
     def isshelxbanner(self,text):
         """Test if text matches a SHELX program banner.
-        
+
         This function tries to match the banners from SHELXC,
         SHELXD and SHELXE.
-        
+
         If the match fails then return False; if it succeeds then
         return a dictionary with the following keys:
-        
+
         name: the program name.
-        
+
         version: the program version.
-        
+
         runtime: the time of day that the program run started at as
         reported in the program banner.
-        
+
         rundate: the date that the program run started at as
         reported in the program banner."""
-        
+
         # Set up regular expression for partial SHELX banner
         if text.find("SHELX") < 0:
             return dict()
@@ -2714,7 +2714,7 @@ class patternmatch:
     # Match SHELX program termination
     def isshelxtermination(self,text):
         """Test if text matches a SHELX program termination.
-        
+
         This function tries to match the messages from SHELXC,
         SHELXD and SHELXE.
 
@@ -2723,7 +2723,7 @@ class patternmatch:
 
         termination_name: the program name as reported in the
         SHELX termination message at the tail of the program log.
-    
+
         termination_message: the message text displayed in the
         termination message. The content of this text varies
         between SHELXC and SHELXD/E so no further processing is
@@ -2758,7 +2758,7 @@ class patternmatch:
     # Match program keyword input line ("Data line")
     def isdataline(self,line):
         """Test if line matches a CCP4 keyword input line.
-        
+
         This function tries to match the keyword input lines.
 
         If the match fails then return False; if it succeeds then
@@ -2782,7 +2782,7 @@ class patternmatch:
     # Match CCP4 file opening line (logical name/filename)
     def isfileopen(self,line):
         """Test if line matches a CCP4 file opening report.
-        
+
         This function tries to match the reports of a file opening
         event from the CCP4 libraries, which report the logical name
         and associated filename.
@@ -2805,11 +2805,11 @@ class patternmatch:
             result["logical_name"] = fileopen.group(1).strip()
             result["filename"] = fileopen.group(2).strip()
         return result
-    
+
     # Match CCP4 SUMMARY_BEGIN line (summary start)
     def issummary_begin(self,line):
         """Test if line matches a CCP4 SUMMARY_BEGIN line.
-        
+
         This function tries to match lines that indicate the start
         of a CCP4 summary block i.e. lines containing the text
         '<!--SUMMARY_BEGIN-->'.
@@ -2829,7 +2829,7 @@ class patternmatch:
     # Match CCP4 SUMMARY_END line (summary end)
     def issummary_end(self,line):
         """Test if line matches a CCP4 SUMMARY_END line.
-        
+
         This function tries to match lines that indicate the end
         of a CCP4 summary block i.e. lines containing the text
         '<!--SUMMARY_END-->'.
@@ -2893,12 +2893,12 @@ def parselog(filen,progress=0):
     make-up of the logfile. Counterintuitively, long files that
     contain few recognisable features can take longer because the
     buffers are only infrequently flushed."""
-    
+
     # Process a file and return a populated logfile object
     #
     # Maximum size of text buffer to use
     bufsize = 50
-    # Initial size of chunks to process 
+    # Initial size of chunks to process
     chunksize = 50
     # Regular expression object
     regex = patternmatch()
@@ -3163,7 +3163,7 @@ def summarise(thislog):
                 print "\t\t"+str(fragment.ntables())+" tables"
             if fragment.nkeytexts():
                 print "\t\t"+str(fragment.nkeytexts())+" keytexts"
-                    
+
     print ""
     # Summarise program logfile fragments
     if thislog.nprograms() > 0:
@@ -3242,7 +3242,7 @@ def copyfragment(fragment0,newobj):
 
     copyfragment can be used to 'mutate' a fragment into (for
     example) a program object."""
-    
+
     # Copy attribute data
     for item in fragment0.attributes():
         newobj[item] = fragment0.get_attribute(item)
@@ -3271,14 +3271,14 @@ def offsetline(linen,pattern_result):
     """Return the line number offset by the size of a matched pattern.
 
     This is an internal utility function.
-    
+
     Given 'linen' (the current line number) and 'pattern_result'
     (a dictionary containing data items returned from one of the
     regular expression functions), this function returns a line
     number which is offset to the start of the regular expression.
     It does this by locating a dictionary key 'nlines', which
     gives the size of the regular expression match."""
-    
+
     if pattern_result.has_key("nlines"):
         nlines = pattern_result["nlines"]
     else:
@@ -3298,7 +3298,7 @@ def find_table_by_title(table_list,title_pattern,index=0):
     of table objects (argument 'table_list'), by finding
     the first table in the list which matches the supplied
     regular expression 'title_pattern'.
-    
+
     If there is more than one matching table then the 'index'
     argument specifies which of the list of matching tables
     should be returned. If index is out of range (or there are
@@ -3338,7 +3338,7 @@ def escape_xml_characters(data):
     This replaces the characters <, > and & with the XML escape
     sequences &lt;, &gt; and &amp;. It also replaces double
     quotes with &quot;.
-    
+
     This could be replaced in future by the
     'xml.sax.saxutils.escape' function."""
     return str(data).replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace('"',"&quot;")
@@ -3348,7 +3348,7 @@ def strip_logfile_html(text):
 
     Return copy of input 'text' with HTML tags removed
     and any HTML special characters escaped.
-    
+
     Note that this is specialised for CCP4 logfiles,
     in particular CCP4-formatted logfiles will be
     extracted from <param name='table' ...> tags."""
@@ -3476,7 +3476,7 @@ def salvage_tag_data(tag_text):
     # Spacegroup
     if tag_is_spacegroup(tag_text):
         return tag_text
-        
+
     # Return an empty string by default
     return ""
 
@@ -3500,10 +3500,10 @@ def retrieve(filen,start,end):
     Given the name of a file 'filen' and a pair of start and
     end line numbers, extract and return the text from the
     file.
-    
+
     This uses the linecache module - beware of problems with
     consuming too much memory if the cache isn't cleared."""
-    
+
     text = ""
     # Check for consistency and validity of lines
     if start < 0 and end < 0 or end < start:
@@ -3534,7 +3534,7 @@ def tokenise(line):
     itself actually a tokeniser) in the core CCP4 libraries. The
     hard part is dealing with quoted strings which form a single
     token, and which can themselves also contain quotes."""
-    
+
     sline = str(line)
     tokens = []
     token = False
@@ -3585,7 +3585,7 @@ def table_tags(filen):
     module. It takes the name of a log file as input,
     scans the file for occurances of the $TABLE tag, and
     reports this to stdout."""
-    
+
     print "Scanning file "+str(filen)
     rtable = re.compile(r"\$TABLE *:")
     f = open(filen,"r")
@@ -3612,7 +3612,7 @@ def table_example():
     a new table object, names it, populates some columns of data
     and then adds some graph definitions before outputting the
     formatted table to stdout."""
-    
+
     print "\nExample making a new table from scratch:\n"
     # Make a new (empty) table object
     tbl = table("A table with random data")
@@ -3642,13 +3642,13 @@ if __name__ == "__main__":
     """Usage example and demonstration for smartie.
 
     Run the main program using:
-    
+
     python smartie.py file1 [file2 [...] ]
 
     For each file this example will generate a logfile object
     and then use the logfile 'summarise' method to print out
     a summary of the file's contents."""
-    
+
     print "Running test on logparser code"
     # Get the command line args
     print "command line: "+str(sys.argv)
@@ -3664,4 +3664,3 @@ if __name__ == "__main__":
         # Use the summarise function
         summarise(log)
         print "\nTime: "+str(end_time-start_time)+"\n"
-        

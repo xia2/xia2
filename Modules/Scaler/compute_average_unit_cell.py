@@ -1,22 +1,22 @@
 #!/usr/bin/env python
 # compute_average_unit_cell.py
-# 
+#
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # Replacement function centralised to replace the use of cellparm.
 
 def compute_average_unit_cell(unit_cell_list):
     '''Compute the weighted average unit cell based on a list of
-    
+
     ((unit cell), nref)
 
     tuples.'''
 
     w_tot = 0.0
-    
+
     a_tot = 0.0
     b_tot = 0.0
     c_tot = 0.0
@@ -35,7 +35,3 @@ def compute_average_unit_cell(unit_cell_list):
 
     return (a_tot / w_tot, b_tot / w_tot, c_tot / w_tot,
             alpha_tot / w_tot, beta_tot / w_tot, gamma_tot / w_tot)
-
-
-        
-        

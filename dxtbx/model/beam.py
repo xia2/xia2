@@ -2,11 +2,11 @@
 # beam.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-#  
+#
 # A model for the beam for the "updated experimental model" project documented
-# in internal ticket #1555. This is not designed to be used outside of the 
+# in internal ticket #1555. This is not designed to be used outside of the
 # XSweep classes.
 
 import math
@@ -31,12 +31,12 @@ class beam:
 
         assert(len(direction) == 3)
         assert(len(polarization_plane) == 3)
-        
+
         self._direction = matrix.col(direction)
         self._polarization_plane = matrix.col(polarization_plane)
         self._polarization_fraction = polarization_fraction
         self._wavelength = wavelength
-        
+
         return
 
     def __repr__(self):
@@ -68,7 +68,7 @@ class beam:
 
         return 0
 
-    def get_direction(self):        
+    def get_direction(self):
         return self._direction.elems
 
     def get_direction_c(self):
@@ -128,10 +128,10 @@ class beam_factory:
         # find record with equipment = source
         cbf_handle.find_column('equipment')
         cbf_handle.find_row('source')
-        
+
         # then get the vector and offset from this
         direction = []
-        
+
         for j in range(3):
             cbf_handle.find_column('vector[%d]' % (j + 1))
             direction.append(cbf_handle.get_doublevalue())
@@ -147,10 +147,10 @@ class beam_factory:
         except:
             polar_fraction = 0.999
             polar_angle = 0.0
-                
+
         polar_plane_normal = (
             math.sin(polar_angle * d2r), math.cos(polar_angle * d2r), 0.0)
-        
+
         return beam(direction, polar_fraction, polar_plane_normal, wavelength)
 
     @staticmethod
@@ -168,10 +168,10 @@ class beam_factory:
         # find record with equipment = source
         cbf_handle.find_column('equipment')
         cbf_handle.find_row('source')
-        
+
         # then get the vector and offset from this
         direction = []
-        
+
         for j in range(3):
             cbf_handle.find_column('vector[%d]' % (j + 1))
             direction.append(cbf_handle.get_doublevalue())
@@ -181,7 +181,7 @@ class beam_factory:
 
         # and information about the polarization - FIXME this should probably
         # be a rotation about the beam not about the Z axis.
-        
+
         try:
             polar_fraction, polar_angle = cbf_handle.get_polarization()
         except:
@@ -190,7 +190,5 @@ class beam_factory:
 
         polar_plane_normal = (
             math.sin(polar_angle * d2r), math.cos(polar_angle * d2r), 0.0)
-        
-        return beam(direction, polar_fraction, polar_plane_normal, wavelength)
 
-        
+        return beam(direction, polar_fraction, polar_plane_normal, wavelength)

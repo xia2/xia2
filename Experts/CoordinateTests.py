@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-# 
-# Code to interpret XDS (G)XPARM file and produce the rotation axis and beam 
-# vector in the imgCIF coordinate frame. From there, can transform to 
+#
+# Code to interpret XDS (G)XPARM file and produce the rotation axis and beam
+# vector in the imgCIF coordinate frame. From there, can transform to
 # Mosflm missetting angles.
-# 
+#
 
 from scitbx import matrix
 import math
@@ -27,7 +27,7 @@ def parse_xparm(xparm_file):
     # question - what is the refined distance defined as *precisely* -
     # the distance from the crystal to the detector origin?! - if it's
     # mrad off, it will essentially make *no* difference
-    
+
     x_to_d = - px * ox, - py * oy, values[14]
 
     return ra, beam, x_to_d, (px, py), values[14], (nx, ny)
@@ -58,13 +58,13 @@ def xds_to_cbf(xparm_file):
     if False:
 
         # try to reproduce the beam centre
-        
+
         distance = x_to_d[2]
         nbeam = math.sqrt(beam.dot())
-        
+
         bx_to_d = beam * distance / beam.elems[2]
         offset = bx_to_d - matrix.col(x_to_d)
-        
+
         # ok this reproduces the correct beam centre - why can't I get this
         # below?!
 
@@ -75,10 +75,10 @@ def xds_to_cbf(xparm_file):
 
         # assert: distance is in direction of beam: convert to distance to
         # origin
-        
+
         d1 = distance * beam / math.sqrt(beam.dot())
         d2 = d1.elems[2]
-        
+
         x_to_d = x_to_d[0], x_to_d[1], d2
 
         print 'New distance: %.3f' % d2
@@ -94,7 +94,7 @@ def xds_to_cbf(xparm_file):
 
     # right now lets calculate a rotation which will overlap the two reference
     # frames.... first relabel so we know what we are trying to do
-    
+
     x = ra
 
     z = beam - (beam.dot(ra) * ra)
@@ -167,14 +167,14 @@ def xds_to_cbf(xparm_file):
     # new direct beam centre...
 
     # so that would be the distance between the sample and the
-    # detector plane in the direction of the direct beam. 
+    # detector plane in the direction of the direct beam.
 
     n = _m * matrix.col([0, 0, 1])
 
     n = n / math.sqrt(n.dot())
 
     D = _m * x_to_d
-    
+
     d = n.dot(D)
 
     # calculate beam unit vector in cbf coordinate frame
@@ -266,7 +266,7 @@ def xds_to_cbf(xparm_file):
 
     __beam = cbf_to_mos * (B - D)
 
-    print '%10.7f %10.7f %10.7f' % __beam.elems    
+    print '%10.7f %10.7f %10.7f' % __beam.elems
 
     mos_to_det = (cbf_to_mos * _m * matrix.sqr([1.0, 0.0, 0.0,
                                                 0.0, 1.0, 0.0,
@@ -312,6 +312,6 @@ def xds_to_cbf(xparm_file):
     # misaligned and hence, how to calculate missetting angles as a function of
     # oscillation angle. N.B. will need to assume a datum point, so assert
     # misseting angles at phi 0.0 are 0.0, 0.0, ccomega.
-        
+
 if __name__ == '__main__':
     xds_to_cbf(sys.argv[1])

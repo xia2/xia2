@@ -2,18 +2,18 @@
 # MosflmHelpers.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 23rd June 2006
-# 
+#
 # Helper functions which will make working with Mosflm in detail a little
-# easier... for instance parsing the rather extensive output file to 
+# easier... for instance parsing the rather extensive output file to
 # decide if the integration went well or no.
-# 
-# FIXME 19/OCT/06 need to be able to parse the integration log to be able to 
+#
+# FIXME 19/OCT/06 need to be able to parse the integration log to be able to
 #                 decide if it went ok for all images.
-# 
+#
 # FIXME 19/OCT/06 would also be useful to be able to get an estimate of
 #                 the "useful" integration limit (e.g. where the individual
 #                 reflections have an I/sigma ~ 1)
@@ -99,13 +99,13 @@ def _parse_mosflm_integration_output(integration_output_list):
 
     for i in range(length):
         record = integration_output_list[i]
-        
+
         if 'Pixel size of' in record:
             pixel_size = float(record.replace('mm', ' ').split()[3])
 
         if 'Pixel size in the' in record:
             pixel_size = float(record.replace('mm', ' ').split()[-1])
-        
+
         if 'Processing Image' in record:
             current_image = int(record.split()[2])
 
@@ -156,7 +156,7 @@ def _parse_mosflm_integration_output(integration_output_list):
         if 'are OVERLOADS' in record:
             overloads = int(record.replace(',', ' ').split()[4])
             per_image_stats[current_image]['overloads'] = overloads
-            
+
         if 'Number of bad spots' in record:
             bad = int(record.replace('=', '').split()[-1])
             # FIXME also with the name...
@@ -166,7 +166,7 @@ def _parse_mosflm_integration_output(integration_output_list):
         # look for BLANK images (i.e. those with no strong spots)
 
         if 'Analysis of Intensities' in record:
-            numbers = map(int, 
+            numbers = map(int,
                          integration_output_list[i + 3].split()[1:])
 
             # define: if more than 95 % of the measurements are in the
@@ -178,7 +178,7 @@ def _parse_mosflm_integration_output(integration_output_list):
                 fraction_weak = float(sum(numbers[:3])) / float(sum(numbers))
             else:
                 fraction_weak = 1.0
-                
+
             per_image_stats[current_image]['fraction_weak'] = fraction_weak
 
         if 'Analysis as a function of resolution.' in record and \
@@ -186,7 +186,7 @@ def _parse_mosflm_integration_output(integration_output_list):
             # then get out the resolution information, spot counts and
             # so on, and generate some kind of resolution estimate
             # from this...
-            # 
+            #
             # (1) compute I/sigma vs. resolution curve
             # (2) analyse to find where I/sigma gets to 1.0
             #
@@ -229,11 +229,11 @@ def _parse_mosflm_integration_output(integration_output_list):
             # this was 1.0 - lowering for testing with broader resolution
             # limit tests...
             resolution = _resolution_estimate(resolution_list, 0.5)
-            
+
             per_image_stats[current_image]['resolution'] = resolution
-            
+
     per_image_stats.pop(0, None)
-            
+
     return per_image_stats
 
 def _print_integrate_lp(integrate_lp_stats):
@@ -335,7 +335,7 @@ def _parse_mosflm_index_output(index_output_list):
 
         # this will not be in the file if Mosflm doesn't think you have
         # the right answer (and often it doesn't have a clue...)
-        # FIXME this sometimes has "transformed from" following...        
+        # FIXME this sometimes has "transformed from" following...
         if 'Suggested Solution' in output:
             correct_number = int(output.split()[2])
 
@@ -357,13 +357,13 @@ def _parse_mosflm_index_output(index_output_list):
     keys.sort()
 
     solutions_by_lattice = { }
-    
+
     # FIXME 25/OCT/06 also need to take the penalty into account slightly
     # because this goes very wrong for TS02/PEAK - add this to the rms
     # times a small magic number (0.5% at the moment)
 
     acceptable_rms = 0.0
-    
+
     for k in keys:
         if not 'unrefined' in solutions[k]:
             list = solutions[k].split()
@@ -381,12 +381,12 @@ def _parse_mosflm_index_output(index_output_list):
             if solutions_by_lattice.has_key(latt):
                 if solutions_by_lattice[latt]['rms'] <= rms:
                     continue
-                
+
             solutions_by_lattice[latt] = {'rms':rms,
                                           'cell':cell,
                                           'frc':frc,
                                           'number':number}
-                
+
     # find what we think is an acceptable solution... this now moved above
     # acceptable_rms = 0.0
 
@@ -402,7 +402,7 @@ def _parse_mosflm_index_output(index_output_list):
     # then print those which should be ok...
 
     results = { }
-    
+
     lattice_to_spacegroup = {'aP':1,
                              'mP':3,
                              'mC':5,
@@ -417,7 +417,7 @@ def _parse_mosflm_index_output(index_output_list):
                              'cP':195,
                              'cF':196,
                              'cI':197}
-                
+
     for k in solutions_by_lattice.keys():
         if solutions_by_lattice[k]['rms'] < acceptable_rms:
             cell = solutions_by_lattice[k]['cell']
@@ -484,7 +484,7 @@ def _get_indexing_solution_number(index_output_list,
 
     # then select the one closest to the target cell - recording the
     # solution number
-    
+
     best = 0
     difference = 60.0
 
@@ -520,7 +520,7 @@ def standard_mask(detector):
     if 'pilatus 6M' in detector:
         if True:
             return []
-        
+
         return ['LIMITS EXCLUDE 83.9 85.0 0.2 434.6',
                 'LIMITS EXCLUDE 168.9 169.9 0.2 434.6',
                 'LIMITS EXCLUDE 253.9 254.9 0.2 434.6',
@@ -534,7 +534,7 @@ def standard_mask(detector):
                 'LIMITS EXCLUDE 0.2 423.6 252.5 255.2',
                 'LIMITS EXCLUDE 0.2 423.6 289.0 291.7',
                 'LIMITS EXCLUDE 0.2 423.6 325.4 328.2',
-                'LIMITS EXCLUDE 0.2 423.6 361.9 364.6', 
+                'LIMITS EXCLUDE 0.2 423.6 361.9 364.6',
                 'LIMITS EXCLUDE 0.2 423.6 398.4 401.1']
 
     if 'pilatus 2M' in detector:
@@ -549,9 +549,9 @@ def standard_mask(detector):
                 'LIMITS EXCLUDE 0.2 253.7 179.6 182.3',
                 'LIMITS EXCLUDE 0.2 253.7 216.0 218.8',
                 'LIMITS EXCLUDE 0.2 253.7 252.5 255.2']
-    
+
     # unknown detector
-    
+
     return []
 
 def _parse_summary_file(filename):
@@ -584,7 +584,7 @@ def _parse_summary_file(filename):
             d[keys[k]] = refined_values[j * ncol + k]
 
         result[image] = d
-            
+
     postref_columns = tokens[5].split()
     postref_values = map(float, tokens[7].replace('******', ' 0.0 ').split())
 
@@ -601,7 +601,7 @@ def _parse_summary_file(filename):
             d[keys[k]] = postref_values[j * ncol + k]
 
         result[image].update(d)
-            
+
     return result
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@
 # XDSIdxref.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A wrapper to handle the JOB=IDXREF module in XDS.
@@ -23,7 +23,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'],
                     'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
-    
+
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
@@ -43,7 +43,7 @@ from XDSIdxrefHelpers import _parse_idxref_lp, _parse_idxref_lp_distance_etc, \
 
 from Experts.LatticeExpert import SortLattices
 
-# global flags 
+# global flags
 from Handlers.Flags import Flags
 
 # helpful expertise from elsewhere
@@ -66,8 +66,8 @@ def XDSIdxref(DriverType = None):
             FrameProcessor.__init__(self)
 
             # now set myself up...
-            
-            
+
+
             self._parallel = Flags.get_parallel()
 
             if self._parallel <= 1:
@@ -107,7 +107,7 @@ def XDSIdxref(DriverType = None):
             self._indxr_input_lattice = None
             self._indxr_input_cell = None
             self._indxr_user_input_lattice = False
-            
+
             self._indxr_lattice = None
             self._indxr_cell = None
             self._indxr_mosaic = None
@@ -259,8 +259,8 @@ def XDSIdxref(DriverType = None):
             # what are we doing?
             xds_inp.write('JOB=IDXREF\n')
             xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
-                          self._parallel) 
-            
+                          self._parallel)
+
             # FIXME this needs to be calculated from the beam centre...
 
             if self._refined_origin:
@@ -344,7 +344,7 @@ def XDSIdxref(DriverType = None):
             st = _parse_idxref_lp_subtree(lp)
 
             if 2 in st:
-            
+
                 if st[2] > st[1] / 10.0:
                     Debug.write('Look closely at autoindexing solution!')
                     self._index_tree_problem = True
@@ -405,7 +405,7 @@ def XDSIdxref(DriverType = None):
                             if self._indexing_solutions[lattice][
                                 'goodness'] < fit:
                                 continue
-                            
+
                         self._indexing_solutions[lattice] = {
                             'goodness':fit,
                             'cell':cell}
@@ -416,7 +416,7 @@ def XDSIdxref(DriverType = None):
                         # bug 2417 - if we have an input lattice then we
                         # don't want to include anything higher symmetry
                         # in the results table...
-                        
+
                         if self._symm:
                             if lattice_to_spacegroup_number(lattice) \
                                    > self._symm:
@@ -429,7 +429,7 @@ def XDSIdxref(DriverType = None):
                             if self._indexing_solutions[lattice][
                                 'goodness'] < fit:
                                 continue
-                        
+
                         self._indexing_solutions[lattice] = {
                             'goodness':fit,
                             'cell':cell}
@@ -449,10 +449,10 @@ def XDSIdxref(DriverType = None):
                     Debug.write('Ignoring solution with lattice %s' % \
                                 lattice)
                     del(self._indexing_solutions[lattice])
-                
+
 
             # get the highest symmetry "acceptable" solution
-            
+
             list = [(k, self._indexing_solutions[k]['cell']) for k in \
                     self._indexing_solutions.keys()]
 
@@ -478,7 +478,7 @@ def XDSIdxref(DriverType = None):
 
                         if self._compare_cell(self._cell, cell) \
                                or not Flags.get_fixed_628():
-                        
+
                             cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % cell
                             Debug.write(
                             'Chosen unit cell: %s' % cell_str)
@@ -497,21 +497,21 @@ def XDSIdxref(DriverType = None):
 
                 # select the top solution as the input cell and reset the
                 # "indexing done" flag
-                    
+
                 sorted_list = SortLattices(list)
 
                 self._symm = lattice_to_spacegroup_number(sorted_list[0][0])
                 self._cell = sorted_list[0][1]
 
                 return False
-            
+
             # get the refined distance &c.
 
             beam, distance = _parse_idxref_lp_distance_etc(lp)
 
             self._refined_beam = beam
             self._refined_distance = distance
-            
+
             # gather the output files
 
             for file in self._output_data_files_list:
@@ -528,12 +528,12 @@ if __name__ == '__main__':
     directory = os.path.join(os.environ['XIA2_ROOT'],
                              'Data', 'Test', 'Images')
 
-    
+
     idxref.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 
     # FIXED 12/DEC/06 need to work out how this is related to the beam centre
     # from labelit...
-    
+
     for file in ['SPOT.XDS']:
         idxref.set_input_data_file(file, open(file, 'rb').read())
 
@@ -545,5 +545,3 @@ if __name__ == '__main__':
     idxref.add_spot_range(90, 90)
 
     idxref.run()
-
-

@@ -2,28 +2,28 @@
 # Streams.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # Maintained by Graeme Winter
 # 15th August 2006
-# 
-# "Standard" output streams for the output of xia2dpa - these will allow 
-# filtering of the output to files, the standard output, a GUI, none of 
+#
+# "Standard" output streams for the output of xia2dpa - these will allow
+# filtering of the output to files, the standard output, a GUI, none of
 # the above, all of the above.
-# 
-# The idea of this is to separate the "administrative", "status" and 
+#
+# The idea of this is to separate the "administrative", "status" and
 # "scientific" output of the program. Finally I also decided (5/SEP/06)
-# to add a stream for "chatter", that is the odds and ends which are 
+# to add a stream for "chatter", that is the odds and ends which are
 # going on inside the program which tells you it's doing things.
 #
-# FIXME 05/SEP/06 wouldn't it be nice to split the output to fit well on 
+# FIXME 05/SEP/06 wouldn't it be nice to split the output to fit well on
 #                 an 80 character terminal display?
-# 
+#
 # FIXED 20/OCT/06 would nice to be able to prevent content being echo'd
 #                 to the chatter, if possible. Esp. for verbose output
 #                 going to say science.
-# 
+#
 # FIXME 20/OCT/06 need to be able to switch these of to allow nothing to
 #                 be printed when running unit tests...
 
@@ -45,7 +45,7 @@ class _Stream:
             self._file_name = None
 
         self._file = None
-            
+
         self._streamname = streamname
         self._prefix = prefix
 
@@ -65,12 +65,12 @@ class _Stream:
         else:
             self._file = open(self._file_name, 'w')
         return self._file
-    
+
     def write(self, record, forward = True):
 
         if self._off:
             return None
-        
+
         for r in record.split('\n'):
             if self._prefix:
                 result = self.get_file().write('[%s]  %s\n' %
@@ -83,7 +83,7 @@ class _Stream:
 
         if self._otherstream and forward:
             self._otherstream.write(record)
-        
+
         return result
 
     def bigbanner(self, comment, forward = True):
@@ -114,7 +114,7 @@ class _Stream:
         ----- comment ------.'''
 
         dashes = '-' * 10
-        
+
         self.write('%s %s %s' % (dashes, comment, dashes), forward)
 
         return

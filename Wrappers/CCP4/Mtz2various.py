@@ -2,14 +2,14 @@
 # Mtz2various.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 27th October 2006
-# 
+#
 # A wrapper for the CCP4 program mtz2various, for converting mtz files
 # to .sca format.
-# 
+#
 
 import os
 import sys
@@ -35,9 +35,9 @@ def Mtz2various(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            
+
             self.set_executable(os.path.join(
-                os.environ.get('CBIN', ''), 'mtz2various'))            
+                os.environ.get('CBIN', ''), 'mtz2various'))
 
             # this will allow extraction of specific intensities
             # from a multi-set reflection file
@@ -126,6 +126,3 @@ if __name__ == '__main__':
         m2v.set_hklin(hklin)
         m2v.set_hklout('%s.sca' % hklin[:-4])
         m2v.convert()
-
-
-    

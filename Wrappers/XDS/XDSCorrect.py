@@ -2,7 +2,7 @@
 # XDSCorrect.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A wrapper to handle the JOB=CORRECT module in XDS.
@@ -26,7 +26,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'],
                     'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
-    
+
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
@@ -102,7 +102,7 @@ def XDSCorrect(DriverType = None):
             self._ice = 0
 
             # the following input files are also required:
-            # 
+            #
             # INTEGRATE.HKL
             # REMOVE.HKL
             #
@@ -236,7 +236,7 @@ def XDSCorrect(DriverType = None):
             # what are we doing?
             xds_inp.write('JOB=CORRECT\n')
             xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
-                          self._parallel) 
+                          self._parallel)
 
             if Flags.get_no_correct():
                 xds_inp.write('CORRECTIONS=!\n')
@@ -244,11 +244,11 @@ def XDSCorrect(DriverType = None):
             # check to see if we are excluding ice rings
             if self._ice != 0:
                 Debug.write('Excluding ice rings')
-                
+
                 for record in open(os.path.join(
                     os.environ['XIA2_ROOT'],
                     'Data', 'ice-rings.dat')).readlines():
-                    
+
                     resol = tuple(map(float, record.split()[:2]))
 
                     xds_inp.write('EXCLUDE_RESOLUTION_RANGE= %.2f %.2f\n' % \
@@ -262,7 +262,7 @@ def XDSCorrect(DriverType = None):
             if self._polarization > 0.0:
                 xds_inp.write('FRACTION_OF_POLARIZATION=%.2f\n' % \
                               self._polarization)
-            
+
             for record in header:
                 xds_inp.write('%s\n' % record)
 
@@ -273,7 +273,7 @@ def XDSCorrect(DriverType = None):
                      name_template
 
             xds_inp.write(record)
-                
+
             xds_inp.write('DATA_RANGE=%d %d\n' % self._data_range)
             # xds_inp.write('MINIMUM_ZETA=0.1\n')
             # include the resolution range, perhaps
@@ -286,12 +286,12 @@ def XDSCorrect(DriverType = None):
                 xds_inp.write('STRICT_ABSORPTION_CORRECTION=TRUE\n')
             else:
                 xds_inp.write('FRIEDEL\'S_LAW=TRUE\n')
-                
+
             if self._spacegroup_number:
                 if not self._cell:
                     raise RuntimeError, \
                           'cannot set spacegroup without unit cell'
-                
+
                 xds_inp.write('SPACE_GROUP_NUMBER=%d\n' % \
                               self._spacegroup_number)
             if self._cell:
@@ -301,10 +301,10 @@ def XDSCorrect(DriverType = None):
             if self._reindex_matrix:
                 xds_inp.write('REIDX=%d %d %d %d %d %d %d %d %d %d %d %d' % \
                               tuple(map(int, self._reindex_matrix)))
-                
+
 
             xds_inp.close()
-            
+
             # copy the input file...
             shutil.copyfile(os.path.join(self.get_working_directory(),
                                          'XDS.INP'),
@@ -361,7 +361,7 @@ def XDSCorrect(DriverType = None):
 
             if refined.volume() / original.volume() > 10:
                 raise RuntimeError, 'catastrophic change in unit cell volume'
-                
+
             # record reindex operation used for future reference... this
             # is to trap trac #419
 
@@ -397,5 +397,3 @@ if __name__ == '__main__':
     correct.add_spot_range(1, 1)
 
     correct.run()
-
-

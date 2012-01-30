@@ -15,7 +15,7 @@ def pack_values(data):
             packed += struct.pack('b', delta)
             current = d
             continue
-        
+
         packed += struct.pack('b', -128)
         if -32767 < delta < 32767:
             packed += struct.pack('<h', delta)
@@ -27,7 +27,7 @@ def pack_values(data):
             packed += struct.pack('<i', delta)
             current = d
             continue
-        
+
         packed += struct.pack('<i', -2147483648)
         packed += struct.pack('<q', delta)
         current = d
@@ -88,7 +88,7 @@ def work():
     values = [int(random.random() * 65536) for j in range(1024 * 1024)]
 
     l = len(values)
-    
+
     packed = pack_values(values)
 
     unpacked = unpack_values(packed, l)
@@ -168,5 +168,3 @@ if __name__ == '__main__':
         total, pixels = sumbyteoffset(image)
         print j, total, pixels, image
         sys.stdout.flush()
-
-

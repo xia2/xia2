@@ -2,11 +2,11 @@
 # Syminfo.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 13th June 2006
-# 
+#
 # A handler singleton for the information in the CCP4 symmetry library
 # syminfo.lib.
 #
@@ -127,7 +127,7 @@ class _Syminfo():
 
     def get_pointgroup(self, name):
         '''Get the pointgroup for this spacegroup, e.g. P422 for P43212.'''
-        
+
         if self._spacegroup_long_to_short.has_key(name):
             name = self._spacegroup_long_to_short[name]
 
@@ -156,12 +156,12 @@ class _Syminfo():
             return self.get_syminfo(name)['lattice']
 
         # ok this should be a "pure" spacegroup string
-        
+
         if self._spacegroup_long_to_short.has_key(name):
             name = self._spacegroup_long_to_short[name]
 
-	# The short name should not have a space in, sometimes this may
-	# be foxed by someone passing in P 21 - this should fix it...
+        # The short name should not have a space in, sometimes this may
+        # be foxed by someone passing in P 21 - this should fix it...
         return self._spacegroup_name_to_lattice[name.replace(' ', '')]
 
     def get_spacegroup_numbers(self):
@@ -205,7 +205,7 @@ class _Syminfo():
         number has.'''
 
         return self._symop[spacegroup_number]['symops']
-    
+
     def get_symops(self, spacegroup):
         '''Get the operations for spacegroup number N.'''
 
@@ -238,12 +238,10 @@ class _Syminfo():
                 subgroups.append(self.spacegroup_number_to_name(j + 1))
 
         return subgroups
-                
+
 Syminfo = _Syminfo()
-    
+
 if __name__ == '__main__':
     for arg in sys.argv[1:]:
         for spacegroup in Syminfo.get_subgroups(arg):
             print spacegroup
-
-    

@@ -2,12 +2,12 @@
 # XDSIntegrateHelpers.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
-# Routines which help with working with XDS INTEGRATE - e.g. parsing the 
+#
+# Routines which help with working with XDS INTEGRATE - e.g. parsing the
 # output INTEGRATE.LP.
-# 
+#
 
 import math
 import os
@@ -24,14 +24,14 @@ from Handlers.Streams import Chatter
 def _parse_integrate_lp_updates(filename):
     '''Parse the integrate.lp file to get the values for any updated
     parameters.'''
- 
+
     if not os.path.split(filename)[-1] == 'INTEGRATE.LP':
         raise RuntimeError, 'input filename not INTEGRATE.LP'
 
     file_contents = open(filename, 'r').readlines()
 
     updates = { }
-    
+
     for i in range(len(file_contents)):
         if ' ***** SUGGESTED VALUES FOR INPUT PARAMETERS *****' in \
            file_contents[i]:
@@ -41,7 +41,7 @@ def _parse_integrate_lp_updates(filename):
             updates[beam_parms[2]] = float(beam_parms[3])
             updates[reflecting_parms[0]] = float(reflecting_parms[1])
             updates[reflecting_parms[2]] = float(reflecting_parms[3])
-            
+
     return updates
 
 def _parse_integrate_lp(filename):
@@ -93,7 +93,7 @@ def _parse_integrate_lp(filename):
                     # record this somewhere...
 
                     fraction_weak = 1.0 - (float(strong) / float(all))
-                
+
                     per_image_stats[image] = {'scale':scale,
                                               'overloads':overloads,
                                               'strong':strong,
@@ -127,13 +127,13 @@ def _parse_integrate_lp(filename):
             unit_cell = tuple(map(float, file_contents[i].split()[-6:]))
             for image in block_images:
                 per_image_stats[image]['unit_cell'] = unit_cell
-            
+
 
         if 'OF SPINDLE POSITION (DEGREES)' in file_contents[i]:
             rmsd_phi = float(file_contents[i].split()[-1])
             # for image in range(block_start_finish[0],
             # block_start_finish[1] + 1):
-            for image in block_images:                
+            for image in block_images:
                 per_image_stats[image]['rmsd_phi'] = \
                                                    rmsd_phi / oscillation_range
 
@@ -142,16 +142,16 @@ def _parse_integrate_lp(filename):
             beam = map(float, file_contents[i].split()[-2:])
             # for image in range(block_start_finish[0],
             # block_start_finish[1] + 1):
-            for image in block_images:            
+            for image in block_images:
                 per_image_stats[image]['beam'] = beam
-            
+
         if 'CRYSTAL TO DETECTOR DISTANCE (mm)' in file_contents[i]:
             distance = float(file_contents[i].split()[-1])
             # for image in range(block_start_finish[0],
             # block_start_finish[1] + 1):
-            for image in block_images:                
+            for image in block_images:
                 per_image_stats[image]['distance'] = distance
-            
+
 
     return per_image_stats
 
@@ -181,7 +181,7 @@ def _happy_integrate_lp(integrate_lp_stats):
 
     for i in images:
         data = integrate_lp_stats[i]
-    
+
         if data['rmsd_phi'] > 1.0 or data['rmsd_pixel'] > 1.0:
             status = '*'
             Debug.write('Image %4d ... high rmsd (%f, %f)' % \
@@ -216,14 +216,14 @@ if __name__ == '__main__':
 
     for i in images:
         print stats[i]['rmsd_pixel']
-            
+
     stddev_pixel = [stats[i]['rmsd_pixel'] for i in images]
-    
+
     # fix to bug # 2501 - remove the extreme values from this
     # list...
-    
+
     stddev_pixel = list(set(stddev_pixel))
     stddev_pixel.sort()
     stddev_pixel = stddev_pixel[1:-1]
-    
+
     print stddev_pixel

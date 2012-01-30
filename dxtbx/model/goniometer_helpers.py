@@ -2,9 +2,9 @@
 # goniometer_helpers.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-#  
+#
 # Helper functions for goniometer
 
 import math
@@ -48,4 +48,3 @@ def cbf_gonio_to_effective_axis_fixed(cbf_gonio):
     S = axis.axis_and_angle_as_r3_rotation_matrix(start, deg = True)
 
     return axis, S.inverse() * R
-

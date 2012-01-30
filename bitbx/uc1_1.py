@@ -1,8 +1,8 @@
 #!/usr/bin/env cctbx.python
-# 
+#
 # Biostruct-X Data Reduction Use Case 1.1:
-# 
-# Given UB matrix, centring operation, generate a list of predictions as 
+#
+# Given UB matrix, centring operation, generate a list of predictions as
 # H K L x y phi. Also requires (clearly) a model for the detector positions
 # and the crystal lattice type. Alternatively (and simpler) assume lattice
 # is P1 and ignore centring.
@@ -26,7 +26,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from cftbx.coordinate_frame_converter import coordinate_frame_converter
 from rstbx.diffraction import rotation_angles
 from cctbx.sgtbx import space_group, space_group_symbols
-from cctbx.uctbx import unit_cell 
+from cctbx.uctbx import unit_cell
 
 def generate_indices(unit_cell_constants, resolution_limit):
     '''Generate all possible reflection indices out to a given resolution
@@ -37,14 +37,14 @@ def generate_indices(unit_cell_constants, resolution_limit):
     maxh, maxk, maxl = uc.max_miller_indices(resolution_limit)
 
     indices = []
-    
+
     for h in range(-maxh, maxh + 1):
         for k in range(-maxk, maxk + 1):
             for l in range(-maxl, maxl + 1):
 
                 if h == 0 and k == 0 and l == 0:
                     continue
-                
+
                 if uc.d((h, k, l)) < resolution_limit:
                     continue
 
@@ -142,7 +142,7 @@ def main(configuration_file):
         s = (ub * hkl).rotate(axis, angle)
         q = (s + s0).normalize()
         r = (q * distance / q.dot(detector_normal)) - detector_origin
-        
+
         x = r.dot(detector_fast)
         y = r.dot(detector_slow)
 
@@ -157,6 +157,6 @@ def main(configuration_file):
 
     for hkl, f, s, angle in observed_reflection_positions:
         print '%d %d %d' % hkl, '%.4f %4f %2f' % (f, s, angle * r2d)
-    
+
 if __name__ == '__main__':
     main(sys.argv[1])

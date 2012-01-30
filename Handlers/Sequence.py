@@ -2,11 +2,11 @@
 # Sequence.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # Handlers and calculations based on sequences for macromolecular structures.
-# 
+#
 
 import string
 
@@ -45,7 +45,7 @@ def to_short_form(residue_list):
         return short_form
     else:
         return residue_letters[residue_list.upper()]
-    
+
 class Sequence:
     '''A class to represent a sequence'''
 
@@ -62,9 +62,9 @@ class Sequence:
                 return
 
             if lines[0][0] == '>':
-                
+
                 self.sequence = ''
-                
+
                 for l in lines[2:]:
                     self.sequence += l
 
@@ -77,7 +77,7 @@ class Sequence:
             sequence = self.sequence.upper()
 
             self.sequence = ''
-            
+
             for s in sequence:
                 if s in string.ascii_uppercase:
                     self.sequence += s
@@ -121,7 +121,7 @@ class Sequence:
                 sequence.append(modifications[l])
             else:
                 sequence.append(l)
-                                    
+
         self.sequence = to_short_form(sequence)
 
     def weight(self):
@@ -179,8 +179,6 @@ if __name__ == '__main__':
              VKNGVKIDLGGIAKGYALDRARQIALSFDENATGFVEAGGDVRIIGPKFGKYPWVIGVKD
              PRGDDVIDYIYLKSGAVATSGDYERYFVVDGVRYHHILDPSTGYPARGVWSVTIIAEDAT
              TADALSTAGFVMAGKDWRKVVLDFPNMGAHLLIVLEGGAIERSETFKLFERE'''
-    
+
     s = Sequence(seq = sequence)
     print s.weight()
-
-    

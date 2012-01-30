@@ -2,9 +2,9 @@
 # Citations.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # A handler for management of program citations. This should initialise
 # from a citations.lib file which can be found in a number of places...
 # in particular $HOME or $USERDIR (I think, on Windows) .xia2, $XIA2_ROOT
@@ -32,7 +32,7 @@ class _Citations:
         for citation in citations:
             program = str(citation.attributes['program'].value)
             bibtex = str(citation.childNodes[0].data)
-            
+
             if not self._citations.has_key(program):
                 self._citations[program] = []
             self._citations[program].append(bibtex)
@@ -49,7 +49,7 @@ class _Citations:
 
     def get_programs(self):
         '''Get a list of all of the programs which have been cited.'''
-        
+
         result = [c for c in self._cited]
         result.sort()
         return result
@@ -58,7 +58,7 @@ class _Citations:
         '''Get a list of bibtex records of citations.'''
 
         result = []
-        
+
         for c in self._cited:
             for b in self._citations.get(c, []):
                 result.append(b)
@@ -82,7 +82,7 @@ class _Citations:
                 results.append(
                     '%(author)s (%(year)s) %(journal)s %(volume)s' % \
                     data)
-                
+
         # want them in alohabetical order
 
         results.sort()
@@ -108,7 +108,7 @@ class _Citations:
                 value = value.strip()
                 if value[-1] == ',':
                     value = value[:-1]
-                
+
                 contents[name.strip()] = value
 
         return contents

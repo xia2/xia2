@@ -2,11 +2,11 @@
 # Sweep.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 15th June 2006
-# 
+#
 # A class to represent a sweep of frames collected under the same conditions.
 # This pertains to the dataset object in the early phases of processing.
 #
@@ -25,7 +25,7 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
-if not os.environ['XIA2_ROOT'] in sys.path: 
+if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Experts.FindImages import image2template, find_matching_images, \
@@ -151,11 +151,11 @@ class Sweep():
         # images - caching isn't good enough in those circumstances!
 
         self._headers = { }
-        
+
         t = time.time()
 
         for i in self._images:
-            dd = Diffdump()            
+            dd = Diffdump()
             image = self.imagename(i)
             dd.set_image(image)
             header = dd.readheader()
@@ -174,7 +174,7 @@ class Sweep():
             # more images have appeared - reset myself
 
             self._images = images
-            
+
             self._read_headers()
 
             sweeps = headers2sweeps(self._headers)
@@ -192,7 +192,7 @@ class Sweep():
             if self._id_image == -1:
 
                 max_images = 0
-                
+
                 for s in sweeps:
                     if len(s['images']) > max_images:
                         sweep = s
@@ -205,7 +205,7 @@ class Sweep():
 
                 if sweep is None:
                     raise RuntimeError, 'no matching sweep found'
-                
+
             self._images = sweep['images']
             self._collect_start = sweep['collect_start']
             self._collect_end = sweep['collect_end']
@@ -232,9 +232,9 @@ if __name__ == '__main__':
                              'Data', 'Test', 'Images', '12287_1_E1_001.img')
     else:
         image = sys.argv[1]
-        
+
     template, directory = image2template_directory(image)
-    
+
     sl = SweepFactory(template, directory)
 
     for s in sl:
@@ -247,4 +247,3 @@ if __name__ == '__main__':
         print 'Images: %d to %d' % (min(s.get_images()), max(s.get_images()))
         print 'Template: %s' % s.get_template()
         print ''
-                                                     

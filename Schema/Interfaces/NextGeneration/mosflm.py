@@ -40,11 +40,7 @@ if __name__ == '__main__':
     m.set_dip_template('foo_1_###.img')
 
     # etc.
-    
+
     m.index()
     m.migrate_index_results_into_integrate_input()
     m.integrate()
-
-    
-
-    

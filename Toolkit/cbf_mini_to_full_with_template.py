@@ -29,7 +29,7 @@ def create_template_simple(beamline, xtal_id, detector_id, detector_name,
         }
 
 def zoop(beam_pixel, distance):
-    
+
     beamline = 'dls'
     xtal_id = 'xtal001'
     detector_id = 'Pilatus6M'
@@ -62,11 +62,11 @@ def understand_minicbf(cbf_file):
     Beam_y = None
 
     cleanup = string.maketrans('(),:', '    ')
-    
+
     for record in split_header(cbf_file).split('\n'):
         if not '#' in record:
             continue
-        
+
         if len(record.split()) == 2 and '-' in record and ':' in record:
             Timestamp = record.split()[1]
             month = {'Jan':1, 'Feb':2, 'Mar':3,
@@ -75,7 +75,7 @@ def understand_minicbf(cbf_file):
                      'Oct':10, 'Nov':11, 'Dec':12}
             for k in month:
                 Timestamp = Timestamp.replace(k, '%d' % month[k])
-        
+
         tokens = record.translate(cleanup).strip().split()[1:]
 
         name = tokens[0]
@@ -118,9 +118,9 @@ def understand_minicbf(cbf_file):
             'Wavelength':Wavelength,
             'Beam_x':Beam_x,
             'Beam_y':Beam_y}
-    
+
     map2 = { }
-    
+
     for record in template.split('\n'):
         if not '@' in record[:1]:
             continue
@@ -164,5 +164,3 @@ if __name__ == '__main__':
         raise RuntimeError, 'will not overwrite %s' % sys.argv[2]
 
     open(sys.argv[2], 'wb').write(understand_minicbf(sys.argv[1]))
-
-    

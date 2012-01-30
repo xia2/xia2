@@ -2,46 +2,46 @@
 # Indexer.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # An interface for programs which perform indexing - this will handle
 # all of the aspects of the interface which are common between indexing
 # progtrams, and which must be presented in order to satisfy the contract
 # for the indexer interface.
-# 
+#
 # The following are considered to be critical for this class:
-# 
+#
 # Images to index - optional this could be decided by the implementation
 # Refined beam position
 # Refined distance
 # Mosaic spread
-# 
+#
 # Input: ?Selected lattice?
 # Input: ?Cell?
 # Output: Selected lattice
 # Output: Unit cell
 # Output: Aux information - may include matrix files &c. This is going to
 #         be in the "payload" and will be program specific.
-# 
+#
 # Methods:
-# 
+#
 # index() -> delegated to implementation._index()
 #
 # Notes:
-# 
+#
 # All properties of this class are prefixed with either indxr for protected
 # things or Indexer for public things.
 #
 # Error Conditions:
-# 
+#
 # A couple of conditions will give indexing errors -
 # (1) if no solution matching the input was found
 # (2) if the images were blank
 # (3) if the indexing just failed (bad beam, etc.)
-# 
+#
 # These need to be handled properly with helpful error messages.
-# 
+#
 
 import os
 import sys
@@ -96,7 +96,7 @@ class _IndexerHelper:
 
         for l in self._sorted_list:
             lattices.append(l)
-            
+
         self._sorted_list = SortLattices(lattices)
         return
 
@@ -211,7 +211,7 @@ class Indexer:
             self.set_indexer_done(False)
 
         return
-        
+
     def set_indexer_done(self, done = True):
         self._indxr_done = done
 
@@ -241,7 +241,7 @@ class Indexer:
     # getters of the status - note well that these need to cascade
     # the status... note that for the prepare get there is no previous
     # step we could cascade to...
-        
+
     def get_indexer_prepare_done(self):
         return self._indxr_prepare_done
 
@@ -250,7 +250,7 @@ class Indexer:
         if not self.get_indexer_prepare_done():
             Debug.write('Resetting indexer done as prepare not done')
             self.set_indexer_done(False)
-        
+
         return self._indxr_done
 
     def get_indexer_finish_done(self):
@@ -259,7 +259,7 @@ class Indexer:
             Debug.write(
                 'Resetting indexer finish done as index not done')
             self.set_indexer_finish_done(False)
-        
+
         return self._indxr_finish_done
 
     # ----------------------------------------------------------
@@ -294,7 +294,7 @@ class Indexer:
 
         self._indxr_helper.eliminate(indxr_print = indxr_print)
         self._indxr_helper.insert(lattice, cell)
-        
+
 
     def index(self):
 
@@ -319,7 +319,7 @@ class Indexer:
 
                 if self._indxr_sweep_name:
                     Chatter.banner('Autoindexing %s' % self._indxr_sweep_name)
-            
+
                 if not self._indxr_helper:
 
                     result = self._index()
@@ -338,7 +338,7 @@ class Indexer:
                     self._indxr_helper = _IndexerHelper(solutions)
 
                     solution = self._indxr_helper.get()
-        
+
                     # compare these against the final solution, if different
                     # reject solution and return - correct solution will
                     # be used next cycle
@@ -352,12 +352,12 @@ class Indexer:
 
                 else:
                     # rerun autoindexing with the best known current solution
-            
+
                     solution = self._indxr_helper.get()
                     self._indxr_input_lattice = solution[0]
                     self._indxr_input_cell = solution[1]
                     result = self._index()
-            
+
             # next finish up...
 
             self.set_indexer_finish_done(True)
@@ -367,7 +367,7 @@ class Indexer:
                 Chatter.write('All possible indexing solutions:')
                 for l in self._indxr_helper.repr():
                     Chatter.write(l)
-                
+
             # FIXED 23/OCT/06 at this stage I need to look at the list of
             # reasonable solutions and try to figure out if the indexing
             # program has picked the highest - if not, then constrain the
@@ -380,15 +380,15 @@ class Indexer:
             # lower symmetry solution and continue. This solution is a
             # general one, so may be implemented in the general indexer
             # interface rather than in specific code...
-            
+
             if self._indxr_print:
                 Chatter.write('Indexing solution:')
                 Chatter.write('%s %s' % (
                     self._indxr_lattice,
                     '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
                     self._indxr_cell))
-        
-        return 
+
+        return
 
     # setter methods for the input - most of these will reset the
     # indexer in one way or another
@@ -403,7 +403,7 @@ class Indexer:
             self._indxr_images.append((image, image))
 
         self.set_indexer_prepare_done(False)
-        
+
         return
 
     def set_indexer_image_wedges(self, indexer_image_wedges):
@@ -418,9 +418,9 @@ class Indexer:
                 self._indxr_images.append(image)
             if type(image) == type(1):
                 self._indxr_images.append((image, image))
-                
+
         self.set_indexer_prepare_done(False)
-        
+
         return
 
     def get_indexer_images(self):
@@ -467,7 +467,7 @@ class Indexer:
     # getter methods for the output - all of these will call index()
     # which will guarantee that the results are up to date (recall
     # while structure above)
-    
+
     def get_indexer_cell(self):
         '''Get the selected unit cell.'''
 
@@ -491,7 +491,7 @@ class Indexer:
         frame.'''
 
         self.index()
-        return self._indxr_spot_list 
+        return self._indxr_spot_list
 
     def get_indexer_ice(self):
         '''Get an idea of whether this is icy - 0, no - 1, yes.'''
@@ -527,7 +527,7 @@ class Indexer:
         '''Get an estimate of the diffracting resolution.'''
 
         self.index()
-        return self._indxr_resolution_estimate       
+        return self._indxr_resolution_estimate
 
     def get_indexer_low_resolution(self):
         '''Get an estimate of the low resolution limit of the data.'''
@@ -537,7 +537,7 @@ class Indexer:
 
     def set_indexer_payload(self, this, value):
         '''Set something in the payload.'''
-        
+
         self._indxr_payload[this] = value
         return
 
@@ -571,5 +571,3 @@ class Indexer:
             self.set_indexer_done(False)
 
         return self.LATTICE_POSSIBLE
-
-    

@@ -1,14 +1,14 @@
 ###CBF: VERSION 1.1
 # Template for Diamond MX beamlines phase 1 - replacing what we currently
 # have in ADSC, Rayonix and DECTRIS image headers with a standard syntax
-# and description. 
-# 
+# and description.
+#
 # DECTRIS translation table follows...
-# 
+#
 @ Exposure_time     _expt_
 @ Exposure_period   _expp_
-@ Start_angle       _omega_     
-@ Angle_increment   _domega_  
+@ Start_angle       _omega_
+@ Angle_increment   _domega_
 @ Timestamp         _timestamp_
 @ Count_cutoff      _cutoff_
 @ Compression_type  _compress_
@@ -19,9 +19,9 @@
 # Detector_distance _dist_
 # Beam_x            _beam_x_
 # Beam_y            _beam_y_
-# 
+#
 # These items will be pre-populated in the template so need not be included:
-# 
+#
 # Alpha
 # Kappa
 # Phi
@@ -29,9 +29,9 @@
 # Oscillation_axis
 # Pixel_size
 # Detector
-# 
+#
 # Once we get this end of things done properly in GDA.
-# 
+#
 --- End of preamble
 # This and all subsequent lines will appear in the header
 
@@ -204,5 +204,3 @@ _array_structure.encoding_type
 _array_structure.compression_type
 _array_structure.byte_order
  ARRAY1 "signed 32-bit integer" _compress_ little_endian
-
-

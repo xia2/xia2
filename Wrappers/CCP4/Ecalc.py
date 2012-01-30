@@ -2,11 +2,11 @@
 # Ecalc.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 20th June 2007
-# 
+#
 
 import sys
 import os
@@ -47,7 +47,7 @@ def Ecalc(DriverType = None):
             return
 
         def ecalc(self):
-            
+
             self.check_hklin()
             self.check_hklout()
 
@@ -64,5 +64,3 @@ def Ecalc(DriverType = None):
 
 
     return EcalcWrapper()
-
-

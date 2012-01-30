@@ -2,13 +2,13 @@
 # XDSCorrectHelpers.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 18th October 2006
-# 
-# Helpers for XDS when running the correct step - this will - 
-# 
+#
+# Helpers for XDS when running the correct step - this will -
+#
 #  - check that all input files are present and correct
 #  - run xds to do integration, with help from the input parameters
 #    and a generic xds writer
@@ -28,7 +28,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'],
                     'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
-    
+
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
@@ -91,17 +91,17 @@ def _parse_correct_lp(filename):
 
         if 'OF SPINDLE POSITION (DEGREES)' in file_contents[i]:
             rmsd_phi = float(file_contents[i].split()[-1])
-            postrefinement_stats['rmsd_phi'] = rmsd_phi        
+            postrefinement_stats['rmsd_phi'] = rmsd_phi
 
         # want to convert this to mm in some standard setting!
         if 'DETECTOR COORDINATES (PIXELS) OF DIRECT BEAM' in file_contents[i]:
             beam = map(float, file_contents[i].split()[-2:])
-            postrefinement_stats['beam'] = beam        
-            
+            postrefinement_stats['beam'] = beam
+
         if 'CRYSTAL TO DETECTOR DISTANCE (mm)' in file_contents[i]:
             distance = float(file_contents[i].split()[-1])
             postrefinement_stats['distance'] = distance
-        
+
         if 'UNIT CELL PARAMETERS' in file_contents[i]:
             cell = map(float, file_contents[i].split()[-6:])
             postrefinement_stats['cell'] = cell
@@ -114,7 +114,7 @@ def _parse_correct_lp(filename):
 
             if '-1.0E+00-1.0E+00-1.0E+00' in file_contents[i]:
                 cell_esd = [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
-            else:            
+            else:
                 cell_esd = map(float, file_contents[i].split()[-6:])
             postrefinement_stats['cell_esd'] = cell_esd
 
@@ -148,7 +148,7 @@ def _parse_correct_lp(filename):
 
         if 'a          b              INPUT DATA SET' in file_contents[i]:
             sdcorrection = map(float, file_contents[i + 1].split()[:2])
-            
+
             postrefinement_stats['sdcorrection'] = tuple(sdcorrection)
 
         if 'CORRELATION  NPAIR  Rmeas  COMPARED  ESD' in file_contents[i]:
@@ -167,4 +167,3 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         correct_lp = sys.argv[1]
     print _parse_correct_lp(correct_lp)
-

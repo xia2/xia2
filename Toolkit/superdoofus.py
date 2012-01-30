@@ -38,7 +38,7 @@ def parse_xparm(xparm_file):
     return ra, beam, x_to_d.elems, (px, py), distance, (nx, ny), x, y
 
 def get_abc_from_xparm(xparm_file):
-    
+
     xdata = xds_read_xparm(xparm_file)
 
     return xdata['a'], xdata['b'], xdata['c']
@@ -51,7 +51,7 @@ def superdoofus(integrate_hkl, xparm_xds):
     O = matrix.col(x_to_d)
     S0 = matrix.col(beam)
     A = matrix.col(ra)
-    
+
     UB = matrix.sqr(a + b + c).inverse()
 
     X = matrix.col(x)
@@ -97,7 +97,7 @@ def superdoofus(integrate_hkl, xparm_xds):
         print '%d %d %d %.3f %.3f %.3f %.3f %.3f %.3f' % \
               (hkl[0], hkl[1], hkl[2], i, j, k,
                xyz[0] * pxpy[0], xyz[1] * pxpy[1], phi)
-        
+
         break
 
 

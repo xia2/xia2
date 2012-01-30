@@ -2,14 +2,14 @@
 # Crossec.py
 #   Copyright (C) 2007 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 21st August 2007
-# 
+#
 # A wrapper for the CCP4 program crossec, which is used for guessing f', f''
 # given an atom and wavelength. This is only useful away from the edge.
-# 
+#
 
 import os
 import sys
@@ -27,7 +27,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'],
                     'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
-    
+
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
@@ -52,9 +52,9 @@ def Crossec(DriverType = None):
         def __init__(self):
 
             DriverInstance.__class__.__init__(self)
-            
+
             self.set_executable(os.path.join(
-                os.environ.get('CBIN', ''), 'crossec'))            
+                os.environ.get('CBIN', ''), 'crossec'))
 
             self._atom = None
             self._wavelength = None

@@ -2,12 +2,12 @@
 # MosflmWrapper.py
 #   Copyright (C) 2011 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A real wrapper for the data processing program Mosflm, which will be wrapped
 # with the following methods to provide functionality:
-# 
+#
 # index: autoindexing functionality (implemented)
 # integrate: process a frame or a dataset (implemented)
 #
@@ -71,7 +71,7 @@ def MosflmWrapper(DriverType = None):
 
             self.set_executable(os.path.join(
                 os.environ['CCP4'], 'bin', 'ipmosflm'))
-                
+
             FrameProcessor.__init__(self)
 
             return
@@ -154,7 +154,7 @@ def MosflmWrapper(DriverType = None):
                 self.input('process %d %d')
                 self.input('go')
 
-            # that should be everything 
+            # that should be everything
             self.close_wait()
 
             # get the log file
@@ -163,4 +163,3 @@ def MosflmWrapper(DriverType = None):
             return
 
     return _MosflmWrapper()
-

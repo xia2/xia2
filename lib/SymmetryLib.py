@@ -2,13 +2,13 @@
 # SymmetryLib.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 16th November 2006
-# 
+#
 # A library of things to help with simple symmetry operation stuff.
-# 
+#
 # FIXED 17/NOV/06 add a method in here to give a list of likely, and then
 #                 less likely, spacegroups based on an input spacegroup.
 #                 For instance, if the input spacegroup is P 41 21 2 then
@@ -23,7 +23,7 @@
 #
 # FIXME 06/DEC/06 need a mapping table from "old" spacegroup names to e.g. xHM
 #                 for use with phenix.hyss.
-# 
+#
 
 import os
 
@@ -54,10 +54,10 @@ def lattice_to_spacegroup(lattice):
                               'cP':195,
                               'cF':196,
                               'cI':197}
-    
+
     if not lattice in _lattice_to_spacegroup.keys():
         raise RuntimeError, 'lattice "%s" unknown' % lattice
-    
+
     return _lattice_to_spacegroup[lattice]
 
 def spacegroup_name_xHM_to_old(xHM):
@@ -79,7 +79,7 @@ def spacegroup_name_xHM_to_old(xHM):
         if 'symbol xHM' in line:
             current_xHM = line.split('\'')[1]
 
-        if 'end_spacegroup' in line:            
+        if 'end_spacegroup' in line:
             mapping[current_xHM] = current_old
 
     xHM = xHM.upper()
@@ -88,7 +88,7 @@ def spacegroup_name_xHM_to_old(xHM):
         raise RuntimeError, 'spacegroup %s unknown' % xHM
 
     return mapping[xHM]
-    
+
 def spacegroup_name_old_to_xHM(old):
     '''Convert from old to xHM name.'''
 
@@ -108,7 +108,7 @@ def spacegroup_name_old_to_xHM(old):
         if 'symbol xHM' in line:
             current_xHM = line.split('\'')[1]
 
-        if 'end_spacegroup' in line:            
+        if 'end_spacegroup' in line:
             mapping[current_old] = current_xHM
 
     old = old.upper()
@@ -120,12 +120,12 @@ def spacegroup_name_old_to_xHM(old):
 
 def clean_reindex_operator(symop):
     return str(symop).replace('[', '').replace(']', '')
-    
+
 def get_all_spacegroups_short():
     '''Get a list of all short spacegroup names.'''
 
     result = []
-    
+
     for record in open(symop, 'r').readlines():
         if record[0] != ' ':
             shortname = record.split()[3]
@@ -137,14 +137,14 @@ def get_all_spacegroups_long():
     '''Get a list of all long spacegroup names.'''
 
     result = []
-    
+
     for record in open(symop, 'r').readlines():
         if record[0] != ' ':
             longname = record.split('\'')[1]
             result.append(longname)
 
     return result
-    
+
 def spacegroup_name_short_to_long(name):
     '''Get the full spacegroup name from the short version.'''
     for record in open(symop, 'r').readlines():
@@ -184,7 +184,7 @@ def compute_enantiomorph(spacegroup):
         new = '32'
     elif elements[0] == 'P' and elements[1] == '32':
         new = '31'
-        
+
     elif elements[0] == 'P' and elements[1] == '61':
         new = '65'
     elif elements[0] == 'P' and elements[1] == '65':
@@ -235,26 +235,26 @@ def lattices_in_order():
 
 def sort_lattices(lattices):
     ordered_lattices = []
-    
+
     for l in lattices_in_order():
         if l in lattices:
             ordered_lattices.append(l)
-            
+
     return ordered_lattices
-    
+
 def lauegroup_to_lattice(lauegroup):
     '''Convert a Laue group representation (from pointless, e.g. I m m m)
     to something useful, like the implied crystal lattice (in this
     case, oI.)'''
 
-    # this has been calculated from the results of Ralf GK's sginfo and a 
+    # this has been calculated from the results of Ralf GK's sginfo and a
     # little fiddling...
     #
     # 19/feb/08 added mI record as pointless has started producing this -
     # why??? this is not a "real" spacegroup... may be able to switch this
     # off...
     #                             'I2/m': 'mI',
-    
+
     lauegroup_to_lattice = {'Ammm': 'oA',
                             'C2/m': 'mC',
                             'Cmmm': 'oC',
@@ -307,4 +307,3 @@ if __name__ == '__main__':
 
         if enantiomorph != spacegroup:
             print '%s -> %s' % (spacegroup, enantiomorph)
- 

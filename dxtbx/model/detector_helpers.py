@@ -2,9 +2,9 @@
 # detector_helpers.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-#  
+#
 # Helpers for the detector class...
 
 import math
@@ -67,7 +67,7 @@ def compute_frame_rotation(original, final):
     # #1 rotate about x ^ (1, 0, 0) - if they are not coincident,
     # rotate about _x ^ _y if they are colinear but in opposite
     # directions
-   
+
     if _x.angle(x) % math.pi:
         _ra_x = _x.cross(x)
         _a_x = _x.angle(x)
@@ -77,25 +77,25 @@ def compute_frame_rotation(original, final):
     else:
         _ra_x = _x
         _a_x = 0.0
-            
+
     _m_x = _ra_x.axis_and_angle_as_r3_rotation_matrix(- _a_x)
 
     # then rotate z to _z by rotating about _x (which is now coincident
     # with x)
-    
+
     _ra_z = _x
     _a_z = _z.angle(_m_x * z)
     _m_z = _ra_z.axis_and_angle_as_r3_rotation_matrix(- _a_z)
-    
+
     _m = _m_z * _m_x
-    
+
     assert(math.fabs(_m.determinant() - 1.0) < 1.0e-7)
 
     return _m
 
 def find_undefined_value(cbf_handle):
     '''Given a cbf handle, get the value for the undefined pixel.'''
-    
+
     cbf_handle.find_category('array_intensities')
     cbf_handle.find_column('undefined_value')
     return cbf_handle.get_doublevalue()
@@ -124,4 +124,3 @@ class detector_helper_sensors:
         return [detector_helper_sensors.SENSOR_CCD,
                 detector_helper_sensors.SENSOR_PAD,
                 detector_helper_sensors.SENSOR_IMAGE_PLATE]
-            

@@ -18,7 +18,7 @@ def pack_values(data):
             packed += struct.pack('b', delta)
             current = d
             continue
-        
+
         packed += struct.pack('b', -128)
         if -32767 < delta < 32767:
             packed += struct.pack('<h', delta)
@@ -30,7 +30,7 @@ def pack_values(data):
             packed += struct.pack('<i', delta)
             current = d
             continue
-        
+
         packed += struct.pack('<h', -2147483648)
         packed += struct.pack('<q', delta)
         current = d
@@ -131,19 +131,19 @@ def fix_6m(bad_mask, images):
             if 'Content-MD5:' in h:
                 continue
             new_header += '%s\n' % h
-        
+
         total_bad = sum([values[j] for j in duff])
-        
+
         for j in duff:
             values[j] = -2
 
         packed = pack_values(values)
         result = new_header + packed
-        
+
         print out
         print 'Average duff value: %f' % (total_bad / nbad)
         print 'Processing time: %.1fs' % (time.time() - start)
-        
+
         open(out, 'w').write(result)
 
     return

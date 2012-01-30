@@ -30,7 +30,7 @@ class FormatSMVADSCSN457(FormatSMVADSC):
 
         if int(header['DETECTOR_SN']) != 457:
             return 0
-        
+
         return 3
 
     def __init__(self, image_file):
@@ -38,15 +38,15 @@ class FormatSMVADSCSN457(FormatSMVADSC):
         proper model of the experiment.'''
 
         assert(FormatSMVADSC.understand(image_file) > 0)
-        
+
         FormatSMV.__init__(self, image_file)
 
         return
-    
+
     def _goniometer(self):
         '''Return a model for a simple single-axis goniometer. This should
         probably be checked against the image header.'''
-        
+
         return self._goniometer_factory.known_axis((-1, 0, 0))
 
     # FIXME surely I don't need the code which follows which just reproduces
@@ -65,7 +65,7 @@ class FormatSMVADSCSN457(FormatSMVADSC):
                       float(self._header_dictionary['SIZE2']))
         overload = 65535
         underload = 0
-        
+
         return self._detector_factory.simple(
             'CCD', distance, (beam_y, beam_x), '+x', '-y',
             (pixel_size, pixel_size), image_size, (underload, overload), [])
@@ -74,13 +74,13 @@ class FormatSMVADSCSN457(FormatSMVADSC):
         '''Return a simple model for the beam.'''
 
         wavelength = float(self._header_dictionary['WAVELENGTH'])
-        
+
         return self._beam_factory.simple(wavelength)
 
     def _scan(self):
         '''Return the scan information for this image.'''
 
-        format = self._scan_factory.format('SMV') 
+        format = self._scan_factory.format('SMV')
         exposure_time = float(self._header_dictionary['TIME'])
         epoch =  time.mktime(time.strptime(self._header_dictionary['DATE']))
         osc_start = float(self._header_dictionary['OSC_START'])

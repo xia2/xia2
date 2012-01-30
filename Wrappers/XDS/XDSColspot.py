@@ -2,7 +2,7 @@
 # XDSColspot.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A wrapper to handle the JOB=COLSPOT module in XDS.
@@ -22,7 +22,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'],
                     'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
-    
+
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
@@ -54,7 +54,7 @@ def XDSColspot(DriverType = None):
             FrameProcessor.__init__(self)
 
             # now set myself up...
-            
+
             self._parallel = Flags.get_parallel()
 
             if self._parallel <= 1:
@@ -90,7 +90,7 @@ def XDSColspot(DriverType = None):
 
         def get_output_data_file(self, name):
             return self._output_data_files[name]
-        
+
         # this needs setting up from setup_from_image in FrameProcessor
 
         def set_data_range(self, start, end):
@@ -130,8 +130,8 @@ def XDSColspot(DriverType = None):
             # what are we doing?
             xds_inp.write('JOB=COLSPOT\n')
             xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
-                          self._parallel) 
-            
+                          self._parallel)
+
             for record in header:
                 xds_inp.write('%s\n' % record)
 
@@ -142,7 +142,7 @@ def XDSColspot(DriverType = None):
                      name_template
 
             xds_inp.write(record)
-                
+
             xds_inp.write('DATA_RANGE=%d %d\n' % self._data_range)
             for spot_range in self._spot_range:
                 xds_inp.write('SPOT_RANGE=%d %d\n' % spot_range)
@@ -155,13 +155,13 @@ def XDSColspot(DriverType = None):
                 xds_inp.write('MINIMUM_NUMBER_OF_PIXELS_IN_A_SPOT=1\n')
 
             xds_inp.close()
-            
+
             # copy the input file...
             shutil.copyfile(os.path.join(self.get_working_directory(),
                                          'XDS.INP'),
                             os.path.join(self.get_working_directory(),
                                          '%d_COLSPOT.INP' % self.get_xpid()))
-            
+
             # write the input data files...
 
             for file in self._input_data_files_list:
@@ -196,7 +196,7 @@ if __name__ == '__main__':
     directory = os.path.join(os.environ['XIA2_ROOT'],
                              'Data', 'Test', 'Images')
 
-    
+
     colspot.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 
     for file in ['X-CORRECTIONS.cbf',
@@ -211,5 +211,3 @@ if __name__ == '__main__':
     colspot.add_spot_range(1, 1)
 
     colspot.run()
-
-

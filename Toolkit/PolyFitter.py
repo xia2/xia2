@@ -1,11 +1,11 @@
 #!/usr/bin/env cctbx.python
 # PolyFitter.py
-# 
+#
 #   Copyright (C) 2010 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # A toolkit component for performing polynomial fits to an array of data,
 # using the CCTBX lbfgs minimiser. For data from a general form, it may
 # be helpful to transform the measurements to a "sensible" form - for example
@@ -147,7 +147,7 @@ def get_positive_values(x):
 
     return result
 
-        
+
 if __name__ == '__main__':
 
     # trying to work out why something is slow...
@@ -159,7 +159,3 @@ if __name__ == '__main__':
 
     for j in range(len(x)):
         print x[j], y[j], m[j]
-
-        
-
-

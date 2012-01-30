@@ -2,18 +2,18 @@
 # Truncate.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 26th October 2006
-# 
+#
 # A wrapper for the CCP4 program Truncate, which calculates F's from
 # I's and gives a few useful statistics about the data set.
 #
 # FIXME 26/OCT/06 this needs to be able to take into account the solvent
 #                 content of the crystal (at the moment it will be assumed
 #                 to be 50%.)
-# 
+#
 # FIXME 16/NOV/06 need to be able to get the estimates B factor from the
 #                 Wilson plot and also second moment stuff, perhaps?
 #
@@ -79,7 +79,7 @@ def Truncate(DriverType = None):
             self._nref_in = 0
             self._nref_out = 0
             self._nabsent = 0
-            
+
             return
 
         def set_anomalous(self, anomalous):
@@ -93,7 +93,7 @@ def Truncate(DriverType = None):
 
         def truncate(self):
             '''Actually perform the truncation procedure.'''
-            
+
             self.check_hklin()
             self.check_hklout()
 
@@ -159,8 +159,8 @@ def Truncate(DriverType = None):
                     elif self._wilson_fit_grad > 0:
                         Debug.write(
                             'Positive gradient but not much wilson plot')
-                        
-                        
+
+
                 if 'Uncertainty in Gradient' in line:
                     self._wilson_fit_grad_sd = float(line.split()[-1])
                 if 'X Intercept' in line:
@@ -169,17 +169,17 @@ def Truncate(DriverType = None):
                     self._wilson_fit_m_sd = float(line.split()[-1])
                 if 'Resolution range' in line:
                     self._wilson_fit_range = map(float, line.split()[-2:])
-                    
-                    
+
+
             results = self.parse_ccp4_loggraph()
             moments = transpose_loggraph(
                 results['Acentric Moments of E for k = 1,3,4,6,8'])
-            
+
             # keys we want in this are "Resln_Range" "1/resol^2" and
             # MomentZ2. The last of these should be around two, but is
             # likely to be a little different to this.
             self._moments = moments
-            
+
             return
 
         def get_b_factor(self):
@@ -210,9 +210,9 @@ def Truncate(DriverType = None):
 
             nref_in = 0
             nref_out = 0
-            
+
             current_logical = None
-            
+
             for record in records:
                 if 'Logical Name' in record:
                     current_logical = record.split()[2]
@@ -237,5 +237,3 @@ if __name__ == '__main__':
 
     print truncate.get_nref_in(), truncate.get_nref_out(), \
           truncate.get_nabsent()
-
-    

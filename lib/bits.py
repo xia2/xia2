@@ -2,13 +2,13 @@
 # bits.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 21/SEP/06
-# 
+#
 # Python routines which don't really belong anywhere else.
-# 
+#
 
 import os
 import sys
@@ -80,7 +80,7 @@ def mean_sd(list_of_numbers):
     for l in list_of_numbers:
         sd += (l - mean) * (l - mean)
     sd /= len(list_of_numbers)
-    return (mean, math.sqrt(sd))    
+    return (mean, math.sqrt(sd))
 
 # FIXNE redundant
 
@@ -125,7 +125,7 @@ def auto_logfiler(DriverInstance, extra = None):
 
     if executable[-4:] == '.bat':
         executable = executable[:-4]
-        
+
     if executable[-4:] == '.exe':
         executable = executable[:-4]
 
@@ -137,7 +137,7 @@ def auto_logfiler(DriverInstance, extra = None):
                                '%d_%s.log' % (number, executable))
 
     DriverInstance.set_xpid(number)
-    
+
     Debug.write('Logfile: %s -> %s' % (executable,
                                        logfile))
 
@@ -172,7 +172,7 @@ def transpose_loggraph(loggraph_dict):
         for j in range(nc):
             results[new_columns[j]].append(record[j])
 
-    return results                            
+    return results
 
 def nint(a):
     '''return the nearest integer to a.'''
@@ -195,7 +195,7 @@ if __name__ == '__main__test__':
     for t in tests:
         if nint(t[0]) != t[1]:
             raise RuntimeError, 'nint failed for %f' % t[0]
-    
+
 if __name__ == '__main_old__':
     # run a test
 

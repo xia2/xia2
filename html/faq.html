@@ -9,25 +9,25 @@
 
     <h3>Will there be a GUI?</h3>
 
-    <p>A CCP4i interface for xia2 is available, which generates xinfo files. 
+    <p>A CCP4i interface for xia2 is available, which generates xinfo files.
       This is however slightly harder to use than the command line.</p>
 
     <h3>How long does it take?</h3>
 
     <p>Because xia2 is quite thorough in the data reduction, it can take
-      a little while and also appear to be doing the same thing over and 
+      a little while and also appear to be doing the same thing over and
       over again, for instance integrating a particular sweep. However,
       by it's design each of these jobs is required, and should be making
       the results better. For my test cases, which are reasonably typical
       MAD, SAD and native data sets, anywhere between 30 minutes and four
-      hours is typical - however this depends greatly on the computer, where 
+      hours is typical - however this depends greatly on the computer, where
       the data are stored.</p>
 
     <h3>What about directories with spaces in?</h3>
 
     <p>Working from directories with spaces in the path, or in directories
-      with spaces in the name may cause problems - generally it is a 
-      good idea to avoid this if possible. This is a particular problem 
+      with spaces in the name may cause problems - generally it is a
+      good idea to avoid this if possible. This is a particular problem
       on Windows where things like to live in "Documents and Settings".</p>
 
     <p>Reducing data from directories with spaces in can have unpredictable
@@ -57,25 +57,25 @@
     <h3>What happens with resolution limits?</h3>
 
     <p>There are two places where resolution limits are imposed, during
-      integration and then during scaling. The integration resolution 
+      integration and then during scaling. The integration resolution
       limit is imposed where the measurement of individual reflections
-      has an I/sigma of about 1.0. This is applied separately for each 
+      has an I/sigma of about 1.0. This is applied separately for each
       sweep. The resolution limit from scaling is applied per sweep, and
       is where the overall (merged) I/sigma is about 2.0.</p>
 
     <h1>Error Questions</h1>
-    
+
     <h3>What does error getting status meean?</h3>
 
     <p>This usually - with a CCP4 program - indicates that the output
-      has got a little mashed and the status record has been moved. 
+      has got a little mashed and the status record has been moved.
       This is usually a side-effect of compilation with gfortran, so
       it is probably worth adding</p>
 
     <pre>
 GFORTRAN_UNBUFFERED_ALL=1
     </pre>
-    
+
     <p>to your environment.</p>
 
   </body>

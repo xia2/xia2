@@ -1,6 +1,6 @@
 #!/usr/bin/env cctbx.python
 # find_HKL.py
-# 
+#
 # An illustration of how to use cctbx code with imgCIF / cbf files, through
 # the pycbf API now included in cctbx. N.B. this does require some coordinate
 # frame changes (see below) and should work with the files from a Pilatus
@@ -66,7 +66,7 @@ def find_HKL(cbf_image):
     cbf_handle.find_row('source')
 
     beam_direction = []
-    
+
     for j in range(3):
         cbf_handle.find_column('vector[%d]' % (j + 1))
         beam_direction.append(cbf_handle.get_doublevalue())
@@ -75,25 +75,25 @@ def find_HKL(cbf_image):
 
     detector = cbf_handle.construct_detector(0)
 
-    # this returns slow fast slow fast pixels pixels mm mm 
+    # this returns slow fast slow fast pixels pixels mm mm
 
     detector_normal = tuple(detector.get_detector_normal())
     distance = detector.get_detector_distance()
     pixel = (detector.get_inferred_pixel_size(1),
              detector.get_inferred_pixel_size(2))
-    
+
     gonio = cbf_handle.construct_goniometer()
 
     real_axis, real_angle = determine_effective_scan_axis(gonio)
 
     axis = tuple(gonio.get_rotation_axis())
     angles = tuple(gonio.get_rotation_range())
-    
+
     # this method returns slow then fast dimensions i.e. (y, x)
-    
+
     size = tuple(reversed(cbf_handle.get_image_size(0)))
     wavelength = cbf_handle.get_wavelength()
-    
+
     O = matrix.col(detector.get_pixel_coordinates(0, 0))
     fast = matrix.col(detector.get_pixel_coordinates(0, 1))
     slow = matrix.col(detector.get_pixel_coordinates(1, 0))
@@ -119,7 +119,7 @@ def find_HKL(cbf_image):
         RtoR = matrix.sqr((1, 0, 0, 0, -1, 0, 0, 0, -1))
     else:
         RtoR = matrix.sqr((1, 0, 0, 0, 1, 0, 0, 0, 1))
-        
+
     Raxis = RtoR * axis
     RUB = RtoR * UB
 
@@ -132,7 +132,7 @@ def find_HKL(cbf_image):
     print '%.2f %.2f' % tuple(omegas)
 
     for omega in omegas:
-    
+
         R = matrix.col(axis).axis_and_angle_as_r3_rotation_matrix(
             math.pi * omega / 180.0)
 

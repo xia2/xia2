@@ -2,14 +2,14 @@
 # XDSScalerHelpers.py
 #   Copyright (C) 2007 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 5th July 2007
 #
-# Code to help the scaler along - this will basically be a bunch of jiffy 
+# Code to help the scaler along - this will basically be a bunch of jiffy
 # functions...
-# 
+#
 
 import os
 import sys
@@ -56,14 +56,14 @@ class XDSScalerHelper:
         return
 
     def get_working_directory(self):
-        return self._working_directory 
+        return self._working_directory
 
     def parse_xscale_ascii_header(self, xds_ascii_file):
         '''Parse out the input reflection files which contributed to this
         reflection file.'''
-        
+
         file_map = { }
-        
+
         for line in open(xds_ascii_file, 'r').readlines():
             if not line[0] == '!':
                 break
@@ -79,9 +79,9 @@ class XDSScalerHelper:
         return file_map
 
     def parse_xscale_ascii_wavelength(self, xds_ascii_file):
-        
-        wavelength_dict = { } 
-        
+
+        wavelength_dict = { }
+
         for line in open(xds_ascii_file, 'r').readlines():
             if not line[0] == '!':
                 break
@@ -102,12 +102,12 @@ class XDSScalerHelper:
     def split_xscale_ascii_file(self, xds_ascii_file, prefix):
         '''Split the output of XSCALE to separate reflection files for
         each run. The output files will be called ${prefix}${input_file}.'''
-        
+
         file_map = self.parse_xscale_ascii_header(xds_ascii_file)
 
         files = { }
         return_map = { }
-    
+
         keys = file_map.keys()
 
         for k in keys:
@@ -132,17 +132,17 @@ class XDSScalerHelper:
                 files[k].write(line)
 
         # next copy the appropriate reflections to each file
-    
+
         for line in open(xds_ascii_file, 'r').readlines():
             if line[0] == '!':
                 continue
-            
+
             # FIXME this will not be correct if zero-dose correction
-            # has been used as this applies an additional record at 
+            # has been used as this applies an additional record at
             # the end... though it should always be #9
             k = int(line.split()[9])
             files[k].write(line)
-        
+
 
         # then write the tailer
 
@@ -166,7 +166,7 @@ class XDSScalerHelper:
             if not project_info.has_key(token):
                 raise RuntimeError, 'project info for %s not available' % \
                       token
-            
+
             hklin = os.path.join(self.get_working_directory(),
                                  data_map[token])
             hklout = os.path.join(self.get_working_directory(),
@@ -180,7 +180,7 @@ class XDSScalerHelper:
             # will require a little juggling...
 
             if False:
-            
+
                 c = self.Combat()
                 c.set_hklin(hklin)
                 c.set_hklout(hklout)
@@ -214,5 +214,3 @@ if __name__ == '__main__':
                     'NATIVE_NATIVE_LR.HKL':('JCSG', '1VR9', 'NATIVE')}
     print xsh.split_and_convert_xscale_output(input_file, 'SCALED_',
                                               project_info)
-
-

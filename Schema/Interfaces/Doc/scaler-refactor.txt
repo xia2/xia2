@@ -1,12 +1,12 @@
 Notes when refactoring scalers.
 -------------------------------
 
-Would be useful to have a standard mediator class which could contain and 
+Would be useful to have a standard mediator class which could contain and
 cache the information from the integraters (and hold the adjustments, e.g.
 from rebatching)
 
 This should be used directly by the scaler interface, which should also make
-standard much of the common code from the ccp4 scaler and the xds one, for 
+standard much of the common code from the ccp4 scaler and the xds one, for
 things like deciding on the standard indexing origin etc.
 
 From #718 CCP4 Scaler needs refactoring
@@ -15,7 +15,7 @@ From #718 CCP4 Scaler needs refactoring
 
 This is probably equally true for the XDSScaler too...
 
-The intention of what this should do is defined in sections 3.3, 3.5 and 
+The intention of what this should do is defined in sections 3.3, 3.5 and
 4.3 of my thesis. Essentially it should do the following for preparation:
 
  - ensure that all data is processed lattice compatible with pointgroup
@@ -42,14 +42,14 @@ Then to finish up:
  - tidy up the reflection files
  - decide on likely spacegroups (this could occur earlier)
 
-In the future it would be nice to be able to perform some of the final 
-analysis more cleverly. N.B. this should also be done for XDS, ideally 
-using the same code base. This would possibly also be useful as a stand-alone 
-tool (EDNA, anyone?) which could take scaled measurements and run analysis 
+In the future it would be nice to be able to perform some of the final
+analysis more cleverly. N.B. this should also be done for XDS, ideally
+using the same code base. This would possibly also be useful as a stand-alone
+tool (EDNA, anyone?) which could take scaled measurements and run analysis
 for NCS and what-have-you. That smells like research though.
 
-Primarily, the main thing was to pull a dictionary out into a class, which 
-should reduce the size of a few large functions, which will increase the 
+Primarily, the main thing was to pull a dictionary out into a class, which
+should reduce the size of a few large functions, which will increase the
 clarity of the code.
 
 Also test out all of the scaling models properly.

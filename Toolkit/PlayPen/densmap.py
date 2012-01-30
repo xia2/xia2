@@ -47,7 +47,7 @@ def densmap(xparm_file, i, j, k):
                 __i = i + 0.05 * _i
                 __j = j + 0.05 * _j
                 __k = k + 0.05 * _k
-                
+
                 r = origin + __i * fast + __j * slow
                 s = (1 / wavelength) * r.normalize()
                 R = phiaxis.axis_and_angle_as_r3_rotation_matrix(
@@ -99,7 +99,7 @@ def densmap2(xparm_file, image):
         for _j in range(0, nx + 1, 8):
             __i = 0.5 + _i
             __j = 0.5 + _j
-                
+
             r = origin + __i * fast + __j * slow
             s = (1 / wavelength) * r.normalize()
             q = Ri * (s - s0)
@@ -109,10 +109,5 @@ def densmap2(xparm_file, image):
 if __name__ == '__main__':
 
     image = int(sys.argv[1])
-    
-    densmap2('gxparm.xds', image)
 
-    
-                    
-                
-    
+    densmap2('gxparm.xds', image)

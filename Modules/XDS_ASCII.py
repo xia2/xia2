@@ -4,13 +4,13 @@
 #
 #   Copyright (C) 2008 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 22nd February 2008
-# 
+#
 # Code for manipulating XDS_ASCII files from XDS CORRECT.
-# 
+#
 
 import os
 
@@ -32,7 +32,7 @@ def remove_misfits(xdsin, xdsout):
 
         if not record.strip():
             continue
-        
+
         if record[0] == '!':
             fout.write(record)
             continue
@@ -44,12 +44,7 @@ def remove_misfits(xdsin, xdsout):
             continue
         else:
             ignored += 1
-                        
+
     fout.close()
 
     return ignored
-
-
-
-    
-            

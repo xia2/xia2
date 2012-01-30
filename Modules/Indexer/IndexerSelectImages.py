@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # IndexSelectImages.py
-# 
+#
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # Code for the selection of images for autoindexing - selecting lone images
@@ -22,7 +22,7 @@ def index_select_images_lone(phi_width, images):
     if offset + int(90.0 / phi_width) in images:
         selected_images.append(offset + int(45.0 / phi_width))
         selected_images.append(offset + int(90.0 / phi_width))
-        
+
     else:
         middle = len(images) // 2 - 1
         if len(images) >= 3:
@@ -41,28 +41,28 @@ def index_select_images_user(phi_width, images, out_stream):
     images_list = '%d' % images[0]
     for image in images[1:]:
         images_list += ', %d' % image
-            
+
     out_stream.write('Existing images for indexing: %s' % \
                      images_list)
 
     while True:
 
         record = raw_input('>')
-                    
+
         if not record.strip():
             return images
-                    
+
         try:
             images = map(int, record.replace(',', ' ').split())
             images_list = '%d' % images[0]
             for image in images[1:]:
                 images_list += ', %d' % image
-            
+
             out_stream.write('New images for indexing: %s' % \
                              images_list)
 
             return images
-                        
+
         except ValueError, e:
             pass
 
@@ -82,5 +82,3 @@ if __name__ == '__main__':
 
     assert(index_select_images_lone(0.5, images) == [1, 90, 180])
     assert(index_select_images_lone(1.0, images) == [1, 45, 90])
-
-    

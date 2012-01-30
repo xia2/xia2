@@ -1,8 +1,8 @@
 #!/usr/bin/env cctbx.python
-# 
+#
 # Biostruct-X Data Reduction Use Case 1.2:
-# 
-# Given UB matrix, centring operation, generate a list of predictions as 
+#
+# Given UB matrix, centring operation, generate a list of predictions as
 # H K L x y phi. Also requires (clearly) a model for the detector positions
 # and the crystal lattice type. This is aimed to help with identifying
 # locations on the images.
@@ -37,14 +37,14 @@ def generate_indices(unit_cell_constants, resolution_limit):
     maxh, maxk, maxl = uc.max_miller_indices(resolution_limit)
 
     indices = []
-    
+
     for h in range(-maxh, maxh + 1):
         for k in range(-maxk, maxk + 1):
             for l in range(-maxl, maxl + 1):
 
                 if h == 0 and k == 0 and l == 0:
                     continue
-                
+
                 if uc.d((h, k, l)) < resolution_limit:
                     continue
 
@@ -70,7 +70,7 @@ def parse_xds_xparm_scan_info(xparm_file):
     '''Read an XDS XPARM file, get the scan information.'''
 
     values = map(float, open(xparm_file).read().split())
-    
+
     assert(len(values) == 42)
 
     img_start = values[0]
@@ -88,7 +88,7 @@ def main(configuration_file, img_range):
 
     img_start, osc_start, osc_range = parse_xds_xparm_scan_info(
         configuration_file)
-    
+
     dmin = cfc.derive_detector_highest_resolution()
 
     phi_start = ((img_range[0] - img_start) * osc_range + osc_start) * d2r
@@ -165,7 +165,7 @@ def main(configuration_file, img_range):
         s = (ub * hkl).rotate(axis, angle)
         q = (s + s0).normalize()
         r = (q * distance / q.dot(detector_normal)) - detector_origin
-        
+
         x = r.dot(detector_fast)
         y = r.dot(detector_slow)
 
@@ -182,11 +182,11 @@ def main(configuration_file, img_range):
         print '%d %d %d' % hkl, '%.4f %4f %2f' % (
             f / pixel_size_fast, s / pixel_size_slow,
             (img_start - 1) + ((angle * r2d) - osc_start) / osc_range)
-    
+
 if __name__ == '__main__':
 
     # FIXME we should perhaps use Phil here to learn how to do this?!
-    
+
     if len(sys.argv) != 4:
         msg = "Requires 3 arguments: path/to/xparm.xds start_image_no end_image_no"
         sys.exit(msg)

@@ -2,7 +2,7 @@
 # XScale.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A wrapper for XSCALE, the XDS Scaling program.
@@ -25,7 +25,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'],
                     'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
-    
+
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
@@ -40,7 +40,7 @@ def XScaleR(DriverType = None,
             correct_decay = True,
             correct_absorption = True,
             correct_modulation = True):
-    
+
     DriverInstance = DriverFactory.Driver(DriverType)
 
     class XScaleWrapper(DriverInstance.__class__):
@@ -99,7 +99,7 @@ def XScaleR(DriverType = None,
             # Rmerge values - for the scale model analysis - N.B. get
             # one for each data set, obviously...
             self._rmerges = { }
-            
+
 
             return
 
@@ -127,7 +127,7 @@ def XScaleR(DriverType = None,
         def set_correct_decay(self, correct_decay):
             self._correct_decay = correct_decay
             return
-            
+
         def set_correct_absorption(self, correct_absorption):
             self._correct_absorption = correct_absorption
             return
@@ -157,9 +157,9 @@ def XScaleR(DriverType = None,
 
                 self._transposed_input[wave]['hkl'].append(hkl)
                 self._transposed_input[wave]['resol'].append(resol)
-            
+
             return
-        
+
         def set_spacegroup_number(self, spacegroup_number):
             self._spacegroup_number = spacegroup_number
             return
@@ -205,7 +205,7 @@ def XScaleR(DriverType = None,
 
                 self._output_reflection_files[wave] = os.path.join(
                     self.get_working_directory(), '%s.HKL' % wave)
-                
+
                 xscale_inp.write(
                     'OUTPUT_FILE=%s.HKL ' % wave)
                 if self._version == 'new':
@@ -217,7 +217,7 @@ def XScaleR(DriverType = None,
                     xscale_inp.write('FRIEDEL\'S_LAW=TRUE MERGE=FALSE\n')
                 if self._version == 'new':
                     xscale_inp.write('\n')
-                    
+
                 for j in range(len(self._transposed_input[wave]['hkl'])):
 
                     # FIXME note to self, this should now be a local
@@ -238,9 +238,9 @@ def XScaleR(DriverType = None,
                         xscale_inp.write(
                             'INPUT_FILE=%s XDS_ASCII\n' % \
                             self._transposed_input[wave]['hkl'][j])
-                        
-	            # FIXME this needs to be removed before being used again
-           	    # in anger!
+
+                    # FIXME this needs to be removed before being used again
+                    # in anger!
                     # xscale_inp.write('CORRECTIONS=DECAY ABSORPTION\n')
 
                     corrections = 'CORRECTIONS='
@@ -262,15 +262,15 @@ def XScaleR(DriverType = None,
 
         def run(self):
             '''Actually run XSCALE.'''
-                
+
             self._write_xscale_inp()
 
             # copy the input file...
             shutil.copyfile(os.path.join(self.get_working_directory(),
                                          'XSCALE.INP'),
                             os.path.join(self.get_working_directory(),
-                                         '%d_XSCALE.INP' % self.get_xpid()))            
-            
+                                         '%d_XSCALE.INP' % self.get_xpid()))
+
             self.start()
             self.close_wait()
 
@@ -294,7 +294,7 @@ def XScaleR(DriverType = None,
                     z = float(line.split()[4])
                     if not (h, k, l, z) in self._remove:
                         self._remove.append((h, k, l, z))
-                        
+
                 if 'FACTOR TO PLACE ALL DATA SETS TO ' in line:
                     self._scale_factor = float(line.split()[-1])
 
@@ -321,12 +321,12 @@ def XScaleR(DriverType = None,
                         Debug.write('Group %d' % j)
                         for file_name in groups[name]:
                             Debug.write(file_name)
-                            
+
                     if not Flags.get_microcrystal():
                         raise RuntimeError, 'reindexing error: %s' % \
                               os.path.join(self.get_working_directory(),
                                            'XSCALE.LP')
-                    
+
             return
 
         def get_scale_factor(self):

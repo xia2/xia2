@@ -2,20 +2,20 @@
 # xia2scan.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 9th June 2006
-# 
+#
 # A small program to summarise the diffraction strength from a list of
-# diffraction images. This will use labelit for both indexing and 
+# diffraction images. This will use labelit for both indexing and
 # distling.
-# 
+#
 # Requires:
-# 
+#
 # The correct beam centre.
-# 
-# 
+#
+#
 
 import sys
 import os
@@ -53,7 +53,7 @@ def xia2scan():
 
     # if this isnot set, then we will presume that it is correct
     # in the image headers
-    
+
     beam = CommandLine.get_beam()
 
     if '-omit' in sys.argv:
@@ -126,7 +126,7 @@ def xia2scan():
     for i in images:
         if summary_info[i]['volume'] == 0 and omit:
             continue
-        
+
         print '%3d %6d %6d %6.2f %6.2f %6.2f %6.2f %9d' % \
               (i, summary_info[i]['spots_total'],
                summary_info[i]['spots_good'],
@@ -138,5 +138,3 @@ def xia2scan():
 
 if __name__ == '__main__':
     xia2scan()
-
-    

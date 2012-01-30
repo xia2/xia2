@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # add_dose_time_to_mtz.py
-# 
+#
 #   Copyright (C) 2009 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # A replacement for the FORTRAN program DOSER, which adds two columns DOSE
 # and TIME to unmerged MTZ files, so that they can be analysed dose-wise
-# by CHEF. In reality, the functionality of both could be mapped to a 
+# by CHEF. In reality, the functionality of both could be mapped to a
 # single program now...
-# 
+#
 
 import os
 import sys
@@ -26,7 +26,7 @@ def add_dose_time_to_mtz(hklin, hklout, doses, times = None):
     # instantiate the MTZ object representation
 
     mtz_obj = mtz.object(file_name = hklin)
-    
+
     batch_column = None
     batch_dataset = None
 
@@ -74,7 +74,7 @@ def add_dose_time_to_mtz(hklin, hklout, doses, times = None):
                                selection_valid = valid)
 
     # and write this lot out as hklout
-    
+
     mtz_obj.write(file_name = hklout)
 
 if (__name__ == "__main__"):
@@ -89,7 +89,7 @@ if (__name__ == "__main__"):
         batch = int(values[1])
         dose = float(values[3])
         time = float(values[5])
-        
+
         doses[batch] = dose
         times[batch] = time
 

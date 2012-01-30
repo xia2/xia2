@@ -18,9 +18,9 @@ class FormatSMVADSC(FormatSMV):
 
     @staticmethod
     def understand(image_file):
-        '''Check to see if this looks like an ADSC SMV format image, i.e. we 
+        '''Check to see if this looks like an ADSC SMV format image, i.e. we
         can make sense of it. Essentially that will be if it contains all of
-        the keys we are looking for and not some we are not (i.e. that belong 
+        the keys we are looking for and not some we are not (i.e. that belong
         to a Rigaku Saturn.)'''
 
         if FormatSMV.understand(image_file) == 0:
@@ -41,7 +41,7 @@ class FormatSMVADSC(FormatSMV):
         for header_item in unwanted_header_items:
             if header_item in header:
                 return 0
-        
+
         return 2
 
     def __init__(self, image_file):
@@ -49,15 +49,15 @@ class FormatSMVADSC(FormatSMV):
         proper model of the experiment.'''
 
         assert(FormatSMVADSC.understand(image_file) > 0)
-        
+
         FormatSMV.__init__(self, image_file)
 
         return
-    
+
     def _goniometer(self):
         '''Return a model for a simple single-axis goniometer. This should
         probably be checked against the image header.'''
-        
+
         return self._goniometer_factory.single_axis()
 
     def _detector(self):
@@ -73,7 +73,7 @@ class FormatSMVADSC(FormatSMV):
                       float(self._header_dictionary['SIZE2']))
         overload = 65535
         underload = 0
-        
+
         return self._detector_factory.simple(
             'CCD', distance, (beam_y, beam_x), '+x', '-y',
             (pixel_size, pixel_size), image_size, (underload, overload), [])
@@ -82,13 +82,13 @@ class FormatSMVADSC(FormatSMV):
         '''Return a simple model for the beam.'''
 
         wavelength = float(self._header_dictionary['WAVELENGTH'])
-        
+
         return self._beam_factory.simple(wavelength)
 
     def _scan(self):
         '''Return the scan information for this image.'''
 
-        format = self._scan_factory.format('SMV') 
+        format = self._scan_factory.format('SMV')
         exposure_time = float(self._header_dictionary['TIME'])
         epoch =  time.mktime(time.strptime(self._header_dictionary['DATE']))
         osc_start = float(self._header_dictionary['OSC_START'])

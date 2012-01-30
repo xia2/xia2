@@ -41,9 +41,9 @@ def read_basic_tiff_header(filename):
     image_depth = None
     header_size = None
     byte_order = None
-    
+
     # OK then let's get started - and let's assume that the size is > 1 kb
-    
+
     byte_order = tiff_byte_order(filename)
     tiff_header = Format.open_file(filename, 'rb').read(1024)
 
@@ -53,7 +53,7 @@ def read_basic_tiff_header(filename):
     else:
         _I = '>I'
         _H = '>H'
-        
+
     offset = struct.unpack(_I, tiff_header[4:8])[0]
 
     ntags = struct.unpack(_H, tiff_header[offset:offset + 2])[0]
@@ -74,7 +74,7 @@ def read_basic_tiff_header(filename):
             type_offset_or_value = struct.unpack(
                 _H, tiff_header[start:start + 2])[0]
             start += 4
-                
+
         if type_desc == 256:
             image_width = type_offset_or_value
         elif type_desc == 257:
@@ -83,21 +83,21 @@ def read_basic_tiff_header(filename):
             image_depth = type_offset_or_value
         elif type_desc == 273:
             header_size = type_offset_or_value
-            
+
     return image_width, image_height, image_depth, header_size, byte_order
 
 def read_tiff_image_description(tiff_header, byte_order):
     '''Search the TIFF header for an image description.'''
 
     # OK then let's get started - and let's assume that the size is > 1 kb
-    
+
     if byte_order == LITTLE_ENDIAN:
         _I = '<I'
         _H = '<H'
     else:
         _I = '>I'
         _H = '>H'
-        
+
     offset = struct.unpack(_I, tiff_header[4:8])[0]
     ntags = struct.unpack(_H, tiff_header[offset:offset + 2])[0]
     start = offset + 2
@@ -123,10 +123,10 @@ def read_tiff_image_description(tiff_header, byte_order):
             type_offset_or_value = struct.unpack(
                 _I, tiff_header[start:start + 4])[0]
             start += 4
-                
+
         if type_desc == 270:
             start = type_offset_or_value
-            end = type_offset_or_value + type_size 
+            end = type_offset_or_value + type_size
             header_text = tiff_header[start:end].strip()
 
     return header_text
@@ -136,14 +136,14 @@ if __name__ == '__main__':
     import sys
 
     for arg in sys.argv[1:]:
-    
+
         width, height, depth, header, order = read_basic_tiff_header(arg)
 
         print '(%d x %d) @ %d + %d' % (width, height, depth, header)
 
         tiff_header = Format.open_file(arg, 'rb').read(header)
 
-        text = read_tiff_image_description(tiff_header, order)        
+        text = read_tiff_image_description(tiff_header, order)
 
         if text:
             print text

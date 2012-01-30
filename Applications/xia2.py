@@ -2,19 +2,19 @@
 # xia2.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 21/SEP/06
 #
 # A top-level interface to the whole of xia2, for data processing & analysis.
-# 
+#
 # FIXED 28/NOV/06 record the total processing time to Chatter.
 #
 # FIXME 28/NOV/06 be able to e-mail someone with the job once finished.
 #
 # FIXME 17/JAN/07 check environment before startup.
-# 
+#
 # FIXME 23/JUN/09 write out xia2-summary.dat which should contain the given
 #       and correct values for the beamline parameters (i.e. for each sweep)
 #       and the unit cell constants, spacegroup, resolution, file information,
@@ -63,7 +63,7 @@ def check_cctbx_version():
                 pass
         else:
             break
-        
+
     if version is None:
         version = libtbx.env.command_version_suffix
 
@@ -124,7 +124,7 @@ def check_environment():
         revision = revision.split()[1]
     else:
         revision = 'not set'
-        
+
     Chatter.write('Build: %s' % revision)
     Chatter.write('Contact: xia2.support@gmail.com')
 
@@ -142,14 +142,14 @@ def check():
                                  'Python'))
 
     from TestPython import test_python_setup
-    
+
     test_python_setup()
 
     return
 
 def xia2():
     '''Actually process something...'''
-    
+
     # print the version
     Chatter.write(Version)
     Citations.cite('xia2')
@@ -157,7 +157,7 @@ def xia2():
     start_time = time.time()
 
     from Handlers.CommandLine import CommandLine
-    
+
     CommandLine.print_command_line()
 
     if not CommandLine.get_xinfo():
@@ -206,7 +206,7 @@ def xia2():
         xtal = xtals[name]
 
         if not xtal.get_all_image_names():
-            
+
             Chatter.write('-----------------------------------' + \
                           '-' * len(name))
             Chatter.write('| No images assigned for crystal %s |' % name)
@@ -214,7 +214,7 @@ def xia2():
                           * len(name))
         else:
             no_images = False
-    
+
     # this actually gets the processing started...
     Chatter.write(str(CommandLine.get_xinfo()))
 
@@ -256,7 +256,7 @@ def xia2():
     out.close()
 
     Environment.cleanup()
-    
+
     return
 
 def help():
@@ -313,5 +313,3 @@ if __name__ == '__main__':
     except exceptions.Exception, e:
         traceback.print_exc(file = open('xia2.error', 'w'))
         Chatter.write('Status: error "%s"' % str(e))
-
-    

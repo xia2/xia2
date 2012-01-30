@@ -25,8 +25,8 @@ def is_smv(filename):
 
     pass
 
-def is_marcd(filename):    
-   
+def is_marcd(filename):
+
     pass
 
 def is_smv_adsc(filename):
@@ -43,4 +43,3 @@ def is_real_cbf(filename):
 
 def is_mini_cbf(filename):
     pass
-

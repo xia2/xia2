@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # BioXHitDBInterface.py
-# 
+#
 #   Copyright (C) 2007 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # An interface to the CCP4i / BioXHit database handler, to allow recording
 # of progress during data reduction.
-# 
+#
 
 import os
 import sys
@@ -39,7 +39,7 @@ class _BioXHitDBInterfaceReal:
 
         status = result[0]
         result = result[1:]
-        
+
         if not status == 'OK':
             raise RuntimeError, 'failed to create project %s' % project
 
@@ -56,7 +56,7 @@ class _BioXHitDBInterfaceReal:
             raise RuntimeError, 'no current project'
 
         result = self._connection.NewRecord(self._project)
-        
+
         status = result[0]
         result = result[1:]
 
@@ -94,7 +94,7 @@ class _BioXHitDBInterfaceFake:
 
     def create_project(self, project, directory):
         pass
-    
+
     def create_job(self, job,
                    input_files = [],
                    output_files = [],
@@ -126,5 +126,3 @@ if __name__ == '__main__':
 
     BioXHitDBInterface.create_project(project, os.getcwd())
     BioXHitDBInterface.create_job('foo', log_file = 'arse.log')
-
-    

@@ -58,7 +58,7 @@ class FormatSMVRigakuSaturnSN07400090(FormatSMVRigakuSaturn):
 
         R = matrix.col((0, 0, 1)).axis_and_angle_as_r3_rotation_matrix(
             -90, deg = True)
-        
+
         detector_fast = R * matrix.col(tuple(detector_axes[:3]))
         detector_slow = R * matrix.col(tuple(detector_axes[3:]))
 

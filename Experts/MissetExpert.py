@@ -2,15 +2,15 @@
 # MissetExpert.py
 #   Copyright (C) 2009 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # 11th August 2009
-# 
-# A class to calculate the missetting angles for Mosflm as a function of 
-# oscillation angle, to enable more robust parallel integration when the 
+#
+# A class to calculate the missetting angles for Mosflm as a function of
+# oscillation angle, to enable more robust parallel integration when the
 # rotation is off perpendicular to the beam by more than e.g. 1 degree.
-# 
+#
 # N.B. similar calculations could use the XDS refined XPARM to record the
 # rotation axis then reuse it here.
 
@@ -34,7 +34,7 @@ class MosflmMissetExpert:
         #            Y = Z ^ X
 
         z = matrix.col([0, 0, 1])
-        
+
         # then calculate the rotation axis
 
         R = (z.axis_and_angle_as_r3_rotation_matrix(phi1, deg = True) * \
@@ -66,7 +66,7 @@ class MosflmMissetExpert:
 if __name__ == '__main__':
 
     # example taken from the problematic myoglobin data set
-    
+
     mme = MosflmMissetExpert(0.25, (-0.33, -0.32, -0.01),
                              91.75, (0.56, -0.12, -0.03))
 

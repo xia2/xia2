@@ -2,28 +2,28 @@
 # FindImages.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 9th June 2006
-# 
+#
 # A set of routines for finding images and the like based on file names.
 # This includes all of the appropriate handling for templates, directories
 # and the like.
 #
-# 15/JUN/06 
-# 
-# Also routines for grouping sets of images together into sweeps based on 
+# 15/JUN/06
+#
+# Also routines for grouping sets of images together into sweeps based on
 # the file names and the information in image headers.
-# 
+#
 # FIXME 24/AUG/06 this needs to renamed to something a little more obvious
 #                 than FindImages - perhaps ImageExpert?
-# FIXME 04/OCT/06 when the image name is all numbers like 999_1_001 need to 
+# FIXME 04/OCT/06 when the image name is all numbers like 999_1_001 need to
 #                 assume that the extension is the number, BEFORE testing any
 #                 of the other possibilities...
 # FIXME 04/OCT/10 when we have images 200-299 (say) don't merge th2 2 with
 #                 the template - you end up with batch 0.
-# 
+#
 
 import sys
 import os
@@ -58,7 +58,7 @@ def image2template(filename):
     # the format strings to put the file name back together
 
     patterns = {r'([^\.]*)\.([0-9]+)\Z':'%s.%s%s',
-                r'([^\.]*)\.([0-9]+)(.*)':'%s.%s%s',                
+                r'([^\.]*)\.([0-9]+)(.*)':'%s.%s%s',
                 r'(.*)_([0-9]*)\.(.*)':'%s_%s.%s',
                 r'(.*?)([0-9]*)\.(.*)':'%s%s.%s'}
 
@@ -75,7 +75,7 @@ def image2template(filename):
 
             for digit in string.digits:
                 number = number.replace(digit, '#')
-                
+
             return patterns[pattern] % (prefix, number, exten)
 
     raise RuntimeError, 'filename %s not understood as a template' % \
@@ -117,10 +117,10 @@ def image2template_directory(filename):
     directory = os.path.dirname(filename)
 
     if not directory:
-        
+
         # then it should be the current working directory
         directory = os.getcwd()
-        
+
     image = os.path.split(filename)[-1]
     template = image2template(image)
 
@@ -220,13 +220,13 @@ def headers2sweeps(header_dict):
     sweeps = []
 
     current_sweep = copy.deepcopy(header_dict[images[0]])
-    
+
     current_sweep['images'] = [images[0]]
 
     # observation: in RIGAKU SATURN data sets the epoch is the same for
     # all images => add the IMAGE NUMBER to this as a workaround if
     # that format. See also RIGAKU_SATURN below.
-    
+
     if 'rigaku saturn' in current_sweep['detector_class']:
         current_sweep['epoch'] += images[0]
 
@@ -237,7 +237,7 @@ def headers2sweeps(header_dict):
         header = header_dict[i]
 
         # RIGAKU_SATURN see above
-        
+
         if 'rigaku saturn' in header['detector_class']:
             header['epoch'] += i
 
@@ -293,7 +293,7 @@ def common_prefix(strings):
                 common = common[:-1]
                 finished = False
                 continue
-            
+
     return common
 
 def ensure_no_batches_numbered_zero(template, images, offset):
@@ -312,7 +312,7 @@ def ensure_no_batches_numbered_zero(template, images, offset):
     while min(images) == 0:
         if not prefix[-1] in string.digits:
             raise RuntimeError, 'image 0 found matching %s' % template
-            
+
         add = int(prefix[-1]) * int(math.pow(10, hashes))
         offset -= add
         hashes += 1
@@ -320,9 +320,9 @@ def ensure_no_batches_numbered_zero(template, images, offset):
         images = [add + i for i in images]
 
     template = '%s%s%s' % (prefix, '#' * hashes, suffix)
-    
+
     return template, images, offset
-        
+
 def digest_template(template, images):
     '''Digest the template and image numbers to copy as much of the
     common characters in the numbers as possible to the template to
@@ -346,7 +346,7 @@ def digest_template(template, images):
         template, images, offset)
 
     return template, images, offset
-    
+
 if __name__ == '__main__':
 
     if len(sys.argv) < 2:
@@ -366,5 +366,5 @@ if __name__ == '__main__':
     print 'images:   %d to %d' % (min(images), max(images))
 
     template, images, offset = digest_template(template, images)
-    
+
     print 'offset:   %d' % offset

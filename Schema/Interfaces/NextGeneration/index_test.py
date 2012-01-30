@@ -19,6 +19,5 @@ for index_implementation in index_implementation_manager.get():
     ii.set_dip_template('foo_1_###.img')
 
     # etc.
-    
-    ii.index()
 
+    ii.index()

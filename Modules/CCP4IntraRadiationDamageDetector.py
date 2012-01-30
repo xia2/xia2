@@ -2,22 +2,22 @@
 # CCP4IntraRadiationDamageDetector.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # 29th March 2007
-# 
+#
 # A detector of radiation damage within a sweep, defined by the B factor
 # and R merge values from Scala. Note well :
 #
 #  - if B factor < -10 is "damaged" [pre]
 #  - if R merge > ??? is "damaged" [gw]
 #
-# Second of these is more interesting for MAD data... however both provide 
+# Second of these is more interesting for MAD data... however both provide
 # interesting information. The current implementation therefore looks
-# at the product of these as a function of exposure epoch, and looks for 
+# at the product of these as a function of exposure epoch, and looks for
 # the point at which the behaviour becomes significantly non-linear.
-# 
+#
 # The definition of "significantly non linear" is a little complex, and
 # goes a little like this:
 #
@@ -29,31 +29,31 @@
 #   fit (ML) straight line to b(i)
 #   compute chi_sq for this straight line - if "reduced chi_sq" > 2
 #     then the straight line is not a good model - ergo bin(i) is damaged.
-# 
+#
 # Input:
-# 
+#
 # Dictionary of lists of B factor, R merge vs. batch. Will need to balance
-# truncation of batches against completeness so perhaps this should be 
+# truncation of batches against completeness so perhaps this should be
 # allowed to perform the actual scaling? Probably a better idea. Do this
 # prior to "full" scaling...
-# 
+#
 # Link also to "inter" radiation damage detection.
 #
 # Output:
-# 
+#
 # List of "allowed" batches to use for different wavelengths. This should
 # in fact return a dictionary of data sets for uses in different contexts,
 # for example "all data", "best data", "refinement data".
-# 
+#
 # Notes:
-# 
+#
 # This may also need to know about (in some detail) how the images were
-# collected e.g. mapping of RUN.BATCH -> time so that proper advice 
+# collected e.g. mapping of RUN.BATCH -> time so that proper advice
 # about what to eliminate can be provided (e.g. fed back to the integraters.)
-# 
+#
 # Test data:
-# 
-# In $X2TD_ROOT/Test/UnitTest/Modules/IntraRadiationDamage (1VRM) and 
+#
+# In $X2TD_ROOT/Test/UnitTest/Modules/IntraRadiationDamage (1VRM) and
 # also InterRadiationDamage (1VPJ) for the latter this should look at the
 # R merge vs. batch for the INFL and LREM (interesting stuff happens at
 # batch 60 in each case...)
@@ -86,7 +86,7 @@ def meansd(values):
 
 # FIXME these need to be tidied up to take a generalised
 # list of values
-        
+
 def bin(values, width):
     '''Bin values in bins of given width, computing the error
     (standard deviation) in the bin on the Y values. This is
@@ -105,7 +105,7 @@ def bin(values, width):
             sd = 0.05
         result.append((meansd([b[0] for b in block])[0],
                        (mean, sd)))
-        
+
     return result
 
 def chisq(data, model):
@@ -159,7 +159,7 @@ def _fit(data):
     # the following quantities are used in reality:
     # sum_inv_sig_sq, sum_x_sq_over_sig_sq, sum_x_over_sig_sq,
     # sum_y_over_sig_sq, sum_xy_over_sig_sq
-    
+
     delta = sum([1.0 / (d[1][1] * d[1][1]) for d in data]) * \
             sum([(d[0] * d[0]) / (d[1][1] * d[1][1]) for d in data]) - \
             (sum([d[0] / (d[1][1] * d[1][1]) for d in data]) *
@@ -180,14 +180,14 @@ def run():
     Assumption is that the data change linearly, and that any
     non-linear behaviour is an indication of significant radiation
     damage.'''
-    
+
     data = [map(float, line.split()) for line in open(
         'reordered.txt', 'r').readlines()]
-    
+
     updata = [(d[0] - data[0][0], -1 * d[1] * d[2]) for d in data]
-    
+
     binned = bin(updata, 10)
-    
+
     for j in range(1, len(binned)):
         basis = binned[:j]
         _a, _b = fit(basis)
@@ -195,7 +195,7 @@ def run():
         chi = chisq(basis, model) / j
 
         b = binned[j]
-        
+
         print '%d %.1f %.4f %.4f %.4f' % (10 * j, b[0], b[1][0], b[1][1], chi)
 
 
@@ -225,13 +225,13 @@ class CCP4IntraRadiationDamageDetector:
         if not self._hklin:
             raise RuntimeError, 'hklin not defined'
         return
-        
+
     def set_working_directory(self, working_directory):
         self._working_directory = working_directory
         return
 
     def get_working_directory(self):
-        return self._working_directory 
+        return self._working_directory
 
     def set_sweep_information(self, sweep_information):
         self._sweep_information = sweep_information
@@ -269,7 +269,7 @@ class CCP4IntraRadiationDamageDetector:
                        xname = input['xname'],
                        dname = input['dname'])
 
-            
+
         for epoch in epochs:
             input = self._sweep_information[epoch]
             start, end = (min(input['batches']), max(input['batches']))
@@ -283,12 +283,12 @@ class CCP4IntraRadiationDamageDetector:
         FileHandler.record_temporary_file(sc.get_hklout())
 
         # fixme need to check if anomalous
-        
+
         sc.set_anomalous()
         sc.set_tails()
 
         # check for errors like data not sorted etc.
-        
+
         sc.scale()
 
         loggraph = sc.parse_ccp4_loggraph()
@@ -297,7 +297,7 @@ class CCP4IntraRadiationDamageDetector:
         rmerge_info = { }
 
         bfactors = { }
-        rmerges = { } 
+        rmerges = { }
 
         for key in loggraph.keys():
 
@@ -314,7 +314,7 @@ class CCP4IntraRadiationDamageDetector:
 
             damaged = False
             damage_batch = 0
-            
+
             if 'Scales v rotation range' in key:
                 dataset = key.split(',')[-1].strip()
                 bfactor_info[dataset] = transpose_loggraph(
@@ -344,7 +344,7 @@ class CCP4IntraRadiationDamageDetector:
 
             rd_log = open(os.path.join(self.get_working_directory(),
                                        'rd_info.log'), 'w')
-                                       
+
 
             for b in batches:
                 if batch_to_epoch[b] < rd_epoch:
@@ -360,19 +360,19 @@ class CCP4IntraRadiationDamageDetector:
 
         else:
             # FIXME need to handle this some how...
-            
+
             pass
 
-        
+
     def decide_rd_limit(self, data):
         '''Decide the radiation damage limit for a list of measurements
         as tuples (epoch, r, b).'''
-        
+
         start_t = data[0][0]
-        
+
         # convert to the form we want to deal with...
         updata = [(d[0] - start_t, -1 * d[1] * d[2]) for d in data]
-        
+
         binned = bin(updata, 10)
 
         for b in binned:
@@ -380,18 +380,18 @@ class CCP4IntraRadiationDamageDetector:
             if b[1][1] < 0.1 and False:
                 # can't do this is a list!
                 b[1][1] = 0.1
-        
+
         epoch = -1
 
         chi_log = open(os.path.join(self.get_working_directory(),
                                     'rd_chi.log'), 'w')
-                                    
+
         for j in range(1, len(binned)):
             basis = binned[:j]
             _a, _b = fit(basis)
             model = [_a + _b * b[0] for b in basis]
             chi = chisq(basis, model) / j
-            
+
             b = binned[j]
             chi_log.write('%f %f %f %f\n' %
                           (b[0], b[1][0], b[1][1], chi))
@@ -404,7 +404,7 @@ class CCP4IntraRadiationDamageDetector:
 
         if epoch == -1:
             epoch = data[-1][0] + 1
-            
+
         return epoch
 
 
@@ -416,17 +416,17 @@ if __name__ == '__main__':
 
     use_TS00 = False
     use_TS03 = True
-    
+
 
     if use_TS00:
-        
+
         irdd = CCP4IntraRadiationDamageDetector()
-        
+
         irdd.set_hklin(os.path.join(os.environ['X2TD_ROOT'],
                                     'Test', 'UnitTest', 'Modules',
                                     'IntraRadiationDamage',
                                     'TS00_13185_sorted.mtz'))
-        
+
         sweep_information = {
             1: {'batches': (1, 360),
                 'dname': 'INFL',
@@ -440,9 +440,9 @@ if __name__ == '__main__':
                 'dname': 'PEAK',
                 'pname': 'TS00',
                 'xname': '13185'}}
-        
+
         irdd.set_sweep_information(sweep_information)
-        
+
         irdd.analyse()
 
     if use_TS03:
@@ -466,15 +466,14 @@ if __name__ == '__main__':
                          'Test', 'UnitTest', 'Modules',
                          'InterRadiationDamage',
                          'TS03_12287_sweep_info.txt'), 'r').read())
-        
+
         irdd = CCP4IntraRadiationDamageDetector()
-        
+
         irdd.set_hklin(os.path.join(os.environ['X2TD_ROOT'],
                                     'Test', 'UnitTest', 'Modules',
                                     'InterRadiationDamage',
                                     'TS03_12287_sorted.mtz'))
-        
-        irdd.set_sweep_information(sweep_information_extra)
-        
-        irdd.analyse()
 
+        irdd.set_sweep_information(sweep_information_extra)
+
+        irdd.analyse()

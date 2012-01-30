@@ -66,7 +66,7 @@ def integrate_compute_com(integrate_lp, dx = 9, dy = 9, dz = 9):
             i = j + 1
 
             profile_text = []
-            
+
             while not 'REFLECTION INTENSITIES INTEGRATED'in records[i]:
                 profile_text.append(records[i])
                 i += 1

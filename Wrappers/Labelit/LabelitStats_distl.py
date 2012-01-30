@@ -2,16 +2,16 @@
 # LabelitStats_distl.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 2nd June 2006
-# 
+#
 # A wrapper for labelit.stats_distl - this will provide functionality to:
 #
 # Looking for ice rings.
 # Screening the images.
-# 
+#
 # The output looks like:
 #
 #                     File : 12287_1_E1_001.img
@@ -23,7 +23,7 @@
 #      Method 2 Resolution :   1.90
 #        Maximum unit cell :  242.8
 #%Saturation, Top 50 Peaks :  14.35
-# 
+#
 # Based on the output of the last Distl run.
 #
 # The output should be identical to the last labelit.distl run.
@@ -57,7 +57,7 @@ def LabelitStats_distl(DriverType = None):
 
             self.set_executable('labelit.stats_distl')
 
-            self._statistics = { } 
+            self._statistics = { }
 
         def stats_distl(self):
             '''Return the image statistics.'''

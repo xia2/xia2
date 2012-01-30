@@ -170,4 +170,3 @@ _array_intensities.overload 65535
 _array_intensities.undefined_value 0
 _array_intensities.pixel_slow_bin_size 2
 _array_intensities.pixel_fast_bin_size 2
-

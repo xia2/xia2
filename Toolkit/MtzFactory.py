@@ -1,11 +1,11 @@
 #!/usr/bin/env cctbx.python
 # MtzFactory.py
-# 
+#
 #   Copyright (C) 2010 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # A toolkit component to read MTZ format reflection files, wrapping the
 # functionality in iotbx. This will return a data structure to represent
 # merged and unmerged MTZ files.
@@ -30,7 +30,7 @@ class mtz_dataset:
         self._column_table = { }
         for column in iotbx_dataset.columns():
             self._column_table[column.label()] = column
-        
+
         return
 
     def get_column_names(self):
@@ -138,7 +138,7 @@ class mtz_file:
 
     def get_unit_cell(self):
         '''Get the unit cell object from HKL_base for other calculations.'''
-        
+
         return self.get_crystal('HKL_base').get_unit_cell()
 
     def get_space_group(self):
@@ -205,6 +205,3 @@ if __name__ == '__main__':
     import sys
 
     mtz_dump(sys.argv[1])
-
-    
-        

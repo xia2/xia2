@@ -2,18 +2,18 @@
 # Sortmtz.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 5th June 2006
-# 
+#
 # A wrapper for the CCP4 program sortmtz.
-# 
-# 
+#
+#
 # Provides:
-# 
+#
 # Reflection sorting functionality for going from Mosflm to Scala.
-# 
+#
 
 import os
 import sys
@@ -68,7 +68,7 @@ def Sortmtz(DriverType = None):
 
                 if 'From ccp4_lwbat: warning:' in l:
                     lwbat_warning = l.split('warning:')[1].strip()
-                
+
                 if 'error in ccp4_lwbat' in l:
                     raise RuntimeError, lwbat_warning
 
@@ -80,12 +80,12 @@ def Sortmtz(DriverType = None):
 
         def sort(self, vrset = None):
             '''Actually sort the reflections.'''
-            
+
             # if we have not specified > 1 hklin file via the add method,
             # check that the set_hklin method has been used.
             if not self._hklin_files:
                 self.check_hklin()
-            
+
             self.check_hklout()
 
             if self._hklin_files:
@@ -99,15 +99,15 @@ def Sortmtz(DriverType = None):
                 self.set_task('Sorting reflections %s => %s' % \
                              (os.path.split(self.get_hklin())[-1],
                               os.path.split(self.get_hklout())[-1]))
-                
+
             self.start()
 
             # allow for the fact that large negative reflections may
             # result from XDS output...
-            
+
             if vrset:
                 self.input('VRSET_MAGIC %f' % vrset)
-                
+
             self.input(self._sort_order)
 
             # multiple mtz files get passed in on the command line...
@@ -131,12 +131,12 @@ def Sortmtz(DriverType = None):
 
                 # general errors - SEGV and the like
                 self.check_for_errors()
-                
+
                 # ccp4 specific errors
                 self.check_ccp4_errors()
                 if 'Error' in self.get_ccp4_status():
                     raise RuntimeError, '[SORTMTZ] %s' % status
-                
+
                 # sortmtz specific errors
                 self.check_sortmtz_errors()
 
@@ -147,7 +147,7 @@ def Sortmtz(DriverType = None):
                 except:
                     pass
                 raise e
-                
+
             return self.get_ccp4_status()
 
     return SortmtzWrapper()

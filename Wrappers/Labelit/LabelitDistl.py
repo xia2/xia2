@@ -2,16 +2,16 @@
 # LabelitDistl.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 2nd June 2006
-# 
+#
 # A wrapper for labelit.distl - this will provide functionality to:
 #
 # Looking for ice rings.
 # Screening the images.
-# 
+#
 # The output looks like:
 #
 #                     File : 12287_1_E1_001.img
@@ -54,7 +54,7 @@ def LabelitDistl(DriverType = None):
 
             self._images = []
 
-            self._statistics = { } 
+            self._statistics = { }
 
         def add_image(self, image):
             '''Add an image for indexing.'''
@@ -116,7 +116,7 @@ def LabelitDistl(DriverType = None):
                 if l[:3] == ['%Saturation,', 'Top', '50']:
                     self._statistics[current_image][
                         'saturation'] = float(l[-1])
-                
+
             return 'ok'
 
         # things to get results from the indexing
@@ -147,5 +147,3 @@ if __name__ == '__main__':
         stats = l.get_statistics(image)
 
         print image, stats['spots_good'], stats['spots']
-
-

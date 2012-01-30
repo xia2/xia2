@@ -2,12 +2,12 @@
 # PDBStructureFile.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
-# A handler for PDB files for macromolecular structures. This is to 
+# A handler for PDB files for macromolecular structures. This is to
 # enable analysis programs.
-# 
+#
 
 import os
 
@@ -40,7 +40,7 @@ def parse_pdb_remark_200(pdb_file_records):
     j = 0
 
     results = []
-    
+
     while j < len(pdb_file_records):
         record = pdb_file_records[j]
         if not 'REMARK 200' in record:
@@ -124,7 +124,7 @@ def read_modifications(pdb_file):
         modifications[record.split()[2]] = record.split()[5]
 
     return modifications
-        
+
 def read_sequence(pdb_file):
     '''Read the sequence from the SEQRES records and return as a dictionary.'''
 
@@ -146,7 +146,7 @@ def read_sequence(pdb_file):
 
         if not chain in sequences:
             sequences[chain] = ''
-            
+
         for r in residues:
             if r in modifications:
                 r = modifications[r]
@@ -169,7 +169,7 @@ if __name__ == '__main__' and False:
 
     for arg in sys.argv[1:]:
         compute(arg)
-        
+
     analyse()
 
 if __name__ == '__main__':
@@ -185,6 +185,3 @@ if __name__ == '__main__':
             sequence = sequences[k]
             print k
             print sequence
-
-
-            

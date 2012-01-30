@@ -2,22 +2,22 @@
 # xia2pdb_lattice.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 
 
-# 
+#
 # A program to analyse PDB CRYST1 records to "mine" information on the
 # spectrum of distortions. This will output the "correct" unit cell
 # from the structure, the spectrum of similar lattices & distortions.
 # The higher lattices than the correct one will be scored by distortion
 # penalty, counting the sneaky high symmetry looking ones as we go.
-# 
+#
 # This is likely to be messy.
-# 
+#
 # FIXME 18/SEP/06 need to make sure that the structure is from an experimental
 #                 source, not a computational one.
-# 
+#
 
 import sys
 import os
@@ -68,7 +68,7 @@ def parse_pdb(pdb_file_name):
 
 def print_lattice(lattice):
     print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % lattice['cell']
-    print 'Number: %s     Lattice: %s' % (lattice['number'], 
+    print 'Number: %s     Lattice: %s' % (lattice['number'],
                                           lattice['lattice'])
     print 'Distortions (PRE, GW):   %5.2f %5.2f' % (lattice['delta'],
                                                     lattice['distortion'])
@@ -84,7 +84,7 @@ def do_funky(pdb_file_name):
 
     sys.stdout.flush()
 
-    # check that the symmetry is legal, not something whacky! 
+    # check that the symmetry is legal, not something whacky!
     try:
         original_lattice = Syminfo.get_lattice(symm)
         # this really needs to go info Syminfo handler
@@ -115,8 +115,8 @@ def do_funky(pdb_file_name):
             print_lattice(lattices[lattice])
         elif lattices[lattice]['number'] == original:
             print '-- Original --'
-	    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % tuple(cell)
-    	    print 'Number: %s     Lattice: %s' % (original, 
+            print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % tuple(cell)
+            print 'Number: %s     Lattice: %s' % (original,
                                                   original_lattice)
             print 'Distortions (PRE, GW):   %5.2f %5.2f' % (0.0, 0.0)
 
@@ -129,4 +129,3 @@ def do_funky(pdb_file_name):
 for file in os.listdir('.'):
     if file.split('.')[-1] == 'pdb':
         do_funky(file)
-

@@ -32,15 +32,15 @@ if __name__ == '__main__':
 
     for p_N in range(9):
         N = int(10 * math.pow(2, p_N))
-        
+
         print N
         pop = population(N, i)
 
         for p_isigma in range(5):
 
             isigma = math.pow(2, p_isigma)
-            
+
             ccs = [cc(noisy_population(pop, isigma),
                       noisy_population(pop, isigma)) for j in range(100)]
-            
+
             print '%4.1f' % float(isigma), '%.4f %.4f' % meansd(ccs)

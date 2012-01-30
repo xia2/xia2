@@ -133,7 +133,7 @@ def get_out_rfactors(records):
 
     for j in range(len(records)):
         record = records[j]
-        
+
         if 'Summary data for' in record:
             dataset = record.split()[-1]
 
@@ -149,7 +149,7 @@ def nint(a):
     return i
 
 def erzatz_resolution(reflection_file, batch_ranges):
-    
+
     mtz_obj = mtz.object(reflection_file)
 
     miller = mtz_obj.extract_miller_indices()
@@ -165,7 +165,7 @@ def erzatz_resolution(reflection_file, batch_ranges):
 
         if crystal.name() == 'HKL_Base':
             continue
-        
+
         uc = crystal.unit_cell()
 
         for dataset in crystal.datasets():
@@ -201,7 +201,7 @@ def erzatz_resolution(reflection_file, batch_ranges):
                 continue
             if batches[j] > end:
                 continue
-            
+
             d.append(uc.d(miller[j]))
             isig.append(ipr_values[j] / sigipr_values[j])
 
@@ -234,7 +234,7 @@ def compute_resolution(dmax, dmin, d, isig):
             return 1.0 / math.sqrt(s)
 
     return dmin
-        
+
 if __name__ == '__test__':
 
     resolutions = erzatz_resolution(
@@ -243,7 +243,7 @@ if __name__ == '__test__':
 
     for batches in sorted(resolutions):
         print '%3d %3d' % batches, '%.2f' % resolutions[batches]
-    
+
 if __name__ == '__main__':
 
     for scale_model in [
@@ -258,10 +258,8 @@ if __name__ == '__main__':
         rfactors, convergence = run_scala(scale_model)
 
         print scale_model
-        
+
         for name in sorted(rfactors):
             print '%s' % name, '%.3f %.3f %.3f' % rfactors[name]
-                
+
         print convergence
-
-

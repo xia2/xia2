@@ -2,20 +2,20 @@
 # xia2setup.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # xia2setup.py - an application to generate the .xinfo file for data
 # reduction from a directory full of images, optionally with scan and
 # sequence files which will be used to add matadata.
 #
 # 18th December 2006
 #
-# 17/JAN/07 FIXED need to add a "calculation of beam centre" stage to this 
+# 17/JAN/07 FIXED need to add a "calculation of beam centre" stage to this
 #                 process.
-# 
-# 
-# 
+#
+#
+#
 
 import os
 import sys
@@ -80,7 +80,7 @@ def is_sequence_name(file):
 def is_image_name(file):
 
     global known_image_extensions
-    
+
     if os.path.isfile(file):
         exten = file.split('.')[-1]
         if exten in known_image_extensions:
@@ -101,14 +101,14 @@ def get_sweep(f):
     global target_template
 
     global known_sweeps
-    
+
     if not is_image_name(f):
         return
 
     # in here, check the permissions on the file...
 
     if not os.access(f, os.R_OK):
-        from Handlers.Streams import Debug        
+        from Handlers.Streams import Debug
         Debug.write('No read permission for %s' % f)
 
     # now check if it is a decoy XDS file///
@@ -124,7 +124,7 @@ def get_sweep(f):
         if target_template:
             if template != target_template:
                 return
-        
+
         key = (directory, template)
         if not known_sweeps.has_key(key):
             sweeplist = SweepFactory(template, directory)
@@ -138,7 +138,7 @@ def get_sweep(f):
 
 def parse_sequence(sequence_file):
     sequence = ''
-    
+
     for record in open(sequence_file).readlines():
         if record[0].upper() in \
            'ABCDEFGHIJKLMNOPQRSTUVWXYZ ':
@@ -165,18 +165,18 @@ def visit(root, directory, files):
                 latest_chooch = None
         if is_sequence_name(os.path.join(directory, f)):
             parse_sequence(os.path.join(directory, f))
-            
+
 def print_sweeps(out = sys.stdout):
 
     global known_sweeps, latest_sequence
-    
+
     sweeplists = known_sweeps.keys()
     sweeplists.sort()
 
     # analysis pass
 
     wavelengths = []
-    
+
     for sweep in sweeplists:
         sweeps = known_sweeps[sweep]
         # this should sort on exposure epoch ...?
@@ -216,7 +216,7 @@ def print_sweeps(out = sys.stdout):
     if Flags.get_cell():
         out.write('USER_CELL %.2f %.2f %.2f %.2f %.2f %.2f\n' % \
                   tuple(Flags.get_cell()))
-        out.write('\n')        
+        out.write('\n')
 
     if Flags.get_freer_file():
         out.write('FREER_FILE %s\n' % Flags.get_freer_file())
@@ -229,7 +229,7 @@ def print_sweeps(out = sys.stdout):
                                for i in range(0, len(latest_sequence), 60)]:
             out.write('%s\n' % sequence_chunk)
         out.write('\n')
-        out.write('END AA_SEQUENCE\n')        
+        out.write('END AA_SEQUENCE\n')
         out.write('\n')
 
     if CommandLine.get_atom_name():
@@ -245,7 +245,7 @@ def print_sweeps(out = sys.stdout):
             out.write('!NUMBER_TOTAL M\n')
         out.write('END HA_INFO\n')
         out.write('\n')
-    
+
     for j in range(len(wavelengths)):
 
         global latest_chooch
@@ -261,9 +261,9 @@ def print_sweeps(out = sys.stdout):
                 name = 'NATIVE'
             else:
                 name = 'WAVE%d' % (j + 1)
-                
+
         wavelength_map[wavelengths[j]] = name
-        
+
         out.write('BEGIN WAVELENGTH %s\n' % name)
 
         dmin = Flags.get_resolution_high()
@@ -273,12 +273,12 @@ def print_sweeps(out = sys.stdout):
             out.write('RESOLUTION %f %f\n' % (dmin, dmax))
         elif dmin:
             out.write('RESOLUTION %f\n' % dmin)
-                
+
         out.write('WAVELENGTH %f\n' % wavelengths[j])
         if fp != 0.0 and fpp != 0.0:
             out.write('F\' %5.2f\n' % fp)
             out.write('F\'\' %5.2f\n' % fpp)
-            
+
         out.write('END WAVELENGTH %s\n' % name)
         out.write('\n')
 
@@ -290,7 +290,7 @@ def print_sweeps(out = sys.stdout):
         for s in sweeps:
 
             # require at least 10 images to represent a sweep...
-            
+
             if len(s.get_images()) < Flags.get_min_images():
                 continue
 
@@ -303,7 +303,7 @@ def print_sweeps(out = sys.stdout):
                 out.write('REVERSEPHI\n')
 
             out.write('WAVELENGTH %s\n' % wavelength_map[s.get_wavelength()])
-            
+
             out.write('DIRECTORY %s\n' % s.get_directory())
             out.write('IMAGE %s\n' % os.path.split(s.imagename(min(
                 s.get_images())))[-1])
@@ -316,7 +316,7 @@ def print_sweeps(out = sys.stdout):
             else:
                 out.write('START_END %d %d\n' % (min(s.get_images()),
                                                  max(s.get_images())))
-                
+
             out.write('EPOCH %d\n' % int(s.get_collect()[0]))
             cl_beam = CommandLine.get_beam()
             if cl_beam[0] or cl_beam[1]:
@@ -360,7 +360,7 @@ def write_xinfo(filename, path, template = None):
             raise e
 
     # FIXME should I have some exception handling in here...?
- 
+
     start = os.getcwd()
     os.chdir(directory)
 
@@ -372,7 +372,7 @@ def write_xinfo(filename, path, template = None):
               os.listdir(CommandLine.get_directory()))
     else:
         rummage(path)
-        
+
     fout = open(filename, 'w')
     print_sweeps(fout)
 
@@ -406,7 +406,7 @@ if __name__ == '__main__':
     except OSError, e:
         if not 'File exists' in str(e):
             raise e
-        
+
     os.chdir(directory)
 
     while not os.path.exists(path):
@@ -417,7 +417,3 @@ if __name__ == '__main__':
 
     rummage(path)
     print_sweeps(fout)
-
-
-
-

@@ -68,17 +68,17 @@ Using  914 out of  960 reflections
    regularized cell:  51.784   51.784  158.113  90.00  90.00  90.00
            Symmetry: tP (Primitive Tetragonal)
 
- Spacegroup information obtained from library file: 
+ Spacegroup information obtained from library file:
  Logical Name: SYMINFO   Filename: /opt/px/ccp4//ccp4-6.0.1/lib/data/syminfo.lib
 
 
- Spacegroup information obtained from library file: 
+ Spacegroup information obtained from library file:
  Logical Name: SYMINFO   Filename: /opt/px/ccp4//ccp4-6.0.1/lib/data/syminfo.lib
 
  Mosflm has chosen solution 10 from the list automatically. You may want to
  re-run the autoindexing and choose a solution yourself.
 
- The solution and direct beam position will now be refined; reflections which 
+ The solution and direct beam position will now be refined; reflections which
  deviate by more than the sigma cutoff from their calculated position will
  be excluded from the refinement.
 
@@ -143,7 +143,7 @@ Logical name: NEWMAT, Filename: NEWMAT
  Total intensity 99966 99998
  SD of intensity   173   180   256   260   264   264   266   266   266   266   266   267   267   267   267   267   267   267   267
  SD of intensity   267   268
- The mosaicity has been estimated as ---> 0.31 <--- for this image only; 
+ The mosaicity has been estimated as ---> 0.31 <--- for this image only;
 This value can be used cautiously as an initial estimate.
 Storing space group from DPS autoindexing: P4         number  75
 Storing space group from DPS autoindexing: P4         number  75
@@ -202,4 +202,3 @@ Using  914 out of  960 reflections
 
 
 [integrate output]
-

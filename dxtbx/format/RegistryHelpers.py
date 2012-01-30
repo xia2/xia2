@@ -83,13 +83,9 @@ def LoadFormatClass(FormatClass):
     finally:
         module.close()
 
-    return 
+    return
 
 if __name__ == '__main__':
 
     for f in LookForFormatClasses():
         LoadFormatClass(f)
-            
-
-
-

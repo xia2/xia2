@@ -2,34 +2,34 @@
 # Integrater.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # An interface for programs which do integration - this will handle
 # all of the input and output, delegating the actual processing to an
 # implementation of this interfacing.
-# 
-# The following are considered critical: 
-# 
+#
+# The following are considered critical:
+#
 # Input:
 # An implementation of the indexer class.
-# 
+#
 # Output:
 # [processed reflections?]
 #
 # This is a complex problem to solve...
-# 
+#
 # Assumptions & Assertions:
-# 
+#
 # (1) Integration includes any cell and orientation refinement.
 #     This should be handled under the prepare phase.
 # (2) If there is no indexer implementation provided as input,
 #     it's ok to go make one, or raise an exception (maybe.)
-# 
+#
 # This means...
-# 
+#
 # (1) That this needs to have the posibility of specifying images for
-#     use in both cell refinement (as a list of wedges, similar to 
+#     use in both cell refinement (as a list of wedges, similar to
 #     the indexer interface) and as a SINGLE WEDGE for use in integration.
 # (2) This may default to a local implementation using the same program,
 #     e.g. XDS or Mosflm - will not necessarily select the best one.
@@ -78,7 +78,7 @@ class Integrater:
         # different resolution rings.
         self._intgr_ice = 0
 
-        # required parameters 
+        # required parameters
         self._intgr_wedge = None
 
         # implementation dependent parameters - these should be keyed by
@@ -125,17 +125,17 @@ class Integrater:
         self._intgr_reindex_matrix = None
 
         # extra information which could be helpful for integration
-        self._intgr_anomalous = False        
+        self._intgr_anomalous = False
 
         # mosaic spread information
         self._intgr_mosaic_min = None
         self._intgr_mosaic_mean = None
         self._intgr_mosaic_max = None
-                
+
         return
 
     # ------------------------------------------------------------------
-    # These methods need to be overloaded by the actual implementation - 
+    # These methods need to be overloaded by the actual implementation -
     # they are all called from within the main integrate() method. The
     # roles of each of these could be as follows -
     #
@@ -165,25 +165,25 @@ class Integrater:
 
         # reset the status flags
         self.set_integrater_prepare_done(False)
-        self.set_integrater_done(False)        
-        self.set_integrater_finish_done(False)        
+        self.set_integrater_done(False)
+        self.set_integrater_finish_done(False)
 
         # reset the "knowledge" from the data
         # note well - if we have set a resolution limit
         # externally then this will have to be respected...
         # e.g. - added user for # 3183
-        
+
         if not self._intgr_reso_user:
             self._intgr_reso_high = 0.0
             self._intgr_reso_low = 0.0
-            
+
         self._intgr_hklout_raw = None
         self._intgr_hklout = None
         self._intgr_program_parameters = { }
 
         self._integrater_reset_callback()
         return
-    
+
     def set_integrater_sweep(self, sweep):
         self._intgr_sweep = sweep
         self._integrater_reset()
@@ -200,7 +200,7 @@ class Integrater:
         if not done:
             self.set_integrater_done(False)
         return
-        
+
     def set_integrater_done(self, done = True):
         self._intgr_done = done
 
@@ -209,7 +209,7 @@ class Integrater:
 
         if not done:
             self._intgr_reindex_operator = None
-              
+
         if not done:
             self.set_integrater_finish_done(False)
         return
@@ -224,12 +224,12 @@ class Integrater:
     def get_integrater_prepare_done(self):
         if not self.get_integrater_indexer():
             return self._intgr_prepare_done
-        
+
         if not self.get_integrater_indexer().get_indexer_done() \
                and self._intgr_prepare_done:
             Debug.write('Resetting integrater as indexer updated.')
             self._integrater_reset()
-            
+
         return self._intgr_prepare_done
 
     def get_integrater_done(self):
@@ -237,7 +237,7 @@ class Integrater:
         if not self.get_integrater_prepare_done():
             Debug.write('Resetting integrater done as prepare not done')
             self.set_integrater_done(False)
-        
+
         return self._intgr_done
 
     def get_integrater_finish_done(self):
@@ -246,7 +246,7 @@ class Integrater:
             Debug.write(
                 'Resetting integrater finish done as integrate not done')
             self.set_integrater_finish_done(False)
-        
+
         return self._intgr_finish_done
 
     # end job control stuff - next getters for results
@@ -283,7 +283,7 @@ class Integrater:
         self._intgr_pname = project_name
         self._intgr_xname = crystal_name
         self._intgr_dname = dataset_name
-        
+
         return
 
     def get_integrater_project_info(self):
@@ -315,9 +315,9 @@ class Integrater:
             self._intgr_epoch = int(header['epoch'])
 
         Debug.write('Sweep epoch: %d' % self._intgr_epoch)
-        
+
         self.set_integrater_done(False)
-        
+
         return
 
     def get_integrater_wedge(self):
@@ -351,7 +351,7 @@ class Integrater:
 
         self._intgr_reso_high = min(dmin, dmax)
         self._intgr_reso_low = max(dmin, dmax)
-        
+
         self.set_integrater_done(False)
 
         return
@@ -364,7 +364,7 @@ class Integrater:
 
         if user:
             self._intgr_reso_user = True
-            
+
         self._intgr_reso_high = dmin
         self.set_integrater_done(False)
         return
@@ -384,7 +384,7 @@ class Integrater:
 
     def get_integrater_mosaic_min_mean_max(self):
         return self._intgr_mosaic_min, self._intgr_mosaic_mean, \
-               self._intgr_mosaic_max 
+               self._intgr_mosaic_max
 
     # getters and setters for program specific parameters
     # => values kept in dictionary
@@ -406,7 +406,7 @@ class Integrater:
             return self._intgr_program_parameters[program][parameter]
         except:
             return None
-        
+
     def get_integrater_parameters(self, program):
         '''Get all parameters and values.'''
 
@@ -440,7 +440,7 @@ class Integrater:
             return self._intgr_export_program_parameters[program][parameter]
         except:
             return None
-        
+
     def get_integrater_export_parameters(self):
         '''Get all parameters and values.'''
 
@@ -481,7 +481,7 @@ class Integrater:
                     except BadLatticeError, e:
 
                         Journal.banner('eliminated this lattice', size = 80)
-                        
+
                         Chatter.write('Rejecting bad lattice %s' % str(e))
                         self._intgr_indexer.eliminate()
                         self._integrater_reset()
@@ -491,7 +491,7 @@ class Integrater:
                 # which may have been adjusted or corrected. See #1698 below.
 
                 Debug.write('Doing some integration...')
-            
+
                 self.set_integrater_done(True)
 
                 if self._intgr_sweep_name:
@@ -506,38 +506,38 @@ class Integrater:
                     Chatter.write('Rejecting bad lattice %s' % str(e))
 
                     Journal.banner('eliminated this lattice', size = 80)
-                    
+
                     self._intgr_indexer.eliminate()
                     self._integrater_reset()
-                    
+
             self.set_integrater_finish_done(True)
-            
+
             try:
                 # allow for the fact that postrefinement may be used
                 # to reject the lattice...
-                
+
                 self._intgr_hklout = self._integrate_finish()
-                
+
             except BadLatticeError, e:
                 Chatter.write('Uh oh! %s' % str(e))
                 self._intgr_indexer.eliminate()
                 self._integrater_reset()
 
         return self._intgr_hklout
-    
+
     def get_integrater_indexer(self):
         return self._intgr_indexer
 
     def get_integrater_intensities(self):
         self.integrate()
         return self._intgr_hklout
-            
+
     def get_integrater_raw_intensities(self):
         self.integrate()
         return self._intgr_hklout_raw
-            
+
     def get_integrater_batches(self):
-        self.integrate()        
+        self.integrate()
         return self._intgr_batches_out
 
     # Should anomalous pairs be treated separately? Implementations
@@ -574,12 +574,12 @@ class Integrater:
 
         if spacegroup_number == self._intgr_spacegroup_number:
             return
-        
+
         self._intgr_reindex_operator = None
         self._intgr_reindex_matrix = None
-        
+
         self._intgr_spacegroup_number = spacegroup_number
-        self.set_integrater_finish_done(False)        
+        self.set_integrater_finish_done(False)
 
         return
 
@@ -590,7 +590,7 @@ class Integrater:
         '''Reset the reindex operator.'''
 
         return self.set_integrater_reindex_operator('h,k,l', compose = False)
-        
+
     def set_integrater_reindex_operator(self, reindex_operator,
                                         compose = True):
         '''Assign a symmetry operator to the reflections - note
@@ -614,12 +614,12 @@ class Integrater:
 
         if self._intgr_reindex_operator is None or not compose:
             self._intgr_reindex_operator = reindex_operator
-            
-        else:            
+
+        else:
             old_operator = self._intgr_reindex_operator
             self._intgr_reindex_operator = compose_symops(
                 reindex_operator, old_operator)
-            
+
             Debug.write('Composing %s and %s -> %s' % \
                         (old_operator, reindex_operator,
                          self._intgr_reindex_operator))
@@ -634,20 +634,17 @@ class Integrater:
 
     def get_integrater_reindex_operator(self):
         return self._intgr_reindex_operator
-        
+
     def get_integrater_reindex_matrix(self):
         return self._intgr_reindex_matrix
-        
+
     # ------------------------------------------------
     # callback methods - overloading these is optional
     # ------------------------------------------------
-    
+
     def _integrater_reset_callback(self):
         '''Overload this if you have other things which need to be reset.'''
         pass
-    
+
     def _set_integrater_reindex_operator_callback(self):
         pass
-
-
-

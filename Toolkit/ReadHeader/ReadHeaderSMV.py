@@ -1,9 +1,9 @@
 #!/usr/bin/env cctbx.python
 # ReadHeaderSMV.py
-# 
+#
 #   Copyright (C) 2010 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # Some code to implement header reading for SMV format image headers, which
@@ -22,7 +22,7 @@ def ReadHeaderSMV(image):
         '{', '').replace('}', '').strip()
 
     header = { }
-    
+
     for record in header_bytes.split(';'):
 
         if not record.strip():
@@ -36,11 +36,10 @@ def ReadHeaderSMV(image):
 if __name__ == '__main__':
 
     import sys
-    
+
     size, header = ReadHeaderSMV(sys.argv[1])
 
     for token in sorted(header):
         print '%s = \t%s' % (token, header[token])
 
     print 'header was %d bytes' % size
-        

@@ -24,10 +24,5 @@ if __name__ == '__main__':
     l.set_dip_template('foo_1_###.img')
 
     # etc.
-    
+
     l.index()
-
-
-    
-
-    

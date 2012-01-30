@@ -42,7 +42,7 @@ class FormatCBF(Format):
 
     def __init__(self, image_file):
         '''Initialise the image structure from the given file.'''
-        
+
         assert(FormatCBF.understand(image_file) > 0)
 
         Format.__init__(self, image_file)
@@ -66,8 +66,3 @@ class FormatCBF(Format):
                 break
 
         return
-
-
-    
-
-

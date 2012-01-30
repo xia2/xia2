@@ -2,15 +2,15 @@
 # IceId.py
 #   Copyright (C) 2007 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 20th May 2008
-# 
+#
 # A subroutine to identify when ice rings are a problem (that is, when it
 # appears that a significant amount of "peaks" are contained within ice
 # ring regions. As yet the definition of significant is not certain...
-# 
+#
 
 import math
 import os
@@ -72,7 +72,7 @@ class IceId:
         self._pixel = None
 
         # and this is used internally
-        
+
         self._setup = False
 
         return
@@ -80,23 +80,23 @@ class IceId:
     def set_beam(self, beam):
         self._beam = beam
         return
-        
+
     def set_distance(self, distance):
         self._distance = distance
         return
-        
+
     def set_wavelength(self, wavelength):
         self._wavelength = wavelength
         return
-        
+
     def set_image(self, image):
         self._image = image
         self._setup = False
         return
-        
+
     def setup(self):
         '''Run diffdump to get the image header values out.'''
-    
+
         if not self._image:
             raise RuntimeError, 'image not assigned'
 
@@ -107,7 +107,7 @@ class IceId:
         # check that the pixels are square; raise exception if not
         if not header['pixel'][0] == header['pixel'][1]:
             raise RuntimeError, 'pixels not square'
-        
+
         pixel = header['pixel'][0]
         wavelength = header['wavelength']
         beam = header['beam']
@@ -126,7 +126,7 @@ class IceId:
             x = self._beam[1] - beam[0]
             y = self._beam[0] - beam[1]
             self._beam = x, y
-            
+
         if not self._distance:
             self._distance = distance
 
@@ -199,7 +199,7 @@ def test():
     print 'not icy'
 
     for n in range(1, 46):
-    
+
         image = os.path.join(os.environ['X2TD_ROOT'],
                              'DL', 'insulin', 'images',
                              'insulin_1_%03d.img' % n)
@@ -207,8 +207,8 @@ def test():
         i = IceId()
         i.set_image(image)
         print i.search()
-    
-    
+
+
     return
 
 def test_input():
@@ -217,7 +217,7 @@ def test_input():
         i = IceId()
         i.set_image(image)
         print i.search()
-        
+
 
 if __name__ == '__main__':
 

@@ -35,7 +35,7 @@ class integrate:
         self._integrate_reflections = None
 
         # keep a note that this plugin class implements integrate
-        
+
         global integrate_implementation_manager
         integrate_implementation_manager.add(self.__class__)
 
@@ -79,7 +79,7 @@ class integrate:
     def get_integrate_output(self):
         '''This is the local implementation of getDataResult()'''
         pass
-    
+
     def _unmarshalintegrate(self):
         # FIXME do the unrolling of the input XML document - set the values
         # using get, set below. This is a separate job for the code camp ;o)
@@ -95,12 +95,12 @@ class integrate:
         print 'preintegrating'
 
         pass
-                
+
     def _integrate(self):
         '''Dreadfully sorry, you really have to overload this one - this is
         where the real work will be done.'''
         raise RuntimeError, 'I need to be implemented'
-        
+
     def _postintegrate(self):
         '''And if you would like to gather your thoughts afterwards, overload
         this.'''
@@ -115,6 +115,3 @@ class integrate:
         print 'marshalling integration output'
 
         return
-
-        
-        

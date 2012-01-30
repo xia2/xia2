@@ -35,11 +35,10 @@ def test_image_header(image):
     print 'Epoch:         %.3f' % header['epoch']
     print 'Exposure time: %.3f' % header['exposure_time']
     print 'Two theta:     %.3f' % header['two_theta']
-    
+
     return
 
 if __name__ == '__main__':
 
     for image in sys.argv[1:]:
         test_image_header(image)
-

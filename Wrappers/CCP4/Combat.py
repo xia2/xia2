@@ -2,19 +2,19 @@
 # Combat.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 5th June 2006
-# 
-# An example of an combat CCP4 program wrapper, which can be used as the 
+#
+# An example of an combat CCP4 program wrapper, which can be used as the
 # base for other wrappers.
-# 
+#
 # Provides:
-# 
+#
 # Conversion from XDS format and Unmerged scalepack format to MTZ
 # unmerged format.
-# 
+#
 
 import os
 import sys
@@ -47,7 +47,7 @@ def Combat(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            
+
             self.set_executable(os.path.join(
                 os.environ.get('CBIN', ''), 'combat'))
 
@@ -105,7 +105,7 @@ def Combat(DriverType = None):
             format = None
 
             # check for XDS format
-            
+
             first_char = open(self.get_hklin(), 'r').read(1)
             if first_char == '!':
                 # may be XDS
@@ -135,14 +135,14 @@ def Combat(DriverType = None):
                 imin = self._find_largest_negative_intensity_xds()
 
                 Debug.write('Imin found to be %f' % imin)
-                
+
                 scale = 1.0
                 while imin * scale < -999999.0:
                     scale *= 0.1
 
-                Debug.write('Determined scale factor of %f' % scale)                    
+                Debug.write('Determined scale factor of %f' % scale)
                 self.input('scale %s' % scale)
-                
+
             if self._pname and self._xname and self._dname:
                 self.input('pname %s' % self._pname)
                 self.input('xname %s' % self._xname)
@@ -184,7 +184,7 @@ if __name__ == '__main__':
             hklin = sys.argv[1]
         else:
             hklin = 'XDS_ASCII.HKL'
-        
+
         c = Combat()
         c.write_log_file('combat-debug.log')
         c.set_hklin(hklin)
@@ -196,18 +196,16 @@ if __name__ == '__main__':
     if False:
 
         # test unmerged polish
-        
+
         c = Combat()
-        
+
         hklin = os.path.join(os.environ['X2TD_ROOT'],
                              'Test', 'UnitTest', 'Interfaces',
                              'Scaler', 'Unmerged', 'TS00_13185_unmerged_INFL.sca')
-        
+
         c.set_hklin(hklin)
         c.set_project_information('TS00', '13185', 'INFL')
         c.set_spacegroup('P212121')
         c.set_cell((57.74, 73.93, 86.57, 90.00, 90.00, 90.00))
         c.set_hklout('TS00_13185_unmerged_INFL.mtz')
         c.run()
-
-    

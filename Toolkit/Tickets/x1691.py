@@ -57,7 +57,7 @@ def get_out_rfactors(records):
 
     for j in range(len(records)):
         record = records[j]
-        
+
         if 'Summary data for' in record:
             dataset = record.split()[-1]
 
@@ -80,7 +80,7 @@ def random_fraction(fraction, candidates):
 def random_selection(number, candidates):
 
     assert(number <= len(candidates))
-    
+
     selected = set()
 
     while len(selected) < number:
@@ -152,10 +152,10 @@ def test_rerun_scala(scala_log_file, nrefl):
         try:
             rfactors = get_out_rfactors(log)
             time = get_time(log)
-            
+
             score = sum([rfactors[dataset][1] for dataset in rfactors]) / \
                     len(rfactors)
-            
+
             results.append((score, scales_command))
         except:
             pass
@@ -206,10 +206,10 @@ def test_rerun_scala_fraction(scala_log_file, fraction):
         try:
             rfactors = get_out_rfactors(log)
             time = get_time(log)
-            
+
             score = sum([rfactors[dataset][1] for dataset in rfactors]) / \
                     len(rfactors)
-            
+
             results.append((score, scales_command))
         except:
             pass
@@ -225,7 +225,7 @@ if __name__ == '__main__':
     for fraction in 0.1, 0.2, 0.3, 0.4, 0.5:
 
         n_correct = 0
-        
+
         for j in range(20):
             r, model = test_rerun_scala_fraction(sys.argv[1], fraction)
 
@@ -233,9 +233,3 @@ if __name__ == '__main__':
                 n_correct += 1
 
         print '%.1f %d' % (fraction, n_correct)
-
-        
-    
-    
-    
-

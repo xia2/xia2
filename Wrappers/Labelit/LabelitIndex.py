@@ -2,27 +2,27 @@
 # LabelitIndex.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 2nd June 2006
-# 
+#
 # A wrapper for labelit.index - this will provide functionality to:
 #
 # Decide the beam centre.
 # Index the lattce.
-# 
+#
 # Now done...
-# 
+#
 # (1) Implement setting of beam, wavelength, distance via labelit parameter
 #     .py file. [dataset_preferences.py] autoindex_override_beam = (x, y)
 #     distance wavelength etc.
-# 
+#
 # (2) Implement profile bumpiness handling if the detector is an image plate.
 #     (this goes in the same file...) this is distl_profile_bumpiness = 5
 #
 # Modifications:
-# 
+#
 # 13/JUN/06: Added mosaic spread getting
 # 21/JUN/06: Added unit cell volume getting
 # 23/JUN/06: FIXME should the images to index be specified by number or
@@ -32,14 +32,14 @@
 # 10/JUL/06: Modified to inherit from FrameProcessor interface to provide
 #            all of the guff to handle the images etc. Though this handles
 #            only the template &c., not the image selections for indexing.
-# 
+#
 # FIXME 24/AUG/06 Need to be able to get the raster & separation parameters
 #                 from the integrationNN.sh script, so that I can reproduce
 #                 the interface now provided by the Mosflm implementation
 #                 (this adds a dictionary with a few extra parameters - dead
 #                 useful under some circumstances) - Oh, I can't do this
 #                 because Labelit doesn't produce these parameters!
-# 
+#
 # FIXED 06/SEP/06 Need to update interface to handle unit cell input as
 #                 described in an email from Nick:
 #
@@ -47,8 +47,8 @@
 #
 #                 Though this will depend on installing the latest CVS
 #                 version (funfunfun) [or the 1.0.0a3 source tarball, easier!]
-# 
-#                 Ok, doing this will simply assign the smiley correctly - 
+#
+#                 Ok, doing this will simply assign the smiley correctly -
 #                 the other solutions are also displayed. I guess that this
 #                 will be useful for indexing multiple sets though.
 #
@@ -64,20 +64,20 @@
 #                 implement lattice reduction. Follow up 16/OCT/06 discussed
 #                 with Nick S about this and not sure what parameters have
 #                 changed but is still interested in making this work properly.
-# 
+#
 # FIXME 16/OCT/06 if more than two images are passed in for indexing can cope,
 #                 just need to assign wedge_limit = N where N is the number
-#                 of images in dataset_preferences.py... apparently this is 
+#                 of images in dataset_preferences.py... apparently this is
 #                 there for "historical reasons"...
 #
-# FIXME 07/NOV/06 new error message encountered trying to index 1VP4 LREM LR 
+# FIXME 07/NOV/06 new error message encountered trying to index 1VP4 LREM LR
 #                 in oC lattice:
 #
 #                 No_Lattice_Selection: In this case 3 of 12 lattice \
 #                 solutions have the oC Bravais type and nearly
 #                 the same cell.  Run labelit again without the \
 #                 known_symmetry and known_cell keywords.
-# 
+#
 #                 Need to be able to handle this...
 
 import os
@@ -96,7 +96,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'],
                     'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
-    
+
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
@@ -139,7 +139,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
         def __init__(self):
 
             DriverInstance.__class__.__init__(self)
-            
+
             # interface constructor calls
             FrameProcessor.__init__(self)
             Indexer.__init__(self)
@@ -151,7 +151,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
             self._refine_beam = True
 
             # this is linked to the above!
-            
+
             self._beam_search_scope = 0.0
 
             self._solutions = { }
@@ -194,7 +194,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
                 # FIXME latest version of labelit has messed up the beam
                 # centre finding :o( so add this for the moment until that
                 # is fixed
-                
+
                 out.write('beam_search_scope = %f\n' % \
                           self._beam_search_scope)
 
@@ -223,7 +223,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
             # 03/NOV/06 looks like this can be "fixed" by the following:
             # out.write('percent_overlap_forcing_detail = 1\n')
             # nope!
-            
+
             out.close()
 
             return
@@ -243,12 +243,12 @@ def LabelitIndex(DriverType = None, indxr_print = True):
                 if 'INDEXING UNRELIABLE' in o:
                     raise RuntimeError, 'indexing failed: %s' % \
                           o.split(':')[-1].strip()
-                    
+
             return
 
         def _index_prepare(self):
             # prepare to do some autoindexing
-            
+
             if self._indxr_images == []:
                 self._index_select_images()
             return
@@ -301,7 +301,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
                 for j in i:
                     if not j in _images:
                         _images.append(j)
-                    
+
             _images.sort()
 
             images_str = '%d' % _images[0]
@@ -365,7 +365,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
                                          'cP':195,
                                          'cF':196,
                                          'cI':197}
-                
+
                 self.add_command_line(
                     'known_symmetry=%d' % \
                     lattice_to_spacegroup[self._indxr_input_lattice])
@@ -381,7 +381,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
                             os.path.join(self.get_working_directory(),
                                          '%d_dataset_preferences.py' % \
                                          self.get_xpid()))
-            
+
             self.start()
             self.close_wait()
 
@@ -392,21 +392,21 @@ def LabelitIndex(DriverType = None, indxr_print = True):
             # try to address it by e.g. extending the beam search area...
 
             try:
-                
+
                 self.check_labelit_errors()
-                
+
             except RuntimeError, e:
-                
+
                 if self._refine_beam is False:
                     raise e
 
                 # can we improve the situation?
-                
+
                 if self._beam_search_scope < 4.0:
                     self._beam_search_scope += 4.0
-                    
+
                     # try repeating the indexing!
-                    
+
                     self.set_indexer_done(False)
                     return 'failed'
 
@@ -414,7 +414,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
 
                 raise e
 
-                    
+
             # ok now we're done, let's look through for some useful stuff
             output = self.get_all_output()
 
@@ -428,7 +428,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
             #                                             2 solutions
             # Beam x 109.0 y 105.1, initial score 538; refined rmsd: 0.1969
             # Beam x 108.8 y 106.1, initial score 354; refined rmsd: 0.1792
-            
+
             # in here want to parse the beam centre search if it was done,
             # and check that the highest scoring solution was declared
             # the "best" - though should also have a check on the
@@ -496,14 +496,14 @@ def LabelitIndex(DriverType = None, indxr_print = True):
                         # then compare them against the stats (one day) from
                         # running with the other solution - eventually the
                         # correct solution will result...
-                    
+
             for o in output:
                 l = o.split()
 
                 if l[:3] == ['Beam', 'center', 'x']:
                     x = float(l[3].replace('mm,', ''))
                     y = float(l[5].replace('mm,', ''))
-                    
+
                     self._indxr_refined_beam = (x, y)
                     self._indxr_refined_distance = float(
                         l[7].replace('mm', ''))
@@ -611,10 +611,10 @@ def LabelitIndex(DriverType = None, indxr_print = True):
                 stats = lsd.get_statistics(self.get_image_name(i))
 
                 resol = 0.5 * (stats['resol_one'] + stats['resol_two'])
-                
+
                 if resol < resolution:
                     resolution = resol
-                    
+
             self._indxr_resolution_estimate = resolution
 
             # also look at the images given in input to try to decide if
@@ -623,21 +623,21 @@ def LabelitIndex(DriverType = None, indxr_print = True):
             try:
 
                 ice = []
-            
+
                 for i in _images:
-                    
+
                     icy = IceId()
                     icy.set_image(self.get_image_name(i))
                     icy.set_beam(self._indxr_refined_beam)
-                    
+
                     ice.append(icy.search())
-                    
+
                 if sum(ice) / len(ice) > 0.45:
                     self._indxr_ice = 1
 
                     Debug.write('Autoindexing images look icy: %.3f' % \
                                 (sum(ice) / len(ice)))
-                    
+
                 else:
                     Debug.write('Autoindexing images look ok: %.3f' % \
                                 (sum(ice) / len(ice)))
@@ -645,7 +645,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
             except RuntimeError, e:
 
                 # cope with printpeaks failure...
-                
+
                 pass
 
             return 'ok'
@@ -688,15 +688,15 @@ def LabelitIndex(DriverType = None, indxr_print = True):
             self._indxr_lattice = lattice
             self._indxr_cell = cell
 
-            Debug.write('Inserting solution: %s ' % lattice + 
+            Debug.write('Inserting solution: %s ' % lattice +
                         '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % cell)
 
             self._indxr_replace(lattice, cell, indxr_print = self._indxr_print)
-            
+
             self._indxr_payload['mosflm_orientation_matrix'] = matrix
 
             return
-        
+
         # things to get results from the indexing
 
         def get_solutions(self):
@@ -715,7 +715,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
                 # c/f eliminate.
 
                 # FIXME should also include a check for the indxr_input_cell
-                
+
                 if self._indxr_input_cell:
                     for s in self._solutions.keys():
                         if self._solutions[s]['lattice'] == \
@@ -788,7 +788,7 @@ if __name__ == '__main__':
     distance = l.get_indexer_distance()
 
     axis = matrix.col([0, 0, 1])
-    
+
     for i in [1, 90]:
         image = l.get_image_name(i)
         dd = Diffdump()
@@ -807,7 +807,7 @@ if __name__ == '__main__':
         # and Mosflm definitions of X & Y...
 
         m_elems = []
-        
+
         m_matrix = l.get_indexer_payload('mosflm_orientation_matrix')
         for record in m_matrix[:3]:
             record = record.replace('-', ' -')
@@ -830,7 +830,7 @@ if __name__ == '__main__':
 
             scale = wavelength * math.sqrt(
                 xp * xp + yp * yp + distance * distance)
-            
+
             X = distance / scale
             X -= 1.0 / wavelength
             Y = - xp / scale

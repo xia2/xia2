@@ -2,7 +2,7 @@
 # XScaleHelpers.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # Helpers for the wrapper for XSCALE, the XDS Scaling program.
@@ -14,16 +14,16 @@ import sys
 def _generate_resolution_shells(low, high):
     '''Generate 9 evenly spaced in reciprocal space resolution
     shells from low to high resolution, e.g. in 1/d^2.'''
-    
+
     dmin = (1.0 / high) * (1.0 / high)
     dmax = (1.0 / low) * (1.0 / low)
     diff = (dmin -  dmax) / 8.0
-    
+
     shells = [1.0 / math.sqrt(dmax)]
-    
+
     for j in range(8):
         shells.append(1.0 / math.sqrt(dmax + diff * (j + 1)))
-        
+
     return shells
 
 def generate_resolution_shells_str(low, high):
@@ -69,15 +69,15 @@ def get_correlation_coefficients_and_group(xscale_lp):
     if not file_names:
         for j, record in enumerate(records):
             if 'SET# INTENSITY  ACCEPTED REJECTED' in record:
-                
+
                 k = j + 1
-                
+
                 while len(records[k].split()) == 5:
                     values = records[k].split()
                     file_names[int(values[0])] = values[-1]
-                    
+
                     k += 1
-                    
+
                 break
 
 
@@ -121,4 +121,4 @@ def get_correlation_coefficients_and_group(xscale_lp):
     return groups
 
 if __name__ == '__main__':
-    get_correlation_coefficients_and_group(sys.argv[1])    
+    get_correlation_coefficients_and_group(sys.argv[1])

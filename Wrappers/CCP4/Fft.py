@@ -2,13 +2,13 @@
 # Fft.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # 31st May 2006
-# 
+#
 # A wrapper for the CCP4 program fft
-# 
+#
 
 import os
 import sys
@@ -35,14 +35,14 @@ def Fft(DriverType = None):
             CCP4DriverInstance.__class__.__init__(self)
 
             self.set_executable(os.path.join(
-                os.environ.get('CBIN', ''), 'fft'))            
+                os.environ.get('CBIN', ''), 'fft'))
 
             self._symmetry = None
             self._dmin = 0.0
             self._dmax = 0.0
             self._exclude_term = 0.0
             self._dname = None
-            
+
         def set_symmetry(self, symmetry):
             if type(symmetry) == type('str'):
                 self._symmetry = symmetry.replace(' ', '')
@@ -71,7 +71,7 @@ def Fft(DriverType = None):
             self.start()
 
             self.input('patterson')
-            
+
             if self._symmetry:
                 self.input('fftspacegroup %s' % str(self._symmetry))
 
@@ -106,4 +106,3 @@ if __name__ == '__main__':
     fft.set_exclude_term(900.0)
 
     print fft.patterson()
-    

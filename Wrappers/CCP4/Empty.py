@@ -2,18 +2,18 @@
 # Empty.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 5th June 2006
-# 
-# An example of an empty CCP4 program wrapper, which can be used as the 
+#
+# An example of an empty CCP4 program wrapper, which can be used as the
 # base for other wrappers.
-# 
+#
 # Provides:
-# 
+#
 # Nothing
-# 
+#
 
 import os
 import sys

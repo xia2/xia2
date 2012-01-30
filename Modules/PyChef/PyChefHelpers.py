@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # PyChefHelpers.py
-# 
+#
 #   Copyright (C) 2009 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
-# Functions to help with the implementation of PyChef - little jiffy 
+#
+# Functions to help with the implementation of PyChef - little jiffy
 # bits which don't really need to be embedded in the main program.
-# 
+#
 
 import sys
 import math
@@ -55,10 +55,10 @@ def compute_unique_reflections(unit_cell,
 if __name__ == '__main__':
 
     for hklin in sys.argv[1:]:
-        
+
         mtz_obj = mtz_factory(file_name = hklin)
         sg = mtz_obj.space_group().build_derived_patterson_group()
-        
+
         for crystal in mtz_obj.crystals():
             uc = crystal.unit_cell()
 
@@ -79,4 +79,3 @@ if __name__ == '__main__':
             ms.add(hkl)
 
         print len(ms)
-

@@ -2,11 +2,11 @@
 # PattersonExpert.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # 24th July 2007
-# 
+#
 # A small expert to handle patterson map calculations. This will factor in
 # things like the symmetry of the crystal in the analysis.
 
@@ -60,7 +60,7 @@ def anomalous_patterson_jiffy(hklin, symmetry = None,
 
     if symmetry is None:
         symmetry = mtzdump.get_spacegroup()
-    
+
     if len(datasets) > 1:
         raise RuntimeError, 'more than one dataset for anomalous Patterson'
 
@@ -89,7 +89,7 @@ def anomalous_patterson_jiffy(hklin, symmetry = None,
 
     mapout = os.path.join(os.environ['CCP4_SCR'], '%s-fft.map' % scratch)
 
-    # calculate the full anomalous difference Patterson 
+    # calculate the full anomalous difference Patterson
 
     fft = Fft()
     fft.set_working_directory(working_directory)
@@ -110,7 +110,7 @@ def anomalous_patterson_jiffy(hklin, symmetry = None,
         mapin = mapout
         mapout = os.path.join(os.environ['CCP4_SCR'],
                               '%s-mapmask.map' % scratch)
-    
+
         mapmask = Mapmask()
         mapmask.set_working_directory(working_directory)
         mapmask.set_mapin(mapin)
@@ -177,7 +177,7 @@ if __name__ == '__main__':
     working_directory = os.getcwd()
     symmetry = 'P212121'
     hklin = '/Users/graeme/Projects/Patterson/ppe/analyse/PPE_X150A_free.mtz'
-    
+
     peaks = anomalous_patterson_jiffy(hklin, symmetry,
                                       working_directory, scratch)
 

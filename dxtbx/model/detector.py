@@ -2,9 +2,9 @@
 # detector.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-#  
+#
 # A model for the detector for the "updated experimental model" project
 # documented in internal ticket #1555. This is not designed to be used outside
 # of the XSweep classes. N.B. this should probably be generalized for non
@@ -75,7 +75,7 @@ class detector:
         start = '%s %d < I < %d\n' % (self._sensor,
                                       self._trusted_range[0],
                                       self._trusted_range[1])
-        
+
         return start + f_3 % self._origin.elems + f_3 % self._fast.elems + \
                f_3 % self._slow.elems + \
                ''.join([m % _m for _m in self._mask])
@@ -89,21 +89,21 @@ class detector:
             return -1
         elif angle > 1.0e-6:
             return 1
-        
+
         dlength = self._origin.dot() - other.get_origin_c().dot()
 
         if dlength < -1.0e-6:
             return -1
         elif dlength > 1.0e-6:
             return 1
-        
+
         angle = self._fast.angle(other.get_fast_c())
 
         if angle < -1.0e-6:
             return -1
         elif angle > 1.0e-6:
             return 1
-        
+
         angle = self._slow.angle(other.get_slow_c())
 
         if angle < -1.0e-6:
@@ -115,12 +115,12 @@ class detector:
             return -1
         elif self._image_size[0] > other.get_image_size()[0]:
             return 1
-        
+
         if self._image_size[1] < other.get_image_size()[1]:
             return -1
         elif self._image_size[1] > other.get_image_size()[1]:
             return 1
-        
+
         return 0
 
     def get_sensor(self):
@@ -130,32 +130,32 @@ class detector:
 
     def get_origin(self):
         '''Get the detector origin.'''
-        
+
         return self._origin.elems
 
     def get_origin_c(self):
         '''Get the detector origin as a cctbx vector.'''
-        
+
         return self._origin
 
     def get_fast(self):
         '''Get the detector fast direction.'''
-        
+
         return self._fast.elems
 
     def get_fast_c(self):
         '''Get the detector fast direction as a cctbx vector.'''
-        
+
         return self._fast
 
     def get_slow(self):
         '''Get the detector slow direction.'''
-        
+
         return self._slow.elems
 
     def get_slow_c(self):
         '''Get the detector slow direction as a cctbx vector.'''
-        
+
         return self._slow
 
     def get_pixel_size(self):
@@ -334,9 +334,9 @@ class detector_factory:
         z = beam - (beam.dot(axis) * axis)
         z = z / math.sqrt(z.dot())
         y = z.cross(x)
-        
+
         # and the target reference frame
-        
+
         _x = matrix.col([1, 0, 0])
         _y = matrix.col([0, 1, 0])
         _z = matrix.col([0, 0, 1])
@@ -365,7 +365,7 @@ class detector_factory:
         cbf_handle.read_file(cif_file, pycbf.MSG_DIGEST)
 
         cbf_detector = cbf_handle.construct_detector(0)
-        
+
         pixel = (cbf_detector.get_inferred_pixel_size(1),
                  cbf_detector.get_inferred_pixel_size(2))
 
@@ -376,13 +376,13 @@ class detector_factory:
         origin = cbf_detector.get_pixel_coordinates(0, 0)
         fast = cbf_detector.get_pixel_coordinates(0, 1)
         slow = cbf_detector.get_pixel_coordinates(1, 0)
-        
+
         dfast = [fast[j] - origin[j] for j in range(3)]
         dslow = [slow[j] - origin[j] for j in range(3)]
-        
+
         lfast = math.sqrt(sum([dfast[j] * dfast[j] for j in range(3)]))
         lslow = math.sqrt(sum([dslow[j] * dslow[j] for j in range(3)]))
-        
+
         fast = tuple([dfast[j] / lfast for j in range(3)])
         slow = tuple([dslow[j] / lslow for j in range(3)])
 
@@ -403,7 +403,7 @@ class detector_factory:
         is assumed that the file has already been read.'''
 
         cbf_detector = cbf_handle.construct_detector(0)
-        
+
         pixel = (cbf_detector.get_inferred_pixel_size(1),
                  cbf_detector.get_inferred_pixel_size(2))
 
@@ -414,13 +414,13 @@ class detector_factory:
         origin = cbf_detector.get_pixel_coordinates(0, 0)
         fast = cbf_detector.get_pixel_coordinates(0, 1)
         slow = cbf_detector.get_pixel_coordinates(1, 0)
-        
+
         dfast = [fast[j] - origin[j] for j in range(3)]
         dslow = [slow[j] - origin[j] for j in range(3)]
-        
+
         lfast = math.sqrt(sum([dfast[j] * dfast[j] for j in range(3)]))
         lslow = math.sqrt(sum([dslow[j] * dslow[j] for j in range(3)]))
-        
+
         fast = tuple([dfast[j] / lfast for j in range(3)])
         slow = tuple([dslow[j] / lslow for j in range(3)])
 
@@ -448,7 +448,7 @@ class detector_factory:
 
         if detector_helper_sensors.check_sensor(name):
             return name
-        
+
         if name.upper() == 'PAD':
             return detector_helper_sensors.SENSOR_PAD
         elif name.upper() == 'CCD':
@@ -459,8 +459,3 @@ class detector_factory:
             return detector_helper_sensors.SENSOR_UNKNOWN
 
         raise RuntimeError, 'name %s not known' % name
-
-
-        
-    
-        

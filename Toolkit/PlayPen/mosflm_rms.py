@@ -22,7 +22,7 @@ def get_mosflm_rmsd(records):
 
 def compare(run_a, run_b):
     '''A / B.'''
-    
+
     rmsd_a = get_mosflm_rmsd(open(run_a).readlines())
     rmsd_b = get_mosflm_rmsd(open(run_b).readlines())
 
@@ -40,5 +40,3 @@ def compare(run_a, run_b):
 if __name__ == '__main__':
 
     print '%.3f %.3f %.3f' % compare(sys.argv[1], sys.argv[2])
-
-

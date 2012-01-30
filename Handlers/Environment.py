@@ -2,17 +2,17 @@
 # Environment.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # Maintained by Graeme Winter
 # 18th September 2006
-# 
+#
 # A handler for matters of the operating environment, which will impact
 # on data harvesting, working directories, a couple of other odds & sods.
-# 
-# 
-# 
+#
+#
+#
 
 import os
 import sys
@@ -41,17 +41,17 @@ class _Environment:
     def _setup(self):
         if self._is_setup:
             return
-        
+
         self._is_setup = True
         harvest_directory = self.generate_directory('Harvest')
         self.setenv('HARVESTHOME', harvest_directory)
 
         # create a USER environment variable, to allow harvesting
-	# in Mosflm to work (hacky, I know, but it really doesn't
-	# matter too much...
+        # in Mosflm to work (hacky, I know, but it really doesn't
+        # matter too much...
         if not os.environ.has_key('USER'):
-	    os.environ['USER'] = 'xia2'
-            
+            os.environ['USER'] = 'xia2'
+
         # check that BINSORT_SCR exists if set..
 
         if False:
@@ -89,7 +89,7 @@ class _Environment:
             os.makedirs(path)
         else:
             Debug.write('Directory exists: %s' % path)
-    
+
         return path
 
     def setenv(self, name, value):
@@ -123,13 +123,13 @@ class _Environment:
         mod = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
 
         for (dirpath, dirnames, filenames) in os.walk(harvest):
-        
+
             for f in filenames:
                 _f = os.path.join(harvest, dirpath, f)
                 os.chmod(_f, mod)
-                
+
         return
- 
+
 Environment = _Environment()
 
 # jiffy functions
@@ -141,7 +141,7 @@ def get_number_cpus():
 
     if os.name == 'nt':
         return int(os.environ['NUMBER_OF_PROCESSORS'])
-    
+
     # linux
 
     if os.path.exists('/proc/cpuinfo'):

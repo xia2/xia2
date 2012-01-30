@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # ResolutionExperts.py
-# 
+#
 #   Copyright (C) 2008 STFC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # A couple of classes to assist with resolution calculations - these
 # are for calculating resolution (d, s) for either distance / beam /
 # wavelength / position or h, k, l, / unit cell.
@@ -94,7 +94,7 @@ def real_to_reciprocal(a, b, c, alpha, beta, gamma):
     alphas = math.acos(cas) / rtod
     betas = math.acos(cbs) / rtod
     gammas = math.acos(cgs) / rtod
-   
+
     return a_s, b_s, c_s, alphas, betas, gammas
 
 def B(a, b, c, alpha, beta, gamma):
@@ -276,7 +276,7 @@ def main(mtzdump):
         f, sf = map(float, lst[3:5])
 
         reflections.append((s, f, sf))
-       
+
         j += 1
 
     reflections.sort()
@@ -331,8 +331,8 @@ def determine_scaled_resolution(hklin, isigma_limit):
     a, b, c, alpha, beta, gamma = cell
     a_s, b_s, c_s, alphas, betas, gammas = real_to_reciprocal(
         a, b, c, alpha, beta, gamma)
-    
-    a_, b_, c_ = B(a_s, b_s, c_s, alphas, betas, gammas)    
+
+    a_, b_, c_ = B(a_s, b_s, c_s, alphas, betas, gammas)
 
     reflections = []
 
@@ -357,16 +357,16 @@ def model():
         for q in range(100):
 
             refl = []
-           
+
             all = wilson(200, 1, isigma)
-           
+
             for a in all:
                 refl.append(a[0])
-               
+
             i = []
             sigma = []
             i_sigma = []
-           
+
             for r in refl:
                 i.append(r[0])
                 sigma.append(r[1])
@@ -467,16 +467,16 @@ def xds_integrate_header_read(xds_hkl):
 
     if not pixel:
         raise RuntimeError, 'pixel size not found'
-    
+
     if not cell:
         raise RuntimeError, 'cell not found'
-    
+
     if not origin:
         raise RuntimeError, 'origin not found'
 
     if not distance:
         raise RuntimeError, 'distance not found'
-    
+
     if not wavelength:
         raise RuntimeError, 'wavelength not found'
 
@@ -572,7 +572,7 @@ def pointless_summedlist_to_list(summedlist, cell):
         result.append((s, i, sigma))
 
     return result
-    
+
 def find_blank(hklin):
 
     # first dump to temp. file
@@ -581,7 +581,7 @@ def find_blank(hklin):
     p = Pointless()
     p.set_hklin(hklin)
     cell = p.sum_mtz(hklout)
-    
+
     isig = { }
 
     for record in open(hklout, 'r'):
@@ -603,7 +603,7 @@ def find_blank(hklin):
 
     blank = []
     good = []
-    
+
     for batch in sorted(isig):
         m, s = meansd(isig[batch])
         if m < 1:
@@ -640,7 +640,7 @@ def remove_blank(hklin, hklout):
     rb.exclude_batches()
 
     return hklout
-    
+
 def bin_o_tron0(sisigma):
     '''Bin the incoming list of (s, i, sigma) and return a list of bins
     of width _scale_bins in S.'''
@@ -649,7 +649,7 @@ def bin_o_tron0(sisigma):
 
     for j in range(_number_bins):
         bins[j + 1] = []
-                 
+
     for sis in sisigma:
         s, i, sigma = sis
 
@@ -662,7 +662,7 @@ def bin_o_tron0(sisigma):
 
     for j in range(_number_bins):
         result[_scale_bins * (j + 1)] = meansd(bins[j + 1])
-        
+
         if False:
             print result[_scale_bins * (j + 1)][0], \
                   result[_scale_bins * (j + 1)][1], \
@@ -683,7 +683,7 @@ def outlier(sisigma):
 
     for j in range(500):
         bins[j + 1] = []
-                 
+
     for sis in sisigma:
         s, i, sigma = sis
 
@@ -709,7 +709,7 @@ def outlier(sisigma):
                                    result[0.004 * (j + 1)][1]))
 
     fout.close()
-                   
+
     # then look to see which bins don't fit
 
     outliers = []
@@ -833,7 +833,7 @@ def ice(s):
 
     return False
 
-    
+
 def digest(bins, isigma_limit = 1.0):
     '''Digest a list of bins to calculate a sensible resolution limit.'''
 
@@ -868,19 +868,19 @@ def digest(bins, isigma_limit = 1.0):
 
     # allow a teeny bit of race - ignore the last resolution bin
     # in this calculation...
-    
+
     if min(_mean[:-1]) > isigma_limit:
         # we have a data set which is all I/sigma > 1.0
         s = max(_s)
         r = 1.0 / math.sqrt(s)
         return s, r
 
-    # first find the area where mean(I/s) ~ sd(I/s) on average - this defines 
+    # first find the area where mean(I/s) ~ sd(I/s) on average - this defines
     # the point where the distribution is "Wilson like". Add a fudge factor of
     # 10% for good measure. Start a little way off the beginning e.g. at 10A.
 
     # panic - fixme - this should be SPREAD not mean error.
-    
+
     for j in range(nint(0.01 * _number_bins), _number_bins):
         s = ss[j]
         mean, sdm, sd = bins[s]
@@ -911,7 +911,7 @@ def digest(bins, isigma_limit = 1.0):
     # distribution... FIXME need to make a decision about this
 
     # then actually do the fit... excluding ice rings of course
-    
+
     x = []
     y = []
 
@@ -927,7 +927,7 @@ def digest(bins, isigma_limit = 1.0):
 
         if ice(s):
             continue
-        
+
         mean, sdm, sd = bins[s]
 
         x.append(s)
@@ -967,4 +967,3 @@ if __name__ == '__main__':
     s, r = digest(bot)
 
     print s, r
-

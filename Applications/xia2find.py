@@ -2,23 +2,23 @@
 # xia2find.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 12th July 2006
-# 
-# A small program to find diffraction data sets as "sweeps" and print 
+#
+# A small program to find diffraction data sets as "sweeps" and print
 # out the results.
-# 
+#
 # 13/JUL/06 Change: Is it better to compile a list of files first, then
 # sort this into templates &c; then compile this into sweeps? Could then
-# also decide how much time to devote to the accurate identification of 
+# also decide how much time to devote to the accurate identification of
 # sweeps... FIXME this needs to be thought about/implemented.
-# 
+#
 # 23/AUG/06 FIXED (1) need to print out the exposure time
-#                 (2) need to print out the exposure epoch in a human 
+#                 (2) need to print out the exposure epoch in a human
 #                     readable way - this is done with time.ctime()
-# 
+#
 # 25/SEP/06 FIXED also need to be able to handle images like blah_foo.0001
 #                 since this is a reasonably common way of collecting frames.
 
@@ -44,7 +44,7 @@ known_sweeps = { }
 def is_image_name(file):
 
     global known_image_extensions
-    
+
     if os.path.isfile(file):
         if file.split('.')[-1] in known_image_extensions:
             return True
@@ -62,7 +62,7 @@ def is_image_name(file):
 def get_sweep(file):
 
     global known_sweeps
-    
+
     if not is_image_name(file):
         return
 
@@ -81,14 +81,14 @@ def get_sweep(file):
 def visit(root, directory, files):
     for f in files:
         get_sweep(os.path.join(directory, f))
-        
+
 def print_sweeps():
 
     global known_sweeps
-    
+
     sweeplists = known_sweeps.keys()
     sweeplists.sort()
-    
+
     for sweep in sweeplists:
         sweeps = known_sweeps[sweep]
         # this should sort on exposure epoch ...?

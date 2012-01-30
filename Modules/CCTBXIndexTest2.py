@@ -13,17 +13,17 @@ def read_xparm(xparm_file):
     '''Parse the XPARM file to a dictionary.'''
 
     records = open(xparm_file, 'r').readlines()
-    
+
     data = map(float, open(xparm_file, 'r').read().split())
-    
+
     if not len(data) == 42:
         raise RuntimeError, 'error parsing %s' % xparm_file
-    
+
     starting_frame = int(data[0])
     phi_start = data[1]
     phi_width = data[2]
     axis = data[3:6]
-    
+
     wavelength = data[6]
     beam = data[7:10]
 
@@ -80,7 +80,7 @@ def nint(a):
     return i
 
 if __name__ == '__main__':
-  
+
     results = read_xparm('XPARM.XDS')
 
     A = results['a']
@@ -121,5 +121,3 @@ if __name__ == '__main__':
                 print '%4d %4d' % (image, i)
             else:
                 print '%4d %4d' % (image, j)
-
-

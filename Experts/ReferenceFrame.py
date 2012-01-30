@@ -1,20 +1,20 @@
 # ReferenceFrame.py
 # Maintained by G.Winter
 # 19th November 2007
-# 
+#
 # Code to handle transformations between reference frames, e.g. from xia2
 # to Mosflm, xia2 to XDS &c.
-# 
+#
 # This is prone to errors most likely... the following descriptions assume
 # Rossmann geometry for the experiment, with the X-ray beam at right angles
 # with a rotation axis which is parallel to a detector axis and with the
 # beam perpendicular (approximately) to the detector face.
-# 
-# Reference frame definitions 
+#
+# Reference frame definitions
 # ---------------------------
-# 
+#
 # (1) Cambridge as used in Mosflm, cribbed from Mosflm documentation.
-# 
+#
 # X: the direction of the X-ray beam photons
 # Y: defined to give a right handed coordinate system
 # Z: the principle rotation axis, such that looking down this axis
@@ -82,5 +82,3 @@ if __name__ == '__main__':
         raise RuntimeError, 'transformation error j'
     if mosflm_to_xia2((0, 0, 1)) != [1, 0, 0]:
         raise RuntimeError, 'transformation error k'
-
-    

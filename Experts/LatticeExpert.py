@@ -2,19 +2,19 @@
 # LatticeExpert.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # 24th August 2006
-# 
+#
 # An expert who knows all about lattices. This will handle the elimination
 # of possible lattices as a result of:
-# 
+#
 # - indexing
 # - failed cell refinement
 # - pointless
 # - &c.
-# 
+#
 # To give you what is left...
 #
 
@@ -34,27 +34,27 @@ allowed_lattices = ['aP', 'mP', 'mC', 'oP', 'oC', 'oI',
                     'cI', 'cF']
 
 # How to do this:
-# 
+#
 # (1) read all spacegroups, symmetries from symop.lib
 # (2) for each symmetry element, pass through symop2mat to get a
 #     numberical representation
 # (3) draw a tree of subgroups & supergroups
-# 
+#
 # Then see if this matches up what I would expect from the lattice
 # symmetry constraints for the simplest lattices.
-# 
+#
 # Have to think about...
-# 
-# (1) making sure that only immediate subgroups are calculated, to 
+#
+# (1) making sure that only immediate subgroups are calculated, to
 #     give a proper tree structure
 # (2) representing the final tree structure in a manner which is actually
 #     useful
-# 
+#
 # Unsurprisingly this doesn't work, because the lattices have different
 # settings, and these settings affect the symmetry operators. Ho hum!
 # Probably easier to hard-code it based on the IUCR tables volume A..
 # Which I will do - see ApplyLattice(lattice, cell) below.
-# 
+#
 
 import math
 
@@ -76,12 +76,12 @@ def ComputeBDistortion(cell1, cell2):
     '''Compute the distortion required to get from cell1 to cell2.'''
 
     # FIXME this should be done via a B matrix calculation...
-    # 
-    # B = \ 
+    #
+    # B = \
     # (a*,    b* cos(al*),          c* cos(be*)      )
     # (0,     b* sin(al*),   - c* sin(be*) cos(alpha))
     # (0,     0,             - c* sin(be*) sin(alpha))
-    # 
+    #
     # so I need to invert the unit cell and check this
     # (Busing & Levy, 1967)
 
@@ -126,7 +126,7 @@ def SortLattices(lattice_list):
         lattices.append(l[0])
         cells[l[0]] = l[1]
 
-    lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5, 
+    lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5,
                              'oP':16, 'oC':20, 'oF':22,
                              'oI':23, 'tP':75, 'tI':79,
                              'hP':143, 'hR':146, 'cP':195,
@@ -135,13 +135,13 @@ def SortLattices(lattice_list):
     spacegroup_to_lattice = { }
     for k in lattice_to_spacegroup.keys():
         spacegroup_to_lattice[lattice_to_spacegroup[k]] = k
-    
+
     spacegroups = [lattice_to_spacegroup[l] for l in lattices]
 
     spacegroups.sort()
     spacegroups.reverse()
     lattices = [spacegroup_to_lattice[s] for s in spacegroups]
-    
+
     result = []
 
     for l in lattices:
@@ -150,7 +150,7 @@ def SortLattices(lattice_list):
     return result
 
 def l2s(lattice):
-    lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5, 
+    lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5,
                              'oP':16, 'oC':20, 'oF':22,
                              'oI':23, 'tP':75, 'tI':79,
                              'hP':143, 'hR':146, 'cP':195,
@@ -158,7 +158,7 @@ def l2s(lattice):
     return lattice_to_spacegroup[lattice]
 
 def s2l(spacegroup):
-    lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5, 
+    lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5,
                              'oP':16, 'oC':20, 'oF':22,
                              'oI':23, 'tP':75, 'tI':79,
                              'hP':143, 'hR':146, 'cP':195,

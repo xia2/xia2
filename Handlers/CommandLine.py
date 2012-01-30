@@ -2,29 +2,29 @@
 # CommandLine.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 12th June 2006
-# 
+#
 # A handler for all of the information which may be passed in on the command
 # line. This singleton object should be able to handle the input, structure
 # it and make it available in a useful fashion.
-# 
+#
 # This is a hook into a global data repository.
-# 
+#
 # Modification log:
-# 
+#
 # 21/JUN/06 - Added in parsing of image (passed in on -image token, or
-#             last token) to template & directory to work with. Note 
+#             last token) to template & directory to work with. Note
 #             well - I need to think more carefully about this in the
 #             future, though this solution may scale...
-# 
-# 16/AUG/06 - FIXED - need to be able to handle a resolution limit in here 
+#
+# 16/AUG/06 - FIXED - need to be able to handle a resolution limit in here
 #             as well as any other information our user may wish to pass
 #             in on the comand line, for example a lattice or a spacegroup.
 #             See 04/SEP/06 below.
-# 
+#
 # 23/AUG/06 - FIXED - need to add handling of the lattice input in particular,
 #             since this is directly supported by Mosflm.py...
 #
@@ -35,11 +35,11 @@
 # 07/FEB/07 - FIXED need flags to control "experimental" functionality
 #             e.g. the phasing pipeline - for instance this could
 #             be -phase to perform phasing on the scaled data.
-# 
+#
 #             At the moment the amount of feedback between the phasing
 #             and the rest of the data reduction is non existent.
-# 
-# 15/MAY/07 - FIXED need to add flag -ehtpx_xml_out which will enable 
+#
+# 15/MAY/07 - FIXED need to add flag -ehtpx_xml_out which will enable
 #             writing of e-HTPX xml for the data reduction portal. This
 #             should be provided the path on which to write the file. N.B.
 #             this has subsequently been removed 19/JAN/2011.
@@ -116,7 +116,7 @@ class _CommandLine():
         self._read_no_relax()
         self._read_no_profile()
         self._read_norefine()
-        self._read_noremove()        
+        self._read_noremove()
         self._read_2dr()
         self._read_2da()
         self._read_2dir()
@@ -125,7 +125,7 @@ class _CommandLine():
         self._read_3diir()
 
         # FIXME really need to fix how this works out...
-        
+
         self._read_3dar()
         self._read_3dair()
         self._read_3daiir()
@@ -184,7 +184,7 @@ class _CommandLine():
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
                   (self._help_crystal_name(), str(e))
-        
+
         try:
             self._read_ispyb_xml_out()
         except exceptions.Exception, e:
@@ -478,7 +478,7 @@ class _CommandLine():
         Debug.write('Interpreted from image %s:' % image)
         Debug.write('Template %s' % template)
         Debug.write('Directory %s' % directory)
-        
+
         return
 
     def _read_atom_name(self):
@@ -496,7 +496,7 @@ class _CommandLine():
 
         Debug.write('Heavy atom: %s' % \
                     self._default_atom_name)
-        
+
         return
 
     def _help_atom_name(self):
@@ -518,7 +518,7 @@ class _CommandLine():
         self._understood.append(index)
         self._understood.append(index + 1)
         Debug.write('Project: %s' % self._default_project_name)
-        
+
         return
 
     def _help_project_name(self):
@@ -538,9 +538,9 @@ class _CommandLine():
         self._default_crystal_name = sys.argv[index + 1]
 
         self._understood.append(index)
-        self._understood.append(index + 1)        
+        self._understood.append(index + 1)
         Debug.write('Crystal: %s' % self._default_crystal_name)
-        
+
         return
 
     def _help_crystal_name(self):
@@ -561,7 +561,7 @@ class _CommandLine():
 
         self._understood.append(index)
         self._understood.append(index + 1)
-        
+
         self._xinfo = XProject(sys.argv[index + 1])
 
         Debug.write(60 * '-')
@@ -596,14 +596,14 @@ class _CommandLine():
 
         self._understood.append(index)
         self._understood.append(index + 1)
-        
+
         Debug.write('Rotation axis: %.6f %.6f %.6f' % \
             Flags.get_xparm_rotation_axis())
         Debug.write('Beam vector: %.6f %.6f %.6f' % \
             Flags.get_xparm_beam_vector())
         Debug.write('Origin: %.2f %.2f' % \
             Flags.get_xparm_origin())
-            
+
         return
 
     def _help_xparm(self):
@@ -624,10 +624,10 @@ class _CommandLine():
 
         self._understood.append(index)
         self._understood.append(index + 1)
-        
+
         Flags.set_parallel(int(sys.argv[index + 1]))
         Debug.write('Parallel set to %d' % Flags.get_parallel())
-            
+
         return
 
     def _help_parallel(self):
@@ -646,7 +646,7 @@ class _CommandLine():
 
         Flags.set_parallel(1)
         Debug.write('Serial set (i.e. 1 CPU)')
-            
+
         return
 
     def _help_serial(self):
@@ -667,7 +667,7 @@ class _CommandLine():
         Flags.set_min_images(int(sys.argv[index + 1]))
         Debug.write('Min No. images / sweep set to %d' % \
                     Flags.get_min_images())
-            
+
         return
 
     def _help_min_images(self):
@@ -692,7 +692,7 @@ class _CommandLine():
 
         Flags.set_start_end(start, end)
         Debug.write('Start, end set to %d %d' % Flags.get_start_end())
-            
+
         return
 
     def _help_start_end(self):
@@ -712,7 +712,7 @@ class _CommandLine():
 
         Flags.set_xparallel(int(sys.argv[index + 1]))
         Debug.write('XParallel set to %d' % Flags.get_xparallel())
-            
+
         return
 
     def _help_xparallel(self):
@@ -732,7 +732,7 @@ class _CommandLine():
 
         Flags.set_spacegroup(sys.argv[index + 1])
         Debug.write('Spacegroup set to %s' % sys.argv[index + 1])
-            
+
         return
 
     def _help_spacegroup(self):
@@ -766,7 +766,7 @@ class _CommandLine():
             Debug.write('Resolution set to %.3f %.3f' % (dmin, dmax))
         else:
             Debug.write('Resolution set to %.3f' % dmin)
-            
+
         return
 
     def _help_resolution(self):
@@ -786,7 +786,7 @@ class _CommandLine():
 
         Flags.set_z_min(float(sys.argv[index + 1]))
         Debug.write('Z min set to %f' % Flags.get_z_min())
-            
+
         return
 
     def _help_z_min(self):
@@ -806,7 +806,7 @@ class _CommandLine():
 
         Flags.set_scala_secondary(float(sys.argv[index + 1]))
         Debug.write('Scala secondary set to %f' % Flags.get_scala_secondary())
-            
+
         return
 
     def _help_scala_secondary(self):
@@ -838,7 +838,7 @@ class _CommandLine():
 
         # and also the spacegroup copied out?! ok - this is done
         # "by magic" in the scaler.
-            
+
         return
 
     def _help_freer_file(self):
@@ -860,7 +860,7 @@ class _CommandLine():
 
         Debug.write('Reference reflection file: %s' %
                     Flags.get_reference_reflection_file())
-            
+
         return
 
     def _help_reference_reflection_file(self):
@@ -881,7 +881,7 @@ class _CommandLine():
         Flags.set_rejection_threshold(float(sys.argv[index + 1]))
         Debug.write('Rejection threshold set to %f' % \
                     Flags.get_rejection_threshold())
-            
+
         return
 
     def _help_rejection_threshold(self):
@@ -902,7 +902,7 @@ class _CommandLine():
         Flags.set_i_over_sigma_limit(float(sys.argv[index + 1]))
         Debug.write('I/sigma limit set to %f' % \
                     Flags.get_i_over_sigma_limit())
-            
+
         return
 
     def _help_i_over_sigma_limit(self):
@@ -923,7 +923,7 @@ class _CommandLine():
         Flags.set_isigma(float(sys.argv[index + 1]))
         Debug.write('I/sigma limit set to %f' % \
                     Flags.get_isigma())
-            
+
         return
 
     def _help_isigma(self):
@@ -944,7 +944,7 @@ class _CommandLine():
         Flags.set_misigma(float(sys.argv[index + 1]))
         Debug.write('Merged I/sigma limit set to %f' % \
                     Flags.get_misigma())
-            
+
         return
 
     def _help_misigma(self):
@@ -965,7 +965,7 @@ class _CommandLine():
         Flags.set_completeness(float(sys.argv[index + 1]))
         Debug.write('Completeness limit set to %f' % \
                     Flags.get_completeness())
-            
+
         return
 
     def _help_completeness(self):
@@ -986,7 +986,7 @@ class _CommandLine():
         Flags.set_rmerge(float(sys.argv[index + 1]))
         Debug.write('Rmerge limit set to %f' % \
                     Flags.get_rmerge())
-            
+
         return
 
     def _help_rmerge(self):
@@ -998,7 +998,7 @@ class _CommandLine():
             Flags.set_microcrystal()
             Debug.write('Microcrystal mode on')
             self._understood.append(sys.argv.index('-microcrystal'))
-            
+
         return
 
     def _read_failover(self):
@@ -1007,7 +1007,7 @@ class _CommandLine():
             Flags.set_failover()
             Debug.write('Failover mode on')
             self._understood.append(sys.argv.index('-failover'))
-            
+
         return
 
     def _read_blend(self):
@@ -1016,7 +1016,7 @@ class _CommandLine():
             Flags.set_blend()
             Debug.write('Blend mode on')
             self._understood.append(sys.argv.index('-blend'))
-            
+
         return
 
     def _read_ispyb_xml_out(self):
@@ -1033,7 +1033,7 @@ class _CommandLine():
         self._understood.append(index + 1)
         Flags.set_ispyb_xml_out(sys.argv[index + 1])
         Debug.write('ISPyB XML output set to %s' % sys.argv[index + 1])
-            
+
         return
 
     def _help_ispyb_xml_out(self):
@@ -1041,7 +1041,7 @@ class _CommandLine():
 
     def get_ispyb_xml_out(self):
         '''Return the ispyb xml out file.'''
-        return self._ispyb_xml_out    
+        return self._ispyb_xml_out
 
     def get_template(self):
         return self._default_template
@@ -1058,7 +1058,7 @@ class _CommandLine():
             Flags.set_trust_timestamps(True)
             Debug.write('Trust timestamps on')
             self._understood.append(sys.argv.index('-trust_timestamps'))
-            
+
         return
 
     def _read_check_xds_version(self):
@@ -1067,7 +1067,7 @@ class _CommandLine():
             Flags.set_check_xds_version(True)
             Debug.write('Check XDS version on')
             self._understood.append(sys.argv.index('-check_xds_version'))
-            
+
         return
 
     def _read_batch_scale(self):
@@ -1076,7 +1076,7 @@ class _CommandLine():
             Flags.set_batch_scale(True)
             Debug.write('Batch scaling mode on')
             self._understood.append(sys.argv.index('-batch_scale'))
-            
+
         return
 
     def _read_small_molecule(self):
@@ -1085,7 +1085,7 @@ class _CommandLine():
             Flags.set_small_molecule(True)
             Debug.write('Small molecule selected')
             self._understood.append(sys.argv.index('-small_molecule'))
-            
+
         return
 
     def _read_scale_model(self):
@@ -1147,7 +1147,7 @@ class _CommandLine():
 
         if '-nochef' in sys.argv:
             Flags.set_chef(False)
-            self._understood.append(sys.argv.index('-nochef'))           
+            self._understood.append(sys.argv.index('-nochef'))
             Debug.write('Chef mode deselected')
 
         return
@@ -1156,7 +1156,7 @@ class _CommandLine():
 
         if '-automatch' in sys.argv:
             Flags.set_automatch(True)
-            self._understood.append(sys.argv.index('-automatch'))            
+            self._understood.append(sys.argv.index('-automatch'))
             Debug.write('Automatch mode selected')
         return
 
@@ -1164,7 +1164,7 @@ class _CommandLine():
 
         if '-reversephi' in sys.argv:
             Flags.set_reversephi(True)
-            self._understood.append(sys.argv.index('-reversephi'))         
+            self._understood.append(sys.argv.index('-reversephi'))
             Debug.write('Reversephi mode selected')
         return
 
@@ -1305,7 +1305,7 @@ class _CommandLine():
             if '-3dii' in sys.argv:
                 self._understood.append(sys.argv.index('-3dii'))
             if '-3diir' in sys.argv:
-                self._understood.append(sys.argv.index('-3diir'))            
+                self._understood.append(sys.argv.index('-3diir'))
             Debug.write('3D II R pipeline (XDS IDXREF all images) selected')
         return
 
@@ -1343,7 +1343,7 @@ class _CommandLine():
             if '-3daii' in sys.argv:
                 self._understood.append(sys.argv.index('-3daii'))
             if '-3daiir' in sys.argv:
-                self._understood.append(sys.argv.index('-3daiir'))            
+                self._understood.append(sys.argv.index('-3daiir'))
             Debug.write('3DA II R pipeline (XDS IDXREF all images) selected')
         return
 
@@ -1362,7 +1362,7 @@ class _CommandLine():
             Flags.set_interactive(True)
             self._understood.append(sys.argv.index('-interactive'))
             Debug.write('Interactive indexing ON')
-            
+
         return
 
     def _read_ice(self):
@@ -1371,31 +1371,31 @@ class _CommandLine():
             Flags.set_ice(True)
             self._understood.append(sys.argv.index('-ice'))
             Debug.write('Ice ring exclusion ON')
-            
+
         return
 
     def _read_egg(self):
 
         if '-egg' in sys.argv:
-            self._understood.append(sys.argv.index('-egg'))            
+            self._understood.append(sys.argv.index('-egg'))
             Flags.set_egg(True)
-            
+
         return
 
     def _read_uniform_sd(self):
 
         if '-no_uniform_sd' in sys.argv:
             Flags.set_uniform_sd(False)
-            self._understood.append(sys.argv.index('-no_uniform_sd'))        
+            self._understood.append(sys.argv.index('-no_uniform_sd'))
             Debug.write('Uniform SD OFF')
-            
+
         return
 
     def _read_migrate_data(self):
 
         if '-migrate_data' in sys.argv:
             Flags.set_migrate_data(True)
-            self._understood.append(sys.argv.index('-migrate_data'))          
+            self._understood.append(sys.argv.index('-migrate_data'))
             Debug.write('Data migration switched on')
         return
 
@@ -1427,7 +1427,7 @@ class _CommandLine():
         Flags.set_cell(_cell)
 
         format = 6 * ' %7.2f'
-        
+
         self._understood.append(index)
         self._understood.append(index + 1)
 
@@ -1454,7 +1454,7 @@ class _CommandLine():
 
         Flags.set_free_fraction(float(sys.argv[index + 1]))
         Debug.write('Free fraction set to %f' % Flags.get_free_fraction())
-            
+
         return
 
     def _help_free_fraction(self):
@@ -1474,7 +1474,7 @@ class _CommandLine():
 
         Flags.set_free_total(int(sys.argv[index + 1]))
         Debug.write('Free total set to %f' % Flags.get_free_total())
-            
+
         return
 
     def _help_free_total(self):
@@ -1492,7 +1492,7 @@ class _CommandLine():
         self._understood.append(index)
         self._understood.append(index + 1)
         Flags.set_mask(sys.argv[index + 1])
-            
+
         return
 
     def get_mask(self):
@@ -1512,7 +1512,7 @@ class _CommandLine():
         self._understood.append(index)
 
         Flags.set_modify_background(True)
-            
+
         return
 
     def get_mask(self):
@@ -1529,7 +1529,7 @@ class _CommandLine():
 
         self._understood.append(index)
         Flags.set_fixed_628()
-            
+
         return
 
     def _help_fixed_628(self):
@@ -1547,7 +1547,7 @@ class _CommandLine():
         self._understood.append(index)
         self._understood.append(index + 1)
         return
-    
+
     def _read_integrater(self):
 
         try:
@@ -1560,7 +1560,7 @@ class _CommandLine():
         self._understood.append(index)
         self._understood.append(index + 1)
         return
-            
+
     def _read_scaler(self):
 
         try:

@@ -2,11 +2,11 @@
 # Aimless.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 31st August 2011
-# 
+#
 # A wrapper for the CCP4 program Aimless, for scaling & merging reflections.
 # This is a replacement for the more venerable program Scala, and shares the
 # same interface as the Scala wrapper. Mostly.
@@ -80,7 +80,7 @@ def Aimless(DriverType = None,
             self._scalepack = False
             self._chef_unmerged = False
             self._unmerged_reflections = None
-            
+
             # scaling parameters
             self._resolution = None
 
@@ -132,7 +132,7 @@ def Aimless(DriverType = None,
             self._cycles = 100
             self._brotation = None
             self._bfactor_tie = None
-            
+
             self._project_crystal_dataset = { }
             self._runs = []
 
@@ -219,7 +219,7 @@ def Aimless(DriverType = None,
 
             if brotation:
                 self._brotation = brotation
-                
+
             return
 
         def set_anomalous(self, anomalous = True):
@@ -291,7 +291,7 @@ def Aimless(DriverType = None,
 
                 if run:
                     runs_to_batches[run].extend(map(int, record.split()))
-                
+
                 if 'shifted scale factor' in record and 'negative' in record:
                     tokens = record.split()
                     scale = tokens[tokens.index('factor') + 1]
@@ -322,7 +322,7 @@ def Aimless(DriverType = None,
 
                 if run:
                     runs_to_batches[run].extend(map(int, record.split()))
-                
+
                 if 'No observations for parameter' in record:
                     bad_run = int(record.split()[-1])
 
@@ -339,7 +339,7 @@ def Aimless(DriverType = None,
                           int(record.split()[-3])
 
             return
-        
+
         def check_aimless_errors(self):
             '''Check for Aimless specific errors. Raise RuntimeError if
             error is found.'''
@@ -361,7 +361,7 @@ def Aimless(DriverType = None,
                     run, batches = self.identify_no_observations_run()
                     raise RuntimeError, 'no observations run %d: %d to %d' % \
                           (run, batches[0], batches[1])
-                          
+
             return
 
         def sum(self):
@@ -454,7 +454,7 @@ def Aimless(DriverType = None,
 
                 if 'Error' in status:
                     raise RuntimeError, '[AIMLESS] %s' % status
-                    
+
             except RuntimeError, e:
                 try:
                     os.remove(self.get_hklout())
@@ -464,7 +464,7 @@ def Aimless(DriverType = None,
                 raise e
 
             return self.get_ccp4_status()
-            
+
         def scale(self):
             '''Actually perform the scaling.'''
 
@@ -528,7 +528,7 @@ def Aimless(DriverType = None,
                     if self._brotation:
                         scale_command += ' brotation %f' % \
                                          self._brotation
-                    
+
                 else:
                     scale_command += ' bfactor off'
 
@@ -540,7 +540,7 @@ def Aimless(DriverType = None,
             else:
 
                 scale_command = 'scales batch'
-                    
+
                 if self._bfactor:
                     scale_command += ' bfactor on'
 
@@ -550,7 +550,7 @@ def Aimless(DriverType = None,
                     else:
                         scale_command += ' brotation %f' % \
                                          self._spacing
-                    
+
                 else:
                     scale_command += ' bfactor off'
 
@@ -560,7 +560,7 @@ def Aimless(DriverType = None,
                 self.input(scale_command)
 
             # Debug.write('Scaling command: "%s"' % scale_command)
-                
+
             # next any 'generic' parameters
 
             if self._resolution:
@@ -598,7 +598,7 @@ def Aimless(DriverType = None,
                 self.check_ccp4_errors()
                 self.check_aimless_error_negative_scale_run()
                 self.check_aimless_errors()
-                
+
                 status = 'okey dokey'
 
                 Debug.write('Aimless status: %s' % status)
@@ -620,23 +620,23 @@ def Aimless(DriverType = None,
 
             hklout_files = []
             hklout_dict = { }
-            
+
             for i in range(len(output)):
                 record = output[i]
 
                 # this is a potential source of problems - if the
                 # wavelength name has a _ in it then we are here stuffed!
-                
+
                 if 'Writing merged data for dataset' in record:
 
                     if len(record.split()) == 9:
                         hklout = output[i + 1].strip()
                     else:
                         hklout = record.split()[9]
-                        
+
                     dname = record.split()[6].split('/')[-1]
                     hklout_dict[dname] = hklout
-                        
+
                     hklout_files.append(hklout)
 
                 elif 'Writing unmerged data for all datasets' in record:
@@ -666,7 +666,7 @@ def Aimless(DriverType = None,
                 self.set_task('Scaling reflections from %s => scalepack %s' % \
                              (os.path.split(self.get_hklin())[-1],
                               os.path.split(self.get_hklout())[-1]))
-                             
+
             self.start()
 
             self.input('bins 20')
@@ -727,7 +727,7 @@ def Aimless(DriverType = None,
                 self.check_for_errors()
                 self.check_ccp4_errors()
                 self.check_aimless_errors()
-                
+
                 status = 'okey dokey'
 
                 Debug.write('Aimless status: %s' % status)
@@ -766,23 +766,23 @@ def Aimless(DriverType = None,
 
             hklout_files = []
             hklout_dict = { }
-            
+
             for i in range(len(output)):
                 record = output[i]
 
                 # this is a potential source of problems - if the
                 # wavelength name has a _ in it then we are here stuffed!
-                
+
                 if 'Writing merged data for dataset' in record:
 
                     if len(record.split()) == 9:
                         hklout = output[i + 1].strip()
                     else:
                         hklout = record.split()[9]
-                        
+
                     dname = record.split()[6].split('/')[-1]
                     hklout_dict[dname] = hklout
-                        
+
                     hklout_files.append(hklout)
 
                 elif 'Writing unmerged data for all datasets' in record:
@@ -792,7 +792,7 @@ def Aimless(DriverType = None,
                         hklout = record.split()[9]
 
                     self._unmerged_reflections = hklout
-            
+
             self._scalr_scaled_reflection_files = hklout_dict
 
             return 'okey dokey'
@@ -806,7 +806,7 @@ def Aimless(DriverType = None,
             self.set_task('Quickly scaling reflections from %s => %s' % \
                           (os.path.split(self.get_hklin())[-1],
                            os.path.split(self.get_hklout())[-1]))
-            
+
             self.start()
 
             # assert here that there is only one dataset in the input...
@@ -820,7 +820,7 @@ def Aimless(DriverType = None,
             else:
                 self.input('scales rotation spacing 10')
                 self.input('cycles 6')
-                
+
             # next any 'generic' parameters
 
             if self._resolution:
@@ -866,11 +866,11 @@ def Aimless(DriverType = None,
                 if 'Mean and maximum shift/sd' in o:
                     mean_shift.append(float(o.split()[5]))
                     max_shift.append(float(o.split()[6]))
-                    
+
             # analyse the shifts
 
             return 'okey dokey'
-            
+
         def get_scaled_reflection_files(self):
             '''Get the names of the actual scaled reflection files - note
             that this is not the same as HKLOUT because Aimless splits them
@@ -935,9 +935,9 @@ def Aimless(DriverType = None,
                     while not 'Estimates of resolution limits' in line:
                         if len(line) > 40:
                             key = line[:40].strip()
-                            
+
                             # hack for bug # 2229 - to cope when
-                            # all data for a dataset is not included 
+                            # all data for a dataset is not included
 
                             if not key:
                                 i += 1
@@ -965,7 +965,7 @@ def Aimless(DriverType = None,
                         del(summary[None])
 
                     total_summary[(pname, xname, dname)] = summary
-                
+
                 if 'Summary data for datasets' in line:
                     j = i + 1
                     while output[j].strip():
@@ -974,13 +974,13 @@ def Aimless(DriverType = None,
                         pxdnames.append((pname, xname, dname))
                         total_summary[(pname, xname, dname)] = { }
                         j += 1
-                        
+
                     i = j + 1
                     line = output[i]
                     while not 'Estimates of resolution limits' in line:
                         if len(line) > 40:
                             key = line[:40].strip()
-                            
+
                             if not key:
                                 i += 1
                                 line = output[i]
@@ -1002,7 +1002,7 @@ def Aimless(DriverType = None,
                                 for j, pxdname in enumerate(pxdnames):
                                     total_summary[pxdname][name] = map(
                                         float, values[3 * j:3 * j + 3])
-                                
+
                         i += 1
                         line = output[i]
 
@@ -1020,15 +1020,15 @@ def Aimless(DriverType = None,
                 if '$TABLE: Rmerge for each run, ' in record:
                     wavelength = record.replace(':', '').split()[-1]
                     result[wavelength] = []
-                    
+
                 if gathering and wavelength and 'Run' in record:
                     wavelength = None
                     gathering = False
                     continue
-                
+
                 if not wavelength:
                     continue
-                
+
                 if 'Overall' in record:
                     gathering = True
 
@@ -1056,7 +1056,7 @@ if __name__ == '__output_main__':
     print 'The following loggraphs were found'
     for k in results.keys():
         print k
-    
+
 
     summary = s.get_summary()
 
@@ -1071,7 +1071,7 @@ if __name__ == '__main_2_':
     # XIACore having been run...
 
     s = Aimless()
-    
+
     hklin = os.path.join(os.environ['XIA2CORE_ROOT'],
                          'Python', 'UnitTest', '12287_1_E1_sorted.mtz')
 
@@ -1096,7 +1096,7 @@ if __name__ == '__main_2_':
     print s.scale()
 
     s.write_log_file('aimless.log')
-    
+
     results = s.parse_ccp4_loggraph()
 
     print 'The following loggraphs were found'
@@ -1112,7 +1112,7 @@ if __name__ == '__main_2_':
 if __name__ == '__main__':
 
     s = Aimless()
-    
+
     hklin = 'TS00_13185_sorted_INFL.mtz'
     hklout = 'TS00_13185_merged_INFL.mtz'
 
@@ -1124,7 +1124,7 @@ if __name__ == '__main__':
     s.merge()
 
     s.write_log_file('merge.log')
-    
+
     results = s.parse_ccp4_loggraph()
 
     print 'The following loggraphs were found'
@@ -1135,4 +1135,3 @@ if __name__ == '__main__':
 
     for k in summary.keys():
         print k, summary[k]
-    

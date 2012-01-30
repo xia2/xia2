@@ -32,7 +32,7 @@ class FormatCBFFull(FormatCBF):
 
         if not '_diffrn.id' in header and not '_diffrn_source' in header:
             return 0
-        
+
         return 2
 
     def __init__(self, image_file):
@@ -81,16 +81,3 @@ if __name__ == '__main__':
 
     for arg in sys.argv[1:]:
         print FormatCBFFull.understand(arg)
-    
-
-    
-
-
-    
-        
-
-
-
-    
-
-

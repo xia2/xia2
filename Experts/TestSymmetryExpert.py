@@ -1,9 +1,9 @@
 #!/usr/bin/env cctbx.python
-# 
+#
 # Tests for SymmetryExpert.py
-# 
+#
 # 7/JUL/2011
-# 
+#
 
 from SymmetryExpert import mat_to_symop, symop_to_mat
 

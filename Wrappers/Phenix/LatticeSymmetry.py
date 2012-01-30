@@ -2,17 +2,17 @@
 # LatticeSymmetry.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A wrapper for the CCTBX jiffy program iotbx.lattice_symmetry which is
 # used like:
-# 
+#
 # iotbx.lattice_symmetry --unit-cell=a,b,c,alpha,beta,gamma --space-group=sg
-# 
+#
 # And gives a list of possible spacegroup / unit cell / reindex operators
 # for other likely lattices. Last is always P1 (P-1 strictly).
-# 
+#
 # 19 November 2007
 #
 
@@ -51,12 +51,12 @@ def LatticeSymmetry(DriverType = None):
             self._spacegroup = None
 
             # following on from the othercell wrapper...
-            
+
             self._lattices = []
             self._distortions = { }
             self._cells = { }
-            self._reindex_ops = { } 
-            self._reindex_ops_basis = { } 
+            self._reindex_ops = { }
+            self._reindex_ops_basis = { }
 
             return
 
@@ -94,8 +94,8 @@ def LatticeSymmetry(DriverType = None):
                 self._spacegroup = 'R3:H'
 
             return
-        
-            
+
+
         def generate(self):
             if not self._cell:
                 raise RuntimeError, 'no unit cell specified'
@@ -150,7 +150,7 @@ def LatticeSymmetry(DriverType = None):
                     # No, can't do this because this now reports the Hall
                     # symmetry not the Laue group. Will have to cope with
                     # the I setting instead :o(
-                    
+
                     lkey = 'Symmetry in minimum-lengths cell'
 
                     for token in state[lkey].split('(')[0].split():
@@ -167,7 +167,7 @@ def LatticeSymmetry(DriverType = None):
                     lauegroup = lauegroup.replace(':h', ':H')
                     lattice = lauegroup_to_lattice(lauegroup)
 
-                    
+
                     reindex_basis = state['Change of basis']
                     reindex = state['Inverse']
 
@@ -197,10 +197,10 @@ def LatticeSymmetry(DriverType = None):
             return self._cells[lattice]
 
         def get_reindex_op(self, lattice):
-            return self._reindex_ops[lattice]                        
+            return self._reindex_ops[lattice]
 
         def get_reindex_op_basis(self, lattice):
-            return self._reindex_ops_basis[lattice]                        
+            return self._reindex_ops_basis[lattice]
 
         def generate_primative_reindex(self):
             if not self._cell:
@@ -220,7 +220,7 @@ def LatticeSymmetry(DriverType = None):
 
             cell = None
             reindex = None
-            
+
             for line in self.get_all_output():
                 # print line[:-1]
                 if 'Unit cell:' in line:
@@ -245,5 +245,3 @@ if __name__ == '__main__':
     print ls.get_reindex_op('aP')
     cell = ls.get_cell('aP')
     print cell
-    
-   

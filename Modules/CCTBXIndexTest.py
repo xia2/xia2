@@ -51,7 +51,7 @@ def read_xparm(xparm_file):
     return results
 
 def write_xparm_format():
-    
+
     print '%6d%12.6f%12.6f%12.6f%12.6f%12.6f' % (starting_frame, phi_start,
                                                  phi_width,
                                                  axis[0], axis[1], axis[2])
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     sg = sgtbx.space_group(spacegroup)
     uc = uctbx.unit_cell(cell)
     sym = crystal.symmetry(unit_cell = uc, space_group = sg)
-    
+
     # This is how we remove translation elements from the spacegroup
     # sgp = sg.build_derived_group(True, False)
     # print 'Uncentred spacegroup: %d' % sgp.type().number()
@@ -134,7 +134,7 @@ if __name__ == '__main__':
     uc = uctbx.unit_cell((a, b, c, alpha, beta, gamma))
 
     bmat = matrix.sqr(uc.orthogonalization_matrix())
-    
+
     sym = crystal.symmetry(unit_cell = uc,
                            space_group = sg)
 
@@ -194,12 +194,12 @@ if __name__ == '__main__':
         # compose these change of basis operations and convert to a
         # matrix to allow application to the crystal orientation
         # matrices
-        
+
         cb_op_all = cb_op_best * cb_op_min
 
         # surely there must be an easier way to get the transformation
         # than a matrix like this??
-        
+
         M = cb_op_all.c_inv().r().as_rational().as_float(
             ).transpose().inverse()
 
@@ -212,13 +212,13 @@ if __name__ == '__main__':
 
         # reconstruct my original real-space A matrix from the vectors in
         # the XPARM file
-        
+
         Am = matrix.sqr([A[0], A[1], A[2],
                          B[0], B[1], B[2],
                          C[0], C[1], C[2]])
 
         # transform it to get the reciprocal space A matrix = [a*, b*, c*]
-        
+
         Amr = Am.inverse()
 
         # multiply this by the orthogonalization matrix from the real-space
@@ -229,7 +229,7 @@ if __name__ == '__main__':
 
         # now multiply this by the reciprocal space B matrix calculated
         # from the back-transformed symmetry-happy cell constants
-        
+
         Anew = ((U * equiv_bmat.inverse()) * M).inverse()
 
         # now invert the matrix above again (i.e. the one which was transformed
@@ -256,7 +256,7 @@ if __name__ == '__main__':
         # how different they are... Since XDS will "listen" can also write
         # out the correct unit cell axis to reindex with, for the
         # higher symmetry.
-        
+
         print 'A    %8.3f%8.3f%8.3f%8.3f%8.3f%8.3f' % \
               (math.sqrt(Ap.dot()), math.sqrt(Bp.dot()), math.sqrt(Cp.dot()),
                rtod * Bp.angle(Cp), rtod * Cp.angle(Ap), rtod * Ap.angle(Bp))
@@ -272,7 +272,7 @@ if __name__ == '__main__':
 
     # get the angular information necessary to transform the image
     # number in the spot list to a rotation angle
-    
+
     phi_start = results['phi_start']
     phi_width = results['phi_width']
     start = results['starting_frame'] - 1
@@ -338,7 +338,3 @@ if __name__ == '__main__':
         h = nint(hkl[0])
         k = nint(hkl[1])
         l = nint(hkl[2])
-
-
-
-

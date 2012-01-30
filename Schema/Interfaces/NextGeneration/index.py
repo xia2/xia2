@@ -39,7 +39,7 @@ index_implementation_manager = _index_implementation_manager()
 class index:
     '''A class to illustrate how interfaces may work for things which index
     diffraction images.'''
-    
+
     __metaclass__ = _index_metaclass
 
     def __init__(self):
@@ -86,13 +86,13 @@ class index:
         '''This is the local implementation of setDataInput()'''
 
         # FIXME in here check that this input data object is the correct type
-        
+
         pass
 
     def get_index_output(self):
         '''This is the local implementation of getDataResult()'''
         pass
-    
+
     def _unmarshalindex(self):
         # FIXME do the unrolling of the input XML document - set the values
         # using get, set below. This is a separate job for the code camp ;o)
@@ -106,14 +106,14 @@ class index:
         this method.'''
 
         print 'preindexing'
-        
+
         pass
-                
+
     def _index(self):
         '''Dreadfully sorry, you really have to overload this one - this is
         where the real work will be done.'''
         raise RuntimeError, 'I need to be implemented'
-        
+
     def _postindex(self):
         '''And if you would like to gather your thoughts afterwards, overload
         this.'''
@@ -128,8 +128,3 @@ class index:
         print 'marshalling indexing output'
 
         return
-
-
-
-        
-        

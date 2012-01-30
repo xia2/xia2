@@ -2,11 +2,11 @@
 # Printpeaks.py
 #   Copyright (C) 2007 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 29th November 2007
-# 
+#
 # A wrapper for the program "printpeaks" derived from the DiffractionImage
 # code in XIA1 by Francois Remacle.
 #
@@ -48,7 +48,7 @@ def Printpeaks(DriverType = None):
             DriverInstance.__class__.__init__(self)
 
             self.set_executable('printpeaks')
-            
+
             self._image = None
             self._peaks = { }
 
@@ -82,7 +82,7 @@ def Printpeaks(DriverType = None):
             self.start()
             self.close_wait()
 
-            self.check_for_errors()            
+            self.check_for_errors()
 
             # results were ok, so get all of the output out
             output = self.get_all_output()
@@ -93,7 +93,7 @@ def Printpeaks(DriverType = None):
 
                 if not 'Peak' in record[:4]:
                     continue
-                
+
                 lst = record.replace(':', ' ').split()
                 x = float(lst[4])
                 y = float(lst[6])
@@ -122,7 +122,7 @@ def Printpeaks(DriverType = None):
             self.start()
             self.close_wait()
 
-            self.check_for_errors()            
+            self.check_for_errors()
 
             # results were ok, so get all of the output out
             output = self.get_all_output()
@@ -153,13 +153,13 @@ def Printpeaks(DriverType = None):
                     limit *= 0.5
 
             else:
-                
+
                 for limit in [5, 10, 20, 50, 100, 200, 500, 1000]:
                     if limit > max_limit:
                         continue
                     self._peaks[float(limit)] = len(
                         [j for j in peaks if j > limit])
-                    
+
 
             return self._peaks
 
@@ -190,7 +190,7 @@ def Printpeaks(DriverType = None):
             self.start()
             self.close_wait()
 
-            self.check_for_errors()            
+            self.check_for_errors()
 
             # results were ok, so get all of the output out
             output = self.get_all_output()
@@ -213,7 +213,7 @@ def Printpeaks(DriverType = None):
                 return 'blank'
 
             return 'ok'
-        
+
         def getpeaks(self):
             '''Just get the list of peaks out, as (x, y, i).'''
 
@@ -228,7 +228,7 @@ def Printpeaks(DriverType = None):
             self.start()
             self.close_wait()
 
-            self.check_for_errors()            
+            self.check_for_errors()
 
             # results were ok, so get all of the output out
             output = self.get_all_output()
@@ -245,7 +245,7 @@ def Printpeaks(DriverType = None):
                 x = float(lst[1].split()[0])
                 y = float(lst[2].split()[0])
                 i = float(lst[4])
-                
+
                 peaks.append((x, y, i))
 
             return peaks
@@ -255,7 +255,7 @@ def Printpeaks(DriverType = None):
 if __name__ == '__main-old__':
 
     import time
-    
+
     def printer(peaks):
         keys = peaks.keys()
         keys.sort()
@@ -271,7 +271,7 @@ if __name__ == '__main-old__':
         p.set_image(image)
         peaks = p.printpeaks()
         printer(peaks)
-            
+
     else:
 
         # for image in sys.argv[1:]:

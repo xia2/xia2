@@ -2,12 +2,12 @@
 # IntegraterFactory.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
-# A factory for Integrater implementations. At the moment this will 
+#
+# A factory for Integrater implementations. At the moment this will
 # support only Mosflm, XDS and the null integrater implementation.
-# 
+#
 
 import os
 import sys
@@ -28,10 +28,10 @@ from Modules.Integrater.XDSIntegrater import XDSIntegrater
 
 from DriverExceptions.NotAvailableError import NotAvailableError
 
-# FIXME 06/SEP/06 this should take an implementation of indexer to 
+# FIXME 06/SEP/06 this should take an implementation of indexer to
 #                 help with the decision about which integrater to
 #                 use, and also to enable invisible configuration.
-# 
+#
 # FIXME 06/SEP/06 also need interface which will work with xsweep
 #                 objects.
 
@@ -115,7 +115,7 @@ def Integrater():
                 raise RuntimeError, \
                       'preselected integrater mosflmr not available'
             pass
-            
+
     if not integrater and \
            (not preselection or preselection == 'xdsr'):
         try:
@@ -126,7 +126,7 @@ def Integrater():
                 raise RuntimeError, \
                       'preselected integrater xdsr not available'
             pass
-            
+
     if not integrater:
         raise RuntimeError, 'no integrater implementations found'
 
@@ -140,7 +140,7 @@ def Integrater():
         Debug.write('Adding user-assigned resolution limits:')
 
         if dmax:
-        
+
             Debug.write('dmin: %.3f dmax: %.2f' % (dmin, dmax))
             integrater.set_integrater_resolution(dmin, dmax, user = True)
 
@@ -148,10 +148,9 @@ def Integrater():
 
             Debug.write('dmin: %.3f' % dmin)
             integrater.set_integrater_high_resolution(dmin, user = True)
-            
+
 
     return integrater
 
 if __name__ == '__main__':
     integrater = Integrater()
-

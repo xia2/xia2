@@ -2,11 +2,11 @@
 # CCP4ScalerHelpers.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 3rd November 2006
-# 
+#
 # Helpers for the "CCP4" Scaler implementation - this contains little
 # functions which wrap the wrappers which are needed. It will also contain
 # small functions for computing e.g. resolution limits.
@@ -65,7 +65,7 @@ def _resolution_estimate(ordered_pair_list, cutoff):
     return resolution
 
 def erzatz_resolution(reflection_file, batch_ranges):
-    
+
     mtz_obj = mtz.object(reflection_file)
 
     miller = mtz_obj.extract_miller_indices()
@@ -81,7 +81,7 @@ def erzatz_resolution(reflection_file, batch_ranges):
 
         if crystal.name() == 'HKL_Base':
             continue
-        
+
         uc = crystal.unit_cell()
 
         for dataset in crystal.datasets():
@@ -117,7 +117,7 @@ def erzatz_resolution(reflection_file, batch_ranges):
                 continue
             if batches[j] > end:
                 continue
-            
+
             d.append(uc.d(miller[j]))
             isig.append(ipr_values[j] / sigipr_values[j])
 
@@ -161,14 +161,14 @@ def compute_resolution(dmax, dmin, d, isig):
 
         if b < max_bin:
             continue
-        
+
         s = smax + b * (smin - smax) / 100.0
         misig = meansd(bins[b])[0]
         if misig < 1.0:
             return 1.0 / math.sqrt(s)
 
     return dmin
-        
+
 def _prepare_pointless_hklin(working_directory,
                              hklin,
                              phi_width):
@@ -185,11 +185,11 @@ def _prepare_pointless_hklin(working_directory,
         hklout = os.path.join(
             working_directory,
             '%s_noblank.mtz' % (os.path.split(hklin)[-1][:-4]))
-    
+
         FileHandler.record_temporary_file(hklout)
 
         hklin = remove_blank(hklin, hklout)
-    
+
     # find the number of batches
 
     md = Mtzdump()
@@ -252,7 +252,7 @@ class CCP4ScalerHelper:
         return
 
     def get_working_directory(self):
-        return self._working_directory 
+        return self._working_directory
 
     def Pointless(self):
         '''Create a Pointless wrapper from _Pointless - and set the
@@ -272,7 +272,7 @@ class CCP4ScalerHelper:
         pointless = self.Pointless()
         pointless.set_hklin(hklin)
         pointless.decide_pointgroup()
-        
+
         rerun_pointless = False
 
         possible = pointless.get_possible_lattices()
@@ -282,35 +282,35 @@ class CCP4ScalerHelper:
         Debug.write('Possible lattices (pointless):')
 
         Debug.write(' '.join(possible))
-        
+
         for lattice in possible:
             state = indexer.set_indexer_asserted_lattice(lattice)
             if state == indexer.LATTICE_CORRECT:
                 Debug.write('Agreed lattice %s' % lattice)
                 correct_lattice = lattice
-                
+
                 break
-                
+
             elif state == indexer.LATTICE_IMPOSSIBLE:
                 Debug.write('Rejected lattice %s' % lattice)
                 rerun_pointless = True
-                
+
                 continue
-                
+
             elif state == indexer.LATTICE_POSSIBLE:
                 Debug.write('Accepted lattice %s, will reprocess' % lattice)
                 need_to_return = True
                 correct_lattice = lattice
-                
+
                 break
 
         if correct_lattice == None:
             correct_lattice = indexer.get_indexer_lattice()
             rerun_pointless = True
-                
+
             Debug.write(
                 'No solution found: assuming lattice from indexer')
-                    
+
         if rerun_pointless:
             pointless.set_correct_lattice(correct_lattice)
             pointless.decide_pointgroup()
@@ -320,11 +320,11 @@ class CCP4ScalerHelper:
         pointgroup = pointless.get_pointgroup()
         reindex_op = pointless.get_reindex_operator()
         probably_twinned = pointless.get_probably_twinned()
-        
+
         Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
         return pointgroup, reindex_op, need_to_return, probably_twinned
-        
+
 # Sweep info class to replace dictionary... #884
 
 class SweepInformation:
@@ -337,7 +337,7 @@ class SweepInformation:
         self._batches = integrater.get_integrater_batches()
         self._batch_offset = 0
 
-        self._image_to_epoch = integrater.get_integrater_sweep(                
+        self._image_to_epoch = integrater.get_integrater_sweep(
             ).get_image_to_epoch()
         self._image_to_dose = { }
 
@@ -353,7 +353,7 @@ class SweepInformation:
 
     def get_integrater(self):
         return self._integrater
-        
+
     def get_batches(self):
         return self._batches
 
@@ -391,7 +391,7 @@ class SweepInformation:
         header = self._integrater.get_header()
         wavelength = self._integrater.get_wavelength()
 
-        detector_width = header['size'][0] * header['pixel'][0] 
+        detector_width = header['size'][0] * header['pixel'][0]
         detector_height = header['size'][1] * header['pixel'][1]
 
         distance = self._integrater.get_integrater_indexer(
@@ -402,11 +402,11 @@ class SweepInformation:
 
         radius = min([beam[0], detector_width - beam[0],
                       beam[1], detector_height - beam[1]])
-        
+
         theta = 0.5 * math.atan(radius / distance)
 
         return wavelength / (2 * math.sin(theta))
-        
+
     def get_integrater_resolution(self):
         return self._integrater.get_integrater_high_resolution()
 
@@ -414,18 +414,18 @@ class SweepInformation:
         if self._reflections:
             return self._reflections
         else:
-            return self._integrater.get_integrater_intensities()            
+            return self._integrater.get_integrater_intensities()
 
     def set_reflections(self, reflections):
         self._reflections = reflections
         return
 
-    
+
 
 class SweepInformationHandler:
 
     def __init__(self, epoch_to_integrater):
-        
+
         self._sweep_information = { }
 
         for epoch in epoch_to_integrater:
@@ -451,11 +451,5 @@ class SweepInformationHandler:
 
             assert(si.get_project_info()[0] == pname)
             assert(si.get_project_info()[1] == xname)
-        
+
         return pname, xname
-
-    
-        
-
-        
-

@@ -18,22 +18,22 @@ def set_freeRS(hklin, fraction, hklout_work, hklout_free):
     mi = mtz_obj.extract_miller_indices()
 
     # the calculate the list of unique miller indices I want to assign
-    # as "free" 
+    # as "free"
 
     free_set = random_selection(fraction, list(set(mi)))
-    
+
     # now read through and assign those as free by adding 50 to FLAG
-    
+
     flag_column = None
-    
+
     for crystal in mtz_obj.crystals():
         for dataset in crystal.datasets():
             if dataset.name() != 'HKL_base':
                 dataset_name = dataset.name()
-                
+
         if crystal.name() != 'HKL_base':
             crystal_name = crystal.name()
-                    
+
         for dataset in crystal.datasets():
             for column in dataset.columns():
                 if column.label() == 'FLAG':

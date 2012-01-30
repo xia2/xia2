@@ -2,13 +2,13 @@
 # SubstructureLib.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 16th November 2006
 #
 # A library of things pertaining to substructure manipulation:
-# 
+#
 # .pdb file -> fractional coordinates
 # invert hand
 
@@ -34,7 +34,7 @@ def _dot(a, b):
         raise RuntimeError, 'different length vectors'
 
     result = 0.0
-    
+
     for i in range(len(a)):
         result += a[i] * b[i]
 
@@ -67,7 +67,7 @@ def _invert_3x3_matrix(m):
     inverse_m[0][0] = (m[1][1] * m[2][2] - m[1][2] * m[2][1]) / determinant
     inverse_m[0][1] = (m[0][2] * m[2][1] - m[0][1] * m[2][2]) / determinant
     inverse_m[0][2] = (m[0][1] * m[1][2] - m[0][2] * m[1][1]) / determinant
-    
+
     inverse_m[1][0] = (m[1][2] * m[2][0] - m[1][0] * m[2][2]) / determinant
     inverse_m[1][1] = (m[0][0] * m[2][2] - m[0][2] * m[2][0]) / determinant
     inverse_m[1][2] = (m[0][2] * m[1][0] - m[0][0] * m[1][2]) / determinant
@@ -125,7 +125,7 @@ def _generate_3x3_matrix():
 def _test_3x3_matrix_inverse():
     '''Generate 100 random matrices, invert them, multiply them and
     check that the result looks like an identity to a "high resolution".'''
-    
+
     for k in range(100):
         r = _generate_3x3_matrix()
         ri = _invert_3x3_matrix(r)
@@ -155,7 +155,7 @@ def write_pdb_sites_file(sites_info, out = sys.stdout):
     scales = sites_info['scale']
 
     # header guff
-    
+
     out.write('REMARK PDB FILE WRITTEN BY XIA2\n')
     if symm:
         out.write('CRYST1 %8.3f %8.3f %8.3f %6.2f %6.2f %6.2f %s\n' % \
@@ -180,9 +180,9 @@ def write_pdb_sites_file(sites_info, out = sys.stdout):
                   (j, atom['atom'].upper(), j,
                    atom['cartesian'][0], atom['cartesian'][1],
                    atom['cartesian'][2], atom['occupancy']))
-        
+
     out.write('END\n')
-    
+
     return
 
 def parse_pdb_sites_file(pdb_file):
@@ -204,7 +204,7 @@ def parse_pdb_sites_file(pdb_file):
             scales[int(d.split()[0].replace('SCALE', '')) - 1] = scale
 
         # need to store this to handle the inversion...
-        
+
         if 'CRYST1' in d[:6]:
             cell = tuple(map(float, d.split()[1:7]))
 
@@ -248,7 +248,7 @@ def parse_pdb_sites_file(pdb_file):
     results['spacegroup'] = symm
     results['scale'] = scales
     results['scale_inverse'] = scales_inverse
-    
+
     return results
 
 def invert_hand(sites_info):
@@ -269,12 +269,12 @@ def invert_hand(sites_info):
                               1 - fractional[2])
             new_cartesian = tuple([_dot(sites_info['scale_inverse'][j],
                                         new_fractional) for j in range(3)])
-                
+
             new_sites.append({'atom':site['atom'],
                               'occupancy':site['occupancy'],
                               'cartesian':new_cartesian,
                               'fractional':new_fractional})
-        
+
     elif sites_info['spacegroup'] == 'I 41 2 2':
         for site in old_sites:
             fractional = site['fractional']
@@ -284,12 +284,12 @@ def invert_hand(sites_info):
 
             new_cartesian = tuple([_dot(sites_info['scale_inverse'][j],
                                         new_fractional) for j in range(3)])
-                
+
             new_sites.append({'atom':site['atom'],
                               'occupancy':site['occupancy'],
                               'cartesian':new_cartesian,
                               'fractional':new_fractional})
-        
+
     elif sites_info['spacegroup'] == 'F 41 3 2':
         for site in old_sites:
             fractional = site['fractional']
@@ -299,12 +299,12 @@ def invert_hand(sites_info):
 
             new_cartesian = tuple([_dot(sites_info['scale_inverse'][j],
                                         new_fractional) for j in range(3)])
-                
+
             new_sites.append({'atom':site['atom'],
                               'occupancy':site['occupancy'],
                               'cartesian':new_cartesian,
                               'fractional':new_fractional})
-        
+
     else:
         # we have the general case
         for site in old_sites:
@@ -315,7 +315,7 @@ def invert_hand(sites_info):
 
             new_cartesian = tuple([_dot(sites_info['scale_inverse'][j],
                                         new_fractional) for j in range(3)])
-                
+
             new_sites.append({'atom':site['atom'],
                               'occupancy':site['occupancy'],
                               'cartesian':new_cartesian,
@@ -344,4 +344,3 @@ if __name__ == '__main__':
     sites = parse_pdb_sites_file(pdb)
     write_pdb_sites_file(sites)
     write_pdb_sites_file(invert_hand(sites))
-    

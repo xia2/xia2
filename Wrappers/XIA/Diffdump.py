@@ -2,17 +2,17 @@
 # Diffdump.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 14th June 2006
-# 
+#
 # A wrapper for the program "diffdump" derived from the DiffractionImage
 # code in XIA1 by Francois Remacle.
 #
 # The output looks like...
-# 
-# > diffdump 12287_1_E1_001.img 
+#
+# > diffdump 12287_1_E1_001.img
 # Image type : adsc
 # Exposure epoch : Sun Sep 26 14:01:35 2004
 # Exposure time : 5.000000
@@ -27,13 +27,13 @@
 #
 # FIXME this should probably be replaced with a module which uses the
 # swig-python bindings of the DiffractionImage library directly.
-# 
-# FIXED 24/NOV/06 before running should check that the file actually 
+#
+# FIXED 24/NOV/06 before running should check that the file actually
 #                 exists!
-# 
+#
 # FIXME 24/NOV/06 if beam centre is 0.0, 0.0 then perhaps reset it to
 #                 the centre of the image.
-# 
+#
 
 import os
 import sys
@@ -48,7 +48,7 @@ from scitbx.math import r3_rotation_axis_and_angle_from_matrix
 if __name__ == '__main__':
     debug = False
 else:
-    debug = False 
+    debug = False
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
@@ -69,7 +69,7 @@ from Handlers.Flags import Flags
 from dxtbx.format.Registry import Registry
 from dxtbx.model.detector_helpers_types import detector_helpers_types
 
-def get_trust_timestamps():    
+def get_trust_timestamps():
     return Flags.get_trust_timestamp()
 
 class _HeaderCache:
@@ -139,7 +139,7 @@ def read_A200(image):
     diffdump program falling over with such images.'''
 
     raise RuntimeError, 'this needs implementing!'
-    
+
     pass
 
 # FIXME get proper specifications for these detectors...
@@ -224,16 +224,16 @@ def failover_full_cbf(cbf_file):
         raise RuntimeError, 'unknown detector %s' % header['detector_class']
 
     cbf_handle.rewind_datablock()
-    
+
     detector = cbf_handle.construct_detector(0)
 
     # FIXME need to check that this is doing something sensible...!
 
     header['beam'] = tuple(map(math.fabs, detector.get_beam_center()[2:]))
     detector_normal = tuple(detector.get_detector_normal())
-    
+
     gonio = cbf_handle.construct_goniometer()
-    
+
     axis = tuple(gonio.get_rotation_axis())
     angles = tuple(gonio.get_rotation_range())
 
@@ -243,11 +243,11 @@ def failover_full_cbf(cbf_file):
 
     header['phi_start'], header['phi_width'] = angles
     header['phi_end'] = header['phi_start'] + header['phi_width']
-    
+
     year, month, day, hour, minute, second, x = cbf_handle.get_datestamp()
     struct_time = datetime.datetime(year, month, day,
                                     hour, minute, second).timetuple()
-    
+
     header['date'] = time.asctime(struct_time)
     header['epoch'] = cbf_handle.get_timestamp()[0]
     header['size'] = tuple(cbf_handle.get_image_size(0))
@@ -260,7 +260,7 @@ def failover_full_cbf(cbf_file):
     origin = detector.get_pixel_coordinates(0, 0)
     fast = detector.get_pixel_coordinates(0, 1)
     slow = detector.get_pixel_coordinates(1, 0)
-    
+
     dfast = matrix.col([fast[j] - origin[j] for j in range(3)]).normalize()
     dslow = matrix.col([slow[j] - origin[j] for j in range(3)]).normalize()
 
@@ -287,9 +287,9 @@ def failover_full_cbf(cbf_file):
     cbf_handle.find_row('source')
 
     # then get the vector and offset from this
-    
+
     beam_direction = []
-    
+
     for j in range(3):
         cbf_handle.find_column('vector[%d]' % (j + 1))
         beam_direction.append(cbf_handle.get_doublevalue())
@@ -358,7 +358,7 @@ def failover_cbf(cbf_file):
         if 'Beam_xy' in record:
 
             # N.B. this is swapped again for historical reasons
-            
+
             beam_pixels = map(float, record.replace('(', '').replace(
                 ')', '').replace(',', '').split()[2:4])
             header['beam'] = beam_pixels[1] * header['pixel'][1], \
@@ -375,7 +375,7 @@ def failover_cbf(cbf_file):
             struct_time = time.strptime(datestring, format)
             header['date'] = time.asctime(struct_time)
             header['epoch'] = time.mktime(struct_time)
-            
+
         except:
             pass
 
@@ -387,10 +387,10 @@ def failover_cbf(cbf_file):
                 struct_time = time.strptime(datestring, format)
                 header['date'] = time.asctime(struct_time)
                 header['epoch'] = time.mktime(struct_time)
-            
+
         except:
             pass
-        
+
         try:
 
             if not 'date' in header:
@@ -399,10 +399,10 @@ def failover_cbf(cbf_file):
                 struct_time = time.strptime(datestring, format)
                 header['date'] = time.asctime(struct_time)
                 header['epoch'] = time.mktime(struct_time)
-                
+
         except:
             pass
-    
+
     # clean up to cope with ESRF header randomisation
     header['phi_end'] = header['phi_start'] + header['phi_width']
 
@@ -419,7 +419,7 @@ def failover_dxtbx(image_file):
         iformat = last_format
     else:
         iformat = Registry.find(image_file)
-        
+
     if iformat.understand(image_file) < 2:
         raise RuntimeError, 'image file %s not understood by dxtbx' % \
               image_file
@@ -441,7 +441,7 @@ def failover_dxtbx(image_file):
     F = d.get_fast_c()
     S = d.get_slow_c()
     N = F.cross(S)
-    
+
     origin = d.get_origin_c()
     beam = b.get_direction_c().normalize()
     centre = - (origin - origin.dot(N) * N)
@@ -481,7 +481,7 @@ def Diffdump(DriverType = None):
             DriverInstance.__class__.__init__(self)
 
             self.set_executable('diffdump')
-            
+
             self._image = None
             self._header = { }
 
@@ -561,7 +561,7 @@ def Diffdump(DriverType = None):
                                                 '%d-%b-%Y %H:%M:%S')
 
             return struct_time, ms
-        
+
         def _epoch(self, datestring):
             '''Compute an epoch from a date string.'''
 
@@ -590,12 +590,12 @@ def Diffdump(DriverType = None):
                 self._header = failover_dxtbx(self._image)
                 HeaderCache.put(self._image, self._header)
                 return copy.deepcopy(self._header)
-            
+
         def readheader_diffdump(self):
             '''Read the image header.'''
 
             global detector_class
-            
+
             # check that the input file exists..
 
             if not os.path.exists(self._image):
@@ -626,7 +626,7 @@ def Diffdump(DriverType = None):
             self.close_wait()
 
             # why is this commented out?
-            # self.check_for_errors()            
+            # self.check_for_errors()
 
             # results were ok, so get all of the output out
             output = self.get_all_output()
@@ -635,13 +635,13 @@ def Diffdump(DriverType = None):
                 print '! all diffdump output follows'
                 for o in output:
                     print '! %s' % o[:-1]
-            
+
             # note that some of the records in the image header
             # will depend on the detector class - this should
             # really be fixed in the program diffdump...
 
             detector = None
-            
+
             fudge = {'adsc':{'wavelength':1.0,
                              'pixel':1.0},
                      'dectris':{'wavelength':1.0,
@@ -673,7 +673,7 @@ def Diffdump(DriverType = None):
 
                 # latest version of diffdump prints out manufacturer in
                 # place of image type...
-                    
+
                 if ('Image type' in o) or ('Manufacturer' in o):
                     if debug:
                         print '! found image type: %s' % l[1].strip().lower()
@@ -686,10 +686,10 @@ def Diffdump(DriverType = None):
                         self._header['detector'] = 'mar'
                     if self._header['detector'] == 'rigaku saturn':
                         self._header['detector'] = 'saturn'
-		    if self._header['detector'] == 'rigaku raxis':
-			self._header['detector'] = 'raxis'
-		    if self._header['detector'] == 'rigaku r-axis':
-			self._header['detector'] = 'raxis'
+                    if self._header['detector'] == 'rigaku raxis':
+                        self._header['detector'] = 'raxis'
+                    if self._header['detector'] == 'rigaku r-axis':
+                        self._header['detector'] = 'raxis'
                     detector = self._header['detector']
 
                 if 'Format' in o:
@@ -713,7 +713,7 @@ def Diffdump(DriverType = None):
                                     os.stat(self._image)[8])
                                 self._header['date'] = time.ctime(
                                     self._header['epoch'])
-                            else:                                
+                            else:
                                 self._header['epoch'] = 0.0
                                 self._header['date'] = ''
 
@@ -758,7 +758,7 @@ def Diffdump(DriverType = None):
                     image = l[1].replace('px', '')
                     image = image.replace('(', '').replace(')', '').split(',')
                     self._header['size'] = map(float, image)
-                
+
                 if 'Pixel Size' in o:
                     image = l[1].replace('mm', '')
                     x, y = image.replace('(', '').replace(')', '').split(',')
@@ -768,7 +768,7 @@ def Diffdump(DriverType = None):
                         self._header['pixel'] = (
                             float(x) * fudge[detector]['pixel'],
                             float(y) * fudge[detector]['pixel'])
-                
+
                 if 'Angle range' in o:
                     phi = map(float, l[1].split('->'))
                     self._header['phi_start'] = phi[0]
@@ -793,17 +793,17 @@ def Diffdump(DriverType = None):
                         self._header['two_theta'] = two_theta * -1.0
                     except ValueError, e:
                         self._header['two_theta'] = 0.0
-                    
+
             # check to see if the beam centre needs to be converted
             # from pixels to mm - e.g. MAR 300 images from APS ID 23
 
             if self._header.has_key('beam') and \
                self._header.has_key('pixel') and \
                self._header.has_key('size'):
-		# look to see if the current beam is somewhere in the middle
- 		# pixel count wise...
-		beam = self._header['beam']
-		size = self._header['size']
+                # look to see if the current beam is somewhere in the middle
+                # pixel count wise...
+                beam = self._header['beam']
+                size = self._header['size']
                 pixel = self._header['pixel']
                 if math.fabs((beam[0] - 0.5 * size[0]) / size[0]) < 0.25:
                     new_beam = (beam[0] * pixel[0], beam[1] * pixel[1])
@@ -813,9 +813,9 @@ def Diffdump(DriverType = None):
 
             if math.fabs(self._header['beam'][0]) < 0.01 and \
                math.fabs(self._header['beam'][1]) < 0.01:
-		size = self._header['size']
+                size = self._header['size']
                 pixel = self._header['pixel']
-                self._header['beam'] = (0.5 * size[0] * pixel[0], 
+                self._header['beam'] = (0.5 * size[0] * pixel[0],
                                         0.5 * size[1] * pixel[1])
 
             if self._header.has_key('detector') and \
@@ -885,7 +885,7 @@ def Diffdump(DriverType = None):
             self.start()
             self.close_wait()
 
-            self.check_for_errors()            
+            self.check_for_errors()
 
             # results were ok, so get all of the output out
             output = self.get_all_output()
@@ -898,13 +898,13 @@ def Diffdump(DriverType = None):
                 if 'Estimation of gain' in o:
                     # This often seems to be an underestimate...
                     gain = 1.333 * float(l[1])
-                    
+
             return gain
 
     return DiffdumpWrapper()
 
 if __name__ == '__main__':
-    
+
     p = Diffdump()
 
     directory = os.path.join(os.environ['XIA2_ROOT'],
@@ -913,7 +913,7 @@ if __name__ == '__main__':
     if len(sys.argv) == 1:
         image = os.path.join(directory, '12287_1_E1_001.img')
         p.set_image(image)
-        
+
         header = p.readheader()
 
         print 'Frame %s collected at: %s' % \
@@ -927,7 +927,7 @@ if __name__ == '__main__':
         print 'Detector class: %s' % header['detector_class']
         print 'Epochs:        %.3f' % header['epoch']
         print 'Exposure time: %.3f' % header['exposure_time']
-    
+
     else:
         for image in sys.argv[1:]:
             p = Diffdump()
@@ -936,7 +936,7 @@ if __name__ == '__main__':
             header = p.readheader()
 
             # gain = p.gain()
-            
+
             print 'Frame %s collected at: %s' % \
                   (os.path.split(image)[-1], header['date'])
             print 'Phi:  %6.2f %6.2f' % \
@@ -951,4 +951,3 @@ if __name__ == '__main__':
             print 'Epoch:         %.3f' % header['epoch']
             print 'Exposure time: %.3f' % header['exposure_time']
             print 'Two theta:     %.3f' % header['two_theta']
-

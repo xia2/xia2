@@ -2,9 +2,9 @@
 # ami.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # 18th June 2007
 #
 # Top-level interface for AMI - Analyse My Intensities
@@ -56,7 +56,7 @@ def ami():
             if counter != (len(hklin_list) + 1):
                 raise RuntimeError, 'hklin out of sequence'
             hklin_list.append(arguments[j + 1])
-        
+
         if arguments[j].lower() == 'hklout':
             hklout = arguments[j + 1]
 
@@ -144,7 +144,7 @@ def ami():
             else:
                 raise RuntimeError, 'value %s unknown for verbose: ' % \
                       a.split()[1]
-            
+
         elif command == 'rein':
             rein = a.split()[1]
 
@@ -198,5 +198,3 @@ def ami():
 
 if __name__ == '__main__':
     ami()
-
-    

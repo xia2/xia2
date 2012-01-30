@@ -36,7 +36,7 @@ class FormatCBFMiniPilatus(FormatCBFMini):
             if '_array_data.header_convention' in record and \
                    'SLS' in record:
                 return 3
-        
+
         return 0
 
     def __init__(self, image_file):
@@ -44,11 +44,11 @@ class FormatCBFMiniPilatus(FormatCBFMini):
         proper model of the experiment.'''
 
         assert(FormatCBFMiniPilatus.understand(image_file) > 0)
-        
+
         FormatCBFMini.__init__(self, image_file)
 
         return
-    
+
     def _goniometer(self):
         '''Return a model for a simple single-axis goniometer. This should
         probably be checked against the image header, though for miniCBF
@@ -96,19 +96,19 @@ class FormatCBFMiniPilatus(FormatCBFMini):
             detector.add_mask(f0, s0, f1, s1)
 
         return detector
-        
+
     def _beam(self):
         '''Return a simple model for the beam.'''
 
         wavelength = float(
             self._cif_header_dictionary['Wavelength'].split()[0])
-        
+
         return self._beam_factory.simple(wavelength)
 
     def _scan(self):
         '''Return the scan information for this image.'''
 
-        format = self._scan_factory.format('CBF') 
+        format = self._scan_factory.format('CBF')
 
         exposure_time = float(
             self._cif_header_dictionary['Exposure_period'].split()[0])

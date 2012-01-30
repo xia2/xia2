@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # XDS2CBF.py
-# 
+#
 #   Copyright (C) 2010 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # Code to read in a GXPARM file from XDS and write out the corresponding
@@ -50,11 +50,11 @@ def parse_xparm(xparm_file):
     return ra, beam, x_to_d.elems, (px, py), distance, (nx, ny), x, y
 
 def get_abc_from_xparm(xparm_file):
-    
+
     xdata = xds_read_xparm(xparm_file)
 
     return xdata['a'], xdata['b'], xdata['c']
-    
+
 def XDS2CBF(xparm_file, integrate_hkl):
     '''Given an XDS XPARM file, return a matrix which will transform from
     XDS coordinates to CBF reference frame.'''
@@ -86,7 +86,7 @@ def XDS2CBF(xparm_file, integrate_hkl):
 
     # right now lets calculate a rotation which will overlap the two reference
     # frames.... first relabel so we know what we are trying to do
-    
+
     x = ra
     z = -1 * (beam - (beam.dot(ra) * ra))
     z = z / math.sqrt(z.dot())
@@ -143,7 +143,7 @@ def XDS2CBF(xparm_file, integrate_hkl):
     _N = _X.cross(_Y)
 
     # so that would be the distance between the sample and the
-    # detector plane in the direction of the direct beam. 
+    # detector plane in the direction of the direct beam.
 
     _beam = _m * beam
 

@@ -51,7 +51,7 @@ class DocElement:
     The DocElement is a generic part of a document, and is not really
     intended to be used directly but instead should be subclassed
     to create more elements (for example Sections).
-    
+
     Note: subclasses of DocElement should provide a 'renderContent'
     method to generate their specific HTML code by the DocElement
     'render' method, and should avoid overriding the 'render'
@@ -111,7 +111,7 @@ class DocElement:
         Multiple CSS classes can be placed in the 'css_class'
         string by separating them with spaces."""
         if self.__classes: self.__classes += " "
-        self.__classes += css_class 
+        self.__classes += css_class
 
     def renderContent(self):
         """Placeholder method
@@ -156,7 +156,7 @@ class Section(DocElement):
 
     When the Section is rendered to HTML the content is generated
     in the order that it was added to the Section.
-    
+
     A 'table of contents' can be added to the Section using the
     addTOC method. This will automatically create a list of links
     to the subsquent subsections in the Section.
@@ -170,7 +170,7 @@ class Section(DocElement):
 
     The div id will be a unique name built from the title (if
     supplied) plus an id number acquired from the parent document.
-        
+
     The div class will be 'section_<X>', where <X> is the level of
     the section (also used in the <h..> tags around the title, if
     a title was supplied).
@@ -365,7 +365,7 @@ class Document(Section):
     with the Document via 'addStyle' and 'addScript' methods. A 'master
     table of contents' can be added to the document by invoking the
     'toc' method.
-    
+
     HTML can be rendered from the Document object at any time by using
     one of the rendering methods. 'render' returns the document HTML,
     'renderFile' writes the HTML to a file. Rendering doesn't change
@@ -454,7 +454,7 @@ class Document(Section):
         html.write(self.render())
         html.close()
         return
-    
+
 class Para:
     """Paragraph object
 
@@ -740,7 +740,7 @@ class Table(DocElement):
                         self.__rows[i][-1] = data[i]
                 else:
                     # Not enough data in the column
-                    self.__rows[i].append(None)               
+                    self.__rows[i].append(None)
         self.__normalise()
         # Deal with the header
         self.__header[-1] = header
@@ -1025,7 +1025,7 @@ class ExternalFile:
 
     Use this as a base class for referencing external files
     that can be linked or inlined within the document."""
-    
+
     def __init__(self,filename,inline):
         """Initialise the ExternalFile object
 
@@ -1073,7 +1073,7 @@ class Stylesheet(ExternalFile):
 
     Normally created and managed automatically by the Document class
     when a stylesheet is added via the Document.addStyle method."""
-    
+
     def __init__(self,stylesheet,inline):
         """Create a new Stylesheet object
 
@@ -1099,7 +1099,7 @@ class Script(ExternalFile):
 
     Normally created and managed automatically by the Document class
     when a stylesheet is added via the Document.addScript method."""
-    
+
     def __init__(self,script,inline):
         """Create a new Script object
 
@@ -1148,7 +1148,7 @@ def MakeMagicTable(text,magic_separator='\t',ignore_empty=True):
     Optionally supply the 'magic_separator' (defaults to a tab)
     which separates the values on each row of the plain text
     table supplied to the class.
-    
+
     By default if two or more delimiters are found side by side
     then they will be treated as a single delimiter - essentially
     this behaviour ignores the 'empty' data items that would
@@ -1261,7 +1261,7 @@ if __name__ == "__main__":
 
     intro = d.addSection("Introduction")
     intro.addPara("This is the intro")
-    
+
     startup = d.addSection("Getting started")
     startup.addPara("Lots of info for getting started")
     prelim = startup.addSubsection("Preliminaries")

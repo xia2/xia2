@@ -1,6 +1,6 @@
 from cctbx import sgtbx
-from cctbx.sgtbx import pointgroup_tools 
-from cctbx.sgtbx import sub_lattice_tools 
+from cctbx.sgtbx import pointgroup_tools
+from cctbx.sgtbx import sub_lattice_tools
 from cctbx import crystal
 
 def demo():
@@ -15,7 +15,7 @@ def demo():
         print '%20s' % sg.build_derived_point_group().type( \
             ).universal_hermann_mauguin_symbol(), \
               '%7.2f %7.2f %7.2f %7.2f %7.2f %7.2f' % cell.parameters()
-        
+
 if __name__ == '__main__':
 
     demo()

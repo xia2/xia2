@@ -126,7 +126,7 @@ class Magpie:
     def count(self,name):
         """Return number of occurances of Data elements called 'name'"""
         return len(self.getData(name))
-    
+
     def process(self):
         """Run the processor on the source text"""
         self.processFile(self.__txtfile)
@@ -147,7 +147,7 @@ class Magpie:
         'source' must be an iterable object (typically either an
         open file object, or a list of lines of text) which
         acts as the data source.
-        
+
         This method steps through the data source line-by-line,
         extracting and storing data from fragments that match
         the Pattern and Block definitions."""
@@ -401,7 +401,7 @@ class PatternMatcher:
     via the addPattern method, a new Pattern object is
     created and stored. Multiple patterns can be associated
     with the same name.
-    
+
     A list of (unique) pattern names can be retrieved via the
     listPatterns method.
 
@@ -439,7 +439,7 @@ class PatternMatcher:
         match is found then a Python dictionary is returned
         with information about the match (see the test
         method of the Pattern object for the details).
-        
+
         If no match is found (or if there are no patterns
         with the supplied name) then an empty Python dictionary
         instance is returned."""
@@ -505,9 +505,9 @@ class Pattern:
             # Populate the "data" dictionary with the
             # value of each regexp group assigned to
             # the corresponding keys in order
-            # 
+            #
             # If there are more keys than groups then
-            # remaining 
+            # remaining
             if self.__keys:
                 i = 1
                 for key in self.__keys:
@@ -590,6 +590,3 @@ class Tabulator:
 def version():
     """Return the version of the Magpie module"""
     return __version__
-
-
-    

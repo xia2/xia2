@@ -21,7 +21,7 @@ class FormatSMV(Format):
     HEADER_BYTES=  512;
 
     and contain a list of keyword-value pairs thereafter which define the
-    header. The keywords etc. for these will depend on the instrument 
+    header. The keywords etc. for these will depend on the instrument
     manufacturer and will be interpreted by subclasses of this class. Note
     also that every line is finished with a semicolon.'''
 
@@ -43,7 +43,7 @@ class FormatSMV(Format):
         header_text = FormatSMV.open_file(image_file, 'rb').read(header_size)
 
         # check we have the whole header in here... it is contained within { }
-        
+
         assert('}' in header_text)
 
         header_dictionary = { }
@@ -60,7 +60,7 @@ class FormatSMV(Format):
 
     def __init__(self, image_file):
         '''Initialise the image structure from the given file.'''
-        
+
         assert(FormatSMV.understand(image_file) > 0)
 
         Format.__init__(self, image_file)
@@ -76,7 +76,3 @@ class FormatSMV(Format):
             self._image_file)
 
         return
-
-
-    
-

@@ -15,7 +15,7 @@ def reduce(symops, v):
         v2[0] = modulo(1.0, v2[0])
         v2[1] = modulo(1.0, v2[1])
         v2[2] = modulo(1.0, v2[2])
-        
+
         if v2[0] > reduced[0]:
             continue
         if v2[0] < reduced[0]:

@@ -2,14 +2,14 @@
 # ChefHelpers.py
 #   Copyright (C) 2008 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 27th March, 2008
 #
 # Helper functions and definitions for things to help chef.
-# 
-# 
+#
+#
 
 import math
 import os
@@ -30,7 +30,7 @@ def completeness_dose(cd_dict):
     dc98 = None
     dc95 = None
     dc90 = None
-    
+
     for d in doses:
         comp = cd_dict[d]
 
@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
     src2 = os.path.join(os.environ['X2TD_ROOT'], 'Test', 'Chef', 'Helpers',
                        'ChefHelpers2.dat')
-    
+
     for record in open(src, 'r').readlines():
         lst = map(float, record.split())
 

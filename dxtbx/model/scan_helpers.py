@@ -2,9 +2,9 @@
 # scan_helpers.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-#  
+#
 # Helpers for the scan class, which are things for handling e.g. filenames,
 # templates and so on. In first instance this will being in code from
 # $XIA2_ROOT/Experts/FindImages.py as I will need it here too.
@@ -33,7 +33,7 @@ def image2template(filename):
     # the format strings to put the file name back together
 
     patterns = {r'([^\.]*)\.([0-9]+)\Z':'%s.%s%s',
-                r'([^\.]*)\.([0-9]+)(.*)':'%s.%s%s',                
+                r'([^\.]*)\.([0-9]+)(.*)':'%s.%s%s',
                 r'(.*)_([0-9]*)\.(.*)':'%s_%s.%s',
                 r'(.*?)([0-9]*)\.(.*)':'%s%s.%s'}
 
@@ -50,7 +50,7 @@ def image2template(filename):
 
             for digit in string.digits:
                 number = number.replace(digit, '#')
-                
+
             return patterns[pattern] % (prefix, number, exten)
 
     raise RuntimeError, 'filename %s not understood as a template' % \
@@ -92,10 +92,10 @@ def image2template_directory(filename):
     directory = os.path.dirname(filename)
 
     if not directory:
-        
+
         # then it should be the current working directory
         directory = os.getcwd()
-        
+
     image = os.path.split(filename)[-1]
     template = image2template(image)
 
@@ -233,8 +233,3 @@ class scan_helper_image_formats:
             return True
 
         return False
-
-    
-            
-
-    

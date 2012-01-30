@@ -11,7 +11,7 @@ def xia2ice():
 
     n = 1
     beam = None
-    
+
     if sys.argv[1] == '-beam':
         beam = tuple(map(float, sys.argv[2].split(',')))
         n = 3
@@ -24,10 +24,8 @@ def xia2ice():
             i.set_beam(beam)
 
         name = os.path.split(image)[-1]
-            
+
         print '%s %.3f' % (name, i.search())
 
 if __name__ == '__main__':
     xia2ice()
-    
-    

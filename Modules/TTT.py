@@ -1,49 +1,49 @@
 #!/usr/bin/env python
-# 
+#
 # Tic Tac Toe, taken from:
 #
 # http://code.activestate.com/recipes/576661-tic-tac-toe/
-# 
+#
 # and heavily modified to be an easter egg of the computer playing against
 # itself.
 
 from random import *
 from string import *
 
-EMPTY = ' '     
-PL_1 = 'X'      
-PL_2 = 'O'      
+EMPTY = ' '
+PL_1 = 'X'
+PL_2 = 'O'
 
-A = 'A'  
+A = 'A'
 B = 'B'
 C = 'C'
 
-board = [[EMPTY, EMPTY, EMPTY], 
-         [EMPTY, EMPTY, EMPTY], 
-         [EMPTY, EMPTY, EMPTY]] 
+board = [[EMPTY, EMPTY, EMPTY],
+         [EMPTY, EMPTY, EMPTY],
+         [EMPTY, EMPTY, EMPTY]]
 
-current_player = randint(1, 2)  
+current_player = randint(1, 2)
 
 def square(row, col):
     return (row, col)
 
 def square_row(square):
-    return square[0] 
+    return square[0]
 
 def square_col(square):
     return square[1]
 
 def get_square(square):
     ''' Returns the value of the given square. '''
-    row_i = square_row(square) - 1 
-    col_i = ord(square_col(square)) - ord(A) 
-    return board[row_i][col_i] 
+    row_i = square_row(square) - 1
+    col_i = ord(square_col(square)) - ord(A)
+    return board[row_i][col_i]
 
 def set_square(square, mark):
     ''' Sets the value of the given square. '''
     row_i = square_row(square) - 1
     col_i = ord(square_col(square)) - ord(A)
-    board[row_i][col_i] = mark 
+    board[row_i][col_i] = mark
 
 def get_row(row):
     ''' Returns the given row as a list of three values. '''
@@ -73,7 +73,7 @@ def all_squares_filled():
     for row in range(1, 4):
         if EMPTY in get_row(row):
             return False
-    return True 
+    return True
 
 def player_has_won(player):
     ''' Returns True iff the given player (1 or 2) has won the game. '''
@@ -90,7 +90,7 @@ def player_has_won(player):
     if get_diagonal((1, A)) == win or get_diagonal((1, C)) == win:
         return True
 
-    return False 
+    return False
 
 def draw_board_straight():
     ''' Returns a straight string representation of the board. '''
@@ -98,7 +98,7 @@ def draw_board_straight():
     A1, A2, A3 = get_square((1, A)), get_square((2, A)), get_square((3, A))
     B1, B2, B3 = get_square((1, B)), get_square((2, B)), get_square((3, B))
     C1, C2, C3 = get_square((1, C)), get_square((2, C)), get_square((3, C))
-    
+
     lines = []
     lines.append('')
     lines.append('+---+---+---+')
@@ -109,8 +109,8 @@ def draw_board_straight():
     lines.append('| ' + A3 + ' | ' + B3 + ' | ' + C3 + ' |')
     lines.append('+---+---+---+')
     lines.append('')
-    
-    return join(lines, '\n') 
+
+    return join(lines, '\n')
 
 def draw_board():
     ''' Returns a string representation of the board in its current state. '''
@@ -123,7 +123,7 @@ def reset_board():
 
 def ttt():
 
-    global current_player 
+    global current_player
 
     reset_board()
     current_player = randint(1, 2)
@@ -141,13 +141,13 @@ def ttt():
 
     result.append(
         'Bored now. Quick games of noughts and crosses...')
-        
+
     while not all_squares_filled():
 
         choices = ['A1', 'A2', 'A3',
                    'B1', 'B2', 'B3',
                    'C1', 'C2', 'C3']
-                   
+
         choice = choices[randint(0,8)]
 
         if choice[0] in ['1', '2', '3']:
@@ -180,15 +180,15 @@ def ttt():
             result.append('Draw...')
             break
 
-        current_player = 3 - current_player 
+        current_player = 3 - current_player
 
     result.append('')
     result.append('... ah, that\' better!')
-    
+
     return result
 
 if __name__ == '__main__':
-    
+
     result = ttt()
     for r in result:
         print r

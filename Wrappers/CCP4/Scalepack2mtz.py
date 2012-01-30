@@ -2,7 +2,7 @@
 # Scalepack2mtz.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A wrapper for the jiffy program scalepack2mtz to convert merged
@@ -34,7 +34,7 @@ def Scalepack2mtz(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-            
+
             self.set_executable(os.path.join(
                 os.environ.get('CBIN', ''), 'scalepack2mtz'))
 
@@ -86,7 +86,7 @@ def Scalepack2mtz(DriverType = None):
                 try:
                     os.remove(self.get_hklout())
                 except:
-                    pass            
+                    pass
 
                 raise e
 
@@ -111,4 +111,3 @@ if __name__ == '__main__':
     s2m.set_spacegroup('P212121')
     s2m.set_project_info('TS00', 'X13185', 'INFL')
     s2m.convert()
-    

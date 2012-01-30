@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # PyChef.py
-# 
+#
 #   Copyright (C) 2009 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # Main program for PyChef, using the PyChef class. Here is some example input:
-# 
+#
 # labin BASE=DOSE
 # range width 5 max 605
 # anomalous on
@@ -27,7 +27,7 @@ def banner():
     version = '1.0'
     user = os.environ.get('USER', '')
     now = time.asctime()
-    
+
     print '#' * 60
     print '#' * 60
     print '#' * 60
@@ -35,7 +35,7 @@ def banner():
           version
     print '#' * 60
     print 'User: %s                  Run at: %s' % (user, now)
-    
+
     return
 
 def get_hklin_files():
@@ -56,7 +56,7 @@ def get_hklin_files():
 
             if not os.path.exists(hklin):
                 raise RuntimeError, 'hklin %s does not exist' % hklin
-            
+
             hklin_files.append(hklin)
 
     for hklin in hklin_files:
@@ -71,7 +71,7 @@ def get_number_cpus():
 
     if os.name == 'nt':
         return int(os.environ['NUMBER_OF_PROCESSORS'])
-    
+
     # linux
 
     if os.path.exists('/proc/cpuinfo'):
@@ -126,14 +126,14 @@ def parse_standard_input():
         tokens = record.split()
 
         #### KEYWORD RESOLUTION ####
-        
+
         if key == 'RESO':
             assert(len(tokens) < 4)
-            assert(len(tokens) > 1)            
+            assert(len(tokens) > 1)
 
             if len(tokens) == 2:
                 resolution_high = float(tokens[1])
-                
+
             elif len(tokens) == 3:
                 resolution_a = float(tokens[1])
                 resolution_b = float(tokens[2])
@@ -144,7 +144,7 @@ def parse_standard_input():
 
         elif key == 'RANG':
             assert(len(tokens) < 8)
-            assert(len(tokens) > 2)            
+            assert(len(tokens) > 2)
 
             for j in range(1, len(tokens)):
                 subkey = tokens[j][:4].upper()
@@ -154,7 +154,7 @@ def parse_standard_input():
                     range_max = float(tokens[j + 1])
                 if subkey == 'WIDT':
                     range_width = float(tokens[j + 1])
-                    
+
         #### KEYWORD ANOMALOUS ####
 
         elif key == 'ANOM':
@@ -209,7 +209,7 @@ def parse_standard_input():
         }
 
     return results
-        
+
 def main():
     '''Create and run a PyChef, reading the traditional format input from
     the command-line.'''
@@ -237,7 +237,7 @@ def main():
         pychef.set_range(standard_input['range_min'],
                          standard_input['range_max'],
                          standard_input['range_width'])
-        
+
     pychef.set_resolution(standard_input['resolution_high'],
                           standard_input['resolution_low'])
     pychef.set_anomalous(standard_input['anomalous'])
@@ -253,8 +253,8 @@ def main():
 
     pychef.init()
     pychef.print_completeness_vs_dose()
-    pychef.rcp()    
-    pychef.scp()    
+    pychef.rcp()
+    pychef.scp()
     pychef.rd()
     pychef.print_dose_profile()
 
@@ -272,5 +272,3 @@ if __name__ == '__main__':
 
     else:
         main()
-
-    

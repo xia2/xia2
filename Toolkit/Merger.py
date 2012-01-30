@@ -1,21 +1,21 @@
 #!/usr/bin/env cctbx.python
 # Merger.py
-# 
+#
 #   Copyright (C) 2010 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # A toolkit component for merging symmetry related intensity measurements
 # to calculate:
-# 
+#
 #  - Rmerge vs. batch, resolution
 #  - Chi^2
 #  - Multiplicity
 #  - Unmerged I/sigma
 #  - Z^2 for centric and acentric reflections
 #  - Completeness
-# 
+#
 # FIXME restructure this (or extend) to include the Chef calculations =>
 #       can then apply these to any derived data types.
 #
@@ -25,7 +25,7 @@
 #       correctly. N.B. will be useful to add extra column for LP correction
 #       values. N.B. INTEGRATE applies an LP correction assuming that the
 #       fraction is 0.5 - this is improved by CORRECT. Pointless copies this
-#       across correctly and computes LP column. 
+#       across correctly and computes LP column.
 
 import sys
 import math
@@ -118,7 +118,7 @@ class unmerged_intensity:
 
         sum_wi_p = 0.0
         sum_w_p = 0.0
-        
+
         sum_wi_m = 0.0
         sum_w_m = 0.0
 
@@ -131,7 +131,7 @@ class unmerged_intensity:
             else:
                 sum_w_m += w
                 sum_wi_m += w * i
-                
+
         if sum_w_p:
             i_mean_p = sum_wi_p / sum_w_p
             sigi_mean_p = math.sqrt(1.0 / sum_w_p)
@@ -143,8 +143,8 @@ class unmerged_intensity:
             i_mean_m = sum_wi_m / sum_w_m
             sigi_mean_m = math.sqrt(1.0 / sum_w_m)
         else:
-            i_mean_m = 0.0 
-            sigi_mean_m = 0.0        
+            i_mean_m = 0.0
+            sigi_mean_m = 0.0
 
         return i_mean_p, sigi_mean_p, i_mean_m, sigi_mean_m
 
@@ -174,7 +174,7 @@ class unmerged_intensity:
                 rmerge_p += math.fabs(o[1] - i_mean_p)
             else:
                 rmerge_m += math.fabs(o[1] - i_mean_m)
-                
+
         return rmerge_p, rmerge_m
 
     def isigma_contribution(self):
@@ -183,7 +183,7 @@ class unmerged_intensity:
 
     def chisq_contribution(self, i_mean):
         '''Calculate the contribution to the reduced chi^2.'''
-        
+
         return [(o[1] - i_mean) / o[2] for o in self._observations]
 
     def calculate_unmerged_di(self):
@@ -227,7 +227,7 @@ class unmerged_intensity:
             result.add(d, _i, _si, _b)
 
         return result
-            
+
 class merger:
     '''A class to calculate things from merging reflections.'''
 
@@ -257,7 +257,7 @@ class merger:
         self._merge_reflections_anomalous()
 
         # self._calculate_unmerged_di()
-    
+
         return
 
     def debug_info(self):
@@ -319,7 +319,7 @@ class merger:
         i = self._mf.get_column_values('I')
         sigi = self._mf.get_column_values('SIGI')
         b = self._mf.get_column_values(self._b_column)
-        
+
         for j in range(len(i)):
             hkl = mi[j]
             if not hkl in self._unmerged_reflections:
@@ -375,7 +375,7 @@ class merger:
 
         for hkl in self._unmerged_reflections:
             d = self.resolution(hkl)
-            scale = k * math.exp(-1 * b / (d * d))            
+            scale = k * math.exp(-1 * b / (d * d))
             self._unmerged_reflections[hkl].apply_scale(scale)
 
         return
@@ -397,7 +397,7 @@ class merger:
             hkls.append(Rhkl)
 
         map_to_asu(self._mf.get_space_group().type(), False, hkls)
-        
+
         for j, hkl in enumerate(self._merged_reflections):
             map_native[hkl] = hkls[j]
 
@@ -411,7 +411,7 @@ class merger:
             hkls.append(Rhkl)
 
         map_to_asu(self._mf.get_space_group().type(), True, hkls)
-        
+
         for j, hkl in enumerate(self._merged_reflections_anomalous):
             map_anomalous[hkl] = hkls[j]
 
@@ -445,7 +445,7 @@ class merger:
 
     def get_merged_reflections(self):
         return self._merged_reflections
-    
+
     def get_unmerged_reflections(self):
         return self._unmerged_reflections
 
@@ -453,7 +453,7 @@ class merger:
         '''Compute the resolution corresponding to this miller index.'''
 
         return self._mf.get_unit_cell().d(hkl)
-    
+
     def calculate_resolution_ranges(self, nbins = 20):
         '''Calculate semi-useful resolution ranges for analysis.'''
 
@@ -485,18 +485,18 @@ class merger:
         self._hkl_ranges = hkl_ranges[:-1]
         for mi in hkl_ranges[-1]:
             self._hkl_ranges[-1].append(mi)
-            
+
         self._resolution_ranges = resolution_ranges[:-1]
         self._resolution_ranges[-1] = (self._resolution_ranges[-1][0],
                                        resolution_ranges[-1][1])
-        
+
         return
 
     def get_resolution_bins(self):
         '''Return the reversed resolution limits - N.B. this is most
         important when considering resolution calculations, see
         resolution_completeness.'''
-        
+
         return list(reversed(self._hkl_ranges)), \
                list(reversed(self._resolution_ranges))
 
@@ -507,10 +507,10 @@ class merger:
         for hkl in self._merged_reflections:
             if self.resolution(hkl) < dmin:
                 delete.append(hkl)
-                
+
         for hkl in delete:
             del(self._merged_reflections[hkl])
-        
+
         delete = []
         for hkl in self._merged_reflections_anomalous:
             if self.resolution(hkl) < dmin:
@@ -518,7 +518,7 @@ class merger:
 
         for hkl in delete:
             del(self._merged_reflections_anomalous[hkl])
-        
+
         delete = []
         for hkl in self._unmerged_reflections:
             if self.resolution(hkl) < dmin:
@@ -526,7 +526,7 @@ class merger:
 
         for hkl in delete:
             del(self._unmerged_reflections[hkl])
-        
+
         return
 
     def calculate_completeness(self, resolution_bin = None):
@@ -565,7 +565,7 @@ class merger:
 
         if not hkl_list:
             hkl_list = list(self._unmerged_reflections)
-        
+
         for hkl in hkl_list:
             # if we have only one observation, do not include in the
             # rmerge calculations
@@ -577,7 +577,7 @@ class merger:
 
         if not b:
             return 0.0
-        
+
         return t / b
 
     def calculate_rmerge_anomalous(self, hkl_list = None):
@@ -588,7 +588,7 @@ class merger:
 
         if not hkl_list:
             hkl_list = list(self._unmerged_reflections)
-        
+
         for hkl in hkl_list:
             is_pm = self._merged_reflections_anomalous[hkl]
             i_mean_p, i_mean_m = is_pm[0], is_pm[2]
@@ -598,15 +598,15 @@ class merger:
 
             # if we have only one observation, do not include in the
             # rmerge calculations
-            
+
             mult_p, mult_m = self._unmerged_reflections[
                 hkl].multiplicity_anomalous()
-            
+
             if mult_p == 1:
                 mult_p = 0
             if mult_m == 1:
                 mult_m = 0
-                
+
             b += mult_p * i_mean_p + mult_m * i_mean_m
 
         if not b:
@@ -621,7 +621,7 @@ class merger:
             hkl_list = list(self._unmerged_reflections)
 
         deltas = []
-        
+
         for hkl in hkl_list:
             i_mean = self._merged_reflections[hkl][0]
             for d in self._unmerged_reflections[hkl].chisq_contribution(
@@ -635,13 +635,13 @@ class merger:
 
     def calculate_multiplicity(self, hkl_list = None):
         '''Calculate the overall average multiplicity.'''
-        
+
         if not hkl_list:
             hkl_list = list(self._unmerged_reflections)
 
         multiplicity = [float(self._unmerged_reflections[hkl].multiplicity()) \
                         for hkl in hkl_list]
-        
+
         return sum(multiplicity) / len(multiplicity)
 
     def calculate_merged_isigma(self, hkl_list = None):
@@ -686,13 +686,13 @@ class merger:
 
         i_s = [self._merged_reflections[hkl][0] for hkl in hkl_centric]
         mean_i = sum(i_s) / len(i_s)
-        
+
         z_s = [i / mean_i for i in i_s]
         z_centric = sum([z * z for z in z_s]) / len(z_s)
 
         i_s = [self._merged_reflections[hkl][0] for hkl in hkl_acentric]
         mean_i = sum(i_s) / len(i_s)
-        
+
         z_s = [i / mean_i for i in i_s]
         z_acentric = sum([z * z for z in z_s]) / len(z_s)
 
@@ -721,7 +721,7 @@ class merger:
 
         if limit > max(rmerge_s):
             return 1.0 / math.sqrt(max(s_s))
-        
+
         rmerge_f = log_inv_fit(s_s, rmerge_s, 6)
 
         if log:
@@ -751,7 +751,7 @@ class merger:
 
         isigma_s = get_positive_values(
             [self.calculate_unmerged_isigma(bin) for bin in bins])
-        
+
         s_s = [1.0 / (r[0] * r[0]) for r in ranges][:len(isigma_s)]
 
         if min(isigma_s) > limit:
@@ -773,7 +773,7 @@ class merger:
 
         _s_s = s_s[start:end]
         _isigma_s = isigma_s[start:end]
-        
+
         _isigma_f = log_fit(_s_s, _isigma_s, 3)
 
         if log:
@@ -784,7 +784,7 @@ class merger:
                 m = _isigma_f[j]
                 fout.write('%f %f %f %f\n' % (s, d, o, m))
             fout.close()
-        
+
         try:
             r_isigma = 1.0 / math.sqrt(interpolate_value(_s_s, _isigma_f,
                                                          limit))
@@ -804,12 +804,12 @@ class merger:
 
         isigma_s = get_positive_values(
             [self.calculate_unmerged_isigma(bin) for bin in bins])
-        
+
         s_s = [1.0 / (r[0] * r[0]) for r in ranges][:len(isigma_s)]
 
         if min(isigma_s) > limit:
             return 1.0 / math.sqrt(max(s_s))
-        
+
         isigma_f = log_fit(s_s, isigma_s, 6)
 
         if log:
@@ -820,7 +820,7 @@ class merger:
                 m = isigma_f[j]
                 fout.write('%f %f %f %f\n' % (s, d, o, m))
             fout.close()
-        
+
         try:
             r_isigma = 1.0 / math.sqrt(interpolate_value(s_s, isigma_f, limit))
         except:
@@ -840,7 +840,7 @@ class merger:
         misigma_s = get_positive_values(
             [self.calculate_merged_isigma(bin) for bin in bins])
         s_s = [1.0 / (r[0] * r[0]) for r in ranges][:len(misigma_s)]
-        
+
         if min(misigma_s) > limit:
             return 1.0 / math.sqrt(max(s_s))
 
@@ -860,7 +860,7 @@ class merger:
 
         _s_s = s_s[start:end]
         _misigma_s = misigma_s[start:end]
-        
+
         _misigma_f = log_fit(_s_s, _misigma_s, 3)
 
         if log:
@@ -871,7 +871,7 @@ class merger:
                 m = _misigma_f[j]
                 fout.write('%f %f %f %f\n' % (s, d, o, m))
             fout.close()
-        
+
         try:
             r_misigma = 1.0 / math.sqrt(interpolate_value(_s_s, _misigma_f,
                                                           limit))
@@ -892,12 +892,12 @@ class merger:
         misigma_s = get_positive_values(
             [self.calculate_merged_isigma(bin) for bin in bins])
         s_s = [1.0 / (r[0] * r[0]) for r in ranges][:len(misigma_s)]
-        
+
         if min(misigma_s) > limit:
             return 1.0 / math.sqrt(max(s_s))
 
         misigma_f = log_fit(s_s, misigma_s, 6)
-        
+
         if log:
             fout = open(log, 'w')
             for j, s in enumerate(s_s):
@@ -923,22 +923,22 @@ class merger:
 
         if limit is None:
             limit = Flags.get_completeness()
-            
+
         bins, ranges = self.get_resolution_bins()
 
         s_s = [1.0 / (r[0] * r[0]) for r in reversed(ranges)]
 
         if limit == 0.0:
             return 1.0 / math.sqrt(max(s_s))
-        
+
         comp_s = [self.calculate_completeness(j) for j, bin in enumerate(
             reversed(bins))]
-        
+
         if min(comp_s) > limit:
             return 1.0 / math.sqrt(max(s_s))
 
         comp_f = fit(s_s, comp_s, 6)
-        
+
         rlimit = limit * max(comp_s)
 
         if log:
@@ -987,8 +987,3 @@ if __name__ == '__main__':
     if False:
         print 'Comp:       %.2f' % m.resolution_completeness(limit = 0.5,
                                                              log = l_comp)
-
-    
-
-
-    

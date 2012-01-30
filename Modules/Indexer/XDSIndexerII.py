@@ -2,14 +2,14 @@
 # XDSIndexerII.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 4th June 2008
-# 
+#
 # An reimplementation of the XDS indexer to work for harder cases, for example
-# cases where the whole sweep needs to be read into memory in IDXREF to get 
-# a decent indexing solution (these do happen) and also cases where the 
+# cases where the whole sweep needs to be read into memory in IDXREF to get
+# a decent indexing solution (these do happen) and also cases where the
 # crystal is highly mosaic. Perhaps. This will now be directly inherited from
 # the original XDSIndexer and only the necessary method overloaded (as I
 # should have done this in the first place.)
@@ -57,7 +57,7 @@ class XDSIndexerII(XDSIndexer):
     def __init__(self):
 
         # set up the inherited objects
-        
+
         XDSIndexer.__init__(self)
 
         return
@@ -66,9 +66,9 @@ class XDSIndexerII(XDSIndexer):
 
     def _index_select_images(self):
         '''Select correct images based on image headers.'''
-        
+
         phi_width = self.get_header_item('phi_width')
-        
+
         if phi_width == 0.0:
             Debug.write('Phi width 0.0? Assuming 1.0!')
             phi_width = 1.0
@@ -94,7 +94,7 @@ class XDSIndexerII(XDSIndexer):
 
         Debug.write('Adding images for indexer: %d -> %d' % \
                     (min(images), max(images)))
-        
+
         self.add_indexer_image_wedge((min(images), max(images)))
 
         # FIXME this should have a wrapper function!
@@ -108,8 +108,5 @@ class XDSIndexerII(XDSIndexer):
         # the background calculation as this is currently bodged a little
         # in the old implementation - look at init.set_background_range
         # in XDSIndexer...
-        
+
         return
-
-
-    

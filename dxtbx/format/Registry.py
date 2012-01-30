@@ -6,7 +6,7 @@
 #   included in the root directory of this package.
 #
 # A registry class to handle Format classes and provide lists of them when
-# this is useful for i.e. identifying the best tool to read a given range 
+# this is useful for i.e. identifying the best tool to read a given range
 # of image formats.
 
 import os
@@ -61,7 +61,7 @@ class _Registry:
 
     def get(self):
         '''Get a list of image formats registered here.'''
-        
+
         return tuple(self._formats)
 
     def find(self, image_file):

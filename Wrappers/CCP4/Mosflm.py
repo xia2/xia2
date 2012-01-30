@@ -2,14 +2,14 @@
 # Mosflm.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 23rd June 2006
-# 
+#
 # A wrapper for the data processing program Mosflm, with the following
 # methods to provide functionality:
-# 
+#
 # index: autoindexing functionality (implemented)
 # integrate: process a frame or a dataset (implemented)
 #
@@ -124,7 +124,7 @@ def Mosflm(DriverType = None):
             else:
                 self.set_executable(os.path.join(
                     os.environ['CCP4'], 'bin', 'ipmosflm'))
-                
+
             FrameProcessor.__init__(self)
             Indexer.__init__(self)
             Integrater.__init__(self)
@@ -142,14 +142,14 @@ def Mosflm(DriverType = None):
             self._mosflm_cell_ref_images = None
             self._mosflm_cell_ref_resolution = None
             self._mosflm_cell_ref_double_mosaic = False
-            
+
             # belt + braces for very troublesome cases - this will only
             # be used in failover / microcrystal mode
             self._mosflm_cell_ref_add_autoindex = False
 
             # and the calculation of the missetting angles
             self._mosflm_misset_expert = None
-            
+
             # local parameters used in integration
             self._mosflm_refine_profiles = True
             self._mosflm_postref_fix_mosaic = False
@@ -162,20 +162,20 @@ def Mosflm(DriverType = None):
 
         def _mosflm_get_header(self, image):
             '''Return the header for this image.'''
-            name = self.get_image_name(image)            
+            name = self.get_image_name(image)
             dd = Diffdump()
             dd.set_image(name)
             return dd.readheader()
-        
+
         def _index_prepare(self):
-			
+
             if self._indxr_images == []:
                 self._index_select_images()
 
             if self._mosflm_autoindex_thresh is None and \
                    Flags.get_microcrystal():
                 self._mosflm_autoindex_thresh = 5
-                
+
             return
 
         def _index_select_images(self):
@@ -258,7 +258,7 @@ def Mosflm(DriverType = None):
 
             if min_images > 9:
                 min_images = 9
-            
+
             images = self.get_matching_images()
 
             if len(images) < 3 * min_images:
@@ -285,7 +285,7 @@ def Mosflm(DriverType = None):
                                         images[-1]))
 
             return cell_ref_images
-                            
+
         def _refine_select_twenty(self, mosaic):
             '''Select images for cell refinement - first 20 in the sweep.'''
 
@@ -299,7 +299,7 @@ def Mosflm(DriverType = None):
                 cell_ref_images.append((images[0], images[19]))
             else:
                 cell_ref_images.append((images[0], images[-1]))
-                
+
             return cell_ref_images
 
         def _index(self):
@@ -319,7 +319,7 @@ def Mosflm(DriverType = None):
                 for j in i:
                     if not j in _images:
                         _images.append(j)
-                    
+
             _images.sort()
 
             images_str = '%d' % _images[0]
@@ -348,7 +348,7 @@ def Mosflm(DriverType = None):
                      'target lattice':self._indxr_input_lattice,
                      'template':self._fp_template,
                      'directory':dirname})
-            
+
             task = 'Autoindex from images:'
 
             for i in _images:
@@ -398,18 +398,18 @@ def Mosflm(DriverType = None):
                     Debug.write('Aiming for at least %d spots...' % min_peaks)
 
                     thresholds = []
-                    
+
                     for i in _images:
-                        
+
                         p = Printpeaks()
                         p.set_image(self.get_image_name(i))
                         thresh = p.threshold(min_peaks)
-                        
+
                         Debug.write('Autoindex threshold for image %d: %d' % \
                                     (i, thresh))
 
                         thresholds.append(thresh)
-                
+
                     thresh = min(thresholds)
                     self._mosflm_autoindex_thresh = thresh
 
@@ -417,7 +417,7 @@ def Mosflm(DriverType = None):
                     Debug.write('Error computing threshold: %s' % str(e))
                     Debug.write('Using default of 20.0')
                     thresh = 20.0
-                
+
             else:
                 thresh = self._mosflm_autoindex_thresh
 
@@ -440,7 +440,7 @@ def Mosflm(DriverType = None):
 
             # trac 1150 - want to estimate mosaic spread from all images then
             # calculate the average - though what happens if one of the chosen
-            # images is BLANK? 
+            # images is BLANK?
 
             for i in _images:
                 self.input('mosaic estimate %d' % i)
@@ -460,13 +460,13 @@ def Mosflm(DriverType = None):
                        indxr_cell[2] / indxr_cell[0] > 6:
 
                         Debug.write(
-                            'Unrealistic autoindexing solution: ' + 
+                            'Unrealistic autoindexing solution: ' +
                             '%.2f %.2f %.2f %.2f %.2f %.2f' % indxr_cell)
 
                         # tweak some parameters and try again...
                         self._mosflm_autoindex_thresh *= 1.5
                         self.set_indexer_done(False)
-                        
+
                         return
 
             intgr_params = { }
@@ -491,14 +491,14 @@ def Mosflm(DriverType = None):
                                lattice_to_spacegroup_dict[
                             self._indxr_input_lattice]:
                             del(self._indxr_other_lattice_cell[k])
-                    
+
                 # check that the selected unit cell matches - and if
                 # not raise a "horrible" exception
 
                 # FIXME why are these and "False" commented out - see also in (e)
 
                 if self._indxr_input_cell:
-                
+
                     for o in output:
                         if 'Final cell (after refinement)' in o:
                             indxr_cell = tuple(map(float, o.split()[-6:]))
@@ -560,7 +560,7 @@ def Mosflm(DriverType = None):
                             lattice_to_spacegroup_dict[k]] = k
                     self._indxr_lattice = spacegroup_to_lattice[spagnum]
 
-                    
+
                 # in here I need to check if the mosaic spread estimation
                 # has failed. If it has it is likely that the selected
                 # lattice has too high symmetry, and the "next one down"
@@ -591,7 +591,7 @@ def Mosflm(DriverType = None):
                 if 'The mosaicity has NOT been estimated' in o:
                     # then consider setting it do a default value...
                     # equal to the oscillation width (a good guess)
-                    
+
                     phi_width = self.get_header_item('phi_width')
 
                     Chatter.write(
@@ -614,7 +614,7 @@ def Mosflm(DriverType = None):
                 if 'Input crystal to detector distance' in o \
                    and 'does NOT agree with' in o:
                     self._indxr_refined_distance = self.get_distance()
-                
+
                 # record raster parameters and so on, useful for the
                 # cell refinement etc - this will be added to a
                 # payload dictionary of mosflm integration keywords
@@ -638,7 +638,7 @@ def Mosflm(DriverType = None):
             self._indxr_mosaic = sum(mosaic_spreads) / len(mosaic_spreads)
 
             self._indxr_payload['mosflm_integration_parameters'] = intgr_params
-                                                                 
+
             self._indxr_payload['mosflm_orientation_matrix'] = open(
                 os.path.join(self.get_working_directory(),
                              'xiaindex.mat'), 'r').readlines()
@@ -647,13 +647,13 @@ def Mosflm(DriverType = None):
             # they are icy...
 
             ice = []
-            
+
             for i in _images:
 
                 icy = IceId()
                 icy.set_image(self.get_image_name(i))
                 icy.set_beam(self._indxr_refined_beam)
-                
+
                 ice.append(icy.search())
 
             if sum(ice) / len(ice) > 0.45:
@@ -665,7 +665,7 @@ def Mosflm(DriverType = None):
             else:
                 Debug.write('Autoindexing images look ok: %.3f' % \
                             (sum(ice) / len(ice)))
-                
+
 
             return
 
@@ -685,7 +685,7 @@ def Mosflm(DriverType = None):
                     self)
             except:
                 status = None
-            
+
             if status is None:
                 # basis is primitive
                 return
@@ -699,7 +699,7 @@ def Mosflm(DriverType = None):
             self._indxr_lattice = lattice
             self._indxr_cell = cell
 
-            Debug.write('Inserting solution: %s ' % lattice + 
+            Debug.write('Inserting solution: %s ' % lattice +
                         '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % cell)
 
             self._indxr_replace(lattice, cell)
@@ -725,11 +725,11 @@ def Mosflm(DriverType = None):
             # have to get the images to use into here somehow - work through
             # using the first image from each cell refinement wedge? that
             # would probably hit the spot...
-                    
+
             auto_logfiler(self)
 
             Debug.write('Running mosflm to generate RASTER, SEPARATION')
-            
+
             self.start()
 
             if self.get_reversephi():
@@ -767,18 +767,18 @@ def Mosflm(DriverType = None):
                     min_peaks = 200
                     Debug.write('Aiming for at least %d spots...' % min_peaks)
                     thresholds = []
-                    
+
                     for i in _images:
-                        
+
                         p = Printpeaks()
                         p.set_image(self.get_image_name(i))
                         thresh = p.threshold(min_peaks)
-                        
+
                         Debug.write('Autoindex threshold for image %d: %d' % \
                                     (i, thresh))
 
                         thresholds.append(thresh)
-                
+
                     thresh = min(thresholds)
                     self._mosflm_autoindex_thresh = thresh
 
@@ -786,7 +786,7 @@ def Mosflm(DriverType = None):
                     Debug.write('Error computing threshold: %s' % str(e))
                     Debug.write('Using default of 20.0')
                     thresh = 20.0
-                
+
             else:
                 thresh = self._mosflm_autoindex_thresh
 
@@ -821,7 +821,7 @@ def Mosflm(DriverType = None):
                 if '(currently SEPARATION' in o:
                     intgr_params['separation'] = map(
                         float, o.replace(')', '').split()[-2:])
-                    
+
             return intgr_params
 
         def _integrate_prepare(self):
@@ -899,7 +899,7 @@ def Mosflm(DriverType = None):
                     self.set_integrater_parameter(
                         'mosflm', 'raster',
                         '%d %d %d %d %d' % tuple(integration_params['raster']))
-            
+
             # next test the cell refinement with the correct lattice
             # and P1 and see how the numbers stack up...
 
@@ -934,7 +934,7 @@ def Mosflm(DriverType = None):
                     auto_logfiler(self)
                     rms_deviations_p1, br_p1 = self._mosflm_test_refine_cell(
                         'aP')
-                    
+
                 self.reset()
                 auto_logfiler(self)
                 rms_deviations, br = self._mosflm_refine_cell()
@@ -950,7 +950,7 @@ def Mosflm(DriverType = None):
                     # reset flag; half mosaic; raise BadLatticeError
 
                     Debug.write('Mosaic negative even x2 -> BadLattice')
-                    
+
                     self._mosflm_cell_ref_double_mosaic = False
                     raise BadLatticeError, 'negative mosaic spread'
 
@@ -961,11 +961,11 @@ def Mosflm(DriverType = None):
                     Debug.write('Mosaic negative -> try x2')
 
                     self._mosflm_cell_ref_double_mosaic = True
-                    
+
                     self.set_integrater_prepare_done(False)
 
                     return
-            
+
             if not self.get_integrater_prepare_done():
                 # cell refinement failed so no point getting the
                 # results of refinement in P1... now this is
@@ -977,12 +977,12 @@ def Mosflm(DriverType = None):
             # in the correct lattice as this will give a fair comparison
             # with the P1 refinement (see bug # 2539) - would also be
             # interesting to see how much better these are...
-            
+
             images = []
             for cri in self._mosflm_cell_ref_images:
                 for j in range(cri[0], cri[1] + 1):
                     images.append(j)
-                    
+
             if rms_deviations and rms_deviations_p1:
                 cycles = []
                 j = 1
@@ -1012,7 +1012,7 @@ def Mosflm(DriverType = None):
                         Debug.write('. %4d   %.2f     %.2f' % \
                                     (images[j], rms_deviations[c][j],
                                      rms_deviations_p1[c][j]))
-                        
+
                         ratio += rms_deviations[c][j] / rms_deviations_p1[c][j]
                         ratios.append(
                             (rms_deviations[c][j] / rms_deviations_p1[c][j]))
@@ -1021,14 +1021,14 @@ def Mosflm(DriverType = None):
 
                 if False and self.get_integrater_indexer(
                     ).get_indexer_lattice() != 'aP':
-                
+
                     good, bad = remove_outliers(ratios, 6)
                     m, s = meansd(good)
 
                     bs = ''
                     for b in bad:
                         bs += '%.3f ' % b
-                        
+
                     Debug.write('%d outlier ratios: %s' % (len(bad), bs))
                     Debug.write('Of the good: %.3f +- %.3f' % (m, s))
 
@@ -1047,7 +1047,7 @@ def Mosflm(DriverType = None):
             # is part of the preparation and was causing fun with
             # bug # 2040 - going quickly! this resets the integration done
             # flag...
-            
+
             cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % \
                        self._intgr_cell
 
@@ -1057,7 +1057,7 @@ def Mosflm(DriverType = None):
                 images = self.get_matching_images()
                 self.set_integrater_wedge(min(images),
                                           max(images))
-            
+
 
             return
 
@@ -1089,7 +1089,7 @@ def Mosflm(DriverType = None):
             wd = self.get_working_directory()
 
             try:
- 
+
                 self.reset()
                 auto_logfiler(self)
 
@@ -1100,16 +1100,16 @@ def Mosflm(DriverType = None):
                         (self.get_integrater_sweep_name(),
                          pname, xname, dname),
                         self.get_log_file())
-                
+
                 if Flags.get_parallel() > 1:
                     Debug.write('Parallel integration: %d jobs' %
                                 Flags.get_parallel())
                     self._mosflm_hklout = self._mosflm_parallel_integrate()
                 else:
                     self._mosflm_hklout = self._mosflm_integrate()
-                    
+
                 # record integration output for e.g. BLEND.
-         
+
                 sweep = self.get_integrater_sweep_name()
                 if sweep:
                     FileHandler.record_more_data_file(
@@ -1122,7 +1122,7 @@ def Mosflm(DriverType = None):
                         Chatter.write(
                             'Negative mosaic spread - stopping integration')
                         raise BadLatticeError, 'negative mosaic spread'
-                        
+
                     Chatter.write(
                         'Negative mosaic spread - rerunning integration')
                     self.set_integrater_done(False)
@@ -1141,7 +1141,7 @@ def Mosflm(DriverType = None):
 
             # FIXME this should rely on self.get_integrater_raw_intensities()
             # not self._mosflm_hklout...
-            
+
             if self._intgr_reindex_operator is None and \
                self._intgr_spacegroup_number == lattice_to_spacegroup(
                 self.get_integrater_indexer().get_indexer_lattice()):
@@ -1244,7 +1244,7 @@ def Mosflm(DriverType = None):
 
             # if set, use the resolution for cell refinement - see
             # bug # 2078...
-            
+
             if self._mosflm_cell_ref_resolution and not \
                    Flags.get_microcrystal():
                 self.input('resolution %f' % \
@@ -1255,7 +1255,7 @@ def Mosflm(DriverType = None):
 
             if Flags.get_microcrystal():
                 self.input('postref sdfac 2.0')
-                
+
             # note well that the beam centre is coming from indexing so
             # should be already properly handled
 
@@ -1299,7 +1299,7 @@ def Mosflm(DriverType = None):
             self.input('refinement include partials')
 
             self._reorder_cell_refinement_images()
-            
+
             self.input('postref multi segments %d repeat 10' % \
                        len(self._mosflm_cell_ref_images))
 
@@ -1309,12 +1309,12 @@ def Mosflm(DriverType = None):
                                    '%d_mosflm.gen' % self.get_xpid())
 
             self.input('genfile %s' % genfile)
-            
+
             for cri in self._mosflm_cell_ref_images:
                 self.input('process %d %d' % cri)
                 self.input('go')
 
-            # that should be everything 
+            # that should be everything
             self.close_wait()
 
             # get the log file
@@ -1332,7 +1332,7 @@ def Mosflm(DriverType = None):
             parse_image = 0
 
             background_residual = { }
-                                    
+
             for i in range(len(output)):
                 o = output[i]
 
@@ -1345,11 +1345,11 @@ def Mosflm(DriverType = None):
 
                 if 'Background residual' in o:
                     res = float(o.replace('residual=', '').split()[8])
-                    
+
                     if not parse_cycle in background_residual:
                         background_residual[parse_cycle] = { }
                     background_residual[parse_cycle][parse_image] = res
-                    
+
                 if 'As this is near to the start' in o:
                     new_ignore_update = True
 
@@ -1379,11 +1379,11 @@ def Mosflm(DriverType = None):
                         else:
                             cycle = int(output[j].replace(
                                 'Cycle', '').split()[0])
-                            
+
                             if not cycle in cycles:
                                 cycles.append(cycle)
                                 rms_values[cycle] = []
-                            
+
                             record = [output[j][k:k + 6] \
                                       for k in range(
                                 11, len(output[j]), 6)]
@@ -1393,7 +1393,7 @@ def Mosflm(DriverType = None):
                                 if r.strip():
                                     data.append(r.strip())
                                 record = data
-                                    
+
                             try:
                                 values = map(float, record)
                                 for v in values:
@@ -1402,9 +1402,9 @@ def Mosflm(DriverType = None):
                                 Debug.write(
                                     'Error parsing %s as floats' % \
                                     output[j][12:])
-                            
+
                         j += 1
-                        
+
 
                     # now transform back the new rms residual values
                     # into the old structure... messy but effective!
@@ -1416,7 +1416,7 @@ def Mosflm(DriverType = None):
                         for i in images:
                             rms_values[cycle].append(
                                 new_rms_values[cycle][i])
-                    
+
                     rms_values_last = rms_values[max(cycles)]
 
             return rms_values, background_residual
@@ -1440,12 +1440,12 @@ def Mosflm(DriverType = None):
             cell = indxr.get_indexer_cell()
             beam = indxr.get_indexer_beam()
 
-            # bug # 3174 - if mosaic is very small (here defined to be 
+            # bug # 3174 - if mosaic is very small (here defined to be
             # 0.25 x osc_width) then set to this minimum value.
 
             if mosaic < 0.25 * self.get_header_item('phi_width'):
                 mosaic = 0.25 * self.get_header_item('phi_width')
-                
+
             if indxr.get_indexer_payload('mosflm_beam_centre'):
                 beam = indxr.get_indexer_payload('mosflm_beam_centre')
 
@@ -1464,7 +1464,7 @@ def Mosflm(DriverType = None):
                     self.set_integrater_parameter(
                         'mosflm', 'raster',
                         '%d %d %d %d %d' % tuple(integration_params['raster']))
-                    
+
             indxr.set_indexer_payload('mosflm_integration_parameters', None)
 
             # copy these into myself for later reference, if indexer
@@ -1517,7 +1517,7 @@ def Mosflm(DriverType = None):
                 self.input('symmetry %s' % set_spacegroup)
             else:
                 self.input('symmetry %s' % spacegroup_number)
-                
+
             # FIXME 18/JUN/08 - it may help to have an overestimate
             # of the mosaic spread in here as it *may* refine down
             # better than up... - this is not a good idea as it may
@@ -1534,7 +1534,7 @@ def Mosflm(DriverType = None):
 
             # if set, use the resolution for cell refinement - see
             # bug # 2078...
-            
+
             if self._mosflm_cell_ref_resolution and not \
                    Flags.get_microcrystal():
                 self.input('resolution %f' % \
@@ -1586,7 +1586,7 @@ def Mosflm(DriverType = None):
                        len(self._mosflm_cell_ref_images))
 
             self.input('postref maxresidual 5.0')
-            
+
             genfile = os.path.join(os.environ['BINSORT_SCR'],
                                    '%d_mosflm.gen' % self.get_xpid())
 
@@ -1596,7 +1596,7 @@ def Mosflm(DriverType = None):
                 self.input('process %d %d' % cri)
                 self.input('go')
 
-            # that should be everything 
+            # that should be everything
             self.close_wait()
 
             # get the log file
@@ -1609,10 +1609,10 @@ def Mosflm(DriverType = None):
             cell_refinement_ok = False
 
             for o in output:
-                
+
                 if 'Cell refinement is complete' in o:
                     cell_refinement_ok = True
-                    
+
             if not cell_refinement_ok:
                 if Flags.get_failover() and not \
                        self._mosflm_cell_ref_add_autoindex:
@@ -1620,13 +1620,13 @@ def Mosflm(DriverType = None):
                     self.set_integrater_prepare_done(False)
                     self._mosflm_cell_ref_add_autoindex = True
                     return [0.0], [0.0]
-                
+
                 Chatter.write(
                     'Looks like cell refinement failed - more follows...')
 
             rms_values_last = None
             rms_values = None
-            
+
             new_cycle_number = 0
             new_rms_values = { }
             new_image_counter = None
@@ -1636,7 +1636,7 @@ def Mosflm(DriverType = None):
             parse_image = 0
 
             background_residual = { }
-            
+
             for i in range(len(output)):
                 o = output[i]
 
@@ -1645,7 +1645,7 @@ def Mosflm(DriverType = None):
 
                 if 'An unrecoverable error has occurred in MOSFLM' in o:
                     raise BadLatticeError, 'cell refinement failed'
-                
+
                 if 'Processing Image' in o:
                     new_image_counter = int(o.split()[2])
 
@@ -1678,11 +1678,11 @@ def Mosflm(DriverType = None):
                         else:
                             cycle = int(output[j].replace(
                                 'Cycle', '').split()[0])
-                            
+
                             if not cycle in cycles:
                                 cycles.append(cycle)
                                 rms_values[cycle] = []
-                            
+
                             record = [output[j][k:k + 6] \
                                       for k in range(
                                 11, len(output[j]), 6)]
@@ -1692,7 +1692,7 @@ def Mosflm(DriverType = None):
                                 if r.strip():
                                     data.append(r.strip())
                                 record = data
-                                    
+
                             try:
                                 values = map(float, record)
                                 for v in values:
@@ -1701,9 +1701,9 @@ def Mosflm(DriverType = None):
                                 Debug.write(
                                     'Error parsing %s as floats' % \
                                     output[j][12:])
-                            
+
                         j += 1
-                        
+
                     for cycle in new_rms_values.keys():
                         images = new_rms_values[cycle].keys()
                         images.sort()
@@ -1721,11 +1721,11 @@ def Mosflm(DriverType = None):
 
                 if 'is greater than the maximum allowed' in o and \
                        'FINAL weighted residual' in o:
-                   
+
                     Debug.write('Large weighted residual... ignoring')
-                    
+
                 if 'INACCURATE CELL PARAMETERS' in o:
-                    
+
                     # get the inaccurate cell parameters in question
                     parameters = output[i + 3].lower().split()
 
@@ -1741,7 +1741,7 @@ def Mosflm(DriverType = None):
                                 (tuple(sds[:3])))
                     Debug.write('Alpha %4.2f  Beta  %4.2f  Gamma %4.2f' % \
                                 (tuple(sds[3:6])))
-                                  
+
                     Debug.write(
                         'In cell refinement, the following cell parameters')
                     Debug.write(
@@ -1751,8 +1751,8 @@ def Mosflm(DriverType = None):
 
                     Debug.write(
                         'However, will continue to integration.')
-                        
-		if 'One or more cell parameters has changed by more' in o:
+
+                if 'One or more cell parameters has changed by more' in o:
                     # this is a more severe example of the above problem...
                     Debug.write(
                         'Cell refinement is unstable...')
@@ -1775,7 +1775,7 @@ def Mosflm(DriverType = None):
             parse_image = 0
 
             background_residual = { }
-                        
+
             for i, o in enumerate(output):
 
                 if 'Processing Image' in o:
@@ -1787,7 +1787,7 @@ def Mosflm(DriverType = None):
                 if 'Background residual' in o:
 
                     res = float(o.replace('residual=', '').split()[8])
-                    
+
                     if not parse_cycle in background_residual:
                         background_residual[parse_cycle] = { }
                     background_residual[parse_cycle][parse_image] = res
@@ -1806,13 +1806,13 @@ def Mosflm(DriverType = None):
                                     (names[j], refined_cell[j],
                                      error[j],
                                      100.0 * error[j] / refined_cell[j]))
-                
+
                 if 'Refined cell' in o:
                     indxr._indxr_cell = tuple(map(float, o.split()[-6:]))
                     self._intgr_cell = tuple(map(float, o.split()[-6:]))
 
                 # FIXME with these are they really on one line?
-                    
+
                 if 'Detector distance as a' in o:
                     j = i + 1
                     while output[j].strip() != '':
@@ -1849,7 +1849,7 @@ def Mosflm(DriverType = None):
                                                   'separation',
                                                   '%s %s' % \
                                                   (tokens[4], tokens[8]))
-                    
+
                 if 'XCEN    YCEN  XTOFRA' in o:
                     numbers = output[i + 1].split()
 
@@ -1871,7 +1871,7 @@ def Mosflm(DriverType = None):
                     indxr._indxr_mosaic = float(o.split()[-1])
 
             self.set_indexer_done(True)
-            
+
             self.set_indexer_payload('mosflm_orientation_matrix', open(
                 os.path.join(self.get_working_directory(),
                              'xiarefine.mat'), 'r').readlines())
@@ -1902,7 +1902,7 @@ def Mosflm(DriverType = None):
 
             integration_params = indxr.get_indexer_payload(
                 'mosflm_integration_parameters')
-            
+
             if integration_params:
                 if integration_params.has_key('separation'):
                     self.set_integrater_parameter(
@@ -1939,7 +1939,7 @@ def Mosflm(DriverType = None):
 
             if pname != None and xname != None and dname != None:
                 Debug.write('Harvesting: %s/%s/%s' % (pname, xname, dname))
-                
+
                 harvest_dir = os.path.join(os.environ['HARVESTHOME'],
                                            'DepositFiles', pname)
 
@@ -1948,7 +1948,7 @@ def Mosflm(DriverType = None):
                     os.makedirs(harvest_dir)
 
                 # harvest file name will be %s.mosflm_run_start_end % dname
-            
+
                 self.input('harvest on')
                 self.input('pname %s' % pname)
                 self.input('xname %s' % xname)
@@ -1975,11 +1975,11 @@ def Mosflm(DriverType = None):
             if self.get_integrater_ice() != 0:
 
                 Debug.write('Excluding ice rings')
-                
+
                 for record in open(os.path.join(
                     os.environ['XIA2_ROOT'],
                     'Data', 'ice-rings.dat')).readlines():
-                    
+
                     resol = tuple(map(float, record.split()[:2]))
                     self.input('resolution exclude %.2f %.2f' % (resol))
 
@@ -2039,11 +2039,11 @@ def Mosflm(DriverType = None):
 
             if self._mosflm_postref_fix_mosaic:
                 self.input('postref fix mosaic')
-                
+
             self.input('separation close')
 
-            # FIXME this is a horrible hack - I at least need to 
-            # sand box this ... 
+            # FIXME this is a horrible hack - I at least need to
+            # sand box this ...
             if self.get_header_item('detector') == 'raxis':
                 self.input('adcoffset 0')
 
@@ -2072,14 +2072,14 @@ def Mosflm(DriverType = None):
                            (self._intgr_wedge[0] - offset,
                             self._intgr_wedge[1] - offset,
                             1 + self._intgr_wedge[1] - self._intgr_wedge[0]))
-                                            
+
             else:
                 self.input('process %d %d' % (self._intgr_wedge[0] - offset,
                                               self._intgr_wedge[1] - offset))
-                
+
             self.input('go')
 
-            # that should be everything 
+            # that should be everything
             self.close_wait()
 
             # get the log file
@@ -2127,9 +2127,9 @@ def Mosflm(DriverType = None):
                             # value... Bug # 3374
 
                             if self._mosflm_gain:
-                                
+
                                 if math.fabs(gain - self._mosflm_gain) > 0.02:
-                            
+
                                     self.set_integrater_parameter(
                                         'mosflm', 'gain', gain)
                                     self.set_integrater_export_parameter(
@@ -2146,7 +2146,7 @@ def Mosflm(DriverType = None):
                                 self.set_integrater_export_parameter(
                                     'mosflm', 'gain', gain)
                                 Debug.write('GAIN found to be %f' % gain)
-                                
+
                                 self._mosflm_gain = gain
                                 self._mosflm_rerun_integration = True
 
@@ -2173,14 +2173,14 @@ def Mosflm(DriverType = None):
 
                 # if a BGSIG error happened try not refining the
                 # profile and running again...
-                
+
                 if 'BGSIG too large' in o:
                     if not self._mosflm_refine_profiles:
                         raise RuntimeError, 'BGSIG error with profiles fixed'
-                    
+
                     Debug.write(
                         'BGSIG error detected - try fixing profile...')
-                    
+
                     self._mosflm_refine_profiles = False
                     self.set_integrater_done(False)
 
@@ -2193,7 +2193,7 @@ def Mosflm(DriverType = None):
                     self.set_integrater_done(False)
 
                     return
-                    
+
                 if 'MOSFLM HAS TERMINATED EARLY' in o:
                     Chatter.write('Mosflm has failed in integration')
                     message = 'The input was:\n\n'
@@ -2231,7 +2231,7 @@ def Mosflm(DriverType = None):
 
             images = parsed_output.keys()
             images.sort()
-            
+
             max_weighted_residual = 0.0
 
             # FIXME bug 2175 this should probably look at the distribution
@@ -2247,7 +2247,7 @@ def Mosflm(DriverType = None):
 
             Chatter.write('Weighted RMSD: %.2f (%.2f)' % \
                           (mean, sd))
-            
+
             for i in images:
                 data = parsed_output[i]
 
@@ -2255,7 +2255,7 @@ def Mosflm(DriverType = None):
 
                     if data['weighted_residual'] > max_weighted_residual:
                         max_weighted_residual = data['weighted_residual']
-            
+
             if len(spot_status) > 60:
                 Chatter.write('Integration status per image (60/record):')
             else:
@@ -2264,13 +2264,13 @@ def Mosflm(DriverType = None):
             for chunk in [spot_status[i:i + 60] \
                           for i in range(0, len(spot_status), 60)]:
                 Chatter.write(chunk)
-                
+
             Chatter.write(
                 '"o" => good        "%" => ok        "!" => bad rmsd')
             Chatter.write(
-                '"O" => overloaded  "#" => many bad  "." => blank') 
+                '"O" => overloaded  "#" => many bad  "." => blank')
             Chatter.write(
-                '"@" => abandoned') 
+                '"@" => abandoned')
 
             Chatter.write('Mosaic spread: %.3f < %.3f < %.3f' % \
                           self.get_integrater_mosaic_min_mean_max())
@@ -2304,14 +2304,14 @@ def Mosflm(DriverType = None):
                            (image, phix, phiy, phiz))
 
             fout.write('$$\n')
-            fout.close()            
+            fout.close()
 
             if self.get_integrater_sweep_name():
                 pname, xname, dname = self.get_integrater_project_info()
                 FileHandler.record_log_file('%s %s %s %s postrefinement' % \
                                             (self.get_integrater_sweep_name(),
                                              pname, xname, dname),
-                                            postref_log)            
+                                            postref_log)
 
             return self._mosflm_hklout
 
@@ -2324,7 +2324,7 @@ def Mosflm(DriverType = None):
 
             # ok, in here try to get the missetting angles at two "widely
             # spaced" points, so that the missetting angle calculating
-            # expert can do it's stuff. 
+            # expert can do it's stuff.
 
             figured = False
             if figured:
@@ -2334,25 +2334,25 @@ def Mosflm(DriverType = None):
                 end = self._intgr_wedge[1] - offset
                 next = start + \
                        int(round(90.0 / self.get_header_item('phi_width')))
-                
+
                 if next > end:
                     next = end
 
                 end -= 3
 
                 # right, run:
-                
+
                 wd = os.path.join(self.get_working_directory(),
                                   'misset' % j)
                 if not os.path.exists(wd):
                     os.makedirs(wd)
 
-                # create the Driver, configure 
+                # create the Driver, configure
                 job = DriverFactory.Driver(self._mosflm_driver_type)
                 job.set_executable(self.get_executable())
                 job.set_working_directory(wd)
                 auto_logfiler(job)
-                
+
             # FIXME why am I getting the cell constants and so on from the
             # indexer?! Because that is where the _integrate_prepare step
             # stores them... interesting!
@@ -2376,7 +2376,7 @@ def Mosflm(DriverType = None):
 
             integration_params = indxr.get_indexer_payload(
                 'mosflm_integration_parameters')
-            
+
             if integration_params:
                 if integration_params.has_key('separation'):
                     self.set_integrater_parameter(
@@ -2386,7 +2386,7 @@ def Mosflm(DriverType = None):
                     self.set_integrater_parameter(
                         'mosflm', 'raster',
                         '%d %d %d %d %d' % tuple(integration_params['raster']))
-                    
+
             indxr.set_indexer_payload('mosflm_integration_parameters', None)
             pname, xname, dname = self.get_integrater_project_info()
 
@@ -2404,7 +2404,7 @@ def Mosflm(DriverType = None):
             hklouts = []
             # reindex_ops = []
             nref = 0
-               
+
             # calculate the chunks to use
             offset = self.get_frame_offset()
             start = self._intgr_wedge[0] - offset
@@ -2431,7 +2431,7 @@ def Mosflm(DriverType = None):
                 if not os.path.exists(wd):
                     os.makedirs(wd)
 
-                # create the Driver, configure 
+                # create the Driver, configure
                 job = DriverFactory.Driver(self._mosflm_driver_type)
                 job.set_executable(self.get_executable())
                 job.set_working_directory(wd)
@@ -2464,14 +2464,14 @@ def Mosflm(DriverType = None):
 
                 if not self._mosflm_refine_profiles:
                     job.input('profile nooptimise')
-                    
+
                 # N.B. for harvesting need to append N to dname.
-                    
+
                 if pname != None and xname != None and dname != None:
-                    Debug.write('Harvesting: %s/%s/%s' % 
+                    Debug.write('Harvesting: %s/%s/%s' %
                                 (pname, xname, dname))
-                    
-                    harvest_dir = os.path.join(os.environ['HARVESTHOME'], 
+
+                    harvest_dir = os.path.join(os.environ['HARVESTHOME'],
                                                'DepositFiles', pname)
 
                     if not os.path.exists(harvest_dir):
@@ -2503,11 +2503,11 @@ def Mosflm(DriverType = None):
                 if self.get_integrater_ice() != 0:
 
                     Debug.write('Excluding ice rings')
-                    
+
                     for record in open(os.path.join(
                         os.environ['XIA2_ROOT'],
                         'Data', 'ice-rings.dat')).readlines():
-                    
+
                         resol = tuple(map(float, record.split()[:2]))
                         job.input('resolution exclude %.2f %.2f' % (resol))
 
@@ -2530,7 +2530,7 @@ def Mosflm(DriverType = None):
                 #
                 # This doesn't work, lots of other problems => calculate the
                 # right missets ab initio.
-                # 
+                #
                 # a, b = chunks[j]
 
                 # job.input('autoindex dps refine image %d' % a)
@@ -2584,15 +2584,15 @@ def Mosflm(DriverType = None):
                 # these are w.r.t. the beam centre and are there to
                 # ensure that spots are not predicted off the detector
                 # (see bug # 2551)
-                
+
                 detector_width = self._fp_header['size'][0] * \
                                  self._fp_header['pixel'][0]
                 detector_height = self._fp_header['size'][1] * \
                                   self._fp_header['pixel'][1]
-                
+
                 lim_x = 0.5 * detector_width
                 lim_y = 0.5 * detector_height
-                
+
                 Debug.write('Scanner limits: %.1f %.1f' % (lim_x, lim_y))
                 job.input('limits xscan %f yscan %f' % (lim_x, lim_y))
 
@@ -2614,16 +2614,16 @@ def Mosflm(DriverType = None):
                 job.input('postref multi segments 1')
                 job.input('process %d %d' % (a, b))
                 job.input('go')
-                
+
                 job.input('postref nosegment')
-                
+
                 if self._mosflm_postref_fix_mosaic:
                     job.input('postref fix mosaic')
-                
+
                 job.input('separation close')
 
-                # FIXME this is a horrible hack - I at least need to 
-                # sand box this ... 
+                # FIXME this is a horrible hack - I at least need to
+                # sand box this ...
                 if self.get_header_item('detector') == 'raxis':
                     job.input('adcoffset 0')
 
@@ -2634,7 +2634,7 @@ def Mosflm(DriverType = None):
                 job.input('genfile %s' % genfile)
 
                 job.input('process %d %d' % chunks[j])
-                
+
                 job.input('go')
 
                 # these are now running so ...
@@ -2657,7 +2657,7 @@ def Mosflm(DriverType = None):
             all_spot_status = ''
 
             threads = []
-            
+
             for j in range(parallel):
                 job = jobs[j]
 
@@ -2677,7 +2677,7 @@ def Mosflm(DriverType = None):
 
                 # get the log file
                 output = job.get_all_output()
-                
+
                 # record a copy of it, perhaps - though not if parallel
                 if self.get_integrater_sweep_name() and False:
                     pname, xname, dname = self.get_integrater_project_info()
@@ -2694,7 +2694,7 @@ def Mosflm(DriverType = None):
 
                 integrated_images_first = 1.0e6
                 integrated_images_last = -1.0e6
- 
+
                 # look for major errors
 
                 for i in range(len(output)):
@@ -2719,11 +2719,11 @@ def Mosflm(DriverType = None):
 
                     if 'Smoothed value for refined mosaic' in o:
                         mosaics.append(float(o.split()[-1]))
-                            
+
                     if 'ERROR IN DETECTOR GAIN' in o:
 
                         # ignore for photon counting detectors
-                        
+
                         if 'pilatus' in self.get_header_item('detector_class'):
                             continue
 
@@ -2736,10 +2736,10 @@ def Mosflm(DriverType = None):
                                 # value... Bug # 3374
 
                                 if self._mosflm_gain:
-                                
+
                                     if math.fabs(
                                         gain - self._mosflm_gain) > 0.02:
-                            
+
                                         self.set_integrater_parameter(
                                             'mosflm', 'gain', gain)
                                         self.set_integrater_export_parameter(
@@ -2757,7 +2757,7 @@ def Mosflm(DriverType = None):
                                     self.set_integrater_export_parameter(
                                         'mosflm', 'gain', gain)
                                     Debug.write('GAIN found to be %f' % gain)
-                                
+
                                     self._mosflm_gain = gain
                                     self._mosflm_rerun_integration = True
 
@@ -2787,7 +2787,7 @@ def Mosflm(DriverType = None):
                             'BGSIG error detected - try fixing profile...')
                         self._mosflm_refine_profiles = False
                         self.set_integrater_done(False)
-                        
+
                         return
 
                     if 'An unrecoverable error has occurred in GETPROF' in o:
@@ -2795,7 +2795,7 @@ def Mosflm(DriverType = None):
                             'GETPROF error detected - try fixing profile...')
                         self._mosflm_refine_profiles = False
                         self.set_integrater_done(False)
-                        
+
                         return
 
                     if 'MOSFLM HAS TERMINATED EARLY' in o:
@@ -2820,9 +2820,9 @@ def Mosflm(DriverType = None):
 
                 images = parsed_output.keys()
                 images.sort()
-                
+
                 max_weighted_residual = 0.0
-                
+
                 residuals = []
                 for i in images:
                     if parsed_output[i].has_key('weighted_residual'):
@@ -2833,7 +2833,7 @@ def Mosflm(DriverType = None):
 
                 for s in spot_status:
                     all_spot_status += s
-                    
+
                 # concatenate all of the output lines to our own output
                 # channel (may be messy, but nothing better presents itself...
                 # yuck, this involves delving in to the Driver interface...
@@ -2842,7 +2842,7 @@ def Mosflm(DriverType = None):
                     self._standard_output_records.append(record)
                     if not self._log_file is None:
                         self._log_file.write(record)
-            
+
             self._intgr_batches_out = (first_integrated_batch,
                                        last_integrated_batch)
 
@@ -2871,9 +2871,9 @@ def Mosflm(DriverType = None):
             Chatter.write(
                 '"o" => good        "%" => ok        "!" => bad rmsd')
             Chatter.write(
-                '"O" => overloaded  "#" => many bad  "." => blank') 
+                '"O" => overloaded  "#" => many bad  "." => blank')
             Chatter.write(
-                '"@" => abandoned') 
+                '"@" => abandoned')
 
             Chatter.write('Mosaic spread: %.3f < %.3f < %.3f' % \
                           self.get_integrater_mosaic_min_mean_max())
@@ -2918,7 +2918,7 @@ def Mosflm(DriverType = None):
                                             (self.get_integrater_sweep_name(),
                                              pname, xname, dname),
                                             postref_log)
-            
+
             hklouts.sort()
 
             hklout = os.path.join(self.get_working_directory(),
@@ -2938,7 +2938,7 @@ def Mosflm(DriverType = None):
             self._mosflm_hklout = hklout
 
             return self._mosflm_hklout
-        
+
         def _reorder_cell_refinement_images(self):
             if not self._mosflm_cell_ref_images:
                 raise RuntimeError, 'no cell refinement images to reorder'
@@ -2959,15 +2959,14 @@ def Mosflm(DriverType = None):
             if user:
                 Integrater.set_integrater_resolution(self, dmin, dmax, user)
             return
-        
+
         def set_integrater_high_resolution(self, dmin, user = False):
             if user:
                 Integrater.set_integrater_high_resolution(self, dmin, user)
             return
-        
+
         def set_integrater_low_resolution(self, dmax, user = False):
             self._intgr_reso_low = dmax
             return
-      
-    return MosflmWrapper()
 
+    return MosflmWrapper()

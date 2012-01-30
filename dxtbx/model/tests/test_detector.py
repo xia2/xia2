@@ -2,7 +2,7 @@
 # test_detector.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # Tests for the detector class.
@@ -45,7 +45,7 @@ def work_detector_helpers():
                            (matrix.col((1, 0, 0)),
                             matrix.col((0, 1, 0)),
                             matrix.col((0, 0, 1))))
-    
+
     compute_frame_rotation((matrix.col((-1, 0, 0)),
                             matrix.col((0, 0, 1)),
                             matrix.col((0, 1, 0))),
@@ -56,4 +56,3 @@ def work_detector_helpers():
 if __name__ == '__main__':
 
     test_detector()
-

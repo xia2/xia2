@@ -33,7 +33,7 @@ def measure(hklin, spacegroup):
     assert(ipr_column != None)
     assert(sigipr_column != None)
 
-    ipr_values = ipr_column.extract_values(not_a_number_substitute = 0.0)    
+    ipr_values = ipr_column.extract_values(not_a_number_substitute = 0.0)
     sigipr_values = sigipr_column.extract_values(not_a_number_substitute = 0.0)
 
     present = []
@@ -56,5 +56,3 @@ if __name__ == '__main__':
     spacegroup = sys.argv[2]
 
     measure(hklin, spacegroup)
-
-    

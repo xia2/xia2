@@ -70,7 +70,7 @@ def obsolete():
 
     di = data.create_dataset('I', (len(i),), 'f')
     di.attrs['signal'] = 1
-    
+
     for j in range(len(i)):
         di[j] = i[j]
 

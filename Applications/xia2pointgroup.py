@@ -2,18 +2,18 @@
 # xia2pointgroup.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 
 
 #
 # 10th August 2006
-# 
+#
 # A small program to integrate in P1 a wedge of images and display
 # the output of pointless run on these images.
 #
 # FIXME this is probably not using the proper interfaces...
-# 
+#
 
 import sys
 import os
@@ -60,7 +60,7 @@ def xia2pointgroup():
             m.set_integrater_indexer(l)
             m.set_integrater_wedge(images[0],
                                    images[0] + int(width / phi_width))
-            
+
             p = Pointless()
             hklout = m.integrate()
             p.set_hklin(hklout)
@@ -70,6 +70,3 @@ def xia2pointgroup():
 
 if __name__ == '__main__':
     xia2pointgroup()
-
-            
-            

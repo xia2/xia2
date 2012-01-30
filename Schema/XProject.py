@@ -2,13 +2,13 @@
 # XProject.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A versioning object representation of a complete project - this
 # represents the "top level" of the .xinfo hierarchy, and should
 # exactly correspond to the contents of the .xinfo file.
-# 
+#
 # Thoughts:
 # Scaling will fix radiation damage issues, so I don't need epochs
 # in the post-scaling universe.
@@ -58,7 +58,7 @@ class XProject():
         for crystal in self._crystals.keys():
             result += str(self._crystals[crystal])
         return result[:-1]
-        
+
     def __str__(self):
         return self.__repr__()
 
@@ -74,7 +74,7 @@ class XProject():
 
     def get_name(self):
         return self._name
-    
+
     def add_crystal(self, xcrystal):
         '''Add a new xcrystal to the project.'''
 
@@ -199,9 +199,9 @@ class XProject():
                     dmin_old = dmin
                     dmax_old = dmax
                     replace = False
-                    
+
                     if 'RESOLUTION' in sweep_info:
-                        
+
                         values = map(float, sweep_info['RESOLUTION'].split())
                         if len(values) == 1:
                             dmin = values[0]
@@ -213,14 +213,14 @@ class XProject():
                                   'bad resolution for sweep %s' % sweep_name
 
                         replace = True
-                        
+
                     if sweep_info['wavelength'] == wavelength:
-                        
+
                         frames_to_process = sweep_info.get('start_end')
 
                         if not frames_to_process and Flags.get_start_end():
                             frames_to_process = Flags.get_start_end()
-                        
+
                         xw.add_sweep(
                             sweep_name,
                             directory = sweep_info.get('DIRECTORY'),
@@ -239,7 +239,7 @@ class XProject():
 
                     dmin = dmin_old
                     dmax = dmax_old
-                
+
                 xc.add_wavelength(xw)
 
             self.add_crystal(xc)
@@ -250,17 +250,14 @@ class XProject():
         '''Write an updated .xinfo file which takes into account the input
         provided by the user on the command line and any input xinfo
         file: this is what xia2 understood to be the problem.'''
-        
+
         raise RuntimeError, 'FIXME this method must be implemented'
 
 if __name__ == '__main__':
     import os
 
     xi_file = os.path.join(os.environ['XIA2_ROOT'], 'Data', 'Test', 'Xinfo', '1vpj.xinfo')
-    
+
     xp = XProject(xi_file)
 
     Chatter.write(str(xp))
-
-    
-    

@@ -2,7 +2,7 @@
 # test_goniometer.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # Tests for the goniometer class.
@@ -17,9 +17,9 @@ from dxtbx.model.goniometer import goniometer
 from dxtbx.model.goniometer import goniometer_factory
 
 def compare_tuples(a, b, tol = 1.0e-6):
-    
+
     assert(len(a) == len(b))
-    
+
     for j in range(len(a)):
         if math.fabs(b[j] - a[j]) > tol:
             return False

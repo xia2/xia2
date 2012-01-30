@@ -2,17 +2,17 @@
 # Cad.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 26th October 2006
-# 
+#
 # A wrapper for the CCP4 program Cad, for merging multiple reflection files
 # into a single reflection file, e.g. in preparation for phasing.
-# 
+#
 # This will take a single HKLOUT file and a list of HKLIN files, c/f the
 # Sortmtz wrapper implementation.
-# 
+#
 # Ok, this Cad wrapper will handle two cases. The first is relabeling all
 # columns by e.g. appending a new suffix to the name (this should default
 # to the dname I guess) and setting the unit cell to some sanctioned value.
@@ -92,7 +92,7 @@ def Cad(DriverType = None):
             cname = FindFreeFlag(freein)
 
             Debug.write('FreeR_flag column identified as %s' % cname)
-            
+
             self._freein = freein
             self._freein_column = cname
 
@@ -119,9 +119,9 @@ def Cad(DriverType = None):
 
             if not self._hklin_files:
                 raise RuntimeError, 'no hklin files defined'
-            
+
             self.check_hklout()
-            
+
             hklin_counter = 0
 
             # for each reflection file, need to gather the column names
@@ -195,7 +195,7 @@ def Cad(DriverType = None):
                 except:
                     pass
                 raise e
-                
+
             return self.get_ccp4_status()
 
         def update(self):
@@ -206,7 +206,7 @@ def Cad(DriverType = None):
 
             if len(self._hklin_files) > 1:
                 raise RuntimeError, 'can have only one hklin to update'
-            
+
             hklin = self._hklin_files[0]
 
             self.check_hklout()
@@ -218,7 +218,7 @@ def Cad(DriverType = None):
             md.set_hklin(hklin)
             md.dump()
             columns = md.get_columns()
-            
+
             column_names_by_file[hklin] = []
             dataset_names_by_file[hklin] = md.get_datasets()
 
@@ -231,7 +231,7 @@ def Cad(DriverType = None):
                 name = c[0]
                 if name in ['H', 'K', 'L']:
                     continue
-                                          
+
                 column_names_by_file[hklin].append(name)
 
             self.add_command_line('hklin1')
@@ -245,14 +245,14 @@ def Cad(DriverType = None):
                            (dataset_id, self._xname, self._dname))
                 self.input('dpname file_number 1 %d %s' % \
                            (dataset_id, self._pname))
-            
+
             column_counter = 0
-            labin_command = 'labin file_number 1' 
+            labin_command = 'labin file_number 1'
             for column in column_names_by_file[hklin]:
                 column_counter += 1
                 labin_command += ' E%d=%s' % (column_counter, column)
 
-            self.input(labin_command)            
+            self.input(labin_command)
 
             # FIXME perhaps - ASSERT that we want only the information from
             # the first dataset here...
@@ -272,14 +272,14 @@ def Cad(DriverType = None):
             if self._new_column_suffix:
                 suffix = self._new_column_suffix
                 column_counter = 0
-                labout_command = 'labout file_number 1' 
+                labout_command = 'labout file_number 1'
                 for column in column_names_by_file[hklin]:
                     column_counter += 1
                     labout_command += ' E%d=%s_%s' % \
                                      (column_counter, column, suffix)
 
                 self.input(labout_command)
-                
+
             self.close_wait()
 
             try:
@@ -304,7 +304,7 @@ def Cad(DriverType = None):
 
             if len(self._hklin_files) > 1:
                 raise RuntimeError, 'can have only one hklin to update'
-            
+
             hklin = self._hklin_files[0]
 
             self.check_hklout()
@@ -351,4 +351,4 @@ if __name__ == '__main__':
     average_unit_cell = (228.21, 52.61, 44.11, 90.00, 100.64, 90.00)
     c.set_new_cell(average_unit_cell)
     c.set_hklout('bar.mtz')
-    c.update()    
+    c.update()

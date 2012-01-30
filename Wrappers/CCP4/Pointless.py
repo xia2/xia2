@@ -2,18 +2,18 @@
 # Pointless.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 2nd June 2006
-# 
+#
 # A wrapper for the latest version of Phil Evans' program pointless - a
 # program for deciding the correct pointgroup for diffraction data and also
 # for computing reindexing operations to map one (merged or unmerged) data
 # set onto a merged reference set.
-# 
+#
 # To do:
-# 
+#
 # (1) Implement the simplest pointless interface, which will simply assert
 #     the appropriate pointgroup for diffraction data.
 # (2) Implement reindexing-to-reference-set. This will require adding
@@ -22,9 +22,9 @@
 # FIXME this is hard-coded to use pointless-1.0.5 as the executable name...
 #
 # Update 14/JUN/06 to 1.0.6 - now available for windows mac linux
-# 
+#
 # This will use the results written to an XMLOUT file. This file looks like:
-# 
+#
 # <POINTLESS version="1.0.5" RunTime="Fri Jun  2 14:07:59 2006">
 # <ReflectionFile stream="HKLIN" name="12287_1_E1.mtz">
 # <cell>
@@ -49,7 +49,7 @@
 #    <gamma>     90</gamma>
 #
 # <snip...>
-# 
+#
 # <BestSolution Type="pointgroup">
 #   <GroupName>P 4 2 2</GroupName>
 #   <ReindexMatrix>     1     0     0
@@ -64,7 +64,7 @@
 #
 # 11/AUG/06 changed from 1.0.6 to 1.0.8 pointless version (looks like the
 # reindexing operators have changed in the latest version... was that a bug?)
-# 
+#
 # FIXED 11/AUG/06 for I222 (example set: 13140) the GroupName comes out
 # as P 2 2 2 not I 2 2 2 - this needs to be coded for somehow - is this
 # correct? Check with Phil E. The pointgroup probably is correct, but I
@@ -78,28 +78,28 @@
 # should be fixed in pointless-1.0.9. This is indeed fixed, need to therefore
 # update the version herein and also remove the guesswork code I added
 # as a workaround.
-# 
-# FIXME perhaps 11/AUG/06 beware - this looks like pointless will now 
+#
+# FIXME perhaps 11/AUG/06 beware - this looks like pointless will now
 # also perform axis reindexing if the spacegroup looks like something
 # like P 2 21 21 - it will reindex l,h,k - beware of this because that
 # will change all of the unit cell parameters and may not be a desirable
 # thing to have. Can this be switched off? Have emailed pre - for the
 # moment just be aware of this!
-# 
-# FIXED 15/AUG/06 pointless is a little over keen with respect to the 
+#
+# FIXED 15/AUG/06 pointless is a little over keen with respect to the
 #                 pointgroup for the 1VR9 native data. It is therefore
 #                 worth adding an option to try scaling in all of the
 #                 "legal" spacegroups (with +ve score) to check that the
 #                 assertions pointless makes about the symmetry
 #                 are correct.
-# 
+#
 # FIXED 22/AUG/06 update to the latest version of pointless which needs
 #                 to read command line input. "systematicabsences off".
-# 
+#
 # FIXED 23/OCT/06 with TS03/PEAK data (1vpj) the "most likely" solution comes
 #                 out as C222, but the solution with the highest NetZc is the
-#                 correct one of P 4/mmm. Need therefore to be able to get 
-#                 this information from the output file. Perhaps need to 
+#                 correct one of P 4/mmm. Need therefore to be able to get
+#                 this information from the output file. Perhaps need to
 #                 balance likelihood against NetZc? Perhaps it is simply
 #                 a problem with this version of pointless? This is not
 #                 fixed in version 1.1.0.5! :o(
@@ -108,7 +108,7 @@
 #                 system so that in the case of 1VR9/TS01 the "correct"
 #                 pointgroup of I222 is not specified, as it has already
 #                 been eliminated at the processing stage.
-# 
+#
 # FIXED 16/NOV/05 also want to run this in a manner which will give a correct
 #                 spacegroup from the systematic absences once the pointgroup
 #                 is correctly set...
@@ -130,7 +130,7 @@ if not os.path.join(os.environ['XIA2CORE_ROOT'],
                     'Python') in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                                  'Python'))
-    
+
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
@@ -243,9 +243,9 @@ def Pointless(DriverType = None):
 
             Debug.write('Copied XDSIN to %s' % copyto)
             Debug.write('Removed %d misfits' % ignored)
-            
+
             self._xdsin = copyto
-            
+
             return
 
         def get_xdsin(self):
@@ -319,7 +319,7 @@ def Pointless(DriverType = None):
             if self._scale_factor:
                 Debug.write('Scaling intensities by factor %e' % \
                             self._scale_factor)
-                
+
                 self.input('multiply %e' % self._scale_factor)
 
             self.close_wait()
@@ -360,7 +360,7 @@ def Pointless(DriverType = None):
 
             # change 22/AUG/06 add this command to switch off systematic
             # absence analysis of the spacegroups.
-            
+
             self.input('systematicabsences off')
             self.input('setting symmetry-based')
 
@@ -426,7 +426,7 @@ def Pointless(DriverType = None):
 
             # catch the case sometimes on ppc mac where pointless adds
             # an extra .xml on the end...
-            
+
             if not os.path.exists(xml_file) and \
                os.path.exists('%s.xml' % xml_file):
                 xml_file = '%s.xml' % xml_file
@@ -434,7 +434,7 @@ def Pointless(DriverType = None):
             if not self._hklref:
 
                 dom = xml.dom.minidom.parse(xml_file)
-                
+
                 best = dom.getElementsByTagName('BestSolution')[0]
                 self._pointgroup = best.getElementsByTagName(
                     'GroupName')[0].childNodes[0].data
@@ -458,7 +458,7 @@ def Pointless(DriverType = None):
                 # output, as this will mean that the index scores are
                 # not there... c/f oppf1314, with latest pointless build
                 # 1.2.14.
-    
+
                 dom = xml.dom.minidom.parse(xml_file)
 
                 try:
@@ -482,7 +482,7 @@ def Pointless(DriverType = None):
                 # FIXME need to get this from the reflection file HKLREF
                 reflection_file_elements = dom.getElementsByTagName(
                     'ReflectionFile')
-                
+
                 for rf in reflection_file_elements:
                     stream = rf.getAttribute('stream')
                     if stream == 'HKLREF':
@@ -500,10 +500,10 @@ def Pointless(DriverType = None):
                 self._totalprob = 1.0
 
                 if best:
-                
+
                     index = best.getElementsByTagName('Index')[0]
 
-                    self._reindex_matrix = map(float, 
+                    self._reindex_matrix = map(float,
                                                index.getElementsByTagName(
                         'ReindexMatrix')[0].childNodes[0].data.split())
                     self._reindex_operator = clean_reindex_operator(
@@ -519,7 +519,7 @@ def Pointless(DriverType = None):
                                             0.0, 0.0, 1.0]
 
                     self._reindex_operator = 'h,k,l'
-            
+
             if not self._input_laue_group and not self._hklref:
 
                 scorelist = dom.getElementsByTagName('LaueGroupScoreList')[0]
@@ -528,7 +528,7 @@ def Pointless(DriverType = None):
                 lauegroups = { }
                 netzcs = { }
                 likelihoods = { }
-                
+
                 for s in scores:
                     number = int(s.getElementsByTagName(
                         'number')[0].childNodes[0].data)
@@ -557,9 +557,9 @@ def Pointless(DriverType = None):
                         # solutions, even if they are unlikely - this will
                         # only be invoked if they are known to
                         # be right...
-                        
+
                         self._lattice_to_laue[lattice] = lauegroup
-                    
+
             return 'ok'
 
         def decide_spacegroup(self):
@@ -577,7 +577,7 @@ def Pointless(DriverType = None):
                             self._xdsin)
                 self.set_task('Computing the correct spacegroup for %s' % \
                               self.get_xdsin())
-                
+
 
             # FIXME this should probably be a standard CCP4 keyword
 
@@ -595,7 +595,7 @@ def Pointless(DriverType = None):
 
             self.input('lauegroup hklin')
             self.input('setting symmetry-based')
-            
+
             if Flags.get_small_molecule() and False:
                 self.input('chirality nonchiral')
 
@@ -614,7 +614,7 @@ def Pointless(DriverType = None):
                 xml_file = '%s.xml' % xml_file
 
             dom = xml.dom.minidom.parse(xml_file)
-            
+
             sg_list = dom.getElementsByTagName('SpacegroupList')[0]
             sg_node = sg_list.getElementsByTagName('Spacegroup')[0]
             best_prob = float(sg_node.getElementsByTagName(
@@ -649,7 +649,7 @@ def Pointless(DriverType = None):
 
             output = self.get_all_output()
             length = len(output)
-            
+
             a = 0.0
             b = 0.0
             c = 0.0
@@ -676,10 +676,10 @@ def Pointless(DriverType = None):
                         cell = map(float, output[5 * block + i + 5].strip(
                             ).split())
                         wavelength = float(output[5 * block + i + 6].strip())
-                        
+
                         dataset_id = '%s/%s/%s' % \
                                      (project, crystal, dataset)
-                        
+
                         self._cell_info['datasets'].append(dataset_id)
                         self._cell_info['dataset_info'][dataset_id] = { }
                         self._cell_info['dataset_info'][
@@ -736,7 +736,7 @@ def Pointless(DriverType = None):
 
         def get_possible_lattices(self):
             return self._possible_lattices
-            
+
     return PointlessWrapper()
 
 if __name__ == '__main__':
@@ -774,7 +774,7 @@ if __name__ == '__moon__':
 
     if pointgroup:
         p.decide_pointgroup()
-        
+
         print 'Correct pointgroup: %s' % p.get_pointgroup()
         print 'Reindexing matrix: ' + \
               '%4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f' % \
@@ -785,17 +785,17 @@ if __name__ == '__moon__':
 
             p.set_correct_lattice('mC')
             p.decide_pointgroup()
-            
+
             print 'Correct pointgroup: %s' % p.get_pointgroup()
             print 'Reindexing matrix: ' + \
                   '%4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f' % \
                   tuple(p.get_reindex_matrix())
             print 'Confidence: %f' % p.get_confidence()
-            
+
 
     else:
         p.decide_spacegroup()
-        
+
         print 'Correct spacegroup: %s' % p.get_spacegroup()
         print 'Reindex operator: %s' % p.get_spacegroup_reindex_operator()
         print 'Cell: %.2f %.2f %.2f %.2f %.2f %.2f' % p.get_cell()

@@ -2,11 +2,11 @@
 # scan.py
 #   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-#  
+#
 # A model for the scan for the "updated experimental model" project documented
-# in internal ticket #1555. This is not designed to be used outside of the 
+# in internal ticket #1555. This is not designed to be used outside of the
 # XSweep classes.
 
 import os
@@ -25,7 +25,7 @@ class scan:
     diffraction experiment. In essence this is the information provided to the
     camera on where the images should go, how long the exposures should be
     and how the frames are formatted.'''
-    
+
     def __init__(self, template, directory, format, image_range,
                  exposure_time, oscillation, epochs):
         '''Construct a new scan class, which represents the information given
@@ -48,7 +48,7 @@ class scan:
         assert(len(image_range) == 2)
         assert(len(oscillation) == 2)
         assert(len(epochs) == (image_range[1] - image_range[0] + 1))
-        
+
         self._template = template
         self._directory = directory
         self._format = format
@@ -56,7 +56,7 @@ class scan:
         self._exposure_time = exposure_time
         self._oscillation = oscillation
         self._epochs = epochs
-        
+
         return
 
     def __repr__(self):
@@ -123,7 +123,7 @@ class scan:
 
             assert(not index < self._image_range[0])
             assert(not index > self._image_range[1])
-            
+
             return scan(self._template, self._directory, self._format,
                          (index, index), self._exposure_time,
                          self.get_oscillation(index),
@@ -139,7 +139,7 @@ class scan:
 
             if start == 0:
                 start = self._image_range[0]
-                
+
             if stop == sys.maxint:
                 stop = self._image_range[1]
 
@@ -156,7 +156,7 @@ class scan:
                          self.get_oscillation(start), new_epochs)
 
         raise TypeError, 'useless index: %s' % type(index)
-                     
+
     def get_template(self):
         '''Get the scan template.'''
         return self._template
@@ -188,7 +188,7 @@ class scan:
         assert(not index > self._image_range[1])
 
         offset = (index - self._image_range[0]) * self._oscillation[1]
-        
+
         return (self._oscillation[0] + offset, self._oscillation[1])
 
     def get_oscillation_range(self):
@@ -196,9 +196,9 @@ class scan:
 
         range = (self._image_range[1] - self._image_range[0] + 1) * \
                 self._oscillation[1]
-        
+
         return (self._oscillation[0], self._oscillation[0] + range)
-        
+
     def get_epochs(self):
         '''Return the dictionary containing the image epochs.'''
         return self._epochs
@@ -241,7 +241,7 @@ class scan_factory:
         cbf_handle.read_file(cif_file, pycbf.MSG_DIGEST)
 
         return scan_factory.imgCIF_H(cif_file, cbf_handle)
-        
+
     @staticmethod
     def imgCIF_H(cif_file, cbf_handle):
         '''Initialize a scan model from an imgCIF file handle, where it is
@@ -252,12 +252,12 @@ class scan_factory:
 
         gonio = cbf_handle.construct_goniometer()
         angles = tuple(gonio.get_rotation_range())
-        
+
         template, directory = \
                   scan_helper_image_files.image_to_template_directory(cif_file)
         index = scan_helper_image_files.image_to_index(cif_file)
         format = scan_helper_image_formats.FORMAT_CBF
-        
+
         gonio.__swig_destroy__(gonio)
 
         return scan(template, directory, format, (index, index),
@@ -298,7 +298,7 @@ class scan_factory:
 
         to the appropriate static token which will be used as a handle
         everywhere else in this.'''
-        
+
         if name.upper() == 'CBF':
             return scan_helper_image_formats.FORMAT_CBF
         elif name.upper() == 'SMV':
@@ -311,4 +311,3 @@ class scan_factory:
             return scan_helper_image_formats.FORMAT_MAR
 
         raise RuntimeError, 'name %s not known' % name
-

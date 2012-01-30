@@ -1,9 +1,9 @@
 #!/usr/bin/env cctbx.python
 # ReadHeaderADSC.py
-# 
+#
 #   Copyright (C) 2010 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # Code to read an ADXV image header and populate the contents of the standard
@@ -32,7 +32,7 @@ class ReadHeaderADSC(ReadHeader):
 
         beam_centre_x_mm = float(header['BEAM_CENTER_X'])
         beam_centre_y_mm = float(header['BEAM_CENTER_Y'])
-        
+
         date = header['DATE']
 
         self.date_struct = time.strptime(date)
@@ -46,17 +46,17 @@ class ReadHeaderADSC(ReadHeader):
 
         self.pixel_size_mm_fast = pixel_size
         self.pixel_size_mm_slow = pixel_size
-        
+
         self.image_size_pixels_fast = int(header['SIZE1'])
         self.image_size_pixels_slow = int(header['SIZE2'])
         self.pixel_depth_bytes = 2
-        
+
         self.osc_start_deg = float(header['OSC_START'])
         self.osc_width_deg = float(header['OSC_RANGE'])
         self.angle_twotheta_deg = float(header.get('TWOTHETA', '0.0'))
         self.angle_kappa_deg = 0.0
         self.angle_chi_deg = 0.0
-        
+
         self.detector_serial_number = header['DETECTOR_SN']
 
         self.image_offset = int(header.get('IMAGE_PEDESTAL', '0'))

@@ -2,13 +2,13 @@
 # CCP4ScalerR.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 21/SEP/06
-# 
+#
 # An implementation of the Scaler interface using CCP4 programs.
-# 
+#
 
 import os
 import sys
@@ -22,7 +22,7 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
-# the interface definition that this will conform to 
+# the interface definition that this will conform to
 from Schema.Interfaces.Scaler import Scaler
 
 from Wrappers.CCP4.CCP4Factory import CCP4Factory
@@ -30,7 +30,7 @@ from Wrappers.CCP4.CCP4Factory import CCP4Factory
 from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Files import FileHandler
 from Handlers.Citations import Citations
-from Handlers.Flags import Flags        
+from Handlers.Flags import Flags
 from Handlers.Syminfo import Syminfo
 
 # jiffys
@@ -60,10 +60,10 @@ class CCP4ScalerR(Scaler):
         Scaler.__init__(self)
 
         self._sweep_handler = None
-        
+
         self._tmp_scaled_refl_files = { }
         self._wavelengths_in_order = []
-        
+
         self.__sweep_resolution_limits = { }
 
         # flags to keep track of the corrections we will be applying
@@ -84,21 +84,21 @@ class CCP4ScalerR(Scaler):
         return
 
     # overloaded from the Scaler interface... to plumb in the factory
-    
+
     def set_working_directory(self, working_directory):
         self._working_directory = working_directory
         self._factory.set_working_directory(working_directory)
-        self._helper.set_working_directory(working_directory)        
+        self._helper.set_working_directory(working_directory)
         return
 
     # this is an overload from the factory - it returns Scala set up with
     # the desired corrections
-    
+
     def _updated_scala(self):
         '''Generate a correctly configured Scala...'''
 
         scala = None
-        
+
         if not self._scalr_corrections:
             scala = self._factory.Scala()
         else:
@@ -113,26 +113,26 @@ class CCP4ScalerR(Scaler):
         if Flags.get_microcrystal():
 
             # fiddly little data sets - allow more rapid scaling...
-            
+
             scala.set_scaling_parameters('rotation', 2.0)
             if self._scalr_correct_decay:
                 scala.set_bfactor(bfactor = True, brotation = 2.0)
-        
+
         return scala
 
     def _pointless_indexer_jiffy(self, hklin, indexer):
         return self._helper.pointless_indexer_jiffy(hklin, indexer)
 
     def _assess_scaling_model(self, tails, bfactor, secondary):
-        
+
         epochs = self._sweep_handler.get_epochs()
-        
+
         sc_tst = self._updated_scala()
         sc_tst.set_cycles(5)
-        
+
         sc_tst.set_hklin(self._prepared_reflections)
         sc_tst.set_hklout('temp.mtz')
-        
+
         sc_tst.set_tails(tails = tails)
         sc_tst.set_bfactor(bfactor = bfactor)
 
@@ -147,18 +147,18 @@ class CCP4ScalerR(Scaler):
         for epoch in epochs:
 
             si = self._sweep_handler.get_sweep_information(epoch)
-            
+
             start, end = si.get_batch_range()
 
             resolution = resolutions[(start, end)]
 
             pname, xname, dname = si.get_project_info()
             sname = si.get_sweep_name()
-            
+
             sc_tst.add_run(start, end, pname = pname,
                            xname = xname, dname = dname, exclude = False,
                            resolution = resolution, name = sname)
-            
+
             if self.get_scaler_anomalous():
                 sc_tst.set_anomalous()
 
@@ -184,7 +184,7 @@ class CCP4ScalerR(Scaler):
             if 'positive gradient' in str(e):
                 return -1, -1
             raise e
-            
+
         rmerges_tst = [data_tst[k]['Rmerge'][target[
             Flags.get_rmerge_target()]] for k in data_tst]
         rmerge_tst = sum(rmerges_tst) / len(rmerges_tst)
@@ -206,7 +206,7 @@ class CCP4ScalerR(Scaler):
             self._scalr_correct_absorption = Flags.get_scale_model_absorption()
             self._scalr_correct_partiality = Flags.get_scale_model_partiality()
             self._scalr_correct_decay = Flags.get_scale_model_decay()
-            
+
             self._scalr_corrections = True
 
             return
@@ -215,13 +215,13 @@ class CCP4ScalerR(Scaler):
 
         rmerge_def, converge_def = self._assess_scaling_model(
             tails = False, bfactor = False, secondary = False)
-                                                              
+
         results = { }
 
         consider = []
 
         log_results = []
-        
+
         for partiality in True, False:
             for decay in True, False:
                 for absorption in True, False:
@@ -231,7 +231,7 @@ class CCP4ScalerR(Scaler):
                             secondary = absorption)
                     else:
                         r, c = rmerge_def, converge_def
-                        
+
                     results[(partiality, decay, absorption)] = r, c
 
                     log_results.append((partiality, decay, absorption, r, c))
@@ -246,10 +246,10 @@ class CCP4ScalerR(Scaler):
 
         for result in log_results:
             Debug.write('. %5s %5s %5s %.3f %.2f' % result)
-            
+
         consider.sort()
         rmerge, partiality, decay, absorption = consider[0]
-        
+
         if absorption:
             Debug.write('Absorption correction: on')
         else:
@@ -291,7 +291,7 @@ class CCP4ScalerR(Scaler):
 
         Journal.block(
             'gathering', self.get_scaler_xcrystal().get_name(), 'CCP4',
-            {'working directory':self.get_working_directory()})        
+            {'working directory':self.get_working_directory()})
 
         for epoch in self._sweep_handler.get_epochs():
             si = self._sweep_handler.get_sweep_information(epoch)
@@ -334,11 +334,11 @@ class CCP4ScalerR(Scaler):
                     pointgroup = self._scalr_input_pointgroup
                     reindex_op = 'h,k,l'
                     ntr = False
-                    
+
                 else:
                     pointless_hklin = self._prepare_pointless_hklin(
                         hklin, si.get_header()['phi_width'])
-                    
+
                     pointgroup, reindex_op, ntr, pt = \
                                 self._pointless_indexer_jiffy(
                         pointless_hklin, indxr)
@@ -354,13 +354,13 @@ class CCP4ScalerR(Scaler):
 
                     intgr.integrater_reset_reindex_operator()
                     need_to_return = True
-            
+
             if len(lattices) > 1:
 
                 # why not using pointless indexer jiffy??!
 
                 correct_lattice = sort_lattices(lattices)[0]
-                
+
                 Chatter.write('Correct lattice asserted to be %s' % \
                               correct_lattice)
 
@@ -370,7 +370,7 @@ class CCP4ScalerR(Scaler):
                     si = self._sweep_handler.get_sweep_information(epoch)
                     indxr = si.get_integrater().get_integrater_indexer()
                     sname = si.get_sweep_name()
-                    
+
                     state = indxr.set_indexer_asserted_lattice(
                         correct_lattice)
 
@@ -403,10 +403,10 @@ class CCP4ScalerR(Scaler):
         probably_twinned = False
 
         need_to_return = False
-        
+
         for epoch in self._sweep_handler.get_epochs():
             si = self._sweep_handler.get_sweep_information(epoch)
-            
+
             hklin = si.get_reflections()
             hklout = os.path.join(
                 self.get_working_directory(),
@@ -426,15 +426,15 @@ class CCP4ScalerR(Scaler):
 
                 pointless_hklin = self._prepare_pointless_hklin(
                     hklin, si.get_header()['phi_width'])
-                
+
                 pointgroup, reindex_op, ntr, pt = \
                             self._pointless_indexer_jiffy(
                     pointless_hklin, indexer)
-                
+
                 Debug.write('X1698: %s: %s' % (pointgroup, reindex_op))
 
                 if ntr:
-                        
+
                     integrater.integrater_reset_reindex_operator()
                     need_to_return = True
 
@@ -448,7 +448,7 @@ class CCP4ScalerR(Scaler):
 
             if pt and not probably_twinned:
                 probably_twinned = True
-                
+
             Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
             pointgroups[epoch] = pointgroup
@@ -473,9 +473,9 @@ class CCP4ScalerR(Scaler):
 
             Chatter.write('Twinning detected, assume pointgroup %s' % \
                           overall_pointgroup)
-            
+
             need_to_return = True
-            
+
         else:
             overall_pointgroup = pointgroup_set.pop()
 
@@ -501,7 +501,7 @@ class CCP4ScalerR(Scaler):
         elif Flags.get_reference_reflection_file():
             self._reference = Flags.get_reference_reflection_file()
             Chatter.write('Using HKLREF %s' % self._reference)
-            
+
         if len(self._sweep_handler.get_epochs()) > 1 and \
                not self._reference:
 
@@ -509,7 +509,7 @@ class CCP4ScalerR(Scaler):
             si = self._sweep_handler.get_sweep_information(first)
             integrater = si.get_integrater()
             self._reference = integrater.get_integrater_intensities()
- 
+
         if self._reference:
 
             md = self._factory.Mtzdump()
@@ -525,12 +525,12 @@ class CCP4ScalerR(Scaler):
             if len(datasets) > 1 and False:
                 raise RuntimeError, 'more than one dataset in %s' % \
                       self._reference
-            
+
             # then get the unit cell, lattice etc.
 
             reference_lattice = Syminfo.get_lattice(md.get_spacegroup())
             reference_cell = md.get_dataset_info(datasets[0])['cell']
-            
+
             # then compute the pointgroup from this...
 
             # ---------- REINDEX TO CORRECT (REFERENCE) SETTING ----------
@@ -552,7 +552,7 @@ class CCP4ScalerR(Scaler):
                 FileHandler.record_temporary_file(hklout)
 
                 # now set the initial reflection set as a reference...
-            
+
                 pl.set_hklref(self._reference)
 
                 # write a pointless log file...
@@ -562,13 +562,13 @@ class CCP4ScalerR(Scaler):
 
                 pointgroup = pl.get_pointgroup()
                 reindex_op = pl.get_reindex_operator()
-                
+
                 Debug.write('Operator: %s' % reindex_op)
 
                 # apply this...
 
                 integrater = si.get_integrater()
-                
+
                 integrater.set_integrater_reindex_operator(reindex_op)
                 integrater.set_integrater_spacegroup_number(
                     Syminfo.spacegroup_name_to_number(pointgroup))
@@ -578,13 +578,13 @@ class CCP4ScalerR(Scaler):
                 md.dump()
 
                 datasets = md.get_datasets()
-                
+
                 if len(datasets) > 1:
                     raise RuntimeError, 'more than one dataset in %s' % \
                           integrater.get_integrater_intensities()
-            
+
                 # then get the unit cell, lattice etc.
-                
+
                 lattice = Syminfo.get_lattice(md.get_spacegroup())
                 cell = md.get_dataset_info(datasets[0])['cell']
 
@@ -602,9 +602,9 @@ class CCP4ScalerR(Scaler):
                                integrater.get_integrater_intensities())
 
         # ---------- SORT TOGETHER DATA ----------
-            
+
         max_batches = 0
-        
+
         for epoch in self._sweep_handler.get_epochs():
 
             # keep a count of the maximum number of batches in a block -
@@ -620,18 +620,18 @@ class CCP4ScalerR(Scaler):
             batches = si.get_batches()
             if 1 + max(batches) - min(batches) > max_batches:
                 max_batches = max(batches) - min(batches) + 1
-            
+
             datasets = md.get_datasets()
 
             Debug.write('In reflection file %s found:' % hklin)
             for d in datasets:
                 Debug.write('... %s' % d)
-            
+
             dataset_info = md.get_dataset_info(datasets[0])
 
         Debug.write('Biggest sweep has %d batches' % max_batches)
         max_batches = nifty_power_of_ten(max_batches)
-    
+
         # then rebatch the files, to make sure that the batch numbers are
         # in the same order as the epochs of data collection.
 
@@ -675,7 +675,7 @@ class CCP4ScalerR(Scaler):
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s_sorted.mtz' % \
                               (self._scalr_pname, self._scalr_xname))
-        
+
         s.set_hklout(hklout)
 
         for epoch in self._sweep_handler.get_epochs():
@@ -729,7 +729,7 @@ class CCP4ScalerR(Scaler):
 
                 Debug.write('Pointless thought %s (reindex as %s)' % \
                             (spacegroup, reindex_operator))
-                            
+
             if self._scalr_input_spacegroup:
                 self._scalr_likely_spacegroups = [self._scalr_input_spacegroup]
             else:
@@ -758,16 +758,16 @@ class CCP4ScalerR(Scaler):
                         spacegroup)
 
         # then run reindex to set the correct spacegroup
-        
+
         ri = self._factory.Reindex()
         ri.set_hklin(hklin)
         ri.set_hklout(hklout)
         ri.set_spacegroup(spacegroup)
         ri.set_operator(reindex_operator)
         ri.reindex()
-        
+
         FileHandler.record_temporary_file(hklout)
-        
+
         # then resort the reflections (one last time!)
 
         s = self._factory.Sortmtz()
@@ -802,7 +802,7 @@ class CCP4ScalerR(Scaler):
     def _scale(self):
         '''Perform all of the operations required to deliver the scaled
         data.'''
-        
+
         epochs = self._sweep_handler.get_epochs()
 
         self._determine_best_scale_model_8way()
@@ -820,7 +820,7 @@ class CCP4ScalerR(Scaler):
             Journal.block(
                 'scaling', self.get_scaler_xcrystal().get_name(), 'CCP4',
                 {'scaling model':'default'})
-        
+
         sc = self._updated_scala()
         sc.set_hklin(self._prepared_reflections)
 
@@ -841,7 +841,7 @@ class CCP4ScalerR(Scaler):
 
             if intgr.get_integrater_user_resolution():
                 dmin = intgr.get_integrater_high_resolution()
-                
+
                 if not user_resolution_limits.has_key(dname):
                     user_resolution_limits[dname] = dmin
                 elif dmin < user_resolution_limits[dname]:
@@ -861,7 +861,7 @@ class CCP4ScalerR(Scaler):
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled_test.mtz' % \
                                    (self._scalr_pname, self._scalr_xname)))
-        
+
         if self.get_scaler_anomalous():
             sc.set_anomalous()
 
@@ -876,7 +876,7 @@ class CCP4ScalerR(Scaler):
                 if 'bad batch' in es or \
                        'negative scales run' in es or \
                        'no observations' in es:
-                    
+
                     # first ID the sweep from the batch no
 
                     batch = int(es.split()[-1])
@@ -898,19 +898,19 @@ class CCP4ScalerR(Scaler):
                     Chatter.write(
                         'Sweep %s gave negative scales - removing' % \
                         sweep.get_name())
-                              
+
                     # then reset the prepare, do, finish flags
 
                     self.set_scaler_prepare_done(False)
                     self.set_scaler_done(False)
                     self.set_scaler_finish_done(False)
-                    
+
                     # and return
-                    
+
                     return
 
                 else:
-                    
+
                     raise e
 
 
@@ -923,7 +923,7 @@ class CCP4ScalerR(Scaler):
         data = sc.get_summary()
 
         loggraph = sc.parse_ccp4_loggraph()
-        
+
         resolution_info = { }
 
         reflection_files = sc.get_scaled_reflection_files()
@@ -970,18 +970,18 @@ class CCP4ScalerR(Scaler):
             rb.set_hklin(hklin)
             rb.set_hklout(hklout)
             rb.limit_batches(start, end)
-            
+
             FileHandler.record_temporary_file(hklout)
-            
+
             log_completeness = os.path.join(self.get_working_directory(),
                                             '%s-completeness.log' % dname)
 
             if os.path.exists(log_completeness):
                 log_completeness = None
-            
+
             log_rmerge = os.path.join(self.get_working_directory(),
                                       '%s-rmerge.log' % dname)
-            
+
             if os.path.exists(log_rmerge):
                 log_rmerge = None
 
@@ -990,7 +990,7 @@ class CCP4ScalerR(Scaler):
 
             if os.path.exists(log_isigma):
                 log_isigma = None
-            
+
             log_misigma = os.path.join(self.get_working_directory(),
                                       '%s-misigma.log' % dname)
 
@@ -1010,7 +1010,7 @@ class CCP4ScalerR(Scaler):
 
             Debug.write('Resolution for sweep %s: %.2f' % \
                         (sname, resolution))
-                        
+
             if not (dname, sname) in self._sweep_resolution_limits:
                 self._sweep_resolution_limits[(dname, sname)] = resolution
                 self.set_scaler_done(False)
@@ -1026,13 +1026,13 @@ class CCP4ScalerR(Scaler):
 
         Debug.write('Scaler highest resolution set to %5.2f' % \
                     highest_resolution)
-        
+
         if not self.get_scaler_done():
             Debug.write('Returning as scaling not finished...')
             return
 
         batch_info = { }
-        
+
         for key in loggraph:
             if 'Analysis against Batch' in key:
                 dataset = key.split(',')[-1].strip()
@@ -1048,7 +1048,7 @@ class CCP4ScalerR(Scaler):
         highest_resolution = 100.0
 
         sc.set_hklin(self._prepared_reflections)
-        
+
         scales_file = '%s_final.scales' % self._scalr_xname
 
         sc.set_new_scales_file(scales_file)
@@ -1074,7 +1074,7 @@ class CCP4ScalerR(Scaler):
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled.mtz' % \
                                    (self._scalr_pname, self._scalr_xname)))
-        
+
         if self.get_scaler_anomalous():
             sc.set_anomalous()
 
@@ -1109,7 +1109,7 @@ class CCP4ScalerR(Scaler):
                     loggraph[key])
 
         batch_info = { }
-        
+
         for key in loggraph:
             if 'Analysis against Batch' in key:
                 dataset = key.split(',')[-1].strip()
@@ -1126,7 +1126,7 @@ class CCP4ScalerR(Scaler):
                         tuple(record))
 
         # finally put all of the results "somewhere useful"
-        
+
         self._scalr_statistics = data
 
         self._tmp_scaled_refl_files = copy.deepcopy(
@@ -1134,11 +1134,11 @@ class CCP4ScalerR(Scaler):
 
         self._scalr_scaled_reflection_files = { }
         self._scalr_scaled_reflection_files['sca'] = { }
-        
+
         for key in self._tmp_scaled_refl_files:
             file = self._tmp_scaled_refl_files[key]
             scaout = '%s.sca' % file[:-4]
-            
+
             m2v = self._factory.Mtz2various()
             m2v.set_hklin(file)
             m2v.set_hklout(scaout)
@@ -1153,7 +1153,7 @@ class CCP4ScalerR(Scaler):
         sc.set_scales_file(scales_file)
 
         self._wavelengths_in_order = []
-        
+
         for epoch in epochs:
             si = self._sweep_handler.get_sweep_information(epoch)
             pname, xname, dname = si.get_project_info()
@@ -1165,10 +1165,10 @@ class CCP4ScalerR(Scaler):
             sc.add_run(start, end, pname = pname, xname = xname,
                        dname = dname, exclude = False,
                        resolution = resolution_limit, name = sname)
-            
+
             if not dname in self._wavelengths_in_order:
                 self._wavelengths_in_order.append(dname)
-            
+
         sc.set_hklout(os.path.join(self.get_working_directory(), 'temp.mtz'))
         sc.set_scalepack(os.path.join(self.get_working_directory(),
                                       '%s_%s_unmerged.sca' % \
@@ -1194,7 +1194,7 @@ class CCP4ScalerR(Scaler):
         sc.set_scales_file(scales_file)
 
         self._wavelengths_in_order = []
-        
+
         for epoch in epochs:
 
             si = self._sweep_handler.get_sweep_information(epoch)
@@ -1207,7 +1207,7 @@ class CCP4ScalerR(Scaler):
             sc.add_run(start, end, pname = pname, xname = xname,
                        dname = dname, exclude = False,
                        resolution = resolution_limit, name = sname)
-            
+
             if not dname in self._wavelengths_in_order:
                 self._wavelengths_in_order.append(dname)
 
@@ -1215,7 +1215,7 @@ class CCP4ScalerR(Scaler):
                                    '%s_%s_chef.mtz' % \
                                    (self._scalr_pname,
                                     self._scalr_xname)))
-        
+
         sc.set_chef_unmerged(True)
 
         if self.get_scaler_anomalous():
@@ -1241,7 +1241,7 @@ class CCP4ScalerR(Scaler):
                 pname, xname, dname = si.get_project_info()
                 sname = si.get_sweep_name()
                 start, end = si.get_batch_range()
-                
+
                 if dname == _dname:
                     resolution = self._sweep_resolution_limits[(dname, sname)]
                     sc.add_run(start, end, pname = pname, xname = xname,
@@ -1253,10 +1253,10 @@ class CCP4ScalerR(Scaler):
 
             sc.set_hklout(os.path.join(self.get_working_directory(),
                                        'temp.mtz'))
-                
+
             if self.get_scaler_anomalous():
                 sc.set_anomalous()
-                
+
             sc.scale()
             stats = sc.get_summary()
 
@@ -1277,7 +1277,7 @@ class CCP4ScalerR(Scaler):
             shutil.move('%s.keep' % harvest_copy, harvest_copy)
             Debug.write('Moving %s to %s' % \
                         ('%s.keep' % harvest_copy, harvest_copy))
-            
+
         return
 
     def _scale_finish(self):
@@ -1292,7 +1292,7 @@ class CCP4ScalerR(Scaler):
                 file = self._tmp_scaled_refl_files[key]
                 t = self._factory.Truncate()
                 t.set_hklin(file)
-                
+
                 # bug # 2326
                 if self.get_scaler_anomalous():
                     t.set_anomalous(True)
@@ -1350,7 +1350,7 @@ class CCP4ScalerR(Scaler):
 
         for key in self._tmp_scaled_refl_files:
             file = self._tmp_scaled_refl_files[key]
-            
+
             hklout = '%s_cad.mtz' % file[:-4]
             FileHandler.record_temporary_file(hklout)
 
@@ -1360,7 +1360,7 @@ class CCP4ScalerR(Scaler):
             c.set_new_cell(average_unit_cell)
             c.set_hklout(hklout)
             c.update()
-            
+
             self._tmp_scaled_refl_files[key] = hklout
 
         if len(self._tmp_scaled_refl_files) > 1:
@@ -1368,7 +1368,7 @@ class CCP4ScalerR(Scaler):
             for key in self._tmp_scaled_refl_files:
                 file = self._tmp_scaled_refl_files[key]
                 c.add_hklin(file)
-        
+
             hklout = os.path.join(self.get_working_directory(),
                                   '%s_%s_merged.mtz' % (self._scalr_pname,
                                                         self._scalr_xname))
@@ -1377,7 +1377,7 @@ class CCP4ScalerR(Scaler):
 
             c.set_hklout(hklout)
             c.merge()
-            
+
             self._scalr_scaled_reflection_files['mtz_merged'] = hklout
 
         else:
@@ -1393,9 +1393,9 @@ class CCP4ScalerR(Scaler):
         FileHandler.record_temporary_file(hklout)
 
         if self.get_scaler_freer_file():
-            
+
             freein = self.get_scaler_freer_file()
-        
+
             Debug.write('Copying FreeR_flag from %s' % freein)
 
             c = self._factory.Cad()
@@ -1405,7 +1405,7 @@ class CCP4ScalerR(Scaler):
             c.copyfree()
 
         elif Flags.get_freer_file():
-            
+
             freein = Flags.get_freer_file()
 
             Debug.write('Copying FreeR_flag from %s' % freein)
@@ -1419,18 +1419,18 @@ class CCP4ScalerR(Scaler):
         else:
 
             free_fraction = 0.05
-            
+
             if Flags.get_free_fraction():
                 free_fraction = Flags.get_free_fraction()
             elif Flags.get_free_total():
                 ntot = Flags.get_free_total()
-                
+
                 mtzdump = self._factory.Mtzdump()
                 mtzdump.set_hklin(hklin)
                 mtzdump.dump()
                 nref = mtzdump.get_reflections()
                 free_fraction = float(ntot) / float(nref)
-                
+
             f = self._factory.Freerflag()
             f.set_free_fraction(free_fraction)
             f.set_hklin(self._scalr_scaled_reflection_files['mtz_merged'])
@@ -1455,7 +1455,7 @@ class CCP4ScalerR(Scaler):
             mtzdump.dump()
             nref = mtzdump.get_reflections()
             free_fraction = float(ntot) / float(nref)
-        
+
         f = self._factory.Freerflag()
         f.set_free_fraction(free_fraction)
         f.set_hklin(hklin)
@@ -1469,12 +1469,12 @@ class CCP4ScalerR(Scaler):
         FileHandler.record_data_file(hklout)
 
         if not Flags.get_small_molecule():
-        
+
             sfc = self._factory.Sfcheck()
             sfc.set_hklin(hklout)
             sfc.analyse()
             twinning_score = sfc.get_twinning()
-            
+
             Chatter.write('Overall twinning score: %4.2f' % twinning_score)
             if twinning_score > 1.9:
                 Chatter.write('Your data do not appear to be twinned')
@@ -1485,21 +1485,21 @@ class CCP4ScalerR(Scaler):
 
             # next have a look for radiation damage...
             # if more than one wavelength
-            
+
             if len(self._tmp_scaled_refl_files) > 1 and \
                    not Flags.get_small_molecule():
                 crd = CCP4InterRadiationDamageDetector()
-                
+
                 crd.set_working_directory(self.get_working_directory())
-                
+
                 crd.set_hklin(hklout)
-            
+
                 if self.get_scaler_anomalous():
                     crd.set_anomalous(True)
-                
+
                 hklout = os.path.join(self.get_working_directory(), 'temp.mtz')
                 FileHandler.record_temporary_file(hklout)
-            
+
                 crd.set_hklout(hklout)
 
                 status = crd.detect()
@@ -1508,10 +1508,10 @@ class CCP4ScalerR(Scaler):
                 Chatter.banner('Local Scaling %s' % self._scalr_xname)
                 for s in status:
                     Chatter.write('%s %s' % s)
-                Chatter.banner('')       
+                Chatter.banner('')
 
         return
-    
+
     def _identify_sweep_epoch(self, batch):
         '''Identify the sweep epoch a given batch came from - N.B.
         this assumes that the data are rebatched, will raise an exception if
@@ -1526,11 +1526,9 @@ class CCP4ScalerR(Scaler):
 
         if len(epochs) > 1:
             raise RuntimeError, 'batch %d found in multiple sweeps' % batch
-        
+
         return epochs[0]
 
     def _prepare_pointless_hklin(self, hklin, phi_width):
         return _prepare_pointless_hklin(self.get_working_directory(),
                                         hklin, phi_width)
-
-    

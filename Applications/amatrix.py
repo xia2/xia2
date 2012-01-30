@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 # amatrix.py
-# 
+#
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
+#
 # This is a little jiffy application to compute the dot products of the
-# real space (primitive) unit cell edges as a function of phi rotation - 
+# real space (primitive) unit cell edges as a function of phi rotation -
 # I guess from a certain point of view this is a little like a simple
 # strategy...
-# 
+#
 # amatrix file.mat lattice wavelength phi_start phi_width first last
-# 
+#
 
 import math
 import os
@@ -46,7 +46,7 @@ def compute(matrix, lattice, wavelength, phi_start, phi_width, start, end):
 
 if __name__ == '__main__':
     if len(sys.argv) == 19:
-        
+
         matrix = ''' -0.00417059 -0.00089426 -0.01139821
  -0.00084328 -0.01388561  0.01379631
  -0.00121258  0.01273236  0.01424531
@@ -79,9 +79,3 @@ if __name__ == '__main__':
         raise RuntimeError, \
               '%s matrix phi_start phi_width start end lattice' % \
               sys.argv[0]
-
-
-                 
-        
-        
-        

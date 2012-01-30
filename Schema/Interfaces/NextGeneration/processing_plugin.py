@@ -31,9 +31,9 @@ class processing_plugin:
         self._pp_labelit.set_index_input()
         self._pp_labelit.index()
         more_index_output = self._pp_labelit.get_index_output()
-        
+
         print 'gathering results of indexing, creating integration input'
-        
+
         # gather results of index into integrate method input
 
         self._pp_mosflm.set_integrate_input()

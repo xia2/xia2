@@ -2,12 +2,12 @@
 # Xtriage.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
-# 
-# A wrapper for the phenix program phenix.xtriage. This is to inspect 
+#
+# A wrapper for the phenix program phenix.xtriage. This is to inspect
 # reduced data and look for e.g. twinning.
-# 
+#
 
 import sys
 import os
@@ -28,7 +28,7 @@ def Xtriage(DriverType = None):
     class XtriageWrapper(DriverInstance.__class__):
         def __init__(self):
 
-            DriverInstance.__class__.__init__(self)            
+            DriverInstance.__class__.__init__(self)
             self.set_executable('phenix.xtriage')
 
             self._hklin = None
@@ -58,4 +58,3 @@ def Xtriage(DriverType = None):
             return
 
     return XtriageWrapper()
-

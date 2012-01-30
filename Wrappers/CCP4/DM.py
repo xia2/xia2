@@ -2,15 +2,15 @@
 # DM.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 
 
 #
 # 16th November 2006
-#  
+#
 # A wrapper for the CCP4 phase improvement program DM.
-# 
+#
 # FIXME 21/NOV/06 need to add the FreeR column if it is in the input
 #                 data set. In practice, the input data from data
 #                 reduction needs to be "cadded in" with the results
@@ -51,15 +51,15 @@ def DM(DriverType = None):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
             self.set_executable(os.path.join(
-                os.environ.get('CBIN', ''), 'dm'))            
-            
+                os.environ.get('CBIN', ''), 'dm'))
+
             self._solvent = 0.0
 
             # FIXME this needs to be more sophisticated as it
             # will depend on the program which has done the phasing!
 
             return
-        
+
         def set_solvent(self, solvent):
             self._solvent = solvent
             return
@@ -78,7 +78,7 @@ def DM(DriverType = None):
             self.input('scheme all')
 
             # FIXME these column labels should not be harded coded!
-            
+
             self.input('labin FP=FPHASED SIGFP=SIGFPHASED FOMO=FOM ' +
                        'HLA=HLA HLB=HLB HLC=HLC HLD=HLD')
             self.input('labout PHIDM=PHIDM FOMDM=FOMDM')
@@ -93,7 +93,7 @@ def DM(DriverType = None):
             loggraphs = self.parse_ccp4_loggraph()
 
             return
-        
+
     return DMWrapper()
 
 if __name__ == '__main__':
@@ -121,5 +121,3 @@ if __name__ == '__main__':
     dm.write_log_file('dm_inverted.log')
 
     dm.improve_phases()
-
-    

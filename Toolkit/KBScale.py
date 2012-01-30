@@ -1,15 +1,15 @@
 #!/usr/bin/env cctbx.python
 # KBScale.py
-# 
+#
 #   Copyright (C) 2010 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A rough implementation of local scaling for partial data sets, using kB
 # scaling. Includes linear and log scaling, and uses CCTBX minimization
 # which seems to work nicely. Used in MultiMerger.
-# 
+#
 
 import math
 
@@ -20,7 +20,7 @@ def kb(s, k, b):
     return k * math.exp(-1 * b * s)
 
 def residual_kb(ref, work, params):
-    
+
     k, b = params
 
     res = sum([math.fabs(r[1] - w[1] * kb(w[0], k, b)) \
@@ -73,11 +73,11 @@ def lkb(s, k, b):
     return k - b * s
 
 def residual_lkb(ref, work, params):
-    
+
     k, b = params
 
     res = sum([math.pow(r[1] - w[1] - lkb(w[0], k, b), 2) \
-               for r, w in zip(ref, work)]) 
+               for r, w in zip(ref, work)])
 
     return res
 
@@ -96,7 +96,7 @@ def gradients_lkb(ref, work, params):
         g.append((rs[1] - rs[0]) / (2 * eps))
 
     return g
-        
+
 class lkb_scaler:
 
     def __init__(self, ref, work):
@@ -130,8 +130,8 @@ def lkb_scale(ref, work):
     lkbs.refine()
 
     return lkbs.get_kb()
-    
-        
+
+
 if __name__ == '__main__':
 
     import random
@@ -139,7 +139,7 @@ if __name__ == '__main__':
     for size in [10 ** r for r in range(1, 5)]:
 
         print size
-        
+
         k = 5
         b = 10
 

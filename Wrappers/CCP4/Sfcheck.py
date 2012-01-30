@@ -2,20 +2,20 @@
 # Sfcheck.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 23rd February 2007
 #
-# A wrapper for the CCP4 program sfcheck, which is used to analyse 
+# A wrapper for the CCP4 program sfcheck, which is used to analyse
 # reduced reflections to detect e.g. twinning amongst other things.
-# 
+#
 # This will do:
 #
 # Second moment analysis
 # Determination of "optical" resolution
 # Analysis of Eigenvalues
-# 
+#
 
 import os
 import sys
@@ -88,7 +88,7 @@ def Sfcheck(DriverType = None):
                 if 'Ratio of Eigen values' in o:
                     self._anisotropic_eigenvalues = tuple(map(float,
                                                               o.split()[-3:]))
-                
+
                 if 'WARNING: program: "anisoscl" is terminated' in o:
                     self._anisotropic_eigenvalues_reliable = False
 
