@@ -18,6 +18,8 @@ Applications/test_pilatus_scan -text
 Applications/x1335 -text
 Applications/x1691 -text
 Attic/Attic1.py -text
+Attic/found_in_toolkit_multi.py -text
+Attic/found_in_toolkit_small.py -text
 Data/detectors.lib -text
 Experts/Doc/FindImages.pdf -text
 Experts/TestSymmetryExpert.py -text
@@ -121,8 +123,6 @@ Toolkit/example-adsc-cif-header.cif -text
 Toolkit/find_HKL.py -text
 Toolkit/fred_header.cbf -text
 Toolkit/metatemplate.txt -text
-Toolkit/multi.py -text
-Toolkit/small.py -text
 Toolkit/superdoofus.py -text
 Toolkit/test_pilatus_scan.py -text
 Wrappers/CCP4/Doc/Chooch.pdf -text
