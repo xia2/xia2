@@ -4,13 +4,23 @@ import os
 from iotbx import mtz
 from cctbx.eltbx import sasaki
 
-def guess_the_atom(hklin, nsites, mw):
+def guess_the_atom(hklin, nsites):
     '''Guess the atom which gives rise to the observed anomalous differences
     in intensities (i.e. I(+) and I(-)) though CCTBX code internally computes
     F(+) etc.'''
 
     mtz_obj = mtz.object(hklin)
     mi = mtz_obj.extract_miller_indices()
+
+    sg = mtz_obj.space_group()
+
+    for crystal in mtz_obj.crystals():
+        if crystal.name() != 'HKL_base':
+            uc = crystal.unit_cell()
+
+    n_ops = len(sg.all_ops())
+    v_asu = uc.volume() / n_ops
+    mw = v_asu / 2.7
 
     wavelengths = { }
 
@@ -45,7 +55,4 @@ def guess_the_atom(hklin, nsites, mw):
                     
 if __name__ == '__main__':
 
-    if len(sys.argv) != 4:
-        raise RuntimeError, '%s hklin nsites molecular_weight' % sys.argv[0]
-
-    print guess_the_atom(sys.argv[1], int(sys.argv[2]), float(sys.argv[3]))
+    print guess_the_atom(sys.argv[1], int(sys.argv[2]))
