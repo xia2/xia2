@@ -70,7 +70,6 @@ Schema/Interfaces/NextGeneration/labelit.py -text
 Schema/Interfaces/NextGeneration/mosflm.py -text
 Schema/Interfaces/NextGeneration/processing_plugin.py -text
 Toolkit/BackstopMask.py -text
-Toolkit/Bijvoet.py -text
 Toolkit/ComputeU.py -text
 Toolkit/KBScale.py -text
 Toolkit/MultiMerger.py -text
@@ -123,6 +122,7 @@ Toolkit/cbfdump.py -text
 Toolkit/example-adsc-cif-header.cif -text
 Toolkit/find_HKL.py -text
 Toolkit/fred_header.cbf -text
+Toolkit/guess_the_atom.py -text
 Toolkit/metatemplate.txt -text
 Toolkit/superdoofus.py -text
 Toolkit/test_pilatus_scan.py -text
