@@ -4,9 +4,9 @@ import os
 from iotbx import mtz
 from cctbx.eltbx import sasaki
 
-def bijvoet(hklin, nsites, mw):
-    '''Compute bijvoet differences between I+/I- and F+/F- averaged over
-    some resolution bins.'''
+def guess_the_atom(hklin, nsites, mw):
+    '''Guess the atom which gives rise to the observed anomalous differences
+    in intensities (i.e. I(+) and I(-)).'''
 
     mtz_obj = mtz.object(hklin)
     mi = mtz_obj.extract_miller_indices()
@@ -40,11 +40,11 @@ def bijvoet(hklin, nsites, mw):
                     best_diff = math.fabs(p_signal - signal)
                     best_atom = atom
 
-    print 'Best guess atom: %s' % best_atom
+    return best_atom
                     
 if __name__ == '__main__':
 
     if len(sys.argv) != 4:
         raise RuntimeError, '%s hklin nsites molecular_weight' % sys.argv[0]
 
-    bijvoet(sys.argv[1], int(sys.argv[2]), float(sys.argv[3]))
+    print guess_the_atom(sys.argv[1], int(sys.argv[2]), float(sys.argv[3]))
