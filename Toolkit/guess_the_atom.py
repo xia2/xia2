@@ -6,7 +6,8 @@ from cctbx.eltbx import sasaki
 
 def guess_the_atom(hklin, nsites, mw):
     '''Guess the atom which gives rise to the observed anomalous differences
-    in intensities (i.e. I(+) and I(-)).'''
+    in intensities (i.e. I(+) and I(-)) though CCTBX code internally computes
+    F(+) etc.'''
 
     mtz_obj = mtz.object(hklin)
     mi = mtz_obj.extract_miller_indices()
