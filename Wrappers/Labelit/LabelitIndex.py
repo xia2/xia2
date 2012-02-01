@@ -666,6 +666,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
                     return
 
             try:
+                raise RuntimeError, 'no, lets not'
                 status, lattice, matrix, cell = mosflm_check_indexer_solution(
                     self)
             except:
