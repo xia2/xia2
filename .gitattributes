@@ -18,6 +18,13 @@ Applications/test_pilatus_scan -text
 Applications/x1335 -text
 Applications/x1691 -text
 Attic/Attic1.py -text
+Attic/bitbx/examples/integrate.hkl -text
+Attic/bitbx/examples/xparm-uc1-2.xds -text
+Attic/bitbx/examples/xparm.xds -text
+Attic/bitbx/readme.txt -text
+Attic/bitbx/uc1_1.py -text
+Attic/bitbx/uc1_2.py -text
+Attic/bitbx/uc1_2_validate.py -text
 Attic/found_in_toolkit_multi.py -text
 Attic/found_in_toolkit_small.py -text
 Data/detectors.lib -text
@@ -142,13 +149,6 @@ Wrappers/Labelit/LabelitIndexII.py -text
 Wrappers/Labelit/LabelitMosflmMatrix.py -text
 Wrappers/XDS/XScaleR.py -text
 Wrappers/dTREK/Doc/dTREK.pdf -text
-bitbx/examples/integrate.hkl -text
-bitbx/examples/xparm-uc1-2.xds -text
-bitbx/examples/xparm.xds -text
-bitbx/readme.txt -text
-bitbx/uc1_1.py -text
-bitbx/uc1_2.py -text
-bitbx/uc1_2_validate.py -text
 cftbx/__init__.py -text
 cftbx/coordinate_frame_converter.py -text
 cftbx/coordinate_frame_helpers.py -text
