@@ -177,6 +177,10 @@ quality of diffraction was not ideal, and radiation damage was an issue.
 Initially the data were processed with 
 
 \begin{center}
+\includegraphics[scale=0.35]{figures/3qrn-diffraction.png}
+\end{center}
+
+\begin{center}
 {\huge
 xia2 -3d -atom Ba /here/are/my/data
 }
@@ -185,7 +189,7 @@ xia2 -3d -atom Ba /here/are/my/data
 \noindent
 giving the merging statistics shown in [FIXME TABLE]. From these it is clear
 that there is something wrong: it is very unusual to have near atomic 
-resolution diffraction with $\sim 10\% R_{\rm{merge}}$ in the low resolution
+resolution diffraction with $\sim 10\%$ $R_{\rm{merge}}$ in the low resolution
 bin. The most likely reasons are incorrect assignment of the pointgroup and
 radiation damage - the latter of which is clear from the analysis of 
 $R_{\rm{merge}}$ as a function of image number [FIXME FIGURE.] A development 
@@ -213,6 +217,9 @@ Anomalous slope            &      1.085 &  0.000 &  0.000\\
 Total observations         &       118588 & 529  &   1634\\
 Total unique               &         9749  &  63 &     337\\
 \end{tabular}
+
+\includegraphics[scale=0.25]{figures/3qrn-all-rmerge-aimless.png}
+\includegraphics[scale=0.25]{figures/3qrn-all-complete-aimless.png}
 
 \subsection{Modifying input}
 
@@ -344,201 +351,50 @@ Mosaic spread: 0.140 < 0.189 < 0.290
 \end{verbatim}
 }
 
+\noindent
 and includes a convenient legend.
 
+\section{Commonly used program options}
 
+There are a number of program options which are used on a daily basis in 
+\emph{xia2}, which are:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\section{Old stuff}
-
-\subsection{Example: 3QRN}
 \begin{itemize}
-\item{J.P. Hall et al., Proc. Natl. Acad. Sci. USA 2011 108 (43) 17573-17574}
-\item{Data recorded at Diamond I02}
-\item{DNA / ligand complex}
-\item{Demonstrates:
-\begin{itemize}
-\item{Radiation damage}
-\item{Heavy atom}
-\item{Resolution limits}
-\end{itemize}
-}
-\item{Better sample used for deposition}
-\end{itemize}
-
-
-
-\subsection{Example: data}
-\begin{center}
-\includegraphics[scale=0.35]{figures/3qrn-diffraction.png}
-\end{center}
-
-\subsection{Example command line}
-{ \huge
-xia2 -3d -atom Ba /dls/i02/data/...
-}
-
-\subsection{Example results}
-\begin{tabular}{lccc}
-High resolution limit      &       1.25 &    6.45 &   1.25\\
-Low resolution limit       &                18.85  & 18.85  &  1.27\\
-Completeness               &                95.2   & 60.1  &  70.2\\
-Multiplicity               &               12.2    & 8.4   &  4.8\\
-I/sigma                    &               12.3    & 18.5   &  2.6\\
-Rmerge                     &             0.113  & 0.096 &  0.564\\
-Rmeas(I)                   &             0.129  & 0.118 &  0.633\\
-Rmeas(I+/-)                &             0.121  & 0.105 &  0.679\\
-Rpim(I)                    &             0.034  & 0.038 &  0.267\\
-Rpim(I+/-)                 &             0.043  & 0.041 &  0.368\\
-Wilson B factor            &            12.131& & \\
-Anomalous completeness     &            93.3  &  52.6  &  58.0\\
-Anomalous multiplicity     &           6.4    & 5.0  &   2.0\\
-Anomalous correlation      &            0.544 &  0.791 & -0.297\\
-Anomalous slope            &      1.085 &  0.000 &  0.000\\
-Total observations         &       118588 & 529  &   1634\\
-Total unique               &         9749  &  63 &     337\\
-\end{tabular}
-
-\subsection{Development option - using AIMLESS}
-{ \huge
-xia2 -3da ...
-}
-
-\subsection{LogFiles/*aimless.log}
-\includegraphics[scale=0.25]{figures/3qrn-all-rmerge-aimless.png}
-\includegraphics[scale=0.25]{figures/3qrn-all-complete-aimless.png}
-
-\subsection{What to do next?}
-\begin{itemize}
-\item{Edit automatic.xinfo}
-\item{Only process first 200 frames}
-\end{itemize}
-
-\subsection{Modify automatic.xinfo $\rightarrow$ modified.xinfo}
-{\small
-\begin{verbatim}
-BEGIN PROJECT AUTOMATIC
-BEGIN CRYSTAL DEFAULT
-BEGIN HA_INFO
-ATOM Ba
-END HA_INFO
-BEGIN WAVELENGTH SAD
-WAVELENGTH 0.979500
-END WAVELENGTH SAD
-BEGIN SWEEP SWEEP1
-WAVELENGTH SAD
-DIRECTORY /dls/i02/data/2011/mx1234-5
-IMAGE K5_M1S3_3_001.img
-START_END 1 200 ! THIS WAS 450
-END SWEEP SWEEP1
-END CRYSTAL DEFAULT
-END PROJECT AUTOMATIC
-\end{verbatim}
-}
-
-\subsection{Running again}
-\begin{center}
-\huge xia2 -3d -xinfo modified.xinfo
-\end{center}
-
-\subsection{Example results II}
-\begin{tabular}{lccc}
-High resolution limit         &         1.22 &  6.34 &  1.22 \\
-Low resolution limit          &        19.62 & 19.62 &  1.24 \\
-Completeness                  &         86.9 &  49.1 &  37.8 \\
-Multiplicity                  &        5.3  &  4.9   & 1.7 \\
-I/sigma                       &        20.1 &  37.0  &  2.3 \\
-Rmerge                        &       0.036 & 0.020  &0.355 \\
-Rmeas(I)                      &       0.060 & 0.038  &0.448 \\
-Rmeas(I+/-)                   &       0.043 & 0.023  &0.491 \\
-Rpim(I)                       &       0.023 & 0.014  &0.297 \\
-Rpim(I+/-)                    &       0.022 & 0.011  &0.339 \\
-Wilson B factor               &       10.70& \\
-Anomalous completeness        &        77.7  & 41.0  & 18.3 \\
-Anomalous multiplicity        &         2.7  &  3.5  &  0.5 \\
-Anomalous correlation         &        0.779 & 0.931 & 0.000 \\
-Anomalous slope               &       1.553  &0.000 & 0.000 \\
-Total observations            &       50875  &272   & 342 \\
-Total unique                  &       9552   &55    & 199 \\
-\end{tabular}
-
-\subsection{Resolution: much more in Lunchtime Bytes}
-\begin{itemize}
-\item{Data incomplete at high resolution}
-\item{Add RESOLUTION to xinfo file (in either SWEEP or WAVELENGTH}
-\item{Add -resolution to the command line}
-\end{itemize}
-
-\subsection{Output}
-\begin{itemize}
-\item{xia2.txt: everything you should read - including program citations}
-\item{xia2-debug.txt: everything you probably shouldn't}
-\item{LogFiles: you should look at these}
-\item{DataFiles: MTZ + erzatz scalepack}
-\end{itemize}
-
-\subsection{Output}
-{\small
-\begin{verbatim}
-------------------- Autoindexing SWEEP1 --------------------
-All possible indexing solutions:
-tP  57.60  57.60 149.51  90.00  90.00  90.00
-oC  81.45  81.46 149.51  90.00  90.00  90.00
-oP  57.59  57.60 149.50  90.00  90.00  90.00
-mC  81.46  81.45 149.50  90.00  89.95  90.00
-mP  57.60  57.59 149.53  90.00  89.93  90.00
-aP  57.59  57.61 149.52  89.93  89.99  89.99
-Indexing solution:
-tP  57.60  57.60 149.51  90.00  90.00  90.00
-\end{verbatim}
-}
-
-\subsection{Output}
-{\small
-\begin{verbatim}
--------------------- Integrating SWEEP1 --------------------
-Processed batches 1 to 450
-Weighted RMSD: 0.26 (0.09)
-Integration status per image (60/record):
-ooooooooooooooooooooooooooooooooooo.oooooooooooooooooooooooo
-ooooooooooooooooooooooo.ooooooooooooooooooo.ooooooo.oooooooo
-ooo.o.ooooooo.oooooooooooooooooooooooooooooooooooooooooooooo
-oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-oooooooooooooooooooo.ooooooooooooooooooooooooooooooooooooooo
-ooooooooooooooooooooooooooooooooooooooooooooooooooo.oooooooo
-ooooooooo.oooooooooo..ooo.oooooooooooooooooooo.ooooooooooooo
-oooooooooooooooooooo.oooooooo.
-"o" => good        "%" => ok        "!" => bad rmsd
-"O" => overloaded  "#" => many bad  "." => blank
-"@" => abandoned
-Mosaic spread: 0.140 < 0.189 < 0.290
-\end{verbatim}
-}
-
-\subsection{Options (2)}
-\begin{itemize}
+\item{-atom X - tell xia2 to separate anomalous pairs i.e. $I(+) \ne I(-)$ in 
+scaling}
+\item{-2d - tell xia2 to use MOSFLM and SCALA}
+\item{-3d - tell xia2 to use XDS and XSCALE}
+\item{-3dii - tell xia2 to use XDS and XSCALE, indexing with peaks found from
+all images}
 \item{-xinfo modified.xinfo - use specific input file}
 \item{-image /path/to/an/image.img - process specific scan}
 \item{-spacegroup spacegroup\_name - set the spacegroup, e.g. P21}
 \item{-cell a,b,c,$\alpha$,$\beta$,$\gamma$ - set the cell constants} 
 \item{-small\_molecule - don't run things like TRUNCATE}
 \end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 \section{What did it do?}
 
