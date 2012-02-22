@@ -30,7 +30,7 @@ xds.parameter {
             raise RuntimeError, 'phil file missing: %s' % source
 
         source_phil = parse(open(source).read())
-        self._working_phil.fetch(source_phil)
+        self._working_phil = self._working_phil.fetch(source = source_phil)
         self._parameters = self._working_phil.extract()
         return
 
