@@ -159,13 +159,19 @@ def get_number_cpus():
 
     output = subprocess.Popen(['system_profiler', 'SPHardwareDataType'],
                               stdout = subprocess.PIPE).communicate()[0]
+
+    ht = 1
+
     for record in output.split('\n'):
+        if 'Intel Core i7' in record:
+            ht = 2
         if 'Total Number Of Cores' in record:
-            return int(record.split()[-1])
+            return ht * int(record.split()[-1])
+        if 'Total Number of Cores' in record:
+            return ht * int(record.split()[-1])
 
     return -1
 
 if __name__ == '__main__':
 
-    print Environment.getenv('HARVESTHOME')
     print get_number_cpus()
