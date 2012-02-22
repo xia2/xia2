@@ -9,6 +9,8 @@
 # set for individual programs can be found. Initially this will be just a 
 # couple for XDS.
 
+import os
+
 from libtbx.phil import parse
 
 class _Phil:
@@ -19,6 +21,17 @@ xds.parameter {
     .type = float
 }
 """)
+        self._parameters = self._working_phil.extract()
+        return
+
+    def add(self, source):
+        
+        if not os.path.exists(source):
+            raise RuntimeError, 'phil file missing: %s' % source
+
+        source_phil = parse(open(source).read())
+        self._working_phil.fetch(source_phil)
+        self._parameters = self._working_phil.extract()
         return
 
     def show(self):
@@ -26,7 +39,7 @@ xds.parameter {
         return
 
     def get_xds_parameter_delphi(self):
-        return self._working_phil.extract().xds.parameter.delphi
+        return self._parameters.xds.parameter.delphi
 
 Phil = _Phil()
 

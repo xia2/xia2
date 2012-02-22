@@ -42,6 +42,7 @@ from XDSIntegrateHelpers import _parse_integrate_lp, \
 
 # global flags etc.
 from Handlers.Flags import Flags
+from Handlers.Phil import Phil
 from Handlers.Streams import Chatter, Debug
 
 def XDSIntegrate(DriverType = None):
@@ -184,10 +185,7 @@ def XDSIntegrate(DriverType = None):
             # write out lots of output
             xds_inp.write('TEST=2\n')
 
-            # hack for the moment for weak diffraction
-            # Debug.write('Setting DELPHI=10.0 in XDS INTEGRATE')
-            # xds_inp.write('DELPHI=10.0\n')
-
+            xds_inp.write('DELPHI=%.1f\n' % Phil.get_xds_parameter_delphi())
 
             fixed_2401 = True
 

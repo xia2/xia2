@@ -61,6 +61,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Experts.FindImages import image2template_directory
 from Schema.XProject import XProject
 from Handlers.Flags import Flags
+from Handlers.Phil import Phil
 from Handlers.Streams import Chatter, Debug
 from Handlers.PipelineSelection import add_preference
 from Handlers.Executables import Executables
@@ -178,6 +179,12 @@ class _CommandLine():
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
                   (self._help_atom_name(), str(e))
+
+        try:
+            self._read_phil()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_phil(), str(e))
 
         try:
             self._read_crystal_name()
@@ -504,6 +511,25 @@ class _CommandLine():
 
     def get_atom_name(self):
         return self._default_atom_name
+
+    def _read_phil(self):
+        try:
+            index = sys.argv.index('-phil')
+
+        except ValueError, e:
+            return
+
+        Phil.add(sys.argv[index + 1])
+
+        self._understood.append(index)
+        self._understood.append(index + 1)
+
+        Debug.write('Phil file: %s' % sys.argv[index + 1])
+
+        return
+
+    def _help_phil(self):
+        return '-phil parameters.phil'
 
     def _read_project_name(self):
         try:
