@@ -185,7 +185,12 @@ def XDSIntegrate(DriverType = None):
             # write out lots of output
             xds_inp.write('TEST=2\n')
 
-            xds_inp.write('DELPHI=%.1f\n' % Phil.get_xds_parameter_delphi())
+            if Flags.get_small_molecule():
+                xds_inp.write('DELPHI=%.1f\n' % \
+                              Phil.get_xds_parameter_delphi_small())
+            else:
+                xds_inp.write('DELPHI=%.1f\n' % \
+                              Phil.get_xds_parameter_delphi())
 
             fixed_2401 = True
 

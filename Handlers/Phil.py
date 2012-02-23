@@ -19,6 +19,8 @@ class _Phil:
 xds.parameter {
   delphi = 5
     .type = float
+  delphi_small = 30
+    .type = float
 }
 """)
         self._parameters = self._working_phil.extract()
@@ -40,6 +42,9 @@ xds.parameter {
 
     def get_xds_parameter_delphi(self):
         return self._parameters.xds.parameter.delphi
+
+    def get_xds_parameter_delphi_small(self):
+        return self._parameters.xds.parameter.delphi_small
 
 Phil = _Phil()
 
