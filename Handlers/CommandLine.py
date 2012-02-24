@@ -11,38 +11,8 @@
 # line. This singleton object should be able to handle the input, structure
 # it and make it available in a useful fashion.
 #
-# This is a hook into a global data repository.
-#
-# Modification log:
-#
-# 21/JUN/06 - Added in parsing of image (passed in on -image token, or
-#             last token) to template & directory to work with. Note
-#             well - I need to think more carefully about this in the
-#             future, though this solution may scale...
-#
-# 16/AUG/06 - FIXED - need to be able to handle a resolution limit in here
-#             as well as any other information our user may wish to pass
-#             in on the comand line, for example a lattice or a spacegroup.
-#             See 04/SEP/06 below.
-#
-# 23/AUG/06 - FIXED - need to add handling of the lattice input in particular,
-#             since this is directly supported by Mosflm.py...
-#
-# 04/SEP/06 - FIXED - need to be able to pass in a resolution limit to
-#             work to, for development purposes (this should become
-#             automatic in the future.)
-#
-# 07/FEB/07 - FIXED need flags to control "experimental" functionality
-#             e.g. the phasing pipeline - for instance this could
-#             be -phase to perform phasing on the scaled data.
-#
-#             At the moment the amount of feedback between the phasing
-#             and the rest of the data reduction is non existent.
-#
-# 15/MAY/07 - FIXED need to add flag -ehtpx_xml_out which will enable
-#             writing of e-HTPX xml for the data reduction portal. This
-#             should be provided the path on which to write the file. N.B.
-#             this has subsequently been removed 19/JAN/2011.
+# This is a hook into a global data repository, should mostly be replaced with
+# a Phil interface.
 
 import sys
 import os
