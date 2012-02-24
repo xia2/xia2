@@ -33,21 +33,16 @@ class _Flags:
 
     def __init__(self):
         self._quick = False
-        self._primitive = False
         self._interactive = False
         self._ice = False
         self._egg = False
         self._uniform_sd = True
         self._chef = False
         self._mask = None
-        self._modify_background = None
-        self._automatch = False
         self._reversephi = False
         self._no_lattice_test = False
-        self._fiddle_sd = False
         self._migrate_data = False
         self._trust_timestaps = False
-        self._check_xds_version = False
 
         # XDS specific things - to help with handling tricky data sets
 
@@ -273,13 +268,6 @@ class _Flags:
     def get_quick(self):
         return self._quick
 
-    def set_primitive(self, primitive):
-        self._primitive = primitive
-        return
-
-    def get_primitive(self):
-        return self._primitive
-
     def set_interactive(self, interactive):
         self._interactive = interactive
         return
@@ -315,13 +303,6 @@ class _Flags:
     def get_chef(self):
         return self._chef
 
-    def set_automatch(self, automatch):
-        self._automatch = automatch
-        return
-
-    def get_automatch(self):
-        return self._automatch
-
     def set_reversephi(self, reversephi):
         self._reversephi = reversephi
         return
@@ -335,13 +316,6 @@ class _Flags:
 
     def get_no_lattice_test(self):
         return self._no_lattice_test
-
-    def set_fiddle_sd(self, fiddle_sd):
-        self._fiddle_sd = fiddle_sd
-        return
-
-    def get_fiddle_sd(self):
-        return self._fiddle_sd
 
     def set_relax(self, relax):
         self._relax = relax
@@ -370,13 +344,6 @@ class _Flags:
 
     def get_trust_timestamps(self):
         return self._trust_timestamps
-
-    def set_check_xds_version(self, check_xds_version):
-        self._check_xds_version = check_xds_version
-        return
-
-    def get_check_xds_version(self):
-        return self._check_xds_version
 
     def set_small_molecule(self, small_molecule):
         self._small_molecule = small_molecule
@@ -500,13 +467,6 @@ class _Flags:
 
     def get_mask(self):
         return self._mask
-
-    def set_modify_background(self, modify_background):
-        self._modify_background = modify_background
-        return
-
-    def get_modify_background(self):
-        return self._modify_background
 
     def set_ispyb_xml_out(self, ispyb_xml_out):
         self._ispyb_xml_out = ispyb_xml_out

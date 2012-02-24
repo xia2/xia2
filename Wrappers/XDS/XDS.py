@@ -75,20 +75,7 @@ def _xds_version(xds_output_list):
     raise RuntimeError, 'XDS version not found'
 
 def xds_check_version_supported(xds_output_list):
-    '''Check that the XDS version is supported.'''
-
-    if not Flags.get_check_xds_version():
-        return
-
-    xds_version = _xds_version(xds_output_list)
-
-    supported_versions = ['December 28, 2009',
-                          'February 3, 2010',
-                          'May 10, 2010',
-                          'December 6, 2010']
-
-    if not xds_version in supported_versions:
-        raise RuntimeError, 'XDS version "%s" not supported' % xds_version
+    '''No longer check that the XDS version is supported.'''
 
     return
 

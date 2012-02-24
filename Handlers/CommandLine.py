@@ -102,18 +102,13 @@ class _CommandLine():
         self._read_egg()
         self._read_uniform_sd()
         self._read_trust_timestamps()
-        self._read_check_xds_version()
         self._read_batch_scale()
         self._read_small_molecule()
         self._read_quick()
-        self._read_primitive()
         self._read_chef()
         self._read_mask()
-        self._read_modify_background()
-        self._read_automatch()
         self._read_reversephi()
         self._read_no_lattice_test()
-        self._read_fiddle_sd()
         self._read_no_relax()
         self._read_no_profile()
         self._read_norefine()
@@ -1087,15 +1082,6 @@ class _CommandLine():
 
         return
 
-    def _read_check_xds_version(self):
-
-        if '-check_xds_version' in sys.argv:
-            Flags.set_check_xds_version(True)
-            Debug.write('Check XDS version on')
-            self._understood.append(sys.argv.index('-check_xds_version'))
-
-        return
-
     def _read_batch_scale(self):
 
         if '-batch_scale' in sys.argv:
@@ -1156,14 +1142,6 @@ class _CommandLine():
             self._understood.append(sys.argv.index('-quick'))
         return
 
-    def _read_primitive(self):
-
-        if '-primitive' in sys.argv:
-            Flags.set_primitive(True)
-            Debug.write('Primitive mode selected')
-            self._understood.append(sys.argv.index('-primitive'))
-        return
-
     def _read_chef(self):
 
         if '-chef' in sys.argv:
@@ -1176,14 +1154,6 @@ class _CommandLine():
             self._understood.append(sys.argv.index('-nochef'))
             Debug.write('Chef mode deselected')
 
-        return
-
-    def _read_automatch(self):
-
-        if '-automatch' in sys.argv:
-            Flags.set_automatch(True)
-            self._understood.append(sys.argv.index('-automatch'))
-            Debug.write('Automatch mode selected')
         return
 
     def _read_reversephi(self):
@@ -1200,14 +1170,6 @@ class _CommandLine():
             Flags.set_no_lattice_test(True)
             self._understood.append(sys.argv.index('-no_lattice_test'))
             Debug.write('No lattice test mode selected')
-        return
-
-    def _read_fiddle_sd(self):
-
-        if '-fiddle_sd' in sys.argv:
-            Flags.set_fiddle_sd(True)
-            self._understood.append(sys.argv.index('-fiddle_sd'))
-            Debug.write('[deprecated] Fiddle SD (3D) mode selected')
         return
 
     def _read_no_relax(self):
@@ -1526,20 +1488,6 @@ class _CommandLine():
 
     def _help_mask(self):
         return '-mask mask.dat'
-
-    # DO NOT USE THE FOLLOWING OPTIONS
-
-    def _read_modify_background(self):
-        try:
-            index = sys.argv.index('-modify_background')
-        except ValueError, e:
-            return
-
-        self._understood.append(index)
-
-        Flags.set_modify_background(True)
-
-        return
 
     def get_mask(self):
         return self._mask

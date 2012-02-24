@@ -323,24 +323,6 @@ class XDSIndexer(FrameProcessor,
 
             init.reload()
 
-        # or mend background...
-
-        if Flags.get_modify_background():
-
-            Debug.write('Modifying background in BKGINIT.pck')
-
-            # copy the original file
-            cbf_old = os.path.join(init.get_working_directory(),
-                                   'BKGINIT.cbf')
-            cbf_save = os.path.join(init.get_working_directory(),
-                                    'BKGINIT.sav')
-            shutil.copyfile(cbf_old, cbf_save)
-
-            recompute_BKGINIT(cbf_save, os.path.join(
-                init.get_working_directory(), 'INIT.LP'), cbf_old)
-
-            init.reload()
-
         for file in ['BLANK.cbf',
                      'BKGINIT.cbf',
                      'GAIN.cbf']:

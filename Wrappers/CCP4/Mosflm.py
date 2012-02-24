@@ -2604,13 +2604,6 @@ def Mosflm(DriverType = None):
                 if b - a > 3:
                     b = a + 3
 
-                if Flags.get_automatch():
-                    lim = 0.25 * min(detector_width, detector_height)
-
-                    job.input('automatch')
-                    job.input('refine nousebox')
-                    job.input('refine limit %.2f' % lim)
-
                 job.input('postref multi segments 1')
                 job.input('process %d %d' % (a, b))
                 job.input('go')
