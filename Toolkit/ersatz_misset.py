@@ -51,6 +51,11 @@ def parse_xds_xparm_scan_info(xparm_file):
 def nint(a):
     return int(round(a))
 
+def meansd(values):
+    mean = sum(values) / len(values)
+    var = sum([(v - mean) * (v - mean) for v in values]) / len(values)
+    return mean, math.sqrt(var)
+
 def ersatz_misset_predict(xparm_xds, spot_xds):
     '''As well as possible, try to predict the misorientation angles as a
     function of frame # from the indexed spots from the XDS IDXREF step.
@@ -70,6 +75,10 @@ def ersatz_misset_predict(xparm_xds, spot_xds):
     size_fast, size_slow = cfc.get('detector_size_fast_slow')
     
     img_start, osc_start, osc_range = parse_xds_xparm_scan_info(xparm_xds)
+
+    rx_s = {}
+    ry_s = {}
+    rz_s = {}
 
     for record in open(spot_xds):
         values = map(float, record.split())
@@ -103,7 +112,26 @@ def ersatz_misset_predict(xparm_xds, spot_xds):
 
         rx, ry, rz = xyz_angles(M)
 
-        print '%.3f %.3f %.3f %.3f' % (phi * 180.0 / math.pi, rx, ry, rz)
+        j = int(f)
+
+        if not j in rx_s:
+            rx_s[j] = []
+        if not j in ry_s:
+            ry_s[j] = []
+        if not j in rz_s:
+            rz_s[j] = []
+        
+        rx_s[j].append(rx)
+        ry_s[j].append(ry)
+        rz_s[j].append(rz)
+
+    for j in sorted(rx_s):
+        ms_x = meansd(rx_s[j])
+        ms_y = meansd(ry_s[j])
+        ms_z = meansd(rz_s[j])
+
+        print '%4d %6.3f %6.3f %6.3f' % (j, ms_x[0], ms_y[0], ms_z[0])
+        
         
 if __name__ == '__main__':
     ersatz_misset_predict(sys.argv[1], sys.argv[2])
