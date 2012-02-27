@@ -7,7 +7,7 @@ from scitbx.math import r3_rotation_axis_and_angle_as_matrix
 
 sys.path.append(os.environ['XIA2_ROOT'])
 
-from cftbx.coordinate_frame_converter import coordinate_frame_converter
+from rstbx.cftbx.coordinate_frame_converter import coordinate_frame_converter
 
 def ersatz_misset(integrate_lp):
     a_s = []
