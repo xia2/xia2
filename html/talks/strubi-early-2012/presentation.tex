@@ -45,6 +45,35 @@
 }
 
 \frame{
+\frametitle{Example: 20 sweeps from insulin}
+\begin{itemize}
+\item{Insulin test sample from I04-1}
+\item{20 sweeps: 0.2 degree / frame x 900: 18000 images}
+\item{Radiation damage very likely}
+\item{Substantial variation between data sets}
+\item{Processing rather time consuming, use a big workstation}
+\end{itemize}
+} 
+
+\begin{frame}[fragile]
+\begin{verbatim}
+High resolution limit          	  1.66	  7.43	  1.66
+Low resolution limit           	 55.18	 55.18	  1.70
+Completeness                   	100.0	 99.9	100.0
+Multiplicity                   	314.3	346.7	262.8
+I/sigma                        	 81.7	228.5	  7.6
+Rmerge                         	0.106	0.071	5.227
+Rmeas(I)                       	0.106	0.071	5.240
+Rmeas(I+/-)                    	0.106	0.071	5.247
+Rpim(I)                        	0.006	0.004	0.322
+Rpim(I+/-)                     	0.008	0.005	0.450
+Wilson B factor                	31.457
+Total observations             	2982419	44723	180512
+Total unique                   	9488	129	687
+\end{verbatim}
+\end{frame}
+
+\frame{
 \frametitle{Effects of Running Aimless}
 \begin{itemize}
 \item{Output effectively the same as Scala}
@@ -80,10 +109,11 @@
 \item{Try to assemble a data set from everything}
 \item{Worry about isomorphism in scaling rather than from unit cell
     etc.}
-\item{look at CC's between sweeps as measure of isomorphism}
+\item{Look at CC's between sweeps as measure of isomorphism}
+\item{Scale CC's to ersatz distance as $d = \frac{1}{CC} -
+    1$\footnote{Which means you can \emph{interpret} the distances.}}
 \end{itemize}
 }
-
 
 \frame{
 \frametitle{Basic Usage}
@@ -95,10 +125,9 @@ xia2 -3daii /here/are/my/data
 }
 
 \frame{
-\frametitle{Basic Usage}
 \begin{center}
 {\huge
-Time passes...
+Time passes... let's talk about options
 }
 \end{center}
 }
@@ -106,12 +135,83 @@ Time passes...
 \frame{
 \frametitle{Useful options}
 \begin{itemize}
-\item{-microcrystal ...}
-\item{-failover ...}
-\item{-spacegroup ...}
-\item{-cell ...}
+\item{-microcrystal - switch to microcrystal mode}
+\item{-failover - ignore failure of processing individual sweeps}
+\item{-spacegroup - set the spacegroup as e.g. P23}
+\item{-cell $a,b,c,\alpha,\beta,\gamma$ - needs -spacegroup}
 \end{itemize}
 }
+
+\begin{frame}[fragile]
+\frametitle{After processing}
+\begin{verbatim}
+> cd DEFAULT/scale
+> x1335 XSCALE.LP
+> R --no-save < x1335.R
+\end{verbatim}
+\end{frame}
+
+\frame{
+\frametitle{Results}
+\begin{center}
+\includegraphics[scale=0.35]{figures/insulin.pdf}
+\end{center}
+}
+
+\frame{
+\frametitle{Interpretation}
+\begin{itemize}
+\item{$d = \frac{1}{CC} - 1$}
+\item{$CC = \frac{1}{d + 1}$}
+\item{$CC = 0.95 \rightarrow d < 0.05$}
+\item{Up to you to decide on your limits...}
+\end{itemize}
+}
+
+\frame{
+\frametitle{Interpretation}
+\begin{center}
+\includegraphics[scale=0.35]{figures/cc_d.pdf}
+\end{center}
+}
+
+\begin{frame}[fragile]
+\begin{verbatim}
+ No.  Av. CC  I/sig  File Name
+   1  0.9796   2.25 NATIVE_SWEEP11.HKL
+   2  0.9822   3.61 NATIVE_SWEEP22.HKL
+   3  0.9807   7.49 NATIVE_SWEEP33.HKL
+   4  0.9869   9.85 NATIVE_SWEEP34.HKL
+   5  0.9930  10.93 NATIVE_SWEEP35.HKL
+   6  0.9939   2.34 NATIVE_SWEEP36.HKL
+   7  0.9913   3.60 NATIVE_SWEEP37.HKL
+   8  0.9902   7.04 NATIVE_SWEEP38.HKL
+   9  0.9922   9.89 NATIVE_SWEEP39.HKL
+  10  0.9868  13.14 NATIVE_SWEEP1.HKL
+  11  0.9904   1.85 NATIVE_SWEEP2.HKL
+  12  0.9889   1.78 NATIVE_SWEEP3.HKL
+  13  0.9885   1.14 NATIVE_SWEEP4.HKL
+  14  0.9907   1.74 NATIVE_SWEEP5.HKL
+  15  0.9904   2.70 NATIVE_SWEEP6.HKL
+  16  0.9926   4.12 NATIVE_SWEEP7.HKL
+  17  0.9924   2.60 NATIVE_SWEEP8.HKL
+  18  0.9925   2.64 NATIVE_SWEEP9.HKL
+  19  0.9930   1.69 NATIVE_SWEEP10.HKL
+  20  0.9826   3.39 NATIVE_SWEEP12.HKL
+\end{verbatim}
+\end{frame}
+
+\frame{
+\frametitle{Next steps}
+\begin{itemize}
+\item{Book keeping - take the sweeps you wish to merge from dendogram}
+\item{Edit xinfo file}
+\item{Run again}
+\item{This needs automating, and also calculations performing to tell
+    you how complete results will be}
+\end{itemize}
+}
+
 
 
 \end{document}
