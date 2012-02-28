@@ -27,9 +27,37 @@
 \frametitle{Overview}
 \begin{itemize}
 \item{CCP4 2012 presentation}
-\item{Current state of multi-crystal analysis}
 \item{Removal of frame count limitations}
+\item{Current state of multi-crystal analysis}
 \item{Conclusions \& plans}
+\end{itemize}
+}
+
+\frame{
+\frametitle{Removal of frame count limitations}
+\begin{itemize}
+\item{Use Aimless in place of Scala}
+\item{Use Pointless in place of Reindex\footnote{This is still not as
+      efficient as it could be - but it works}}
+\item{Run -3daii or -3da}
+\item{No more batch limitations}
+\end{itemize}
+}
+
+\frame{
+\frametitle{Effects of Running Aimless}
+\begin{itemize}
+\item{Output effectively the same as Scala}
+\item{SD correction slightly more effective}
+\item{C++ not Fortran - no need to recompile for lots of batches}
+\item{Parallel (openMP) version in development}
+\end{itemize}
+}
+
+\frame{
+\frametitle{Effects of Running Aimless in xia2}
+\begin{itemize}
+\item{Since scaling performed by XSCALE very little difference in results}
 \end{itemize}
 }
 
@@ -39,10 +67,51 @@
 \item{Developed over ~ 1 year or so}
 \item{Hiatus for most of that time}
 \item{Still very rough around the edges}
+\item{Requires use of XDS processing}
+\item{Requires R (at the moment) to generate plot}
+\end{itemize}
+}
+
+\frame{
+\frametitle{Basic principles}
+\begin{itemize}
+\item{Assume in processing that everything comes from the same
+    crystal}
+\item{Try to assemble a data set from everything}
+\item{Worry about isomorphism in scaling rather than from unit cell
+    etc.}
+\item{look at CC's between sweeps as measure of isomorphism}
 \end{itemize}
 }
 
 
+\frame{
+\frametitle{Basic Usage}
+\begin{center}
+{\huge
+xia2 -3daii /here/are/my/data
+}
+\end{center}
+}
+
+\frame{
+\frametitle{Basic Usage}
+\begin{center}
+{\huge
+Time passes...
+}
+\end{center}
+}
+
+\frame{
+\frametitle{Useful options}
+\begin{itemize}
+\item{-microcrystal ...}
+\item{-failover ...}
+\item{-spacegroup ...}
+\item{-cell ...}
+\end{itemize}
+}
 
 
 \end{document}
