@@ -158,13 +158,27 @@ Time passes... let's talk about options
 \end{center}
 }
 
+\begin{frame}[fragile]
+\begin{verbatim}
+ No.  Av. CC  I/sig  File Name
+   1  0.9796   2.25 NATIVE_SWEEP11.HKL
+   2  0.9822   3.61 NATIVE_SWEEP22.HKL
+   3  0.9807   7.49 NATIVE_SWEEP33.HKL
+<snip>
+  18  0.9925   2.64 NATIVE_SWEEP9.HKL
+  19  0.9930   1.69 NATIVE_SWEEP10.HKL
+  20  0.9826   3.39 NATIVE_SWEEP12.HKL
+\end{verbatim}
+\end{frame}
+
 \frame{
 \frametitle{Interpretation}
 \begin{itemize}
 \item{$d = \frac{1}{CC} - 1$}
 \item{$CC = \frac{1}{d + 1}$}
 \item{$CC = 0.95 \rightarrow d < 0.05$}
-\item{Up to you to decide on your limits...}
+\item{Up to you to decide on your limits... at least you know what
+    they mean}
 \end{itemize}
 }
 
@@ -174,32 +188,6 @@ Time passes... let's talk about options
 \includegraphics[scale=0.35]{figures/cc_d.pdf}
 \end{center}
 }
-
-\begin{frame}[fragile]
-\begin{verbatim}
- No.  Av. CC  I/sig  File Name
-   1  0.9796   2.25 NATIVE_SWEEP11.HKL
-   2  0.9822   3.61 NATIVE_SWEEP22.HKL
-   3  0.9807   7.49 NATIVE_SWEEP33.HKL
-   4  0.9869   9.85 NATIVE_SWEEP34.HKL
-   5  0.9930  10.93 NATIVE_SWEEP35.HKL
-   6  0.9939   2.34 NATIVE_SWEEP36.HKL
-   7  0.9913   3.60 NATIVE_SWEEP37.HKL
-   8  0.9902   7.04 NATIVE_SWEEP38.HKL
-   9  0.9922   9.89 NATIVE_SWEEP39.HKL
-  10  0.9868  13.14 NATIVE_SWEEP1.HKL
-  11  0.9904   1.85 NATIVE_SWEEP2.HKL
-  12  0.9889   1.78 NATIVE_SWEEP3.HKL
-  13  0.9885   1.14 NATIVE_SWEEP4.HKL
-  14  0.9907   1.74 NATIVE_SWEEP5.HKL
-  15  0.9904   2.70 NATIVE_SWEEP6.HKL
-  16  0.9926   4.12 NATIVE_SWEEP7.HKL
-  17  0.9924   2.60 NATIVE_SWEEP8.HKL
-  18  0.9925   2.64 NATIVE_SWEEP9.HKL
-  19  0.9930   1.69 NATIVE_SWEEP10.HKL
-  20  0.9826   3.39 NATIVE_SWEEP12.HKL
-\end{verbatim}
-\end{frame}
 
 \frame{
 \frametitle{Next steps}
@@ -212,6 +200,31 @@ Time passes... let's talk about options
 \end{itemize}
 }
 
+\frame{
+\frametitle{Trivial example - Thaumatin}
+\begin{itemize}
+\item{Split 450 image Thaumatin data set into 5 x 90 image chunks}
+\item{Process as usual, very good results and grouping comes in data
+    collection order}
+\item{Distances are fantastically small indicating very high CC's}
+\end{itemize}
+}
 
+\frame{
+\frametitle{Results}
+\begin{center}
+\includegraphics[scale=0.35]{figures/thaumatin.pdf}
+\end{center}
+}
+
+\frame{
+\frametitle{Developments planned from mid April}
+\begin{itemize}
+\item{Apply to more cases}
+\item{Work on clustering}
+\item{Work on incorporating radiation damage: split sweeps?}
+\item{Automate analysis, also allowing for completeness}
+\end{itemize}
+}
 
 \end{document}
