@@ -29,6 +29,7 @@
 \item{CCP4 2012 presentation}
 \item{Removal of frame count limitations}
 \item{Current state of multi-crystal analysis}
+\item{Other developments}
 \item{Conclusions \& plans}
 \end{itemize}
 }
@@ -139,6 +140,8 @@ Time passes... let's talk about options
 \item{-failover - ignore failure of processing individual sweeps}
 \item{-spacegroup - set the spacegroup as e.g. P23}
 \item{-cell $a,b,c,\alpha,\beta,\gamma$ - needs -spacegroup}
+\item{-min\_images 3 - minimum images to count as a sweep}
+\item{-xparm GXPARM.XDS - refined model of experimental geometry}
 \end{itemize}
 }
 
@@ -222,8 +225,18 @@ Time passes... let's talk about options
 \begin{itemize}
 \item{Apply to more cases}
 \item{Work on clustering}
-\item{Work on incorporating radiation damage: split sweeps?}
+\item{Include comparison of $R_{\rm{merge}}$ as a function of batch number}
+\item{Work on incorporating radiation damage: split sweeps into blocks}
 \item{Automate analysis, also allowing for completeness}
+\end{itemize}
+}
+
+\frame{
+\frametitle{Other developments}
+\begin{itemize}
+\item{Development of xia2 for small molecule crystallography}
+\item{Support for complex experimental geometry from imgCIF data}
+\item{Full scaling model search with scaling with Aimless and Scala}
 \end{itemize}
 }
 
