@@ -1,10 +1,8 @@
 import math
-import os
 import sys
 
 from scitbx import matrix
 from cctbx import uctbx
-from cctbx import sgtbx
 
 from coordinate_frame_helpers import is_xds_xparm, import_xds_xparm
 
@@ -105,7 +103,7 @@ class coordinate_frame_converter:
 
         uc = uctbx.unit_cell((a, b, c, alpha, beta, gamma))
 
-        B = matrix.sqr(uc.fractionalization_matrix().transpose())
+        B = matrix.sqr(uc.fractionalization_matrix()).transpose()
 
         U = A * B.inverse()
 
@@ -120,6 +118,33 @@ class coordinate_frame_converter:
                   convention
 
         return R * U, B
+
+    def get_unit_cell(self):
+        '''Get the unit cell.'''
+
+        cfi = self._coordinate_frame_information
+
+        if not cfi.get_real_space_a() or not cfi.get_real_space_b() or \
+           not cfi.get_real_space_c():
+            raise RuntimeError, 'orientation matrix information missing'
+
+        axis_a = cfi.get_real_space_a()
+        axis_b = cfi.get_real_space_b()
+        axis_c = cfi.get_real_space_c()
+
+        A = matrix.sqr(axis_a.elems +  axis_b.elems + axis_c.elems).inverse()
+
+        a = axis_a.length()
+        b = axis_b.length()
+        c = axis_c.length()
+
+        alpha = axis_b.angle(axis_c, deg = True)
+        beta = axis_c.angle(axis_a, deg = True)
+        gamma = axis_a.angle(axis_b, deg = True)
+
+        uc = uctbx.unit_cell((a, b, c, alpha, beta, gamma))
+
+        return uc
 
     def derive_beam_centre_pixels_fast_slow(self):
         '''Derive the pixel position at which the direct beam would intersect

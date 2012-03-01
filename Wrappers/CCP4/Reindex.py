@@ -27,6 +27,7 @@ from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
 
 from Handlers.Syminfo import Syminfo
+from Handlers.Phil import Phil
 
 def ReindexOld(DriverType = None):
     '''A factory for ReindexWrapper classes.'''
@@ -122,6 +123,9 @@ def Reindex(DriverType = None):
     '''A new factory for ReindexWrapper classes, which will actually use
     pointless.'''
 
+    if Phil.get_ccp4_reindex_program() == 'reindex':
+        return ReindexOld(DriverType)
+    
     DriverInstance = DriverFactory.Driver(DriverType)
     CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, 'ccp4')
 

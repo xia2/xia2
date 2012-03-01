@@ -22,6 +22,10 @@ xds.parameter {
   delphi_small = 30
     .type = float
 }
+ccp4.reindex {
+  program = 'pointless'
+    .type = str
+}
 """)
         self._parameters = self._working_phil.extract()
         return
@@ -45,6 +49,9 @@ xds.parameter {
 
     def get_xds_parameter_delphi_small(self):
         return self._parameters.xds.parameter.delphi_small
+
+    def get_ccp4_reindex_program(self):
+        return self._parameters.ccp4.reindex.program
 
 Phil = _Phil()
 
