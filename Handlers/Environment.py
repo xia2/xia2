@@ -35,7 +35,7 @@ def df(path):
     if platform.system() == 'Windows':
         bytes = ctypes.c_ulonglong(0)
         ctypes.windll.kernel32.GetDiskFreeSpaceExW(
-            ctypes.c_wchar_p(folder), None, None, ctypes.pointer(bytes))
+            ctypes.c_wchar_p(path), None, None, ctypes.pointer(bytes))
         return bytes.value
     else:
         s = os.statvfs(path)
@@ -185,3 +185,4 @@ def get_number_cpus():
 if __name__ == '__main__':
 
     print get_number_cpus()
+    print df(os.getcwd())
