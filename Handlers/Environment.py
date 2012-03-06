@@ -18,16 +18,30 @@ import os
 import sys
 import subprocess
 import stat
+import platform
+import ctypes
+import tempfile
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
-# to make a temporary BINSORT_SCR directory
-import tempfile
-
 from Handlers.Streams import Chatter, Debug
+
+def df(path):
+    '''Return disk space in bytes in path.'''
+
+    if platform.system() == 'Windows':
+        bytes = ctypes.c_ulonglong(0)
+        ctypes.windll.kernel32.GetDiskFreeSpaceExW(
+            ctypes.c_wchar_p(folder), None, None, ctypes.pointer(bytes))
+        return bytes.value
+    else:
+        s = os.statvfs(path)
+        return s.f_frsize * s.f_bavail
+
+    raise RuntimeError, 'platform not supported'
 
 class _Environment:
     '''A class to store environmental considerations.'''
@@ -52,22 +66,18 @@ class _Environment:
         if not os.environ.has_key('USER'):
             os.environ['USER'] = 'xia2'
 
-        # check that BINSORT_SCR exists if set..
-
-        if False:
-
-            if os.environ.has_key('BINSORT_SCR'):
-                path = os.environ['BINSORT_SCR']
-                if not os.path.exists(path):
-                    Debug.write('Making directory: %s (BINSORT_SCR)' % path)
-                    os.makedirs(path)
-
         # create a random BINSORT_SCR directory
 
         binsort_scr = tempfile.mkdtemp()
         os.environ['BINSORT_SCR'] = binsort_scr
         Debug.write('Created BINSORT_SCR: %s' % binsort_scr)
 
+        try:
+            Debug.write('Space in BINSORT_SCR: %.2f GB' % (
+                        df(binsort_scr) / (1024.0 * 1024.0 * 1024.0)))
+        except RuntimeError, e:
+            pass
+            
         self._is_setup = True
 
         return
