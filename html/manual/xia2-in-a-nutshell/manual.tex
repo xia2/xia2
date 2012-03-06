@@ -1,6 +1,7 @@
 \documentclass[a4paper, 11pt]{article}
 \usepackage{graphicx,amsmath}
 \usepackage{verbatim}
+\usepackage{graphicx}
 
 \title{The \emph{xia2} manual}
 
@@ -12,6 +13,44 @@
 \clearpage
 
 \tableofcontents
+
+\section{Quick Start Guide}
+
+If you don't like manuals and reading and just want to get started,
+just try:
+
+\begin{verbatim}
+xia2 -2d /here/are/my/images
+\end{verbatim}
+
+\noindent
+or
+
+\begin{verbatim}
+xia2 -3d /here/are/my/images
+\end{verbatim}
+
+\noindent
+(remembering of course -atom X if you want anomalous pairs separating
+in scaling.) If this appears to do something sensible then you may
+well be home and dry. Some critical options:
+
+\begin{center}
+\begin{tabular}{|r|p{6cm}|}
+\hline
+Option & Usage \\
+\hline
+-atom X & tell xia2 to separate anomalous pairs i.e. $I(+) \ne I(-)$ in 
+scaling \\
+-2d & tell xia2 to use MOSFLM and SCALA \\
+-3d & tell xia2 to use XDS and XSCALE \\
+-3dii & tell xia2 to use XDS and XSCALE, indexing with peaks found from
+all images \\
+\hline
+\end{tabular}
+\end{center}
+
+If this doesn't hit the spot, you'll need to read the rest of the document.
 
 \section{Background}
 
@@ -94,31 +133,36 @@ scientists. In all cases however the usage of the program is the same.
 
 \section{Using xia2}
 
-\begin{center}
-\begin{tabular}{c}
-{\huge
-xia2 -2d /here/are/my/data
-}\\
-\\
-{\huge \emph{- or -}} \\
-\\
-{\huge
-xia2 -3d /here/are/my/data
-}\\
-\end{tabular}
-\end{center}
+As mentioned in the quick start section, to get started simply run:
+
+\begin{verbatim}
+xia2 -2d /here/are/my/images
+\end{verbatim}
+
+\noindent
+or
+
+\begin{verbatim}
+xia2 -3d /here/are/my/images
+\end{verbatim}
 
 The program is used from the command-line, there is no GUI. In essence there
 are four command-line options which are useful on a daily basis:
 
-\begin{itemize}
-\item{-atom X - tell xia2 to separate anomalous pairs i.e. $I(+) \ne I(-)$ in 
-scaling}
-\item{-2d - tell xia2 to use MOSFLM and SCALA}
-\item{-3d - tell xia2 to use XDS and XSCALE}
-\item{-3dii - tell xia2 to use XDS and XSCALE, indexing with peaks found from
-all images}
-\end{itemize}
+\begin{center}
+\begin{tabular}{|r|p{6cm}|}
+\hline
+Option & Usage \\
+\hline
+-atom X & tell xia2 to separate anomalous pairs i.e. $I(+) \ne I(-)$ in 
+scaling \\
+-2d & tell xia2 to use MOSFLM and SCALA \\
+-3d & tell xia2 to use XDS and XSCALE \\
+-3dii & tell xia2 to use XDS and XSCALE, indexing with peaks found from
+all images \\
+\hline
+\end{tabular}
+\end{center}
 
 \noindent
 These specify in the broadest possible terms to the program the manner in
@@ -126,8 +170,6 @@ which you would like the processing performed. The program will then read all
 of the image headers found in \verb|/here/are/my/data| to organise the data, 
 first into sweeps, then into wavelengths, before assigning all of these
 wavelengths to a crystal.
-
-[FIXME FIGURE]
 
 The data from the experiment is understood as follows. The SWEEP, which 
 corresponds to one ``scan,'' is the basic unit of indexing and integration.
@@ -137,6 +179,7 @@ and high dose pass will be merged together. A CRYSTAL however contains all
 of the data from the experiment and is the basic unit of data for scaling.
 
 \begin{figure}
+\begin{center}
 {\small
 \begin{verbatim}
 BEGIN PROJECT AUTOMATIC
@@ -161,6 +204,7 @@ END CRYSTAL DEFAULT
 END PROJECT AUTOMATIC
 \end{verbatim}
 }
+\end{center}
 \caption{The input file to the program, which is generated automatically, shows
 how the input data are understood. This may be adjusted and the program rerun,
 which will be covered in more detail later in the manual.}
@@ -172,32 +216,40 @@ The most straightforward way to discuss the operation of the program is
 through demonstrations with real examples. The first of these is a DNA / 
 ligand complex recorded at Diamond Light Source as part of ongoing research.
 The structure includes barium which may be used for phasing, and the data
-were recorded as a single sweep. As may be seen from [FIXME FIGURE] the
-quality of diffraction was not ideal, and radiation damage was an issue.
-Initially the data were processed with 
-
-\begin{center}
-\includegraphics[scale=0.35]{figures/3qrn-diffraction.png}
-\end{center}
-
-\begin{center}
-{\huge
+were recorded as a single sweep. As may be seen from
+Figure~\ref{figure-diffraction}, the quality of diffraction was not
+ideal, and radiation damage was an issue. Initially the data were processed with 
+\begin{verbatim}
 xia2 -3d -atom Ba /here/are/my/data
-}
-\end{center}
+\end{verbatim}
 
 \noindent
-giving the merging statistics shown in [FIXME TABLE]. From these it is clear
+giving the merging statistics shown in Table~\ref{table-merging-full}.
+From these it is clear
 that there is something wrong: it is very unusual to have near atomic 
 resolution diffraction with $\sim 10\%$ $R_{\rm{merge}}$ in the low resolution
 bin. The most likely reasons are incorrect assignment of the pointgroup and
 radiation damage - the latter of which is clear from the analysis of 
-$R_{\rm{merge}}$ as a function of image number [FIXME FIGURE.] A development 
+$R_{\rm{merge}}$ as a function of image number
+(Figure~\ref{figure-rmerge-completeness} left.) A development 
 option is now available (-3da rather than -3d) which will run Aimless in the 
 place of Scala for merging, and which gives the cumulative completeness as
-a function of frame number, as shown in FIXME FIGURE. From this it is clear 
-that the data were essentially complete after approximately 200 frames. 
+a function of frame number, as shown in
+Figure~\ref{figure-rmerge-completeness} right. From this it is clear 
+that the data were essentially complete after approximately 200
+frames, though the low resolution completeness is poor. 
 
+\begin{figure}
+\caption{Illustration of central region of diffraction pattern from
+  data set used as example in the text. \label{figure-diffraction}}
+\begin{center}
+\includegraphics[scale=0.35]{figures/3qrn-diffraction.png}
+\end{center}
+\end{figure}
+
+\begin{table}
+\caption{Merging stats for the full data set for the example shown in
+  the text.\label{table-merging-full}}
 \begin{tabular}{lccc}
 High resolution limit      &       1.25 &    6.45 &   1.25\\
 Low resolution limit       &                18.85  & 18.85  &  1.27\\
@@ -217,9 +269,17 @@ Anomalous slope            &      1.085 &  0.000 &  0.000\\
 Total observations         &       118588 & 529  &   1634\\
 Total unique               &         9749  &  63 &     337\\
 \end{tabular}
+\end{table}
 
-\includegraphics[scale=0.25]{figures/3qrn-all-rmerge-aimless.png}
-\includegraphics[scale=0.25]{figures/3qrn-all-complete-aimless.png}
+\begin{figure}
+\caption{Merging statistics and completeness as a function of frame
+  number for the example described in the
+  text.\label{figure-rmerge-completeness}}
+\begin{tabular}{cc}
+\includegraphics[scale=0.25]{figures/3qrn-all-rmerge-aimless.png} & 
+\includegraphics[scale=0.25]{figures/3qrn-all-complete-aimless.png} \\
+\end{tabular}
+\end{figure}
 
 \subsection{Modifying input}
 
@@ -230,21 +290,24 @@ work like this as decisions made for the full data set (e.g. scaling model
 to use) may differ from those for the subset - we therefore need to rerun the
 whole \emph{xia2} job after modifying the input. All that is necessary is to 
 adjust the image range (START\_END) to get the modified input file shown in 
-FIXME FIGURE and rerun as 
+Figure~\ref{table-modified-xinfo} and rerun as 
 
-\begin{center}
-{\huge
+\begin{verbatim}
 xia2 -3d -xinfo modified.xinfo
-}
-\end{center}
+\end{verbatim}
 
 \noindent
-giving the results shown in FIXME TABLE. These are clearly much more internally
-consistent and give nice results from experimental phasing. At the same time 
+giving the results shown in Table~\ref{table-merging-sub}. 
+These are clearly much more internally
+consistent and give nice results from experimental phasing though with
+very poor low resolution completeness. At the same time 
 we may wish to adjust the resolution limits to give more complete data in the 
 outer shell, which may be achieved by adding a RESOLUTION instruction to 
 either the SWEEP or WAVELENGTH block.
 
+\begin{figure}
+\begin{center}
+{\small
 \begin{verbatim}
 BEGIN PROJECT AUTOMATIC
 BEGIN CRYSTAL DEFAULT
@@ -267,7 +330,15 @@ END SWEEP SWEEP1
 END CRYSTAL DEFAULT
 END PROJECT AUTOMATIC
 \end{verbatim}
+}
+\end{center}
+\caption{The modified input file to the program, showing the change to
+START\_END.\label{table-modified-xinfo}}
+\end{figure}
 
+\begin{table}
+\caption{Merging stats for the first 200 frames form the data set for
+  the example shown in the text.\label{table-merging-sub}}
 \begin{tabular}{lccc}
 High resolution limit         &         1.22 &  6.34 &  1.22 \\
 Low resolution limit          &        19.62 & 19.62 &  1.24 \\
@@ -287,6 +358,7 @@ Anomalous slope               &       1.553  &0.000 & 0.000 \\
 Total observations            &       50875  &272   & 342 \\
 Total unique                  &       9552   &55    & 199 \\
 \end{tabular}
+\end{table}
 
 \section{Program Output}
 
@@ -354,24 +426,53 @@ Mosaic spread: 0.140 < 0.189 < 0.290
 \noindent
 and includes a convenient legend.
 
+\subsection{HTML pages}
+
+If \verb|xia2html| has been run there is a nicely formatted html
+version of this report, which includes graphical representation of
+some of the log file output from e.g. Scala. Loading up
+\verb|xia2.html| will give (hopefully self documenting) results as
+shown in Figure~\ref{figure-xia2html}. If you have manually run xia2,
+immediately running \verb|xia2html| in the same directory will generate this.
+
+\begin{figure}
+\caption{Illustration of xia2html output.\label{figure-xia2html}}
+\begin{center}
+\includegraphics[scale=0.25]{figures/xia2html.png}
+\end{center}
+\end{figure}
+
 \section{Commonly used program options}
 
 There are a number of program options which are used on a daily basis in 
 \emph{xia2}, which are:
 
-\begin{itemize}
-\item{-atom X - tell \emph{xia2} to separate anomalous pairs i.e. $I(+) \ne I(-)$ in 
-scaling}
-\item{-2d - tell \emph{xia2} to use MOSFLM and SCALA}
-\item{-3d - tell \emph{xia2} to use XDS and XSCALE}
-\item{-3dii - tell \emph{xia2} to use XDS and XSCALE, indexing with
-    peaks found from all images}
-\item{-xinfo modified.xinfo - use specific input file}
-\item{-image /path/to/an/image.img - process specific scan}
-\item{-spacegroup spacegroup\_name - set the spacegroup, e.g. P21}
-\item{-cell a,b,c,$\alpha$,$\beta$,$\gamma$ - set the cell constants} 
-\item{-small\_molecule - don't run things like TRUNCATE}
-\end{itemize}
+\begin{center}
+\begin{tabular}{|r|p{6cm}|}
+\hline
+-atom X & tell \emph{xia2} to separate anomalous pairs i.e. $I(+) \ne I(-)$ in 
+scaling \\
+-2d & tell \emph{xia2} to use MOSFLM and SCALA \\
+-3d & tell \emph{xia2} to use XDS and XSCALE \\
+-3dii & tell \emph{xia2} to use XDS and XSCALE, indexing with
+    peaks found from all images \\
+-2da & tell \emph{xia2} to use MOSFLM and AIMLESS \\
+-3da & tell \emph{xia2} to use XDS and XSCALE, merging with AIMLESS \\
+-3daii & tell \emph{xia2} to use XDS and XSCALE, merging with AIMLESS,
+indexing with peaks found from all images \\
+-xinfo modified.xinfo & use specific input file \\
+-image /path/to/an/image.img & process specific scan \\
+-spacegroup spacegroup\_name & set the spacegroup, e.g. P21 \\
+-cell a,b,c,$\alpha$,$\beta$,$\gamma$ & set the cell constants \\ 
+-small\_molecule & process in manner more suited to small molecule data \\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent
+Options running AIMLESS are able to cope with an extremely large
+number of images, useful when trying to merge data from a number of
+crystals each with a large number of images.
 
 \subsection{Resolution limits}
 
