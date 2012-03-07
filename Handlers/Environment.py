@@ -29,7 +29,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Handlers.Streams import Chatter, Debug
 
-def df(path):
+def df(path = os.getcwd()):
     '''Return disk space in bytes in path.'''
 
     if platform.system() == 'Windows':
@@ -66,15 +66,19 @@ class _Environment:
         if not os.environ.has_key('USER'):
             os.environ['USER'] = 'xia2'
 
-        # create a random BINSORT_SCR directory
+        # create a random BINSORT_SCR directory, check how much space we
+        # have in there...
 
         binsort_scr = tempfile.mkdtemp()
         os.environ['BINSORT_SCR'] = binsort_scr
         Debug.write('Created BINSORT_SCR: %s' % binsort_scr)
 
         try:
-            Debug.write('Space in BINSORT_SCR: %.2f GB' % (
-                        df(binsort_scr) / (1024.0 * 1024.0 * 1024.0)))
+            space = df(binsort_scr) / (1024.0 * 1024.0)
+            Debug.write('Space in BINSORT_SCR: %.2f GB' % (space / 1024.0))
+            if space < 200.0:
+                Chatter.write('Warning: < 200MB in BINSORT_SCR')
+                
         except RuntimeError, e:
             pass
             
@@ -113,10 +117,7 @@ class _Environment:
     def getenv(self, name):
         '''A wrapper for os.environ.'''
         self._setup()
-        try:
-            return os.environ[name]
-        except:
-            return None
+        return os.environ.get(name, None)
 
     def cleanup(self):
         '''Clean up now we are done - chown all harvest files to world

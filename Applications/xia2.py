@@ -24,6 +24,7 @@
 
 import sys
 import os
+import math
 import time
 import exceptions
 import traceback
@@ -33,7 +34,7 @@ sys.path.append(os.environ['XIA2_ROOT'])
 from Handlers.Streams import Chatter
 from Handlers.Files import cleanup
 from Handlers.Citations import Citations
-from Handlers.Environment import Environment
+from Handlers.Environment import Environment, df
 
 from XIA2Version import Version
 
@@ -89,25 +90,27 @@ def check_environment():
     check_cctbx_version()
 
     xia2_keys = ['XIA2_ROOT', 'XIA2CORE_ROOT']
-
     ccp4_keys = ['CCP4', 'CLIBD', 'BINSORT_SCR']
 
     Chatter.write('Environment configuration...')
     for k in xia2_keys:
-        if not os.environ.has_key(k):
+        v = Environment.getenv(k)
+        if not v:
             raise RuntimeError, '%s not defined - is xia2 set up?'
-        if not os.environ[k] == os.environ[k].strip():
-            raise RuntimeError, 'spaces around "%s"' % os.environ[k]
-        Chatter.write('%s => %s' % (k, os.environ[k]))
+        if not v == v.strip():
+            raise RuntimeError, 'spaces around "%s"' % v
+        Chatter.write('%s => %s' % (k, v))
 
     for k in ccp4_keys:
-        if not os.environ.has_key(k):
+        v = Environment.getenv(k)
+        if not v:
             raise RuntimeError, '%s not defined - is CCP4 set up?'
-        if not os.environ[k] == os.environ[k].strip():
-            raise RuntimeError, 'spaces around "%s"' % os.environ[k]
-        Chatter.write('%s => %s' % (k, os.environ[k]))
+        if not v == v.strip():
+            raise RuntimeError, 'spaces around "%s"' % v
+        Chatter.write('%s => %s' % (k, v))
 
     Chatter.write('Working directory: %s' % os.getcwd())
+    Chatter.write('Free space:        %.2f GB' % (df() / math.pow(2, 30)))
 
     try:
         if os.name == 'nt':
