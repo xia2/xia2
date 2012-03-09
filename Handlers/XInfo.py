@@ -363,6 +363,8 @@ class XInfo:
                           (sweep, crystal)
 
                 self._crystals[crystal]['sweeps'][sweep] = { }
+                self._crystals[crystal]['sweeps'][sweep][
+                    'excluded_regions'] = []
 
                 # in here I expect to find IMAGE, DIRECTORY, WAVELENGTH
                 # and optionally BEAM
@@ -418,6 +420,24 @@ class XInfo:
                                   'START_END start end, not "%s"' % record
                         self._crystals[crystal]['sweeps'][sweep][
                             'start_end'] = start_end
+
+                    elif 'EXCLUDE' == record.split()[0]:
+                        if record.split()[1].upper() == 'ICE':
+                            self._crystals[crystal]['sweeps'][sweep][
+                                'ice'] = True 
+                        else:
+                            excluded_region = map(float, record.split()[1:])
+                            if len(excluded_region) != 2:
+                                raise RuntimeError, \
+                                      'EXCLUDE upper lower, not "%s". \
+                                       eg. EXCLUDE 2.28 2.22' % record
+                            if excluded_region[0] <= excluded_region[1]:
+                                raise RuntimeError, \
+                                      'EXCLUDE upper lower, where upper \
+                                       must be greater than lower (not "%s").\n\
+                                       eg. EXCLUDE 2.28 2.22' % record
+                            self._crystals[crystal]['sweeps'][sweep][
+                                'excluded_regions'].append(excluded_region)
 
                     else:
                         key = record.split()[0]

@@ -163,7 +163,7 @@ class XWavelength():
                   beam = None, reversephi = False, distance = None,
                   gain = 0.0, dmin = 0.0, dmax = 0.0, polarization = 0.0,
                   frames_to_process = None, user_lattice = None,
-                  user_cell = None, epoch = 0):
+                  user_cell = None, epoch = 0, ice = False, excluded_regions = []):
         '''Add a sweep to this wavelength.'''
 
         self._sweeps.append(XSweep(name, self,
@@ -179,7 +179,9 @@ class XWavelength():
                                    frames_to_process = frames_to_process,
                                    user_lattice = user_lattice,
                                    user_cell = user_cell,
-                                   epoch = epoch))
+                                   epoch = epoch,
+                                   ice = ice,
+                                   excluded_regions = excluded_regions))
 
         return
 

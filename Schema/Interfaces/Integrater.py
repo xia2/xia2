@@ -77,6 +77,7 @@ class Integrater:
         # indicates "yes". FIXME this should be able to identify
         # different resolution rings.
         self._intgr_ice = 0
+        self._intgr_excluded_regions = []
 
         # required parameters
         self._intgr_wedge = None
@@ -558,6 +559,16 @@ class Integrater:
 
     def get_integrater_ice(self):
         return self._intgr_ice
+
+    # excluded_regions is a list of tuples representing
+    # upper and lower resolution ranges to exclude
+    def set_integrater_excluded_regions(self, excluded_regions):
+        self._intgr_excluded_regions = excluded_regions
+        return
+
+    def get_integrater_excluded_regions(self):
+        return self._intgr_excluded_regions
+
 
     # these methods which follow should probably be respected by
     # the Mosflm implementation of integrater

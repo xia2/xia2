@@ -162,7 +162,9 @@ class XSweep():
                  frames_to_process = None,
                  user_lattice = None,
                  user_cell = None,
-                 epoch = 0):
+                 epoch = 0,
+                 ice = False,
+                 excluded_regions = []):
         '''Create a new sweep named name, belonging to XWavelength object
         wavelength, representing the images in directory starting with image,
         with beam centre optionally defined.'''
@@ -194,6 +196,8 @@ class XSweep():
         self._header = { }
         self._resolution_high = dmin
         self._resolution_low = dmax
+        self._ice = ice
+        self._excluded_regions = excluded_regions
 
         # FIXME in here also need to be able to accumulate the total
         # dose from all experimental measurements (complex) and provide
@@ -641,6 +645,15 @@ class XSweep():
 
             if Flags.get_ice():
                 self._integrater.set_integrater_ice(Flags.get_ice())
+
+            # or if we were told about ice or specific excluded resolution
+            # ranges via the xinfo file
+            if self._ice:
+                self._integrater.set_integrater_ice(self._ice)
+                
+            if len(self._excluded_regions) > 0:
+                self._integrater.set_integrater_excluded_regions(
+                    self._excluded_regions)
 
             # set the working directory for this, based on the hierarchy
             # defined herein...

@@ -191,7 +191,7 @@ class XProject():
 
                 # want to be able to locally override the resolution limits
                 # for this sweep while leaving the rest for the data set
-                # in tact...
+                # intact...
 
                 for sweep_name in crystals[crystal]['sweeps'].keys():
                     sweep_info = crystals[crystal]['sweeps'][sweep_name]
@@ -213,6 +213,13 @@ class XProject():
                                   'bad resolution for sweep %s' % sweep_name
 
                         replace = True
+                    
+                    # FIXME: AJP to implement
+                    if 'ice' in sweep_info:
+                        pass
+                    if 'excluded_regions' in sweep_info:
+                        pass
+
 
                     if sweep_info['wavelength'] == wavelength:
 
@@ -235,7 +242,11 @@ class XProject():
                             frames_to_process = frames_to_process,
                             user_lattice = lattice,
                             user_cell = cell,
-                            epoch = sweep_info.get('epoch', 0))
+                            epoch = sweep_info.get('epoch', 0),
+                            ice = sweep_info.get('ice', False),
+                            excluded_regions = sweep_info.get(
+                                'excluded_regions', []),
+                            )
 
                     dmin = dmin_old
                     dmax = dmax_old

@@ -100,6 +100,7 @@ def XDSCorrect(DriverType = None):
             self._output_data_files_list = ['GXPARM.XDS']
 
             self._ice = 0
+            self._excluded_regions = []
 
             # the following input files are also required:
             #
@@ -138,6 +139,10 @@ def XDSCorrect(DriverType = None):
 
         def set_ice(self, ice):
             self._ice = ice
+            return
+
+        def set_excluded_regions(self, excluded_regions):
+            self._excluded_regions = excluded_regions
             return
 
         def set_polarization(self, polarization):
@@ -253,6 +258,14 @@ def XDSCorrect(DriverType = None):
 
                     xds_inp.write('EXCLUDE_RESOLUTION_RANGE= %.2f %.2f\n' % \
                                   resol)
+            
+            # exclude requested resolution ranges
+            if len(self._excluded_regions) != 0:
+                Debug.write('Excluding regions: %s' % `self._excluded_regions`)
+
+                for upper, lower in self._excluded_regions:
+                    xds_inp.write('EXCLUDE_RESOLUTION_RANGE= %.2f %.2f\n' % \
+                                   (upper, lower))
 
             # postrefine everything to give better values to the
             # next INTEGRATE run

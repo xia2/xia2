@@ -1983,6 +1983,15 @@ def Mosflm(DriverType = None):
                     resol = tuple(map(float, record.split()[:2]))
                     self.input('resolution exclude %.2f %.2f' % (resol))
 
+            # exclude specified resolution ranges
+            if len(self.get_integrater_excluded_regions()) != 0:
+                regions = self.get_integrater_excluded_regions()
+
+                Debug.write('Excluding regions: %s' % `regions`)
+
+                for upper, lower in regions:
+                    self.input('resolution exclude %.2f %.2f' % (upper, lower))
+
             mask = standard_mask(self._fp_header['detector_class'])
             for m in mask:
                 self.input(m)
@@ -2510,6 +2519,17 @@ def Mosflm(DriverType = None):
 
                         resol = tuple(map(float, record.split()[:2]))
                         job.input('resolution exclude %.2f %.2f' % (resol))
+
+                # exclude specified resolution ranges
+                if len(self.get_integrater_excluded_regions()) != 0:
+                    regions = self.get_integrater_excluded_regions()
+
+                    Debug.write('Excluding regions: %s' % `regions`)
+
+                    for upper, lower in regions:
+                        job.input('resolution exclude %.2f %.2f' % \
+                                   (upper, lower))
+
 
                 # generate the mask information from the detector class
                 mask = standard_mask(self._fp_header['detector_class'])
