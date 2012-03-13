@@ -369,7 +369,7 @@ class XDSScalerA(Scaler):
         for epoch in self._scalr_integraters.keys():
             intgr = self._scalr_integraters[epoch]
             pname, xname, dname = intgr.get_integrater_project_info()
-            sweep_name = intgr.get_integrater_sweep_name()
+            sname = intgr.get_integrater_sweep_name()
             self._sweep_information[epoch] = {
                 'pname':pname,
                 'xname':xname,
@@ -383,11 +383,11 @@ class XDSScalerA(Scaler):
                 ).get_image_to_epoch(),
                 'image_to_dose':{},
                 'batch_offset':0,
-                'sweep_name':sweep_name
+                'sname':sname
                 }
 
             Journal.entry({'adding data from':'%s/%s/%s' % \
-                           (xname, dname, sweep_name)})
+                           (xname, dname, sname)})
 
             # what are these used for?
             # pname / xname / dname - dataset identifiers
@@ -877,14 +877,15 @@ class XDSScalerA(Scaler):
 
             # and the get wavelength that this belongs to
             dname = self._sweep_information[epoch]['dname']
+            sname = self._sweep_information[epoch]['sname']
 
             # and the resolution range for the reflections
             intgr = self._sweep_information[epoch]['integrater']
             Debug.write('Epoch: %d' % epoch)
-            Debug.write('HKL: %s (%s)' % (reflections, dname))
+            Debug.write('HKL: %s (%s/%s)' % (reflections, dname, sname))
 
             resolution_low = intgr.get_integrater_low_resolution()
-            resolution_high = self._resolution_limits.get(dname, 0.0)
+            resolution_high = self._resolution_limits.get((dname, sname), 0.0)
 
             resolution = (resolution_high, resolution_low)
 
@@ -1018,16 +1019,18 @@ class XDSScalerA(Scaler):
 
             intgr = input['integrater']
 
+            rkey = input['dname'], input['sname']
+
             if intgr.get_integrater_user_resolution():
                 dmin = intgr.get_integrater_high_resolution()
 
-                if not user_resolution_limits.has_key(input['dname']):
-                    user_resolution_limits[input['dname']] = dmin
-                    self._resolution_limits[input['dname']] = dmin
+                if not user_resolution_limits.has_key(rkey):
+                    user_resolution_limits[rkey] = dmin
+                    self._resolution_limits[rkey] = dmin
                     self._user_resolution_limits[dname] = True
-                elif dmin < user_resolution_limits[input['dname']]:
-                    user_resolution_limits[input['dname']] = dmin
-                    self._resolution_limits[input['dname']] = dmin
+                elif dmin < user_resolution_limits[rkey]:
+                    user_resolution_limits[rkey] = dmin
+                    self._resolution_limits[rkey] = dmin
 
         self._tmp_scaled_refl_files = { }
 
@@ -1071,7 +1074,7 @@ class XDSScalerA(Scaler):
         for epoch in self._sweep_information.keys():
             hklin = self._sweep_information[epoch]['scaled_reflections']
             dname = self._sweep_information[epoch]['dname']
-            sname = self._sweep_information[epoch]['sweep_name']
+            sname = self._sweep_information[epoch]['sname']
 
             log_completeness = os.path.join(self.get_working_directory(),
                                       '%s-completeness.log' % sname)
@@ -1108,7 +1111,7 @@ class XDSScalerA(Scaler):
             # let's properly listen to the user's resolution limit needs...
 
             if self._user_resolution_limits.get(dname, False):
-                resolution = self._resolution_limits[dname]
+                resolution = self._user_resolution_limits[dname]
 
             else:
                 if Flags.get_small_molecule():
@@ -1126,14 +1129,13 @@ class XDSScalerA(Scaler):
             Chatter.write('Resolution for sweep %s/%s: %.2f' % \
                           (dname, sname, resolution))
 
-            if not dname in self._resolution_limits:
-                self._resolution_limits[dname] = resolution
+            if not (dname, sname) in self._resolution_limits:
+                self._resolution_limits[(dname, sname)] = resolution
                 self.set_scaler_done(False)
             else:
-                if resolution < self._resolution_limits[dname]:
-                    self._resolution_limits[dname] = resolution
+                if resolution < self._resolution_limits[(dname, sname)]:
+                    self._resolution_limits[(dname, sname)] = resolution
                     self.set_scaler_done(False)
-
 
         if not self.get_scaler_done():
             Debug.write('Returning as scaling not finished...')
@@ -1190,10 +1192,10 @@ class XDSScalerA(Scaler):
             xname = self._sweep_information[epoch]['xname']
             dname = self._sweep_information[epoch]['dname']
 
-            sweep_name = self._sweep_information[epoch]['sweep_name']
+            sname = self._sweep_information[epoch]['sname']
 
             Journal.entry({'adding data from':'%s/%s/%s' % \
-                           (xname, dname, sweep_name)})
+                           (xname, dname, sname)})
 
             hklout = os.path.join(self.get_working_directory(),
                                   '%s_%s_%s_%d.mtz' % \
@@ -1426,112 +1428,22 @@ class XDSScalerA(Scaler):
             tuple(ri.get_cell()))
         self._reindexed_cell = tuple(ri.get_cell())
 
-        sc = self._factory.Aimless()
-        sc.set_hklin(self._prepared_reflections)
-
-        scales_file = '%s.scales' % self._scalr_xname
-        sc.set_new_scales_file(scales_file)
-
-        for epoch in epochs:
-            input = self._sweep_information[epoch]
-            start, end = (min(input['batches']), max(input['batches']))
-            sc.add_run(start, end, name = input['sweep_name'])
-
-        sc.set_hklout(os.path.join(self.get_working_directory(),
-                                   '%s_%s_scaled.mtz' % \
-                                   (self._scalr_pname, self._scalr_xname)))
-
-        if self.get_scaler_anomalous():
-            sc.set_anomalous()
-
-        sc.multi_merge()
-
-        data = sc.get_summary()
-
-        loggraph = sc.parse_ccp4_loggraph()
-
-        resolution_info = { }
-
-        for key in loggraph.keys():
-            if 'Analysis against resolution' in key:
-                dataset = key.split(',')[-1].strip()
-                resolution_info[dataset] = transpose_loggraph(
-                    loggraph[key])
-
-        reflection_files = sc.get_scaled_reflection_files()
-
-        highest_resolution = 100.0
-
-        if len(resolution_info.keys()) == 0:
-            raise RuntimeError, 'no resolution info'
-
-        for dataset in resolution_info.keys():
-
-            if dataset in user_resolution_limits:
-                resolution = user_resolution_limits[dataset]
-                self._resolution_limits[dataset] = resolution
-                if resolution < highest_resolution:
-                    highest_resolution = resolution
-                continue
-
-            if not dataset in self._resolution_limits:
-                raise RuntimeError, 'resolution calculation already failed?'
-
-            if False:
-                resolution = determine_scaled_resolution(
-                    reflection_files[dataset],
-                    Flags.get_i_over_sigma_limit())[1]
-
-                self._resolution_limits[dataset] = resolution
-
-            resolution = self._resolution_limits[dataset]
-            if resolution < highest_resolution:
-                highest_resolution = resolution
-
-            Chatter.write('Resolution limit for %s: %5.2f' % \
-                          (dataset, self._resolution_limits[dataset]))
+        highest_resolution = min(
+            [self._resolution_limits[k] for k in self._resolution_limits])
 
         self._scalr_highest_resolution = highest_resolution
 
         Debug.write('Scaler highest resolution set to %5.2f' % \
-                      highest_resolution)
-
-        best_resolution = 100.0
-
-        for epoch in self._scalr_integraters.keys():
-            intgr = self._scalr_integraters[epoch]
-            pname, xname, dname = intgr.get_integrater_project_info()
-
-            dmin = intgr.get_integrater_high_resolution()
-
-            Debug.write('Integrater (%s) resolution limit: %.2f' % \
-                        (dname, dmin))
-
-            if self._resolution_limits[dname] < best_resolution:
-                best_resolution = self._resolution_limits[dname]
+                    highest_resolution)
 
         if not self.get_scaler_done():
             Debug.write('Returning as scaling not finished...')
             return
 
-        batch_info = { }
-
-        for key in loggraph.keys():
-            if 'Analysis against Batch' in key:
-                dataset = key.split(',')[-1].strip()
-                batch_info[dataset] = transpose_loggraph(
-                    loggraph[key])
-
-        average_completeness = 0.0
-
-        for k in data.keys():
-            average_completeness += data[k]['Completeness'][0]
-        average_completeness /= len(data.keys())
-
         sdadd_full = 0.0
         sdb_full = 0.0
 
-        # ---------- FINAL SCALING ----------
+        # ---------- FINAL MERGING ----------
 
         scales_file = '%s_final.scales' % self._scalr_xname
 
@@ -1541,7 +1453,7 @@ class XDSScalerA(Scaler):
                                                        self._scalr_xname),
                                     sc.get_log_file())
 
-        sc.set_resolution(best_resolution)
+        sc.set_resolution(highest_resolution)
         sc.set_hklin(self._prepared_reflections)
         sc.set_new_scales_file(scales_file)
 
@@ -1554,11 +1466,12 @@ class XDSScalerA(Scaler):
             input = self._sweep_information[epoch]
             start, end = (min(input['batches']), max(input['batches']))
 
-            run_resolution_limit = self._resolution_limits[input['dname']]
+            rkey = input['dname'], input['sname']
+            run_resolution_limit = self._resolution_limits[rkey]
 
             sc.add_run(start, end, exclude = False,
                        resolution = run_resolution_limit,
-                       name = input['sweep_name'])
+                       name = input['sname'])
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled.mtz' % \
@@ -1609,12 +1522,10 @@ class XDSScalerA(Scaler):
 
         self._scalr_scaled_reflection_files = { }
 
-        self._scalr_highest_resolution = best_resolution
-
         # also output the unmerged scalepack format files...
 
         sc = self._factory.Aimless()
-        sc.set_resolution(best_resolution)
+        sc.set_resolution(highest_resolution)
         sc.set_hklin(self._prepared_reflections)
         sc.set_scalepack()
 
@@ -1622,11 +1533,12 @@ class XDSScalerA(Scaler):
             input = self._sweep_information[epoch]
             start, end = (min(input['batches']), max(input['batches']))
 
-            run_resolution_limit = self._resolution_limits[input['dname']]
+            rkey = input['dname'], input['sname']
+            run_resolution_limit = self._resolution_limits[rkey]
 
             sc.add_run(start, end, exclude = False,
                        resolution = run_resolution_limit,
-                       name = input['sweep_name'])
+                       name = input['sname'])
 
         sc.set_hklout(os.path.join(self.get_working_directory(),
                                    '%s_%s_scaled.mtz' % \
