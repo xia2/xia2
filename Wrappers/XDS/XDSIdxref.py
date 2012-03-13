@@ -341,6 +341,9 @@ def XDSIdxref(DriverType = None):
 
             self._idxref_data = _parse_idxref_lp(lp)
 
+            if not self._idxref_data:
+                raise RuntimeError, 'indexing failed'
+                
             st = _parse_idxref_lp_subtree(lp)
 
             if 2 in st:
