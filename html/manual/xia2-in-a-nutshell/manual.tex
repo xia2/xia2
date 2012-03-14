@@ -14,6 +14,8 @@
 
 \tableofcontents
 
+\clearpage
+
 \section{Quick Start Guide}
 
 If you don't like manuals and reading and just want to get started,
@@ -35,22 +37,45 @@ xia2 -3d /here/are/my/images
 in scaling.) If this appears to do something sensible then you may
 well be home and dry. Some critical options:
 
-\begin{center}
-\begin{tabular}{|r|p{6cm}|}
-\hline
-Option & Usage \\
-\hline
--atom X & tell xia2 to separate anomalous pairs i.e. $I(+) \ne I(-)$ in 
-scaling \\
--2d & tell xia2 to use MOSFLM and SCALA \\
--3d & tell xia2 to use XDS and XSCALE \\
--3dii & tell xia2 to use XDS and XSCALE, indexing with peaks found from
-all images \\
-\hline
-\end{tabular}
-\end{center}
+\begin{itemize}
+\item{-atom X: \\
+Tell xia2 to separate anomalous pairs i.e. $I(+) \ne I(-)$ in scaling.}
+\item{-2d: \\
+Tell xia2 to use MOSFLM and SCALA.}
+\item{-3d: \\
+Tell xia2 to use XDS and XSCALE.}
+\item{-3dii: \\
+Tell xia2 to use XDS and XSCALE, indexing with peaks found from all images.}
+\end{itemize}
 
 If this doesn't hit the spot, you'll need to read the rest of the document.
+
+\clearpage
+
+\section{Introduction}
+
+In a nutshell, \emph{xia2} is an expert system to perform X-ray diffraction
+data processing on \emph{your} behalf, using \emph{your} software with little
+or no input from \emph{you}. It will correctly handle multi-pass, 
+multi-wavelength data sets as described later but crucially it is not a
+data processing package. Specifically, if you use \emph{xia2} in published
+work please include the references for the programs it has used, which are
+printed at the end of the output.
+
+The system was initially written to support remote access to synchrotron 
+facilities, however it may prove useful to anyone using MX, for example:
+
+\begin{itemize}
+\item{assisting new or novice users,}
+\item{giving a second opinion to experts,}
+\item{assisting busy users to allow them to focus on problem cases, or}
+\item{providing reproducible processing.}
+\end{itemize}
+
+\noindent
+The last of these may be most useful for users in a pharmacutical setting,
+or people wishing to test or benchmark equipment, for example beamline 
+scientists. In all cases however the usage of the program is the same.
 
 \section{Background}
 
@@ -80,6 +105,10 @@ fertile for for the development of automated data reduction tools. Most
 crucially, however, the author was told that this was impossible and a 
 waste of time - sufficient motivation for anyone.
 
+\subsection{Glossary}
+
+FIXME write glossary.
+
 \section{Acknowledgements}
 
 Without the trusted and capable packes Mosflm, CCP4, Scala and XDS it would 
@@ -91,8 +120,8 @@ such as Labelit \footnote{N.K. Sauter et al. J. Appl. Cryst. (2004) 37,
 399-409}, Pointless\footnote{P. Evans, Acta Cryst. (2006) D62, 72-82}
 and CCTBX\footnote{R.W. Grosse-Kunstleve et al. J. Appl. Cryst. (2002) 35, 
 126-136} have made the development of \emph{xia2} much more straightforward
-and the end product. The author would therefore like to additionally thank
-Nick Sauter and Ralf Grosee-Kunstleve for their help.
+and the end product more reliable. The author would therefore like to
+additionally thank Nick Sauter and Ralf Grosee-Kunstleve for their help.
 
 Development of a package such as this is impossible without test data, for
 which the author would like to thank numerous users, particularly the 
@@ -106,30 +135,7 @@ The software itself is open source, distributed under a BSD licence, but
 relies on the user having correctly configured and licenced the necessary
 data analysis software, the details of which will be discussed shortly.
 
-\section{Introduction}
-
-In a nutshell, \emph{xia2} is an expert system to perform X-ray diffraction
-data processing on \emph{your} behalf, using \emph{your} software with little
-or no input from \emph{you}. It will correctly handle multi-pass, 
-multi-wavelength data sets as described later but crucially it is not a
-data processing package. Specifically, if you use \emph{xia2} in published
-work please include the references for the programs it has used, which are
-printed at the end of the output.
-
-The system was initially written to support remote access to synchrotron 
-facilities, however it may prove useful to anyone using MX, for example:
-
-\begin{itemize}
-\item{assisting new or novice users,}
-\item{giving a second opinion to experts,}
-\item{assisting busy users to allow them to focus on problem cases, or}
-\item{providing reproducible processing.}
-\end{itemize}
-
-\noindent
-The last of these may be most useful for users in a pharmacutical setting,
-or people wishing to test or benchmark equipment, for example beamline 
-scientists. In all cases however the usage of the program is the same.
+\clearpage
 
 \section{Using xia2}
 
