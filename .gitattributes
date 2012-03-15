@@ -98,6 +98,7 @@ Toolkit/PlayPen/mosflm_matrix_things.py -text
 Toolkit/PlayPen/mosflm_rms.py -text
 Toolkit/PlayPen/mtz2nxs.py -text
 Toolkit/PlayPen/parse-integrate-scale-factors.py -text
+Toolkit/PlayPen/rexinfo.py -text
 Toolkit/PlayPen/rooster.py -text
 Toolkit/PlayPen/rotomat.py -text
 Toolkit/PlayPen/scala2gnuplot.py -text

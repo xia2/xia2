@@ -79,6 +79,7 @@ def get_ccs(xscale_lp):
 
             break
 
+    fout = open('x1335.log', 'w')
     for j in range(xmax):
         ccs[(j + 1, j + 1)] = (0, 0)
 
@@ -88,7 +89,13 @@ def get_ccs(xscale_lp):
                                       sum([ccs[(i + 1, j + 1)][1]
                                            for i in range(xmax)]) / (xmax - 1),
                                       isigma, file_names[j + 1])
+        fout.write('%4d %6.4f %6.2f %s\n' % \
+                   (j + 1, sum([ccs[(i + 1, j + 1)][1]
+                                for i in range(xmax)]) / (xmax - 1),
+                       isigma, file_names[j + 1]))
 
+    fout.close()
+        
 def ccs_to_R(xscale_lp):
 
     ccs = { }
