@@ -57,7 +57,7 @@ def rummage(loggraphs):
     raise RuntimeError, 'you no get here'
 
 def understand(analysis_as_batch):
-    batch_column = analysis_as_batch['columns'].index('Batch_number')
+    batch_column = analysis_as_batch['columns'].index('Batch')
     rmerge_column = analysis_as_batch['columns'].index('Rmerge')
 
     batches = [int(record[batch_column]) for record in \
