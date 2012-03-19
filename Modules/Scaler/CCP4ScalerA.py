@@ -409,8 +409,10 @@ class CCP4ScalerA(Scaler):
             indexer = integrater.get_integrater_indexer()
 
             if self._scalr_input_pointgroup:
+                Debug.write('Using input pointgroup: %s' % \
+                            self._scalr_input_pointgroup)
                 pointgroup = self._scalr_input_pointgroup
-                reindex_ops[epoch] = 'h,k,l'
+                reindex_op = 'h,k,l'
                 pt = False
 
             else:
@@ -429,19 +431,13 @@ class CCP4ScalerA(Scaler):
                     integrater.integrater_reset_reindex_operator()
                     need_to_return = True
 
-                reindex_ops[epoch] = reindex_op
-
-            if self._scalr_input_pointgroup:
-                Debug.write('Using input pointgroup: %s' % \
-                            self._scalr_input_pointgroup)
-                pointgroup = self._scalr_input_pointgroup
-
             if pt and not probably_twinned:
                 probably_twinned = True
 
             Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
             pointgroups[epoch] = pointgroup
+            reindex_ops[epoch] = reindex_op
 
         overall_pointgroup = None
 
