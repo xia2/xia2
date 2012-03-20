@@ -842,10 +842,10 @@ class CCP4ScalerR(Scaler):
             if intgr.get_integrater_user_resolution():
                 dmin = intgr.get_integrater_high_resolution()
 
-                if not user_resolution_limits.has_key(dname):
-                    user_resolution_limits[dname] = dmin
-                elif dmin < user_resolution_limits[dname]:
-                    user_resolution_limits[dname] = dmin
+                if not user_resolution_limits.has_key((dname, sname)):
+                    user_resolution_limits[(dname, sname)] = dmin
+                elif dmin < user_resolution_limits[(dname, sname)]:
+                    user_resolution_limits[(dname, sname)] = dmin
 
             start, end = si.get_batch_range()
 
@@ -952,8 +952,8 @@ class CCP4ScalerR(Scaler):
             intgr = si.get_integrater()
             start, end = si.get_batch_range()
 
-            if dname in user_resolution_limits:
-                resolution = user_resolution_limits[dname]
+            if (dname, sname) in user_resolution_limits:
+                resolution = user_resolution_limits[(dname, sname)]
                 self._sweep_resolution_limits[(dname, sname)] = resolution
                 if resolution < highest_resolution:
                     highest_resolution = resolution
