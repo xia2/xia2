@@ -1009,9 +1009,7 @@ class XDSScalerA(Scaler):
         wavelength_names = output_files.keys()
 
         # these are per wavelength - also allow for user defined resolution
-        # limits a la bug # 3183.
-
-        user_resolution_limits = { }
+        # limits a la bug # 3183. No longer...
 
         for epoch in self._sweep_information.keys():
 
@@ -1024,13 +1022,12 @@ class XDSScalerA(Scaler):
             if intgr.get_integrater_user_resolution():
                 dmin = intgr.get_integrater_high_resolution()
 
-                if not user_resolution_limits.has_key(rkey):
-                    user_resolution_limits[rkey] = dmin
+                if not self._user_resolution_limits.has_key(rkey):
                     self._resolution_limits[rkey] = dmin
-                    self._user_resolution_limits[dname] = True
-                elif dmin < user_resolution_limits[rkey]:
-                    user_resolution_limits[rkey] = dmin
+                    self._user_resolution_limits[rkey] = dmin
+                elif dmin < self._user_resolution_limits[rkey]:
                     self._resolution_limits[rkey] = dmin
+                    self._user_resolution_limits[rkey] = dmin
 
         self._tmp_scaled_refl_files = { }
 
@@ -1110,8 +1107,8 @@ class XDSScalerA(Scaler):
 
             # let's properly listen to the user's resolution limit needs...
 
-            if self._user_resolution_limits.get(dname, False):
-                resolution = self._user_resolution_limits[dname]
+            if self._user_resolution_limits.get((dname, sname), False):
+                resolution = self._user_resolution_limits[(dname, sname)]
 
             else:
                 if Flags.get_small_molecule():
