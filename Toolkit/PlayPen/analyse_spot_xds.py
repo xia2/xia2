@@ -66,7 +66,7 @@ def read_spot_xds(spot_xds):
 
     if len(clusters) == 1:
         ignore = 0
-    elif len(clusters) == 2:
+    else:
         ignore = len(clusters[0])
     
     results = { }
