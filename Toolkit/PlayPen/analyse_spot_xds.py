@@ -1,7 +1,32 @@
 # Read SPOT.XDS; look for blank images.
 
 import sys
-import math        
+import math
+
+from libtbx import cluster
+
+def do_cluster(values):
+    mean = sum(values) / len(values)
+    
+    hc = cluster.HierarchicalClustering(
+        values, lambda x, y: float(abs(x - y)),
+        'average')
+    
+    return hc.getlevel(mean)
+
+def clusters_i(spot_xds):
+
+    i_values = []
+    
+    for record in open(spot_xds):
+        values = map(float, record.split())
+        if not values:
+            continue
+        i = values[3]
+
+        i_values.append(i)
+
+    return do_cluster(i_values[:200])
 
 def values_to_z(values):
     zs = []
@@ -16,8 +41,14 @@ def values_to_z(values):
     return zs
 
 def read_spot_xds(spot_xds):
-    results = { }
 
+    # this is sorted on I, want to consider throwing away unusually strong
+    # outlier types. Can do that by clustering strongest few reflections,
+    # limit as mean.
+
+    ivalues = []
+    jvalues = []
+    
     for record in open(spot_xds):
         values = map(float, record.split())
         if not values:
@@ -25,26 +56,41 @@ def read_spot_xds(spot_xds):
         j = int(round(values[2]))
         i = values[3]
 
+        ivalues.append(i)
+        jvalues.append(j)
+
+    # decide if we want to throw some away? look at nframe / 2 values
+
+    nframe = (max(jvalues) - min(jvalues) + 1) // 2
+    clusters = do_cluster(ivalues[:nframe])
+
+    if len(clusters) == 1:
+        ignore = 0
+    elif len(clusters) == 2:
+        ignore = len(clusters[0])
+    else:
+        raise RuntimeError, 'more than two groups'
+    
+    results = { }
+
+    for i, j in zip(ivalues, jvalues)[ignore:]:
         if not j in results:
             results[j] = [ ]
 
         results[j].append(i)
 
     averages = { }
-    zmaxs = { }
 
     for j in results:
         averages[j] = sum(results[j]) / len(results[j])
-        zmaxs[j] = max(values_to_z(results[j]))
 
-    return averages, zmaxs
+    return averages
 
 if __name__ == '__main__':
-    averages, zmaxs = read_spot_xds(sys.argv[1])
+    averages = read_spot_xds(sys.argv[1])
 
     m = max(averages) + 1
 
     for j in range(m):
-        print '%4d %.2f %.2f' % (j, averages.get(j, 0.0), zmaxs.get(j, 0.0))
+        print '%4d %.2f' % (j, averages.get(j, 0.0))
 
-    
