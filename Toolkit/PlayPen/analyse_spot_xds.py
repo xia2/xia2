@@ -68,8 +68,6 @@ def read_spot_xds(spot_xds):
         ignore = 0
     elif len(clusters) == 2:
         ignore = len(clusters[0])
-    else:
-        raise RuntimeError, 'more than two groups'
     
     results = { }
 
@@ -86,11 +84,10 @@ def read_spot_xds(spot_xds):
 
     return averages
 
+def get_signal(spot_xds):
+    averages = read_spot_xds(spot_xds)
+    signal = [averages.get(j, 0.0) for j in range(1, len(averages))]
+    return min(signal), max(signal)
+
 if __name__ == '__main__':
-    averages = read_spot_xds(sys.argv[1])
-
-    m = max(averages) + 1
-
-    for j in range(m):
-        print '%4d %.2f' % (j, averages.get(j, 0.0))
-
+    print '%.2f %.2f' % get_signal(sys.argv[1])
