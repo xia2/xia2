@@ -189,9 +189,9 @@ def ccs_to_R(xscale_lp):
     for target, source, distance in history:
         print 'Cluster: %.2f' % distance
         for t in target:
-            print file_names[data[t]]
+            print data[t], file_names[data[t]]
         for s in source:
-            print file_names[data[s]]
+            print data[s], file_names[data[s]]
 
 if __name__ == '__main__':
 
