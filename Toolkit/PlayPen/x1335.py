@@ -180,44 +180,18 @@ def ccs_to_R(xscale_lp):
     fout.write('c = hclust(d, method = "ward")\n')
     fout.write('plot(c)\n')
 
-    # try implementing a "toy" ward linkage...
+    from ward_cluster import ward_cluster
 
-    spaces = []
+    data = [j + 1 for j in range(xmax)]
 
-    for key in distances:
-        spaces.append((distances[key], key))
+    history = ward_cluster(data, distances)
 
-    spaces.sort()
-
-    dmax = 0.01
-
-    sets = []
-
-    for s in spaces:
-        if s[0] > dmax:
-            break
-
-        i, j = s[1]
-
-        for _s in sets:
-
-            if i in _s and j in _s:
-                continue
-
-            if i in _s:
-                _s.add(j)
-                continue
-
-            if j in _s:
-                _s.add(i)
-                continue
-
-        sets.append(set([i, j]))
-
-    for _s in sorted(sets):
-        # print _s
-        pass
-
+    for target, source, distance in history:
+        print 'Cluster: %.2f' % distance
+        for t in target:
+            print file_names[t]
+        for s in source:
+            print file_names[s]
 
 if __name__ == '__main__':
 
