@@ -3,6 +3,8 @@ import os
 import subprocess
 from iotbx import mtz
 
+from ward_cluster import ward_cluster
+
 def run_job(executable, arguments = [], stdin = [], working_directory = None):
     '''Run a program with some command-line arguments and some input,
     then return the standard output when it is finished.'''
@@ -52,6 +54,9 @@ def rumble(_mtz_files):
     data = []
     remove = []
 
+    mtz_ids = [int(mtz_file.replace('SCALED_SAD_SWEEP', '').split('.')[0]) \
+               for mtz_file in _mtz_files]
+
     for _mtz_file in _mtz_files:
         merged = merge(_mtz_file)
         remove.append(merged)
@@ -61,22 +66,38 @@ def rumble(_mtz_files):
         for ma in mas:
             if not ma.anomalous_flag():
                 continue
-            data.append(ma)
+            data.append(ma.resolution_filter(d_min = 3.0))
 
     differences = [_data.anomalous_differences() for _data in data]
 
     cc_matrix = { }
+    distances = { }
 
     for i in range(len(differences) - 1):
         for j in range(i + 1, len(differences)):
             correlation = differences[i].correlation(differences[j])
             cc, n = correlation.coefficient(), correlation.n()
 
-            print '%20s %20s %.3f %d' % (_mtz_files[i], _mtz_files[j], cc, n)
-            print '%20s %20s %.3f %d' % (_mtz_files[j], _mtz_files[i], cc, n)
+            if cc < 0.01:
+                cc = 0.01
+            distance = (1.0 / cc) - 1
+            distances[(i, j)] = distance
+            distances[(j, i)] = distance
 
     for name in remove:
         os.remove(name)
+
+    data = [_mtz_files[i] for i in range(len(differences))]
+
+    history = ward_cluster(data, distances)
+
+    for target, source, distance in history:
+        print 'Cluster: %.4f' % distance
+        for t in target:
+            print data[t],
+        for s in source:
+            print data[s],
+        print
 
 if __name__ == '__main__':
     rumble(sys.argv[1:])
