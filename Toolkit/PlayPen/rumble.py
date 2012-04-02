@@ -58,6 +58,9 @@ def rumble(_mtz_files):
                for mtz_file in _mtz_files]
 
     for _mtz_file in _mtz_files:
+        # this step is because input data are unmerged - however this may not be
+        # needed?
+        
         merged = merge(_mtz_file)
         remove.append(merged)
         m = mtz.object(merged)
@@ -69,6 +72,11 @@ def rumble(_mtz_files):
             data.append(ma.resolution_filter(d_min = 3.0))
 
     differences = [_data.anomalous_differences() for _data in data]
+
+    for i in range(len(differences)):
+        signal_to_noise = sum(abs(differences[i].data())) / \
+            sum(differences[i].sigmas())
+        print '%02d %.2f' % (mtz_ids[i], signal_to_noise)
 
     cc_matrix = { }
     distances = { }
