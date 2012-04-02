@@ -102,6 +102,7 @@ Toolkit/PlayPen/parse-integrate-scale-factors.py -text
 Toolkit/PlayPen/rexinfo.py -text
 Toolkit/PlayPen/rooster.py -text
 Toolkit/PlayPen/rotomat.py -text
+Toolkit/PlayPen/rumble.py -text
 Toolkit/PlayPen/scala2gnuplot.py -text
 Toolkit/PlayPen/scale-play.py -text
 Toolkit/PlayPen/spot2q.py -text
