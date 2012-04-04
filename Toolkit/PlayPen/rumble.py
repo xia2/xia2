@@ -54,29 +54,36 @@ def rumble(_mtz_files):
     data = []
     remove = []
 
-    mtz_ids = [int(mtz_file.replace('SCALED_SAD_SWEEP', '').split('.')[0]) \
+    mtz_ids = [int(mtz_file.replace('AUTOMATIC_DEFAULT_scaled_SAD', '').split('.')[0]) \
                for mtz_file in _mtz_files]
 
     for _mtz_file in _mtz_files:
         # this step is because input data are unmerged - however this may not be
         # needed?
         
-        merged = merge(_mtz_file)
-        remove.append(merged)
+        # merged = merge(_mtz_file)
+        merged = _mtz_file
+        # remove.append(merged)
         m = mtz.object(merged)
         mas = m.as_miller_arrays()
 
         for ma in mas:
             if not ma.anomalous_flag():
                 continue
-            data.append(ma.resolution_filter(d_min = 3.0))
+            data.append(ma)
 
-    differences = [_data.anomalous_differences() for _data in data]
+    if False:
+        differences = [_data.anomalous_differences() for _data in data]
+    else:
+        differences = [_data.anomalous_differences().sigma_filter(
+            cutoff_factor = 2.0) for _data in data]
+
+    # differences = data
 
     for i in range(len(differences)):
         signal_to_noise = sum(abs(differences[i].data())) / \
             sum(differences[i].sigmas())
-        print '%02d %.2f' % (mtz_ids[i], signal_to_noise)
+        # print '%02d %.2f' % (mtz_ids[i], signal_to_noise)
 
     cc_matrix = { }
     distances = { }
@@ -86,14 +93,13 @@ def rumble(_mtz_files):
             correlation = differences[i].correlation(differences[j])
             cc, n = correlation.coefficient(), correlation.n()
 
-            if cc < 0.01:
-                cc = 0.01
-            distance = (1.0 / cc) - 1
-            distances[(i, j)] = distance
-            distances[(j, i)] = distance
-
+            print '%2d %2d %.4f %5d' % (mtz_ids[i], mtz_ids[j], cc, n)
+            
     for name in remove:
         os.remove(name)
+
+    if True:
+        return
 
     data = [_mtz_files[i] for i in range(len(differences))]
 
