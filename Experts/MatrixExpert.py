@@ -195,7 +195,7 @@ def parse_matrix(matrix_text):
     # therefore parse this manually... or just add
     # a space before all '-'
 
-    tokens = map(float, matrix_text.replace('-', ' -').split())
+    tokens = map(float, matrix_text.replace('-', ' -').split()[:30])
 
     cell = tokens[21:27]
     a = tokens[0:9]
