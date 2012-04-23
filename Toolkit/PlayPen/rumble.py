@@ -1,7 +1,9 @@
 import sys
 import os
+import math
 import subprocess
 from iotbx import mtz
+from cctbx.array_family import flex
 
 from ward_cluster import ward_cluster
 
@@ -49,6 +51,38 @@ def merge(mtz_file):
                       'sdcorrection fixsdb noadjust norefine both 1.0 0.0'])
     return mtz_file_out
 
+def new_cc(a, b):
+    '''Compute CC between miller arrays a and b.'''
+
+    assert a.is_real_array()
+    assert b.is_real_array()
+
+    _a, _b = a.common_sets(other = b, assert_is_similar_symmetry = True)
+    return flex.linear_correlation(_a.data(), _b.data())
+
+def paired_t(ma, mb):
+    assert ma.is_real_array()
+    assert mb.is_real_array()
+
+    _a, _b = ma.common_sets(other = mb, assert_is_similar_symmetry = True)
+
+    da = _a.data()
+    db = _b.data()
+
+    mean_a = sum(da) / len(da)
+    mean_b = sum(db) / len(db)
+
+    hat_a = [a - mean_a for a in da]
+    hat_b = [b - mean_b for b in db]
+
+    # from http://mathworld.wolfram.com/Pairedt-Test.html
+
+    t = (mean_a - mean_b) * math.sqrt((len(hat_a) * (len(hat_a) - 1)) /
+                                      (sum([(a - b) * (a - b) for a, b in
+                                            zip(hat_a, hat_b)])))
+    
+    return t, len(da)
+    
 def rumble(_mtz_files):
 
     data = []
@@ -72,7 +106,7 @@ def rumble(_mtz_files):
                 continue
             data.append(ma)
 
-    if False:
+    if True:
         differences = [_data.anomalous_differences() for _data in data]
     else:
         differences = [_data.anomalous_differences().sigma_filter(
@@ -93,7 +127,10 @@ def rumble(_mtz_files):
             correlation = differences[i].correlation(differences[j])
             cc, n = correlation.coefficient(), correlation.n()
 
-            print '%2d %2d %.4f %5d' % (mtz_ids[i], mtz_ids[j], cc, n)
+            t, nt = paired_t(differences[i], differences[j])
+ 
+            print '%2d %2d %.4f %5d %.4f %5d' % (mtz_ids[i], mtz_ids[j],
+                                                 cc, n, t, nt)
             
     for name in remove:
         os.remove(name)
