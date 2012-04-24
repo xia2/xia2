@@ -97,8 +97,6 @@ def unmerged_fa(_mtz_file):
             reflections[(hkl)] = []
         reflections[(hkl)].append((pm, batch[j], f[j], sigf[j]))
 
-    print len(reflections)
-
     # now compute unmerged FA values
 
     unmerged_fa = { }
@@ -132,7 +130,7 @@ def unmerged_fa(_mtz_file):
         for n, (b, fa) in enumerate(fas):
             for _b, _fa in fas[n + 1:]:
                 ra = math.fabs(fa - _fa)
-                rb = 0.5 * (fa + _fa)
+                rb = 0.5 * math.fabs(fa + _fa)
                 mb = nint(max(b, _b))
                 rcp_top[mb] += ra
                 rcp_bottom[mb] += rb
@@ -141,11 +139,8 @@ def unmerged_fa(_mtz_file):
         rcp_top[b] += rcp_top[b - 1]
         rcp_bottom[b] += rcp_bottom[b - 1]
 
-    for b in range(min(batch) + 1, max(batch) + 1):
-        print '%5d 56.3f' % (b, rcp_top[b] / rcp_bottom[b])
-
-
-
+    for b in range(min(batch), max(batch) + 1):
+        print '%5d %6.3f' % (b, rcp_top[b] / rcp_bottom[b])
 
 if __name__ == '__main__':
     unmerged_fa(sys.argv[1])
