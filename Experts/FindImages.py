@@ -49,18 +49,18 @@ def image2template(filename):
 
     # the patterns in the order I want to test them
 
-    pattern_keys = [r'([^\.]*)\.([0-9]+)\Z',
-                    r'([^\.]*)\.([0-9]+)(.*)',
-                    r'(.*)_([0-9]*)\.(.*)',
-                    r'(.*?)([0-9]*)\.(.*)']
+    pattern_keys = [r'([^\.]*)\.([0-9]{2,12})\Z',
+                    r'([^\.]*)\.([0-9]{2,12})(.*)',
+                    r'(.*)_([0-9]{2,12})\.(.*)',
+                    r'(.*?)([0-9]{2,12})\.(.*)']
 
     # patterns is a dictionary of possible regular expressions with
     # the format strings to put the file name back together
 
-    patterns = {r'([^\.]*)\.([0-9]+)\Z':'%s.%s%s',
-                r'([^\.]*)\.([0-9]+)(.*)':'%s.%s%s',
-                r'(.*)_([0-9]*)\.(.*)':'%s_%s.%s',
-                r'(.*?)([0-9]*)\.(.*)':'%s%s.%s'}
+    patterns = {r'([^\.]*)\.([0-9]{2,12})\Z':'%s.%s%s',
+                r'([^\.]*)\.([0-9]{2,12})(.*)':'%s.%s%s',
+                r'(.*)_([0-9]{2,12})\.(.*)':'%s_%s.%s',
+                r'(.*?)([0-9]{2,12})\.(.*)':'%s%s.%s'}
 
     for pattern in pattern_keys:
         match = re.compile(pattern).match(filename)
