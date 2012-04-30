@@ -40,7 +40,43 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Handlers.Streams import Debug
 
+patterns = [r'([0-9]{2,12})\.(.*)',
+            r'(.*)\.([0-9]{2,12})_(.*)']
+
+compiled_patterns = [re.compile(pattern) for pattern in patterns]
+
+def template_regex(filename):
+    '''Try a bunch of templates to work out the most sensible. N.B. assumes that
+    the image index will be the last digits found in the file name.'''
+
+    rfilename = filename[::-1]
+
+    global patterns, compiled_patterns
+
+    for j, cp in enumerate(compiled_patterns):
+        match = cp.match(rfilename)
+        if not match:
+            continue
+        groups = match.groups()
+
+        if len(groups) == 3:
+            exten = '.' + groups[0][::-1]
+            digits = groups[1][::-1]
+            prefix = groups[2][::-1] + '_'
+        else:
+            exten = ''
+            digits = groups[0][::-1]
+            prefix = groups[1][::-1] + '.'
+            
+        template = prefix + ''.join(['#' for d in digits]) + exten
+        break
+        
+    return template, int(digits)
+
 def image2template(filename):
+    return template_regex(filename)[0]
+
+def image2template_old(filename):
     '''Return a template to match this filename.'''
 
     # check that the file name doesn't contain anything mysterious
@@ -82,6 +118,9 @@ def image2template(filename):
           filename
 
 def image2image(filename):
+    return template_regex(filename)[1]
+
+def image2image_old(filename):
     '''Return an integer for the template to match this filename.'''
 
     # check that the file name doesn't contain anything mysterious
