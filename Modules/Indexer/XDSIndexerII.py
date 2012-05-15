@@ -70,9 +70,8 @@ class XDSIndexerII(XDSIndexer):
         phi_width = self.get_header_item('phi_width')
 
         if phi_width == 0.0:
-            Debug.write('Phi width 0.0? Assuming 1.0!')
-            phi_width = 1.0
-
+            raise RuntimeError, 'cannot use still images'
+        
         # use five degrees for the background calculation
 
         five_deg = int(round(5.0 / phi_width)) - 1
