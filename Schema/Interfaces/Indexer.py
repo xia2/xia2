@@ -393,7 +393,7 @@ class Indexer:
     # setter methods for the input - most of these will reset the
     # indexer in one way or another
 
-    def add_indexer_image_wedge(self, image):
+    def add_indexer_image_wedge(self, image, reset = True):
         '''Add some images for autoindexing (optional) input is a 2-tuple
         or an integer.'''
 
@@ -402,11 +402,12 @@ class Indexer:
         if type(image) == type(1):
             self._indxr_images.append((image, image))
 
-        self.set_indexer_prepare_done(False)
+        if reset:
+            self.set_indexer_prepare_done(False)
 
         return
 
-    def set_indexer_image_wedges(self, indexer_image_wedges):
+    def set_indexer_image_wedges(self, indexer_image_wedges, reset = True):
         '''Assign images to use for autoindexing, will clobber existing
         values. Use with interactive indexing...'''
 
@@ -419,7 +420,8 @@ class Indexer:
             if type(image) == type(1):
                 self._indxr_images.append((image, image))
 
-        self.set_indexer_prepare_done(False)
+        if reset:
+            self.set_indexer_prepare_done(False)
 
         return
 
