@@ -209,7 +209,8 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
         'rigaku saturn 92':True,
         'rigaku saturn 944':True,
         'rigaku saturn 724':True,
-        'raxis IV':True}
+        'raxis IV':True,
+        'NOIR1':True}
 
     # FIXME not sure if this is correct...
 

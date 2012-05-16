@@ -60,11 +60,13 @@ class XDSIndexerII(XDSIndexer):
 
         XDSIndexer.__init__(self)
 
+        self._index_select_images = self._index_select_images_ii
+
         return
 
     # helper functions
 
-    def _index_select_images(self):
+    def _index_select_images_ii(self):
         '''Select correct images based on image headers.'''
 
         phi_width = self.get_header_item('phi_width')

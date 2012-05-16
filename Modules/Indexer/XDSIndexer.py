@@ -73,6 +73,7 @@ class XDSIndexer(FrameProcessor,
         self._working_directory = os.getcwd()
 
         self._background_images = None
+        self._index_select_images = self._index_select_images_i
 
         # place to store working data
         self._data_files = { }
@@ -171,7 +172,7 @@ class XDSIndexer(FrameProcessor,
 
     # helper functions
 
-    def _index_select_images(self):
+    def _index_select_images_i(self):
         '''Select correct images based on image headers.'''
 
         phi_width = self.get_header_item('phi_width')

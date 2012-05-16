@@ -466,10 +466,14 @@ def failover_dxtbx(image_file):
     header['date'] = s.get_image_time(min(s.get_epochs()))
     header['wavelength'] = b.get_wavelength()
     header['size'] = fast, slow
-    detector_type = detector_helpers_types.get(
-        d.get_sensor(), fast, slow, int(1000 * _f), int(1000 * _s))
-    header['detector_class'] = detector_type.replace('-', ' ')
-    header['detector'] = detector_type.split('-')[0]
+    if hasattr(i, 'detector_class'):
+        header['detector_class'] = i.detector_class
+        header['detector'] = i.detector
+    else:
+        detector_type = detector_helpers_types.get(
+            d.get_sensor(), fast, slow, int(1000 * _f), int(1000 * _s))
+        header['detector_class'] = detector_type.replace('-', ' ')
+        header['detector'] = detector_type.split('-')[0]
 
     return header
 
