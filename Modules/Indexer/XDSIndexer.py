@@ -186,27 +186,23 @@ class XDSIndexer(FrameProcessor,
         # characterise the images - are there just two (e.g. dna-style
         # reference images) or is there a full block?
 
+        wedges = []
+
         if len(images) < 3:
             # work on the assumption that this is a reference pair
 
-            self.add_indexer_image_wedge(images[0])
+            wedges.append(images[0])
+
             if len(images) > 1:
-                self.add_indexer_image_wedge(images[-1])
+                wedges.append(images[1])
 
         else:
-            # work on the assumption that this is a full sweep of images
-            # so I can use two blocks... of 5 degrees - perhaps this should
-            # be three blocks? testing with 5 degrees, used to be 3.
-
-            # five degree blocks are excessive - especially if we have 0.1
-            # degree oscillations => just use 5 image blocks...
-
             block_size = 5
 
             Debug.write('Adding images for indexer: %d -> %d' % \
                         (images[0], images[block_size] - 1))
 
-            self.add_indexer_image_wedge((images[0], images[block_size] - 1))
+            wedges.append((images[0], images[block_size] - 1))
 
             if int(90.0 / phi_width) + block_size in images:
                 # assume we can add a wedge around 45 degrees as well...
@@ -218,10 +214,10 @@ class XDSIndexer(FrameProcessor,
                             (int(90.0 / phi_width) + images[0],
                              int(90.0 / phi_width) + images[0] +
                              block_size - 1))
-                self.add_indexer_image_wedge(
+                wedges.append(
                     (int(45.0 / phi_width) + images[0],
                      int(45.0 / phi_width) + images[0] + block_size - 1))
-                self.add_indexer_image_wedge(
+                wedges.append(
                     (int(90.0 / phi_width) + images[0],
                      int(90.0 / phi_width) + images[0] + block_size - 1))
 
@@ -233,13 +229,12 @@ class XDSIndexer(FrameProcessor,
 
                 Debug.write('Adding images for indexer: %d -> %d' % \
                             (first, last))
-                self.add_indexer_image_wedge((first, last))
+                wedges.append((first, last))
                 Debug.write('Adding images for indexer: %d -> %d' % \
                             (images[- block_size], images[-1]))
-                self.add_indexer_image_wedge((images[- block_size],
-                                              images[-1]))
+                wedges.append((images[- block_size], images[-1]))
 
-        return
+        return wedges
 
     # do-er functions
 
@@ -256,7 +251,9 @@ class XDSIndexer(FrameProcessor,
         if self._indxr_images == []:
             # note well that this may reset the "done" flag so
             # override this...
-            self._index_select_images()
+            wedges = self._index_select_images()
+            for wedge in wedges:
+                self.add_indexer_image_wedge(wedge)
             self.set_indexer_prepare_done(True)
 
         all_images = self.get_matching_images()

@@ -88,6 +88,8 @@ class XDSIndexerII(XDSIndexer):
         # former then we have a problem, as we want *all* the images in the
         # sweep...
 
+        wedges = []
+
         if len(images) < 3 and len(images) < Flags.get_min_images():
             raise RuntimeError, \
                   'This INDEXER cannot be used for only %d images' % \
@@ -96,7 +98,7 @@ class XDSIndexerII(XDSIndexer):
         Debug.write('Adding images for indexer: %d -> %d' % \
                     (min(images), max(images)))
 
-        self.add_indexer_image_wedge((min(images), max(images)))
+        wedges.append((min(images), max(images)))
 
         # FIXME this should have a wrapper function!
 
@@ -105,9 +107,4 @@ class XDSIndexerII(XDSIndexer):
         else:
             self._background_images = (min(images), max(images))
 
-        # FIXME this also needs to generate a list of images to use for
-        # the background calculation as this is currently bodged a little
-        # in the old implementation - look at init.set_background_range
-        # in XDSIndexer...
-
-        return
+        return wedges
