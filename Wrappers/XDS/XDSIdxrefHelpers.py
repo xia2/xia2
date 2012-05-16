@@ -141,10 +141,24 @@ def _parse_idxref_lp_subtree(lp_file_lines):
 
     return subtrees
 
+def _parse_idxref_lp_quality(lp_file_lines):
+    fraction = None
+    rmsd = None
+    rmsphi = None
+
+    for record in lp_file_lines:
+        if 'OUT OF' in record and 'SPOTS INDEXED' in record:
+            fraction = float(record.split()[0]) / float(record.split()[3])
+        if 'STANDARD DEVIATION OF SPOT    POSITION' in record:
+            rmsd = float(record.split()[-1])
+        if 'STANDARD DEVIATION OF SPINDLE POSITION' in record:
+            rmsphi = float(record.split()[-1])
+
+    return fraction, rmsd, rmsphi
+
 if __name__ == '__main__':
 
-    origins = _parse_idxref_index_origin(open(sys.argv[1], 'r').readlines())
+    fraction, rmsd, rmsphi = _parse_idxref_lp_quality(
+        open(sys.argv[1], 'r').readlines())
 
-    print '  H   K   L    GOF  Delta  Beam Centre'
-    for hkl in origins:
-        print '%3d %3d %3d' % hkl, '%6.1f %6.1f %6.1f %6.1f' % origins[hkl]
+    print '%.2f %.2f %.2f' % (fraction, rmsd, rmsphi)

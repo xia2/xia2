@@ -39,7 +39,8 @@ from Handlers.Streams import Debug
 
 # specific helper stuff
 from XDSIdxrefHelpers import _parse_idxref_lp, _parse_idxref_lp_distance_etc, \
-     _parse_idxref_lp_subtree, _parse_idxref_index_origin
+     _parse_idxref_lp_subtree, _parse_idxref_index_origin, \
+     _parse_idxref_lp_quality
 
 from Experts.LatticeExpert import SortLattices
 
@@ -122,6 +123,8 @@ def XDSIdxref(DriverType = None):
 
             self._index_tree_problem = False
 
+            self._fraction_rmsd_rmsphi = None
+
             return
 
         # getter and setter for input / output data
@@ -175,6 +178,9 @@ def XDSIdxref(DriverType = None):
 
         def get_index_tree_problem(self):
             return self._index_tree_problem
+
+        def get_fraction_rmsd_rmsphi(self):
+            return self._fraction_rmsd_rmsphi
 
         def _compare_cell(self, c_ref, c_test):
             '''Compare two sets of unit cell constants: if they differ by
@@ -338,6 +344,8 @@ def XDSIdxref(DriverType = None):
             # parse the output
             lp = open(os.path.join(
                 self.get_working_directory(), 'IDXREF.LP'), 'r').readlines()
+
+            self._fraction_rmsd_rmsphi = _parse_idxref_lp_quality(lp)
 
             self._idxref_data = _parse_idxref_lp(lp)
 
