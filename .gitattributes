@@ -142,6 +142,7 @@ Toolkit/guess_the_atom.py -text
 Toolkit/metatemplate.txt -text
 Toolkit/superdoofus.py -text
 Toolkit/test_pilatus_scan.py -text
+Wrappers/CCP4/Ctruncate.py -text
 Wrappers/CCP4/Doc/Chooch.pdf -text
 Wrappers/CCP4/Doc/Combat.pdf -text
 Wrappers/CCP4/Doc/General.pdf -text

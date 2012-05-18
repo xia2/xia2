@@ -26,6 +26,10 @@ ccp4.reindex {
   program = 'pointless'
     .type = str
 }
+ccp4.truncate {
+  program = 'ctruncate'
+    .type = str
+}
 """)
         self._parameters = self._working_phil.extract()
         return
@@ -52,6 +56,11 @@ ccp4.reindex {
 
     def get_ccp4_reindex_program(self):
         return self._parameters.ccp4.reindex.program
+
+    def get_ccp4_truncate_program(self):
+        return self._parameters.ccp4.truncate.program
+
+    
 
 Phil = _Phil()
 
