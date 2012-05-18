@@ -40,8 +40,13 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Handlers.Streams import Debug
 
+# N.B. these are reversed patterns...
+
 patterns = [r'([0-9]{2,12})\.(.*)',
-            r'(.*)\.([0-9]{2,12})_(.*)']
+            r'(.*)\.([0-9]{2,12})_(.*)',
+            r'(.*)\.([0-9]{2,12})(.*)']
+
+joiners = ['.', '_', '']
 
 compiled_patterns = [re.compile(pattern) for pattern in patterns]
 
@@ -62,16 +67,30 @@ def template_regex(filename):
         if len(groups) == 3:
             exten = '.' + groups[0][::-1]
             digits = groups[1][::-1]
-            prefix = groups[2][::-1] + '_'
+            prefix = groups[2][::-1] + joiners[j]
         else:
             exten = ''
             digits = groups[0][::-1]
-            prefix = groups[1][::-1] + '.'
+            prefix = groups[1][::-1] + joiners[j]
             
         template = prefix + ''.join(['#' for d in digits]) + exten
         break
         
     return template, int(digits)
+
+def work_template_regex():
+    questions_answers = {
+        'foo_bar_001.img':'foo_bar_###.img',
+        'foo_bar001.img':'foo_bar###.img',
+        'foo_bar_1.8A_001.img':'foo_bar_1.8A_###.img',
+        'foo_bar.001':'foo_bar.###',
+        'foo_bar_001.img1000':'foo_bar_###.img1000',
+        'foo_bar_00001.img':'foo_bar_#####.img'
+        }
+
+    for filename in questions_answers:
+        answer = template_regex(filename)
+        assert answer[0] == questions_answers[filename]
 
 def image2template(filename):
     return template_regex(filename)[0]
@@ -388,22 +407,4 @@ def digest_template(template, images):
 
 if __name__ == '__main__':
 
-    if len(sys.argv) < 2:
-        raise RuntimeError, '%s image_001.img' % sys.argv[0]
-
-    head, tail = os.path.split(sys.argv[1])
-
-    if not head:
-        head = os.getcwd()
-
-    template = image2template(tail)
-
-    print 'template: %s' % template
-
-    images = find_matching_images(template, head)
-
-    print 'images:   %d to %d' % (min(images), max(images))
-
-    template, images, offset = digest_template(template, images)
-
-    print 'offset:   %d' % offset
+    work_template_regex()
