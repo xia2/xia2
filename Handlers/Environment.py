@@ -63,8 +63,11 @@ class _Environment:
         # create a USER environment variable, to allow harvesting
         # in Mosflm to work (hacky, I know, but it really doesn't
         # matter too much...
-        if not os.environ.has_key('USER'):
-            os.environ['USER'] = 'xia2'
+        if not 'USER' in os.environ:
+            if 'USERNAME' in os.environ:
+                os.environ['USER'] = os.environ['USERNAME']
+            else:
+                os.environ['USER'] = 'xia2'
 
         # create a random BINSORT_SCR directory, check how much space we
         # have in there...
