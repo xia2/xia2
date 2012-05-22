@@ -307,6 +307,15 @@ def Cad(DriverType = None):
 
             hklin = self._hklin_files[0]
 
+            # get the resolution limit to give as a limit for the FreeR
+            # column
+
+            md = Mtzdump()
+            md.set_working_directory(self.get_working_directory())
+            md.set_hklin(hklin)
+            md.dump()
+            resolution_range = md.get_resolution_range()
+            
             self.check_hklout()
             if self._freein is None:
                 raise RuntimeError, 'freein not defined'
@@ -320,6 +329,7 @@ def Cad(DriverType = None):
             self.start()
 
             self.input('labin file_number 1 E1=%s' % self._freein_column)
+            self.input('resolution file_number 1 %f %f' % resolution_range)
             self.input('labin file_number 2 all')
 
             self.close_wait()
