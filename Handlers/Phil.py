@@ -21,6 +21,10 @@ xds.parameter {
     .type = float
   delphi_small = 30
     .type = float
+  untrusted_ellipse = None
+    .type = ints(size = 4)
+  untrusted_rectangle = None
+    .type = ints(size = 4)
 }
 ccp4.reindex {
   program = 'pointless'
@@ -50,6 +54,12 @@ ccp4.truncate {
 
     def get_xds_parameter_delphi(self):
         return self._parameters.xds.parameter.delphi
+
+    def get_xds_parameter_untrusted_ellipse(self):
+        return self._parameters.xds.parameter.untrusted_ellipse
+    
+    def get_xds_parameter_untrusted_rectangle(self):
+        return self._parameters.xds.parameter.untrusted_rectangle
 
     def get_xds_parameter_delphi_small(self):
         return self._parameters.xds.parameter.delphi_small

@@ -59,6 +59,7 @@ if not os.path.join(os.environ['XIA2_ROOT']) in sys.path:
 
 from Handlers.Streams import Debug
 from Handlers.Flags import Flags
+from Handlers.Phil import Phil
 
 from dxtbx.format.FormatPilatusHelpers import pilatus_6M_mask, \
      pilatus_2M_mask, pilatus_300K_mask
@@ -376,7 +377,6 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
     if 'pilatus' in header['detector_class']:
         result.append('SENSOR_THICKNESS=0.32')
 
-
     if header['detector_class'] == 'pilatus 6M':
         for limits in pilatus_6M_mask():
             result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(limits))
@@ -388,6 +388,14 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
     elif header['detector_class'] == 'pilatus 300K':
         for limits in pilatus_300K_mask():
             result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(limits))
+
+    if Phil.get_xds_parameter_untrusted_ellipse():
+        result.append('UNTRUSTED_ELLIPSE= %d %d %d %d' % tuple(
+            Phil.get_xds_parameter_untrusted_ellipse()))
+
+    if Phil.get_xds_parameter_untrusted_rectangle():
+        result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(
+            Phil.get_xds_parameter_untrusted_rectangle()))
 
     return result
 
