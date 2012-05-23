@@ -52,6 +52,7 @@ from Schema.Interfaces.FrameProcessor import FrameProcessor
 from lib.bits import auto_logfiler, nint
 from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Flags import Flags
+from Handlers.Phil import Phil
 
 class XDSIndexer(FrameProcessor,
                  Indexer):
@@ -171,6 +172,27 @@ class XDSIndexer(FrameProcessor,
         return idxref
 
     # helper functions
+
+    def _index_remove_masked_regions(self):
+        if not Phil.get_xia2_settings_untrusted_rectangle_indexing():
+            return
+        
+        limits = Phil.get_xia2_settings_untrusted_rectangle_indexing()
+        spot_xds = ''
+        removed = 0
+        for record in self._data_files['SPOT.XDS'].split('\n'):
+            if not record.strip():
+                continue
+            x, y, phi, i = map(float, record.split()[:4])
+            if x > limits[0] and x < limits[1] and \
+                y > limits[2] and y < limits[3]:
+                removed += 1
+                continue
+            spot_xds += '%s\n' % record
+
+        Debug.write('Removed %d peaks from SPOT.XDS' % removed)
+        self._data_files['SPOT.XDS'] = spot_xds
+        return
 
     def _index_select_images_i(self):
         '''Select correct images based on image headers.'''
@@ -384,8 +406,11 @@ class XDSIndexer(FrameProcessor,
 
         idxref = self.Idxref()
 
+        self._index_remove_masked_regions()
         for file in ['SPOT.XDS']:
             idxref.set_input_data_file(file, self._data_files[file])
+
+        # edit SPOT.XDS to remove reflections in untrusted regions of the detector
 
         idxref.set_data_range(self._indxr_images[0][0],
                               self._indxr_images[0][1])

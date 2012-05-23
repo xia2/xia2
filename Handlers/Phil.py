@@ -37,6 +37,8 @@ ccp4.truncate {
 xia2.settings {
   show_template = False
     .type = bool
+  untrusted_rectangle_indexing = None
+    .type = ints(size = 4)
 }
 """)
         self._parameters = self._working_phil.extract()
@@ -76,6 +78,9 @@ xia2.settings {
 
     def get_xia2_settings_show_template(self):
         return self._parameters.xia2.settings.show_template
+
+    def get_xia2_settings_untrusted_rectangle_indexing(self):
+        return self._parameters.xia2.settings.untrusted_rectangle_indexing
 
 Phil = _Phil()
 

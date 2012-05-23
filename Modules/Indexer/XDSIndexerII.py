@@ -51,6 +51,7 @@ from Modules.Indexer.XDSCheckIndexerSolution import xds_check_indexer_solution
 from lib.bits import auto_logfiler, nint
 from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Flags import Flags
+from Handlers.Phil import Phil
 
 class XDSIndexerII(XDSIndexer):
     '''An extension of XDSIndexer using all available images.'''
@@ -142,6 +143,7 @@ class XDSIndexerII(XDSIndexer):
 
         idxref = self.Idxref()
 
+        self._index_remove_masked_regions()
         for file in ['SPOT.XDS']:
             idxref.set_input_data_file(file, self._data_files[file])
 
@@ -321,7 +323,8 @@ class XDSIndexerII(XDSIndexer):
 
     def test_i(self):
         idxref = self.Idxref()
-
+        
+        self._index_remove_masked_regions()
         for file in ['SPOT.XDS']:
             idxref.set_input_data_file(file, self._data_files[file])
 
@@ -363,6 +366,7 @@ class XDSIndexerII(XDSIndexer):
     def test_ii(self):
         idxref = self.Idxref()
 
+        self._index_remove_masked_regions()
         for file in ['SPOT.XDS']:
             idxref.set_input_data_file(file, self._data_files[file])
 
