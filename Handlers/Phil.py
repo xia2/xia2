@@ -34,6 +34,10 @@ ccp4.truncate {
   program = 'ctruncate'
     .type = str
 }
+xia2.settings {
+  show_template = False
+    .type = bool
+}
 """)
         self._parameters = self._working_phil.extract()
         return
@@ -70,7 +74,8 @@ ccp4.truncate {
     def get_ccp4_truncate_program(self):
         return self._parameters.ccp4.truncate.program
 
-    
+    def get_xia2_settings_show_template(self):
+        return self._parameters.xia2.settings.show_template
 
 Phil = _Phil()
 
