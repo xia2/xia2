@@ -408,6 +408,12 @@ class XSweep():
                                                self._directory,
                                                number)
 
+    def get_template(self):
+        return self._template
+
+    def get_directory(self):
+        return self._directory
+
     def get_all_image_names(self):
         '''Get a full list of all images in this sweep...'''
         result = []
