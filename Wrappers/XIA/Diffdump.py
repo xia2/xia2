@@ -42,6 +42,7 @@ import time
 import datetime
 import math
 import exceptions
+import traceback
 from scitbx import matrix
 from scitbx.math import r3_rotation_axis_and_angle_from_matrix
 
@@ -317,7 +318,7 @@ def failover_cbf(cbf_file):
 
     header['two_theta'] = 0.0
 
-    for record in open(cbf_file):
+    for record in open(cbf_file).readlines():
 
         if '_array_data.data' in record:
             break
@@ -407,7 +408,6 @@ def failover_cbf(cbf_file):
         except:
             pass
 
-    # clean up to cope with ESRF header randomisation
     header['phi_end'] = header['phi_start'] + header['phi_width']
 
     return header
@@ -621,7 +621,7 @@ def Diffdump(DriverType = None):
                     self._header = header
                     HeaderCache.put(self._image, self._header)
                     return copy.deepcopy(self._header)
-            except:
+            except exceptions.Exception, e:
                 if '.cbf' in self._image[-4:]:
                     header = failover_full_cbf(self._image)
                     self._header = header
