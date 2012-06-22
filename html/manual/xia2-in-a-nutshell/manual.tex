@@ -18,8 +18,7 @@
 
 \section{Quick Start Guide}
 
-If you don't like manuals and reading and just want to get started,
-just try:
+If you don't like reading manuals and just want to get started, try:
 
 \begin{verbatim}
 xia2 -2d /here/are/my/images
@@ -83,7 +82,7 @@ Users of macromolecular crystallography (MX) are well served in terms of
 data reduction software, with packages such as HKL2000, 
 Mosflm\footnote{A.G.W. Leslie, Acta Cryst. (2006) D62, 48-57},
 XDS\footnote{W. Kabsch, Acta Cryst. (2010) D66, 125-132} and 
-d*TREK generally available and commonly used. In the main, however, these
+d*TREK often available and commonly used. In the main, however, these
 programs require that the user makes sensible decisions about the data 
 analysis to ensure that a useful result is reached. This manual describes
 a package, \emph{xia2}, which makes use of some of the aforementioned 
@@ -117,11 +116,11 @@ such as Labelit \footnote{N.K. Sauter et al. J. Appl. Cryst. (2004) 37,
 and CCTBX\footnote{R.W. Grosse-Kunstleve et al. J. Appl. Cryst. (2002) 35, 
 126-136} have made the development of \emph{xia2} much more straightforward
 and the end product more reliable. The author would therefore like to
-additionally thank Nick Sauter and Ralf Grosee-Kunstleve for their help.
+additionally thank Nick Sauter and Ralf Grosse-Kunstleve for their help.
 
 Development of a package such as this is impossible without test data, for
 which the author would like to thank numerous users, particularly the 
-Joint Centre for Structural Genomics, for publishing the majority of their
+Joint Center for Structural Genomics, for publishing the majority of their
 raw diffraction data. 
 
 During the course of \emph{xia2} development the project has been 
@@ -148,8 +147,8 @@ or
 xia2 -3d /here/are/my/images
 \end{verbatim}
 
-The program is used from the command-line, there is no GUI. In essence there
-are four command-line options which are useful on a daily basis:
+The program is used from the command-line; there is no GUI. The four most
+important command-line options are as follows:
 
 \begin{center}
 \begin{tabular}{|r|p{6cm}|}
@@ -179,6 +178,8 @@ These are contained by WAVELENGTH objects which correspond to CCP4 MTZ
 datasets, and will ultimately have unique Miller indices. For example, a low
 and high dose pass will be merged together. A CRYSTAL however contains all 
 of the data from the experiment and is the basic unit of data for scaling.
+This description of the experiment is written automatically to an instruction
+file, an example of which is shown in Figure~\ref{figure-input}
 
 \begin{figure}
 \begin{center}
@@ -209,16 +210,16 @@ END PROJECT AUTOMATIC
 \end{center}
 \caption{The input file to the program, which is generated automatically, shows
 how the input data are understood. This may be adjusted and the program rerun,
-which will be covered in more detail later in the manual.}
+which will be covered in more detail later in the manual. \label{figure-input}}
 \end{figure}
 
 \section{Introductory example}
 
 The most straightforward way to discuss the operation of the program is 
-through demonstrations with real examples. The first of these is a DNA / 
-ligand complex recorded at Diamond Light Source as part of ongoing research.
-The structure includes barium which may be used for phasing, and the data
-were recorded as a single sweep. As may be seen from
+through demonstrations with real examples. The first of these is a dataset
+from a DNA / ligand complex recorded at Diamond Light Source as part of
+ongoing research. The structure includes barium which may be used for phasing,
+and the data were recorded as a single sweep. As may be seen from
 Figure~\ref{figure-diffraction}, the quality of diffraction was not
 ideal, and radiation damage was an issue. Initially the data were processed with 
 \begin{verbatim}
@@ -242,16 +243,16 @@ that the data were essentially complete after approximately 200
 frames, though the low resolution completeness is poor. 
 
 \begin{figure}
-\caption{Illustration of central region of diffraction pattern from
-  data set used as example in the text. \label{figure-diffraction}}
+\caption{Illustration of the central region of a diffraction pattern from
+  the example data set. \label{figure-diffraction}}
 \begin{center}
 \includegraphics[scale=0.35]{figures/3qrn-diffraction.png}
 \end{center}
 \end{figure}
 
 \begin{table}
-\caption{Merging stats for the full data set for the example shown in
-  the text.\label{table-merging-full}}
+\caption{Merging stats for processing of the full example data set.
+\label{table-merging-full}}
 \begin{tabular}{lccc}
 High resolution limit      &       1.25 &    6.45 &   1.25\\
 Low resolution limit       &                18.85  & 18.85  &  1.27\\
@@ -275,8 +276,7 @@ Total unique               &         9749  &  63 &     337\\
 
 \begin{figure}
 \caption{Merging statistics and completeness as a function of frame
-  number for the example described in the
-  text.\label{figure-rmerge-completeness}}
+  number for the example data.\label{figure-rmerge-completeness}}
 \begin{tabular}{cc}
 \includegraphics[scale=0.25]{figures/3qrn-all-rmerge-aimless.png} & 
 \includegraphics[scale=0.25]{figures/3qrn-all-complete-aimless.png} \\
@@ -339,8 +339,8 @@ START\_END.\label{table-modified-xinfo}}
 \end{figure}
 
 \begin{table}
-\caption{Merging stats for the first 200 frames form the data set for
-  the example shown in the text.\label{table-merging-sub}}
+\caption{Merging stats for the first 200 frames of the example data set.
+\label{table-merging-sub}}
 \begin{tabular}{lccc}
 High resolution limit         &         1.22 &  6.34 &  1.22 \\
 Low resolution limit          &        19.62 & 19.62 &  1.24 \\
@@ -375,9 +375,9 @@ be discussed shortly.
 
 \subsection{xia2.txt}
 
-In intention of the program output from \emph{xia2} is that it includes only
-the information which is critical to read, as will be shown for a 450 image 
-Pilatus 2M data set recorded from a thaumatin crystal. Tthe results from 
+By design, the program output from \emph{xia2} includes only
+the information that is critical to read, as will be shown for a 450 image 
+Pilatus 2M data set recorded from a thaumatin crystal. The results from 
 indexing are displayed as lattice / unit cell:
 
 {\small
@@ -402,7 +402,7 @@ allows the overall behaviour of the data to be understood at a glance. While
 mostly 'o' is usually a good indication of satisfactory processing, '\%'
 are not unusual, along with '.' for weaker data. If the output consists
 of mostly 'O' then it may be helpful to record a low dose data set. The output
-looks like:
+includes a convenient legend, and looks like the following:
 
 {\small
 \begin{verbatim}
@@ -425,9 +425,6 @@ Mosaic spread: 0.140 < 0.189 < 0.290
 \end{verbatim}
 }
 
-\noindent
-and includes a convenient legend.
-
 \subsection{HTML pages}
 
 If \verb|xia2html| has been run there is a nicely formatted html
@@ -446,7 +443,7 @@ immediately running \verb|xia2html| in the same directory will generate this.
 
 \section{Commonly used program options}
 
-There are a number of program options which are used on a daily basis in 
+There are a number of program options used on a daily basis in 
 \emph{xia2}, which are:
 
 \begin{center}
@@ -472,7 +469,7 @@ indexing with peaks found from all images \\
 \end{center}
 
 \noindent
-Options running AIMLESS are able to cope with an extremely large
+Options running Aimless are able to cope with an extremely large
 number of images - i.e. many thousands, useful when trying to merge
 data from a 
 number of crystals each with a large number of images, though time consuming!
