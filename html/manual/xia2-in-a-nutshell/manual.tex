@@ -1,4 +1,17 @@
 \documentclass[a4paper, 11pt]{article}
+
+% differentiate between pdflatex and e.g htlatex for includegraphics
+\newif\ifpdf
+\ifx\pdfoutput\undefined
+  \pdffalse
+\else
+  \ifnum\pdfoutput=1
+    \pdftrue
+  \else
+    \pdffalse
+  \fi
+\fi
+
 \usepackage{graphicx,amsmath}
 \usepackage{verbatim}
 \usepackage{graphicx}
@@ -250,7 +263,11 @@ frames, though the low resolution completeness is poor.
 \caption{Illustration of the central region of a diffraction pattern from
   the example data set. \label{figure-diffraction}}
 \begin{center}
-\includegraphics[scale=0.35]{figures/3qrn-diffraction.png}
+\ifpdf
+    \includegraphics[scale=0.35]{figures/3qrn-diffraction.png}
+\else
+    \includegraphics[scale=0.35, bb=0 0 1280 1280]{figures/3qrn-diffraction.png}
+\fi
 \end{center}
 \end{figure}
 
@@ -282,8 +299,13 @@ Total unique               &         9749  &  63 &     337\\
 \caption{Merging statistics and completeness as a function of frame
   number for the example data.\label{figure-rmerge-completeness}}
 \begin{tabular}{cc}
-\includegraphics[scale=0.25]{figures/3qrn-all-rmerge-aimless.png} & 
-\includegraphics[scale=0.25]{figures/3qrn-all-complete-aimless.png} \\
+\ifpdf
+  \includegraphics[scale=0.25]{figures/3qrn-all-rmerge-aimless.png} & 
+  \includegraphics[scale=0.25]{figures/3qrn-all-complete-aimless.png} \\
+\else
+  \includegraphics[scale=0.25, bb=0 0 1212 1524]{figures/3qrn-all-rmerge-aimless.png} & 
+  \includegraphics[scale=0.25, bb=0 0 1212 1524]{figures/3qrn-all-complete-aimless.png} \\
+\fi
 \end{tabular}
 \end{figure}
 
@@ -441,7 +463,11 @@ immediately running \verb|xia2html| in the same directory will generate this.
 \begin{figure}
 \caption{Illustration of xia2html output.\label{figure-xia2html}}
 \begin{center}
-\includegraphics[scale=0.25]{figures/xia2html.png}
+\ifpdf
+  \includegraphics[scale=0.25]{figures/xia2html.png}
+\else
+  \includegraphics[scale=0.25, bb=0 0 1780 1774]{figures/xia2html.png}
+\fi
 \end{center}
 \end{figure}
 
