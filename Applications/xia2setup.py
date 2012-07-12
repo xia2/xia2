@@ -114,9 +114,12 @@ def get_sweep(f):
     # now check if it is a decoy XDS file///
 
     if f.split('.')[-1] == 'cbf':
-        firstline = open(f, 'r').readline()
-        if 'XDS' in firstline.split()[-1]:
-            return
+        try:
+            firstline = open(f, 'r').readline()
+            if 'XDS' in firstline.split()[-1]:
+                return
+        except exceptions.Exception, e:
+            raise RuntimeError, 'problem with %s: %s' % (f, str(e))
 
     try:
         template, directory = image2template_directory(f)
