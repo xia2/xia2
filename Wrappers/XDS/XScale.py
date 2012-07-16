@@ -35,6 +35,7 @@ from XDS import xds_check_error
 
 from Handlers.Flags import Flags
 from Handlers.Streams import Debug
+from Handlers.Phil import Phil
 
 def XScale(DriverType = None,
            correct_decay = True,
@@ -216,9 +217,8 @@ def XScale(DriverType = None,
             xscale_inp.write('UNIT_CELL_CONSTANTS=')
             xscale_inp.write('%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f\n' % \
                              tuple(self._cell))
-
-            # hack to get the poly data set processed - need a weak mode...
-            # xscale_inp.write('MINIMUM_I/SIGMA=2\n')
+            xscale_inp.write('MINIMUM_I/SIGMA=%.1f\n' % \
+                             Phil.get_xds_parameter_xscale_min_isigma())
 
             if self._reindex_matrix:
                 xscale_inp.write(
