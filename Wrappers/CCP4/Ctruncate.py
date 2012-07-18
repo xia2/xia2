@@ -136,9 +136,15 @@ def Ctruncate(DriverType = None):
             self._nabsent = 0
             
             results = self.parse_ccp4_loggraph()
-            moments = transpose_loggraph(
-                results['Acentric moments of E using Truncate method'])
-
+            if 'Acentric moments of E using Truncate method' in results:
+                moments = transpose_loggraph(
+                    results['Acentric moments of E using Truncate method'])
+            elif 'Acentric moments of E' in results:
+                moments = transpose_loggraph(
+                    results['Acentric moments of E'])
+            else:
+                raise RuntimeError, 'Acentric moments of E not found'
+                
             self._moments = moments
 
             return
