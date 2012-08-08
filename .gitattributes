@@ -90,6 +90,7 @@ Toolkit/PlayPen/aimless2gnuplot.py -text
 Toolkit/PlayPen/analyse_spot_xds.py -text
 Toolkit/PlayPen/cc.py -text
 Toolkit/PlayPen/centring.py -text
+Toolkit/PlayPen/correct_lp2p4p.py -text
 Toolkit/PlayPen/densmap.py -text
 Toolkit/PlayPen/empty_cbf.py -text
 Toolkit/PlayPen/erzatz_symmetry.py -text
