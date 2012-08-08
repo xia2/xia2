@@ -51,7 +51,7 @@ class refinery:
         self._b = random.random()
         self._c = random.random()
 
-        for j in range(100):
+        for j in range(10):
             self.y.append(myfunc(j, self._a, self._b, self._c))
 
     def refine(self):

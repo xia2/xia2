@@ -17,15 +17,16 @@ def compute_volume_esd(unit_cell, unit_cell_esd, volume):
 
     a = [unit_cell_esd[j] / unit_cell[j] for j in range(3)]
 
-    b1 = sa * (csa - csb * csg) * unit_cell_esd[3]
-    b2 = sb * (csb - csg * csa) * unit_cell_esd[4]
-    b3 = sg * (csg - csa * csb) * unit_cell_esd[5]
+    b1 = sa * (csa - csb * csg) * unit_cell_esd[3] * d2r
+    b2 = sb * (csb - csg * csa) * unit_cell_esd[4] * d2r
+    b3 = sg * (csg - csa * csb) * unit_cell_esd[5] * d2r
 
     cv = math.pow(unit_cell[0] * unit_cell[1] * unit_cell[2], 4) / \
         math.pow(volume, 2)
 
-    suvol = math.sqrt(volume * volume * a[0] * a[1] * a[2] + \
-                      cv * (b1 * b1 + b2 * b2 + b3 * b3))
+    suvol = math.sqrt(volume * volume * \
+                      a[0] * a[0] * a[1] * a[1] * a[2] * a[2] + \
+                      cv * (b1 * b1 + b2 * b2 + b3 * b3)) * 1.0e6
 
     return suvol
 
