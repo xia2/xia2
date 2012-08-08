@@ -3,6 +3,8 @@
 def compute_volume_esd(unit_cell, unit_cell_esd, volume):
     '''From http://journals.iucr.org/services/cif/checking/CELLV_02.html.'''
 
+    # see also Fundamentals of Crystallography p 135.
+
     import math
 
     d2r = math.pi / 180.0
@@ -24,9 +26,9 @@ def compute_volume_esd(unit_cell, unit_cell_esd, volume):
     cv = math.pow(unit_cell[0] * unit_cell[1] * unit_cell[2], 4) / \
         math.pow(volume, 2)
 
-    suvol = math.sqrt(volume * volume * \
-                      a[0] * a[0] * a[1] * a[1] * a[2] * a[2] + \
-                      cv * (b1 * b1 + b2 * b2 + b3 * b3)) * 1.0e6
+    suvol = math.sqrt(volume * volume * 
+                      (a[0] * a[0] + a[1] * a[1] + a[2] * a[2]) + \
+                      cv * (b1 * b1 + b2 * b2 + b3 * b3))
 
     return suvol
 
