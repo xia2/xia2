@@ -143,7 +143,7 @@ class beam_factory:
 
         try:
             polar_fraction, polar_angle = cbf_handle.get_polarization()
-        except:
+        except: # intentional
             polar_fraction = 0.999
             polar_angle = 0.0
 
@@ -183,7 +183,7 @@ class beam_factory:
 
         try:
             polar_fraction, polar_angle = cbf_handle.get_polarization()
-        except:
+        except: # intentional
             polar_fraction = 0.999
             polar_angle = 0.0
 

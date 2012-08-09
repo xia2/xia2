@@ -35,7 +35,7 @@ class FormatTIFF(Format):
                 image_file)
             return 1
 
-        except:
+        except: # intentional
             pass
 
         return 0

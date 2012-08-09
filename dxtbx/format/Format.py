@@ -17,12 +17,12 @@ import sys
 
 try:
     import bz2
-except:
+except: # intentional
     bz2 = None
 
 try:
     import gzip
-except:
+except: # intentional
     gzip = None
 
 import exceptions

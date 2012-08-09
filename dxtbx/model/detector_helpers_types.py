@@ -67,7 +67,7 @@ class detector_helpers_types:
             for s in detector_helper_sensors.all():
                 try:
                     return self.get(s, fast, slow, df, ds)
-                except:
+                except: # intentional
                     pass
 
             raise RuntimeError, 'detector %s %d %d %d %d unknown' % \

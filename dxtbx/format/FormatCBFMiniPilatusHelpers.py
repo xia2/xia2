@@ -21,7 +21,7 @@ def get_pilatus_timestamp(timestamp_string):
             struct_time = time.strptime(timestamp, format)
             return time.mktime(struct_time) + float('0.' + milliseconds)
 
-        except:
+        except: # intentional
             pass
 
     raise RuntimeError, 'timestamp %s not recognised' % timestamp
