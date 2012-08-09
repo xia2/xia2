@@ -196,6 +196,7 @@ dxtbx/format/tests/TestFormat.py -text
 dxtbx/format/tests/TestRegistry.py -text
 dxtbx/model/__init__.py -text
 dxtbx/model/beam.py -text
+dxtbx/model/cube.py -text
 dxtbx/model/detector.py -text
 dxtbx/model/detector_helpers.py -text
 dxtbx/model/detector_helpers_types.py -text
@@ -230,6 +231,7 @@ dxtbx/model/tests/test_beam.py -text
 dxtbx/model/tests/test_detector.py -text
 dxtbx/model/tests/test_goniometer.py -text
 dxtbx/model/tests/test_scan.py -text
+dxtbx/model/tst_cube.py -text
 dxtbx/readme.txt -text
 html/manual/xia2-in-a-nutshell/ccp4_html.cfg -text
 html/manual/xia2-in-a-nutshell/compile_html.sh -text
