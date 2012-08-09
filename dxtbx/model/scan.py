@@ -15,7 +15,6 @@ import pycbf
 import math
 import copy
 import time
-import datetime
 
 from scan_helpers import scan_helper_image_files
 from scan_helpers import scan_helper_image_formats

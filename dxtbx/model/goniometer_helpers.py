@@ -7,8 +7,6 @@
 #
 # Helper functions for goniometer
 
-import math
-import pycbf
 from scitbx import matrix
 from scitbx.math import r3_rotation_axis_and_angle_from_matrix
 

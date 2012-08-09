@@ -8,8 +8,6 @@
 # An implementation of the CBF image reader for Pilatus images. Inherits from
 # FormatCBFMini.
 
-import time
-
 from dxtbx.format.FormatCBFMini import FormatCBFMini
 from dxtbx.format.FormatCBFMiniPilatusHelpers import \
      get_pilatus_timestamp

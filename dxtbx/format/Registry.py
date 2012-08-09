@@ -9,11 +9,6 @@
 # this is useful for i.e. identifying the best tool to read a given range
 # of image formats.
 
-import os
-import sys
-import imp
-import inspect
-
 from RegistryHelpers import InheritsFromFormat
 from RegistryHelpers import LookForFormatClasses
 from RegistryHelpers import LoadFormatClass

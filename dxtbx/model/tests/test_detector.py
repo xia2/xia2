@@ -7,7 +7,6 @@
 #
 # Tests for the detector class.
 
-import math
 import os
 import sys
 from scitbx import matrix
@@ -16,7 +15,6 @@ sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from dxtbx.model.detector import detector
 from dxtbx.model.detector import detector_factory
-from dxtbx.model.detector_helpers import read_xds_xparm
 from dxtbx.model.detector_helpers import compute_frame_rotation
 
 def test_detector():

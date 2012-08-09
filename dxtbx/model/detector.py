@@ -14,7 +14,6 @@
 import math
 import pycbf
 from scitbx import matrix
-from scitbx.math import r3_rotation_axis_and_angle_from_matrix
 
 from detector_helpers import detector_helper_sensors
 from detector_helpers import read_xds_xparm

@@ -7,10 +7,8 @@
 #
 # Tests for the scan class, and it's helper classes.
 
-import math
 import os
 import sys
-import time
 
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 

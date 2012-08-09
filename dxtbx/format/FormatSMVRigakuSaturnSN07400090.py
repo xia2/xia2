@@ -10,7 +10,6 @@
 # FormatSMVRigakuSaturn customizing only the difference (incorrect definition
 # of fast and slow directions.)
 
-import time
 from scitbx import matrix
 
 from dxtbx.format.FormatSMVRigakuSaturn import FormatSMVRigakuSaturn

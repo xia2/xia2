@@ -12,7 +12,6 @@
 import math
 import pycbf
 from scitbx import matrix
-from scitbx.math import r3_rotation_axis_and_angle_from_matrix
 
 from goniometer_helpers import cbf_gonio_to_effective_axis_fixed
 

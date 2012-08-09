@@ -10,7 +10,6 @@
 # but will allow for extension for specific implementations of CBF.
 
 import pycbf
-import exceptions
 
 from dxtbx.format.FormatCBF import FormatCBF
 

@@ -8,7 +8,6 @@
 # Helpers for FormatCBFMiniPilatus...
 
 import time
-import exceptions
 
 def get_pilatus_timestamp(timestamp_string):
 

@@ -7,7 +7,6 @@
 #
 # Tests for the beam class.
 
-import math
 import os
 import sys
 

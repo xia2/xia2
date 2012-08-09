@@ -32,12 +32,17 @@ def plot_shoebox(shoebox):
 
 def tst_cube():
 
-    from cube import cube
+    import os
+    import sys
+
+    sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
+
+    from dxtbx.model.cube import cube
 
     import os
 
-    template = os.path.join(os.path.split(os.getcwd())[0],
-                            'use_case_xds_method', 'thau2_O0_K0_P0_1_####.cbf')
+    template = os.path.join('/Users/graeme/svn/cctbx/sources/cctbx_project/bpcx_regression/use_case_xds_method',
+                            'thau2_O0_K0_P0_1_####.cbf')
 
     c = cube(template)
 

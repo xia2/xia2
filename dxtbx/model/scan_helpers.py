@@ -10,7 +10,6 @@
 # $XIA2_ROOT/Experts/FindImages.py as I will need it here too.
 
 import os
-import sys
 import re
 import string
 import math

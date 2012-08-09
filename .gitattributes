@@ -228,10 +228,10 @@ dxtbx/model/tests/image_020.dat -text
 dxtbx/model/tests/omega_scan.cbf -text svneol=unset#unset
 dxtbx/model/tests/phi_scan_001.cbf -text svneol=unset#unset
 dxtbx/model/tests/test_beam.py -text
+dxtbx/model/tests/test_cube.py -text
 dxtbx/model/tests/test_detector.py -text
 dxtbx/model/tests/test_goniometer.py -text
 dxtbx/model/tests/test_scan.py -text
-dxtbx/model/tst_cube.py -text
 dxtbx/readme.txt -text
 html/manual/xia2-in-a-nutshell/ccp4_html.cfg -text
 html/manual/xia2-in-a-nutshell/compile_html.sh -text
