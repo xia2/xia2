@@ -1,7 +1,7 @@
-HOWTO: Support for New Detectors to xia2
-----------------------------------------
+HOWTO: Support for New Detectors to dxtbx
+-----------------------------------------
 
-A new framework has been implemented within xia2 to make it more straight-
+A new framework has been implemented within dxtbx to make it more straight-
 forward to add support for new detector types and beamlines. In essence all
 that is needed is to implement a Python class which extends the Format class
 to add some specific details about this detector and the associated beamline /
@@ -74,7 +74,7 @@ let's call the class something clear like FormatSMVRigakuSaturn.py:
         sys.path.append(FormatRoot)
 
 to the start of the class file. However I would personally just do all of the
-coding in the xia2 directory as that will keep things simple. Anyway, we
+coding in the dxtbx directory as that will keep things simple. Anyway, we
 digress. The first thing which needs to be added is a static method named
 "understand" which will say how much sense we can make of this image and in
 essence whether this is the tool for the job. This cannot make use of any
