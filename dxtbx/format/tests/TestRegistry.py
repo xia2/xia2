@@ -10,9 +10,7 @@
 import os
 import sys
 
-assert('XIA2_ROOT' in os.environ)
-
-if not os.environ['XIA2_ROOT'] in sys.path:
+if 'XIA2_ROOT' in os.environ and not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
 from dxtbx.format.Registry import Registry
