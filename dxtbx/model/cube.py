@@ -1,12 +1,16 @@
+#!/usr/bin/env python
 # cube.py
+#   Copyright (C) 2011 Diamond Light Source, Graeme Winter
 #
-# a toy data cube implementation (start thereof)
+#   This code is distributed under the BSD license, a copy of which is
+#   included in the root directory of this package.
 #
-# aims
+# A data cube implementation, with aims:
+#
 # - to be able to read in images (and unload images) silently
 # - to be able to pass a 3 dimensional flex array corresponding to a
 #   subset of frames, area of detector (shoebox)
-# - to be instantiated with a filename template
+# - to be instantiated with a filename template - or through the factory below
 # - to behave a little like a flex array
 
 class cube:
@@ -59,6 +63,7 @@ class cube:
 
         if self._cache.full():
             del(self._loaded_frames[self._cache.get()])
+
         from iotbx.detectors import ImageFactory
         image = ImageFactory(self._format % frame_number)
         image.read()
@@ -74,6 +79,19 @@ class cube:
         self._cache.put(frame_number)
 
         return
+
+    def totals(self):
+        '''
+        Compute sum of pixel values on frames, to exercise system.
+        '''
+
+        totals = { }
+
+        for frame in self._frames:
+            self._load(frame)
+            totals[frame] = sum(self._loaded_frames[frame])
+
+        return totals
 
     def get(self, frame0, frame1, slow0, slow1, fast0, fast1):
         '''
@@ -97,6 +115,9 @@ class cube:
         grid = flex.grid((frame1 - frame0, slow1 - slow0, fast1 - fast0))
         shoebox = flex.double(grid)
 
+        # FIXME need to find a faster way to code this: possibly through
+        # some additional C++ code?
+
         for frame in range(frame0, frame1):
             self._load(frame)
             for s in range(slow0, slow1):
@@ -114,3 +135,12 @@ class cube_factory:
         from cube_helpers import TR
         template = TR(filename)[0]
         return cube(template)
+
+if __name__ == '__main__':
+    import sys
+
+    c = cube_factory.from_filename(sys.argv[1])
+    totals = c.totals()
+
+    for f in sorted(totals):
+        print f, totals[f]
