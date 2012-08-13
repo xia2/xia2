@@ -39,6 +39,9 @@ def LookForFormatClasses():
     format_classes = []
     file_names = []
 
+    # FIXME in here - dxtbx should already be in os.path - look for it there,
+    # also wouldn't it be tidy to refer to a Phil parameter?
+
     xia2_format_dir = os.path.join(os.environ['XIA2_ROOT'], 'dxtbx', 'format')
 
     if os.name == 'nt':

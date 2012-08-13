@@ -52,6 +52,8 @@ class FormatSMVADSCSN457(FormatSMVADSC):
     # FIXME surely I don't need the code which follows which just reproduces
     # standard ADSC model?
 
+    # FIXME find a test case, remove this.
+
     def _detector(self):
         '''Return a model for a simple detector, presuming no one has
         one of these on a two-theta stage. Assert that the beam centre is

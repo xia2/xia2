@@ -58,6 +58,7 @@ def TestRegistry2(files):
         print i.get_goniometer()
         print i.get_detector()
         print i.get_scan()
+        print i.get_cube()
 
         print i.get_beam() == b0, i.get_goniometer() == g0, \
               i.get_detector() == d0

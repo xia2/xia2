@@ -39,7 +39,7 @@ from dxtbx.model.goniometer import goniometer, goniometer_factory
 from dxtbx.model.detector import detector, detector_factory
 from dxtbx.model.beam import beam, beam_factory
 from dxtbx.model.scan import scan, scan_factory
-from dxtbx.model.cube import cube
+from dxtbx.model.cube import cube, cube_factory
 
 class _MetaFormat(type):
     '''A metaclass for the Format base class (and hence all format classes)
@@ -88,6 +88,7 @@ class Format:
         self._detector_factory = detector_factory
         self._beam_factory = beam_factory
         self._scan_factory = scan_factory
+        self._cube_factory = cube_factory
 
         self.setup()
 
@@ -119,6 +120,10 @@ class Format:
             scan_instance = self._scan()
             assert(isinstance(scan_instance, scan))
             self._scan_instance = scan_instance
+
+            cube_instance = self._cube()
+            # assert(isinstance(cube_instance, cube))
+            self._cube_inctance = cube_instance
 
         except exceptions.Exception, e:
             traceback.print_exc(sys.stderr)
@@ -152,10 +157,7 @@ class Format:
         return self._scan_instance
 
     def get_cube(self):
-        '''Get the cube; generating if needed'''
-
-        if not self._cube_instance:
-            self._cube_instance = cube(file_to_template(self._image_file))
+        '''Get the cube'''
 
         return self._cube_instance
 
@@ -205,11 +207,35 @@ class Format:
 
         raise RuntimeError, 'overload me'
 
+    def _cube(self):
+        '''Get the data cube - this method could optionally be overloaded,
+        otherwise it will use the regular cube factory - which behind the
+        scenes uses iotbx.'''
+
+        # FIXME since behind the scenes this goes through the
+        # iotbx, it will not use the general file opening below -
+        # could this be rectified?
+
+        self._cube_instance = cube_factory.from_filename(self._image_file)
+
+        return
+
     ####################################################################
     #                                                                  #
     # Helper functions for dealing with compressed images.             #
     #                                                                  #
     ####################################################################
+
+    @staticmethod
+    def is_url(path):
+        '''See if the file is a URL.'''
+
+        from urlparse import urlparse
+
+        if urlparse(path).scheme:
+            return True
+
+        return False
 
     @staticmethod
     def is_bz2(filename):
@@ -224,17 +250,6 @@ class Format:
         magic = open(filename, 'rb').read(2)
 
         return ord(magic[0]) == 0x1f and ord(magic[1]) == 0x8b
-
-    @staticmethod
-    def is_url(path):
-        '''See if the file is a URL.'''
-
-        from urlparse import urlparse
-
-        if urlparse(path).scheme:
-            return True
-
-        return False
 
     @staticmethod
     def open_file(filename, mode = 'rb'):

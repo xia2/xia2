@@ -1,6 +1,6 @@
 HOWTO: Support for New Detectors to dxtbx
 -----------------------------------------
- 
+
 A new framework has been implemented within dxtbx to make it more straight-
 forward to add support for new detector types and beamlines. In essence all
 that is needed is to implement a Python class which extends the Format class

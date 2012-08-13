@@ -48,6 +48,10 @@ class cube:
 
         return
 
+    def __repr__(self):
+        return '%s\n' % self._template + \
+            '%d -> %d' % (min(self._frames), max(self._frames))
+
     def _load(self, frame_number):
 
         if frame_number in self._loaded_frames:
@@ -102,3 +106,11 @@ class cube:
 
         return shoebox
 
+class cube_factory:
+    '''A factory class for cube instances.'''
+
+    @staticmethod
+    def from_filename(filename):
+        from cube_helpers import TR
+        template = TR(filename)[0]
+        return cube(template)
