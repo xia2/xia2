@@ -13,8 +13,15 @@
 #
 
 import os
+import sys
 import math
 from iotbx import mtz
+
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
+
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
 
 from Wrappers.CCP4.Mtzdump import Mtzdump
 from Wrappers.CCP4.Rebatch import Rebatch
@@ -453,3 +460,36 @@ class SweepInformationHandler:
             assert(si.get_project_info()[1] == xname)
 
         return pname, xname
+
+def anomalous_signals(hklin):
+    '''
+    Compute some measures of anomalous signal: df / f and di / sig(di).
+    '''
+
+    m = mtz.object(hklin)
+    mas = m.as_miller_arrays()
+
+    data = None
+
+    for ma in mas:
+        if not ma.anomalous_flag():
+            continue
+        if str(ma.observation_type()) != 'xray.intensity':
+            continue
+        data = ma
+
+    if not data:
+        raise RuntimeError, 'no anomalous data found'
+
+    df_f = data.anomalous_signal()
+    differences = data.anomalous_differences()
+    di_sigdi = (sum(abs(differences.data())) /
+                sum(differences.sigmas()))
+
+    return df_f, di_sigdi
+
+if __name__ == '__main__':
+
+    for arg in sys.argv[1:]:
+        df_f, di_sigdi = anomalous_signals(arg)
+        print '%s: %.3f %.3f' % (os.path.split(arg)[-1], df_f, di_sigdi)
