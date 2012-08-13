@@ -220,6 +220,7 @@ class Scaler:
             'Wilson B factor', 'Partial bias',
             'Anomalous completeness', 'Anomalous multiplicity',
             'Anomalous correlation', 'Anomalous slope',
+            'dF/F', 'dI/s(dI)',
             'Total observations', 'Total unique']
 
         # information for returning "interesting facts" about the data

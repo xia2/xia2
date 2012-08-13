@@ -51,7 +51,7 @@ from Experts.SymmetryExpert import r_to_rt, rt_to_r, compose_symops
 from Experts.SymmetryExpert import symop_to_mat, compose_matrices_r
 
 # stuff I have nicked from the CCP4 Scaler implementation
-from CCP4ScalerHelpers import _resolution_estimate
+from CCP4ScalerHelpers import _resolution_estimate, anomalous_signals
 from Modules.CCP4InterRadiationDamageDetector import \
      CCP4InterRadiationDamageDetector
 from Experts.ResolutionExperts import determine_scaled_resolution
@@ -1665,6 +1665,19 @@ class XDSScalerR(Scaler):
         return
 
     def _scale_finish(self):
+
+        # compute anomalous signals if anomalous
+
+        if self.get_scaler_anomalous():
+            for key in self._tmp_scaled_refl_files:
+                f = self._tmp_scaled_refl_files[key]
+                a_s = anomalous_signals(f)
+                self._scalr_statistics[
+                    (self._scalr_pname, self._scalr_xname, key)
+                    ]['dF/F'] = [a_s[0]]
+                self._scalr_statistics[
+                    (self._scalr_pname, self._scalr_xname, key)
+                    ]['dI/s(dI)'] = [a_s[1]]
 
         # next transform to F's from I's etc.
 

@@ -220,6 +220,8 @@ def format_statistics(statistics):
         'Anomalous multiplicity',
         'Anomalous correlation',
         'Anomalous slope',
+        'dF/F',
+        'dI/s(dI)',
         'Total observations',
         'Total unique']
 
@@ -240,6 +242,8 @@ def format_statistics(statistics):
         'Anomalous multiplicity':'%5.1f\t%5.1f\t%5.1f',
         'Anomalous correlation':'%6.3f\t%6.3f\t%6.3f',
         'Anomalous slope':'%5.3f\t%5.3f\t%5.3f',
+        'dF/F':'%.3f',
+        'dI/s(dI)':'%.3f',
         'Total observations':'%d\t%d\t%d',
         'Total unique':'%d\t%d\t%d'
         }

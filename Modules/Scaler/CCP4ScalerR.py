@@ -40,7 +40,8 @@ from lib.SymmetryLib import lattices_in_order, sort_lattices
 
 from CCP4ScalerHelpers import _resolution_estimate, \
      _prepare_pointless_hklin, _fraction_difference, \
-     CCP4ScalerHelper, SweepInformationHandler, erzatz_resolution
+     CCP4ScalerHelper, SweepInformationHandler, erzatz_resolution, \
+     anomalous_signals
 
 from Modules.CCP4InterRadiationDamageDetector import \
      CCP4InterRadiationDamageDetector
@@ -1283,6 +1284,19 @@ class CCP4ScalerR(Scaler):
     def _scale_finish(self):
         '''Finish off the scaling... This needs to be replaced with a
         call to AMI.'''
+
+        # compute anomalous signals if anomalous
+
+        if self.get_scaler_anomalous():
+            for key in self._tmp_scaled_refl_files:
+                f = self._tmp_scaled_refl_files[key]
+                a_s = anomalous_signals(f)
+                self._scalr_statistics[
+                    (self._scalr_pname, self._scalr_xname, key)
+                    ]['dF/F'] = [a_s[0]]
+                self._scalr_statistics[
+                    (self._scalr_pname, self._scalr_xname, key)
+                    ]['dI/s(dI)'] = [a_s[1]]
 
         # convert I's to F's in Truncate
 
