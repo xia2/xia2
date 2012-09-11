@@ -147,6 +147,7 @@ def compose_symops(a, b):
     return result
 
 def symop_to_mat(symop):
+    symop = symop.replace('h', 'x').replace('k', 'y').replace('l', 'z')
     return matrix.sqr(sgtbx.change_of_basis_op(
         symop).c().as_double_array()[:9]).elems
 
@@ -195,3 +196,12 @@ if __name__ == '__main__':
     m = symop_to_mat(s)
 
     assert(s == mat_to_symop(m))
+
+    s = '-h,-k,h+l'
+
+    m = symop_to_mat(s)
+
+    for i in map(int, m):
+        print i,
+
+    
