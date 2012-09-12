@@ -318,7 +318,7 @@ def failover_cbf(cbf_file):
 
     header['two_theta'] = 0.0
 
-    for record in open(cbf_file).readlines():
+    for record in open(cbf_file):
 
         if '_array_data.data' in record:
             break
@@ -591,6 +591,9 @@ def Diffdump(DriverType = None):
             if HeaderCache.check(self._image):
                 self._header = HeaderCache.get(self._image)
                 return copy.deepcopy(self._header)
+
+            if os.path.getsize(self._image) == 0:
+                raise RuntimeError, 'empty file: %s' % self._image
 
             try:
                 return self.readheader_diffdump()
