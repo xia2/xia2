@@ -302,8 +302,9 @@ def XScaleR(DriverType = None,
                     dname = line.split()[-1].replace('.HKL', '')
 
                 if 'total' in line and not dname in self._rmerges:
-                    self._rmerges[dname] = float(
-                        line.replace('%', '').split()[5])
+                    if len(line.split()) > 5:
+                        self._rmerges[dname] = float(
+                            line.replace('%', '').split()[5])
 
                 # trac #419 - if the data sets are not correctly indexed,
                 # throw an exception. N.B. this will only work if the
