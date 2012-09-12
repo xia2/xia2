@@ -255,6 +255,13 @@ def print_sweeps(out = sys.stdout):
 
         if latest_chooch:
             name = latest_chooch.id_wavelength(wavelengths[j])
+            first_name = name
+            counter = 1
+
+            while name in [wavelength_map[w] for w in wavelength_map]:
+                counter += 1
+                name = '%s%d' % (first_name, counter)
+            
             fp, fpp = latest_chooch.get_fp_fpp(wavelengths[j])
         else:
             fp, fpp = 0.0, 0.0
