@@ -1202,7 +1202,9 @@ class CCP4ScalerA(Scaler):
 
     def _scale_finish(self):
         '''Finish off the scaling... This needs to be replaced with a
-        call to AMI.'''
+        call to AMI. Or something generic in a parent class which is used by
+        all scalers, provided that they play nice and put their data in
+        the right place so the parent scale_finish can find it...'''
 
         # compute anomalous signals if anomalous
 

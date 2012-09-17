@@ -282,7 +282,11 @@ def failover_full_cbf(cbf_file):
     header['detector_origin_mm'] = f, s
 
     header['rotation_axis'] = cbf_gonio_to_effective_axis(gonio)
-    header['two_theta'] = dfast.angle(matrix.col((0.0, 1.0, 0.0)), deg = True)
+    two_theta = dfast.angle(matrix.col((0.0, 1.0, 0.0)), deg = True)
+    if math.fabs(two_theta - 180.0) < 1.0:
+        header['two_theta'] = 0
+    else:
+        header['two_theta'] = two_theta
 
     # find the direct beam vector - takes a few steps
     cbf_handle.find_category('axis')

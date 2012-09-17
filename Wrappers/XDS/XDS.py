@@ -148,6 +148,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
         'mar':'MAR345',
         'marccd':'CCDCHESS',
         'dectris':'PILATUS',
+        'pilatus':'PILATUS',
         'raxis':'RAXIS',
         'saturn':'SATURN',
         'adsc':'ADSC'}
@@ -156,6 +157,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
         'mar':1,
         'marccd':1,
         'dectris':0,
+        'pilatus':0,
         'raxis':1,
         'saturn':1,
         'adsc':1}
@@ -164,6 +166,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
         'mar':130000,
         'marccd':65000,
         'dectris':1048500,
+        'pilatus':1048500,
         'raxis':1000000,
         'saturn':1000000,
         'adsc':65000}
@@ -172,6 +175,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
         'mar':'1.0 0.0 0.0',
         'marccd':'1.0 0.0 0.0',
         'dectris':'1.0 0.0 0.0',
+        'pilatus':'1.0 0.0 0.0',
         'raxis':'1.0 0.0 0.0',
         'saturn':'-1.0 0.0 0.0',
         'adsc':'1.0 0.0 0.0'}
@@ -180,6 +184,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
         'mar':'0.0 1.0 0.0',
         'marccd':'0.0 1.0 0.0',
         'dectris':'0.0 1.0 0.0',
+        'pilatus':'0.0 1.0 0.0',
         'raxis':'0.0 -1.0 0.0',
         'saturn':'0.0 1.0 0.0',
         'adsc':'0.0 1.0 0.0'}
@@ -221,6 +226,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
             'mar':'-1.0 0.0 0.0',
             'marccd':'-1.0 0.0 0.0',
             'dectris':'-1.0 0.0 0.0',
+            'pilatus':'-1.0 0.0 0.0',
             'raxis':'0.0 -1.0 0.0',
             'saturn':'0.0 -1.0 0.0',
             'adsc':'-1.0 0.0 0.0'}
@@ -231,6 +237,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
             'mar':'1.0 0.0 0.0',
             'marccd':'1.0 0.0 0.0',
             'dectris':'1.0 0.0 0.0',
+            'pilatus':'1.0 0.0 0.0',
             'raxis':'0.0 1.0 0.0',
             'saturn':'0.0 1.0 0.0',
             'adsc':'1.0 0.0 0.0'}
@@ -239,6 +246,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
         'mar':'0.0 1.0 0.0',
         'marccd':'0.0 1.0 0.0',
         'dectris':'0.0 1.0 0.0',
+        'pilatus':'0.0 1.0 0.0',
         'raxis':'1.0 0.0 0.0',
         'saturn':'0.0 1.0 0.0',
         'adsc':'0.0 1.0 0.0'}
@@ -268,7 +276,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
                    detector_to_minimum_trusted[detector],
                    detector_to_overload[detector]))
 
-    if not detector in ['raxis', 'saturn', 'dectris'] and \
+    if not detector in ['raxis', 'saturn', 'dectris', 'pilatus'] and \
            math.fabs(header['two_theta']) > 1.0:
         raise RuntimeError, 'two theta offset not supported for %s' % detector
 
