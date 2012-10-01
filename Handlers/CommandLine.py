@@ -1294,12 +1294,15 @@ class _CommandLine():
 
     def _read_3daiir(self):
 
-        if '-3daiir' in sys.argv or '-3daii' in sys.argv:
+        if '-3daiir' in sys.argv or '-3daii' in sys.argv or \
+               '-3diia' in sys.argv:
             add_preference('indexer', 'xdsii')
             add_preference('integrater', 'xdsr')
             add_preference('scaler', 'xdsa')
             if '-3daii' in sys.argv:
                 self._understood.append(sys.argv.index('-3daii'))
+            if '-3diia' in sys.argv:
+                self._understood.append(sys.argv.index('-3diia'))
             if '-3daiir' in sys.argv:
                 self._understood.append(sys.argv.index('-3daiir'))
             Debug.write('3DA II R pipeline (XDS IDXREF all images) selected')
