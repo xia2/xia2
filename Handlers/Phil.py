@@ -27,6 +27,8 @@ xds.parameter {
     .type = ints(size = 4)
   xscale_min_isigma = 3.0
     .type = float
+  trusted_region = None
+    .type = floats(size = 2)
 }
 ccp4.reindex {
   program = 'pointless'
@@ -68,6 +70,9 @@ xia2.settings {
     
     def get_xds_parameter_untrusted_rectangle(self):
         return self._parameters.xds.parameter.untrusted_rectangle
+
+    def get_xds_parameter_trusted_region(self):
+        return self._parameters.xds.parameter.trusted_region
 
     def get_xds_parameter_delphi_small(self):
         return self._parameters.xds.parameter.delphi_small

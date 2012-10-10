@@ -255,7 +255,6 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
 
     width, height = tuple(map(int, header['size']))
     qx, qy = tuple(header['pixel'])
-
     detector = header['detector']
 
     if detector == 'rigaku':
@@ -325,7 +324,10 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
         result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%s' % \
                       detector_to_y_axis[detector])
 
-    if detector_class_is_square[detector_class]:
+    if Phil.get_xds_parameter_trusted_region():
+        result.append('TRUSTED_REGION %.2f %.2f' % tuple(
+            Phil.get_xds_parameter_trusted_region()))
+    elif detector_class_is_square[detector_class]:
         result.append('TRUSTED_REGION=0.0 1.41')
     else:
         result.append('TRUSTED_REGION=0.0 0.99')
