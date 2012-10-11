@@ -29,6 +29,8 @@ xds.parameter {
     .type = float
   trusted_region = None
     .type = floats(size = 2)
+  profile_grid_size = None
+    .type = ints(size = 2)
 }
 ccp4.reindex {
   program = 'pointless'
@@ -73,6 +75,9 @@ xia2.settings {
 
     def get_xds_parameter_trusted_region(self):
         return self._parameters.xds.parameter.trusted_region
+
+    def get_xds_parameter_profile_grid_size(self):
+        return self._parameters.xds.parameter.profile_grid_size
 
     def get_xds_parameter_delphi_small(self):
         return self._parameters.xds.parameter.delphi_small

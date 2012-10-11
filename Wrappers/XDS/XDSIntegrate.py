@@ -163,6 +163,15 @@ def XDSIntegrate(DriverType = None):
             xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
                           self._parallel)
 
+            if Phil.get_xds_parameter_profile_grid_size():
+                ab, c = Phil.get_xds_parameter_profile_grid_size()
+                assert(ab > 0 and ab < 22 and (ab % 2) == 1)
+                assert(c > 0 and c < 22 and (c % 2) == 1)
+                xds_inp.write(
+                    'NUMBER_OF_PROFILE_GRID_POINTS_ALONG_ALPHA/BETA= %d\n' % ab)
+                xds_inp.write(
+                    'NUMBER_OF_PROFILE_GRID_POINTS_ALONG_GAMMA= %d\n' % c)
+
             if Flags.get_xparallel() > 1:
                 xds_inp.write('MAXIMUM_NUMBER_OF_JOBS=%d\n' % \
                               Flags.get_xparallel())
