@@ -51,8 +51,8 @@ joiners = ['.', '_', '']
 compiled_patterns = [re.compile(pattern) for pattern in patterns]
 
 def template_regex(filename):
-    '''Try a bunch of templates to work out the most sensible. N.B. assumes that
-    the image index will be the last digits found in the file name.'''
+    '''Try a bunch of templates to work out the most sensible. N.B. assumes
+    that the image index will be the last digits found in the file name.'''
 
     rfilename = filename[::-1]
 

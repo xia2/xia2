@@ -1,0 +1,3 @@
+#!/bin/bash
+
+cctbx.python -Q warn ${XIA2_ROOT}/Applications/xia2hdr.py $@

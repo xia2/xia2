@@ -18,6 +18,8 @@ Applications/test_image_header.py -text
 Applications/test_pilatus_scan -text
 Applications/x1335 -text
 Applications/x1691 -text
+Applications/xia2hdr -text
+Applications/xia2hdr.py -text
 Attic/Attic1.py -text
 Attic/bitbx/examples/integrate.hkl -text
 Attic/bitbx/examples/xparm-uc1-2.xds -text
