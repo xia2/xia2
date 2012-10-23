@@ -164,6 +164,18 @@ class _CommandLine():
                   (self._help_ispyb_xml_out(), str(e))
 
         try:
+            self._read_hdr_in()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_hdr_in(), str(e))
+
+        try:
+            self._read_hdr_out()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_hdr_out(), str(e))
+
+        try:
             self._read_parallel()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -1030,9 +1042,44 @@ class _CommandLine():
     def _help_ispyb_xml_out(self):
         return '-ispyb_xml_out project.xml'
 
-    def get_ispyb_xml_out(self):
-        '''Return the ispyb xml out file.'''
-        return self._ispyb_xml_out
+    def _read_hdr_in(self):
+        try:
+            index = sys.argv.index('-hdr_in')
+        except ValueError, e:
+            self._hdr_in = None
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        self._understood.append(index)
+        self._understood.append(index + 1)
+        Flags.set_hdr_in(sys.argv[index + 1])
+
+        return
+
+    def _help_hdr_in(self):
+        return '-hdr_in project.hdr'
+
+    def _read_hdr_out(self):
+        try:
+            index = sys.argv.index('-hdr_out')
+        except ValueError, e:
+            self._hdr_out = None
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        self._understood.append(index)
+        self._understood.append(index + 1)
+        Flags.set_hdr_out(sys.argv[index + 1])
+        Debug.write('Output header file set to %s' % sys.argv[index + 1])
+
+        return
+
+    def _help_hdr_out(self):
+        return '-hdr_out project.hdr'
 
     def get_template(self):
         return self._default_template

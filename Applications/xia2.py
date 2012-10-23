@@ -230,6 +230,12 @@ def xia2():
     # delete all of the temporary mtz files...
     cleanup()
 
+    # maybe write out the headers
+    from Handlers.Flags import Flags
+    if Flags.get_hdr_out():
+        from Wrappers.XIA.Diffdump import HeaderCache
+        HeaderCache.write(Flags.get_hdr_out())
+
     # and the summary file
     summary_records = CommandLine.get_xinfo().summarise()
 
@@ -312,6 +318,7 @@ if __name__ == '__main__':
 
     try:
         xia2()
+        
         Chatter.write('Status: normal termination')
     except exceptions.Exception, e:
         traceback.print_exc(file = open('xia2.error', 'w'))

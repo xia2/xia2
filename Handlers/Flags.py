@@ -130,6 +130,10 @@ class _Flags:
         # ISPyB things
         self._ispyb_xml_out = None
 
+        # header cache / json things
+        self._hdr_in = None
+        self._hdr_out = None
+
         return
 
     def set_batch_scale(self, batch_scale):
@@ -474,6 +478,27 @@ class _Flags:
 
     def get_ispyb_xml_out(self):
         return self._ispyb_xml_out
+
+    def set_hdr_in(self, hdr_in):
+        self._hdr_in = hdr_in
+
+        from Wrappers.XIA.Diffdump import HeaderCache
+        from Handlers.Streams import Debug
+
+        Debug.write('Read %d headers from %s' % (HeaderCache.read(hdr_in),
+                                                 hdr_in))
+        
+        return
+
+    def get_hdr_in(self):
+        return self._hdr_in
+
+    def set_hdr_out(self, hdr_out):
+        self._hdr_out = hdr_out
+        return
+
+    def get_hdr_out(self):
+        return self._hdr_out
 
     def set_fixed_628(self):
         self._fixed_628 = True

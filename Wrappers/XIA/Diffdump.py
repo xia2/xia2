@@ -88,6 +88,17 @@ class _HeaderCache:
     def check(self, image):
         return self._headers.has_key(image)
 
+    def write(self, filename):
+        import json
+        json.dump(self._headers, open(filename, 'w'))
+        return
+
+    def read(self, filename):
+        assert(self._headers == { })
+        import json
+        self._headers = json.load(open(filename, 'r'))
+        return len(self._headers)
+
 HeaderCache = _HeaderCache()
 
 # FIXME this does not include all MAR, RAXIS detectors
@@ -920,49 +931,13 @@ def Diffdump(DriverType = None):
 
 if __name__ == '__main__':
 
-    p = Diffdump()
-
-    directory = os.path.join(os.environ['XIA2_ROOT'],
-                             'Data', 'Test', 'Images')
-
-    if len(sys.argv) == 1:
-        image = os.path.join(directory, '12287_1_E1_001.img')
+    for image in sys.argv[1:]:
+        p = Diffdump()
         p.set_image(image)
-
+        
         header = p.readheader()
 
-        print 'Frame %s collected at: %s' % \
-              (os.path.split(image)[-1], header['date'])
-        print 'Phi:  %6.2f %6.2f' % \
-              (header['phi_start'], header['phi_end'])
-        print 'Wavelength: %6.4f    Distance:   %6.2f' % \
-              (header['wavelength'], header['distance'])
-        print 'Gain: %f' % gain
-        print 'Pixel size: %f %f' % header['pixel']
-        print 'Detector class: %s' % header['detector_class']
-        print 'Epochs:        %.3f' % header['epoch']
-        print 'Exposure time: %.3f' % header['exposure_time']
+        for token in sorted(header):
+            print token, header[token]
 
-    else:
-        for image in sys.argv[1:]:
-            p = Diffdump()
-            p.set_image(image)
-
-            header = p.readheader()
-
-            # gain = p.gain()
-
-            print 'Frame %s collected at: %s' % \
-                  (os.path.split(image)[-1], header['date'])
-            print 'Phi:  %6.2f %6.2f' % \
-                  (header['phi_start'], header['phi_end'])
-            print 'Wavelength: %6.4f    Distance:   %6.2f' % \
-                  (header['wavelength'], header['distance'])
-            # print 'Gain: %f' % gain
-            print 'Pixel size:    %f %f' % header['pixel']
-            print 'Size:          %d %d' % tuple(header['size'])
-            print 'Beam centre:   %f %f' % tuple(header['beam'])
-            print 'Detector class: %s' % header['detector_class']
-            print 'Epoch:         %.3f' % header['epoch']
-            print 'Exposure time: %.3f' % header['exposure_time']
-            print 'Two theta:     %.3f' % header['two_theta']
+    HeaderCache.write()
