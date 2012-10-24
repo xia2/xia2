@@ -85,6 +85,7 @@ Toolkit/ComputeU.py -text
 Toolkit/KBScale.py -text
 Toolkit/MultiMerger.py -text
 Toolkit/PlayPen/ExperimentSetup.py -text
+Toolkit/PlayPen/HDR_join.py -text
 Toolkit/PlayPen/MendBKGINIT.py -text
 Toolkit/PlayPen/TestMinimise.py -text
 Toolkit/PlayPen/__init__.py -text
