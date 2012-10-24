@@ -96,6 +96,16 @@ def is_image_name(file):
 
     return False
 
+def is_xds_file(f):
+    filename = os.path.split(f)[1]
+
+    xds_files = ['ABS', 'ABSORP', 'BKGINIT', 'BKGPIX', 'BLANK', 'DECAY',
+                 'DX-CORRECTIONS', 'DY-CORRECTIONS', 'FRAME', 'GAIN',
+                 'GX-CORRECTIONS', 'GY-CORRECTIONS', 'MODPIX',
+                 'X-CORRECTIONS', 'Y-CORRECTIONS']
+
+    return (filename.split('.')[0].split('_') in xds_files)
+
 def get_sweep(f):
 
     global target_template
@@ -105,21 +115,14 @@ def get_sweep(f):
     if not is_image_name(f):
         return
 
+    if is_xds_file(f):
+        return
+
     # in here, check the permissions on the file...
 
     if not os.access(f, os.R_OK):
         from Handlers.Streams import Debug
         Debug.write('No read permission for %s' % f)
-
-    # now check if it is a decoy XDS file///
-
-    if f.split('.')[-1] == 'cbf':
-        try:
-            firstline = open(f, 'r').readline()
-            if 'XDS' in firstline.split()[-1]:
-                return
-        except exceptions.Exception, e:
-            raise RuntimeError, 'problem with %s: %s' % (f, str(e))
 
     try:
         template, directory = image2template_directory(f)
