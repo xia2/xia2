@@ -8,19 +8,6 @@
 # 21/SEP/06
 #
 # A top-level interface to the whole of xia2, for data processing & analysis.
-#
-# FIXED 28/NOV/06 record the total processing time to Chatter.
-#
-# FIXME 28/NOV/06 be able to e-mail someone with the job once finished.
-#
-# FIXME 17/JAN/07 check environment before startup.
-#
-# FIXME 23/JUN/09 write out xia2-summary.dat which should contain the given
-#       and correct values for the beamline parameters (i.e. for each sweep)
-#       and the unit cell constants, spacegroup, resolution, file information,
-#       date, wavelength, R factors, completeness, multiplicity. N.B. will
-#       need to get the updated beam centre from IDXREF. Nope, this is already
-#       in place. Excellent.
 
 import sys
 import os
