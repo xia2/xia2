@@ -46,6 +46,7 @@ from Experts.LatticeExpert import SortLattices
 
 # global flags
 from Handlers.Flags import Flags
+from Handlers.Phil import Phil
 
 # helpful expertise from elsewhere
 from Experts.SymmetryExpert import lattice_to_spacegroup_number
@@ -184,14 +185,21 @@ def XDSIdxref(DriverType = None):
 
         def _compare_cell(self, c_ref, c_test):
             '''Compare two sets of unit cell constants: if they differ by
-            less than 5% / 5 degrees return True, else False.'''
+            less than 5% / 5 degrees return True, else False. Now configured
+            by xia2.settings.xds_cell_deviation in Phil input.'''
+
+            if Phil.get_xia2_settings_xds_cell_deviation():
+                dev_l, dev_a = Phil.get_xia2_settings_xds_cell_deviation()
+            else:
+                dev_l = 0.05
+                dev_a = 5.0
 
             for j in range(3):
-                if math.fabs((c_test[j] - c_ref[j]) / c_ref[j]) > 0.05:
+                if math.fabs((c_test[j] - c_ref[j]) / c_ref[j]) > dev_l:
                     return False
 
             for j in range(3, 6):
-                if math.fabs(c_test[j] - c_ref[j]) > 5:
+                if math.fabs(c_test[j] - c_ref[j]) > dev_a:
                     return False
 
             return True

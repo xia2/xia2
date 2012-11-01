@@ -45,6 +45,8 @@ xia2.settings {
     .type = bool
   untrusted_rectangle_indexing = None
     .type = ints(size = 4)
+  xds_cell_deviation = 0.05, 5.0
+    .type = floats(size = 2)
 }
 """)
         self._parameters = self._working_phil.extract()
@@ -93,6 +95,9 @@ xia2.settings {
 
     def get_xia2_settings_show_template(self):
         return self._parameters.xia2.settings.show_template
+
+    def get_xia2_settings_xds_cell_deviation(self):
+        return self._parameters.xia2.settings.xds_cell_deviation
 
     def get_xia2_settings_untrusted_rectangle_indexing(self):
         return self._parameters.xia2.settings.untrusted_rectangle_indexing
