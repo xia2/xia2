@@ -77,7 +77,7 @@ def check_environment():
     check_cctbx_version()
 
     xia2_keys = ['XIA2_ROOT', 'XIA2CORE_ROOT']
-    ccp4_keys = ['CCP4', 'CLIBD', 'BINSORT_SCR']
+    ccp4_keys = ['CCP4', 'CLIBD', 'CCP4_SCR']
 
     Chatter.write('Environment configuration...')
     for k in xia2_keys:

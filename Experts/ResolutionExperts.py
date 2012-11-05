@@ -534,7 +534,7 @@ def mosflm_mtz_to_list(mtz):
     '''Run pointless to convert mtz to list of h k l ... and give the
     unit cell, then convert this to a list as necessary before returning.'''
 
-    hklout = tempfile.mktemp('.hkl', '', os.environ['BINSORT_SCR'])
+    hklout = tempfile.mktemp('.hkl', '', os.environ['CCP4_SCR'])
 
     p = Pointless()
     p.set_hklin(mtz)
@@ -576,7 +576,7 @@ def pointless_summedlist_to_list(summedlist, cell):
 def find_blank(hklin):
 
     # first dump to temp. file
-    hklout = tempfile.mktemp('.hkl', '', os.environ['BINSORT_SCR'])
+    hklout = tempfile.mktemp('.hkl', '', os.environ['CCP4_SCR'])
 
     p = Pointless()
     p.set_hklin(hklin)

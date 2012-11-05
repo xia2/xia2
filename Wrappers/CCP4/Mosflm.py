@@ -1305,7 +1305,7 @@ def Mosflm(DriverType = None):
 
             self.input('postref maxresidual 5.0')
 
-            genfile = os.path.join(os.environ['BINSORT_SCR'],
+            genfile = os.path.join(os.environ['CCP4_SCR'],
                                    '%d_mosflm.gen' % self.get_xpid())
 
             self.input('genfile %s' % genfile)
@@ -1587,7 +1587,7 @@ def Mosflm(DriverType = None):
 
             self.input('postref maxresidual 5.0')
 
-            genfile = os.path.join(os.environ['BINSORT_SCR'],
+            genfile = os.path.join(os.environ['CCP4_SCR'],
                                    '%d_mosflm.gen' % self.get_xpid())
 
             self.input('genfile %s' % genfile)
@@ -2058,7 +2058,7 @@ def Mosflm(DriverType = None):
 
             offset = self.get_frame_offset()
 
-            genfile = os.path.join(os.environ['BINSORT_SCR'],
+            genfile = os.path.join(os.environ['CCP4_SCR'],
                                    '%d_mosflm.gen' % self.get_xpid())
 
             self.input('genfile %s' % genfile)
@@ -2640,7 +2640,7 @@ def Mosflm(DriverType = None):
                 if self.get_header_item('detector') == 'raxis':
                     job.input('adcoffset 0')
 
-                genfile = os.path.join(os.environ['BINSORT_SCR'],
+                genfile = os.path.join(os.environ['CCP4_SCR'],
                                        '%d_%d_mosflm.gen' %
                                        (self.get_xpid(), j))
 

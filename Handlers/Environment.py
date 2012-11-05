@@ -68,22 +68,6 @@ class _Environment:
                 os.environ['USER'] = os.environ['USERNAME']
             else:
                 os.environ['USER'] = 'xia2'
-
-        # create a random BINSORT_SCR directory, check how much space we
-        # have in there...
-
-        binsort_scr = tempfile.mkdtemp()
-        os.environ['BINSORT_SCR'] = binsort_scr
-        Debug.write('Created BINSORT_SCR: %s' % binsort_scr)
-
-        try:
-            space = df(binsort_scr) / (1024.0 * 1024.0)
-            Debug.write('Space in BINSORT_SCR: %.2f GB' % (space / 1024.0))
-            if space < 200.0:
-                Chatter.write('Warning: < 200MB in BINSORT_SCR')
-                
-        except RuntimeError, e:
-            pass
             
         self._is_setup = True
 

@@ -145,7 +145,7 @@ def MosflmWrapper(DriverType = None):
             self.input('limits xscan %f yscan %f' % (lim_x, lim_y))
             self.input('separation close')
 
-            genfile = os.path.join(os.environ['BINSORT_SCR'],
+            genfile = os.path.join(os.environ['CCP4_SCR'],
                                    '%d_mosflm.gen' % self.get_xpid())
 
             self.input('genfile %s' % genfile)

@@ -44,8 +44,8 @@ def PrintpeaksMosflm(DriverType = None):
 
             self.set_executable('ipmosflm')
 
-            if 'BINSORT_SCR' in os.environ:
-                self.set_working_directory(os.environ['BINSORT_SCR'])
+            if 'CCP4_SCR' in os.environ:
+                self.set_working_directory(os.environ['CCP4_SCR'])
 
             self._image = None
             self._peaks = { }
