@@ -194,6 +194,12 @@ class _CommandLine():
                   (self._help_xparm(), str(e))
 
         try:
+            self._read_xparm_ub()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_xparm_ub(), str(e))
+
+        try:
             self._read_min_images()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -610,7 +616,33 @@ class _CommandLine():
         return
 
     def _help_xparm(self):
-        return '-xparm N'
+        return '-xparm GXPARM.XDS'
+
+    def _read_xparm_ub(self):
+        try:
+            index = sys.argv.index('-xparm_ub')
+        except ValueError, e:
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        Flags.set_xparm_ub(sys.argv[index + 1])
+
+        self._understood.append(index)
+        self._understood.append(index + 1)
+
+        Debug.write('Real Space A: %.2f %.2f %.2f' % \
+                    Flags.get_xparm_a())
+        Debug.write('Real Space B: %.2f %.2f %.2f' % \
+                    Flags.get_xparm_b())
+        Debug.write('Real Space C: %.2f %.2f %.2f' % \
+                    Flags.get_xparm_c())
+        
+        return
+
+    def _help_xparm_ub(self):
+        return '-xparm_ub GXPARM.XDS'
 
     def _read_parallel(self):
         try:

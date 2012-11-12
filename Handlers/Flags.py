@@ -391,6 +391,27 @@ class _Flags:
     def get_xparm_beam_vector(self):
         return self._xparm_beam_vector
 
+    def set_xparm_ub(self, xparm):
+
+        self._xparm_ub = xparm
+
+        tokens = map(float, open(xparm, 'r').read().split())
+
+        self._xparm_a = tokens[-9:-6]
+        self._xparm_a = tokens[-6:-3]
+        self._xparm_a = tokens[-3:-0]
+
+        return
+
+    def get_xparm_a(self):
+        return self._xparm_a
+
+    def get_xparm_b(self):
+        return self._xparm_b
+
+    def get_xparm_c(self):
+        return self._xparm_c
+
     def set_min_images(self, min_images):
         self._min_images = min_images
         return
