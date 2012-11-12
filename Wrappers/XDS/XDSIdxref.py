@@ -323,15 +323,15 @@ def XDSIdxref(DriverType = None):
 
             if self._a_axis:
                 xds_inp.write('UNIT_CELL_A-AXIS=%.2f %.2f %.2f\n' %
-                              self._a_axis)
+                              tuple(self._a_axis))
 
             if self._b_axis:
                 xds_inp.write('UNIT_CELL_B-AXIS=%.2f %.2f %.2f\n' %
-                              self._b_axis)
+                              tuple(self._b_axis))
 
             if self._c_axis:
                 xds_inp.write('UNIT_CELL_C-AXIS=%.2f %.2f %.2f\n' %
-                              self._c_axis)
+                              tuple(self._c_axis))
 
             for record in header:
                 xds_inp.write('%s\n' % record)
