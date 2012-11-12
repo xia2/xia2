@@ -633,11 +633,11 @@ class _CommandLine():
         self._understood.append(index + 1)
 
         Debug.write('Real Space A: %.2f %.2f %.2f' % \
-                    Flags.get_xparm_a())
+                    tuple(Flags.get_xparm_a()))
         Debug.write('Real Space B: %.2f %.2f %.2f' % \
-                    Flags.get_xparm_b())
+                    tuple(Flags.get_xparm_b()))
         Debug.write('Real Space C: %.2f %.2f %.2f' % \
-                    Flags.get_xparm_c())
+                    tuple(Flags.get_xparm_c()))
         
         return
 

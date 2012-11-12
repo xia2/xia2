@@ -398,9 +398,9 @@ class _Flags:
         tokens = map(float, open(xparm, 'r').read().split())
 
         self._xparm_a = tokens[-9:-6]
-        self._xparm_a = tokens[-6:-3]
-        self._xparm_a = tokens[-3:-0]
-
+        self._xparm_b = tokens[-6:-3]
+        self._xparm_c = tokens[-3:]
+        
         return
 
     def get_xparm_a(self):

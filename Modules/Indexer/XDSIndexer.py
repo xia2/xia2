@@ -167,6 +167,15 @@ class XDSIndexer(FrameProcessor,
             idxref.set_refined_beam_vector(Flags.get_xparm_beam_vector())
             idxref.set_refined_rotation_axis(Flags.get_xparm_rotation_axis())
 
+        # hacks for Jira 493
+
+        if Flags.get_xparm_a():
+            idxref.set_a_axis(Flags.get_xparm_a())
+        if Flags.get_xparm_b():
+            idxref.set_b_axis(Flags.get_xparm_b())
+        if Flags.get_xparm_c():
+            idxref.set_c_axis(Flags.get_xparm_c())
+        
         auto_logfiler(idxref, 'IDXREF')
 
         return idxref

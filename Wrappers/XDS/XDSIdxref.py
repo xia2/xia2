@@ -96,6 +96,10 @@ def XDSIdxref(DriverType = None):
             self._cell = None
             self._symm = 0
 
+            self._a_axis = None
+            self._b_axis = None
+            self._c_axis = None
+            
             # options
             self._reversephi = False
 
@@ -152,6 +156,18 @@ def XDSIdxref(DriverType = None):
                 raise RuntimeError, 'cell must be a 6-tuple de floats'
 
             self._indxr_input_cell = tuple(map(float, cell))
+            return
+
+        def set_a_axis(self, a_axis):
+            self._a_axis = a_axis
+            return
+
+        def set_b_axis(self, b_axis):
+            self._b_axis = b_axis
+            return
+
+        def set_c_axis(self, c_axis):
+            self._c_axis = c_axis
             return
 
         def set_input_data_file(self, name, data):
@@ -303,6 +319,19 @@ def XDSIdxref(DriverType = None):
                 cell_format = '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f'
                 xds_inp.write('UNIT_CELL_CONSTANTS=%s\n' % \
                               cell_format % self._cell)
+
+
+            if self._a_axis:
+                xds_inp.write('UNIT_CELL_A-AXIS=%.2f %.2f %.2f\n' %
+                              self._a_axis)
+
+            if self._b_axis:
+                xds_inp.write('UNIT_CELL_B-AXIS=%.2f %.2f %.2f\n' %
+                              self._b_axis)
+
+            if self._c_axis:
+                xds_inp.write('UNIT_CELL_C-AXIS=%.2f %.2f %.2f\n' %
+                              self._c_axis)
 
             for record in header:
                 xds_inp.write('%s\n' % record)
