@@ -433,7 +433,28 @@ END PROJECT TS01
     <p>Changes since 0.3.5.0</p>
     <ul>
       <li>-hdr_in mode - pass in text file containing image
-      header.</li>
+      header. Can also generate this file with xia2 with -hdr_out example.hdr
+      </li>
+      <li>-xparm_ub mode for XDS processing only, provide a UB matrix (XDS 
+	XPARM file) to match the orientation to: primarily useful if you record
+	data from several regions on a sample, and the sample has close-to
+	symmetry (i.e. you almost certainly don't need this)</li>
+      <li>Removed usage of BINSORT_SCR as this is being deprecated by CCP4.
+      </li>
+      <li>Allow Phil overrides on selection of autoindexing solutions, where
+	indexing can give large variations in unit cell constants (e.g. low
+	resolution virus data)</li>
+      <li>Properly set the resolution in CAD copying free R flags.</li>
+      <li>Allow access to profile grid size through the Phil interface:
+
+	xds.parameter.profile_grid_size = 13, 13
+      </li>
+      <li>Implement TRUSTED_REGION through Phil as suggested by Luca Jovine
+      </li>
+      <li>Updates to process simulated data from SIM_MX</li>
+      <li>More measures of anomalous signal in output.</li>
+      <li>Corrected citations in output</li>
+      <li>Replaced TRUNCATE with CTRUNCATE.</li>
     </ul>
 
     <p>Changes since 0.3.4.0</p>
