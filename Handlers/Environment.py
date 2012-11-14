@@ -63,12 +63,19 @@ class _Environment:
         # create a USER environment variable, to allow harvesting
         # in Mosflm to work (hacky, I know, but it really doesn't
         # matter too much...
+        
         if not 'USER' in os.environ:
             if 'USERNAME' in os.environ:
                 os.environ['USER'] = os.environ['USERNAME']
             else:
                 os.environ['USER'] = 'xia2'
-            
+
+        # define a local CCP4_SCR 
+
+        ccp4_scr = tempfile.mkdtemp()
+        os.environ['CCP4_SCR'] = ccp4_scr
+        Debug.write('Created CCP4_SCR: %s' % ccp4_scr)
+
         self._is_setup = True
 
         return
