@@ -51,6 +51,10 @@ class _Flags:
         self._xparm_rotation_axis = None
         self._xparm_origin = None
 
+        self._xparm_a = None
+        self._xparm_b = None
+        self._xparm_c = None
+
         try:
             self._parallel = get_number_cpus()
         except:
