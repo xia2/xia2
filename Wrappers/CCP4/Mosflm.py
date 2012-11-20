@@ -2720,7 +2720,7 @@ def Mosflm(DriverType = None):
                     o = output[i]
 
                     if 'Integrating Image' in o:
-                        batch = int(o.split()[2])
+                        batch = int(o.replace('Image', 'Image ').split()[2])
                         if batch < integrated_images_first:
                             integrated_images_first = batch
                         if batch > integrated_images_last:
