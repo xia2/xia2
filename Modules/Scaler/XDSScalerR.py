@@ -1097,8 +1097,6 @@ class XDSScalerR(Scaler):
             if os.path.exists(log_misigma):
                 log_misigma = None
 
-            m = merger(hklin)
-
             hkl_copy = os.path.join(self.get_working_directory(),
                                     'R_%s' % os.path.split(hklin)[-1])
 
@@ -1111,6 +1109,8 @@ class XDSScalerR(Scaler):
                 resolution = self._user_resolution_limits[(dname, sname)]
 
             else:
+                m = merger(hklin)
+            
                 if Flags.get_small_molecule():
                     m.calculate_resolution_ranges(nbins = 10)
                 else:
@@ -1122,6 +1122,8 @@ class XDSScalerR(Scaler):
                 r_mis = m.resolution_merged_isigma(log = log_misigma)
 
                 resolution = max([r_comp, r_rm, r_uis, r_mis])
+
+                del(m)
 
             Chatter.write('Resolution for sweep %s/%s: %.2f' % \
                           (dname, sname, resolution))
