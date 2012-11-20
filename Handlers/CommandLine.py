@@ -86,6 +86,7 @@ class _CommandLine():
         self._read_2dr()
         self._read_2da()
         self._read_2dir()
+        self._read_2dia()
         self._read_3dr()
         self._read_3dir()
         self._read_3diir()
@@ -1292,6 +1293,19 @@ class _CommandLine():
             add_preference('scaler', 'ccp4a')
             if '-2da' in sys.argv:
                 self._understood.append(sys.argv.index('-2da'))
+            Debug.write('2DA pipeline selected')
+        return
+
+    def _read_2dia(self):
+
+        if '-2dai' in sys.argv or '-2dia' in sys.argv:
+            add_preference('indexer', 'mosflm')
+            add_preference('integrater', 'mosflmr')
+            add_preference('scaler', 'ccp4a')
+            if '-2dai' in sys.argv:
+                self._understood.append(sys.argv.index('-2dai'))
+            if '-2dia' in sys.argv:
+                self._understood.append(sys.argv.index('-2dia'))
             Debug.write('2DA pipeline selected')
         return
 
