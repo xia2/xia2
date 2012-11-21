@@ -29,6 +29,13 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Handlers.Streams import Chatter, Debug
 
+def memory_usage():
+    try:
+        import resource
+        return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    except:
+        return 0
+
 def df(path = os.getcwd()):
     '''Return disk space in bytes in path.'''
 

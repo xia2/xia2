@@ -68,14 +68,20 @@ class _Stream:
 
     def write(self, record, forward = True):
 
+        import resource
+
         if self._off:
             return None
 
         for r in record.split('\n'):
             if self._prefix:
+                self.get_file().write('RAM usage: %d\n' % resource.getrusage(
+                    resource.RUSAGE_SELF).ru_maxrss)
                 result = self.get_file().write('[%s]  %s\n' %
                                                (self._prefix, r.strip()))
             else:
+                self.get_file().write('RAM usage: %d\n' % resource.getrusage(
+                    resource.RUSAGE_SELF).ru_maxrss)
                 result = self.get_file().write('%s\n' %
                                                (r.strip()))
 
