@@ -899,7 +899,11 @@ class XDSScalerA(Scaler):
             Debug.write('Switching on zero-dose extrapolation')
             xscale.set_zero_dose()
 
-        # do the scaling keeping the reflections unmerged
+        # trying to track down error in SCI-479
+
+        import resource
+        Debug.write('RAM usage: %d' %
+                    resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
 
         xscale.run()
 
