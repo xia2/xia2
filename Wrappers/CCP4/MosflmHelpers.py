@@ -107,13 +107,13 @@ def _parse_mosflm_integration_output(integration_output_list):
             pixel_size = float(record.replace('mm', ' ').split()[-1])
 
         if 'Processing Image' in record:
-            current_image = int(record.split()[2])
+            current_image = int(record.replace('Image', 'Image ').split()[2])
 
             if not per_image_stats.has_key(current_image):
                 per_image_stats[current_image] = {'scale':1.0}
 
         if 'Integrating Image' in record:
-            current_image = int(record.split()[2])
+            current_image = int(record.replace('Image', 'Image ').split()[2])
 
         if 'XCEN    YCEN  XTOFRA   XTOFD' in record:
             data = map(float, integration_output_list[i + 1].split())
