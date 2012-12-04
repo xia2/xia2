@@ -20,6 +20,9 @@ Applications/x1335 -text
 Applications/x1691 -text
 Applications/xia2hdr -text
 Applications/xia2hdr.py -text
+Applications/xia2merger -text
+Applications/xia2merger.bat -text
+Applications/xia2merger.py -text
 Attic/Attic1.py -text
 Attic/bitbx/examples/integrate.hkl -text
 Attic/bitbx/examples/xparm-uc1-2.xds -text
