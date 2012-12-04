@@ -36,6 +36,22 @@ def memory_usage():
     except:
         return 0
 
+def debug_memory_usage():
+    '''Print line, file, memory usage.'''
+
+    import exceptions
+
+    try:
+        import inspect
+        
+        frameinfo = inspect.getframeinfo(inspect.stack()[1][0])
+        Debug.write('RAM usage at %s %d: %d' %
+                    (os.path.split(frameinfo.filename)[-1], frameinfo.lineno,
+                     memory_usage()))
+    except exceptions.Exception, e:
+        Debug.write('Error getting RAM usage: %s' % str(e))
+    return
+
 def df(path = os.getcwd()):
     '''Return disk space in bytes in path.'''
 
