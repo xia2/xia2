@@ -850,6 +850,9 @@ class XDSScalerA(Scaler):
     def _scale(self):
         '''Actually scale all of the data together.'''
 
+        from Handlers.Environment import debug_memory_usage
+        debug_memory_usage()
+
         Journal.block(
             'scaling', self.get_scaler_xcrystal().get_name(), 'XSCALE',
             {'scaling model':'default (all)'})
@@ -899,12 +902,7 @@ class XDSScalerA(Scaler):
             Debug.write('Switching on zero-dose extrapolation')
             xscale.set_zero_dose()
 
-        # trying to track down error in SCI-479
-
-        import resource
-        Debug.write('RAM usage: %d' %
-                    resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
-
+        debug_memory_usage()
         xscale.run()
 
         scale_factor = xscale.get_scale_factor()
@@ -1007,6 +1005,8 @@ class XDSScalerA(Scaler):
                     Chatter.write(record)
             return
 
+        debug_memory_usage()
+        
         # now get the reflection files out and merge them with aimless
 
         output_files = xscale.get_output_reflection_files()
@@ -1052,6 +1052,8 @@ class XDSScalerA(Scaler):
         for epoch in self._sweep_information.keys():
             self._sweep_information[epoch]['scaled_reflections'] = None
 
+        debug_memory_usage()
+
         for wavelength in wavelength_names:
             hklin = output_files[wavelength]
 
@@ -1071,6 +1073,10 @@ class XDSScalerA(Scaler):
                             raise RuntimeError, 'duplicate entries'
                         self._sweep_information[epoch][
                             'scaled_reflections'] = ref[hklout]
+
+            del(xsh)
+
+        debug_memory_usage()
 
         for epoch in self._sweep_information.keys():
             hklin = self._sweep_information[epoch]['scaled_reflections']
@@ -1139,6 +1145,8 @@ class XDSScalerA(Scaler):
                 if resolution < self._resolution_limits[(dname, sname)]:
                     self._resolution_limits[(dname, sname)] = resolution
                     self.set_scaler_done(False)
+
+        debug_memory_usage()
 
         if not self.get_scaler_done():
             Debug.write('Returning as scaling not finished...')

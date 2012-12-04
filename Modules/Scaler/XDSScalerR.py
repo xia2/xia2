@@ -1068,6 +1068,8 @@ class XDSScalerR(Scaler):
                         self._sweep_information[epoch][
                             'scaled_reflections'] = ref[hklout]
 
+            del(xsh)
+
         for epoch in self._sweep_information.keys():
             hklin = self._sweep_information[epoch]['scaled_reflections']
             dname = self._sweep_information[epoch]['dname']
