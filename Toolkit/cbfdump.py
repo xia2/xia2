@@ -159,23 +159,20 @@ def cbfdump(cbf_image, do_print = False):
     # perhaps bodge this by looking at the displacements of pixels in the
     # fast and slow directions?
 
-    origin = detector.get_pixel_coordinates(0, 0)
-    fast = detector.get_pixel_coordinates(0, 1)
-    slow = detector.get_pixel_coordinates(1, 0)
+    origin = matrix.col(detector.get_pixel_coordinates(0, 0))
+    pfast = matrix.col(detector.get_pixel_coordinates(0, 1))
+    pslow = matrix.col(detector.get_pixel_coordinates(1, 0))
 
-    if do_print: print 'Origin:     %.2f %.2f %.2f' % tuple(origin)
+    if do_print: print 'Origin:     %.2f %.2f %.2f' % origin.elems
 
-    dfast = [fast[j] - origin[j] for j in range(3)]
-    dslow = [slow[j] - origin[j] for j in range(3)]
+    dfast = pfast - origin
+    dslow = pslow - origin
 
-    lfast = math.sqrt(sum([dfast[j] * dfast[j] for j in range(3)]))
-    lslow = math.sqrt(sum([dslow[j] * dslow[j] for j in range(3)]))
+    fast = dfast.normalize()
+    slow = dslow.normalize()
 
-    fast = tuple([dfast[j] / lfast for j in range(3)])
-    slow = tuple([dslow[j] / lslow for j in range(3)])
-
-    if do_print: print 'Fast direction: %.2f %.2f %.2f' % fast
-    if do_print: print 'Slow direction: %.2f %.2f %.2f' % slow
+    if do_print: print 'Fast direction: %.2f %.2f %.2f' % fast.elems
+    if do_print: print 'Slow direction: %.2f %.2f %.2f' % slow.elems
 
     if hasattr(detector, 'get_detector_axis_fast'):
 
@@ -203,10 +200,11 @@ def cbfdump(cbf_image, do_print = False):
         matrix.col(beam_direction).dot())
     _n = matrix.col(detector_normal) / math.sqrt(
         matrix.col(detector_normal).dot())
-    _f = matrix.col(fast) / math.sqrt(matrix.col(fast).dot())
-    _s = matrix.col(slow) / math.sqrt(matrix.col(slow).dot())
+    
+    _f = fast
+    _s = slow
 
-    _O = matrix.col(origin)
+    _O = origin
     _D = _b * (_O.dot(_n) / _b.dot(_n))
 
     _B = _D - _O
@@ -215,6 +213,10 @@ def cbfdump(cbf_image, do_print = False):
     y = _B.dot(_s)
 
     if do_print: print 'Computed:   %.2f %.2f' % (x, y)
+
+    if do_print: print 'Pixels:     %.2f %.2f' % (x / pixel[0],
+                                                  y / pixel[1])
+    
     if do_print: print 'Size:       %.2f %.2f' % (size[0] * pixel[0],
                                                   size[1] * pixel[1])
     detector.__swig_destroy__(detector)
