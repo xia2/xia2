@@ -17,6 +17,7 @@ for n, argv in enumerate(sys.argv[1:]):
         _s = ('%f' % s[j])[:7]
         assert('.' in _s)
 
-        print '%4d%4d%4d%8s%8s%4d' % (h[0], h[1], h[2], 
-                                      _i, _s, n + 1)
+        if s[j] >= 0.0:
+            print '%4d%4d%4d%8s%8s%4d' % (h[0], h[1], h[2], 
+                                          _i, _s, n + 1)
 
