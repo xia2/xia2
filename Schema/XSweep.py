@@ -423,6 +423,16 @@ class XSweep():
                                                           image))
         return result
 
+    def get_image_range(self):
+        '''Get min / max numbers for this sweep.'''
+
+        return min(self._images), max(self._images)
+
+    def get_header(self):
+        '''Get the image header information.'''
+
+        return copy.copy(self._header)
+
     def get_epoch(self, image):
         '''Get the exposure epoch for this image.'''
 

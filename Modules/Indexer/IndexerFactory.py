@@ -68,7 +68,22 @@ def IndexerForXSweep(xsweep):
 
     crystal_lattice = xsweep.get_crystal_lattice()
 
-    indexer = Indexer()
+    # FIXME SCI-599 decide from the width of the sweep and the preference
+    # which indexer to return...
+
+    sweep_images = xsweep.get_image_range()
+    header = xsweep.get_header()
+    sweep_width = header['phi_width'] * (sweep_images[1] - sweep_images[0] + 1)
+
+    # hack now - if XDS integration switch to XDS indexer if (i) labelit and
+    # (ii) sweep < 10 degrees
+
+    if sweep_width < 10.0 and not get_preferences().get('indexer') and \
+        'xds' in get_preferences().get('integrater'):
+        Debug.write('Overriding indexer as XDSII')
+        indexer = Indexer(preselection = 'xdsii')
+    else:
+        indexer = Indexer()
 
     if crystal_lattice:
         # this is e.g. ('aP', (1.0, 2.0, 3.0, 90.0, 98.0, 88.0))
@@ -118,7 +133,7 @@ def IndexerForXSweep(xsweep):
 
 # FIXME need to provide framework for input passing
 
-def Indexer():
+def Indexer(preselection = None):
     '''Create an instance of Indexer for use with a dataset.'''
 
     # FIXME need to check that these implement indexer
@@ -127,7 +142,8 @@ def Indexer():
 
     # return XDSIndexer()
 
-    preselection = get_preferences().get('indexer')
+    if not preselection:
+        preselection = get_preferences().get('indexer')
 
     if not preselection:
         if Flags.get_small_molecule():
