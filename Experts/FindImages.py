@@ -270,6 +270,21 @@ def headers2sweep_ids(header_dict):
 def headers2sweeps(header_dict):
     '''Parse a dictionary of headers to produce a list of summaries.'''
 
+    # SCI-545 - remove still images from sweeps
+
+    zap = []
+
+    for i in header_dict:
+        header = header_dict[i]
+        delta_phi = math.fabs(header['phi_end'] - header['phi_start'])
+        if delta_phi == 0:
+            zap.append(i)
+
+    Debug.write('Removing %d apparently still images' % len(zap))
+
+    for z in zap:
+        del(header_dict[z])
+
     images = sorted(header_dict)
 
     if len(images) == 0:

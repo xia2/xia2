@@ -11,11 +11,7 @@
 #
 # 18th December 2006
 #
-# 17/JAN/07 FIXED need to add a "calculation of beam centre" stage to this
-#                 process.
-#
-#
-#
+
 
 import os
 import sys
@@ -169,6 +165,7 @@ def visit(root, directory, files):
                 latest_chooch.scan()
             except:
                 latest_chooch = None
+                
         if is_sequence_name(os.path.join(directory, f)):
             parse_sequence(os.path.join(directory, f))
 

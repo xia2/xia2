@@ -39,9 +39,6 @@ def SweepFactory(template, directory, beam = None):
     '''A factory which will return a list of sweep objects which match
     the input template and directory.'''
 
-    # FIXME this needs to be optimised to not read every single image header
-    # since that's too slow...
-
     sweeps = []
 
     images = find_matching_images(template, directory)
