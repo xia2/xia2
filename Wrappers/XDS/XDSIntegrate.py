@@ -424,7 +424,7 @@ def XDSIntegrate(DriverType = None):
                               max_rel_dev)
 
             except KeyError, e:
-                Chatter.write('Refinement not performed...')
+                raise RuntimeError, 'Refinement not performed...'
 
             return
 
