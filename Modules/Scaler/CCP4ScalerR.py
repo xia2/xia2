@@ -1484,10 +1484,10 @@ class CCP4ScalerR(Scaler):
 
         if not Flags.get_small_molecule():
 
-            sfc = self._factory.Sfcheck()
-            sfc.set_hklin(hklout)
-            sfc.analyse()
-            twinning_score = sfc.get_twinning()
+            from Toolkit.E4 import E4_mtz
+
+            E4s = E4_mtz(hklout, native = True)
+            twinning_score = E4s.items()[0][1]
 
             Chatter.write('Overall twinning score: %4.2f' % twinning_score)
             if twinning_score > 1.9:

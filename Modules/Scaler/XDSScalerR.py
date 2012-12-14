@@ -1872,11 +1872,10 @@ class XDSScalerR(Scaler):
         # record this for future reference
         FileHandler.record_data_file(hklout)
 
-        # have a look for twinning ...
-        sfc = self._factory.Sfcheck()
-        sfc.set_hklin(hklout)
-        sfc.analyse()
-        twinning_score = sfc.get_twinning()
+        from Toolkit.E4 import E4_mtz
+
+        E4s = E4_mtz(hklout, native = True)
+        twinning_score = E4s.items()[0][1]
 
         Chatter.write('Overall twinning score: %4.2f' % twinning_score)
         if twinning_score > 1.9:

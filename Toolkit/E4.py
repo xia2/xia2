@@ -1,17 +1,29 @@
 
 def main():
     import sys
-    from iotbx import reflection_file_reader
 
     for argv in sys.argv[1:]:
-        reflection_file = reflection_file_reader.any_reflection_file(
-            file_name = argv)
-        if reflection_file.file_type() is None:
-            continue
-        miller_arrays = reflection_file.as_miller_arrays()
+        print E4_mtz(argv)
 
-        for ma in miller_arrays:
-            print ma.info().label_string(), E4(ma)
+def E4_mtz(hklin, native = True):
+    from iotbx import reflection_file_reader
+    reflection_file = reflection_file_reader.any_reflection_file(
+        file_name = hklin)
+    if reflection_file.file_type() is None:
+        raise RuntimeError, 'error reading %s' % hklin
+    miller_arrays = reflection_file.as_miller_arrays()
+
+    E4s = { } 
+
+    for ma in miller_arrays:
+        if str(ma.observation_type()) != 'xray.intensity':
+            continue
+        if native and ma.anomalous_flag():
+            continue
+        E4s[ma.info().label_string()] = E4(ma)
+
+    return E4s
+    
 
 def E4(ma):
     f = ma.as_intensity_array()
