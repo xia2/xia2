@@ -327,7 +327,8 @@ def print_sweeps(out = sys.stdout):
                 out.write('START_END %d %d\n' % (min(s.get_images()),
                                                  max(s.get_images())))
 
-            out.write('EPOCH %d\n' % int(s.get_collect()[0]))
+            # really don't need to store the epoch in the xinfo file
+            # out.write('EPOCH %d\n' % int(s.get_collect()[0]))
             cl_beam = CommandLine.get_beam()
             if cl_beam[0] or cl_beam[1]:
                 out.write('BEAM %6.2f %6.2f\n' % cl_beam)
