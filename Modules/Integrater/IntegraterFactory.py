@@ -124,7 +124,8 @@ def Integrater():
         except NotAvailableError, e:
             if preselection == 'xdsr':
                 raise RuntimeError, \
-                      'preselected integrater xdsr not available'
+                      'preselected integrater xdsr not available: ' + \
+                      'xds not installed?'
             pass
 
     if not integrater:
