@@ -31,7 +31,7 @@ def E4(ma):
     f.set_observation_type_xray_intensity()
     f.setup_binner(auto_binning = True)
     sm = f.second_moment(use_binning = True)
-    moments = [sm.data[j] for j in f.binner().range_used()]
+    moments = [m for m in [sm.data[j] for j in f.binner().range_used()] if m]
     return sum(moments) / len(moments)
 
 if __name__ == '__main__':
