@@ -78,6 +78,11 @@ def _xds_version(xds_output_list):
 def xds_check_version_supported(xds_output_list):
     '''No longer check that the XDS version is supported.'''
 
+    for record in xds_output_list:
+        if 'Sorry, license expired' in record:
+            raise RuntimeError, 'installed XDS expired on %s' % \
+                  record.split()[-1]
+
     return
 
 def xds_check_error(xds_output_list):
