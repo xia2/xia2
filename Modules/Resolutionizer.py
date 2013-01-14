@@ -541,8 +541,7 @@ class resolutionizer:
 
         working_phil = parse(phil_defaults)
         if phil:
-            working_phil.fetch(parse(open(phil).read()))
-            working_phil.show()
+            working_phil = working_phil.fetch(parse(open(phil).read()))
             
         self._params = working_phil.extract()
             
