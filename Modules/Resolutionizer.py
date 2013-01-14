@@ -1,7 +1,7 @@
 #!/usr/bin/env cctbx.python
-# Merger.py
+# Resolutionizer.py
 #
-#   Copyright (C) 2010 Diamond Light Source, Graeme Winter
+#   Copyright (C) 2013 Diamond Light Source, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
@@ -16,16 +16,7 @@
 #  - Z^2 for centric and acentric reflections
 #  - Completeness
 #
-# FIXME restructure this (or extend) to include the Chef calculations =>
-#       can then apply these to any derived data types.
-#
-# FIXME add capability to read in XDS (G)XPARM file as well as e.g. INTEGRATE
-#       HKL format file (or pointless equivalent, if possible) to compute
-#       LP corrections. This will allow XDS INTEGRATE -> Scala to be performed
-#       correctly. N.B. will be useful to add extra column for LP correction
-#       values. N.B. INTEGRATE applies an LP correction assuming that the
-#       fraction is 0.5 - this is improved by CORRECT. Pointless copies this
-#       across correctly and computes LP column.
+# The standalone (moving to C++) version...
 
 import sys
 import math
@@ -34,32 +25,332 @@ import time
 import itertools
 import copy
 
-if not os.environ.has_key('XIA2_ROOT'):
-    raise RuntimeError, 'XIA2_ROOT not defined'
-if not os.environ.has_key('XIA2CORE_ROOT'):
-    raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-    sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
-
 from cctbx.array_family import flex
 from iotbx import mtz
 from cctbx.miller import build_set
 from cctbx.miller import map_to_asu
 from cctbx.crystal import symmetry as crystal_symmetry
 from cctbx.sgtbx import rt_mx
-
-from MtzFactory import mtz_file
-from PolyFitter import fit
-from PolyFitter import log_fit
-from PolyFitter import log_inv_fit
-from PolyFitter import interpolate_value
-from PolyFitter import get_positive_values
-from Handlers.Flags import Flags
-from Handlers.Streams import streams_off
+from scitbx import lbfgs
+from libtbx.phil import parse
 
 def nint(a):
     return int(round(a))
+
+class mtz_dataset:
+    '''A class to represent the MTZ dataset in the hierarchy. This will
+    be instantiated in the mtz_crystal class below, and contain:
+
+     - a list of columns
+
+    Maybe more things will be added.'''
+
+    def __init__(self, iotbx_dataset):
+        self._name = iotbx_dataset.name()
+        self._column_table = { }
+        for column in iotbx_dataset.columns():
+            self._column_table[column.label()] = column
+
+        return
+
+    def get_column_names(self):
+        return list(self._column_table)
+
+    def get_column(self, column_label):
+        return self._column_table[column_label]
+
+    def get_column_values(self, column_label, nan_value = 0.0):
+        return self._column_table[column_label].extract_values(
+            not_a_number_substitute = nan_value)
+
+class mtz_crystal:
+    '''A class to represent the MTZ crystal in the hierarchy. This will
+    be instantiated by the factories below.'''
+
+    def __init__(self, iotbx_crystal):
+        self._name = iotbx_crystal.name()
+        self._unit_cell = iotbx_crystal.unit_cell()
+
+        self._dataset_table = { }
+        for dataset in iotbx_crystal.datasets():
+            self._dataset_table[dataset.name()] = mtz_dataset(dataset)
+
+        self._column_table = { }
+
+        for dname in self._dataset_table:
+            dataset = self._dataset_table[dname]
+            for column_name in dataset.get_column_names():
+                assert(not column_name in self._column_table)
+                self._column_table[column_name] = dataset.get_column(
+                    column_name)
+
+        return
+
+    def get_dataset_names(self):
+        return list(self._dataset_table)
+
+    def get_dataset(self, dataset_name):
+        return self._dataset_table[dataset_name]
+
+    def get_unit_cell_parameters(self):
+        return tuple(self._unit_cell.parameters())
+
+    def get_unit_cell(self):
+        return self._unit_cell
+
+    def get_column_names(self):
+        return list(self._column_table)
+
+    def get_column(self, column_label):
+        return self._column_table[column_label]
+
+    def get_column_values(self, column_label, nan_value = 0.0):
+        return self._column_table[column_label].extract_values(
+            not_a_number_substitute = nan_value)
+
+class mtz_file:
+    '''A class to represent the full MTZ file in the hierarchy - this
+    will have a list of one or more crystals contained within it each
+    with its own unit cell and datasets.'''
+
+    # FIXME need to keep in mind MTZ batch headers - can I access these?
+    # yes - through stuff like this:
+    #
+    #    for batch in mtz_obj.batches():
+    #        for token in dir(batch):
+    #            print token
+    #        print batch.num()
+    #
+    # but need to decide what I am looking for... will bake this in with
+    # a future update (it would be interesting to look at how the UB
+    # matrices behave.)
+
+    def __init__(self, hklin):
+        mtz_obj = mtz.object(hklin)
+
+        self._miller_indices = mtz_obj.extract_miller_indices()
+        self._resolution_range = mtz_obj.max_min_resolution()
+        self._space_group = mtz_obj.space_group()
+
+        self._crystal_table = { }
+
+        for crystal in mtz_obj.crystals():
+            self._crystal_table[crystal.name()] = mtz_crystal(crystal)
+
+        self._column_table = { }
+
+        for xname in self._crystal_table:
+            crystal = self._crystal_table[xname]
+            for dname in crystal.get_dataset_names():
+                dataset = crystal.get_dataset(dname)
+                for column_name in dataset.get_column_names():
+                    assert(not column_name in self._column_table)
+                    self._column_table[column_name] = dataset.get_column(
+                        column_name)
+
+        return
+
+    def get_crystal_names(self):
+        return list(self._crystal_table)
+
+    def get_crystal(self, crystal_name):
+        return self._crystal_table[crystal_name]
+
+    def get_unit_cell(self):
+        '''Get the unit cell object from HKL_base for other calculations.'''
+
+        return self.get_crystal('HKL_base').get_unit_cell()
+
+    def get_space_group(self):
+        return self._space_group
+
+    def get_resolution_range(self):
+        return self._resolution_range
+
+    def get_symmetry_operations(self):
+        return [smx for smx in self._space_group.smx()]
+
+    def get_centring_operations(self):
+        return [ltr for ltr in self._space_group.ltr()]
+
+    def get_miller_indices(self):
+        return self._miller_indices
+
+    def get_column_names(self):
+        return list(self._column_table)
+
+    def get_column(self, column_label):
+        return self._column_table[column_label]
+
+    def get_column_values(self, column_label, nan_value = 0.0):
+        return self._column_table[column_label].extract_values(
+            not_a_number_substitute = nan_value)
+
+def mtz_dump(hklin):
+    '''An implementation of mtzdump using the above classes.'''
+
+    mtz = mtz_file(hklin)
+
+    print 'Reading file: %s' % hklin
+    print 'Spacegroup: %s' % mtz.get_space_group().type(
+         ).universal_hermann_mauguin_symbol()
+
+    print 'Centring operations:'
+    for cenop in mtz.get_centring_operations():
+        print cenop
+
+    print 'Symmetry operations:'
+    for symop in mtz.get_symmetry_operations():
+        print symop
+
+    for xname in mtz.get_crystal_names():
+        crystal = mtz.get_crystal(xname)
+        print 'Crystal: %s' % xname
+        print 'Cell: %.3f %.3f %.3f %.3f %.3f %.3f' % \
+              crystal.get_unit_cell_parameters()
+
+        for dname in crystal.get_dataset_names():
+            dataset = crystal.get_dataset(dname)
+            print 'Dataset: %s' % dname
+            print 'Columns (with min / max)'
+            for column in dataset.get_column_names():
+                values = dataset.get_column_values(column)
+                print '%20s %.4e %.4e' % (column, min(values), max(values))
+
+    print 'All columns:'
+    for column in mtz.get_column_names():
+        print column
+
+def poly_residual(xp, y, params):
+    '''Compute the residual between the observations y[i] and sum_j
+    params[j] x[i]^j. For efficiency, x[i]^j are pre-calculated in xp.'''
+
+    r = 0.0
+
+    n = len(params)
+    c = len(y)
+
+    e = flex.double([flex.sum(xp[j] * params) for j in range(c)])
+
+    return flex.sum(flex.pow2(y - e))
+
+def poly_gradients(xp, y, params):
+    '''Compute the gradient of the residual w.r.t. the parameters, N.B.
+    will be performed using a finite difference method. N.B. this should
+    be trivial to do algebraicly.'''
+
+    eps = 1.0e-6
+
+    g = flex.double()
+
+    n = len(params)
+
+    for j in range(n):
+        rs = []
+        for signed_eps in [- eps, eps]:
+            params_eps = params[:]
+            params_eps[j] += signed_eps
+            rs.append(poly_residual(xp, y, params_eps))
+        g.append((rs[1] - rs[0]) / (2 * eps))
+
+    return g
+
+class poly_fitter:
+    '''A class to do the polynomial fit. This will fit observations y
+    at points x with a polynomial of order n.'''
+
+    def __init__(self, points, values, order):
+        self.x = flex.double([1.0 for j in range(order)])
+        self._x = flex.double(points)
+        self._y = flex.double(values)
+
+        # precalculate x[j]^[0-(n - 1)] values
+
+        self._xp = [flex.double([math.pow(x, j) for j in range(order)])
+                    for x in self._x]
+
+        return
+
+    def refine(self):
+        '''Actually perform the parameter refinement.'''
+
+        return lbfgs.run(target_evaluator = self)
+
+    def compute_functional_and_gradients(self):
+
+        return poly_residual(self._xp, self._y, self.x), \
+               poly_gradients(self._xp, self._y, self.x)
+
+    def get_parameters(self):
+        return list(self.x)
+
+    def evaluate(self, x):
+        '''Evaluate the resulting fit at point x.'''
+
+        return sum([math.pow(x, k) * self.x[k] for k in range(len(self.x))])
+
+def fit(x, y, order):
+    '''Fit the values y(x) then return this fit. x, y should
+    be iterables containing floats of the same size. The order is the order
+    of polynomial to use for this fit. This will be useful for e.g. I/sigma.'''
+
+    pf = poly_fitter(x, y, order)
+    pf.refine()
+
+    return [pf.evaluate(_x) for _x in x]
+
+def log_fit(x, y, order):
+    '''Fit the values log(y(x)) then return exp() to this fit. x, y should
+    be iterables containing floats of the same size. The order is the order
+    of polynomial to use for this fit. This will be useful for e.g. I/sigma.'''
+
+    ly = [math.log(_y) for _y in y]
+
+    pf = poly_fitter(x, ly, order)
+    pf.refine()
+
+    return [math.exp(pf.evaluate(_x)) for _x in x]
+
+def log_inv_fit(x, y, order):
+    '''Fit the values log(1 / y(x)) then return the inverse of this fit.
+    x, y should be iterables, the order of the polynomial for the transformed
+    fit needs to be specified. This will be useful for e.g. Rmerge.'''
+
+    ly = [math.log(1.0 / _y) for _y in y]
+
+    pf = poly_fitter(x, ly, order)
+    pf.refine()
+
+    return [(1.0 / math.exp(pf.evaluate(_x))) for _x in x]
+
+def interpolate_value(x, y, t):
+    '''Find the value of x: y(x) = t.'''
+
+    if t > max(y) or t < min(y):
+        raise RuntimeError, 't outside of [%f, %f]' % (min(y), max(y))
+
+    for j in range(1, len(x)):
+        x0 = x[j - 1]
+        y0 = y[j - 1]
+
+        x1 = x[j]
+        y1 = y[j]
+
+        if (y0 - t) * (y1 - t) < 0:
+            return x0 + (t - y0) * (x1 - x0) / (y1 - y0)
+
+def get_positive_values(x):
+    '''Return a list of values v from x where v > 0.'''
+
+    result = []
+
+    for _x in x:
+        if _x > 0:
+            result.append(_x)
+        else:
+            return result
+
+    return result
 
 class unmerged_intensity:
     '''A class to represent and encapsulate the multiple observations of a
@@ -228,11 +519,31 @@ class unmerged_intensity:
 
         return result
 
-class merger:
+phil_defaults = '''
+resolutionizer {
+  rmerge = 0.0
+    .type = float
+  completeness = 0.0
+    .type = float
+  isigma = 1.0
+    .type = float
+  misigma = 2.0
+    .type = float
+  bins = 100
+    .type = int
+}
+'''
+
+class resolutionizer:
     '''A class to calculate things from merging reflections.'''
 
-    def __init__(self, hklin):
+    def __init__(self, hklin, phil = None):
 
+        self._working_phil = parse(phil_defaults)
+        if phil:
+            self._working_phil.fetch(source = parse(open(phil).read()))
+        self._params = self._working_phil.extract()
+            
         self._mf = mtz_file(hklin)
         self._unmerged_reflections = { }
         self._merged_reflections = { }
@@ -287,17 +598,11 @@ class merger:
 
         return
 
-    def accumulate(self, other_merger):
-        '''Accumulate all of the measurements from another merger class
+    def accumulate(self, other_r):
+        '''Accumulate all of the measurements from another resolutionizer class
         instance.'''
 
-        # self._unmerged_reflections = { }
-        # self._merged_reflections = { }
-        # self._merged_reflections_anomalous = { }
-
-        # self._read_unmerged_reflections()
-
-        other_unmerged_reflections = other_merger.get_unmerged_reflections()
+        other_unmerged_reflections = other_r.get_unmerged_reflections()
 
         for hkl in other_unmerged_reflections:
             if not hkl in self._unmerged_reflections:
@@ -704,7 +1009,7 @@ class merger:
         for positive values.'''
 
         if limit is None:
-            limit = Flags.get_rmerge()
+            limit = self._params.resolutionizer.rmerge
 
         bins, ranges = self.get_resolution_bins()
 
@@ -745,7 +1050,7 @@ class merger:
         set) or the full extent of the data.'''
 
         if limit is None:
-            limit = Flags.get_isigma()
+            limit = self._params.resolutionizer.isigma
 
         bins, ranges = self.get_resolution_bins()
 
@@ -798,7 +1103,7 @@ class merger:
         set) or the full extent of the data.'''
 
         if limit is None:
-            limit = Flags.get_isigma()
+            limit = self._params.resolutionizer.isigma
 
         bins, ranges = self.get_resolution_bins()
 
@@ -833,7 +1138,7 @@ class merger:
         set) or the full extent of the data.'''
 
         if limit is None:
-            limit = Flags.get_misigma()
+            limit = self._params.resolutionizer.misigma
 
         bins, ranges = self.get_resolution_bins()
 
@@ -885,7 +1190,7 @@ class merger:
         set) or the full extent of the data.'''
 
         if limit is None:
-            limit = Flags.get_misigma()
+            limit = self._params.resolutionizer.misigma
 
         bins, ranges = self.get_resolution_bins()
 
@@ -922,7 +1227,7 @@ class merger:
         triclinic cases.'''
 
         if limit is None:
-            limit = Flags.get_completeness()
+            limit = self._params.resolutionizer.completeness
 
         bins, ranges = self.get_resolution_bins()
 
@@ -960,11 +1265,9 @@ class merger:
 
 if __name__ == '__main__':
 
-    streams_off()
-
     nbins = 100
 
-    m = merger(sys.argv[1])
+    m = resolutionizer(sys.argv[1])
 
     name = os.path.split(sys.argv[1])[-1].replace('.mtz', '')
 
@@ -979,11 +1282,7 @@ if __name__ == '__main__':
     m.calculate_resolution_ranges(nbins = nbins)
 
     print 'Resolutions:'
-    print 'Rmerge:     %.2f' % m.resolution_rmerge(limit = 1.0,
-                                                   log = l_rmerge)
-    print 'I/sig:      %.2f' % m.resolution_unmerged_isigma(log = l_isigma)
-    print 'Mn(I/sig):  %.2f' % m.resolution_merged_isigma(log = l_misigma)
-
-    if False:
-        print 'Comp:       %.2f' % m.resolution_completeness(limit = 0.5,
-                                                             log = l_comp)
+    print 'Rmerge:     %.2f' % m.resolution_rmerge()
+    print 'I/sig:      %.2f' % m.resolution_unmerged_isigma()
+    print 'Mn(I/sig):  %.2f' % m.resolution_merged_isigma()
+    print 'Comp:       %.2f' % m.resolution_completeness()
