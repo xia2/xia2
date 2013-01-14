@@ -539,10 +539,12 @@ class resolutionizer:
 
     def __init__(self, hklin, phil = None):
 
-        self._working_phil = parse(phil_defaults)
+        working_phil = parse(phil_defaults)
         if phil:
-            self._working_phil.fetch(source = parse(open(phil).read()))
-        self._params = self._working_phil.extract()
+            working_phil.fetch(parse(open(phil).read()))
+            working_phil.show()
+            
+        self._params = working_phil.extract()
             
         self._mf = mtz_file(hklin)
         self._unmerged_reflections = { }
@@ -1267,18 +1269,11 @@ if __name__ == '__main__':
 
     nbins = 100
 
-    m = resolutionizer(sys.argv[1])
-
-    name = os.path.split(sys.argv[1])[-1].replace('.mtz', '')
-
-    l_rmerge = '%s_rmerge' % name
-    l_comp = '%s_comp' % name
-    l_isigma = '%s_isigma' % name
-    l_misigma = '%s_misigma' % name
-
-    if len(sys.argv) > 2:
-        nbins = int(sys.argv[2])
-
+    if len(sys.argv) == 2:
+        m = resolutionizer(sys.argv[1])
+    else:
+        m = resolutionizer(sys.argv[1], sys.argv[2])
+        
     m.calculate_resolution_ranges(nbins = nbins)
 
     print 'Resolutions:'
