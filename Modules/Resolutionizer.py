@@ -529,7 +529,7 @@ resolutionizer {
     .type = float
   misigma = 2.0
     .type = float
-  bins = 100
+  nbins = 100
     .type = int
 }
 '''
@@ -543,7 +543,7 @@ class resolutionizer:
         if phil:
             working_phil = working_phil.fetch(parse(open(phil).read()))
             
-        self._params = working_phil.extract()
+        self._params = working_phil.extract().resolutionizer
             
         self._mf = mtz_file(hklin)
         self._unmerged_reflections = { }
@@ -1004,13 +1004,38 @@ class resolutionizer:
 
         return z_centric, z_acentric
 
+    def resolution_auto(self):
+        '''Compute resolution limits based on the current self._params set.'''
+
+        self.calculate_resolution_ranges(nbins = self._params.nbins)
+
+        if self._params.rmerge:
+            print 'Resolution rmerge:       %.2f' % \
+                self.resolution_rmerge()
+
+        if self._params.completeness:
+            print 'Resolution completeness: %.2f' % \
+                self.resolution_completeness()
+
+        if self._params.isigma:
+            print 'Resolution I/sig:        %.2f' % \
+                self.resolution_unmerged_isigma()
+
+        if self._params.misigma:
+            print 'Resolution Mn(I/sig):    %.2f' % \
+                self.resolution_merged_isigma()
+
+        return
+
+
+            
     def resolution_rmerge(self, limit = None, log = None):
         '''Compute a resolution limit where either rmerge = 1.0 (limit if
         set) or the full extent of the data. N.B. this fit is only meaningful
         for positive values.'''
 
         if limit is None:
-            limit = self._params.resolutionizer.rmerge
+            limit = self._params.rmerge
 
         bins, ranges = self.get_resolution_bins()
 
@@ -1051,7 +1076,7 @@ class resolutionizer:
         set) or the full extent of the data.'''
 
         if limit is None:
-            limit = self._params.resolutionizer.isigma
+            limit = self._params.isigma
 
         bins, ranges = self.get_resolution_bins()
 
@@ -1104,7 +1129,7 @@ class resolutionizer:
         set) or the full extent of the data.'''
 
         if limit is None:
-            limit = self._params.resolutionizer.isigma
+            limit = self._params.isigma
 
         bins, ranges = self.get_resolution_bins()
 
@@ -1139,7 +1164,7 @@ class resolutionizer:
         set) or the full extent of the data.'''
 
         if limit is None:
-            limit = self._params.resolutionizer.misigma
+            limit = self._params.misigma
 
         bins, ranges = self.get_resolution_bins()
 
@@ -1191,7 +1216,7 @@ class resolutionizer:
         set) or the full extent of the data.'''
 
         if limit is None:
-            limit = self._params.resolutionizer.misigma
+            limit = self._params.misigma
 
         bins, ranges = self.get_resolution_bins()
 
@@ -1228,7 +1253,7 @@ class resolutionizer:
         triclinic cases.'''
 
         if limit is None:
-            limit = self._params.resolutionizer.completeness
+            limit = self._params.completeness
 
         bins, ranges = self.get_resolution_bins()
 
@@ -1266,17 +1291,9 @@ class resolutionizer:
 
 if __name__ == '__main__':
 
-    nbins = 100
-
     if len(sys.argv) == 2:
         m = resolutionizer(sys.argv[1])
     else:
         m = resolutionizer(sys.argv[1], sys.argv[2])
         
-    m.calculate_resolution_ranges(nbins = nbins)
-
-    print 'Resolutions:'
-    print 'Rmerge:     %.2f' % m.resolution_rmerge()
-    print 'I/sig:      %.2f' % m.resolution_unmerged_isigma()
-    print 'Mn(I/sig):  %.2f' % m.resolution_merged_isigma()
-    print 'Comp:       %.2f' % m.resolution_completeness()
+    m.resolution_auto()
