@@ -537,12 +537,26 @@ resolutionizer {
 class resolutionizer:
     '''A class to calculate things from merging reflections.'''
 
-    def __init__(self, hklin, phil = None):
+    def __init__(self, args):
+
+        hklin = args[0]
 
         working_phil = parse(phil_defaults)
-        if phil:
-            working_phil = working_phil.fetch(parse(open(phil).read()))
-            
+        phil_args = []
+
+        for arg in args[1:]:
+            if os.path.exists(arg):
+                working_phil = working_phil.fetch(
+                    source = parse(open(arg).read()))
+            else:
+                phil_args.append(arg)
+
+        if phil_args:
+            interp = working_phil.command_line_argument_interpreter(
+                home_scope = 'resolutionizer')
+            more_phil = interp.process(' '.join(phil_args))
+            working_phil = working_phil.fetch(source = more_phil)
+
         self._params = working_phil.extract().resolutionizer
             
         self._mf = mtz_file(hklin)
@@ -1291,9 +1305,5 @@ class resolutionizer:
 
 if __name__ == '__main__':
 
-    if len(sys.argv) == 2:
-        m = resolutionizer(sys.argv[1])
-    else:
-        m = resolutionizer(sys.argv[1], sys.argv[2])
-        
+    m = resolutionizer(sys.argv[1:])
     m.resolution_auto()
