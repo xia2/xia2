@@ -551,10 +551,10 @@ class resolutionizer:
             else:
                 phil_args.append(arg)
 
-        if phil_args:
+        for phil_arg in phil_args:
             interp = working_phil.command_line_argument_interpreter(
                 home_scope = 'resolutionizer')
-            more_phil = interp.process(' '.join(phil_args))
+            more_phil = interp.process(phil_arg)
             working_phil = working_phil.fetch(source = more_phil)
 
         self._params = working_phil.extract().resolutionizer

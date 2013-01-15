@@ -58,7 +58,7 @@ from Experts.ResolutionExperts import determine_scaled_resolution
 from Modules.DoseAccumulate import accumulate
 
 # new resolution limit code
-from Toolkit.Merger import merger
+from Wrappers.XIA.Merger import Merger
 
 # newly implemented CCTBX powered functions to replace xia2 binaries
 from Modules.Scaler.add_dose_time_to_mtz import add_dose_time_to_mtz
@@ -1119,21 +1119,40 @@ class XDSScalerA(Scaler):
                 resolution = self._user_resolution_limits[(dname, sname)]
 
             else:
-                m = merger(hklin)
+                m = Merger()
+                m.set_hklin(hklin)
+                if Flags.get_rmerge():
+                    m.set_limit_rmerge(Flags.get_rmerge())
+                if Flags.get_completeness():
+                    m.set_limit_completeness(Flags.get_completeness())
+                if Flags.get_isigma():
+                    m.set_limit_isigma(Flags.get_isigma())
+                if Flags.get_misigma():
+                    m.set_limit_misigma(Flags.get_misigma())
 
-                if Flags.get_small_molecule():
-                    m.calculate_resolution_ranges(nbins = 10)
+                m.run()
+
+                if Flags.get_completeness():
+                    r_comp = m.get_resolution_completeness()
                 else:
-                    m.calculate_resolution_ranges(nbins = 100)
+                    r_comp = 0.0
+                
+                if Flags.get_rmerge():
+                    r_rm = m.get_resolution_rmerge()
+                else:
+                    r_rm = 0.0
 
-                r_comp = m.resolution_completeness(log = log_completeness)
-                r_rm = m.resolution_rmerge(log = log_rmerge)
-                r_uis = m.resolution_unmerged_isigma(log = log_isigma)
-                r_mis = m.resolution_merged_isigma(log = log_misigma)
+                if Flags.get_isigma():
+                    r_uis = m.get_resolution_isigma()
+                else:
+                    r_uis = 0.0
+
+                if Flags.get_misigma():
+                    r_mis = m.get_resolution_misigma()
+                else:
+                    r_mis = 0.0
 
                 resolution = max([r_comp, r_rm, r_uis, r_mis])
-
-                del(m)
 
             Chatter.write('Resolution for sweep %s/%s: %.2f' % \
                           (dname, sname, resolution))
