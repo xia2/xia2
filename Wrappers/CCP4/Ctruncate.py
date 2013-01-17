@@ -108,7 +108,10 @@ def Ctruncate(DriverType = None):
             if self._anomalous:
                 self.add_command_line('-colano')
                 self.add_command_line('/*/*/[I(+),SIGI(+),I(-),SIGI(-)]')
-                
+            
+	    self.add_command_line('-colin')
+            self.add_command_line('/*/*/[IMEAN,SIGIMEAN]')
+    
             self.start()
             self.close_wait()
 
