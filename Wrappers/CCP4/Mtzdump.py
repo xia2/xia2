@@ -267,56 +267,13 @@ def Mtzdump(DriverType = None):
 
     return MtzdumpWrapper()
 
-if __name__ == '__main1__':
-
-    # do a quick test
-
-    if not os.environ.has_key('XIA2CORE_ROOT'):
-        raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-    dpa = os.environ['XIA2_ROOT']
-
-    hklin = os.path.join(dpa,
-                         'Data', 'Test', 'Mtz', '12287_1_E1_1_10.mtz')
-
-    hklin = os.path.join(os.environ['X2TD_ROOT'],
-                         'Test', 'UnitTest', 'Interfaces',
-                         'Scaler', 'Merged', 'TS00_13185_merged_free.mtz')
-
-    if len(sys.argv) > 1:
-        hklin = sys.argv[1]
-
-    m = Mtzdump()
-    m.write_log_file('mtzdump.log')
-    m.set_hklin(hklin)
-    print m.dump()
-
-    columns = m.get_columns()
-
-    for c in columns:
-        print '%s (%s)' % c
-
-    datasets = m.get_datasets()
-
-    for d in datasets:
-        print '%s' % d
-        info = m.get_dataset_info(d)
-        print '%s (%6.4fA) %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-              (info['spacegroup'], info['wavelength'],
-               info['cell'][0], info['cell'][1], info['cell'][2],
-               info['cell'][1], info['cell'][4], info['cell'][5])
-    print m.get_resolution_range()
-
 if __name__ == '__main__':
     m = Mtzdump()
-
-    hklin = os.path.join(os.environ['X2TD_ROOT'],
-                         'XIA2', 'Mtz', '12287_1_E1_1_10.mtz')
 
     if len(sys.argv) > 1:
         m.set_hklin(sys.argv[1])
     else:
-        m.set_hklin(hklin)
+        raise RuntimeError, '%s hklin.mtz' % sys.argv[0]
 
     m.dump()
     m.dump_batch_headers()
