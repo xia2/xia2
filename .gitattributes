@@ -5,8 +5,6 @@ Applications/__init__.py -text
 Applications/aimless2gnuplot -text
 Applications/cbfdump -text
 Applications/cbfdump.bat -text
-Applications/print_labelit_exception -text
-Applications/print_labelit_exception.py -text
 Applications/pydiffdump -text
 Applications/pydiffdump.bat -text
 Applications/pydiffdump.py -text
