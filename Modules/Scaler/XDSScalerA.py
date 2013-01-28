@@ -54,7 +54,6 @@ from Experts.SymmetryExpert import symop_to_mat, compose_matrices_r
 from CCP4ScalerHelpers import _resolution_estimate, anomalous_signals
 from Modules.CCP4InterRadiationDamageDetector import \
      CCP4InterRadiationDamageDetector
-from Experts.ResolutionExperts import determine_scaled_resolution
 from Modules.DoseAccumulate import accumulate
 
 # new resolution limit code

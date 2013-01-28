@@ -48,7 +48,6 @@ from Modules.CCP4InterRadiationDamageDetector import \
 from Modules.DoseAccumulate import accumulate
 
 from Modules.AnalyseMyIntensities import AnalyseMyIntensities
-from Experts.ResolutionExperts import determine_scaled_resolution
 from Wrappers.XIA.Merger import Merger
 
 # newly implemented CCTBX powered functions to replace xia2 binaries
@@ -1065,12 +1064,6 @@ class CCP4ScalerA(Scaler):
             sc.set_anomalous()
 
         sc.scale()
-
-        for dataset in resolution_info:
-            if False:
-                print dataset
-                determine_scaled_resolution(
-                    reflection_files[dataset], 3.0)[1]
 
         data = sc.get_summary()
 

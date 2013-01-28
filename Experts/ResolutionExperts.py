@@ -308,46 +308,6 @@ def main(mtzdump):
 
         j += binsize
 
-def determine_scaled_resolution(hklin, isigma_limit):
-    '''Determine the scaled and merged resolution limit from an MTZ file
-    from e.g. Scala.'''
-
-    if Flags.get_small_molecule():
-        _small_molecule()
-
-    md = Mtzdump()
-    md.set_hklin(hklin)
-    intensities = md.dump_scala_intensities()
-    md.dump()
-    datasets = md.get_datasets()
-
-    if len(datasets) > 1:
-        raise RuntimeError, 'multiple datasets in %s' % hklin
-
-    cell = md.get_dataset_info(datasets[0])['cell']
-
-    # transform cell to vector form
-
-    a, b, c, alpha, beta, gamma = cell
-    a_s, b_s, c_s, alphas, betas, gammas = real_to_reciprocal(
-        a, b, c, alpha, beta, gamma)
-
-    a_, b_, c_ = B(a_s, b_s, c_s, alphas, betas, gammas)
-
-    reflections = []
-
-    for i in intensities:
-        h, k, l = i[:3]
-        s = resolution(h, k, l, a_, b_, c_)
-        _i, _si = i[3], i[4]
-        reflections.append((s, _i, _si))
-
-    reflections.sort()
-
-    s, r = digest(bin_o_tron(reflections), isigma_limit)
-
-    return s, r
-
 def model():
 
     for isigma in [0.5, 1.0, 1.5, 2.0, 3.0]:
