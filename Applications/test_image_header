@@ -1,3 +1,0 @@
-#!/bin/bash
-
-cctbx.python -Q warn ${XIA2_ROOT}/Applications/test_image_header.py $@

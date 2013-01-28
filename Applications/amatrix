@@ -1,3 +1,0 @@
-#!/bin/bash
-
-python ${XIA2_ROOT}/Applications/amatrix.py $@
