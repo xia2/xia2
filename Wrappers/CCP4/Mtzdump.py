@@ -56,8 +56,6 @@ def Mtzdump(DriverType = None):
 
             self._column_ranges = { }
 
-            self._intensities = { }
-
             return
 
         def dump(self):
