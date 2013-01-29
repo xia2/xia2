@@ -31,6 +31,9 @@ from Decorators.DecoratorFactory import DecoratorFactory
 def Mtzdump(DriverType = None):
     '''A factory for MtzdumpWrapper classes.'''
 
+    from Modules.Mtzdump import Mtzdump as _Mtzdump
+    return _Mtzdump()
+
     DriverInstance = DriverFactory.Driver(DriverType)
     CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, 'ccp4')
 

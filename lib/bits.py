@@ -120,6 +120,10 @@ def auto_logfiler(DriverInstance, extra = None):
     '''Create a "sensible" log file for this program wrapper & connect it.'''
 
     working_directory = DriverInstance.get_working_directory()
+
+    if not working_directory:
+        return
+    
     executable = os.path.split(DriverInstance.get_executable())[-1]
     number = _get_number()
 
