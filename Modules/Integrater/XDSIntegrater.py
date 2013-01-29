@@ -459,16 +459,7 @@ class XDSIntegrater(FrameProcessor,
                      'GAIN.cbf']:
             integrate.set_input_data_file(file, self._data_files[file])
 
-        # use the refined parameters for integration?
-
-        fixed_2401 = True
-
-        # bug # 3264 - currently if the resolution for integration is given
-        # the integration will not be repeated. As a side effect, this means
-        # that GXPARM may not be used, which is not ideal, as it should be
-        # considered.
-
-        if self._data_files.has_key('GXPARM.XDS') and fixed_2401:
+        if self._data_files.has_key('GXPARM.XDS'):
             Debug.write('Using globally refined parameters')
             integrate.set_input_data_file(
                 'XPARM.XDS', self._data_files['GXPARM.XDS'])
@@ -534,6 +525,8 @@ class XDSIntegrater(FrameProcessor,
 
         # fix for bug # 3264 -
         # if we have not run integration with refined parameters, make it so...
+        # erm? shouldn't this therefore return if this is the principle, or
+        # set the flag after we have tested the lattice?
 
         if not self._data_files.has_key('GXPARM.XDS'):
             Debug.write(
@@ -696,7 +689,7 @@ class XDSIntegrater(FrameProcessor,
             reindex_op = mat_to_symop(matrix)
 
             # assign this to self: will this reset?! make for a leaky
-            # anstraction and just assign this...
+            # abstraction and just assign this...
 
             # self.set_integrater_reindex_operator(reindex)
 
@@ -860,8 +853,10 @@ class XDSIntegrater(FrameProcessor,
                 remove_hkl.close()
 
                 # we want to rerun the finishing step so...
-                # unless we have added no new reflections
-                if used:
+                # unless we have added no new reflections... or unless we
+                # have not confirmed the point group (see SCI-398)
+                
+                if used and self.get_integrater_reindex_matrix():
                     self.set_integrater_finish_done(False)
 
         else:
