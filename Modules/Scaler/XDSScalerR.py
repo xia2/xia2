@@ -14,7 +14,6 @@
 
 import os
 import sys
-import math
 import shutil
 import copy
 
@@ -25,7 +24,8 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
 # the interface definition that this will conform to
-from Schema.Interfaces.Scaler import Scaler
+# from Schema.Interfaces.Scaler import Scaler
+from CommonScaler import CommonScaler as Scaler
 
 # other tools that this will need
 from Modules.Scaler.XDSScalerHelpers import XDSScalerHelper
@@ -40,18 +40,15 @@ from Wrappers.CCP4.CCP4Factory import CCP4Factory
 
 # random odds and sods - the resolution estimate should be somewhere better
 from lib.bits import auto_logfiler, transpose_loggraph, is_mtz_file
-from lib.bits import nifty_power_of_ten
 from lib.SymmetryLib import lattices_in_order
 from Handlers.Citations import Citations
 from Handlers.Syminfo import Syminfo
 from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Flags import Flags
 from Handlers.Files import FileHandler
-from Experts.SymmetryExpert import r_to_rt, rt_to_r, compose_symops
-from Experts.SymmetryExpert import symop_to_mat, compose_matrices_r
 
 # stuff I have nicked from the CCP4 Scaler implementation
-from CCP4ScalerHelpers import _resolution_estimate, anomalous_signals
+from CCP4ScalerHelpers import anomalous_signals
 from Modules.CCP4InterRadiationDamageDetector import \
      CCP4InterRadiationDamageDetector
 from Modules.DoseAccumulate import accumulate
@@ -81,9 +78,6 @@ class XDSScalerR(Scaler):
 
         self._spacegroup = None
         self._factory = CCP4Factory()
-
-        # junk which may prove to be useful...
-        self._reindexed_cell = None
 
         self._chef_analysis_groups = { }
         self._chef_analysis_times = { }
@@ -218,128 +212,6 @@ class XDSScalerR(Scaler):
         Debug.write('Pointgroup: %s (%s)' % (pointgroup, reindex_op))
 
         return pointgroup, reindex_op, need_to_return
-
-    def _sweep_information_to_chef(self):
-        '''Analyse the sweep_information data structure to work out which
-        measurements should be compared in chef. This will then print out
-        an opinion of what should be compared by sweep epoch / image name.'''
-
-        dose_rates = []
-        wavelengths = []
-        groups = { }
-        batch_groups = { }
-        resolutions = { }
-
-        # FIXME need to estimate the inscribed circle resolution from the
-        # image header information - the lowest for each group will be used
-        # for the analysis... Actually - this will be the lowest resolution
-        # of all of the integrater resolutions *and* all of the inscribed
-        # circle resolutions...
-
-        for epoch in sorted(self._sweep_information):
-            header = self._sweep_information[epoch]['header']
-            batches = self._sweep_information[epoch]['batches']
-            dr = header['exposure_time'] / header['phi_width']
-            wave = self._sweep_information[epoch]['dname']
-            template = self._sweep_information[epoch][
-                'integrater'].get_template()
-
-            # FIXME should these not really just be inherited / propogated
-            # through the FrameProcessor interface? Trac #255.
-
-            indxr = self._sweep_information[epoch][
-                'integrater'].get_integrater_indexer()
-            beam = indxr.get_indexer_beam()
-            distance = indxr.get_indexer_distance()
-            wavelength = self._sweep_information[epoch][
-                'integrater'].get_wavelength()
-
-            # ok, in here decide the minimum distance from the beam centre to
-            # the edge... which will depend on the size of the detector
-
-            detector_width = header['size'][0] * header['pixel'][0]
-            detector_height = header['size'][1] * header['pixel'][1]
-
-            radius = min([beam[0], detector_width - beam[0],
-                          beam[1], detector_height - beam[1]])
-
-            theta = 0.5 * math.atan(radius / distance)
-
-            resolution = wavelength / (2 * math.sin(theta))
-
-            if not wave in wavelengths:
-                wavelengths.append(wave)
-
-            # cluster on power of sqrt(two), perhaps? also need to get the
-            # batch ranges which they will end up as so that I can fetch
-            # out the reflections I want from the scaled MTZ files.
-            # When it comes to doing this it will also need to know where
-            # those reflections may be found... - this is in sweep_information
-            # [epoch]['batches'] so should be pretty handy to get to in here.
-
-            found = False
-
-            for rate in dose_rates:
-                r = rate[1]
-                if dr / r > math.sqrt(0.5) and dr / r < math.sqrt(2.0):
-                    # copy this for grouping
-                    found = True
-                    if (wave, rate[0]) in groups:
-                        groups[(wave, rate[0])].append((epoch, template))
-                        batch_groups[(wave, rate[0])].append(batches)
-                        if rate[0] in resolutions:
-                            resolutions[rate[0]] = max(resolutions[rate[0]],
-                                                       resolution)
-                        else:
-                            resolutions[rate[0]] = resolution
-
-
-                    else:
-                        groups[(wave, rate[0])] = [(epoch, template)]
-                        batch_groups[(wave, rate[0])] = [batches]
-                        if rate[0] in resolutions:
-                            resolutions[rate[0]] = max(resolutions[rate[0]],
-                                                       resolution)
-                        else:
-                            resolutions[rate[0]] = resolution
-
-            if not found:
-                rate = (len(dose_rates), dr)
-                dose_rates.append(rate)
-                groups[(wave, rate[0])] = [(epoch, template)]
-                batch_groups[(wave, rate[0])] = [batches]
-
-                if rate[0] in resolutions:
-                    resolutions[rate[0]] = max(resolutions[rate[0]],
-                                               resolution)
-                else:
-                    resolutions[rate[0]] = resolution
-
-        # now work through the groups and print out the results, as well
-        # as storing them for future reference...
-
-        self._chef_analysis_groups = { }
-        self._chef_analysis_times = { }
-        self._chef_analysis_resolutions = { }
-
-        for rate in dose_rates:
-            self._chef_analysis_groups[rate[0]] = []
-            self._chef_analysis_times[rate[0]] = rate[1]
-            Debug.write('Dose group %d (%s s)' % rate)
-            Debug.write('Resolution limit: %.2f' % resolutions[rate[0]])
-            self._chef_analysis_resolutions[rate[0]] = resolutions[rate[0]]
-            for wave in wavelengths:
-                if (wave, rate[0]) in groups:
-                    for j in range(len(groups[(wave, rate[0])])):
-                        et = groups[(wave, rate[0])][j]
-                        batches = batch_groups[(wave, rate[0])][j]
-                        self._chef_analysis_groups[rate[0]].append(
-                            (wave, et[1], batches[0], batches[1]))
-                        Debug.write('%d %s %s (%d to %d)' % \
-                                    (et[0], wave, et[1],
-                                     batches[0], batches[1]))
-
-        return
 
     def _scale_prepare(self):
         '''Prepare the data for scaling - this will reindex it the
@@ -1127,7 +999,7 @@ class XDSScalerR(Scaler):
                     r_comp = m.get_resolution_completeness()
                 else:
                     r_comp = 0.0
-                
+
                 if Flags.get_rmerge():
                     r_rm = m.get_resolution_rmerge()
                 else:
@@ -1160,181 +1032,7 @@ class XDSScalerR(Scaler):
             Debug.write('Returning as scaling not finished...')
             return
 
-        max_batches = 0
-
-        for epoch in self._sweep_information.keys():
-
-            hklin = self._sweep_information[epoch]['scaled_reflections']
-
-            md = self._factory.Mtzdump()
-            md.set_hklin(hklin)
-            md.dump()
-
-            if self._sweep_information[epoch]['batches'] == [0, 0]:
-
-                Chatter.write('Getting batches from %s' % hklin)
-                batches = md.get_batches()
-                self._sweep_information[epoch]['batches'] = [min(batches),
-                                                             max(batches)]
-                Chatter.write('=> %d to %d' % (min(batches),
-                                               max(batches)))
-
-            batches = self._sweep_information[epoch]['batches']
-            if 1 + max(batches) - min(batches) > max_batches:
-                max_batches = max(batches) - min(batches) + 1
-
-            datasets = md.get_datasets()
-
-            Debug.write('In reflection file %s found:' % hklin)
-            for d in datasets:
-                Debug.write('... %s' % d)
-
-            dataset_info = md.get_dataset_info(datasets[0])
-
-        Debug.write('Biggest sweep has %d batches' % max_batches)
-        max_batches = nifty_power_of_ten(max_batches)
-
-        epochs = self._sweep_information.keys()
-        epochs.sort()
-
-        counter = 0
-
-        Journal.block(
-            'merging', self.get_scaler_xcrystal().get_name(), 'CCP4', {})
-
-        for epoch in epochs:
-            rb = self._factory.Rebatch()
-
-            hklin = self._sweep_information[epoch]['scaled_reflections']
-
-            pname = self._sweep_information[epoch]['pname']
-            xname = self._sweep_information[epoch]['xname']
-            dname = self._sweep_information[epoch]['dname']
-
-            sname = self._sweep_information[epoch]['sname']
-
-            Journal.entry({'adding data from':'%s/%s/%s' % \
-                           (xname, dname, sname)})
-
-            hklout = os.path.join(self.get_working_directory(),
-                                  '%s_%s_%s_%d.mtz' % \
-                                  (pname, xname, dname, counter))
-
-            # we will want to delete this one exit
-            FileHandler.record_temporary_file(hklout)
-
-            # record this for future reference - will be needed in the
-            # radiation damage analysis...
-
-            # hack - reset this as it gets in a muddle...
-            intgr = self._sweep_information[epoch]['integrater']
-            self._sweep_information[epoch][
-                'batches'] = intgr.get_integrater_batches()
-
-            first_batch = min(self._sweep_information[epoch]['batches'])
-            self._sweep_information[epoch][
-                'batch_offset'] = counter * max_batches - first_batch + 1
-
-            rb.set_hklin(hklin)
-            rb.set_first_batch(counter * max_batches + 1)
-            rb.set_hklout(hklout)
-
-            new_batches = rb.rebatch()
-
-            # update the "input information"
-
-            self._sweep_information[epoch]['hklin'] = hklout
-            self._sweep_information[epoch]['batches'] = new_batches
-
-            # update the counter & recycle
-
-            counter += 1
-
-        if Flags.get_chef():
-            self._sweep_information_to_chef()
-
-        s = self._factory.Sortmtz()
-
-        hklout = os.path.join(self.get_working_directory(),
-                              '%s_%s_sorted.mtz' % \
-                              (self._scalr_pname, self._scalr_xname))
-
-        s.set_hklout(hklout)
-
-        for epoch in epochs:
-            s.add_hklin(self._sweep_information[epoch]['hklin'])
-
-        s.sort(vrset = -99999999.0)
-
-        self._prepared_reflections = hklout
-
-        if self.get_scaler_reference_reflection_file():
-            md = self._factory.Mtzdump()
-            md.set_hklin(self.get_scaler_reference_reflection_file())
-            md.dump()
-
-            spacegroups = [md.get_spacegroup()]
-            reindex_operator = 'h,k,l'
-
-        else:
-
-            pointless = self._factory.Pointless()
-            pointless.set_hklin(hklout)
-            pointless.decide_spacegroup()
-
-            FileHandler.record_log_file('%s %s pointless' % \
-                                        (self._scalr_pname,
-                                         self._scalr_xname),
-                                        pointless.get_log_file())
-
-            spacegroups = pointless.get_likely_spacegroups()
-            reindex_operator = pointless.get_spacegroup_reindex_operator()
-
-            if self._scalr_input_spacegroup:
-                Debug.write('Assigning user input spacegroup: %s' % \
-                            self._scalr_input_spacegroup)
-                spacegroups = [self._scalr_input_spacegroup]
-                reindex_operator = 'h,k,l'
-
-        self._scalr_likely_spacegroups = spacegroups
-        spacegroup = self._scalr_likely_spacegroups[0]
-
-        self._scalr_reindex_operator = reindex_operator
-
-        Chatter.write('Likely spacegroups:')
-        for spag in self._scalr_likely_spacegroups:
-            Chatter.write('%s' % spag)
-
-        Chatter.write(
-            'Reindexing to first spacegroup setting: %s (%s)' % \
-            (spacegroup, reindex_operator))
-
-        hklin = self._prepared_reflections
-        hklout = os.path.join(self.get_working_directory(),
-                              '%s_%s_reindex.mtz' % \
-                              (self._scalr_pname, self._scalr_xname))
-
-        FileHandler.record_temporary_file(hklout)
-
-        ri = self._factory.Reindex()
-        ri.set_hklin(hklin)
-        ri.set_hklout(hklout)
-        ri.set_spacegroup(spacegroup)
-        ri.set_operator(reindex_operator)
-        ri.reindex()
-
-        hklin = hklout
-        hklout = os.path.join(self.get_working_directory(),
-                              '%s_%s_sorted.mtz' % \
-                              (self._scalr_pname, self._scalr_xname))
-
-        s = self._factory.Sortmtz()
-        s.set_hklin(hklin)
-        s.set_hklout(hklout)
-
-        s.sort(vrset = -99999999.0)
-
-        self._prepared_reflections = hklout
+        self._sort_together_data_xds()
 
         doses = { }
 
@@ -1440,11 +1138,6 @@ class XDSScalerR(Scaler):
             FileHandler.record_log_file(
                 '%s chef %d' % (self._scalr_xname, group + 1),
                 chef.get_log_file())
-
-        Debug.write(
-            'Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f' % \
-            tuple(ri.get_cell()))
-        self._reindexed_cell = tuple(ri.get_cell())
 
         highest_resolution = min(
             [self._resolution_limits[k] for k in self._resolution_limits])
@@ -1554,7 +1247,6 @@ class XDSScalerR(Scaler):
                 batch_info[dataset] = transpose_loggraph(
                     loggraph[key])
 
-
         # finally put all of the results "somewhere useful"
 
         self._scalr_statistics = data
@@ -1605,7 +1297,7 @@ class XDSScalerR(Scaler):
                 input = self._sweep_information[epoch]
                 rkey = input['dname'], input['sname']
                 start, end = (min(input['batches']), max(input['batches']))
-                
+
                 if dname == input['dname']:
                     sc.add_run(start, end, pname = input['pname'],
                                xname = input['xname'],
@@ -1750,11 +1442,6 @@ class XDSScalerR(Scaler):
 
                 # and record the reflection file..
                 self._tmp_scaled_refl_files[wavelength] = hklout
-
-        # copy across the reindexed unit cell - messy is this correct?
-        # #1330.
-
-        self._scalr_cell = self._reindexed_cell
 
         if len(self._tmp_scaled_refl_files.keys()) > 1:
 

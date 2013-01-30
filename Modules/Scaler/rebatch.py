@@ -9,7 +9,6 @@
 # Replacement for CCP4 program rebatch, using cctbx Python.
 #
 
-import os
 import sys
 
 from iotbx import mtz

@@ -23,7 +23,8 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
 # the interface definition that this will conform to
-from Schema.Interfaces.Scaler import Scaler
+# from Schema.Interfaces.Scaler import Scaler
+from CommonScaler import CommonScaler as Scaler
 
 from Wrappers.CCP4.CCP4Factory import CCP4Factory
 
@@ -34,24 +35,19 @@ from Handlers.Flags import Flags
 from Handlers.Syminfo import Syminfo
 
 # jiffys
-from lib.bits import is_mtz_file, nifty_power_of_ten, auto_logfiler
-from lib.bits import transpose_loggraph, nint
-from lib.SymmetryLib import lattices_in_order, sort_lattices
+from lib.bits import is_mtz_file
+from lib.bits import transpose_loggraph
+from lib.SymmetryLib import sort_lattices
 
-from CCP4ScalerHelpers import _resolution_estimate, \
-     _prepare_pointless_hklin, _fraction_difference, \
+from CCP4ScalerHelpers import _prepare_pointless_hklin, \
      CCP4ScalerHelper, SweepInformationHandler, erzatz_resolution, \
      anomalous_signals
 
 from Modules.CCP4InterRadiationDamageDetector import \
      CCP4InterRadiationDamageDetector
-from Modules.DoseAccumulate import accumulate
 
 from Modules.AnalyseMyIntensities import AnalyseMyIntensities
 from Wrappers.XIA.Merger import Merger
-
-# newly implemented CCTBX powered functions to replace xia2 binaries
-from Modules.Scaler.add_dose_time_to_mtz import add_dose_time_to_mtz
 
 class CCP4ScalerR(Scaler):
     '''An implementation of the Scaler interface using CCP4 programs.'''
@@ -603,187 +599,7 @@ class CCP4ScalerR(Scaler):
 
         # ---------- SORT TOGETHER DATA ----------
 
-        max_batches = 0
-
-        for epoch in self._sweep_handler.get_epochs():
-
-            # keep a count of the maximum number of batches in a block -
-            # this will be used to make rebatch work below.
-
-            si = self._sweep_handler.get_sweep_information(epoch)
-            hklin = si.get_reflections()
-
-            md = self._factory.Mtzdump()
-            md.set_hklin(hklin)
-            md.dump()
-
-            batches = si.get_batches()
-            if 1 + max(batches) - min(batches) > max_batches:
-                max_batches = max(batches) - min(batches) + 1
-
-            datasets = md.get_datasets()
-
-            Debug.write('In reflection file %s found:' % hklin)
-            for d in datasets:
-                Debug.write('... %s' % d)
-
-            dataset_info = md.get_dataset_info(datasets[0])
-
-        Debug.write('Biggest sweep has %d batches' % max_batches)
-        max_batches = nifty_power_of_ten(max_batches)
-
-        # then rebatch the files, to make sure that the batch numbers are
-        # in the same order as the epochs of data collection.
-
-        counter = 0
-
-        for epoch in self._sweep_handler.get_epochs():
-
-            si = self._sweep_handler.get_sweep_information(epoch)
-            rb = self._factory.Rebatch()
-
-            hklin = si.get_reflections()
-
-            pname, xname, dname = si.get_project_info()
-
-            hklout = os.path.join(self.get_working_directory(),
-                                  '%s_%s_%s_%d.mtz' % \
-                                  (pname, xname, dname, counter))
-
-            FileHandler.record_temporary_file(hklout)
-
-            first_batch = min(si.get_batches())
-            si.set_batch_offset(counter * max_batches - first_batch + 1)
-
-            rb.set_hklin(hklin)
-            rb.set_first_batch(counter * max_batches + 1)
-            rb.set_hklout(hklout)
-
-            new_batches = rb.rebatch()
-
-            # update the "input information"
-
-            si.set_reflections(hklout)
-            si.set_batches(new_batches)
-
-            # update the counter & recycle
-
-            counter += 1
-
-        s = self._factory.Sortmtz()
-
-        hklout = os.path.join(self.get_working_directory(),
-                              '%s_%s_sorted.mtz' % \
-                              (self._scalr_pname, self._scalr_xname))
-
-        s.set_hklout(hklout)
-
-        for epoch in self._sweep_handler.get_epochs():
-            s.add_hklin(self._sweep_handler.get_sweep_information(
-                epoch).get_reflections())
-
-        s.sort()
-
-        # verify that the measurements are in the correct setting
-        # choice for the spacegroup
-
-        hklin = hklout
-        hklout = hklin.replace('sorted.mtz', 'temp.mtz')
-
-        if not self.get_scaler_reference_reflection_file():
-
-            p = self._factory.Pointless()
-
-            FileHandler.record_log_file('%s %s pointless' % \
-                                        (self._scalr_pname,
-                                         self._scalr_xname),
-                                        p.get_log_file())
-
-            if len(self._sweep_handler.get_epochs()) > 1:
-                p.set_hklin(hklin)
-            else:
-                # permit the use of pointless preparation...
-                epoch = self._sweep_handler.get_epochs()[0]
-                p.set_hklin(self._prepare_pointless_hklin(
-                    hklin, self._sweep_handler.get_sweep_information(
-                    epoch).get_header()['phi_width']))
-
-            if self._scalr_input_spacegroup:
-                Debug.write('Assigning user input spacegroup: %s' % \
-                            self._scalr_input_spacegroup)
-
-                p.decide_spacegroup()
-                spacegroup = p.get_spacegroup()
-                reindex_operator = p.get_spacegroup_reindex_operator()
-
-                Debug.write('Pointless thought %s (reindex as %s)' % \
-                            (spacegroup, reindex_operator))
-
-                spacegroup = self._scalr_input_spacegroup
-                reindex_operator = 'h,k,l'
-
-            else:
-                p.decide_spacegroup()
-                spacegroup = p.get_spacegroup()
-                reindex_operator = p.get_spacegroup_reindex_operator()
-
-                Debug.write('Pointless thought %s (reindex as %s)' % \
-                            (spacegroup, reindex_operator))
-
-            if self._scalr_input_spacegroup:
-                self._scalr_likely_spacegroups = [self._scalr_input_spacegroup]
-            else:
-                self._scalr_likely_spacegroups = p.get_likely_spacegroups()
-
-            Chatter.write('Likely spacegroups:')
-            for spag in self._scalr_likely_spacegroups:
-                Chatter.write('%s' % spag)
-
-            Chatter.write(
-                'Reindexing to first spacegroup setting: %s (%s)' % \
-                (spacegroup, reindex_operator))
-
-        else:
-
-            md = self._factory.Mtzdump()
-            md.set_hklin(self.get_scaler_reference_reflection_file())
-            md.dump()
-
-            spacegroup = md.get_spacegroup()
-            reindex_operator = 'h,k,l'
-
-            self._scalr_likely_spacegroups = [spacegroup]
-
-            Debug.write('Assigning spacegroup %s from reference' % \
-                        spacegroup)
-
-        # then run reindex to set the correct spacegroup
-
-        ri = self._factory.Reindex()
-        ri.set_hklin(hklin)
-        ri.set_hklout(hklout)
-        ri.set_spacegroup(spacegroup)
-        ri.set_operator(reindex_operator)
-        ri.reindex()
-
-        FileHandler.record_temporary_file(hklout)
-
-        # then resort the reflections (one last time!)
-
-        s = self._factory.Sortmtz()
-
-        temp = hklin
-        hklin = hklout
-        hklout = temp
-
-        s.add_hklin(hklin)
-        s.set_hklout(hklout)
-
-        s.sort()
-
-        # done preparing!
-
-        self._prepared_reflections = s.get_hklout()
+        self._sort_together_data_ccp4()
 
         self._sweep_resolution_limits = { }
 
@@ -990,7 +806,7 @@ class CCP4ScalerR(Scaler):
                 r_comp = m.get_resolution_completeness()
             else:
                 r_comp = 0.0
-                
+
             if Flags.get_rmerge():
                 r_rm = m.get_resolution_rmerge()
             else:

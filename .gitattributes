@@ -34,6 +34,7 @@ Modules/Indexer/__init__.py -text
 Modules/Integrater/__init__.py -text
 Modules/Scaler/CCP4ScalerA.py -text
 Modules/Scaler/CCP4ScalerR.py -text
+Modules/Scaler/CommonScaler.py -text
 Modules/Scaler/XDSScalerA.py -text
 Modules/Scaler/XDSScalerR.py -text
 Modules/Scaler/__init__.py -text

@@ -12,9 +12,6 @@
 # single program now...
 #
 
-import os
-import sys
-
 from iotbx import mtz
 from cctbx.array_family import flex
 

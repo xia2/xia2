@@ -20,7 +20,7 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
-from Handlers.Streams import Chatter, Debug
+from Handlers.Streams import Debug
 from lib.bits import auto_logfiler
 from Wrappers.CCP4.Combat import Combat as _Combat
 from Wrappers.CCP4.Pointless import Pointless as _Pointless

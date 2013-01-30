@@ -20,18 +20,15 @@ sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 # scaler implementations
-
 from CCP4ScalerR import CCP4ScalerR
 from CCP4ScalerA import CCP4ScalerA
 from XDSScalerR import XDSScalerR
 from XDSScalerA import XDSScalerA
 
 # selection stuff
-
-from Handlers.PipelineSelection import get_preferences, add_preference
+from Handlers.PipelineSelection import get_preferences
 
 # other odds and ends
-
 from DriverExceptions.NotAvailableError import NotAvailableError
 from Handlers.Streams import Debug
 

@@ -26,7 +26,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Wrappers.CCP4.Mtzdump import Mtzdump
 from Wrappers.CCP4.Rebatch import Rebatch
 from lib.bits import auto_logfiler
-from Handlers.Streams import Chatter, Debug
+from Handlers.Streams import Debug
 from Handlers.Files import FileHandler
 from Handlers.Flags import Flags
 from Experts.ResolutionExperts import remove_blank
