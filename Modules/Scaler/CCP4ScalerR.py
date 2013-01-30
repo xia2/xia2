@@ -40,11 +40,7 @@ from lib.bits import transpose_loggraph
 from lib.SymmetryLib import sort_lattices
 
 from CCP4ScalerHelpers import _prepare_pointless_hklin, \
-     CCP4ScalerHelper, SweepInformationHandler, erzatz_resolution, \
-     anomalous_signals
-
-from Modules.CCP4InterRadiationDamageDetector import \
-     CCP4InterRadiationDamageDetector
+     CCP4ScalerHelper, SweepInformationHandler, erzatz_resolution
 
 from Modules.AnalyseMyIntensities import AnalyseMyIntensities
 from Wrappers.XIA.Merger import Merger
@@ -1088,76 +1084,6 @@ class CCP4ScalerR(Scaler):
             Debug.write('Moving %s to %s' % \
                         ('%s.keep' % harvest_copy, harvest_copy))
 
-        return
-
-    def _scale_finish(self):
-        '''Finish off the scaling... This needs to be replaced with a
-        call to AMI.'''
-
-        # compute anomalous signals if anomalous
-
-        if self.get_scaler_anomalous():
-            for key in self._tmp_scaled_refl_files:
-                f = self._tmp_scaled_refl_files[key]
-                a_s = anomalous_signals(f)
-                self._scalr_statistics[
-                    (self._scalr_pname, self._scalr_xname, key)
-                    ]['dF/F'] = [a_s[0]]
-                self._scalr_statistics[
-                    (self._scalr_pname, self._scalr_xname, key)
-                    ]['dI/s(dI)'] = [a_s[1]]
-
-        # convert I's to F's in Truncate
-
-        if not Flags.get_small_molecule():
-
-            for key in self._tmp_scaled_refl_files:
-                file = self._tmp_scaled_refl_files[key]
-                t = self._factory.Truncate()
-                t.set_hklin(file)
-
-                # bug # 2326
-                if self.get_scaler_anomalous():
-                    t.set_anomalous(True)
-                else:
-                    t.set_anomalous(False)
-
-                # this is tricksy - need to really just replace the last
-                # instance of this string FIXME 27/OCT/06
-
-                FileHandler.record_log_file('%s %s %s truncate' % \
-                                            (self._scalr_pname,
-                                             self._scalr_xname,
-                                             key),
-                                            t.get_log_file())
-
-                hklout = ''
-                for path in os.path.split(file)[:-1]:
-                    hklout = os.path.join(hklout, path)
-                hklout = os.path.join(hklout, os.path.split(file)[-1].replace(
-                    '_scaled', '_truncated'))
-
-                FileHandler.record_temporary_file(hklout)
-
-                t.set_hklout(hklout)
-                t.truncate()
-
-                Debug.write('%d absent reflections in %s removed' % \
-                            (t.get_nabsent(), key))
-
-                b_factor = t.get_b_factor()
-
-                # look for the second moment information...
-                moments = t.get_moments()
-
-                # record the b factor somewhere (hopefully) useful...
-
-                self._scalr_statistics[
-                    (self._scalr_pname, self._scalr_xname, key)
-                    ]['Wilson B factor'] = [b_factor]
-
-                self._tmp_scaled_refl_files[key] = hklout
-
         ami = AnalyseMyIntensities()
         ami.set_working_directory(self.get_working_directory())
 
@@ -1165,173 +1091,11 @@ class CCP4ScalerR(Scaler):
             [self._tmp_scaled_refl_files[key] for key in
              self._tmp_scaled_refl_files])
 
-        Chatter.write('Computed average unit cell (will use in all files)')
-        Chatter.write('%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-                      average_unit_cell)
+        Debug.write('Computed average unit cell (will use in all files)')
+        Debug.write('%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
+                    average_unit_cell)
 
         self._scalr_cell = average_unit_cell
-
-        for key in self._tmp_scaled_refl_files:
-            file = self._tmp_scaled_refl_files[key]
-
-            hklout = '%s_cad.mtz' % file[:-4]
-            FileHandler.record_temporary_file(hklout)
-
-            c = self._factory.Cad()
-            c.add_hklin(file)
-            c.set_new_suffix(key)
-            c.set_new_cell(average_unit_cell)
-            c.set_hklout(hklout)
-            c.update()
-
-            self._tmp_scaled_refl_files[key] = hklout
-
-        if len(self._tmp_scaled_refl_files) > 1:
-            c = self._factory.Cad()
-            for key in self._tmp_scaled_refl_files:
-                file = self._tmp_scaled_refl_files[key]
-                c.add_hklin(file)
-
-            hklout = os.path.join(self.get_working_directory(),
-                                  '%s_%s_merged.mtz' % (self._scalr_pname,
-                                                        self._scalr_xname))
-
-            Debug.write('Merging all data sets to %s' % hklout)
-
-            c.set_hklout(hklout)
-            c.merge()
-
-            self._scalr_scaled_reflection_files['mtz_merged'] = hklout
-
-        else:
-
-            self._scalr_scaled_reflection_files[
-                'mtz_merged'] = self._tmp_scaled_refl_files[
-                self._tmp_scaled_refl_files.keys()[0]]
-
-        hklout = os.path.join(self.get_working_directory(),
-                              '%s_%s_free_temp.mtz' % (self._scalr_pname,
-                                                       self._scalr_xname))
-
-        FileHandler.record_temporary_file(hklout)
-
-        if self.get_scaler_freer_file():
-
-            freein = self.get_scaler_freer_file()
-
-            Debug.write('Copying FreeR_flag from %s' % freein)
-
-            c = self._factory.Cad()
-            c.set_freein(freein)
-            c.add_hklin(self._scalr_scaled_reflection_files['mtz_merged'])
-            c.set_hklout(hklout)
-            c.copyfree()
-
-        elif Flags.get_freer_file():
-
-            freein = Flags.get_freer_file()
-
-            Debug.write('Copying FreeR_flag from %s' % freein)
-
-            c = self._factory.Cad()
-            c.set_freein(freein)
-            c.add_hklin(self._scalr_scaled_reflection_files['mtz_merged'])
-            c.set_hklout(hklout)
-            c.copyfree()
-
-        else:
-
-            free_fraction = 0.05
-
-            if Flags.get_free_fraction():
-                free_fraction = Flags.get_free_fraction()
-            elif Flags.get_free_total():
-                ntot = Flags.get_free_total()
-
-                mtzdump = self._factory.Mtzdump()
-                mtzdump.set_hklin(hklin)
-                mtzdump.dump()
-                nref = mtzdump.get_reflections()
-                free_fraction = float(ntot) / float(nref)
-
-            f = self._factory.Freerflag()
-            f.set_free_fraction(free_fraction)
-            f.set_hklin(self._scalr_scaled_reflection_files['mtz_merged'])
-            f.set_hklout(hklout)
-            f.add_free_flag()
-
-        hklin = hklout
-        hklout = os.path.join(self.get_working_directory(),
-                              '%s_%s_free.mtz' % (self._scalr_pname,
-                                                  self._scalr_xname))
-
-        free_fraction = 0.05
-
-        if Flags.get_free_fraction():
-            free_fraction = Flags.get_free_fraction()
-        elif Flags.get_free_total():
-            ntot = Flags.get_free_total()
-
-            # need to get a fraction, so...
-            mtzdump = self._factory.Mtzdump()
-            mtzdump.set_hklin(hklin)
-            mtzdump.dump()
-            nref = mtzdump.get_reflections()
-            free_fraction = float(ntot) / float(nref)
-
-        f = self._factory.Freerflag()
-        f.set_free_fraction(free_fraction)
-        f.set_hklin(hklin)
-        f.set_hklout(hklout)
-        f.complete_free_flag()
-
-        del self._scalr_scaled_reflection_files['mtz_merged']
-
-        self._scalr_scaled_reflection_files['mtz'] = hklout
-
-        FileHandler.record_data_file(hklout)
-
-        if not Flags.get_small_molecule():
-
-            from Toolkit.E4 import E4_mtz
-
-            E4s = E4_mtz(hklout, native = True)
-            twinning_score = E4s.items()[0][1]
-
-            Chatter.write('Overall twinning score: %4.2f' % twinning_score)
-            if twinning_score > 1.9:
-                Chatter.write('Your data do not appear to be twinned')
-            elif twinning_score < 1.6:
-                Chatter.write('Your data appear to be twinned')
-            else:
-                Chatter.write('Ambiguous score (1.6 < score < 1.9)')
-
-            # next have a look for radiation damage...
-            # if more than one wavelength
-
-            if len(self._tmp_scaled_refl_files) > 1 and \
-                   not Flags.get_small_molecule():
-                crd = CCP4InterRadiationDamageDetector()
-
-                crd.set_working_directory(self.get_working_directory())
-
-                crd.set_hklin(hklout)
-
-                if self.get_scaler_anomalous():
-                    crd.set_anomalous(True)
-
-                hklout = os.path.join(self.get_working_directory(), 'temp.mtz')
-                FileHandler.record_temporary_file(hklout)
-
-                crd.set_hklout(hklout)
-
-                status = crd.detect()
-
-                Chatter.write('')
-                Chatter.banner('Local Scaling %s' % self._scalr_xname)
-                for s in status:
-                    Chatter.write('%s %s' % s)
-                Chatter.banner('')
 
         return
 
