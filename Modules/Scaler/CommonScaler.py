@@ -218,6 +218,10 @@ class CommonScaler(Scaler):
         return
 
     def _sort_together_data_xds(self):
+
+        if len(self._sweep_information) == 1:
+             return self._sort_together_data_xds_one_sweep()
+
         max_batches = 0
 
         for epoch in self._sweep_information.keys():
@@ -392,6 +396,109 @@ class CommonScaler(Scaler):
             'Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f' % \
             tuple(ri.get_cell()))
         self._scalr_cell = tuple(ri.get_cell())
+
+        return
+
+    def _sort_together_data_xds_one_sweep(self):
+
+        assert(len(self._sweep_information) == 1)
+
+        epoch = self._sweep_information.keys()[0]
+        hklin = self._sweep_information[epoch]['scaled_reflections']
+
+        if Flags.get_chef():
+            self._sweep_information_to_chef()
+
+        if self.get_scaler_reference_reflection_file():
+            md = self._factory.Mtzdump()
+            md.set_hklin(self.get_scaler_reference_reflection_file())
+            md.dump()
+
+            spacegroups = [md.get_spacegroup()]
+            reindex_operator = 'h,k,l'
+
+        elif self._scalr_input_spacegroup:
+            Debug.write('Assigning user input spacegroup: %s' % \
+                        self._scalr_input_spacegroup)
+            spacegroups = [self._scalr_input_spacegroup]
+            reindex_operator = 'h,k,l'
+
+        else:
+            pointless = self._factory.Pointless()
+            pointless.set_hklin(hklin)
+            pointless.decide_spacegroup()
+
+            FileHandler.record_log_file('%s %s pointless' % \
+                                        (self._scalr_pname,
+                                         self._scalr_xname),
+                                        pointless.get_log_file())
+
+            spacegroups = pointless.get_likely_spacegroups()
+            reindex_operator = pointless.get_spacegroup_reindex_operator()
+
+
+        self._scalr_likely_spacegroups = spacegroups
+        spacegroup = self._scalr_likely_spacegroups[0]
+
+        self._scalr_reindex_operator = reindex_operator
+
+        Chatter.write('Likely spacegroups:')
+        for spag in self._scalr_likely_spacegroups:
+            Chatter.write('%s' % spag)
+
+        Chatter.write(
+            'Reindexing to first spacegroup setting: %s (%s)' % \
+            (spacegroup, reindex_operator))
+
+        hklout = os.path.join(self.get_working_directory(),
+                              '%s_%s_reindex.mtz' % \
+                              (self._scalr_pname, self._scalr_xname))
+
+        FileHandler.record_temporary_file(hklout)
+
+        if reindex_operator == '[h,k,l]':
+             # just assign spacegroup
+
+             from iotbx import mtz
+             from cctbx import sgtbx
+
+             s = sgtbx.space_group(sgtbx.space_group_symbols(
+                  str(spacegroup)).hall())
+
+             m = mtz.object(hklin)
+             m.set_space_group(s).write(hklout)
+             self._scalr_cell = m.crystals()[-1].unit_cell().parameters()
+             Debug.write(
+                 'Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f' % \
+                 tuple(self._scalr_cell))
+             del(m)
+             del(s)
+
+        else:
+             ri = self._factory.Reindex()
+             ri.set_hklin(hklin)
+             ri.set_hklout(hklout)
+             ri.set_spacegroup(spacegroup)
+             ri.set_operator(reindex_operator)
+             ri.reindex()
+
+             Debug.write(
+                 'Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f' % \
+                 tuple(ri.get_cell()))
+             self._scalr_cell = tuple(ri.get_cell())
+
+        hklin = hklout
+        hklout = os.path.join(self.get_working_directory(),
+                              '%s_%s_sorted.mtz' % \
+                              (self._scalr_pname, self._scalr_xname))
+
+        s = self._factory.Sortmtz()
+        s.set_hklin(hklin)
+        s.set_hklout(hklout)
+
+        s.sort(vrset = -99999999.0)
+
+        self._prepared_reflections = hklout
 
         return
 
