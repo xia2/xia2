@@ -50,6 +50,7 @@ from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Citations import Citations
 from Handlers.Flags import Flags
 from Handlers.Executables import Executables
+from Handlers.Files import FileHandler
 
 # helpers
 
@@ -447,6 +448,10 @@ def Mosflm(DriverType = None):
                 self.input('go')
 
             self.close_wait()
+
+            sweep = self.get_indexer_sweep_name()
+            FileHandler.record_log_file(
+                '%s INDEX' % (sweep), self.get_log_file())
 
             output = self.get_all_output()
 

@@ -119,6 +119,7 @@ from lib.bits import auto_logfiler
 from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Citations import Citations
 from Handlers.Flags import Flags
+from Handlers.Files import FileHandler
 from Modules.IceId import IceId
 from Modules.Indexer.MosflmCheckIndexerSolution import \
      mosflm_check_indexer_solution
@@ -384,6 +385,10 @@ def LabelitIndex(DriverType = None, indxr_print = True):
 
             self.start()
             self.close_wait()
+
+            sweep = self.get_indexer_sweep_name()
+            FileHandler.record_log_file(
+                '%s INDEX' % (sweep), self.get_log_file())
 
             # check for errors
             self.check_for_errors()

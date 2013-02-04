@@ -52,6 +52,7 @@ from lib.bits import auto_logfiler, nint
 from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Flags import Flags
 from Handlers.Phil import Phil
+from Handlers.Files import FileHandler
 
 class XDSIndexerII(XDSIndexer):
     '''An extension of XDSIndexer using all available images.'''
@@ -272,6 +273,10 @@ class XDSIndexerII(XDSIndexer):
                 else:
                     raise e
 
+        sweep = self.get_indexer_sweep_name()
+        FileHandler.record_log_file('%s INDEX' % (sweep),
+                                    os.path.join(self.get_working_directory(),
+                                                 'IDXREF.LP'))
         for file in ['SPOT.XDS',
                      'XPARM.XDS']:
             self._data_files[file] = idxref.get_output_data_file(file)
