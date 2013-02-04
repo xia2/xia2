@@ -430,6 +430,14 @@ END PROJECT TS01
 
     <h1>Release Notes</h1>
 
+    <p>Changes since 0.3.5.2: dealing with huge data sets</p>
+    <ul>
+      <li>If single sweep, do not rebatch.</li>
+      <li>Replace CCP4 Mtzdump with CCTBX-powered equivalent.</li>
+      <li>If reindex for changing spacegroup name but not indices
+    (i.e. no REINDEX= card) then use CCTBX-powered replacement.</li>
+    </ul>
+
     <p>Changes since 0.3.5.1: CCP4 patch release</p>
     <ul>
       <li>Resolution limit calculation now delegated to resolutionizer.</li>
