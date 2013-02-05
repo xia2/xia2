@@ -243,9 +243,6 @@ def XDSCorrect(DriverType = None):
             xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
                           self._parallel)
 
-            if Flags.get_no_correct():
-                xds_inp.write('CORRECTIONS=!\n')
-
             # check to see if we are excluding ice rings
             if self._ice != 0:
                 Debug.write('Excluding ice rings')

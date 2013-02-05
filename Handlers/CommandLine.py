@@ -98,7 +98,6 @@ class _CommandLine():
         self._read_3daiir()
         self._read_migrate_data()
         self._read_zero_dose()
-        self._read_no_correct()
         self._read_free_fraction()
         self._read_free_total()
 
@@ -122,11 +121,6 @@ class _CommandLine():
             self._read_cell()
         except:
             raise RuntimeError, self._help_cell()
-
-        try:
-            self._read_first_last()
-        except:
-            raise RuntimeError, self._help_first_last()
 
         try:
             self._read_image()
@@ -261,12 +255,6 @@ class _CommandLine():
                   (self._help_rejection_threshold(), str(e))
 
         try:
-            self._read_i_over_sigma_limit()
-        except exceptions.Exception, e:
-            raise RuntimeError, '%s (%s)' % \
-                  (self._help_i_over_sigma_limit(), str(e))
-
-        try:
             self._read_isigma()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -313,12 +301,6 @@ class _CommandLine():
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
                   (self._help_scale_model(), str(e))
-
-        try:
-            self._read_rmerge_target()
-        except exceptions.Exception, e:
-            raise RuntimeError, '%s (%s)' % \
-                  (self._help_rmerge_target(), str(e))
 
         # FIXME add some consistency checks in here e.g. that there are
         # images assigned, there is a lattice assigned if cell constants
@@ -392,40 +374,6 @@ class _CommandLine():
 
     def get_beam(self):
         return self._beam
-
-    def _read_first_last(self):
-        '''Read first, last images from the command line.'''
-
-        index = -1
-
-        try:
-            index = sys.argv.index('-first_last')
-        except ValueError, e:
-            self._first_last = (-1, -1)
-            return
-
-        if index < 0:
-            raise RuntimeError, 'negative index'
-
-        try:
-            first, last = tuple(map(int, sys.argv[index + 1].split(',')))
-        except IndexError, e:
-            raise RuntimeError, '-first_last first,last'
-
-        self._first_last = first, last
-
-        self._understood.append(index)
-        self._understood.append(index + 1)
-
-        Debug.write('First & last image: %d %d' % self._first_last)
-
-        return
-
-    def _help_first_last(self):
-        return '-first_last first,last'
-
-    def get_first_last(self):
-        return self._first_last
 
     def _help_image(self):
         '''Return a string for explaining the -image method.'''
@@ -923,27 +871,6 @@ class _CommandLine():
     def _help_rejection_threshold(self):
         return '-rejection_threshold N'
 
-    def _read_i_over_sigma_limit(self):
-        try:
-            index = sys.argv.index('-i_over_sigma_limit')
-        except ValueError, e:
-            return
-
-        if index < 0:
-            raise RuntimeError, 'negative index'
-
-        self._understood.append(index)
-        self._understood.append(index + 1)
-
-        Flags.set_i_over_sigma_limit(float(sys.argv[index + 1]))
-        Debug.write('I/sigma limit set to %f' % \
-                    Flags.get_i_over_sigma_limit())
-
-        return
-
-    def _help_i_over_sigma_limit(self):
-        return '-i_over_sigma_limit N'
-
     def _read_isigma(self):
         try:
             index = sys.argv.index('-isigma')
@@ -1167,23 +1094,6 @@ class _CommandLine():
 
         return
 
-    def _read_rmerge_target(self):
-        try:
-            index = sys.argv.index('-rmerge_target')
-        except ValueError, e:
-            return
-
-        if index < 0:
-            raise RuntimeError, 'negative index'
-
-        self._understood.append(index)
-        self._understood.append(index + 1)
-
-        Flags.set_rmerge_target(sys.argv[index + 1])
-        Debug.write('Scaling model set to: %s' % Flags.get_rmerge_target())
-
-        return
-
     def _read_quick(self):
 
         if '-quick' in sys.argv:
@@ -1244,18 +1154,6 @@ class _CommandLine():
             Flags.set_zero_dose(True)
             self._understood.append(sys.argv.index('-zero_dose'))
             Debug.write('Zero-dose mode (XDS/XSCALE) selected')
-        return
-
-    def _read_no_correct(self):
-
-        if '-no_correct' in sys.argv:
-            Flags.set_no_correct(True)
-            self._understood.append(sys.argv.index('-no_correct'))
-            Debug.write('No-correct mode (XDS/XSCALE) selected')
-        elif '-correct' in sys.argv:
-            Flags.set_no_correct(False)
-            self._understood.append(sys.argv.index('-correct'))
-            Debug.write('Yes-correct mode (XDS/XSCALE) selected')
         return
 
     def _read_norefine(self):

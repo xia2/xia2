@@ -84,7 +84,6 @@ class _Flags:
         self._remove = True
         self._zero_dose = False
         self._relax = True
-        self._no_correct = True
         self._profile = True
 
         # and these for the Mosflm / Scala and perhaps XDS implementation
@@ -115,7 +114,6 @@ class _Flags:
 
         # and these are general rejection criteria
         self._rejection_threshold = 1.5
-        self._i_over_sigma_limit = 2.0
         self._isigma = 1.0
         self._misigma = 2.0
         self._completeness = 0.0
@@ -554,13 +552,6 @@ class _Flags:
     def get_rejection_threshold(self):
         return self._rejection_threshold
 
-    def set_i_over_sigma_limit(self, i_over_sigma_limit):
-        self._i_over_sigma_limit = i_over_sigma_limit
-        return
-
-    def get_i_over_sigma_limit(self):
-        return self._i_over_sigma_limit
-
     def set_isigma(self, isigma):
         self._isigma = isigma
         return
@@ -630,12 +621,5 @@ class _Flags:
 
     def get_zero_dose(self):
         return self._zero_dose
-
-    def set_no_correct(self, no_correct):
-        self._no_correct = no_correct
-        return
-
-    def get_no_correct(self):
-        return self._no_correct
 
 Flags = _Flags()
