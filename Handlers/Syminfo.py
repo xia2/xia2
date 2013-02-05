@@ -188,6 +188,8 @@ class _Syminfo():
         except:
             pass
 
+        spacegroup = spacegroup.strip()
+
         # check if this is a disputed spacegroup name
 
         if ':' in spacegroup and 'H' in spacegroup:
