@@ -81,6 +81,8 @@ def main():
     merge(sys.argv[2:], 'summed_????.cbf')
 
     os.rename('summed_0001.cbf', sys.argv[1])
+
+    print 'Merged %d images to %s' % (len(sys.argv[2:]), sys.argv[1])
     
 if __name__ == '__main__':
     main()

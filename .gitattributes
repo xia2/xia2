@@ -123,7 +123,6 @@ Toolkit/cbfdump.py -text
 Toolkit/find_HKL.py -text
 Toolkit/guess_the_atom.py -text
 Toolkit/superdoofus.py -text
-Toolkit/test_pilatus_scan.py -text
 Wrappers/CCP4/Ctruncate.py -text
 Wrappers/CCP4/Doc/Chooch.pdf -text
 Wrappers/CCP4/Doc/Combat.pdf -text
