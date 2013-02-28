@@ -1,0 +1,63 @@
+Help on module CCP4Decorator:
+
+NAME
+    CCP4Decorator
+
+FILE
+    /home/graeme/CVS/XIA/XIACore/Python/Decorators/CCP4Decorator.py
+
+DESCRIPTION
+    # CCP4Decorator.py
+    # Maintained by G.Winter
+    # 25th May 2006
+    # 
+    # A decorator to add hklin and hklout methods to a Driver instance.
+    # This will probably include some other interesting things like
+    # xyzin etc at some point in the future, once such things become 
+    # important.
+    # 
+    # Supported Keywords:
+    # HKLIN input MTZ reflection file (.mtz) 
+    # HLKOUT output MTZ reflection file (.mtz) 
+    # MAPIN input map file (.map) 
+    # MAPOUT output map file (.map) 
+    # XYZIN input coordinate file (.pdb) 
+    # XYZOUT output coordinate file (.pdb) 
+    # 
+    # All accessed via setHklin(hklin) getHklin() etc.
+    # 
+    # List from:
+    # 
+    # http://www.ccp4.ac.uk/dist/html/ccp4.html
+    #
+
+FUNCTIONS
+    CCP4DecoratorFactory(DriverInstance)
+        Create a CCP4 decorated Driver instance - based on the Driver
+        instance which is passed in. This is an implementation of
+        dynamic inheritance. Note well - this produces a new object and
+        leaves the original unchanged.
+
+
+Help on module DecoratorFactory:
+
+NAME
+    DecoratorFactory
+
+FILE
+    /home/graeme/CVS/XIA/XIACore/Python/Decorators/DecoratorFactory.py
+
+DESCRIPTION
+    # DecoratorFactory.py
+    # Maintained by G.Winter
+    # 31st May 2006
+    # 
+    # A factory to provide access to the decorator classes. So far this is
+    # 
+    # "ccp4" -> A CCP4 Decorator
+    #
+
+DATA
+    DecoratorFactory = <DecoratorFactory._DecoratorFactory instance>
+
+

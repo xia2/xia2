@@ -1,2 +1,4 @@
 @PATH=%PATH%;%XIA2_ROOT%\Applications
+@XIA2CORE_ROOT=%XIA2_ROOT%\core
+
 

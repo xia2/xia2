@@ -1,0 +1,520 @@
+Help on module DefaultDriver:
+
+NAME
+    DefaultDriver
+
+FILE
+    /home/graeme/CVS/XIA/XIACore/Python/Driver/DefaultDriver.py
+
+DESCRIPTION
+    # Driver.py
+    # Maintained by G.Winter
+    # 27th March 2006
+    # 
+    # A new "Driver" class for XIA 0.2.x and others.
+    # 
+    # This should be instantiated by a DriverFactory from DriverFactory.py
+    #
+    # Change 24/MAY/06. This implementation is now the default Driver but
+    # without the start method being implemented. This means that this has
+    # all of the getter and setter methods but nothing which depends on the
+    # environment.
+    #
+    # This class should only be inherited from, with the start method
+    # overridden. The other methods should also be overridden - this class
+    # just defines the API.
+    #
+
+CLASSES
+    DefaultDriver
+    
+    class DefaultDriver
+     |  A class to run other programs, specifically from the CCP4 suite
+     |  but also others, to achieve crystallographic processes. This will also
+     |  provide functionality for controlling the job, limited only by the
+     |  needs of portability across Windows, Macintosh OS X and Linux.
+     |  
+     |  Methods defined here:
+     |  
+     |  __del__(self)
+     |  
+     |  __init__(self)
+     |      Initialise the Driver instance.
+     |  
+     |  addCommand_line(self, command_line_token)
+     |      Add a token to the command line.
+     |  
+     |  addInput_file(self, input_file)
+     |  
+     |  addOutput_file(self, output_file)
+     |  
+     |  check(self)
+     |      Check that the running process is ok - this is an optional
+     |      interface which may not be defined for some implementations of
+     |      Driver. Returns True if children are all ok, False otherwise.
+     |  
+     |  check_for_errors(self)
+     |      Work through the standard output of the program and see if
+     |      any standard error conditions (listed in DriverHelper) can be
+     |      found. This will raise an appropriate exception if an error
+     |      is found.
+     |  
+     |  clearCommand_line(self)
+     |      Clear the command line.
+     |  
+     |  close(self)
+     |      Close the standard input channel.
+     |  
+     |  close_wait(self)
+     |      Close the standard input channel and wait for the standard
+     |      output to stop. Note that the results can still be obtained through
+     |      self.get_all_output()...
+     |  
+     |  describe(self)
+     |      Give a short description of what this job will do...
+     |  
+     |  finished(self)
+     |      Check if the program has finished.
+     |  
+     |  getExecutable(self)
+     |      Get the name of the executable.
+     |  
+     |  getTask(self)
+     |      Return a helpful record about what the task is doing.
+     |  
+     |  get_all_output(self)
+     |      Return all of the output of the job.
+     |  
+     |  input(self, record, newline=True)
+     |      Pass record into child program via _input & copying mechanism.
+     |  
+     |  kill(self)
+     |      Kill the child process.
+     |  
+     |  output(self)
+     |      Pull a record from the child program via _output.
+     |  
+     |  setCommand_line(self, command_line)
+     |      Set the command line which wants to be run.
+     |  
+     |  setExecutable(self, executable)
+     |      Set the name of the executable.
+     |  
+     |  setTask(self, task)
+     |      Set a helpful record about what the task is doing.
+     |  
+     |  setWorking_directory(self, working_directory)
+     |      Set the working directory for this process.
+     |  
+     |  start(self)
+     |      Start the sub process - which is to say if interactive start the
+     |      interactive job, if batch start the batch job. This implementation
+     |      will fail because youre not supposed to use it!
+     |  
+     |  status(self)
+     |      Check the status of the child process - implemented by _status
+     |      in other Driver implementations.
+     |  
+     |  write_log_file(self, filename)
+
+
+Help on module DriverFactory:
+
+NAME
+    DriverFactory
+
+FILE
+    /home/graeme/CVS/XIA/XIACore/Python/Driver/DriverFactory.py
+
+DESCRIPTION
+    # DriverFactory.py
+    # Maintained by G.Winter
+    # 24th May 2006
+    # 
+    # A factory for Driver implementations.
+    # 
+    # At the moment this will instantiate
+    # 
+    # SimpleDriver
+    # 
+    # instances only.
+    #
+
+DATA
+    DriverFactory = <DriverFactory._DriverFactory instance>
+
+
+Help on module DriverHelper:
+
+NAME
+    DriverHelper
+
+FILE
+    /home/graeme/CVS/XIA/XIACore/Python/Driver/DriverHelper.py
+
+DESCRIPTION
+    # DriverHelper.py
+    # Maintained by G.Winter
+    # 24th may 2006
+    # 
+    # Helper functions (mostly abstraction layer) for the Driver implementations.
+    # 
+    # Implemented functions:
+    # kill_process(Popen process instance)
+    #
+    # Functions to be implemented:
+    # script_writer(String name, String exec,
+    #               String [] command_line, String [] input)
+    #
+
+FUNCTIONS
+    check_return_code(code)
+        Check the return code for indications of errors.
+    
+    error_abrt(record)
+        Look in record for signs of a abort signal.
+    
+    error_kill(record)
+        Look in record for signs of a killed child process.
+    
+    error_no_program(record)
+        Look in a record (output from program) for signs that this died
+        due to a missing program.
+    
+    error_segv(record)
+        Look in record for signs of a segmentation fault.
+    
+    generate_random_name()
+        Generate a random name to use as a handle for a job.
+    
+    kill_process(process)
+    
+    script_writer(working_directory, script_name, executable, command_line_tokens, input_records)
+        Write a script to run a program for either UNIX or Windows.
+
+DATA
+    RandomNamer = <DriverHelper._RandomNamer instance>
+
+
+Help on module InteractiveDriver:
+
+NAME
+    InteractiveDriver
+
+FILE
+    /home/graeme/CVS/XIA/XIACore/Python/Driver/InteractiveDriver.py
+
+DESCRIPTION
+    # InteractiveDriver.py
+    # Maintained by G.Winter
+    # 24th May 2006
+    # 
+    # An implementation based on the simplest Driver type - the one which 
+    # just wraps the subprocess.Popen class. Note well: this will require 
+    # Python 2.4. However, this adds timeouts and job control to the mix - 
+    # a better use of the interactive interface.
+    # 
+    # Applicability: Windows/OS X/UNIX
+    #
+
+CLASSES
+    DefaultDriver.DefaultDriver
+        InteractiveDriver
+    
+    class InteractiveDriver(DefaultDriver.DefaultDriver)
+     |  Methods defined here:
+     |  
+     |  __init__(self)
+     |  
+     |  check(self)
+     |      Overload the default check method.
+     |  
+     |  close(self)
+     |  
+     |  kill(self)
+     |  
+     |  start(self)
+     |  
+     |  ----------------------------------------------------------------------
+     |  Methods inherited from DefaultDriver.DefaultDriver:
+     |  
+     |  __del__(self)
+     |  
+     |  addCommand_line(self, command_line_token)
+     |      Add a token to the command line.
+     |  
+     |  addInput_file(self, input_file)
+     |  
+     |  addOutput_file(self, output_file)
+     |  
+     |  check_for_errors(self)
+     |      Work through the standard output of the program and see if
+     |      any standard error conditions (listed in DriverHelper) can be
+     |      found. This will raise an appropriate exception if an error
+     |      is found.
+     |  
+     |  clearCommand_line(self)
+     |      Clear the command line.
+     |  
+     |  close_wait(self)
+     |      Close the standard input channel and wait for the standard
+     |      output to stop. Note that the results can still be obtained through
+     |      self.get_all_output()...
+     |  
+     |  describe(self)
+     |      Give a short description of what this job will do...
+     |  
+     |  finished(self)
+     |      Check if the program has finished.
+     |  
+     |  getExecutable(self)
+     |      Get the name of the executable.
+     |  
+     |  getTask(self)
+     |      Return a helpful record about what the task is doing.
+     |  
+     |  get_all_output(self)
+     |      Return all of the output of the job.
+     |  
+     |  input(self, record, newline=True)
+     |      Pass record into child program via _input & copying mechanism.
+     |  
+     |  output(self)
+     |      Pull a record from the child program via _output.
+     |  
+     |  setCommand_line(self, command_line)
+     |      Set the command line which wants to be run.
+     |  
+     |  setExecutable(self, executable)
+     |      Set the name of the executable.
+     |  
+     |  setTask(self, task)
+     |      Set a helpful record about what the task is doing.
+     |  
+     |  setWorking_directory(self, working_directory)
+     |      Set the working directory for this process.
+     |  
+     |  status(self)
+     |      Check the status of the child process - implemented by _status
+     |      in other Driver implementations.
+     |  
+     |  write_log_file(self, filename)
+
+
+Help on module ScriptDriver:
+
+NAME
+    ScriptDriver
+
+FILE
+    /home/graeme/CVS/XIA/XIACore/Python/Driver/ScriptDriver.py
+
+DESCRIPTION
+    # ScriptDriver.py
+    # Maintained by G.Winter
+    # 24th May 2006
+    # 
+    # An implementation of the Driver class which writes scripts, which are run
+    # and the results piped to an output file. The content of this output file
+    # is then returned through the output() method.
+    # 
+    # Applicability: Windows/OS X/UNIX
+    #
+
+CLASSES
+    DefaultDriver.DefaultDriver
+        ScriptDriver
+    
+    class ScriptDriver(DefaultDriver.DefaultDriver)
+     |  Methods defined here:
+     |  
+     |  __init__(self)
+     |  
+     |  check(self)
+     |      NULL overloading of the default check method.
+     |  
+     |  close(self)
+     |      This is where most of the work will be done - in here is
+     |      where the script itself gets written and run, and the output
+     |      file channel opened when the process has finished...
+     |  
+     |  kill(self)
+     |      This is meaningless...
+     |  
+     |  setName(self, name)
+     |      Set the name to something sensible.
+     |  
+     |  start(self)
+     |      This is pretty meaningless in terms of running things through
+     |      scripts...
+     |  
+     |  ----------------------------------------------------------------------
+     |  Methods inherited from DefaultDriver.DefaultDriver:
+     |  
+     |  __del__(self)
+     |  
+     |  addCommand_line(self, command_line_token)
+     |      Add a token to the command line.
+     |  
+     |  addInput_file(self, input_file)
+     |  
+     |  addOutput_file(self, output_file)
+     |  
+     |  check_for_errors(self)
+     |      Work through the standard output of the program and see if
+     |      any standard error conditions (listed in DriverHelper) can be
+     |      found. This will raise an appropriate exception if an error
+     |      is found.
+     |  
+     |  clearCommand_line(self)
+     |      Clear the command line.
+     |  
+     |  close_wait(self)
+     |      Close the standard input channel and wait for the standard
+     |      output to stop. Note that the results can still be obtained through
+     |      self.get_all_output()...
+     |  
+     |  describe(self)
+     |      Give a short description of what this job will do...
+     |  
+     |  finished(self)
+     |      Check if the program has finished.
+     |  
+     |  getExecutable(self)
+     |      Get the name of the executable.
+     |  
+     |  getTask(self)
+     |      Return a helpful record about what the task is doing.
+     |  
+     |  get_all_output(self)
+     |      Return all of the output of the job.
+     |  
+     |  input(self, record, newline=True)
+     |      Pass record into child program via _input & copying mechanism.
+     |  
+     |  output(self)
+     |      Pull a record from the child program via _output.
+     |  
+     |  setCommand_line(self, command_line)
+     |      Set the command line which wants to be run.
+     |  
+     |  setExecutable(self, executable)
+     |      Set the name of the executable.
+     |  
+     |  setTask(self, task)
+     |      Set a helpful record about what the task is doing.
+     |  
+     |  setWorking_directory(self, working_directory)
+     |      Set the working directory for this process.
+     |  
+     |  status(self)
+     |      Check the status of the child process - implemented by _status
+     |      in other Driver implementations.
+     |  
+     |  write_log_file(self, filename)
+
+
+Help on module SimpleDriver:
+
+NAME
+    SimpleDriver
+
+FILE
+    /home/graeme/CVS/XIA/XIACore/Python/Driver/SimpleDriver.py
+
+DESCRIPTION
+    # SimpleDriver.py
+    # Maintained by G.Winter
+    # 24th May 2006
+    # 
+    # An initial implementation of the simplest Driver type - the one which 
+    # just wraps the subprocess.Popen class. Note well: this will require 
+    # Python 2.4. 
+    # 
+    # Applicability: Windows/OS X/UNIX
+    #
+
+CLASSES
+    DefaultDriver.DefaultDriver
+        SimpleDriver
+    
+    class SimpleDriver(DefaultDriver.DefaultDriver)
+     |  Methods defined here:
+     |  
+     |  __init__(self)
+     |  
+     |  check(self)
+     |      Overload the default check method.
+     |  
+     |  close(self)
+     |  
+     |  kill(self)
+     |  
+     |  start(self)
+     |  
+     |  ----------------------------------------------------------------------
+     |  Methods inherited from DefaultDriver.DefaultDriver:
+     |  
+     |  __del__(self)
+     |  
+     |  addCommand_line(self, command_line_token)
+     |      Add a token to the command line.
+     |  
+     |  addInput_file(self, input_file)
+     |  
+     |  addOutput_file(self, output_file)
+     |  
+     |  check_for_errors(self)
+     |      Work through the standard output of the program and see if
+     |      any standard error conditions (listed in DriverHelper) can be
+     |      found. This will raise an appropriate exception if an error
+     |      is found.
+     |  
+     |  clearCommand_line(self)
+     |      Clear the command line.
+     |  
+     |  close_wait(self)
+     |      Close the standard input channel and wait for the standard
+     |      output to stop. Note that the results can still be obtained through
+     |      self.get_all_output()...
+     |  
+     |  describe(self)
+     |      Give a short description of what this job will do...
+     |  
+     |  finished(self)
+     |      Check if the program has finished.
+     |  
+     |  getExecutable(self)
+     |      Get the name of the executable.
+     |  
+     |  getTask(self)
+     |      Return a helpful record about what the task is doing.
+     |  
+     |  get_all_output(self)
+     |      Return all of the output of the job.
+     |  
+     |  input(self, record, newline=True)
+     |      Pass record into child program via _input & copying mechanism.
+     |  
+     |  output(self)
+     |      Pull a record from the child program via _output.
+     |  
+     |  setCommand_line(self, command_line)
+     |      Set the command line which wants to be run.
+     |  
+     |  setExecutable(self, executable)
+     |      Set the name of the executable.
+     |  
+     |  setTask(self, task)
+     |      Set a helpful record about what the task is doing.
+     |  
+     |  setWorking_directory(self, working_directory)
+     |      Set the working directory for this process.
+     |  
+     |  status(self)
+     |      Check the status of the child process - implemented by _status
+     |      in other Driver implementations.
+     |  
+     |  write_log_file(self, filename)
+
+
