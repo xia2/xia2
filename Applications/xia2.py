@@ -16,7 +16,7 @@ import time
 import exceptions
 import traceback
 
-sys.path.append(os.environ['XIA2_ROOT'])
+sys.path.insert(0, os.environ['XIA2_ROOT'])
 
 from Handlers.Streams import Chatter
 from Handlers.Files import cleanup
