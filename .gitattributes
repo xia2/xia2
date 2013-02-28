@@ -147,16 +147,6 @@ cftbx/tests/example-mosflm.mat -text
 cftbx/tests/example-xparm.xds -text
 core/Data/Random/names.txt -text
 core/Data/Random/readme.txt -text
-core/Doc/CCP4NewsletterSummer06/Newsletter.pdf -text
-core/Doc/CCP4NewsletterSummer06/Newsletter.tex -text
-core/Doc/CCP4NewsletterSummer06/UML/Decorator-1.pdf -text
-core/Doc/CCP4NewsletterSummer06/UML/Decorator.mp -text
-core/Doc/CCP4NewsletterSummer06/UML/Driver-1.pdf -text
-core/Doc/CCP4NewsletterSummer06/UML/Driver.mp -text
-core/Doc/CCP4NewsletterSummer06/UML/DriverInterface-1.pdf -text
-core/Doc/CCP4NewsletterSummer06/UML/DriverInterface.mp -text
-core/Doc/X2C.pdf -text
-core/Doc/X2C.tex -text
 core/Python/Background/Background.py -text
 core/Python/Background/__init__.py -text
 core/Python/Decorators/CCP4Decorator.py -text
