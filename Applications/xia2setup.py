@@ -133,7 +133,8 @@ def get_sweep(f):
             known_sweeps[key] = sweeplist
 
     except exceptions.Exception, e:
-        print 'Exception: %s (%s)' % (str(e), f)
+        from Handlers.Streams import Debug
+        Debug.write('Exception: %s (%s)' % (str(e), f))
         # traceback.print_exc(file = sys.stdout)
 
     return
