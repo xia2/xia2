@@ -457,12 +457,15 @@ def failover_dxtbx(image_file):
     fast, slow = map(int, d.get_image_size())
     _f, _s = d.get_pixel_size()
 
-    F = d.get_fast_c()
-    S = d.get_slow_c()
+    F = matrix.col(d.get_fast_axis())
+    S = matrix.col(d.get_slow_axis())
     N = F.cross(S)
 
-    origin = d.get_origin_c()
-    beam = b.get_direction_c().normalize()
+    origin = matrix.col(d.get_origin())
+    beam = matrix.col(b.get_direction())
+
+    # FIXME detector has methods to compute the beam centre now...
+    
     centre = - (origin - origin.dot(N) * N)
 
     x = centre.dot(F)
