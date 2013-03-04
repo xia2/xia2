@@ -170,7 +170,7 @@ class XSweep():
         with beam centre optionally defined.'''
 
         # + check the wavelength is an XWavelength object
-        #   raise an exception if not...
+        #   raise an exception if not... or not...
 
         if not wavelength.__class__.__name__ == 'XWavelength':
             pass
@@ -181,7 +181,7 @@ class XSweep():
         directory = expand_path(directory)
 
         # bug # 2274 - maybe migrate the data to a local disk (this
-        # will depend if el user has added -migrate_data to the cl)
+        # will depend if the user has added -migrate_data to the cl)
 
         directory = FileHandler.migrate(directory)
 

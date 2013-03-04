@@ -66,10 +66,6 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Driver.DriverFactory import DriverFactory
 from Handlers.Flags import Flags
 
-# replacement dxtbx for rigaku saturns sometimes
-from dxtbx.format.Registry import Registry
-from dxtbx.model.detector_helpers_types import detector_helpers_types
-
 def get_trust_timestamps():
     return Flags.get_trust_timestamp()
 
@@ -431,6 +427,10 @@ last_format = None
 
 def failover_dxtbx(image_file):
     '''Failover to use the dxtbx to read the image headers...'''
+
+    # replacement dxtbx for rigaku saturns sometimes
+    from dxtbx.format.Registry import Registry
+    from dxtbx.model.detector_helpers_types import detector_helpers_types
 
     global last_format
 
