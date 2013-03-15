@@ -300,7 +300,7 @@ def print_sweeps(out = sys.stdout):
         sweeps.sort()
         for s in sweeps:
 
-            # require at least 10 images to represent a sweep...
+            # require at least n images to represent a sweep...
 
             if len(s.get_images()) < Flags.get_min_images():
                 continue
@@ -321,8 +321,15 @@ def print_sweeps(out = sys.stdout):
 
             if Flags.get_start_end():
                 start, end = Flags.get_start_end()
-                assert(not (start < min(s.get_images())))
-                assert(not (end > max(s.get_images())))
+
+                if start < min(s.get_images()):
+                    raise RuntimeError, 'requested start %d < %d' % \
+                          (start, min(s.get_images()))
+
+                if end > max(s.get_images()):
+                    raise RuntimeError, 'requested end %d > %d' % \
+                          (end, max(s.get_images()))
+
                 out.write('START_END %d %d\n' % (start, end))
             else:
                 out.write('START_END %d %d\n' % (min(s.get_images()),

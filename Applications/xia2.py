@@ -304,9 +304,9 @@ if __name__ == '__main__':
         sys.exit()
 
     try:
-        xia2()
-        
+        xia2()    
         Chatter.write('Status: normal termination')
+        
     except exceptions.Exception, e:
         traceback.print_exc(file = open('xia2.error', 'w'))
         Chatter.write('Status: error "%s"' % str(e))
