@@ -203,6 +203,9 @@ def find_matching_images(template, directory):
         '\\#' * length, '([0-9]{%d})' % length)
     regexp = re.compile(regexp_text)
 
+    # FIXME there are faster ways of determining this - by generating the lists
+    # of possible images. That said, the code for this is now in dxtbx...
+
     images = []
 
     for f in files:

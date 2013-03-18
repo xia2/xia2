@@ -439,7 +439,7 @@ def failover_dxtbx(image_file):
     else:
         iformat = Registry.find(image_file)
 
-    if iformat.understand(image_file) < 2:
+    if not iformat.understand(image_file):
         raise RuntimeError, 'image file %s not understood by dxtbx' % \
               image_file
 
@@ -480,16 +480,18 @@ def failover_dxtbx(image_file):
     header['phi_end'] = sum(s.get_oscillation())
     header['pixel'] = _f, _s
     header['beam'] = x, y
-    header['epoch'] = s.get_image_epoch(min(s.get_epochs()))
-    header['date'] = s.get_image_time(min(s.get_epochs()))
+    header['epoch'] = s.get_image_epoch(s.get_image_range()[0])
+    header['date'] = s.get_image_time(s.get_image_range()[0])
     header['wavelength'] = b.get_wavelength()
     header['size'] = fast, slow
     if hasattr(i, 'detector_class'):
         header['detector_class'] = i.detector_class
         header['detector'] = i.detector
     else:
+
         detector_type = detector_helpers_types.get(
-            d.get_sensor(), fast, slow, int(1000 * _f), int(1000 * _s))
+            d.get_type(), fast, slow, int(1000 * _f), int(1000 * _s))
+
         header['detector_class'] = detector_type.replace('-', ' ')
         header['detector'] = detector_type.split('-')[0]
 
@@ -511,6 +513,8 @@ def Diffdump(DriverType = None):
             self._image = None
             self._header = { }
 
+            self._previous_crashed = False
+            
             return
 
         def set_image(self, image):
@@ -613,12 +617,18 @@ def Diffdump(DriverType = None):
             if os.path.getsize(self._image) == 0:
                 raise RuntimeError, 'empty file: %s' % self._image
 
+            if not self._previous_crashed:
+                try:
+                    return self.readheader_diffdump()
+                except exceptions.Exception, e:
+                    self._previous_crashed = True
+
             try:
-                return self.readheader_diffdump()
-            except exceptions.Exception, e:
                 self._header = failover_dxtbx(self._image)
                 HeaderCache.put(self._image, self._header)
                 return copy.deepcopy(self._header)
+            except exceptions.Exception, e:
+                traceback.print_exc(file = sys.stdout)
 
         def readheader_diffdump(self):
             '''Read the image header.'''

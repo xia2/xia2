@@ -45,11 +45,9 @@ def SweepFactory(template, directory, beam = None):
 
     headers = { }
 
+    dd = Diffdump()
     for i in images:
-        image = template_directory_number2image(template,
-                                                directory,
-                                                i)
-        dd = Diffdump()
+        image = template_directory_number2image(template, directory, i)
         dd.set_image(image)
         headers[i] = dd.readheader()
 
