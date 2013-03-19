@@ -471,6 +471,9 @@ def failover_dxtbx(image_file):
     x = centre.dot(F)
     y = centre.dot(S)
 
+    header['fast_direction'] = F.elems
+    header['slow_direction'] = S.elems
+    header['rotation_axis'] = g.get_rotation_axis()
     header['exposure_time'] = s.get_exposure_time()
     header['distance'] = math.fabs(origin.dot(N))
     header['two_theta'] = - beam.angle(N, deg = True)
@@ -479,7 +482,11 @@ def failover_dxtbx(image_file):
     header['phi_width'] = s.get_oscillation()[1]
     header['phi_end'] = sum(s.get_oscillation())
     header['pixel'] = _f, _s
-    header['beam'] = x, y
+
+    # FIXME this is very bad as it relates to teh legacy backwards Mosflm
+    # beam centre standard still... FIXME-SCI-948
+
+    header['beam'] = y, x
     header['epoch'] = s.get_image_epoch(s.get_image_range()[0])
     header['date'] = s.get_image_time(s.get_image_range()[0])
     header['wavelength'] = b.get_wavelength()

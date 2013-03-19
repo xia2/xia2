@@ -220,6 +220,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
         'rigaku saturn 92':True,
         'rigaku saturn 944':True,
         'rigaku saturn 724':True,
+        'rigaku saturn a200':True,
         'raxis IV':True,
         'NOIR1':True}
 
@@ -284,7 +285,17 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
            math.fabs(header['two_theta']) > 1.0:
         raise RuntimeError, 'two theta offset not supported for %s' % detector
 
-    if detector in ['raxis', 'saturn']:
+    if 'fast_direction' in header and 'slow_direction' in header:
+        fast_direction = tuple([-1 * d for d in header['fast_direction']])
+        slow_direction = tuple([d for d in header['slow_direction']])
+
+        result.append('DIRECTION_OF_DETECTOR_X-AXIS=%f %f %f' % \
+                      fast_direction)
+
+        result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%f %f %f' % \
+                      slow_direction)
+
+    elif detector in ['raxis', 'saturn']:
 
         result.append(
             'DIRECTION_OF_DETECTOR_X-AXIS=%s' % \
