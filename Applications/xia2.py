@@ -16,7 +16,13 @@ import time
 import exceptions
 import traceback
 
+if not os.environ.has_key('XIA2_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'
+
 sys.path.insert(0, os.environ['XIA2_ROOT'])
+
+if not 'XIA2CORE_ROOT' in os.environ:
+    os.environ['XIA2CORE_ROOT'] = os.path.join(os.environ['XIA2_ROOT'], 'core')
 
 from Handlers.Streams import Chatter
 from Handlers.Files import cleanup

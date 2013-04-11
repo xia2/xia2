@@ -667,8 +667,10 @@ def Diffdump(DriverType = None):
                     return copy.deepcopy(self._header)
                 pass
 
+            self.clear_command_line()
             self.add_command_line(self._image)
             self.start()
+
             self.close_wait()
 
             # why is this commented out?
