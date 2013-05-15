@@ -96,6 +96,7 @@ Toolkit/PlayPen/rumble.py -text
 Toolkit/PlayPen/scala2gnuplot.py -text
 Toolkit/PlayPen/scale-play.py -text
 Toolkit/PlayPen/spot2q.py -text
+Toolkit/PlayPen/test_scaling.py -text
 Toolkit/PlayPen/unmerged_fa.py -text
 Toolkit/PlayPen/ward_cluster.py -text
 Toolkit/PlayPen/x1334.lp -text
