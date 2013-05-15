@@ -243,12 +243,12 @@ class Scaler(object):
 
         self.optimizer = dssa(dimension = self.n,
                               matrix = self.starting_matrix,
-                              evaluator = self)
+                              evaluator = self,
+                              further_opt = True)
 
         self.x = self.optimizer.get_solution()
 
         print 'Scaling took %d function evaluations' % self._target_evaluations
-
 
         return
         
