@@ -233,7 +233,7 @@ class Scaler(object):
     def scale(self):
         '''Find scale factors s, b that minimise target function.'''
 
-        from direct_search_simulated_annealing import dssa
+        from scitbx.direct_search_simulated_annealing import dssa
         from scitbx.array_family import flex
 
         self.n = 2 * len(self._frame_sizes)
