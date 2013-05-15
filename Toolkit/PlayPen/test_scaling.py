@@ -195,18 +195,7 @@ class Scaler(object):
         return self._imean
 
     def get_scaled_intensities(self):
-        scaled_intensities = []
-        j = 0
-
-        for f, fs in enumerate(self._frame_sizes):
-            for k in range(fs):
-                hkl = self._indices[j]
-                g_hl = self.scale_factor(f, hkl)
-                scaled_intensities.append((self._intensities[j] / g_hl))
-
-                j += 1
-
-        return scaled_intensities
+        return self._scaled_intensities
                 
     def target(self, vector):
 
@@ -277,9 +266,53 @@ class Scaler(object):
                                          evaluator = self,
                                          tolerance = 1.e-3)
 
+        # save the best scale factors
+             
         self.x = self.optimizer.get_solution()
 
-        return
+        self._scales_s = flex.double(1, 0.0)
+        self._scales_s.extend(self.x[:len(self._frame_sizes) - 1])
+        self._scales_b = flex.double(1, 0.0)
+        self._scales_b.extend(self.x[len(self._frame_sizes) - 1:])
+        
+        # scale the raw intensity data for later reference
+
+        scaled_intensities = []
+        j = 0
+
+        for f, fs in enumerate(self._frame_sizes):
+            for k in range(fs):
+                hkl = self._indices[j]
+                g_hl = self.scale_factor(f, hkl)
+                scaled_intensities.append((self._intensities[j] / g_hl))
+
+                j += 1
+
+        self._scaled_intensities = scaled_intensities
+
+        # now compute reflections with > 1 observation as starting point for
+        # computing the Rmerge
+
+        from collections import defaultdict
+        multiplicity = defaultdict(list)
+
+        for j, i in enumerate(self._indices):
+            multiplicity[i].append(j)
+
+        rmerge_n = 0.0
+        rmerge_d = 0.0
+
+        import math
+
+        for i in multiplicity:
+            if len(multiplicity[i]) == 1:
+                continue
+            imean = self._imean[i]
+            for j in multiplicity[i]:
+                rmerge_n += math.fabs(scaled_intensities[j] - imean)
+                rmerge_d += imean
+      
+        return rmerge_n / rmerge_d
         
 class Frame:
     '''A class to represent one set of intensity measurements from X-fel
@@ -380,12 +413,23 @@ class Frame:
         raw_sigmas = self._raw_sigmas + other.get_raw_sigmas()
         frame_sizes = self._frame_sizes + other.get_frame_sizes()
 
+        # FIXME in here should provide previous scale factors as a
+        # starting point - ideally could roughly scale the two sets of
+        # scale factors together first but maybe not worth the effort
+
+        # sometimes (rarely) the scaling just does not work: accept this and
+        # move on, just act as if nothing was merged - the frame will not be
+        # emptied so there is no cost.
+
         try:
             scaler = Scaler(self._unit_cell, raw_indices,
                             raw_intensities, raw_sigmas, frame_sizes)
-            scaler.scale()
+            rmerge = scaler.scale()
         except ZeroDivisionError, zde:
-            return
+            return None
+
+        # and then in here I should grab the refined scale factors and
+        # save them
 
         self._raw_indices = raw_indices
         self._raw_intensities = raw_intensities
@@ -401,7 +445,7 @@ class Frame:
 
         other.empty()
 
-        return
+        return rmerge
 
     def merge_old(self, other):
 
@@ -646,7 +690,9 @@ def find_merge_common_images(args):
         joins.reverse()
         
         for j2, j1 in joins:
-            frames[j1].merge(frames[j2])
+            rmerge = frames[j1].merge(frames[j2])
+            if rmerge:
+                print 'R: %4d %4d %6.3f' % (j1, j2, rmerge)
 
         continue
 

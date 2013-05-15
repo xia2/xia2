@@ -174,8 +174,14 @@ class Scaler(object):
             for k in range(fs):
                 hkl = self._indices[j]
                 g_hl = self.scale_factor(f, hkl)
-                imean_s_n[hkl] += self._intensities[j] * self._weights[j] * g_hl
-                imean_s_d[hkl] += self._weights[j] * g_hl * g_hl
+                n = self._intensities[j] * self._weights[j] * g_hl
+                d = self._weights[j] * g_hl * g_hl
+
+                # only include terms with non-zero weight
+                
+                if d > 0:
+                    imean_s_n[hkl] += n
+                    imean_s_d[hkl] += d
 
                 j += 1
             
@@ -244,6 +250,7 @@ class Scaler(object):
         self.optimizer = dssa(dimension = self.n,
                               matrix = self.starting_matrix,
                               evaluator = self,
+                              tolerance = 1.e-6,
                               further_opt = True)
 
         self.x = self.optimizer.get_solution()
