@@ -91,6 +91,7 @@ Toolkit/PlayPen/mosflm_matrix_things.py -text
 Toolkit/PlayPen/mosflm_rms.py -text
 Toolkit/PlayPen/mtz2nxs.py -text
 Toolkit/PlayPen/nwrite.c -text
+Toolkit/PlayPen/ok_try_pairs_of_pairs.py -text
 Toolkit/PlayPen/parse-integrate-scale-factors.py -text
 Toolkit/PlayPen/rexinfo.py -text
 Toolkit/PlayPen/rooster.py -text

@@ -264,7 +264,7 @@ class Scaler(object):
             self.optimizer = simplex_opt(dimension = self.n,
                                          matrix = self.starting_matrix,
                                          evaluator = self,
-                                         tolerance = 1.e-3)
+                                         tolerance = 1.e-6)
 
         # save the best scale factors
              
@@ -331,7 +331,7 @@ class Frame:
         self._frame_sizes = [len(indices)]
 
         self._kb = None
-
+        
         return
 
     def empty(self):
@@ -427,6 +427,13 @@ class Frame:
             scaler = Scaler(self._unit_cell, raw_indices,
                             raw_intensities, raw_sigmas, frame_sizes)
             rmerge = scaler.scale()
+
+            # apply arbitrary cut-off on scaling: R > 0 and R < 1
+            if rmerge > 1:
+                return None
+            if rmerge < 0:
+                return None
+            
         except ZeroDivisionError, zde:
             return None
 
@@ -514,10 +521,8 @@ class Frame:
                 y_obs.append(math.log(i))
                 weights.append((i / s) ** 2)
 
-        _x = sum([w * x for w, x in zip(weights, x_obs)]) / \
-            sum(weights)
-        _y = sum([w * y for w, y in zip(weights, y_obs)]) / \
-            sum(weights)
+        _x = sum(x_obs) / len(x_obs)
+        _y = sum(y_obs) / len(y_obs)
 
         B = sum([w * (x - _x) * (y - _y) for w, x, y in \
                  zip(weights, x_obs, y_obs)]) / \
@@ -529,6 +534,28 @@ class Frame:
 
         return s, B
 
+    def hand_pairs(self):
+        '''Find # reflection pairs matched by hand inversion operation h, l, k.
+        N.B. this does have determinant -1 but also maps reflections asu onto
+        self.'''
+
+        unique_indices = set(self._raw_indices)
+
+        from cctbx.sgtbx import rt_mx, change_of_basis_op
+
+        hp = 0
+
+        oh = change_of_basis_op(rt_mx('h,l,k'))
+
+        for ui in unique_indices:
+            oh_ui = oh.apply(ui)
+            if oh_ui == ui:
+                continue
+            if oh_ui in unique_indices:
+                hp += 1
+
+        return hp / 2
+
     def scale_to_kb(self, k, B):
         '''Scale this set to match input ln(k), B.'''
 
@@ -537,16 +564,12 @@ class Frame:
 
         import math
 
-        results = []
-
         for j, hkl in enumerate(self._raw_indices):
-            ds_sq = self._unit_cell.d_star_sq(hkl)
-            S = math.exp(dk + dB * ds_sq)
+            S = math.exp(dk + dB * self._unit_cell.d_star_sq(hkl))
             self._raw_intensities[j] *= S
             self._raw_sigmas[j] *= S
-            results.append((ds_sq, self._raw_intensities[j]))
 
-        return results
+        return
 
 def frame_numbers(frames):
     result = { }
@@ -664,6 +687,10 @@ def find_merge_common_images(args):
 
         frames.append(Frame(uc, indices, intensities, sigmas))
 
+    cycle = 0
+
+    total_nref = sum([len(f.get_indices()) for f in frames])
+
     # pre-scale the data - first determine average ln(k), B; then apply
 
     kbs = [f.kb() for f in frames]
@@ -671,31 +698,108 @@ def find_merge_common_images(args):
     mn_k = sum([kb[0] for kb in kbs]) / len(kbs)
     mn_B = sum([kb[1] for kb in kbs]) / len(kbs)
 
-    for j, f in enumerate(frames):
-        s_i = f.scale_to_kb(mn_k, mn_B)
-        fout = open('frame-s-i-%05d.dat' % j, 'w')
-        for s, i in s_i:
-            fout.write('%f %f\n' % (s, i))
-        fout.close()
-
-    from collections import defaultdict
-
-    hist = defaultdict(int)
-
-    fout = open('kb.dat', 'w')
-
-    for j, f in enumerate(frames):
-        kb = f.kb()
-        fout.write('%4d %6.3f %6.3f\n' % (j, kb[0], kb[1]))
-        hist[int(round(kb[1]))] += 1
-
-    fout.close()
-
-    for b in sorted(hist):
-        print b, hist[b]
-
-
+    for f in frames:
+        f.scale_to_kb(mn_k, mn_B)
     
+    while True:
+
+        print 'Analysing %d frames' % len(frames)
+        print 'Cycle %d' % cycle
+        cycle += 1
+
+        print 'Power spectrum'
+        fn = frame_numbers(frames)
+        for j in sorted(fn):
+            print '%4d %4d' % (j, fn[j])
+            
+        nref_cycle = sum([len(f.get_indices()) for f in frames])
+        assert(nref_cycle == total_nref)
+
+        common_reflections = numpy.zeros((len(frames), len(frames)),
+                                         dtype = numpy.short)
+
+        obs = { } 
+
+        from cctbx.sgtbx import rt_mx, change_of_basis_op
+        oh = change_of_basis_op(rt_mx('h,l,k'))
+
+        for j, f in enumerate(frames):
+            indices = set(f.get_indices())
+            for i in indices:
+                _i = tuple(i)
+                if not _i in obs:
+                    obs[_i] = []
+                obs[_i].append(j)
+
+        # work through unique observations ignoring those which include no
+        # hand information
+ 
+        for hkl in obs:
+            if hkl == oh.apply(hkl):
+                continue
+            obs[hkl].sort()
+            for j, f1 in enumerate(obs[hkl][:-1]):
+                for f2 in obs[hkl][j + 1:]:
+                    common_reflections[(f1, f2)] += 1
+
+        cmn_rfl_list = []
+
+        for f1 in range(len(frames)):
+            for f2 in range(f1 + 1, len(frames)):
+                if common_reflections[(f1, f2)] > 20:
+                    cmn_rfl_list.append((common_reflections[(f1, f2)], f1, f2))
+
+        cmn_rfl_list.sort()
+        cmn_rfl_list.reverse()
+    
+        joins = []
+        used = []
+    
+        for n, f1, f2 in cmn_rfl_list:
+
+            if f1 in used or f2 in used:
+                continue
+            
+            _cc = frames[f1].cc(frames[f2])
+
+            # really only need to worry about f2 which will get merged...
+            # merging multiple files together should be OK provided they are
+            # correctly sorted (though the order should not matter anyhow?)
+            # anyhow they are sorted anyway... ah as f2 > f1 then just sorting
+            # the list by f2 will make sure the data cascase correctly.
+
+            # p-value very small for cc > 0.75 for > 20 observations - necessary
+            # as will be correlated due to Wilson curves
+
+            if _cc[0] > 20 and _cc[1] > 0.75:
+                print '%4d %.3f' % _cc, f1, f2
+                joins.append((f2, f1))
+                # used.append(f1)
+                used.append(f2)
+
+        if not joins:
+            print 'No pairs found'
+            break
+
+        joins.sort()
+        joins.reverse()
+        
+        for j2, j1 in joins:
+            rmerge = frames[j1].merge(frames[j2])
+            if rmerge:
+                print 'R: %4d %4d %6.3f' % (j1, j2, rmerge)
+            else:
+                print 'R: %4d %4d ------' % (j1, j2)
+                
+        continue
+
+    frames.sort()
+
+    print 'Biggest few: #frames; #unique refl'
+    j = -1
+    while frames[j].get_frames() > 1:
+        print frames[j].get_frames(), frames[j].get_unique_indices()
+        j -= 1
 
     return
 
