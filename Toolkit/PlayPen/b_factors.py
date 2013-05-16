@@ -512,8 +512,10 @@ class Frame:
                 y_obs.append(math.log(i))
                 weights.append((i / s) ** 2)
 
-        _x = sum(x_obs) / len(x_obs)
-        _y = sum(y_obs) / len(y_obs)
+        _x = sum([w * x for w, x in zip(weights, x_obs)]) / \
+            sum(weights)
+        _y = sum([w * y for w, y in zip(weights, y_obs)]) / \
+            sum(weights)
 
         B = sum([w * (x - _x) * (y - _y) for w, x, y in \
                  zip(weights, x_obs, y_obs)]) / \
