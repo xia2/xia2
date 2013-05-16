@@ -85,6 +85,7 @@ Toolkit/PlayPen/empty_cbf.py -text
 Toolkit/PlayPen/erzatz_symmetry.py -text
 Toolkit/PlayPen/find_right_hand_op.py -text
 Toolkit/PlayPen/gxparm.xds -text
+Toolkit/PlayPen/hand.py -text
 Toolkit/PlayPen/lattice_play.py -text
 Toolkit/PlayPen/mosflm_matrix_things.py -text
 Toolkit/PlayPen/mosflm_rms.py -text
