@@ -35,7 +35,8 @@ def generate_asu(unit_cell_constants, space_group_number, dmin):
 
     from scitbx import matrix
 
-    other_hand = change_of_basis_op(rt_mx('k,h,-l'))
+    other_hand = change_of_basis_op(rt_mx('-k,-h,l'))
+    # other_hand = change_of_basis_op(rt_mx('-h,-k,l'))
 
     from collections import defaultdict
 
