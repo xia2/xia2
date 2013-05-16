@@ -75,6 +75,7 @@ Toolkit/PlayPen/__init__.py -text
 Toolkit/PlayPen/aimless2gnuplot.py -text
 Toolkit/PlayPen/analyse_scale_xfel_properly.py -text
 Toolkit/PlayPen/analyse_spot_xds.py -text
+Toolkit/PlayPen/b_factors.py -text
 Toolkit/PlayPen/cc.py -text
 Toolkit/PlayPen/centring.py -text
 Toolkit/PlayPen/compare_ub.py -text
