@@ -330,6 +330,8 @@ class Frame:
         self._frames = 1
         self._frame_sizes = [len(indices)]
 
+        self._kb = None
+        
         return
 
     def empty(self):
@@ -494,6 +496,74 @@ class Frame:
         return len(set(self._raw_indices).intersection(
                 set(other.get_indices())))
 
+    def kb(self):
+        '''Compute estimates for the overall scale factor and B factor by
+        linear regression of the intensity observations. N.B. fitting
+        ln(I) on baseline of 1/d^2 '''
+
+        import math
+
+        x_obs = []
+        y_obs = []
+        weights = []
+
+        for j, i in enumerate(self._raw_intensities):
+            s = self._raw_sigmas[j]
+            if i > s:
+                x_obs.append(self._unit_cell.d_star_sq(self._raw_indices[j]))
+                y_obs.append(math.log(i))
+                weights.append((i / s) ** 2)
+
+        _x = sum(x_obs) / len(x_obs)
+        _y = sum(y_obs) / len(y_obs)
+
+        B = sum([w * (x - _x) * (y - _y) for w, x, y in \
+                 zip(weights, x_obs, y_obs)]) / \
+            sum([w * (x - _x) ** 2 for w, x in zip(weights, x_obs)])
+
+        s = _y - B * _x
+
+        self._kb = s, B
+
+        return s, B
+
+    def hand_pairs(self):
+        '''Find # reflection pairs matched by hand inversion operation h, l, k.
+        N.B. this does have determinant -1 but also maps reflections asu onto
+        self.'''
+
+        unique_indices = set(self._raw_indices)
+
+        from cctbx.sgtbx import rt_mx, change_of_basis_op
+
+        hp = 0
+
+        oh = change_of_basis_op(rt_mx('h,l,k'))
+
+        for ui in unique_indices:
+            oh_ui = oh.apply(ui)
+            if oh_ui == ui:
+                continue
+            if oh_ui in unique_indices:
+                hp += 1
+
+        return hp / 2
+
+    def scale_to_kb(self, k, B):
+        '''Scale this set to match input ln(k), B.'''
+
+        dk = k - self._kb[0]
+        dB = B - self._kb[1]
+
+        import math
+
+        for j, hkl in enumerate(self._raw_indices):
+            S = math.exp(dk + dB * self._unit_cell.d_star_sq(hkl))
+            self._raw_intensities[j] *= S
+            self._raw_sigmas[j] *= S
+
+        return
+
 def frame_numbers(frames):
     result = { }
 
@@ -614,6 +684,16 @@ def find_merge_common_images(args):
 
     total_nref = sum([len(f.get_indices()) for f in frames])
 
+    # pre-scale the data - first determine average ln(k), B; then apply
+
+    kbs = [f.kb() for f in frames]
+
+    mn_k = sum([kb[0] for kb in kbs]) / len(kbs)
+    mn_B = sum([kb[1] for kb in kbs]) / len(kbs)
+
+    for f in frames:
+        f.scale_to_kb(mn_k, mn_B)
+    
     while True:
 
         print 'Analysing %d frames' % len(frames)
@@ -693,7 +773,9 @@ def find_merge_common_images(args):
             rmerge = frames[j1].merge(frames[j2])
             if rmerge:
                 print 'R: %4d %4d %6.3f' % (j1, j2, rmerge)
-
+            else:
+                print 'R: %4d %4d ------' % (j1, j2)
+                
         continue
 
     frames.sort()

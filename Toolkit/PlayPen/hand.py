@@ -546,7 +546,6 @@ class Frame:
 
         return hp / 2
         
-
 def frame_numbers(frames):
     result = { }
 

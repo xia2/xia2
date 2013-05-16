@@ -330,6 +330,8 @@ class Frame:
         self._frames = 1
         self._frame_sizes = [len(indices)]
 
+        self._kb = None
+
         return
 
     def empty(self):
@@ -523,7 +525,25 @@ class Frame:
 
         s = _y - B * _x
 
+        self._kb = s, B
+
         return s, B
+
+    def scale_to_kb(self, k, B):
+        '''Scale this set to match input ln(k), B.'''
+
+        dk = k - self._kb[0]
+        dB = B - self._kb[1]
+
+        import math
+
+        for j, hkl in enumerate(self._raw_indices):
+            S = math.exp(dk + dB * self._unit_cell.d_star_sq(hkl))
+            self._raw_intensities[j] *= S
+            self._raw_sigmas[j] *= S
+
+        return
+
 
 def frame_numbers(frames):
     result = { }
@@ -640,6 +660,16 @@ def find_merge_common_images(args):
         sigmas = sigma_i[s:e]
 
         frames.append(Frame(uc, indices, intensities, sigmas))
+
+    # pre-scale the data - first determine average ln(k), B; then apply
+
+    kbs = [f.kb() for f in frames]
+
+    mn_k = sum([kb[0] for kb in kbs]) / len(kbs)
+    mn_B = sum([kb[1] for kb in kbs]) / len(kbs)
+
+    for f in frames:
+        f.scale_to_kb(mn_k, mn_B)
 
     from collections import defaultdict
 
