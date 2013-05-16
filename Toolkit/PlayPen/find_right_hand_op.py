@@ -25,10 +25,10 @@ def generate_asu(unit_cell_constants, space_group_number, dmin):
                 
                 if uc.d((h, k, l)) < dmin:
                     continue
-                
-                indices.append((h, k, l))
 
-    
+                if not sg.is_sys_absent((h, k, l)):
+                    indices.append((h, k, l))
+
     ms = miller.set(xs, indices, False).map_to_asu()
 
     indices = set(ms.indices())
@@ -44,12 +44,19 @@ def generate_asu(unit_cell_constants, space_group_number, dmin):
     for i in indices:
         if i[0] == i[1] or i[1] == i[2] or i[2] == i[0]:
             continue
-        
+
+        found = False
+
         for smx in sg.smx():
             op = change_of_basis_op(smx) * other_hand
             j = op.apply(i)
             if j in indices:
                 mappings[op.as_hkl()] += 1
+                found = True
+
+        if not found:
+            print i
+            print 1/0
 
     for m in mappings:
         print m, mappings[m]
