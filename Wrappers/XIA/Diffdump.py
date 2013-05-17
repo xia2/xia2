@@ -488,7 +488,7 @@ def failover_dxtbx(image_file):
 
     header['beam'] = y, x
     header['epoch'] = s.get_image_epoch(s.get_image_range()[0])
-    header['date'] = s.get_image_time(s.get_image_range()[0])
+    header['date'] = time.ctime(header['epoch'])
     header['wavelength'] = b.get_wavelength()
     header['size'] = fast, slow
     if hasattr(i, 'detector_class'):
