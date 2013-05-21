@@ -30,6 +30,7 @@ from Wrappers.XDS.XDSXycorr import XDSXycorr as _Xycorr
 from Wrappers.XDS.XDSInit import XDSInit as _Init
 from Wrappers.XDS.XDSColspot import XDSColspot as _Colspot
 from Wrappers.XDS.XDSIdxref import XDSIdxref as _Idxref
+from Wrappers.XDS.XDS import xds_read_xparm
 
 from Wrappers.XIA.Diffdump import Diffdump
 
@@ -606,13 +607,15 @@ class XDSIndexer(FrameProcessor,
 
         # first parse the numbers from the IDXREF XPARM file
 
-        xparm = self._data_files['XPARM.XDS']
-        values = map(float, xparm.split())
+        xparm_dict = xds_read_xparm(os.path.join(self.get_working_directory(),
+                                                 'XPARM.XDS'))
 
-        distance = values[14]
-        wavelength = values[6]
-        pixel = values[12], values[13]
-        beam = values[15], values[16]
+        
+
+        distance = xparm_dict['distance']
+        wavelength = xparm_dict['wavelength']
+        pixel = xparm_dict['px'], xparm_dict['py']
+        beam = xparm_dict['ox'], xparm_dict['oy']
 
         if distance < 0.0:
             distance *= -1

@@ -320,9 +320,23 @@ class Frame:
 
     def __init__(self, unit_cell, indices, intensities, sigmas):
         self._unit_cell = unit_cell
-        self._raw_indices = list(indices)
-        self._raw_intensities = list(intensities)
-        self._raw_sigmas = list(sigmas)
+
+        _indices = []
+        _intensities = []
+        _sigmas = []
+
+        # limit only to relections with 500 counts or more
+
+        for j, i in enumerate(intensities):
+            if i < 500:
+                continue
+            _indices.append(indices[j])
+            _intensities.append(intensities[j])
+            _sigmas.append(sigmas[j])
+
+        self._raw_indices = _indices
+        self._raw_intensities = _intensities
+        self._raw_sigmas = _sigmas
 
         self._intensities = intensities
         self._sigmas = sigmas
@@ -544,7 +558,7 @@ class Frame:
             S = math.exp(dk + dB * ds_sq)
             self._raw_intensities[j] *= S
             self._raw_sigmas[j] *= S
-            results.append((ds_sq, self._raw_intensities[j]))
+            results.append((ds_sq, self._raw_intensities[j], self._raw_sigmas[j]))
 
         return results
 
@@ -600,6 +614,7 @@ def find_merge_common_images(args):
         ).build_miller_set(
         anomalous_flag=not work_params.merge_anomalous,
         d_min=work_params.d_min)
+    print 'Miller set size: %d' % len(miller_set.indices())
     from xfel.cxi.merging.general_fcalc import random_structure
     i_model = random_structure(work_params)
 
@@ -638,8 +653,19 @@ def find_merge_common_images(args):
     keep_start = []
     keep_end = []
 
+    def nint(a):
+        return int(round(a))
+
+    from collections import defaultdict
+    i_scale = 0.1
+    i_hist = defaultdict(int)
+
     for j, se in enumerate(zip(starts, ends)):
         s, e = se
+
+        for i in intensi[s:e]:
+            i_hist[nint(i_scale * i)] += 1
+        
         isig = sum(i / s for i, s in zip(intensi[s:e], sigma_i[s:e])) / (e - s)
         dmin = 100.0
         for x in xrange(s, e):
@@ -650,6 +676,11 @@ def find_merge_common_images(args):
             keep_start.append(s)
             keep_end.append(e)
 
+    fout = open('i_hist.dat', 'w')
+    for i in i_hist:
+        fout.write('%.2f %d\n' % (i / i_scale, i_hist[i]))
+    fout.close()
+
     starts = keep_start
     ends = keep_end
 
@@ -657,7 +688,19 @@ def find_merge_common_images(args):
 
     frames = []
 
+    odd = 0
+    even = 0
+
     for s, e in zip(starts, ends):
+
+        for x in range(s, e):
+            hkl = lookup[hkl_asu[x]]
+            
+            if (hkl[0] + hkl[1] + hkl[2]) % 2 == 1:
+                odd += 1
+            else:
+                even += 1
+        
         indices = [tuple(lookup[hkl_asu[x]]) for x in range(s, e)]
         intensities = intensi[s:e]
         sigmas = sigma_i[s:e]
@@ -671,11 +714,18 @@ def find_merge_common_images(args):
     mn_k = sum([kb[0] for kb in kbs]) / len(kbs)
     mn_B = sum([kb[1] for kb in kbs]) / len(kbs)
 
+    n_lt_500 = 0
+    n_gt_500 = 0
+
     for j, f in enumerate(frames):
         s_i = f.scale_to_kb(mn_k, mn_B)
         fout = open('frame-s-i-%05d.dat' % j, 'w')
-        for s, i in s_i:
-            fout.write('%f %f\n' % (s, i))
+        for s, i, si in s_i:
+            fout.write('%f %f %f\n' % (s, i, si))
+            if i < 500:
+                n_lt_500 += 1
+            else:
+                n_gt_500 += 1
         fout.close()
 
     from collections import defaultdict
@@ -695,6 +745,8 @@ def find_merge_common_images(args):
         print b, hist[b]
 
 
+    print odd, even
+    print n_lt_500, n_gt_500
     
 
     return

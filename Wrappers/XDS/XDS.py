@@ -483,6 +483,14 @@ def beam_centre_xds_to_mosflm(px, py, header):
     return y, x
 
 def xds_read_xparm(xparm_file):
+    '''Parse the new-style or old-style XPARM file.'''
+
+    if 'XPARM' in open(xparm_file, 'r').readline():
+        return xds_read_xparm_new_style(xparm_file)
+    else:
+        return xds_read_xparm_old_style(xparm_file)
+
+def xds_read_xparm_old_style(xparm_file):
     '''Parse the XPARM file to a dictionary.'''
 
     data = map(float, open(xparm_file, 'r').read().split())
@@ -509,6 +517,40 @@ def xds_read_xparm(xparm_file):
     cell = data[27:33]
 
     a, b, c = data[33:36], data[36:39], data[39:42]
+
+    results = {
+        'starting_frame':starting_frame,
+        'phi_start':phi_start, 'phi_width':phi_width,
+        'axis':axis, 'wavelength':wavelength, 'beam':beam,
+        'nx':nx, 'ny':ny, 'px':px, 'py':py, 'distance':distance,
+        'ox':ox, 'oy':oy, 'x':x, 'y':y, 'normal':normal,
+        'spacegroup':spacegroup, 'cell':cell, 'a':a, 'b':b, 'c':c
+        }
+
+    return results
+
+def xds_read_xparm_new_style(xparm_file):
+    '''Parse the XPARM file to a dictionary.'''
+
+    data = map(float, open(xparm_file, 'r').read().split()[1:])
+
+    starting_frame = int(data[0])
+    phi_start, phi_width = data[1:3]
+    axis = data[3:6]
+
+    wavelength = data[6]
+    beam = data[7:10]
+
+    spacegroup = int(data[10])
+    cell = data[11:17]
+    a, b, c = data[17:20], data[20:23], data[23:26]
+    assert(int(data[26]) == 1)
+    nx, ny = map(int, data[27:29])
+    px, py = data[29:31]
+    ox, oy = data[31:33]
+    distance = data[33]
+    x, y = data[34:37], data[37:40]
+    normal = data[40:43]
 
     results = {
         'starting_frame':starting_frame,
