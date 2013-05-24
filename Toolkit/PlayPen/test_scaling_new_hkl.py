@@ -264,7 +264,7 @@ class Scaler(object):
             self.optimizer = simplex_opt(dimension = self.n,
                                          matrix = self.starting_matrix,
                                          evaluator = self,
-                                         tolerance = 1.e-6)
+                                         tolerance = 1.e-3)
 
         # save the best scale factors
              
@@ -318,10 +318,13 @@ class Frame:
     '''A class to represent one set of intensity measurements from X-fel
     data collection.'''
 
-    def __init__(self, unit_cell, indices, intensities, sigmas):
+    def __init__(self, unit_cell, indices, misym, original,
+                 intensities, sigmas):
         self._unit_cell = unit_cell
 
+        _misym = []
         _indices = []
+        _original = []
         _intensities = []
         _sigmas = []
 
@@ -330,20 +333,20 @@ class Frame:
         for j, i in enumerate(intensities):
             if i < 500:
                 continue
+            _misym.append(misym[j])
             _indices.append(indices[j])
+            _original.append(original[j])
             _intensities.append(intensities[j])
             _sigmas.append(sigmas[j])
-           
-        # self._raw_indices = list(indices)
-        # self._raw_intensities = list(intensities)
-        # self._raw_sigmas = list(sigmas)
 
+        self._raw_misym = _misym
         self._raw_indices = _indices
+        self._raw_original = _original
         self._raw_intensities = _intensities
         self._raw_sigmas = _sigmas
         
-        self._intensities = intensities
-        self._sigmas = sigmas
+        self._intensities = _intensities
+        self._sigmas = _sigmas
 
         self._frames = 1
         self._frame_sizes = [len(_indices)]
@@ -445,13 +448,6 @@ class Frame:
             scaler = Scaler(self._unit_cell, raw_indices,
                             raw_intensities, raw_sigmas, frame_sizes)
             rmerge = scaler.scale()
-
-            # apply arbitrary cut-off on scaling: R > 0 and R < 1
-            if rmerge > 1:
-                return None
-            if rmerge < 0:
-                return None
-            
         except ZeroDivisionError, zde:
             return None
 
@@ -589,6 +585,39 @@ class Frame:
 
         return
 
+    def output_as_scalepack(self, sg, scalepack_fn):
+        '''Output the *raw data* as an ersatz unmerged scalepack file.'''
+
+        # first write header bumpf
+        
+        symm = [op.r() for op in sg.smx()]
+
+        fout = open(scalepack_fn, 'w')
+
+        symbol = sg.type().lookup_symbol().replace(' ', '')
+        fout.write('%5d %s\n' % (len(symm), symbol))
+
+        for s in symm:
+            fout.write('%3d%3d%3d%3d%3d%3d%3d%3d%3d\n%3d%3d%3d\n' % tuple(
+                map(int, s.as_double()) + [0, 0, 0]))
+
+        # then write out the measurements
+
+        j = 0
+        
+        for b, fs in enumerate(self._frame_sizes):
+            for k in range(fs):
+                hkl = self._raw_indices[j]
+                ohkl = self._raw_original[j]
+                m = self._misym[j]
+                i = self._raw_intensities[j]
+                s = self._raw_sigmas[j]
+                fout.write('%4d%4d%4d%4d%4d%4d%6d 0 0%3d%8.1f%8.1f\n' %
+                           (hkl + ohkl + (b + 1, m, i, s)))
+
+        fout.close()
+
+
 def frame_numbers(frames):
     result = { }
 
@@ -661,7 +690,47 @@ def find_merge_common_images(args):
     intensi = scaler.observations["i"]
     sigma_i = scaler.observations["sigi"]
     
-    lookup = scaler.millers["merged_asu_hkl"]    
+    hkl_h = scaler.observations["hkl_h"]
+    hkl_k = scaler.observations["hkl_k"]
+    hkl_l = scaler.observations["hkl_l"]    
+    
+    lookup = scaler.millers["merged_asu_hkl"]
+
+    # compute m/isym
+
+    m_isym = []
+
+    good = 0
+    broken = 0
+
+    real_hkl = []
+    orig_hkl = []
+
+    from cctbx.sgtbx import reciprocal_space_asu as rs_asu
+
+    asu = rs_asu(sg.type())
+
+    symm = [op.r() for op in sg.smx()]    
+    for x in xrange(1, len(scaler.observations["hkl_id"])):    
+        m = -1
+        uhkl = hkl_h[x], hkl_k[x], hkl_l[x]
+
+        for j, smx in enumerate(symm):
+            res = tuple(map(int, smx * uhkl))
+            if asu.is_inside(res):
+                m = j
+                break
+            res = tuple(map(int, [-1 * s for s in smx * uhkl]))
+            if asu.is_inside(res):
+                m = j
+                break
+            
+        if m == -1:
+            raise RuntimeError, 'asu error'
+
+        m_isym.append(m)
+        real_hkl.append(res)
+        orig_hkl.append(uhkl)
 
     # construct table of start / end indices for frames: now using Python
     # range indexing
@@ -699,11 +768,13 @@ def find_merge_common_images(args):
     frames = []
 
     for s, e in zip(starts, ends):
-        indices = [tuple(lookup[hkl_asu[x]]) for x in range(s, e)]
+        misym = [m_isym[x] for x in range(s, e)]
+        indices = [real_hkl[x] for x in range(s, e)]
+        original = [orig_hkl[x] for x in range(s, e)]
         intensities = intensi[s:e]
         sigmas = sigma_i[s:e]
 
-        frames.append(Frame(uc, indices, intensities, sigmas))
+        frames.append(Frame(uc, indices, misym, original, intensities, sigmas))
 
     cycle = 0
 
@@ -738,9 +809,6 @@ def find_merge_common_images(args):
 
         obs = { } 
 
-        from cctbx.sgtbx import rt_mx, change_of_basis_op
-        oh = change_of_basis_op(rt_mx('h,l,k'))
-
         for j, f in enumerate(frames):
             indices = set(f.get_indices())
             for i in indices:
@@ -749,12 +817,7 @@ def find_merge_common_images(args):
                     obs[_i] = []
                 obs[_i].append(j)
 
-        # work through unique observations ignoring those which include no
-        # hand information
- 
         for hkl in obs:
-            if hkl == oh.apply(hkl):
-                continue
             obs[hkl].sort()
             for j, f1 in enumerate(obs[hkl][:-1]):
                 for f2 in obs[hkl][j + 1:]:
@@ -764,7 +827,7 @@ def find_merge_common_images(args):
 
         for f1 in range(len(frames)):
             for f2 in range(f1 + 1, len(frames)):
-                if common_reflections[(f1, f2)] > 20:
+                if common_reflections[(f1, f2)] > 10:
                     cmn_rfl_list.append((common_reflections[(f1, f2)], f1, f2))
 
         cmn_rfl_list.sort()
@@ -786,10 +849,11 @@ def find_merge_common_images(args):
             # anyhow they are sorted anyway... ah as f2 > f1 then just sorting
             # the list by f2 will make sure the data cascase correctly.
 
-            # p-value very small for cc > 0.75 for > 20 observations - necessary
-            # as will be correlated due to Wilson curves
+            # p-value small (3% ish) for cc > 0.6 for > 10 observations -
+            # necessary as will be correlated due to Wilson curves though
+            # with B factor < 10 this is less of an issue
 
-            if _cc[0] > 20 and _cc[1] > 0.75:
+            if _cc[0] > 10 and _cc[1] > 0.6:
                 print '%4d %.3f' % _cc, f1, f2
                 joins.append((f2, f1))
                 # used.append(f1)
@@ -817,6 +881,7 @@ def find_merge_common_images(args):
     j = -1
     while frames[j].get_frames() > 1:
         print frames[j].get_frames(), frames[j].get_unique_indices()
+        frames[j].output_as_scalepack(sg, 'scalepack-%d.sca' % j)
         j -= 1
 
     return

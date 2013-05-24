@@ -76,6 +76,7 @@ Toolkit/PlayPen/aimless2gnuplot.py -text
 Toolkit/PlayPen/analyse_scale_xfel_properly.py -text
 Toolkit/PlayPen/analyse_spot_xds.py -text
 Toolkit/PlayPen/b_factors.py -text
+Toolkit/PlayPen/bootstrap_scaling.py -text
 Toolkit/PlayPen/cc.py -text
 Toolkit/PlayPen/centring.py -text
 Toolkit/PlayPen/compare_ub.py -text
@@ -101,6 +102,7 @@ Toolkit/PlayPen/scala2gnuplot.py -text
 Toolkit/PlayPen/scale-play.py -text
 Toolkit/PlayPen/spot2q.py -text
 Toolkit/PlayPen/test_scaling.py -text
+Toolkit/PlayPen/test_scaling_new_hkl.py -text
 Toolkit/PlayPen/unmerged_fa.py -text
 Toolkit/PlayPen/ward_cluster.py -text
 Toolkit/PlayPen/x1334.lp -text

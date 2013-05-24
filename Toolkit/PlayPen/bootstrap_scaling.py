@@ -320,33 +320,15 @@ class Frame:
 
     def __init__(self, unit_cell, indices, intensities, sigmas):
         self._unit_cell = unit_cell
+        self._raw_indices = list(indices)
+        self._raw_intensities = list(intensities)
+        self._raw_sigmas = list(sigmas)
 
-        _indices = []
-        _intensities = []
-        _sigmas = []
-
-        # limit only to relections with 500 counts or more
-
-        for j, i in enumerate(intensities):
-            if i < 500:
-                continue
-            _indices.append(indices[j])
-            _intensities.append(intensities[j])
-            _sigmas.append(sigmas[j])
-           
-        # self._raw_indices = list(indices)
-        # self._raw_intensities = list(intensities)
-        # self._raw_sigmas = list(sigmas)
-
-        self._raw_indices = _indices
-        self._raw_intensities = _intensities
-        self._raw_sigmas = _sigmas
-        
         self._intensities = intensities
         self._sigmas = sigmas
 
         self._frames = 1
-        self._frame_sizes = [len(_indices)]
+        self._frame_sizes = [len(indices)]
 
         self._kb = None
         
@@ -589,6 +571,60 @@ class Frame:
 
         return
 
+def get_stuff_from_hklin(hklin):
+    from iotbx import mtz
+
+    mtz_obj = mtz.object(hklin)
+
+    dmax, dmin = mtz_obj.max_min_resolution()
+    
+    sg = mtz_obj.space_group()
+    uc = None
+
+    # now have a rummage through to get the columns out that I want
+
+    i_column = None
+    sigi_column = None
+
+    for crystal in mtz_obj.crystals():
+        uc = crystal.unit_cell()
+
+    return uc, sg, (dmax, dmin)
+    
+
+def frame_factory(hklin):
+    '''Create a Frame object from an MTZ file corresponding to one INTEGRATE
+    run in XDS.'''
+
+    from iotbx import mtz
+
+    mtz_obj = mtz.object(hklin)
+
+    mi = mtz_obj.extract_miller_indices()
+    dmax, dmin = mtz_obj.max_min_resolution()
+    
+    sg = mtz_obj.space_group()
+    uc = None
+
+    # now have a rummage through to get the columns out that I want
+
+    i_column = None
+    sigi_column = None
+
+    for crystal in mtz_obj.crystals():
+        uc = crystal.unit_cell()
+
+        for dataset in crystal.datasets():
+            for column in dataset.columns():
+                if column.label() == 'I':
+                    i_column = column
+                elif column.label() == 'SIGI':
+                    sigi_column = column
+
+    return Frame(uc, mi, i_column.extract_values(
+        not_a_number_substitute = 0.0), sigi_column.extract_values(
+        not_a_number_substitute = 0.0))
+
 def frame_numbers(frames):
     result = { }
 
@@ -600,110 +636,50 @@ def frame_numbers(frames):
     return result
 
 def find_merge_common_images(args):
-    phil = iotbx.phil.process_command_line(args = args,
-                                           master_string = master_phil).show()
-    work_params = phil.work.extract()
-    if ("--help" in args) :
-        libtbx.phil.parse(master_phil.show())
-        return
 
-    if ((work_params.d_min is None) or
-        (work_params.data is None) or
-        ((work_params.model is None) and
-         work_params.scaling.algorithm != "mark1")) :
-        raise Usage("cxi.merge "
-                    "d_min=4.0 "
-                    "data=~/scratch/r0220/006/strong/ "
-                    "model=3bz1_3bz2_core.pdb")
-    if ((work_params.rescale_with_average_cell) and
-        (not work_params.set_average_unit_cell)) :
-        raise Usage(
-            "If rescale_with_average_cell=True, you must also specify "+
-            "set_average_unit_cell=True.")
+    dmax = None
+    dmin = None
+    sg = None
+    uc = None
 
-    # Read Nat's reference model from an MTZ file.  XXX The observation
-    # type is given as F, not I--should they be squared?  Check with Nat!
-    log = open("%s_%s_scale.log" % (work_params.output.prefix,
-                                    work_params.scaling.algorithm), "w")
-    out = multi_out()
-    out.register("log", log, atexit_send_to=None)
-    out.register("stdout", sys.stdout)
+    for arg in args:
+        _uc, _sg, _d = get_stuff_from_hklin(arg)
 
-    print >> out, "Target unit cell and space group:"
-    print >> out, "  ", work_params.target_unit_cell
-    print >> out, "  ", work_params.target_space_group
+        if uc is None:
+            uc = _uc
+        else:
+            # FIXME should test these are similar
+            pass
 
-    uc = work_params.target_unit_cell
+        if sg is None:
+            sg = _sg
+        else:
+            # FIXME should test these are the same
+            pass
 
+        if dmax is None:
+            dmax = _d[0]
+        else:
+            if _d[0] > dmax:
+                dmax = _d[0]
+                
+        if dmin is None:
+            dmin = _d[1]
+        else:
+            if _d[1] < dmin:
+                dmin = _d[1]
+        
     miller_set = symmetry(
-        unit_cell=work_params.target_unit_cell,
-        space_group_info=work_params.target_space_group
+        unit_cell = uc,
+        space_group_info = sg.info()
         ).build_miller_set(
-        anomalous_flag=not work_params.merge_anomalous,
-        d_min=work_params.d_min)
-    from xfel.cxi.merging.general_fcalc import random_structure
-    i_model = random_structure(work_params)
-
-    # ---- Augment this code with any special procedures for x scaling
-    scaler = xscaling_manager(
-        miller_set=miller_set,
-        i_model=i_model,
-        params=work_params,
-        log=out)
-    scaler.read_all()
-    print "finished reading"
-    sg = miller_set.space_group()
-    pg = sg.build_derived_laue_group()
-    miller_set.show_summary()
-
-    hkl_asu = scaler.observations["hkl_id"]
-    imageno = scaler.observations["frame_id"]
-    intensi = scaler.observations["i"]
-    sigma_i = scaler.observations["sigi"]
-    
-    lookup = scaler.millers["merged_asu_hkl"]    
-
-    # construct table of start / end indices for frames: now using Python
-    # range indexing
-
-    starts = [0]
-    ends = []
-    
-    for x in xrange(1, len(scaler.observations["hkl_id"])):
-        if imageno[x] != imageno[x - 1]:
-            ends.append(x)
-            starts.append(x)
-            
-    ends.append(len(scaler.observations["hkl_id"]))
-
-    keep_start = []
-    keep_end = []
-
-    for j, se in enumerate(zip(starts, ends)):
-        s, e = se
-        isig = sum(i / s for i, s in zip(intensi[s:e], sigma_i[s:e])) / (e - s)
-        dmin = 100.0
-        for x in xrange(s, e):
-            d = uc.d(lookup[hkl_asu[x]])
-            if d < dmin:
-                dmin = d
-        if isig > 6.0 and dmin < 3.2:
-            keep_start.append(s)
-            keep_end.append(e)
-
-    starts = keep_start
-    ends = keep_end
-
-    print 'Keeping %d frames' % len(starts)
+        anomalous_flag = False,
+        d_min = dmin)
 
     frames = []
 
-    for s, e in zip(starts, ends):
-        indices = [tuple(lookup[hkl_asu[x]]) for x in range(s, e)]
-        intensities = intensi[s:e]
-        sigmas = sigma_i[s:e]
-
-        frames.append(Frame(uc, indices, intensities, sigmas))
+    for arg in args:
+        frames.append(frame_factory(arg))
 
     cycle = 0
 
@@ -715,6 +691,8 @@ def find_merge_common_images(args):
 
     mn_k = sum([kb[0] for kb in kbs]) / len(kbs)
     mn_B = sum([kb[1] for kb in kbs]) / len(kbs)
+
+    print 'K, B: %.2f %.2f' % (mn_k, mn_B)
 
     for f in frames:
         f.scale_to_kb(mn_k, mn_B)
@@ -823,22 +801,6 @@ def find_merge_common_images(args):
 
     
 if (__name__ == "__main__"):
-    sargs = ["d_min=3.0",
-             "output.n_bins=25",
-             "target_unit_cell=106.18,106.18,106.18,90,90,90",
-             "target_space_group=I23",
-             "nproc=1",
-             "merge_anomalous=True",
-             "plot_single_index_histograms=False",
-             "scaling.algorithm=mark1",
-             "raw_data.sdfac_auto=True",
-             "scaling.mtz_file=fake_filename.mtz",
-             "scaling.show_plots=True",
-             "scaling.log_cutoff=-3.",
-             "set_average_unit_cell=True",
-             "rescale_with_average_cell=False",
-             "significance_filter.sigma=0.5",
-             "output.prefix=poly_122_unpolarized_control"
-             ]
-    result = find_merge_common_images(args=sargs)
+    import sys
+    result = find_merge_common_images(sys.argv[1:])
       
