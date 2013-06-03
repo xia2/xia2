@@ -340,7 +340,19 @@ def failover_cbf(cbf_file):
             header['size'] = (1679, 1475)
             continue
 
+        if 'PILATUS3 2M' in record:
+            header['detector_class'] = 'pilatus 2M'
+            header['detector'] = 'dectris'
+            header['size'] = (1679, 1475)
+            continue
+
         if 'PILATUS 6M' in record:
+            header['detector_class'] = 'pilatus 6M'
+            header['detector'] = 'dectris'
+            header['size'] = (2527, 2463)
+            continue
+
+        if 'PILATUS3 6M' in record:
             header['detector_class'] = 'pilatus 6M'
             header['detector'] = 'dectris'
             header['size'] = (2527, 2463)
