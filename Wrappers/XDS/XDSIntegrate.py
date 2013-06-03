@@ -215,7 +215,8 @@ def XDSIntegrate(DriverType = None):
                 # bug 2420 - have found for some examples that the
                 # refinement is unstable - perhaps some of this is
                 # best postrefined? was ALL
-                xds_inp.write('REFINE(INTEGRATE)=BEAM ORIENTATION CELL\n')
+                # xds_inp.write('REFINE(INTEGRATE)=BEAM ORIENTATION CELL\n')
+                xds_inp.write('REFINE(INTEGRATE)=ORIENTATION CELL\n')
 
             # check for updated input parameters
             if self._updates.has_key('BEAM_DIVERGENCE') and \
