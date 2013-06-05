@@ -42,10 +42,20 @@ from XDSIntegrateHelpers import _parse_integrate_lp, \
 
 # global flags etc.
 from Handlers.Flags import Flags
-from Handlers.Phil import Phil
 from Handlers.Streams import Chatter, Debug
 
-def XDSIntegrate(DriverType = None):
+from libtbx.phil import parse
+
+master_params = parse("""
+refine = *ORIENTATION *CELL *BEAM DISTANCE AXIS
+  .type = choice(multi = True)
+  .help = 'what to refine in first pass of integration'
+refine_final = *ORIENTATION *CELL BEAM DISTANCE AXIS
+  .type = choice(multi = True)
+  .help = 'what to refine in final pass of integration'
+""")  
+
+def XDSIntegrate(DriverType = None, params = None):
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -53,13 +63,19 @@ def XDSIntegrate(DriverType = None):
                               FrameProcessor):
         '''A wrapper for wrapping XDS in integrate mode.'''
 
-        def __init__(self):
+        def __init__(self, params = None):
 
             # set up the object ancestors...
 
             DriverInstance.__class__.__init__(self)
             FrameProcessor.__init__(self)
 
+            # phil parameters
+
+            if not params:
+                params = master_params.extract()
+            self._params = params
+            
             # now set myself up...
 
             self._parallel = Flags.get_parallel()
@@ -162,7 +178,8 @@ def XDSIntegrate(DriverType = None):
             xds_inp.write('JOB=INTEGRATE\n')
             xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
                           self._parallel)
-
+            
+            from Handlers.Phil import Phil
             if Phil.get_xds_parameter_profile_grid_size():
                 ab, c = Phil.get_xds_parameter_profile_grid_size()
                 assert(ab > 0 and ab < 22 and (ab % 2) == 1)
@@ -201,22 +218,12 @@ def XDSIntegrate(DriverType = None):
                 xds_inp.write('DELPHI=%.1f\n' % \
                               Phil.get_xds_parameter_delphi())
 
-            fixed_2401 = True
-
-            if self._refined_xparm and fixed_2401:
-                # allow only for crystal movement
-                if Flags.get_refine():
-                    Debug.write('Refining ORIENTATION CELL')
-                    xds_inp.write('REFINE(INTEGRATE)=ORIENTATION CELL\n')
-                else:
-                    Debug.write('Not refining ORIENTATION CELL')
-                    xds_inp.write('REFINE(INTEGRATE)=!\n')
+            if self._refined_xparm:
+                xds_inp.write('REFINE(INTEGRATE)=%s\n' %
+                              ' '.join(self._params.refine_final))
             else:
-                # bug 2420 - have found for some examples that the
-                # refinement is unstable - perhaps some of this is
-                # best postrefined? was ALL
-                # xds_inp.write('REFINE(INTEGRATE)=BEAM ORIENTATION CELL\n')
-                xds_inp.write('REFINE(INTEGRATE)=ORIENTATION CELL\n')
+                xds_inp.write('REFINE(INTEGRATE)=%s\n' %
+                              ' '.join(self._params.refine))
 
             # check for updated input parameters
             if self._updates.has_key('BEAM_DIVERGENCE') and \
@@ -429,7 +436,7 @@ def XDSIntegrate(DriverType = None):
 
             return
 
-    return XDSIntegrateWrapper()
+    return XDSIntegrateWrapper(params)
 
 if __name__ == '__main__':
 

@@ -16,7 +16,12 @@ from libtbx.phil import parse
 class _Phil:
     def __init__(self):
         self._working_phil = parse("""
-xds.parameter {
+xds {
+  integrate {
+    include scope Wrappers.XDS.XDSIntegrate.master_params
+  }
+}
+deprecated_xds.parameter {
   delphi = 5
     .type = float
   delphi_small = 30
@@ -48,7 +53,7 @@ xia2.settings {
   xds_cell_deviation = 0.05, 5.0
     .type = floats(size = 2)
 }
-""")
+""", process_includes = True)
         self._parameters = self._working_phil.extract()
         return
 
@@ -59,6 +64,7 @@ xia2.settings {
 
         source_phil = parse(open(source).read())
         self._working_phil = self._working_phil.fetch(source = source_phil)
+        self.show()
         self._parameters = self._working_phil.extract()
         return
 
@@ -67,25 +73,25 @@ xia2.settings {
         return
 
     def get_xds_parameter_delphi(self):
-        return self._parameters.xds.parameter.delphi
+        return self._parameters.deprecated_xds.parameter.delphi
 
     def get_xds_parameter_untrusted_ellipse(self):
-        return self._parameters.xds.parameter.untrusted_ellipse
+        return self._parameters.deprecated_xds.parameter.untrusted_ellipse
     
     def get_xds_parameter_untrusted_rectangle(self):
-        return self._parameters.xds.parameter.untrusted_rectangle
+        return self._parameters.deprecated_xds.parameter.untrusted_rectangle
 
     def get_xds_parameter_trusted_region(self):
-        return self._parameters.xds.parameter.trusted_region
+        return self._parameters.deprecated_xds.parameter.trusted_region
 
     def get_xds_parameter_profile_grid_size(self):
-        return self._parameters.xds.parameter.profile_grid_size
+        return self._parameters.deprecated_xds.parameter.profile_grid_size
 
     def get_xds_parameter_delphi_small(self):
-        return self._parameters.xds.parameter.delphi_small
+        return self._parameters.deprecated_xds.parameter.delphi_small
 
     def get_xds_parameter_xscale_min_isigma(self):
-        return self._parameters.xds.parameter.xscale_min_isigma
+        return self._parameters.deprecated_xds.parameter.xscale_min_isigma
 
     def get_ccp4_reindex_program(self):
         return self._parameters.ccp4.reindex.program

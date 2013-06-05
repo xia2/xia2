@@ -80,7 +80,6 @@ class _Flags:
 
         # these are development parameters for the XDS implementation
         self._z_min = 0.0
-        self._refine = True
         self._remove = True
         self._zero_dose = False
         self._relax = True
@@ -600,13 +599,6 @@ class _Flags:
 
     def get_blend(self):
         return self._blend
-
-    def set_refine(self, refine):
-        self._refine = refine
-        return
-
-    def get_refine(self):
-        return self._refine
 
     def set_remove(self, remove):
         self._remove = remove

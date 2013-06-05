@@ -148,7 +148,8 @@ class XDSIntegrater(FrameProcessor,
         return defpix
 
     def Integrate(self):
-        integrate = _Integrate()
+        from Handlers.Phil import Phil
+        integrate = _Integrate(params=Phil._parameters.xds.integrate)
         integrate.set_working_directory(self.get_working_directory())
 
         integrate.setup_from_image(self.get_image_name(

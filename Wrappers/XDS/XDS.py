@@ -59,7 +59,6 @@ if not os.path.join(os.environ['XIA2_ROOT']) in sys.path:
 
 from Handlers.Streams import Debug
 from Handlers.Flags import Flags
-from Handlers.Phil import Phil
 
 from dxtbx.format.FormatPilatusHelpers import pilatus_6M_mask, \
      pilatus_2M_mask, pilatus_300K_mask
@@ -340,6 +339,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
         result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%s' % \
                       detector_to_y_axis[detector])
 
+    from Handlers.Phil import Phil
     if Phil.get_xds_parameter_trusted_region():
         result.append('TRUSTED_REGION %.2f %.2f' % tuple(
             Phil.get_xds_parameter_trusted_region()))
