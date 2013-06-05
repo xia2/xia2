@@ -66,6 +66,7 @@ Toolkit/BackstopMask.py -text
 Toolkit/E4.py -text
 Toolkit/KBScale.py -text
 Toolkit/MultiMerger.py -text
+Toolkit/PlayPen/124_analysis_code.py -text
 Toolkit/PlayPen/ExperimentSetup.py -text
 Toolkit/PlayPen/HDR_join.py -text
 Toolkit/PlayPen/MendBKGINIT.py -text
