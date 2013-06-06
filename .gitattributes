@@ -242,8 +242,5 @@ core/Test/ExampleProgramTightLoop.py -text
 core/Test/readme.txt -text
 core/license.txt -text
 core/readme.txt -text
-core/setup.bat -text
-core/setup.csh -text
-core/setup.sh -text
 html/xia2-new-logo.gif -text
 html/xia2-new-logo.psd -text

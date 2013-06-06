@@ -1,2 +1,0 @@
-@PATH=%PATH%;%XIA2CORE_ROOT%\Test
-
