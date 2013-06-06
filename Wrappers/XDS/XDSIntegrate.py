@@ -47,7 +47,7 @@ from Handlers.Streams import Chatter, Debug
 from libtbx.phil import parse
 
 master_params = parse("""
-refine = *ORIENTATION *CELL *BEAM DISTANCE AXIS
+refine = *ORIENTATION *CELL BEAM DISTANCE AXIS
   .type = choice(multi = True)
   .help = 'what to refine in first pass of integration'
 refine_final = *ORIENTATION *CELL BEAM DISTANCE AXIS
