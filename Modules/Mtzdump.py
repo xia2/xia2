@@ -60,7 +60,16 @@ class Mtzdump():
                                         in mtz_obj.columns()]
         self._resolution_range = mtz_obj.max_min_resolution()
         spacegroup_and_no = mtz_obj.space_group().info().symbol_and_number()
-        self._header['spacegroup'] = spacegroup_and_no.split('(')[0]
+        
+        # replace tokens which are 1 with nothing
+        spacegroup_tokens = spacegroup_and_no.split('(')[0].split()
+
+        spacegroup = ''
+        for st in spacegroup_tokens:
+            if st != '1':
+                spacegroup += st
+
+        self._header['spacegroup'] = spacegroup
         self._reflections = mtz_obj.n_reflections()
 
         for crystal in mtz_obj.crystals():
@@ -170,9 +179,4 @@ if __name__ == '__main__':
         raise RuntimeError, '%s hklin.mtz' % sys.argv[0]
 
     m.dump()
-    m.dump_batch_headers()
-
-    for batch in m.get_batches():
-        print '=== batch %4d ===' % batch
-        print '%.4f %.4f %.4f \n%.4f %.4f %.4f \n%.4f %.4f %.4f ' % \
-              tuple(m.get_batch_header(batch)['umat'])
+    print m.get_spacegroup()

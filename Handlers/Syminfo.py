@@ -245,5 +245,4 @@ Syminfo = _Syminfo()
 
 if __name__ == '__main__':
     for arg in sys.argv[1:]:
-        for spacegroup in Syminfo.get_subgroups(arg):
-            print spacegroup
+        print Syminfo.get_pointgroup(arg)
