@@ -123,7 +123,8 @@ def detector_axis_apply_two_theta_rotation(axis_string, header):
     return '%.3f %.3f %.3f' % new_axis
 
 def header_to_xds(header, synchrotron = None, reversephi = False,
-                  refined_beam_vector = None, refined_rotation_axis = None):
+                  refined_beam_vector = None, refined_rotation_axis = None,
+                  refined_distance = None):
     '''A function to take an input header dictionary from Diffdump
     and generate a list of records to start XDS - see Doc/INP.txt.'''
 
@@ -360,7 +361,9 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
     # this is ONLY for XDS - SATURN are the same - probably left handed
     # goniometer rotation on rigaku X-ray sets.
 
-    if not detector in ['raxis', 'saturn']:
+    if refined_distance:
+        result.append('DETECTOR_DISTANCE=%7.3f' % refined_distance)
+    elif not detector in ['raxis', 'saturn']:
         result.append('DETECTOR_DISTANCE=%7.3f' % header['distance'])
     else:
         result.append('DETECTOR_DISTANCE=%7.3f' % (-1 * header['distance']))

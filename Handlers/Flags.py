@@ -368,15 +368,14 @@ class _Flags:
 
         self._xparm = xparm
 
-        tokens = map(float, open(xparm, 'r').read().split())
+        from Wrappers.XDS.XDS import xds_read_xparm
 
-        rotation_axis = tuple(tokens[3:6])
-        beam_vector = tuple(tokens[7:10])
-        origin = tuple(tokens[15:17])
+        xparm_info = xds_read_xparm(xparm)
 
-        self._xparm_origin = origin
-        self._xparm_beam_vector = beam_vector
-        self._xparm_rotation_axis = rotation_axis
+        self._xparm_origin = xparm_info['ox'], xparm_info['oy']
+        self._xparm_beam_vector = tuple(xparm_info['beam'])
+        self._xparm_rotation_axis = tuple(xparm_info['axis'])
+        self._xparm_distance = xparm_info['distance']
 
         return
 
@@ -391,6 +390,9 @@ class _Flags:
 
     def get_xparm_beam_vector(self):
         return self._xparm_beam_vector
+
+    def get_xparm_distance(self):
+        return self._xparm_distance
 
     def set_xparm_ub(self, xparm):
 

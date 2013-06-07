@@ -168,6 +168,7 @@ class XDSIndexer(FrameProcessor,
             idxref.set_refined_origin(Flags.get_xparm_origin())
             idxref.set_refined_beam_vector(Flags.get_xparm_beam_vector())
             idxref.set_refined_rotation_axis(Flags.get_xparm_rotation_axis())
+            idxref.set_refined_distance(Flags.get_xparm_distance())
 
         # hacks for Jira 493
 

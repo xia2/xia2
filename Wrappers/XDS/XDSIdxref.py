@@ -236,6 +236,10 @@ def XDSIdxref(DriverType = None):
         # this needs setting up (optionally) from refined results from
         # elsewhere
 
+        def set_refined_distance(self, refined_distance):
+            self._refined_distance = refined_distance
+            return
+
         def set_refined_origin(self, refined_origin):
             self._refined_origin = refined_origin
             return
@@ -289,7 +293,8 @@ def XDSIdxref(DriverType = None):
             header = header_to_xds(
                 image_header, reversephi = self._reversephi,
                 refined_beam_vector = self._refined_beam_vector,
-                refined_rotation_axis = self._refined_rotation_axis)
+                refined_rotation_axis = self._refined_rotation_axis,
+                refined_distance = self._refined_distance)
 
             xds_inp = open(os.path.join(self.get_working_directory(),
                                         'XDS.INP'), 'w')

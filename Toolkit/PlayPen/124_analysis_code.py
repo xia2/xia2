@@ -11,7 +11,7 @@ from xfel.command_line.cxi_xmerge import xscaling_manager
 
 def run(args):
   phil = iotbx.phil.process_command_line(
-    args = args, master_string = master_phil).show()
+    args = args, master_string = master_phil)
   work_params = phil.work.extract()
   if ("--help" in args) :
     libtbx.phil.parse(master_phil.show())
@@ -31,19 +31,6 @@ def run(args):
     raise Usage("If rescale_with_average_cell=True, you must also specify "+
       "set_average_unit_cell=True.")
   
-  # Read Nat's reference model from an MTZ file.  XXX The observation
-  # type is given as F, not I--should they be squared?  Check with Nat!
-  
-  log = open("%s_%s_reconcile.log" %
-             (work_params.output.prefix,work_params.scaling.algorithm), "w")
-  out = multi_out()
-  out.register("log", log, atexit_send_to=None)
-  out.register("stdout", sys.stdout)
-
-  print >> out, "Target unit cell and space group:"
-  print >> out, "  ", work_params.target_unit_cell
-  print >> out, "  ", work_params.target_space_group
-
   miller_set = symmetry(
       unit_cell = work_params.target_unit_cell,
       space_group_info = work_params.target_space_group
@@ -57,25 +44,17 @@ def run(args):
   scaler = xscaling_manager(
     miller_set = miller_set,
     i_model = i_model,
-    params = work_params,
-    log = out)
+    params = work_params)
   
   scaler.read_all()
-  print "finished reading, now look at master list of ASU miller indices"
   sg = miller_set.space_group()
-  for ihkl,HKL in enumerate(scaler.millers["merged_asu_hkl"]):
-    print ihkl,HKL
-
   pg = sg.build_derived_laue_group()
   rational_ops = []
   for symop in pg:
-    print symop.r().as_hkl()
     rational_ops.append((matrix.sqr(symop.r().transpose().as_rational()),
                          symop.r().as_hkl()))
 
-  print len(scaler.millers["merged_asu_hkl"])
-  print len(miller_set.indices())
-  miller_set.show_summary()
+  # miller_set.show_summary()
 
   hkl_asu = scaler.observations["hkl_id"]
   imageno = scaler.observations["frame_id"]
