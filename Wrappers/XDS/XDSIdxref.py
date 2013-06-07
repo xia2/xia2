@@ -57,9 +57,12 @@ master_params = parse("""
 refine = *ORIENTATION *CELL *BEAM *DISTANCE *AXIS
   .type = choice(multi = True)
   .help = 'what to refine in autoindexing'
+debug = *OFF ON
+  .type = choice(multi = False)
+  .help = 'output enganced debugging for indexing'
 """)  
 
-def XDSIdxref(DriverType = None):
+def XDSIdxref(DriverType = None, params = None):
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -67,15 +70,20 @@ def XDSIdxref(DriverType = None):
                            FrameProcessor):
         '''A wrapper for wrapping XDS in idxref mode.'''
 
-        def __init__(self):
+        def __init__(self, params = None):
 
             # set up the object ancestors...
 
             DriverInstance.__class__.__init__(self)
             FrameProcessor.__init__(self)
 
-            # now set myself up...
+            # phil parameters
 
+            if not params:
+                params = master_params.extract()
+            self._params = params
+
+            # now set myself up...
 
             self._parallel = Flags.get_parallel()
 
@@ -312,6 +320,9 @@ def XDSIdxref(DriverType = None):
             else:
                 xds_inp.write('ORGX=%f ORGY=%f\n' % \
                               tuple(self._org))
+
+            xds_inp.write('REFINE(IDXREF)=%s\n' %
+                          ' '.join(self._params.refine))
 
             if self._starting_frame and self._starting_angle:
                 xds_inp.write('STARTING_FRAME=%d\n' % \
@@ -581,7 +592,7 @@ def XDSIdxref(DriverType = None):
 
             return True
 
-    return XDSIdxrefWrapper()
+    return XDSIdxrefWrapper(params)
 
 if __name__ == '__main__':
 

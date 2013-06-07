@@ -146,7 +146,8 @@ class XDSIndexer(FrameProcessor,
         return colspot
 
     def Idxref(self):
-        idxref = _Idxref()
+        from Handlers.Phil import Phil
+        idxref = _Idxref(params=Phil._parameters.xds.index)
         idxref.set_working_directory(self.get_working_directory())
 
         idxref.setup_from_image(self.get_image_name(
