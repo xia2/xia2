@@ -321,8 +321,21 @@ def XDSIdxref(DriverType = None, params = None):
                 xds_inp.write('ORGX=%f ORGY=%f\n' % \
                               tuple(self._org))
 
+            # FIXME in here make sure sweep is wider than 5 degrees
+            # before specifying AXIS: if <= 5 degrees replace AXIS with
+            # nothing - base this on the maximum possible angular separation
+
+            min_frame = self._spot_range[0][0]
+            max_frame = self._spot_range[-1][1]
+
+            refine_params = [p for p in self._params.refine]
+
+            if 'AXIS' in refine_params and (max_frame - min_frame) * \
+                (image_header['phi_end'] - image_header['phi_start']) < 5.0:
+                refine_params.remove('AXIS')
+                
             xds_inp.write('REFINE(IDXREF)=%s\n' %
-                          ' '.join(self._params.refine))
+                          ' '.join(refine_params))
 
             if self._starting_frame and self._starting_angle:
                 xds_inp.write('STARTING_FRAME=%d\n' % \
