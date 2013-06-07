@@ -303,6 +303,11 @@ class XDSIndexer(FrameProcessor,
         xycorr.set_data_range(first, last)
         xycorr.set_background_range(self._indxr_images[0][0],
                                     self._indxr_images[0][1])
+        mosflm_beam_centre = self.get_beam()
+        xds_beam_centre = beam_centre_mosflm_to_xds(
+            mosflm_beam_centre[0], mosflm_beam_centre[1], self.get_header())
+        xycorr.set_beam_centre(xds_beam_centre[0],
+                               xds_beam_centre[1])
         for block in self._indxr_images:
             xycorr.add_spot_range(block[0], block[1])
 
