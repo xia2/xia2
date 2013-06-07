@@ -46,11 +46,18 @@ from Experts.LatticeExpert import SortLattices
 
 # global flags
 from Handlers.Flags import Flags
-from Handlers.Phil import Phil
 
 # helpful expertise from elsewhere
 from Experts.SymmetryExpert import lattice_to_spacegroup_number
 from Experts.LatticeExpert import s2l
+
+from libtbx.phil import parse
+
+master_params = parse("""
+refine = *ORIENTATION *CELL *BEAM *DISTANCE *AXIS
+  .type = choice(multi = True)
+  .help = 'what to refine in autoindexing'
+""")  
 
 def XDSIdxref(DriverType = None):
 
@@ -204,6 +211,7 @@ def XDSIdxref(DriverType = None):
             less than 5% / 5 degrees return True, else False. Now configured
             by xia2.settings.xds_cell_deviation in Phil input.'''
 
+            from Handlers.Phil import Phil
             if Phil.get_xia2_settings_xds_cell_deviation():
                 dev_l, dev_a = Phil.get_xia2_settings_xds_cell_deviation()
             else:

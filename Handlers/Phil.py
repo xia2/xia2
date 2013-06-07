@@ -20,6 +20,9 @@ xds {
   integrate {
     include scope Wrappers.XDS.XDSIntegrate.master_params
   }
+  index {
+    include scope Wrappers.XDS.XDSIdxref.master_params
+  }
 }
 deprecated_xds.parameter {
   delphi = 5
@@ -64,7 +67,6 @@ xia2.settings {
 
         source_phil = parse(open(source).read())
         self._working_phil = self._working_phil.fetch(source = source_phil)
-        self.show()
         self._parameters = self._working_phil.extract()
         return
 
