@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# LabelitDistl.py
+# DistlSignalStrength.py
 #   Copyright (C) 2010 Diamond Light Source, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is
