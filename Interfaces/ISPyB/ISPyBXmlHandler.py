@@ -21,6 +21,13 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Handlers.Files import FileHandler
 
+def sanitize(path):
+    '''Replace double path separators with single ones.'''
+    
+    import os
+    double = os.sep * 2
+    return path.replace(double, os.sep)
+
 class _ISPyBXmlHandler:
 
     def __init__(self):
@@ -202,7 +209,7 @@ class _ISPyBXmlHandler:
                     fout.write('<Image><fileName>%s</fileName>' % \
                                os.path.split(image_name)[-1])
                     fout.write('<fileLocation>%s</fileLocation></Image>' %
-                               os.path.split(image_name)[0])
+                               sanitize(os.path.split(image_name)[0]))
                     fout.write('<AutoProcIntegration>\n')
                     cell = sweep.get_integrater_cell()
                     self.write_cell(fout, cell)
@@ -241,7 +248,7 @@ class _ISPyBXmlHandler:
 
             fout.write('<AutoProcProgramContainer><AutoProcProgram>')
             fout.write('<processingCommandLine>%s</processingCommandLine>' \
-                       % CommandLine.get_command_line())
+                       % sanitize(CommandLine.get_command_line()))
             fout.write('<processingPrograms>xia2</processingPrograms>')
             fout.write('</AutoProcProgram>')
 
@@ -259,7 +266,7 @@ class _ISPyBXmlHandler:
                 fout.write('</fileType><fileName>%s</fileName>' % \
                            os.path.split(reflection_file)[-1])
                 fout.write('<filePath>%s</filePath>' % \
-                           os.path.split(reflection_file)[0])
+                           sanitize(os.path.split(reflection_file)[0]))
                 fout.write('</AutoProcProgramAttachment>\n')
 
 
@@ -267,7 +274,7 @@ class _ISPyBXmlHandler:
 
             fout.write('<AutoProcProgramAttachment><fileType>Log')
             fout.write('</fileType><fileName>xia2.txt</fileName>')
-            fout.write('<filePath>%s</filePath>' % os.getcwd())
+            fout.write('<filePath>%s</filePath>' % sanitize(os.getcwd()))
             fout.write('</AutoProcProgramAttachment>\n')
 
             fout.write('</AutoProcProgramContainer>')
