@@ -143,6 +143,7 @@ Wrappers/CCP4/Doc/Reindex.pdf -text
 Wrappers/CCP4/Doc/Scala.pdf -text
 Wrappers/CCP4/Doc/Sortmtz.pdf -text
 Wrappers/Labelit/DistlSignalStrength.py -text
+Wrappers/Labelit/DistlSweepStrength.py -text
 Wrappers/Labelit/Doc/LabelitDistl.pdf -text
 Wrappers/Labelit/Doc/LabelitScreen.pdf -text
 Wrappers/Labelit/Doc/LabelitStats_distl.pdf -text
