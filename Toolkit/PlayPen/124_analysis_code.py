@@ -307,6 +307,8 @@ class Frame:
       _intensities.append(intensities[j])
       _sigmas.append(sigmas[j])
       
+    assert(len(_indices) == len(_other))
+
     self._raw_indices = _indices
     self._raw_other = _other
     self._raw_intensities = _intensities
@@ -428,6 +430,7 @@ class Frame:
     '''Scale and merge frame data from this frame and the other.'''
 
     raw_indices = self._raw_indices + other.get_indices()
+    raw_other = self._raw_other + other.get_other()
     raw_intensities = self._raw_intensities + other.get_raw_intensities()
     raw_sigmas = self._raw_sigmas + other.get_raw_sigmas()
     frame_sizes = self._frame_sizes + other.get_frame_sizes()
@@ -451,6 +454,7 @@ class Frame:
     # save them
 
     self._raw_indices = raw_indices
+    self._raw_other = raw_other
     self._raw_intensities = raw_intensities
     self._raw_sigmas = raw_sigmas
     self._frame_sizes = frame_sizes
@@ -748,9 +752,6 @@ def run(args):
     common_reflections = numpy.zeros((len(frames), len(frames)),
                                      dtype = numpy.short)
     
-    other_reflections = numpy.zeros((len(frames), len(frames)),
-                                    dtype = numpy.short)
-
     obs = { } 
 
     # for other hand add -j
@@ -763,31 +764,19 @@ def run(args):
           obs[_i] = []
         obs[_i].append(j)
 
-      indices = set(f.get_other())
-      for i in indices:
-        _i = tuple(i)
-        if not _i in obs:
-          obs[_i] = []
-        obs[_i].append(-j)
-
     for hkl in obs:
       obs[hkl].sort()
       for j, f1 in enumerate(obs[hkl][:-1]):
         for f2 in obs[hkl][j + 1:]:
           if f1 * f2 > 0:
             common_reflections[(abs(f1), abs(f2))] += 1
-          else:
-            other_reflections[(abs(f1), abs(f2))] += 1
 
     cmn_rfl_list = []
-    oth_rfl_list = []
 
     for f1 in range(len(frames)):
       for f2 in range(f1 + 1, len(frames)):
         if common_reflections[(f1, f2)] > 10:
           cmn_rfl_list.append((common_reflections[(f1, f2)], f1, f2))
-        if other_reflections[(f1, f2)] > 10:
-          oth_rfl_list.append((other_reflections[(f1, f2)], f1, f2))
 
     cmn_rfl_list.sort()
     cmn_rfl_list.reverse()
@@ -831,10 +820,46 @@ def run(args):
       else:
         print 'R: %4d %4d ------' % (j1, j2)
 
-    all_joins = joins
+    all_joins = [j for j in joins]
 
     # then do the same for the alternative indices
 
+    other_reflections = numpy.zeros((len(frames), len(frames)),
+                                    dtype = numpy.short)
+
+    obs = { } 
+
+    # for other hand add -j
+
+    for j, f in enumerate(frames):
+      indices = set(f.get_indices())
+      for i in indices:
+        _i = tuple(i)
+        if not _i in obs:
+          obs[_i] = []
+        obs[_i].append(j)
+
+      indices = set(f.get_other())
+      for i in indices:
+        _i = tuple(i)
+        if not _i in obs:
+          obs[_i] = []
+        obs[_i].append(-j)
+
+    for hkl in obs:
+      obs[hkl].sort()
+      for j, f1 in enumerate(obs[hkl][:-1]):
+        for f2 in obs[hkl][j + 1:]:
+          if f1 * f2 < 0:
+            other_reflections[(abs(f1), abs(f2))] += 1
+
+    oth_rfl_list = []
+
+    for f1 in range(len(frames)):
+      for f2 in range(f1 + 1, len(frames)):
+        if other_reflections[(f1, f2)] > 10:
+          oth_rfl_list.append((other_reflections[(f1, f2)], f1, f2))
+    
     joins = []
 
     oth_rfl_list.sort()
