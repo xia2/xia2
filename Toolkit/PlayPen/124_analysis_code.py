@@ -550,6 +550,17 @@ class Frame:
 
     fout.close()
 
+def frame_numbers(frames):
+    result = { }
+
+    for f in frames:
+        if not f.get_frames() in result:
+            result[f.get_frames()] = 0
+        result[f.get_frames()] += 1
+
+    return result
+
+
 # main application...
 
 def run(args):
@@ -680,9 +691,10 @@ def run(args):
   frames = []
 
   for s, e in zip(starts, ends):
-    misym = [m_isym[x] for x in range(s, e)]
+    # FIXME need this from remap to ASU
+    misym = [0 for x in range(s, e)]
     indices = [original_indices[x] for x in range(s, e)]
-    original = [lookup[x] for x in range(s, e)]
+    original = [lookup[hkl_asu[x]] for x in range(s, e)]
     intensities = intensi[s:e]
     sigmas = sigma_i[s:e]
 
@@ -715,6 +727,8 @@ def run(args):
             
     nref_cycle = sum([len(f.get_indices()) for f in frames])
     assert(nref_cycle == total_nref)
+
+    import numpy
 
     common_reflections = numpy.zeros((len(frames), len(frames)),
                                      dtype = numpy.short)
