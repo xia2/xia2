@@ -617,26 +617,20 @@ def run(args):
 
   # FIXME in here perform the mapping to ASU for both the original and other
   # index as an array-wise manipulation to make things a bunch faster...
+  # however this also uses a big chunk of RAM...
 
-  polarity_transform_I23 = matrix.sqr((0, 1, 0, -1, 0, 0, 0, 0, 1))
-  for x in xrange(len(scaler.observations["hkl_id"])):
-    if (x % 1000) == 0:
-      print x
-    hkl = lookup[hkl_asu[x]]
-    hklrev = polarity_transform_I23 * hkl
-    testmiller = flex.miller_index([hklrev])
-    map_to_asu(sgtype, aflag, testmiller)
-    hklrev_asu = testmiller[0]
-    if (origH[x] + origK[x] + origL[x]) % 2 != 0 :
-      relation = "BADSYS" 
-    else:
-      original = origH[x], origK[x], origL[x]
-      relation = "XXXXXX"
-      for op in rational_ops:
-        if (op[0] * original).elems == hkl:
-          relation = op[1]
-          break
+  original_indices = flex.miller_index([lookup[hkl_asu[x]] for x in xrange(
+    len(scaler.observations["hkl_id"]))])
+  I23 = matrix.sqr((0, 1, 0, -1, 0, 0, 0, 0, 1))
+  other_indices = flex.miller_index([I23 * lookup[hkl_asu[x]] for x in xrange(
+    len(scaler.observations["hkl_id"]))])
+  map_to_asu(sgtype, aflag, original_indices)
+  map_to_asu(sgtype, aflag, other_indices)
 
+  # FIXME would be useful in here to have a less expensive way of finding the
+  # symmetry operation which gave the map to the ASU - perhaps best way is to
+  # make a new C++ map_to_asu which records this.
+  
   # FIXME in here recover the original frame structure of the data to
   # logical frame objetcs - N.B. the frame will need to be augmented to test
   # alternative indexings
@@ -679,12 +673,31 @@ def run(args):
 
   # then start running the comparison code
 
+  polarity_transform_I23 = matrix.sqr((0, 1, 0, -1, 0, 0, 0, 0, 1))
+  for x in xrange(len(scaler.observations["hkl_id"])):
+    if (x % 1000) == 0:
+      print x
+    hkl = lookup[hkl_asu[x]]
+    hklrev = polarity_transform_I23 * hkl
+    testmiller = flex.miller_index([hklrev])
+    map_to_asu(sgtype, aflag, testmiller)
+    hklrev_asu = testmiller[0]
+    if (origH[x] + origK[x] + origL[x]) % 2 != 0 :
+      relation = "BADSYS" 
+    else:
+      original = origH[x], origK[x], origL[x]
+      relation = "XXXXXX"
+      for op in rational_ops:
+        if (op[0] * original).elems == hkl:
+          relation = op[1]
+          break
 
-  print "%6d" % hkl_asu[x], "%9s" % relation, \
-      "%7d frame %5d HKL:%4d%4d%4d ASU:%4d%4d%4d ALT:%4d%4d%4d" % (
-        x, imageno[x], origH[x], origK[x], origL[x], hkl[0], hkl[1], hkl[2],
-        hklrev_asu[0], hklrev_asu[1], hklrev_asu[2]), \
-        "I %8.2f S %8.2f" % (intensi[x], sigma_i[x])
+
+    print "%6d" % hkl_asu[x], "%9s" % relation, \
+        "%7d frame %5d HKL:%4d%4d%4d ASU:%4d%4d%4d ALT:%4d%4d%4d" % (
+          x, imageno[x], origH[x], origK[x], origL[x], hkl[0], hkl[1], hkl[2],
+          hklrev_asu[0], hklrev_asu[1], hklrev_asu[2]), \
+          "I %8.2f S %8.2f" % (intensi[x], sigma_i[x])
 
 if (__name__ == "__main__"):
   sargs = ["d_min=3.0",
