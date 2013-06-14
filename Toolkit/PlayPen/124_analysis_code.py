@@ -302,7 +302,7 @@ class Frame:
     
     for j, i in enumerate(intensities):
       # FIXME should really exclude all observations with I/sigma < 3
-      if i < 500:
+      if i < 3 * sigmas[j]:
         continue
       _misym.append(misym[j])
       _indices.append(indices[j])
@@ -542,7 +542,7 @@ class Frame:
       for k in range(fs):
         hkl = self._raw_indices[j]
         ohkl = self._raw_original[j]
-        m = self._misym[j]
+        m = self._raw_misym[j]
         i = self._raw_intensities[j]
         s = self._raw_sigmas[j]
         fout.write('%4d%4d%4d%4d%4d%4d%6d 0 0%3d%8.1f%8.1f\n' %
@@ -677,7 +677,7 @@ def run(args):
       d = uc.d(lookup[hkl_asu[x]])
       if d < dmin:
         dmin = d
-    if isig > 6.0 and dmin < 3.2:
+    if isig > 3.0 and dmin < 3.2:
       keep_start.append(s)
       keep_end.append(e)
 
