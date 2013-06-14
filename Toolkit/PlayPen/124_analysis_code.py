@@ -619,11 +619,19 @@ def run(args):
   # index as an array-wise manipulation to make things a bunch faster...
   # however this also uses a big chunk of RAM...
 
-  original_indices = flex.miller_index([lookup[hkl_asu[x]] for x in xrange(
-    len(scaler.observations["hkl_id"]))])
+  original_indices = flex.miller_index()
+  for x in xrange(len(scaler.observations["hkl_id"])):
+    if (x % 1000) == 0:
+      print x
+    original_indices.append(lookup[hkl_asu[x]])
+
   I23 = matrix.sqr((0, 1, 0, -1, 0, 0, 0, 0, 1))
-  other_indices = flex.miller_index([I23 * lookup[hkl_asu[x]] for x in xrange(
-    len(scaler.observations["hkl_id"]))])
+  other_indices = flex.miller_index()
+  for x in xrange(len(scaler.observations["hkl_id"])):
+    if (x % 1000) == 0:
+      print x
+    other_indices.append(I23 * lookup[hkl_asu[x]])
+
   map_to_asu(sgtype, aflag, original_indices)
   map_to_asu(sgtype, aflag, other_indices)
 
