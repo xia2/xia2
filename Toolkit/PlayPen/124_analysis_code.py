@@ -777,7 +777,7 @@ def run(args):
           if f1 * f2 > 0:
             common_reflections[(abs(f1), abs(f2))] += 1
           else:
-            other_refections[(abs(f1), abs(f2))] += 1
+            other_reflections[(abs(f1), abs(f2))] += 1
 
     cmn_rfl_list = []
     oth_rfl_list = []
@@ -786,7 +786,7 @@ def run(args):
       for f2 in range(f1 + 1, len(frames)):
         if common_reflections[(f1, f2)] > 10:
           cmn_rfl_list.append((common_reflections[(f1, f2)], f1, f2))
-        if other_refections[(f1, f2)] > 10:
+        if other_reflections[(f1, f2)] > 10:
           oth_rfl_list.append((other_reflections[(f1, f2)], f1, f2))
 
     cmn_rfl_list.sort()
