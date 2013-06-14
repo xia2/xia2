@@ -617,18 +617,19 @@ def run(args):
 
   # FIXME in here perform the mapping to ASU for both the original and other
   # index as an array-wise manipulation to make things a bunch faster...
-  # however this also uses a big chunk of RAM...
+  # however this also uses a big chunk of RAM... FIXME also in here use
+  # cb_op.apply(indices) to get the indices reindexed...
 
   original_indices = flex.miller_index()
   for x in xrange(len(scaler.observations["hkl_id"])):
-    if (x % 1000) == 0:
+    if (x % 10000) == 0:
       print x
     original_indices.append(lookup[hkl_asu[x]])
 
   I23 = matrix.sqr((0, 1, 0, -1, 0, 0, 0, 0, 1))
   other_indices = flex.miller_index()
   for x in xrange(len(scaler.observations["hkl_id"])):
-    if (x % 1000) == 0:
+    if (x % 10000) == 0:
       print x
     other_indices.append(I23 * lookup[hkl_asu[x]])
 
@@ -677,35 +678,127 @@ def run(args):
 
   print 'Keeping %d frames' % len(starts)
 
-  print 1/0  
-
   # then start running the comparison code
 
-  polarity_transform_I23 = matrix.sqr((0, 1, 0, -1, 0, 0, 0, 0, 1))
-  for x in xrange(len(scaler.observations["hkl_id"])):
-    if (x % 1000) == 0:
-      print x
-    hkl = lookup[hkl_asu[x]]
-    hklrev = polarity_transform_I23 * hkl
-    testmiller = flex.miller_index([hklrev])
-    map_to_asu(sgtype, aflag, testmiller)
-    hklrev_asu = testmiller[0]
-    if (origH[x] + origK[x] + origL[x]) % 2 != 0 :
-      relation = "BADSYS" 
-    else:
-      original = origH[x], origK[x], origL[x]
-      relation = "XXXXXX"
-      for op in rational_ops:
-        if (op[0] * original).elems == hkl:
-          relation = op[1]
-          break
+  frames = []
 
+  for s, e in zip(starts, ends):
+    misym = [m_isym[x] for x in range(s, e)]
+    indices = [original_indices[x] for x in range(s, e)]
+    original = [lookup[x] for x in range(s, e)]
+    intensities = intensi[s:e]
+    sigmas = sigma_i[s:e]
 
-    print "%6d" % hkl_asu[x], "%9s" % relation, \
-        "%7d frame %5d HKL:%4d%4d%4d ASU:%4d%4d%4d ALT:%4d%4d%4d" % (
-          x, imageno[x], origH[x], origK[x], origL[x], hkl[0], hkl[1], hkl[2],
-          hklrev_asu[0], hklrev_asu[1], hklrev_asu[2]), \
-          "I %8.2f S %8.2f" % (intensi[x], sigma_i[x])
+    frames.append(Frame(uc, indices, misym, original, intensities, sigmas))
+
+  cycle = 0
+
+  total_nref = sum([len(f.get_indices()) for f in frames])
+
+  # pre-scale the data - first determine average ln(k), B; then apply
+
+  kbs = [f.kb() for f in frames]
+
+  mn_k = sum([kb[0] for kb in kbs]) / len(kbs)
+  mn_B = sum([kb[1] for kb in kbs]) / len(kbs)
+
+  for f in frames:
+    f.scale_to_kb(mn_k, mn_B)
+    
+  while True:
+
+    print 'Analysing %d frames' % len(frames)
+    print 'Cycle %d' % cycle
+    cycle += 1
+
+    print 'Power spectrum'
+    fn = frame_numbers(frames)
+    for j in sorted(fn):
+      print '%4d %4d' % (j, fn[j])
+            
+    nref_cycle = sum([len(f.get_indices()) for f in frames])
+    assert(nref_cycle == total_nref)
+
+    common_reflections = numpy.zeros((len(frames), len(frames)),
+                                     dtype = numpy.short)
+
+    obs = { } 
+
+    for j, f in enumerate(frames):
+      indices = set(f.get_indices())
+      for i in indices:
+        _i = tuple(i)
+        if not _i in obs:
+          obs[_i] = []
+        obs[_i].append(j)
+
+    for hkl in obs:
+      obs[hkl].sort()
+      for j, f1 in enumerate(obs[hkl][:-1]):
+        for f2 in obs[hkl][j + 1:]:
+          common_reflections[(f1, f2)] += 1
+
+    cmn_rfl_list = []
+
+    for f1 in range(len(frames)):
+      for f2 in range(f1 + 1, len(frames)):
+        if common_reflections[(f1, f2)] > 10:
+          cmn_rfl_list.append((common_reflections[(f1, f2)], f1, f2))
+
+    cmn_rfl_list.sort()
+    cmn_rfl_list.reverse()
+    
+    joins = []
+    used = []
+    
+    for n, f1, f2 in cmn_rfl_list:
+      
+      if f1 in used or f2 in used:
+        continue
+            
+      _cc = frames[f1].cc(frames[f2])
+
+      # really only need to worry about f2 which will get merged...
+      # merging multiple files together should be OK provided they are
+      # correctly sorted (though the order should not matter anyhow?)
+      # anyhow they are sorted anyway... ah as f2 > f1 then just sorting
+      # the list by f2 will make sure the data cascase correctly.
+
+      # p-value small (3% ish) for cc > 0.6 for > 10 observations -
+      # necessary as will be correlated due to Wilson curves though
+      # with B factor < 10 this is less of an issue
+
+      if _cc[0] > 10 and _cc[1] > 0.6:
+        print '%4d %.3f' % _cc, f1, f2
+        joins.append((f2, f1))
+        used.append(f2)
+
+    if not joins:
+      print 'No pairs found'
+      break
+
+    joins.sort()
+    joins.reverse()
+        
+    for j2, j1 in joins:
+      rmerge = frames[j1].merge(frames[j2])
+      if rmerge:
+        print 'R: %4d %4d %6.3f' % (j1, j2, rmerge)
+      else:
+        print 'R: %4d %4d ------' % (j1, j2)
+                
+    continue
+
+  frames.sort()
+
+  print 'Biggest few: #frames; #unique refl'
+  j = -1
+  while frames[j].get_frames() > 1:
+    print frames[j].get_frames(), frames[j].get_unique_indices()
+    frames[j].output_as_scalepack(sg, 'scalepack-%d.sca' % j)
+    j -= 1
+
+  return
 
 if (__name__ == "__main__"):
   sargs = ["d_min=3.0",
