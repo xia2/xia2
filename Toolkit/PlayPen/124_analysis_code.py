@@ -622,16 +622,13 @@ def run(args):
 
   original_indices = flex.miller_index()
   for x in xrange(len(scaler.observations["hkl_id"])):
-    if (x % 10000) == 0:
-      print x
     original_indices.append(lookup[hkl_asu[x]])
 
-  I23 = matrix.sqr((0, 1, 0, -1, 0, 0, 0, 0, 1))
-  other_indices = flex.miller_index()
-  for x in xrange(len(scaler.observations["hkl_id"])):
-    if (x % 10000) == 0:
-      print x
-    other_indices.append(I23 * lookup[hkl_asu[x]])
+  from cctbx.sgtbx import change_of_basis_op
+
+  I23 = change_of_basis_op('k, -h, l')
+
+  other_indices = I23.apply(original_indices)
 
   map_to_asu(sgtype, aflag, original_indices)
   map_to_asu(sgtype, aflag, other_indices)
