@@ -24,8 +24,15 @@ from Driver.DriverFactory import DriverFactory
 
 import spotfinder
 from spotfinder.command_line import sweep_strength
+import libtbx.phil
 
 master_params = sweep_strength.master_params
+custom_params = libtbx.phil.parse("""
+distl.verbosity = 0
+""")
+# override distl.sweep_strength_defaults
+master_params = master_params.fetch(source=custom_params)
+
 
 def DistlSweepStrength(DriverType=None, params=None):
     '''Factory for DistlSweepStrength wrapper classes, with the specified
@@ -46,6 +53,8 @@ def DistlSweepStrength(DriverType=None, params=None):
             if not params:
                 params = master_params.extract()
             self._params = params
+
+
 
             self.set_executable('distl.sweep_strength')
 
@@ -103,7 +112,6 @@ def DistlSweepStrength(DriverType=None, params=None):
 
             for image in self._images:
                 self.add_command_line(image)
-            self.add_command_line('verbose=True')
             self.start()
             self.close_wait()
 
