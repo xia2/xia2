@@ -288,31 +288,27 @@ class Frame:
   '''A class to represent one set of intensity measurements from X-fel
   data collection.'''
 
-  def __init__(self, unit_cell, indices, misym, original,
-               intensities, sigmas):
+  def __init__(self, unit_cell, indices, other, intensities, sigmas):
     self._unit_cell = unit_cell
     
-    _misym = []
     _indices = []
-    _original = []
+    _other = []
     _intensities = []
     _sigmas = []
     
-    # limit only to relections with 500 counts or more
+    # limit only to relections with I/sigma(I) or more
     
     for j, i in enumerate(intensities):
       # FIXME should really exclude all observations with I/sigma < 3
       if i < 3 * sigmas[j]:
         continue
-      _misym.append(misym[j])
       _indices.append(indices[j])
-      _original.append(original[j])
+      _other.append(other[j])
       _intensities.append(intensities[j])
       _sigmas.append(sigmas[j])
       
-    self._raw_misym = _misym
     self._raw_indices = _indices
-    self._raw_original = _original
+    self._raw_other = _other
     self._raw_intensities = _intensities
     self._raw_sigmas = _sigmas
     
@@ -328,6 +324,7 @@ class Frame:
 
   def empty(self):
     self._raw_indices = []
+    self._raw_other = []
     self._raw_intensities = []
     self._raw_sigmas = []
     
@@ -366,6 +363,12 @@ class Frame:
   def get_unique_indices(self):
     return len(set(self._raw_indices))
 
+  def get_other(self):
+    return self._raw_other
+
+  def get_unique_other(self):
+    return len(set(self._raw_other))
+
   def get_intensity_dict(self):
     '''Useful for CC value between frames: FIXME this should be using the
     merged values from last scaling round.'''
@@ -376,6 +379,22 @@ class Frame:
 
     for j in range(len(self._raw_indices)):
       hkl = self._raw_indices[j]
+      i = self._intensities[j]
+      
+      result[hkl].append(i)
+
+    return result
+
+  def get_other_dict(self):
+    '''Useful for CC value between frames: FIXME this should be using the
+    merged values from last scaling round.'''
+
+    from collections import defaultdict
+
+    result = defaultdict(list)
+
+    for j in range(len(self._raw_other)):
+      hkl = self._raw_other[j]
       i = self._intensities[j]
       
       result[hkl].append(i)
@@ -396,10 +415,15 @@ class Frame:
         
     return cc(self.get_intensity_dict(), other.get_intensity_dict())
 
+  def cc_other(self, other):
+        
+    return cc(self.get_intensity_dict(), other.get_other_dict())
+
   def reindex(self):
     # FIXME this should just switch the original and alternative indices
-    raise RuntimeError, 'implement me'
-
+    self._raw_other, self._raw_indices = self._raw_indices, self._raw_other
+    return
+  
   def merge(self, other):
     '''Scale and merge frame data from this frame and the other.'''
 
@@ -446,6 +470,10 @@ class Frame:
     return len(set(self._raw_indices).intersection(
       set(other.get_indices())))
 
+  def common_other(self, other):
+    return len(set(self._raw_indices).intersection(
+      set(other.get_other())))
+
   def kb(self):
     '''Compute estimates for the overall scale factor and B factor by
     linear regression of the intensity observations. N.B. fitting
@@ -478,28 +506,13 @@ class Frame:
     return s, B
 
   def hand_pairs(self):
-    '''Find # reflection pairs matched by hand inversion operation h, l, k.
-    N.B. this does have determinant -1 but also maps reflections asu onto
-    self.'''
 
     # FIXME this should just use the saved indices
 
     unique_indices = set(self._raw_indices)
+    unique_other = set(self._raw_other)
 
-    from cctbx.sgtbx import rt_mx, change_of_basis_op
-    
-    hp = 0
-    
-    oh = change_of_basis_op(rt_mx('h,l,k'))
-    
-    for ui in unique_indices:
-      oh_ui = oh.apply(ui)
-      if oh_ui == ui:
-        continue
-      if oh_ui in unique_indices:
-        hp += 1
-
-    return hp / 2
+    return len(unique_indices.intersection(unique_other))
 
   def scale_to_kb(self, k, B):
     '''Scale this set to match input ln(k), B.'''
@@ -541,8 +554,8 @@ class Frame:
     for b, fs in enumerate(self._frame_sizes):
       for k in range(fs):
         hkl = self._raw_indices[j]
-        ohkl = self._raw_original[j]
-        m = self._raw_misym[j]
+        ohkl = self._raw_other[j]
+        m = 1
         i = self._raw_intensities[j]
         s = self._raw_sigmas[j]
         fout.write('%4d%4d%4d%4d%4d%4d%6d 0 0%3d%8.1f%8.1f\n' %
@@ -677,7 +690,7 @@ def run(args):
       d = uc.d(lookup[hkl_asu[x]])
       if d < dmin:
         dmin = d
-    if isig > 3.0 and dmin < 3.2:
+    if isig > 6.0 and dmin < 3.2:
       keep_start.append(s)
       keep_end.append(e)
 
@@ -694,11 +707,11 @@ def run(args):
     # FIXME need this from remap to ASU
     misym = [0 for x in range(s, e)]
     indices = [original_indices[x] for x in range(s, e)]
-    original = [lookup[hkl_asu[x]] for x in range(s, e)]
+    other = [other_indices[x] for x in range(s, e)]
     intensities = intensi[s:e]
     sigmas = sigma_i[s:e]
 
-    frames.append(Frame(uc, indices, misym, original, intensities, sigmas))
+    frames.append(Frame(uc, indices, other, intensities, sigmas))
 
   cycle = 0
 
@@ -728,12 +741,19 @@ def run(args):
     nref_cycle = sum([len(f.get_indices()) for f in frames])
     assert(nref_cycle == total_nref)
 
+    # first work on the original indices
+
     import numpy
 
     common_reflections = numpy.zeros((len(frames), len(frames)),
                                      dtype = numpy.short)
+    
+    other_reflections = numpy.zeros((len(frames), len(frames)),
+                                    dtype = numpy.short)
 
     obs = { } 
+
+    # for other hand add -j
 
     for j, f in enumerate(frames):
       indices = set(f.get_indices())
@@ -743,18 +763,31 @@ def run(args):
           obs[_i] = []
         obs[_i].append(j)
 
+      indices = set(f.get_other())
+      for i in indices:
+        _i = tuple(i)
+        if not _i in obs:
+          obs[_i] = []
+        obs[_i].append(-j)
+
     for hkl in obs:
       obs[hkl].sort()
       for j, f1 in enumerate(obs[hkl][:-1]):
         for f2 in obs[hkl][j + 1:]:
-          common_reflections[(f1, f2)] += 1
+          if f1 * f2 > 0:
+            common_reflections[(abs(f1), abs(f2))] += 1
+          else:
+            other_refections[(abs(f1), abs(f2))] += 1
 
     cmn_rfl_list = []
+    oth_rfl_list = []
 
     for f1 in range(len(frames)):
       for f2 in range(f1 + 1, len(frames)):
         if common_reflections[(f1, f2)] > 10:
           cmn_rfl_list.append((common_reflections[(f1, f2)], f1, f2))
+        if other_refections[(f1, f2)] > 10:
+          oth_rfl_list.append((other_reflections[(f1, f2)], f1, f2))
 
     cmn_rfl_list.sort()
     cmn_rfl_list.reverse()
@@ -797,7 +830,54 @@ def run(args):
         print 'R: %4d %4d %6.3f' % (j1, j2, rmerge)
       else:
         print 'R: %4d %4d ------' % (j1, j2)
-                
+
+    all_joins = joins
+
+    # then do the same for the alternative indices
+
+    joins = []
+
+    oth_rfl_list.sort()
+    oth_rfl_list.reverse()
+        
+    for n, f1, f2 in oth_rfl_list:
+      
+      if f1 in used or f2 in used:
+        continue
+            
+      _cc = frames[f1].cc_other(frames[f2])
+
+      # really only need to worry about f2 which will get merged...
+      # merging multiple files together should be OK provided they are
+      # correctly sorted (though the order should not matter anyhow?)
+      # anyhow they are sorted anyway... ah as f2 > f1 then just sorting
+      # the list by f2 will make sure the data cascase correctly.
+
+      # p-value small (3% ish) for cc > 0.6 for > 10 observations -
+      # necessary as will be correlated due to Wilson curves though
+      # with B factor < 10 this is less of an issue
+
+      if _cc[0] > 10 and _cc[1] > 0.6:
+        print '%4d %.3f' % _cc, f1, f2
+        joins.append((f2, f1))
+        used.append(f2)
+
+    all_joins += joins
+
+    if not all_joins:
+      break
+      
+    joins.sort()
+    joins.reverse()
+        
+    for j2, j1 in joins:
+      frames[j2].reindex()
+      rmerge = frames[j1].merge(frames[j2])
+      if rmerge:
+        print 'R: %4d %4d %6.3f' % (j1, j2, rmerge)
+      else:
+        print 'R: %4d %4d ------' % (j1, j2)
+        
     continue
 
   frames.sort()
