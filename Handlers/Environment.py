@@ -43,7 +43,7 @@ def debug_memory_usage():
 
     try:
         import inspect
-        
+
         frameinfo = inspect.getframeinfo(inspect.stack()[1][0])
         Debug.write('RAM usage at %s %d: %d' %
                     (os.path.split(frameinfo.filename)[-1], frameinfo.lineno,
@@ -86,14 +86,14 @@ class _Environment:
         # create a USER environment variable, to allow harvesting
         # in Mosflm to work (hacky, I know, but it really doesn't
         # matter too much...
-        
+
         if not 'USER' in os.environ:
             if 'USERNAME' in os.environ:
                 os.environ['USER'] = os.environ['USERNAME']
             else:
                 os.environ['USER'] = 'xia2'
 
-        # define a local CCP4_SCR 
+        # define a local CCP4_SCR
 
         ccp4_scr = tempfile.mkdtemp()
         os.environ['CCP4_SCR'] = ccp4_scr
@@ -164,41 +164,9 @@ Environment = _Environment()
 
 def get_number_cpus():
     '''Portably get the number of processor cores available.'''
+    from libtbx.introspection import number_of_processors
+    return number_of_processors(return_value_if_unknown=-1)
 
-    # Windows NT derived platforms
-
-    if os.name == 'nt':
-        return int(os.environ['NUMBER_OF_PROCESSORS'])
-
-    # linux
-
-    if os.path.exists('/proc/cpuinfo'):
-        n_cpu = 0
-
-        for record in open('/proc/cpuinfo', 'r').readlines():
-            if not record.strip():
-                continue
-            if 'processor' in record.split()[0]:
-                n_cpu += 1
-
-        return n_cpu
-
-    # os X
-
-    output = subprocess.Popen(['system_profiler', 'SPHardwareDataType'],
-                              stdout = subprocess.PIPE).communicate()[0]
-
-    ht = 1
-
-    for record in output.split('\n'):
-        if 'Intel Core i7' in record:
-            ht = 2
-        if 'Total Number Of Cores' in record:
-            return ht * int(record.split()[-1])
-        if 'Total Number of Cores' in record:
-            return ht * int(record.split()[-1])
-
-    return -1
 
 if __name__ == '__main__':
 
