@@ -132,6 +132,8 @@ def print_sweeps(out = sys.stdout):
 
     out = sys.stdout
 
+    nproc = Flags.get_parallel()
+
     for sweep in sweeplists:
         sweeps = known_sweeps[sweep]
         # this should sort on exposure epoch ...?
@@ -154,8 +156,17 @@ def print_sweeps(out = sys.stdout):
             out.write('IMAGE %s\n' % os.path.split(s.imagename(min(
                 s.get_images())))[-1])
 
-            # FIXME in here add your DistlSweepStrength code, look at s for
-            # filename information
+            d = DistlSweepStrength()
+            if nproc > 1:
+                d.add_command_line("nproc=%i" %nproc)
+            #if 1:
+                #d.add_command_line("minimum_spot_area=0")
+                #d.add_command_line("minimum_signal_height=10")
+                #d.add_command_line("minimum_spot_height=15")
+            for i in s.get_images():
+                d.set_image(s.imagename(i))
+            d.run()
+
 
 def rummage(path):
     '''Walk through the directories looking for sweeps.'''
