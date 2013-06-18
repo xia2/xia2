@@ -60,7 +60,6 @@ def merge2cbf(DriverType = None):
             # I don't think there is a parallel version
             self.set_executable('merge2cbf')
 
-            self._moving_average = False
             self._data_range = (0, 0)
             self._merge_n_images = 1
             self._input_data_files = { }
@@ -71,17 +70,6 @@ def merge2cbf(DriverType = None):
 
             return
 
-        ## getter and setter for input / output data
-
-        #def set_input_data_file(self, name, data):
-            #self._input_data_files[name] = data
-            #return
-
-        #def get_output_data_file(self, name):
-            #return self._output_data_files[name]
-
-        # this needs setting up from setup_from_image in FrameProcessor
-
         def set_data_range(self, start, end):
             self._data_range = (start, end)
 
@@ -91,15 +79,20 @@ def merge2cbf(DriverType = None):
         def get_merge_n_images(self):
             return self._merge_n_images
 
-        def set_moving_average(self, moving_average):
-            assert moving_average in (True, False)
-            self._moving_average = moving_average
-
-        def get_moving_average(self):
-            return self._moving_average
-
-        def run(self):
+        def run(self, moving_average=False):
             '''Run merge2cbf.'''
+
+            if moving_average:
+                # recursively call this function
+                i_first, i_last = self._data_range
+                n_output_images = (i_last - i_first) - self._merge_n_images + 1
+                for i in range(i_first, i_first+n_output_images):
+                    self._data_range = (i, i+self._merge_n_images)
+                    self.run(moving_average=False)
+                # restore the original data range
+                self._data_range = (i_first, i_last)
+                self.update_minicbf_headers(moving_average=True)
+                return
 
             # merge2cbf only requires mimimal information in the input file
             image_header = self.get_header()
@@ -110,14 +103,13 @@ def merge2cbf(DriverType = None):
             name_template = os.path.join(self.get_directory(),
                                          self.get_template().replace('#', '?'))
 
-            output_template = os.path.join(self.get_working_directory(),
-                                           'merge2cbf_averaged_????.cbf')
+            self._output_template = os.path.join('merge2cbf_averaged_????.cbf')
 
             xds_inp.write(
                 'NAME_TEMPLATE_OF_DATA_FRAMES=%s\n' %name_template)
 
             xds_inp.write(
-                'NAME_TEMPLATE_OF_OUTPUT_FRAMES=%s\n' %output_template)
+                'NAME_TEMPLATE_OF_OUTPUT_FRAMES=%s\n' %self._output_template)
 
             xds_inp.write(
                 'NUMBER_OF_DATA_FRAMES_COVERED_BY_EACH_OUTPUT_FRAME=%s\n' %
@@ -132,31 +124,104 @@ def merge2cbf(DriverType = None):
 
             xds_check_version_supported(self.get_all_output())
 
-        def run_moving_average(self):
-            '''Like the run method, but to create a sequence of moving average
-               images.'''
+            self.update_minicbf_headers(moving_average=False)
+
+        def update_minicbf_headers(self, moving_average=False):
             i_first, i_last = self._data_range
-            n_output_images = (i_last - i_first) - self._merge_n_images + 1
-            for i in range(i_first, i_first+n_output_images):
-                self._data_range = (i, i+self._merge_n_images)
-                self.run()
-            # restore the original data range
-            self._data_range = (i_first, i_last)
+            if moving_average:
+                n_output_images = (i_last - i_first) - self._merge_n_images + 1
+            else:
+                n_output_images = (i_last - i_first + 1) // self._merge_n_images
+
+            import fileinput
+
+            for i in range(n_output_images):
+                minicbf_header_content = self.get_minicbf_header_contents(
+                    i, moving_average=moving_average)
+                f = fileinput.input(
+                    self._output_template.replace('????', '%04i') %(i+1),
+                    mode='rb', inplace=1)
+                processing_array_header_contents = False
+                printed_array_header_contents = False
+                for line in f:
+                    if processing_array_header_contents and line.startswith('_'):
+                        # we have reached the next data item
+                        processing_array_header_contents = False
+                    elif line.startswith('_array_data.header_contents'):
+                        processing_array_header_contents = True
+                    elif processing_array_header_contents:
+                        if not printed_array_header_contents:
+                            print """;\n%s\n;\n""" %minicbf_header_content
+                            printed_array_header_contents = True
+                        continue
+                    print line,
+                f.close()
+
+        def get_minicbf_header_contents(self, i_output_image, moving_average=False):
+            from Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
+            header_contents = []
+            image_header = self.get_header()
+            header_contents.append(
+                '# Detector: %s' %image_header['detector_class'].upper())
+            import time
+            timestamp = time.strftime('%Y-%m-%dT%H:%M:%S.000',
+                                      time.gmtime(image_header['epoch']))
+            header_contents.append(
+            '# %s' %timestamp)
+            pixel_size_mm = image_header['pixel']
+            pixel_size_microns = tuple([mm * 1000 for mm in pixel_size_mm])
+            header_contents.append(
+                '# Pixel_size %.0fe-6 m x %.0fe-6 m' %pixel_size_microns)
+            if 'pilatus' in image_header['detector_class']:
+                header_contents.append("# Silicon sensor, thickness 0.000320 m")
+            header_contents.append(
+                '# Exposure_period %.7f s' %image_header['exposure_time'])
+            # XXX xia2 doesn't keep track of the overload count cutoff value?
+            header_contents.append(
+                '# Count_cutoff %i counts' %1e7)
+            header_contents.append(
+                '# Wavelength %.5f A' %image_header['wavelength'])
+            # mm to m
+            header_contents.append(
+                '# Detector_distance %.5f m' %(image_header['distance']/1000))
+            beam_x, beam_y = image_header['beam']
+            header_contents.append(
+                '# Beam_xy (%.2f, %.2f) pixels' %beam_centre_mosflm_to_xds(
+                    beam_x, beam_y, image_header))
+            input_phi_width = image_header['phi_width']
+            if moving_average:
+                output_phi_width = input_phi_width
+            else:
+                output_phi_width = input_phi_width * self._merge_n_images
+            header_contents.append(
+                '# Start_angle %.4f deg.' %
+                (image_header['phi_start'] + output_phi_width * i_output_image))
+            header_contents.append(
+                '# Angle_increment %.4f deg.' %output_phi_width)
+            header_contents.append(
+                '# Detector_2theta %.4f deg.' %image_header['two_theta'])
+            return "\n".join(header_contents)
 
     return merge2cbfWrapper()
 
 if __name__ == '__main__':
+    import sys
 
     m2c = merge2cbf()
 
-    directory = '/Users/rjgildea/data/2013_05_23/insitu/thermolysin/F9/'
+    args = sys.argv[1:]
+    if len(args):
+        first_image = args[0]
+        assert os.path.isfile(first_image)
+        data_range = (1, len(args))
+    else:
+        directory = '/Users/rjgildea/data/2013_05_23/insitu/thermolysin/F9/'
+        first_image = os.path.join(directory, 'app30_weak_F9d1_10_0001.cbf')
+        data_range = (1, 50)
 
-    m2c.setup_from_image(os.path.join(directory, 'app30_weak_F9d1_10_0001.cbf'))
+    m2c.setup_from_image(first_image)
 
-    m2c.set_data_range(1, 50)
+    m2c.set_data_range(*data_range)
     m2c.set_merge_n_images(5)
 
-    # Either do straight averaging:
     m2c.run()
-    # or a moving average
-    #m2c.run_moving_average()
