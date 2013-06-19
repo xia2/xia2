@@ -40,7 +40,25 @@ from Handlers.Streams import Debug
 # global flags
 from Handlers.Flags import Flags
 
-def merge2cbf(DriverType = None):
+from libtbx import phil
+import libtbx
+
+master_params = phil.parse("""
+merge_n_images = 1
+  .type = int(value_min=1)
+  .help = "Number of input images to average into a single output image"
+data_range = None
+  .type = ints(size=2, value_min=0)
+moving_average = False
+  .type = bool
+  .help = "If true, then perform a moving average over the sweep, i.e. given"
+          "images 1, 2, 3, 4, 5, 6, ..., with averaging over three images,"
+          "the output frames would cover 1-3, 2-4, 3-5, 4-6, etc."
+          "Otherwise, a straight summation is performed:"
+          " 1-3, 4-6, 7-9, etc."
+""")
+
+def merge2cbf(DriverType=None, params=None):
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -48,20 +66,24 @@ def merge2cbf(DriverType = None):
                            FrameProcessor):
         '''A wrapper for wrapping merge2cbf.'''
 
-        def __init__(self):
+        def __init__(self, params=None):
 
             # set up the object ancestors...
 
             DriverInstance.__class__.__init__(self)
             FrameProcessor.__init__(self)
 
+            # phil parameters
+
+            if not params:
+                params = master_params.extract()
+            self._params = params
+
             # now set myself up...
 
             # I don't think there is a parallel version
             self.set_executable('merge2cbf')
 
-            self._data_range = (0, 0)
-            self._merge_n_images = 1
             self._input_data_files = { }
             self._output_data_files = { }
 
@@ -70,29 +92,26 @@ def merge2cbf(DriverType = None):
 
             return
 
-        def set_data_range(self, start, end):
-            self._data_range = (start, end)
+        class data_range(libtbx.property):
+            def fset(self, start, end):
+                self._params.data_range = (start, end)
+            def fget(self):
+                return self._params.data_range
 
-        def set_merge_n_images(self, n):
-            self._merge_n_images = n
+        class moving_average(libtbx.property):
+            def fset(self, value):
+                self._params.moving_average = value
+            def fget(self):
+                return self._params.moving_average
 
-        def get_merge_n_images(self):
-            return self._merge_n_images
+        class merge_n_images(libtbx.property):
+            def fset(self, n):
+                self._params.merge_n_images = n
+            def fget(self):
+                return self._params.merge_n_images
 
-        def run(self, moving_average=False):
-            '''Run merge2cbf.'''
-
-            if moving_average:
-                # recursively call this function
-                i_first, i_last = self._data_range
-                n_output_images = (i_last - i_first) - self._merge_n_images + 1
-                for i in range(i_first, i_first+n_output_images):
-                    self._data_range = (i, i+self._merge_n_images)
-                    self.run(moving_average=False)
-                # restore the original data range
-                self._data_range = (i_first, i_last)
-                self.update_minicbf_headers(moving_average=True)
-                return
+        def run_core(self, data_range, moving_average=False):
+            '''Actually run merge2cbf itself.'''
 
             # merge2cbf only requires mimimal information in the input file
             image_header = self.get_header()
@@ -113,9 +132,9 @@ def merge2cbf(DriverType = None):
 
             xds_inp.write(
                 'NUMBER_OF_DATA_FRAMES_COVERED_BY_EACH_OUTPUT_FRAME=%s\n' %
-                self.get_merge_n_images())
+                self.merge_n_images)
 
-            xds_inp.write('DATA_RANGE=%d %d\n' % self._data_range)
+            xds_inp.write('DATA_RANGE=%d %d\n' % tuple(data_range))
 
             xds_inp.close()
 
@@ -124,14 +143,27 @@ def merge2cbf(DriverType = None):
 
             xds_check_version_supported(self.get_all_output())
 
+        def run(self):
+            '''Run merge2cbf.'''
+
+            if self.moving_average:
+                i_first, i_last = self.data_range
+                n_output_images = (i_last - i_first) - self.merge_n_images + 1
+                for i in range(i_first, i_first+n_output_images):
+                    data_range = (i, i+self.merge_n_images)
+                    self.run_core(data_range, moving_average=False)
+                self.update_minicbf_headers(moving_average=True)
+                return
+
+            self.run_core(self.data_range, moving_average=False)
             self.update_minicbf_headers(moving_average=False)
 
         def update_minicbf_headers(self, moving_average=False):
-            i_first, i_last = self._data_range
+            i_first, i_last = self.data_range
             if moving_average:
-                n_output_images = (i_last - i_first) - self._merge_n_images + 1
+                n_output_images = (i_last - i_first) - self.merge_n_images + 1
             else:
-                n_output_images = (i_last - i_first + 1) // self._merge_n_images
+                n_output_images = (i_last - i_first + 1) // self.merge_n_images
 
             import fileinput
 
@@ -192,7 +224,7 @@ def merge2cbf(DriverType = None):
             if moving_average:
                 output_phi_width = input_phi_width
             else:
-                output_phi_width = input_phi_width * self._merge_n_images
+                output_phi_width = input_phi_width * self.merge_n_images
             header_contents.append(
                 '# Start_angle %.4f deg.' %
                 (image_header['phi_start'] + output_phi_width * i_output_image))
@@ -202,30 +234,20 @@ def merge2cbf(DriverType = None):
                 '# Detector_2theta %.4f deg.' %image_header['two_theta'])
             return "\n".join(header_contents)
 
-    return merge2cbfWrapper()
+    return merge2cbfWrapper(params=params)
 
 if __name__ == '__main__':
     import sys
-
-    m2c = merge2cbf()
+    from libtbx.phil import command_line
 
     args = sys.argv[1:]
-
-    if len(args):
-        n_per_frame = int(args[0])
-        args = args[1:]
-        first_image = args[0]
-        assert os.path.isfile(first_image)
-        data_range = (1, len(args))
-    else:
-        n_per_frame = 5
-        directory = '/Users/rjgildea/data/2013_05_23/insitu/thermolysin/F9/'
-        first_image = os.path.join(directory, 'app30_weak_F9d1_10_0001.cbf')
-        data_range = (1, 50)
-
+    cmd_line = command_line.argument_interpreter(master_params=master_params)
+    working_phil, image_files = cmd_line.process_and_fetch(
+        args=args, custom_processor="collect_remaining")
+    working_phil.show()
+    assert len(image_files) > 0
+    first_image = image_files[0]
+    params = working_phil.extract()
+    m2c = merge2cbf(params=params)
     m2c.setup_from_image(first_image)
-
-    m2c.set_data_range(*data_range)
-    m2c.set_merge_n_images(n_per_frame)
-
     m2c.run()
