@@ -210,11 +210,15 @@ if __name__ == '__main__':
     m2c = merge2cbf()
 
     args = sys.argv[1:]
+
     if len(args):
+        n_per_frame = int(args[0])
+        args = args[1:]
         first_image = args[0]
         assert os.path.isfile(first_image)
         data_range = (1, len(args))
     else:
+        n_per_frame = 5
         directory = '/Users/rjgildea/data/2013_05_23/insitu/thermolysin/F9/'
         first_image = os.path.join(directory, 'app30_weak_F9d1_10_0001.cbf')
         data_range = (1, 50)
@@ -222,6 +226,6 @@ if __name__ == '__main__':
     m2c.setup_from_image(first_image)
 
     m2c.set_data_range(*data_range)
-    m2c.set_merge_n_images(5)
+    m2c.set_merge_n_images(n_per_frame)
 
     m2c.run()
