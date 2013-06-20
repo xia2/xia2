@@ -44,7 +44,7 @@ from libtbx import phil
 import libtbx
 
 master_params = phil.parse("""
-merge_n_images = 1
+merge_n_images = 2
   .type = int(value_min=1)
   .help = "Number of input images to average into a single output image"
 data_range = None
