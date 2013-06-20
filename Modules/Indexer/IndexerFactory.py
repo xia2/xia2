@@ -149,6 +149,8 @@ def Indexer(preselection = None):
         if Flags.get_small_molecule():
             preselection = 'mosflm'
 
+    # FIXME perhaps find a less baroque way of coding this up
+
     if not indexer and (not preselection or preselection == 'labelit'):
         try:
             indexer = LabelitIndex()
@@ -185,6 +187,8 @@ def Indexer(preselection = None):
             if preselection:
                 raise RuntimeError, 'preselected indexer xds not available'
             pass
+
+    # FIXME add option for XDSIndexerSum so we can run that as an option
 
     if not indexer and (not preselection or preselection == 'labelitii'):
         try:
