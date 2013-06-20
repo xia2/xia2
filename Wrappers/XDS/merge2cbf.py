@@ -170,8 +170,11 @@ def merge2cbf(DriverType=None, params=None):
             for i in range(n_output_images):
                 minicbf_header_content = self.get_minicbf_header_contents(
                     i, moving_average=moving_average)
-                f = fileinput.input(
-                    self._output_template.replace('????', '%04i') %(i+1),
+                filename = os.path.join(
+                    self.get_working_directory(),
+                    self._output_template.replace('????', '%04i') %(i+1))
+                assert os.path.isfile(filename)
+                f = fileinput.input(filename,
                     mode='rb', inplace=1)
                 processing_array_header_contents = False
                 printed_array_header_contents = False
