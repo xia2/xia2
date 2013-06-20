@@ -90,6 +90,7 @@ class _CommandLine():
         self._read_3dr()
         self._read_3dir()
         self._read_3diir()
+        self._read_3ds()
 
         # FIXME really need to fix how this works out...
 
@@ -587,7 +588,7 @@ class _CommandLine():
                     tuple(Flags.get_xparm_b()))
         Debug.write('Real Space C: %.2f %.2f %.2f' % \
                     tuple(Flags.get_xparm_c()))
-        
+
         return
 
     def _help_xparm_ub(self):
@@ -1256,6 +1257,17 @@ class _CommandLine():
             if '-3diir' in sys.argv:
                 self._understood.append(sys.argv.index('-3diir'))
             Debug.write('3D II R pipeline (XDS IDXREF all images) selected')
+        return
+
+    def _read_3ds(self):
+
+        if '-3ds' in sys.argv :
+            add_preference('indexer', 'xdssum')
+            add_preference('integrater', 'xdsr')
+            add_preference('scaler', 'xdsr')
+            if '-3ds' in sys.argv:
+                self._understood.append(sys.argv.index('-3ds'))
+            Debug.write('3DS pipeline selected')
         return
 
     def _read_3dar(self):

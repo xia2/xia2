@@ -44,6 +44,7 @@ from Wrappers.Labelit.LabelitIndexII import LabelitIndexII
 from Wrappers.CCP4.Mosflm import Mosflm
 from Modules.Indexer.XDSIndexer import XDSIndexer
 from Modules.Indexer.XDSIndexerII import XDSIndexerII
+from Modules.Indexer.XDSIndexerSum import XDSIndexerSum
 
 from DriverExceptions.NotAvailableError import NotAvailableError
 from Handlers.Streams import Debug
@@ -188,7 +189,14 @@ def Indexer(preselection = None):
                 raise RuntimeError, 'preselected indexer xds not available'
             pass
 
-    # FIXME add option for XDSIndexerSum so we can run that as an option
+    if not indexer and (not preselection or preselection == 'xdssum'):
+        try:
+            indexer = XDSIndexerSum()
+            Debug.write('Using XDS Indexer on summed images')
+        except NotAvailableError, e:
+            if preselection:
+                raise RuntimeError, 'preselected indexer xds not available'
+            pass
 
     if not indexer and (not preselection or preselection == 'labelitii'):
         try:

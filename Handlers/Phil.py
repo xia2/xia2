@@ -6,7 +6,7 @@
 #   included in the root directory of this package.
 #
 # Phil parameter setting - to get a single place where complex parameters to
-# set for individual programs can be found. Initially this will be just a 
+# set for individual programs can be found. Initially this will be just a
 # couple for XDS.
 
 import os
@@ -22,6 +22,9 @@ xds {
   }
   index {
     include scope Wrappers.XDS.XDSIdxref.master_params
+  }
+  merge2cbf {
+    include scope Wrappers.XDS.merge2cbf.master_params
   }
 }
 deprecated_xds.parameter {
@@ -61,7 +64,7 @@ xia2.settings {
         return
 
     def add(self, source):
-        
+
         if not os.path.exists(source):
             raise RuntimeError, 'phil file missing: %s' % source
 
@@ -79,7 +82,7 @@ xia2.settings {
 
     def get_xds_parameter_untrusted_ellipse(self):
         return self._parameters.deprecated_xds.parameter.untrusted_ellipse
-    
+
     def get_xds_parameter_untrusted_rectangle(self):
         return self._parameters.deprecated_xds.parameter.untrusted_rectangle
 

@@ -12,8 +12,6 @@
 
 import os
 import sys
-import math
-import exceptions
 
 if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
@@ -25,42 +23,36 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from XDSIndexer import XDSIndexer
 
-# wrappers for programs that this needs
-
-from Wrappers.XIA.Diffdump import Diffdump
-
-# helper functions
-
-from Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
-from Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
-from Wrappers.XDS.XDS import XDSException
-from Modules.Indexer.XDSCheckIndexerSolution import xds_check_indexer_solution
-
-# interfaces that this must implement to be an indexer - though these
-# are inherited implicitly
-
-# from Schema.Interfaces.Indexer import Indexer
-# from Schema.Interfaces.FrameProcessor import FrameProcessor
-
 # odds and sods that are needed
 
-from lib.bits import auto_logfiler, nint
-from Handlers.Streams import Chatter, Debug, Journal
+from Handlers.Streams import Debug
 from Handlers.Flags import Flags
 from Handlers.Phil import Phil
-from Handlers.Files import FileHandler
 
 # FIXME need to put in access here to Phil parameters to know how wide to make
 # the summed images
 
-class XDSIndexerII(XDSIndexer):
+from Wrappers.XDS.merge2cbf import merge2cbf
+from Wrappers.XDS.merge2cbf import master_params as merge2cbf_params
+
+master_params = merge2cbf_params
+
+class XDSIndexerSum(XDSIndexer):
     '''An extension of XDSIndexer using all available images.'''
 
-    def __init__(self):
+    def __init__(self, params=None):
+
+        self._params = params
+        if self._params is None:
+            self._params = master_params.extract()
 
         # set up the inherited objects
+        _index_select_images = self._index_select_images
 
         XDSIndexer.__init__(self)
+
+        # XDSIndexer.__init__ modfies this!
+        self._index_select_images = _index_select_images
 
         return
 
@@ -73,15 +65,31 @@ class XDSIndexerII(XDSIndexer):
         # contents then (ii) change the template stored, the directory and
         # the header contents to correspond to those new images. Finally make
         # a note of these changes so we can correct XPARM file at the end.
-        
+
         assert(min(self.get_matching_images()) == 1)
 
+        # make a note so we can fix the XPARM.XDS file at the end
+        self._true_phi_width = self.get_header_item('phi_width')
+
+        if self._params.data_range is None:
+            self._params.data_range = 1, len(self.get_matching_images())
+        m2c = merge2cbf(params=self._params)
+        m2c.setup_from_image(self.get_image_name(1))
+        m2c.set_working_directory(os.path.join(
+            self.get_working_directory(), 'summed_images'))
+        os.mkdir(m2c.get_working_directory())
+        m2c.run()
+
+        # Is this safe to do?
+        self._setup_from_image(
+            os.path.join(m2c.get_working_directory(),
+                         'merge2cbf_averaged_0001.cbf'))
 
         phi_width = self.get_header_item('phi_width')
 
         if phi_width == 0.0:
             raise RuntimeError, 'cannot use still images'
-        
+
         # use five degrees for the background calculation
 
         five_deg = int(round(5.0 / phi_width)) - 1
@@ -119,3 +127,35 @@ class XDSIndexerII(XDSIndexer):
 
     # FIXME here override _index_finish by calling original _index_finish
     # then correcting the XPARM file as mentioned above.
+
+    def _index_finish(self):
+        self._modify_xparm_xds()
+        XDSIndexer._index_finish(self)
+
+    def _modify_xparm_xds(self):
+        import fileinput
+        xparm_filename = os.path.join(
+            self.get_working_directory(), 'XPARM.XDS')
+        assert os.path.isfile(xparm_filename)
+        f = fileinput.input(xparm_filename, mode='rb', inplace=1)
+        updated_oscillation_range = False
+        for line in f:
+            if not updated_oscillation_range:
+                # Starting image number (STARTING_FRAME=),
+                # spindle angle at start (STARTING_ANGLE=),
+                # oscillation range,
+                # and laboratory coordinates of the rotation axis.
+                tokens = line.split()
+                if len(tokens) == 6:
+                    summed_oscillation_range = float(tokens[2])
+                    # sanity check - is this actually necessary?
+                    assert (summed_oscillation_range
+                            - self.get_header_item('phi_width')) < 1e-6
+                    tokens[2] = '%.4f' %self._true_phi_width
+                    print " ".join(tokens)
+                    continue
+            print line,
+        f.close()
+
+        # copy across file contents internally
+        self._data_files['XPARM.XDS'] = open(xparm_filename, mode='rb').read()
