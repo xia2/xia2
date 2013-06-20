@@ -535,7 +535,7 @@ def xds_read_xparm_old_style(xparm_file):
 def xds_read_xparm_new_style(xparm_file):
     '''Parse the XPARM file to a dictionary.'''
 
-    data = map(float, open(xparm_file, 'r').read().split()[1:])
+    data = map(float, ' '.join(open(xparm_file, 'r').readlines()[1:]).split())
 
     starting_frame = int(data[0])
     phi_start, phi_width = data[1:3]
