@@ -564,6 +564,7 @@ class Frame:
         s = self._raw_sigmas[j]
         fout.write('%4d%4d%4d%4d%4d%4d%6d 0 0%3d%8.1f%8.1f\n' %
                    (hkl + ohkl + (b + 1, m, i, s)))
+        j += 1
 
     fout.close()
 

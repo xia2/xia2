@@ -106,6 +106,7 @@ Toolkit/PlayPen/scale-play.py -text
 Toolkit/PlayPen/spot2q.py -text
 Toolkit/PlayPen/test_scaling.py -text
 Toolkit/PlayPen/test_scaling_new_hkl.py -text
+Toolkit/PlayPen/test_sg.py -text
 Toolkit/PlayPen/unmerged_fa.py -text
 Toolkit/PlayPen/ward_cluster.py -text
 Toolkit/PlayPen/x1334.lp -text
