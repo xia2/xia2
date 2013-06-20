@@ -128,7 +128,7 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         raise RuntimeError, '%s image' % sys.argv[0]
 
-    print sys.argv[1:]
+    print '%s ... %s' % (sys.argv[1], sys.argv[-1])
 
     d = DistlSweepStrength()
     for arg in sys.argv[1:]:
