@@ -33,18 +33,11 @@ from Handlers.Phil import Phil
 # the summed images
 
 from Wrappers.XDS.merge2cbf import merge2cbf
-from Wrappers.XDS.merge2cbf import master_params as merge2cbf_params
-
-master_params = merge2cbf_params
 
 class XDSIndexerSum(XDSIndexer):
     '''An extension of XDSIndexer using all available images.'''
 
-    def __init__(self, params=None):
-
-        self._params = params
-        if self._params is None:
-            self._params = master_params.extract()
+    def __init__(self):
 
         # set up the inherited objects
         _index_select_images = self._index_select_images
@@ -71,9 +64,10 @@ class XDSIndexerSum(XDSIndexer):
         # make a note so we can fix the XPARM.XDS file at the end
         self._true_phi_width = self.get_header_item('phi_width')
 
-        if self._params.data_range is None:
-            self._params.data_range = 1, len(self.get_matching_images())
-        m2c = merge2cbf(params=self._params)
+        params = Phil._parameters.xds.merge2cbf
+        if params.data_range is None:
+            params.data_range = 1, len(self.get_matching_images())
+        m2c = merge2cbf(params=params)
         m2c.setup_from_image(self.get_image_name(1))
         m2c.set_working_directory(os.path.join(
             self.get_working_directory(), 'summed_images'))
