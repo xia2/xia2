@@ -631,6 +631,7 @@ class CommonScaler(Scaler):
         if self.get_scaler_anomalous():
             for key in self._tmp_scaled_refl_files:
                 f = self._tmp_scaled_refl_files[key]
+                Debug.write('Running anomalous signal analysis on %s' % f)
                 a_s = anomalous_signals(f)
                 self._scalr_statistics[
                     (self._scalr_pname, self._scalr_xname, key)
