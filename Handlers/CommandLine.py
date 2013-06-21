@@ -1264,7 +1264,7 @@ class _CommandLine():
         if '-3ds' in sys.argv :
             add_preference('indexer', 'xdssum')
             add_preference('integrater', 'xdsr')
-            add_preference('scaler', 'xdsr')
+            add_preference('scaler', 'xdsa')
             if '-3ds' in sys.argv:
                 self._understood.append(sys.argv.index('-3ds'))
             Debug.write('3DS pipeline selected')
