@@ -14,7 +14,6 @@ Applications/xia2merger -text
 Applications/xia2merger.bat -text
 Applications/xia2merger.py -text
 Data/detectors.lib -text
-Experts/Doc/FindImages.pdf -text
 Handlers/Doc/CommandLine.pdf -text
 Handlers/Doc/Decision.pdf -text
 Handlers/Doc/Syminfo.pdf -text
