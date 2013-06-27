@@ -1,6 +1,4 @@
 * text=auto !eol
-Applications/Doc/xia2scan.pdf -text
-Applications/Doc/xia2setup.pdf -text
 Applications/__init__.py -text
 Applications/aimless2gnuplot -text
 Applications/cbfdump -text
