@@ -95,6 +95,17 @@ def xds_check_error(xds_output_list):
 
     return
 
+def rotate_cbf_to_xds_convention(fast, slow, axis = (1, 0, 0)):
+    '''Rotate fast and slow directions about rotation axis to give XDS 
+    conventional directions for fast and slow. This should be a rotation
+    of 180 degrees about principle axis, defined to be 1,0,0.'''
+
+    from scitbx import matrix
+
+    R = matrix.col(axis).axis_and_angle_as_r3_rotation_matrix(180.0, deg = True)
+
+    return (R * fast).elems, (R * slow).elems
+
 def detector_axis_apply_two_theta_rotation(axis_string, header):
     '''Apply a rotation in degrees to this detector axis given as a string
     containing a list of three floating point values. Return as same.
@@ -281,14 +292,14 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
                    detector_to_minimum_trusted[detector],
                    detector_to_overload[detector]))
 
-    if not detector in ['raxis', 'saturn', 'dectris', 'pilatus'] and \
+    if not detector in ['raxis', 'saturn', 'dectris', 'pilatus', 'adsc'] and \
            math.fabs(header['two_theta']) > 1.0:
         raise RuntimeError, 'two theta offset not supported for %s' % detector
 
     if 'fast_direction' in header and 'slow_direction' in header:
-        fast_direction = tuple([-1 * d for d in header['fast_direction']])
-        slow_direction = tuple([d for d in header['slow_direction']])
-
+        fast_direction, slow_direction = rotate_cbf_to_xds_convention(
+            header['fast_direction'], header['slow_direction'])
+        
         result.append('DIRECTION_OF_DETECTOR_X-AXIS=%f %f %f' % \
                       fast_direction)
 

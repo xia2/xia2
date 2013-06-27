@@ -927,6 +927,9 @@ def Diffdump(DriverType = None):
                 self._header['phi_width'] = osc_range
                 self._header['phi_end'] = osc_start + osc_range
 
+            if detector == 'adsc' and abs(header['two_theta']) > 1.0:
+                raise RuntimeError, 'adsc + two-theta not supported'
+                
             HeaderCache.put(self._image, self._header)
 
             return copy.deepcopy(self._header)
