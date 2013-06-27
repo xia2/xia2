@@ -148,14 +148,6 @@ core/Python/Decorators/DecoratorFactory.py -text
 core/Python/Decorators/DecoratorHelper.py -text
 core/Python/Decorators/__init__.py -text
 core/Python/Decorators/readme.txt -text
-core/Python/Doc/DecoratorPydoc.txt -text
-core/Python/Doc/DriverPydoc.txt -text
-core/Python/Doc/Structure.pdf -text
-core/Python/Doc/Structure.tex -text
-core/Python/Doc/UML/Driver-1.pdf -text svneol=unset#unset
-core/Python/Doc/UML/Driver.mp -text
-core/Python/Doc/UML/compile.bat -text
-core/Python/Doc/UML/readme.txt -text
 core/Python/Driver/ClusterDriverFactory.py -text
 core/Python/Driver/DefaultClusterDriver.py -text
 core/Python/Driver/DefaultDriver.py -text
