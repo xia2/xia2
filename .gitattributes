@@ -42,6 +42,7 @@ Modules/Xia2html/icons/warning.png -text
 Toolkit/BackstopMask.py -text
 Toolkit/E4.py -text
 Toolkit/KBScale.py -text
+Toolkit/MendBKGINIT.py -text
 Toolkit/MultiMerger.py -text
 Toolkit/PolyFitter.py -text
 Toolkit/XDS2CBF.py -text
