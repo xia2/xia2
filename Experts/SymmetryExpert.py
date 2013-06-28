@@ -49,50 +49,7 @@ def gen_rot_mat_euler(alpha, beta, gamma):
 def _multiply_symmetry_matrix(a, b):
     '''compute a * b, for e.g. h_ = a * b * h, e.g. apply b before a.'''
 
-    if True:
-        return (matrix.sqr(a) * matrix.sqr(b)).elems
-
-    result = []
-
-    result.append(a[0] * b[0] +
-                  a[1] * b[3] +
-                  a[2] * b[6])
-
-    result.append(a[0] * b[1] +
-                  a[1] * b[4] +
-                  a[2] * b[7])
-
-    result.append(a[0] * b[2] +
-                  a[1] * b[5] +
-                  a[2] * b[8])
-
-
-    result.append(a[3] * b[0] +
-                  a[4] * b[3] +
-                  a[5] * b[6])
-
-    result.append(a[3] * b[1] +
-                  a[4] * b[4] +
-                  a[5] * b[7])
-
-    result.append(a[3] * b[2] +
-                  a[4] * b[5] +
-                  a[5] * b[8])
-
-
-    result.append(a[6] * b[0] +
-                  a[7] * b[3] +
-                  a[8] * b[6])
-
-    result.append(a[6] * b[1] +
-                  a[7] * b[4] +
-                  a[8] * b[7])
-
-    result.append(a[6] * b[2] +
-                  a[7] * b[5] +
-                  a[8] * b[8])
-
-    return result
+    return (matrix.sqr(a) * matrix.sqr(b)).elems
 
 def r_to_rt(r):
     '''Convert R matrix to RT, assuming T=0.'''
@@ -136,16 +93,8 @@ def compose_matrices_r(mat_a, mat_b):
 def compose_symops(a, b):
     '''Compose operation c, which is applying b then a.'''
 
-    # symop2mat = Symop2mat()
-    mat_a = symop_to_mat(a)
-    mat_b = symop_to_mat(b)
-
-    mat_c = _multiply_symmetry_matrix(mat_a, mat_b)
-
-    # mat2symop = Mat2symop()
-    result = mat_to_symop(mat_c).strip()
-
-    return result
+    return mat_to_symop(
+        _multiply_symmetry_matrix(symop_to_mat(a), symop_to_mat(b))).strip()
 
 def symop_to_mat(symop):
     symop = symop.replace('h', 'x').replace('k', 'y').replace('l', 'z')
@@ -161,35 +110,15 @@ def lattice_to_spacegroup_number(lattice):
     '''Return the spacegroup number corresponding to the lowest symmetry
     possible for a given Bravais lattice.'''
 
-    _lattice_to_spacegroup_number = {'aP':1,
-                                     'mP':3,
-                                     'mC':5,
-                                     'oP':16,
-                                     'oC':20,
-                                     'oF':22,
-                                     'oI':23,
-                                     'tP':75,
-                                     'tI':79,
-                                     'hP':143,
-                                     'hR':146,
-                                     'cP':195,
-                                     'cF':196,
+    _lattice_to_spacegroup_number = {'aP':1, 'mP':3, 'mC':5, 'oP':16, 'oC':20,
+                                     'oF':22, 'oI':23, 'tP':75, 'tI':79, 
+                                     'hP':143, 'hR':146, 'cP':195, 'cF':196,
                                      'cI':197}
 
     if not lattice in _lattice_to_spacegroup_number.keys():
         raise RuntimeError, 'lattice %s unknown' % lattice
 
     return _lattice_to_spacegroup_number[lattice]
-
-def modulo(m, x):
-    '''Return x modulo m for floating values m, x.'''
-
-    while x < 0:
-        x += m
-    while x > m:
-        x -= m
-
-    return x
 
 if __name__ == '__main__':
 
