@@ -461,6 +461,19 @@ def XDSIdxref(DriverType = None, params = None):
                     Debug.write('... %3d %3d %3d %4.1f %6.1f %6.1f' % \
                                 alternative)
 
+            # New algorithm in here - now use iotbx.lattice_symmetry with the 
+            # P1 indexing solution (solution #1) to determine the list of 
+            # allowable solutions - only consider those lattices in this 
+            # allowed list (unless we have user input)
+
+            from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
+            ls = LatticeSymmetry()
+            ls.set_lattice('aP')
+            ls.set_cell(tuple(self._idxref_data[44]['cell']))
+            ls.generate()
+
+            allowed_lattices = ls.get_lattices()
+            
             for j in range(1, 45):
                 if not self._idxref_data.has_key(j):
                     continue
@@ -470,16 +483,6 @@ def XDSIdxref(DriverType = None, params = None):
                 cell = data['cell']
                 mosaic = data['mosaic']
                 reidx = data['reidx']
-
-                # only consider indexing solutions with goodness of fit < 40
-                # or any value (< 200) if we have been provided the
-                # input unit cell... but # 2731
-
-                # FIXME the cell MUST be constrained externally (i.e. in
-                # here, not by XDS) to correspond to the Bravais lattice
-                # constraints
-
-                # if we "know" the answer, well just go ahead with that
 
                 if self._symm and self._cell and \
                        self._indxr_user_input_lattice:
@@ -496,8 +499,8 @@ def XDSIdxref(DriverType = None, params = None):
                             'cell':cell}
 
                 else:
-                    if fit < 40.0 or (self._cell and fit < 200.0) \
-                           or (self._symm and fit < 200.0):
+                    if lattice in allowed_lattices or \
+                        (self._symm and fit < 200.0):
                         # bug 2417 - if we have an input lattice then we
                         # don't want to include anything higher symmetry
                         # in the results table...

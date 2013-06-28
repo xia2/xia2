@@ -239,9 +239,12 @@ def LatticeSymmetry(DriverType = None):
 if __name__ == '__main__':
 
     ls = LatticeSymmetry()
-    ls.set_lattice('cI')
-    ls.set_cell((78.56, 78.56, 78.56, 90.00, 90.00, 90.00))
+    ls.set_lattice('aP')
+    ls.set_cell(tuple(map(float, sys.argv[1:7])))
     ls.generate()
-    print ls.get_reindex_op('aP')
-    cell = ls.get_cell('aP')
-    print cell
+
+    lattices = ls.get_lattices()
+
+    for lattice in lattices:
+        print '%s %.3f %.3f %.3f %.3f %.3f %.3f' % tuple(
+            [lattice] + ls.get_cell(lattice))
