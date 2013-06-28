@@ -58,8 +58,8 @@ Wrappers/Labelit/DistlSignalStrength.py -text
 Wrappers/Labelit/DistlSweepStrength.py -text
 Wrappers/Labelit/LabelitIndexII.py -text
 Wrappers/Labelit/LabelitMosflmMatrix.py -text
+Wrappers/XDS/Merge2cbf.py -text
 Wrappers/XDS/XScaleR.py -text
-Wrappers/XDS/merge2cbf.py -text
 cftbx/__init__.py -text
 cftbx/coordinate_frame_converter.py -text
 cftbx/coordinate_frame_helpers.py -text

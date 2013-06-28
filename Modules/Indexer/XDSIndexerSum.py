@@ -32,7 +32,7 @@ from Handlers.Phil import Phil
 # FIXME need to put in access here to Phil parameters to know how wide to make
 # the summed images
 
-from Wrappers.XDS.merge2cbf import merge2cbf
+from Wrappers.XDS.Merge2cbf import Merge2cbf
 
 class XDSIndexerSum(XDSIndexer):
     '''An extension of XDSIndexer using all available images.'''
@@ -67,7 +67,7 @@ class XDSIndexerSum(XDSIndexer):
         params = Phil._parameters.xds.merge2cbf
         if params.data_range is None:
             params.data_range = 1, len(self.get_matching_images())
-        m2c = merge2cbf(params=params)
+        m2c = Merge2cbf(params=params)
         m2c.setup_from_image(self.get_image_name(1))
         m2c.set_working_directory(os.path.join(
             self.get_working_directory(), 'summed_images'))

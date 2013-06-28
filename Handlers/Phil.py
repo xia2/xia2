@@ -24,7 +24,7 @@ xds {
     include scope Wrappers.XDS.XDSIdxref.master_params
   }
   merge2cbf {
-    include scope Wrappers.XDS.merge2cbf.master_params
+    include scope Wrappers.XDS.Merge2cbf.master_params
   }
 }
 deprecated_xds.parameter {

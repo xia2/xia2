@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# merge2cbf.py
+# Merge2cbf.py
 #   Copyright (C) 2013 Diamond Light Source, Richard Gildea
 #
 #   This code is distributed under the BSD license, a copy of which is
@@ -58,11 +58,11 @@ moving_average = False
           " 1-3, 4-6, 7-9, etc."
 """)
 
-def merge2cbf(DriverType=None, params=None):
+def Merge2cbf(DriverType=None, params=None):
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
-    class merge2cbfWrapper(DriverInstance.__class__,
+    class Merge2cbfWrapper(DriverInstance.__class__,
                            FrameProcessor):
         '''A wrapper for wrapping merge2cbf.'''
 
@@ -237,7 +237,7 @@ def merge2cbf(DriverType=None, params=None):
                 '# Detector_2theta %.4f deg.' %image_header['two_theta'])
             return "\n".join(header_contents)
 
-    return merge2cbfWrapper(params=params)
+    return Merge2cbfWrapper(params=params)
 
 if __name__ == '__main__':
     import sys
@@ -251,6 +251,6 @@ if __name__ == '__main__':
     assert len(image_files) > 0
     first_image = image_files[0]
     params = working_phil.extract()
-    m2c = merge2cbf(params=params)
+    m2c = Merge2cbf(params=params)
     m2c.setup_from_image(first_image)
     m2c.run()
