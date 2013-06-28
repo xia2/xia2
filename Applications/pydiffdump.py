@@ -32,7 +32,7 @@ def pydiffdump(files):
 
         print format.__name__
 
-        if format.understand(f) >= 2:
+        if format.understand(f):
             i = format(f)
 
             print 'Beam:'
@@ -43,7 +43,7 @@ def pydiffdump(files):
             print i.get_detector()
             print 'Scan:'
             print i.get_scan()
-
+            
     return time.time() - s
 
 def pydiffdump_fast(files):

@@ -43,6 +43,7 @@ def gen_rot_mat_euler(alpha, beta, gamma):
     rx = rot_x(gamma)
 
     r = _multiply_symmetry_matrix(ry, rz)
+
     return _multiply_symmetry_matrix(rx, r)
 
 def _multiply_symmetry_matrix(a, b):
