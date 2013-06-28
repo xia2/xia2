@@ -41,7 +41,7 @@ from Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
 from Wrappers.XDS.XDS import XDSException
 from Modules.Indexer.XDSCheckIndexerSolution import xds_check_indexer_solution
 
-from Toolkit.PlayPen.MendBKGINIT import recompute_BKGINIT
+from Toolkit.MendBKGINIT import recompute_BKGINIT
 
 # interfaces that this must implement to be an indexer
 
