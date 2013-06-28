@@ -1,6 +1,5 @@
 * text=auto !eol
 Applications/__init__.py -text
-Applications/aimless2gnuplot -text
 Applications/cbfdump -text
 Applications/cbfdump.bat -text
 Applications/pydiffdump -text
