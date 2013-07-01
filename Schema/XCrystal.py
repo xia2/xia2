@@ -389,6 +389,10 @@ class XCrystal():
         spacegroup = spacegroups[0]
         resolution = self._get_scaler().get_scaler_highest_resolution()
 
+        from cctbx import sgtbx
+        sg = sgtbx.space_group_type(str(spacegroup))
+        spacegroup = sg.lookup_symbol()
+
         result += 'Assuming spacegroup: %s\n' % spacegroup
         if len(spacegroups) > 1:
             result += 'Other likely alternatives are:\n'
