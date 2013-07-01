@@ -219,7 +219,7 @@ def failover_full_cbf(cbf_file):
     header = { }
 
     cbf_handle = pycbf.cbf_handle_struct()
-    cbf_handle.read_file(cbf_file, pycbf.MSG_DIGEST)
+    cbf_handle.read_widefile(cbf_file, pycbf.MSG_DIGEST)
 
     detector_id_map = {'Pilatus2M':'pilatus 2M',
                        'Pilatus6M':'pilatus 6M',
