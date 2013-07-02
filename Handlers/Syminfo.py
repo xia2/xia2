@@ -157,6 +157,10 @@ class _Syminfo():
 
         # ok this should be a "pure" spacegroup string
 
+        if ':' in name:
+            assert(name.startswith('R'))
+            name = name.split(':')[0].replace('R', 'H')
+
         if self._spacegroup_long_to_short.has_key(name):
             name = self._spacegroup_long_to_short[name]
 
