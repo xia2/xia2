@@ -59,8 +59,6 @@ cftbx/coordinate_frame_helpers.py -text
 cftbx/readme.txt -text
 cftbx/tests/example-mosflm.mat -text
 cftbx/tests/example-xparm.xds -text
-core/Data/Random/names.txt -text
-core/Data/Random/readme.txt -text
 core/Python/Background/Background.py -text
 core/Python/Background/__init__.py -text
 core/Python/Decorators/CCP4Decorator.py -text
