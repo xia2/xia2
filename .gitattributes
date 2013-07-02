@@ -41,11 +41,8 @@ Modules/Xia2html/icons/info.png -text
 Modules/Xia2html/icons/warning.png -text
 Toolkit/BackstopMask.py -text
 Toolkit/E4.py -text
-Toolkit/KBScale.py -text
 Toolkit/MendBKGINIT.py -text
-Toolkit/MultiMerger.py -text
 Toolkit/PolyFitter.py -text
-Toolkit/XDS2CBF.py -text
 Toolkit/__init__.py -text
 Toolkit/byte_offset.cpp -text
 Toolkit/cbf_mini_to_full_with_template.py -text
