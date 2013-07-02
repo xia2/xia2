@@ -44,9 +44,6 @@ Toolkit/E4.py -text
 Toolkit/MendBKGINIT.py -text
 Toolkit/PolyFitter.py -text
 Toolkit/__init__.py -text
-Toolkit/byte_offset.cpp -text
-Toolkit/cbf_mini_to_full_with_template.py -text
-Toolkit/cbfdump.py -text
 Toolkit/guess_the_atom.py -text
 Toolkit/x1335.py -text
 Wrappers/CCP4/Ctruncate.py -text
