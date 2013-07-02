@@ -997,7 +997,8 @@ class XDSScalerA(Scaler):
                     m.set_limit_isigma(Flags.get_isigma())
                 if Flags.get_misigma():
                     m.set_limit_misigma(Flags.get_misigma())
-
+                if Flags.get_small_molecule():
+                    m.set_nbins(20)
                 m.run()
 
                 if Flags.get_completeness():

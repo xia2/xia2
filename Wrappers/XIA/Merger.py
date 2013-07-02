@@ -27,6 +27,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Handlers.Flags import Flags
 from Driver.PythonDriver import PythonDriver
+from Handlers.Streams import Debug
 
 class Merger(PythonDriver):
 
@@ -101,6 +102,7 @@ class Merger(PythonDriver):
             cl.append('misigma=%f' % self._limit_misigma)
         for c in cl:
             self.add_command_line(c)
+        Debug.write('Resolution analysis: %s' % (' '.join(cl)))
         self.start()
         self.close_wait()
         for record in self.get_all_output():
