@@ -749,10 +749,12 @@ def Mosflm(DriverType = None):
             self.input('directory "%s"' % self.get_directory())
             self.input('newmat xiaindex.mat')
 
-            # why would I not want to assign the right beam centre?
-
-            if self.get_beam_prov() == 'user' or True:
-                self.input('beam %f %f' % self.get_beam())
+            indxr = self.get_integrater_indexer()
+            beam = indxr.get_indexer_beam()
+            distance = indxr.get_indexer_distance()
+            
+            self.input('beam %f %f' % beam)
+            self.input('distance %f' % distance)
 
             if self.get_wavelength_prov() == 'user':
                 self.input('wavelength %f' % self.get_wavelength())
