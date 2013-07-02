@@ -1,4 +1,4 @@
 #!/bin/bash
 
-python ${XIA2CORE_ROOT}/Python/UnitTest/TestAll.py
+cctbx.python ${XIA2CORE_ROOT}/Python/UnitTest/TestAll.py
 
