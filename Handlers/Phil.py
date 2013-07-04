@@ -30,6 +30,9 @@ xds {
     include scope Wrappers.XDS.Merge2cbf.master_params
   }
 }
+dials {
+  include scope Wrappers.Dials.Spotfinder.master_phil
+}
 deprecated_xds.parameter {
   delphi = 5
     .type = float
@@ -61,6 +64,12 @@ xia2.settings {
     .type = ints(size = 4)
   xds_cell_deviation = 0.05, 5.0
     .type = floats(size = 2)
+  developmental {
+    use_dials_spotfinder = False
+      .type = bool
+      .help = "This feature requires the dials project to be installed, and"
+              "is not currently intended for general use. Use at your peril!"
+  }
 }
 """, process_includes=True)
 

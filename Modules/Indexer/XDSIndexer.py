@@ -146,6 +146,23 @@ class XDSIndexer(FrameProcessor,
 
         return colspot
 
+    def DialsSpotfinder(self):
+        from Wrappers.Dials.Spotfinder import Spotfinder
+        spotfinder = Spotfinder(params=PhilIndex.params.dials.spotfinder)
+        spotfinder.set_working_directory(self.get_working_directory())
+        spotfinder.setup_from_image(self.get_image_name(
+            self._indxr_images[0][0]))
+
+        auto_logfiler(spotfinder, 'SPOTFINDER')
+
+        return spotfinder
+
+    def DialsExportSpotXDS(self):
+        from Wrappers.Dials.ExportSpotXDS import ExportSpotXDS
+        export = ExportSpotXDS()
+        export.set_working_directory(self.get_working_directory())
+        return export
+
     def Idxref(self):
         from Handlers.Phil import PhilIndex
         idxref = _Idxref(params=PhilIndex.params.xds.index)
@@ -367,27 +384,46 @@ class XDSIndexer(FrameProcessor,
                      'GAIN.cbf']:
             self._data_files[file] = init.get_output_data_file(file)
 
-        # next start to process these - then colspot
+        if PhilIndex.params.xia2.settings.developmental.use_dials_spotfinder:
 
-        colspot = self.Colspot()
+            spotfinder = self.DialsSpotfinder()
 
-        for file in ['X-CORRECTIONS.cbf',
-                     'Y-CORRECTIONS.cbf',
-                     'BLANK.cbf',
-                     'BKGINIT.cbf',
-                     'GAIN.cbf']:
-            colspot.set_input_data_file(file, self._data_files[file])
+            for block in self._indxr_images:
+                spotfinder.add_spot_range(block[0], block[1])
 
-        colspot.set_data_range(first, last)
-        colspot.set_background_range(self._indxr_images[0][0],
-                                     self._indxr_images[0][1])
-        for block in self._indxr_images:
-            colspot.add_spot_range(block[0], block[1])
+            spotfinder.run()
+            export = self.DialsExportSpotXDS()
+            export.set_input_data_file(
+                'reflections.pickle',
+                spotfinder.get_output_data_file('reflections.pickle'))
+            export.run()
 
-        colspot.run()
+            for file in ['SPOT.XDS']:
+                self._data_files[file] = export.get_output_data_file(file)
 
-        for file in ['SPOT.XDS']:
-            self._data_files[file] = colspot.get_output_data_file(file)
+        else:
+
+            # next start to process these - then colspot
+
+            colspot = self.Colspot()
+
+            for file in ['X-CORRECTIONS.cbf',
+                         'Y-CORRECTIONS.cbf',
+                         'BLANK.cbf',
+                         'BKGINIT.cbf',
+                         'GAIN.cbf']:
+                colspot.set_input_data_file(file, self._data_files[file])
+
+            colspot.set_data_range(first, last)
+            colspot.set_background_range(self._indxr_images[0][0],
+                                         self._indxr_images[0][1])
+            for block in self._indxr_images:
+                colspot.add_spot_range(block[0], block[1])
+
+            colspot.run()
+
+            for file in ['SPOT.XDS']:
+                self._data_files[file] = colspot.get_output_data_file(file)
 
         # that should be everything prepared... all of the important
         # files should be loaded into memory to be able to cope with

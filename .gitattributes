@@ -47,6 +47,9 @@ Toolkit/__init__.py -text
 Toolkit/guess_the_atom.py -text
 Toolkit/x1335.py -text
 Wrappers/CCP4/Ctruncate.py -text
+Wrappers/Dials/ExportSpotXDS.py -text
+Wrappers/Dials/Spotfinder.py -text
+Wrappers/Dials/__init__.py -text
 Wrappers/Labelit/DistlSignalStrength.py -text
 Wrappers/Labelit/DistlSweepStrength.py -text
 Wrappers/Labelit/LabelitIndexII.py -text
