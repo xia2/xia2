@@ -112,8 +112,8 @@ class XDSIndexer(FrameProcessor,
         return xycorr
 
     def Init(self):
-        from Handlers.Phil import Phil
-        init = _Init(params=Phil._parameters.xds.init)
+        from Handlers.Phil import PhilIndex
+        init = _Init(params=PhilIndex.params.xds.init)
         init.set_working_directory(self.get_working_directory())
 
         init.setup_from_image(self.get_image_name(

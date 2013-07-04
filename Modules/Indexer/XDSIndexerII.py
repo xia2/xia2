@@ -51,7 +51,6 @@ from Modules.Indexer.XDSCheckIndexerSolution import xds_check_indexer_solution
 from lib.bits import auto_logfiler, nint
 from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Flags import Flags
-from Handlers.Phil import Phil
 from Handlers.Files import FileHandler
 
 class XDSIndexerII(XDSIndexer):
