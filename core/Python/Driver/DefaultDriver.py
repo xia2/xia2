@@ -1,15 +1,15 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
 # DefaultDriver.py
 #
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # 27th March 2006
-# 
+#
 # A new "Driver" class for XIA 0.2.x and others.
-# 
+#
 # This should be instantiated by a DriverFactory from DriverFactory.py
 #
 # Change 24/MAY/06. This implementation is now the default Driver but
@@ -23,9 +23,9 @@
 #
 # Change 22/JUN/06 - need to add environment handling stuff, in particular
 # to allow "GFORTRAN_UNBUFFERED_ALL=1" to be set.
-# 
+#
 # Change 1/SEP/06 - add method to test if this executable exists. This can
-# be used in the constructor of classes derived from this, which will 
+# be used in the constructor of classes derived from this, which will
 # then allow dynamic decisions about which programs to use for different
 # tasks. Note well - when running on a cluster this means that you need
 # to have the same environment set up on the head node where the constructor
@@ -37,11 +37,11 @@
 # DriverHelper/executable_exists.
 #
 # Change 28/JAN/10 - need to be able to exert some control over the environment
-# of the underlying program, specifically so that the LD_LIBRARY_PATH may 
-# be manipulated in cases where it may be nudged in the wrong direction 
+# of the underlying program, specifically so that the LD_LIBRARY_PATH may
+# be manipulated in cases where it may be nudged in the wrong direction
 # e.g. by the PHENIX dispatcher script. This is probably a long time overdue.
-# Implementation approach will be to allow a dictionary to be defined which 
-# will have tokens PREPENDED to the environment by the IMPLEMENTATION of the 
+# Implementation approach will be to allow a dictionary to be defined which
+# will have tokens PREPENDED to the environment by the IMPLEMENTATION of the
 # Driver interface.
 
 import os
@@ -76,8 +76,8 @@ class DefaultDriver:
         # settings for the job to run
         self._executable = None
 
-	# command_line should be a list of separate elements
-	# note well that this is different to how things worked before
+        # command_line should be a list of separate elements
+        # note well that this is different to how things worked before
         self._command_line = []
         self._working_directory = os.getcwd()
         self._working_environment = { }
@@ -108,14 +108,14 @@ class DefaultDriver:
         # this will be assigned if auto-logfiler (c/f lib.guff)
         # note that there are no guidelines for this...!
         # bug 2690... xia2 process id is name...
-        
+
         self._xpid = 0
 
         return
 
     def __del__(self):
         # the destructor - close the log file etc.
-        
+
         if not self._log_file is None:
             self._log_file.flush()
             self._log_file.close()
@@ -169,7 +169,7 @@ class DefaultDriver:
                     return True
                 if '%s.exe' % executable in os.listdir(path):
                     return True
-            
+
         return False
 
     def set_executable(self, executable):
@@ -223,7 +223,7 @@ class DefaultDriver:
 
         if not name in self._working_environment_exclusive:
             self._working_environment_exclusive.append(name)
-        
+
         return
 
     def add_working_environment(self, name, value):
@@ -258,7 +258,7 @@ class DefaultDriver:
     def _add_input_file(self, input_file):
         '''Add an input file to the job. This may be overloaded by versions
         which check for the file or move it somewhere.'''
-        
+
         self._input_files.append(input_file)
 
         return
@@ -269,7 +269,7 @@ class DefaultDriver:
     def _add_output_file(self, output_file):
         '''Add an output file to the job. This may be overloaded by versions
         which check for the file or move it somewhere.'''
-        
+
         self._output_files.append(output_file)
 
         return
@@ -289,15 +289,21 @@ class DefaultDriver:
 
         if self._command_line is None:
             self.clearCommand_line()
-        self._command_line.append(command_line_token)
+        elif (isinstance(command_line_token, list) or
+              isinstance(command_line_token, tuple)):
+            for token in command_line_token:
+                self._command_line.append(token)
+        else:
+            assert isinstance(command_line_token, basestring)
+            self._command_line.append(command_line_token)
 
         return
-    
+
     def set_command_line(self, command_line):
         '''Set the command line which wants to be run.'''
 
-	if not type(command_line) == type([]):
-	    raise RuntimeError, 'command line should be a list'
+        if not type(command_line) == type([]):
+            raise RuntimeError, 'command line should be a list'
 
         self._command_line = command_line
 
@@ -313,7 +319,7 @@ class DefaultDriver:
     def get_working_directory(self):
         '''Get the working directory for this process.'''
 
-        return self._working_directory 
+        return self._working_directory
 
     def describe(self):
         '''Give a short description of what this job will do...'''
@@ -336,7 +342,7 @@ class DefaultDriver:
         self._scratch_directories = []
         if not self._log_file is None:
             self._log_file.flush()
-            self._log_file.close()        
+            self._log_file.close()
         self._log_file = None
 
         # reset the name to a new value...
@@ -372,7 +378,7 @@ class DefaultDriver:
             error_fp(record)
 
         return
-        
+
     def check_for_errors(self):
         '''Work through the standard output of the program and see if
         any standard error conditions (listed in DriverHelper) can be
@@ -387,7 +393,7 @@ class DefaultDriver:
 
         check_return_code(self.status())
 
-        return 
+        return
 
     def _input(self, record):
         '''Pass record into the child programs standard input.'''
@@ -406,7 +412,7 @@ class DefaultDriver:
 
         # this method should be overridden by the implementation
         # of the Driver
-        
+
         self._input(record)
 
         return
@@ -430,7 +436,7 @@ class DefaultDriver:
             # FIXME 07/NOV/06 I have noticed that sometimes
             # information is missed from the log files - perhaps
             # flushing here will help??
-            
+
             self._log_file.flush()
 
         # presume if there is no output that the program has finished
@@ -464,7 +470,7 @@ class DefaultDriver:
 
     def get_log_file(self):
         '''Get a pointer to the log file if set.'''
-        
+
         if self._log_file:
             return self._log_file.name
 
@@ -499,7 +505,7 @@ class DefaultDriver:
                 break
 
         return
-    
+
     def kill(self):
         '''Kill the child process.'''
 
@@ -527,11 +533,11 @@ class DefaultDriver:
             self._standard_output_records.append(line)
 
         return
-    
+
 if __name__ == '__main__':
 
     # then run a simple test.
-    
+
     try:
         d = DefaultDriver()
         d.start()
@@ -540,4 +546,3 @@ if __name__ == '__main__':
         print 'All is well'
 
 
-    
