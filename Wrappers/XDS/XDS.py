@@ -63,6 +63,29 @@ from Handlers.Flags import Flags
 from dxtbx.format.FormatPilatusHelpers import pilatus_6M_mask, \
      pilatus_2M_mask, pilatus_300K_mask
 
+_running_xds_version_stamp = None
+
+def _running_xds_version():
+    global _running_xds_version_stamp
+    if _running_xds_version_stamp is None:
+        import subprocess
+        xds_version_str = subprocess.check_output('xds')
+        assert('VERSION' in xds_version_str)
+        first_line = xds_version_str.split('\n')[1].strip()
+        if not 'BUILT=' in xds_version_str:
+            import datetime
+            format_str = '***** XDS *****  (VERSION  %B %d, %Y)'
+            date = datetime.datetime.strptime(first_line, format_str)
+            
+            _running_xds_version_stamp = (date.year * 10000 + date.month * 100 + 
+                                          date.day)
+        else:
+            first_line = xds_version_str.split('\n')[1].strip()
+            s = first_line.index('BUILT=') + 6
+            _running_xds_version_stamp = int(first_line[s:s+8])
+
+    return _running_xds_version_stamp
+            
 def _xds_version(xds_output_list):
     '''Return the version of XDS which has been run.'''
 

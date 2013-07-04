@@ -34,18 +34,18 @@ from Driver.DriverFactory import DriverFactory
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
-from XDS import header_to_xds, xds_check_version_supported, xds_check_error
+from XDS import header_to_xds, xds_check_version_supported, xds_check_error, \
+    _running_xds_version
 
 # specific helper stuff
 from XDSIntegrateHelpers import _parse_integrate_lp, \
-     _parse_integrate_lp_updates
+    _parse_integrate_lp_updates
 
 # global flags etc.
 from Handlers.Flags import Flags
 from Handlers.Streams import Chatter, Debug
 
 from libtbx.phil import parse
-
 
 master_params = parse("""
 refine = *ORIENTATION *CELL BEAM DISTANCE AXIS
@@ -54,6 +54,8 @@ refine = *ORIENTATION *CELL BEAM DISTANCE AXIS
 refine_final = *ORIENTATION *CELL BEAM DISTANCE AXIS
   .type = choice(multi = True)
   .help = 'what to refine in final pass of integration'
+fix_scale = False
+  .type = bool
 """)  
 
 def XDSIntegrate(DriverType = None, params = None):
@@ -226,6 +228,13 @@ def XDSIntegrate(DriverType = None, params = None):
                 xds_inp.write('REFINE(INTEGRATE)=%s\n' %
                               ' '.join(self._params.refine))
 
+            if self._params.fix_scale:
+                if _running_xds_version() >= 20130617:
+                    xds_inp.write('DATA_RANGE_FIXED_SCALE_FACTOR= %d %d 1\n' % 
+                                  self._data_range)
+                else:
+                    xds_inp.write('FIXED_SCALE_FACTOR=TRUE\n')    
+                
             # check for updated input parameters
             if self._updates.has_key('BEAM_DIVERGENCE') and \
                    self._updates.has_key('BEAM_DIVERGENCE_E.S.D.'):
@@ -444,7 +453,6 @@ if __name__ == '__main__':
     integrate = XDSIntegrate()
     directory = os.path.join(os.environ['XIA2_ROOT'],
                              'Data', 'Test', 'Images')
-
 
     integrate.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
 

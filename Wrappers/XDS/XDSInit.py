@@ -32,10 +32,16 @@ from Driver.DriverFactory import DriverFactory
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
-from XDS import header_to_xds, xds_check_version_supported
+from XDS import header_to_xds, xds_check_version_supported, _running_xds_version
 from Handlers.Streams import Debug
 
-def XDSInit(DriverType = None):
+from libtbx.phil import parse
+master_params = parse("""
+fix_scale = False
+  .type = bool
+""")  
+
+def XDSInit(DriverType = None, params = None):
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -43,12 +49,18 @@ def XDSInit(DriverType = None):
                          FrameProcessor):
         '''A wrapper for wrapping XDS in init mode.'''
 
-        def __init__(self):
+        def __init__(self, params = None):
 
             # set up the object ancestors...
 
             DriverInstance.__class__.__init__(self)
             FrameProcessor.__init__(self)
+
+            # phil parameters
+
+            if not params:
+                params = master_params.extract()
+            self._params = params
 
             # now set myself up...
 
@@ -138,6 +150,13 @@ def XDSInit(DriverType = None):
             xds_inp.write('BACKGROUND_RANGE=%d %d\n' % \
                           self._background_range)
 
+            if self._params.fix_scale:
+                if _running_xds_version() >= 20130617:
+                    xds_inp.write('DATA_RANGE_FIXED_SCALE_FACTOR= %d %d 1\n' % 
+                                  self._data_range)
+                else:
+                    xds_inp.write('FIXED_SCALE_FACTOR=TRUE\n')    
+
             xds_inp.close()
 
             # copy the input file...
@@ -180,7 +199,7 @@ def XDSInit(DriverType = None):
                 self._output_data_files[file] = open(os.path.join(
                     self.get_working_directory(), file), 'rb').read()
 
-    return XDSInitWrapper()
+    return XDSInitWrapper(params)
 
 if __name__ == '__main__':
 

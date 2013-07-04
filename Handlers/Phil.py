@@ -20,6 +20,9 @@ xds {
   integrate {
     include scope Wrappers.XDS.XDSIntegrate.master_params
   }
+  init {
+    include scope Wrappers.XDS.XDSInit.master_params
+  }
   index {
     include scope Wrappers.XDS.XDSIdxref.master_params
   }
