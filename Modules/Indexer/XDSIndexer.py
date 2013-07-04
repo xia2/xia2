@@ -53,7 +53,7 @@ from Schema.Interfaces.FrameProcessor import FrameProcessor
 from lib.bits import auto_logfiler, nint
 from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Flags import Flags
-from Handlers.Phil import Phil
+from Handlers.Phil import PhilIndex
 from Handlers.Files import FileHandler
 
 class XDSIndexer(FrameProcessor,
@@ -147,8 +147,8 @@ class XDSIndexer(FrameProcessor,
         return colspot
 
     def Idxref(self):
-        from Handlers.Phil import Phil
-        idxref = _Idxref(params=Phil._parameters.xds.index)
+        from Handlers.Phil import PhilIndex
+        idxref = _Idxref(params=PhilIndex.params.xds.index)
         idxref.set_working_directory(self.get_working_directory())
 
         idxref.setup_from_image(self.get_image_name(
@@ -180,7 +180,7 @@ class XDSIndexer(FrameProcessor,
             idxref.set_b_axis(Flags.get_xparm_b())
         if Flags.get_xparm_c():
             idxref.set_c_axis(Flags.get_xparm_c())
-        
+
         auto_logfiler(idxref, 'IDXREF')
 
         return idxref
@@ -188,10 +188,10 @@ class XDSIndexer(FrameProcessor,
     # helper functions
 
     def _index_remove_masked_regions(self):
-        if not Phil.get_xia2_settings_untrusted_rectangle_indexing():
+        if not PhilIndex.params.xia2.settings.untrusted_rectangle_indexing:
             return
-        
-        limits = Phil.get_xia2_settings_untrusted_rectangle_indexing()
+
+        limits = PhilIndex.params.xia2.settings.untrusted_rectangle_indexing
         spot_xds = ''
         removed = 0
         for record in self._data_files['SPOT.XDS'].split('\n'):
@@ -539,7 +539,7 @@ class XDSIndexer(FrameProcessor,
         FileHandler.record_log_file('%s INDEX' % (sweep),
                                     os.path.join(self.get_working_directory(),
                                                  'IDXREF.LP'))
-        
+
         for file in ['SPOT.XDS',
                      'XPARM.XDS']:
             self._data_files[file] = idxref.get_output_data_file(file)
@@ -617,8 +617,6 @@ class XDSIndexer(FrameProcessor,
 
         xparm_dict = xds_read_xparm(os.path.join(self.get_working_directory(),
                                                  'XPARM.XDS'))
-
-        
 
         distance = xparm_dict['distance']
         wavelength = xparm_dict['wavelength']

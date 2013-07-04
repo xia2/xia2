@@ -148,8 +148,8 @@ class XDSIntegrater(FrameProcessor,
         return defpix
 
     def Integrate(self):
-        from Handlers.Phil import Phil
-        integrate = _Integrate(params=Phil._parameters.xds.integrate)
+        from Handlers.Phil import PhilIndex
+        integrate = _Integrate(params=PhilIndex.params.xds.integrate)
         integrate.set_working_directory(self.get_working_directory())
 
         integrate.setup_from_image(self.get_image_name(
@@ -858,7 +858,7 @@ class XDSIntegrater(FrameProcessor,
                 # we want to rerun the finishing step so...
                 # unless we have added no new reflections... or unless we
                 # have not confirmed the point group (see SCI-398)
-                
+
                 if used and self.get_integrater_reindex_matrix():
                     self.set_integrater_finish_done(False)
 

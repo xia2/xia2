@@ -181,10 +181,11 @@ def XDSIntegrate(DriverType = None, params = None):
             xds_inp.write('JOB=INTEGRATE\n')
             xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
                           self._parallel)
-            
-            from Handlers.Phil import Phil
-            if Phil.get_xds_parameter_profile_grid_size():
-                ab, c = Phil.get_xds_parameter_profile_grid_size()
+
+            from Handlers.Phil import PhilIndex
+            xds_params = PhilIndex.params.deprecated_xds
+            if xds_params.parameter.profile_grid_size:
+                ab, c = xds_params.parameter.profile_grid_size
                 assert(ab > 0 and ab < 22 and (ab % 2) == 1)
                 assert(c > 0 and c < 22 and (c % 2) == 1)
                 xds_inp.write(
@@ -216,10 +217,10 @@ def XDSIntegrate(DriverType = None, params = None):
 
             if Flags.get_small_molecule():
                 xds_inp.write('DELPHI=%.1f\n' % \
-                              Phil.get_xds_parameter_delphi_small())
+                              xds_params.parameter.delphi_small)
             else:
                 xds_inp.write('DELPHI=%.1f\n' % \
-                              Phil.get_xds_parameter_delphi())
+                              xds_params.parameter.delphi)
 
             if self._refined_xparm:
                 xds_inp.write('REFINE(INTEGRATE)=%s\n' %

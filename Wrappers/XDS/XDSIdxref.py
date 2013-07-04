@@ -219,9 +219,9 @@ def XDSIdxref(DriverType = None, params = None):
             less than 5% / 5 degrees return True, else False. Now configured
             by xia2.settings.xds_cell_deviation in Phil input.'''
 
-            from Handlers.Phil import Phil
-            if Phil.get_xia2_settings_xds_cell_deviation():
-                dev_l, dev_a = Phil.get_xia2_settings_xds_cell_deviation()
+            from Handlers.Phil import PhilIndex
+            if PhilIndex.params.xia2.settings.xds_cell_deviation:
+                dev_l, dev_a = PhilIndex.params.xia2.settings.xds_cell_deviation
             else:
                 dev_l = 0.05
                 dev_a = 5.0
@@ -333,7 +333,7 @@ def XDSIdxref(DriverType = None, params = None):
             if 'AXIS' in refine_params and (max_frame - min_frame) * \
                 (image_header['phi_end'] - image_header['phi_start']) < 5.0:
                 refine_params.remove('AXIS')
-                
+
             xds_inp.write('REFINE(IDXREF)=%s\n' %
                           ' '.join(refine_params))
 
@@ -425,7 +425,7 @@ def XDSIdxref(DriverType = None, params = None):
 
             if not self._idxref_data:
                 raise RuntimeError, 'indexing failed'
-                
+
             st = _parse_idxref_lp_subtree(lp)
 
             if 2 in st:

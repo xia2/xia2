@@ -34,7 +34,7 @@ from XDS import xds_check_error
 
 from Handlers.Flags import Flags
 from Handlers.Streams import Debug
-from Handlers.Phil import Phil
+from Handlers.Phil import PhilIndex
 from XScaleHelpers import get_correlation_coefficients_and_group
 
 def XScaleR(DriverType = None,
@@ -193,7 +193,8 @@ def XScaleR(DriverType = None,
             xscale_inp.write('%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f\n' % \
                              tuple(self._cell))
             xscale_inp.write('MINIMUM_I/SIGMA=%.1f\n' % \
-                             Phil.get_xds_parameter_xscale_min_isigma())
+                             PhilIndex.params.deprecated_xds.parameter.\
+                             xscale_min_isigma)
 
             if self._reindex_matrix:
                 xscale_inp.write(

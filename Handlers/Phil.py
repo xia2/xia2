@@ -13,9 +13,9 @@ import os
 
 from libtbx.phil import parse
 
-class _Phil:
-    def __init__(self):
-        self._working_phil = parse("""
+from libtbx.phil import interface
+
+master_phil = parse("""
 xds {
   integrate {
     include scope Wrappers.XDS.XDSIntegrate.master_params
@@ -62,7 +62,13 @@ xia2.settings {
   xds_cell_deviation = 0.05, 5.0
     .type = floats(size = 2)
 }
-""", process_includes = True)
+""", process_includes=True)
+
+PhilIndex = interface.index(master_phil=master_phil)
+
+class _Phil:
+    def __init__(self):
+        self._working_phil = master_phil
         self._parameters = self._working_phil.extract()
         return
 

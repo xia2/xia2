@@ -48,7 +48,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from lib.bits import inherits_from
 from Handlers.Streams import Chatter, Debug, Journal
-from Handlers.Phil import Phil
+from Handlers.Phil import PhilIndex
 
 from Schema.Exceptions.BadLatticeError import BadLatticeError
 
@@ -499,12 +499,12 @@ class Integrater:
                 template = self.get_integrater_sweep().get_template()
 
                 if self._intgr_sweep_name:
-                    if Phil.get_xia2_settings_show_template():
+                    if PhilIndex.params.xia2.settings.show_template:
                         Chatter.banner('Integrating %s (%s)' % \
                                        (self._intgr_sweep_name, template))
                     else:
                         Chatter.banner('Integrating %s' % \
-                                       (self._intgr_sweep_name))                        
+                                       (self._intgr_sweep_name))
                 try:
 
                     #1698

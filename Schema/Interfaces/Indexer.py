@@ -53,7 +53,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Handlers.Streams import Debug, Chatter
-from Handlers.Phil import Phil
+from Handlers.Phil import PhilIndex
 
 from Experts.LatticeExpert import SortLattices
 
@@ -321,13 +321,13 @@ class Indexer:
                 template = self.get_indexer_sweep().get_template()
 
                 if self._indxr_sweep_name:
-                    if Phil.get_xia2_settings_show_template():
+                    if PhilIndex.params.xia2.settings.show_template:
                         Chatter.banner('Autoindexing %s (%s)' % \
                                        (self._indxr_sweep_name, template))
                     else:
                         Chatter.banner('Autoindexing %s' % \
                                        (self._indxr_sweep_name))
-                        
+
 
                 if not self._indxr_helper:
 

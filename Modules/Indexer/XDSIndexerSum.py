@@ -27,7 +27,7 @@ from XDSIndexer import XDSIndexer
 
 from Handlers.Streams import Debug
 from Handlers.Flags import Flags
-from Handlers.Phil import Phil
+from Handlers.Phil import PhilIndex
 
 # FIXME need to put in access here to Phil parameters to know how wide to make
 # the summed images
@@ -64,7 +64,7 @@ class XDSIndexerSum(XDSIndexer):
         # make a note so we can fix the XPARM.XDS file at the end
         self._true_phi_width = self.get_header_item('phi_width')
 
-        params = Phil._parameters.xds.merge2cbf
+        params = PhilIndex.params.xds.merge2cbf
         if params.data_range is None:
             params.data_range = 1, len(self.get_matching_images())
         m2c = Merge2cbf(params=params)

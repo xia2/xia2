@@ -374,10 +374,11 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
         result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%s' % \
                       detector_to_y_axis[detector])
 
-    from Handlers.Phil import Phil
-    if Phil.get_xds_parameter_trusted_region():
+    from Handlers.Phil import PhilIndex
+    params = PhilIndex.get_python_object()
+    if params.deprecated_xds.parameter.trusted_region:
         result.append('TRUSTED_REGION %.2f %.2f' % tuple(
-            Phil.get_xds_parameter_trusted_region()))
+            params.deprecated_xds.parameter.trusted_region))
     elif detector_class_is_square[detector_class]:
         result.append('TRUSTED_REGION=0.0 1.41')
     else:
@@ -452,13 +453,13 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
         for limits in pilatus_300K_mask():
             result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(limits))
 
-    if Phil.get_xds_parameter_untrusted_ellipse():
+    if params.deprecated_xds.parameter.untrusted_ellipse:
         result.append('UNTRUSTED_ELLIPSE= %d %d %d %d' % tuple(
-            Phil.get_xds_parameter_untrusted_ellipse()))
+            params.deprecated_xds.parameter.untrusted_ellipse()))
 
-    if Phil.get_xds_parameter_untrusted_rectangle():
+    if params.deprecated_xds.parameter.untrusted_rectangle:
         result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(
-            Phil.get_xds_parameter_untrusted_rectangle()))
+            params.deprecated_xds.parameter.untrusted_rectangle()))
 
     return result
 

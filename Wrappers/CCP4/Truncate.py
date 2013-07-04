@@ -41,7 +41,7 @@ from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
 from lib.bits import transpose_loggraph
 from Handlers.Streams import Chatter, Debug
-from Handlers.Phil import Phil
+from Handlers.Phil import PhilIndex
 
 from Ctruncate import Ctruncate
 
@@ -51,9 +51,9 @@ def Truncate(DriverType = None):
     DriverInstance = DriverFactory.Driver(DriverType)
     CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, 'ccp4')
 
-    if Phil.get_ccp4_truncate_program() == 'ctruncate':
+    if PhilIndex.params.ccp4.truncate.program == 'ctruncate':
         return Ctruncate(DriverType)
-    
+
     class TruncateWrapper(CCP4DriverInstance.__class__):
         '''A wrapper for Truncate, using the CCP4-ified Driver.'''
 
