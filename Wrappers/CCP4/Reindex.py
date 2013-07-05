@@ -123,7 +123,7 @@ def Reindex(DriverType = None):
     '''A new factory for ReindexWrapper classes, which will actually use
     pointless.'''
 
-    if PhilIndex.params.ccp4.redindex.program == 'reindex':
+    if PhilIndex.params.ccp4.reindex.program == 'reindex':
         return ReindexOld(DriverType)
 
     DriverInstance = DriverFactory.Driver(DriverType)
