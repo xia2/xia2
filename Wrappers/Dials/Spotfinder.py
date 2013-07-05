@@ -111,6 +111,14 @@ def Spotfinder(DriverType=None, params=None):
         def run(self):
             '''Run dials.spotfinder.'''
 
+            # This is a bit of a phil hack in order to pass the phil
+            # parameters on the comman line to dials.spotfinder
+            master_scope = list(master_phil.active_objects())[0]
+            working_phil = master_scope.format(self._params)
+            for object_locator in master_scope.fetch_diff(
+                working_phil).all_definitions():
+                self.add_command_line(object_locator.object.as_str())
+
             for image in self._images:
                 self.add_command_line(image)
             matching_images = self.get_matching_images()
