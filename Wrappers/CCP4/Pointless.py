@@ -307,14 +307,14 @@ def Pointless(DriverType = None):
             # -c for copy - just convert the file to MTZ multirecord
             self.add_command_line('-c')
 
-            self.add_command_line('xdsin')
-            self.add_command_line(self._xdsin)
 
             self.start()
 
             if self._pname and self._xname and self._dname:
                 self.input('name project %s crystal %s dataset %s' % \
                            (self._pname, self._xname, self._dname))
+
+            self.input('xdsin %s' % self._xdsin)
 
             if self._scale_factor:
                 Debug.write('Scaling intensities by factor %e' % \
