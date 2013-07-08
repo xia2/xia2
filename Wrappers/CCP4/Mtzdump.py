@@ -22,8 +22,14 @@ import copy
 if not os.environ.has_key('XIA2CORE_ROOT'):
     raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
-sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                             'Python'))
+if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
+    sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
+
+if not os.environ.has_key('XIA2CORE_ROOT'):
+    raise RuntimeError, 'XIA2_ROOT not defined'    
+
+if not os.environ['XIA2_ROOT'] in sys.path:
+    sys.path.append(os.environ['XIA2_ROOT'])
 
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
@@ -277,9 +283,4 @@ if __name__ == '__main__':
         raise RuntimeError, '%s hklin.mtz' % sys.argv[0]
 
     m.dump()
-    m.dump_batch_headers()
-
-    for batch in m.get_batches():
-        print '=== batch %4d ===' % batch
-        print '%.4f %.4f %.4f \n%.4f %.4f %.4f \n%.4f %.4f %.4f ' % \
-              tuple(m.get_batch_header(batch)['umat'])
+    print m.get_spacegroup()

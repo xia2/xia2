@@ -151,7 +151,7 @@ def XDSInit(DriverType = None, params = None):
                           self._background_range)
 
             if self._params.fix_scale:
-                if _running_xds_version() >= 20130617:
+                if _running_xds_version() >= 20130330:
                     xds_inp.write('DATA_RANGE_FIXED_SCALE_FACTOR= %d %d 1\n' % 
                                   self._data_range)
                 else:

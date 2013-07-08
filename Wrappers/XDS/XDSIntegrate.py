@@ -230,7 +230,7 @@ def XDSIntegrate(DriverType = None, params = None):
                               ' '.join(self._params.refine))
 
             if self._params.fix_scale:
-                if _running_xds_version() >= 20130617:
+                if _running_xds_version() >= 20130330:
                     xds_inp.write('DATA_RANGE_FIXED_SCALE_FACTOR= %d %d 1\n' % 
                                   self._data_range)
                 else:

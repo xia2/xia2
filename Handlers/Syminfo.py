@@ -250,3 +250,4 @@ Syminfo = _Syminfo()
 if __name__ == '__main__':
     for arg in sys.argv[1:]:
         print Syminfo.get_pointgroup(arg)
+        print Syminfo.get_lattice(arg)

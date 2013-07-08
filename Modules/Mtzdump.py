@@ -61,13 +61,18 @@ class Mtzdump():
         self._resolution_range = mtz_obj.max_min_resolution()
         spacegroup_and_no = mtz_obj.space_group().info().symbol_and_number()
         
-        # replace tokens which are 1 with nothing
+        # replace tokens which are 1 with nothing - unless P1 (D'oh!)
         spacegroup_tokens = spacegroup_and_no.split('(')[0].split()
 
         spacegroup = ''
-        for st in spacegroup_tokens:
-            if st != '1':
+        if len(spacegroup_tokens) == 2:
+            for st in spacegroup_tokens:
                 spacegroup += st
+                
+        else:
+            for st in spacegroup_tokens:
+                if st != '1':
+                    spacegroup += st
 
         self._header['spacegroup'] = spacegroup
         self._reflections = mtz_obj.n_reflections()
