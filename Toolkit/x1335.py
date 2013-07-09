@@ -180,18 +180,6 @@ def ccs_to_R(xscale_lp):
     fout.write('c = hclust(d, method = "ward")\n')
     fout.write('plot(c)\n')
 
-    from ward_cluster import ward_cluster
-
-    data = [(j + 1) for j in range(xmax)]
-
-    history = ward_cluster(data, distances)
-
-    for target, source, distance in history:
-        print 'Cluster: %.2f' % distance
-        for t in target:
-            print data[t], file_names[data[t]]
-        for s in source:
-            print data[s], file_names[data[s]]
 
 if __name__ == '__main__':
 
