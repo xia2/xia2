@@ -88,6 +88,13 @@ def xparm_to_ub(xparm_file):
     RS_ub = matrix.sqr(xparm_data['a'] + xparm_data['b'] + xparm_data['c'])
     return RS_ub.inverse()
 
+def xparm_to_beam_fast_slow(xparm_file):
+    from scitbx import matrix
+    xparm_data = xds_read_xparm(xparm_file)
+    
+    return tuple(xparm_data['beam']), tuple(xparm_data['x']), \
+           tuple(xparm_data['y'])
+
 def find_xparm(xparm_location):
     assert(os.path.exists(xparm_location))
     if os.path.split(xparm_location)[-1] == 'GXPARM.XDS':
@@ -112,19 +119,24 @@ def derive_axis_angle(xparm0, xparm1):
     return axis, angle, R
 
 def main(args):
+
+    from scitbx import matrix
+    
     prefix = os.path.commonprefix(args)
 
-    from rstbx.cftbx.coordinate_frame_converter import \
-         coordinate_frame_converter
+    beam, fast, slow = xparm_to_beam_fast_slow(find_xparm(args[0]))
 
-    cfc = coordinate_frame_converter(find_xparm(args[0]))
+    print 'Coordinate frame:'
+    print '%6.3f %6.3f %6.3f fast' % fast
+    print '%6.3f %6.3f %6.3f slow' % slow
+    print '%6.3f %6.3f %6.3f beam' % matrix.col(beam).normalize().elems
 
     for j in range(len(args) - 1):
         print '%s => %s' % (args[j].replace(prefix, ''),
                             args[j + 1].replace(prefix, ''))
         axis, angle, R = derive_axis_angle(args[j], args[j + 1])
         print 'Axis:'
-        print '%6.3f %6.3f %6.3f' % cfc.move(axis)
+        print '%6.3f %6.3f %6.3f' % axis 
         print 'Angle:'
         print '%6.3f' % angle
 
