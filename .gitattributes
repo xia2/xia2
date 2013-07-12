@@ -42,6 +42,7 @@ Modules/Xia2html/icons/warning.png -text
 Toolkit/BackstopMask.py -text
 Toolkit/E4.py -text
 Toolkit/MendBKGINIT.py -text
+Toolkit/MiniKappaCalibrate.py -text
 Toolkit/PolyFitter.py -text
 Toolkit/__init__.py -text
 Toolkit/guess_the_atom.py -text
