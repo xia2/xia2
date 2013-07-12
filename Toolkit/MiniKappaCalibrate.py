@@ -9,13 +9,22 @@ def xparm_to_ub(xparm_file):
     from Wrappers.XDS.XDS import xds_read_xparm
     from scitbx import matrix
     xparm_data = xds_read_xparm(xparm_file)
-    return matrix.sqr(xparm_data['a'] + xparm_data['b'] + xparm_data['c'])
+    RS_ub = matrix.sqr(xparm_data['a'] + xparm_data['b'] + xparm_data['c'])
+    return RS_ub.inverse()
 
+def find_xparm(xparm_location):
+    assert(os.path.exists(xparm_location))
+    if os.path.split(xparm_location)[-1] == 'GXPARM.XDS':
+        return xparm_location
+    assert(os.path.isdir(xparm_location))
+    if os.path.exists(os.path.join(xparm_location, 'GXPARM.XDS')):
+        return os.path.join(xparm_location, 'GXPARM.XDS')
+
+    raise RuntimeError, 'no GXPARM.XDS found in %s' % xparm_location
+        
 def derive_axis_angle(xparm0, xparm1):
-    if os.path.isdir(xparm0):
-        xparm0 = os.path.join(xparm0, 'GXPARM.XDS')
-    if os.path.isdir(xparm1):
-        xparm1 = os.path.join(xparm1, 'GXPARM.XDS')
+    xparm0 = find_xparm(xparm0)
+    xparm1 = find_xparm(xparm1)
     from scitbx.math import r3_rotation_axis_and_angle_from_matrix
     import math
     ub0 = xparm_to_ub(xparm0)
@@ -27,10 +36,15 @@ def derive_axis_angle(xparm0, xparm1):
     return axis, angle, R
 
 if __name__ == '__main__':
-    axis, angle, R = derive_axis_angle(sys.argv[1], sys.argv[2])
-    print 'Axis:'
-    print '%6.3f %6.3f %6.3f' % axis
-    print 'Angle:'
-    print '%6.3f' % angle
-    print 'R:'
-    print '%6.3f %6.3f %6.3f\n%6.3f %6.3f %6.3f\n%6.3f %6.3f %6.3f' % R.elems
+
+    prefix = os.path.commonprefix(sys.argv[1:])
+
+    for j in range(1, len(sys.argv) - 1):
+        print '%s => %s' % (sys.argv[j].replace(prefix, ''),
+                            sys.argv[j + 1].replace(prefix, ''))
+        axis, angle, R = derive_axis_angle(sys.argv[j], sys.argv[j + 1])
+        print 'Axis:'
+        print '%6.3f %6.3f %6.3f' % axis
+        print 'Angle:'
+        print '%6.3f' % angle
+
