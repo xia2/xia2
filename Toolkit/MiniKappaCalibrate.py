@@ -124,19 +124,17 @@ def main(args):
     
     prefix = os.path.commonprefix(args)
 
-    beam, fast, slow = xparm_to_beam_fast_slow(find_xparm(args[0]))
-
-    print 'Coordinate frame:'
-    print '%6.3f %6.3f %6.3f fast' % fast
-    print '%6.3f %6.3f %6.3f slow' % slow
-    print '%6.3f %6.3f %6.3f beam' % matrix.col(beam).normalize().elems
+    from rstbx.cftbx.coordinate_frame_converter import \
+     coordinate_frame_converter
+    
+    cfc = coordinate_frame_converter(find_xparm(args[0]))
 
     for j in range(len(args) - 1):
         print '%s => %s' % (args[j].replace(prefix, ''),
                             args[j + 1].replace(prefix, ''))
         axis, angle, R = derive_axis_angle(args[j], args[j + 1])
         print 'Axis:'
-        print '%6.3f %6.3f %6.3f' % axis 
+        print '%6.3f %6.3f %6.3f' % cfc.move(axis, convention = cfc.MOSFLM) 
         print 'Angle:'
         print '%6.3f' % angle
 
