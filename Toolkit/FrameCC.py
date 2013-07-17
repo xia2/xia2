@@ -24,4 +24,5 @@ if __name__ == '__main__':
             results[(j + i, i)] = c
             
     for k in sorted(results):
-        print '%4d %4d %.6e %.6e' % (k[0], k[1], results[k], 1.0 - results[k])
+        print '%4d %4d %.6e %.6e' % (k[0] + 1, k[1] + 1, results[k], 
+                                     1.0 - results[k])
