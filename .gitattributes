@@ -1,7 +1,5 @@
 * text=auto !eol
 Applications/__init__.py -text
-Applications/cbfdump -text
-Applications/cbfdump.bat -text
 Applications/pydiffdump -text
 Applications/pydiffdump.bat -text
 Applications/pydiffdump.py -text
