@@ -5,7 +5,6 @@ Applications/cbfdump.bat -text
 Applications/pydiffdump -text
 Applications/pydiffdump.bat -text
 Applications/pydiffdump.py -text
-Applications/pydiffdump2xds -text
 Applications/x1335 -text
 Applications/xia2hdr -text
 Applications/xia2hdr.py -text
