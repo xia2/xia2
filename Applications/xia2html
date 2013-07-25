@@ -1,16 +1,16 @@
-#!/bin/sh -ef
-#
-# Run Xia2Log.py
-#
-# NB Need to set the XIA2HTMLDIR to the location of the
-# Xia2Log.py script
-#
-# CVS_id $Id: xia2html,v 1.2 2009/11/16 13:21:50 pjx Exp $
-#
-# Set up the environment
+#!/bin/bash
+
+if [ "$XIA2_ROOT"=="" ]; then
+  full_path="$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")"
+  export XIA2_ROOT=`dirname "$full_path" | sed 's/\/Applications$//'`
+fi
+
 export XIA2HTMLDIR=$XIA2_ROOT/Modules/Xia2html
-# Run the Xia2log.py script
-python $XIA2HTMLDIR/Xia2html.py ${1+"$@"}
-#
-# Start Firefox to show the file.
-##exec firefox xia2.html
+
+if [ -n "$XIA2_CCTBX" ]; then 
+  ${XIA2_CCTBX}/bin/cctbx.python -Q warn \
+    $XIA2HTMLDIR/Xia2html.py ${1+"$@"}
+else
+  cctbx.python -Q warn $XIA2HTMLDIR/Xia2html.py ${1+"$@"}
+fi
+
