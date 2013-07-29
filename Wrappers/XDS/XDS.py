@@ -107,13 +107,20 @@ def xds_check_version_supported(xds_output_list):
 
     return
 
+xds_error_database = {
+    'cannot open or read file lp_01.tmp':'Error running forkintegrate'
+    }
+
 def xds_check_error(xds_output_list):
     '''Check for errors in XDS output and raise an exception if one is
     found.'''
 
     for line in xds_output_list:
         if '!!!' in line and 'ERROR' in line:
-            error = '[XDS] %s' % line.split('!!!')[2].strip().lower()
+            message = line.split('!!!')[2].strip().lower()
+            if message in xds_error_database:
+                message = xds_error_database[message]
+            error = '[XDS] %s' % message
             raise XDSException, error
 
     return
