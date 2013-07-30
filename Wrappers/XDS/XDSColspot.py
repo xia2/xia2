@@ -132,6 +132,9 @@ def XDSColspot(DriverType = None):
             xds_inp.write('MAXIMUM_NUMBER_OF_PROCESSORS=%d\n' % \
                           self._parallel)
 
+            if image_header['detector'] in ('pilatus', 'dectris'):
+                xds_inp.write('MINIMUM_NUMBER_OF_PIXELS_IN_A_SPOT=1\n')
+
             for record in header:
                 xds_inp.write('%s\n' % record)
 
