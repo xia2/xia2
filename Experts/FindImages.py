@@ -418,8 +418,13 @@ def digest_template(template, images):
         template = template.replace(len(prefix) * '#', prefix, 1)
         images = [int(s.replace(prefix, '', 1)) for s in strings]
 
-    template, images, offset = ensure_no_batches_numbered_zero(
-        template, images, offset)
+    try:
+        template, images, offset = ensure_no_batches_numbered_zero(
+            template, images, offset)
+    except RuntimeError, e:
+        Debug.write('Throwing away image 0 from template %s' % template)
+        template, images, offset = ensure_no_batches_numbered_zero(
+            template, images[1:], offset)
 
     return template, images, offset
 
