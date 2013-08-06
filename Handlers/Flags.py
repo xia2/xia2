@@ -135,6 +135,9 @@ class _Flags:
         self._hdr_in = None
         self._hdr_out = None
 
+        # pickle output
+        self._pickle = None
+
         return
 
     def set_batch_scale(self, batch_scale):
@@ -523,6 +526,13 @@ class _Flags:
 
     def get_hdr_out(self):
         return self._hdr_out
+
+    def set_pickle(self, pickle):
+        self._pickle = pickle
+        return
+
+    def get_pickle(self):
+        return self._pickle
 
     def set_fixed_628(self):
         self._fixed_628 = True

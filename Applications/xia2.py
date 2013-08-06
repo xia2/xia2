@@ -220,6 +220,14 @@ def xia2():
     Chatter.write('Processing took %s' % \
                   time.strftime("%Hh %Mm %Ss", time.gmtime(duration)))
 
+    from Handlers.Flags import Flags
+    if Flags.get_pickle():
+        import cPickle as pickle
+        try:
+            pickle.dump(CommandLine.get_xinfo(), open(Flags.get_pickle(), 'w'))
+        except exceptions.Exception, e:
+            traceback.print_exc(file = open('xia2.pkl.error', 'w'))
+
     # delete all of the temporary mtz files...
     cleanup()
 

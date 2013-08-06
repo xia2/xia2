@@ -172,6 +172,12 @@ class _CommandLine():
                   (self._help_hdr_out(), str(e))
 
         try:
+            self._read_pickle()
+        except exceptions.Exception, e:
+            raise RuntimeError, '%s (%s)' % \
+                  (self._help_pickle(), str(e))
+
+        try:
             self._read_parallel()
         except exceptions.Exception, e:
             raise RuntimeError, '%s (%s)' % \
@@ -1042,6 +1048,25 @@ class _CommandLine():
 
     def _help_hdr_out(self):
         return '-hdr_out project.hdr'
+
+    def _read_pickle(self):
+        try:
+            index = sys.argv.index('-pickle')
+        except ValueError, e:
+            self._pickle = None
+            return
+
+        if index < 0:
+            raise RuntimeError, 'negative index'
+
+        self._understood.append(index)
+        self._understood.append(index + 1)
+        Flags.set_pickle(sys.argv[index + 1])
+
+        return
+
+    def _help_pickle(self):
+        return '-pickle name.pkl'
 
     def get_template(self):
         return self._default_template
