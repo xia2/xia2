@@ -76,7 +76,7 @@ class XDSIndexer(FrameProcessor,
         self._working_directory = os.getcwd()
 
         self._background_images = None
-        self._index_select_images = self._index_select_images_i
+        self._index_select_images = 'i'
 
         # place to store working data
         self._data_files = { }
@@ -303,8 +303,12 @@ class XDSIndexer(FrameProcessor,
 
         if self._indxr_images == []:
             # note well that this may reset the "done" flag so
-            # override this...
-            wedges = self._index_select_images()
+            # override this... ornate method here to avoid keeping a 
+            # pointer to the function which decides which image selection
+            # method to use (for pickling reasons)
+            _select_images_function = getattr(
+                self, '_index_select_images_%s' % (self._index_select_images))
+            wedges = _select_images_function()
             for wedge in wedges:
                 self.add_indexer_image_wedge(wedge)
             self.set_indexer_prepare_done(True)

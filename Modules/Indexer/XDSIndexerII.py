@@ -62,7 +62,7 @@ class XDSIndexerII(XDSIndexer):
 
         XDSIndexer.__init__(self)
 
-        self._index_select_images = self._index_select_images_ii
+        self._index_select_images = 'ii'
 
         self._i_or_ii = None
 
