@@ -314,6 +314,7 @@ def Mosflm(DriverType = None):
             # multiple lattices in a relatively straightforward manner.
 
             self.reset()
+            auto_logfiler(self)
 
             _images = []
             for i in self._indxr_images:

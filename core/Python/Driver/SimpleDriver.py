@@ -28,6 +28,7 @@ class SimpleDriver(DefaultDriver):
         DefaultDriver.__init__(self)
 
         self._popen = None
+        self._popen_status = None
 
         return
 
@@ -80,7 +81,8 @@ class SimpleDriver(DefaultDriver):
                                        universal_newlines = True,
                                        env = environment,
                                        shell = True)
-        
+        self._popen_status = None
+
         # somehow here test for failure - oh, you can't because
         # the shell spawned is probably still ok
 
@@ -92,7 +94,7 @@ class SimpleDriver(DefaultDriver):
         # FIXME this may give false results if the child program
         # is too fast!
 
-        if self._popen.poll() is None:
+        if self._popen and self._popen.poll() is None:
             return True
 
         # FIXME this should do a proper test!
@@ -116,6 +118,9 @@ class SimpleDriver(DefaultDriver):
     def _status(self):
         # get the return status of the process
 
+        if self._popen_status != None:
+            return self._popen_status
+        
         return self._popen.poll()
 
     def close(self):
@@ -127,6 +132,11 @@ class SimpleDriver(DefaultDriver):
 
         return
 
+    def cleanup(self):
+        self._popen_status = self._popen.poll()
+        self._popen = None
+        return
+        
     def kill(self):
         kill_process(self._popen)
 

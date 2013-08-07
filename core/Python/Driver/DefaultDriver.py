@@ -98,6 +98,7 @@ class DefaultDriver:
         self._scratch_directories = []
 
         self._log_file = None
+        self._log_file_name = None
 
         self._task = None
 
@@ -465,14 +466,16 @@ class DefaultDriver:
         if len(self._standard_output_records) > 0:
             for s in self._standard_output_records:
                 self._log_file.write(s)
+                
+        self._log_file_name = self._log_file.name
 
         return
 
     def get_log_file(self):
         '''Get a pointer to the log file if set.'''
 
-        if self._log_file:
-            return self._log_file.name
+        if self._log_file_name:
+            return self._log_file_name
 
         return ""
 
@@ -504,6 +507,13 @@ class DefaultDriver:
             if not line:
                 break
 
+        if self._log_file:
+            # close the existing log file
+            self._log_file.close()
+            self._log_file = None
+
+        self.cleanup()
+            
         return
 
     def kill(self):
@@ -511,6 +521,9 @@ class DefaultDriver:
 
         raise RuntimeError, 'Do not use the DefaultDriver class directly'
 
+    def cleanup(self):
+        pass
+    
     def status(self):
         '''Check the status of the child process - implemented by _status
         in other Driver implementations.'''
