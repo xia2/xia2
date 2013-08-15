@@ -120,8 +120,11 @@ class SimpleDriver(DefaultDriver):
 
         if self._popen_status != None:
             return self._popen_status
-        
-        return self._popen.poll()
+
+        if self._popen:
+            return self._popen.poll()
+
+        return 0
 
     def close(self):
         
