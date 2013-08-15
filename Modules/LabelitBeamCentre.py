@@ -44,6 +44,10 @@ def compute_beam_centre(sweep, working_directory = os.getcwd()):
     except exceptions.Exception, e:
         # do not have labelit installed?
         # need to check the exception
+        import sys
+        import traceback
+        # traceback.print_exc(sys.stderr)
+
         return None
 
     return beam
