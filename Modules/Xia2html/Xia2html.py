@@ -762,7 +762,7 @@ class Xia2run:
         # An example of this looks like:
         #
         #"o" => good        "%" => ok        "!" => bad rmsd
-        #"O" => overloaded  "#" => many bad  "." => blank
+        #"O" => overloaded  "#" => many bad  "." => weak
         #"@" => abandoned
         self.__xia2.defineBlock('integration_status_key',"ok","abandoned")
         # interwavelength_analysis block
@@ -3097,7 +3097,7 @@ class IntegrationStatusReporter:
         The key to symbols from xia2.txt typically looks like:
 
         'o' => good        '%' => ok        '!' => bad rmsd
-        'O' => overloaded  '#' => many bad  '.' => blank
+        'O' => overloaded  '#' => many bad  '.' => weak
         '@' => abandoned
 
         This method attempts to parse this text and produce a

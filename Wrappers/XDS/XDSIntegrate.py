@@ -413,7 +413,7 @@ def XDSIntegrate(DriverType = None, params = None):
                 Chatter.write(
                     '"o" => good        "%" => ok        "!" => bad rmsd')
                 Chatter.write(
-                    '"O" => overloaded  "#" => many bad  "." => blank')
+                    '"O" => overloaded  "#" => many bad  "." => weak')
                 Chatter.write(
                     '"@" => abandoned')
 

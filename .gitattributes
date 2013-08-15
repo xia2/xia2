@@ -29,11 +29,11 @@ Modules/TTT.py -text
 Modules/Xia2html/extras/JLogGraph.jar -text
 Modules/Xia2html/icons/img_abandoned.png -text
 Modules/Xia2html/icons/img_bad_rmsd.png -text
-Modules/Xia2html/icons/img_blank.png -text
 Modules/Xia2html/icons/img_good.png -text
 Modules/Xia2html/icons/img_many_bad.png -text
 Modules/Xia2html/icons/img_ok.png -text
 Modules/Xia2html/icons/img_overloaded.png -text
+Modules/Xia2html/icons/img_weak.png -text
 Modules/Xia2html/icons/info.png -text
 Modules/Xia2html/icons/warning.png -text
 Toolkit/BackstopMask.py -text
