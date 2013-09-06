@@ -161,13 +161,6 @@ def Mosflm(DriverType = None):
 
             return
 
-        def _mosflm_get_header(self, image):
-            '''Return the header for this image.'''
-            name = self.get_image_name(image)
-            dd = Diffdump()
-            dd.set_image(name)
-            return dd.readheader()
-
         def _index_prepare(self):
 
             if self._indxr_images == []:
