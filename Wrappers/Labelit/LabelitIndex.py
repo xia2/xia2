@@ -12,73 +12,6 @@
 # Decide the beam centre.
 # Index the lattce.
 #
-# Now done...
-#
-# (1) Implement setting of beam, wavelength, distance via labelit parameter
-#     .py file. [dataset_preferences.py] autoindex_override_beam = (x, y)
-#     distance wavelength etc.
-#
-# (2) Implement profile bumpiness handling if the detector is an image plate.
-#     (this goes in the same file...) this is distl_profile_bumpiness = 5
-#
-# Modifications:
-#
-# 13/JUN/06: Added mosaic spread getting
-# 21/JUN/06: Added unit cell volume getting
-# 23/JUN/06: FIXME should the images to index be specified by number or
-#            by name? No implementation change, Q needs answering.
-#            c/f Mosflm wrapper.
-# 07/JUL/06: write_ds_preferences now "protected".
-# 10/JUL/06: Modified to inherit from FrameProcessor interface to provide
-#            all of the guff to handle the images etc. Though this handles
-#            only the template &c., not the image selections for indexing.
-#
-# FIXME 24/AUG/06 Need to be able to get the raster & separation parameters
-#                 from the integrationNN.sh script, so that I can reproduce
-#                 the interface now provided by the Mosflm implementation
-#                 (this adds a dictionary with a few extra parameters - dead
-#                 useful under some circumstances) - Oh, I can't do this
-#                 because Labelit doesn't produce these parameters!
-#
-# FIXED 06/SEP/06 Need to update interface to handle unit cell input as
-#                 described in an email from Nick:
-#
-#                 known_symmetry=P4 known_cell=a,b,c,alpha,beta,gamma
-#
-#                 Though this will depend on installing the latest CVS
-#                 version (funfunfun) [or the 1.0.0a3 source tarball, easier!]
-#
-#                 Ok, doing this will simply assign the smiley correctly -
-#                 the other solutions are also displayed. I guess that this
-#                 will be useful for indexing multiple sets though.
-#
-# FIXME 06/SEP/06 This needs to have an indentity change to LabelitIndex
-#                 Combine this with the renaming of LabelitStats_distl to
-#                 fit in with LabelitMosflmScript.
-#
-# FIXED 18/SEP/06 pass on the working directory to sub processes...
-#
-# FIXME 19/SEP/06 need to inspect the metric fit parameters - for 1vr9/native
-#                 labelit now happily indexes in I222 not correctly in C2 -
-#                 this is shown by a poor metric penalty. Also need to
-#                 implement lattice reduction. Follow up 16/OCT/06 discussed
-#                 with Nick S about this and not sure what parameters have
-#                 changed but is still interested in making this work properly.
-#
-# FIXME 16/OCT/06 if more than two images are passed in for indexing can cope,
-#                 just need to assign wedge_limit = N where N is the number
-#                 of images in dataset_preferences.py... apparently this is
-#                 there for "historical reasons"...
-#
-# FIXME 07/NOV/06 new error message encountered trying to index 1VP4 LREM LR
-#                 in oC lattice:
-#
-#                 No_Lattice_Selection: In this case 3 of 12 lattice \
-#                 solutions have the oC Bravais type and nearly
-#                 the same cell.  Run labelit again without the \
-#                 known_symmetry and known_cell keywords.
-#
-#                 Need to be able to handle this...
 
 import os
 import sys
@@ -129,6 +62,10 @@ def LabelitIndex(DriverType = None, indxr_print = True):
 
     DriverInstance = DriverFactory.Driver(DriverType)
 
+    # FIXME this class should not inherit directly from these interfaces - 
+    # would be better to have a higher level module which did that as a 
+    # bridge...
+
     class LabelitIndexWrapper(DriverInstance.__class__,
                               FrameProcessor,
                               Indexer):
@@ -162,9 +99,6 @@ def LabelitIndex(DriverType = None, indxr_print = True):
 
             return
 
-        # this is not defined in the Indexer interface :o(
-        # FIXME should it be???
-
         def set_refine_beam(self, refine_beam):
             self._refine_beam = refine_beam
             return
@@ -188,13 +122,10 @@ def LabelitIndex(DriverType = None, indxr_print = True):
             if self.get_beam_prov() == 'user':
                 out.write('autoindex_override_beam = (%f, %f)\n' % \
                           self.get_beam())
+
             if self._refine_beam is False:
                 out.write('beam_search_scope = 0.0\n')
             else:
-                # FIXME latest version of labelit has messed up the beam
-                # centre finding :o( so add this for the moment until that
-                # is fixed
-
                 out.write('beam_search_scope = %f\n' % \
                           self._beam_search_scope)
 
@@ -212,17 +143,15 @@ def LabelitIndex(DriverType = None, indxr_print = True):
                 out.write('distl_binned_image_spot_size = 10\n')
 
             # presume that we won't be using more than four
-            # images...
+            # images... err why? just use as many as are given in the 
+            # list?
+
             out.write('wedgelimit = 4\n')
 
             # new feature - index on the spot centre of mass, not the
             # highest pixel (should improve the RMS deviation reports.)
 
             out.write('distl_spotfinder_algorithm = "maximum_pixel"\n')
-
-            # 03/NOV/06 looks like this can be "fixed" by the following:
-            # out.write('percent_overlap_forcing_detail = 1\n')
-            # nope!
 
             out.close()
 
