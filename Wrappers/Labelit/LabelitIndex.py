@@ -120,7 +120,6 @@ from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Citations import Citations
 from Handlers.Flags import Flags
 from Handlers.Files import FileHandler
-from Modules.IceId import IceId
 from Modules.Indexer.MosflmCheckIndexerSolution import \
      mosflm_check_indexer_solution
 
@@ -622,37 +621,6 @@ def LabelitIndex(DriverType = None, indxr_print = True):
 
             self._indxr_resolution_estimate = resolution
 
-            # also look at the images given in input to try to decide if
-            # they are icy...
-
-            try:
-
-                ice = []
-
-                for i in _images:
-
-                    icy = IceId()
-                    icy.set_image(self.get_image_name(i))
-                    icy.set_beam(self._indxr_refined_beam)
-
-                    ice.append(icy.search())
-
-                if sum(ice) / len(ice) > 0.45:
-                    self._indxr_ice = 1
-
-                    Debug.write('Autoindexing images look icy: %.3f' % \
-                                (sum(ice) / len(ice)))
-
-                else:
-                    Debug.write('Autoindexing images look ok: %.3f' % \
-                                (sum(ice) / len(ice)))
-
-            except RuntimeError, e:
-
-                # cope with printpeaks failure...
-
-                pass
-
             return 'ok'
 
         def _index_finish(self):
@@ -752,101 +720,3 @@ def LabelitIndex(DriverType = None, indxr_print = True):
 
     return LabelitIndexWrapper()
 
-if __name__ == '__main__':
-
-    # run a demo test
-
-    if not os.environ.has_key('XIA2_ROOT'):
-        raise RuntimeError, 'XIA2_ROOT not defined'
-
-    l = LabelitIndex()
-
-    directory = os.path.join(os.environ['XIA2_ROOT'], '..', 'xia2test',
-                             'XIA2', 'Images')
-
-    l.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
-
-    # FIXME shouldn't need to do this any more
-    l.add_indexer_image_wedge(1)
-    l.add_indexer_image_wedge(90)
-
-    l.set_indexer_input_lattice('aP')
-
-    l.index()
-
-    print 'Refined beam is: %6.2f %6.2f' % l.get_indexer_beam()
-    print 'Distance:        %6.2f' % l.get_indexer_distance()
-    print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % l.get_indexer_cell()
-    print 'Lattice: %s' % l.get_indexer_lattice()
-    print 'Mosaic: %6.2f' % l.get_indexer_mosaic()
-
-    print 'Matrix:'
-    for m in l.get_indexer_payload('mosflm_orientation_matrix'):
-        print m[:-1]
-
-    # mow reindex the spot lists from the two images...
-    from Wrappers.XIA.Printpeaks import Printpeaks
-    from Wrappers.XIA.Diffdump import Diffdump
-
-    # CCTBX stuff
-    from scitbx import matrix
-
-    distance = l.get_indexer_distance()
-
-    axis = matrix.col([0, 0, 1])
-
-    for i in [1, 90]:
-        image = l.get_image_name(i)
-        dd = Diffdump()
-        dd.set_image(image)
-        header = dd.readheader()
-        phi = header['phi_start'] + 0.5 * header['phi_width']
-        pixel = header['pixel']
-        wavelength = header['wavelength']
-        pp = Printpeaks()
-        pp.set_image(image)
-        peaks = pp.get_maxima()
-
-        new_peaks = []
-
-        # N.B. in the calculation below I am using the Cambridge frame
-        # and Mosflm definitions of X & Y...
-
-        m_elems = []
-
-        m_matrix = l.get_indexer_payload('mosflm_orientation_matrix')
-        for record in m_matrix[:3]:
-            record = record.replace('-', ' -')
-            for e in map(float, record.split()):
-                m_elems.append(e / wavelength)
-
-        mi = matrix.sqr(m_elems)
-        m = mi.inverse()
-
-        A = matrix.col(m.elems[0:3])
-        B = matrix.col(m.elems[3:6])
-        C = matrix.col(m.elems[6:9])
-
-        # ok, have verified that this is the correct matrix!
-
-        for p in peaks[100:120]:
-            x, y, null = p
-            xp = pixel[0] * y - l.get_indexer_beam()[0]
-            yp = pixel[1] * x - l.get_indexer_beam()[1]
-
-            scale = wavelength * math.sqrt(
-                xp * xp + yp * yp + distance * distance)
-
-            X = distance / scale
-            X -= 1.0 / wavelength
-            Y = - xp / scale
-            Z = yp / scale
-
-            S = matrix.col([X, Y, Z])
-
-            rtod = 180.0 / math.pi
-
-            hkl = (m * S.rotate(axis, - phi / rtod)).elems
-
-            print '%6.2f %6.2f %6.2f %f %f' % \
-                  (hkl[0], hkl[1], hkl[2], y, x)

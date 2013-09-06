@@ -649,12 +649,6 @@ class XSweep():
 
             self._integrater.set_integrater_indexer(self._get_indexer())
 
-            # copy across "is this be icy" information... n.b. this
-            # could change the order of execution?
-
-            self._integrater.set_integrater_ice(
-                self._get_indexer().get_indexer_ice())
-
             # or if we have been told this on the command-line -
             # N.B. should really add a mechanism to specify the ice
             # rings we want removing, #1317.

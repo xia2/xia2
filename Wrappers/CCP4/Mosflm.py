@@ -91,7 +91,6 @@ from Wrappers.CCP4.Reindex import Reindex
 from Wrappers.CCP4.Sortmtz import Sortmtz
 from Wrappers.XIA.Diffdump import Diffdump
 from Wrappers.XIA.Printpeaks import Printpeaks
-from Modules.IceId import IceId
 
 # cell refinement image helpers
 
@@ -641,30 +640,6 @@ def Mosflm(DriverType = None):
             self._indxr_payload['mosflm_orientation_matrix'] = open(
                 os.path.join(self.get_working_directory(),
                              'xiaindex.mat'), 'r').readlines()
-
-            # also look at the images given in input to try to decide if
-            # they are icy...
-
-            ice = []
-
-            for i in _images:
-
-                icy = IceId()
-                icy.set_image(self.get_image_name(i))
-                icy.set_beam(self._indxr_refined_beam)
-
-                ice.append(icy.search())
-
-            if sum(ice) / len(ice) > 0.45:
-                self._indxr_ice = 1
-
-                Debug.write('Autoindexing images look icy: %.3f' % \
-                            (sum(ice) / len(ice)))
-
-            else:
-                Debug.write('Autoindexing images look ok: %.3f' % \
-                            (sum(ice) / len(ice)))
-
 
             return
 
@@ -2545,19 +2520,6 @@ def Mosflm(DriverType = None):
                 job.input('distance %f' % distance)
                 job.input('symmetry %s' % spacegroup_number)
                 job.input('mosaic %f' % mosaic)
-
-                # TEST: re-autoindex the pattern to see if the problem
-                # with the cell refinement convergence radius goes away...
-                #
-                # This doesn't work, lots of other problems => calculate the
-                # right missets ab initio.
-                #
-                # a, b = chunks[j]
-
-                # job.input('autoindex dps refine image %d' % a)
-                # job.input('autoindex dps refine image %d' % b)
-                # job.input('newmat processed.mat')
-                # job.input('go')
 
                 if self._mosflm_postref_fix_mosaic:
                     job.input('postref fix mosaic')

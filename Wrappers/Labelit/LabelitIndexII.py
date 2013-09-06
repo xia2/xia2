@@ -120,7 +120,6 @@ from lib.bits import auto_logfiler
 from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Citations import Citations
 from Handlers.Flags import Flags
-from Modules.IceId import IceId
 from Modules.Indexer.MosflmCheckIndexerSolution import \
      mosflm_check_indexer_solution
 
@@ -640,29 +639,6 @@ def LabelitIndexII(DriverType = None, indxr_print = True):
                     resolution = resol
 
             self._indxr_resolution_estimate = resolution
-
-            # also look at the images given in input to try to decide if
-            # they are icy...
-
-            ice = []
-
-            for i in _images:
-
-                icy = IceId()
-                icy.set_image(self.get_image_name(i))
-                icy.set_beam(self._indxr_refined_beam)
-
-                ice.append(icy.search())
-
-            if sum(ice) / len(ice) > 0.45:
-                self._indxr_ice = 1
-
-                Debug.write('Autoindexing images look icy: %.3f' % \
-                            (sum(ice) / len(ice)))
-
-            else:
-                Debug.write('Autoindexing images look ok: %.3f' % \
-                            (sum(ice) / len(ice)))
 
             return 'ok'
 

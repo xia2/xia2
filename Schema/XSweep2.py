@@ -270,9 +270,6 @@ class XSweep2():
 
             self._integrater.set_integrater_indexer(self._get_indexer())
 
-            self._integrater.set_integrater_ice(
-                self._get_indexer().get_indexer_ice())
-
             if Flags.get_ice():
                 self._integrater.set_integrater_ice(Flags.get_ice())
 
