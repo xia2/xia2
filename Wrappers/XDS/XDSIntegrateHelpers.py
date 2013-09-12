@@ -92,7 +92,10 @@ def _parse_integrate_lp(filename):
                     # trap e.g. missing images - need to be able to
                     # record this somewhere...
 
-                    fraction_weak = 1.0 - (float(strong) / float(all))
+                    if all:
+                        fraction_weak = 1.0 - (float(strong) / float(all))
+                    else:
+                        fraction_weak = 1.0
 
                     per_image_stats[image] = {'scale':scale,
                                               'overloads':overloads,
