@@ -488,11 +488,11 @@ class CCP4ScalerR(Scaler):
 
         if self.get_scaler_reference_reflection_file():
             self._reference = self.get_scaler_reference_reflection_file()
-            Chatter.write('Using HKLREF %s' % self._reference)
+            Debug.write('Using HKLREF %s' % self._reference)
 
         elif Flags.get_reference_reflection_file():
             self._reference = Flags.get_reference_reflection_file()
-            Chatter.write('Using HKLREF %s' % self._reference)
+            Debug.write('Using HKLREF %s' % self._reference)
 
         if len(self._sweep_handler.get_epochs()) > 1 and \
                not self._reference:
