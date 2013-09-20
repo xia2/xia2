@@ -20,6 +20,9 @@ import math
 
 from Handlers.Files import FileHandler
 
+def clean_reindex_operator(reindex_operator):
+    return reindex_operator.replace('[', '').replace(']', '')
+
 class CommonScaler(Scaler):
     '''Unified bits which the scalers have in common over the interface.'''
 
@@ -171,7 +174,7 @@ class CommonScaler(Scaler):
 
             Chatter.write(
                 'Reindexing to first spacegroup setting: %s (%s)' % \
-                (spacegroup, reindex_operator))
+                (spacegroup, clean_reindex_operator(reindex_operator)))
 
         else:
 
@@ -363,7 +366,7 @@ class CommonScaler(Scaler):
 
         Chatter.write(
             'Reindexing to first spacegroup setting: %s (%s)' % \
-            (spacegroup, reindex_operator))
+            (spacegroup, clean_reindex_operator(reindex_operator)))
 
         hklin = self._prepared_reflections
         hklout = os.path.join(self.get_working_directory(),
@@ -448,7 +451,7 @@ class CommonScaler(Scaler):
 
         Chatter.write(
             'Reindexing to first spacegroup setting: %s (%s)' % \
-            (spacegroup, reindex_operator))
+            (spacegroup, clean_reindex_operator(reindex_operator)))
 
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s_reindex.mtz' % \
