@@ -237,8 +237,8 @@ class XDSIntegrater(FrameProcessor,
             if self.get_frame_wedge():
                 wedge = self.get_frame_wedge()
                 Debug.write('Propogating wedge limit: %d %d' % wedge)
-                self._intgr_indexer.set_frame_wedge(wedge[0],
-                                                    wedge[1])
+                self._intgr_indexer.set_frame_wedge(wedge[0], wedge[1],
+                                                    apply_offset = False)
 
             # this needs to be set up from the contents of the
             # Integrater frame processer - wavelength &c.
@@ -297,8 +297,8 @@ class XDSIntegrater(FrameProcessor,
             if self.get_frame_wedge():
                 wedge = self.get_frame_wedge()
                 Debug.write('Propogating wedge limit: %d %d' % wedge)
-                self._intgr_indexer.set_frame_wedge(wedge[0],
-                                                    wedge[1])
+                self._intgr_indexer.set_frame_wedge(wedge[0], wedge[1],
+                                                    apply_offset = False)
 
             if self.get_reversephi():
                 Debug.write('Propogating reverse-phi...')

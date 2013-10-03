@@ -91,11 +91,12 @@ class FrameProcessor:
         self._fp_template = template
         return
 
-    def set_frame_wedge(self, start, end):
+    def set_frame_wedge(self, start, end, apply_offset = True):
         '''Set the allowed range of images for processing.'''
 
-        start = start - self._fp_offset
-        end = end - self._fp_offset
+        if apply_offset:
+            start = start - self._fp_offset
+            end = end - self._fp_offset
 
         self._fp_wedge = start, end
 
