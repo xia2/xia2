@@ -1,97 +1,13 @@
 #!/usr/bin/env python
 # XInfo.py
+# 
 #   Copyright (C) 2006 CCLRC, Graeme Winter
+#   Copyright (C) 2009 Diamond Light Source, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
-# A handler for .xinfo files, an example of which can be found in:
-#
-# os.path.join(os.environ['XIA2_ROOT'], 'Data', 'Test', 'Xinfo', '1vr9.xinfo')
-#
-# This file should record some metadata about the experiment, and contain
-# enough information to solve the structure. A similar .xinfo file
-# will be needed & generated in xia2dc.
-#
-# FIXME 25/AUG/06 Something similar will be needed by xia2dc, and will
-#                 need to be populated by that program based on
-#                 flourescence scans and so on. xia2dc will, however,
-#                 require a minimally populated .xinfo file for input.
-#                 Comment 27/OCT/06 something like this will also be
-#                 needed for the xia2ss phase as well...
-#
-# FIXME 25/AUG/06 I need to implement a "wizard" for generating the .xinfo
-#                 file because it's not particularly helpful or friendly
-#                 in the amount of information it contains.
-#
-# FIXME 25/AUG/06 Need to implement a system to ensure that the datasets
-#                 point at different sweeps, not two of them pointing
-#                 a the same sweep. Will allow two very similar looking
-#                 wavelength definitions (i.e. with the same lambda) for
-#                 one crystal because these could pertain to RIP, and may
-#                 correspond to different f', f'' values (although, will
-#                 these change as a function of radiation damage? unlikely)
-#                 FIXME I need to find this out to get a proper structure!
-#
-# FIXED 30/AUG/06 Probably should redefine DATASET as SWEEP to get a more
-#                 accurate mapping to the MTZ hierarchy. For the interim
-#                 I could allow either. So, for the moment, we have:
-#
-#                 WAVELENGTH -> MTZ dataset
-#                 PROJECT -> MTZ project
-#                 CRYSTAL -> MTZ dataset
-#
-#                 Fix this... later!
-#
-# FIXED 05/SEP/06 Need to kill current definition of DATASET so I can use
-#                 it when going to xia2ss as a dataset. => sed /dataset/sweep/
-#                 for xia2dpa. Done, and documentation, examples are
-#                 updated.
-#
-# FIXED 05/SEP/06 Need to produce an object hierarchy based on Schema/Object
-#                 to give object versioning which will represent the contents
-#                 of the .xinfo+ file, that is, the representation of this
-#                 information during the data reduction process, to make the
-#                 join from the input-to-dpa .xinfo file and the xia2ss
-#                 .xinfo input file. This will be:
-#
-#                 XProject
-#                 XCrystal
-#                 XWavelength
-#                 XSweep
-#                 XDataset
-#
-#                 A slightly poor naming convention, but it will do the
-#                 job. So - the properties of these are defined in
-#                 /Schema. Note well that these have subproperties
-#                 (e.g. sweep resolution) which will also have to be
-#                 defined as classes...
-#
-# FIXED 19/SEP/06 also allow the DISTANCE to be provided in the .xinfo
-#                 file in the same way as the beam - unfortunately this
-#                 is sometimes wrong and very hard to find right ;o(.
-#                 See NaI/Lysozyme data collected on 14.1 in /data1/graeme.
-#
-# FIXED 26/SEP/06 allow for INTEGRATED_REFLECTION_FILE in sweep record in place
-#                 of or in addition to the DIRECTORY, TEMPLATE to allow for
-#                 development of the scaling independently of the scaling
-#                 &c. The same could be applied to the scaled reflections
-#                 belonging to a wavelength etc.
-#
-# FIXED 27/OCT/06 need to be able to override or provide the epoch
-#                 information in the .xinfo file to cope with cases
-#                 where this information is not in the image headers.
-#
-# FIXED 15/NOV/06 allow for a role for wavelengths, for example in shelxc/d/e
-#                 it would help matters to define peak, inflection, low and
-#                 high remote. This should be done automatically in a perfect
-#                 world. In fact, this is best done by assigning one of these
-#                 names to the wavelength name - job done!
-#
-# FIXME 04/DEC/06 need to also allow for starting from post-scaled data -
-#                 this will make debugging easier and also provide a
-#                 xia2ha like functionality.
-#
+# xia2 information / input file reader
 
 class XInfo:
     '''A class to represent all of the input to the xia2dpa system, with

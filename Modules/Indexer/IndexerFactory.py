@@ -99,8 +99,6 @@ def IndexerForXSweep(xsweep):
     # interface will also implement FrameProcessor, which this uses.
     # verify this, or assert it in some way...
 
-    # BIG FIXED - need to standardize on getBeam or get_beam - I prefer the
-    # latter.
     if xsweep.get_beam():
         indexer.set_beam(xsweep.get_beam())
 

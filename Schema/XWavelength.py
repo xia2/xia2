@@ -170,7 +170,7 @@ class XWavelength():
                                    directory = directory,
                                    image = image,
                                    beam = beam,
-                                   reversephi = False,
+                                   reversephi = reversephi,
                                    distance = distance,
                                    gain = gain,
                                    dmin = dmin,

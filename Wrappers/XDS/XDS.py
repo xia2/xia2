@@ -132,7 +132,8 @@ def rotate_cbf_to_xds_convention(fast, slow, axis = (1, 0, 0)):
 
     from scitbx import matrix
 
-    R = matrix.col(axis).axis_and_angle_as_r3_rotation_matrix(180.0, deg = True)
+    R = matrix.col(axis).axis_and_angle_as_r3_rotation_matrix(
+        180.0, deg = True)
 
     return (R * fast).elems, (R * slow).elems
 
@@ -414,13 +415,21 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
                                                header['phi_start']))
     result.append('X-RAY_WAVELENGTH=%8.6f' % header['wavelength'])
 
+    # if user specified reversephi and this was not picked up in the
+    # format class reverse phi: n.b. double-negative warning!
+
     if refined_rotation_axis:
         result.append('ROTATION_AXIS= %f %f %f' % \
                       refined_rotation_axis)
     elif 'rotation_axis' in header:
         R = matrix.sqr((1, 0, 0, 0, -1, 0, 0, 0, -1))
-        result.append('ROTATION_AXIS= %.3f %.3f %.3f' % \
-                      (R * matrix.col(header['rotation_axis'])).elems)
+        if reversephi:
+            result.append('ROTATION_AXIS= %.3f %.3f %.3f' % \
+                          (-1 * R * matrix.col(header['rotation_axis'])).elems)
+        else:
+            result.append('ROTATION_AXIS= %.3f %.3f %.3f' % \
+                          (R * matrix.col(header['rotation_axis'])).elems)
+            
     else:
         result.append('ROTATION_AXIS= %s' % \
                       detector_to_rotation_axis[detector])
