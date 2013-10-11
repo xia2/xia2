@@ -229,6 +229,11 @@ Options:
 
 Extract project name and data from a xia2 processing run, create a standalone
 ccp4i project and start ccp4i with that project.
+
+Please note that this standalone ccp4i project will not be in the global
+projects database of ccp4i. However it may be added later using the
+'Directories&ProjectDir' button in ccp4i. The list of jobs performed in the
+standalone project will remain intact after the import.
 """
     return msg % myname
 
