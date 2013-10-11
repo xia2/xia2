@@ -142,6 +142,9 @@ def Ctruncate(DriverType = None):
             if 'Acentric moments of E using Truncate method' in results:
                 moments = transpose_loggraph(
                     results['Acentric moments of E using Truncate method'])
+            elif 'Acentric moments of I' in results:
+                moments = transpose_loggraph(
+                    results['Acentric moments of I'])
             elif 'Acentric moments of E' in results:
                 moments = transpose_loggraph(
                     results['Acentric moments of E'])
