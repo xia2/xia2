@@ -278,6 +278,10 @@ class XSweep():
                 raise RuntimeError, 'error reading %s: %s' % \
                       (os.path.join(directory, image), str(e))
 
+            if header is None:
+                raise RuntimeError, 'error reading %s: %s' % \
+                      (os.path.join(directory, image), str(e))
+
             # check that they match by closer than 0.0001A, if wavelength
             # is not None
 

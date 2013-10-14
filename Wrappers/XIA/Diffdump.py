@@ -450,6 +450,8 @@ def failover_dxtbx(image_file):
         iformat = last_format
     else:
         iformat = Registry.find(image_file)
+        from Handlers.Streams import Debug
+        Debug.write('Using dxtbx format instance: %s' % iformat.__name__)
 
     if not iformat.understand(image_file):
         raise RuntimeError, 'image file %s not understood by dxtbx' % \
