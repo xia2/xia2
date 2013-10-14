@@ -80,6 +80,12 @@ class PythonDriver(DefaultDriver):
 
         return True
 
+    def _check_executable(self, executable):
+        if os.path.exists(executable):
+            return executable
+        return ''
+        
+
     def _input(self, record):
 
         if not self.check():
