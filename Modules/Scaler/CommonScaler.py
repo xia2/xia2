@@ -685,9 +685,6 @@ class CommonScaler(Scaler):
                     (self._scalr_pname, self._scalr_xname, wavelength)
                     ]['Wilson B factor'] = [b_factor]
 
-                # look for the second moment information...
-                moments = truncate.get_moments()
-
                 # and record the reflection file..
                 self._tmp_scaled_refl_files[wavelength] = hklout
 
