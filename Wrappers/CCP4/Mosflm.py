@@ -637,7 +637,7 @@ def Mosflm(DriverType = None):
             except:
                 return
 
-            if status is False:
+            if status is False or status is None:
                 return
 
             # ok need to update internals...
