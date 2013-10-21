@@ -6,8 +6,8 @@
 #   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
-# Generate the raster parameters from spot finding to help Mosflm cell refinement
-# if other programs used for indexing (e.g. Labelit or DIALS)
+# Generate the raster parameters from spot finding to help Mosflm cell 
+# refinement if other programs used for indexing (e.g. Labelit or DIALS)
 
 def GenerateRaster(DriverType = None):
     '''A factory for GenerateRasterWrapper(ipmosflm) classes.'''
@@ -30,7 +30,7 @@ def GenerateRaster(DriverType = None):
 
             return
 
-        def generate_raster(self, indxr, images):
+        def __call__(self, indxr, images):
             '''Get out the parameters from autoindexing without using the
             result - this is probably ok as it is quite quick ;o).'''
 

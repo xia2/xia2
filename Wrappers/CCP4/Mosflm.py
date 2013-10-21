@@ -657,7 +657,8 @@ def Mosflm(DriverType = None):
         def _mosflm_generate_raster(self, _images):
             from Wrappers.Mosflm.GenerateRaster import GenerateRaster
             gr = GenerateRaster()
-            return gr.generate_raster(self.get_integrater_indexer(), _images)
+            gr.set_working_directory(self.get_working_directory())
+            return gr(self.get_integrater_indexer(), _images)
         
         def _integrate_prepare(self):
             '''Prepare for integration - note that if there is a reason
