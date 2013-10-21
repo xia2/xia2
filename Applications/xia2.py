@@ -224,7 +224,8 @@ def xia2():
     if Flags.get_pickle():
         import cPickle as pickle
         try:
-            pickle.dump(CommandLine.get_xinfo(), open(Flags.get_pickle(), 'w'))
+            pickle.dump(CommandLine.get_xinfo(),
+                        open(Flags.get_pickle(), 'w'))
         except exceptions.Exception, e:
             traceback.print_exc(file = open('xia2.pkl.error', 'w'))
 
@@ -310,8 +311,7 @@ if __name__ == '__main__':
         check()
     except exceptions.Exception, e:
         traceback.print_exc(file = open('xia2.error', 'w'))
-        Chatter.write('Error: %s' % str(e))
-        Chatter.write('Do you have Python 2.4 installed?')
+        Chatter.write('Status: error "%s"' % str(e))
 
     if len(sys.argv) < 2 or '-help' in sys.argv:
         help()
