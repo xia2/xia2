@@ -64,7 +64,7 @@ if not root in sys.path:
 
 from DriverExceptions.NotAvailableError import NotAvailableError
 
-class DefaultDriver:
+class DefaultDriver(object):
     '''A class to run other programs, specifically from the CCP4 suite
     but also others, to achieve crystallographic processes. This will also
     provide functionality for controlling the job, limited only by the

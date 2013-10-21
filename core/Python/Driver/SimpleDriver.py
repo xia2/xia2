@@ -51,13 +51,6 @@ class SimpleDriver(DefaultDriver):
             for c in self._command_line:
                 command_line += ' \'%s\'' % c
 
-        # portability issue here with the shell interaction?
-
-        # if os.name == 'posix':
-        #     shell = False
-        # else:
-        #     shell = True
-
         environment = copy.deepcopy(os.environ)
 
         for name in self._working_environment:
@@ -87,19 +80,6 @@ class SimpleDriver(DefaultDriver):
         # the shell spawned is probably still ok
 
         return
-
-    def check(self):
-        '''Overload the default check method.'''
-
-        # FIXME this may give false results if the child program
-        # is too fast!
-
-        if self._popen and self._popen.poll() is None:
-            return True
-
-        # FIXME this should do a proper test!
-        
-        return True
 
     def _input(self, record):
 
