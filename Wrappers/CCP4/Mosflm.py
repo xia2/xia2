@@ -9,14 +9,6 @@
 #
 # A wrapper for the data processing program Mosflm, with the following
 # methods to provide functionality:
-#
-# index: autoindexing functionality (implemented)
-# integrate: process a frame or a dataset (implemented)
-#
-# Internally this will also require cell refinement and so on, but this
-# will be implicit - the cell refinement is a local requirement for
-# mosflm only - though this will provide some useful functionality
-# for diagnosing wrong indexing solutions.
 
 import os
 import sys
@@ -30,8 +22,7 @@ if not os.environ.has_key('XIA2_ROOT'):
     raise RuntimeError, 'XIA2_ROOT not defined'
 
 if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
-    sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                                 'Python'))
+    sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
 if not os.environ['XIA2_ROOT'] in sys.path:
     sys.path.append(os.environ['XIA2_ROOT'])
 
@@ -45,7 +36,6 @@ from Schema.Interfaces.Indexer import Indexer
 from Schema.Interfaces.Integrater import Integrater
 
 # output streams &c.
-
 from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Citations import Citations
 from Handlers.Flags import Flags
@@ -53,7 +43,6 @@ from Handlers.Executables import Executables
 from Handlers.Files import FileHandler
 
 # helpers
-
 from MosflmHelpers import _happy_integrate_lp, \
      _parse_mosflm_integration_output, decide_integration_resolution_limit, \
      _parse_mosflm_index_output, standard_mask, \
@@ -61,7 +50,6 @@ from MosflmHelpers import _happy_integrate_lp, \
      _parse_summary_file
 
 # things we are moving towards...
-
 from Modules.Indexer.IndexerSelectImages import index_select_images_lone, \
      index_select_images_user
 
@@ -78,7 +66,6 @@ from Experts.ResolutionExperts import mosflm_mtz_to_list, \
 from Experts.MissetExpert import MosflmMissetExpert
 
 # exceptions
-
 from Schema.Exceptions.BadLatticeError import BadLatticeError
 from Schema.Exceptions.NegativeMosaicError import NegativeMosaicError
 from Schema.Exceptions.IndexingError import IndexingError
@@ -86,19 +73,16 @@ from Schema.Exceptions.IntegrationError import IntegrationError
 
 # other classes which are necessary to implement the integrater
 # interface (e.g. new version, with reindexing as the finish...)
-
 from Wrappers.CCP4.Reindex import Reindex
 from Wrappers.CCP4.Sortmtz import Sortmtz
 from Wrappers.XIA.Diffdump import Diffdump
 from Wrappers.XIA.Printpeaks import Printpeaks
 
 # cell refinement image helpers
-
 from Modules.Indexer.MosflmCheckIndexerSolution import \
      mosflm_check_indexer_solution
 
 # jiffy functions for means, standard deviations and outliers
-
 from lib.bits import meansd, remove_outliers
 
 def Mosflm(DriverType = None):
@@ -116,8 +100,6 @@ def Mosflm(DriverType = None):
         def __init__(self):
             # generic things
             CCP4DriverInstance.__class__.__init__(self)
-
-            # FIXME should this be "hard" coded as the ccp4 one?
 
             if Executables.get('ipmosflm'):
                 self.set_executable(Executables.get('ipmosflm'))
@@ -299,11 +281,6 @@ def Mosflm(DriverType = None):
             '''Implement the indexer interface.'''
 
             Citations.cite('mosflm')
-
-            # FIXME verify that the spot finding found some spots (and throw
-            # an exception if not!) then perform the indexing on this
-            # spot list. N.B. this would provide the opportunity to index
-            # multiple lattices in a relatively straightforward manner.
 
             self.reset()
             auto_logfiler(self)
@@ -658,14 +635,9 @@ def Mosflm(DriverType = None):
                 status, lattice, matrix, cell = mosflm_check_indexer_solution(
                     self)
             except:
-                status = None
-
-            if status is None:
-                # basis is primitive
                 return
 
             if status is False:
-                # basis is centred, and passes test
                 return
 
             # ok need to update internals...
@@ -815,8 +787,9 @@ def Mosflm(DriverType = None):
             if 'pilatus' in self.get_header_item('detector_class'):
                 self._mosflm_gain = 1.0
 
+            indxr = self.get_integrater_indexer()
+
             if not self._mosflm_cell_ref_images:
-                indxr = self.get_integrater_indexer()
                 mosaic = indxr.get_indexer_mosaic()
 
                 if Flags.get_microcrystal():
@@ -826,8 +799,8 @@ def Mosflm(DriverType = None):
                     self._mosflm_cell_ref_images = self._refine_select_images(
                         mosaic)
 
-            indxr = self.get_integrater_indexer()
-
+            # generate human readable output
+                    
             images_str = '%d to %d' % self._mosflm_cell_ref_images[0]
             for i in self._mosflm_cell_ref_images[1:]:
                 images_str += ', %d to %d' % i
@@ -846,6 +819,8 @@ def Mosflm(DriverType = None):
                            'target lattice':indxr.get_indexer_lattice(),
                            'template':self._fp_template,
                            'directory':dirname})
+
+            # end generate human readable output
 
             # in here, check to see if we have the raster parameters and
             # separation from indexing - if we used a different indexer
@@ -879,12 +854,6 @@ def Mosflm(DriverType = None):
             # next test the cell refinement with the correct lattice
             # and P1 and see how the numbers stack up...
 
-            # FIXME in here 19/JUNE/08 - if I get a negative mosaic spread
-            # in here it may be worth doubling the estimated mosaic spread
-            # and having another go. If it fails a second time, then
-            # let the exception through... - this should now raise a
-            # NegativeMosaicError not a BadLatticeError
-
             # copy the cell refinement resolution in...
 
             self._mosflm_cell_ref_resolution = indxr.get_indexer_resolution()
@@ -916,44 +885,28 @@ def Mosflm(DriverType = None):
                 rms_deviations, br = self._mosflm_refine_cell()
 
             except NegativeMosaicError, nme:
-                # need to handle cases where the mosaic spread refines to
-                # a negative value when the lattice is right - this could
-                # be caused by the starting value being too small so
-                # try doubling - if this fails, reject lattice as duff...
-
+                
                 if self._mosflm_cell_ref_double_mosaic:
 
                     # reset flag; half mosaic; raise BadLatticeError
-
                     Debug.write('Mosaic negative even x2 -> BadLattice')
-
                     self._mosflm_cell_ref_double_mosaic = False
                     raise BadLatticeError, 'negative mosaic spread'
 
                 else:
 
                     # set flag, double mosaic, return to try again
-
                     Debug.write('Mosaic negative -> try x2')
-
                     self._mosflm_cell_ref_double_mosaic = True
-
                     self.set_integrater_prepare_done(False)
 
                     return
 
             if not self.get_integrater_prepare_done():
-                # cell refinement failed so no point getting the
-                # results of refinement in P1... now this is
-                # ignored as it is important we refine the cell
-                # in P1 first...
                 return
 
-            # run the cell refinement again with the refined parameters
-            # in the correct lattice as this will give a fair comparison
-            # with the P1 refinement (see bug # 2539) - would also be
-            # interesting to see how much better these are...
-
+            # compare cell refinement with lattice and in P1
+            
             images = []
             for cri in self._mosflm_cell_ref_images:
                 for j in range(cri[0], cri[1] + 1):
@@ -1018,11 +971,6 @@ def Mosflm(DriverType = None):
 
             else:
                 Debug.write('Cell refinement in P1 failed... or was not run')
-
-            # also look for the images we want to integrate... since this
-            # is part of the preparation and was causing fun with
-            # bug # 2040 - going quickly! this resets the integration done
-            # flag...
 
             cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % \
                        self._intgr_cell
@@ -1114,9 +1062,6 @@ def Mosflm(DriverType = None):
         def _integrate_finish(self):
             '''Finish the integration - if necessary performing reindexing
             based on the pointgroup and the reindexing operator.'''
-
-            # FIXME this should rely on self.get_integrater_raw_intensities()
-            # not self._mosflm_hklout...
 
             if self._intgr_reindex_operator is None and \
                self._intgr_spacegroup_number == lattice_to_spacegroup(
