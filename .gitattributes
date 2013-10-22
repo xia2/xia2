@@ -55,6 +55,7 @@ Wrappers/Labelit/DistlSignalStrength.py -text
 Wrappers/Labelit/DistlSweepStrength.py -text
 Wrappers/Labelit/LabelitIndexII.py -text
 Wrappers/Labelit/LabelitMosflmMatrix.py -text
+Wrappers/Mosflm/Autoindex.py -text
 Wrappers/Mosflm/Findspots.py -text
 Wrappers/Mosflm/GenerateRaster.py -text
 Wrappers/Mosflm/__init__.py -text
