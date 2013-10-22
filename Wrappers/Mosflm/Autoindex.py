@@ -71,7 +71,7 @@ def Autoindex(DriverType = None):
             self.input('distance %f' % fp.get_distance())
             self.input('wavelength %f' % fp.get_wavelength())
 
-            if spot_file:
+            if self._spot_file:
                 self.input('autoindex dps refine image %s file %s' % 
                            (images_str, spot_file))
             else:
