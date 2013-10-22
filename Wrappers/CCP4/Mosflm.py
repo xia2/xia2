@@ -147,6 +147,15 @@ def Mosflm(DriverType = None):
             if self._indxr_images == []:
                 self._index_select_images()
 
+            # temporary bodge plumb in spot finding to test...
+
+            if False:
+                from lib.bits import unique_elements
+                from Wrappers.Mosflm.Findspots import Findspots
+                fs = Findspots()
+                fs.set_working_directory(self.get_working_directory())
+                fs(self, unique_elements(self._indxr_images))
+
             if self._mosflm_autoindex_thresh is None and \
                    Flags.get_microcrystal():
                 self._mosflm_autoindex_thresh = 5
@@ -285,27 +294,16 @@ def Mosflm(DriverType = None):
             self.reset()
             auto_logfiler(self)
 
-            _images = []
-            for i in self._indxr_images:
-                for j in i:
-                    if not j in _images:
-                        _images.append(j)
-
-            _images.sort()
-
-            images_str = '%d' % _images[0]
-            for i in _images[1:]:
-                images_str += ', %d' % i
-
+            from lib.bits import unique_elements
+            _images = unique_elements(self._indxr_images)
+            images_str = ', '.join(map(str, _images))
+            
             cell_str = None
             if self._indxr_input_cell:
                 cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % \
                             self._indxr_input_cell
 
             if self._indxr_sweep_name:
-
-                # then this is a proper autoindexing run - describe this
-                # to the journal entry
 
                 if len(self._fp_directory) <= 50:
                     dirname = self._fp_directory

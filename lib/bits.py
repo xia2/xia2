@@ -149,6 +149,10 @@ def auto_logfiler(DriverInstance, extra = None):
 
     return logfile
 
+def unique_elements(list_of_tuples):
+    '''Extract unique elements from list of tuples, return as sorted list.'''
+    return sorted(set(sum(map(list, list_of_tuples), [])))
+
 def transpose_loggraph(loggraph_dict):
     '''Transpose the information in the CCP4-parsed-loggraph dictionary
     into a more useful structure.'''

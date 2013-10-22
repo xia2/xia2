@@ -31,9 +31,6 @@ def GenerateRaster(DriverType = None):
             return
 
         def __call__(self, indxr, images):
-            '''Get out the parameters from autoindexing without using the
-            result - this is probably ok as it is quite quick ;o).'''
-
             from Handlers.Streams import Debug
             Debug.write('Running mosflm to generate RASTER, SEPARATION')
 
