@@ -37,8 +37,18 @@ class Platform(FrameProcessor):
         ai = Autoindex()
         return ai(self, images)
 
-if __name__ == '__main__':
-    p = Platform(sys.argv[1])
-    print p.findspots(p.get_matching_images()[:1])
-    print p.autoindex(p.get_matching_images()[:1])
+def tst_autoindex(image):
+    p = Platform(image)
+    return p.autoindex(p.get_matching_images()[:1])
     
+def tst_findspots(image):
+    p = Platform(image)
+    return p.findspots(p.get_matching_images()[:1])
+
+def tst_all():
+    import sys
+    tst_findspots(sys.argv[1])
+    tst_autoindex(sys.argv[1])
+
+if __name__ == '__main__':
+    tst_all()    
