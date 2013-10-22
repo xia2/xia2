@@ -43,10 +43,9 @@ def GenerateRaster(DriverType = None):
             self.input('beam %f %f' % indxr.get_indexer_beam())
             self.input('distance %f' % indxr.get_indexer_distance())
             self.input('wavelength %f' % indxr.get_wavelength())
-
+            self.input('findspots file spots.dat')
             for i in images:
                 self.input('findspots find %d' % i)
-
             self.input('go')
 
             self.close_wait()
