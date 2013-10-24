@@ -9,6 +9,8 @@
 # Find spots for autoindexing - now separating this out into two steps; finding
 # spots in index prepare and doing indexing in index proper.
 
+from __future__ import division
+
 def Findspots(DriverType = None):
     '''A factory for FindspotsWrapper(ipmosflm) classes.'''
 
@@ -48,8 +50,8 @@ def Findspots(DriverType = None):
 
             # FIXME I should really gather some interesting information about
             # the spot finding in here...
-            
-            import os            
+
+            import os
             return os.path.join(self.get_working_directory(), 'spots.dat')
-        
+
     return FindspotsWrapper()

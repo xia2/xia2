@@ -6,10 +6,12 @@
 #   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
-# Generate the raster parameters from spot finding to help Mosflm cell 
-# refinement if other programs used for indexing (e.g. Labelit or DIALS) - 
+# Generate the raster parameters from spot finding to help Mosflm cell
+# refinement if other programs used for indexing (e.g. Labelit or DIALS) -
 # N.B. this is subtly different to Findspots as it takes as input an Indexer
 # implementation not FrameProcessor.
+
+from __future__ import division
 
 def GenerateRaster(DriverType = None):
     '''A factory for GenerateRasterWrapper(ipmosflm) classes.'''
@@ -52,7 +54,7 @@ def GenerateRaster(DriverType = None):
             p = { }
 
             # scrape from the output the values we want...
-            
+
             for o in self.get_all_output():
                 if 'parameters have been set to' in o:
                     p['raster'] = map(int, o.split()[-5:])
@@ -60,5 +62,5 @@ def GenerateRaster(DriverType = None):
                     p['separation'] = map(float, o.replace(')', '').split()[-2:])
 
             return p
-        
+
     return GenerateRasterWrapper()

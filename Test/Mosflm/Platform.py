@@ -8,6 +8,7 @@
 #
 # Test platform for new Mosflm wrapper implementations.
 
+from __future__ import division
 import os
 import sys
 
@@ -26,7 +27,7 @@ from Schema.Interfaces.FrameProcessor import FrameProcessor
 class Platform(FrameProcessor):
     def __init__(self, image):
         FrameProcessor.__init__(self, image)
-        
+
     def findspots(self, images):
         from Wrappers.Mosflm.Findspots import Findspots
         fs = Findspots()
@@ -42,10 +43,10 @@ class Platform(FrameProcessor):
         from Wrappers.Mosflm.Autoindex import Autoindex
 
         ai = Autoindex()
-        
+
         if images is None:
             images = ai.select_images(self)
-        
+
         fs = Findspots()
         ai.set_spot_file(fs(self, images))
         return ai(self, images)
@@ -56,10 +57,10 @@ class Platform(FrameProcessor):
         from Wrappers.Mosflm.Exceptions import AutoindexError
 
         ai = Autoindex()
-        
+
         if images is None:
             images = ai.select_images(self)
-        
+
         fs = Findspots()
         spot_file = fs(self, images)
         from PlatformHelpers import randomize_spots
@@ -71,11 +72,11 @@ class Platform(FrameProcessor):
             return
 
         raise RuntimeError, 'should not get here'
-    
+
 def tst_autoindex(image):
     p = Platform(image)
     return p.autoindex(p.get_matching_images()[:1])
-    
+
 def tst_findspots(image):
     p = Platform(image)
     return p.findspots(p.get_matching_images()[:1])
@@ -102,4 +103,4 @@ def tst_all():
     print 'OK'
 
 if __name__ == '__main__':
-    tst_all()    
+    tst_all()

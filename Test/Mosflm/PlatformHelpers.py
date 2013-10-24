@@ -8,12 +8,14 @@
 #
 # Test platform helpers for new Mosflm wrapper implementations.
 
+from __future__ import division
+
 def randomize_spots(spot_file):
-    '''Read Mosflm spot file; randomize the spot positions; write new spot 
+    '''Read Mosflm spot file; randomize the spot positions; write new spot
     file.'''
 
     import random
-    
+
     spot_records = open(spot_file).readlines()
 
     nx, ny = map(int, spot_records[0].split()[:2])
@@ -32,20 +34,18 @@ def randomize_spots(spot_file):
         if int(x) == int(y) == -999:
             new_spot_records.append(record)
             continue
-                    
+
         new_x = nx * pixel_size * random.random()
         new_y = ny * pixel_size * random.random()
-        
+
         new_spot_records.append(' %10.2f%10.2f%9.3f%9.3f%12.1f%12.1f\n' % \
                                 (new_x, new_y, img, phi, i, sigi))
 
     open(spot_file, 'w').write(''.join(new_spot_records))
 
     return spot_file
-                            
+
 if __name__ == '__main__':
     import sys
 
     randomize_spots(sys.argv[1])
-                                
-        
