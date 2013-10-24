@@ -1,5 +1,4 @@
-def index_solution(tokens):
-    
+def index_solution(tokens):    
     from collections import namedtuple
     IndexSolution = namedtuple('IndexSolution', 
                                'penalty sdcell fracn latt cell')
@@ -11,6 +10,11 @@ def index_solution(tokens):
 def parse_index_log(mosflm_output):
     n_solutions = 0
     solutions = [ ]
+
+    for record in mosflm_output:
+        if 'DIRECT SPACE VECTORS DID NOT RESULT INTO A ORIENTATION' in record:
+            from Exceptions import AutoindexError
+            raise AutoindexError, 'indexing failed'
     
     for j, record in enumerate(mosflm_output):
         if ' No PENALTY SDCELL FRACN LATT      a        b        c' in record:
