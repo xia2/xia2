@@ -37,6 +37,19 @@ class Platform(FrameProcessor):
         ai = Autoindex()
         return ai(self, images)
 
+    def findspots_autoindex(self, images):
+        from Wrappers.Mosflm.Findspots import Findspots
+        from Wrappers.Mosflm.Autoindex import Autoindex
+        fs = Findspots()
+        spot_file = fs(self, images)
+        ai = Autoindex()
+        ai.set_spot_file(spot_file)
+        solutions = ai(self, images)
+        for s in solutions:
+            print '%3d %2s %.3f' % (s.penalty, s.latt, s.fracn), \
+              '%5.1f %5.1f %5.1f %5.1f %5.1f %5.1f' % s.cell
+
+        
 def tst_autoindex(image):
     p = Platform(image)
     return p.autoindex(p.get_matching_images()[:1])
@@ -45,10 +58,15 @@ def tst_findspots(image):
     p = Platform(image)
     return p.findspots(p.get_matching_images()[:1])
 
+def tst_findspots_autoindex(image):
+    p = Platform(image)
+    return p.findspots_autoindex(p.get_matching_images()[:1])
+
 def tst_all():
     import sys
-    tst_findspots(sys.argv[1])
-    tst_autoindex(sys.argv[1])
+    # tst_findspots(sys.argv[1])
+    # tst_autoindex(sys.argv[1])
+    tst_findspots_autoindex(sys.argv[1])
 
 if __name__ == '__main__':
     tst_all()    

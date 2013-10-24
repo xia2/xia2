@@ -73,11 +73,14 @@ def Autoindex(DriverType = None):
 
             if self._spot_file:
                 self.input('autoindex dps refine image %s file %s' % 
-                           (images_str, spot_file))
+                           (images_str, self._spot_file))
             else:
                 self.input('autoindex dps refine image %s' % images_str)
                 
             self.input('go')
             self.close_wait()
+
+            from AutoindexHelpers import parse_index_log
+            return parse_index_log(self.get_all_output())                  
         
     return AutoindexWrapper()
