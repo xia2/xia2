@@ -51,9 +51,20 @@ def Autoindex(DriverType = None):
         def set_spot_file(self, spot_file):
             self._spot_file = spot_file
             return
-        
-        def __call__(self, fp, images):
+
+        def select_images(self, fp):
             from Handlers.Streams import Debug
+            from Modules.Indexer.IndexerSelectImages import \
+                index_select_images_lone
+            phi_width = fp.get_header_item('phi_width')
+            images = fp.get_matching_images()
+            return index_select_images_lone(phi_width, images)
+        
+        def __call__(self, fp, images = None):
+            from Handlers.Streams import Debug
+            
+            if images is None:
+                images = self.select_images(fp)
 
             images_str = ' '.join(map(str, images))
             

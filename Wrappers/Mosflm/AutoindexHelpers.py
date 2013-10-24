@@ -32,3 +32,4 @@ def parse_index_log(mosflm_output):
                     continue
                 
     return solutions
+
