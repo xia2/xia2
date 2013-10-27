@@ -28,6 +28,11 @@ class Platform(FrameProcessor):
     def __init__(self, image):
         FrameProcessor.__init__(self, image)
 
+    def header(self, images):
+        from Wrappers.Mosflm.Header import Header
+        h = Header()
+        return h(self, images)
+
     def findspots(self, images):
         from Wrappers.Mosflm.Findspots import Findspots
         fs = Findspots()
@@ -93,6 +98,10 @@ def tst_findspots_autoindex_select(image):
     p = Platform(image)
     return p.findspots_autoindex()
 
+def tst_header(image):
+    p = Platform(image)
+    return p.header(p.get_matching_images())
+
 def tst_all():
     import sys
     tst_findspots(sys.argv[1])
@@ -102,5 +111,9 @@ def tst_all():
     tst_findspots_autoindex_randomize(sys.argv[1])
     print 'OK'
 
+def tst_all():
+    import sys
+    tst_header(sys.argv[1])
+    
 if __name__ == '__main__':
     tst_all()

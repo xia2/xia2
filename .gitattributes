@@ -62,6 +62,7 @@ Wrappers/Mosflm/AutoindexHelpers.py -text
 Wrappers/Mosflm/Exceptions.py -text
 Wrappers/Mosflm/Findspots.py -text
 Wrappers/Mosflm/GenerateRaster.py -text
+Wrappers/Mosflm/Header.py -text
 Wrappers/Mosflm/__init__.py -text
 Wrappers/XDS/Merge2cbf.py -text
 Wrappers/XDS/XScaleR.py -text
