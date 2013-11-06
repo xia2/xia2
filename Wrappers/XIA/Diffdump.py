@@ -468,14 +468,22 @@ def failover_dxtbx(image_file):
 
     header = { }
 
-    fast, slow = map(int, d.get_image_size())
-    _f, _s = d.get_pixel_size()
-
-    F = matrix.col(d.get_fast_axis())
-    S = matrix.col(d.get_slow_axis())
-    N = F.cross(S)
-
-    origin = matrix.col(d.get_origin())
+    if not hasattr(d, 'get_image_size'):
+        # cope with new detector as array of panels dxtbx api
+        fast, slow = map(int, d[0].get_image_size())
+        _f, _s = d[0].get_pixel_size()
+        F = matrix.col(d[0].get_fast_axis())
+        S = matrix.col(d[0].get_slow_axis())
+        N = F.cross(S)
+        origin = matrix.col(d[0].get_origin())
+    else:
+        fast, slow = map(int, d.get_image_size())
+        _f, _s = d.get_pixel_size()
+        F = matrix.col(d.get_fast_axis())
+        S = matrix.col(d.get_slow_axis())
+        N = F.cross(S)
+        origin = matrix.col(d.get_origin())
+        
     beam = matrix.col(b.get_direction())
 
     # FIXME detector has methods to compute the beam centre now...
@@ -510,8 +518,14 @@ def failover_dxtbx(image_file):
         header['detector'] = i.detector
     else:
 
+        if hasattr(d, 'get_type'):
+            # cope with new detector as array of panels API
+            dtype = d.get_type()
+        else:
+            dtype = d[0].get_type()    
+        
         detector_type = detector_helpers_types.get(
-            d.get_type(), fast, slow, int(1000 * _f), int(1000 * _s))
+            dtype, fast, slow, int(1000 * _f), int(1000 * _s))
 
         header['detector_class'] = detector_type.replace('-', ' ')
         header['detector'] = detector_type.split('-')[0]
