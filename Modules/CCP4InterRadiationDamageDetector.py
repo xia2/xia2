@@ -25,10 +25,10 @@ import sys
 import math
 
 if not os.environ.has_key('XIA2_ROOT'):
-    raise RuntimeError, 'XIA2_ROOT not defined'
+  raise RuntimeError, 'XIA2_ROOT not defined'
 
 if not os.environ['XIA2_ROOT'] in sys.path:
-    sys.path.append(os.environ['XIA2_ROOT'])
+  sys.path.append(os.environ['XIA2_ROOT'])
 
 from Wrappers.CCP4.Scaleit import Scaleit
 from lib.bits import auto_logfiler
@@ -45,126 +45,126 @@ from lib.bits import auto_logfiler
 # which are "damaged".
 
 class CCP4InterRadiationDamageDetector:
-    '''A class to detect radiation damage.'''
+  '''A class to detect radiation damage.'''
 
-    def __init__(self):
-        self._working_directory = os.getcwd()
-        self._hklin = None
-        self._hklout = None
-        self._anomalous = False
+  def __init__(self):
+    self._working_directory = os.getcwd()
+    self._hklin = None
+    self._hklout = None
+    self._anomalous = False
 
-        return
+    return
 
-    def set_hklin(self, hklin):
-        self._hklin = hklin
-        return
+  def set_hklin(self, hklin):
+    self._hklin = hklin
+    return
 
-    def set_anomalous(self, anomalous):
-        self._anomalous = anomalous
-        return
+  def set_anomalous(self, anomalous):
+    self._anomalous = anomalous
+    return
 
-    def get_hklin(self):
-        return self._hklin
+  def get_hklin(self):
+    return self._hklin
 
-    def check_hklin(self):
-        if self._hklin is None:
-            raise RuntimeError, 'hklin not defined'
-        if not os.path.exists(self._hklin):
-            raise RuntimeError, 'hklin %s does not exist' % self._hklin
+  def check_hklin(self):
+    if self._hklin is None:
+      raise RuntimeError, 'hklin not defined'
+    if not os.path.exists(self._hklin):
+      raise RuntimeError, 'hklin %s does not exist' % self._hklin
 
-        return
+    return
 
-    def set_hklout(self, hklout):
-        self._hklout = hklout
-        return
+  def set_hklout(self, hklout):
+    self._hklout = hklout
+    return
 
-    def get_hklout(self):
-        return self._hklout
+  def get_hklout(self):
+    return self._hklout
 
-    def check_hklout(self):
-        if self._hklout is None:
-            raise RuntimeError, 'hklout not defined'
+  def check_hklout(self):
+    if self._hklout is None:
+      raise RuntimeError, 'hklout not defined'
 
-        # check that these are different files!
+    # check that these are different files!
 
-        if self._hklout == self._hklin:
-            raise RuntimeError, 'hklout and hklin are the same file'
+    if self._hklout == self._hklin:
+      raise RuntimeError, 'hklout and hklin are the same file'
 
-        return
+    return
 
-    def set_working_directory(self, working_directory):
-        self._working_directory = working_directory
-        pass
+  def set_working_directory(self, working_directory):
+    self._working_directory = working_directory
+    pass
 
-    def get_working_directory(self):
-        return self._working_directory
+  def get_working_directory(self):
+    return self._working_directory
 
-    def detect(self):
-        '''Detect radiation damage between wavelengths / datasets in a
-        reflection file. Will assume that the input is in order of data
-        collection. Will further assume that this is for MAD phasing.'''
+  def detect(self):
+    '''Detect radiation damage between wavelengths / datasets in a
+    reflection file. Will assume that the input is in order of data
+    collection. Will further assume that this is for MAD phasing.'''
 
-        self.check_hklin()
-        self.check_hklout()
+    self.check_hklin()
+    self.check_hklout()
 
-        # check that hklin is an mtz file.
+    # check that hklin is an mtz file.
 
-        scaleit = Scaleit()
-        scaleit.set_working_directory(self.get_working_directory())
-        auto_logfiler(scaleit)
+    scaleit = Scaleit()
+    scaleit.set_working_directory(self.get_working_directory())
+    auto_logfiler(scaleit)
 
-        if self._anomalous:
-            scaleit.set_anomalous(True)
+    if self._anomalous:
+      scaleit.set_anomalous(True)
 
-        scaleit.set_hklin(self.get_hklin())
-        scaleit.set_hklout(self.get_hklout())
+    scaleit.set_hklin(self.get_hklin())
+    scaleit.set_hklout(self.get_hklout())
 
-        scaleit.scaleit()
+    scaleit.scaleit()
 
-        statistics = scaleit.get_statistics()
+    statistics = scaleit.get_statistics()
 
-        wavelengths = statistics['mapping']
-        b_factors = statistics['b_factor']
+    wavelengths = statistics['mapping']
+    b_factors = statistics['b_factor']
 
-        derivatives = wavelengths.keys()
-        derivatives.sort()
+    derivatives = wavelengths.keys()
+    derivatives.sort()
 
-        status = []
+    status = []
 
-        for j in derivatives:
-            name = b_factors[j]['dname']
-            b = b_factors[j]['b']
-            r = b_factors[j]['r']
+    for j in derivatives:
+      name = b_factors[j]['dname']
+      b = b_factors[j]['b']
+      r = b_factors[j]['r']
 
-            # this is arbitrary!
+      # this is arbitrary!
 
-            if r > 0.50:
-                misindexed = ', misindexed'
-            else:
-                misindexed = ''
+      if r > 0.50:
+        misindexed = ', misindexed'
+      else:
+        misindexed = ''
 
-            if b < -3:
-                status.append((name, '%5.1f %4.2f (damaged%s)' % \
-                               (b, r, misindexed)))
-            else:
-                status.append((name, '%5.1f %4.2f (ok%s)' % \
-                               (b, r, misindexed)))
+      if b < -3:
+        status.append((name, '%5.1f %4.2f (damaged%s)' % \
+                       (b, r, misindexed)))
+      else:
+        status.append((name, '%5.1f %4.2f (ok%s)' % \
+                       (b, r, misindexed)))
 
-        return status
+    return status
 
 if __name__ == '__main__':
 
-    c = CCP4InterRadiationDamageDetector()
+  c = CCP4InterRadiationDamageDetector()
 
-    hklin = os.path.join(
-        os.environ['X2TD_ROOT'],
-        'Test', 'UnitTest', 'Wrappers', 'Scaleit',
-        'TS03_INTER_RD.mtz')
+  hklin = os.path.join(
+      os.environ['X2TD_ROOT'],
+      'Test', 'UnitTest', 'Wrappers', 'Scaleit',
+      'TS03_INTER_RD.mtz')
 
-    c.set_hklin(hklin)
-    c.set_hklout('junk.mtz')
+  c.set_hklin(hklin)
+  c.set_hklout('junk.mtz')
 
-    status = c.detect()
+  status = c.detect()
 
-    for s in status:
-        print '%s %s' % s
+  for s in status:
+    print '%s %s' % s

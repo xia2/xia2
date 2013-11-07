@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 # TestDriver.py
-# 
+#
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root dorectory of this package.
 #
 # 24th May 2006
-# 
+#
 # Unit tests for the python Driver class implementations.
 #
 
 import os, sys
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
-    raise RuntimeError, 'XIA2CORE_ROOT not defined'
+  raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
 sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                              'Python'))
@@ -25,228 +25,225 @@ import unittest
 
 class TestDriver(unittest.TestCase):
 
-    def setUp(self):
-        pass
+  def setUp(self):
+    pass
 
-    def testsimple(self):
-        '''Test the Driver class with the simple ExampleProgram.'''
+  def testsimple(self):
+    '''Test the Driver class with the simple ExampleProgram.'''
 
-        d = DriverFactory.Driver()
+    d = DriverFactory.Driver()
 
-        d.set_executable('ExampleProgram')
+    d.set_executable('ExampleProgram')
 
-        d.start()
-        d.close()
+    d.start()
+    d.close()
 
-        results = []
+    results = []
 
-        while True:
-            line = d.output()
+    while True:
+      line = d.output()
 
-            if not line:
-                break
+      if not line:
+        break
 
-            results.append(line.strip())
+      results.append(line.strip())
 
-        self.assertEqual(len(results), 10)
-        self.assertEqual(results[0], 'Hello, world!')
+    self.assertEqual(len(results), 10)
+    self.assertEqual(results[0], 'Hello, world!')
 
-    def testcript(self):
-        '''Test the Driver class with the simple ExampleProgram.'''
+  def testcript(self):
+    '''Test the Driver class with the simple ExampleProgram.'''
 
-        d = DriverFactory.Driver('script')
+    d = DriverFactory.Driver('script')
 
-        d.set_name('unittest')
+    d.set_name('unittest')
 
-        d.set_executable('ExampleProgram')
+    d.set_executable('ExampleProgram')
 
-        d.start()
-        d.close()
+    d.start()
+    d.close()
 
-        results = []
+    results = []
 
-        while True:
-            line = d.output()
+    while True:
+      line = d.output()
 
-            if not line:
-                break
+      if not line:
+        break
 
-            results.append(line.strip())
+      results.append(line.strip())
 
-        self.assertEqual(len(results), 10)
-        self.assertEqual(results[0], 'Hello, world!')
+    self.assertEqual(len(results), 10)
+    self.assertEqual(results[0], 'Hello, world!')
 
-    def testnoprogram(self):
-        '''Test how the driver handles the executable not existing.'''
+  def testnoprogram(self):
+    '''Test how the driver handles the executable not existing.'''
 
-        d = DriverFactory.Driver()
+    d = DriverFactory.Driver()
 
-        # UNIT TEST now much simpler, see changes in DefaultDriver detailed
-        # 1/SEP/06 - however, should this also test against the environment
-        # variable to switch off this test?
+    # UNIT TEST now much simpler, see changes in DefaultDriver detailed
+    # 1/SEP/06 - however, should this also test against the environment
+    # variable to switch off this test?
 
-        self.assertRaises(NotAvailableError, d.set_executable, 'nosuchprogram')
+    self.assertRaises(NotAvailableError, d.set_executable, 'nosuchprogram')
 
-        # d.start()
+    # d.start()
 
-        # in some cases the termination of the child process may be caught
-        # this is OK
-        # try:
-        # d.close()
-        # except RuntimeError, re:
-        # just make this so that it has to raise an exception?
-        # self.assertEqual(1, 1)
-        # self.assertEqual(str(re), 'child process has termimated')
-        # return
+    # in some cases the termination of the child process may be caught
+    # this is OK
+    # try:
+    # d.close()
+    # except RuntimeError, re:
+    # just make this so that it has to raise an exception?
+    # self.assertEqual(1, 1)
+    # self.assertEqual(str(re), 'child process has termimated')
+    # return
 
-        # while True:
-        # line = d.output()
-        # if not line:
-        # break
+    # while True:
+    # line = d.output()
+    # if not line:
+    # break
 
-        # found_exception = False
-        # exception_str = ''
+    # found_exception = False
+    # exception_str = ''
 
-        # try:
-        # d.check_for_errors()
-        # except RuntimeError, re:
-        # found_exception = True
-        # exception_str = str(re)
+    # try:
+    # d.check_for_errors()
+    # except RuntimeError, re:
+    # found_exception = True
+    # exception_str = str(re)
 
-        # self.assertEqual(found_exception, True)
-        # self.assertEqual(exception_str, 
-        # 'executable "nosuchprogram" does not exist')
-        
-    def testsignalkill(self):
-        '''Test the kill signal.'''
+    # self.assertEqual(found_exception, True)
+    # self.assertEqual(exception_str,
+    # 'executable "nosuchprogram" does not exist')
 
-        d = DriverFactory.Driver()
+  def testsignalkill(self):
+    '''Test the kill signal.'''
 
-        d.set_executable('EPKill')
-        d.start()
+    d = DriverFactory.Driver()
 
-        # in some cases the termination of the child process may be caught
-        # this is OK
-        try:
-            d.close()
-        except RuntimeError, re:
-            # this could have one or more records...
-            # self.assertEqual(str(re), 'child process has termimated')
-            self.assertEqual(1, 1)
-            return
-        
-        while True:
-            line = d.output()
-            if not line:
-                break
+    d.set_executable('EPKill')
+    d.start()
 
-        
-        found_exception = False
-        exception_str = ''
-        
-        try:
-            d.check_for_errors()
-        except RuntimeError, re:
-            found_exception = True
-            exception_str = str(re)
+    # in some cases the termination of the child process may be caught
+    # this is OK
+    try:
+      d.close()
+    except RuntimeError, re:
+      # this could have one or more records...
+      # self.assertEqual(str(re), 'child process has termimated')
+      self.assertEqual(1, 1)
+      return
 
-        self.assertEqual(found_exception, True)
+    while True:
+      line = d.output()
+      if not line:
+        break
 
-        # this is os specific: windows does not return the error code
 
-        if os.name == 'nt':
-            self.assertEqual(exception_str,
-                             'child error')
-        else:
-            self.assertEqual(exception_str, 
-                             'child killed')
-            
-    def testsignalsegv(self):
-        '''Test the segmentation fault signal.'''
+    found_exception = False
+    exception_str = ''
 
-        d = DriverFactory.Driver()
+    try:
+      d.check_for_errors()
+    except RuntimeError, re:
+      found_exception = True
+      exception_str = str(re)
 
-        try:
-            d.set_executable('EPSegv')
-            d.start()
-            d.close()
-            while True:
-                line = d.output()
-                if not line:
-                    break
-                
-        except RuntimeError, e:
-            self.assertEqual(str(e), 'child segmentation fault')
-            return
-        
-        found_exception = False
-        exception_str = ''
+    self.assertEqual(found_exception, True)
 
-        try:
-            d.check_for_errors()
-        except RuntimeError, re:
-            found_exception = True
-            exception_str = str(re)
-
-        # this is os specific: windows does not return the error code
-        # nor does the return code come back at all as an error. 
-        # ergo no errors to report on windows
-
-        if os.name == 'nt':
-            pass
-        else:
-            self.assertEqual(found_exception, True)
-            self.assertEqual(exception_str, 
-                             'child segmentation fault')
+    # this is os specific: windows does not return the error code
 
     if os.name == 'nt':
-        def testsignalsegv(self):
-            pass
-            
-    def testsignalabrt(self):
-        '''Test the abort signal.'''
+      self.assertEqual(exception_str,
+                       'child error')
+    else:
+      self.assertEqual(exception_str,
+                       'child killed')
 
-        d = DriverFactory.Driver()
+  def testsignalsegv(self):
+    '''Test the segmentation fault signal.'''
 
-        try:
-            d.set_executable('EPAbrt')
-            d.start()
-            d.close()
-            while True:
-                line = d.output()
-                if not line:
-                    break
-        except RuntimeError, e:
-            # this should probably error
-            self.assertEqual(str(e), 'child aborted')
-            return
+    d = DriverFactory.Driver()
 
-        
-        found_exception = False
-        exception_str = ''
-        
-        try:
-            d.check_for_errors()
-        except RuntimeError, re:
-            found_exception = True
-            exception_str = str(re)
+    try:
+      d.set_executable('EPSegv')
+      d.start()
+      d.close()
+      while True:
+        line = d.output()
+        if not line:
+          break
 
-        self.assertEqual(found_exception, True)
+    except RuntimeError, e:
+      self.assertEqual(str(e), 'child segmentation fault')
+      return
 
-        # this is os specific: windows does not return the error code
+    found_exception = False
+    exception_str = ''
 
-        if os.name == 'nt':
-            self.assertEqual(exception_str,
-                             'child error')
-        else:
-            self.assertEqual(exception_str, 
-                             'child aborted')
-            
-        
+    try:
+      d.check_for_errors()
+    except RuntimeError, re:
+      found_exception = True
+      exception_str = str(re)
+
+    # this is os specific: windows does not return the error code
+    # nor does the return code come back at all as an error.
+    # ergo no errors to report on windows
+
+    if os.name == 'nt':
+      pass
+    else:
+      self.assertEqual(found_exception, True)
+      self.assertEqual(exception_str,
+                       'child segmentation fault')
+
+  if os.name == 'nt':
+    def testsignalsegv(self):
+      pass
+
+  def testsignalabrt(self):
+    '''Test the abort signal.'''
+
+    d = DriverFactory.Driver()
+
+    try:
+      d.set_executable('EPAbrt')
+      d.start()
+      d.close()
+      while True:
+        line = d.output()
+        if not line:
+          break
+    except RuntimeError, e:
+      # this should probably error
+      self.assertEqual(str(e), 'child aborted')
+      return
+
+
+    found_exception = False
+    exception_str = ''
+
+    try:
+      d.check_for_errors()
+    except RuntimeError, re:
+      found_exception = True
+      exception_str = str(re)
+
+    self.assertEqual(found_exception, True)
+
+    # this is os specific: windows does not return the error code
+
+    if os.name == 'nt':
+      self.assertEqual(exception_str,
+                       'child error')
+    else:
+      self.assertEqual(exception_str,
+                       'child aborted')
+
+
 
 
 if __name__ == '__main__':
-    unittest.main()
-
-
-            
+  unittest.main()

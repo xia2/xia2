@@ -14,16 +14,16 @@ import sys
 import os
 
 class _Executables:
-    def __init__(self):
-        self._executables = { }
+  def __init__(self):
+    self._executables = { }
 
-    def add(self, executable, path):
-        if not os.path.exists(path):
-            raise RuntimeError, 'path %s not found' % path
-        self._executables[executable] = path
-        return
+  def add(self, executable, path):
+    if not os.path.exists(path):
+      raise RuntimeError, 'path %s not found' % path
+    self._executables[executable] = path
+    return
 
-    def get(self, executable):
-        return self._executables.get(executable, None)
+  def get(self, executable):
+    return self._executables.get(executable, None)
 
 Executables = _Executables()

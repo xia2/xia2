@@ -17,7 +17,7 @@ import os
 import sys
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
-    raise RuntimeError, 'XIA2CORE_ROOT not defined'
+  raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
 sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
                              'Python'))
@@ -25,130 +25,130 @@ sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
 from Driver.DriverFactory import DriverFactory
 
 def DistlSignalStrength(DriverType = None):
-    '''Factory for DistlSignalStrength wrapper classes, with the specified
-    Driver type.'''
+  '''Factory for DistlSignalStrength wrapper classes, with the specified
+  Driver type.'''
 
-    DriverInstance = DriverFactory.Driver(DriverType)
+  DriverInstance = DriverFactory.Driver(DriverType)
 
-    class DistlSignalStrengthWrapper(DriverInstance.__class__):
-        '''A wrapper for the program distl.signal_strength - which will provide
-        functionality for looking for finding spots &c.'''
+  class DistlSignalStrengthWrapper(DriverInstance.__class__):
+    '''A wrapper for the program distl.signal_strength - which will provide
+    functionality for looking for finding spots &c.'''
 
-        def __init__(self):
+    def __init__(self):
 
-            DriverInstance.__class__.__init__(self)
+      DriverInstance.__class__.__init__(self)
 
-            self.set_executable('distl.signal_strength')
+      self.set_executable('distl.signal_strength')
 
-            self._image = None
+      self._image = None
 
-            self._statistics = { }
-            self._peaks = []
+      self._statistics = { }
+      self._peaks = []
 
-            return
+      return
 
-        def set_image(self, image):
-            '''Set an image for analysis.'''
+    def set_image(self, image):
+      '''Set an image for analysis.'''
 
-            self._image = image
+      self._image = image
 
-            return
+      return
 
-        def distl(self):
-            '''Actually analyse the images.'''
+    def distl(self):
+      '''Actually analyse the images.'''
 
-            self.add_command_line(self._image)
-            self.start()
-            self.close_wait()
+      self.add_command_line(self._image)
+      self.start()
+      self.close_wait()
 
-            # check for errors
-            self.check_for_errors()
+      # check for errors
+      self.check_for_errors()
 
-            # ok now we're done, let's look through for some useful stuff
+      # ok now we're done, let's look through for some useful stuff
 
-            output = self.get_all_output()
+      output = self.get_all_output()
 
-            for o in output:
-                l = o.split()
+      for o in output:
+        l = o.split()
 
-                if l[:2] == ['Spot', 'Total']:
-                    self._statistics['spots_total'] = int(l[-1])
-                if l[:2] == ['In-Resolution', 'Total']:
-                    self._statistics['spots'] = int(l[-1])
-                if l[:3] == ['Good', 'Bragg', 'Candidates']:
-                    self._statistics['spots_good'] = int(l[-1])
-                if l[:2] == ['Ice', 'Rings']:
-                    self._statistics['ice_rings'] = int(l[-1])
-                if l[:3] == ['Method', '1', 'Resolution']:
-                    self._statistics['resol_one'] = float(l[-1])
-                if l[:3] == ['Method', '2', 'Resolution']:
-                    self._statistics['resol_two'] = float(l[-1])
-                if l[:3] == ['%Saturation,', 'Top', '50']:
-                    self._statistics[
-                        'saturation'] = float(l[-1])
+        if l[:2] == ['Spot', 'Total']:
+          self._statistics['spots_total'] = int(l[-1])
+        if l[:2] == ['In-Resolution', 'Total']:
+          self._statistics['spots'] = int(l[-1])
+        if l[:3] == ['Good', 'Bragg', 'Candidates']:
+          self._statistics['spots_good'] = int(l[-1])
+        if l[:2] == ['Ice', 'Rings']:
+          self._statistics['ice_rings'] = int(l[-1])
+        if l[:3] == ['Method', '1', 'Resolution']:
+          self._statistics['resol_one'] = float(l[-1])
+        if l[:3] == ['Method', '2', 'Resolution']:
+          self._statistics['resol_two'] = float(l[-1])
+        if l[:3] == ['%Saturation,', 'Top', '50']:
+          self._statistics[
+              'saturation'] = float(l[-1])
 
-            return
+      return
 
-        def find_peaks(self):
-            '''Actually analyse the images.'''
+    def find_peaks(self):
+      '''Actually analyse the images.'''
 
-            self.add_command_line(self._image)
-            self.add_command_line('verbose=True')
-            self.start()
-            self.close_wait()
+      self.add_command_line(self._image)
+      self.add_command_line('verbose=True')
+      self.start()
+      self.close_wait()
 
-            # check for errors
-            self.check_for_errors()
+      # check for errors
+      self.check_for_errors()
 
-            # ok now we're done, let's look through for some useful stuff
+      # ok now we're done, let's look through for some useful stuff
 
-            output = self.get_all_output()
+      output = self.get_all_output()
 
-            self._peaks = []
+      self._peaks = []
 
-            peak_xy = None
-            peak_sn = None
+      peak_xy = None
+      peak_sn = None
 
-            for o in output:
+      for o in output:
 
-                if not 'Peak' in o:
-                    continue
+        if not 'Peak' in o:
+          continue
 
-                if 'signal-to-noise' in o:
-                    assert(peak_xy is None)
-                    peak_sn = float(o.split('=')[-1])
+        if 'signal-to-noise' in o:
+          assert(peak_xy is None)
+          peak_sn = float(o.split('=')[-1])
 
-                elif 'position' in o:
-                    assert(peak_sn)
-                    l = o.replace('=', ' ').split()
-                    peak_xy = float(l[3]), float(l[5])
+        elif 'position' in o:
+          assert(peak_sn)
+          l = o.replace('=', ' ').split()
+          peak_xy = float(l[3]), float(l[5])
 
-                    # it appears that the printpeaks coordinate system is
-                    # swapped w.r.t. the distl one...
+          # it appears that the printpeaks coordinate system is
+          # swapped w.r.t. the distl one...
 
-                    self._peaks.append((peak_xy[1], peak_xy[0], peak_sn))
+          self._peaks.append((peak_xy[1], peak_xy[0], peak_sn))
 
-                    peak_xy = None
-                    peak_sn = None
+          peak_xy = None
+          peak_sn = None
 
-            return self._peaks
+      return self._peaks
 
-        def get_statistics(self):
-            return self._statistics
+    def get_statistics(self):
+      return self._statistics
 
-        def get_peaks(self):
-            return self._peaks
+    def get_peaks(self):
+      return self._peaks
 
-    return DistlSignalStrengthWrapper()
+  return DistlSignalStrengthWrapper()
 
 if __name__ == '__main__':
 
-    if len(sys.argv) < 2:
-        raise RuntimeError, '%s image' % sys.argv[0]
+  if len(sys.argv) < 2:
+    raise RuntimeError, '%s image' % sys.argv[0]
 
-    d = DistlSignalStrength()
-    d.set_image(sys.argv[1])
-    peaks = d.find_peaks()
+  d = DistlSignalStrength()
+  d.set_image(sys.argv[1])
+  peaks = d.find_peaks()
 
-    for m in peaks:
-        print '%6.1f %6.1f %6.1f' % m
+  for m in peaks:
+    print '%6.1f %6.1f %6.1f' % m

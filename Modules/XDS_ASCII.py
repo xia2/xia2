@@ -15,36 +15,36 @@
 import os
 
 def remove_misfits(xdsin, xdsout):
-    '''Read through the XDS_ASCII input file and remove the misfit
-    reflections (SD < 0.0) - write out the remains to xdsout.'''
+  '''Read through the XDS_ASCII input file and remove the misfit
+  reflections (SD < 0.0) - write out the remains to xdsout.'''
 
-    if xdsin == xdsout:
-        raise RuntimeError, 'xdsin and xdsout same file'
+  if xdsin == xdsout:
+    raise RuntimeError, 'xdsin and xdsout same file'
 
-    if not os.path.exists(xdsin):
-        raise RuntimeError, 'xdsin does not exist'
+  if not os.path.exists(xdsin):
+    raise RuntimeError, 'xdsin does not exist'
 
-    fout = open(xdsout, 'w')
+  fout = open(xdsout, 'w')
 
-    ignored = 0
+  ignored = 0
 
-    for record in open(xdsin, 'r').readlines():
+  for record in open(xdsin, 'r').readlines():
 
-        if not record.strip():
-            continue
+    if not record.strip():
+      continue
 
-        if record[0] == '!':
-            fout.write(record)
-            continue
+    if record[0] == '!':
+      fout.write(record)
+      continue
 
-        values = map(float, record.split())
+    values = map(float, record.split())
 
-        if values[4] > 0.0:
-            fout.write(record)
-            continue
-        else:
-            ignored += 1
+    if values[4] > 0.0:
+      fout.write(record)
+      continue
+    else:
+      ignored += 1
 
-    fout.close()
+  fout.close()
 
-    return ignored
+  return ignored

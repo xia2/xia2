@@ -16,114 +16,114 @@ import os
 import xml.dom.minidom
 
 class _Citations:
-    '''A class to track citations.'''
+  '''A class to track citations.'''
 
-    def __init__(self):
-        self._citations = {}
-        self._cited = []
+  def __init__(self):
+    self._citations = {}
+    self._cited = []
 
-        # set up the citations list...
+    # set up the citations list...
 
-        dom = xml.dom.minidom.parse(os.path.join(
-            os.environ['XIA2_ROOT'],
-            'Data', 'citations.lib'))
-        citations = dom.getElementsByTagName(
-            'citations')[0].getElementsByTagName('citation')
-        for citation in citations:
-            program = str(citation.attributes['program'].value)
-            bibtex = str(citation.childNodes[0].data)
+    dom = xml.dom.minidom.parse(os.path.join(
+        os.environ['XIA2_ROOT'],
+        'Data', 'citations.lib'))
+    citations = dom.getElementsByTagName(
+        'citations')[0].getElementsByTagName('citation')
+    for citation in citations:
+      program = str(citation.attributes['program'].value)
+      bibtex = str(citation.childNodes[0].data)
 
-            if not self._citations.has_key(program):
-                self._citations[program] = []
-            self._citations[program].append(bibtex)
+      if not self._citations.has_key(program):
+        self._citations[program] = []
+      self._citations[program].append(bibtex)
 
-        return
+    return
 
-    def cite(self, program):
-        '''Cite a given program.'''
+  def cite(self, program):
+    '''Cite a given program.'''
 
-        if not program in self._cited:
-            self._cited.append(program)
+    if not program in self._cited:
+      self._cited.append(program)
 
-        return
+    return
 
-    def get_programs(self):
-        '''Get a list of all of the programs which have been cited.'''
+  def get_programs(self):
+    '''Get a list of all of the programs which have been cited.'''
 
-        result = [c for c in self._cited]
-        result.sort()
-        return result
+    result = [c for c in self._cited]
+    result.sort()
+    return result
 
-    def get_citations(self):
-        '''Get a list of bibtex records of citations.'''
+  def get_citations(self):
+    '''Get a list of bibtex records of citations.'''
 
-        result = []
+    result = []
 
-        for c in self._cited:
-            for b in self._citations.get(c, []):
-                result.append(b)
+    for c in self._cited:
+      for b in self._citations.get(c, []):
+        result.append(b)
 
-        return result
+    return result
 
-    def get_citations_acta(self):
-        '''Return a list of strings of Acta style references.'''
+  def get_citations_acta(self):
+    '''Return a list of strings of Acta style references.'''
 
-        results = []
+    results = []
 
-        bibtex_list = self.get_citations()
+    bibtex_list = self.get_citations()
 
-        for bibtex in bibtex_list:
-            data = self._parse_bibtex(bibtex)
-            if data.has_key('pages'):
-                results.append(
-                    '%(author)s (%(year)s) %(journal)s %(volume)s, %(pages)s' % \
-                    data)
-            else:
-                results.append(
-                    '%(author)s (%(year)s) %(journal)s %(volume)s' % \
-                    data)
+    for bibtex in bibtex_list:
+      data = self._parse_bibtex(bibtex)
+      if data.has_key('pages'):
+        results.append(
+            '%(author)s (%(year)s) %(journal)s %(volume)s, %(pages)s' % \
+            data)
+      else:
+        results.append(
+            '%(author)s (%(year)s) %(journal)s %(volume)s' % \
+            data)
 
-        # want them in alohabetical order
+    # want them in alohabetical order
 
-        results.sort()
+    results.sort()
 
-        return results
+    return results
 
-    def _parse_bibtex(self, bibtex):
-        '''A jiffy to parse a bibtex entry.'''
+  def _parse_bibtex(self, bibtex):
+    '''A jiffy to parse a bibtex entry.'''
 
-        contents = { }
+    contents = { }
 
-        # default values
-        contents['volume'] = ''
+    # default values
+    contents['volume'] = ''
 
-        for token in bibtex.split('\n'):
-            if '=' in token:
-                name, value = tuple(token.split('='))
+    for token in bibtex.split('\n'):
+      if '=' in token:
+        name, value = tuple(token.split('='))
 
-                # clean up the value...
-                value = value.replace('{', '').replace('}', '')
-                value = value.replace('"', '')
+        # clean up the value...
+        value = value.replace('{', '').replace('}', '')
+        value = value.replace('"', '')
 
-                value = value.strip()
-                if value[-1] == ',':
-                    value = value[:-1]
+        value = value.strip()
+        if value[-1] == ',':
+          value = value[:-1]
 
-                contents[name.strip()] = value
+        contents[name.strip()] = value
 
-        return contents
+    return contents
 
 
 Citations = _Citations()
 
 if __name__ == '__main__':
-    Citations.cite('labelit')
-    Citations.cite('denzo')
-    Citations.cite('mosflm')
-    Citations.cite('xds')
-    Citations.cite('xia2')
+  Citations.cite('labelit')
+  Citations.cite('denzo')
+  Citations.cite('mosflm')
+  Citations.cite('xds')
+  Citations.cite('xia2')
 
-    for citation in Citations.get_citations_acta():
-        print citation
+  for citation in Citations.get_citations_acta():
+    print citation
 
-    print Citations.get_programs()
+  print Citations.get_programs()

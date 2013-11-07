@@ -14,167 +14,167 @@ import copy
 from iotbx import mtz
 
 class Mtzdump():
-    '''A class to give the same functionality as the wrapper for the CCP4
-    MTZDUMP program.'''
+  '''A class to give the same functionality as the wrapper for the CCP4
+  MTZDUMP program.'''
 
-    def __init__(self):
-        self._header = { }
-        self._header['datasets'] = []
-        self._header['dataset_info'] = { }
-        
-        self._batch_header = { }
-        
-        self._batches = None
-        self._reflections = 0
-        self._resolution_range = (0, 0)
-        
-        return
+  def __init__(self):
+    self._header = { }
+    self._header['datasets'] = []
+    self._header['dataset_info'] = { }
 
-    def set_working_directory(self, wd):
-        pass
+    self._batch_header = { }
 
-    def get_working_directory(self):
-        return None
+    self._batches = None
+    self._reflections = 0
+    self._resolution_range = (0, 0)
 
-    def set_hklin(self, hklin):
-        self._hklin = hklin
-        return
+    return
 
-    def dump(self):
-        '''Actually obtain the contents of the mtz file header.'''
+  def set_working_directory(self, wd):
+    pass
 
-        assert(self._hklin)
-        assert(os.path.exists(self._hklin))
+  def get_working_directory(self):
+    return None
 
-        mtz_obj = mtz.object(self._hklin)
+  def set_hklin(self, hklin):
+    self._hklin = hklin
+    return
 
-        # work through the file acculumating the necessary information
-        
-        self._header['datasets'] = []
-        self._header['dataset_info'] = { }
-        
-        self._batches = [batch.num() for batch in mtz_obj.batches()]
-        self._header['column_labels'] = [column.label() for column
-                                         in mtz_obj.columns()]
-        self._header['column_types'] = [column.type() for column
-                                        in mtz_obj.columns()]
-        self._resolution_range = mtz_obj.max_min_resolution()
-        spacegroup_and_no = mtz_obj.space_group().info().symbol_and_number()
+  def dump(self):
+    '''Actually obtain the contents of the mtz file header.'''
 
-        spacegroup_number = int(spacegroup_and_no.replace(')', '').split()[-1])
+    assert(self._hklin)
+    assert(os.path.exists(self._hklin))
 
-        from Handlers.Syminfo import Syminfo
+    mtz_obj = mtz.object(self._hklin)
 
-        spacegroup = Syminfo.spacegroup_number_to_name(spacegroup_number)
+    # work through the file acculumating the necessary information
 
-        self._header['spacegroup'] = spacegroup
-        self._reflections = mtz_obj.n_reflections()
+    self._header['datasets'] = []
+    self._header['dataset_info'] = { }
 
-        for crystal in mtz_obj.crystals():
-            if crystal.name() == 'HKL_base':
-                continue
+    self._batches = [batch.num() for batch in mtz_obj.batches()]
+    self._header['column_labels'] = [column.label() for column
+                                     in mtz_obj.columns()]
+    self._header['column_types'] = [column.type() for column
+                                    in mtz_obj.columns()]
+    self._resolution_range = mtz_obj.max_min_resolution()
+    spacegroup_and_no = mtz_obj.space_group().info().symbol_and_number()
 
-            pname = crystal.project_name()
-            xname = crystal.name()
-            cell = crystal.unit_cell().parameters()
-            
-            for dataset in crystal.datasets():
-                dname = dataset.name()
-                wavelength = dataset.wavelength()
-                dataset_id = '%s/%s/%s' % (pname, xname, dname)
-                dataset_number = dataset.i_dataset()
-                
-                assert(not dataset_id in self._header['datasets'])
-                
-                self._header['datasets'].append(dataset_id)
-                self._header['dataset_info'][dataset_id] = { }
-                self._header['dataset_info'][
-                    dataset_id]['wavelength'] = wavelength
-                self._header['dataset_info'][
-                    dataset_id]['cell'] = cell
-                self._header['dataset_info'][
-                    dataset_id]['id'] = dataset_number
-                
-        return 
+    spacegroup_number = int(spacegroup_and_no.replace(')', '').split()[-1])
 
-    def dump_batch_headers(self):
-        '''Actually print the contents of the mtz file batch headers.'''
+    from Handlers.Syminfo import Syminfo
 
-        assert(self._hklin)
-        assert(os.path.exists(self._hklin))
+    spacegroup = Syminfo.spacegroup_number_to_name(spacegroup_number)
 
-        mtz_obj = mtz.object(self._hklin)
+    self._header['spacegroup'] = spacegroup
+    self._reflections = mtz_obj.n_reflections()
 
-        for batch in mtz_obj.batches():
-            current_batch = batch.num()
-            umat = batch.umat()
+    for crystal in mtz_obj.crystals():
+      if crystal.name() == 'HKL_base':
+        continue
 
-            self._batch_header[current_batch] = {'umat': umat}
-                
-        return
-    
-    def get_batch_header(self, batch):
-        return copy.deepcopy(self._batch_header[batch])
+      pname = crystal.project_name()
+      xname = crystal.name()
+      cell = crystal.unit_cell().parameters()
 
-    def get_columns(self):
-        '''Get a list of the columns and their types as tuples
-        (label, type) in a list.'''
+      for dataset in crystal.datasets():
+        dname = dataset.name()
+        wavelength = dataset.wavelength()
+        dataset_id = '%s/%s/%s' % (pname, xname, dname)
+        dataset_number = dataset.i_dataset()
 
-        results = []
-        for i in range(len(self._header['column_labels'])):
-            results.append((self._header['column_labels'][i],
-                            self._header['column_types'][i]))
-        return results
+        assert(not dataset_id in self._header['datasets'])
 
-    def get_resolution_range(self):
-        return self._resolution_range
+        self._header['datasets'].append(dataset_id)
+        self._header['dataset_info'][dataset_id] = { }
+        self._header['dataset_info'][
+            dataset_id]['wavelength'] = wavelength
+        self._header['dataset_info'][
+            dataset_id]['cell'] = cell
+        self._header['dataset_info'][
+            dataset_id]['id'] = dataset_number
 
-    def get_datasets(self):
-        '''Return a list of available datasets.'''
-        return self._header['datasets']
+    return
 
-    def get_dataset_info(self, dataset):
-        '''Get the cell, spacegroup & wavelength associated with
-        a dataset. The dataset is specified by pname/xname/dname.'''
+  def dump_batch_headers(self):
+    '''Actually print the contents of the mtz file batch headers.'''
 
-        result = copy.deepcopy(self._header['dataset_info'][dataset])
-        result['spacegroup'] = self._header['spacegroup']
-        return result
+    assert(self._hklin)
+    assert(os.path.exists(self._hklin))
 
-    def get_spacegroup(self):
-        '''Get the spacegroup recorded for this reflection file.'''
-        return self._header['spacegroup']
+    mtz_obj = mtz.object(self._hklin)
 
-    def get_batches(self):
-        '''Get a list of batches found in this reflection file.'''
-        return self._batches
+    for batch in mtz_obj.batches():
+      current_batch = batch.num()
+      umat = batch.umat()
 
-    def get_column_range(self, column):
-        '''Get the value ranges for this column. This now works by reading
-        the file rather than using cached values => could be slow.'''
+      self._batch_header[current_batch] = {'umat': umat}
 
-        assert(self._hklin)
-        assert(os.path.exists(self._hklin))
-        
-        mtz_obj = mtz.object(self._hklin)
-        col = mtz_obj.get_column(column)
-        valid = col.extract_valid_values()
-        
-        return min(valid), max(valid)
-        
-    def get_reflections(self):
-        '''Return the number of reflections found in the reflection
-        file.'''
+    return
 
-        return self._reflections
+  def get_batch_header(self, batch):
+    return copy.deepcopy(self._batch_header[batch])
+
+  def get_columns(self):
+    '''Get a list of the columns and their types as tuples
+    (label, type) in a list.'''
+
+    results = []
+    for i in range(len(self._header['column_labels'])):
+      results.append((self._header['column_labels'][i],
+                      self._header['column_types'][i]))
+    return results
+
+  def get_resolution_range(self):
+    return self._resolution_range
+
+  def get_datasets(self):
+    '''Return a list of available datasets.'''
+    return self._header['datasets']
+
+  def get_dataset_info(self, dataset):
+    '''Get the cell, spacegroup & wavelength associated with
+    a dataset. The dataset is specified by pname/xname/dname.'''
+
+    result = copy.deepcopy(self._header['dataset_info'][dataset])
+    result['spacegroup'] = self._header['spacegroup']
+    return result
+
+  def get_spacegroup(self):
+    '''Get the spacegroup recorded for this reflection file.'''
+    return self._header['spacegroup']
+
+  def get_batches(self):
+    '''Get a list of batches found in this reflection file.'''
+    return self._batches
+
+  def get_column_range(self, column):
+    '''Get the value ranges for this column. This now works by reading
+    the file rather than using cached values => could be slow.'''
+
+    assert(self._hklin)
+    assert(os.path.exists(self._hklin))
+
+    mtz_obj = mtz.object(self._hklin)
+    col = mtz_obj.get_column(column)
+    valid = col.extract_valid_values()
+
+    return min(valid), max(valid)
+
+  def get_reflections(self):
+    '''Return the number of reflections found in the reflection
+    file.'''
+
+    return self._reflections
 
 if __name__ == '__main__':
-    m = Mtzdump()
+  m = Mtzdump()
 
-    if len(sys.argv) > 1:
-        m.set_hklin(sys.argv[1])
-    else:
-        raise RuntimeError, '%s hklin.mtz' % sys.argv[0]
+  if len(sys.argv) > 1:
+    m.set_hklin(sys.argv[1])
+  else:
+    raise RuntimeError, '%s hklin.mtz' % sys.argv[0]
 
-    m.dump()
-    print m.get_spacegroup()
+  m.dump()
+  print m.get_spacegroup()

@@ -21,61 +21,61 @@ from cctbx.crystal import symmetry as crystal_symmetry
 
 def get_mtz_column_list(hklin):
 
-    mtz_obj = mtz_factory(file_name = hklin)
+  mtz_obj = mtz_factory(file_name = hklin)
 
-    # construct a list of columns in the file
+  # construct a list of columns in the file
 
-    cnames = []
+  cnames = []
 
-    batch_column = None
-    batch_dataset = None
+  batch_column = None
+  batch_dataset = None
 
-    for crystal in mtz_obj.crystals():
-        for dataset in crystal.datasets():
-            for column in dataset.columns():
-                cnames.append(column.label())
+  for crystal in mtz_obj.crystals():
+    for dataset in crystal.datasets():
+      for column in dataset.columns():
+        cnames.append(column.label())
 
-    return cnames
+  return cnames
 
 def compute_unique_reflections(unit_cell,
                                space_group,
                                anomalous,
                                high_resolution_limit,
                                low_resolution_limit = None):
-    '''Compute the list of unique reflections from the unit cell and space
-    group.'''
+  '''Compute the list of unique reflections from the unit cell and space
+  group.'''
 
-    cs = crystal_symmetry(unit_cell = unit_cell,
-                          space_group = space_group)
+  cs = crystal_symmetry(unit_cell = unit_cell,
+                        space_group = space_group)
 
-    return [hkl for hkl in build_set(cs, anomalous,
-                                     d_min = high_resolution_limit,
-                                     d_max = low_resolution_limit).indices()]
+  return [hkl for hkl in build_set(cs, anomalous,
+                                   d_min = high_resolution_limit,
+                                   d_max = low_resolution_limit).indices()]
 
 if __name__ == '__main__':
 
-    for hklin in sys.argv[1:]:
+  for hklin in sys.argv[1:]:
 
-        mtz_obj = mtz_factory(file_name = hklin)
-        sg = mtz_obj.space_group().build_derived_patterson_group()
+    mtz_obj = mtz_factory(file_name = hklin)
+    sg = mtz_obj.space_group().build_derived_patterson_group()
 
-        for crystal in mtz_obj.crystals():
-            uc = crystal.unit_cell()
+    for crystal in mtz_obj.crystals():
+      uc = crystal.unit_cell()
 
-            for dataset in crystal.datasets():
+      for dataset in crystal.datasets():
 
-                print crystal.name(), dataset.name()
+        print crystal.name(), dataset.name()
 
-        dmax, dmin = mtz_obj.max_min_resolution()
+    dmax, dmin = mtz_obj.max_min_resolution()
 
-        print len(compute_unique_reflections(uc, sg, True,
-                                             dmin, dmax))
+    print len(compute_unique_reflections(uc, sg, True,
+                                         dmin, dmax))
 
-        ms = set()
+    ms = set()
 
-        miller_indices = mtz_obj.extract_miller_indices()
+    miller_indices = mtz_obj.extract_miller_indices()
 
-        for hkl in miller_indices:
-            ms.add(hkl)
+    for hkl in miller_indices:
+      ms.add(hkl)
 
-        print len(ms)
+    print len(ms)

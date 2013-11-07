@@ -14,18 +14,18 @@ import shutil
 
 # We should really put these variable checks, etc in one centralised place
 if not os.environ.has_key('XIA2CORE_ROOT'):
-    raise RuntimeError, 'XIA2CORE_ROOT not defined'
+  raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
 if not os.environ.has_key('XIA2_ROOT'):
-    raise RuntimeError, 'XIA2_ROOT not defined'
+  raise RuntimeError, 'XIA2_ROOT not defined'
 
 if not os.path.join(os.environ['XIA2CORE_ROOT'],
                     'Python') in sys.path:
-    sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                                 'Python'))
+  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
+                               'Python'))
 
 if not os.environ['XIA2_ROOT'] in sys.path:
-    sys.path.append(os.environ['XIA2_ROOT'])
+  sys.path.append(os.environ['XIA2_ROOT'])
 
 from Driver.DriverFactory import DriverFactory
 
@@ -44,121 +44,121 @@ import libtbx
 import libtbx.load_env
 
 if libtbx.env.has_module('dials'):
-    spotfinding_phil_path = libtbx.env.find_in_repositories(
-        relative_path='dials/data/spotfinding.phil',
-        test=os.path.isfile)
-    master_phil = phil.parse(file_name=spotfinding_phil_path)
+  spotfinding_phil_path = libtbx.env.find_in_repositories(
+      relative_path='dials/data/spotfinding.phil',
+      test=os.path.isfile)
+  master_phil = phil.parse(file_name=spotfinding_phil_path)
 else:
-    master_phil = phil.parse("""
+  master_phil = phil.parse("""
 """)
 
 def Spotfinder(DriverType=None, params=None):
 
-    DriverInstance = DriverFactory.Driver(DriverType)
+  DriverInstance = DriverFactory.Driver(DriverType)
 
-    class SpotfinderWrapper(DriverInstance.__class__,
-                            FrameProcessor):
-        '''A wrapper for wrapping dials.spotfinder.'''
+  class SpotfinderWrapper(DriverInstance.__class__,
+                          FrameProcessor):
+    '''A wrapper for wrapping dials.spotfinder.'''
 
-        def __init__(self, params=None):
+    def __init__(self, params=None):
 
-            # set up the object ancestors...
+      # set up the object ancestors...
 
-            DriverInstance.__class__.__init__(self)
-            FrameProcessor.__init__(self)
+      DriverInstance.__class__.__init__(self)
+      FrameProcessor.__init__(self)
 
-            # phil parameters
+      # phil parameters
 
-            if not params:
-                params = master_phil.extract()
-            self._params = params
+      if not params:
+        params = master_phil.extract()
+      self._params = params
 
-            # now set myself up...
+      # now set myself up...
 
-            self._images = []
-            self._spot_range = []
+      self._images = []
+      self._spot_range = []
 
-            self.set_executable('dials.spotfinder')
+      self.set_executable('dials.spotfinder')
 
-            self._input_data_files = { }
-            self._output_data_files = { }
+      self._input_data_files = { }
+      self._output_data_files = { }
 
-            self._input_data_files_list = []
-            self._output_data_files_list = []
+      self._input_data_files_list = []
+      self._output_data_files_list = []
 
-            return
+      return
 
 
-        # getter and setter for input / output data
+    # getter and setter for input / output data
 
-        def setup_from_image(self, image):
-            FrameProcessor.setup_from_image(self, image)
-            for i in self.get_matching_images():
-                self._images.append(self.get_image_name(i))
+    def setup_from_image(self, image):
+      FrameProcessor.setup_from_image(self, image)
+      for i in self.get_matching_images():
+        self._images.append(self.get_image_name(i))
 
-        def set_input_data_file(self, name, data):
-            self._input_data_files[name] = data
-            return
+    def set_input_data_file(self, name, data):
+      self._input_data_files[name] = data
+      return
 
-        def get_output_data_file(self, name):
-            return self._output_data_files[name]
+    def get_output_data_file(self, name):
+      return self._output_data_files[name]
 
-        # this needs setting up from setup_from_image in FrameProcessor
+    # this needs setting up from setup_from_image in FrameProcessor
 
-        def add_spot_range(self, start, end):
-            self._spot_range.append((start, end))
+    def add_spot_range(self, start, end):
+      self._spot_range.append((start, end))
 
-        def run(self):
-            '''Run dials.spotfinder.'''
+    def run(self):
+      '''Run dials.spotfinder.'''
 
-            # This is a bit of a phil hack in order to pass the phil
-            # parameters on the comman line to dials.spotfinder
-            master_scope = list(master_phil.active_objects())[0]
-            working_phil = master_scope.format(self._params)
-            for object_locator in master_scope.fetch_diff(
-                working_phil).all_definitions():
-                self.add_command_line(object_locator.object.as_str())
+      # This is a bit of a phil hack in order to pass the phil
+      # parameters on the comman line to dials.spotfinder
+      master_scope = list(master_phil.active_objects())[0]
+      working_phil = master_scope.format(self._params)
+      for object_locator in master_scope.fetch_diff(
+          working_phil).all_definitions():
+        self.add_command_line(object_locator.object.as_str())
 
-            for image in self._images:
-                self.add_command_line(image)
-            matching_images = self.get_matching_images()
-            for spot_range in self._spot_range:
-                self.add_command_line('scan_range=%i,%i' %(
-                    matching_images.index(spot_range[0]),
-                    matching_images.index(spot_range[1])+1))
-            self.add_command_line(('-o', 'reflections.pickle'))
-            self.start()
-            self.close_wait()
+      for image in self._images:
+        self.add_command_line(image)
+      matching_images = self.get_matching_images()
+      for spot_range in self._spot_range:
+        self.add_command_line('scan_range=%i,%i' %(
+            matching_images.index(spot_range[0]),
+            matching_images.index(spot_range[1])+1))
+      self.add_command_line(('-o', 'reflections.pickle'))
+      self.start()
+      self.close_wait()
 
-            # check for errors
-            self.check_for_errors()
+      # check for errors
+      self.check_for_errors()
 
-            self._output_data_files.setdefault(
-                'reflections.pickle',
-                open(os.path.join(self.get_working_directory(),
-                                  'reflections.pickle'), 'rb').read())
-            output = self.get_all_output()
-            print "".join(output)
+      self._output_data_files.setdefault(
+          'reflections.pickle',
+          open(os.path.join(self.get_working_directory(),
+                            'reflections.pickle'), 'rb').read())
+      output = self.get_all_output()
+      print "".join(output)
 
-    return SpotfinderWrapper(params=params)
+  return SpotfinderWrapper(params=params)
 
 if __name__ == '__main__':
-    import sys
-    from libtbx.phil import command_line
+  import sys
+  from libtbx.phil import command_line
 
-    args = sys.argv[1:]
-    cmd_line = command_line.argument_interpreter(master_params=master_params)
-    working_phil, image_files = cmd_line.process_and_fetch(
-        args=args, custom_processor="collect_remaining")
-    working_phil.show()
-    assert len(image_files) > 0
-    first_image = image_files[0]
-    params = working_phil.extract()
-    spotfinder = Spotfinder(params=params)
-    spotfinder.setup_from_image(first_image)
-    spotfinder.run()
-    #for image in image_files:
-        #spotfinder.set_input_data_file(image)
-    #m2c = Merge2cbf(params=params)
-    #m2c.setup_from_image(first_image)
-    #m2c.run()
+  args = sys.argv[1:]
+  cmd_line = command_line.argument_interpreter(master_params=master_params)
+  working_phil, image_files = cmd_line.process_and_fetch(
+      args=args, custom_processor="collect_remaining")
+  working_phil.show()
+  assert len(image_files) > 0
+  first_image = image_files[0]
+  params = working_phil.extract()
+  spotfinder = Spotfinder(params=params)
+  spotfinder.setup_from_image(first_image)
+  spotfinder.run()
+  #for image in image_files:
+    #spotfinder.set_input_data_file(image)
+  #m2c = Merge2cbf(params=params)
+  #m2c.setup_from_image(first_image)
+  #m2c.run()

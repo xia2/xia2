@@ -16,81 +16,81 @@ from iotbx import mtz
 from cctbx.array_family import flex
 
 def add_dose_time_to_mtz(hklin, hklout, doses, times = None):
-    '''Add doses and times from dictionaries doses, times (optional)
-    to hklin to produce hklout. The dictionaries are indexed by the
-    BATCH column in hklin. Will raise exception if no BATCH column.'''
+  '''Add doses and times from dictionaries doses, times (optional)
+  to hklin to produce hklout. The dictionaries are indexed by the
+  BATCH column in hklin. Will raise exception if no BATCH column.'''
 
-    # instantiate the MTZ object representation
+  # instantiate the MTZ object representation
 
-    mtz_obj = mtz.object(file_name = hklin)
+  mtz_obj = mtz.object(file_name = hklin)
 
-    batch_column = None
-    batch_dataset = None
+  batch_column = None
+  batch_dataset = None
 
-    for crystal in mtz_obj.crystals():
-        for dataset in crystal.datasets():
-            for column in dataset.columns():
-                if column.label() == 'BATCH':
-                    batch_column = column
-                    batch_dataset = dataset
+  for crystal in mtz_obj.crystals():
+    for dataset in crystal.datasets():
+      for column in dataset.columns():
+        if column.label() == 'BATCH':
+          batch_column = column
+          batch_dataset = dataset
 
-    if not batch_column:
-        raise RuntimeError, 'no BATCH column found in %s' % hklin
+  if not batch_column:
+    raise RuntimeError, 'no BATCH column found in %s' % hklin
 
-    # right, so get the values out from the batch column, create a flex
-    # array of the same size and assign DOSE, TIME, then add these to the
-    # same dataset.
+  # right, so get the values out from the batch column, create a flex
+  # array of the same size and assign DOSE, TIME, then add these to the
+  # same dataset.
 
-    batch_column_values = batch_column.extract_values(
-        not_a_number_substitute = -1)
+  batch_column_values = batch_column.extract_values(
+      not_a_number_substitute = -1)
 
-    dose_column = batch_dataset.add_column(label = 'DOSE', type = 'R')
-    dose_column_values = flex.float()
+  dose_column = batch_dataset.add_column(label = 'DOSE', type = 'R')
+  dose_column_values = flex.float()
+
+  if times:
+    time_column = batch_dataset.add_column(label = 'TIME', type = 'R')
+    time_column_values = flex.float()
+
+  valid = flex.bool()
+
+  for b in batch_column_values:
+
+    valid.append(True)
+    dose_column_values.append(doses.get(b, -1.0))
 
     if times:
-        time_column = batch_dataset.add_column(label = 'TIME', type = 'R')
-        time_column_values = flex.float()
+      time_column_values.append(times.get(b, -1.0))
 
-    valid = flex.bool()
+  # add the columns back to the MTZ file structure
 
-    for b in batch_column_values:
+  dose_column.set_values(values = dose_column_values,
+                         selection_valid = valid)
 
-        valid.append(True)
-        dose_column_values.append(doses.get(b, -1.0))
-
-        if times:
-            time_column_values.append(times.get(b, -1.0))
-
-    # add the columns back to the MTZ file structure
-
-    dose_column.set_values(values = dose_column_values,
+  if times:
+    time_column.set_values(values = time_column_values,
                            selection_valid = valid)
 
-    if times:
-        time_column.set_values(values = time_column_values,
-                               selection_valid = valid)
+  # and write this lot out as hklout
 
-    # and write this lot out as hklout
-
-    mtz_obj.write(file_name = hklout)
+  mtz_obj.write(file_name = hklout)
 
 if (__name__ == "__main__"):
 
-    doses = { }
-    times = { }
+  doses = { }
+  times = { }
 
-    for record in open('doser.in', 'r').readlines():
-        values = record.split()
-        if not values:
-            continue
-        batch = int(values[1])
-        dose = float(values[3])
-        time = float(values[5])
+  for record in open('doser.in', 'r').readlines():
+    values = record.split()
+    if not values:
+      continue
+    batch = int(values[1])
+    dose = float(values[3])
+    time = float(values[5])
 
-        doses[batch] = dose
-        times[batch] = time
+    doses[batch] = dose
+    times[batch] = time
 
-    add_dose_time_to_mtz(hklin = 'TS03_12287_chef_INFL.mtz',
-                         hklout = 'hklout.mtz',
-                         doses = doses,
-                         times = times)
+  add_dose_time_to_mtz(hklin = 'TS03_12287_chef_INFL.mtz',
+                       hklout = 'hklout.mtz',
+                       doses = doses,
+                       times = times)

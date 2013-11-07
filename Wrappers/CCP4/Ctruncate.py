@@ -25,17 +25,17 @@ import os
 import sys
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
-    raise RuntimeError, 'XIA2CORE_ROOT not defined'
+  raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
 if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
-    sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                                 'Python'))
+  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
+                               'Python'))
 
 if not os.environ.has_key('XIA2_ROOT'):
-    raise RuntimeError, 'XIA2_ROOT not defined'
+  raise RuntimeError, 'XIA2_ROOT not defined'
 
 if not os.path.join(os.environ['XIA2_ROOT']) in sys.path:
-    sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
+  sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
@@ -43,195 +43,195 @@ from lib.bits import transpose_loggraph
 from Handlers.Streams import Chatter, Debug
 
 def Ctruncate(DriverType = None):
-    '''A factory for CtruncateWrapper classes.'''
+  '''A factory for CtruncateWrapper classes.'''
 
-    DriverInstance = DriverFactory.Driver(DriverType)
+  DriverInstance = DriverFactory.Driver(DriverType)
 
-    class CtruncateWrapper(DriverInstance.__class__):
-        '''A wrapper for Ctruncate, using the regular Driver.'''
+  class CtruncateWrapper(DriverInstance.__class__):
+    '''A wrapper for Ctruncate, using the regular Driver.'''
 
-        def __init__(self):
-            # generic things
-            DriverInstance.__class__.__init__(self)
+    def __init__(self):
+      # generic things
+      DriverInstance.__class__.__init__(self)
 
-            self.set_executable(os.path.join(
-                os.environ.get('CBIN', ''), 'ctruncate'))
+      self.set_executable(os.path.join(
+          os.environ.get('CBIN', ''), 'ctruncate'))
 
-            self._anomalous = False
-            self._nres = 0
+      self._anomalous = False
+      self._nres = 0
 
-            self._b_factor = 0.0
-            self._moments = None
+      self._b_factor = 0.0
+      self._moments = None
 
-            # numbers of reflections in and out, and number of absences
-            # counted
+      # numbers of reflections in and out, and number of absences
+      # counted
 
-            self._nref_in = 0
-            self._nref_out = 0
-            self._nabsent = 0
+      self._nref_in = 0
+      self._nref_out = 0
+      self._nabsent = 0
 
-            return
+      return
 
-        def set_hklin(self, hklin):
-            self._hklin = hklin
-            return
+    def set_hklin(self, hklin):
+      self._hklin = hklin
+      return
 
-        def set_hklout(self, hklout):
-            self._hklout = hklout
-            return
+    def set_hklout(self, hklout):
+      self._hklout = hklout
+      return
 
-        def set_nres(self, nres):
-            self._nres = nres
-            return
+    def set_nres(self, nres):
+      self._nres = nres
+      return
 
-        def set_anomalous(self, anomalous):
-            self._anomalous = anomalous
-            return
+    def set_anomalous(self, anomalous):
+      self._anomalous = anomalous
+      return
 
-        def truncate(self):
-            '''Actually perform the truncation procedure.'''
+    def truncate(self):
+      '''Actually perform the truncation procedure.'''
 
-            if not self._hklin:
-                raise RuntimeError, 'hklin not defined'
-            if not self._hklout:
-                raise RuntimeError, 'hklout not defined'
+      if not self._hklin:
+        raise RuntimeError, 'hklin not defined'
+      if not self._hklout:
+        raise RuntimeError, 'hklout not defined'
 
-            self.add_command_line('-hklin')
-            self.add_command_line(self._hklin)
-            self.add_command_line('-hklout')
-            self.add_command_line(self._hklout)
+      self.add_command_line('-hklin')
+      self.add_command_line(self._hklin)
+      self.add_command_line('-hklout')
+      self.add_command_line(self._hklout)
 
-            if self._nres:
-                self.add_command_line('-nres')
-                self.add_command_line('%d' % self._nres)
+      if self._nres:
+        self.add_command_line('-nres')
+        self.add_command_line('%d' % self._nres)
 
-            if self._anomalous:
-                self.add_command_line('-colano')
-                self.add_command_line('/*/*/[I(+),SIGI(+),I(-),SIGI(-)]')
-            
-	    self.add_command_line('-colin')
-            self.add_command_line('/*/*/[IMEAN,SIGIMEAN]')
-    
-            self.start()
-            self.close_wait()
+      if self._anomalous:
+        self.add_command_line('-colano')
+        self.add_command_line('/*/*/[I(+),SIGI(+),I(-),SIGI(-)]')
 
-            try:
-                self.check_for_errors()
+      self.add_command_line('-colin')
+      self.add_command_line('/*/*/[IMEAN,SIGIMEAN]')
 
-            except RuntimeError, e:
-                try:
-                    os.remove(self._hklout)
-                except:
-                    pass
+      self.start()
+      self.close_wait()
 
-                raise RuntimeError, 'ctruncate failure'
+      try:
+        self.check_for_errors()
 
-            nref = 0
+      except RuntimeError, e:
+        try:
+          os.remove(self._hklout)
+        except:
+          pass
 
-            for record in self.get_all_output():
-                if 'Number of reflections:' in record:
-                    nref = int(record.split()[-1])
+        raise RuntimeError, 'ctruncate failure'
 
-                if 'B =' in record and 'intercept' in record:
-                    self._b_factor = float(record.split()[2])
+      nref = 0
 
-            self._nref_in, self._nref_out = nref, nref
-            self._nabsent = 0
+      for record in self.get_all_output():
+        if 'Number of reflections:' in record:
+          nref = int(record.split()[-1])
 
-            moments = None
-            
-            results = self.parse_ccp4_loggraph()
-            
-            if 'Acentric moments of E using Truncate method' in results:
-                moments = transpose_loggraph(
-                    results['Acentric moments of E using Truncate method'])
-            elif 'Acentric moments of I' in results:
-                moments = transpose_loggraph(
-                    results['Acentric moments of I'])
-            elif 'Acentric moments of E' in results:
-                moments = transpose_loggraph(
-                    results['Acentric moments of E'])
-            else:
-                Debug.write('Acentric moments of E/I not found')
+        if 'B =' in record and 'intercept' in record:
+          self._b_factor = float(record.split()[2])
 
-            self._moments = moments
+      self._nref_in, self._nref_out = nref, nref
+      self._nabsent = 0
 
-            return
+      moments = None
 
-        def get_b_factor(self):
-            return self._b_factor
+      results = self.parse_ccp4_loggraph()
 
-        def get_moments(self):
-            return self._moments
+      if 'Acentric moments of E using Truncate method' in results:
+        moments = transpose_loggraph(
+            results['Acentric moments of E using Truncate method'])
+      elif 'Acentric moments of I' in results:
+        moments = transpose_loggraph(
+            results['Acentric moments of I'])
+      elif 'Acentric moments of E' in results:
+        moments = transpose_loggraph(
+            results['Acentric moments of E'])
+      else:
+        Debug.write('Acentric moments of E/I not found')
 
-        def get_nref_in(self):
-            return self._nref_in
+      self._moments = moments
 
-        def get_nref_out(self):
-            return self._nref_out
+      return
 
-        def get_nabsent(self):
-            return self._nabsent
+    def get_b_factor(self):
+      return self._b_factor
 
-        def parse_ccp4_loggraph(self):
-            '''Look through the standard output of the program for
-            CCP4 loggraph text. When this is found store it in a
-            local dictionary to allow exploration.'''
+    def get_moments(self):
+      return self._moments
 
-            # reset the loggraph store
-            self._loggraph = { }
+    def get_nref_in(self):
+      return self._nref_in
 
-            output = self.get_all_output()
+    def get_nref_out(self):
+      return self._nref_out
 
-            for i in range(len(output)):
-                line = output[i]
-                if '$TABLE' in line:
+    def get_nabsent(self):
+      return self._nabsent
 
-                    n_dollar = line.count('$$')
-                    
-                    current = line.split(':')[1].replace('>',
-                                                                  '').strip()
-                    self._loggraph[current] = { }
-                    self._loggraph[current]['columns'] = []
-                    self._loggraph[current]['data'] = []
+    def parse_ccp4_loggraph(self):
+      '''Look through the standard output of the program for
+      CCP4 loggraph text. When this is found store it in a
+      local dictionary to allow exploration.'''
 
-                    loggraph_info = ''
+      # reset the loggraph store
+      self._loggraph = { }
 
-                    while n_dollar < 4:
-                        n_dollar += line.count('$$')
-                        loggraph_info += line
+      output = self.get_all_output()
 
-                        if n_dollar == 4:
-                            break
-                        
-                        i += 1
-                        line = output[i]
+      for i in range(len(output)):
+        line = output[i]
+        if '$TABLE' in line:
 
-                    tokens = loggraph_info.split('$$')
-                    self._loggraph[current]['columns'] = tokens[1].split()
+          n_dollar = line.count('$$')
 
-                    if len(tokens) < 4:
-                        raise RuntimeError, 'loggraph "%s" broken' % current
-                    
-                    data = tokens[3].split('\n')
+          current = line.split(':')[1].replace('>',
+                                                        '').strip()
+          self._loggraph[current] = { }
+          self._loggraph[current]['columns'] = []
+          self._loggraph[current]['data'] = []
 
-                    columns = len(self._loggraph[current]['columns'])
+          loggraph_info = ''
 
-                    for j in range(len(data)):
-                        record = data[j].split()
-                        if len(record) == columns:
-                            self._loggraph[current]['data'].append(record)
+          while n_dollar < 4:
+            n_dollar += line.count('$$')
+            loggraph_info += line
 
-            return self._loggraph                
-        
-    return CtruncateWrapper()
+            if n_dollar == 4:
+              break
+
+            i += 1
+            line = output[i]
+
+          tokens = loggraph_info.split('$$')
+          self._loggraph[current]['columns'] = tokens[1].split()
+
+          if len(tokens) < 4:
+            raise RuntimeError, 'loggraph "%s" broken' % current
+
+          data = tokens[3].split('\n')
+
+          columns = len(self._loggraph[current]['columns'])
+
+          for j in range(len(data)):
+            record = data[j].split()
+            if len(record) == columns:
+              self._loggraph[current]['data'].append(record)
+
+      return self._loggraph
+
+  return CtruncateWrapper()
 
 if __name__ == '__main__':
 
-    ctruncate = Ctruncate()
-    ctruncate.set_hklin(sys.argv[1])
-    ctruncate.set_hklout(sys.argv[2])
-    ctruncate.truncate()
+  ctruncate = Ctruncate()
+  ctruncate.set_hklin(sys.argv[1])
+  ctruncate.set_hklout(sys.argv[2])
+  ctruncate.truncate()
 
-    print ctruncate.get_nref_in(), ctruncate.get_nref_out(), \
-          ctruncate.get_nabsent()
+  print ctruncate.get_nref_in(), ctruncate.get_nref_out(), \
+        ctruncate.get_nabsent()

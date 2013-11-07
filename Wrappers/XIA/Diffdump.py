@@ -47,53 +47,53 @@ from scitbx import matrix
 from scitbx.math import r3_rotation_axis_and_angle_from_matrix
 
 if __name__ == '__main__':
-    debug = False
+  debug = False
 else:
-    debug = False
+  debug = False
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
-    raise RuntimeError, 'XIA2CORE_ROOT not defined'
+  raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
 if not os.environ.has_key('XIA2_ROOT'):
-    raise RuntimeError, 'XIA2_ROOT not defined'
+  raise RuntimeError, 'XIA2_ROOT not defined'
 
 if not os.path.join(os.environ['XIA2CORE_ROOT'], 'Python') in sys.path:
-    sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
+  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'], 'Python'))
 
 if not os.environ['XIA2_ROOT'] in sys.path:
-    sys.path.append(os.environ['XIA2_ROOT'])
+  sys.path.append(os.environ['XIA2_ROOT'])
 
 from Driver.DriverFactory import DriverFactory
 from Handlers.Flags import Flags
 
 def get_trust_timestamps():
-    return Flags.get_trust_timestamp()
+  return Flags.get_trust_timestamp()
 
 class _HeaderCache:
-    '''A cache for image headers.'''
+  '''A cache for image headers.'''
 
-    def __init__(self):
-        self._headers = { }
+  def __init__(self):
+    self._headers = { }
 
-    def put(self, image, header):
-        self._headers[image] = copy.deepcopy(header)
+  def put(self, image, header):
+    self._headers[image] = copy.deepcopy(header)
 
-    def get(self, image):
-        return self._headers[image]
+  def get(self, image):
+    return self._headers[image]
 
-    def check(self, image):
-        return self._headers.has_key(image)
+  def check(self, image):
+    return self._headers.has_key(image)
 
-    def write(self, filename):
-        import json
-        json.dump(self._headers, open(filename, 'w'))
-        return
+  def write(self, filename):
+    import json
+    json.dump(self._headers, open(filename, 'w'))
+    return
 
-    def read(self, filename):
-        assert(self._headers == { })
-        import json
-        self._headers = json.load(open(filename, 'r'))
-        return len(self._headers)
+  def read(self, filename):
+    assert(self._headers == { })
+    import json
+    self._headers = json.load(open(filename, 'r'))
+    return len(self._headers)
 
 HeaderCache = _HeaderCache()
 
@@ -109,8 +109,8 @@ detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('adsc', 4168, 64):'adsc q270',
                   ('adsc', 4168, 65):'adsc q270',
                   ('adsc', 2084, 128):'adsc q270 2x2 binned',
-                  ('adsc', 2084, 129):'adsc q270 2x2 binned',                  
-                  ('adsc', 2084, 130):'adsc q270 2x2 binned',                  
+                  ('adsc', 2084, 129):'adsc q270 2x2 binned',
+                  ('adsc', 2084, 130):'adsc q270 2x2 binned',
                   ('cbf', 2463, 172):'pilatus 6M',
                   ('mini-cbf', 2463, 172):'pilatus 6M',
                   ('dectris', 2527, 172):'pilatus 6M',
@@ -147,12 +147,12 @@ detector_class = {('adsc', 2304, 81):'adsc q4',
                   ('rigaku', 1042, 89):'rigaku saturn 944 2x2 binned'}
 
 def read_A200(image):
-    '''Read the header from a Rigaku A200 image. This is to work around the
-    diffdump program falling over with such images.'''
+  '''Read the header from a Rigaku A200 image. This is to work around the
+  diffdump program falling over with such images.'''
 
-    raise RuntimeError, 'this needs implementing!'
+  raise RuntimeError, 'this needs implementing!'
 
-    pass
+  pass
 
 # FIXME get proper specifications for these detectors...
 
@@ -160,837 +160,837 @@ import pycbf
 
 def find_detector_id(cbf_handle):
 
-    detector_id = ''
+  detector_id = ''
 
-    cbf_handle.rewind_datablock()
-    nblocks = cbf_handle.count_datablocks()
+  cbf_handle.rewind_datablock()
+  nblocks = cbf_handle.count_datablocks()
 
-    for j in range(nblocks):
-        cbf_handle.select_datablock(0)
+  for j in range(nblocks):
+    cbf_handle.select_datablock(0)
 
-    ncat = cbf_handle.count_categories()
+  ncat = cbf_handle.count_categories()
 
-    for j in range(ncat):
-        cbf_handle.select_category(j)
+  for j in range(ncat):
+    cbf_handle.select_category(j)
 
-        if not cbf_handle.category_name() == 'diffrn_detector':
-            continue
+    if not cbf_handle.category_name() == 'diffrn_detector':
+      continue
 
-        nrows = cbf_handle.count_rows()
-        ncols = cbf_handle.count_columns()
+    nrows = cbf_handle.count_rows()
+    ncols = cbf_handle.count_columns()
 
-        cbf_handle.rewind_column()
+    cbf_handle.rewind_column()
 
-        while True:
-            if cbf_handle.column_name() == 'id':
-                detector_id = cbf_handle.get_value()
-                break
-            try:
-                cbf_handle.next_column()
-            except:
-                break
+    while True:
+      if cbf_handle.column_name() == 'id':
+        detector_id = cbf_handle.get_value()
+        break
+      try:
+        cbf_handle.next_column()
+      except:
+        break
 
-    return detector_id
+  return detector_id
 
 def cbf_gonio_to_effective_axis(cbf_gonio):
-    '''Given a cbf goniometer handle, determine the real rotation axis.'''
+  '''Given a cbf goniometer handle, determine the real rotation axis.'''
 
-    x = cbf_gonio.rotate_vector(0.0, 1, 0, 0)
-    y = cbf_gonio.rotate_vector(0.0, 0, 1, 0)
-    z = cbf_gonio.rotate_vector(0.0, 0, 0, 1)
+  x = cbf_gonio.rotate_vector(0.0, 1, 0, 0)
+  y = cbf_gonio.rotate_vector(0.0, 0, 1, 0)
+  z = cbf_gonio.rotate_vector(0.0, 0, 0, 1)
 
-    R = matrix.rec(x + y + z, (3, 3)).transpose()
+  R = matrix.rec(x + y + z, (3, 3)).transpose()
 
-    x1 = cbf_gonio.rotate_vector(1.0, 1, 0, 0)
-    y1 = cbf_gonio.rotate_vector(1.0, 0, 1, 0)
-    z1 = cbf_gonio.rotate_vector(1.0, 0, 0, 1)
+  x1 = cbf_gonio.rotate_vector(1.0, 1, 0, 0)
+  y1 = cbf_gonio.rotate_vector(1.0, 0, 1, 0)
+  z1 = cbf_gonio.rotate_vector(1.0, 0, 0, 1)
 
-    R1 = matrix.rec(x1 + y1 + z1, (3, 3)).transpose()
+  R1 = matrix.rec(x1 + y1 + z1, (3, 3)).transpose()
 
-    RA = R1 * R.inverse()
+  RA = R1 * R.inverse()
 
-    axis = r3_rotation_axis_and_angle_from_matrix(RA).axis
+  axis = r3_rotation_axis_and_angle_from_matrix(RA).axis
 
-    return axis
+  return axis
 
 def failover_full_cbf(cbf_file):
-    '''Use pycbf library to read full cbf file description.'''
+  '''Use pycbf library to read full cbf file description.'''
 
-    header = { }
+  header = { }
 
-    cbf_handle = pycbf.cbf_handle_struct()
-    cbf_handle.read_widefile(cbf_file, pycbf.MSG_DIGEST)
+  cbf_handle = pycbf.cbf_handle_struct()
+  cbf_handle.read_widefile(cbf_file, pycbf.MSG_DIGEST)
 
-    detector_id_map = {'Pilatus2M':'pilatus 2M',
-                       'Pilatus6M':'pilatus 6M',
-                       'i19-p300k':'pilatus 300K',
-                       'ADSCQ315-SN920':'adsc q315 2x2 binned'}
+  detector_id_map = {'Pilatus2M':'pilatus 2M',
+                     'Pilatus6M':'pilatus 6M',
+                     'i19-p300k':'pilatus 300K',
+                     'ADSCQ315-SN920':'adsc q315 2x2 binned'}
 
-    header['detector_class'] = detector_id_map[find_detector_id(cbf_handle)]
+  header['detector_class'] = detector_id_map[find_detector_id(cbf_handle)]
 
-    if 'pilatus' in header['detector_class']:
-        header['detector'] = 'dectris'
-    elif 'adsc' in header['detector_class']:
-        header['detector'] = 'adsc'
-    else:
-        raise RuntimeError, 'unknown detector %s' % header['detector_class']
+  if 'pilatus' in header['detector_class']:
+    header['detector'] = 'dectris'
+  elif 'adsc' in header['detector_class']:
+    header['detector'] = 'adsc'
+  else:
+    raise RuntimeError, 'unknown detector %s' % header['detector_class']
 
-    cbf_handle.rewind_datablock()
+  cbf_handle.rewind_datablock()
 
-    detector = cbf_handle.construct_detector(0)
+  detector = cbf_handle.construct_detector(0)
 
-    # FIXME need to check that this is doing something sensible...!
+  # FIXME need to check that this is doing something sensible...!
 
-    header['beam'] = tuple(map(math.fabs, detector.get_beam_center()[2:]))
-    detector_normal = tuple(detector.get_detector_normal())
+  header['beam'] = tuple(map(math.fabs, detector.get_beam_center()[2:]))
+  detector_normal = tuple(detector.get_detector_normal())
 
-    gonio = cbf_handle.construct_goniometer()
+  gonio = cbf_handle.construct_goniometer()
 
-    axis = tuple(gonio.get_rotation_axis())
-    angles = tuple(gonio.get_rotation_range())
+  axis = tuple(gonio.get_rotation_axis())
+  angles = tuple(gonio.get_rotation_range())
 
-    header['distance'] = detector.get_detector_distance()
-    header['pixel'] = (detector.get_inferred_pixel_size(1),
-                       detector.get_inferred_pixel_size(2))
+  header['distance'] = detector.get_detector_distance()
+  header['pixel'] = (detector.get_inferred_pixel_size(1),
+                     detector.get_inferred_pixel_size(2))
 
-    header['phi_start'], header['phi_width'] = angles
-    header['phi_end'] = header['phi_start'] + header['phi_width']
+  header['phi_start'], header['phi_width'] = angles
+  header['phi_end'] = header['phi_start'] + header['phi_width']
 
-    year, month, day, hour, minute, second, x = cbf_handle.get_datestamp()
-    struct_time = datetime.datetime(year, month, day,
-                                    hour, minute, second).timetuple()
+  year, month, day, hour, minute, second, x = cbf_handle.get_datestamp()
+  struct_time = datetime.datetime(year, month, day,
+                                  hour, minute, second).timetuple()
 
-    header['date'] = time.asctime(struct_time)
-    header['epoch'] = cbf_handle.get_timestamp()[0]
-    header['size'] = tuple(cbf_handle.get_image_size(0))
-    header['exposure_time'] = cbf_handle.get_integration_time()
-    header['wavelength'] = cbf_handle.get_wavelength()
+  header['date'] = time.asctime(struct_time)
+  header['epoch'] = cbf_handle.get_timestamp()[0]
+  header['size'] = tuple(cbf_handle.get_image_size(0))
+  header['exposure_time'] = cbf_handle.get_integration_time()
+  header['wavelength'] = cbf_handle.get_wavelength()
 
-    # compute the true two-theta offset... which is kind-of going around
-    # the houses. oh and the real rotation axis.
+  # compute the true two-theta offset... which is kind-of going around
+  # the houses. oh and the real rotation axis.
 
-    origin = detector.get_pixel_coordinates(0, 0)
-    fast = detector.get_pixel_coordinates(0, 1)
-    slow = detector.get_pixel_coordinates(1, 0)
+  origin = detector.get_pixel_coordinates(0, 0)
+  fast = detector.get_pixel_coordinates(0, 1)
+  slow = detector.get_pixel_coordinates(1, 0)
 
-    dfast = matrix.col([fast[j] - origin[j] for j in range(3)]).normalize()
-    dslow = matrix.col([slow[j] - origin[j] for j in range(3)]).normalize()
+  dfast = matrix.col([fast[j] - origin[j] for j in range(3)]).normalize()
+  dslow = matrix.col([slow[j] - origin[j] for j in range(3)]).normalize()
 
-    dorigin = matrix.col(origin)
-    dnormal = dfast.cross(dslow)
+  dorigin = matrix.col(origin)
+  dnormal = dfast.cross(dslow)
 
-    centre = - (dorigin - dorigin.dot(dnormal) * dnormal)
+  centre = - (dorigin - dorigin.dot(dnormal) * dnormal)
 
-    f = centre.dot(dfast)
-    s = centre.dot(dslow)
+  f = centre.dot(dfast)
+  s = centre.dot(dslow)
 
-    header['fast_direction'] = dfast.elems
-    header['slow_direction'] = dslow.elems
-    header['detector_origin_mm'] = f, s
+  header['fast_direction'] = dfast.elems
+  header['slow_direction'] = dslow.elems
+  header['detector_origin_mm'] = f, s
 
-    header['rotation_axis'] = cbf_gonio_to_effective_axis(gonio)
-    two_theta = dfast.angle(matrix.col((0.0, 1.0, 0.0)), deg = True)
-    if math.fabs(two_theta - 180.0) < 1.0:
-        header['two_theta'] = 0
-    else:
-        header['two_theta'] = two_theta
+  header['rotation_axis'] = cbf_gonio_to_effective_axis(gonio)
+  two_theta = dfast.angle(matrix.col((0.0, 1.0, 0.0)), deg = True)
+  if math.fabs(two_theta - 180.0) < 1.0:
+    header['two_theta'] = 0
+  else:
+    header['two_theta'] = two_theta
 
-    # find the direct beam vector - takes a few steps
-    cbf_handle.find_category('axis')
+  # find the direct beam vector - takes a few steps
+  cbf_handle.find_category('axis')
 
-    # find record with equipment = source
-    cbf_handle.find_column('equipment')
-    cbf_handle.find_row('source')
+  # find record with equipment = source
+  cbf_handle.find_column('equipment')
+  cbf_handle.find_row('source')
 
-    # then get the vector and offset from this
+  # then get the vector and offset from this
 
-    beam_direction = []
+  beam_direction = []
 
-    for j in range(3):
-        cbf_handle.find_column('vector[%d]' % (j + 1))
-        beam_direction.append(cbf_handle.get_doublevalue())
+  for j in range(3):
+    cbf_handle.find_column('vector[%d]' % (j + 1))
+    beam_direction.append(cbf_handle.get_doublevalue())
 
-    # FIXME in here add in code to compute from first principles the beam
-    # centre etc.
+  # FIXME in here add in code to compute from first principles the beam
+  # centre etc.
 
-    detector.__swig_destroy__(detector)
-    del(detector)
+  detector.__swig_destroy__(detector)
+  del(detector)
 
-    gonio.__swig_destroy__(gonio)
-    del(gonio)
+  gonio.__swig_destroy__(gonio)
+  del(gonio)
 
-    return header
+  return header
 
 def failover_cbf(cbf_file):
-    '''CBF files from the latest update to the PILATUS detector cause a
-    segmentation fault in diffdump. This is a workaround.'''
+  '''CBF files from the latest update to the PILATUS detector cause a
+  segmentation fault in diffdump. This is a workaround.'''
 
-    header = { }
+  header = { }
 
-    header['two_theta'] = 0.0
+  header['two_theta'] = 0.0
 
-    for record in open(cbf_file):
+  for record in open(cbf_file):
 
-        if '_array_data.data' in record:
-            break
+    if '_array_data.data' in record:
+      break
 
-        if 'PILATUS 2M' in record:
-            header['detector_class'] = 'pilatus 2M'
-            header['detector'] = 'dectris'
-            header['size'] = (1679, 1475)
-            continue
+    if 'PILATUS 2M' in record:
+      header['detector_class'] = 'pilatus 2M'
+      header['detector'] = 'dectris'
+      header['size'] = (1679, 1475)
+      continue
 
-        if 'PILATUS3 2M' in record:
-            header['detector_class'] = 'pilatus 2M'
-            header['detector'] = 'dectris'
-            header['size'] = (1679, 1475)
-            continue
+    if 'PILATUS3 2M' in record:
+      header['detector_class'] = 'pilatus 2M'
+      header['detector'] = 'dectris'
+      header['size'] = (1679, 1475)
+      continue
 
-        if 'PILATUS 6M' in record:
-            header['detector_class'] = 'pilatus 6M'
-            header['detector'] = 'dectris'
-            header['size'] = (2527, 2463)
-            continue
+    if 'PILATUS 6M' in record:
+      header['detector_class'] = 'pilatus 6M'
+      header['detector'] = 'dectris'
+      header['size'] = (2527, 2463)
+      continue
 
-        if 'PILATUS3 6M' in record:
-            header['detector_class'] = 'pilatus 6M'
-            header['detector'] = 'dectris'
-            header['size'] = (2527, 2463)
-            continue
+    if 'PILATUS3 6M' in record:
+      header['detector_class'] = 'pilatus 6M'
+      header['detector'] = 'dectris'
+      header['size'] = (2527, 2463)
+      continue
 
-        if 'Start_angle' in record:
-            header['phi_start'] = float(record.split()[-2])
-            continue
+    if 'Start_angle' in record:
+      header['phi_start'] = float(record.split()[-2])
+      continue
 
-        if 'Angle_increment' in record:
-            header['phi_width'] = float(record.split()[-2])
-            continue
+    if 'Angle_increment' in record:
+      header['phi_width'] = float(record.split()[-2])
+      continue
 
-        if 'Exposure_period' in record:
-            header['exposure_time'] = float(record.split()[-2])
-            continue
+    if 'Exposure_period' in record:
+      header['exposure_time'] = float(record.split()[-2])
+      continue
 
-        if 'Detector_distance' in record:
-            header['distance'] = 1000 * float(record.split()[2])
-            continue
+    if 'Detector_distance' in record:
+      header['distance'] = 1000 * float(record.split()[2])
+      continue
 
-        if 'Wavelength' in record:
-            header['wavelength'] = float(record.split()[-2])
-            continue
+    if 'Wavelength' in record:
+      header['wavelength'] = float(record.split()[-2])
+      continue
 
-        if 'Pixel_size' in record:
-            header['pixel'] = 1000 * float(record.split()[2]), \
-                              1000 * float(record.split()[5])
-            continue
+    if 'Pixel_size' in record:
+      header['pixel'] = 1000 * float(record.split()[2]), \
+                        1000 * float(record.split()[5])
+      continue
 
-        if 'Beam_xy' in record:
+    if 'Beam_xy' in record:
 
-            # N.B. this is swapped again for historical reasons
+      # N.B. this is swapped again for historical reasons
 
-            beam_pixels = map(float, record.replace('(', '').replace(
-                ')', '').replace(',', '').split()[2:4])
-            header['beam'] = beam_pixels[1] * header['pixel'][1], \
-                             beam_pixels[0] * header['pixel'][0]
-            header['raw_beam'] = beam_pixels[1] * header['pixel'][1], \
-                                 beam_pixels[0] * header['pixel'][0]
-            continue
+      beam_pixels = map(float, record.replace('(', '').replace(
+          ')', '').replace(',', '').split()[2:4])
+      header['beam'] = beam_pixels[1] * header['pixel'][1], \
+                       beam_pixels[0] * header['pixel'][0]
+      header['raw_beam'] = beam_pixels[1] * header['pixel'][1], \
+                           beam_pixels[0] * header['pixel'][0]
+      continue
 
-        # try to get the date etc. literally.
+    # try to get the date etc. literally.
 
-        try:
-            datestring = record.split()[-1].split('.')[0]
-            format = '%Y-%b-%dT%H:%M:%S'
-            struct_time = time.strptime(datestring, format)
-            header['date'] = time.asctime(struct_time)
-            header['epoch'] = time.mktime(struct_time)
+    try:
+      datestring = record.split()[-1].split('.')[0]
+      format = '%Y-%b-%dT%H:%M:%S'
+      struct_time = time.strptime(datestring, format)
+      header['date'] = time.asctime(struct_time)
+      header['epoch'] = time.mktime(struct_time)
 
-        except:
-            pass
+    except:
+      pass
 
-        try:
+    try:
 
-            if not 'date' in header:
-                datestring = record.split()[-1].split('.')[0]
-                format = '%Y-%m-%dT%H:%M:%S'
-                struct_time = time.strptime(datestring, format)
-                header['date'] = time.asctime(struct_time)
-                header['epoch'] = time.mktime(struct_time)
+      if not 'date' in header:
+        datestring = record.split()[-1].split('.')[0]
+        format = '%Y-%m-%dT%H:%M:%S'
+        struct_time = time.strptime(datestring, format)
+        header['date'] = time.asctime(struct_time)
+        header['epoch'] = time.mktime(struct_time)
 
-        except:
-            pass
+    except:
+      pass
 
-        try:
+    try:
 
-            if not 'date' in header:
-                datestring = record.replace('#', '').strip().split('.')[0]
-                format = '%Y/%b/%d %H:%M:%S'
-                struct_time = time.strptime(datestring, format)
-                header['date'] = time.asctime(struct_time)
-                header['epoch'] = time.mktime(struct_time)
+      if not 'date' in header:
+        datestring = record.replace('#', '').strip().split('.')[0]
+        format = '%Y/%b/%d %H:%M:%S'
+        struct_time = time.strptime(datestring, format)
+        header['date'] = time.asctime(struct_time)
+        header['epoch'] = time.mktime(struct_time)
 
-        except:
-            pass
+    except:
+      pass
 
-    header['phi_end'] = header['phi_start'] + header['phi_width']
+  header['phi_end'] = header['phi_start'] + header['phi_width']
 
-    return header
+  return header
 
 last_format = None
 
 def failover_dxtbx(image_file):
-    '''Failover to use the dxtbx to read the image headers...'''
+  '''Failover to use the dxtbx to read the image headers...'''
 
-    # replacement dxtbx for rigaku saturns sometimes
-    from dxtbx.format.Registry import Registry
-    from dxtbx.model.detector_helpers_types import detector_helpers_types
+  # replacement dxtbx for rigaku saturns sometimes
+  from dxtbx.format.Registry import Registry
+  from dxtbx.model.detector_helpers_types import detector_helpers_types
 
-    global last_format
+  global last_format
 
-    if last_format:
-        iformat = last_format
+  if last_format:
+    iformat = last_format
+  else:
+    iformat = Registry.find(image_file)
+    from Handlers.Streams import Debug
+    Debug.write('Using dxtbx format instance: %s' % iformat.__name__)
+
+  if not iformat.understand(image_file):
+    raise RuntimeError, 'image file %s not understood by dxtbx' % \
+          image_file
+
+  last_format = iformat
+
+  i = iformat(image_file)
+
+  b = i.get_beam()
+  g = i.get_goniometer()
+  d = i.get_detector()
+  s = i.get_scan()
+
+  header = { }
+
+  if not hasattr(d, 'get_image_size'):
+    # cope with new detector as array of panels dxtbx api
+    fast, slow = map(int, d[0].get_image_size())
+    _f, _s = d[0].get_pixel_size()
+    F = matrix.col(d[0].get_fast_axis())
+    S = matrix.col(d[0].get_slow_axis())
+    N = F.cross(S)
+    origin = matrix.col(d[0].get_origin())
+  else:
+    fast, slow = map(int, d.get_image_size())
+    _f, _s = d.get_pixel_size()
+    F = matrix.col(d.get_fast_axis())
+    S = matrix.col(d.get_slow_axis())
+    N = F.cross(S)
+    origin = matrix.col(d.get_origin())
+
+  beam = matrix.col(b.get_direction())
+
+  # FIXME detector has methods to compute the beam centre now...
+
+  centre = - (origin - origin.dot(N) * N)
+
+  x = centre.dot(F)
+  y = centre.dot(S)
+
+  header['fast_direction'] = F.elems
+  header['slow_direction'] = S.elems
+  header['rotation_axis'] = g.get_rotation_axis()
+  header['exposure_time'] = s.get_exposure_time()
+  header['distance'] = math.fabs(origin.dot(N))
+  header['two_theta'] = - beam.angle(N, deg = True)
+  header['raw_beam'] = x, y
+  header['phi_start'] = s.get_oscillation()[0]
+  header['phi_width'] = s.get_oscillation()[1]
+  header['phi_end'] = sum(s.get_oscillation())
+  header['pixel'] = _f, _s
+
+  # FIXME this is very bad as it relates to teh legacy backwards Mosflm
+  # beam centre standard still... FIXME-SCI-948
+
+  header['beam'] = y, x
+  header['epoch'] = s.get_image_epoch(s.get_image_range()[0])
+  header['date'] = time.ctime(header['epoch'])
+  header['wavelength'] = b.get_wavelength()
+  header['size'] = fast, slow
+  if hasattr(i, 'detector_class'):
+    header['detector_class'] = i.detector_class
+    header['detector'] = i.detector
+  else:
+
+    if hasattr(d, 'get_type'):
+      # cope with new detector as array of panels API
+      dtype = d.get_type()
     else:
-        iformat = Registry.find(image_file)
-        from Handlers.Streams import Debug
-        Debug.write('Using dxtbx format instance: %s' % iformat.__name__)
+      dtype = d[0].get_type()
 
-    if not iformat.understand(image_file):
-        raise RuntimeError, 'image file %s not understood by dxtbx' % \
-              image_file
+    detector_type = detector_helpers_types.get(
+        dtype, fast, slow, int(1000 * _f), int(1000 * _s))
 
-    last_format = iformat
+    header['detector_class'] = detector_type.replace('-', ' ')
+    header['detector'] = detector_type.split('-')[0]
 
-    i = iformat(image_file)
-
-    b = i.get_beam()
-    g = i.get_goniometer()
-    d = i.get_detector()
-    s = i.get_scan()
-
-    header = { }
-
-    if not hasattr(d, 'get_image_size'):
-        # cope with new detector as array of panels dxtbx api
-        fast, slow = map(int, d[0].get_image_size())
-        _f, _s = d[0].get_pixel_size()
-        F = matrix.col(d[0].get_fast_axis())
-        S = matrix.col(d[0].get_slow_axis())
-        N = F.cross(S)
-        origin = matrix.col(d[0].get_origin())
-    else:
-        fast, slow = map(int, d.get_image_size())
-        _f, _s = d.get_pixel_size()
-        F = matrix.col(d.get_fast_axis())
-        S = matrix.col(d.get_slow_axis())
-        N = F.cross(S)
-        origin = matrix.col(d.get_origin())
-        
-    beam = matrix.col(b.get_direction())
-
-    # FIXME detector has methods to compute the beam centre now...
-    
-    centre = - (origin - origin.dot(N) * N)
-
-    x = centre.dot(F)
-    y = centre.dot(S)
-
-    header['fast_direction'] = F.elems
-    header['slow_direction'] = S.elems
-    header['rotation_axis'] = g.get_rotation_axis()
-    header['exposure_time'] = s.get_exposure_time()
-    header['distance'] = math.fabs(origin.dot(N))
-    header['two_theta'] = - beam.angle(N, deg = True)
-    header['raw_beam'] = x, y
-    header['phi_start'] = s.get_oscillation()[0]
-    header['phi_width'] = s.get_oscillation()[1]
-    header['phi_end'] = sum(s.get_oscillation())
-    header['pixel'] = _f, _s
-
-    # FIXME this is very bad as it relates to teh legacy backwards Mosflm
-    # beam centre standard still... FIXME-SCI-948
-
-    header['beam'] = y, x
-    header['epoch'] = s.get_image_epoch(s.get_image_range()[0])
-    header['date'] = time.ctime(header['epoch'])
-    header['wavelength'] = b.get_wavelength()
-    header['size'] = fast, slow
-    if hasattr(i, 'detector_class'):
-        header['detector_class'] = i.detector_class
-        header['detector'] = i.detector
-    else:
-
-        if hasattr(d, 'get_type'):
-            # cope with new detector as array of panels API
-            dtype = d.get_type()
-        else:
-            dtype = d[0].get_type()    
-        
-        detector_type = detector_helpers_types.get(
-            dtype, fast, slow, int(1000 * _f), int(1000 * _s))
-
-        header['detector_class'] = detector_type.replace('-', ' ')
-        header['detector'] = detector_type.split('-')[0]
-
-    return header
+  return header
 
 def Diffdump(DriverType = None):
-    '''A factory for wrappers for the diffdump.'''
+  '''A factory for wrappers for the diffdump.'''
 
-    DriverInstance = DriverFactory.Driver(DriverType)
+  DriverInstance = DriverFactory.Driver(DriverType)
 
-    class DiffdumpWrapper(DriverInstance.__class__):
-        '''Provide access to the functionality in diffdump.'''
+  class DiffdumpWrapper(DriverInstance.__class__):
+    '''Provide access to the functionality in diffdump.'''
 
-        def __init__(self):
-            DriverInstance.__class__.__init__(self)
+    def __init__(self):
+      DriverInstance.__class__.__init__(self)
 
-            self.set_executable('diffdump')
+      self.set_executable('diffdump')
 
-            self._image = None
-            self._header = { }
+      self._image = None
+      self._header = { }
 
-            self._previous_crashed = False
-            
-            return
+      self._previous_crashed = False
 
-        def set_image(self, image):
-            '''Set an image to read the header of.'''
-            self._image = image
-            self._header = { }
-            return
+      return
 
-        def _get_time(self, datestring):
-            '''Unpack a date string to a structure.'''
+    def set_image(self, image):
+      '''Set an image to read the header of.'''
+      self._image = image
+      self._header = { }
+      return
 
-            if len(datestring) == 0:
-                raise RuntimeError, 'empty date'
+    def _get_time(self, datestring):
+      '''Unpack a date string to a structure.'''
 
-            if datestring == 'N/A':
-                # we don't have the date!
-                # set default to 0-epoch
-                return datetime.datetime(1970, 0, 0, 0, 0, 0).timetuple(), 0.0
+      if len(datestring) == 0:
+        raise RuntimeError, 'empty date'
 
-            # problem here is multiple formats for date strings!
-            # so have to change the structure...
+      if datestring == 'N/A':
+        # we don't have the date!
+        # set default to 0-epoch
+        return datetime.datetime(1970, 0, 0, 0, 0, 0).timetuple(), 0.0
 
-            # FIXME!
-            # pilatus: 2007/Sep/22 21:15:03.229
-            # format: %Y/%b/%d %H:%M:%S
+      # problem here is multiple formats for date strings!
+      # so have to change the structure...
 
-            # allow for milliseconds
-            ms = 0.0
+      # FIXME!
+      # pilatus: 2007/Sep/22 21:15:03.229
+      # format: %Y/%b/%d %H:%M:%S
 
-            struct_time = None
-            try:
-                format = '%Y/%b/%d %H:%M:%S'
-                ms = 0.001 * int(datestring.split('.')[1])
-                _datestring = datestring.split('.')[0]
-                struct_time = time.strptime(_datestring, format)
-            except:
-                struct_time = None
+      # allow for milliseconds
+      ms = 0.0
 
-            # ADSC CBF format
+      struct_time = None
+      try:
+        format = '%Y/%b/%d %H:%M:%S'
+        ms = 0.001 * int(datestring.split('.')[1])
+        _datestring = datestring.split('.')[0]
+        struct_time = time.strptime(_datestring, format)
+      except:
+        struct_time = None
 
-            if not struct_time:
-                try:
-                    format = '%d/%m/%Y %H:%M:%S'
-                    ms = 0.001 * int(datestring.split('.')[1])
-                    _datestring = datestring.split('.')[0]
-                    struct_time = time.strptime(_datestring, format)
-                except:
-                    struct_time = None
+      # ADSC CBF format
 
-            if not struct_time:
-                try:
-                    struct_time = time.strptime(datestring)
-                except:
-                    struct_time = None
+      if not struct_time:
+        try:
+          format = '%d/%m/%Y %H:%M:%S'
+          ms = 0.001 * int(datestring.split('.')[1])
+          _datestring = datestring.split('.')[0]
+          struct_time = time.strptime(_datestring, format)
+        except:
+          struct_time = None
 
-            if not struct_time:
-                # this may be a mar format date...
-                # MMDDhhmmYYYY.ss - go figure
-                # or it could also be the format from
-                # saturn images like:
-                # 23-Oct-2006 13:42:36
-                if not '-' in datestring:
-                    month = int(datestring[:2])
-                    day = int(datestring[2:4])
-                    hour = int(datestring[4:6])
-                    minute = int(datestring[6:8])
-                    year = int(datestring[8:12])
-                    second = int(datestring[-2:])
-                    d = datetime.datetime(year, month, day,
-                                          hour, minute, second)
-                    struct_time = d.timetuple()
-                else:
-                    struct_time = time.strptime(datestring,
-                                                '%d-%b-%Y %H:%M:%S')
+      if not struct_time:
+        try:
+          struct_time = time.strptime(datestring)
+        except:
+          struct_time = None
 
-            return struct_time, ms
+      if not struct_time:
+        # this may be a mar format date...
+        # MMDDhhmmYYYY.ss - go figure
+        # or it could also be the format from
+        # saturn images like:
+        # 23-Oct-2006 13:42:36
+        if not '-' in datestring:
+          month = int(datestring[:2])
+          day = int(datestring[2:4])
+          hour = int(datestring[4:6])
+          minute = int(datestring[6:8])
+          year = int(datestring[8:12])
+          second = int(datestring[-2:])
+          d = datetime.datetime(year, month, day,
+                                hour, minute, second)
+          struct_time = d.timetuple()
+        else:
+          struct_time = time.strptime(datestring,
+                                      '%d-%b-%Y %H:%M:%S')
 
-        def _epoch(self, datestring):
-            '''Compute an epoch from a date string.'''
+      return struct_time, ms
 
-            t, ms = self._get_time(datestring)
+    def _epoch(self, datestring):
+      '''Compute an epoch from a date string.'''
 
-            return time.mktime(t) + ms
+      t, ms = self._get_time(datestring)
 
-        def _date(self, datestring):
-            '''Compute a human readable date from a date string.'''
+      return time.mktime(t) + ms
 
-            return time.asctime(self._get_time(datestring)[0])
+    def _date(self, datestring):
+      '''Compute a human readable date from a date string.'''
 
-        def readheader(self):
-            '''Read the image header.'''
+      return time.asctime(self._get_time(datestring)[0])
 
-            if self._header:
-                return copy.deepcopy(self._header)
+    def readheader(self):
+      '''Read the image header.'''
 
-            if HeaderCache.check(self._image):
-                self._header = HeaderCache.get(self._image)
-                return copy.deepcopy(self._header)
+      if self._header:
+        return copy.deepcopy(self._header)
 
-            if os.path.getsize(self._image) == 0:
-                raise RuntimeError, 'empty file: %s' % self._image
+      if HeaderCache.check(self._image):
+        self._header = HeaderCache.get(self._image)
+        return copy.deepcopy(self._header)
 
-            if not self._previous_crashed:
-                try:
-                    return self.readheader_diffdump()
-                except exceptions.Exception, e:
-                    self._previous_crashed = True
+      if os.path.getsize(self._image) == 0:
+        raise RuntimeError, 'empty file: %s' % self._image
 
-            try:
-                self._header = failover_dxtbx(self._image)
-                HeaderCache.put(self._image, self._header)
-                return copy.deepcopy(self._header)
-            except exceptions.Exception, e:
-                traceback.print_exc(file = sys.stdout)
+      if not self._previous_crashed:
+        try:
+          return self.readheader_diffdump()
+        except exceptions.Exception, e:
+          self._previous_crashed = True
 
-        def readheader_diffdump(self):
-            '''Read the image header.'''
+      try:
+        self._header = failover_dxtbx(self._image)
+        HeaderCache.put(self._image, self._header)
+        return copy.deepcopy(self._header)
+      except exceptions.Exception, e:
+        traceback.print_exc(file = sys.stdout)
 
-            global detector_class
+    def readheader_diffdump(self):
+      '''Read the image header.'''
 
-            # check that the input file exists..
+      global detector_class
 
-            if not os.path.exists(self._image):
-                raise RuntimeError, 'image %s does not exist' % \
-                      self._image
+      # check that the input file exists..
 
-            # consider using more recent code to read these images in
-            # first instance, to replace diffdump
+      if not os.path.exists(self._image):
+        raise RuntimeError, 'image %s does not exist' % \
+              self._image
 
-            try:
-                if '.cbf' in self._image[-4:]:
-                    header = failover_cbf(self._image)
-                    assert(header['detector_class'] in \
-                           ['pilatus 2M', 'pilatus 6M'])
-                    self._header = header
-                    HeaderCache.put(self._image, self._header)
-                    return copy.deepcopy(self._header)
-            except exceptions.Exception, e:
-                if '.cbf' in self._image[-4:]:
-                    header = failover_full_cbf(self._image)
-                    self._header = header
-                    HeaderCache.put(self._image, self._header)
-                    return copy.deepcopy(self._header)
-                pass
+      # consider using more recent code to read these images in
+      # first instance, to replace diffdump
 
-            self.clear_command_line()
-            self.add_command_line(self._image)
-            self.start()
+      try:
+        if '.cbf' in self._image[-4:]:
+          header = failover_cbf(self._image)
+          assert(header['detector_class'] in \
+                 ['pilatus 2M', 'pilatus 6M'])
+          self._header = header
+          HeaderCache.put(self._image, self._header)
+          return copy.deepcopy(self._header)
+      except exceptions.Exception, e:
+        if '.cbf' in self._image[-4:]:
+          header = failover_full_cbf(self._image)
+          self._header = header
+          HeaderCache.put(self._image, self._header)
+          return copy.deepcopy(self._header)
+        pass
 
-            self.close_wait()
+      self.clear_command_line()
+      self.add_command_line(self._image)
+      self.start()
 
-            # why is this commented out?
-            # self.check_for_errors()
+      self.close_wait()
 
-            # results were ok, so get all of the output out
-            output = self.get_all_output()
+      # why is this commented out?
+      # self.check_for_errors()
+
+      # results were ok, so get all of the output out
+      output = self.get_all_output()
+
+      if debug:
+        print '! all diffdump output follows'
+        for o in output:
+          print '! %s' % o[:-1]
+
+      # note that some of the records in the image header
+      # will depend on the detector class - this should
+      # really be fixed in the program diffdump...
+
+      detector = None
+
+      fudge = {'adsc':{'wavelength':1.0,
+                       'pixel':1.0},
+               'dectris':{'wavelength':1.0,
+                          'pixel':1.0},
+               'rigaku':{'wavelength':1.0,
+                         'pixel':1.0},
+               'raxis':{'wavelength':1.0,
+                       'pixel':1.0},
+               'saturn':{'wavelength':1.0,
+                         'pixel':1.0},
+               'marccd':{'wavelength':1.0,
+                         'pixel':0.001},
+               'mini-cbf':{'wavelength':1.0,
+                           'pixel':1.0},
+               'cbf':{'wavelength':1.0,
+                      'pixel':1.0},
+               'mar':{'wavelength':1.0,
+                      'pixel':1.0}}
+
+      cbf_format = False
+
+      for o in output:
+        l = o.split(':')
+
+        if len(l) > 1:
+          l2 = l[1].split()
+        else:
+          l2 = ''
+
+        # latest version of diffdump prints out manufacturer in
+        # place of image type...
+
+        if ('Image type' in o) or ('Manufacturer' in o):
+          if debug:
+            print '! found image type: %s' % l[1].strip().lower()
+          self._header['detector'] = l[1].strip().lower()
+
+          # correct spelling, perhaps
+          if self._header['detector'] == 'mar ccd':
+            self._header['detector'] = 'marccd'
+          if self._header['detector'] == 'mar 345':
+            self._header['detector'] = 'mar'
+          if self._header['detector'] == 'rigaku saturn':
+            self._header['detector'] = 'saturn'
+          if self._header['detector'] == 'rigaku raxis':
+            self._header['detector'] = 'raxis'
+          if self._header['detector'] == 'rigaku r-axis':
+            self._header['detector'] = 'raxis'
+          detector = self._header['detector']
+
+        if 'Format' in o:
+          if o.split()[-1] == 'CBF':
+            cbf_format = True
+
+        # FIXME in here need to check a trust file timestamp flag
+
+        if 'Exposure epoch' in o or 'Collection date' in o:
+          try:
+            d = o[o.index(':') + 1:]
+            if d.strip():
+              self._header['epoch'] = self._epoch(d.strip())
+              self._header['date'] = self._date(d.strip())
+              if debug:
+                print '! exposure epoch: %d' % \
+                      int(self._header['epoch'])
+            else:
+              if get_trust_timestamps():
+                self._header['epoch'] = float(
+                    os.stat(self._image)[8])
+                self._header['date'] = time.ctime(
+                    self._header['epoch'])
+              else:
+                self._header['epoch'] = 0.0
+                self._header['date'] = ''
+
+          except exceptions.Exception, e:
 
             if debug:
-                print '! all diffdump output follows'
-                for o in output:
-                    print '! %s' % o[:-1]
+              print '! error interpreting date: %s' % str(e)
 
-            # note that some of the records in the image header
-            # will depend on the detector class - this should
-            # really be fixed in the program diffdump...
+            # this is badly formed....
+            # so perhaps read the file creation date?
+            # time.ctime(os.stat(filename)[8]) -> date
+            # os.stat(filename)[8] -> epoch
+            self._header['epoch'] = float(
+                os.stat(self._image)[8])
+            self._header['date'] = time.ctime(
+                self._header['epoch'])
+            # self._header['epoch'] = 0.0
+            # self._header['date'] = ''
 
-            detector = None
+        if 'Exposure time' in o:
+          self._header['exposure_time'] = float(l2[0])
 
-            fudge = {'adsc':{'wavelength':1.0,
-                             'pixel':1.0},
-                     'dectris':{'wavelength':1.0,
-                                'pixel':1.0},
-                     'rigaku':{'wavelength':1.0,
-                               'pixel':1.0},
-                     'raxis':{'wavelength':1.0,
-                             'pixel':1.0},
-                     'saturn':{'wavelength':1.0,
-                               'pixel':1.0},
-                     'marccd':{'wavelength':1.0,
-                               'pixel':0.001},
-                     'mini-cbf':{'wavelength':1.0,
-                                 'pixel':1.0},
-                     'cbf':{'wavelength':1.0,
-                            'pixel':1.0},
-                     'mar':{'wavelength':1.0,
-                            'pixel':1.0}}
-
-            cbf_format = False
-
-            for o in output:
-                l = o.split(':')
-
-                if len(l) > 1:
-                    l2 = l[1].split()
-                else:
-                    l2 = ''
-
-                # latest version of diffdump prints out manufacturer in
-                # place of image type...
-
-                if ('Image type' in o) or ('Manufacturer' in o):
-                    if debug:
-                        print '! found image type: %s' % l[1].strip().lower()
-                    self._header['detector'] = l[1].strip().lower()
-
-                    # correct spelling, perhaps
-                    if self._header['detector'] == 'mar ccd':
-                        self._header['detector'] = 'marccd'
-                    if self._header['detector'] == 'mar 345':
-                        self._header['detector'] = 'mar'
-                    if self._header['detector'] == 'rigaku saturn':
-                        self._header['detector'] = 'saturn'
-                    if self._header['detector'] == 'rigaku raxis':
-                        self._header['detector'] = 'raxis'
-                    if self._header['detector'] == 'rigaku r-axis':
-                        self._header['detector'] = 'raxis'
-                    detector = self._header['detector']
-
-                if 'Format' in o:
-                    if o.split()[-1] == 'CBF':
-                        cbf_format = True
-
-                # FIXME in here need to check a trust file timestamp flag
-
-                if 'Exposure epoch' in o or 'Collection date' in o:
-                    try:
-                        d = o[o.index(':') + 1:]
-                        if d.strip():
-                            self._header['epoch'] = self._epoch(d.strip())
-                            self._header['date'] = self._date(d.strip())
-                            if debug:
-                                print '! exposure epoch: %d' % \
-                                      int(self._header['epoch'])
-                        else:
-                            if get_trust_timestamps():
-                                self._header['epoch'] = float(
-                                    os.stat(self._image)[8])
-                                self._header['date'] = time.ctime(
-                                    self._header['epoch'])
-                            else:
-                                self._header['epoch'] = 0.0
-                                self._header['date'] = ''
-
-                    except exceptions.Exception, e:
-
-                        if debug:
-                            print '! error interpreting date: %s' % str(e)
-
-                        # this is badly formed....
-                        # so perhaps read the file creation date?
-                        # time.ctime(os.stat(filename)[8]) -> date
-                        # os.stat(filename)[8] -> epoch
-                        self._header['epoch'] = float(
-                            os.stat(self._image)[8])
-                        self._header['date'] = time.ctime(
-                            self._header['epoch'])
-                        # self._header['epoch'] = 0.0
-                        # self._header['date'] = ''
-
-                if 'Exposure time' in o:
-                    self._header['exposure_time'] = float(l2[0])
-
-                if 'Wavelength' in o:
-                    self._header['wavelength'] = float(l2[0]) * \
-                                                 fudge[detector]['wavelength']
-                    if debug:
-                        print '! found wavelength: %f' % \
-                              self._header['wavelength']
+        if 'Wavelength' in o:
+          self._header['wavelength'] = float(l2[0]) * \
+                                       fudge[detector]['wavelength']
+          if debug:
+            print '! found wavelength: %f' % \
+                  self._header['wavelength']
 
 
-                if 'Distance' in o:
-                    self._header['distance'] = float(
-                        l[1].replace('mm', '').strip())
+        if 'Distance' in o:
+          self._header['distance'] = float(
+              l[1].replace('mm', '').strip())
 
-                if 'Beam cent' in o:
-                    beam = l[1].replace('(', '').replace(
-                        ')', '').replace('mm', ' ').split(',')
-                    self._header['beam'] = map(float, beam)
-                    self._header['raw_beam'] = map(float, beam)
+        if 'Beam cent' in o:
+          beam = l[1].replace('(', '').replace(
+              ')', '').replace('mm', ' ').split(',')
+          self._header['beam'] = map(float, beam)
+          self._header['raw_beam'] = map(float, beam)
 
-                if 'Image Size' in o:
-                    image = l[1].replace('px', '')
-                    image = image.replace('(', '').replace(')', '').split(',')
-                    self._header['size'] = map(float, image)
+        if 'Image Size' in o:
+          image = l[1].replace('px', '')
+          image = image.replace('(', '').replace(')', '').split(',')
+          self._header['size'] = map(float, image)
 
-                if 'Pixel Size' in o:
-                    image = l[1].replace('mm', '')
-                    x, y = image.replace('(', '').replace(')', '').split(',')
-                    if detector == 'marccd' and math.fabs(float(x)) < 1.0:
-                        self._header['pixel'] = (float(x), float(y))
-                    else:
-                        self._header['pixel'] = (
-                            float(x) * fudge[detector]['pixel'],
-                            float(y) * fudge[detector]['pixel'])
+        if 'Pixel Size' in o:
+          image = l[1].replace('mm', '')
+          x, y = image.replace('(', '').replace(')', '').split(',')
+          if detector == 'marccd' and math.fabs(float(x)) < 1.0:
+            self._header['pixel'] = (float(x), float(y))
+          else:
+            self._header['pixel'] = (
+                float(x) * fudge[detector]['pixel'],
+                float(y) * fudge[detector]['pixel'])
 
-                if 'Angle range' in o:
-                    phi = map(float, l[1].split('->'))
-                    self._header['phi_start'] = phi[0]
-                    self._header['phi_end'] = phi[1]
-                    self._header['phi_width'] = phi[1] - phi[0]
+        if 'Angle range' in o:
+          phi = map(float, l[1].split('->'))
+          self._header['phi_start'] = phi[0]
+          self._header['phi_end'] = phi[1]
+          self._header['phi_width'] = phi[1] - phi[0]
 
-                if 'Oscillation' in o:
-                    phi = map(float, l[1].replace('deg', '').split('->'))
-                    self._header['phi_start'] = phi[0]
-                    self._header['phi_end'] = phi[1]
-                    self._header['phi_width'] = phi[1] - phi[0]
+        if 'Oscillation' in o:
+          phi = map(float, l[1].replace('deg', '').split('->'))
+          self._header['phi_start'] = phi[0]
+          self._header['phi_end'] = phi[1]
+          self._header['phi_width'] = phi[1] - phi[0]
 
-                if 'Oscillation range' in o:
-                    phi = map(float, l[1].replace('deg', '').split('->'))
-                    self._header['phi_start'] = phi[0]
-                    self._header['phi_end'] = phi[1]
-                    self._header['phi_width'] = phi[1] - phi[0]
+        if 'Oscillation range' in o:
+          phi = map(float, l[1].replace('deg', '').split('->'))
+          self._header['phi_start'] = phi[0]
+          self._header['phi_end'] = phi[1]
+          self._header['phi_width'] = phi[1] - phi[0]
 
-                if 'Two Theta value' in o:
-                    try:
-                        two_theta = float(o.split(':')[1].split()[0])
-                        self._header['two_theta'] = two_theta * -1.0
-                    except ValueError, e:
-                        self._header['two_theta'] = 0.0
+        if 'Two Theta value' in o:
+          try:
+            two_theta = float(o.split(':')[1].split()[0])
+            self._header['two_theta'] = two_theta * -1.0
+          except ValueError, e:
+            self._header['two_theta'] = 0.0
 
-            # check to see if the beam centre needs to be converted
-            # from pixels to mm - e.g. MAR 300 images from APS ID 23
+      # check to see if the beam centre needs to be converted
+      # from pixels to mm - e.g. MAR 300 images from APS ID 23
 
-            if self._header.has_key('beam') and \
-               self._header.has_key('pixel') and \
-               self._header.has_key('size'):
-                # look to see if the current beam is somewhere in the middle
-                # pixel count wise...
-                beam = self._header['beam']
-                size = self._header['size']
-                pixel = self._header['pixel']
-                if math.fabs((beam[0] - 0.5 * size[0]) / size[0]) < 0.25:
-                    new_beam = (beam[0] * pixel[0], beam[1] * pixel[1])
-                    self._header['beam'] = new_beam
+      if self._header.has_key('beam') and \
+         self._header.has_key('pixel') and \
+         self._header.has_key('size'):
+        # look to see if the current beam is somewhere in the middle
+        # pixel count wise...
+        beam = self._header['beam']
+        size = self._header['size']
+        pixel = self._header['pixel']
+        if math.fabs((beam[0] - 0.5 * size[0]) / size[0]) < 0.25:
+          new_beam = (beam[0] * pixel[0], beam[1] * pixel[1])
+          self._header['beam'] = new_beam
 
-            # check beam centre is sensible i.e. not NULL
+      # check beam centre is sensible i.e. not NULL
 
-            if math.fabs(self._header['beam'][0]) < 0.01 and \
-               math.fabs(self._header['beam'][1]) < 0.01:
-                size = self._header['size']
-                pixel = self._header['pixel']
-                self._header['beam'] = (0.5 * size[0] * pixel[0],
-                                        0.5 * size[1] * pixel[1])
+      if math.fabs(self._header['beam'][0]) < 0.01 and \
+         math.fabs(self._header['beam'][1]) < 0.01:
+        size = self._header['size']
+        pixel = self._header['pixel']
+        self._header['beam'] = (0.5 * size[0] * pixel[0],
+                                0.5 * size[1] * pixel[1])
 
-            if self._header.has_key('detector') and \
-               self._header.has_key('pixel') and \
-               self._header.has_key('size'):
-                # compute the detector class
-                detector = self._header['detector']
-                width = int(self._header['size'][0])
-                pixel = int(1000 * self._header['pixel'][0])
+      if self._header.has_key('detector') and \
+         self._header.has_key('pixel') and \
+         self._header.has_key('size'):
+        # compute the detector class
+        detector = self._header['detector']
+        width = int(self._header['size'][0])
+        pixel = int(1000 * self._header['pixel'][0])
 
-                key = (detector, width, pixel)
+        key = (detector, width, pixel)
 
-                self._header['detector_class'] = detector_class[key]
+        self._header['detector_class'] = detector_class[key]
 
-                # check for mar ccd and perhaps reassign
+        # check for mar ccd and perhaps reassign
 
-                if detector == 'mar' and \
-                   'ccd' in self._header['detector_class']:
-                    self._header['detector'] = 'marccd'
+        if detector == 'mar' and \
+           'ccd' in self._header['detector_class']:
+          self._header['detector'] = 'marccd'
 
-                # currently diffdump swaps x, y in beam centre output
-                if self._header['detector_class'] == 'pilatus 2M':
-                    x, y = self._header['beam']
-                    self._header['beam'] = y, x
-                    x, y = self._header['raw_beam']
-                    self._header['raw_beam'] = y, x
+        # currently diffdump swaps x, y in beam centre output
+        if self._header['detector_class'] == 'pilatus 2M':
+          x, y = self._header['beam']
+          self._header['beam'] = y, x
+          x, y = self._header['raw_beam']
+          self._header['raw_beam'] = y, x
 
-            else:
-                self._header['detector_class'] = 'unknown'
+      else:
+        self._header['detector_class'] = 'unknown'
 
-            # quickly check diffdump didn't do something stupid...
+      # quickly check diffdump didn't do something stupid...
 
-            if detector == 'adsc' and not cbf_format:
+      if detector == 'adsc' and not cbf_format:
 
-                osc_start = 0.0
-                osc_range = 0.0
+        osc_start = 0.0
+        osc_range = 0.0
 
-                size = int(open(self._image, 'r').read(20).split()[-1])
-                hdr = open(self._image, 'r').read(size)
-                for record in hdr.split('\n'):
-                    if 'OSC_START' in record:
-                        osc_start = float(record.replace(
-                            ';', '').split('=')[-1])
-                    if 'OSC_RANGE' in record:
-                        osc_range = float(record.replace(
-                            ';', '').split('=')[-1])
+        size = int(open(self._image, 'r').read(20).split()[-1])
+        hdr = open(self._image, 'r').read(size)
+        for record in hdr.split('\n'):
+          if 'OSC_START' in record:
+            osc_start = float(record.replace(
+                ';', '').split('=')[-1])
+          if 'OSC_RANGE' in record:
+            osc_range = float(record.replace(
+                ';', '').split('=')[-1])
 
-                self._header['phi_start'] = osc_start
-                self._header['phi_width'] = osc_range
-                self._header['phi_end'] = osc_start + osc_range
+        self._header['phi_start'] = osc_start
+        self._header['phi_width'] = osc_range
+        self._header['phi_end'] = osc_start + osc_range
 
-            if detector == 'adsc' and abs(header['two_theta']) > 1.0:
-                raise RuntimeError, 'adsc + two-theta not supported'
-                
-            HeaderCache.put(self._image, self._header)
+      if detector == 'adsc' and abs(header['two_theta']) > 1.0:
+        raise RuntimeError, 'adsc + two-theta not supported'
 
-            return copy.deepcopy(self._header)
+      HeaderCache.put(self._image, self._header)
 
-        def gain(self):
-            '''Estimate gain for this image.'''
+      return copy.deepcopy(self._header)
 
-            # check that the input file exists..
+    def gain(self):
+      '''Estimate gain for this image.'''
 
-            if not os.path.exists(self._image):
-                raise RuntimeError, 'image %s does not exist' % \
-                      self._image
+      # check that the input file exists..
 
-            self.add_command_line('-gain')
-            self.add_command_line(self._image)
-            self.start()
-            self.close_wait()
+      if not os.path.exists(self._image):
+        raise RuntimeError, 'image %s does not exist' % \
+              self._image
 
-            self.check_for_errors()
+      self.add_command_line('-gain')
+      self.add_command_line(self._image)
+      self.start()
+      self.close_wait()
 
-            # results were ok, so get all of the output out
-            output = self.get_all_output()
+      self.check_for_errors()
 
-            gain = 0.0
+      # results were ok, so get all of the output out
+      output = self.get_all_output()
 
-            for o in output:
-                l = o.split(':')
+      gain = 0.0
 
-                if 'Estimation of gain' in o:
-                    # This often seems to be an underestimate...
-                    gain = 1.333 * float(l[1])
+      for o in output:
+        l = o.split(':')
 
-            return gain
+        if 'Estimation of gain' in o:
+          # This often seems to be an underestimate...
+          gain = 1.333 * float(l[1])
 
-    return DiffdumpWrapper()
+      return gain
+
+  return DiffdumpWrapper()
 
 if __name__ == '__main__':
 
-    for image in sys.argv[1:]:
-        p = Diffdump()
-        p.set_image(image)
-        
-        header = p.readheader()
+  for image in sys.argv[1:]:
+    p = Diffdump()
+    p.set_image(image)
 
-        for token in sorted(header):
-            print token, header[token]
+    header = p.readheader()
 
-    HeaderCache.write()
+    for token in sorted(header):
+      print token, header[token]
+
+  HeaderCache.write()

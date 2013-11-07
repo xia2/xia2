@@ -9,29 +9,29 @@
 # Replacement function centralised to replace the use of cellparm.
 
 def compute_average_unit_cell(unit_cell_list):
-    '''Compute the weighted average unit cell based on a list of
+  '''Compute the weighted average unit cell based on a list of
 
-    ((unit cell), nref)
+  ((unit cell), nref)
 
-    tuples.'''
+  tuples.'''
 
-    w_tot = 0.0
+  w_tot = 0.0
 
-    a_tot = 0.0
-    b_tot = 0.0
-    c_tot = 0.0
-    alpha_tot = 0.0
-    beta_tot = 0.0
-    gamma_tot = 0.0
+  a_tot = 0.0
+  b_tot = 0.0
+  c_tot = 0.0
+  alpha_tot = 0.0
+  beta_tot = 0.0
+  gamma_tot = 0.0
 
-    for cell, n_ref in unit_cell_list:
-        w_tot += n_ref
-        a_tot += cell[0] * n_ref
-        b_tot += cell[1] * n_ref
-        c_tot += cell[2] * n_ref
-        alpha_tot += cell[3] * n_ref
-        beta_tot += cell[4] * n_ref
-        gamma_tot += cell[5] * n_ref
+  for cell, n_ref in unit_cell_list:
+    w_tot += n_ref
+    a_tot += cell[0] * n_ref
+    b_tot += cell[1] * n_ref
+    c_tot += cell[2] * n_ref
+    alpha_tot += cell[3] * n_ref
+    beta_tot += cell[4] * n_ref
+    gamma_tot += cell[5] * n_ref
 
-    return (a_tot / w_tot, b_tot / w_tot, c_tot / w_tot,
-            alpha_tot / w_tot, beta_tot / w_tot, gamma_tot / w_tot)
+  return (a_tot / w_tot, b_tot / w_tot, c_tot / w_tot,
+          alpha_tot / w_tot, beta_tot / w_tot, gamma_tot / w_tot)

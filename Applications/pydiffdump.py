@@ -15,69 +15,69 @@ import time
 assert('XIA2_ROOT' in os.environ)
 
 if not os.environ['XIA2_ROOT'] in sys.path:
-    sys.path.append(os.environ['XIA2_ROOT'])
+  sys.path.append(os.environ['XIA2_ROOT'])
 
 from dxtbx.format.Registry import Registry
 
 def pydiffdump(files):
-    '''Print the class which claims to work with each file.'''
+  '''Print the class which claims to work with each file.'''
 
-    s = time.time()
+  s = time.time()
 
-    for f in files:
+  for f in files:
 
-        print f
+    print f
 
-        format = Registry.find(f)
+    format = Registry.find(f)
 
-        print format.__name__
+    print format.__name__
 
-        if format.understand(f):
-            i = format(f)
+    if format.understand(f):
+      i = format(f)
 
-            print 'Beam:'
-            print i.get_beam()
-            print 'Goniometer:'
-            print i.get_goniometer()
-            print 'Detector:'
-            print i.get_detector()
-            print 'Scan:'
-            print i.get_scan()
-            
-    return time.time() - s
+      print 'Beam:'
+      print i.get_beam()
+      print 'Goniometer:'
+      print i.get_goniometer()
+      print 'Detector:'
+      print i.get_detector()
+      print 'Scan:'
+      print i.get_scan()
+
+  return time.time() - s
 
 def pydiffdump_fast(files):
-    '''First find the class, then read every frame with it.'''
+  '''First find the class, then read every frame with it.'''
 
-    s = time.time()
+  s = time.time()
 
-    format = Registry.find(files[0])
+  format = Registry.find(files[0])
 
-    scan = None
+  scan = None
 
-    for f in files:
+  for f in files:
 
-        i = format(f)
-        print 'Beam:'
-        print i.get_xbeam()
-        print 'Goniometer:'
-        print i.get_xgoniometer()
-        print 'Detector:'
-        print i.get_xdetector()
-        print 'Scan:'
-        print i.get_xscan()
+    i = format(f)
+    print 'Beam:'
+    print i.get_xbeam()
+    print 'Goniometer:'
+    print i.get_xgoniometer()
+    print 'Detector:'
+    print i.get_xdetector()
+    print 'Scan:'
+    print i.get_xscan()
 
-        if scan is None:
-            scan = i.get_xscan()
-        else:
-            scan += i.get_xscan()
+    if scan is None:
+      scan = i.get_xscan()
+    else:
+      scan += i.get_xscan()
 
-    print scan
+  print scan
 
-    return time.time() - s
+  return time.time() - s
 
 if __name__ == '__main__':
 
-    t = pydiffdump(sys.argv[1:])
+  t = pydiffdump(sys.argv[1:])
 
-    print 'Reading %d headers took %.1fs' % (len(sys.argv[1:]), t)
+  print 'Reading %d headers took %.1fs' % (len(sys.argv[1:]), t)

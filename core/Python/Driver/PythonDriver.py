@@ -3,7 +3,7 @@
 #
 #   Copyright (C) 2013 Diamond Light Source, Graeme Winter
 #
-#   This code is distributed under the BSD license, a copy of which is 
+#   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
 # A driver class to launch Python subprocesses with the shared environment
@@ -19,115 +19,114 @@ from DriverHelper import kill_process
 
 class PythonDriver(DefaultDriver):
 
-    def __init__(self):
-        DefaultDriver.__init__(self)
+  def __init__(self):
+    DefaultDriver.__init__(self)
 
-        self._popen = None
+    self._popen = None
 
-        return
+    return
 
-    def start(self):
+  def start(self):
 
-        # here self._executable refers to the Python program which should be
-        # executed
-        
-        if self._executable is None:
-            raise RuntimeError, 'no executable is set.'
+    # here self._executable refers to the Python program which should be
+    # executed
 
-        if os.name == 'nt':
-            # pass in CL as a list of tokens
-            command_line = [sys.executable]
-            command_line.append(self._executable)
-            for c in self._command_line:
-                command_line.append(c)
-        else:
-            # now pass in the command line as a string and allow the
-            # shell to parse it - note well though that the tokens
-            # on the command line are quoted..
+    if self._executable is None:
+      raise RuntimeError, 'no executable is set.'
 
-            command_line = '%s %s' % (sys.executable, self._executable)
-            for c in self._command_line:
-                command_line += ' \'%s\'' % c
+    if os.name == 'nt':
+      # pass in CL as a list of tokens
+      command_line = [sys.executable]
+      command_line.append(self._executable)
+      for c in self._command_line:
+        command_line.append(c)
+    else:
+      # now pass in the command line as a string and allow the
+      # shell to parse it - note well though that the tokens
+      # on the command line are quoted..
 
-        environment = copy.deepcopy(os.environ)
+      command_line = '%s %s' % (sys.executable, self._executable)
+      for c in self._command_line:
+        command_line += ' \'%s\'' % c
 
-        for name in self._working_environment:
-            added = self._working_environment[name][0]
-            for value in self._working_environment[name][1:]:
-                added += '%s%s' % (os.pathsep, value)
+    environment = copy.deepcopy(os.environ)
 
-            if name in environment and \
-                   not name in self._working_environment_exclusive:
-                environment[name] = '%s%s%s' % (added, os.pathsep,
-                                                environment[name])
-            else:
-                environment[name] = added
+    for name in self._working_environment:
+      added = self._working_environment[name][0]
+      for value in self._working_environment[name][1:]:
+        added += '%s%s' % (os.pathsep, value)
 
-        self._popen = subprocess.Popen(command_line,
-                                       bufsize = 1,
-                                       stdin = subprocess.PIPE,
-                                       stdout = subprocess.PIPE,
-                                       stderr = subprocess.STDOUT,
-                                       cwd = self._working_directory,
-                                       universal_newlines = True,
-                                       env = environment,
-                                       shell = True)
-        
-        return
+      if name in environment and \
+             not name in self._working_environment_exclusive:
+        environment[name] = '%s%s%s' % (added, os.pathsep,
+                                        environment[name])
+      else:
+        environment[name] = added
 
-    def check(self):
-        '''Overload the default check method.'''
+    self._popen = subprocess.Popen(command_line,
+                                   bufsize = 1,
+                                   stdin = subprocess.PIPE,
+                                   stdout = subprocess.PIPE,
+                                   stderr = subprocess.STDOUT,
+                                   cwd = self._working_directory,
+                                   universal_newlines = True,
+                                   env = environment,
+                                   shell = True)
 
-        return True
+    return
 
-    def _check_executable(self, executable):
-        if os.path.exists(executable):
-            return executable
-        return ''
-        
+  def check(self):
+    '''Overload the default check method.'''
 
-    def _input(self, record):
+    return True
 
-        if not self.check():
-            raise RuntimeError, 'child process has termimated'
+  def _check_executable(self, executable):
+    if os.path.exists(executable):
+      return executable
+    return ''
 
-        self._popen.stdin.write(record)
 
-        return
+  def _input(self, record):
 
-    def _output(self):
-        # need to put some kind of timeout facility on this...
-        
-        return self._popen.stdout.readline()
+    if not self.check():
+      raise RuntimeError, 'child process has termimated'
 
-    def _status(self):
-        # get the return status of the process
+    self._popen.stdin.write(record)
 
-        return self._popen.poll()
+    return
 
-    def close(self):
-        
-        if not self.check():
-            raise RuntimeError, 'child process has termimated'
+  def _output(self):
+    # need to put some kind of timeout facility on this...
 
-        self._popen.stdin.close()
+    return self._popen.stdout.readline()
 
-        return
+  def _status(self):
+    # get the return status of the process
 
-    def kill(self):
-        kill_process(self._popen)
+    return self._popen.poll()
 
-        return
+  def close(self):
+
+    if not self.check():
+      raise RuntimeError, 'child process has termimated'
+
+    self._popen.stdin.close()
+
+    return
+
+  def kill(self):
+    kill_process(self._popen)
+
+    return
 
 if __name__ == '__main__':
-    assert('XIA2CORE_ROOT') in os.environ
+  assert('XIA2CORE_ROOT') in os.environ
 
-    pd = PythonDriver()
-    pd.set_executable(os.path.join(os.environ['XIA2CORE_ROOT'],
-                                   'Test', 'ExampleProgram.py'))
-    pd.start()
-    pd.close_wait()
+  pd = PythonDriver()
+  pd.set_executable(os.path.join(os.environ['XIA2CORE_ROOT'],
+                                 'Test', 'ExampleProgram.py'))
+  pd.start()
+  pd.close_wait()
 
-    for record in pd.get_all_output():
-        print record[:-1]
-    
+  for record in pd.get_all_output():
+    print record[:-1]

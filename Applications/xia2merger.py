@@ -14,52 +14,49 @@ import time
 assert('XIA2_ROOT' in os.environ)
 
 if not os.environ['XIA2_ROOT'] in sys.path:
-    sys.path.append(os.environ['XIA2_ROOT'])
+  sys.path.append(os.environ['XIA2_ROOT'])
 
 from Toolkit.Merger import merger
 
 if __name__ == '__main__':
-    import argparse
+  import argparse
 
-    parser = argparse.ArgumentParser()
+  parser = argparse.ArgumentParser()
 
-    parser.add_argument("hklin", type = str,
-                        help = "input reflection file")
-    parser.add_argument("-n", "--nbins", type = float,
-                        help = "number of resolution bins")
-    parser.add_argument("-r", "--rmerge", type = float,
-                        help = "limit on Rmerge")
-    parser.add_argument("-c", "--completeness", type = float,
-                        help = "limit on completeness [0,1]")
-    parser.add_argument("-i", "--isigma", type = float,
-                        help = "limit on I/sigma")
-    parser.add_argument("-m", "--misigma", type = float,
-                        help = "limit on Mn(I/sigma)")
-    args = parser.parse_args()
+  parser.add_argument("hklin", type = str,
+                      help = "input reflection file")
+  parser.add_argument("-n", "--nbins", type = float,
+                      help = "number of resolution bins")
+  parser.add_argument("-r", "--rmerge", type = float,
+                      help = "limit on Rmerge")
+  parser.add_argument("-c", "--completeness", type = float,
+                      help = "limit on completeness [0,1]")
+  parser.add_argument("-i", "--isigma", type = float,
+                      help = "limit on I/sigma")
+  parser.add_argument("-m", "--misigma", type = float,
+                      help = "limit on Mn(I/sigma)")
+  args = parser.parse_args()
 
-    if args.nbins:
-        nbins = args.nbins
-    else:
-        nbins = 100
+  if args.nbins:
+    nbins = args.nbins
+  else:
+    nbins = 100
 
-    m = merger(args.hklin)
-    m.calculate_resolution_ranges(nbins = nbins)
-        
-    if args.completeness:
-        print 'COMPLETENESS %f' % m.resolution_completeness(
-            limit = args.completeness)
+  m = merger(args.hklin)
+  m.calculate_resolution_ranges(nbins = nbins)
 
-    if args.rmerge:
-        print 'RMERGE %f' % m.resolution_rmerge(
-            limit = args.rmerge)
+  if args.completeness:
+    print 'COMPLETENESS %f' % m.resolution_completeness(
+        limit = args.completeness)
 
-    if args.isigma:
-        print 'ISIGMA %f' % m.resolution_unmerged_isigma(
-            limit = args.isigma)
+  if args.rmerge:
+    print 'RMERGE %f' % m.resolution_rmerge(
+        limit = args.rmerge)
 
-    if args.misigma:
-        print 'MISIGMA %f' % m.resolution_merged_isigma(
-            limit = args.misigma)
+  if args.isigma:
+    print 'ISIGMA %f' % m.resolution_unmerged_isigma(
+        limit = args.isigma)
 
-
-
+  if args.misigma:
+    print 'MISIGMA %f' % m.resolution_merged_isigma(
+        limit = args.misigma)

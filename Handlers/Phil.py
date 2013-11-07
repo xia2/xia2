@@ -76,4 +76,4 @@ xia2.settings {
 PhilIndex = interface.index(master_phil=master_phil)
 
 if __name__ == '__main__':
-    PhilIndex.working_phil.show()
+  PhilIndex.working_phil.show()

@@ -20,12 +20,12 @@ import time
 import traceback
 
 if not os.environ.has_key('XIA2_ROOT'):
-    raise RuntimeError, 'XIA2_ROOT not defined'
+  raise RuntimeError, 'XIA2_ROOT not defined'
 if not 'XIA2CORE_ROOT' in os.environ:
-    os.environ['XIA2CORE_ROOT'] = os.path.join(os.environ['XIA2_ROOT'], 'core')
+  os.environ['XIA2CORE_ROOT'] = os.path.join(os.environ['XIA2_ROOT'], 'core')
 
 if not os.environ['XIA2_ROOT'] in sys.path:
-    sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
+  sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Schema.Sweep import SweepFactory
 from Experts.FindImages import image2template_directory
@@ -56,383 +56,383 @@ latest_chooch = None
 target_template = None
 
 def is_scan_name(file):
-    global known_scan_extensions
+  global known_scan_extensions
 
-    if os.path.isfile(file):
-        if file.split('.')[-1] in known_scan_extensions:
-            return True
+  if os.path.isfile(file):
+    if file.split('.')[-1] in known_scan_extensions:
+      return True
 
-    return False
+  return False
 
 def is_sequence_name(file):
-    global known_sequence_extensions
+  global known_sequence_extensions
 
-    if os.path.isfile(file):
-        if file.split('.')[-1] in known_sequence_extensions:
-            return True
+  if os.path.isfile(file):
+    if file.split('.')[-1] in known_sequence_extensions:
+      return True
 
-    return False
+  return False
 
 def is_image_name(file):
 
-    global known_image_extensions
+  global known_image_extensions
 
-    if os.path.isfile(file):
-        exten = file.split('.')[-1]
-        if exten in known_image_extensions:
-            return True
+  if os.path.isfile(file):
+    exten = file.split('.')[-1]
+    if exten in known_image_extensions:
+      return True
 
-        # check for files like foo_bar.0001 - c/f FIXME for 25/SEP/06
-        end = file.split('.')[-1]
-        try:
-            j = int(end)
-            return True
-        except:
-            pass
+    # check for files like foo_bar.0001 - c/f FIXME for 25/SEP/06
+    end = file.split('.')[-1]
+    try:
+      j = int(end)
+      return True
+    except:
+      pass
 
-    return False
+  return False
 
 def is_xds_file(f):
-    filename = os.path.split(f)[1]
+  filename = os.path.split(f)[1]
 
-    xds_files = ['ABS', 'ABSORP', 'BKGINIT', 'BKGPIX', 'BLANK', 'DECAY',
-                 'DX-CORRECTIONS', 'DY-CORRECTIONS', 'FRAME', 'GAIN',
-                 'GX-CORRECTIONS', 'GY-CORRECTIONS', 'MODPIX',
-                 'X-CORRECTIONS', 'Y-CORRECTIONS']
+  xds_files = ['ABS', 'ABSORP', 'BKGINIT', 'BKGPIX', 'BLANK', 'DECAY',
+               'DX-CORRECTIONS', 'DY-CORRECTIONS', 'FRAME', 'GAIN',
+               'GX-CORRECTIONS', 'GY-CORRECTIONS', 'MODPIX',
+               'X-CORRECTIONS', 'Y-CORRECTIONS']
 
-    return (filename.split('.')[0].split('_') in xds_files)
+  return (filename.split('.')[0].split('_') in xds_files)
 
 def get_sweep(f):
 
-    global target_template
+  global target_template
 
-    global known_sweeps
+  global known_sweeps
 
-    if not is_image_name(f):
-        return
-
-    if is_xds_file(f):
-        return
-
-    # in here, check the permissions on the file...
-
-    if not os.access(f, os.R_OK):
-        from Handlers.Streams import Debug
-        Debug.write('No read permission for %s' % f)
-
-    try:
-        template, directory = image2template_directory(f)
-
-        if target_template:
-            if template != target_template:
-                return
-
-        key = (directory, template)
-        if not known_sweeps.has_key(key):
-            sweeplist = SweepFactory(template, directory)
-            known_sweeps[key] = sweeplist
-
-    except exceptions.Exception, e:
-        from Handlers.Streams import Debug
-        Debug.write('Exception: %s (%s)' % (str(e), f))
-        # traceback.print_exc(file = sys.stdout)
-
+  if not is_image_name(f):
     return
+
+  if is_xds_file(f):
+    return
+
+  # in here, check the permissions on the file...
+
+  if not os.access(f, os.R_OK):
+    from Handlers.Streams import Debug
+    Debug.write('No read permission for %s' % f)
+
+  try:
+    template, directory = image2template_directory(f)
+
+    if target_template:
+      if template != target_template:
+        return
+
+    key = (directory, template)
+    if not known_sweeps.has_key(key):
+      sweeplist = SweepFactory(template, directory)
+      known_sweeps[key] = sweeplist
+
+  except exceptions.Exception, e:
+    from Handlers.Streams import Debug
+    Debug.write('Exception: %s (%s)' % (str(e), f))
+    # traceback.print_exc(file = sys.stdout)
+
+  return
 
 def parse_sequence(sequence_file):
-    sequence = ''
+  sequence = ''
 
-    for record in open(sequence_file).readlines():
-        if record[0].upper() in \
-           'ABCDEFGHIJKLMNOPQRSTUVWXYZ ':
-            sequence += record.strip().upper()
+  for record in open(sequence_file).readlines():
+    if record[0].upper() in \
+       'ABCDEFGHIJKLMNOPQRSTUVWXYZ ':
+      sequence += record.strip().upper()
 
-    global latest_sequence
-    latest_sequence = sequence
-    return
+  global latest_sequence
+  latest_sequence = sequence
+  return
 
 def visit(root, directory, files):
-    files.sort()
-    for f in files:
-        get_sweep(os.path.join(directory, f))
+  files.sort()
+  for f in files:
+    get_sweep(os.path.join(directory, f))
 
-        if is_scan_name(os.path.join(directory, f)):
-            global latest_chooch
-            try:
-                latest_chooch = Chooch()
-                if CommandLine.get_atom_name():
-                    latest_chooch.set_atom(CommandLine.get_atom_name())
-                latest_chooch.set_scan(os.path.join(directory, f))
-                latest_chooch.scan()
-            except:
-                latest_chooch = None
-                
-        if is_sequence_name(os.path.join(directory, f)):
-            parse_sequence(os.path.join(directory, f))
+    if is_scan_name(os.path.join(directory, f)):
+      global latest_chooch
+      try:
+        latest_chooch = Chooch()
+        if CommandLine.get_atom_name():
+          latest_chooch.set_atom(CommandLine.get_atom_name())
+        latest_chooch.set_scan(os.path.join(directory, f))
+        latest_chooch.scan()
+      except:
+        latest_chooch = None
+
+    if is_sequence_name(os.path.join(directory, f)):
+      parse_sequence(os.path.join(directory, f))
 
 def print_sweeps(out = sys.stdout):
 
-    global known_sweeps, latest_sequence
+  global known_sweeps, latest_sequence
 
-    sweeplists = known_sweeps.keys()
-    sweeplists.sort()
+  sweeplists = known_sweeps.keys()
+  sweeplists.sort()
 
-    # analysis pass
+  # analysis pass
 
-    wavelengths = []
+  wavelengths = []
 
-    for sweep in sweeplists:
-        sweeps = known_sweeps[sweep]
-        # this should sort on exposure epoch ...?
-        sweeps.sort()
-        for s in sweeps:
+  for sweep in sweeplists:
+    sweeps = known_sweeps[sweep]
+    # this should sort on exposure epoch ...?
+    sweeps.sort()
+    for s in sweeps:
 
-            if len(s.get_images()) < Flags.get_min_images():
-                continue
+      if len(s.get_images()) < Flags.get_min_images():
+        continue
 
-            wavelength = s.get_wavelength()
+      wavelength = s.get_wavelength()
 
-            if not wavelength in wavelengths:
-                wavelengths.append(wavelength)
+      if not wavelength in wavelengths:
+        wavelengths.append(wavelength)
 
-    wavelength_map = { }
+  wavelength_map = { }
 
-    project = CommandLine.get_project_name()
-    if not project:
-        project = 'AUTOMATIC'
+  project = CommandLine.get_project_name()
+  if not project:
+    project = 'AUTOMATIC'
 
-    crystal = CommandLine.get_crystal_name()
-    if not crystal:
-        crystal = 'DEFAULT'
+  crystal = CommandLine.get_crystal_name()
+  if not crystal:
+    crystal = 'DEFAULT'
 
-    out.write('BEGIN PROJECT %s\n' % project)
-    out.write('BEGIN CRYSTAL %s\n' % crystal)
+  out.write('BEGIN PROJECT %s\n' % project)
+  out.write('BEGIN CRYSTAL %s\n' % crystal)
 
+  out.write('\n')
+
+  # check to see if a user spacegroup has been assigned - if it has,
+  # copy it in...
+
+  if Flags.get_spacegroup():
+    out.write('USER_SPACEGROUP %s\n' % Flags.get_spacegroup())
     out.write('\n')
 
-    # check to see if a user spacegroup has been assigned - if it has,
-    # copy it in...
+  if Flags.get_cell():
+    out.write('USER_CELL %.2f %.2f %.2f %.2f %.2f %.2f\n' % \
+              tuple(Flags.get_cell()))
+    out.write('\n')
 
-    if Flags.get_spacegroup():
-        out.write('USER_SPACEGROUP %s\n' % Flags.get_spacegroup())
-        out.write('\n')
+  if Flags.get_freer_file():
+    out.write('FREER_FILE %s\n' % Flags.get_freer_file())
+    out.write('\n')
 
-    if Flags.get_cell():
-        out.write('USER_CELL %.2f %.2f %.2f %.2f %.2f %.2f\n' % \
-                  tuple(Flags.get_cell()))
-        out.write('\n')
+  if latest_sequence:
+    out.write('BEGIN AA_SEQUENCE\n')
+    out.write('\n')
+    for sequence_chunk in [latest_sequence[i:i + 60] \
+                           for i in range(0, len(latest_sequence), 60)]:
+      out.write('%s\n' % sequence_chunk)
+    out.write('\n')
+    out.write('END AA_SEQUENCE\n')
+    out.write('\n')
 
-    if Flags.get_freer_file():
-        out.write('FREER_FILE %s\n' % Flags.get_freer_file())
-        out.write('\n')
+  if CommandLine.get_atom_name():
+    out.write('BEGIN HA_INFO\n')
+    out.write('ATOM %s\n' % CommandLine.get_atom_name().lower())
+    if CommandLine.get_atom_name().lower() == 'se' and latest_sequence:
+      # assume that this is selenomethionine
+      out.write('! If this is SeMet uncomment next line...\n')
+      out.write('!NUMBER_PER_MONOMER %d\n' % latest_sequence.count('M'))
+      out.write('!NUMBER_TOTAL M\n')
+    else:
+      out.write('!NUMBER_PER_MONOMER N\n')
+      out.write('!NUMBER_TOTAL M\n')
+    out.write('END HA_INFO\n')
+    out.write('\n')
 
-    if latest_sequence:
-        out.write('BEGIN AA_SEQUENCE\n')
-        out.write('\n')
-        for sequence_chunk in [latest_sequence[i:i + 60] \
-                               for i in range(0, len(latest_sequence), 60)]:
-            out.write('%s\n' % sequence_chunk)
-        out.write('\n')
-        out.write('END AA_SEQUENCE\n')
-        out.write('\n')
+  for j in range(len(wavelengths)):
 
-    if CommandLine.get_atom_name():
-        out.write('BEGIN HA_INFO\n')
-        out.write('ATOM %s\n' % CommandLine.get_atom_name().lower())
-        if CommandLine.get_atom_name().lower() == 'se' and latest_sequence:
-            # assume that this is selenomethionine
-            out.write('! If this is SeMet uncomment next line...\n')
-            out.write('!NUMBER_PER_MONOMER %d\n' % latest_sequence.count('M'))
-            out.write('!NUMBER_TOTAL M\n')
-        else:
-            out.write('!NUMBER_PER_MONOMER N\n')
-            out.write('!NUMBER_TOTAL M\n')
-        out.write('END HA_INFO\n')
-        out.write('\n')
+    global latest_chooch
 
-    for j in range(len(wavelengths)):
+    if latest_chooch:
+      name = latest_chooch.id_wavelength(wavelengths[j])
+      first_name = name
+      counter = 1
 
-        global latest_chooch
+      while name in [wavelength_map[w] for w in wavelength_map]:
+        counter += 1
+        name = '%s%d' % (first_name, counter)
 
-        if latest_chooch:
-            name = latest_chooch.id_wavelength(wavelengths[j])
-            first_name = name
-            counter = 1
+      fp, fpp = latest_chooch.get_fp_fpp(wavelengths[j])
+    else:
+      fp, fpp = 0.0, 0.0
+      if len(wavelengths) == 1 and CommandLine.get_atom_name():
+        name = 'SAD'
+      elif len(wavelengths) == 1:
+        name = 'NATIVE'
+      else:
+        name = 'WAVE%d' % (j + 1)
 
-            while name in [wavelength_map[w] for w in wavelength_map]:
-                counter += 1
-                name = '%s%d' % (first_name, counter)
-            
-            fp, fpp = latest_chooch.get_fp_fpp(wavelengths[j])
-        else:
-            fp, fpp = 0.0, 0.0
-            if len(wavelengths) == 1 and CommandLine.get_atom_name():
-                name = 'SAD'
-            elif len(wavelengths) == 1:
-                name = 'NATIVE'
-            else:
-                name = 'WAVE%d' % (j + 1)
+    wavelength_map[wavelengths[j]] = name
 
-        wavelength_map[wavelengths[j]] = name
+    out.write('BEGIN WAVELENGTH %s\n' % name)
 
-        out.write('BEGIN WAVELENGTH %s\n' % name)
+    dmin = Flags.get_resolution_high()
+    dmax = Flags.get_resolution_low()
 
-        dmin = Flags.get_resolution_high()
-        dmax = Flags.get_resolution_low()
+    if dmin and dmax:
+      out.write('RESOLUTION %f %f\n' % (dmin, dmax))
+    elif dmin:
+      out.write('RESOLUTION %f\n' % dmin)
 
-        if dmin and dmax:
-            out.write('RESOLUTION %f %f\n' % (dmin, dmax))
-        elif dmin:
-            out.write('RESOLUTION %f\n' % dmin)
+    out.write('WAVELENGTH %f\n' % wavelengths[j])
+    if fp != 0.0 and fpp != 0.0:
+      out.write('F\' %5.2f\n' % fp)
+      out.write('F\'\' %5.2f\n' % fpp)
 
-        out.write('WAVELENGTH %f\n' % wavelengths[j])
-        if fp != 0.0 and fpp != 0.0:
-            out.write('F\' %5.2f\n' % fp)
-            out.write('F\'\' %5.2f\n' % fpp)
+    out.write('END WAVELENGTH %s\n' % name)
+    out.write('\n')
 
-        out.write('END WAVELENGTH %s\n' % name)
-        out.write('\n')
+  j = 0
+  for sweep in sweeplists:
+    sweeps = known_sweeps[sweep]
+    # this should sort on exposure epoch ...?
+    sweeps.sort()
+    for s in sweeps:
 
-    j = 0
-    for sweep in sweeplists:
-        sweeps = known_sweeps[sweep]
-        # this should sort on exposure epoch ...?
-        sweeps.sort()
-        for s in sweeps:
+      # require at least n images to represent a sweep...
 
-            # require at least n images to represent a sweep...
+      if len(s.get_images()) < Flags.get_min_images():
+        continue
 
-            if len(s.get_images()) < Flags.get_min_images():
-                continue
+      j += 1
+      name = 'SWEEP%d' % j
 
-            j += 1
-            name = 'SWEEP%d' % j
+      out.write('BEGIN SWEEP %s\n' % name)
 
-            out.write('BEGIN SWEEP %s\n' % name)
+      if Flags.get_reversephi():
+        out.write('REVERSEPHI\n')
 
-            if Flags.get_reversephi():
-                out.write('REVERSEPHI\n')
+      out.write('WAVELENGTH %s\n' % wavelength_map[s.get_wavelength()])
 
-            out.write('WAVELENGTH %s\n' % wavelength_map[s.get_wavelength()])
+      out.write('DIRECTORY %s\n' % s.get_directory())
+      out.write('IMAGE %s\n' % os.path.split(s.imagename(min(
+          s.get_images())))[-1])
 
-            out.write('DIRECTORY %s\n' % s.get_directory())
-            out.write('IMAGE %s\n' % os.path.split(s.imagename(min(
-                s.get_images())))[-1])
+      if Flags.get_start_end():
+        start, end = Flags.get_start_end()
 
-            if Flags.get_start_end():
-                start, end = Flags.get_start_end()
+        if start < min(s.get_images()):
+          raise RuntimeError, 'requested start %d < %d' % \
+                (start, min(s.get_images()))
 
-                if start < min(s.get_images()):
-                    raise RuntimeError, 'requested start %d < %d' % \
-                          (start, min(s.get_images()))
+        if end > max(s.get_images()):
+          raise RuntimeError, 'requested end %d > %d' % \
+                (end, max(s.get_images()))
 
-                if end > max(s.get_images()):
-                    raise RuntimeError, 'requested end %d > %d' % \
-                          (end, max(s.get_images()))
+        out.write('START_END %d %d\n' % (start, end))
+      else:
+        out.write('START_END %d %d\n' % (min(s.get_images()),
+                                         max(s.get_images())))
 
-                out.write('START_END %d %d\n' % (start, end))
-            else:
-                out.write('START_END %d %d\n' % (min(s.get_images()),
-                                                 max(s.get_images())))
+      # really don't need to store the epoch in the xinfo file
+      # out.write('EPOCH %d\n' % int(s.get_collect()[0]))
+      cl_beam = CommandLine.get_beam()
+      if cl_beam[0] or cl_beam[1]:
+        out.write('BEAM %6.2f %6.2f\n' % cl_beam)
+      else:
+        beam = compute_beam_centre(s)
+        if beam:
+          out.write('BEAM %6.2f %6.2f\n' % tuple(beam))
+      out.write('END SWEEP %s\n' % name)
 
-            # really don't need to store the epoch in the xinfo file
-            # out.write('EPOCH %d\n' % int(s.get_collect()[0]))
-            cl_beam = CommandLine.get_beam()
-            if cl_beam[0] or cl_beam[1]:
-                out.write('BEAM %6.2f %6.2f\n' % cl_beam)
-            else:
-                beam = compute_beam_centre(s)
-                if beam:
-                    out.write('BEAM %6.2f %6.2f\n' % tuple(beam))
-            out.write('END SWEEP %s\n' % name)
+      out.write('\n')
 
-            out.write('\n')
-
-    out.write('END CRYSTAL %s\n' % crystal)
-    out.write('END PROJECT %s\n' % project)
+  out.write('END CRYSTAL %s\n' % crystal)
+  out.write('END PROJECT %s\n' % project)
 
 def rummage(path):
-    '''Walk through the directories looking for sweeps.'''
-    os.path.walk(path, visit, os.getcwd())
-    return
+  '''Walk through the directories looking for sweeps.'''
+  os.path.walk(path, visit, os.getcwd())
+  return
 
 def write_xinfo(filename, path, template = None):
 
-    global target_template
+  global target_template
 
-    target_template = template
+  target_template = template
 
-    crystal = CommandLine.get_crystal_name()
+  crystal = CommandLine.get_crystal_name()
 
-    if not crystal:
-        crystal = 'DEFAULT'
+  if not crystal:
+    crystal = 'DEFAULT'
 
-    if not os.path.isabs(filename):
-        filename = os.path.abspath(filename)
+  if not os.path.isabs(filename):
+    filename = os.path.abspath(filename)
 
-    directory = os.path.join(os.getcwd(), crystal, 'setup')
+  directory = os.path.join(os.getcwd(), crystal, 'setup')
 
-    try:
-        os.makedirs(directory)
-    except OSError, e:
-        if not 'File exists' in str(e):
-            raise e
+  try:
+    os.makedirs(directory)
+  except OSError, e:
+    if not 'File exists' in str(e):
+      raise e
 
-    # FIXME should I have some exception handling in here...?
+  # FIXME should I have some exception handling in here...?
 
-    start = os.getcwd()
-    os.chdir(directory)
+  start = os.getcwd()
+  os.chdir(directory)
 
-    # if we have given a template and directory on the command line, just
-    # look there (i.e. not in the subdirectories)
+  # if we have given a template and directory on the command line, just
+  # look there (i.e. not in the subdirectories)
 
-    if CommandLine.get_template() and CommandLine.get_directory():
-        visit(None, CommandLine.get_directory(),
-              os.listdir(CommandLine.get_directory()))
-    else:
-        rummage(path)
+  if CommandLine.get_template() and CommandLine.get_directory():
+    visit(None, CommandLine.get_directory(),
+          os.listdir(CommandLine.get_directory()))
+  else:
+    rummage(path)
 
-    fout = open(filename, 'w')
-    print_sweeps(fout)
+  fout = open(filename, 'w')
+  print_sweeps(fout)
 
-    # change back directory c/f bug # 2693 - important for error files...
-    os.chdir(start)
+  # change back directory c/f bug # 2693 - important for error files...
+  os.chdir(start)
 
 if __name__ == '__main__':
 
-    streams_off()
+  streams_off()
 
-    argv = sys.argv
+  argv = sys.argv
 
-    # test to see if sys.argv[-2] + path is a valid path - to work around
-    # spaced command lines
+  # test to see if sys.argv[-2] + path is a valid path - to work around
+  # spaced command lines
 
-    path = argv.pop()
+  path = argv.pop()
 
-    # perhaps move to a new directory...
+  # perhaps move to a new directory...
 
-    crystal = CommandLine.get_crystal_name()
+  crystal = CommandLine.get_crystal_name()
 
-    fout = open(os.path.join(os.getcwd(), 'automatic.xinfo'), 'w')
+  fout = open(os.path.join(os.getcwd(), 'automatic.xinfo'), 'w')
 
-    if not crystal:
-        crystal = 'DEFAULT'
+  if not crystal:
+    crystal = 'DEFAULT'
 
-    directory = os.path.join(os.getcwd(), crystal, 'setup')
+  directory = os.path.join(os.getcwd(), crystal, 'setup')
 
-    try:
-        os.makedirs(directory)
-    except OSError, e:
-        if not 'File exists' in str(e):
-            raise e
+  try:
+    os.makedirs(directory)
+  except OSError, e:
+    if not 'File exists' in str(e):
+      raise e
 
-    os.chdir(directory)
+  os.chdir(directory)
 
-    while not os.path.exists(path):
-        path = '%s %s' % (argv.pop(), path)
+  while not os.path.exists(path):
+    path = '%s %s' % (argv.pop(), path)
 
-    if not os.path.isabs(path):
-        path = os.path.abspath(path)
+  if not os.path.isabs(path):
+    path = os.path.abspath(path)
 
-    rummage(path)
-    print_sweeps(fout)
+  rummage(path)
+  print_sweeps(fout)

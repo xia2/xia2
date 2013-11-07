@@ -17,56 +17,56 @@ import exceptions
 import math
 
 if not os.environ.has_key('XIA2_ROOT'):
-    raise RuntimeError, 'XIA2_ROOT not defined'
+  raise RuntimeError, 'XIA2_ROOT not defined'
 if not os.environ.has_key('XIA2CORE_ROOT'):
-    raise RuntimeError, 'XIA2CORE_ROOT not defined'
+  raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
 if not os.environ['XIA2_ROOT'] in sys.path:
-    sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
+  sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Wrappers.XIA.Diffdump import Diffdump
 
 def gain(image):
-    '''Get the gain from an image.'''
+  '''Get the gain from an image.'''
 
-    dd = Diffdump()
-    dd.set_image(image)
-    return dd.gain()
+  dd = Diffdump()
+  dd.set_image(image)
+  return dd.gain()
 
 def generate_gain(image_list):
-    '''Get the mean and standard deviation in gain from a list
-    of images.'''
+  '''Get the mean and standard deviation in gain from a list
+  of images.'''
 
-    gains = []
-    for image in image_list:
-        gains.append(gain(image))
+  gains = []
+  for image in image_list:
+    gains.append(gain(image))
 
-    sum = 0.0
-    for g in gains:
-        sum += g
-    mean = sum / len(gains)
+  sum = 0.0
+  for g in gains:
+    sum += g
+  mean = sum / len(gains)
 
-    sd = 0.0
-    for g in gains:
-        sd += (g - mean) * (g - mean)
-    sd = math.sqrt(sd / len(gains))
+  sd = 0.0
+  for g in gains:
+    sd += (g - mean) * (g - mean)
+  sd = math.sqrt(sd / len(gains))
 
-    return mean, sd
+  return mean, sd
 
 if __name__ == '__main__':
 
-    directory = os.path.join(os.environ['XIA2_ROOT'],
-                             'Data', 'Test', 'Images')
+  directory = os.path.join(os.environ['XIA2_ROOT'],
+                           'Data', 'Test', 'Images')
 
-    if len(sys.argv) == 1:
+  if len(sys.argv) == 1:
 
-        print gain(os.path.join(directory, '12287_1_E1_001.img'))
-        print gain(os.path.join(directory, '12287_1_E1_090.img'))
+    print gain(os.path.join(directory, '12287_1_E1_001.img'))
+    print gain(os.path.join(directory, '12287_1_E1_090.img'))
 
-        print generate_gain([os.path.join(directory, '12287_1_E1_001.img'),
-                             os.path.join(directory, '12287_1_E1_090.img')])
+    print generate_gain([os.path.join(directory, '12287_1_E1_001.img'),
+                         os.path.join(directory, '12287_1_E1_090.img')])
 
 
-    else:
+  else:
 
-        print generate_gain(sys.argv[1:])
+    print generate_gain(sys.argv[1:])

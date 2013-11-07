@@ -30,129 +30,129 @@
 import sys
 
 class _Stream:
-    '''A class to represent an output stream. This will be used as a number
-    of static instances - Debug and Chatter in particular.'''
+  '''A class to represent an output stream. This will be used as a number
+  of static instances - Debug and Chatter in particular.'''
 
-    def __init__(self, streamname, prefix):
-        '''Create a new stream.'''
+  def __init__(self, streamname, prefix):
+    '''Create a new stream.'''
 
-        # FIXME would rather this goes to a file...
-        # unless this is impossible
+    # FIXME would rather this goes to a file...
+    # unless this is impossible
 
-        if streamname:
-            self._file_name = '%s.txt' % streamname
-        else:
-            self._file_name = None
+    if streamname:
+      self._file_name = '%s.txt' % streamname
+    else:
+      self._file_name = None
 
-        self._file = None
+    self._file = None
 
-        self._streamname = streamname
-        self._prefix = prefix
+    self._streamname = streamname
+    self._prefix = prefix
 
-        self._otherstream = None
-        self._off = False
+    self._otherstream = None
+    self._off = False
 
-        return
+    return
 
-    # FIXED 20/OCT/06 added forward option, specify as false to
-    # prevent this happening...
+  # FIXED 20/OCT/06 added forward option, specify as false to
+  # prevent this happening...
 
-    def get_file(self):
-        if self._file:
-            return self._file
-        if not self._file_name:
-            self._file = sys.stdout
-        else:
-            self._file = open(self._file_name, 'w')
-        return self._file
+  def get_file(self):
+    if self._file:
+      return self._file
+    if not self._file_name:
+      self._file = sys.stdout
+    else:
+      self._file = open(self._file_name, 'w')
+    return self._file
 
-    def write(self, record, forward = True):
-        if self._off:
-            return None
+  def write(self, record, forward = True):
+    if self._off:
+      return None
 
-        for r in record.split('\n'):
-            if self._prefix:
-                result = self.get_file().write('[%s]  %s\n' %
-                                               (self._prefix, r.strip()))
-            else:
-                result = self.get_file().write('%s\n' %
-                                               (r.strip()))
+    for r in record.split('\n'):
+      if self._prefix:
+        result = self.get_file().write('[%s]  %s\n' %
+                                       (self._prefix, r.strip()))
+      else:
+        result = self.get_file().write('%s\n' %
+                                       (r.strip()))
 
-            self.get_file().flush()
+      self.get_file().flush()
 
-        if self._otherstream and forward:
-            self._otherstream.write(record)
+    if self._otherstream and forward:
+      self._otherstream.write(record)
 
-        return result
+    return result
 
-    def bigbanner(self, comment, forward = True):
-        '''Write a big banner for something.'''
+  def bigbanner(self, comment, forward = True):
+    '''Write a big banner for something.'''
 
-        hashes = '#' * 60
+    hashes = '#' * 60
 
-        self.write(hashes, forward)
-        self.write('# %s' % comment, forward)
-        self.write(hashes, forward)
+    self.write(hashes, forward)
+    self.write('# %s' % comment, forward)
+    self.write(hashes, forward)
 
-        return
+    return
 
-    def banner(self, comment, forward = True, size = 60):
+  def banner(self, comment, forward = True, size = 60):
 
-        if not comment:
-            self.write('-' * size)
-            return
+    if not comment:
+      self.write('-' * size)
+      return
 
-        l = len(comment)
-        m = (size - (l + 2)) // 2
-        n = size - (l + 2 + m)
-        self.write('%s %s %s' % ('-' * m, comment, '-' * n))
-        return
+    l = len(comment)
+    m = (size - (l + 2)) // 2
+    n = size - (l + 2 + m)
+    self.write('%s %s %s' % ('-' * m, comment, '-' * n))
+    return
 
-    def smallbanner(self, comment, forward):
-        '''Write a small batter for something, like this:
-        ----- comment ------.'''
+  def smallbanner(self, comment, forward):
+    '''Write a small batter for something, like this:
+    ----- comment ------.'''
 
-        dashes = '-' * 10
+    dashes = '-' * 10
 
-        self.write('%s %s %s' % (dashes, comment, dashes), forward)
+    self.write('%s %s %s' % (dashes, comment, dashes), forward)
 
-        return
+    return
 
-    def block(self, task, data, program, options):
-        '''Print out a description of the task being performed with
-        the program and a dictionary of options which will be printed
-        in alphabetical order.'''
+  def block(self, task, data, program, options):
+    '''Print out a description of the task being performed with
+    the program and a dictionary of options which will be printed
+    in alphabetical order.'''
 
-        self.banner('%s %s with %s' % (task, data, program), size = 80)
-        for o in sorted(options):
-            if options[o]:
-                oname = '%s:' % o
-                self.write('%s %s' % (oname.ljust(30), options[o]))
+    self.banner('%s %s with %s' % (task, data, program), size = 80)
+    for o in sorted(options):
+      if options[o]:
+        oname = '%s:' % o
+        self.write('%s %s' % (oname.ljust(30), options[o]))
 
-        return
+    return
 
-    def entry(self, options):
-        '''Print subsequent entries to the above block.'''
+  def entry(self, options):
+    '''Print subsequent entries to the above block.'''
 
-        for o in sorted(options):
-            if options[o]:
-                oname = '%s:' % o
-                self.write('%s %s' % (oname.ljust(30), options[o]))
+    for o in sorted(options):
+      if options[o]:
+        oname = '%s:' % o
+        self.write('%s %s' % (oname.ljust(30), options[o]))
 
-        return
+    return
 
-    def join(self, otherstream):
-        '''Join another stream so that all output from this stream goes also
-        to that one.'''
+  def join(self, otherstream):
+    '''Join another stream so that all output from this stream goes also
+    to that one.'''
 
-        self._otherstream = otherstream
+    self._otherstream = otherstream
 
-    def off(self):
-        '''Switch the stream writing off...'''
+  def off(self):
+    '''Switch the stream writing off...'''
 
-        self._off = True
+    self._off = True
 
-        return
+    return
 
 # FIXME 23/NOV/06 now write a xia2.txt from chatter and rename that
 # output stream Stdout... then copy everything there!
@@ -165,11 +165,11 @@ Debug = _Stream('xia2-debug', None)
 Chatter.join(Stdout)
 
 def streams_off():
-    '''Switch off the chatter output - designed for unit tests...'''
-    Chatter.off()
-    Journal.off()
-    Debug.off()
-    return
+  '''Switch off the chatter output - designed for unit tests...'''
+  Chatter.off()
+  Journal.off()
+  Debug.off()
+  return
 
 if __name__ == '__main__':
-    Chatter.write('nothing much, really')
+  Chatter.write('nothing much, really')

@@ -122,17 +122,17 @@ import shutil
 import xml.dom.minidom
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
-    raise RuntimeError, 'XIA2CORE_ROOT not defined'
+  raise RuntimeError, 'XIA2CORE_ROOT not defined'
 if not os.environ.has_key('XIA2_ROOT'):
-    raise RuntimeError, 'XIA2_ROOT not defined'
+  raise RuntimeError, 'XIA2_ROOT not defined'
 
 if not os.path.join(os.environ['XIA2CORE_ROOT'],
                     'Python') in sys.path:
-    sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                                 'Python'))
+  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
+                               'Python'))
 
 if not os.environ['XIA2_ROOT'] in sys.path:
-    sys.path.append(os.environ['XIA2_ROOT'])
+  sys.path.append(os.environ['XIA2_ROOT'])
 
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
@@ -149,653 +149,653 @@ from lib.SymmetryLib import lauegroup_to_lattice, spacegroup_name_xHM_to_old, \
 from Modules.XDS_ASCII import remove_misfits
 
 def Pointless(DriverType = None):
-    '''A factory for PointlessWrapper classes.'''
+  '''A factory for PointlessWrapper classes.'''
 
-    DriverInstance = DriverFactory.Driver(DriverType)
-    CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, 'ccp4')
+  DriverInstance = DriverFactory.Driver(DriverType)
+  CCP4DriverInstance = DecoratorFactory.Decorate(DriverInstance, 'ccp4')
 
-    class PointlessWrapper(CCP4DriverInstance.__class__):
-        '''A wrapper for Pointless, using the CCP4-ified Driver.'''
+  class PointlessWrapper(CCP4DriverInstance.__class__):
+    '''A wrapper for Pointless, using the CCP4-ified Driver.'''
 
-        def __init__(self):
-            # generic things
-            CCP4DriverInstance.__class__.__init__(self)
+    def __init__(self):
+      # generic things
+      CCP4DriverInstance.__class__.__init__(self)
 
-            self.set_executable(os.path.join(
-                os.environ.get('CBIN', ''), 'pointless'))
+      self.set_executable(os.path.join(
+          os.environ.get('CBIN', ''), 'pointless'))
 
-            self._input_laue_group = None
+      self._input_laue_group = None
 
-            self._pointgroup = None
-            self._spacegroup = None
-            self._reindex_matrix = None
-            self._reindex_operator = None
-            self._spacegroup_reindex_matrix = None
-            self._spacegroup_reindex_operator = None
-            self._confidence = 0.0
-            self._hklref = None
-            self._xdsin = None
-            self._probably_twinned = False
+      self._pointgroup = None
+      self._spacegroup = None
+      self._reindex_matrix = None
+      self._reindex_operator = None
+      self._spacegroup_reindex_matrix = None
+      self._spacegroup_reindex_operator = None
+      self._confidence = 0.0
+      self._hklref = None
+      self._xdsin = None
+      self._probably_twinned = False
 
-            # pname, xname, dname stuff for when we are copying reflections
-            self._pname = None
-            self._xname = None
-            self._dname = None
+      # pname, xname, dname stuff for when we are copying reflections
+      self._pname = None
+      self._xname = None
+      self._dname = None
 
-            # space to store all possible solutions, to allow discussion of
-            # the correct lattice with the indexer... this should be a
-            # list containing e.g. 'tP'
-            self._possible_lattices = []
+      # space to store all possible solutions, to allow discussion of
+      # the correct lattice with the indexer... this should be a
+      # list containing e.g. 'tP'
+      self._possible_lattices = []
 
-            self._lattice_to_laue = { }
+      self._lattice_to_laue = { }
 
-            # all "likely" spacegroups...
-            self._likely_spacegroups = []
+      # all "likely" spacegroups...
+      self._likely_spacegroups = []
 
-            # and unit cell information
-            self._cell_info = { }
-            self._cell = None
+      # and unit cell information
+      self._cell_info = { }
+      self._cell = None
 
-            # and scale factors to use in conversion
-            self._scale_factor = 1.0
+      # and scale factors to use in conversion
+      self._scale_factor = 1.0
 
-        def set_scale_factor(self, scale_factor):
-            self._scale_factor = scale_factor
-            return
+    def set_scale_factor(self, scale_factor):
+      self._scale_factor = scale_factor
+      return
 
-        def set_hklref(self, hklref):
-            self._hklref = hklref
-            return
+    def set_hklref(self, hklref):
+      self._hklref = hklref
+      return
 
-        def get_hklref(self):
-            return self._hklref
+    def get_hklref(self):
+      return self._hklref
 
-        def set_project_info(self, pname, xname, dname):
-            self._pname = pname
-            self._xname = xname
-            self._dname = dname
-            return
+    def set_project_info(self, pname, xname, dname):
+      self._pname = pname
+      self._xname = xname
+      self._dname = dname
+      return
 
-        def check_hklref(self):
-            if self._hklref is None:
-                raise RuntimeError, 'hklref not defined'
-            if not os.path.exists(self._hklref):
-                raise RuntimeError, 'hklref %s does not exist' % self._hklref
+    def check_hklref(self):
+      if self._hklref is None:
+        raise RuntimeError, 'hklref not defined'
+      if not os.path.exists(self._hklref):
+        raise RuntimeError, 'hklref %s does not exist' % self._hklref
 
-        def set_xdsin(self, xdsin):
+    def set_xdsin(self, xdsin):
 
-            # copy this file for debugging purposes - may take up a lot
-            # of disk space so remove before release!
+      # copy this file for debugging purposes - may take up a lot
+      # of disk space so remove before release!
 
-            if True:
-                self._xdsin = xdsin
-                return
+      if True:
+        self._xdsin = xdsin
+        return
 
-            # now use this step to remove the misfit reflections
-            # from the XDS_ASCII file.
+      # now use this step to remove the misfit reflections
+      # from the XDS_ASCII file.
 
-            copyto = os.path.join(self.get_working_directory(), '%s_%s' % \
-                                  (self.get_xpid(), os.path.split(xdsin)[-1]))
+      copyto = os.path.join(self.get_working_directory(), '%s_%s' % \
+                            (self.get_xpid(), os.path.split(xdsin)[-1]))
 
-            # shutil.copyfile(xdsin, copyto)
+      # shutil.copyfile(xdsin, copyto)
 
-            ignored = remove_misfits(xdsin, copyto)
+      ignored = remove_misfits(xdsin, copyto)
 
-            Debug.write('Copied XDSIN to %s' % copyto)
-            Debug.write('Removed %d misfits' % ignored)
+      Debug.write('Copied XDSIN to %s' % copyto)
+      Debug.write('Removed %d misfits' % ignored)
 
-            self._xdsin = copyto
+      self._xdsin = copyto
 
-            return
+      return
 
-        def get_xdsin(self):
-            return self._xdsin
+    def get_xdsin(self):
+      return self._xdsin
 
-        def check_xdsin(self):
-            if self._xdsin is None:
-                raise RuntimeError, 'xdsin not defined'
-            if not os.path.exists(self._xdsin):
-                raise RuntimeError, 'xdsin %s does not exist' % self._xdsin
+    def check_xdsin(self):
+      if self._xdsin is None:
+        raise RuntimeError, 'xdsin not defined'
+      if not os.path.exists(self._xdsin):
+        raise RuntimeError, 'xdsin %s does not exist' % self._xdsin
 
-        def set_correct_lattice(self, lattice):
-            '''In a rerunning situation, set the correct lattice, which will
-            assert a correct lauegroup based on the previous run of the
-            program...'''
+    def set_correct_lattice(self, lattice):
+      '''In a rerunning situation, set the correct lattice, which will
+      assert a correct lauegroup based on the previous run of the
+      program...'''
 
-            if self._lattice_to_laue == { }:
-                raise RuntimeError, 'no lattice to lauegroup mapping'
+      if self._lattice_to_laue == { }:
+        raise RuntimeError, 'no lattice to lauegroup mapping'
 
-            if not self._lattice_to_laue.has_key(lattice):
-                raise RuntimeError, 'lattice %s not possible' % lattice
+      if not self._lattice_to_laue.has_key(lattice):
+        raise RuntimeError, 'lattice %s not possible' % lattice
 
-            self._input_laue_group = self._lattice_to_laue[lattice]
+      self._input_laue_group = self._lattice_to_laue[lattice]
 
-            return
+      return
 
-        def sum_mtz(self, summedlist):
-            '''Sum partials in an MTZ file from Mosflm to a text file.'''
+    def sum_mtz(self, summedlist):
+      '''Sum partials in an MTZ file from Mosflm to a text file.'''
 
-            self.add_command_line('-c')
-            self.check_hklin()
+      self.add_command_line('-c')
+      self.check_hklin()
 
-            self.start()
-            self.input('output summedlist %s' % summedlist)
-            self.close_wait()
+      self.start()
+      self.input('output summedlist %s' % summedlist)
+      self.close_wait()
 
-            # get out the unit cell - we will need this...
+      # get out the unit cell - we will need this...
 
-            output = self.get_all_output()
+      output = self.get_all_output()
 
-            cell = None
+      cell = None
 
-            for j in range(len(output)):
-                line = output[j]
+      for j in range(len(output)):
+        line = output[j]
 
-                if 'Space group from HKLIN file' in line:
-                    cell = tuple(map(float, output[j + 1].split()[1:]))
+        if 'Space group from HKLIN file' in line:
+          cell = tuple(map(float, output[j + 1].split()[1:]))
 
-            return cell
+      return cell
 
-        def xds_to_mtz(self):
-            '''Use pointless to convert XDS file to MTZ.'''
+    def xds_to_mtz(self):
+      '''Use pointless to convert XDS file to MTZ.'''
 
-            if not self._xdsin:
-                raise RuntimeError, 'XDSIN not set'
+      if not self._xdsin:
+        raise RuntimeError, 'XDSIN not set'
 
-            self.check_hklout()
+      self.check_hklout()
 
-            # -c for copy - just convert the file to MTZ multirecord
-            self.add_command_line('-c')
+      # -c for copy - just convert the file to MTZ multirecord
+      self.add_command_line('-c')
 
 
-            self.start()
+      self.start()
 
-            if self._pname and self._xname and self._dname:
-                self.input('name project %s crystal %s dataset %s' % \
-                           (self._pname, self._xname, self._dname))
+      if self._pname and self._xname and self._dname:
+        self.input('name project %s crystal %s dataset %s' % \
+                   (self._pname, self._xname, self._dname))
 
-            self.input('xdsin %s' % self._xdsin)
+      self.input('xdsin %s' % self._xdsin)
 
-            if self._scale_factor:
-                Debug.write('Scaling intensities by factor %e' % \
-                            self._scale_factor)
+      if self._scale_factor:
+        Debug.write('Scaling intensities by factor %e' % \
+                    self._scale_factor)
 
-                self.input('multiply %e' % self._scale_factor)
+        self.input('multiply %e' % self._scale_factor)
 
-            self.close_wait()
+      self.close_wait()
 
-            # FIXME need to check the status and so on here
+      # FIXME need to check the status and so on here
 
-            return
+      return
 
-        def decide_pointgroup(self):
-            '''Decide on the correct pointgroup for hklin.'''
+    def decide_pointgroup(self):
+      '''Decide on the correct pointgroup for hklin.'''
 
-            if not self._xdsin:
-                self.check_hklin()
-                self.set_task('Computing the correct pointgroup for %s' % \
-                              self.get_hklin())
+      if not self._xdsin:
+        self.check_hklin()
+        self.set_task('Computing the correct pointgroup for %s' % \
+                      self.get_hklin())
 
-            else:
-                Debug.write('Pointless using XDS input file %s' % \
-                            self._xdsin)
+      else:
+        Debug.write('Pointless using XDS input file %s' % \
+                    self._xdsin)
 
-                self.set_task('Computing the correct pointgroup for %s' % \
-                              self.get_xdsin())
+        self.set_task('Computing the correct pointgroup for %s' % \
+                      self.get_xdsin())
 
-            # FIXME this should probably be a standard CCP4 keyword
+      # FIXME this should probably be a standard CCP4 keyword
 
-            if self._xdsin:
-                self.add_command_line('xdsin')
-                self.add_command_line(self._xdsin)
+      if self._xdsin:
+        self.add_command_line('xdsin')
+        self.add_command_line(self._xdsin)
 
-            self.add_command_line('xmlout')
-            self.add_command_line('%d_pointless.xml' % self.get_xpid())
+      self.add_command_line('xmlout')
+      self.add_command_line('%d_pointless.xml' % self.get_xpid())
 
-            if self._hklref:
-                self.add_command_line('hklref')
-                self.add_command_line(self._hklref)
+      if self._hklref:
+        self.add_command_line('hklref')
+        self.add_command_line(self._hklref)
 
-            self.start()
+      self.start()
 
-            # change 22/AUG/06 add this command to switch off systematic
-            # absence analysis of the spacegroups.
+      # change 22/AUG/06 add this command to switch off systematic
+      # absence analysis of the spacegroups.
 
-            self.input('systematicabsences off')
-            self.input('setting symmetry-based')
+      self.input('systematicabsences off')
+      self.input('setting symmetry-based')
 
-            if Flags.get_small_molecule() and False:
-                self.input('chirality nonchiral')
+      if Flags.get_small_molecule() and False:
+        self.input('chirality nonchiral')
 
-            # change 23/OCT/06 if there is an input laue group, use this
-            if self._input_laue_group:
-                self.input('lauegroup %s' % self._input_laue_group)
+      # change 23/OCT/06 if there is an input laue group, use this
+      if self._input_laue_group:
+        self.input('lauegroup %s' % self._input_laue_group)
 
-            self.close_wait()
+      self.close_wait()
 
-            # check for errors
-            self.check_for_errors()
+      # check for errors
+      self.check_for_errors()
 
-            # check the CCP4 status - oh, there isn't one!
-            # FIXME I manually need to check for errors here....
+      # check the CCP4 status - oh, there isn't one!
+      # FIXME I manually need to check for errors here....
 
-            hklin_spacegroup = ''
-            hklin_lattice = ''
+      hklin_spacegroup = ''
+      hklin_lattice = ''
 
-            for o in self.get_all_output():
+      for o in self.get_all_output():
 
-                if 'Spacegroup from HKLIN file' in o:
+        if 'Spacegroup from HKLIN file' in o:
 
-                    # hklin_spacegroup = o.split(':')[-1].strip()
-                    hklin_spacegroup = spacegroup_name_xHM_to_old(
-                        o.replace(
-                        'Spacegroup from HKLIN file :', '').strip())
-                    hklin_lattice = Syminfo.get_lattice(hklin_spacegroup)
+          # hklin_spacegroup = o.split(':')[-1].strip()
+          hklin_spacegroup = spacegroup_name_xHM_to_old(
+              o.replace(
+              'Spacegroup from HKLIN file :', '').strip())
+          hklin_lattice = Syminfo.get_lattice(hklin_spacegroup)
 
-                if 'No alternative indexing possible' in o:
-                    # then the XML file will be broken - no worries...
+        if 'No alternative indexing possible' in o:
+          # then the XML file will be broken - no worries...
 
-                    self._pointgroup = hklin_spacegroup
-                    self._confidence = 1.0
-                    self._totalprob = 1.0
-                    self._reindex_matrix = [1.0, 0.0, 0.0,
-                                            0.0, 1.0, 0.0,
-                                            0.0, 0.0, 1.0]
-                    self._reindex_operator = 'h,k,l'
+          self._pointgroup = hklin_spacegroup
+          self._confidence = 1.0
+          self._totalprob = 1.0
+          self._reindex_matrix = [1.0, 0.0, 0.0,
+                                  0.0, 1.0, 0.0,
+                                  0.0, 0.0, 1.0]
+          self._reindex_operator = 'h,k,l'
 
-                    return 'ok'
+          return 'ok'
 
-                if '**** Incompatible symmetries ****' in o:
-                    # then there is an important error in here I need
-                    # to trap...
-                    raise RuntimeError, \
-                          'reindexing against a reference with ' + \
-                          'different symmetry'
+        if '**** Incompatible symmetries ****' in o:
+          # then there is an important error in here I need
+          # to trap...
+          raise RuntimeError, \
+                'reindexing against a reference with ' + \
+                'different symmetry'
 
-                if 'L-test suggests that the data may be twinned' in o:
-                    self._probably_twinned = True
+        if 'L-test suggests that the data may be twinned' in o:
+          self._probably_twinned = True
 
-            # parse the XML file for the information I need...
-            # FIXME this needs documenting - I am using xml.dom.minidom.
+      # parse the XML file for the information I need...
+      # FIXME this needs documenting - I am using xml.dom.minidom.
 
-            # FIXME 2: This needs extracting to a self.parse_pointless_xml()
-            # or something.
+      # FIXME 2: This needs extracting to a self.parse_pointless_xml()
+      # or something.
 
-            xml_file = os.path.join(self.get_working_directory(),
-                                    '%d_pointless.xml' % self.get_xpid())
+      xml_file = os.path.join(self.get_working_directory(),
+                              '%d_pointless.xml' % self.get_xpid())
 
-            # catch the case sometimes on ppc mac where pointless adds
-            # an extra .xml on the end...
+      # catch the case sometimes on ppc mac where pointless adds
+      # an extra .xml on the end...
 
-            if not os.path.exists(xml_file) and \
-               os.path.exists('%s.xml' % xml_file):
-                xml_file = '%s.xml' % xml_file
+      if not os.path.exists(xml_file) and \
+         os.path.exists('%s.xml' % xml_file):
+        xml_file = '%s.xml' % xml_file
 
-            if not self._hklref:
+      if not self._hklref:
 
-                dom = xml.dom.minidom.parse(xml_file)
+        dom = xml.dom.minidom.parse(xml_file)
 
-                best = dom.getElementsByTagName('BestSolution')[0]
-                self._pointgroup = best.getElementsByTagName(
-                    'GroupName')[0].childNodes[0].data
-                self._confidence = float(best.getElementsByTagName(
-                    'Confidence')[0].childNodes[0].data)
-                self._totalprob = float(best.getElementsByTagName(
-                    'TotalProb')[0].childNodes[0].data)
-                self._reindex_matrix = map(float, best.getElementsByTagName(
-                    'ReindexMatrix')[0].childNodes[0].data.split())
-                self._reindex_operator = clean_reindex_operator(
-                    best.getElementsByTagName(
-                    'ReindexOperator')[0].childNodes[0].data.strip())
+        best = dom.getElementsByTagName('BestSolution')[0]
+        self._pointgroup = best.getElementsByTagName(
+            'GroupName')[0].childNodes[0].data
+        self._confidence = float(best.getElementsByTagName(
+            'Confidence')[0].childNodes[0].data)
+        self._totalprob = float(best.getElementsByTagName(
+            'TotalProb')[0].childNodes[0].data)
+        self._reindex_matrix = map(float, best.getElementsByTagName(
+            'ReindexMatrix')[0].childNodes[0].data.split())
+        self._reindex_operator = clean_reindex_operator(
+            best.getElementsByTagName(
+            'ReindexOperator')[0].childNodes[0].data.strip())
 
-            else:
+      else:
 
-                # if we have provided a HKLREF input then the xml output
-                # is changed...
+        # if we have provided a HKLREF input then the xml output
+        # is changed...
 
-                # FIXME in here, need to check if there is the legend
-                # "No possible alternative indexing" in the standard
-                # output, as this will mean that the index scores are
-                # not there... c/f oppf1314, with latest pointless build
-                # 1.2.14.
+        # FIXME in here, need to check if there is the legend
+        # "No possible alternative indexing" in the standard
+        # output, as this will mean that the index scores are
+        # not there... c/f oppf1314, with latest pointless build
+        # 1.2.14.
 
-                dom = xml.dom.minidom.parse(xml_file)
+        dom = xml.dom.minidom.parse(xml_file)
 
-                try:
-                    best = dom.getElementsByTagName('IndexScores')[0]
-                except IndexError, e:
-                    Debug.write('Reindex not found in xml output')
+        try:
+          best = dom.getElementsByTagName('IndexScores')[0]
+        except IndexError, e:
+          Debug.write('Reindex not found in xml output')
 
-                    # check for this legend then
-                    found = False
-                    for record in self.get_all_output():
-                        if 'No possible alternative indexing' in record:
-                            found = True
+          # check for this legend then
+          found = False
+          for record in self.get_all_output():
+            if 'No possible alternative indexing' in record:
+              found = True
 
-                    if not found:
-                        raise RuntimeError, 'error finding solution'
+          if not found:
+            raise RuntimeError, 'error finding solution'
 
-                    best = None
+          best = None
 
-                hklref_pointgroup = ''
+        hklref_pointgroup = ''
 
-                # FIXME need to get this from the reflection file HKLREF
-                reflection_file_elements = dom.getElementsByTagName(
-                    'ReflectionFile')
+        # FIXME need to get this from the reflection file HKLREF
+        reflection_file_elements = dom.getElementsByTagName(
+            'ReflectionFile')
 
-                for rf in reflection_file_elements:
-                    stream = rf.getAttribute('stream')
-                    if stream == 'HKLREF':
-                        hklref_pointgroup = rf.getElementsByTagName(
-                            'SpacegroupName')[0].childNodes[0].data.strip()
-                        # Chatter.write('HKLREF pointgroup is %s' % \
-                        # hklref_pointgroup)
-
-                if hklref_pointgroup == '':
-                    raise RuntimeError, 'error finding HKLREF pointgroup'
-
-                self._pointgroup = hklref_pointgroup
-
-                self._confidence = 1.0
-                self._totalprob = 1.0
-
-                if best:
-
-                    index = best.getElementsByTagName('Index')[0]
-
-                    self._reindex_matrix = map(float,
-                                               index.getElementsByTagName(
-                        'ReindexMatrix')[0].childNodes[0].data.split())
-                    self._reindex_operator = clean_reindex_operator(
-                        index.getElementsByTagName(
-                        'ReindexOperator')[0].childNodes[0].data.strip())
-                else:
-
-                    # no alternative indexing is possible so just
-                    # assume the default...
-
-                    self._reindex_matrix = [1.0, 0.0, 0.0,
-                                            0.0, 1.0, 0.0,
-                                            0.0, 0.0, 1.0]
-
-                    self._reindex_operator = 'h,k,l'
-
-            if not self._input_laue_group and not self._hklref:
-
-                scorelist = dom.getElementsByTagName('LaueGroupScoreList')[0]
-                scores = scorelist.getElementsByTagName('LaueGroupScore')
-
-                lauegroups = { }
-                netzcs = { }
-                likelihoods = { }
-
-                for s in scores:
-                    number = int(s.getElementsByTagName(
-                        'number')[0].childNodes[0].data)
-                    lauegroup = s.getElementsByTagName(
-                        'LaueGroupName')[0].childNodes[0].data
-                    reindex = s.getElementsByTagName(
-                        'ReindexOperator')[0].childNodes[0].data
-                    netzc = float(s.getElementsByTagName(
-                        'NetZCC')[0].childNodes[0].data)
-                    likelihood = float(s.getElementsByTagName(
-                        'Likelihood')[0].childNodes[0].data)
-                    r_merge = float(s.getElementsByTagName(
-                        'R')[0].childNodes[0].data)
-                    delta = float(s.getElementsByTagName(
-                        'CellDelta')[0].childNodes[0].data)
-
-                    # record this as a possible lattice... if it's Z score
-                    # is positive, anyway
-
-                    lattice = lauegroup_to_lattice(lauegroup)
-                    if not lattice in self._possible_lattices:
-                        if netzc > 0.0:
-                            self._possible_lattices.append(lattice)
-
-                        # do we not always want to have access to the
-                        # solutions, even if they are unlikely - this will
-                        # only be invoked if they are known to
-                        # be right...
-
-                        self._lattice_to_laue[lattice] = lauegroup
-
-            return 'ok'
-
-        def decide_spacegroup(self):
-            '''Given data indexed in the correct pointgroup, have a
-            guess at the spacegroup.'''
-
-            if not self._xdsin:
-
-                self.check_hklin()
-                self.set_task('Computing the correct spacegroup for %s' % \
-                              self.get_hklin())
-
-            else:
-                Debug.write('Pointless using XDS input file %s' % \
-                            self._xdsin)
-                self.set_task('Computing the correct spacegroup for %s' % \
-                              self.get_xdsin())
-
-
-            # FIXME this should probably be a standard CCP4 keyword
-
-            if self._xdsin:
-                self.add_command_line('xdsin')
-                self.add_command_line(self._xdsin)
-
-            self.add_command_line('xmlout')
-            self.add_command_line('%d_pointless.xml' % self.get_xpid())
-
-            self.add_command_line('hklout')
-            self.add_command_line('pointless.mtz')
-
-            self.start()
-
-            self.input('lauegroup hklin')
-            self.input('setting symmetry-based')
-
-            if Flags.get_small_molecule() and False:
-                self.input('chirality nonchiral')
-
-            self.close_wait()
-
-            # check for errors
-            self.check_for_errors()
-
-            hklin_spacegroup = ''
-
-            xml_file = os.path.join(self.get_working_directory(),
-                                    '%d_pointless.xml' % self.get_xpid())
-
-            if not os.path.exists(xml_file) and \
-               os.path.exists('%s.xml' % xml_file):
-                xml_file = '%s.xml' % xml_file
-
-            dom = xml.dom.minidom.parse(xml_file)
-
-            sg_list = dom.getElementsByTagName('SpacegroupList')[0]
-            sg_node = sg_list.getElementsByTagName('Spacegroup')[0]
-            best_prob = float(sg_node.getElementsByTagName(
-                'TotalProb')[0].childNodes[0].data.strip())
-
-            # FIXME 21/NOV/06 in here record a list of valid spacegroups
-            # (that is, those which are as likely as the most likely)
-            # for later use...
-
-            self._spacegroup = sg_node.getElementsByTagName(
+        for rf in reflection_file_elements:
+          stream = rf.getAttribute('stream')
+          if stream == 'HKLREF':
+            hklref_pointgroup = rf.getElementsByTagName(
                 'SpacegroupName')[0].childNodes[0].data.strip()
-            self._spacegroup_reindex_operator = sg_node.getElementsByTagName(
-                'ReindexOperator')[0].childNodes[0].data.strip()
-            self._spacegroup_reindex_matrix = tuple(
-                map(float, sg_node.getElementsByTagName(
-                'ReindexMatrix')[0].childNodes[0].data.split()))
+            # Chatter.write('HKLREF pointgroup is %s' % \
+            # hklref_pointgroup)
 
-            # get a list of "equally likely" spacegroups
+        if hklref_pointgroup == '':
+          raise RuntimeError, 'error finding HKLREF pointgroup'
 
-            for node in sg_list.getElementsByTagName('Spacegroup'):
-                prob = float(node.getElementsByTagName(
-                    'TotalProb')[0].childNodes[0].data.strip())
-                name = node.getElementsByTagName(
-                    'SpacegroupName')[0].childNodes[0].data.strip()
+        self._pointgroup = hklref_pointgroup
 
-                if math.fabs(prob - best_prob) < 0.01:
-                    # this is jolly likely!
-                    self._likely_spacegroups.append(name)
+        self._confidence = 1.0
+        self._totalprob = 1.0
 
-            # now parse the output looking for the unit cell information -
-            # this should look familiar from mtzdump
+        if best:
 
-            output = self.get_all_output()
-            length = len(output)
+          index = best.getElementsByTagName('Index')[0]
 
-            a = 0.0
-            b = 0.0
-            c = 0.0
-            alpha = 0.0
-            beta = 0.0
-            gamma = 0.0
+          self._reindex_matrix = map(float,
+                                     index.getElementsByTagName(
+              'ReindexMatrix')[0].childNodes[0].data.split())
+          self._reindex_operator = clean_reindex_operator(
+              index.getElementsByTagName(
+              'ReindexOperator')[0].childNodes[0].data.strip())
+        else:
 
-            self._cell_info['datasets'] = []
-            self._cell_info['dataset_info'] = { }
+          # no alternative indexing is possible so just
+          # assume the default...
 
-            for i in range(length):
+          self._reindex_matrix = [1.0, 0.0, 0.0,
+                                  0.0, 1.0, 0.0,
+                                  0.0, 0.0, 1.0]
 
-                line = output[i][:-1]
+          self._reindex_operator = 'h,k,l'
 
-                if 'Dataset ID, ' in line:
+      if not self._input_laue_group and not self._hklref:
 
-                    block = 0
-                    while output[block * 5 + i + 2].strip():
-                        dataset_number = int(
-                            output[5 * block + i + 2].split()[0])
-                        project = output[5 * block + i + 2][10:].strip()
-                        crystal = output[5 * block + i + 3][10:].strip()
-                        dataset = output[5 * block + i + 4][10:].strip()
-                        cell = map(float, output[5 * block + i + 5].strip(
-                            ).split())
-                        wavelength = float(output[5 * block + i + 6].strip())
+        scorelist = dom.getElementsByTagName('LaueGroupScoreList')[0]
+        scores = scorelist.getElementsByTagName('LaueGroupScore')
 
-                        dataset_id = '%s/%s/%s' % \
-                                     (project, crystal, dataset)
+        lauegroups = { }
+        netzcs = { }
+        likelihoods = { }
 
-                        self._cell_info['datasets'].append(dataset_id)
-                        self._cell_info['dataset_info'][dataset_id] = { }
-                        self._cell_info['dataset_info'][
-                            dataset_id]['wavelength'] = wavelength
-                        self._cell_info['dataset_info'][
-                            dataset_id]['cell'] = cell
-                        self._cell_info['dataset_info'][
-                            dataset_id]['id'] = dataset_number
-                        block += 1
+        for s in scores:
+          number = int(s.getElementsByTagName(
+              'number')[0].childNodes[0].data)
+          lauegroup = s.getElementsByTagName(
+              'LaueGroupName')[0].childNodes[0].data
+          reindex = s.getElementsByTagName(
+              'ReindexOperator')[0].childNodes[0].data
+          netzc = float(s.getElementsByTagName(
+              'NetZCC')[0].childNodes[0].data)
+          likelihood = float(s.getElementsByTagName(
+              'Likelihood')[0].childNodes[0].data)
+          r_merge = float(s.getElementsByTagName(
+              'R')[0].childNodes[0].data)
+          delta = float(s.getElementsByTagName(
+              'CellDelta')[0].childNodes[0].data)
 
-            for dataset in self._cell_info['datasets']:
-                cell = self._cell_info['dataset_info'][dataset]['cell']
-                a += cell[0]
-                b += cell[1]
-                c += cell[2]
-                alpha += cell[3]
-                beta += cell[4]
-                gamma += cell[5]
+          # record this as a possible lattice... if it's Z score
+          # is positive, anyway
 
-            n = len(self._cell_info['datasets'])
-            self._cell = (a / n, b / n, c / n, alpha / n, beta / n, gamma / n)
+          lattice = lauegroup_to_lattice(lauegroup)
+          if not lattice in self._possible_lattices:
+            if netzc > 0.0:
+              self._possible_lattices.append(lattice)
 
-            return 'ok'
+            # do we not always want to have access to the
+            # solutions, even if they are unlikely - this will
+            # only be invoked if they are known to
+            # be right...
 
-        def get_reindex_matrix(self):
-            return self._reindex_matrix
+            self._lattice_to_laue[lattice] = lauegroup
 
-        def get_reindex_operator(self):
-            return self._reindex_operator
+      return 'ok'
 
-        def get_pointgroup(self):
-            return self._pointgroup
+    def decide_spacegroup(self):
+      '''Given data indexed in the correct pointgroup, have a
+      guess at the spacegroup.'''
 
-        def get_spacegroup(self):
-            return self._spacegroup
+      if not self._xdsin:
 
-        def get_cell(self):
-            return self._cell
+        self.check_hklin()
+        self.set_task('Computing the correct spacegroup for %s' % \
+                      self.get_hklin())
 
-        def get_probably_twinned(self):
-            return self._probably_twinned
+      else:
+        Debug.write('Pointless using XDS input file %s' % \
+                    self._xdsin)
+        self.set_task('Computing the correct spacegroup for %s' % \
+                      self.get_xdsin())
 
-        def get_spacegroup_reindex_operator(self):
-            return self._spacegroup_reindex_operator
 
-        def get_spacegroup_reindex_matrix(self):
-            return self._spacegroup_reindex_matrix
+      # FIXME this should probably be a standard CCP4 keyword
 
-        def get_likely_spacegroups(self):
-            return self._likely_spacegroups
+      if self._xdsin:
+        self.add_command_line('xdsin')
+        self.add_command_line(self._xdsin)
 
-        def get_confidence(self):
-            return self._confidence
+      self.add_command_line('xmlout')
+      self.add_command_line('%d_pointless.xml' % self.get_xpid())
 
-        def get_possible_lattices(self):
-            return self._possible_lattices
+      self.add_command_line('hklout')
+      self.add_command_line('pointless.mtz')
 
-    return PointlessWrapper()
+      self.start()
+
+      self.input('lauegroup hklin')
+      self.input('setting symmetry-based')
+
+      if Flags.get_small_molecule() and False:
+        self.input('chirality nonchiral')
+
+      self.close_wait()
+
+      # check for errors
+      self.check_for_errors()
+
+      hklin_spacegroup = ''
+
+      xml_file = os.path.join(self.get_working_directory(),
+                              '%d_pointless.xml' % self.get_xpid())
+
+      if not os.path.exists(xml_file) and \
+         os.path.exists('%s.xml' % xml_file):
+        xml_file = '%s.xml' % xml_file
+
+      dom = xml.dom.minidom.parse(xml_file)
+
+      sg_list = dom.getElementsByTagName('SpacegroupList')[0]
+      sg_node = sg_list.getElementsByTagName('Spacegroup')[0]
+      best_prob = float(sg_node.getElementsByTagName(
+          'TotalProb')[0].childNodes[0].data.strip())
+
+      # FIXME 21/NOV/06 in here record a list of valid spacegroups
+      # (that is, those which are as likely as the most likely)
+      # for later use...
+
+      self._spacegroup = sg_node.getElementsByTagName(
+          'SpacegroupName')[0].childNodes[0].data.strip()
+      self._spacegroup_reindex_operator = sg_node.getElementsByTagName(
+          'ReindexOperator')[0].childNodes[0].data.strip()
+      self._spacegroup_reindex_matrix = tuple(
+          map(float, sg_node.getElementsByTagName(
+          'ReindexMatrix')[0].childNodes[0].data.split()))
+
+      # get a list of "equally likely" spacegroups
+
+      for node in sg_list.getElementsByTagName('Spacegroup'):
+        prob = float(node.getElementsByTagName(
+            'TotalProb')[0].childNodes[0].data.strip())
+        name = node.getElementsByTagName(
+            'SpacegroupName')[0].childNodes[0].data.strip()
+
+        if math.fabs(prob - best_prob) < 0.01:
+          # this is jolly likely!
+          self._likely_spacegroups.append(name)
+
+      # now parse the output looking for the unit cell information -
+      # this should look familiar from mtzdump
+
+      output = self.get_all_output()
+      length = len(output)
+
+      a = 0.0
+      b = 0.0
+      c = 0.0
+      alpha = 0.0
+      beta = 0.0
+      gamma = 0.0
+
+      self._cell_info['datasets'] = []
+      self._cell_info['dataset_info'] = { }
+
+      for i in range(length):
+
+        line = output[i][:-1]
+
+        if 'Dataset ID, ' in line:
+
+          block = 0
+          while output[block * 5 + i + 2].strip():
+            dataset_number = int(
+                output[5 * block + i + 2].split()[0])
+            project = output[5 * block + i + 2][10:].strip()
+            crystal = output[5 * block + i + 3][10:].strip()
+            dataset = output[5 * block + i + 4][10:].strip()
+            cell = map(float, output[5 * block + i + 5].strip(
+                ).split())
+            wavelength = float(output[5 * block + i + 6].strip())
+
+            dataset_id = '%s/%s/%s' % \
+                         (project, crystal, dataset)
+
+            self._cell_info['datasets'].append(dataset_id)
+            self._cell_info['dataset_info'][dataset_id] = { }
+            self._cell_info['dataset_info'][
+                dataset_id]['wavelength'] = wavelength
+            self._cell_info['dataset_info'][
+                dataset_id]['cell'] = cell
+            self._cell_info['dataset_info'][
+                dataset_id]['id'] = dataset_number
+            block += 1
+
+      for dataset in self._cell_info['datasets']:
+        cell = self._cell_info['dataset_info'][dataset]['cell']
+        a += cell[0]
+        b += cell[1]
+        c += cell[2]
+        alpha += cell[3]
+        beta += cell[4]
+        gamma += cell[5]
+
+      n = len(self._cell_info['datasets'])
+      self._cell = (a / n, b / n, c / n, alpha / n, beta / n, gamma / n)
+
+      return 'ok'
+
+    def get_reindex_matrix(self):
+      return self._reindex_matrix
+
+    def get_reindex_operator(self):
+      return self._reindex_operator
+
+    def get_pointgroup(self):
+      return self._pointgroup
+
+    def get_spacegroup(self):
+      return self._spacegroup
+
+    def get_cell(self):
+      return self._cell
+
+    def get_probably_twinned(self):
+      return self._probably_twinned
+
+    def get_spacegroup_reindex_operator(self):
+      return self._spacegroup_reindex_operator
+
+    def get_spacegroup_reindex_matrix(self):
+      return self._spacegroup_reindex_matrix
+
+    def get_likely_spacegroups(self):
+      return self._likely_spacegroups
+
+    def get_confidence(self):
+      return self._confidence
+
+    def get_possible_lattices(self):
+      return self._possible_lattices
+
+  return PointlessWrapper()
 
 if __name__ == '__main__':
-    p = Pointless()
+  p = Pointless()
 
-    hklin = sys.argv[1]
+  hklin = sys.argv[1]
 
-    p.set_hklin(hklin)
+  p.set_hklin(hklin)
 
-    cell = p.sum_mtz('foo.hkl')
+  cell = p.sum_mtz('foo.hkl')
 
-    print cell
+  print cell
 
 if __name__ == '__moon__':
 
-    # then run some sort of test
+  # then run some sort of test
 
-    if not os.environ.has_key('XIA2CORE_ROOT'):
-        raise RuntimeError, 'XIA2CORE_ROOT not defined'
+  if not os.environ.has_key('XIA2CORE_ROOT'):
+    raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
-    xia2core = os.environ['XIA2CORE_ROOT']
+  xia2core = os.environ['XIA2CORE_ROOT']
 
-    hklin = os.path.join(xia2core,
-                         'Data', 'Test', 'Mtz', '12287_1_E1.mtz')
+  hklin = os.path.join(xia2core,
+                       'Data', 'Test', 'Mtz', '12287_1_E1.mtz')
 
-    if len(sys.argv) > 1:
-        hklin = sys.argv[1]
+  if len(sys.argv) > 1:
+    hklin = sys.argv[1]
 
-    p = Pointless()
+  p = Pointless()
 
-    p.set_hklin(hklin)
-    p.write_log_file('pointless.log')
+  p.set_hklin(hklin)
+  p.write_log_file('pointless.log')
 
-    pointgroup = True
+  pointgroup = True
 
-    if pointgroup:
-        p.decide_pointgroup()
+  if pointgroup:
+    p.decide_pointgroup()
 
-        print 'Correct pointgroup: %s' % p.get_pointgroup()
-        print 'Reindexing matrix: ' + \
-              '%4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f' % \
-              tuple(p.get_reindex_matrix())
-        print 'Confidence: %f' % p.get_confidence()
+    print 'Correct pointgroup: %s' % p.get_pointgroup()
+    print 'Reindexing matrix: ' + \
+          '%4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f' % \
+          tuple(p.get_reindex_matrix())
+    print 'Confidence: %f' % p.get_confidence()
 
-        if False:
+    if False:
 
-            p.set_correct_lattice('mC')
-            p.decide_pointgroup()
+      p.set_correct_lattice('mC')
+      p.decide_pointgroup()
 
-            print 'Correct pointgroup: %s' % p.get_pointgroup()
-            print 'Reindexing matrix: ' + \
-                  '%4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f' % \
-                  tuple(p.get_reindex_matrix())
-            print 'Confidence: %f' % p.get_confidence()
+      print 'Correct pointgroup: %s' % p.get_pointgroup()
+      print 'Reindexing matrix: ' + \
+            '%4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f' % \
+            tuple(p.get_reindex_matrix())
+      print 'Confidence: %f' % p.get_confidence()
 
 
-    else:
-        p.decide_spacegroup()
+  else:
+    p.decide_spacegroup()
 
-        print 'Correct spacegroup: %s' % p.get_spacegroup()
-        print 'Reindex operator: %s' % p.get_spacegroup_reindex_operator()
-        print 'Cell: %.2f %.2f %.2f %.2f %.2f %.2f' % p.get_cell()
+    print 'Correct spacegroup: %s' % p.get_spacegroup()
+    print 'Reindex operator: %s' % p.get_spacegroup_reindex_operator()
+    print 'Cell: %.2f %.2f %.2f %.2f %.2f %.2f' % p.get_cell()

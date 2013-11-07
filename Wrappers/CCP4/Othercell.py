@@ -38,17 +38,17 @@ import os
 import sys
 
 if not os.environ.has_key('XIA2CORE_ROOT'):
-    raise RuntimeError, 'XIA2CORE_ROOT not defined'
+  raise RuntimeError, 'XIA2CORE_ROOT not defined'
 if not os.environ.has_key('XIA2_ROOT'):
-    raise RuntimeError, 'XIA2_ROOT not defined'
+  raise RuntimeError, 'XIA2_ROOT not defined'
 
 if not os.path.join(os.environ['XIA2CORE_ROOT'],
                     'Python') in sys.path:
-    sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                                 'Python'))
+  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
+                               'Python'))
 
 if not os.environ['XIA2_ROOT'] in sys.path:
-    sys.path.append(os.environ['XIA2_ROOT'])
+  sys.path.append(os.environ['XIA2_ROOT'])
 
 from Driver.DriverFactory import DriverFactory
 from Experts.LatticeExpert import ApplyLattice
@@ -59,137 +59,137 @@ from Handlers.Flags import Flags
 from lib.SymmetryLib import lauegroup_to_lattice
 
 def Othercell(DriverType = None):
-    '''Factory for Othercell wrapper classes, with the specified
-    Driver type.'''
+  '''Factory for Othercell wrapper classes, with the specified
+  Driver type.'''
 
-    DriverInstance = DriverFactory.Driver(DriverType)
+  DriverInstance = DriverFactory.Driver(DriverType)
 
-    class OthercellWrapper(DriverInstance.__class__):
-        '''A wrapper for the program othercell - which will provide
-        functionality for presenting other indexing possibilities...'''
+  class OthercellWrapper(DriverInstance.__class__):
+    '''A wrapper for the program othercell - which will provide
+    functionality for presenting other indexing possibilities...'''
 
-        def __init__(self):
-            DriverInstance.__class__.__init__(self)
+    def __init__(self):
+      DriverInstance.__class__.__init__(self)
 
-            self.set_executable(os.path.join(
-                os.environ.get('CBIN', ''), 'othercell'))
+      self.set_executable(os.path.join(
+          os.environ.get('CBIN', ''), 'othercell'))
 
-            self._initial_cell = []
-            self._initial_lattice_type = None
+      self._initial_cell = []
+      self._initial_lattice_type = None
 
-            # results storage
+      # results storage
 
-            self._lattices = []
-            self._distortions = { }
-            self._cells = { }
-            self._reindex_ops = { }
+      self._lattices = []
+      self._distortions = { }
+      self._cells = { }
+      self._reindex_ops = { }
 
-            return
+      return
 
-        def set_cell(self, cell):
-            self._initial_cell = cell
+    def set_cell(self, cell):
+      self._initial_cell = cell
 
-            return
+      return
 
-        def set_lattice(self, lattice):
-            '''Set the full lattice - not just the centering operator!.'''
+    def set_lattice(self, lattice):
+      '''Set the full lattice - not just the centering operator!.'''
 
-            self._initial_lattice_type = lattice[1].lower()
+      self._initial_lattice_type = lattice[1].lower()
 
-            return
+      return
 
-        def generate(self):
-            if not self._initial_cell:
-                raise RuntimeError, 'must set the cell'
-            if not self._initial_lattice_type:
-                raise RuntimeError, 'must set the lattice'
+    def generate(self):
+      if not self._initial_cell:
+        raise RuntimeError, 'must set the cell'
+      if not self._initial_lattice_type:
+        raise RuntimeError, 'must set the lattice'
 
-            self.start()
+      self.start()
 
-            self.input('%f %f %f %f %f %f' % tuple(self._initial_cell))
-            self.input('%s' % self._initial_lattice_type)
-            self.input('')
+      self.input('%f %f %f %f %f %f' % tuple(self._initial_cell))
+      self.input('%s' % self._initial_lattice_type)
+      self.input('')
 
-            self.close_wait()
+      self.close_wait()
 
-            # parse the output of the program...
+      # parse the output of the program...
 
-            for o in self.get_all_output():
+      for o in self.get_all_output():
 
-                if not '[' in o:
-                    continue
-                if 'Reindex op' in o:
-                    continue
-                if 'Same cell' in o:
-                    continue
-                if 'Other cell' in o:
-                    continue
-                if 'within angular tolerance' in o:
-                    continue
+        if not '[' in o:
+          continue
+        if 'Reindex op' in o:
+          continue
+        if 'Same cell' in o:
+          continue
+        if 'Other cell' in o:
+          continue
+        if 'within angular tolerance' in o:
+          continue
 
-                lauegroup = o[:11].strip()
-                if not lauegroup:
-                    continue
+        lauegroup = o[:11].strip()
+        if not lauegroup:
+          continue
 
-                if lauegroup[0] == '[':
-                    continue
+        if lauegroup[0] == '[':
+          continue
 
-                modded_lauegroup = ''
-                for token in lauegroup.split():
-                    if token == '1':
-                        continue
-                    modded_lauegroup += token
+        modded_lauegroup = ''
+        for token in lauegroup.split():
+          if token == '1':
+            continue
+          modded_lauegroup += token
 
-                try:
-                    lattice = lauegroup_to_lattice(modded_lauegroup)
-                except KeyError, e:
-                    # there was some kind of mess made of the othercell
-                    # output - this happens!
-                    continue
+        try:
+          lattice = lauegroup_to_lattice(modded_lauegroup)
+        except KeyError, e:
+          # there was some kind of mess made of the othercell
+          # output - this happens!
+          continue
 
-                cell = tuple(map(float, o[11:45].split()))
-                distortion = float(o.split()[-2])
-                operator = o.split()[-1][1:-1]
+        cell = tuple(map(float, o[11:45].split()))
+        distortion = float(o.split()[-2])
+        operator = o.split()[-1][1:-1]
 
-                if not lattice in self._lattices:
-                    self._lattices.append(lattice)
-                    self._distortions[lattice] = distortion
-                    self._cells[lattice] = cell
-                    self._reindex_ops[lattice] = operator
-                else:
-                    if distortion > self._distortions[lattice]:
-                        continue
-                    self._distortions[lattice] = distortion
-                    self._cells[lattice] = cell
-                    self._reindex_ops[lattice] = operator
+        if not lattice in self._lattices:
+          self._lattices.append(lattice)
+          self._distortions[lattice] = distortion
+          self._cells[lattice] = cell
+          self._reindex_ops[lattice] = operator
+        else:
+          if distortion > self._distortions[lattice]:
+            continue
+          self._distortions[lattice] = distortion
+          self._cells[lattice] = cell
+          self._reindex_ops[lattice] = operator
 
-        def get_lattices(self):
-            return self._lattices
+    def get_lattices(self):
+      return self._lattices
 
-        def get_cell(self, lattice):
-            return self._cells[lattice]
+    def get_cell(self, lattice):
+      return self._cells[lattice]
 
-        def get_reindex_op(self, lattice):
-            return self._reindex_ops[lattice]
+    def get_reindex_op(self, lattice):
+      return self._reindex_ops[lattice]
 
 
-    return OthercellWrapper()
+  return OthercellWrapper()
 
 if __name__ == '__main__':
 
-    o = Othercell()
+  o = Othercell()
 
-    # o.set_cell([43.62, 52.27, 116.4, 103, 100.7, 90.03])
-    # o.set_lattice('p')
+  # o.set_cell([43.62, 52.27, 116.4, 103, 100.7, 90.03])
+  # o.set_lattice('p')
 
-    o.set_cell([198.61, 198.61, 243.45, 90.00, 90.00, 120.00])
-    o.set_lattice('r')
+  o.set_cell([198.61, 198.61, 243.45, 90.00, 90.00, 120.00])
+  o.set_lattice('r')
 
-    o.generate()
+  o.generate()
 
-    # need to add some checks in here that everything went fine...
-    # for line in o.get_all_output():
-    # print line[:-1]
+  # need to add some checks in here that everything went fine...
+  # for line in o.get_all_output():
+  # print line[:-1]
 
-    o.get_cell('aP')
-    o.get_reindex_op('aP')
+  o.get_cell('aP')
+  o.get_reindex_op('aP')

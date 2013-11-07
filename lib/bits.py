@@ -15,213 +15,213 @@ import sys
 import math
 
 if not os.environ.has_key('XIA2_ROOT'):
-    raise RuntimeError, 'XIA2_ROOT not defined'
+  raise RuntimeError, 'XIA2_ROOT not defined'
 if not os.environ.has_key('XIA2CORE_ROOT'):
-    raise RuntimeError, 'XIA2CORE_ROOT not defined'
+  raise RuntimeError, 'XIA2CORE_ROOT not defined'
 
 if not os.environ['XIA2_ROOT'] in sys.path:
-    sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
+  sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
 from Handlers.Streams import Chatter, Debug
 
 def inherits_from(this_class,
                   base_class_name):
-    '''Return True if base_class_name contributes to the this_class class.'''
+  '''Return True if base_class_name contributes to the this_class class.'''
 
-    if this_class.__bases__:
-        for b in this_class.__bases__:
-            if inherits_from(b, base_class_name):
-                return True
-
-    if this_class.__name__ == base_class_name:
+  if this_class.__bases__:
+    for b in this_class.__bases__:
+      if inherits_from(b, base_class_name):
         return True
 
-    return False
-
-def is_mtz_file(filename):
-    '''Check if a file is MTZ format - at least according to the
-    magic number.'''
-
-    magic = open(filename, 'rb').read(4)
-
-    if magic == 'MTZ ':
-        return True
-
-    return False
-
-def is_xds_file(filename):
-    '''Check to see if a file looks like XDS_ASCII format.'''
-
-    first_token = open(filename, 'r').readline().split()[0]
-
-    if first_token == '!FORMAT=XDS_ASCII':
-        return True
-
-    return False
-
-def is_scalepack_file(filename):
-    '''Determine if a file looks like scalepack format.'''
-
+  if this_class.__name__ == base_class_name:
     return True
 
+  return False
+
+def is_mtz_file(filename):
+  '''Check if a file is MTZ format - at least according to the
+  magic number.'''
+
+  magic = open(filename, 'rb').read(4)
+
+  if magic == 'MTZ ':
+    return True
+
+  return False
+
+def is_xds_file(filename):
+  '''Check to see if a file looks like XDS_ASCII format.'''
+
+  first_token = open(filename, 'r').readline().split()[0]
+
+  if first_token == '!FORMAT=XDS_ASCII':
+    return True
+
+  return False
+
+def is_scalepack_file(filename):
+  '''Determine if a file looks like scalepack format.'''
+
+  return True
+
 def nifty_power_of_ten(num):
-    '''Return 10^n: 10^n > num; 10^(n-1) <= num.'''
+  '''Return 10^n: 10^n > num; 10^(n-1) <= num.'''
 
-    result = 10
+  result = 10
 
-    while result <= num:
-        result *= 10
+  while result <= num:
+    result *= 10
 
-    return result
+  return result
 
 def mean_sd(list_of_numbers):
-    mean = sum(list_of_numbers) / len(list_of_numbers)
-    sd = 0.0
-    for l in list_of_numbers:
-        sd += (l - mean) * (l - mean)
-    sd /= len(list_of_numbers)
-    return (mean, math.sqrt(sd))
+  mean = sum(list_of_numbers) / len(list_of_numbers)
+  sd = 0.0
+  for l in list_of_numbers:
+    sd += (l - mean) * (l - mean)
+  sd /= len(list_of_numbers)
+  return (mean, math.sqrt(sd))
 
 # FIXNE redundant
 
 def meansd(values):
-    mean = sum(values) / len(values)
-    var = sum([(v - mean) * (v - mean) for v in values]) / len(values)
-    return mean, math.sqrt(var)
+  mean = sum(values) / len(values)
+  var = sum([(v - mean) * (v - mean) for v in values]) / len(values)
+  return mean, math.sqrt(var)
 
 def remove_outliers(values, limit):
-    result = []
-    outliers = []
-    for j in range(len(values)):
-        scratch = []
-        for k in range(len(values)):
-            if j != k:
-                scratch.append(values[k])
-        m, s = meansd(scratch)
-        if math.fabs(values[j] - m) / s <= limit * s:
-            result.append(values[j])
-        else:
-            outliers.append(values[j])
+  result = []
+  outliers = []
+  for j in range(len(values)):
+    scratch = []
+    for k in range(len(values)):
+      if j != k:
+        scratch.append(values[k])
+    m, s = meansd(scratch)
+    if math.fabs(values[j] - m) / s <= limit * s:
+      result.append(values[j])
+    else:
+      outliers.append(values[j])
 
-    return result, outliers
+  return result, outliers
 
 ##### START MESSY CODE #####
 
 _run_number = 0
 
 def _get_number():
-    global _run_number
-    _run_number += 1
-    return _run_number
+  global _run_number
+  _run_number += 1
+  return _run_number
 
 ###### END MESSY CODE ######
 
 def auto_logfiler(DriverInstance, extra = None):
-    '''Create a "sensible" log file for this program wrapper & connect it.'''
+  '''Create a "sensible" log file for this program wrapper & connect it.'''
 
-    working_directory = DriverInstance.get_working_directory()
+  working_directory = DriverInstance.get_working_directory()
 
-    if not working_directory:
-        return
-    
-    executable = os.path.split(DriverInstance.get_executable())[-1]
-    number = _get_number()
+  if not working_directory:
+    return
 
-    if executable[-4:] == '.bat':
-        executable = executable[:-4]
+  executable = os.path.split(DriverInstance.get_executable())[-1]
+  number = _get_number()
 
-    if executable[-4:] == '.exe':
-        executable = executable[:-4]
+  if executable[-4:] == '.bat':
+    executable = executable[:-4]
 
-    if extra:
-        logfile = os.path.join(working_directory,
-                               '%d_%s_%s.log' % (number, executable, extra))
-    else:
-        logfile = os.path.join(working_directory,
-                               '%d_%s.log' % (number, executable))
+  if executable[-4:] == '.exe':
+    executable = executable[:-4]
 
-    DriverInstance.set_xpid(number)
+  if extra:
+    logfile = os.path.join(working_directory,
+                           '%d_%s_%s.log' % (number, executable, extra))
+  else:
+    logfile = os.path.join(working_directory,
+                           '%d_%s.log' % (number, executable))
 
-    Debug.write('Logfile: %s -> %s' % (executable,
-                                       logfile))
+  DriverInstance.set_xpid(number)
 
-    DriverInstance.write_log_file(logfile)
+  Debug.write('Logfile: %s -> %s' % (executable,
+                                     logfile))
 
-    return logfile
+  DriverInstance.write_log_file(logfile)
+
+  return logfile
 
 def unique_elements(list_of_tuples):
-    '''Extract unique elements from list of tuples, return as sorted list.'''
-    return sorted(set(sum(map(list, list_of_tuples), [])))
+  '''Extract unique elements from list of tuples, return as sorted list.'''
+  return sorted(set(sum(map(list, list_of_tuples), [])))
 
 def transpose_loggraph(loggraph_dict):
-    '''Transpose the information in the CCP4-parsed-loggraph dictionary
-    into a more useful structure.'''
+  '''Transpose the information in the CCP4-parsed-loggraph dictionary
+  into a more useful structure.'''
 
-    columns = loggraph_dict['columns']
-    data = loggraph_dict['data']
+  columns = loggraph_dict['columns']
+  data = loggraph_dict['data']
 
-    results = { }
+  results = { }
 
-    # FIXME column labels are not always unique - so prepend the column
-    # number - that'll make it unique! PS counting from 1 - 01/NOV/06
+  # FIXME column labels are not always unique - so prepend the column
+  # number - that'll make it unique! PS counting from 1 - 01/NOV/06
 
-    new_columns = []
+  new_columns = []
 
-    j = 0
-    for c in columns:
-        j += 1
-        col = '%d_%s' % (j, c)
-        new_columns.append(col)
-        results[col] = []
+  j = 0
+  for c in columns:
+    j += 1
+    col = '%d_%s' % (j, c)
+    new_columns.append(col)
+    results[col] = []
 
-    nc = len(new_columns)
+  nc = len(new_columns)
 
-    for record in data:
-        for j in range(nc):
-            results[new_columns[j]].append(record[j])
+  for record in data:
+    for j in range(nc):
+      results[new_columns[j]].append(record[j])
 
-    return results
+  return results
 
 def nint(a):
-    '''return the nearest integer to a.'''
+  '''return the nearest integer to a.'''
 
-    i = int(a)
+  i = int(a)
 
-    if a > 0:
-        if a - i > 0.5:
-            i += 1
+  if a > 0:
+    if a - i > 0.5:
+      i += 1
 
-    elif a < 0:
-        if a - i < -0.5:
-            i -= 1
+  elif a < 0:
+    if a - i < -0.5:
+      i -= 1
 
-    return i
+  return i
 
 if __name__ == '__main__test__':
-    # test out nint
-    tests = [(2.9, 3), (3.1, 3), (-2.9, -3), (-3.1, -3)]
-    for t in tests:
-        if nint(t[0]) != t[1]:
-            raise RuntimeError, 'nint failed for %f' % t[0]
+  # test out nint
+  tests = [(2.9, 3), (3.1, 3), (-2.9, -3), (-3.1, -3)]
+  for t in tests:
+    if nint(t[0]) != t[1]:
+      raise RuntimeError, 'nint failed for %f' % t[0]
 
 if __name__ == '__main_old__':
-    # run a test
+  # run a test
 
-    class A:
-        pass
+  class A:
+    pass
 
-    class B(A):
-        pass
+  class B(A):
+    pass
 
-    class C:
-        pass
+  class C:
+    pass
 
-    if inherits_from(B, 'A'):
-        print 'ok'
-    else:
-        print 'failed'
+  if inherits_from(B, 'A'):
+    print 'ok'
+  else:
+    print 'failed'
 
-    if not inherits_from(C, 'A'):
-        print 'ok'
-    else:
-        print 'failed'
+  if not inherits_from(C, 'A'):
+    print 'ok'
+  else:
+    print 'failed'
