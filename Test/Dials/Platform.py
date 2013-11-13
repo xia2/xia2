@@ -35,7 +35,7 @@ class Platform(FrameProcessor):
 
 def tst_findspots(image):
   p = Platform(image)
-  return p.findspots(p.get_matching_images()[:1])
+  return p.findspots(p.get_matching_images()[:10])
 
 def tst_all():
   import sys

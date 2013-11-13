@@ -31,10 +31,10 @@ def DialsSpotfinder(DriverType = None):
       Debug.write('Running dials.spotfinder to find spots')
 
       spotfinder_images = [fp.get_image_name(i) for i in images]
+      self.clear_command_line()  
       self.add_command_line(spotfinder_images)
       self.add_command_line('-o')
-      self.add_command_line('spots.pickle')
-      
+      self.add_command_line('spots.pickle')    
       self.start()
       self.close_wait()
 
