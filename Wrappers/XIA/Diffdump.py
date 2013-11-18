@@ -496,7 +496,10 @@ def failover_dxtbx(image_file):
   header['fast_direction'] = F.elems
   header['slow_direction'] = S.elems
   header['rotation_axis'] = g.get_rotation_axis()
-  header['exposure_time'] = s.get_exposure_time()
+  if hasattr(s, 'get_exposure_time'):
+    header['exposure_time'] = s.get_exposure_time()
+  else:
+    header['exposure_time'] = s.get_exposure_times()[0]    
   header['distance'] = math.fabs(origin.dot(N))
   header['two_theta'] = - beam.angle(N, deg = True)
   header['raw_beam'] = x, y
