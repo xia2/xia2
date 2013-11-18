@@ -26,9 +26,14 @@ def DialsSpotfinder(DriverType = None):
       
       return
 
-    def __call__(self, fp, images):
+    def __call__(self, fp, images, dials_spotfinder_phil = None):
       from Handlers.Streams import Debug
       Debug.write('Running dials.spotfinder to find spots')
+
+      if dials_spotfinder_phil:
+        # write phil as file to disk
+        # pass phil on command-line below
+        pass
 
       spotfinder_images = [fp.get_image_name(i) for i in images]
       self.clear_command_line()  

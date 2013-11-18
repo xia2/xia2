@@ -45,8 +45,8 @@ import libtbx.load_env
 
 if libtbx.env.has_module('dials'):
   spotfinding_phil_path = libtbx.env.find_in_repositories(
-      relative_path='dials/data/spotfinding.phil',
-      test=os.path.isfile)
+    relative_path='dials/data/spotfinding.phil',
+    test=os.path.isfile)
   master_phil = phil.parse(file_name=spotfinding_phil_path)
 else:
   master_phil = phil.parse("""
