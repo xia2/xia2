@@ -151,6 +151,6 @@ core/Test/ExampleProgramTightLoop.py -text
 core/Test/readme.txt -text
 core/license.txt -text
 core/readme.txt -text
-html/phils/fixed.phil -text
+html/phils/fixed_scale_factors.phil -text
 html/xia2-new-logo.gif -text
 html/xia2-new-logo.psd -text
