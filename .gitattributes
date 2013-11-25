@@ -152,6 +152,6 @@ core/Test/readme.txt -text
 core/license.txt -text
 core/readme.txt -text
 html/phils/fixed_scale_factors.phil -text
-html/phils/spots_per_pixel.phil -text
+html/phils/pixels_per_spot.phil -text
 html/xia2-new-logo.gif -text
 html/xia2-new-logo.psd -text
