@@ -62,7 +62,7 @@ debug = *OFF ON
   .help = 'output enganced debugging for indexing'
 """)
 
-def XDSIdxref(DriverType = None, params = None):
+def XDSIdxref(DriverType=None, params=None):
 
   DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -70,7 +70,7 @@ def XDSIdxref(DriverType = None, params = None):
                          FrameProcessor):
     '''A wrapper for wrapping XDS in idxref mode.'''
 
-    def __init__(self, params = None):
+    def __init__(self, params=None):
 
       # set up the object ancestors...
 

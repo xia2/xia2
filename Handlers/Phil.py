@@ -9,11 +9,7 @@
 # set for individual programs can be found. Initially this will be just a
 # couple for XDS.
 
-import os
-
-from libtbx.phil import parse
-
-from libtbx.phil import interface
+from libtbx.phil import parse, interface
 
 master_phil = parse("""
 xds {
@@ -26,12 +22,23 @@ xds {
   index {
     include scope Wrappers.XDS.XDSIdxref.master_params
   }
+  colspot {
+    include scope Wrappers.XDS.XDSColspot.master_params
+  }
   merge2cbf {
     include scope Wrappers.XDS.Merge2cbf.master_params
   }
 }
 dials {
   include scope Wrappers.Dials.Spotfinder.master_phil
+  spotfinder {
+    phil_file = None
+      .type = path
+  }
+  index {
+    phil_file = None
+      .type = path
+  }
 }
 deprecated_xds.parameter {
   delphi = 5

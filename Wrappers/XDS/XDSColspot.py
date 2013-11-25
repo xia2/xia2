@@ -38,7 +38,14 @@ from Handlers.Streams import Debug
 # global flags
 from Handlers.Flags import Flags
 
-def XDSColspot(DriverType = None):
+from libtbx.phil import parse
+
+master_params = parse("""
+minimum_pixels_per_spot = 1
+  .type = int
+""")
+
+def XDSColspot(DriverType=None, params=None):
 
   DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -46,12 +53,18 @@ def XDSColspot(DriverType = None):
                           FrameProcessor):
     '''A wrapper for wrapping XDS in colspot mode.'''
 
-    def __init__(self):
+    def __init__(self, params=None):
 
       # set up the object ancestors...
 
       DriverInstance.__class__.__init__(self)
       FrameProcessor.__init__(self)
+
+      # phil parameters
+
+      if not params:
+        params = master_params.extract()
+      self._params = params
 
       # now set myself up...
 
@@ -133,7 +146,8 @@ def XDSColspot(DriverType = None):
                     self._parallel)
 
       if image_header['detector'] in ('pilatus', 'dectris'):
-        xds_inp.write('MINIMUM_NUMBER_OF_PIXELS_IN_A_SPOT=1\n')
+        xds_inp.write('MINIMUM_NUMBER_OF_PIXELS_IN_A_SPOT=%d\n' %
+                      self._params.minimum_pixels_per_spot)
 
       for record in header:
         xds_inp.write('%s\n' % record)
@@ -191,7 +205,7 @@ def XDSColspot(DriverType = None):
 
       return
 
-  return XDSColspotWrapper()
+  return XDSColspotWrapper(params)
 
 if __name__ == '__main__':
 

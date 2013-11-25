@@ -130,7 +130,8 @@ class XDSIndexer(FrameProcessor,
     return init
 
   def Colspot(self):
-    colspot = _Colspot()
+    from Handlers.Phil import PhilIndex
+    colspot = _Colspot(params=PhilIndex.params.xds.colspot)
     colspot.set_working_directory(self.get_working_directory())
 
     colspot.setup_from_image(self.get_image_name(
