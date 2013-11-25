@@ -47,6 +47,11 @@ from Handlers.Streams import Chatter, Debug
 
 from libtbx.phil import parse
 
+# For details on reflecting_range, it's E.S.D., and beam divergence etc.
+# see:
+# 
+# http://xds.mpimf-heidelberg.mpg.de/html_doc/xds_parameters.html
+
 master_params = parse("""
 refine = *ORIENTATION *CELL BEAM DISTANCE AXIS
   .type = choice(multi = True)
@@ -56,9 +61,19 @@ refine_final = *ORIENTATION *CELL BEAM DISTANCE AXIS
   .help = 'what to refine in final pass of integration'
 fix_scale = False
   .type = bool
+delphi = 0
+  .type = float
+reflecting_range = 0
+  .type = float
+reflecting_range_esd = 0
+  .type = float
+beam_divergence = 0
+  .type = float
+beam_divergence_esd = 0
+  .type = float
 """)
 
-def XDSIntegrate(DriverType = None, params = None):
+def XDSIntegrate(DriverType=None, params=None):
 
   DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -66,7 +81,7 @@ def XDSIntegrate(DriverType = None, params = None):
                             FrameProcessor):
     '''A wrapper for wrapping XDS in integrate mode.'''
 
-    def __init__(self, params = None):
+    def __init__(self, params=None):
 
       # set up the object ancestors...
 
@@ -215,7 +230,9 @@ def XDSIntegrate(DriverType = None, params = None):
       # write out lots of output
       xds_inp.write('TEST=2\n')
 
-      if Flags.get_small_molecule():
+      if self._params.delphi:
+        xds_inp.write('DELPHI=%.1f\n' % self._params.delphi)
+      elif Flags.get_small_molecule():
         xds_inp.write('DELPHI=%.1f\n' % \
                       xds_params.parameter.delphi_small)
       else:
@@ -236,28 +253,31 @@ def XDSIntegrate(DriverType = None, params = None):
         else:
           xds_inp.write('FIXED_SCALE_FACTOR=TRUE\n')
 
-      # check for updated input parameters
+      # check for updated input parameters or ones from phil
+      
       if self._updates.has_key('BEAM_DIVERGENCE') and \
              self._updates.has_key('BEAM_DIVERGENCE_E.S.D.'):
         xds_inp.write(
             'BEAM_DIVERGENCE=%f BEAM_DIVERGENCE_E.S.D.=%f\n' % \
             (self._updates['BEAM_DIVERGENCE'],
              self._updates['BEAM_DIVERGENCE_E.S.D.']))
-        Debug.write(
-            'BEAM_DIVERGENCE=%f BEAM_DIVERGENCE_E.S.D.=%f' % \
-            (self._updates['BEAM_DIVERGENCE'],
-             self._updates['BEAM_DIVERGENCE_E.S.D.']))
-
+      elif self._params.beam_divergence and self._params.beam_divergence_esd:
+        xds_inp.write(
+            'BEAM_DIVERGENCE=%f BEAM_DIVERGENCE_E.S.D.=%f\n' % \
+            (self._params.beam_divergence,
+             self._params.beam_divergence_esd))
+        
       if self._updates.has_key('REFLECTING_RANGE') and \
              self._updates.has_key('REFLECTING_RANGE_E.S.D.'):
         xds_inp.write(
             'REFLECTING_RANGE=%f REFLECTING_RANGE_E.S.D.=%f\n' % \
             (self._updates['REFLECTING_RANGE'],
              self._updates['REFLECTING_RANGE_E.S.D.']))
-        Debug.write(
-            'REFLECTING_RANGE=%f REFLECTING_RANGE_E.S.D.=%f' % \
-            (self._updates['REFLECTING_RANGE'],
-             self._updates['REFLECTING_RANGE_E.S.D.']))
+      elif self._params.reflecting_range and self._params.reflecting_range_esd:
+        xds_inp.write(
+            'REFLECTING_RANGE=%f REFLECTING_RANGE_E.S.D.=%f\n' % \
+            (self._params.reflecting_range,
+             self._params.reflecting_range_esd))
 
       for record in header:
         xds_inp.write('%s\n' % record)
