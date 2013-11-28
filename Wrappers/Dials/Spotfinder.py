@@ -43,6 +43,7 @@ from libtbx import phil
 import libtbx
 import libtbx.load_env
 
+# FIXME make all of this go away...
 if libtbx.env.has_module('dials'):
   spotfinding_phil_path = libtbx.env.find_in_repositories(
     relative_path='dials/data/spotfinding.phil',
@@ -67,7 +68,8 @@ def Spotfinder(DriverType=None, params=None):
       DriverInstance.__class__.__init__(self)
       FrameProcessor.__init__(self)
 
-      # phil parameters
+      # phil parameters - should get these from Handlers.Phil.dials.phil_file
+      # perhaps as starting point then clobber those extra parameters we want...
 
       if not params:
         params = master_phil.extract()
