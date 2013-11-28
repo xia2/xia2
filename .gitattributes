@@ -51,6 +51,7 @@ Toolkit/__init__.py -text
 Toolkit/guess_the_atom.py -text
 Toolkit/x1335.py -text
 Wrappers/CCP4/Ctruncate.py -text
+Wrappers/Dials/DialsImport.py -text
 Wrappers/Dials/DialsSpotfinder.py -text
 Wrappers/Dials/ExportSpotXDS.py -text
 Wrappers/Dials/Spotfinder.py -text
