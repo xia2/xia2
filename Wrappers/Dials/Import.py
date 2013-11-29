@@ -10,8 +10,8 @@
 
 from __future__ import division
 
-from Utils import setup_xia2_environ
-setup_xia2_environ()
+from __init__ import _setup_xia2_environ
+_setup_xia2_environ()
 
 # interfaces that this inherits from ...
 from Schema.Interfaces.FrameProcessor import FrameProcessor
