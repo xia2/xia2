@@ -52,9 +52,10 @@ Toolkit/guess_the_atom.py -text
 Toolkit/x1335.py -text
 Wrappers/CCP4/Ctruncate.py -text
 Wrappers/Dials/Attic/Spotfinder.py -text
-Wrappers/Dials/DialsImport.py -text
-Wrappers/Dials/DialsSpotfinder.py -text
 Wrappers/Dials/ExportSpotXDS.py -text
+Wrappers/Dials/Import.py -text
+Wrappers/Dials/Spotfinder.py -text
+Wrappers/Dials/Utils.py -text
 Wrappers/Dials/__init__.py -text
 Wrappers/Labelit/DistlSignalStrength.py -text
 Wrappers/Labelit/DistlSweepStrength.py -text

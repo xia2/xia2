@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# DialsImport.py
+# Import.py
 #
 #   Copyright (C) 2013 Diamond Light Source, Richard Gildea
 #
@@ -10,39 +10,20 @@
 
 from __future__ import division
 
-import os
-
-# We should really put these variable checks, etc in one centralised place
-def setup_xia2_environ():
-  import sys
-  if not os.environ.has_key('XIA2CORE_ROOT'):
-    raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-  if not os.environ.has_key('XIA2_ROOT'):
-    raise RuntimeError, 'XIA2_ROOT not defined'
-
-  if not os.path.join(os.environ['XIA2CORE_ROOT'],
-                      'Python') in sys.path:
-    sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                                 'Python'))
-
-  if not os.environ['XIA2_ROOT'] in sys.path:
-    sys.path.append(os.environ['XIA2_ROOT'])
-
+from Utils import setup_xia2_environ
 setup_xia2_environ()
 
 # interfaces that this inherits from ...
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 
-
-def DialsImport(DriverType = None):
-  '''A factory for DialsImportWrapper classes.'''
+def Import(DriverType = None):
+  '''A factory for ImportWrapper classes.'''
 
   from Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
-  class DialsImportWrapper(DriverInstance.__class__,
-                           FrameProcessor):
+  class ImportWrapper(DriverInstance.__class__,
+                      FrameProcessor):
 
     def __init__(self):
       DriverInstance.__class__.__init__(self)
@@ -85,23 +66,23 @@ def DialsImport(DriverType = None):
       self.start()
       self.close_wait()
 
+      import os
       self._output_data_files.setdefault(
-        'sweep.json',
-        open(os.path.join(self.get_working_directory(), 'sweep.json'), 'rb')
-        .read())
+        'sweep.json', open(os.path.join(
+          self.get_working_directory(), 'sweep.json'), 'rb').read())
 
       from dxtbx.serialize import load
       self.sweep = load.imageset_from_string(
         self.get_output_data_file('sweep.json'))
 
-  return DialsImportWrapper()
+  return ImportWrapper()
 
 if __name__ == '__main__':
   import sys
   image_files = sys.argv[1:]
   assert len(image_files) > 0
   first_image = image_files[0]
-  importer = DialsImport()
+  importer = Import()
   importer.setup_from_image(first_image)
   importer.run()
   print importer.sweep.get_detector()

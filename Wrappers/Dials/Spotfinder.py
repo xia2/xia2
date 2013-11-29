@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# DialsSpotfinder.py
+# Spotfinder.py
 #
 #   Copyright (C) 2013 Diamond Light Source, Richard Gildea, Graeme Winter
 #
@@ -11,39 +11,23 @@
 
 from __future__ import division
 
-import os
-import sys
-
-if not os.environ.has_key('XIA2CORE_ROOT'):
-  raise RuntimeError, 'XIA2CORE_ROOT not defined'
-
-if not os.environ.has_key('XIA2_ROOT'):
-  raise RuntimeError, 'XIA2_ROOT not defined'
-
-if not os.path.join(os.environ['XIA2CORE_ROOT'],
-                    'Python') in sys.path:
-  sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
-                               'Python'))
-
-if not os.environ['XIA2_ROOT'] in sys.path:
-  sys.path.append(os.environ['XIA2_ROOT'])
-
+from Utils import setup_xia2_environ
+setup_xia2_environ()
 
 # interfaces that this inherits from ...
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 from Handlers.Flags import Flags
 
-
-def DialsSpotfinder(DriverType = None):
-  '''A factory for DialsSpotfinderWrapper classes.'''
+def Spotfinder(DriverType = None):
+  '''A factory for SpotfinderWrapper classes.'''
 
   from Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
-  class DialsSpotfinderWrapper(DriverInstance.__class__,
-                               FrameProcessor):
-
+  class SpotfinderWrapper(DriverInstance.__class__,
+                          FrameProcessor):
+    
     def __init__(self):
       DriverInstance.__class__.__init__(self)
       FrameProcessor.__init__(self)
@@ -103,25 +87,26 @@ def DialsSpotfinder(DriverType = None):
       # that was used to launch xia2 but eventually the reflection list object
       # should be moved to cctbx anyway
       import cPickle as pickle
+      import os
       self.reflections = pickle.load(open(
         os.path.join(self.get_working_directory(), 'spots.pickle'), 'rb'))
 
-  return DialsSpotfinderWrapper()
+  return SpotfinderWrapper()
 
 if __name__ == '__main__':
-  import sys
+  import sys, os
   image_files = sys.argv[1:]
   assert len(image_files) > 0
   first_image = image_files[0]
-  from Wrappers.Dials.DialsImport import DialsImport
-  importer = DialsImport()
+  from Wrappers.Dials.Import import Import
+  importer = Import()
   importer.setup_from_image(first_image)
   importer.run()
   print importer.sweep.get_detector()
   print importer.sweep.get_beam()
   print importer.sweep.get_goniometer()
   print importer.sweep.get_scan()
-  spotfinder = DialsSpotfinder()
+  spotfinder = Spotfinder()
   spotfinder.setup_from_sweep(importer.sweep)
   # or this way:
   #spotfinder.set_input_data_file(
