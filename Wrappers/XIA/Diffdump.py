@@ -501,7 +501,10 @@ def failover_dxtbx(image_file):
   else:
     header['exposure_time'] = s.get_exposure_times()[0]    
   header['distance'] = math.fabs(origin.dot(N))
-  header['two_theta'] = - beam.angle(N, deg = True)
+  if math.fabs(beam.angle(N, deg = True) - 180) < 0.1:
+    header['two_theta'] = 180 - beam.angle(N, deg = True)
+  else:
+    header['two_theta'] = - beam.angle(N, deg = True)
   header['raw_beam'] = x, y
   header['phi_start'] = s.get_oscillation()[0]
   header['phi_width'] = s.get_oscillation()[1]
@@ -520,7 +523,6 @@ def failover_dxtbx(image_file):
     header['detector_class'] = i.detector_class
     header['detector'] = i.detector
   else:
-
     if hasattr(d, 'get_type'):
       # cope with new detector as array of panels API
       dtype = d.get_type()
