@@ -208,12 +208,10 @@ class XProject():
 
             replace = True
 
-          # FIXME: AJP to implement
           if 'ice' in sweep_info:
             pass
           if 'excluded_regions' in sweep_info:
             pass
-
 
           if sweep_info['wavelength'] == wavelength:
 
