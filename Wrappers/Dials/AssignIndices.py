@@ -84,6 +84,7 @@ def AssignIndices(DriverType = None):
 
       self.start()
       self.close_wait()
+      self.check_for_errors()
 
       # XXX this won't work as yet if DIALS is not built into cctbx.python
       # that was used to launch xia2 but eventually the reflection list object
