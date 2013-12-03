@@ -91,8 +91,6 @@ def ExportSpotXDS(DriverType=None, params=None):
       self.add_command_line(self._input_data_files.keys())
       self.start()
       self.close_wait()
-
-      # check for errors
       self.check_for_errors()
 
       self._output_data_files.setdefault(

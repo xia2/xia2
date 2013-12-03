@@ -82,6 +82,7 @@ def Refine(DriverType = None):
 
       self.start()
       self.close_wait()
+      self.check_for_errors()
 
       import os
       for output_file in ('refined_sweep.json', 'refined_crystal.json'):

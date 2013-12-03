@@ -65,6 +65,7 @@ def Import(DriverType = None):
       self.add_command_line('sweep.json')
       self.start()
       self.close_wait()
+      self.check_for_errors()
 
       import os
       self._output_data_files.setdefault(

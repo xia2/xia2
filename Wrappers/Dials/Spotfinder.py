@@ -76,6 +76,7 @@ def Spotfinder(DriverType = None):
       self.add_command_line('--nproc=%i' %nproc)
       self.start()
       self.close_wait()
+      self.check_for_errors()
 
       # XXX probably too large to store in memory?
       #self._output_data_files.setdefault(
