@@ -5,11 +5,13 @@
 #   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
+# Interactive indexing with XDS: at the moment this means just selecting which 
+# images you want to use for indexing though FIXME it should be possible to 
+# have the indexing fully interactive i.e. user can run index, select solution,
+# change images to use etc. so it becomes fully interactive.
 
 import os
 import sys
-import math
-import exceptions
 
 if not os.environ.has_key('XIA2_ROOT'):
   raise RuntimeError, 'XIA2_ROOT not defined'
@@ -21,23 +23,9 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from XDSIndexer import XDSIndexer
 
-# wrappers for programs that this needs
-
-from Wrappers.XIA.Diffdump import Diffdump
-
-# helper functions
-
-from Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
-from Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
-from Wrappers.XDS.XDS import XDSException
-from Modules.Indexer.XDSCheckIndexerSolution import xds_check_indexer_solution
-
 # odds and sods that are needed
 
-from lib.bits import auto_logfiler, nint
-from Handlers.Streams import Chatter, Debug, Journal
-from Handlers.Flags import Flags
-from Handlers.Files import FileHandler
+from Handlers.Streams import Chatter
 
 class XDSIndexerInteractive(XDSIndexer):
   '''An extension of XDSIndexer using all available images.'''
