@@ -289,7 +289,7 @@ class DefaultDriver(object):
     '''Get the command line.'''
 
     return self._command_line
-  
+
   def add_command_line(self, command_line_token):
     '''Add a token to the command line.'''
 

@@ -18,7 +18,7 @@ def Say(what):
   if not os.path.exists(say):
     return
   os.system('%s %s' % (say, what))
-  return            
+  return
 
 if __name__ == '__main__':
   Say('Hello world')

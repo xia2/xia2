@@ -8,8 +8,8 @@
     <h1><img src="xia2-new-logo.gif" alt="xia2"></img>
     Automated Data Reduction</h1>
 
-    <p><a href="http://sourceforge.net/projects/xia2/">Sourceforge project 
-	page</a>.</p>
+    <p><a href="http://sourceforge.net/projects/xia2/">Sourceforge project
+        page</a>.</p>
 
     <p>New! I have now set up a mailing list for xia2 on sourceforge.
       If you would like to subscribe to this - where announcements of new
@@ -57,10 +57,10 @@
       .zip file)</a></li>
       <li><a
       href="http://www.ccp4.ac.uk/xia/xia2-0.3.6.3.tar.bz2">Unix (as
-      .tar.bz2 file)</a></li> 
+      .tar.bz2 file)</a></li>
       <li><a
       href="http://www.ccp4.ac.uk/xia/xia2-0.3.6.3.tar.gz">Unix (as
-      .tar.gz file)</a></li> 
+      .tar.gz file)</a></li>
     </ul>
 
     <p>All of the files are the same, simply packed for different platforms.
@@ -461,8 +461,8 @@ END PROJECT TS01
     <ul>
       <li>Resolution limit calculation now delegated to resolutionizer.</li>
       <li>Twinning test now uses CCTBX code not sfcheck.</li>
-      <li>PythonDriver added to support execution of Python code as separate 
-	process.</li>
+      <li>PythonDriver added to support execution of Python code as separate
+        process.</li>
     </ul>
 
     <p>Changes since 0.3.5.0</p>
@@ -470,19 +470,19 @@ END PROJECT TS01
       <li>-hdr_in mode - pass in text file containing image
       header. Can also generate this file with xia2 with -hdr_out example.hdr
       </li>
-      <li>-xparm_ub mode for XDS processing only, provide a UB matrix (XDS 
-	XPARM file) to match the orientation to: primarily useful if you record
-	data from several regions on a sample, and the sample has close-to
-	symmetry (i.e. you almost certainly don't need this)</li>
+      <li>-xparm_ub mode for XDS processing only, provide a UB matrix (XDS
+        XPARM file) to match the orientation to: primarily useful if you record
+        data from several regions on a sample, and the sample has close-to
+        symmetry (i.e. you almost certainly don't need this)</li>
       <li>Removed usage of BINSORT_SCR as this is being deprecated by CCP4.
       </li>
       <li>Allow Phil overrides on selection of autoindexing solutions, where
-	indexing can give large variations in unit cell constants (e.g. low
-	resolution virus data)</li>
+        indexing can give large variations in unit cell constants (e.g. low
+        resolution virus data)</li>
       <li>Properly set the resolution in CAD copying free R flags.</li>
       <li>Allow access to profile grid size through the Phil interface:
 
-	xds.parameter.profile_grid_size = 13, 13
+        xds.parameter.profile_grid_size = 13, 13
       </li>
       <li>Implement TRUSTED_REGION through Phil as suggested by Luca Jovine
       </li>
@@ -499,18 +499,18 @@ END PROJECT TS01
     <p>Changes since 0.3.4.0</p>
     <ul>
       <li>Additional information in output: correct directory for BINSORT_SCR,
-	free space in working directory, warns if less than 200MB in 
-	BINSORT_SCR directory.</li>
+        free space in working directory, warns if less than 200MB in
+        BINSORT_SCR directory.</li>
       <li>EXCLUDE keyword added to XINFO SWEEP block to allow
-	specific resolution ranges to be excluded in processing,
-	contributed by Andrew Perry at Monash University.</li>
+        specific resolution ranges to be excluded in processing,
+        contributed by Andrew Perry at Monash University.</li>
       <li>Include the resolution limits at the XSCALE stage rather
-	than simply in the merging.</li>
+        than simply in the merging.</li>
       <li>Support for 2x2 binned ADSC Quantum 270 detector.</li>
       <li>Support for '.' in file names.</li>
       <li>Support for NOIR1 detector on ALS 4.2.2</li>
-      <li>Smarter 3dii mode - if 3di style indexing will give better answer, 
-	it will do that...</li>
+      <li>Smarter 3dii mode - if 3di style indexing will give better answer,
+        it will do that...</li>
       <li>Use ctruncate in place of truncate (finally!)</li>
     </ul>
 
@@ -518,7 +518,7 @@ END PROJECT TS01
     <ul>
       <li>Use Phil to override XDS parameters.</li>
       <li>Use Pointless in place of Reindex; Aimless in place of Scala; no
-	limit to number of batches which can be processed.</li>
+        limit to number of batches which can be processed.</li>
     </ul>
 
     <p>Changes since 0.3.3.3</p>

@@ -7,7 +7,7 @@
 #endif
 
 int main(int argc,
-	 char ** argv)
+         char ** argv)
 {
 
 #ifndef _WIN32
@@ -20,4 +20,3 @@ int main(int argc,
 
   return 0;
 }
-

@@ -32,7 +32,7 @@ xds {
 dials {
   phil_file = None
     .type = path
-  # FIXME all of these should go away - until we put things back in 
+  # FIXME all of these should go away - until we put things back in
   # explicitly
   # include scope Wrappers.Dials.Spotfinder.master_phil
   spotfinder {

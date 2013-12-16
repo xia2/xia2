@@ -499,7 +499,7 @@ def failover_dxtbx(image_file):
   if hasattr(s, 'get_exposure_time'):
     header['exposure_time'] = s.get_exposure_time()
   else:
-    header['exposure_time'] = s.get_exposure_times()[0]    
+    header['exposure_time'] = s.get_exposure_times()[0]
   header['distance'] = math.fabs(origin.dot(N))
   if math.fabs(beam.angle(N, deg = True) - 180) < 0.1:
     header['two_theta'] = 180 - beam.angle(N, deg = True)

@@ -49,7 +49,7 @@ from libtbx.phil import parse
 
 # For details on reflecting_range, it's E.S.D., and beam divergence etc.
 # see:
-# 
+#
 # http://xds.mpimf-heidelberg.mpg.de/html_doc/xds_parameters.html
 
 master_params = parse("""
@@ -254,7 +254,7 @@ def XDSIntegrate(DriverType=None, params=None):
           xds_inp.write('FIXED_SCALE_FACTOR=TRUE\n')
 
       # check for updated input parameters or ones from phil
-      
+
       if self._updates.has_key('BEAM_DIVERGENCE') and \
              self._updates.has_key('BEAM_DIVERGENCE_E.S.D.'):
         xds_inp.write(
@@ -266,7 +266,7 @@ def XDSIntegrate(DriverType=None, params=None):
             'BEAM_DIVERGENCE=%f BEAM_DIVERGENCE_E.S.D.=%f\n' % \
             (self._params.beam_divergence,
              self._params.beam_divergence_esd))
-        
+
       if self._updates.has_key('REFLECTING_RANGE') and \
              self._updates.has_key('REFLECTING_RANGE_E.S.D.'):
         xds_inp.write(

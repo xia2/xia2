@@ -3,7 +3,7 @@
 #include <signal.h>
 
 int main(int argc,
-	 char ** argv)
+         char ** argv)
 {
 #ifndef _WIN32
   raise(SIGKILL);
@@ -15,4 +15,3 @@ int main(int argc,
 
   return 0;
 }
-

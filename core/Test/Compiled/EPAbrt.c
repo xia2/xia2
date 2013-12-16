@@ -3,10 +3,9 @@
 #include <signal.h>
 
 int main(int argc,
-	 char ** argv)
+         char ** argv)
 {
   raise(SIGABRT);
 
   return 0;
 }
-

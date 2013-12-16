@@ -5,8 +5,8 @@
 #   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
-# Interactive indexing with XDS: at the moment this means just selecting which 
-# images you want to use for indexing though FIXME it should be possible to 
+# Interactive indexing with XDS: at the moment this means just selecting which
+# images you want to use for indexing though FIXME it should be possible to
 # have the indexing fully interactive i.e. user can run index, select solution,
 # change images to use etc. so it becomes fully interactive.
 
@@ -55,7 +55,7 @@ class XDSIndexerInteractive(XDSIndexer):
     images = self.get_matching_images()
 
     from IndexerSelectImages import index_select_image_wedges_user
-    
+
     wedges = index_select_image_wedges_user(
       self._fp_template, phi_width, images, Chatter)
 
@@ -65,4 +65,3 @@ class XDSIndexerInteractive(XDSIndexer):
       self._background_images = (min(images), max(images))
 
     return wedges
-

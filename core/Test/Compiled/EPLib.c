@@ -3,7 +3,7 @@
 #include "EPLib2.h"
 
 int main(int argc,
-	 char ** argv)
+         char ** argv)
 {
   int i = 1;
 
@@ -11,4 +11,3 @@ int main(int argc,
 
   return 0;
 }
-

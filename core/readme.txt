@@ -7,13 +7,13 @@ Updated for version 0.0.2 7/JUN/06
 Introduction
 ------------
 
-This is the core module of XIA2 - essentially the second major development 
+This is the core module of XIA2 - essentially the second major development
 release of the XIA - "Crystallographic Infrastructure for
 Automation", or "eXpertise In Automation", depending on your mood.
 
 The structure of this is different. In place of having a single huge CVS
 archive, the core is being separated out from the rest, to allow it to be used
-more easily in other projects. 
+more easily in other projects.
 
 Requirements
 ------------
@@ -54,11 +54,11 @@ ExampleProgramRaiseException
 ExampleProgramStandardInput
 ExampleProgramTightLoop
 
-These are shell/batch scripts which run python (.py) programs. In all cases a 
+These are shell/batch scripts which run python (.py) programs. In all cases a
 python executable needs to be in the path.
 
 There are also a small number of compiled executables for testing things like
-segmentation violations and the like. To build these you'll need compilers - 
+segmentation violations and the like. To build these you'll need compilers -
 on windows visual studio and on linux/mac os x gcc. To build these go to
 
 /Test/Compiled
@@ -74,7 +74,7 @@ source the setup script in $XIA2CORE_ROOT:
 . setup.sh (unix derivatives)
 setup.bat  (windows)
 
-Then go to Python and run the appropriate run_tests script as bash 
+Then go to Python and run the appropriate run_tests script as bash
 run_tests.sh or run_tests.bat. This will run a set of unit tests (9)
 which should run and produce output like:
 
@@ -84,8 +84,8 @@ Ran 9 tests in 124.018s
 
 OK
 
-If it does, then you're onto a winner. Some of the tests rely on CCP4 
-programs, so they can take a moment or two. If any programs are missing 
+If it does, then you're onto a winner. Some of the tests rely on CCP4
+programs, so they can take a moment or two. If any programs are missing
 helpful message will tell you all about it.
 
 
@@ -97,7 +97,7 @@ There is a fair amount of documentation to be had - look first in
 
 $XIA2CORE_ROOT/Doc
 
-and 
+and
 
 $XIA2CORE_ROOT/Python/Doc
 

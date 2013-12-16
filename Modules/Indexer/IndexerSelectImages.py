@@ -85,7 +85,7 @@ def index_select_image_wedges_user(sweep_id, phi_width, images, out_stream):
       return images
 
     try:
-      images = [tuple([int(t.strip()) for t in r.split('-')]) 
+      images = [tuple([int(t.strip()) for t in r.split('-')])
                 for r in record.split(',')]
       images_list = ', '.join(['%d-%d' % i for i in images])
       out_stream.write('New images for indexing: %s' % \

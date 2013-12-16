@@ -20,8 +20,8 @@ Driver API specifies call input() -> this is recorded then delegated to the
 Driver implementation _input() method. Simple. This means that the _input()
 method must be overloaded - not input()!
 
-19/JUN/06 
+19/JUN/06
 
-Implement a ClusterDriverFactory which will create a ClusterDriver instance 
+Implement a ClusterDriverFactory which will create a ClusterDriver instance
 (to the client looks like a Driver) if "cluster" is in XIA2CORE_DRIVERTYPE.
 Can be specific like "cluster.sge".
