@@ -341,9 +341,12 @@ def print_sweeps(out = sys.stdout):
       if cl_beam[0] or cl_beam[1]:
         out.write('BEAM %6.2f %6.2f\n' % cl_beam)
       else:
+        interactive = Flags.get_interactive()
+        Flags.set_interactive(False)
         beam = compute_beam_centre(s)
         if beam:
           out.write('BEAM %6.2f %6.2f\n' % tuple(beam))
+        Flags.set_interactive(interactive)
       out.write('END SWEEP %s\n' % name)
 
       out.write('\n')

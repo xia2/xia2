@@ -44,6 +44,7 @@ from Wrappers.Labelit.LabelitIndexII import LabelitIndexII
 from Wrappers.CCP4.Mosflm import Mosflm
 from Modules.Indexer.XDSIndexer import XDSIndexer
 from Modules.Indexer.XDSIndexerII import XDSIndexerII
+from Modules.Indexer.XDSIndexerInteractive import XDSIndexerInteractive
 from Modules.Indexer.XDSIndexerSum import XDSIndexerSum
 
 from DriverExceptions.NotAvailableError import NotAvailableError
@@ -180,8 +181,12 @@ def Indexer(preselection = None):
 
   if not indexer and (not preselection or preselection == 'xdsii'):
     try:
-      indexer = XDSIndexerII()
-      Debug.write('Using XDS II Indexer')
+      if Flags.get_interactive():
+        indexer = XDSIndexerInteractive()
+        Debug.write('Using XDS Interactive Indexer')
+      else:
+        indexer = XDSIndexerII()
+        Debug.write('Using XDS II Indexer')
     except NotAvailableError, e:
       if preselection:
         raise RuntimeError, 'preselected indexer xds not available'

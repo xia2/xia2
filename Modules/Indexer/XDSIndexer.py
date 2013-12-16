@@ -303,10 +303,6 @@ class XDSIndexer(FrameProcessor,
     Debug.write('Distance: %.2f' % self.get_distance())
 
     if self._indxr_images == []:
-      # note well that this may reset the "done" flag so
-      # override this... ornate method here to avoid keeping a
-      # pointer to the function which decides which image selection
-      # method to use (for pickling reasons)
       _select_images_function = getattr(
           self, '_index_select_images_%s' % (self._index_select_images))
       wedges = _select_images_function()

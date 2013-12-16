@@ -70,6 +70,36 @@ def index_select_images_user(phi_width, images, out_stream):
 
   return images
 
+def index_select_image_wedges_user(sweep_id, phi_width, images, out_stream):
+  images = [(min(images), max(images))]
+  images_list = ', '.join(['%d-%d' % i for i in images])
+
+  out_stream.write('Existing images for indexing %s: %s' % \
+                   (sweep_id, images_list))
+
+  while True:
+
+    record = raw_input('>')
+
+    if not record.strip():
+      return images
+
+    try:
+      images = [tuple([int(t.strip()) for t in r.split('-')]) 
+                for r in record.split(',')]
+      images_list = ', '.join(['%d-%d' % i for i in images])
+      out_stream.write('New images for indexing: %s' % \
+                       images_list)
+
+      return images
+
+    except ValueError, e:
+      pass
+
+  # should not reach here but...
+
+  return images
+
 if __name__ == '__main__':
 
   images = range(1, 91)
