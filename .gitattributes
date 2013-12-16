@@ -153,7 +153,6 @@ core/Test/ExampleProgramTightLoop -text
 core/Test/ExampleProgramTightLoop.bat -text
 core/Test/ExampleProgramTightLoop.py -text
 core/Test/readme.txt -text
-core/license.txt -text
 core/readme.txt -text
 html/phils/fixed_scale_factors.phil -text
 html/phils/micromanage_integrate.phil -text
