@@ -53,7 +53,7 @@ from libtbx.phil import parse
 # http://xds.mpimf-heidelberg.mpg.de/html_doc/xds_parameters.html
 
 master_params = parse("""
-refine = *ORIENTATION *CELL BEAM DISTANCE AXIS
+refine = *ORIENTATION *CELL *BEAM *DISTANCE AXIS
   .type = choice(multi = True)
   .help = 'what to refine in first pass of integration'
 refine_final = *ORIENTATION *CELL BEAM DISTANCE AXIS
