@@ -337,7 +337,6 @@ class XSweep():
 
         start_t = time.time()
 
-
         for j in images:
           dd = Diffdump()
           dd.set_image(self.get_image_name(j))
@@ -622,32 +621,26 @@ class XSweep():
         crystal_id = self.get_wavelength().get_crystal().get_name()
 
       self._indexer.set_working_directory(
-          Environment.generate_directory([crystal_id,
-                                          wavelength_id,
-                                          self.get_name(),
-                                          'index']))
+          Environment.generate_directory(
+            [crystal_id, wavelength_id, self.get_name(), 'index']))
 
       if self._frames_to_process:
         frames = self._frames_to_process
-        self._indexer.set_frame_wedge(frames[0],
-                                      frames[1])
+        self._indexer.set_frame_wedge(frames[0], frames[1])
 
       self._indexer.set_indexer_sweep_name(self._name)
 
-    # FIXME in here I should probably check that the indexer
-    # is up-to-date with respect to the crystal &c. if this has
-    # changed the indexer will need to be updated...
-    #
-    # I need to think very hard about how this will work..
-
     return self._indexer
 
+  # FIXME make this general - allow multiple intergraters from one indexer to
+  # handle multi-lattice cases...
+  
   def _get_integrater(self):
     '''Get my integrater, and if it is not set, create one.'''
 
     if self._integrater == None:
       self._integrater = IntegraterFactory.IntegraterForXSweep(self)
-
+      
       # configure the integrater with the indexer - unless
       # we don't want to...
 
@@ -681,20 +674,15 @@ class XSweep():
 
       else:
         wavelength_id = self.get_wavelength().get_name()
-        crystal_id = self.get_wavelength().get_crystal(
-            ).get_name()
-        project_id = self.get_wavelength().get_crystal(
-            ).get_project().get_name()
+        crystal_id = self.get_wavelength().get_crystal().get_name()
+        project_id = self.get_wavelength().get_crystal().get_project().get_name()
 
       self._integrater.set_working_directory(
-          Environment.generate_directory([crystal_id,
-                                          wavelength_id,
-                                          self.get_name(),
-                                          'integrate']))
+          Environment.generate_directory(
+            [crystal_id, wavelength_id, self.get_name(), 'integrate']))
 
-      self._integrater.set_integrater_project_info(project_id,
-                                                   crystal_id,
-                                                   wavelength_id)
+      self._integrater.set_integrater_project_info(
+        project_id, crystal_id, wavelength_id)
 
       self._integrater.set_integrater_sweep_name(self._name)
 
@@ -703,11 +691,9 @@ class XSweep():
       self._integrater.set_integrater_anomalous(
           self.get_wavelength().get_crystal().get_anomalous())
 
-      # see if we have any useful detector parameters to pass
-      # on
+      # see if we have any useful detector parameters to pass on
 
       if self.get_gain():
-        # this is assuming that an Integrater is also a FrameProcessor
         self._integrater.set_gain(self.get_gain())
 
       if self.get_polarization():
