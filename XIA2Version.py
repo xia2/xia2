@@ -7,7 +7,7 @@
 #
 # 6th June 2006
 #
-# A file containing the version number of the current xia2.
+# A file containing the version number of the current xia2. Generally useful.
 #
 
 VersionNumber = "0.3.6.3"
