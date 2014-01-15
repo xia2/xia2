@@ -1,19 +1,18 @@
 #!/usr/bin/env python
 # Import.py
 #
-#   Copyright (C) 2013 Diamond Light Source, Richard Gildea
+#   Copyright (C) 2013 Diamond Light Source, Richard Gildea, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
-# Import dxtbx-format experimental models
+# Import data into the DIALS models for subsequent analysis
 
 from __future__ import division
 
 from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
 
-# interfaces that this inherits from ...
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 def Import(DriverType = None):
@@ -29,16 +28,12 @@ def Import(DriverType = None):
       DriverInstance.__class__.__init__(self)
       FrameProcessor.__init__(self)
 
-      self._images = []
-      self._spot_range = []
-
       self.set_executable('dials.import')
 
-      self._input_data_files = { }
-      self._output_data_files = { }
+      self._images = []
+      self._image_range = []
 
-      self._input_data_files_list = []
-      self._output_data_files_list = []
+      self._sweep_filename = 'sweep.json'
 
       return
 
@@ -46,13 +41,18 @@ def Import(DriverType = None):
       FrameProcessor.setup_from_image(self, image)
       for i in self.get_matching_images():
         self._images.append(self.get_image_name(i))
-
-    def set_input_data_file(self, name, data):
-      self._input_data_files[name] = data
       return
 
-    def get_output_data_file(self, name):
-      return self._output_data_files[name]
+    def set_sweep_filename(self, sweep_filename):
+      self._sweep_filename = sweep_filename
+      return
+
+    def get_sweep_filename(self):
+      import os
+      if os.path.abspath(self._sweep_filename):
+        return self._sweep_filename
+      else:
+        return os.path.join(self.get_working_directory(), self._sweep_filename)
 
     def run(self):
       from Handlers.Streams import Debug
@@ -62,19 +62,20 @@ def Import(DriverType = None):
       for image in self._images:
         self.add_command_line(image)
       self.add_command_line('--sweep-filename')
-      self.add_command_line('sweep.json')
+      self.add_command_line(self._sweep_filename)
       self.start()
       self.close_wait()
       self.check_for_errors()
 
       import os
-      self._output_data_files.setdefault(
-        'sweep.json', open(os.path.join(
-          self.get_working_directory(), 'sweep.json'), 'rb').read())
+      assert(os.path.exists(self._sweep_filename))
 
+    def load_sweep_model(self):
       from dxtbx.serialize import load
-      self.sweep = load.imageset_from_string(
-        self.get_output_data_file('sweep.json'))
+      import os
+      return load.imageset_from_string(
+        open(os.path.join(self.get_working_directory(),
+                          self._sweep_filename), 'r').read())
 
   return ImportWrapper()
 
@@ -86,7 +87,8 @@ if __name__ == '__main__':
   importer = Import()
   importer.setup_from_image(first_image)
   importer.run()
-  print importer.sweep.get_detector()
-  print importer.sweep.get_beam()
-  print importer.sweep.get_goniometer()
-  print importer.sweep.get_scan()
+  sweep = importer.load_sweep_model()
+  print sweep.get_detector()
+  print sweep.get_beam()
+  print sweep.get_goniometer()
+  print sweep.get_scan()
