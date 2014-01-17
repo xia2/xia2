@@ -66,7 +66,15 @@ def Index(DriverType = None):
     def set_beam_fix(self, beam_fix):
       self._beam_fix = beam_fix
       return
+
+    def get_sweep_filename(self):
+      import os
+      return os.path.join(self.get_working_directory(), 'sweep.json')
     
+    def get_crystal_filename(self):
+      import os
+      return os.path.join(self.get_working_directory(), 'crystal.json')
+
     def run(self, method):
       from Handlers.Streams import Debug
       Debug.write('Running dials.index')
@@ -107,6 +115,7 @@ if __name__ == '__main__':
 
   from Wrappers.Dials.Import import Import
   from Wrappers.Dials.Spotfinder import Spotfinder
+  from Wrappers.Dials.ExportXDS import ExportXDS
 
   importer = Import()
   importer.setup_from_image(image_file)
@@ -121,3 +130,9 @@ if __name__ == '__main__':
   indexer.set_spot_filename(spotfinder.get_spot_filename())
   indexer.set_sweep_filename(importer.get_sweep_filename())
   indexer.run('fft3d')
+
+  exporter = ExportXDS()
+  exporter.set_crystal_filename(indexer.get_crystal_filename())
+  exporter.set_sweep_filename(indexer.get_sweep_filename())
+  exporter.run()
+  

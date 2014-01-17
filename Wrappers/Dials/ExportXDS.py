@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+# ExportXDS.py
+#
+#   Copyright (C) 2013 Diamond Light Source, Richard Gildea, Graeme Winter
+#
+#   This code is distributed under the BSD license, a copy of which is
+#   included in the root directory of this package.
+#
+# Export DIALS models for XDS processing.
+
+from __future__ import division
+
+from __init__ import _setup_xia2_environ
+_setup_xia2_environ()
+
+def ExportXDS(DriverType = None):
+  '''A factory for ExportXDSWrapper classes.'''
+
+  from Driver.DriverFactory import DriverFactory
+  DriverInstance = DriverFactory.Driver(DriverType)
+
+  class ExportXDSWrapper(DriverInstance.__class__):
+
+    def __init__(self):
+      DriverInstance.__class__.__init__(self)
+      self.set_executable('dials.export_xds')
+
+      self._sweep_filename = None
+      self._crystal_filename = None
+
+      return
+
+    def set_sweep_filename(self, sweep_filename):
+      self._sweep_filename = sweep_filename
+      return
+
+    def set_crystal_filename(self, crystal_filename):
+      self._crystal_filename = crystal_filename
+      return
+
+    def run(self):
+      from Handlers.Streams import Debug
+      Debug.write('Running dials.export_xds')
+
+      self.clear_command_line()
+      self.add_command_line(self._sweep_filename)
+      self.add_command_line(self._crystal_filename)
+      self.start()
+      self.close_wait()
+      self.check_for_errors()
+
+      return
+
+  return ExportXDSWrapper()
+

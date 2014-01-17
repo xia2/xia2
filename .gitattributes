@@ -54,6 +54,7 @@ Wrappers/CCP4/Ctruncate.py -text
 Wrappers/Dials/AssignIndices.py -text
 Wrappers/Dials/Attic/Spotfinder.py -text
 Wrappers/Dials/ExportSpotXDS.py -text
+Wrappers/Dials/ExportXDS.py -text
 Wrappers/Dials/Import.py -text
 Wrappers/Dials/Index.py -text
 Wrappers/Dials/Refine.py -text
