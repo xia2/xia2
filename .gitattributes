@@ -55,6 +55,7 @@ Wrappers/Dials/AssignIndices.py -text
 Wrappers/Dials/Attic/Spotfinder.py -text
 Wrappers/Dials/ExportSpotXDS.py -text
 Wrappers/Dials/Import.py -text
+Wrappers/Dials/Index.py -text
 Wrappers/Dials/Refine.py -text
 Wrappers/Dials/Spotfinder.py -text
 Wrappers/Dials/__init__.py -text

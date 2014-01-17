@@ -33,7 +33,7 @@ def Import(DriverType = None):
       self._images = []
       self._image_range = []
 
-      self._sweep_filename = 'sweep.json'
+      self._sweep_filename = 'sweep_import.json'
 
       return
 

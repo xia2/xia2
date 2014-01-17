@@ -43,6 +43,9 @@ def Spotfinder(DriverType = None):
       self._spot_filename = spot_filename
       return
 
+    def get_spot_filename(self):
+      return self._spot_filename
+    
     def set_scan_ranges(self, scan_ranges):
       self._scan_ranges = scan_ranges
       return
