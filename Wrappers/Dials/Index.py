@@ -99,8 +99,7 @@ def Index(DriverType = None):
       self.close_wait()
       self.check_for_errors()
 
-      for record in self.get_all_output():
-        print record[:-1]
+      # FIXME I really should try to get something interesting from the output 
 
       return
 

@@ -46,6 +46,7 @@ from Modules.Indexer.XDSIndexer import XDSIndexer
 from Modules.Indexer.XDSIndexerII import XDSIndexerII
 from Modules.Indexer.XDSIndexerInteractive import XDSIndexerInteractive
 from Modules.Indexer.XDSIndexerSum import XDSIndexerSum
+from Modules.Indexer.DialsIndexer import DialsIndexer
 
 from DriverExceptions.NotAvailableError import NotAvailableError
 from Handlers.Streams import Debug
@@ -140,8 +141,6 @@ def Indexer(preselection = None):
 
   indexer = None
 
-  # return XDSIndexer()
-
   if not preselection:
     preselection = get_preferences().get('indexer')
 
@@ -209,6 +208,16 @@ def Indexer(preselection = None):
       if preselection:
         raise RuntimeError, \
               'preselected indexer labelit not available'
+      pass
+
+  if not indexer and (not preselection or preselection == 'dials'):
+    try:
+      indexer = DialsIndexer()
+      Debug.write('Using DialsIndexer')
+    except NotAvailableError, e:
+      if preselection:
+        raise RuntimeError, \
+              'preselected indexer dials not available'
       pass
 
   if not indexer:

@@ -68,7 +68,9 @@ def Import(DriverType = None):
       self.check_for_errors()
 
       import os
-      assert(os.path.exists(self._sweep_filename))
+      assert(os.path.exists(os.path.join(self.get_working_directory(),
+                                         self._sweep_filename)))
+      return
 
     def load_sweep_model(self):
       from dxtbx.serialize import load
