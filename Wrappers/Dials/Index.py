@@ -34,6 +34,8 @@ def Index(DriverType = None):
       self._maximum_spot_error = 3.0
       self._detector_fix = None
       self._beam_fix = None
+
+      self._p1_cell = None
       
       return
 
@@ -75,6 +77,9 @@ def Index(DriverType = None):
       import os
       return os.path.join(self.get_working_directory(), 'crystal.json')
 
+    def get_p1_cell(self):
+      return self._p1_cell
+    
     def run(self, method):
       from Handlers.Streams import Debug
       Debug.write('Running dials.index')
@@ -99,7 +104,10 @@ def Index(DriverType = None):
       self.close_wait()
       self.check_for_errors()
 
-      # FIXME I really should try to get something interesting from the output 
+      for record in self.get_all_output():
+        if 'Unit cell:' in record:
+          self._p1_cell = map(float, record.replace('(', '').replace(
+            ')', '').replace(',', '').split()[-6:])
 
       return
 

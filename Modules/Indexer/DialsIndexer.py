@@ -154,6 +154,8 @@ class DialsIndexer(FrameProcessor,
     last_background = int(round(5.0 / header['phi_width'])) - 1 + first
     
     # next start to process these - first xycorr
+    # FIXME run these *afterwards* as then we have a refined detector geometry 
+    # so the parallax correction etc. should be slightly better.
 
     xycorr = self.Xycorr()
     xycorr.set_data_range(first, last)
@@ -199,12 +201,28 @@ class DialsIndexer(FrameProcessor,
 
   def _index(self):
     # FIXME allow humans to set the indexing method from whatever list...
+    # FIXME respect input unit cell / symmetry if set - or if decided from 
+    # previous indexing cycle
     indexer = self.Index()
     indexer.set_spot_filename(self._spot_filename)
     indexer.set_sweep_filename(self._sweep_filename)
     indexer.run('fft3d')
 
     self._indexer = indexer
+
+    # FIXME set_indexer_done(False) and recycle perhaps if we select a 
+    # non-P1 solution...
+    # FIXME Richard now writing a tool to do this...
+
+    from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
+    ls = LatticeSymmetry()
+    ls.set_lattice('aP')
+    ls.set_cell(indexer.get_p1_cell())
+    ls.generate()
+    
+    allowed_lattices = ls.get_lattices()
+    for al in allowed_lattices:
+      print al, '%8.3f %8.3f %8.3f %8.3f %8.3f %8.3f' % tuple(ls.get_cell(al))
     
     return
 
