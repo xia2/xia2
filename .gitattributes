@@ -59,6 +59,7 @@ Wrappers/Dials/ExportXDS.py -text
 Wrappers/Dials/Import.py -text
 Wrappers/Dials/Index.py -text
 Wrappers/Dials/Refine.py -text
+Wrappers/Dials/RefineBravaisSettings.py -text
 Wrappers/Dials/Spotfinder.py -text
 Wrappers/Dials/__init__.py -text
 Wrappers/Labelit/DistlSignalStrength.py -text

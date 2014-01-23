@@ -30,6 +30,8 @@ from Wrappers.XDS.XDSIdxref import XDSIdxref as _Idxref
 from Wrappers.Dials.Import import Import as _Import
 from Wrappers.Dials.Spotfinder import Spotfinder as _Spotfinder
 from Wrappers.Dials.Index import Index as _Index
+from Wrappers.Dials.RefineBravaisSettings import RefineBravaisSettings as \
+     _RefineBravaisSettings
 from Wrappers.Dials.ExportXDS import ExportXDS as _ExportXDS
 
 from Wrappers.XIA.Diffdump import Diffdump
@@ -138,6 +140,12 @@ class DialsIndexer(FrameProcessor,
     auto_logfiler(export_xds)
     return export_xds
 
+  def RefineBravaisSettings(self):
+    rbs = _RefineBravaisSettings()
+    rms.set_working_directory(self.get_working_directory())
+    auto_logfiler(rbs)
+    return rbs
+
   ##########################################
 
   def _index_prepare(self):
@@ -210,6 +218,13 @@ class DialsIndexer(FrameProcessor,
 
     self._indexer = indexer
 
+    rbs = self.RefineBravaisSettings()
+    rbs.set_crystal_filename(indexer.get_crystal_filename())
+    rbs.set_sweep_filename(indexer.get_sweep_filename())
+    rbs.set_indexed_filename(indexer.get_indexed_filename())
+    rbs.run()
+
+    
     # FIXME set_indexer_done(False) and recycle perhaps if we select a 
     # non-P1 solution...
     # FIXME Richard now writing a tool to do this...

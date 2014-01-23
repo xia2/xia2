@@ -77,6 +77,10 @@ def Index(DriverType = None):
       import os
       return os.path.join(self.get_working_directory(), 'crystal.json')
 
+    def get_indexed_filename(self):
+      import os
+      return os.path.join(self.get_working_directory(), 'indexed.pickle')
+
     def get_p1_cell(self):
       return self._p1_cell
     
@@ -123,6 +127,7 @@ if __name__ == '__main__':
   from Wrappers.Dials.Import import Import
   from Wrappers.Dials.Spotfinder import Spotfinder
   from Wrappers.Dials.ExportXDS import ExportXDS
+  from Wrappers.Dials.RefineBravaisSettings import RefineBravaisSettings
 
   importer = Import()
   importer.setup_from_image(image_file)
@@ -138,6 +143,14 @@ if __name__ == '__main__':
   indexer.set_sweep_filename(importer.get_sweep_filename())
   indexer.run('fft3d')
 
+  rbs = RefineBravaisSettings()
+  rbs.set_crystal_filename(indexer.get_crystal_filename())
+  rbs.set_sweep_filename(indexer.get_sweep_filename())
+  rbs.set_indexed_filename(indexer.get_indexed_filename())
+  rbs.run()
+
+  print 1/0
+  
   exporter = ExportXDS()
   exporter.set_crystal_filename(indexer.get_crystal_filename())
   exporter.set_sweep_filename(indexer.get_sweep_filename())
