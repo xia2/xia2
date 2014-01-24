@@ -44,7 +44,13 @@ def RefineBravaisSettings(DriverType = None):
       return
 
     def get_bravais_summary(self):
-      return self._bravais_summary
+      import copy, os
+      bravais_summary = { }
+      for k in self._bravais_summary:
+        bravais_summary[int(k)] = copy.deepcopy(self._bravais_summary[k])
+        bravais_summary[int(k)]['crystal_file'] = os.path.join(
+          self.get_working_directory(), 'bravais_setting_%d.json' % int(k))
+      return bravais_summary
     
     def run(self):
       from Handlers.Streams import Debug
@@ -59,11 +65,10 @@ def RefineBravaisSettings(DriverType = None):
       self.check_for_errors()
 
       from json import loads
-      self._bravais_summary = loads(open('bravais_summary.json', 'r').read())
+      import os
+      self._bravais_summary = loads(open(os.path.join(
+          self.get_working_directory(), 'bravais_summary.json'), 'r').read())
 
-      for solution in sorted(self._bravais_summary):
-        print solution, self._bravais_summary[solution]
-      
       return
 
   return RefineBravaisSettingsWrapper()

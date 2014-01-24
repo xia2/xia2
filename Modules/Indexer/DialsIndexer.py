@@ -142,7 +142,7 @@ class DialsIndexer(FrameProcessor,
 
   def RefineBravaisSettings(self):
     rbs = _RefineBravaisSettings()
-    rms.set_working_directory(self.get_working_directory())
+    rbs.set_working_directory(self.get_working_directory())
     auto_logfiler(rbs)
     return rbs
 
@@ -218,27 +218,21 @@ class DialsIndexer(FrameProcessor,
 
     self._indexer = indexer
 
+    # FIXME from this (i) populate the helper table, (ii) export those files
+    # which XDS will expect to find, (iii) try to avoid re-running the indexing
+    # step if we eliminate a solution as we have all of the refined results
+    # already available. 
+    
     rbs = self.RefineBravaisSettings()
     rbs.set_crystal_filename(indexer.get_crystal_filename())
     rbs.set_sweep_filename(indexer.get_sweep_filename())
     rbs.set_indexed_filename(indexer.get_indexed_filename())
     rbs.run()
 
-    
-    # FIXME set_indexer_done(False) and recycle perhaps if we select a 
-    # non-P1 solution...
-    # FIXME Richard now writing a tool to do this...
+    self._solutions = rbs.get_bravais_summary()
+    for k in sorted(self._solutions):
+      print k, self._solutions[k]
 
-    from Wrappers.Phenix.LatticeSymmetry import LatticeSymmetry
-    ls = LatticeSymmetry()
-    ls.set_lattice('aP')
-    ls.set_cell(indexer.get_p1_cell())
-    ls.generate()
-    
-    allowed_lattices = ls.get_lattices()
-    for al in allowed_lattices:
-      print al, '%8.3f %8.3f %8.3f %8.3f %8.3f %8.3f' % tuple(ls.get_cell(al))
-    
     return
 
   def _index_finish(self):
