@@ -235,8 +235,17 @@ class DialsIndexer(FrameProcessor,
     rbs.set_indexed_filename(indexer.get_indexed_filename())
     rbs.run()
 
+    rmsd_p1 = rbs.get_bravais_summary()[1]['rmsd']
+    
     for k in sorted(rbs.get_bravais_summary()):
       summary = rbs.get_bravais_summary()[k]
+
+      # FIXME need to do this better - for the moment only accept lattice where 
+      # R.M.S. deviation is less than twice P1 R.M.S. deviation.
+      
+      if summary['rmsd'] > 2.0 * rmsd_p1:
+        continue
+      
       self._solutions[k] = {
         'number':k,
         'mosaic':0.0,
