@@ -220,6 +220,8 @@ class DialsIndexer(FrameProcessor,
     indexer.set_sweep_filename(self._sweep_filename)
     indexer.run('fft3d')
 
+    # FIXME don't keep hold of an indexer: prevents pickling
+    
     self._indexer = indexer
 
     # FIXME in here should respect the input unit cell and lattice if provided
@@ -262,14 +264,14 @@ class DialsIndexer(FrameProcessor,
     for solution in self._solutions.keys():
       lattice = self._solutions[solution]['lattice']
       if self._indxr_other_lattice_cell.has_key(lattice):
-        if self._indxr_other_lattice_cell[lattice]['goodness'] < \
+        if self._indxr_other_lattice_cell[lattice]['metric'] < \
           self._solutions[solution]['metric']:
           continue
 
       self._indxr_other_lattice_cell[lattice] = {
-        'goodness':self._solutions[solution]['metric'],
+        'metric':self._solutions[solution]['metric'],
         'cell':self._solutions[solution]['cell']}
-      
+
     self._indxr_lattice = self._solution['lattice']
     self._indxr_cell = tuple(self._solution['cell'])
     self._indxr_mosaic = self._solution['mosaic']
