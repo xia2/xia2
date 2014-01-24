@@ -519,13 +519,16 @@ class XSweep():
       hbeam = header['beam']
       ibeam = indxr.get_indexer_beam()
 
-      summary.append('Beam %.2f %.2f => %.2f %.2f' % \
-                     (hbeam[0], hbeam[1], ibeam[0], ibeam[1]))
+      if hbeam and ibeam:
+        summary.append('Beam %.2f %.2f => %.2f %.2f' % \
+        (hbeam[0], hbeam[1], ibeam[0], ibeam[1]))
 
       hdist = header['distance']
+
       idist = indxr.get_indexer_distance()
 
-      summary.append('Distance %.2f => %.2f' % (hdist, idist))
+      if hdist and idist:
+        summary.append('Distance %.2f => %.2f' % (hdist, idist))
 
       summary.append('Date: %s' % header['date'])
 
