@@ -65,7 +65,8 @@ class DialsIndexer(FrameProcessor,
     # place to store working data
     
     self._data_files = { }
-
+    self._solutions = { }
+    
     return
 
   # admin functions
@@ -218,6 +219,8 @@ class DialsIndexer(FrameProcessor,
 
     self._indexer = indexer
 
+    # FIXME in here should respect the input unit cell and lattice if provided
+    
     # FIXME from this (i) populate the helper table, (ii) export those files
     # which XDS will expect to find, (iii) try to avoid re-running the indexing
     # step if we eliminate a solution as we have all of the refined results
@@ -229,16 +232,85 @@ class DialsIndexer(FrameProcessor,
     rbs.set_indexed_filename(indexer.get_indexed_filename())
     rbs.run()
 
-    self._solutions = rbs.get_bravais_summary()
-    for k in sorted(self._solutions):
-      print k, self._solutions[k]
+    for k in sorted(rbs.get_bravais_summary()):
+      summary = rbs.get_bravais_summary()[k]
+      self._solutions[k] = {
+        'number':k,
+        'mosaic':0.0,
+        'metric':summary['max_angular_difference'],
+        'rmsd':summary['rmsd'],
+        'nspots':summary['nspots'],
+        'lattice':summary['bravais'],
+        'cell':summary['unit_cell'],
+        'crystal_file':summary['crystal_file']
+        }
 
+    self._solution = self.get_solution()
+
+    for solution in self._solutions.keys():
+      lattice = self._solutions[solution]['lattice']
+      if self._indxr_other_lattice_cell.has_key(lattice):
+        if self._indxr_other_lattice_cell[lattice]['goodness'] < \
+          self._solutions[solution]['metric']:
+          continue
+
+      self._indxr_other_lattice_cell[lattice] = {
+        'goodness':self._solutions[solution]['metric'],
+        'cell':self._solutions[solution]['cell']}
+      
+    self._indxr_lattice = self._solution['lattice']
+    self._indxr_cell = tuple(self._solution['cell'])
+    self._indxr_mosaic = self._solution['mosaic']
+
+    return
+    
+  def get_solutions():
+    return self._solutions
+      
+  def get_solution(self):
+
+    import copy
+    
+    # FIXME I really need to clean up the code in here...
+    
+    if self._indxr_input_lattice is None:
+      return copy.deepcopy(
+        self._solutions[max(self._solutions.keys())])
+    else:
+      if self._indxr_input_cell:
+        for s in self._solutions.keys():
+          if self._solutions[s]['lattice'] == \
+            self._indxr_input_lattice:
+            if self._compare_cell(
+                self._indxr_input_cell,
+                self._solutions[s]['cell']):
+              return copy.deepcopy(self._solutions[s])
+            else:
+              del(self._solutions[s])
+          else:
+            del(self._solutions[s])
+
+        raise RuntimeError, \
+          'no solution for lattice %s with given cell' % \
+          self._indxr_input_lattice
+
+      else:
+        for s in self._solutions.keys():
+          if self._solutions[s]['lattice'] == \
+            self._indxr_input_lattice:
+            return copy.deepcopy(self._solutions[s])
+          else:
+            del(self._solutions[s])
+
+        raise RuntimeError, 'no solution for lattice %s' % \
+          self._indxr_input_lattice
+      
     return
 
   def _index_finish(self):
     exporter = self.ExportXDS()
-    exporter.set_crystal_filename(indexer.get_crystal_filename())
-    exporter.set_sweep_filename(indexer.get_sweep_filename())
+    exporter.set_crystal_filename(self.get_solution()['crystal_file'])
+    exporter.set_sweep_filename(self._indexer.get_sweep_filename())
     exporter.run()
 
     for file in ['XPARM.XDS']:
@@ -256,6 +328,8 @@ class DialsIndexer(FrameProcessor,
     pixel = xparm_dict['px'], xparm_dict['py']
     beam = xparm_dict['ox'], xparm_dict['oy']
 
+    self._indxr_payload['xds_files'] = self._data_files
+    
     return
 
   
