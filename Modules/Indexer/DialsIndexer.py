@@ -66,6 +66,9 @@ class DialsIndexer(FrameProcessor,
     
     self._data_files = { }
     self._solutions = { }
+
+    # FIXME this is a stupid low resolution limit to use...
+    self._indxr_low_resolution = 40.0
     
     return
 
