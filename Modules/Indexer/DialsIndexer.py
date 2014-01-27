@@ -61,15 +61,15 @@ class DialsIndexer(FrameProcessor,
     self._working_directory = os.getcwd()
 
     self._background_images = None
-    
+
     # place to store working data
-    
+
     self._data_files = { }
     self._solutions = { }
 
     # FIXME this is a stupid low resolution limit to use...
     self._indxr_low_resolution = 40.0
-    
+
     return
 
   # admin functions
@@ -153,20 +153,20 @@ class DialsIndexer(FrameProcessor,
   ##########################################
 
   def _index_prepare(self):
-    
+
     all_images = self.get_matching_images()
     first = min(all_images)
     last = max(all_images)
 
     self._indxr_images = [(first, last)]
-    
+
     dd = Diffdump()
     dd.set_image(self.get_image_name(first))
     header = dd.readheader()
     last_background = int(round(5.0 / header['phi_width'])) - 1 + first
-    
+
     # next start to process these - first xycorr
-    # FIXME run these *afterwards* as then we have a refined detector geometry 
+    # FIXME run these *afterwards* as then we have a refined detector geometry
     # so the parallax correction etc. should be slightly better.
 
     xycorr = self.Xycorr()
@@ -213,7 +213,7 @@ class DialsIndexer(FrameProcessor,
 
   def _index(self):
     # FIXME allow humans to set the indexing method from whatever list...
-    # FIXME respect input unit cell / symmetry if set - or if decided from 
+    # FIXME respect input unit cell / symmetry if set - or if decided from
     # previous indexing cycle
     indexer = self.Index()
     indexer.set_spot_filename(self._spot_filename)
@@ -221,16 +221,16 @@ class DialsIndexer(FrameProcessor,
     indexer.run('fft3d')
 
     # FIXME don't keep hold of an indexer: prevents pickling
-    
+
     self._indexer = indexer
 
     # FIXME in here should respect the input unit cell and lattice if provided
-    
+
     # FIXME from this (i) populate the helper table, (ii) export those files
     # which XDS will expect to find, (iii) try to avoid re-running the indexing
     # step if we eliminate a solution as we have all of the refined results
-    # already available. 
-    
+    # already available.
+
     rbs = self.RefineBravaisSettings()
     rbs.set_crystal_filename(indexer.get_crystal_filename())
     rbs.set_sweep_filename(indexer.get_sweep_filename())
@@ -238,16 +238,16 @@ class DialsIndexer(FrameProcessor,
     rbs.run()
 
     rmsd_p1 = rbs.get_bravais_summary()[1]['rmsd']
-    
+
     for k in sorted(rbs.get_bravais_summary()):
       summary = rbs.get_bravais_summary()[k]
 
-      # FIXME need to do this better - for the moment only accept lattice where 
-      # R.M.S. deviation is less than twice P1 R.M.S. deviation.
-      
+      # FIXME need to do this better - for the moment only accept lattices
+      # where R.M.S. deviation is less than twice P1 R.M.S. deviation.
+
       if summary['rmsd'] > 2.0 * rmsd_p1:
         continue
-      
+
       self._solutions[k] = {
         'number':k,
         'mosaic':0.0,
@@ -277,16 +277,16 @@ class DialsIndexer(FrameProcessor,
     self._indxr_mosaic = self._solution['mosaic']
 
     return
-    
+
   def get_solutions():
     return self._solutions
-      
+
   def get_solution(self):
 
     import copy
-    
+
     # FIXME I really need to clean up the code in here...
-    
+
     if self._indxr_input_lattice is None:
       return copy.deepcopy(
         self._solutions[max(self._solutions.keys())])
@@ -318,7 +318,7 @@ class DialsIndexer(FrameProcessor,
 
         raise RuntimeError, 'no solution for lattice %s' % \
           self._indxr_input_lattice
-      
+
     return
 
   def _index_finish(self):
@@ -330,7 +330,7 @@ class DialsIndexer(FrameProcessor,
     for file in ['XPARM.XDS']:
       self._data_files[file] = open(os.path.join(
         self.get_working_directory(), file), 'rb').read()
-    
+
     self._indxr_payload['xds_files'] = self._data_files
 
     from Wrappers.XDS.XDS import xds_read_xparm
@@ -343,14 +343,5 @@ class DialsIndexer(FrameProcessor,
     beam = xparm_dict['ox'], xparm_dict['oy']
 
     self._indxr_payload['xds_files'] = self._data_files
-    
+
     return
-
-  
-
-  
-  
-
-  
-    
-    

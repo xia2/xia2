@@ -637,13 +637,13 @@ class XSweep():
 
   # FIXME make this general - allow multiple intergraters from one indexer to
   # handle multi-lattice cases...
-  
+
   def _get_integrater(self):
     '''Get my integrater, and if it is not set, create one.'''
 
     if self._integrater == None:
       self._integrater = IntegraterFactory.IntegraterForXSweep(self)
-      
+
       # configure the integrater with the indexer - unless
       # we don't want to...
 

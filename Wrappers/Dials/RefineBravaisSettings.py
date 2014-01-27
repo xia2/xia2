@@ -51,7 +51,7 @@ def RefineBravaisSettings(DriverType = None):
         bravais_summary[int(k)]['crystal_file'] = os.path.join(
           self.get_working_directory(), 'bravais_setting_%d.json' % int(k))
       return bravais_summary
-    
+
     def run(self):
       from Handlers.Streams import Debug
       Debug.write('Running dials.refine_bravais_settings')
@@ -72,4 +72,3 @@ def RefineBravaisSettings(DriverType = None):
       return
 
   return RefineBravaisSettingsWrapper()
-

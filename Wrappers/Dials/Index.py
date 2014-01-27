@@ -36,7 +36,9 @@ def Index(DriverType = None):
       self._beam_fix = None
 
       self._p1_cell = None
-      
+
+      self._max_cell = 250
+
       return
 
     def set_sweep_filename(self, sweep_filename):
@@ -72,7 +74,7 @@ def Index(DriverType = None):
     def get_sweep_filename(self):
       import os
       return os.path.join(self.get_working_directory(), 'sweep.json')
-    
+
     def get_crystal_filename(self):
       import os
       return os.path.join(self.get_working_directory(), 'crystal.json')
@@ -83,7 +85,7 @@ def Index(DriverType = None):
 
     def get_p1_cell(self):
       return self._p1_cell
-    
+
     def run(self, method):
       from Handlers.Streams import Debug
       Debug.write('Running dials.index')
@@ -92,18 +94,19 @@ def Index(DriverType = None):
       self.add_command_line(self._sweep_filename)
       self.add_command_line(self._spot_filename)
       self.add_command_line('method=%s' % method)
+      self.add_command_line('max_cell=%d' % self._max_cell)
       if self._space_group:
         self.add_command_line('space_group=%s' % self._space_group)
       if self._unit_cell:
         self.add_command_line('unit_cell=%s' % self._unit_cell)
       if self._maximum_spot_error:
-        self.add_command_line('maximum_spot_error=%.f' % 
+        self.add_command_line('maximum_spot_error=%.f' %
                               self._maximum_spot_error)
       if self._detector_fix:
         self.add_command_line('detector.fix=%s' % self._detector_fix)
       if self._beam_fix:
         self.add_command_line('beam.fix=%s' % self._beam_fix)
-                              
+
       self.start()
       self.close_wait()
       self.check_for_errors()
@@ -150,9 +153,8 @@ if __name__ == '__main__':
   rbs.run()
 
   print 1/0
-  
+
   exporter = ExportXDS()
   exporter.set_crystal_filename(indexer.get_crystal_filename())
   exporter.set_sweep_filename(indexer.get_sweep_filename())
   exporter.run()
-  
