@@ -49,8 +49,8 @@ def Cad(DriverType = None):
       self.add_command_line(hklin)
 
       self.set_task('Rewriting reflections %s => %s' %
-                `   (os.path.split(hklin)[-1],
-                 `   os.path.split(self.getHklout())[-1]))
+                    (os.path.split(hklin)[-1],
+                     os.path.split(self.getHklout())[-1]))
 
       self.start()
 
