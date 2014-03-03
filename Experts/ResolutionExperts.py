@@ -338,7 +338,7 @@ def model():
     print isigma, za, zb
     sys.stdout.flush()
 
-class ResolutionCell:
+class ResolutionCell(object):
   '''A class to use for calculating the resolution from the unit cell
   parameters and h, k, l. Cell constants are numbers in real space.'''
 
@@ -354,7 +354,7 @@ class ResolutionCell:
     s = resolution(h, k, l, self._A, self._B, self._C)
     return s, 1.0 / math.sqrt(s)
 
-class ResolutionGeometry:
+class ResolutionGeometry(object):
   '''A class for calculating the resolution of a reflection from the
   position on the detector, wavelength, beam centre and distance.'''
 

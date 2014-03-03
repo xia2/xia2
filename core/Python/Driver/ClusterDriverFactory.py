@@ -19,7 +19,7 @@ import os
 
 from SunGridEngineClusterDriver import SunGridEngineClusterDriver
 
-class _ClusterDriverFactory:
+class _ClusterDriverFactory(object):
 
   def __init__(self):
 

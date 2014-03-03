@@ -43,7 +43,7 @@ from Wrappers.XIA.Chef import Chef as _Chef
 
 from lib.bits import auto_logfiler
 
-class CCP4Factory:
+class CCP4Factory(object):
   '''A class to provide CCP4 program wrappers.'''
 
   def __init__(self):

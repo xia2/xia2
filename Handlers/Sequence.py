@@ -46,7 +46,7 @@ def to_short_form(residue_list):
   else:
     return residue_letters[residue_list.upper()]
 
-class Sequence:
+class Sequence(object):
   '''A class to represent a sequence'''
 
   def __init__(self, file = None, seq = None):

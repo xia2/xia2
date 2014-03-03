@@ -15,7 +15,7 @@
 import os
 import xml.dom.minidom
 
-class _Citations:
+class _Citations(object):
   '''A class to track citations.'''
 
   def __init__(self):

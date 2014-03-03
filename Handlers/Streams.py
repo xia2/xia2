@@ -29,7 +29,7 @@
 
 import sys
 
-class _Stream:
+class _Stream(object):
   '''A class to represent an output stream. This will be used as a number
   of static instances - Debug and Chatter in particular.'''
 

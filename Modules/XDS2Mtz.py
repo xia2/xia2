@@ -27,7 +27,7 @@ from Wrappers.XDS.XDSConv import XDSConv
 from Handlers.Files import FileHandler
 from Handlers.Syminfo import Syminfo
 
-class XDS2Mtz:
+class XDS2Mtz(object):
   '''A class to convert XDS reflection files to MTZ format, merging
   if required.'''
 

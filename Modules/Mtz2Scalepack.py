@@ -21,7 +21,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Wrappers.CCP4.Mtzdump import Mtzdump as _Mtzdump
 from Wrappers.CCP4.Mtz2various import Mtz2various as _Mtz2various
 
-class Mtz2Scalepack:
+class Mtz2Scalepack(object):
   '''A jiffy class to convert an MTZ file to scalepack merged format,
   for all pname, xname, dname found in the file.'''
 

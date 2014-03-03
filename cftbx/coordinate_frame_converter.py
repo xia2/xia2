@@ -6,7 +6,7 @@ from cctbx import uctbx
 
 from coordinate_frame_helpers import is_xds_xparm, import_xds_xparm
 
-class coordinate_frame_converter:
+class coordinate_frame_converter(object):
   '''A class which is instantiated from a supported file (initially an
   imgCIF image or an XDS XPARM / INTEGRATE.HKL / XDS_ASCII.HKL file) and
   will make available the rotation axis, beam vector, detector position

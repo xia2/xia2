@@ -37,7 +37,7 @@ from libtbx.phil import parse
 def nint(a):
   return int(round(a))
 
-class mtz_dataset:
+class mtz_dataset(object):
   '''A class to represent the MTZ dataset in the hierarchy. This will
   be instantiated in the mtz_crystal class below, and contain:
 
@@ -63,7 +63,7 @@ class mtz_dataset:
     return self._column_table[column_label].extract_values(
         not_a_number_substitute = nan_value)
 
-class mtz_crystal:
+class mtz_crystal(object):
   '''A class to represent the MTZ crystal in the hierarchy. This will
   be instantiated by the factories below.'''
 
@@ -108,7 +108,7 @@ class mtz_crystal:
     return self._column_table[column_label].extract_values(
         not_a_number_substitute = nan_value)
 
-class mtz_file:
+class mtz_file(object):
   '''A class to represent the full MTZ file in the hierarchy - this
   will have a list of one or more crystals contained within it each
   with its own unit cell and datasets.'''
@@ -255,7 +255,7 @@ def poly_gradients(xp, y, params):
 
   return g
 
-class poly_fitter:
+class poly_fitter(object):
   '''A class to do the polynomial fit. This will fit observations y
   at points x with a polynomial of order n.'''
 
@@ -352,7 +352,7 @@ def get_positive_values(x):
 
   return result
 
-class unmerged_intensity:
+class unmerged_intensity(object):
   '''A class to represent and encapsulate the multiple observations of a
   given intensity defined in terms of the Miller index. It is assumed that
   these are compatible observations.'''
@@ -534,7 +534,7 @@ resolutionizer {
 }
 '''
 
-class resolutionizer:
+class resolutionizer(object):
   '''A class to calculate things from merging reflections.'''
 
   def __init__(self, args):

@@ -69,7 +69,7 @@ from Handlers.Flags import Flags
 def get_trust_timestamps():
   return Flags.get_trust_timestamp()
 
-class _HeaderCache:
+class _HeaderCache(object):
   '''A cache for image headers.'''
 
   def __init__(self):

@@ -49,7 +49,7 @@ from lib.NMolLib import compute_nmol, compute_solvent
 from Handlers.Streams import Chatter, Debug
 from Handlers.Files import FileHandler
 
-class AnalyseMyIntensities:
+class AnalyseMyIntensities(object):
   '''A class to use for intensity analysis. This will gather intensities
   (merged or unmerged) from multiple data sets and merge them together
   as well as telling you all about your data.'''

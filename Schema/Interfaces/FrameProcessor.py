@@ -35,7 +35,7 @@ from Wrappers.XIA.Diffdump import Diffdump
 
 from Handlers.Streams import Debug
 
-class FrameProcessor:
+class FrameProcessor(object):
   '''A class to handle the information needed to process X-Ray
   diffraction frames.'''
 

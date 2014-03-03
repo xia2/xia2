@@ -14,7 +14,7 @@ import os
 import sys
 import exceptions
 
-class _BioXHitDBInterfaceReal:
+class _BioXHitDBInterfaceReal(object):
   '''A class to mediate transactions with the CCP4i database.'''
 
   def __init__(self):
@@ -86,7 +86,7 @@ class _BioXHitDBInterfaceReal:
     self._connection.HandlerDisconnect()
 
 
-class _BioXHitDBInterfaceFake:
+class _BioXHitDBInterfaceFake(object):
   '''A class to do nothing if ccp4i db handler not available.'''
 
   def __init__(self):

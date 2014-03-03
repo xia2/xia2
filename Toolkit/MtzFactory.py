@@ -17,7 +17,7 @@ import time
 
 from iotbx import mtz
 
-class mtz_dataset:
+class mtz_dataset(object):
   '''A class to represent the MTZ dataset in the hierarchy. This will
   be instantiated in the mtz_crystal class below, and contain:
 
@@ -43,7 +43,7 @@ class mtz_dataset:
     return self._column_table[column_label].extract_values(
         not_a_number_substitute = nan_value)
 
-class mtz_crystal:
+class mtz_crystal(object):
   '''A class to represent the MTZ crystal in the hierarchy. This will
   be instantiated by the factories below.'''
 
@@ -88,7 +88,7 @@ class mtz_crystal:
     return self._column_table[column_label].extract_values(
         not_a_number_substitute = nan_value)
 
-class mtz_file:
+class mtz_file(object):
   '''A class to represent the full MTZ file in the hierarchy - this
   will have a list of one or more crystals contained within it each
   with its own unit cell and datasets.'''

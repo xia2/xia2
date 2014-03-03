@@ -9,7 +9,7 @@
 #
 # xia2 information / input file reader
 
-class XInfo:
+class XInfo(object):
   '''A class to represent all of the input to the xia2dpa system, with
   enough information to allow structure solution, as parsed from a
   .xinfo file, an example of which is in the source code.'''

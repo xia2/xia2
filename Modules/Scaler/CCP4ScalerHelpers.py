@@ -247,7 +247,7 @@ from Wrappers.CCP4.Pointless import Pointless as _Pointless
 
 ############### HELPER CLASS #########################
 
-class CCP4ScalerHelper:
+class CCP4ScalerHelper(object):
   '''A class to help the CCP4 Scaler along a little.'''
 
   def __init__(self):
@@ -334,7 +334,7 @@ class CCP4ScalerHelper:
 
 # Sweep info class to replace dictionary... #884
 
-class SweepInformation:
+class SweepInformation(object):
 
   def __init__(self, integrater):
 
@@ -429,7 +429,7 @@ class SweepInformation:
 
 
 
-class SweepInformationHandler:
+class SweepInformationHandler(object):
 
   def __init__(self, epoch_to_integrater):
 

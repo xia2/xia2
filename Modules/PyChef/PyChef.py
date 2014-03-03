@@ -22,7 +22,7 @@ from PyChefHelpers import get_mtz_column_list, compute_unique_reflections
 
 from iotbx import mtz
 
-class PyChef:
+class PyChef(object):
   '''The main PyChef class.'''
 
   def __init__(self):

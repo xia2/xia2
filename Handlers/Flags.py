@@ -25,7 +25,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Handlers.Environment import get_number_cpus
 from Toolkit.BackstopMask import BackstopMask
 
-class _Flags:
+class _Flags(object):
   '''A singleton to manage boolean flags.'''
 
   # by default now switch on smart scaling and chef - after the smart

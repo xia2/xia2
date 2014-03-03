@@ -15,7 +15,7 @@
 
 from CCP4Decorator import CCP4DecoratorFactory
 
-class _DecoratorFactory:
+class _DecoratorFactory(object):
   '''A factory singleton to dress Driver instances with decoration
   for specific program suites, for instance CCP4.'''
 

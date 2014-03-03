@@ -28,13 +28,13 @@ def inherits_from(this_class,
 if __name__ == '__main__':
   # run a test
 
-  class A:
+  class A(object):
     pass
 
   class B(A):
     pass
 
-  class C:
+  class C(object):
     pass
 
   if inherits_from(B, 'A'):

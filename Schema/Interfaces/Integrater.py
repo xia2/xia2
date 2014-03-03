@@ -59,7 +59,7 @@ from Wrappers.XIA.Diffdump import Diffdump
 from Experts.SymmetryExpert import compose_matrices_r, compose_symops
 from Experts.SymmetryExpert import symop_to_mat
 
-class Integrater:
+class Integrater(object):
   '''An interface to present integration functionality in a similar
   way to the indexer interface.'''
 

@@ -187,7 +187,7 @@ def work_equation_of_line():
     assert(math.fabs(d1) < 0.001)
     assert(math.fabs(d2) < 0.001)
 
-class BackstopMask:
+class BackstopMask(object):
   '''A class to handle the calculation of back stop masks, from a
   set of masks as a function of distance derived from inspection
   of images in ADXV.'''
@@ -336,7 +336,7 @@ class BackstopMask:
 
     return rectangle(p1, p2, p3, p4)
 
-class rectangle:
+class rectangle(object):
   '''A class to represent a rectange.'''
 
   def __init__(self, p1, p2, p3, p4):

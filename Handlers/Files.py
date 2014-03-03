@@ -83,7 +83,7 @@ def get_ccp4_commands(lines_of_input):
 
   return script, logicals
 
-class _FileHandler:
+class _FileHandler(object):
   '''A singleton class to manage files.'''
 
   def __init__(self):

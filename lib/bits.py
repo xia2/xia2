@@ -207,13 +207,13 @@ if __name__ == '__main__test__':
 if __name__ == '__main_old__':
   # run a test
 
-  class A:
+  class A(object):
     pass
 
   class B(A):
     pass
 
-  class C:
+  class C(object):
     pass
 
   if inherits_from(B, 'A'):

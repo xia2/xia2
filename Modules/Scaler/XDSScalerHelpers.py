@@ -25,7 +25,7 @@ from lib.bits import auto_logfiler
 from Wrappers.CCP4.Combat import Combat as _Combat
 from Wrappers.CCP4.Pointless import Pointless as _Pointless
 
-class XDSScalerHelper:
+class XDSScalerHelper(object):
   '''A class which contains functions which will help the XDS Scaler
   with its work. This is implemented as a class to allow properties
   like working directories and so on to be maintained.'''

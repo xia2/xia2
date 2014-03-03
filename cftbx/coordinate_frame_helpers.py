@@ -5,7 +5,7 @@ import random
 from scitbx import matrix
 from cctbx import sgtbx
 
-class coordinate_frame_information:
+class coordinate_frame_information(object):
   '''A bucket class to store coordinate frame information.'''
 
   def __init__(self, detector_origin, detector_fast, detector_slow,

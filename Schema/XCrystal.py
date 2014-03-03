@@ -96,7 +96,7 @@ def sort_o_dict(dict, metric):
   result = []
   jiffy = []
 
-  class sort_o_thing:
+  class sort_o_thing(object):
     def __init__(self, tag, guff):
       self.tag = tag
       for key in guff.keys():

@@ -63,7 +63,7 @@ from CCP4InterRadiationDamageDetector import CCP4InterRadiationDamageDetector
 
 from lib.bits import auto_logfiler
 
-class Scalepack2Mtz:
+class Scalepack2Mtz(object):
   '''A jiffy class to enable transformation between scalepack format
   (merged or unmerged) to a properly structured MTZ file.'''
 

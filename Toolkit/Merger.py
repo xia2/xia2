@@ -61,7 +61,7 @@ from Handlers.Streams import streams_off
 def nint(a):
   return int(round(a))
 
-class unmerged_intensity:
+class unmerged_intensity(object):
   '''A class to represent and encapsulate the multiple observations of a
   given intensity defined in terms of the Miller index. It is assumed that
   these are compatible observations.'''
@@ -228,7 +228,7 @@ class unmerged_intensity:
 
     return result
 
-class merger:
+class merger(object):
   '''A class to calculate things from merging reflections.'''
 
   def __init__(self, hklin):

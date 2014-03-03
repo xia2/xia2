@@ -66,7 +66,7 @@ def df(path = os.getcwd()):
 
   raise RuntimeError, 'platform not supported'
 
-class _Environment:
+class _Environment(object):
   '''A class to store environmental considerations.'''
 
   def __init__(self):

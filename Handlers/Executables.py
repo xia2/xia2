@@ -13,7 +13,7 @@
 import sys
 import os
 
-class _Executables:
+class _Executables(object):
   def __init__(self):
     self._executables = { }
 

@@ -50,7 +50,7 @@ def poly_gradients(xp, y, params):
 
   return g
 
-class poly_fitter:
+class poly_fitter(object):
   '''A class to do the polynomial fit. This will fit observations y
   at points x with a polynomial of order n.'''
 

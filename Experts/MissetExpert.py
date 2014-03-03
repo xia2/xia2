@@ -19,7 +19,7 @@ from scitbx.math import r3_rotation_axis_and_angle_from_matrix
 from scitbx.math.euler_angles import xyz_angles, xyz_matrix
 import math
 
-class MosflmMissetExpert:
+class MosflmMissetExpert(object):
   '''A class to calculate the missetting angles to use for integration
   given some values around the start and a good way in (ideally 90 degrees)
   to the data processing. The protocol to obtain these remains to be

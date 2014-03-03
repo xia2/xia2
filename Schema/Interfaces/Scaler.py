@@ -166,7 +166,7 @@ from Handlers.Streams import Chatter, Debug
 from Modules.Scalepack2Mtz import Scalepack2Mtz
 from Modules.Mtz2Scalepack import Mtz2Scalepack
 
-class Scaler:
+class Scaler(object):
   '''An interface to present scaling functionality in a similar way to the
   integrater interface.'''
 

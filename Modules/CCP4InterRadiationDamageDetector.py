@@ -44,7 +44,7 @@ from lib.bits import auto_logfiler
 # This will return a list of wavelengths which are "ok" and a list of ones
 # which are "damaged".
 
-class CCP4InterRadiationDamageDetector:
+class CCP4InterRadiationDamageDetector(object):
   '''A class to detect radiation damage.'''
 
   def __init__(self):

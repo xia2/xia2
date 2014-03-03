@@ -57,7 +57,7 @@ from Handlers.Phil import PhilIndex
 
 from Experts.LatticeExpert import SortLattices
 
-class _IndexerHelper:
+class _IndexerHelper(object):
   '''A class to manage autoindexing results in a useful way, to ensure
   that the indexing solutions are properly managed, c/f TS01:1VR9.'''
 
@@ -115,7 +115,7 @@ class _IndexerHelper:
 
     return
 
-class Indexer:
+class Indexer(object):
   '''A class interface to present autoindexing functionality in a standard
   way for all indexing programs. Note that this interface defines the
   contract - what the implementation actually does is a matter for the

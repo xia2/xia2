@@ -27,7 +27,7 @@ from InteractiveDriver import InteractiveDriver
 # another factory to delegate to
 from ClusterDriverFactory import ClusterDriverFactory
 
-class _DriverFactory:
+class _DriverFactory(object):
 
   def __init__(self):
 
