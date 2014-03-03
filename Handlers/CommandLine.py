@@ -36,7 +36,7 @@ from Handlers.Streams import Chatter, Debug
 from Handlers.PipelineSelection import add_preference
 from Handlers.Executables import Executables
 
-class _CommandLine():
+class _CommandLine(object):
   '''A class to represent the command line input.'''
 
   def __init__(self):

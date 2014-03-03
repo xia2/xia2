@@ -115,7 +115,7 @@ def sort_o_dict(dict, metric):
 
   return result
 
-class _lattice_manager():
+class _lattice_manager(object):
   '''A class to manage lattice representations.'''
 
   def __init__(self, index_lattice, index_cell):
@@ -147,7 +147,7 @@ class _lattice_manager():
 
     self._allowed_lattice_order = self._allowed_lattice_order[1:]
 
-class _aa_sequence():
+class _aa_sequence(object):
   '''An object to represent the amino acid sequence.'''
 
   def __init__(self, sequence):
@@ -161,7 +161,7 @@ class _aa_sequence():
   def get_sequence(self):
     return self._sequence
 
-class _ha_info():
+class _ha_info(object):
   '''A versioned class to represent the heavy atom information.'''
 
   # FIXME in theory we could have > 1 of these to represent e.g. different
@@ -258,7 +258,7 @@ def format_statistics(statistics):
 
   return result
 
-class XCrystal():
+class XCrystal(object):
   '''An object to maintain all of the information about a crystal. This
   will contain the experimental information in XWavelength objects,
   and also amino acid sequence, heavy atom information.'''

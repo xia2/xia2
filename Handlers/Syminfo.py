@@ -23,7 +23,7 @@ if not os.environ.has_key('XIA2CORE_ROOT'):
 
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
-class _Syminfo():
+class _Syminfo(object):
   '''An object to retain symmetry information.'''
 
   def __init__(self):

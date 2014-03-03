@@ -13,7 +13,7 @@ import sys
 import copy
 from iotbx import mtz
 
-class Mtzdump():
+class Mtzdump(object):
   '''A class to give the same functionality as the wrapper for the CCP4
   MTZDUMP program.'''
 

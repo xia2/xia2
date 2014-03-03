@@ -98,7 +98,7 @@ from Handlers.Environment import Environment
 
 # See FIXME Integrater interface definition, 27/SEP/06
 
-class _global_integration_parameters:
+class _global_integration_parameters(object):
   '''A global class to record the integration parameters which are exported
   for each crystal. This is a dictionary keyed by the crystal id.'''
 
@@ -145,7 +145,7 @@ from Wrappers.XIA.Diffdump import Diffdump
 import Modules.Indexer.IndexerFactory as IndexerFactory
 import Modules.Integrater.IntegraterFactory as IntegraterFactory
 
-class XSweep():
+class XSweep(object):
   '''An object representation of the sweep.'''
 
   def __init__(self, name,

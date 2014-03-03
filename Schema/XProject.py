@@ -33,7 +33,7 @@ from Handlers.Syminfo import Syminfo
 # output stream
 from Handlers.Streams import Chatter, Debug
 
-class XProject():
+class XProject(object):
   '''A representation of a complete project. This will contain a dictionary
   of crystals.'''
 

@@ -33,7 +33,7 @@ from XSweep import XSweep
 from Handlers.Flags import Flags
 from Handlers.Streams import Chatter
 
-class XWavelength():
+class XWavelength(object):
   '''An object representation of a wavelength, which will after data
   reduction correspond to an MTZ hierarchy dataset.'''
 
