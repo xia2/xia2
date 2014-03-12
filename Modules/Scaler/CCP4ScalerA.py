@@ -811,7 +811,7 @@ class CCP4ScalerA(Scaler):
       else:
         r_mis = 0.0
 
-      resolution = max([r_comp, r_rm, r_uis, r_mis], r_cc_half)
+      resolution = max([r_comp, r_rm, r_uis, r_mis, r_cc_half])
 
       Debug.write('Resolution for sweep %s: %.2f' % \
                   (sname, resolution))
