@@ -591,6 +591,13 @@ class _Flags(object):
   def get_rmerge(self):
     return self._rmerge
 
+  def set_cc_half(self, cc_half):
+    self._cc_half = cc_half
+    return
+
+  def get_cc_half(self):
+    return self._cc_half
+
   def set_microcrystal(self, microcrystal = True):
     self._microcrystal = microcrystal
     return

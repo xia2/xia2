@@ -280,6 +280,12 @@ class _CommandLine(object):
             (self._help_rmerge(), str(e))
 
     try:
+      self._read_cc_half()
+    except exceptions.Exception, e:
+      raise RuntimeError, '%s (%s)' % \
+            (self._help_cc_half(), str(e))
+
+    try:
       self._read_microcrystal()
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
@@ -962,6 +968,27 @@ class _CommandLine(object):
 
   def _help_rmerge(self):
     return '-rmerge N'
+
+  def _read_cc_half(self):
+    try:
+      index = sys.argv.index('-cc_half')
+    except ValueError, e:
+      return
+
+    if index < 0:
+      raise RuntimeError, 'negative index'
+
+    self._understood.append(index)
+    self._understood.append(index + 1)
+
+    Flags.set_cc_half(float(sys.argv[index + 1]))
+    Debug.write('CC half limit set to %f' % \
+                Flags.get_cc_half())
+
+    return
+
+  def _help_cc_half(self):
+    return '-cc_half N'
 
   def _read_microcrystal(self):
 

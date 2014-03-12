@@ -472,6 +472,43 @@ class unmerged_intensity(object):
     '''Calculate the contribution to the I/sigma. N.B. multiplicity!'''
     return sum(o[1] / o[2] for o in self._observations)
 
+  def cc_merge(self, indices):
+    '''Merge only reflections in indices.'''
+
+    sum_wi = 0.0
+    sum_w = 0.0
+
+    for j in indices:
+      o = self._observations[j]
+      i = o[1]
+      w = 1.0 / (o[2] * o[2])
+      sum_w += w
+      sum_wi += w * i
+
+    i_mean = sum_wi / sum_w
+    sigi_mean = math.sqrt(1.0 / sum_w)
+
+    return i_mean, sigi_mean
+  
+  def cc_half_contribution(self):
+    '''Merge set randomly merged into two groups, return both average 
+    values.'''
+
+    import random
+    
+    indices = range(len(self._observations))
+
+    # if list length is odd, randomize which half gets one extra contribution
+    
+    how_many = len(indices) // 2
+    if len(indices) % 2 and random.random() > 0.5:
+      how_many += 1
+      
+    set_a = set(random.sample(indices, how_many))
+    set_b = set(indices) - set_a
+
+    return self.cc_merge(set_a)[0], self.cc_merge(set_b)[0]
+
   def chisq_contribution(self, i_mean):
     '''Calculate the contribution to the reduced chi^2.'''
 
@@ -524,6 +561,8 @@ resolutionizer {
   rmerge = 0.0
     .type = float
   completeness = 0.0
+    .type = float
+  cc_half = 0.5
     .type = float
   isigma = 1.0
     .type = float
@@ -877,6 +916,28 @@ class resolutionizer(object):
 
     return float(len(hkl_list)) / float(len(hkl_calc))
 
+  def calculate_cc_half(self, hkl_list = None):
+    '''Calculate cc_half for this set of reflections.'''
+
+    if not hkl_list:
+      hkl_list = list(self._unmerged_reflections)
+
+    a = []
+    b = []
+    
+    for hkl in hkl_list:
+      if self._unmerged_reflections[hkl].multiplicity() > 1:
+        cc_half_contrib = self._unmerged_reflections[hkl].cc_half_contribution()
+        a.append(cc_half_contrib[0])
+        b.append(cc_half_contrib[1])
+
+    ma = sum(a) / len(a)
+    mb = sum(b) / len(b)
+
+    return sum([(_a - ma) * (_b - mb) for _a, _b in zip(a, b)]) / \
+      math.sqrt(sum([(_a - ma) ** 2 for _a in a]) * \
+                sum([(_b - mb) ** 2 for _b in b]))
+        
   def calculate_rmerge(self, hkl_list = None):
     '''Calculate the overall Rmerge.'''
 
@@ -1031,6 +1092,10 @@ class resolutionizer(object):
       print 'Resolution completeness: %.2f' % \
           self.resolution_completeness()
 
+    if self._params.cc_half:
+      print 'Resolution cc_half     : %.2f' % \
+          self.resolution_cc_half()
+
     if self._params.isigma:
       print 'Resolution I/sig:        %.2f' % \
           self.resolution_unmerged_isigma()
@@ -1040,8 +1105,6 @@ class resolutionizer(object):
           self.resolution_merged_isigma()
 
     return
-
-
 
   def resolution_rmerge(self, limit = None, log = None):
     '''Compute a resolution limit where either rmerge = 1.0 (limit if
@@ -1302,6 +1365,46 @@ class resolutionizer(object):
       r_comp = 1.0 / math.sqrt(max(s_s))
 
     return r_comp
+
+  def resolution_cc_half(self, limit = None, log = None):
+    '''Compute a resolution limit where ccc_half < 0.5 (limit if
+    set) or the full extent of the data.'''
+
+    if limit is None:
+      limit = self._params.cc_half
+
+    bins, ranges = self.get_resolution_bins()
+
+    s_s = [1.0 / (r[0] * r[0]) for r in reversed(ranges)]
+
+    if limit == 0.0:
+      return 1.0 / math.sqrt(max(s_s))
+
+    cc_s = [self.calculate_cc_half(bin) for bin in reversed(bins)]
+
+    if min(cc_s) > limit:
+      return 1.0 / math.sqrt(max(s_s))
+
+    cc_f = fit(s_s, cc_s, 6)
+
+    rlimit = limit * max(cc_s)
+
+    if log:
+      fout = open(log, 'w')
+      for j, s in enumerate(s_s):
+        d = 1.0 / math.sqrt(s)
+        o = cc_s[j]
+        m = cc_f[j]
+        fout.write('%f %f %f %f\n' % (s, d, o, m))
+      fout.close()
+
+    try:
+      r_cc = 1.0 / math.sqrt(
+          interpolate_value(s_s, cc_f, rlimit))
+    except:
+      r_cc = 1.0 / math.sqrt(max(s_s))
+
+    return r_cc
 
 if __name__ == '__main__':
 

@@ -40,6 +40,7 @@ class Merger(PythonDriver):
     self._hklin = None
     self._limit_rmerge = None
     self._limit_completeness = None
+    self._limit_cc_half = None
     self._limit_isigma = None
     self._limit_misigma = None
     self._nbins = 100
@@ -47,6 +48,7 @@ class Merger(PythonDriver):
     # outputs
     self._resolution_rmerge = None
     self._resolution_completeness = None
+    self._resolution_cc_half = None
     self._resolution_isigma = None
     self._resolution_misigma = None
 
@@ -68,6 +70,10 @@ class Merger(PythonDriver):
     self._limit_completeness = limit_completeness
     return
 
+  def set_limit_cc_half(self, limit_cc_half):
+    self._limit_cc_half = limit_cc_half
+    return
+
   def set_limit_isigma(self, limit_isigma):
     self._limit_isigma = limit_isigma
     return
@@ -81,6 +87,9 @@ class Merger(PythonDriver):
 
   def get_resolution_completeness(self):
     return self._resolution_completeness
+
+  def get_resolution_cc_half(self):
+    return self._resolution_cc_half
 
   def get_resolution_isigma(self):
     return self._resolution_isigma
@@ -96,6 +105,8 @@ class Merger(PythonDriver):
       cl.append('rmerge=%f' % self._limit_rmerge)
     if self._limit_completeness:
       cl.append('completeness=%f' % self._limit_completeness)
+    if self._limit_cc_half:
+      cl.append('cc_half=%f' % self._limit_cc_half)
     if self._limit_isigma:
       cl.append('isigma=%f' % self._limit_isigma)
     if self._limit_misigma:
@@ -110,6 +121,8 @@ class Merger(PythonDriver):
         self._resolution_rmerge = float(record.split()[-1])
       if 'Resolution completeness' in record:
         self._resolution_completeness = float(record.split()[-1])
+      if 'Resolution cc_half' in record:
+        self._resolution_cc_half = float(record.split()[-1])
       if 'Resolution I/sig' in record:
         self._resolution_isigma = float(record.split()[-1])
       if 'Resolution Mn(I/sig)' in record:

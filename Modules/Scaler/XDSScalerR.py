@@ -985,6 +985,8 @@ class XDSScalerR(Scaler):
           m.set_limit_rmerge(Flags.get_rmerge())
         if Flags.get_completeness():
           m.set_limit_completeness(Flags.get_completeness())
+        if Flags.get_cc_half():
+          m.set_limit_cc_half(Flags.get_cc_half())
         if Flags.get_isigma():
           m.set_limit_isigma(Flags.get_isigma())
         if Flags.get_misigma():
@@ -998,6 +1000,11 @@ class XDSScalerR(Scaler):
           r_comp = m.get_resolution_completeness()
         else:
           r_comp = 0.0
+
+        if Flags.get_cc_half():
+          r_cc_half = m.get_resolution_cc_half()
+        else:
+          r_cc_half = 0.0
 
         if Flags.get_rmerge():
           r_rm = m.get_resolution_rmerge()
@@ -1014,7 +1021,7 @@ class XDSScalerR(Scaler):
         else:
           r_mis = 0.0
 
-        resolution = max([r_comp, r_rm, r_uis, r_mis])
+        resolution = max([r_comp, r_rm, r_uis, r_mis, r_cc_half])
 
       Chatter.write('Resolution for sweep %s/%s: %.2f' % \
                     (dname, sname, resolution))
