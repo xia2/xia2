@@ -117,6 +117,7 @@ class _Flags(object):
     self._misigma = 2.0
     self._completeness = 0.0
     self._rmerge = 0.0
+    self._cc_half = 0.0
 
     self._microcrystal = False
     self._failover = False
