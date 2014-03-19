@@ -19,6 +19,7 @@ sys.path.append(os.path.join(os.environ['XIA2CORE_ROOT'],
 
 from Driver.DriverFactory import DriverFactory
 from Decorators.DecoratorFactory import DecoratorFactory
+from Modules.FindFreeFlag import FindFreeFlag
 
 def Freerflag(DriverType = None):
   '''A factory for FreerflagWrapper classes.'''
@@ -59,10 +60,10 @@ def Freerflag(DriverType = None):
     def complete_free_flag(self):
       self.check_hklin()
       self.check_hklout()
-
+      free_column = FindFreeFlag(self.get_hklin())
       self.start()
       self.input('freerfrac %.3f' % self._free_fraction)
-      self.input('complete FREE=FreeR_flag')
+      self.input('complete FREE=%s' % free_column)
       self.close_wait()
       self.check_for_errors()
       self.check_ccp4_errors()
