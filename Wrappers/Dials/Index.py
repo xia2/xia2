@@ -42,7 +42,7 @@ def Index(DriverType = None):
       return
 
     def set_sweep_filename(self, sweep_filename):
-      if sweep_filename == 'sweep.json':
+      if sweep_filename == 'datablock.json':
         raise RuntimeError, 'chosen sweep name will be overwritten'
       self._sweep_filename = sweep_filename
       return
@@ -73,11 +73,11 @@ def Index(DriverType = None):
 
     def get_sweep_filename(self):
       import os
-      return os.path.join(self.get_working_directory(), 'sweep.json')
+      return os.path.join(self.get_working_directory(), 'datablock.json')
 
-    def get_crystal_filename(self):
+    def get_experiments_filename(self):
       import os
-      return os.path.join(self.get_working_directory(), 'crystal.json')
+      return os.path.join(self.get_working_directory(), 'experiments.json')
 
     def get_indexed_filename(self):
       import os

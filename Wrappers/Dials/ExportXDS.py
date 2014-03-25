@@ -30,12 +30,8 @@ def ExportXDS(DriverType = None):
 
       return
 
-    def set_sweep_filename(self, sweep_filename):
-      self._sweep_filename = sweep_filename
-      return
-
-    def set_crystal_filename(self, crystal_filename):
-      self._crystal_filename = crystal_filename
+    def set_experiments_filename(self, experiments_filename):
+      self._experiments_filename = experiments_filename
       return
 
     def run(self):
@@ -43,8 +39,7 @@ def ExportXDS(DriverType = None):
       Debug.write('Running dials.export_xds')
 
       self.clear_command_line()
-      self.add_command_line(self._sweep_filename)
-      self.add_command_line(self._crystal_filename)
+      self.add_command_line(self._experiments_filename)
       self.start()
       self.close_wait()
       self.check_for_errors()

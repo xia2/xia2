@@ -25,18 +25,13 @@ def RefineBravaisSettings(DriverType = None):
       DriverInstance.__class__.__init__(self)
       self.set_executable('dials.refine_bravais_settings')
 
-      self._sweep_filename = None
-      self._crystal_filename = None
+      self._experiments_filename = None
       self._indexed_filename = None
 
       return
 
-    def set_sweep_filename(self, sweep_filename):
-      self._sweep_filename = sweep_filename
-      return
-
-    def set_crystal_filename(self, crystal_filename):
-      self._crystal_filename = crystal_filename
+    def set_experiments_filename(self, experiments_filename):
+      self._experiments_filename = experiments_filename
       return
 
     def set_indexed_filename(self, indexed_filename):
@@ -48,7 +43,7 @@ def RefineBravaisSettings(DriverType = None):
       bravais_summary = { }
       for k in self._bravais_summary:
         bravais_summary[int(k)] = copy.deepcopy(self._bravais_summary[k])
-        bravais_summary[int(k)]['crystal_file'] = os.path.join(
+        bravais_summary[int(k)]['experiments_file'] = os.path.join(
           self.get_working_directory(), 'bravais_setting_%d.json' % int(k))
       return bravais_summary
 
@@ -57,8 +52,7 @@ def RefineBravaisSettings(DriverType = None):
       Debug.write('Running dials.refine_bravais_settings')
 
       self.clear_command_line()
-      self.add_command_line(self._sweep_filename)
-      self.add_command_line(self._crystal_filename)
+      self.add_command_line(self._experiments_filename)
       self.add_command_line(self._indexed_filename)
       self.start()
       self.close_wait()

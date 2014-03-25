@@ -232,8 +232,7 @@ class DialsIndexer(FrameProcessor,
     # already available.
 
     rbs = self.RefineBravaisSettings()
-    rbs.set_crystal_filename(indexer.get_crystal_filename())
-    rbs.set_sweep_filename(indexer.get_sweep_filename())
+    rbs.set_experiments_filename(indexer.get_experiments_filename())
     rbs.set_indexed_filename(indexer.get_indexed_filename())
     rbs.run()
 
@@ -256,7 +255,7 @@ class DialsIndexer(FrameProcessor,
         'nspots':summary['nspots'],
         'lattice':summary['bravais'],
         'cell':summary['unit_cell'],
-        'crystal_file':summary['crystal_file']
+        'experiments_file':summary['experiments_file']
         }
 
     self._solution = self.get_solution()
@@ -323,19 +322,18 @@ class DialsIndexer(FrameProcessor,
 
   def _index_finish(self):
     exporter = self.ExportXDS()
-    exporter.set_crystal_filename(self.get_solution()['crystal_file'])
-    exporter.set_sweep_filename(self._indexer.get_sweep_filename())
+    exporter.set_experiments_filename(self.get_solution()['experiments_file'])
     exporter.run()
 
     for file in ['XPARM.XDS']:
       self._data_files[file] = open(os.path.join(
-        self.get_working_directory(), file), 'rb').read()
+        self.get_working_directory(), 'xds', file), 'rb').read()
 
     self._indxr_payload['xds_files'] = self._data_files
 
     from Wrappers.XDS.XDS import xds_read_xparm
-    xparm_dict = xds_read_xparm(os.path.join(self.get_working_directory(),
-                                             'XPARM.XDS'))
+    xparm_dict = xds_read_xparm(
+      os.path.join(self.get_working_directory(), 'xds', 'XPARM.XDS'))
 
     distance = xparm_dict['distance']
     wavelength = xparm_dict['wavelength']
