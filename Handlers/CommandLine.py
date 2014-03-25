@@ -90,6 +90,7 @@ class _CommandLine(object):
     self._read_3dr()
     self._read_3dir()
     self._read_3diir()
+    self._read_3ddr()
     self._read_3ds()
 
     # FIXME really need to fix how this works out...
@@ -1310,6 +1311,19 @@ class _CommandLine(object):
       if '-3diir' in sys.argv:
         self._understood.append(sys.argv.index('-3diir'))
       Debug.write('3D II R pipeline (XDS IDXREF all images) selected')
+    return
+
+  def _read_3ddr(self):
+
+    if '-3ddr' in sys.argv or '-3dd' in sys.argv:
+      add_preference('indexer', 'dials')
+      add_preference('integrater', 'xdsr')
+      add_preference('scaler', 'xdsr')
+      if '-3dd' in sys.argv:
+        self._understood.append(sys.argv.index('-3dd'))
+      if '-3ddr' in sys.argv:
+        self._understood.append(sys.argv.index('-3ddr'))
+      Debug.write('3DD pipeline (DIALS indexing) selected')
     return
 
   def _read_3ds(self):
