@@ -26,7 +26,7 @@ def Spotfinder(DriverType = None):
 
     def __init__(self):
       DriverInstance.__class__.__init__(self)
-      self.set_executable('dials.spotfinder')
+      self.set_executable('dials.find_spots')
 
       self._sweep_filename = None
       self._spot_filename = 'strong.pickle'
@@ -59,7 +59,7 @@ def Spotfinder(DriverType = None):
 
     def run(self):
       from Handlers.Streams import Debug
-      Debug.write('Running dials.spotfinder')
+      Debug.write('Running dials.find_spots')
 
       self.clear_command_line()
       self.add_command_line(self._sweep_filename)

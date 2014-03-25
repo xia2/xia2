@@ -33,7 +33,7 @@ def Import(DriverType = None):
       self._images = []
       self._image_range = []
 
-      self._sweep_filename = 'sweep_import.json'
+      self._sweep_filename = 'datablock_import.json'
 
       return
 
@@ -61,7 +61,7 @@ def Import(DriverType = None):
       self.clear_command_line()
       for image in self._images:
         self.add_command_line(image)
-      self.add_command_line('--sweep-filename')
+      self.add_command_line('--output')
       self.add_command_line(self._sweep_filename)
       self.start()
       self.close_wait()
