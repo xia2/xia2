@@ -489,21 +489,21 @@ class unmerged_intensity(object):
     sigi_mean = math.sqrt(1.0 / sum_w)
 
     return i_mean, sigi_mean
-  
+
   def cc_half_contribution(self):
-    '''Merge set randomly merged into two groups, return both average 
+    '''Merge set randomly merged into two groups, return both average
     values.'''
 
     import random
-    
+
     indices = range(len(self._observations))
 
     # if list length is odd, randomize which half gets one extra contribution
-    
+
     how_many = len(indices) // 2
     if len(indices) % 2 and random.random() > 0.5:
       how_many += 1
-      
+
     set_a = set(random.sample(indices, how_many))
     set_b = set(indices) - set_a
 
@@ -924,7 +924,7 @@ class resolutionizer(object):
 
     a = []
     b = []
-    
+
     for hkl in hkl_list:
       if self._unmerged_reflections[hkl].multiplicity() > 1:
         cc_half_contrib = self._unmerged_reflections[hkl].cc_half_contribution()
@@ -937,7 +937,7 @@ class resolutionizer(object):
     return sum([(_a - ma) * (_b - mb) for _a, _b in zip(a, b)]) / \
       math.sqrt(sum([(_a - ma) ** 2 for _a in a]) * \
                 sum([(_b - mb) ** 2 for _b in b]))
-        
+
   def calculate_rmerge(self, hkl_list = None):
     '''Calculate the overall Rmerge.'''
 
