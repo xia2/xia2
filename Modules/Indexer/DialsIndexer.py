@@ -204,6 +204,8 @@ class DialsIndexer(FrameProcessor,
     spotfinder = self.Spotfinder()
     spotfinder.set_sweep_filename(importer.get_sweep_filename())
     spotfinder.set_scan_ranges([(first, last)])
+    if PhilIndex.params.dials.spotfinder.phil_file is not None:
+      spotfinder.set_phil_file(PhilIndex.params.dials.spotfinder.phil_file)
     spotfinder.run()
 
     self._spot_filename = spotfinder.get_spot_filename()
@@ -218,7 +220,25 @@ class DialsIndexer(FrameProcessor,
     indexer = self.Index()
     indexer.set_spot_filename(self._spot_filename)
     indexer.set_sweep_filename(self._sweep_filename)
-    indexer.run('fft3d')
+    if PhilIndex.params.dials.index.phil_file is not None:
+      indexer.set_phil_file(PhilIndex.params.dials.index.phil_file)
+
+    if self._indxr_input_lattice:
+      indexer.set_indexer_input_lattice(self._indxr_input_lattice)
+      Debug.write('Set lattice: %s' % self._indxr_input_lattice)
+
+    if self._indxr_input_cell:
+      indexer.set_indexer_input_cell(self._indxr_input_cell)
+      Debug.write('Set cell: %f %f %f %f %f %f' % \
+                  self._indxr_input_cell)
+      original_cell = self._indxr_input_cell
+
+    if self._indxr_input_cell is not None:
+      method = 'real_space_grid_search'
+    else:
+      method = 'fft3d'
+
+    indexer.run(method)
 
     # FIXME don't keep hold of an indexer: prevents pickling
 
@@ -276,6 +296,20 @@ class DialsIndexer(FrameProcessor,
     self._indxr_mosaic = self._solution['mosaic']
 
     return
+
+  def _compare_cell(self, c_ref, c_test):
+    '''Compare two sets of unit cell constants: if they differ by
+    less than 5% / 5 degrees return True, else False.'''
+
+    for j in range(3):
+      if math.fabs((c_test[j] - c_ref[j]) / c_ref[j]) > 0.05:
+        return False
+
+    for j in range(3, 6):
+      if math.fabs(c_test[j] - c_ref[j]) > 5:
+        return False
+
+    return True
 
   def get_solutions():
     return self._solutions

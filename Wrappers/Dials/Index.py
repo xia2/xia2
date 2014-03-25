@@ -34,10 +34,13 @@ def Index(DriverType = None):
       self._maximum_spot_error = 3.0
       self._detector_fix = None
       self._beam_fix = None
-
+      self._indexing_method = "fft3d"
       self._p1_cell = None
+      self._indxr_input_cell = None
+      self._indxr_input_lattice = None
 
       self._max_cell = 250
+      self._phil_file = None
 
       return
 
@@ -51,12 +54,22 @@ def Index(DriverType = None):
       self._spot_filename = spot_filename
       return
 
-    def set_unit_cell(self, unit_cell):
-      self._unit_cell = unit_cell
+    def set_indexer_input_lattice(self, lattice):
+      self._indxr_input_lattice = lattice
       return
 
-    def set_space_group(self, space_group):
-      self._space_group = space_group
+    def set_indexer_user_input_lattice(self, user):
+      self._indxr_user_input_lattice = user
+      return
+
+    def set_indexer_input_cell(self, cell):
+      if not type(cell) == type(()):
+        raise RuntimeError, 'cell must be a 6-tuple de floats'
+
+      if len(cell) != 6:
+        raise RuntimeError, 'cell must be a 6-tuple de floats'
+
+      self._indxr_input_cell = tuple(map(float, cell))
       return
 
     def set_maximum_spot_error(self, maximum_spot_error):
@@ -70,6 +83,13 @@ def Index(DriverType = None):
     def set_beam_fix(self, beam_fix):
       self._beam_fix = beam_fix
       return
+
+    def set_indexing_method(self, method):
+      self._indexing_method = method
+      return
+
+    def set_indexing_method(self):
+      return self._indexing_method
 
     def get_sweep_filename(self):
       import os
@@ -86,6 +106,10 @@ def Index(DriverType = None):
     def get_p1_cell(self):
       return self._p1_cell
 
+    def set_phil_file(self, phil_file):
+      self._phil_file = phil_file
+      return
+
     def run(self, method):
       from Handlers.Streams import Debug
       Debug.write('Running dials.index')
@@ -95,10 +119,14 @@ def Index(DriverType = None):
       self.add_command_line(self._spot_filename)
       self.add_command_line('method=%s' % method)
       self.add_command_line('max_cell=%d' % self._max_cell)
-      if self._space_group:
-        self.add_command_line('space_group=%s' % self._space_group)
-      if self._unit_cell:
-        self.add_command_line('unit_cell=%s' % self._unit_cell)
+      if self._indxr_input_lattice is not None:
+        from Experts.SymmetryExpert import lattice_to_spacegroup_number
+        self._symm = lattice_to_spacegroup_number(
+            self._indxr_input_lattice)
+        self.add_command_line('space_group=%s' % self._symm)
+      if self._indxr_input_cell is not None:
+        self.add_command_line(
+          'unit_cell="%s,%s,%s,%s,%s,%s"' %self._indxr_input_cell)
       if self._maximum_spot_error:
         self.add_command_line('maximum_spot_error=%.f' %
                               self._maximum_spot_error)
@@ -106,6 +134,8 @@ def Index(DriverType = None):
         self.add_command_line('detector.fix=%s' % self._detector_fix)
       if self._beam_fix:
         self.add_command_line('beam.fix=%s' % self._beam_fix)
+      if self._phil_file is not None:
+        self.add_command_line("%s" %self._phil_file)
 
       self.start()
       self.close_wait()
