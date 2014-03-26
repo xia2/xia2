@@ -233,10 +233,14 @@ class DialsIndexer(FrameProcessor,
                   self._indxr_input_cell)
       original_cell = self._indxr_input_cell
 
-    if self._indxr_input_cell is not None:
-      method = 'real_space_grid_search'
+    if PhilIndex.params.dials.index.method is None:
+      if self._indxr_input_cell is not None:
+        method = 'real_space_grid_search'
+      else:
+        method = 'fft3d'
+      Debug.write('Choosing indexing method: %s' % method)
     else:
-      method = 'fft3d'
+      method = PhilIndex.params.dials.index.method
 
     indexer.run(method)
 

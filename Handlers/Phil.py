@@ -40,6 +40,8 @@ dials {
       .type = path
   }
   index {
+    method = fft1d fft3d real_space_grid_search
+      .type = choice
     phil_file = None
       .type = path
   }
