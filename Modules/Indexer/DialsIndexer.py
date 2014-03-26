@@ -164,6 +164,7 @@ class DialsIndexer(FrameProcessor,
     dd.set_image(self.get_image_name(first))
     header = dd.readheader()
     last_background = int(round(5.0 / header['phi_width'])) - 1 + first
+    last_background = min(last, last_background)
 
     # next start to process these - first xycorr
     # FIXME run these *afterwards* as then we have a refined detector geometry
