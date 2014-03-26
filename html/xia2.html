@@ -437,11 +437,15 @@ END PROJECT TS01
 
     <h1>Release Notes</h1>
 
-    <p>Changes since 0.3.6.3: Bug fixes, add CC-half.</p>
+    <p>Changes since 0.3.6.3: Bug fixes, add CC-half, removing Scala.</p>
     <ul>
       <li>-cc_half 0.5 (say) resolution limit criterion available -
-    suggest set -misigma 0.5 -isigma 0.5 or similar with this.</li>
+      suggest set -misigma 0.5 -isigma 0.5 or similar with this.</li>
       <li>-freer_file where free flag != FreeR_flag fixed.</li>
+      <li>Massively trimmed all of the command line options for the
+      pipelines and removed the use of Scala in all pipelines, replaced
+      with Aimless (not before time!) This means that -3dr and so forth
+      <i>will no longer work</i> so please use -2d, -3d, -3di etc.</li>
     </ul>
 
     <p>Changes since 0.3.6.2: Cope with new CCP4.</p>

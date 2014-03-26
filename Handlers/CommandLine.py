@@ -83,21 +83,16 @@ class _CommandLine(object):
     self._read_no_profile()
     self._read_norefine()
     self._read_noremove()
-    self._read_2dr()
-    self._read_2da()
-    self._read_2dir()
-    self._read_2dia()
-    self._read_3dr()
-    self._read_3dir()
-    self._read_3diir()
-    self._read_3ddr()
-    self._read_3ds()
 
-    # FIXME really need to fix how this works out...
+    # pipeline options
+    
+    self._read_2d()
+    self._read_2di()
+    self._read_3d()
+    self._read_3di()
+    self._read_3dii()
+    self._read_3dd()
 
-    self._read_3dar()
-    self._read_3dair()
-    self._read_3daiir()
     self._read_migrate_data()
     self._read_zero_dose()
     self._read_free_fraction()
@@ -1227,155 +1222,62 @@ class _CommandLine(object):
       Flags.set_remove(False)
     return
 
-  def _read_2dr(self):
+  def _read_2d(self):
 
-    if '-2dr' in sys.argv or '-2d' in sys.argv:
-      add_preference('integrater', 'mosflmr')
-      add_preference('scaler', 'ccp4r')
-      if '-2d' in sys.argv:
-        self._understood.append(sys.argv.index('-2d'))
-      if '-2dr' in sys.argv:
-        self._understood.append(sys.argv.index('-2dr'))
-      Debug.write('2DR pipeline selected')
-    return
-
-  def _read_2da(self):
-
-    if '-2da' in sys.argv:
+    if '-2d' in sys.argv:
       add_preference('integrater', 'mosflmr')
       add_preference('scaler', 'ccp4a')
-      if '-2da' in sys.argv:
-        self._understood.append(sys.argv.index('-2da'))
+      self._understood.append(sys.argv.index('-2d'))
       Debug.write('2DA pipeline selected')
     return
 
-  def _read_2dia(self):
+  def _read_2di(self):
 
-    if '-2dai' in sys.argv or '-2dia' in sys.argv:
+    if '-2di' in sys.argv:
       add_preference('indexer', 'mosflm')
       add_preference('integrater', 'mosflmr')
       add_preference('scaler', 'ccp4a')
-      if '-2dai' in sys.argv:
-        self._understood.append(sys.argv.index('-2dai'))
-      if '-2dia' in sys.argv:
-        self._understood.append(sys.argv.index('-2dia'))
-      Debug.write('2DA pipeline selected')
+      self._understood.append(sys.argv.index('-2di'))
+      Debug.write('2DA pipeline; mosflm indexing selected')
     return
 
-  def _read_2dir(self):
+  def _read_3d(self):
 
-    if '-2dir' in sys.argv or '-2di' in sys.argv:
-      add_preference('indexer', 'mosflm')
-      add_preference('integrater', 'mosflmr')
-      add_preference('scaler', 'ccp4r')
-      if '-2di' in sys.argv:
-        self._understood.append(sys.argv.index('-2di'))
-      if '-2dir' in sys.argv:
-        self._understood.append(sys.argv.index('-2dir'))
-      Debug.write('2DR pipeline selected')
-    return
-
-  def _read_3dr(self):
-
-    if '-3dr' in sys.argv or '-3d' in sys.argv:
+    if '-3d' in sys.argv:
       add_preference('integrater', 'xdsr')
-      add_preference('scaler', 'xdsr')
-      if '-3d' in sys.argv:
-        self._understood.append(sys.argv.index('-3d'))
-      if '-3dr' in sys.argv:
-        self._understood.append(sys.argv.index('-3dr'))
+      add_preference('scaler', 'xdsa')
+      self._understood.append(sys.argv.index('-3d'))
       Debug.write('3DR pipeline selected')
     return
 
-  def _read_3dir(self):
+  def _read_3di(self):
 
-    if '-3dir' in sys.argv or '-3di' in sys.argv:
+    if '-3di' in sys.argv:
       add_preference('indexer', 'xds')
       add_preference('integrater', 'xdsr')
-      add_preference('scaler', 'xdsr')
-      if '-3di' in sys.argv:
-        self._understood.append(sys.argv.index('-3di'))
-      if '-3dir' in sys.argv:
-        self._understood.append(sys.argv.index('-3dir'))
-      Debug.write('3DR pipeline selected')
+      add_preference('scaler', 'xdsa')
+      self._understood.append(sys.argv.index('-3di'))
+      Debug.write('3DR pipeline; XDS indexing selected')
     return
 
-  def _read_3diir(self):
+  def _read_3dii(self):
 
-    if '-3diir' in sys.argv or '-3dii' in sys.argv:
+    if '-3dii' in sys.argv:
       add_preference('indexer', 'xdsii')
       add_preference('integrater', 'xdsr')
-      add_preference('scaler', 'xdsr')
-      if '-3dii' in sys.argv:
-        self._understood.append(sys.argv.index('-3dii'))
-      if '-3diir' in sys.argv:
-        self._understood.append(sys.argv.index('-3diir'))
+      add_preference('scaler', 'xdsa')
+      self._understood.append(sys.argv.index('-3dii'))
       Debug.write('3D II R pipeline (XDS IDXREF all images) selected')
     return
 
-  def _read_3ddr(self):
+  def _read_3dd(self):
 
-    if '-3ddr' in sys.argv or '-3dd' in sys.argv:
+    if '-3dd' in sys.argv:
       add_preference('indexer', 'dials')
       add_preference('integrater', 'xdsr')
-      add_preference('scaler', 'xdsr')
-      if '-3dd' in sys.argv:
-        self._understood.append(sys.argv.index('-3dd'))
-      if '-3ddr' in sys.argv:
-        self._understood.append(sys.argv.index('-3ddr'))
+      add_preference('scaler', 'xdsa')
+      self._understood.append(sys.argv.index('-3dd'))
       Debug.write('3DD pipeline (DIALS indexing) selected')
-    return
-
-  def _read_3ds(self):
-
-    if '-3ds' in sys.argv :
-      add_preference('indexer', 'xdssum')
-      add_preference('integrater', 'xdsr')
-      add_preference('scaler', 'xdsa')
-      if '-3ds' in sys.argv:
-        self._understood.append(sys.argv.index('-3ds'))
-      Debug.write('3DS pipeline selected')
-    return
-
-  def _read_3dar(self):
-
-    if '-3dar' in sys.argv or '-3da' in sys.argv:
-      add_preference('integrater', 'xdsr')
-      add_preference('scaler', 'xdsa')
-      if '-3da' in sys.argv:
-        self._understood.append(sys.argv.index('-3da'))
-      if '-3dar' in sys.argv:
-        self._understood.append(sys.argv.index('-3dar'))
-      Debug.write('3DAR pipeline selected')
-    return
-
-  def _read_3dair(self):
-
-    if '-3dair' in sys.argv or '-3dai' in sys.argv:
-      add_preference('indexer', 'xds')
-      add_preference('integrater', 'xdsr')
-      add_preference('scaler', 'xdsa')
-      if '-3dai' in sys.argv:
-        self._understood.append(sys.argv.index('-3dai'))
-      if '-3dair' in sys.argv:
-        self._understood.append(sys.argv.index('-3dair'))
-      Debug.write('3DAR pipeline selected')
-    return
-
-  def _read_3daiir(self):
-
-    if '-3daiir' in sys.argv or '-3daii' in sys.argv or \
-           '-3diia' in sys.argv:
-      add_preference('indexer', 'xdsii')
-      add_preference('integrater', 'xdsr')
-      add_preference('scaler', 'xdsa')
-      if '-3daii' in sys.argv:
-        self._understood.append(sys.argv.index('-3daii'))
-      if '-3diia' in sys.argv:
-        self._understood.append(sys.argv.index('-3diia'))
-      if '-3daiir' in sys.argv:
-        self._understood.append(sys.argv.index('-3daiir'))
-      Debug.write('3DA II R pipeline (XDS IDXREF all images) selected')
     return
 
   def _read_debug(self):

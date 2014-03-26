@@ -21,7 +21,7 @@ def check(key, value):
   allowed_indexers = [
       'mosflm', 'labelit', 'labelitii', 'xds', 'xdsii', 'xdssum', 'dials']
   allowed_integraters = ['mosflmr', 'xdsr', 'mosflm', 'xds']
-  allowed_scalers = ['ccp4r', 'ccp4a', 'xdsr', 'xdsa', 'ccp4', 'xds']
+  allowed_scalers = ['ccp4a', 'xdsa']
 
   if key == 'indexer':
     if not value in allowed_indexers:
@@ -40,10 +40,6 @@ def check(key, value):
   if key == 'scaler':
     if not value in allowed_scalers:
       raise RuntimeError, 'scaler %s unknown' % value
-    if value == 'ccp4':
-      return 'ccp4r'
-    if value == 'xds':
-      return 'xdsr'
     return value
 
   return
