@@ -245,6 +245,9 @@ class DialsIndexer(FrameProcessor,
 
     indexer.run(method)
 
+    if not os.path.exists(indexer.get_experiments_filename()):
+      raise RuntimeError("Indexing has failed!")
+
     # FIXME don't keep hold of an indexer: prevents pickling
 
     self._indexer = indexer
