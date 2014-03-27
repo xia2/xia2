@@ -740,7 +740,9 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_spacegroup(self._argv[index + 1])
+    Flags.set_spacegroup(self._argv[index + 1]) # XXX this line should go
+    PhilIndex.update("xia2.settings.space_group=%s" %self._argv[index + 1])
+    PhilIndex.get_python_object()
     Debug.write('Spacegroup set to %s' % self._argv[index + 1])
 
     return
@@ -1373,7 +1375,8 @@ class _CommandLine(object):
 
     _cell = tuple(map(float, cell))
 
-    Flags.set_cell(_cell)
+    PhilIndex.update("xia2.settings.unit_cell=%s,%s,%s,%s,%s,%s" %_cell)
+    PhilIndex.get_python_object()
 
     format = 6 * ' %7.2f'
 

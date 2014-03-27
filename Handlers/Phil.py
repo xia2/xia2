@@ -9,7 +9,8 @@
 # set for individual programs can be found. Initially this will be just a
 # couple for XDS.
 
-from libtbx.phil import parse, interface
+from libtbx.phil import interface
+from iotbx.phil import parse
 
 master_phil = parse("""
 xds {
@@ -72,6 +73,12 @@ ccp4.truncate {
     .type = str
 }
 xia2.settings {
+  unit_cell = None
+    .type = unit_cell
+    .help = "Provide a target unit cell to the indexing program"
+  space_group = None
+    .type = space_group
+    .help = "Provide a target space group to the indexing program"
   show_template = False
     .type = bool
   untrusted_rectangle_indexing = None

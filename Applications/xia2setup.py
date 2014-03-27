@@ -31,6 +31,7 @@ from Schema.Sweep import SweepFactory
 from Experts.FindImages import image2template_directory
 from Handlers.CommandLine import CommandLine
 from Handlers.Flags import Flags
+from Handlers.Phil import PhilIndex
 from Wrappers.CCP4.Chooch import Chooch
 from Modules.LabelitBeamCentre import compute_beam_centre
 from Handlers.Streams import streams_off
@@ -213,13 +214,16 @@ def print_sweeps(out = sys.stdout):
   # check to see if a user spacegroup has been assigned - if it has,
   # copy it in...
 
-  if Flags.get_spacegroup():
-    out.write('USER_SPACEGROUP %s\n' % Flags.get_spacegroup())
+  settings = PhilIndex.params.xia2.settings
+
+  if settings.space_group is not None:
+    out.write(
+      'USER_SPACEGROUP %s\n' % settings.space_group.type().lookup_symbol())
     out.write('\n')
 
-  if Flags.get_cell():
+  if settings.unit_cell is not None:
     out.write('USER_CELL %.2f %.2f %.2f %.2f %.2f %.2f\n' % \
-              tuple(Flags.get_cell()))
+              settings.unit_cell.parameters())
     out.write('\n')
 
   if Flags.get_freer_file():

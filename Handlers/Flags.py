@@ -104,9 +104,6 @@ class _Flags(object):
     # scala secondary correction
     self._scala_secondary = 6
 
-    # options to support the -cell option
-    self._cell = None
-
     # resolution limit flags
     self._resolution_low = None
     self._resolution_high = None
@@ -262,13 +259,6 @@ class _Flags(object):
 
   def get_lattice(self):
     return self._lattice
-
-  def set_cell(self, cell):
-    self._cell = cell
-    return
-
-  def get_cell(self):
-    return self._cell
 
   def set_quick(self, quick):
     self._quick = quick

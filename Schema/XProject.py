@@ -29,6 +29,7 @@ from Schema.XWavelength import XWavelength
 from Handlers.XInfo import XInfo
 from Handlers.Flags import Flags
 from Handlers.Syminfo import Syminfo
+from Handlers.Phil import PhilIndex
 
 # output stream
 from Handlers.Streams import Chatter, Debug
@@ -91,6 +92,8 @@ class XProject(object):
     '''Set up this object & all subobjects based on the .xinfo
     file contents.'''
 
+    settings = PhilIndex.params.xia2.settings
+
     xinfo = XInfo(xinfo_file)
 
     self._name = xinfo.get_project()
@@ -117,8 +120,9 @@ class XProject(object):
       # user assigned spacegroup
       if crystals[crystal].has_key('user_spacegroup'):
         xc.set_user_spacegroup(crystals[crystal]['user_spacegroup'])
-      elif Flags.get_spacegroup():
-        xc.set_user_spacegroup(Flags.get_spacegroup())
+      elif settings.space_group is not None:
+        # XXX do we ever actually get here?
+        xc.set_user_spacegroup(settings.space_group.type().lookup_symbol())
 
       for wavelength in crystals[crystal]['wavelengths'].keys():
         # FIXME 29/NOV/06 in here need to be able to cope with
@@ -158,8 +162,10 @@ class XProject(object):
         if crystals[crystal].has_key('user_spacegroup'):
           lattice = Syminfo.get_lattice(
             crystals[crystal]['user_spacegroup'])
-        elif Flags.get_spacegroup():
-          lattice = Syminfo.get_lattice(Flags.get_spacegroup())
+        elif settings.space_group is not None:
+          # XXX do we ever actually get here?
+          lattice = Syminfo.get_lattice(
+            settings.space_group.type().lookup_symbol())
         elif Flags.get_lattice():
           lattice = Flags.get_lattice()
         else:
@@ -171,8 +177,9 @@ class XProject(object):
 
         if crystals[crystal].has_key('user_cell'):
           cell = crystals[crystal]['user_cell']
-        elif Flags.get_cell():
-          cell = Flags.get_cell()
+        elif settings.unit_cell is not None:
+          # XXX do we ever actually get here?
+          cell = settings.unit_cell.parameters()
         else:
           cell = None
 
