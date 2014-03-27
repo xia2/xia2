@@ -160,7 +160,7 @@ def xia2():
     # write an xinfo file then
     xinfo = os.path.join(os.getcwd(), 'automatic.xinfo')
 
-    argv = sys.argv[1:]
+    argv = CommandLine.get_argv()
 
     if not CommandLine.get_directory():
 

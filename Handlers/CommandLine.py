@@ -47,6 +47,9 @@ class _CommandLine(object):
 
     return
 
+  def get_argv(self):
+    return self._argv
+
   def print_command_line(self):
     cl = self.get_command_line()
     Chatter.write('Command line: %s' % cl)
@@ -62,9 +65,22 @@ class _CommandLine(object):
   def setup(self):
     '''Set everything up...'''
 
+    self._argv = copy.deepcopy(sys.argv)
+
+    # first of all try to interpret arguments as phil parameters/files
+
+    from Handlers.Phil import master_phil
+    from libtbx.phil import command_line
+    cmd_line = command_line.argument_interpreter(master_phil=master_phil)
+    working_phil, self._argv = cmd_line.process_and_fetch(
+      args=self._argv, custom_processor="collect_remaining")
+
+    PhilIndex.merge_phil(working_phil)
+    PhilIndex.get_python_object()
+    #PhilIndex.get_diff().show()
+
     # things which are single token flags...
 
-    self._argv = copy.deepcopy(sys.argv)
 
     self._read_debug()
     self._read_interactive()
@@ -85,7 +101,7 @@ class _CommandLine(object):
     self._read_noremove()
 
     # pipeline options
-    
+
     self._read_2d()
     self._read_2di()
     self._read_3d()
@@ -329,7 +345,7 @@ class _CommandLine(object):
     nonsense = 'Unknown command-line options:'
     was_nonsense = False
 
-    for j, argv in enumerate(sys.argv):
+    for j, argv in enumerate(self._argv):
       if j == 0:
         continue
       if argv[0] != '-':
@@ -351,7 +367,7 @@ class _CommandLine(object):
     index = -1
 
     try:
-      index = sys.argv.index('-beam')
+      index = self._argv.index('-beam')
     except ValueError, e:
       self._beam = (0.0, 0.0)
       return
@@ -360,7 +376,7 @@ class _CommandLine(object):
       raise RuntimeError, 'negative index'
 
     try:
-      beam = sys.argv[index + 1].split(',')
+      beam = self._argv[index + 1].split(',')
     except IndexError, e:
       raise RuntimeError, '-beam correct use "-beam x,y"'
 
@@ -394,7 +410,7 @@ class _CommandLine(object):
     index = -1
 
     try:
-      index = sys.argv.index('-image')
+      index = self._argv.index('-image')
     except ValueError, e:
       # the token is not on the command line
       self._default_template = None
@@ -402,7 +418,7 @@ class _CommandLine(object):
       self._default_image = None
       return
 
-    image = sys.argv[index + 1]
+    image = self._argv[index + 1]
 
     # check if there is a space in the image name - this happens and it
     # looks like the python input parser will split it even if the
@@ -410,8 +426,8 @@ class _CommandLine(object):
 
     if image[-1] == '\\':
       try:
-        image = '%s %s' % (sys.argv[index + 1][:-1],
-                           sys.argv[index + 2])
+        image = '%s %s' % (self._argv[index + 1][:-1],
+                           self._argv[index + 2])
       except:
         raise RuntimeError, 'image name ends in \\'
 
@@ -431,13 +447,13 @@ class _CommandLine(object):
 
   def _read_atom_name(self):
     try:
-      index = sys.argv.index('-atom')
+      index = self._argv.index('-atom')
 
     except ValueError, e:
       self._default_atom_name = None
       return
 
-    self._default_atom_name = sys.argv[index + 1]
+    self._default_atom_name = self._argv[index + 1]
 
     self._understood.append(index)
     self._understood.append(index + 1)
@@ -455,18 +471,18 @@ class _CommandLine(object):
 
   def _read_phil(self):
     try:
-      index = sys.argv.index('-phil')
+      index = self._argv.index('-phil')
 
     except ValueError, e:
       return
 
-    PhilIndex.merge_param_file(sys.argv[index + 1])
+    PhilIndex.merge_param_file(self._argv[index + 1])
     PhilIndex.get_python_object()
 
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Debug.write('Phil file: %s' % sys.argv[index + 1])
+    Debug.write('Phil file: %s' % self._argv[index + 1])
 
     return
 
@@ -475,13 +491,13 @@ class _CommandLine(object):
 
   def _read_project_name(self):
     try:
-      index = sys.argv.index('-project')
+      index = self._argv.index('-project')
 
     except ValueError, e:
       self._default_project_name = None
       return
 
-    self._default_project_name = sys.argv[index + 1]
+    self._default_project_name = self._argv[index + 1]
 
     self._understood.append(index)
     self._understood.append(index + 1)
@@ -497,13 +513,13 @@ class _CommandLine(object):
 
   def _read_crystal_name(self):
     try:
-      index = sys.argv.index('-crystal')
+      index = self._argv.index('-crystal')
 
     except ValueError, e:
       self._default_crystal_name = None
       return
 
-    self._default_crystal_name = sys.argv[index + 1]
+    self._default_crystal_name = self._argv[index + 1]
 
     self._understood.append(index)
     self._understood.append(index + 1)
@@ -519,7 +535,7 @@ class _CommandLine(object):
 
   def _read_xinfo(self):
     try:
-      index = sys.argv.index('-xinfo')
+      index = self._argv.index('-xinfo')
     except ValueError, e:
       self._xinfo = None
       return
@@ -530,11 +546,11 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    self._xinfo = XProject(sys.argv[index + 1])
+    self._xinfo = XProject(self._argv[index + 1])
 
     Debug.write(60 * '-')
-    Debug.write('XINFO file: %s' % sys.argv[index + 1])
-    for record in open(sys.argv[index + 1], 'r').readlines():
+    Debug.write('XINFO file: %s' % self._argv[index + 1])
+    for record in open(self._argv[index + 1], 'r').readlines():
       # don't want \n on the end...
       Debug.write(record[:-1])
     Debug.write(60 * '-')
@@ -553,14 +569,14 @@ class _CommandLine(object):
 
   def _read_xparm(self):
     try:
-      index = sys.argv.index('-xparm')
+      index = self._argv.index('-xparm')
     except ValueError, e:
       return
 
     if index < 0:
       raise RuntimeError, 'negative index'
 
-    Flags.set_xparm(sys.argv[index + 1])
+    Flags.set_xparm(self._argv[index + 1])
 
     self._understood.append(index)
     self._understood.append(index + 1)
@@ -579,14 +595,14 @@ class _CommandLine(object):
 
   def _read_xparm_ub(self):
     try:
-      index = sys.argv.index('-xparm_ub')
+      index = self._argv.index('-xparm_ub')
     except ValueError, e:
       return
 
     if index < 0:
       raise RuntimeError, 'negative index'
 
-    Flags.set_xparm_ub(sys.argv[index + 1])
+    Flags.set_xparm_ub(self._argv[index + 1])
 
     self._understood.append(index)
     self._understood.append(index + 1)
@@ -605,21 +621,21 @@ class _CommandLine(object):
 
   def _read_parallel(self):
     try:
-      index = sys.argv.index('-parallel')
+      index = self._argv.index('-parallel')
     except ValueError, e:
       return
 
     if index < 0:
       raise RuntimeError, 'negative index'
 
-    if int(sys.argv[index + 1]) < 0:
+    if int(self._argv[index + 1]) < 0:
       raise RuntimeError, 'negative number of processors: %s' % \
-            sys.argv[index + 1]
+            self._argv[index + 1]
 
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_parallel(int(sys.argv[index + 1]))
+    Flags.set_parallel(int(self._argv[index + 1]))
     Debug.write('Parallel set to %d' % Flags.get_parallel())
 
     return
@@ -629,7 +645,7 @@ class _CommandLine(object):
 
   def _read_serial(self):
     try:
-      index = sys.argv.index('-serial')
+      index = self._argv.index('-serial')
     except ValueError, e:
       return
 
@@ -648,7 +664,7 @@ class _CommandLine(object):
 
   def _read_min_images(self):
     try:
-      index = sys.argv.index('-min_images')
+      index = self._argv.index('-min_images')
     except ValueError, e:
       return
 
@@ -658,7 +674,7 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_min_images(int(sys.argv[index + 1]))
+    Flags.set_min_images(int(self._argv[index + 1]))
     Debug.write('Min No. images / sweep set to %d' % \
                 Flags.get_min_images())
 
@@ -669,20 +685,20 @@ class _CommandLine(object):
 
   def _read_start_end(self):
     try:
-      index = sys.argv.index('-start_end')
+      index = self._argv.index('-start_end')
     except ValueError, e:
       return
 
     if index < 0:
       raise RuntimeError, 'negative index'
 
-    if not '-image' in sys.argv:
+    if not '-image' in self._argv:
       raise RuntimeError, 'do not use start_end without -image'
 
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    start, end = tuple(map(int, sys.argv[index + 1].split(',')))
+    start, end = tuple(map(int, self._argv[index + 1].split(',')))
 
     Flags.set_start_end(start, end)
     Debug.write('Start, end set to %d %d' % Flags.get_start_end())
@@ -694,7 +710,7 @@ class _CommandLine(object):
 
   def _read_xparallel(self):
     try:
-      index = sys.argv.index('-xparallel')
+      index = self._argv.index('-xparallel')
     except ValueError, e:
       return
 
@@ -704,7 +720,7 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_xparallel(int(sys.argv[index + 1]))
+    Flags.set_xparallel(int(self._argv[index + 1]))
     Debug.write('XParallel set to %d' % Flags.get_xparallel())
 
     return
@@ -714,7 +730,7 @@ class _CommandLine(object):
 
   def _read_spacegroup(self):
     try:
-      index = sys.argv.index('-spacegroup')
+      index = self._argv.index('-spacegroup')
     except ValueError, e:
       return
 
@@ -724,8 +740,8 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_spacegroup(sys.argv[index + 1])
-    Debug.write('Spacegroup set to %s' % sys.argv[index + 1])
+    Flags.set_spacegroup(self._argv[index + 1])
+    Debug.write('Spacegroup set to %s' % self._argv[index + 1])
 
     return
 
@@ -734,14 +750,14 @@ class _CommandLine(object):
 
   def _read_resolution(self):
     try:
-      index = sys.argv.index('-resolution')
+      index = self._argv.index('-resolution')
     except ValueError, e:
       return
 
     if index < 0:
       raise RuntimeError, 'negative index'
 
-    resolution = sys.argv[index + 1]
+    resolution = self._argv[index + 1]
     if ',' in resolution:
       a, b = map(float, resolution.split(','))
       dmin = min(a, b)
@@ -768,7 +784,7 @@ class _CommandLine(object):
 
   def _read_z_min(self):
     try:
-      index = sys.argv.index('-z_min')
+      index = self._argv.index('-z_min')
     except ValueError, e:
       return
 
@@ -778,7 +794,7 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_z_min(float(sys.argv[index + 1]))
+    Flags.set_z_min(float(self._argv[index + 1]))
     Debug.write('Z min set to %f' % Flags.get_z_min())
 
     return
@@ -788,7 +804,7 @@ class _CommandLine(object):
 
   def _read_scala_secondary(self):
     try:
-      index = sys.argv.index('-scala_secondary')
+      index = self._argv.index('-scala_secondary')
     except ValueError, e:
       return
 
@@ -798,7 +814,7 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_scala_secondary(float(sys.argv[index + 1]))
+    Flags.set_scala_secondary(float(self._argv[index + 1]))
     Debug.write('Scala secondary set to %f' % Flags.get_scala_secondary())
 
     return
@@ -808,14 +824,14 @@ class _CommandLine(object):
 
   def _read_freer_file(self):
     try:
-      index = sys.argv.index('-freer_file')
+      index = self._argv.index('-freer_file')
     except ValueError, e:
       return
 
     if index < 0:
       raise RuntimeError, 'negative index'
 
-    Flags.set_freer_file(sys.argv[index + 1])
+    Flags.set_freer_file(self._argv[index + 1])
 
     self._understood.append(index)
     self._understood.append(index + 1)
@@ -826,7 +842,7 @@ class _CommandLine(object):
     # this should also be used as an indexing reference to make
     # sense...
 
-    Flags.set_reference_reflection_file(sys.argv[index + 1])
+    Flags.set_reference_reflection_file(self._argv[index + 1])
     Debug.write('Reference reflection file: %s' %
                 Flags.get_reference_reflection_file())
 
@@ -840,14 +856,14 @@ class _CommandLine(object):
 
   def _read_reference_reflection_file(self):
     try:
-      index = sys.argv.index('-reference_reflection_file')
+      index = self._argv.index('-reference_reflection_file')
     except ValueError, e:
       return
 
     if index < 0:
       raise RuntimeError, 'negative index'
 
-    Flags.set_reference_reflection_file(sys.argv[index + 1])
+    Flags.set_reference_reflection_file(self._argv[index + 1])
 
     self._understood.append(index)
     self._understood.append(index + 1)
@@ -862,7 +878,7 @@ class _CommandLine(object):
 
   def _read_rejection_threshold(self):
     try:
-      index = sys.argv.index('-rejection_threshold')
+      index = self._argv.index('-rejection_threshold')
     except ValueError, e:
       return
 
@@ -872,7 +888,7 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_rejection_threshold(float(sys.argv[index + 1]))
+    Flags.set_rejection_threshold(float(self._argv[index + 1]))
     Debug.write('Rejection threshold set to %f' % \
                 Flags.get_rejection_threshold())
 
@@ -883,7 +899,7 @@ class _CommandLine(object):
 
   def _read_isigma(self):
     try:
-      index = sys.argv.index('-isigma')
+      index = self._argv.index('-isigma')
     except ValueError, e:
       return
 
@@ -893,7 +909,7 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_isigma(float(sys.argv[index + 1]))
+    Flags.set_isigma(float(self._argv[index + 1]))
     Debug.write('I/sigma limit set to %f' % \
                 Flags.get_isigma())
 
@@ -904,7 +920,7 @@ class _CommandLine(object):
 
   def _read_misigma(self):
     try:
-      index = sys.argv.index('-misigma')
+      index = self._argv.index('-misigma')
     except ValueError, e:
       return
 
@@ -914,7 +930,7 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_misigma(float(sys.argv[index + 1]))
+    Flags.set_misigma(float(self._argv[index + 1]))
     Debug.write('Merged I/sigma limit set to %f' % \
                 Flags.get_misigma())
 
@@ -925,7 +941,7 @@ class _CommandLine(object):
 
   def _read_completeness(self):
     try:
-      index = sys.argv.index('-completeness')
+      index = self._argv.index('-completeness')
     except ValueError, e:
       return
 
@@ -935,7 +951,7 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_completeness(float(sys.argv[index + 1]))
+    Flags.set_completeness(float(self._argv[index + 1]))
     Debug.write('Completeness limit set to %f' % \
                 Flags.get_completeness())
 
@@ -946,7 +962,7 @@ class _CommandLine(object):
 
   def _read_rmerge(self):
     try:
-      index = sys.argv.index('-rmerge')
+      index = self._argv.index('-rmerge')
     except ValueError, e:
       return
 
@@ -956,7 +972,7 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_rmerge(float(sys.argv[index + 1]))
+    Flags.set_rmerge(float(self._argv[index + 1]))
     Debug.write('Rmerge limit set to %f' % \
                 Flags.get_rmerge())
 
@@ -967,7 +983,7 @@ class _CommandLine(object):
 
   def _read_cc_half(self):
     try:
-      index = sys.argv.index('-cc_half')
+      index = self._argv.index('-cc_half')
     except ValueError, e:
       return
 
@@ -977,7 +993,7 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_cc_half(float(sys.argv[index + 1]))
+    Flags.set_cc_half(float(self._argv[index + 1]))
     Debug.write('CC half limit set to %f' % \
                 Flags.get_cc_half())
 
@@ -988,34 +1004,34 @@ class _CommandLine(object):
 
   def _read_microcrystal(self):
 
-    if '-microcrystal' in sys.argv:
+    if '-microcrystal' in self._argv:
       Flags.set_microcrystal()
       Debug.write('Microcrystal mode on')
-      self._understood.append(sys.argv.index('-microcrystal'))
+      self._understood.append(self._argv.index('-microcrystal'))
 
     return
 
   def _read_failover(self):
 
-    if '-failover' in sys.argv:
+    if '-failover' in self._argv:
       Flags.set_failover()
       Debug.write('Failover mode on')
-      self._understood.append(sys.argv.index('-failover'))
+      self._understood.append(self._argv.index('-failover'))
 
     return
 
   def _read_blend(self):
 
-    if '-blend' in sys.argv:
+    if '-blend' in self._argv:
       Flags.set_blend()
       Debug.write('Blend mode on')
-      self._understood.append(sys.argv.index('-blend'))
+      self._understood.append(self._argv.index('-blend'))
 
     return
 
   def _read_ispyb_xml_out(self):
     try:
-      index = sys.argv.index('-ispyb_xml_out')
+      index = self._argv.index('-ispyb_xml_out')
     except ValueError, e:
       self._ispyb_xml_out = None
       return
@@ -1025,8 +1041,8 @@ class _CommandLine(object):
 
     self._understood.append(index)
     self._understood.append(index + 1)
-    Flags.set_ispyb_xml_out(sys.argv[index + 1])
-    Debug.write('ISPyB XML output set to %s' % sys.argv[index + 1])
+    Flags.set_ispyb_xml_out(self._argv[index + 1])
+    Debug.write('ISPyB XML output set to %s' % self._argv[index + 1])
 
     return
 
@@ -1035,7 +1051,7 @@ class _CommandLine(object):
 
   def _read_hdr_in(self):
     try:
-      index = sys.argv.index('-hdr_in')
+      index = self._argv.index('-hdr_in')
     except ValueError, e:
       self._hdr_in = None
       return
@@ -1045,7 +1061,7 @@ class _CommandLine(object):
 
     self._understood.append(index)
     self._understood.append(index + 1)
-    Flags.set_hdr_in(sys.argv[index + 1])
+    Flags.set_hdr_in(self._argv[index + 1])
 
     return
 
@@ -1054,7 +1070,7 @@ class _CommandLine(object):
 
   def _read_hdr_out(self):
     try:
-      index = sys.argv.index('-hdr_out')
+      index = self._argv.index('-hdr_out')
     except ValueError, e:
       self._hdr_out = None
       return
@@ -1064,8 +1080,8 @@ class _CommandLine(object):
 
     self._understood.append(index)
     self._understood.append(index + 1)
-    Flags.set_hdr_out(sys.argv[index + 1])
-    Debug.write('Output header file set to %s' % sys.argv[index + 1])
+    Flags.set_hdr_out(self._argv[index + 1])
+    Debug.write('Output header file set to %s' % self._argv[index + 1])
 
     return
 
@@ -1074,7 +1090,7 @@ class _CommandLine(object):
 
   def _read_pickle(self):
     try:
-      index = sys.argv.index('-pickle')
+      index = self._argv.index('-pickle')
     except ValueError, e:
       self._pickle = None
       return
@@ -1084,7 +1100,7 @@ class _CommandLine(object):
 
     self._understood.append(index)
     self._understood.append(index + 1)
-    Flags.set_pickle(sys.argv[index + 1])
+    Flags.set_pickle(self._argv[index + 1])
 
     return
 
@@ -1102,34 +1118,34 @@ class _CommandLine(object):
 
   def _read_trust_timestamps(self):
 
-    if '-trust_timestamps' in sys.argv:
+    if '-trust_timestamps' in self._argv:
       Flags.set_trust_timestamps(True)
       Debug.write('Trust timestamps on')
-      self._understood.append(sys.argv.index('-trust_timestamps'))
+      self._understood.append(self._argv.index('-trust_timestamps'))
 
     return
 
   def _read_batch_scale(self):
 
-    if '-batch_scale' in sys.argv:
+    if '-batch_scale' in self._argv:
       Flags.set_batch_scale(True)
       Debug.write('Batch scaling mode on')
-      self._understood.append(sys.argv.index('-batch_scale'))
+      self._understood.append(self._argv.index('-batch_scale'))
 
     return
 
   def _read_small_molecule(self):
 
-    if '-small_molecule' in sys.argv:
+    if '-small_molecule' in self._argv:
       Flags.set_small_molecule(True)
       Debug.write('Small molecule selected')
-      self._understood.append(sys.argv.index('-small_molecule'))
+      self._understood.append(self._argv.index('-small_molecule'))
 
     return
 
   def _read_scale_model(self):
     try:
-      index = sys.argv.index('-scale_model')
+      index = self._argv.index('-scale_model')
     except ValueError, e:
       return
 
@@ -1139,196 +1155,196 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_scale_model(sys.argv[index + 1])
+    Flags.set_scale_model(self._argv[index + 1])
     Debug.write('Scaling model set to: %s' % Flags.get_scale_model())
 
     return
 
   def _read_quick(self):
 
-    if '-quick' in sys.argv:
+    if '-quick' in self._argv:
       Flags.set_quick(True)
       Debug.write('Quick mode selected')
-      self._understood.append(sys.argv.index('-quick'))
+      self._understood.append(self._argv.index('-quick'))
     return
 
   def _read_chef(self):
 
-    if '-chef' in sys.argv:
+    if '-chef' in self._argv:
       Flags.set_chef(True)
-      self._understood.append(sys.argv.index('-chef'))
+      self._understood.append(self._argv.index('-chef'))
       Debug.write('Chef mode selected')
 
-    if '-nochef' in sys.argv:
+    if '-nochef' in self._argv:
       Flags.set_chef(False)
-      self._understood.append(sys.argv.index('-nochef'))
+      self._understood.append(self._argv.index('-nochef'))
       Debug.write('Chef mode deselected')
 
     return
 
   def _read_reversephi(self):
 
-    if '-reversephi' in sys.argv:
+    if '-reversephi' in self._argv:
       Flags.set_reversephi(True)
-      self._understood.append(sys.argv.index('-reversephi'))
+      self._understood.append(self._argv.index('-reversephi'))
       Debug.write('Reversephi mode selected')
     return
 
   def _read_no_lattice_test(self):
 
-    if '-no_lattice_test' in sys.argv:
+    if '-no_lattice_test' in self._argv:
       Flags.set_no_lattice_test(True)
-      self._understood.append(sys.argv.index('-no_lattice_test'))
+      self._understood.append(self._argv.index('-no_lattice_test'))
       Debug.write('No lattice test mode selected')
     return
 
   def _read_no_relax(self):
 
-    if '-no_relax' in sys.argv:
+    if '-no_relax' in self._argv:
       Flags.set_relax(False)
-      self._understood.append(sys.argv.index('-no_relax'))
+      self._understood.append(self._argv.index('-no_relax'))
       Debug.write('XDS relax about indexing selected')
     return
 
   def _read_no_profile(self):
 
-    if '-no_profile' in sys.argv:
+    if '-no_profile' in self._argv:
       Flags.set_profile(False)
-      self._understood.append(sys.argv.index('-no_profile'))
+      self._understood.append(self._argv.index('-no_profile'))
       Debug.write('XDS profile fitting OFF')
     return
 
   def _read_zero_dose(self):
 
-    if '-zero_dose' in sys.argv:
+    if '-zero_dose' in self._argv:
       Flags.set_zero_dose(True)
-      self._understood.append(sys.argv.index('-zero_dose'))
+      self._understood.append(self._argv.index('-zero_dose'))
       Debug.write('Zero-dose mode (XDS/XSCALE) selected')
     return
 
   def _read_norefine(self):
 
-    if '-norefine' in sys.argv:
+    if '-norefine' in self._argv:
       Flags.set_refine(False)
-      self._understood.append(sys.argv.index('-norefine'))
+      self._understood.append(self._argv.index('-norefine'))
       # FIXME what does this do??? - switch off orientation refinement
       # in integration
     return
 
   def _read_noremove(self):
 
-    if '-noremove' in sys.argv:
-      self._understood.append(sys.argv.index('-noremove'))
+    if '-noremove' in self._argv:
+      self._understood.append(self._argv.index('-noremove'))
       Flags.set_remove(False)
     return
 
   def _read_2d(self):
 
-    if '-2d' in sys.argv:
+    if '-2d' in self._argv:
       add_preference('integrater', 'mosflmr')
       add_preference('scaler', 'ccp4a')
-      self._understood.append(sys.argv.index('-2d'))
+      self._understood.append(self._argv.index('-2d'))
       Debug.write('2DA pipeline selected')
     return
 
   def _read_2di(self):
 
-    if '-2di' in sys.argv:
+    if '-2di' in self._argv:
       add_preference('indexer', 'mosflm')
       add_preference('integrater', 'mosflmr')
       add_preference('scaler', 'ccp4a')
-      self._understood.append(sys.argv.index('-2di'))
+      self._understood.append(self._argv.index('-2di'))
       Debug.write('2DA pipeline; mosflm indexing selected')
     return
 
   def _read_3d(self):
 
-    if '-3d' in sys.argv:
+    if '-3d' in self._argv:
       add_preference('integrater', 'xdsr')
       add_preference('scaler', 'xdsa')
-      self._understood.append(sys.argv.index('-3d'))
+      self._understood.append(self._argv.index('-3d'))
       Debug.write('3DR pipeline selected')
     return
 
   def _read_3di(self):
 
-    if '-3di' in sys.argv:
+    if '-3di' in self._argv:
       add_preference('indexer', 'xds')
       add_preference('integrater', 'xdsr')
       add_preference('scaler', 'xdsa')
-      self._understood.append(sys.argv.index('-3di'))
+      self._understood.append(self._argv.index('-3di'))
       Debug.write('3DR pipeline; XDS indexing selected')
     return
 
   def _read_3dii(self):
 
-    if '-3dii' in sys.argv:
+    if '-3dii' in self._argv:
       add_preference('indexer', 'xdsii')
       add_preference('integrater', 'xdsr')
       add_preference('scaler', 'xdsa')
-      self._understood.append(sys.argv.index('-3dii'))
+      self._understood.append(self._argv.index('-3dii'))
       Debug.write('3D II R pipeline (XDS IDXREF all images) selected')
     return
 
   def _read_3dd(self):
 
-    if '-3dd' in sys.argv:
+    if '-3dd' in self._argv:
       add_preference('indexer', 'dials')
       add_preference('integrater', 'xdsr')
       add_preference('scaler', 'xdsa')
-      self._understood.append(sys.argv.index('-3dd'))
+      self._understood.append(self._argv.index('-3dd'))
       Debug.write('3DD pipeline (DIALS indexing) selected')
     return
 
   def _read_debug(self):
 
-    if '-debug' in sys.argv:
+    if '-debug' in self._argv:
       # join the debug stream to the main output
       Debug.join(Chatter)
-      self._understood.append(sys.argv.index('-debug'))
+      self._understood.append(self._argv.index('-debug'))
       Debug.write('Debugging output switched on')
     return
 
   def _read_interactive(self):
 
-    if '-interactive' in sys.argv:
+    if '-interactive' in self._argv:
       Flags.set_interactive(True)
-      self._understood.append(sys.argv.index('-interactive'))
+      self._understood.append(self._argv.index('-interactive'))
       Debug.write('Interactive indexing ON')
 
     return
 
   def _read_ice(self):
 
-    if '-ice' in sys.argv:
+    if '-ice' in self._argv:
       Flags.set_ice(True)
-      self._understood.append(sys.argv.index('-ice'))
+      self._understood.append(self._argv.index('-ice'))
       Debug.write('Ice ring exclusion ON')
 
     return
 
   def _read_egg(self):
 
-    if '-egg' in sys.argv:
-      self._understood.append(sys.argv.index('-egg'))
+    if '-egg' in self._argv:
+      self._understood.append(self._argv.index('-egg'))
       Flags.set_egg(True)
 
     return
 
   def _read_uniform_sd(self):
 
-    if '-no_uniform_sd' in sys.argv:
+    if '-no_uniform_sd' in self._argv:
       Flags.set_uniform_sd(False)
-      self._understood.append(sys.argv.index('-no_uniform_sd'))
+      self._understood.append(self._argv.index('-no_uniform_sd'))
       Debug.write('Uniform SD OFF')
 
     return
 
   def _read_migrate_data(self):
 
-    if '-migrate_data' in sys.argv:
+    if '-migrate_data' in self._argv:
       Flags.set_migrate_data(True)
-      self._understood.append(sys.argv.index('-migrate_data'))
+      self._understood.append(self._argv.index('-migrate_data'))
       Debug.write('Data migration switched on')
     return
 
@@ -1338,7 +1354,7 @@ class _CommandLine(object):
     index = -1
 
     try:
-      index = sys.argv.index('-cell')
+      index = self._argv.index('-cell')
     except ValueError, e:
       return
 
@@ -1346,7 +1362,7 @@ class _CommandLine(object):
       raise RuntimeError, 'negative index'
 
     try:
-      cell = sys.argv[index + 1].split(',')
+      cell = self._argv[index + 1].split(',')
     except IndexError, e:
       raise RuntimeError, \
             '-cell correct use "-cell a,b,c,alpha,beta,gamma"'
@@ -1375,7 +1391,7 @@ class _CommandLine(object):
 
   def _read_free_fraction(self):
     try:
-      index = sys.argv.index('-free_fraction')
+      index = self._argv.index('-free_fraction')
     except ValueError, e:
       return
 
@@ -1385,7 +1401,7 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_free_fraction(float(sys.argv[index + 1]))
+    Flags.set_free_fraction(float(self._argv[index + 1]))
     Debug.write('Free fraction set to %f' % Flags.get_free_fraction())
 
     return
@@ -1395,7 +1411,7 @@ class _CommandLine(object):
 
   def _read_free_total(self):
     try:
-      index = sys.argv.index('-free_total')
+      index = self._argv.index('-free_total')
     except ValueError, e:
       return
 
@@ -1405,7 +1421,7 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_free_total(int(sys.argv[index + 1]))
+    Flags.set_free_total(int(self._argv[index + 1]))
     Debug.write('Free total set to %f' % Flags.get_free_total())
 
     return
@@ -1415,7 +1431,7 @@ class _CommandLine(object):
 
   def _read_mask(self):
     try:
-      index = sys.argv.index('-mask')
+      index = self._argv.index('-mask')
     except ValueError, e:
       return
 
@@ -1424,7 +1440,7 @@ class _CommandLine(object):
 
     self._understood.append(index)
     self._understood.append(index + 1)
-    Flags.set_mask(sys.argv[index + 1])
+    Flags.set_mask(self._argv[index + 1])
 
     return
 
@@ -1439,7 +1455,7 @@ class _CommandLine(object):
 
   def _read_fixed_628(self):
     try:
-      index = sys.argv.index('-fixed_628')
+      index = self._argv.index('-fixed_628')
     except ValueError, e:
       return
 
@@ -1457,11 +1473,11 @@ class _CommandLine(object):
   def _read_indexer(self):
 
     try:
-      index = sys.argv.index('-indexer')
+      index = self._argv.index('-indexer')
     except ValueError, e:
       return
 
-    indexer = sys.argv[index + 1]
+    indexer = self._argv[index + 1]
     add_preference('indexer', indexer)
     self._understood.append(index)
     self._understood.append(index + 1)
@@ -1470,11 +1486,11 @@ class _CommandLine(object):
   def _read_integrater(self):
 
     try:
-      index = sys.argv.index('-integrater')
+      index = self._argv.index('-integrater')
     except ValueError, e:
       return
 
-    integrater = sys.argv[index + 1]
+    integrater = self._argv[index + 1]
     add_preference('integrater', integrater)
     self._understood.append(index)
     self._understood.append(index + 1)
@@ -1483,11 +1499,11 @@ class _CommandLine(object):
   def _read_scaler(self):
 
     try:
-      index = sys.argv.index('-scaler')
+      index = self._argv.index('-scaler')
     except ValueError, e:
       return
 
-    scaler = sys.argv[index + 1]
+    scaler = self._argv[index + 1]
     add_preference('scaler', scaler)
     self._understood.append(index)
     self._understood.append(index + 1)
@@ -1495,10 +1511,10 @@ class _CommandLine(object):
 
   def _read_executables(self):
     try:
-      index = sys.argv.index('-executable')
+      index = self._argv.index('-executable')
     except ValueError, e:
       return
-    executable_string = sys.argv[index + 1]
+    executable_string = self._argv[index + 1]
     assert('=' in executable_string)
     executable, path = executable_string.split('=')
     Executables.add(executable, path)
