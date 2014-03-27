@@ -109,7 +109,7 @@ def Integrater():
       integrater = Mosflm.Mosflm()
       Debug.write('Using MosflmR Integrater')
       if not get_preferences().get('scaler'):
-        add_preference('scaler', 'ccp4r')
+        add_preference('scaler', 'ccp4a')
     except NotAvailableError, e:
       if preselection == 'mosflmr':
         raise RuntimeError, \
