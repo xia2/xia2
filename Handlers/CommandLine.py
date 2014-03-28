@@ -476,10 +476,17 @@ class _CommandLine(object):
     except ValueError, e:
       return
 
+    Chatter.bigbanner('-phil option now no longer needed: '
+                      'please just place file on command-line', size=80)
+
+    self._understood.append(index)
+
+    if True:
+      return
+    
     PhilIndex.merge_param_file(self._argv[index + 1])
     PhilIndex.get_python_object()
 
-    self._understood.append(index)
     self._understood.append(index + 1)
 
     Debug.write('Phil file: %s' % self._argv[index + 1])

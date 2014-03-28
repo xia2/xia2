@@ -85,10 +85,10 @@ class _Stream(object):
 
     return result
 
-  def bigbanner(self, comment, forward = True):
+  def bigbanner(self, comment, forward = True, size=60):
     '''Write a big banner for something.'''
 
-    hashes = '#' * 60
+    hashes = '#' * size
 
     self.write(hashes, forward)
     self.write('# %s' % comment, forward)
