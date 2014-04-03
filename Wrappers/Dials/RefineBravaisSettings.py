@@ -56,12 +56,12 @@ def RefineBravaisSettings(DriverType = None):
       self.add_command_line(self._indexed_filename)
 
       # some spells to make the refinement work faster...
-      
+
       self.add_command_line('reflections_per_degree=10')
       self.add_command_line('detector.fix=all')
       self.add_command_line('beam.fix=all')
-      self.add_command_line('engine=GaussNewtonIterations')
-      
+      self.add_command_line('engine=GaussNewton')
+
       self.start()
       self.close_wait()
       self.check_for_errors()
