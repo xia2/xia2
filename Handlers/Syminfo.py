@@ -23,6 +23,8 @@ if not os.environ.has_key('XIA2CORE_ROOT'):
 
 sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
+from cctbx import sgtbx
+
 class _Syminfo(object):
   '''An object to retain symmetry information.'''
 
@@ -127,11 +129,9 @@ class _Syminfo(object):
 
   def get_pointgroup(self, name):
     '''Get the pointgroup for this spacegroup, e.g. P422 for P43212.'''
-
-    if self._spacegroup_long_to_short.has_key(name):
-      name = self._spacegroup_long_to_short[name]
-
-    return self._spacegroup_name_to_pointgroup[name.replace(' ', '')]
+    space_group = sgtbx.space_group_info(name).group()
+    point_group = space_group.build_derived_point_group()
+    return point_group.type().lookup_symbol().replace(' ', '')
 
   def get_lattice(self, name):
     '''Get the lattice for a named spacegroup.'''
@@ -142,31 +142,16 @@ class _Syminfo(object):
                 'cI', 'cF']:
       return name
 
-
-    # introspect on the input to figure out what to return
-
-    if type(name) == type(1):
-      return self.get_syminfo(name)['lattice']
-
-    # check that this isn't a string of an integer - if it is
-    # repeat above...
-
-    if self._int_re.match(name):
+    from cctbx.sgtbx.bravais_types import bravais_lattice
+    if isinstance(name, int):
+      lattice = bravais_lattice(number=name)
+    elif self._int_re.match(name):
       name = int(name)
-      return self.get_syminfo(name)['lattice']
+      lattice = bravais_lattice(number=name)
+    else:
+      lattice = bravais_lattice(symbol=name)
 
-    # ok this should be a "pure" spacegroup string
-
-    if ':' in name:
-      assert(name.startswith('R'))
-      name = name.split(':')[0].replace('R', 'H')
-
-    if self._spacegroup_long_to_short.has_key(name):
-      name = self._spacegroup_long_to_short[name]
-
-    # The short name should not have a space in, sometimes this may
-    # be foxed by someone passing in P 21 - this should fix it...
-    return self._spacegroup_name_to_lattice[name.replace(' ', '')]
+    return str(lattice)
 
   def get_spacegroup_numbers(self):
     '''Get a list of all spacegroup numbers.'''
@@ -178,8 +163,7 @@ class _Syminfo(object):
 
   def spacegroup_number_to_name(self, spacegroup_number):
     '''Return the name of this spacegroup.'''
-
-    return self._symop[spacegroup_number]['name']
+    return sgtbx.space_group_info(spacegroup_number).type().lookup_symbol()
 
   def spacegroup_name_to_number(self, spacegroup):
     '''Return the number corresponding to this spacegroup.'''
@@ -192,25 +176,12 @@ class _Syminfo(object):
     except:
       pass
 
-    spacegroup = spacegroup.strip()
-
-    # check if this is a disputed spacegroup name
-
-    if ':' in spacegroup and 'H' in spacegroup:
-      spacegroup = spacegroup.split(':')[0].strip().replace('R', 'H')
-
-    # next check to see if this is the long form
-
-    if self._spacegroup_long_to_short.has_key(spacegroup):
-      spacegroup = self._spacegroup_long_to_short[spacegroup]
-
-    return self._spacegroup_name_to_number[spacegroup]
+    return sgtbx.space_group_info(str(spacegroup)).type().number()
 
   def get_num_symops(self, spacegroup_number):
     '''Get the number of symmetry operations that spacegroup
     number has.'''
-
-    return self._symop[spacegroup_number]['symops']
+    return len(sgtbx.space_group_info(number=spacegroup_number).group())
 
   def get_symops(self, spacegroup):
     '''Get the operations for spacegroup number N.'''
