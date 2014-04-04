@@ -355,8 +355,8 @@ class XDSIntegrater(FrameProcessor,
 
     if not self.get_integrater_low_resolution():
 
-      dmin = self._intgr_indexer.get_indexer_low_resolution()
-      self.set_integrater_low_resolution(dmin)
+      dmax = self._intgr_indexer.get_indexer_low_resolution()
+      self.set_integrater_low_resolution(dmax)
 
       Debug.write('Low resolution set to: %s' % \
                   self.get_integrater_low_resolution())
