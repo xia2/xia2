@@ -81,15 +81,12 @@ class XWavelength(object):
       if failover:
         try:
           s.get_integrater_intensities()
-          #import pickle
-          #p = pickle.dumps(s)
           return s
         except Exception, e:
           Chatter.write('Processing sweep %s failed: %s' % \
                         (s.get_name(), str(e)))
-          #remove.append(s)
-          #return ''
       else:
+        s.get_integrater_intensities()
         return s
 
     args = [(s, Flags.get_failover()) for s in self._sweeps]
@@ -102,7 +99,6 @@ class XWavelength(object):
     if mp_params.mode == 'serial':
       nproc = 1
     else:
-      #assert
       nproc = mp_params.nproc
       if nproc is Auto:
         from Handlers.Environment import get_number_cpus
