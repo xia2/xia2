@@ -33,7 +33,7 @@ from Handlers.Syminfo import Syminfo
 def LatticeSymmetry(DriverType = None):
   '''A factory for the LatticeSymmetry wrappers.'''
 
-  DriverInstance = DriverFactory.Driver(DriverType)
+  DriverInstance = DriverFactory.Driver('simple')
 
   class LatticeSymmetryWrapper(DriverInstance.__class__):
     '''A wrapper class for iotbx.lattice_symmetry.'''
