@@ -248,9 +248,9 @@ class DialsIndexer(FrameProcessor,
     if not os.path.exists(indexer.get_experiments_filename()):
       raise RuntimeError("Indexing has failed!")
 
-    # FIXME don't keep hold of an indexer: prevents pickling
-
-    self._indexer = indexer
+    # not strictly the P1 cell, rather the cell that was used in indexing
+    self._p1_cell = indexer._p1_cell
+    self._indexed_filename = indexer.get_indexed_filename()
 
     # FIXME in here should respect the input unit cell and lattice if provided
 
@@ -388,13 +388,13 @@ class DialsIndexer(FrameProcessor,
 
     from libtbx import easy_pickle
     from cctbx import crystal, miller, uctbx
-    reflections = easy_pickle.load(self._indexer.get_indexed_filename())
+    reflections = easy_pickle.load(self._indexed_filename)
     miller_indices = reflections['miller_index']
     miller_indices = miller_indices.select(miller_indices != (0,0,0))
     # it isn't necessarily the 'p1_cell', but it should be the cell that
     # corresponds to the miller indices in the indexed.pickle
     symmetry = crystal.symmetry(
-      unit_cell=uctbx.unit_cell(self._indexer._p1_cell))
+      unit_cell=uctbx.unit_cell(self._p1_cell))
     miller_set = miller.set(symmetry, miller_indices)
     d_max, d_min = miller_set.d_max_min()
     d_max *= 1.05 # include an upper margin to avoid rounding errors
