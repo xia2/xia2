@@ -321,12 +321,11 @@ class XDSScalerA(Scaler):
 
     need_to_return = False
 
-    # is this correct or should it be run for all cases?
-    # try for BA0296
-
     if len(self._sweep_information.keys()) > 1:
 
       lattices = []
+
+      # FIXME run this stuff in parallel as well... 
 
       for epoch in self._sweep_information.keys():
 
