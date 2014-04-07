@@ -129,7 +129,7 @@ class XWavelength(object):
         preserve_order=True,
         preserve_exception_message=True)
 
-      DriverFactory.det_driver_type(drivertype)
+      DriverFactory.set_driver_type(drivertype)
 
     else:
       results_list = [s for s in self._sweeps]
