@@ -453,6 +453,9 @@ class XDSScalerA(Scaler):
            not self._reference:
       # need to generate a reference reflection file - generate this
       # from the reflections in self._first_epoch
+      # 
+      # FIXME this should really use the Brehm and Diederichs method
+      # if you have lots of little sweeps...
 
       intgr = self._sweep_information[self._first_epoch]['integrater']
 
