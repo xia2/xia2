@@ -59,9 +59,12 @@ class _Stream(object):
 
   def cache(self):
     self._cache = True
+    self._cachelines = []
     return
 
   def uncache(self):
+    if not self._cache:
+      return
     self._cache = False
     for record, forward in self._cachelines:
       self.write(record, forward)

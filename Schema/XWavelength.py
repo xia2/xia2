@@ -79,28 +79,25 @@ class XWavelength(object):
 
       from Handlers.Streams import Debug
 
-      Chatter.cache()
-      Debug.cache()
+      assert len(args) == 3
+      s, failover, cache = args
+      if cache:
+        Chatter.cache()
+        Debug.cache()
 
-      assert len(args) == 2
-      s, failover = args
-      if failover:
-        try:
-          s.get_integrater_intensities()
-          Chatter.uncache()
-          Debug.uncache()
-          return s
-        except Exception, e:
+      try:
+        s.get_integrater_intensities()
+      except Exception, e:
+        if failover:
           Chatter.write('Processing sweep %s failed: %s' % \
                         (s.get_name(), str(e)))
-      else:
-        s.get_integrater_intensities()
-
-        Chatter.uncache()
-        Debug.uncache()
+        else:
+          raise 
+      finally:
+        if cache:
+          Chatter.uncache()
+          Debug.uncache()
         return s
-
-    args = [(s, Flags.get_failover()) for s in self._sweeps]
 
     from libtbx import easy_mp
     from libtbx import Auto
@@ -115,14 +112,18 @@ class XWavelength(object):
         from Handlers.Environment import get_number_cpus
         njob = get_number_cpus()
 
-    results_list = easy_mp.parallel_map(
-      run_one_sweep, args, params=None,
-      processes=njob,
-      method="multiprocessing",
-      asynchronous=True,
-      callback=None,
-      preserve_order=True,
-      preserve_exception_message=True)
+    if njob > 1:
+      args = [(s, Flags.get_failover(), njob > 1) for s in self._sweeps]
+      results_list = easy_mp.parallel_map(
+        run_one_sweep, args, params=None,
+        processes=njob,
+        method="multiprocessing",
+        asynchronous=True,
+        callback=None,
+        preserve_order=True,
+        preserve_exception_message=True)
+    else:
+      results_list = [s for s in self._sweeps]
 
     self._sweeps = [s for s in results_list if s is not None]
     result += "\n".join(str(s) for s in results_list)
