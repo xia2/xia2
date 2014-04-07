@@ -107,8 +107,13 @@ class QSubDriver(DefaultDriver):
     where the script itself gets written and run, and the output
     file channel opened when the process has finished...'''
 
+    script_name = os.path.join('jobs', self._script_name)
+
+    if not os.path.exists(os.path.join(self._working_directory, 'jobs')):
+      os.mkdir(os.path.join(self._working_directory, 'jobs'))
+
     script_writer(self._working_directory,
-                  self._script_name,
+                  script_name,
                   self._executable,
                   self._script_command_line,
                   self._working_environment,
@@ -118,7 +123,7 @@ class QSubDriver(DefaultDriver):
     # the queue
 
     pipe = subprocess.Popen(['qsub', '-V', '-cwd',
-                             '%s.sh' % self._script_name],
+                             '%s.sh' % script_name],
                             cwd = self._working_directory,
                             stdout = subprocess.PIPE,
                             stderr = subprocess.PIPE)
@@ -179,13 +184,23 @@ class QSubDriver(DefaultDriver):
     error_output = open(sge_stderr, 'r').readlines()
     self.check_sge_errors(error_output)
 
+    try:
+      os.path.remove(os.path.join(self._working_directory,
+                                  '%s.sh.o%s' % (self._script_name,
+                                                 job_id)))
+      os.path.remove(os.path.join(self._working_directory,
+                                  '%s.sh.e%s' % (self._script_name,
+                                                 job_id)))
+    except: # deliberate
+      pass
+
     # it's nearly impossible to get the return status from qsub
     # so don't bother
     self._script_status = 0
 
     # set this up for reading the "standard output" of the job.
     self._output_file = open(os.path.join(self._working_directory,
-                                          '%s.xout' % self._script_name),
+                                          '%s.xout' % script_name),
                              'r')
 
     # at this stage I should delete the sge specific files defined
