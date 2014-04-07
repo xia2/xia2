@@ -149,7 +149,7 @@ class _Syminfo(object):
       name = int(name)
       lattice = bravais_lattice(number=name)
     else:
-      lattice = bravais_lattice(symbol=name)
+      lattice = bravais_lattice(symbol=str(name))
 
     return str(lattice)
 
