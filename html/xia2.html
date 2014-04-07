@@ -452,7 +452,8 @@ END PROJECT TS01
       <li>Parallelisation options: can now cleanly process sweeps from one 
 	wavelength in parallel (to aid with multi-crystal data sets) use 
 	Phil parameters njob=4 nproc=12 mode=parallel (say) to allow processing
-	four sweeps at a time each using 12 cores.</li>
+	four sweeps at a time each using 12 
+	cores<sup><a href="#fn1" id="ref1">1</a></sup></li>.
     </ul>
 
     <p>Changes since 0.3.6.2: Cope with new CCP4.</p>
@@ -1173,6 +1174,10 @@ xia2 -ehtpx_xml_out project.xml
     <p>The mosflm binary which comes with
       <a href="http://www.mrc-lmb.cam.ac.uk/harry/imosflm/index.html">
         iMosflm</a> works well with xia2.</p>
+
+    <sup id="fn1">1. N.B. you may wait for a while until you see output - it 
+      will all be cached while parallel processing is happening to avoid 
+      it getting mangled.<a href="#ref1" title="Return to 1.">Back</a></sup>
 
   </body>
 </html>
