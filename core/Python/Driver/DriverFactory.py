@@ -40,22 +40,21 @@ class _DriverFactory(object):
     # that the following Driver implementation is being used
 
     if os.environ.has_key('XIA2CORE_DRIVERTYPE'):
-      self.setDriver_type(os.environ['XIA2CORE_DRIVERTYPE'])
+      self.set_driver_type(os.environ['XIA2CORE_DRIVERTYPE'])
 
     return
 
   def set_driver_type(self, type):
-    return self.setDriver_type(type)
-
-  def setDriver_type(self, type):
     '''Set the kind of driver this factory should produce.'''
-
     if not type in self._implemented_types:
       raise RuntimeError, 'unimplemented driver class: %s' % type
 
     self._driver_type = type
 
     return
+
+  def get_driver_type(self):
+    return self._driver_type
 
   def Driver(self, type = None):
     '''Create a new Driver instance, optionally providing the

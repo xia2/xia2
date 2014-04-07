@@ -75,15 +75,20 @@ class XWavelength(object):
 
     remove = []
 
+    from Driver.DriverFactory import DriverFactory
+        
     def run_one_sweep(args):
 
       from Handlers.Streams import Debug
 
       assert len(args) == 3
-      s, failover, cache = args
-      if cache:
-        Chatter.cache()
-        Debug.cache()
+      s, failover, job_type = args
+
+      if job_type:
+        DriverFactory.set_driver_type(job_type)
+      
+      Chatter.cache()
+      Debug.cache()
 
       try:
         s.get_integrater_intensities()
@@ -94,9 +99,8 @@ class XWavelength(object):
         else:
           raise 
       finally:
-        if cache:
-          Chatter.uncache()
-          Debug.uncache()
+        Chatter.uncache()
+        Debug.uncache()
         return s
 
     from libtbx import easy_mp
@@ -113,7 +117,9 @@ class XWavelength(object):
         njob = get_number_cpus()
 
     if njob > 1:
-      args = [(s, Flags.get_failover(), njob > 1) for s in self._sweeps]
+      drivertype = DriverFactory.get_driver_type()
+
+      args = [(s, Flags.get_failover(), mp_params.type) for s in self._sweeps]
       results_list = easy_mp.parallel_map(
         run_one_sweep, args, params=None,
         processes=njob,
@@ -122,6 +128,9 @@ class XWavelength(object):
         callback=None,
         preserve_order=True,
         preserve_exception_message=True)
+
+      DriverFactory.det_driver_type(drivertype)
+
     else:
       results_list = [s for s in self._sweeps]
 

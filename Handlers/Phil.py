@@ -101,7 +101,7 @@ xia2.settings {
       .type = int(value_min=1)
     njob = Auto
       .type = int(value_min=1)
-    type = *simple cluster.sge
+    type = *simple qsub
       .type = choice
       .help = "How to run the parallel processing jobs, e.g. over a cluster"
   }
