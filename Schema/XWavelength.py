@@ -73,10 +73,8 @@ class XWavelength(object):
 
     result += 'Sweeps:\n'
 
-    remove = []
-
     from Driver.DriverFactory import DriverFactory
-        
+
     def run_one_sweep(args):
 
       from Handlers.Streams import Debug
@@ -86,7 +84,7 @@ class XWavelength(object):
 
       if job_type:
         DriverFactory.set_driver_type(job_type)
-      
+
       Chatter.cache()
       Debug.cache()
 
@@ -96,8 +94,9 @@ class XWavelength(object):
         if failover:
           Chatter.write('Processing sweep %s failed: %s' % \
                         (s.get_name(), str(e)))
+          s = None
         else:
-          raise 
+          raise
       finally:
         Chatter.uncache()
         Debug.uncache()
@@ -131,11 +130,29 @@ class XWavelength(object):
 
       DriverFactory.set_driver_type(drivertype)
 
-    else:
-      results_list = [s for s in self._sweeps]
+      self._sweeps = [s for s in results_list if s is not None]
+      result += "\n".join(str(s) for s in results_list)
 
-    self._sweeps = [s for s in results_list if s is not None]
-    result += "\n".join(str(s) for s in results_list)
+    else:
+      remove = []
+
+      for s in self._sweeps:
+
+        # would be nice to put this somewhere else in the hierarchy - not
+        # sure how to do that though (should be handled in Interfaces?)
+
+        try:
+          result += '%s\n' % str(s)
+        except Exception, e:
+          if Flags.get_failover():
+            Chatter.write('Processing sweep %s failed: %s' % \
+                          (s.get_name(), str(e)))
+            remove.append(s)
+          else:
+            raise
+
+      for s in remove:
+        self._sweeps.remove(s)
 
     return result[:-1]
 
