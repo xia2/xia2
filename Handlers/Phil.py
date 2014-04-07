@@ -13,6 +13,10 @@ from libtbx.phil import interface
 from iotbx.phil import parse
 
 master_phil = parse("""
+general {
+  check_image_files_readable = True
+    .type = bool
+}  
 xds {
   integrate {
     include scope Wrappers.XDS.XDSIntegrate.master_params

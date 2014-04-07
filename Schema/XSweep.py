@@ -230,40 +230,46 @@ class XSweep(object):
         error = False
 
         start, end = self._frames_to_process
-        for j in range(start, end + 1):
-          if not j in self._images:
-            Debug.write('image %s missing' % \
-                        self.get_image_name(j))
-            error = True
-            continue
-          if not os.access(self.get_image_name(j), os.R_OK):
-            Debug.write('image %s unreadable' % \
-                        self.get_image_name(j))
-            error = True
-            continue
+        from Handlers.Phil import PhilIndex
+        params = PhilIndex.get_python_object()
+        if params.general.check_image_files_readable:
+          for j in range(start, end + 1):
+            if not j in self._images:
+              Debug.write('image %s missing' % \
+                          self.get_image_name(j))
+              error = True
+              continue
+            if not os.access(self.get_image_name(j), os.R_OK):
+              Debug.write('image %s unreadable' % \
+                          self.get_image_name(j))
+              error = True
+              continue
 
-        if error:
-          raise RuntimeError, 'problem with sweep %s' % self._name
+          if error:
+            raise RuntimeError, 'problem with sweep %s' % self._name
 
       else:
 
         error = False
 
         start, end = min(self._images), max(self._images)
-        for j in range(start, end + 1):
-          if not j in self._images:
-            Debug.write('image %s missing' % \
-                        self.get_image_name(j))
-            error = True
-            continue
-          if not os.access(self.get_image_name(j), os.R_OK):
-            Debug.write('image %s unreadable' % \
-                        self.get_image_name(j))
-            error = True
-            continue
+        from Handlers.Phil import PhilIndex
+        params = PhilIndex.get_python_object()
+        if params.general.check_image_files_readable:
+          for j in range(start, end + 1):
+            if not j in self._images:
+              Debug.write('image %s missing' % \
+                          self.get_image_name(j))
+              error = True
+              continue
+            if not os.access(self.get_image_name(j), os.R_OK):
+              Debug.write('image %s unreadable' % \
+                          self.get_image_name(j))
+              error = True
+              continue
 
-        if error:
-          raise RuntimeError, 'problem with sweep %s' % self._name
+          if error:
+            raise RuntimeError, 'problem with sweep %s' % self._name
 
       # + read the image header information into here?
       #   or don't I need it? it would be useful for checking
