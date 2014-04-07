@@ -91,6 +91,15 @@ xia2.settings {
       .help = "This feature requires the dials project to be installed, and"
               "is not currently intended for general use. Use at your peril!"
   }
+  multiprocessing {
+    mode = *serial parallel
+      .type = choice
+      .help = "Whether to process each sweep in serial (using n processes per"
+              " sweep) or to process sweeps in parallale (using 1 process per"
+              " sweep)."
+    nproc = Auto
+      .type = int(value_min=1)
+  }
 }
 """, process_includes=True)
 

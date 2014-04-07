@@ -75,26 +75,75 @@ class XWavelength(object):
 
     remove = []
 
-    for s in self._sweeps:
-
-      # would be nice to put this somewhere else in the hierarchy - not
-      # sure how to do that though (should be handled in Interfaces?)
-
-      # would also be nice to put some parallelism in here - though is
-      # this the right place to do that? would seem kind-of messy...
-
-      if Flags.get_failover():
+    def run_one_sweep(args):
+      assert len(args) == 2
+      s, failover = args
+      if failover:
         try:
-          result += '%s\n' % str(s)
+          s.get_integrater_intensities()
+          #import pickle
+          #p = pickle.dumps(s)
+          return s
         except Exception, e:
           Chatter.write('Processing sweep %s failed: %s' % \
                         (s.get_name(), str(e)))
-          remove.append(s)
+          #remove.append(s)
+          #return ''
       else:
-        result += '%s\n' % str(s)
+        return s
 
-    for s in remove:
-      self._sweeps.remove(s)
+    args = [(s, Flags.get_failover()) for s in self._sweeps]
+
+    from libtbx import easy_mp
+    from libtbx import Auto
+    from Handlers.Phil import PhilIndex
+    params = PhilIndex.get_python_object()
+    mp_params = params.xia2.settings.multiprocessing
+    if mp_params.mode == 'serial':
+      nproc = 1
+    else:
+      #assert
+      nproc = mp_params.nproc
+      if nproc is Auto:
+        from Handlers.Environment import get_number_cpus
+        nproc = get_number_cpus()
+
+    results_list = easy_mp.parallel_map(
+      run_one_sweep, args, params=None,
+      processes=nproc,
+      method="multiprocessing",
+      asynchronous=True,
+      callback=None,
+      preserve_order=True,
+      preserve_exception_message=True)
+
+    self._sweeps = [s for s in results_list if s is not None]
+    result += "\n".join(str(s) for s in results_list)
+
+    #remove = [s for s, r in zip(self._sweeps, results_list) if r is None]
+
+    #result += '\n'.join(r for r in results_list if r is not None)
+
+    #for s in self._sweeps:
+
+      ## would be nice to put this somewhere else in the hierarchy - not
+      ## sure how to do that though (should be handled in Interfaces?)
+
+      ## would also be nice to put some parallelism in here - though is
+      ## this the right place to do that? would seem kind-of messy...
+
+      #if Flags.get_failover():
+        #try:
+          #result += '%s\n' % str(s)
+        #except Exception, e:
+          #Chatter.write('Processing sweep %s failed: %s' % \
+                        #(s.get_name(), str(e)))
+          #remove.append(s)
+      #else:
+        #result += '%s\n' % str(s)
+
+    #for s in remove:
+      #self._sweeps.remove(s)
 
     return result[:-1]
 

@@ -33,7 +33,7 @@ from Schema.XProject import XProject
 from Handlers.Flags import Flags
 from Handlers.Phil import PhilIndex
 from Handlers.Streams import Chatter, Debug
-from Handlers.PipelineSelection import add_preference
+from Handlers.PipelineSelection import add_preference, get_preferences
 from Handlers.Executables import Executables
 
 class _CommandLine(object):
@@ -341,6 +341,11 @@ class _CommandLine(object):
 
     # finally, check that all arguments were read and raise an exception
     # if any of them were nonsense.
+
+    params = PhilIndex.get_python_object()
+    mp_params = params.xia2.settings.multiprocessing
+    if mp_params.mode == 'parallel':
+      Flags.set_parallel(1)
 
     nonsense = 'Unknown command-line options:'
     was_nonsense = False
