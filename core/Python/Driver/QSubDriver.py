@@ -184,24 +184,13 @@ class QSubDriver(DefaultDriver):
     error_output = open(sge_stderr, 'r').readlines()
     self.check_sge_errors(error_output)
 
-    try:
-      os.path.remove(os.path.join(self._working_directory,
-                                  '%s.sh.o%s' % (self._script_name,
-                                                 job_id)))
-      os.path.remove(os.path.join(self._working_directory,
-                                  '%s.sh.e%s' % (self._script_name,
-                                                 job_id)))
-    except: # deliberate
-      pass
-
     # it's nearly impossible to get the return status from qsub
     # so don't bother
     self._script_status = 0
 
     # set this up for reading the "standard output" of the job.
     self._output_file = open(os.path.join(self._working_directory,
-                                          '%s.xout' % script_name),
-                             'r')
+                                          '%s.xout' % script_name), 'r')
 
     # at this stage I should delete the sge specific files defined
     # above to be tidy...
