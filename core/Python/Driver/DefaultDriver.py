@@ -514,7 +514,7 @@ class DefaultDriver(object):
 
     if self._log_file:
       # close the existing log file: also add a comment at the end containing the
-      # command-line (or the first 78 characters thereof, replacing working 
+      # command-line (or the first 78 characters thereof, replacing working
       # directory & executable path for brevity)
       command_line = '%s ' % os.path.split(self._executable)[-1]
       for c in self._command_line:

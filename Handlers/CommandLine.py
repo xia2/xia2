@@ -488,7 +488,7 @@ class _CommandLine(object):
 
     if True:
       return
-    
+
     PhilIndex.merge_param_file(self._argv[index + 1])
     PhilIndex.get_python_object()
 

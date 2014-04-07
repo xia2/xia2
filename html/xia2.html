@@ -440,20 +440,20 @@ END PROJECT TS01
     <p>Changes since 0.3.6.3: Bug fixes, add CC-half, removing Scala.</p>
     <ul>
       <li>-cc_half 0.5 (say) resolution limit criterion available -
-	suggest set -misigma 0.5 -isigma 0.5 or similar with this.</li>
+        suggest set -misigma 0.5 -isigma 0.5 or similar with this.</li>
       <li>-freer_file where free flag != FreeR_flag fixed.</li>
       <li>Massively trimmed all of the command line options for the
-	pipelines and removed the use of Scala in all pipelines, replaced
-	with Aimless (not before time!) This means that -3dr and so forth
-	<i>will no longer work</i> so please use -2d, -3d, -3di etc.</li>
-      <li>-phil command line option now deprecated: phil parameters passed 
-	on the command-line will be respected, also phil files, without this
-	clue</li>
-      <li>Parallelisation options: can now cleanly process sweeps from one 
-	wavelength in parallel (to aid with multi-crystal data sets) use 
-	Phil parameters njob=4 nproc=12 mode=parallel (say) to allow processing
-	four sweeps at a time each using 12 
-	cores<sup><a href="#fn1" id="ref1">1</a></sup></li>.
+        pipelines and removed the use of Scala in all pipelines, replaced
+        with Aimless (not before time!) This means that -3dr and so forth
+        <i>will no longer work</i> so please use -2d, -3d, -3di etc.</li>
+      <li>-phil command line option now deprecated: phil parameters passed
+        on the command-line will be respected, also phil files, without this
+        clue</li>
+      <li>Parallelisation options: can now cleanly process sweeps from one
+        wavelength in parallel (to aid with multi-crystal data sets) use
+        Phil parameters njob=4 nproc=12 mode=parallel (say) to allow processing
+        four sweeps at a time each using 12
+        cores<sup><a href="#fn1" id="ref1">1</a></sup></li>.
     </ul>
 
     <p>Changes since 0.3.6.2: Cope with new CCP4.</p>
@@ -1175,8 +1175,8 @@ xia2 -ehtpx_xml_out project.xml
       <a href="http://www.mrc-lmb.cam.ac.uk/harry/imosflm/index.html">
         iMosflm</a> works well with xia2.</p>
 
-    <sup id="fn1">1. N.B. you may wait for a while until you see output - it 
-      will all be cached while parallel processing is happening to avoid 
+    <sup id="fn1">1. N.B. you may wait for a while until you see output - it
+      will all be cached while parallel processing is happening to avoid
       it getting mangled.<a href="#ref1" title="Return to 1.">Back</a></sup>
 
   </body>

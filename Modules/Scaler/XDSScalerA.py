@@ -325,7 +325,7 @@ class XDSScalerA(Scaler):
 
       lattices = []
 
-      # FIXME run this stuff in parallel as well... 
+      # FIXME run this stuff in parallel as well...
 
       for epoch in self._sweep_information.keys():
 

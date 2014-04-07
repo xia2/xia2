@@ -81,7 +81,7 @@ class XWavelength(object):
 
       Chatter.cache()
       Debug.cache()
-      
+
       assert len(args) == 2
       s, failover = args
       if failover:
@@ -95,7 +95,7 @@ class XWavelength(object):
                         (s.get_name(), str(e)))
       else:
         s.get_integrater_intensities()
-        
+
         Chatter.uncache()
         Debug.uncache()
         return s

@@ -100,7 +100,10 @@ xia2.settings {
     nproc = Auto
       .type = int(value_min=1)
     njob = Auto
-      .type = int(value_min=1)      
+      .type = int(value_min=1)
+    type = *simple cluster.sge
+      .type = choice
+      .help = "How to run the parallel processing jobs, e.g. over a cluster"
   }
 }
 """, process_includes=True)

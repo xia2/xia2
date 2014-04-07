@@ -17,7 +17,7 @@
 #  - Completeness
 #
 # The standalone (moving to C++) version... FIXME use a DIALS ReflectionTable
-# in here: this would be much faster. 
+# in here: this would be much faster.
 
 import sys
 import math
