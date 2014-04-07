@@ -449,6 +449,10 @@ END PROJECT TS01
       <li>-phil command line option now deprecated: phil parameters passed 
 	on the command-line will be respected, also phil files, without this
 	clue</li>
+      <li>Parallelisation options: can now cleanly process sweeps from one 
+	wavelength in parallel (to aid with multi-crystal data sets) use 
+	Phil parameters njob=4 nproc=12 mode=parallel (say) to allow processing
+	four sweeps at a time each using 12 cores.</li>
     </ul>
 
     <p>Changes since 0.3.6.2: Cope with new CCP4.</p>
