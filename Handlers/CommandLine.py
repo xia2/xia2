@@ -345,7 +345,7 @@ class _CommandLine(object):
     params = PhilIndex.get_python_object()
     mp_params = params.xia2.settings.multiprocessing
     if mp_params.mode == 'parallel':
-      Flags.set_parallel(1)
+      Flags.set_parallel(mp_params.nproc)
 
     nonsense = 'Unknown command-line options:'
     was_nonsense = False

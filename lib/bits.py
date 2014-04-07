@@ -107,6 +107,8 @@ def remove_outliers(values, limit):
 
 ##### START MESSY CODE #####
 
+# FIXME need a mutex lock around this
+
 _run_number = 0
 
 def _get_number():

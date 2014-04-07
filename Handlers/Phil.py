@@ -99,6 +99,8 @@ xia2.settings {
               " sweep)."
     nproc = Auto
       .type = int(value_min=1)
+    njob = Auto
+      .type = int(value_min=1)      
   }
 }
 """, process_includes=True)
