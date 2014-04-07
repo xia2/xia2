@@ -52,10 +52,20 @@ class _Stream(object):
     self._otherstream = None
     self._off = False
 
+    self._cache = False
+    self._cachelines = []
+
     return
 
-  # FIXED 20/OCT/06 added forward option, specify as false to
-  # prevent this happening...
+  def cache(self):
+    self._cache = True
+    return
+
+  def uncache(self):
+    self._cache = False
+    for record, forward in self._cachelines:
+      self.write(record, forward)
+    return self._cachelines
 
   def get_file(self):
     if self._file:
@@ -69,6 +79,10 @@ class _Stream(object):
   def write(self, record, forward = True):
     if self._off:
       return None
+
+    if self._cache:
+      self._cachelines.append((record, forward))
+      return
 
     for r in record.split('\n'):
       if self._prefix:
