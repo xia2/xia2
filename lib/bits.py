@@ -106,15 +106,30 @@ def remove_outliers(values, limit):
   return result, outliers
 
 ##### START MESSY CODE #####
+# Shard counter for multiprocessing
+# http://eli.thegreenplace.net/2012/01/04/shared-counter-with-pythons-multiprocessing/
 
-# FIXME need a mutex lock around this
+from multiprocessing import Value, Lock
 
-_run_number = 0
+class Counter(object):
+    def __init__(self, initval=0):
+        self.val = Value('i', initval)
+        self.lock = Lock()
+
+    def increment(self):
+        with self.lock:
+            self.val.value += 1
+
+    def value(self):
+        with self.lock:
+            return self.val.value
+
+_run_number = Counter(0)
 
 def _get_number():
   global _run_number
-  _run_number += 1
-  return _run_number
+  _run_number.increment()
+  return _run_number.value()
 
 ###### END MESSY CODE ######
 
