@@ -46,6 +46,7 @@ from Handlers.Syminfo import Syminfo
 from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Flags import Flags
 from Handlers.Files import FileHandler
+from Handlers.Phil import PhilIndex
 
 # stuff I have nicked from the CCP4 Scaler implementation
 from Modules.DoseAccumulate import accumulate
@@ -449,11 +450,110 @@ class XDSScalerA(Scaler):
 
       Debug.write('Spacegroup %d' % self._spacegroup)
 
-    if len(self._sweep_information.keys()) > 1 and \
+    params = PhilIndex.params
+    use_brehm_diederichs = params.xia2.settings.use_brehm_diederichs
+    if len(self._sweep_information.keys()) > 1 and use_brehm_diederichs:
+      brehm_diederichs_files_in = []
+      for epoch in self._sweep_information.keys():
+
+        intgr = self._sweep_information[epoch]['integrater']
+        hklin = intgr.get_integrater_intensities()
+        indxr = intgr.get_integrater_indexer()
+
+        # in here need to consider what to do if the user has
+        # assigned the pointgroup on the command line ...
+
+        if not self._scalr_input_pointgroup:
+          pointgroup, reindex_op, ntr = \
+                      self._pointless_indexer_jiffy(hklin, indxr)
+
+          if ntr:
+
+            # Bug # 3373
+
+            Debug.write('Reindex to standard (PIJ): %s' % \
+                        reindex_op)
+
+            intgr.set_integrater_reindex_operator(
+                reindex_op, compose = False)
+            reindex_op = 'h,k,l'
+            need_to_return = True
+
+        else:
+
+          # 27/FEB/08 to support user assignment of pointgroups
+
+          Debug.write('Using input pointgroup: %s' % \
+                      self._scalr_input_pointgroup)
+          pointgroup = self._scalr_input_pointgroup
+          reindex_op = 'h,k,l'
+
+        intgr.set_integrater_reindex_operator(reindex_op)
+        intgr.set_integrater_spacegroup_number(
+            Syminfo.spacegroup_name_to_number(pointgroup))
+
+        # convert the XDS_ASCII for this sweep to mtz - on the next
+        # get this should be in the correct setting...
+
+        dname = self._sweep_information[epoch]['dname']
+        sname = intgr.get_integrater_sweep_name()
+        hklin = intgr.get_integrater_intensities()
+        hklout = os.path.join(self.get_working_directory(),
+                              '%s_%s.mtz' % (dname, sname))
+
+        FileHandler.record_temporary_file(hklout)
+
+        # now use pointless to make this conversion
+
+        pointless = self._factory.Pointless()
+        pointless.set_xdsin(hklin)
+        pointless.set_hklout(hklout)
+        pointless.xds_to_mtz()
+        brehm_diederichs_files_in.append(hklout)
+
+      # now run cctbx.brehm_diederichs to figure out the indexing hand for
+      # each sweep
+      from Wrappers.Cctbx.BrehmDiederichs import BrehmDiederichs
+      brehm_diederichs = BrehmDiederichs()
+      brehm_diederichs.set_working_directory(self.get_working_directory())
+      auto_logfiler(brehm_diederichs)
+      brehm_diederichs.set_input_filenames(brehm_diederichs_files_in)
+      # 1 or 3? 1 seems to work better?
+      brehm_diederichs.set_asymmetric(1)
+      brehm_diederichs.run()
+      reindexing_dict = brehm_diederichs.get_reindexing_dict()
+
+      for epoch in self._sweep_information.keys():
+
+        intgr = self._sweep_information[epoch]['integrater']
+        indxr = intgr.get_integrater_indexer()
+
+        dname = self._sweep_information[epoch]['dname']
+        sname = intgr.get_integrater_sweep_name()
+        hklin = intgr.get_integrater_intensities()
+        hklout = os.path.join(self.get_working_directory(),
+                              '%s_%s.mtz' % (dname, sname))
+
+        # apply the reindexing operator
+        intgr.set_integrater_reindex_operator(reindex_op)
+
+        # and copy the reflection file to the local directory
+        hklin = intgr.get_integrater_intensities()
+        hklout = os.path.join(self.get_working_directory(),
+                              '%s_%s.HKL' % (dname, sname))
+
+        Debug.write('Copying %s to %s' % (hklin, hklout))
+        shutil.copyfile(hklin, hklout)
+
+        # record just the local file name...
+        self._sweep_information[epoch][
+            'prepared_reflections'] = os.path.split(hklout)[-1]
+
+    elif len(self._sweep_information.keys()) > 1 and \
            not self._reference:
       # need to generate a reference reflection file - generate this
       # from the reflections in self._first_epoch
-      # 
+      #
       # FIXME this should really use the Brehm and Diederichs method
       # if you have lots of little sweeps...
 

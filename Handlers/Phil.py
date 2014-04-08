@@ -89,6 +89,11 @@ xia2.settings {
     .type = ints(size = 4)
   xds_cell_deviation = 0.05, 5.0
     .type = floats(size = 2)
+  use_brehm_diederichs = False
+    .type = bool
+    .help = "Use the Brehm-Diederichs algorithm to resolve an indexing "
+            "ambiguity."
+            "See: W. Brehm and K. Diederichs, Acta Cryst. (2014). D70, 101-109."
   developmental {
     use_dials_spotfinder = False
       .type = bool

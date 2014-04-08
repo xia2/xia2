@@ -26,6 +26,7 @@ def BrehmDiederichs(DriverType = None):
       self.set_executable('cctbx.brehm_diederichs')
 
       self._input_filenames = []
+      self._asymmetric = None
       self._output_filenames = []
       self._reindexing_dict = {}
       return
@@ -33,6 +34,9 @@ def BrehmDiederichs(DriverType = None):
     def set_input_filenames(self, filenames):
       self._input_filenames = filenames
       return
+
+    def set_asymmetric(self, asymmetric):
+      self._asymmetric = asymmetric
 
     def get_output_filenames(self):
       return self._output_filenames
@@ -45,7 +49,11 @@ def BrehmDiederichs(DriverType = None):
       Debug.write('Running cctbx.brehm_diederichs')
 
       self.clear_command_line()
-      self.add_command_line('plot=False')
+      if self._asymmetric is not None:
+        assert isinstance(self._asymmetric, int)
+        self.add_command_line('asymmetric=%i' %self._asymmetric)
+      self.add_command_line('show_plot=False')
+      self.add_command_line('save_plot=True')
       for filename in self._input_filenames:
         self.add_command_line(filename)
 
