@@ -58,6 +58,7 @@ from lib.bits import auto_logfiler
 from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Flags import Flags
 from Handlers.Files import FileHandler
+from Handlers.Phil import PhilIndex
 
 from Experts.SymmetryExpert import lattice_to_spacegroup_number
 
@@ -148,7 +149,6 @@ class XDSIntegrater(FrameProcessor,
     return defpix
 
   def Integrate(self):
-    from Handlers.Phil import PhilIndex
     integrate = _Integrate(params=PhilIndex.params.xds.integrate)
     integrate.set_working_directory(self.get_working_directory())
 
@@ -166,7 +166,7 @@ class XDSIntegrater(FrameProcessor,
     return integrate
 
   def Correct(self):
-    correct = _Correct()
+    correct = _Correct(params=PhilIndex.params.xds.correct)
     correct.set_working_directory(self.get_working_directory())
 
     correct.setup_from_image(self.get_image_name(

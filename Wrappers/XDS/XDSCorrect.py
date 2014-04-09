@@ -48,7 +48,15 @@ from Experts.ResolutionExperts import xds_integrate_hkl_to_list, \
 from Handlers.Flags import Flags
 from Handlers.Streams import Debug
 
-def XDSCorrect(DriverType = None):
+from libtbx.phil import parse
+
+master_params = parse("""
+refine = *DISTANCE *BEAM *AXIS *ORIENTATION *CELL
+  .type = choice(multi = True)
+  .help = 'what to refine in the CORRECT step'
+""")
+
+def XDSCorrect(DriverType = None, params=None):
 
   DriverInstance = DriverFactory.Driver(DriverType)
 
@@ -56,12 +64,18 @@ def XDSCorrect(DriverType = None):
                           FrameProcessor):
     '''A wrapper for wrapping XDS in correct mode.'''
 
-    def __init__(self):
+    def __init__(self, params=None):
 
       # set up the object ancestors...
 
       DriverInstance.__class__.__init__(self)
       FrameProcessor.__init__(self)
+
+      # phil parameters
+
+      if not params:
+        params = master_params.extract()
+      self._params = params
 
       # now set myself up...
 
@@ -267,7 +281,7 @@ def XDSCorrect(DriverType = None):
       # postrefine everything to give better values to the
       # next INTEGRATE run
       xds_inp.write(
-          'REFINE(CORRECT)=DISTANCE BEAM AXIS ORIENTATION CELL\n')
+          'REFINE(CORRECT)=%s\n' %self._params.refine)
 
       if self._polarization > 0.0:
         xds_inp.write('FRACTION_OF_POLARIZATION=%.2f\n' % \

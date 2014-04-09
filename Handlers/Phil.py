@@ -16,8 +16,11 @@ master_phil = parse("""
 general {
   check_image_files_readable = True
     .type = bool
-}  
+}
 xds {
+  correct {
+    include scope Wrappers.XDS.XDSCorrect.master_params
+  }
   integrate {
     include scope Wrappers.XDS.XDSIntegrate.master_params
   }
