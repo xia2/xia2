@@ -7,9 +7,9 @@ fi
 
 if [ -n "$XIA2_CCTBX" ]; then 
   ${XIA2_CCTBX}/bin/cctbx.python -Q warn \
-    ${XIA2_ROOT}/Applications/xia2.py $@
+    ${XIA2_ROOT}/Applications/xia2.py "$@"
 else
-  cctbx.python -Q warn ${XIA2_ROOT}/Applications/xia2.py $@
+  cctbx.python -Q warn ${XIA2_ROOT}/Applications/xia2.py "$@"
 fi
 
 
