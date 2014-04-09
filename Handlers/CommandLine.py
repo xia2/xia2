@@ -347,6 +347,11 @@ class _CommandLine(object):
     if mp_params.mode == 'parallel':
       Flags.set_parallel(mp_params.nproc)
 
+    with open('working.phil', 'wb') as f:
+      print >> f, PhilIndex.working_phil.as_str()
+    with open('diff.phil', 'wb') as f:
+      print >> f, PhilIndex.get_diff().as_str()
+
     nonsense = 'Unknown command-line options:'
     was_nonsense = False
 
