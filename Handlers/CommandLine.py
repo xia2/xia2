@@ -57,7 +57,7 @@ class _CommandLine(object):
 
   def get_command_line(self):
     cl = 'xia2'
-    for arg in self._argv[1:]:
+    for arg in sys.argv[1:]:
       cl += ' %s' % arg
 
     return cl
