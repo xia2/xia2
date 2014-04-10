@@ -370,6 +370,14 @@ def failover_cbf(cbf_file):
       header['exposure_time'] = float(record.split()[-2])
       continue
 
+    if 'Silicon sensor' in record:
+      header['sensor'] = 1000 * float(record.split()[4])
+      continue
+
+    if 'Count_cutoff' in record:
+      header['saturation'] = int(record.split()[2])
+      continue
+
     if 'Detector_distance' in record:
       header['distance'] = 1000 * float(record.split()[2])
       continue

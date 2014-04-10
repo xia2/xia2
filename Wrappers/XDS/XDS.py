@@ -335,7 +335,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
   result.append('DETECTOR=%s MINIMUM_VALID_PIXEL_VALUE=%d OVERLOAD=%d' % \
                 (detector_to_detector[detector],
                  detector_to_minimum_trusted[detector],
-                 detector_to_overload[detector]))
+                 header.get('saturation', detector_to_overload[detector])))
 
   if not detector in ['raxis', 'saturn', 'dectris', 'pilatus', 'adsc'] and \
          math.fabs(header['two_theta']) > 1.0:
@@ -466,11 +466,11 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
   # FIXME 11/DEC/06 this should depend on the wavelength
   result.append('AIR=0.001')
 
-  # dead regions of the detector for pilatus 6M, 2M, 300K etc.
-
+  # sensor thickness... default to 0.32 mm
   if 'pilatus' in header['detector_class']:
-    result.append('SENSOR_THICKNESS=0.32')
+    result.append('SENSOR_THICKNESS=%f' % header.get('sensor', 0.32))
 
+  # dead regions of the detector for pilatus 6M, 2M, 300K etc.
   if header['detector_class'] == 'pilatus 6M':
     for limits in pilatus_6M_mask():
       result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(limits))
