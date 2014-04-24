@@ -300,16 +300,6 @@ class BackstopMask(object):
 
     values = unpack_values(data[data_offset:], length)
 
-    # now mask out the backstop region - badly!
-
-    if False:
-
-      for j in range(len(values)):
-        x = j % fast
-        y = (j - x) / slow
-        if r.is_inside((x + 0.5, y + 0.5)):
-          values[j] = -3
-
     # or perhaps mask it out a little more cleverly
 
     limits = r.limits()
@@ -333,6 +323,12 @@ class BackstopMask(object):
     within the backstop region.'''
 
     p1, p2, p3, p4 = self.calculate_mask(header)
+
+    from Handlers.Streams import Debug
+
+    Debug.write('Vertices of mask: (%d, %d), (%d, %d), (%d, %d), (%d, %d)' % \
+                (int(p1[0]), int(p1[1]), int(p2[0]), int(p2[1]),
+                 int(p3[0]), int(p3[1]), int(p4[0]), int(p4[1])))
 
     return rectangle(p1, p2, p3, p4)
 

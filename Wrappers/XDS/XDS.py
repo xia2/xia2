@@ -485,10 +485,14 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
       result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(limits))
 
   if params.deprecated_xds.parameter.untrusted_ellipse:
+    Debug.write('UNTRUSTED_ELLIPSE= %d %d %d %d' % tuple(
+        params.deprecated_xds.parameter.untrusted_ellipse))
     result.append('UNTRUSTED_ELLIPSE= %d %d %d %d' % tuple(
         params.deprecated_xds.parameter.untrusted_ellipse))
 
   if params.deprecated_xds.parameter.untrusted_rectangle:
+    Debug.write('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(
+        params.deprecated_xds.parameter.untrusted_rectangle))
     result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(
         params.deprecated_xds.parameter.untrusted_rectangle))
 
