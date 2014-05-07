@@ -103,6 +103,12 @@ xia2.settings {
       .help = "This feature requires the dials project to be installed, and"
               "is not currently intended for general use. Use at your peril!"
   }
+  xds {
+    geometry_x = None
+      .type = path
+    geometry_y = None
+      .type = path
+  }
   multiprocessing {
     mode = *serial parallel
       .type = choice
