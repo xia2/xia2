@@ -80,6 +80,7 @@ def XDSCorrect(DriverType = None, params=None):
       # now set myself up...
 
       self._parallel = Flags.get_parallel()
+      self.set_cpu_threads(self._parallel)
 
       if self._parallel <= 1:
         self.set_executable('xds')

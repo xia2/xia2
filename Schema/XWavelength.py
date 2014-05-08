@@ -126,8 +126,7 @@ class XWavelength(object):
         asynchronous=True,
         callback=None,
         preserve_order=True,
-        preserve_exception_message=True,
-        qsub_command="qsub -pe smp 8")
+        preserve_exception_message=True)
 
       DriverFactory.set_driver_type(drivertype)
 
