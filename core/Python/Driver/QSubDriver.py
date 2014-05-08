@@ -124,7 +124,7 @@ class QSubDriver(DefaultDriver):
 
     if self._cpu_threads > 1:
       pipe = subprocess.Popen(['qsub', '-V', '-cwd', 
-                               '-pe', 'smp', '%d' % self._cpu_threads
+                               '-pe', 'smp', '%d' % self._cpu_threads,
                                '%s.sh' % script_name],
                                cwd = self._working_directory,
                                stdout = subprocess.PIPE,
