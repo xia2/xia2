@@ -75,7 +75,7 @@ def Spotfinder(DriverType = None):
       for scan_range in self._scan_ranges:
         self.add_command_line('scan_range=%d,%d' % scan_range)
       if self._phil_file is not None:
-        self.add_command_line("%s" %self._phil_file)
+        self.add_command_line("%s" % self._phil_file)
       self.start()
       self.close_wait()
       self.check_for_errors()

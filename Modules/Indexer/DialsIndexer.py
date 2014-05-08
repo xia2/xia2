@@ -153,7 +153,6 @@ class DialsIndexer(FrameProcessor,
   ##########################################
 
   def _index_prepare(self):
-
     all_images = self.get_matching_images()
     first = min(all_images)
     last = max(all_images)
@@ -197,9 +196,17 @@ class DialsIndexer(FrameProcessor,
       self._data_files[file] = init.get_output_data_file(file)
 
     # at this stage, break out to run the DIALS code: this sets itself up
+    # now cheat and pass in some information... save re-reading all of the
+    # image headers
+
+    image_to_epoch = self.get_indexer_sweep().get_image_to_epoch()
+
+    # FIXME need to adjust this to allow (say) three chunks of images
 
     importer = self.Import()
-    importer.run()
+    importer.set_image_range(self._indxr_images[0])
+    importer.set_image_to_epoch(image_to_epoch)
+    importer.run(fast_mode=True)
 
     # FIXME this should really use the assigned spot finding regions
     spotfinder = self.Spotfinder()

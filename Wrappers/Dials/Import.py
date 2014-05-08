@@ -34,14 +34,16 @@ def Import(DriverType = None):
       self._image_range = []
 
       self._sweep_filename = 'datablock_import.json'
+      self._image_to_epoch = None
 
       return
 
     def setup_from_image(self, image):
       FrameProcessor.setup_from_image(self, image)
-      for i in self.get_matching_images():
-        self._images.append(self.get_image_name(i))
       return
+
+    def set_image_range(self, image_range):
+      self._image_range = image_range
 
     def set_sweep_filename(self, sweep_filename):
       self._sweep_filename = sweep_filename
@@ -54,18 +56,70 @@ def Import(DriverType = None):
       else:
         return os.path.join(self.get_working_directory(), self._sweep_filename)
 
-    def run(self):
+    def set_image_to_epoch(self, image_to_epoch):
+      self._image_to_epoch = image_to_epoch
+      return
+
+    def fix_datablock_import(self):
+      import json
+      import os
+
+      datablock_json = os.path.join(self.get_working_directory(),
+                                    'datablock_import.json')
+
+      datablock = json.load(open(datablock_json))
+      scan = datablock[0]['scan'][0]
+
+      # fix image_range, exposure_time, epochs
+
+      first, last = self._image_range
+
+      exposure_time = scan[u'exposure_time'][0]
+      scan[u'image_range'] = [first, last]
+      scan[u'epochs'] = []
+      scan[u'exposure_time'] = []
+      scan[u'epochs'] = []
+      for image in range(first, last + 1):
+        scan[u'exposure_time'].append(exposure_time)
+        scan[u'epochs'].append(self._image_to_epoch[image])
+      datablock[0]['scan'] = [scan]
+      json.dump(datablock, open(datablock_json, 'w'))
+
+      return
+
+    def run(self, fast_mode=False):
+
+      # fast_mode: read first two image headers then extrapolate the rest
+      # from what xia2 read from the image headers...
+
       from Handlers.Streams import Debug
-      Debug.write('Running dials.import')
+      if fast_mode:
+        if not self._image_to_epoch:
+          raise RuntimeError, 'fast mode needs image_to_epoch map'
+        Debug.write('Running dials.import in fast mode')
+      else:
+        Debug.write('Running dials.import in slow mode')
 
       self.clear_command_line()
-      for image in self._images:
-        self.add_command_line(image)
+
+      for i in range(self._image_range[0], self._image_range[1] + 1):
+        self._images.append(self.get_image_name(i))
+
+      if fast_mode:
+        for image in self._images[:2]:
+          self.add_command_line(image)
+      else:
+        for image in self._images:
+          self.add_command_line(image)
+
       self.add_command_line('--output')
       self.add_command_line(self._sweep_filename)
       self.start()
       self.close_wait()
       self.check_for_errors()
+
+      if fast_mode:
+        self.fix_datablock_import()
 
       import os
       assert(os.path.exists(os.path.join(self.get_working_directory(),

@@ -338,14 +338,18 @@ class _CommandLine(object):
       raise RuntimeError, '%s (%s)' % \
             (self._help_xinfo(), str(e))
 
-
     # finally, check that all arguments were read and raise an exception
     # if any of them were nonsense.
 
     params = PhilIndex.get_python_object()
     mp_params = params.xia2.settings.multiprocessing
     if mp_params.mode == 'parallel':
-      Flags.set_parallel(mp_params.nproc)
+      from libtbx import Auto
+      if mp_params.nproc is Auto:
+        from Handlers.Environment import get_number_cpus
+        Flags.set_parallel(get_number_cpus())
+      else:
+        Flags.set_parallel(mp_params.nproc)
 
     with open('working.phil', 'wb') as f:
       print >> f, PhilIndex.working_phil.as_str()

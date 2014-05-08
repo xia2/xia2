@@ -65,10 +65,7 @@ def Aimless(DriverType = None,
       if not version:
         raise RuntimeError, 'version not found'
 
-      version_numbers = map(int, version.split('.'))
-
-      assert(version_numbers[1] >= 1)
-      assert(version_numbers[2] >= 4)
+      Debug.write('Using version: %s' % version)
 
       # FIXME (i) check program exists and (ii) version is known -
       # if not then default back in the calling code to using scala.
