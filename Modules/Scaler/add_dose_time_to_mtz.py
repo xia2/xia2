@@ -90,7 +90,9 @@ if (__name__ == "__main__"):
     doses[batch] = dose
     times[batch] = time
 
-  add_dose_time_to_mtz(hklin = 'TS03_12287_chef_INFL.mtz',
-                       hklout = 'hklout.mtz',
+  import sys
+
+  add_dose_time_to_mtz(hklin = sys.argv[1],
+                       hklout = sys.argv[2],
                        doses = doses,
                        times = times)
