@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "$XIA2_ROOT"=="" ]; then
+if [ -z "$XIA2_ROOT" ]; then
   full_path="$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")"
   export XIA2_ROOT=`dirname "$full_path" | sed 's/\/Applications$//'`
 fi

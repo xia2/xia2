@@ -78,6 +78,10 @@ def check_environment():
   if version[0] == 2 and version[1] < 4:
     raise RuntimeError, 'Python 2.x before 2.4 not supported'
 
+  # to help wrapper code - print process id...
+
+  Debug.write('Process ID: %d' % os.getpid())
+  
   # now check that the CCTBX routines are available
 
   check_cctbx_version()
