@@ -24,7 +24,7 @@ sys.path.insert(0, os.environ['XIA2_ROOT'])
 if not 'XIA2CORE_ROOT' in os.environ:
   os.environ['XIA2CORE_ROOT'] = os.path.join(os.environ['XIA2_ROOT'], 'core')
 
-from Handlers.Streams import Chatter
+from Handlers.Streams import Chatter, Debug
 from Handlers.Files import cleanup
 from Handlers.Citations import Citations
 from Handlers.Environment import Environment, df
