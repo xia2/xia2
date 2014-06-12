@@ -74,7 +74,7 @@ def Spotfinder(DriverType = None):
       self.set_cpu_threads(nproc)
       self.add_command_line('--nproc=%i' % nproc)
       for scan_range in self._scan_ranges:
-        self.add_command_line('scan_range=%d,%d' % scan_range)
+        self.add_command_line('spotfinder.scan_range=%d,%d' % scan_range)
       if self._phil_file is not None:
         self.add_command_line("%s" % self._phil_file)
       self.start()
