@@ -76,6 +76,8 @@ Wrappers/Mosflm/Header.py -text
 Wrappers/Mosflm/__init__.py -text
 Wrappers/System/Say.py -text
 Wrappers/XDS/Merge2cbf.py -text
+Wrappers/XDS/XDSFiles.py -text
+Wrappers/XDS/XDSGenerateIgnoreFiles.py -text
 Wrappers/XDS/XScaleR.py -text
 Wrappers/dTREK/__init__.py -text
 cftbx/__init__.py -text

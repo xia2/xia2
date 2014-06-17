@@ -123,19 +123,19 @@ class QSubDriver(DefaultDriver):
     # the queue
 
     if self._cpu_threads > 1:
-      pipe = subprocess.Popen(['qsub', '-V', '-cwd', 
+      pipe = subprocess.Popen(['qsub', '-V', '-cwd',
                                '-pe', 'smp', '%d' % self._cpu_threads,
                                '%s.sh' % script_name],
                                cwd = self._working_directory,
                                stdout = subprocess.PIPE,
                                stderr = subprocess.PIPE)
     else:
-      pipe = subprocess.Popen(['qsub', '-V', '-cwd', 
+      pipe = subprocess.Popen(['qsub', '-V', '-cwd',
                                '%s.sh' % script_name],
                                cwd = self._working_directory,
                                stdout = subprocess.PIPE,
                                stderr = subprocess.PIPE)
-      
+
     # this will get all of the output as a tuple (stdout, stderr)
     stdout, stderr = pipe.communicate()
 

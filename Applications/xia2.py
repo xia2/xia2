@@ -81,7 +81,7 @@ def check_environment():
   # to help wrapper code - print process id...
 
   Debug.write('Process ID: %d' % os.getpid())
-  
+
   # now check that the CCTBX routines are available
 
   check_cctbx_version()

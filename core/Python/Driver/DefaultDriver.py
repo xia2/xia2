@@ -113,7 +113,7 @@ class DefaultDriver(object):
     self._xpid = 0
 
     self._cpu_threads = 1
-    
+
     return
 
   def __del__(self):
@@ -138,7 +138,7 @@ class DefaultDriver(object):
 
   def get_cpu_threads(self):
     return self._cpu_threads
-  
+
   def _check_executable(self, executable):
     '''Pass this on to executable_exists.'''
 

@@ -74,17 +74,27 @@ def is_sequence_name(file):
 
   return False
 
-def is_image_name(file):
+def is_image_name(filename):
 
   global known_image_extensions
+  from Wrappers.XDS.XDSFiles import XDSFiles
 
-  if os.path.isfile(file):
-    exten = file.split('.')[-1]
+  if os.path.isfile(filename):
+
+    if os.path.split(filename)[-1] in XDSFiles:
+      return False
+
+    # also XDS scaling files from previous xia2 job - hard coded, messy :o(
+    for xds_file in 'ABSORP', 'DECAY', 'MODPIX':
+      if os.path.join('scale', xds_file) in filename:
+        return False
+
+    exten = filename.split('.')[-1]
     if exten in known_image_extensions:
       return True
 
     # check for files like foo_bar.0001 - c/f FIXME for 25/SEP/06
-    end = file.split('.')[-1]
+    end = filename.split('.')[-1]
     try:
       j = int(end)
       return True
@@ -155,7 +165,10 @@ def parse_sequence(sequence_file):
 def visit(root, directory, files):
   files.sort()
   for f in files:
-    get_sweep(os.path.join(directory, f))
+
+    full_path = os.path.join(directory, f)
+    if is_image_name(full_path):
+      get_sweep(full_path)
 
     if is_scan_name(os.path.join(directory, f)):
       global latest_chooch

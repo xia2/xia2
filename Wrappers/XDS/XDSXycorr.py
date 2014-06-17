@@ -119,7 +119,7 @@ def XDSXycorr(DriverType = None):
 
       from Handlers.Phil import PhilIndex
       xds_params = PhilIndex.params.xia2.settings.xds
-      
+
       xds_inp = open(os.path.join(self.get_working_directory(),
                                   'XDS.INP'), 'w')
 
@@ -132,7 +132,7 @@ def XDSXycorr(DriverType = None):
       if xds_params.geometry_x and xds_params.geometry_y:
         xds_inp.write('X-GEO_CORR=%s\n' % xds_params.geometry_x)
         xds_inp.write('Y-GEO_CORR=%s\n' % xds_params.geometry_y)
-                
+
       name_template = os.path.join(self.get_directory(),
                                    self.get_template().replace('#', '?'))
 
