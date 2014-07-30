@@ -406,20 +406,16 @@ def Pointless(DriverType = None):
           return 'ok'
 
         if '**** Incompatible symmetries ****' in o:
-          # then there is an important error in here I need
-          # to trap...
           raise RuntimeError, \
-                'reindexing against a reference with ' + \
-                'different symmetry'
+						'reindexing against a reference with different symmetry'
+
+        if '***** Stopping because cell discrepancy between files' in record:
+					raise RuntimeError, 'incompatible unit cells between data sets'
 
         if 'L-test suggests that the data may be twinned' in o:
           self._probably_twinned = True
 
       # parse the XML file for the information I need...
-      # FIXME this needs documenting - I am using xml.dom.minidom.
-
-      # FIXME 2: This needs extracting to a self.parse_pointless_xml()
-      # or something.
 
       xml_file = os.path.join(self.get_working_directory(),
                               '%d_pointless.xml' % self.get_xpid())
