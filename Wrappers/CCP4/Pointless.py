@@ -409,7 +409,7 @@ def Pointless(DriverType = None):
           raise RuntimeError, \
 						'reindexing against a reference with different symmetry'
 
-        if '***** Stopping because cell discrepancy between files' in record:
+        if '***** Stopping because cell discrepancy between files' in o:
 					raise RuntimeError, 'incompatible unit cells between data sets'
 
         if 'L-test suggests that the data may be twinned' in o:

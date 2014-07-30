@@ -175,10 +175,13 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
   # K-alpha edge and this is an image plate.
 
   if synchrotron == None:
-
     if header['detector'] == 'marccd':
       synchrotron = True
     elif header['detector'] == 'adsc':
+      synchrotron = True
+    elif header['detector'] == 'dectris':
+      synchrotron = True
+    elif header['detector'] == 'pilatus':
       synchrotron = True
     elif math.fabs(header['wavelength'] - 1.5418) < 0.01:
       Debug.write('Wavelength looks like Cu Ka -> lab source')
