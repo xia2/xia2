@@ -169,6 +169,8 @@ class FrameProcessor(object):
     return self._fp_wavelength_prov
 
   def set_distance(self, distance):
+    if distance is None:
+      return
     from scitbx import matrix
     panel = self.get_detector()[0]
     d_normal = matrix.col(panel.get_normal())
