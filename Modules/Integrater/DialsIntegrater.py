@@ -36,10 +36,12 @@ from Schema.Exceptions.BadLatticeError import BadLatticeError
 # we still need to reindex with XDS.
 
 from Modules.Indexer.DialsIndexer import DialsIndexer
+from Wrappers.CCP4.Reindex import Reindex
 
 # odds and sods that are needed
 
 from lib.bits import auto_logfiler
+from lib.SymmetryLib import lattice_to_spacegroup
 from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Flags import Flags
 from Handlers.Files import FileHandler
@@ -105,18 +107,6 @@ class DialsIntegrater(FrameProcessor,
 
   def get_integrated_filename(self):
     return self._intgr_integrated_filename
-
-  #def _set_integrater_reindex_operator_callback(self):
-    #'''If a REMOVE.HKL file exists in the working
-    #directory, remove it...'''
-    #if os.path.exists(os.path.join(
-        #self.get_working_directory(),
-        #'REMOVE.HKL')):
-      #os.remove(os.path.join(
-          #self.get_working_directory(),
-          #'REMOVE.HKL'))
-      #Debug.write('Deleting REMOVE.HKL as reindex op set.')
-    #return
 
   # factory functions
 
@@ -298,59 +288,14 @@ class DialsIntegrater(FrameProcessor,
 
     first_image_in_wedge = self.get_image_name(self._intgr_wedge[0])
 
-    #integrate.set_data_range(self._intgr_wedge[0],
-                             #self._intgr_wedge[1])
-
     integrate.set_experiments_filename(self._intgr_experiments_filename)
     integrate.set_reflections_filename(self._intgr_indexed_filename)
-
-    #for file in ['X-CORRECTIONS.cbf',
-                 #'Y-CORRECTIONS.cbf',
-                 #'BLANK.cbf',
-                 #'BKGPIX.cbf',
-                 #'GAIN.cbf']:
-      #integrate.set_input_data_file(file, self._data_files[file])
-
+    
     integrate.run()
 
-    # record the log file -
-
-    #pname, xname, dname = self.get_integrater_project_info()
-    #sweep = self.get_integrater_sweep_name()
-    #FileHandler.record_log_file('%s %s %s %s INTEGRATE' % \
-                                #(pname, xname, dname, sweep),
-                                #os.path.join(self.get_working_directory(),
-                                             #'INTEGRATE.LP'))
-
-    ## and copy the first pass INTEGRATE.HKL...
-
-    #lattice = self._intgr_indexer.get_indexer_lattice()
-    #if not os.path.exists(os.path.join(
-        #self.get_working_directory(),
-        #'INTEGRATE-%s.HKL' % lattice)):
-      #here = self.get_working_directory()
-      #shutil.copyfile(os.path.join(here, 'INTEGRATE.HKL'),
-                      #os.path.join(here, 'INTEGRATE-%s.HKL' % lattice))
-
-    ## record INTEGRATE.HKL for e.g. BLEND.
-
-    #FileHandler.record_more_data_file(
-        #'%s %s %s %s INTEGRATE' % (pname, xname, dname, sweep),
-        #os.path.join(self.get_working_directory(), 'INTEGRATE.HKL'))
-
-    ## should the existence of these require that I rerun the
-    ## integration or can we assume that the application of a
-    ## sensible resolution limit will achieve this??
-
-    #self._integrate_parameters = integrate.get_updates()
-
-    ## record the mosaic spread &c.
-
-    #m_min, m_mean, m_max = integrate.get_mosaic()
-    #self.set_integrater_mosaic_min_mean_max(m_min, m_mean, m_max)
-
-    #Chatter.write('Mosaic spread: %.3f < %.3f < %.3f' % \
-                  #self.get_integrater_mosaic_min_mean_max())
+    # FIXME (i) record the log file, (ii) get more information out from the
+    # integration log on the quality of the data and (iii) the mosaic spread
+    # range observed and R.M.S. deviations.
 
     self._intgr_integrated_filename \
       = os.path.join(self.get_working_directory(), 'integrated.pickle')
@@ -367,6 +312,36 @@ class DialsIntegrater(FrameProcessor,
     exporter.run()
     self._intgr_integrated_filename = mtz_filename
 
+    if self._intgr_reindex_operator is None and \
+      self._intgr_spacegroup_number == lattice_to_spacegroup(
+        self.get_integrater_indexer().get_indexer_lattice()):
+      return mtz_filename
+
+    if self._intgr_reindex_operator is None and \
+      self._intgr_spacegroup_number == 0:
+      return mtz_filename
+
+    Debug.write('Reindexing to spacegroup %d (%s)' % \
+                (self._intgr_spacegroup_number,
+                 self._intgr_reindex_operator))
+
+    hklin = mtz_filename
+    reindex = Reindex()
+    reindex.set_working_directory(self.get_working_directory())
+    auto_logfiler(reindex)
+
+    reindex.set_operator(self._intgr_reindex_operator)
+
+    if self._intgr_spacegroup_number:
+      reindex.set_spacegroup(self._intgr_spacegroup_number)
+    hklout = '%s_reindex.mtz' % hklin[:-4]
+    reindex.set_hklin(hklin)
+    reindex.set_hklout(hklout)
+    reindex.reindex()
+    self._intgr_integrated_filename = hklout
+    return hklout
+
+    
     return mtz_filename
 
 if __name__ == '__main__':

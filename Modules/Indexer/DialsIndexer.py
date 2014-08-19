@@ -382,7 +382,8 @@ class DialsIndexer(FrameProcessor,
 
     self._indxr_payload['xds_files'] = self._data_files
 
-    # get estimate of low resolution limit from lowest resolution indexed reflection
+    # get estimate of low resolution limit from lowest resolution indexed
+    # reflection
 
     from libtbx import easy_pickle
     from cctbx import crystal, miller, uctbx
