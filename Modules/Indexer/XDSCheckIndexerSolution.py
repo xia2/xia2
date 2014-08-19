@@ -55,20 +55,11 @@ def xds_check_indexer_solution(xparm_file,
   an estimate of it) and try this if it is centred. Returns tuple
   (space_group_number, cell).'''
 
-  from cctbx.crystal import crystal_model
-  from rstbx.cftbx.coordinate_frame_converter import \
-      coordinate_frame_converter
-  # Get the real space coordinate frame
-  cfc = coordinate_frame_converter(xparm_file)
-  real_space_a = cfc.get('real_space_a')
-  real_space_b = cfc.get('real_space_b')
-  real_space_c = cfc.get('real_space_c')
-  space_group_number = cfc.get('space_group_number')
-  spacegroup = sgtbx.space_group_symbols(space_group_number).hall()
-  sg = sgtbx.space_group(spacegroup)
-  cm = crystal_model.crystal_model(
-    real_space_a, real_space_b, real_space_c,
-    space_group=sg)
+  from dxtbx.serialize.xds import to_crystal as xparm_to_crystal
+  cm = xparm_to_crystal(xparm_file)
+  sg = cm.get_space_group()
+  spacegroup = sg.type().hall_symbol()
+  space_group_number = sg.type().number()
   A_inv = cm.get_A().inverse()
   cell = cm.get_unit_cell().parameters()
 
