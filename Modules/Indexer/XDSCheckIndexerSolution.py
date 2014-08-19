@@ -55,139 +55,73 @@ def xds_check_indexer_solution(xparm_file,
   an estimate of it) and try this if it is centred. Returns tuple
   (space_group_number, cell).'''
 
-  from iotbx.xds import xparm
-  handle = xparm.reader()
-  handle.read_file(xparm_file)
-
-  A = handle.unit_cell_a_axis
-  B = handle.unit_cell_b_axis
-  C = handle.unit_cell_c_axis
-  cell = handle.unit_cell
-  space_group_number = handle.space_group
+  from cctbx.crystal import crystal_model
+  from rstbx.cftbx.coordinate_frame_converter import \
+      coordinate_frame_converter
+  # Get the real space coordinate frame
+  cfc = coordinate_frame_converter(xparm_file)
+  real_space_a = cfc.get('real_space_a')
+  real_space_b = cfc.get('real_space_b')
+  real_space_c = cfc.get('real_space_c')
+  space_group_number = cfc.get('space_group_number')
   spacegroup = sgtbx.space_group_symbols(space_group_number).hall()
   sg = sgtbx.space_group(spacegroup)
+  cm = crystal_model.crystal_model(
+    real_space_a, real_space_b, real_space_c,
+    space_group=sg)
+  A_inv = cm.get_A().inverse()
+  cell = cm.get_unit_cell().parameters()
 
-  # now ask if it is centred - if not, just return the input solution
-  # without testing...
+  import dxtbx
+  models = dxtbx.load(xparm_file)
+  detector = models.get_detector()
+  beam = models.get_beam()
+  goniometer = models.get_goniometer()
+  scan = models.get_scan()
 
-  # XXX this always evaluates to False!
-  #if not is_centred(space_group_number) and False:
-    #return s2l(space_group_number), tuple(cell)
+  from iotbx.xds import spot_xds
+  spot_xds_handle = spot_xds.reader()
+  spot_xds_handle.read_file(spot_file)
 
-  # right, now need to read through the SPOT.XDS file and index the
-  # reflections with the centred basis. Then I need to remove the lattice
-  # translation operations and reindex, comparing the results.
+  from cctbx.array_family import flex
+  centroids_px = flex.vec3_double(spot_xds_handle.centroid)
+  miller_indices = flex.miller_index(spot_xds_handle.miller_index)
 
-  # first get the information I'll need to transform x, y, i to
-  # reciprocal space
+  # Convert Pixel coordinate into mm/rad
+  x, y, z = centroids_px.parts()
+  x_mm, y_mm = detector[0].pixel_to_millimeter(flex.vec2_double(x, y)).parts()
+  z_rad = scan.get_angle_from_array_index(z, deg=False)
+  centroids_mm = flex.vec3_double(x_mm, y_mm, z_rad)
 
-  wavelength = handle.wavelength
-  distance = handle.detector_distance
+  # then convert detector position to reciprocal space position
 
-  px, py = handle.pixel_size
-  ox, oy = handle.detector_origin
+  # based on code in dials/algorithms/indexing/indexer2.py
+  s1 = detector[0].get_lab_coord(flex.vec2_double(x_mm, y_mm))
+  s1 = s1/s1.norms() * (1/beam.get_wavelength())
+  S = s1 - beam.get_s0()
+  # XXX what about if goniometer fixed rotation is not identity?
+  reciprocal_space_points = S.rotate_around_origin(
+    goniometer.get_rotation_axis(),
+    -z_rad)
 
-  phi_start = handle.starting_angle
-  phi_width = handle.oscillation_range
-  start = handle.starting_frame - 1
-  axis = matrix.col(handle.rotation_axis)
+  # now index the reflections
+  hkl_float = tuple(A_inv) * reciprocal_space_points
+  hkl_int = hkl_float.iround()
 
-  # begin to transform these to something more usable (i.e. detector
-  # offsets in place of beam vectors &c.)
+  # check if we are within 0.1 lattice spacings of the closest
+  # lattice point - a for a random point this will be about 0.8% of
+  # the time...
+  differences = hkl_float - hkl_int.as_vec3_double()
+  dh, dk, dl = [flex.abs(d) for d in differences.parts()]
+  tolerance = 0.1
+  sel = (dh < tolerance) and (dk < tolerance) and (dl < tolerance)
 
-  N = matrix.col(handle.detector_normal)
-  D = distance * N
-  S = matrix.col(handle.beam_vector)
+  is_sys_absent = sg.is_sys_absent(
+    flex.miller_index(list(hkl_int.select(sel))))
 
-  Sd = (wavelength * distance / (wavelength * S.dot(N))) * S
-  d = math.sqrt(Sd.dot())
-
-  off = Sd - D
-
-  # FIXME should verify that the offset is confined to the detector
-  # plane - i.e. off.normal = 0
-
-  bx = ox + off.elems[0] / handle.pixel_size[0]
-  by = oy + off.elems[1] / handle.pixel_size[1]
-
-  dtor = 180.0 / math.pi
-
-  # then transform the matrix to a helpful form (i.e. the reciprocal
-  # space orientation matrix (a*, b*, c*)
-
-  m = matrix.sqr(A + B + C)
-  #mi = m.inverse()
-
-  # now iterate through the spot file
-
-  present = 0
-  absent = 0
-  total = 0
-
-  # 20110119 removing references to this half-lattice test as I am not
-  # sure I have any test cases where this is used. Perhaps will need to
-  # reinstate this at some point in the future. N.B. this used to refer
-  # to the harrison clock, removing as a part of the decrufting mandated
-  # in trac #1284.
-
-  for record in open(spot_file, 'r').readlines():
-    l = record.split()
-
-    if not l:
-      continue
-
-    if len(l) != 7:
-      raise RuntimeError, 'error reading spot index'
-
-    X, Y, i = map(float, l[:3])
-    h, k, l = map(int, l[-3:])
-
-    total += 1
-
-    # transform coordinates to something physical - i.e. degrees and mm.
-
-    phi = (i - start) * phi_width + phi_start
-    X = px * (X - bx)
-    Y = py * (Y - by)
-
-    # then convert detector position to reciprocal space position -
-    # first add the crystal to detector beam vector, then scale, then
-    # subtract the beam vector again in reciprocal space...
-
-    P = matrix.col([X, Y, 0]) + Sd
-
-    scale = wavelength * math.sqrt(P.dot())
-
-    x = P.elems[0] / scale
-    y = P.elems[1] / scale
-    z = P.elems[2] / scale
-
-    Sp = matrix.col([x, y, z]) - S
-
-    # now index the reflection
-
-    hkl = m * Sp.rotate_around_origin(axis, - 1 * phi / dtor).elems
-
-    ihkl = nint(hkl[0]), nint(hkl[1]), nint(hkl[2])
-
-    # check if we are within 0.1 lattice spacings of the closest
-    # lattice point - a for a random point this will be about 0.8% of
-    # the time...
-
-    dhkl = [math.fabs(hkl[j] - ihkl[j]) for j in range(3)]
-
-    # is this reflection close to an integral index?
-
-    if dhkl[0] < 0.1 and dhkl[1] < 0.1 and dhkl[2] < 0.1:
-
-      # is it absent?
-
-      if sg.is_sys_absent(ihkl):
-        absent += 1
-      else:
-        present += 1
-
-      continue
+  total = is_sys_absent.size()
+  absent = is_sys_absent.count(True)
+  present = total - absent
 
   # now, if the number of absences is substantial, need to consider
   # transforming this to a primitive basis
