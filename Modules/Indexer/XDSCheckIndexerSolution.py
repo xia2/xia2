@@ -24,7 +24,6 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 # xia2 stuff...
 
-from Wrappers.XDS.XDS import xds_read_xparm
 from Handlers.Streams import Debug
 from Handlers.Flags import Flags
 from lib.bits import nint
@@ -35,12 +34,6 @@ from cctbx import sgtbx
 from cctbx import crystal
 from scitbx import matrix
 
-# check for deprecation, add workaround (thanks to RWGK 21/APR/10)
-
-if (hasattr(matrix.rec, "rotate_around_origin")):
-  matrix.rec.rotate = matrix.rec.rotate_around_origin
-
-# end workaround
 
 def s2l(spacegroup):
   lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5,
@@ -65,10 +58,6 @@ def xds_check_indexer_solution(xparm_file,
   from iotbx.xds import xparm
   handle = xparm.reader()
   handle.read_file(xparm_file)
-
-  # parse the XPARM file to a dictionary
-
-  #xparm_d = xds_read_xparm(xparm_file)
 
   A = handle.unit_cell_a_axis
   B = handle.unit_cell_b_axis
@@ -177,7 +166,7 @@ def xds_check_indexer_solution(xparm_file,
 
     # now index the reflection
 
-    hkl = m * Sp.rotate(axis, - 1 * phi / dtor).elems
+    hkl = m * Sp.rotate_around_origin(axis, - 1 * phi / dtor).elems
 
     ihkl = nint(hkl[0]), nint(hkl[1]), nint(hkl[2])
 
