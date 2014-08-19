@@ -377,17 +377,6 @@ class DialsIndexer(FrameProcessor,
 
     self._indxr_payload['xds_files'] = self._data_files
 
-    from Wrappers.XDS.XDS import xds_read_xparm
-    xparm_dict = xds_read_xparm(
-      os.path.join(self.get_working_directory(), 'xds', 'XPARM.XDS'))
-
-    distance = xparm_dict['distance']
-    wavelength = xparm_dict['wavelength']
-    pixel = xparm_dict['px'], xparm_dict['py']
-    beam = xparm_dict['ox'], xparm_dict['oy']
-
-    self._indxr_payload['xds_files'] = self._data_files
-
     # get estimate of low resolution limit from lowest resolution indexed reflection
 
     from libtbx import easy_pickle
