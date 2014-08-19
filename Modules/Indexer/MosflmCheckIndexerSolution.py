@@ -84,7 +84,7 @@ def mosflm_check_indexer_solution(indexer):
 
   distance = indexer.get_indexer_distance()
   axis = matrix.col([0, 0, 1])
-  beam = indexer.get_indexer_beam()
+  beam = indexer.get_indexer_beam_centre()
   cell = indexer.get_indexer_cell()
   wavelength = indexer.get_wavelength()
 
@@ -302,7 +302,7 @@ if __name__ == '__main__':
 
   i.setup_from_image(sys.argv[1])
 
-  print 'Refined beam is: %6.2f %6.2f' % i.get_indexer_beam()
+  print 'Refined beam is: %6.2f %6.2f' % i.get_indexer_beam_centre()
   print 'Distance:        %6.2f' % i.get_indexer_distance()
   print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % i.get_indexer_cell()
   print 'Lattice: %s' % i.get_indexer_lattice()

@@ -290,13 +290,10 @@ class XDSIndexerII(XDSIndexer):
     self._indxr_lattice, self._indxr_cell, self._indxr_mosaic = \
                          idxref.get_indexing_solution()
 
-    #self._indxr_refined_beam = beam_centre_xds_to_mosflm(
-        #idxref.get_refined_beam()[0], idxref.get_refined_beam()[1],
-        #self.get_header())
     detector = self.get_imageset().get_detector()
-    self._indxr_refined_beam = tuple(reversed(
-      detector[0].pixel_to_millimeter(idxref.get_refined_beam())))
-    self._indxr_refined_distance = idxref.get_refined_distance()
+    self.set_indexer_beam_centre(tuple(reversed(
+      detector[0].pixel_to_millimeter(idxref.get_refined_beam()))))
+    self.set_indexer_distance(idxref.get_refined_distance())
 
     self._indxr_payload['xds_files'] = self._data_files
 

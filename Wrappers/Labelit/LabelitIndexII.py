@@ -527,9 +527,8 @@ def LabelitIndexII(DriverType = None, indxr_print = True):
           x = float(l[3].replace('mm,', ''))
           y = float(l[5].replace('mm,', ''))
 
-          self._indxr_refined_beam = (x, y)
-          self._indxr_refined_distance = float(
-              l[7].replace('mm', ''))
+          self.set_indexer_beam_centre((x, y))
+          self.set_indexer_distance(float(l[7].replace('mm', '')))
 
           self._mosaic = float(l[10].replace('mosaicity=', ''))
 

@@ -257,7 +257,7 @@ class XDSIntegrater(FrameProcessor,
 
     cell = self._intgr_indexer.get_indexer_cell()
     lattice = self._intgr_indexer.get_indexer_lattice()
-    beam = self._intgr_indexer.get_indexer_beam()
+    beam = self._intgr_indexer.get_indexer_beam_centre()
     distance = self._intgr_indexer.get_indexer_distance()
 
     # check if the lattice was user assigned...

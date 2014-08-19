@@ -405,7 +405,7 @@ class SweepInformation(object):
         ).get_indexer_distance()
 
     beam = self._integrater.get_integrater_indexer(
-        ).get_indexer_beam()
+        ).get_indexer_beam_centre()
 
     radius = min([beam[0], detector_width - beam[0],
                   beam[1], detector_height - beam[1]])

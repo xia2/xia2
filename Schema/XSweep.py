@@ -466,7 +466,7 @@ class XSweep(object):
       indxr = self._get_indexer()
 
       hbeam = header['beam']
-      ibeam = indxr.get_indexer_beam()
+      ibeam = indxr.get_indexer_beam_centre()
 
       if hbeam and ibeam:
         summary.append('Beam %.2f %.2f => %.2f %.2f' % \
@@ -689,8 +689,8 @@ class XSweep(object):
   def get_indexer_mosaic(self):
     return self._get_indexer().get_indexer_mosaic()
 
-  def get_indexer_beam(self):
-    return self._get_indexer().get_indexer_beam()
+  def get_indexer_beam_centre(self):
+    return self._get_indexer().get_indexer_beam_centre()
 
   def get_wavelength(self):
     return self._wavelength
@@ -755,7 +755,7 @@ if __name__ == '__main__':
 
   Chatter.write('.')
 
-  Chatter.write('Refined beam is: %6.2f %6.2f' % xs.get_indexer_beam())
+  Chatter.write('Refined beam is: %6.2f %6.2f' % xs.get_indexer_beam_centre())
   Chatter.write('Distance:        %6.2f' % xs.get_indexer_distance())
   Chatter.write('Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
                 xs.get_indexer_cell())

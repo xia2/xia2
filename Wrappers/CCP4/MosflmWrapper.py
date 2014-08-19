@@ -84,7 +84,7 @@ def MosflmWrapper(DriverType = None):
       lattice = indxr.get_indexer_lattice()
       mosaic = indxr.get_indexer_mosaic()
       cell = indxr.get_indexer_cell()
-      beam = indxr.get_indexer_beam()
+      beam = indxr.get_indexer_beam_centre()
       distance = indxr.get_indexer_distance()
       matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
 

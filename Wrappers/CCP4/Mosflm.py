@@ -507,8 +507,7 @@ def Mosflm(DriverType = None):
         if 'Final cell (after refinement)' in o:
           self._indxr_cell = tuple(map(float, o.split()[-6:]))
         if 'Beam coordinates of' in o:
-          self._indxr_refined_beam = tuple(map(float, o.split(
-              )[-2:]))
+          self.set_indexer_beam_centre(tuple(map(float, o.split()[-2:])))
 
         # FIXED this may not be there if this is a repeat indexing!
         if 'Symmetry:' in o:
@@ -986,7 +985,7 @@ def Mosflm(DriverType = None):
 
       lattice = indxr.get_indexer_lattice()
       mosaic = indxr.get_indexer_mosaic()
-      beam = indxr.get_indexer_beam()
+      beam = indxr.get_indexer_beam_centre()
       distance = indxr.get_indexer_distance()
       matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
 
@@ -1240,7 +1239,7 @@ def Mosflm(DriverType = None):
       lattice = indxr.get_indexer_lattice()
       mosaic = indxr.get_indexer_mosaic()
       cell = indxr.get_indexer_cell()
-      beam = indxr.get_indexer_beam()
+      beam = indxr.get_indexer_beam_centre()
 
       # bug # 3174 - if mosaic is very small (here defined to be
       # 0.25 x osc_width) then set to this minimum value.
@@ -1276,7 +1275,7 @@ def Mosflm(DriverType = None):
 
       if indxr != self:
         self.set_indexer_input_lattice(lattice)
-        self.set_indexer_beam(beam)
+        self.set_indexer_beam_centre(beam)
 
       spacegroup_number = lattice_to_spacegroup(lattice)
 
@@ -1696,7 +1695,7 @@ def Mosflm(DriverType = None):
       lattice = indxr.get_indexer_lattice()
       mosaic = indxr.get_indexer_mosaic()
       cell = indxr.get_indexer_cell()
-      beam = indxr.get_indexer_beam()
+      beam = indxr.get_indexer_beam_centre()
       distance = indxr.get_indexer_distance()
       matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
 
@@ -2173,7 +2172,7 @@ def Mosflm(DriverType = None):
       spacegroup_number = lattice_to_spacegroup(lattice)
       mosaic = indxr.get_indexer_mosaic()
       cell = indxr.get_indexer_cell()
-      beam = indxr.get_indexer_beam()
+      beam = indxr.get_indexer_beam_centre()
       distance = indxr.get_indexer_distance()
       matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
 

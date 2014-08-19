@@ -232,7 +232,7 @@ class _ISPyBXmlHandler(object):
               '<refinedDetectorDistance>%f</refinedDetectorDistance>' % \
               indxr.get_indexer_distance())
 
-          beam = indxr.get_indexer_beam()
+          beam = indxr.get_indexer_beam_centre()
 
           fout.write('<refinedXBeam>%f</refinedXBeam>' % beam[0])
           fout.write('<refinedYBeam>%f</refinedYBeam>' % beam[1])

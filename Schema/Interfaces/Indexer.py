@@ -155,7 +155,7 @@ class Indexer(object):
 
     # refined experimental parameters
     self._indxr_mosaic = None
-    self._indxr_refined_beam = None
+    self._indxr_refined_beam_centre = None
     self._indxr_refined_distance = None
     self._indxr_resolution_estimate = 0.0
     self._indxr_low_resolution = 0.0
@@ -508,17 +508,23 @@ class Indexer(object):
     self.index()
     return self._indxr_refined_distance
 
-  def set_indexer_beam(self, beam):
-    '''Set the beam centre.'''
+  def set_indexer_distance(self, distance):
+    '''Set the refined distance.'''
 
-    self._indxr_refined_beam = beam
+    self._indxr_refined_distance = distance
     return
 
-  def get_indexer_beam(self):
+  def set_indexer_beam_centre(self, beam_centre):
+    '''Set the beam centre.'''
+
+    self._indxr_refined_beam_centre = beam_centre
+    return
+
+  def get_indexer_beam_centre(self):
     '''Get the refined beam.'''
 
     self.index()
-    return self._indxr_refined_beam
+    return self._indxr_refined_beam_centre
 
   def get_indexer_payload(self, this):
     '''Attempt to get something from the indexer payload.'''

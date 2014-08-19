@@ -237,7 +237,7 @@ if __name__ == '__main__':
 
   i.setup_from_image(os.path.join(directory, 'insulin_1_001.img'))
 
-  print 'Refined beam is: %6.2f %6.2f' % i.get_indexer_beam()
+  print 'Refined beam is: %6.2f %6.2f' % i.get_indexer_beam_centre()
   print 'Distance:        %6.2f' % i.get_indexer_distance()
   print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % i.get_indexer_cell()
   print 'Lattice: %s' % i.get_indexer_lattice()
