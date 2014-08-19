@@ -30,6 +30,7 @@ from Wrappers.XDS.XDSIdxref import XDSIdxref as _Idxref
 from Wrappers.Dials.Import import Import as _Import
 from Wrappers.Dials.Spotfinder import Spotfinder as _Spotfinder
 from Wrappers.Dials.Index import Index as _Index
+from Wrappers.Dials.Reindex import Reindex as _Reindex
 from Wrappers.Dials.RefineBravaisSettings import RefineBravaisSettings as \
      _RefineBravaisSettings
 from Wrappers.Dials.ExportXDS import ExportXDS as _ExportXDS
@@ -48,6 +49,7 @@ from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Flags import Flags
 from Handlers.Phil import PhilIndex
 from Handlers.Files import FileHandler
+from Experts.SymmetryExpert import lattice_to_spacegroup_number
 
 class DialsIndexer(FrameProcessor,
                    Indexer):
@@ -140,6 +142,12 @@ class DialsIndexer(FrameProcessor,
     index.set_working_directory(self.get_working_directory())
     auto_logfiler(index)
     return index
+
+  def Reindex(self):
+    reindex = _Reindex()
+    reindex.set_working_directory(self.get_working_directory())
+    auto_logfiler(reindex)
+    return reindex
 
   def ExportXDS(self):
     export_xds = _ExportXDS()
@@ -290,7 +298,8 @@ class DialsIndexer(FrameProcessor,
         'nspots':summary['nspots'],
         'lattice':summary['bravais'],
         'cell':summary['unit_cell'],
-        'experiments_file':summary['experiments_file']
+        'experiments_file':summary['experiments_file'],
+        'cb_op':summary['cb_op']
         }
 
     self._solution = self.get_solution()
@@ -312,6 +321,18 @@ class DialsIndexer(FrameProcessor,
 
     self._indxr_mosaic = self._solution['mosaic']
 
+    # reindex the output reflection list to this solution
+
+    reindex = self.Reindex()
+    reindex.set_experiment_file(experiment_list)
+    reindex.set_indexed_spot_file(self._indexed_filename)
+    reindex.set_cb_op(self._solution['cb_op'])
+    reindex.set_space_group(str(lattice_to_spacegroup_number(
+      self._solution['lattice'])))
+    experiments, indexed_file = reindex.run()
+    self._indexed_filename = indexed_file
+    self.set_indexer_experiment_list(experiments)
+        
     return
 
   def _compare_cell(self, c_ref, c_test):
