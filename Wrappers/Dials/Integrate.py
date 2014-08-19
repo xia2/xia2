@@ -33,7 +33,7 @@ def Integrate(DriverType = None):
       self._experiments_filename = None
       self._reflections_filename = None
       self._integration_algorithm = "fitrs"
-      self._outlier_algorithm = "null"
+      self._outlier_algorithm = None
       self._phil_file = None
 
       return
@@ -59,6 +59,13 @@ def Integrate(DriverType = None):
     def get_intensity_algorithm(self):
       return self._integration_algorithm
 
+    def set_background_outlier_algorithm(self, algorithm):
+      self._outlier_algorithm = algorithm
+      return
+
+    def get_background_outlier_algorithm(self):
+      return self._outlier_algorithm
+
     def set_phil_file(self, phil_file):
       self._phil_file = phil_file
       return
@@ -76,7 +83,7 @@ def Integrate(DriverType = None):
       self.add_command_line(("-r", self._reflections_filename))
       self.add_command_line(
         'intensity.algorithm=%s' % self._integration_algorithm)
-      if self._outlier_algorithm:
+      if self._outlier_algorithm is not None:
         self.add_command_line(
           'outlier.algorithm=%s' % self._outlier_algorithm)
       if self._phil_file is not None:
