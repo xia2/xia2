@@ -765,8 +765,6 @@ class XDSIntegrater(FrameProcessor,
       # compare and reject if both > 50% higher - though adding a little
       # flexibility - 0.5 pixel / osc width slack.
 
-      phi_width = self.get_header_item('phi_width')
-
       pixel = p1_deviations[0]
       phi = math.sqrt(0.05 * 0.05 + \
                       p1_deviations[1] * p1_deviations[1])

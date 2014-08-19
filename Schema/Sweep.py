@@ -41,21 +41,34 @@ def SweepFactory(template, directory, beam = None):
 
   sweeps = []
 
-  images = find_matching_images(template, directory)
+  from dxtbx.imageset import ImageSetFactory
+  imagesets = ImageSetFactory.from_template(
+    os.path.join(directory, template),
+    check_headers=True)
 
-  headers = { }
+  for imageset in imagesets:
+    scan = imagesets[0].get_scan()
+    if scan is not None:
+      sweeps.append(
+        Sweep(template, directory,
+              id_image=scan.get_image_range()[0],
+              beam=beam))
 
-  dd = Diffdump()
-  for i in images:
-    image = template_directory_number2image(template, directory, i)
-    dd.set_image(image)
-    headers[i] = dd.readheader()
+  #images = find_matching_images(template, directory)
 
-  sweep_ids = headers2sweep_ids(headers)
+  #headers = { }
 
-  for s in sweep_ids:
-    sweeps.append(Sweep(template, directory,
-                        id_image = s, beam = beam))
+  #dd = Diffdump()
+  #for i in images:
+    #image = template_directory_number2image(template, directory, i)
+    #dd.set_image(image)
+    #headers[i] = dd.readheader()
+
+  #sweep_ids = headers2sweep_ids(headers)
+
+  #for s in sweep_ids:
+    #sweeps.append(Sweep(template, directory,
+                        #id_image = s, beam = beam))
 
   return sweeps
 

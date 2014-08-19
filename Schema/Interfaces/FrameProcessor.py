@@ -243,6 +243,10 @@ class FrameProcessor(object):
   def get_two_theta_prov(self):
     return self._fp_two_theta_prov
 
+  def get_phi_width(self):
+    phi_start, phi_end = self.get_scan().get_oscillation()
+    return phi_end - phi_start
+
   def set_header(self, header):
     self._fp_header = header
     return
@@ -269,8 +273,30 @@ class FrameProcessor(object):
 
     return image2image(image)
 
+  # getters/setters for dxtbx objects
   def get_imageset(self):
     return self._imageset
+
+  def get_scan(self):
+    return self._imageset.get_scan()
+
+  def get_detector(self):
+    return self._imageset.get_detector()
+
+  def set_detector(self, detector):
+    self._imageset.set_detector(detector)
+
+  def get_goniometer(self):
+    return self._imageset.get_goniometer()
+
+  def set_goniometer(self, goniometer):
+    self._imageset.set_goniometer(goniometer)
+
+  def get_beam_obj(self):
+    return self._imageset.get_beam()
+
+  def set_beam_obj(self, beam):
+    self._imageset.set_beam(beam)
 
   def setup_from_image(self, image):
     if self._fp_template and self._fp_directory:
@@ -298,10 +324,10 @@ class FrameProcessor(object):
         images.append(j)
       self._fp_matching_images = images
 
-    # XXX this should go
-    dd = Diffdump()
-    dd.set_image(image)
-    self._fp_header = dd.readheader()
+    ## XXX this should go
+    #dd = Diffdump()
+    #dd.set_image(image)
+    #self._fp_header = dd.readheader()
 
     from dxtbx.imageset import ImageSetFactory
     imageset = ImageSetFactory.from_template(

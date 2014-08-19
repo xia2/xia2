@@ -185,7 +185,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
     def _index_select_images(self):
       '''Select correct images based on image headers.'''
 
-      phi_width = self.get_header_item('phi_width')
+      phi_width = self.get_phi_width()
       images = self.get_matching_images()
 
       if Flags.get_interactive():

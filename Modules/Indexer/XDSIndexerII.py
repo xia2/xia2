@@ -73,7 +73,7 @@ class XDSIndexerII(XDSIndexer):
   def _index_select_images_ii(self):
     '''Select correct images based on image headers.'''
 
-    phi_width = self.get_header_item('phi_width')
+    phi_width = self.get_phi_width()
 
     if phi_width == 0.0:
       raise RuntimeError, 'cannot use still images'

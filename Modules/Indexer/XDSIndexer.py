@@ -229,7 +229,7 @@ class XDSIndexer(FrameProcessor,
   def _index_select_images_i(self):
     '''Select correct images based on image headers.'''
 
-    phi_width = self.get_header_item('phi_width')
+    phi_width = self.get_phi_width()
 
     if phi_width == 0.0:
       Debug.write('Phi width 0.0? Assuming 1.0!')
