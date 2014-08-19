@@ -544,7 +544,8 @@ def LabelitIndex(DriverType = None, indxr_print = True):
       from cctbx import sgtbx, uctbx
       from dxtbx.model.crystal import crystal_model_from_mosflm_matrix
       mosflm_matrix = matrix.sqr(
-        [float(i) for line in lms.calculate() for i in line.split() ][:9])
+        [float(i) for line in lms.calculate()
+         for i in line.replace("-", " -").split() ][:9])
 
       space_group = sgtbx.space_group_info(lattice_to_spacegroup_number(
         self._solution['lattice'])).group()
