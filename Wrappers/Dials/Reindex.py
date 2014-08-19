@@ -50,7 +50,7 @@ def Reindex(DriverType = None):
       self._cb_op = cb_op
       return
 
-    def run(self, method):
+    def run(self):
       from Handlers.Streams import Debug
       Debug.write('Running dials.reindex')
 
