@@ -118,6 +118,7 @@ def Index(DriverType = None):
       self.add_command_line(self._sweep_filename)
       self.add_command_line(self._spot_filename)
       self.add_command_line('method=%s' % method)
+      self.add_command_line('use_all_reflections=True')
       if self._max_cell:
         self.add_command_line('max_cell=%d' % self._max_cell)
       if self._indxr_input_lattice is not None:
@@ -160,7 +161,6 @@ if __name__ == '__main__':
 
   from Wrappers.Dials.Import import Import
   from Wrappers.Dials.Spotfinder import Spotfinder
-  from Wrappers.Dials.ExportXDS import ExportXDS
   from Wrappers.Dials.RefineBravaisSettings import RefineBravaisSettings
 
   print "Begin importing"
