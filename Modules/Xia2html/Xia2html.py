@@ -455,6 +455,10 @@ class Citations:
         'pointless',
         'Evans, Philip (2006) Acta Crystallographica Section D 62, 72--82',
         'http://journals.iucr.org/d/issues/2006/01/00/ba5084/index.html')
+    self.addCitation(
+        'aimless',
+        'Evans, P. and Murshudov, G. N. (2013) Acta Crystallographica Section D 69, 1204–-1214',
+        'http://journals.iucr.org/d/issues/2013/07/00/ba5190/index.html')
     # Mosflm
     self.addCitation(
         'mosflm',

@@ -265,7 +265,7 @@ class CCP4ScalerA(Scaler):
     # acknowledge all of the programs we are about to use...
 
     Citations.cite('pointless')
-    Citations.cite('scala')
+    Citations.cite('aimless')
     Citations.cite('ccp4')
 
     # ---------- GATHER ----------
@@ -610,7 +610,7 @@ class CCP4ScalerA(Scaler):
       self._scalr_correct_absorption = True
       self._scalr_correct_partiality = False
       self._scalr_correct_decay = True
-      
+
     if self._scalr_corrections:
       Journal.block(
           'scaling', self.get_scaler_xcrystal().get_name(), 'CCP4',
