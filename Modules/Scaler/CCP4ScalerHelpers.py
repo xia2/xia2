@@ -110,7 +110,7 @@ def erzatz_resolution(reflection_file, batch_ranges):
   assert(ipr_column or i_column)
   assert(sigipr_column or sigi_column)
   assert(batch_column)
-
+  
   if ipr_column is None: ipr_column = i_column
   if sigipr_column is None: sigipr_column = sigi_column
 
@@ -134,8 +134,9 @@ def erzatz_resolution(reflection_file, batch_ranges):
       if batches[j] > end:
         continue
 
-      d.append(uc.d(miller[j]))
-      isig.append(ipr_values[j] / sigipr_values[j])
+      if sigipr_values[j] > 0:
+        d.append(uc.d(miller[j]))
+        isig.append(ipr_values[j] / sigipr_values[j])
 
     resolutions[(start, end)] = compute_resolution(dmax, dmin, d, isig)
 
@@ -497,8 +498,13 @@ def anomalous_signals(hklin):
 
   return df_f, di_sigdi
 
-if __name__ == '__main__':
+if __name__ == '__main__old__':
 
   for arg in sys.argv[1:]:
     df_f, di_sigdi = anomalous_signals(arg)
     print '%s: %.3f %.3f' % (os.path.split(arg)[-1], df_f, di_sigdi)
+
+if __name__ == '__main__':
+  reflection_file = sys.argv[1]
+  batch_range = int(sys.argv[2]), int(sys.argv[3])
+  print erzatz_resolution(reflection_file, [batch_range])

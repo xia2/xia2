@@ -33,6 +33,7 @@ def Integrate(DriverType = None):
       self._experiments_filename = None
       self._reflections_filename = None
       self._integration_algorithm = "fitrs"
+      self._outlier_algorithm = "null"
       self._phil_file = None
 
       return
@@ -74,9 +75,12 @@ def Integrate(DriverType = None):
       self.add_command_line(self._experiments_filename)
       self.add_command_line(("-r", self._reflections_filename))
       self.add_command_line(
-        'intensity.algorithm=%s' %self._integration_algorithm)
+        'intensity.algorithm=%s' % self._integration_algorithm)
+      if self._outlier_algorithm:
+        self.add_command_line(
+          'outlier.algorithm=%s' % self._outlier_algorithm)
       if self._phil_file is not None:
-        self.add_command_line("%s" %self._phil_file)
+        self.add_command_line("%s" % self._phil_file)
 
       self.start()
       self.close_wait()
