@@ -383,27 +383,30 @@ class _CommandLine(object):
     try:
       index = self._argv.index('-beam')
     except ValueError, e:
-      self._beam = (0.0, 0.0)
+      self._beam = None
       return
 
     if index < 0:
       raise RuntimeError, 'negative index'
 
-    try:
-      beam = self._argv[index + 1].split(',')
-    except IndexError, e:
-      raise RuntimeError, '-beam correct use "-beam x,y"'
+    #try:
+      #beam = self._argv[index + 1].split(',')
+    #except IndexError, e:
+      #raise RuntimeError, '-beam correct use "-beam x,y"'
 
-    if len(beam) != 2:
-      raise RuntimeError, '-beam correct use "-beam x,y"'
+    #if len(beam) != 2:
+      #raise RuntimeError, '-beam correct use "-beam x,y"'
 
-    self._beam = (float(beam[0]), float(beam[1]))
+    #self._beam = (float(beam[0]), float(beam[1]))
 
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Debug.write('Beam read from command line as %f %f' % \
-                self._beam)
+    PhilIndex.update("xia2.settings.beam_centre=%s" %self._argv[index +1 ])
+    PhilIndex.get_python_object()
+    Debug.write('Beam read from command line as %f %f' % tuple(
+      PhilIndex.params.xia2.settings.beam_centre))
+    self._beam = tuple(PhilIndex.params.xia2.settings.beam_centre)
 
     return
 

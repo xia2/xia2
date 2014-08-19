@@ -354,15 +354,15 @@ def print_sweeps(out = sys.stdout):
 
       # really don't need to store the epoch in the xinfo file
       # out.write('EPOCH %d\n' % int(s.get_collect()[0]))
-      cl_beam = CommandLine.get_beam()
-      if cl_beam[0] or cl_beam[1]:
-        out.write('BEAM %6.2f %6.2f\n' % cl_beam)
+      user_beam_centre = settings.beam_centre
+      if user_beam_centre is not None:
+        out.write('BEAM %6.2f %6.2f\n' % tuple(user_beam_centre))
       else:
         interactive = Flags.get_interactive()
         Flags.set_interactive(False)
-        beam = compute_beam_centre(s)
-        if beam:
-          out.write('BEAM %6.2f %6.2f\n' % tuple(beam))
+        beam_centre = compute_beam_centre(s)
+        if beam_centre:
+          out.write('BEAM %6.2f %6.2f\n' % tuple(beam_centre))
         Flags.set_interactive(interactive)
       out.write('END SWEEP %s\n' % name)
 

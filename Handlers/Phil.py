@@ -86,6 +86,9 @@ xia2.settings {
   space_group = None
     .type = space_group
     .help = "Provide a target space group to the indexing program"
+  beam_centre = None
+    .type = floats(size=2)
+    .help = "Beam centre (x,y) coordinates (mm) using the  Mosflm convention"
   show_template = False
     .type = bool
   untrusted_rectangle_indexing = None
