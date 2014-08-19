@@ -5,7 +5,7 @@
 #   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
-# An indexer compatible with XDS but using the DIALS methods.
+# An indexer using the DIALS methods.
 
 import os
 import sys
@@ -18,13 +18,6 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.environ['XIA2_ROOT'] in sys.path:
   sys.path.append(os.environ['XIA2_ROOT'])
 
-# wrappers for programs that this needs: XDS
-
-from Wrappers.XDS.XDSXycorr import XDSXycorr as _Xycorr
-from Wrappers.XDS.XDSInit import XDSInit as _Init
-from Wrappers.XDS.XDSColspot import XDSColspot as _Colspot
-from Wrappers.XDS.XDSIdxref import XDSIdxref as _Idxref
-
 # wrappers for programs that this needs: DIALS
 
 from Wrappers.Dials.Import import Import as _Import
@@ -33,7 +26,6 @@ from Wrappers.Dials.Index import Index as _Index
 from Wrappers.Dials.Reindex import Reindex as _Reindex
 from Wrappers.Dials.RefineBravaisSettings import RefineBravaisSettings as \
      _RefineBravaisSettings
-from Wrappers.Dials.ExportXDS import ExportXDS as _ExportXDS
 
 from Wrappers.XIA.Diffdump import Diffdump
 
@@ -88,41 +80,6 @@ class DialsIndexer(FrameProcessor,
 
   # factory functions
 
-  def Xycorr(self):
-    xycorr = _Xycorr()
-    xycorr.set_working_directory(self.get_working_directory())
-
-    xycorr.setup_from_image(self.get_image_name(
-        self._indxr_images[0][0]))
-
-    if self.get_distance():
-      xycorr.set_distance(self.get_distance())
-
-    if self.get_wavelength():
-      xycorr.set_wavelength(self.get_wavelength())
-
-    auto_logfiler(xycorr, 'XYCORR')
-
-    return xycorr
-
-  def Init(self):
-    from Handlers.Phil import PhilIndex
-    init = _Init(params=PhilIndex.params.xds.init)
-    init.set_working_directory(self.get_working_directory())
-
-    init.setup_from_image(self.get_image_name(
-        self._indxr_images[0][0]))
-
-    if self.get_distance():
-      init.set_distance(self.get_distance())
-
-    if self.get_wavelength():
-      init.set_wavelength(self.get_wavelength())
-
-    auto_logfiler(init, 'INIT')
-
-    return init
-
   def Import(self):
     importer = _Import()
     importer.set_working_directory(self.get_working_directory())
@@ -149,12 +106,6 @@ class DialsIndexer(FrameProcessor,
     auto_logfiler(reindex)
     return reindex
 
-  def ExportXDS(self):
-    export_xds = _ExportXDS()
-    export_xds.set_working_directory(self.get_working_directory())
-    auto_logfiler(export_xds)
-    return export_xds
-
   def RefineBravaisSettings(self):
     rbs = _RefineBravaisSettings()
     rbs.set_working_directory(self.get_working_directory())
@@ -173,39 +124,6 @@ class DialsIndexer(FrameProcessor,
     last = max(all_images)
 
     self._indxr_images = [(first, last)]
-
-    last_background = int(round(5.0 / self.get_phi_width())) - 1 + first
-    last_background = min(last, last_background)
-
-    # next start to process these - first xycorr
-    # FIXME run these *afterwards* as then we have a refined detector geometry
-    # so the parallax correction etc. should be slightly better.
-
-    xycorr = self.Xycorr()
-    xycorr.set_data_range(first, last)
-    xycorr.set_background_range(first, last_background)
-    xycorr.run()
-
-    for file in ['X-CORRECTIONS.cbf',
-                 'Y-CORRECTIONS.cbf']:
-      self._data_files[file] = xycorr.get_output_data_file(file)
-
-    # next start to process these - then init
-
-    init = self.Init()
-
-    for file in ['X-CORRECTIONS.cbf',
-                 'Y-CORRECTIONS.cbf']:
-      init.set_input_data_file(file, self._data_files[file])
-
-    init.set_data_range(first, last)
-    init.set_background_range(first, last_background)
-    init.run()
-
-    for file in ['BLANK.cbf',
-                 'BKGINIT.cbf',
-                 'GAIN.cbf']:
-      self._data_files[file] = init.get_output_data_file(file)
 
     # at this stage, break out to run the DIALS code: this sets itself up
     # now cheat and pass in some information... save re-reading all of the
@@ -273,8 +191,8 @@ class DialsIndexer(FrameProcessor,
 
     # FIXME in here should respect the input unit cell and lattice if provided
 
-    # FIXME from this (i) populate the helper table, (ii) export those files
-    # which XDS will expect to find, (iii) try to avoid re-running the indexing
+    # FIXME from this (i) populate the helper table,
+    # (ii) try to avoid re-running the indexing
     # step if we eliminate a solution as we have all of the refined results
     # already available.
 
@@ -397,16 +315,6 @@ class DialsIndexer(FrameProcessor,
     return
 
   def _index_finish(self):
-    exporter = self.ExportXDS()
-    exporter.set_experiments_filename(self.get_solution()['experiments_file'])
-    exporter.run()
-
-    for file in ['XPARM.XDS']:
-      self._data_files[file] = open(os.path.join(
-        self.get_working_directory(), 'xds', file), 'rb').read()
-
-    self._indxr_payload['xds_files'] = self._data_files
-
     # get estimate of low resolution limit from lowest resolution indexed
     # reflection
 
