@@ -44,10 +44,10 @@ def SweepFactory(template, directory, beam = None):
   from dxtbx.imageset import ImageSetFactory
   imagesets = ImageSetFactory.from_template(
     os.path.join(directory, template),
-    check_headers=True)
+    check_headers=False)
 
   for imageset in imagesets:
-    scan = imagesets[0].get_scan()
+    scan = imageset.get_scan()
     if scan is not None:
       sweeps.append(
         Sweep(template, directory,
@@ -78,8 +78,9 @@ class Sweep(object):
   def __init__(self,
                template,
                directory,
-               id_image = None,
-               beam = None):
+               imageset=None,
+               id_image=None,
+               beam=None):
 
     '''Initialise the sweep by inspecting the images. id_image
     defines the first image in this sweep, and hence the identity of
@@ -110,36 +111,40 @@ class Sweep(object):
     return
 
   def get_template(self):
-    return self._template
+    return self._imageset.get_template()
 
   def get_directory(self):
-    return self._directory
+    return os.path.split(self.get_template())[0]
 
-  def get_detector_class(self):
-    return self._detector_class
+  #def get_detector_class(self):
+    #return self._detector_class
 
   def get_images(self):
     # check if any more images have appeared
     self.update()
-    return self._images
+    image_range = self._imageset.get_scan().get_image_range()
+    return list(range(image_range[0], image_range[1]+1))
 
-  def get_collect(self):
-    return self._collect_start, self._collect_end
+  #def get_collect(self):
+    #return self._collect_start, self._collect_end
 
-  def get_phi(self):
-    return self._phi
+  #def get_phi(self):
+    #scan = self._imageset.get_scan()
+    #return self._phi
 
-  def get_exposure_time(self):
-    return self._exposure_time
+  #def get_exposure_time(self):
+    #return self._exposure_time
 
   def get_distance(self):
-    return self._distance
+    return self._imageset.get_detector()[0].get_distance()
 
   def get_wavelength(self):
-    return self._wavelength
+    return self._imageset.get_beam().get_wavelength()
 
   def get_beam_centre(self):
-    return self._beam_centre
+    detector = self._imageset.get_detector()
+    beam = self._imageset.get_beam()
+    return tuple(reversed(detector.get_ray_intersection(beam.get_s0())[1]))
 
   def imagename(self, number):
     '''Compute an image name from an image number.'''
@@ -179,57 +184,75 @@ class Sweep(object):
                                   self._directory)
 
     if len(images) > len(self._images):
-      # more images have appeared - reset myself
 
       self._images = images
 
-      self._read_headers()
+      from dxtbx.imageset import ImageSetFactory
+      imagesets = ImageSetFactory.from_template(
+        os.path.join(self._directory, self._template),
+        check_headers=False)
 
-      sweeps = headers2sweeps(self._headers)
+      max_images = 0
+      best_sweep = None
+      for imageset in imagesets:
+        scan = imageset.get_scan()
+        if scan is None: continue
+        if imageset.get_scan().get_num_images() > max_images:
+          best_sweep = imageset
 
-      # select the correct "sweep" - at the moment
-      # define this to be the one with the most frames
-      # in, though some way of manually defining this
-      # will be useful FIXME.
+      self._imageset = best_sweep
 
-      sweep = None
+      ## more images have appeared - reset myself
 
-      # select which sweep to represent - default to the largest
-      # earliest one
+      #self._images = images
 
-      if self._id_image == -1:
+      #self._read_headers()
 
-        max_images = 0
+      #sweeps = headers2sweeps(self._headers)
 
-        for s in sweeps:
-          if len(s['images']) > max_images:
-            sweep = s
-            max_images = len(s['images'])
+      ## select the correct "sweep" - at the moment
+      ## define this to be the one with the most frames
+      ## in, though some way of manually defining this
+      ## will be useful FIXME.
 
-      else:
-        for s in sweeps:
-          if self._id_image in s['images']:
-            sweep = s
+      #sweep = None
 
-        if sweep is None:
-          raise RuntimeError, 'no matching sweep found'
+      ## select which sweep to represent - default to the largest
+      ## earliest one
 
-      self._images = sweep['images']
-      self._collect_start = sweep['collect_start']
-      self._collect_end = sweep['collect_end']
+      #if self._id_image == -1:
 
-      self._phi = (sweep['phi_start'], sweep['phi_end'],
-                   sweep['phi_width'])
-      self._exposure_time = sweep['exposure_time']
-      self._distance = sweep['distance']
-      self._wavelength = sweep['wavelength']
+        #max_images = 0
 
-      self._detector_class = sweep['detector_class']
+        #for s in sweeps:
+          #if len(s['images']) > max_images:
+            #sweep = s
+            #max_images = len(s['images'])
 
-      # only update this once, and if it isn't known - we want
-      # to use the user value if provided
-      if not self._beam_centre:
-        self._beam_centre = map(float, sweep['beam'])
+      #else:
+        #for s in sweeps:
+          #if self._id_image in s['images']:
+            #sweep = s
+
+        #if sweep is None:
+          #raise RuntimeError, 'no matching sweep found'
+
+      #self._images = sweep['images']
+      #self._collect_start = sweep['collect_start']
+      #self._collect_end = sweep['collect_end']
+
+      #self._phi = (sweep['phi_start'], sweep['phi_end'],
+                   #sweep['phi_width'])
+      #self._exposure_time = sweep['exposure_time']
+      #self._distance = sweep['distance']
+      #self._wavelength = sweep['wavelength']
+
+      #self._detector_class = sweep['detector_class']
+
+      ## only update this once, and if it isn't known - we want
+      ## to use the user value if provided
+      #if not self._beam_centre:
+        #self._beam_centre = map(float, sweep['beam'])
 
     return
 
