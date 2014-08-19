@@ -104,6 +104,7 @@ class _CommandLine(object):
 
     self._read_2d()
     self._read_2di()
+    self._read_dials()
     self._read_3d()
     self._read_3di()
     self._read_3dii()
@@ -1283,6 +1284,15 @@ class _CommandLine(object):
       Debug.write('2DA pipeline; mosflm indexing selected')
     return
 
+  def _read_dials(self):
+    if '-dials' in self._argv:
+      add_preference('indexer', 'dials')
+      add_preference('integrater', 'dials')
+      add_preference('scaler', 'ccp4a')
+      self._understood.append(self._argv.index('-dials'))
+      Debug.write('DIALS pipeline selected')
+    return
+  
   def _read_3d(self):
 
     if '-3d' in self._argv:
