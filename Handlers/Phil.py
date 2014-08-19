@@ -69,6 +69,14 @@ dials {
     phil_file = None
       .type = path
   }
+  refine {
+    scan_varying = True
+      .type = bool
+    use_all_reflections = True
+      .type = bool
+    phil_file = None
+      .type = path
+  }
   integrate {
     phil_file = None
       .type = path

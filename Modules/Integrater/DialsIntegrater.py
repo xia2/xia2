@@ -23,6 +23,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 # wrappers for programs that this needs
 
+from Wrappers.Dials.Refine import Refine as _Refine
 from Wrappers.Dials.Integrate import Integrate as _Integrate
 from Wrappers.Dials.ExportMtz import ExportMtz as _ExportMtz
 
@@ -110,6 +111,21 @@ class DialsIntegrater(FrameProcessor,
 
   # factory functions
 
+  def Refine(self):
+    refine = _Refine()
+    params = PhilIndex.params.dials.refine
+    refine.set_phil_file(params.phil_file)
+    refine.set_working_directory(self.get_working_directory())
+    refine.setup_from_image(self.get_image_name(self._intgr_wedge[0]))
+    refine.set_experiments_filename(self._intgr_experiments_filename)
+    refine.set_indexed_filename(
+      self._intgr_indexer.get_indexed_filename())
+    refine.set_scan_varying(params.scan_varying)
+    refine.set_use_all_reflections(params.scan_varying)
+    auto_logfiler(refine, 'REFINE')
+
+    return refine
+
   def Integrate(self):
     integrate = _Integrate()
     integrate.set_phil_file(PhilIndex.params.dials.integrate.phil_file)
@@ -196,8 +212,6 @@ class DialsIntegrater(FrameProcessor,
         self._intgr_indexer.set_wavelength(
             self.get_wavelength())
 
-      #experiments = self._intgr_indexer.get_indexer_experiment_list()
-
     # get the unit cell from this indexer to initiate processing
     # if it is new... and also copy out all of the information for
     # the Dials indexer if not...
@@ -227,13 +241,20 @@ class DialsIntegrater(FrameProcessor,
                   self.get_integrater_low_resolution())
 
     # copy the data across
-    from dxtbx.serialize import dump
+    from dxtbx.serialize import load, dump
     self._intgr_experiments_filename = os.path.join(
       self.get_working_directory(), "experiments.json")
     dump.experiment_list(experiments, self._intgr_experiments_filename)
     self._intgr_indexed_filename = os.path.join(
       self.get_working_directory(), os.path.basename(
         self._intgr_indexer.get_indexed_filename()))
+
+    refiner = self.Refine()
+    refiner.run()
+    self._intgr_experiments_filename \
+      = refiner.get_refined_experiments_filename()
+    experiments = load.experiment_list(self._intgr_experiments_filename)
+    experiment = experiments[0]
 
     #shutil.copyfile(self._intgr_indexer.get_experiments_filename(),
                 #self._intgr_experiments_filename)
