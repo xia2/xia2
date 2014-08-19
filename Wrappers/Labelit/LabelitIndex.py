@@ -531,6 +531,31 @@ def LabelitIndex(DriverType = None, indxr_print = True):
       if mosflm_beam:
         self._indxr_payload['mosflm_beam_centre'] = tuple(mosflm_beam)
 
+      import copy
+      detector = copy.deepcopy(self.get_detector())
+      beam = copy.deepcopy(self.get_beam_obj())
+      from Wrappers.Mosflm.AutoindexHelpers import set_mosflm_beam_centre
+      set_mosflm_beam_centre(detector, beam, mosflm_beam)
+
+      from scitbx import matrix
+      from cctbx import uctbx
+      from dxtbx.model.crystal import crystal_model_from_mosflm_matrix
+      mosflm_matrix = matrix.sqr(
+        [float(i) for line in lms.calculate() for i in line.split() ][:9])
+      crystal_model = crystal_model_from_mosflm_matrix(
+        mosflm_matrix, unit_cell=uctbx.unit_cell(self._indxr_cell))
+
+      from dxtbx.model.experiment.experiment_list import Experiment, ExperimentList
+      experiment = Experiment(beam=beam,
+                              detector=detector,
+                              goniometer=self.get_goniometer(),
+                              scan=self.get_scan(),
+                              crystal=crystal_model,
+                              )
+
+      experiment_list = ExperimentList([experiment])
+      self.set_indexer_experiment_list(experiment_list)
+
       # also get an estimate of the resolution limit from the
       # labelit.stats_distl output... FIXME the name is wrong!
 

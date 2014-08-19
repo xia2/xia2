@@ -259,6 +259,7 @@ class XDSIntegrater(FrameProcessor,
     assert len(experiments) == 1 # currently only handle one lattic/sweep
     experiment = experiments[0]
     crystal_model = experiment.crystal
+    lattice = self._intgr_indexer.get_indexer_lattice()
 
     # check if the lattice was user assigned...
     user_assigned = self._intgr_indexer.get_indexer_user_input_lattice()
@@ -322,9 +323,9 @@ class XDSIntegrater(FrameProcessor,
         self._intgr_indexer.set_wavelength(
             self.get_wavelength())
 
-      from cctbx.sgtbx import bravais_types
-      lattice = str(
-        bravais_types.bravais_lattice(group=crystal_model.get_space_group()))
+      #from cctbx.sgtbx import bravais_types
+      #lattice = str(
+        #bravais_types.bravais_lattice(group=crystal_model.get_space_group()))
       self._intgr_indexer.set_indexer_input_lattice(lattice)
 
       if user_assigned:
@@ -336,7 +337,6 @@ class XDSIntegrater(FrameProcessor,
       self._intgr_indexer.set_detector(experiment.detector)
       self._intgr_indexer.set_beam_obj(experiment.beam)
       self._intgr_indexer.set_goniometer(experiment.goniometer)
-      self._intgr_indexer.set_scan(experiment.scan)
 
       # re-get the unit cell &c. and check that the indexing
       # worked correctly
