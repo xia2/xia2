@@ -255,10 +255,10 @@ class XDSIntegrater(FrameProcessor,
     # if it is new... and also copy out all of the information for
     # the XDS indexer if not...
 
-    cell = self._intgr_indexer.get_indexer_cell()
-    lattice = self._intgr_indexer.get_indexer_lattice()
-    beam = self._intgr_indexer.get_indexer_beam_centre()
-    distance = self._intgr_indexer.get_indexer_distance()
+    experiments = self._intgr_indexer.get_indexer_experiment_list()
+    assert len(experiments) == 1 # currently only handle one lattic/sweep
+    experiment = experiments[0]
+    crystal_model = experiment.crystal
 
     # check if the lattice was user assigned...
     user_assigned = self._intgr_indexer.get_indexer_user_input_lattice()
@@ -309,6 +309,7 @@ class XDSIntegrater(FrameProcessor,
       # may be screwing things up - perhaps it would
       # be best to allow XDS just to index with a free
       # cell but target lattice??
+      cell = crystal_model.get_unit_cell().parameters()
       if Flags.get_relax():
         Debug.write(
             'Inputting target cell: %.2f %.2f %.2f %.2f %.2f %.2f' % \
@@ -321,6 +322,9 @@ class XDSIntegrater(FrameProcessor,
         self._intgr_indexer.set_wavelength(
             self.get_wavelength())
 
+      from cctbx.sgtbx import bravais_types
+      lattice = str(
+        bravais_types.bravais_lattice(group=crystal_model.get_space_group()))
       self._intgr_indexer.set_indexer_input_lattice(lattice)
 
       if user_assigned:
@@ -328,8 +332,11 @@ class XDSIntegrater(FrameProcessor,
                     lattice)
         self._intgr_indexer.set_indexer_user_input_lattice(True)
 
-      self._intgr_indexer.set_distance(distance)
-      self._intgr_indexer.set_beam_centre(beam)
+      #self._intgr_indexer.set_distance(distance)
+      self._intgr_indexer.set_detector(experiment.detector)
+      self._intgr_indexer.set_beam_obj(experiment.beam)
+      self._intgr_indexer.set_goniometer(experiment.goniometer)
+      self._intgr_indexer.set_scan(experiment.scan)
 
       # re-get the unit cell &c. and check that the indexing
       # worked correctly
@@ -338,6 +345,11 @@ class XDSIntegrater(FrameProcessor,
 
       cell = self._intgr_indexer.get_indexer_cell()
       lattice = self._intgr_indexer.get_indexer_lattice()
+
+      experiments = self._intgr_indexer.get_indexer_experiment_list()
+      assert len(experiments) == 1 # currently only handle one lattic/sweep
+      experiment = experiments[0]
+      crystal_model = experiment.crystal
 
       # then in here check that the target unit cell corresponds
       # to the unit cell I wanted as input...? now for this I
@@ -367,8 +379,9 @@ class XDSIntegrater(FrameProcessor,
     for f in self._data_files.keys():
       Debug.write('%s' % f)
 
-    # copy the distance too...
-    self.set_distance(self._intgr_indexer.get_indexer_distance())
+    self.set_detector(experiment.detector)
+    self.set_beam_obj(experiment.beam)
+    self.set_goniometer(experiment.goniometer)
 
     # delete things we should not know e.g. the postrefined cell from
     # CORRECT - c/f bug # 2695

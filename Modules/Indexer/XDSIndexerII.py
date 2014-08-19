@@ -290,10 +290,23 @@ class XDSIndexerII(XDSIndexer):
     self._indxr_lattice, self._indxr_cell, self._indxr_mosaic = \
                          idxref.get_indexing_solution()
 
-    detector = self.get_imageset().get_detector()
-    self.set_indexer_beam_centre(tuple(reversed(
-      detector[0].pixel_to_millimeter(idxref.get_refined_beam()))))
-    self.set_indexer_distance(idxref.get_refined_distance())
+    import dxtbx
+    from dxtbx.serialize.xds import to_crystal
+    xparm_file = os.path.join(self.get_working_directory(), 'XPARM.XDS')
+    models = dxtbx.load(xparm_file)
+    crystal_model = to_crystal(xparm_file)
+
+    from dxtbx.model.experiment.experiment_list import Experiment, ExperimentList
+    experiment = Experiment(beam=models.get_beam(),
+                            detector=models.get_detector(),
+                            goniometer=models.get_goniometer(),
+                            scan=models.get_scan(),
+                            crystal=crystal_model,
+                            #imageset=self.get_imageset(),
+                            )
+
+    experiment_list = ExperimentList([experiment])
+    self.set_indexer_experiment_list(experiment_list)
 
     self._indxr_payload['xds_files'] = self._data_files
 

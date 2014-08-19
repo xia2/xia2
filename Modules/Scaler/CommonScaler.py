@@ -535,7 +535,7 @@ class CommonScaler(Scaler):
 
       indxr = self._sweep_information[epoch][
           'integrater'].get_integrater_indexer()
-      beam = indxr.get_indexer_beam()
+      beam = indxr.get_indexer_beam_centre()
       distance = indxr.get_indexer_distance()
       wavelength = self._sweep_information[epoch][
           'integrater'].get_wavelength()
