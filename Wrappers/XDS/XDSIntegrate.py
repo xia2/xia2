@@ -215,12 +215,10 @@ def XDSIntegrate(DriverType=None, params=None):
 
       elif Flags.get_xparallel() == -1:
         chunk_width = 30.0
-
-        scan = self.get_imageset().get_scan()
-        phi_start, phi_end = scan.get_oscillation()
+        phi_width = self.get_phi_width()
         nchunks = int(
             (self._data_range[1] - self._data_range[0] + 1) * \
-            (phi_end - phi_start) / chunk_width)
+            phi_width / chunk_width)
 
         Debug.write('Xparallel: -1 using %d chunks' % nchunks)
 

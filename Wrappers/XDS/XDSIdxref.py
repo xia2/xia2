@@ -332,10 +332,9 @@ def XDSIdxref(DriverType=None, params=None):
 
       refine_params = [p for p in self._params.refine]
 
-      scan = self.get_imageset().get_scan()
-      phi_start, phi_end = scan.get_oscillation()
-      if 'AXIS' in refine_params and (max_frame - min_frame) * \
-          (phi_end - phi_start) < 5.0:
+      phi_width = self.get_phi_width()
+      if ('AXIS' in refine_params
+          and (max_frame - min_frame) * phi_width < 5.0):
         refine_params.remove('AXIS')
 
       xds_inp.write('REFINE(IDXREF)=%s\n' %
