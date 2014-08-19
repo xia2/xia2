@@ -290,14 +290,17 @@ class FrameProcessor(object):
 
     self._setup_from_image(image)
 
+  def setup_from_imageset(self, imageset):
+    if self._imageset:
+      raise RuntimeError, 'FrameProcessor implementation already set up'
+
+    self._setup_from_imageset(imageset)
+
   # private methods
 
   def _setup_from_image(self, image):
     '''Configure myself from an image name.'''
     template, directory = image2template_directory(image)
-    self._fp_template = template
-    self._fp_directory = directory
-
     self._fp_matching_images = find_matching_images(template, directory)
 
     # trim this down to only allowed images...
@@ -319,9 +322,21 @@ class FrameProcessor(object):
     imageset = ImageSetFactory.from_template(
       os.path.join(directory, template),
       image_range=(self._fp_matching_images[0], self._fp_matching_images[-1]))[0]
+
+    self._setup_from_imageset(imageset)
+    return
+
+  def _setup_from_imageset(self, imageset):
+    '''Configure myself from an image name.'''
+
     beam = imageset.get_beam()
     detector = imageset.get_detector()
     self._imageset = imageset
+    self._fp_directory, self._fp_template = os.path.split(
+      imageset.get_template())
+
+    image_range = imageset.get_scan().get_image_range()
+    self._fp_matching_images = tuple(range(image_range[0], image_range[1]+1))
 
     # populate wavelength, beam etc from this
     if self._fp_wavelength_prov is None:
