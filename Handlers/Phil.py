@@ -131,12 +131,14 @@ xia2.settings {
     mode = *serial parallel
       .type = choice
       .help = "Whether to process each sweep in serial (using n processes per"
-              " sweep) or to process sweeps in parallale (using 1 process per"
+              " sweep) or to process sweeps in parallel (using 1 process per"
               " sweep)."
     nproc = Auto
       .type = int(value_min=1)
+      .help = "The number of processors to use per job."
     njob = Auto
       .type = int(value_min=1)
+      .help = "The number of sweeps to process simultaneously."
     type = *simple qsub
       .type = choice
       .help = "How to run the parallel processing jobs, e.g. over a cluster"
