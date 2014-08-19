@@ -311,23 +311,23 @@ class DialsIntegrater(FrameProcessor,
 
     integrate.set_experiments_filename(self._intgr_experiments_filename)
     integrate.set_reflections_filename(self._intgr_indexed_filename)
-    
+
     integrate.run()
 
     # FIXME (i) record the log file, (ii) get more information out from the
     # integration log on the quality of the data and (iii) the mosaic spread
     # range observed and R.M.S. deviations.
 
-    self._intgr_integrated_filename \
+    self._intgr_integrated_pickle \
       = os.path.join(self.get_working_directory(), 'integrated.pickle')
 
-    return self._intgr_integrated_filename
+    return self._intgr_integrated_pickle
 
   def _integrate_finish(self):
-    '''Finish off the integration by running correct.'''
+    '''Finish off the integration by running dials.export_mtz.'''
 
     exporter = self.ExportMtz()
-    exporter.set_reflections_filename(self.get_integrated_filename())
+    exporter.set_reflections_filename(self._intgr_integrated_pickle)
     mtz_filename = os.path.join(self.get_working_directory(), 'integrated.mtz')
     exporter.set_mtz_filename(mtz_filename)
     exporter.run()
