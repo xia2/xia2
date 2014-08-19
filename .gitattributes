@@ -19,6 +19,7 @@ Modules/Indexer/IndexerSelectImages.py -text
 Modules/Indexer/MosflmIntegrateAbsences.py -text
 Modules/Indexer/XDSIndexerSum.py -text
 Modules/Indexer/__init__.py -text
+Modules/Integrater/DialsIntegrater.py -text
 Modules/Integrater/__init__.py -text
 Modules/Scaler/CCP4ScalerA.py -text
 Modules/Scaler/CommonScaler.py -text
