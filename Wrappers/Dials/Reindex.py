@@ -66,7 +66,12 @@ def Reindex(DriverType = None):
       self.close_wait()
       self.check_for_errors()
 
-      return "experiments_reindexed.pickle", "reflections_reindexed.pickle"
+      wd = self.get_working_directory()
+
+      import os
+      
+      return os.path.join(wd, "experiments_reindexed.pickle"), \
+        os.path.join(wd, "reflections_reindexed.pickle")
 
   return ReindexWrapper()
 
