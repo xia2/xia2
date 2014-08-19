@@ -171,6 +171,9 @@ class DialsIntegrater(FrameProcessor,
     IDXREF to get the XPARM etc. DEFPIX is considered part of the full
     integration as it is resolution dependent.'''
 
+    from Handlers.Citations import Citations
+    Citations.cite('dials')
+
     # decide what images we are going to process, if not already
     # specified
     if not self._intgr_wedge:
@@ -362,7 +365,7 @@ class DialsIntegrater(FrameProcessor,
     self._intgr_integrated_filename = hklout
     return hklout
 
-    
+
     return mtz_filename
 
 if __name__ == '__main__':

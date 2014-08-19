@@ -164,6 +164,10 @@ class DialsIndexer(FrameProcessor,
   ##########################################
 
   def _index_prepare(self):
+
+    from Handlers.Citations import Citations
+    Citations.cite('dials')
+
     all_images = self.get_matching_images()
     first = min(all_images)
     last = max(all_images)
@@ -332,7 +336,7 @@ class DialsIndexer(FrameProcessor,
       self._solution['lattice'])))
     experiments, indexed_file = reindex.run()
     self._indexed_filename = indexed_file
-        
+
     return
 
   def _compare_cell(self, c_ref, c_test):
