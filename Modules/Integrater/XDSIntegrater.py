@@ -36,7 +36,6 @@ from Wrappers.XDS.XDSCorrect import XDSCorrect as _Correct
 # helper functions
 
 from Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
-from Wrappers.XDS.XDS import xds_read_xparm
 from Experts.SymmetryExpert import r_to_rt, rt_to_r
 from Experts.SymmetryExpert import symop_to_mat, mat_to_symop
 
@@ -741,11 +740,14 @@ class XDSIntegrater(FrameProcessor,
 
     # compute misorientation of axes
 
-    xparm_dict = xds_read_xparm(os.path.join(self.get_working_directory(),
-                                             'GXPARM.XDS'))
+    xparm_file = os.path.join(self.get_working_directory(), 'GXPARM.XDS')
 
-    rotn = xparm_dict['axis']
-    beam = xparm_dict['beam']
+    from iotbx.xds import xparm
+    handle = xparm.reader()
+    handle.read_file(xparm_file)
+
+    rotn = handle.rotation_axis
+    beam = handle.beam_vector
 
     dot = sum([rotn[j] * beam[j] for j in range(3)])
     r = math.sqrt(sum([rotn[j] * rotn[j] for j in range(3)]))

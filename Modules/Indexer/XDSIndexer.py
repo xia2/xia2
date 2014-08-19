@@ -661,13 +661,16 @@ class XDSIndexer(FrameProcessor,
 
     # first parse the numbers from the IDXREF XPARM file
 
-    xparm_dict = xds_read_xparm(os.path.join(self.get_working_directory(),
-                                             'XPARM.XDS'))
+    xparm_file = os.path.join(self.get_working_directory(), 'XPARM.XDS')
 
-    distance = xparm_dict['distance']
-    wavelength = xparm_dict['wavelength']
-    pixel = xparm_dict['px'], xparm_dict['py']
-    beam = xparm_dict['ox'], xparm_dict['oy']
+    from iotbx.xds import xparm
+    handle = xparm.reader()
+    handle.read_file(xparm_file)
+
+    distance = handle.detector_distance
+    wavelength = handle.wavelength
+    pixel = handle.pixel_size
+    beam = handle.detector_origin
 
     if distance < 0.0:
       distance *= -1

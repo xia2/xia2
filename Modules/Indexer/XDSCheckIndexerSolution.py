@@ -62,21 +62,28 @@ def xds_check_indexer_solution(xparm_file,
   an estimate of it) and try this if it is centred. Returns tuple
   (space_group_number, cell).'''
 
+  from iotbx.xds import xparm
+  handle = xparm.reader()
+  handle.read_file(xparm_file)
+
   # parse the XPARM file to a dictionary
 
-  xparm_d = xds_read_xparm(xparm_file)
+  #xparm_d = xds_read_xparm(xparm_file)
 
-  A, B, C = xparm_d['a'], xparm_d['b'], xparm_d['c']
-  cell = xparm_d['cell']
-  space_group_number = xparm_d['spacegroup']
+  A = handle.unit_cell_a_axis
+  B = handle.unit_cell_b_axis
+  C = handle.unit_cell_c_axis
+  cell = handle.unit_cell
+  space_group_number = handle.space_group
   spacegroup = sgtbx.space_group_symbols(space_group_number).hall()
   sg = sgtbx.space_group(spacegroup)
 
   # now ask if it is centred - if not, just return the input solution
   # without testing...
 
-  if not is_centred(space_group_number) and False:
-    return s2l(space_group_number), tuple(cell)
+  # XXX this always evaluates to False!
+  #if not is_centred(space_group_number) and False:
+    #return s2l(space_group_number), tuple(cell)
 
   # right, now need to read through the SPOT.XDS file and index the
   # reflections with the centred basis. Then I need to remove the lattice
@@ -85,30 +92,23 @@ def xds_check_indexer_solution(xparm_file,
   # first get the information I'll need to transform x, y, i to
   # reciprocal space
 
-  wavelength = xparm_d['wavelength']
-  distance = xparm_d['distance']
-  beam = xparm_d['beam']
+  wavelength = handle.wavelength
+  distance = handle.detector_distance
 
-  nx = xparm_d['nx']
-  ny = xparm_d['ny']
-  px = xparm_d['px']
-  py = xparm_d['py']
-  ox = xparm_d['ox']
-  oy = xparm_d['oy']
+  px, py = handle.pixel_size
+  ox, oy = handle.detector_origin
 
-  normal = xparm_d['normal']
-
-  phi_start = xparm_d['phi_start']
-  phi_width = xparm_d['phi_width']
-  start = xparm_d['starting_frame'] - 1
-  axis = matrix.col(xparm_d['axis'])
+  phi_start = handle.starting_angle
+  phi_width = handle.oscillation_range
+  start = handle.starting_frame - 1
+  axis = matrix.col(handle.rotation_axis)
 
   # begin to transform these to something more usable (i.e. detector
   # offsets in place of beam vectors &c.)
 
-  N = matrix.col(normal)
+  N = matrix.col(handle.detector_normal)
   D = distance * N
-  S = matrix.col(beam)
+  S = matrix.col(handle.beam_vector)
 
   Sd = (wavelength * distance / (wavelength * S.dot(N))) * S
   d = math.sqrt(Sd.dot())
@@ -118,8 +118,8 @@ def xds_check_indexer_solution(xparm_file,
   # FIXME should verify that the offset is confined to the detector
   # plane - i.e. off.normal = 0
 
-  bx = ox + off.elems[0] / px
-  by = oy + off.elems[1] / py
+  bx = ox + off.elems[0] / handle.pixel_size[0]
+  by = oy + off.elems[1] / handle.pixel_size[1]
 
   dtor = 180.0 / math.pi
 
@@ -127,7 +127,7 @@ def xds_check_indexer_solution(xparm_file,
   # space orientation matrix (a*, b*, c*)
 
   m = matrix.sqr(A + B + C)
-  mi = m.inverse()
+  #mi = m.inverse()
 
   # now iterate through the spot file
 
