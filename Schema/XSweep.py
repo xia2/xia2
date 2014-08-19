@@ -138,9 +138,6 @@ from Experts.FindImages import image2template, find_matching_images, \
      template_directory_number2image, image2template_directory
 from Experts.Filenames import expand_path
 
-# image header reading functionality
-from Wrappers.XIA.Diffdump import Diffdump
-
 # access to factory classes
 import Modules.Indexer.IndexerFactory as IndexerFactory
 import Modules.Integrater.IntegraterFactory as IntegraterFactory
@@ -218,8 +215,15 @@ class XSweep(object):
                       image2template_directory(os.path.join(directory,
                                                             image))
 
-      self._images = find_matching_images(self._template,
-                                          self._directory)
+      from dxtbx.imageset import ImageSetFactory
+      imagesets = ImageSetFactory.from_template(
+        os.path.join(self._directory, self._template),
+        image_range=self._frames_to_process,
+        check_headers=False)
+      assert len(imagesets) == 1
+      self._imageset = imagesets[0]
+      start, end = self._imageset.get_array_range()
+      self._images = list(range(start+1, end+1))
 
       # FIXME in here check that (1) the list of images is continuous
       # and (2) that all of the images are readable. This should also
@@ -255,21 +259,11 @@ class XSweep(object):
       #   against wavelength.getWavelength() I guess to make
       #   sure that the plumbing is all sound.
 
-      dd = Diffdump()
-      dd.set_image(os.path.join(directory, image))
-      try:
-        header = dd.readheader()
-      except RuntimeError, e:
-        raise RuntimeError, 'error reading %s: %s' % \
-              (os.path.join(directory, image), str(e))
-
-      if header is None:
-        raise RuntimeError, 'error reading %s: returned None' % \
-              (os.path.join(directory, image))
-
       # check that they match by closer than 0.0001A, if wavelength
       # is not None
 
+      beam_ = self._imageset.get_beam()
+      scan = self._imageset.get_scan()
       if not wavelength == None:
 
         # FIXME 29/NOV/06 if the wavelength wavelength value
@@ -278,7 +272,7 @@ class XSweep(object):
         # (a reasonable assumption)
 
         if wavelength.get_wavelength() == 0.0:
-          wavelength.set_wavelength(header['wavelength'])
+          wavelength.set_wavelength(beam_.get_wavelength())
 
         # FIXME 08/DEC/06 in here need to allow for the fact
         # that the wavelength in the image header could be wrong and
@@ -287,7 +281,7 @@ class XSweep(object):
         # also everything using the FrameProcessor interface
         # will also have to respect this!
 
-        if math.fabs(header['wavelength'] -
+        if math.fabs(beam_.get_wavelength() -
                      wavelength.get_wavelength()) > 0.0001:
           # format = 'wavelength for sweep %s does not ' + \
           # 'match wavelength %s'
@@ -297,65 +291,32 @@ class XSweep(object):
           format = 'Header wavelength for sweep %s differerent' + \
                    ' to assigned value (%4.2f vs. %4.2f)'
 
-          Chatter.write(format % (name, header['wavelength'],
+          Chatter.write(format % (name, beam_.get_wavelength(),
                                   wavelength.get_wavelength()))
 
 
       # also in here look at the image headers to see if we can
       # construct a mapping between exposure epoch and image ...
 
-      if header.has_key('epoch'):
-        # then we can do something interesting in here - note
-        # well that this will require reading the headers of
-        # every image to be processed!
+      images = []
 
-        images = []
+      if self._frames_to_process:
+        start, end = self._frames_to_process
+        for j in self._images:
+          if j >= start and j <= end:
+            images.append(j)
+      else:
+        images = self._images
 
-        if self._frames_to_process:
-          start, end = self._frames_to_process
-          for j in self._images:
-            if j >= start and j <= end:
-              images.append(j)
+      for j in images:
+        epoch = scan.get_image_epoch(j)
+        self._epoch_to_image[epoch] = j
+        self._image_to_epoch[j] = epoch
 
-        else:
-          images = self._images
+      epochs = self._epoch_to_image.keys()
 
-        start_t = time.time()
-
-        for j in images:
-          dd = Diffdump()
-          dd.set_image(self.get_image_name(j))
-          try:
-            header = dd.readheader()
-          except RuntimeError, e:
-            raise RuntimeError, 'error reading %s: %s' % \
-                  (self.get_image_name(j), str(e))
-          self._epoch_to_image[header['epoch']] = j
-          self._image_to_epoch[j] = header['epoch']
-
-        end_t = time.time()
-
-        epochs = self._epoch_to_image.keys()
-
-        Debug.write('Reading %d headers took %ds' % \
-                    (len(images), int(end_t - start_t)))
-        Debug.write('Exposure epoch for sweep %s: %d %d' % \
-                    (self._template, min(epochs), max(epochs)))
-
-    else:
-
-      raise RuntimeError, \
-            'integrated intensities or directory + ' + \
-            'image needed to create XSweep'
-
-      # parse the reflection file header here to get the wavelength
-      # out - put this in the header record...
-
-      header = { }
-      self._images = None
-      self._template = None
-
-    self._header = header
+      Debug.write('Exposure epoch for sweep %s: %d %d' % \
+                  (self._template, min(epochs), max(epochs)))
 
     # + get the lattice - can this be a pointer, so that when
     #   this object updates lattice it is globally-for-this-crystal
@@ -415,6 +376,9 @@ class XSweep(object):
     '''Get min / max numbers for this sweep.'''
 
     return min(self._images), max(self._images)
+
+  def get_imageset(self):
+    return self._imageset
 
   def get_header(self):
     '''Get the image header information.'''
