@@ -18,6 +18,18 @@ general {
     .type = bool
 }
 xds {
+  delphi = 5
+    .type = float
+  delphi_small = 30
+    .type = float
+  untrusted_ellipse = None
+    .type = ints(size = 4)
+  untrusted_rectangle = None
+    .type = ints(size = 4)
+  trusted_region = None
+    .type = floats(size = 2)
+  profile_grid_size = None
+    .type = ints(size = 2)
   correct {
     include scope Wrappers.XDS.XDSCorrect.master_params
   }
@@ -32,6 +44,10 @@ xds {
   }
   colspot {
     include scope Wrappers.XDS.XDSColspot.master_params
+  }
+  xscale {
+    min_isigma = 3.0
+      .type = float
   }
   merge2cbf {
     include scope Wrappers.XDS.Merge2cbf.master_params
@@ -54,22 +70,6 @@ dials {
       .type = path
   }
   # FIXME to here
-}
-deprecated_xds.parameter {
-  delphi = 5
-    .type = float
-  delphi_small = 30
-    .type = float
-  untrusted_ellipse = None
-    .type = ints(size = 4)
-  untrusted_rectangle = None
-    .type = ints(size = 4)
-  xscale_min_isigma = 3.0
-    .type = float
-  trusted_region = None
-    .type = floats(size = 2)
-  profile_grid_size = None
-    .type = ints(size = 2)
 }
 ccp4.reindex {
   program = 'pointless'

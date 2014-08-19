@@ -421,9 +421,9 @@ def imageset_to_xds(imageset, synchrotron = None, reversephi = False,
 
   from Handlers.Phil import PhilIndex
   params = PhilIndex.get_python_object()
-  if params.deprecated_xds.parameter.trusted_region:
-    result.append('TRUSTED_REGION %.2f %.2f' % tuple(
-        params.deprecated_xds.parameter.trusted_region))
+  if params.xds.trusted_region:
+    result.append(
+      'TRUSTED_REGION %.2f %.2f' % tuple(params.xds.trusted_region))
   elif detector_class_is_square[
     detector_helpers_types.get(sensor, fast, slow, df, ds).replace('-', ' ')]:
     result.append('TRUSTED_REGION=0.0 1.41')
@@ -519,17 +519,15 @@ def imageset_to_xds(imageset, synchrotron = None, reversephi = False,
     result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' %
                   (f0 - 1, f1 + 1, s0 - 1, s1 + 1))
 
-  if params.deprecated_xds.parameter.untrusted_ellipse:
-    Debug.write('UNTRUSTED_ELLIPSE= %d %d %d %d' % tuple(
-        params.deprecated_xds.parameter.untrusted_ellipse))
-    result.append('UNTRUSTED_ELLIPSE= %d %d %d %d' % tuple(
-        params.deprecated_xds.parameter.untrusted_ellipse))
+  if params.xds.untrusted_ellipse:
+    result.append(
+      'UNTRUSTED_ELLIPSE= %d %d %d %d' % tuple(params.xds.untrusted_ellipse))
+    Debug.write(result[-1])
 
-  if params.deprecated_xds.parameter.untrusted_rectangle:
-    Debug.write('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(
-        params.deprecated_xds.parameter.untrusted_rectangle))
+  if params.xds.untrusted_rectangle:
     result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(
-        params.deprecated_xds.parameter.untrusted_rectangle))
+      params.xds.untrusted_rectangle))
+    Debug.write(result[-1])
 
   return result
 

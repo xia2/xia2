@@ -199,9 +199,9 @@ def XDSIntegrate(DriverType=None, params=None):
                     self._parallel)
 
       from Handlers.Phil import PhilIndex
-      xds_params = PhilIndex.params.deprecated_xds
-      if xds_params.parameter.profile_grid_size:
-        ab, c = xds_params.parameter.profile_grid_size
+      xds_params = PhilIndex.params.xds
+      if xds_params.profile_grid_size:
+        ab, c = xds_params.profile_grid_size
         assert(ab > 0 and ab < 22 and (ab % 2) == 1)
         assert(c > 0 and c < 22 and (c % 2) == 1)
         xds_inp.write(
@@ -234,10 +234,10 @@ def XDSIntegrate(DriverType=None, params=None):
         xds_inp.write('DELPHI=%.1f\n' % self._params.delphi)
       elif Flags.get_small_molecule():
         xds_inp.write('DELPHI=%.1f\n' % \
-                      xds_params.parameter.delphi_small)
+                      xds_params.delphi_small)
       else:
         xds_inp.write('DELPHI=%.1f\n' % \
-                      xds_params.parameter.delphi)
+                      xds_params.delphi)
 
       if self._refined_xparm:
         xds_inp.write('REFINE(INTEGRATE)=%s\n' %
