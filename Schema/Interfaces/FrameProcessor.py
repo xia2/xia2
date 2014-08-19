@@ -85,6 +85,8 @@ class FrameProcessor(object):
   def set_frame_wedge(self, start, end, apply_offset = True):
     '''Set the allowed range of images for processing.'''
 
+    # XXX RJG Better to pass slice of imageset here?
+
     if apply_offset:
       start = start - self._fp_offset
       end = end - self._fp_offset
@@ -100,35 +102,38 @@ class FrameProcessor(object):
       self._fp_matching_images = images
 
       # reload the header information as well - this will be
-      # for the old wedge...
-
-      # read the image header
+      # for the old wedge...# read the image header
+      # XXX this shouldn't be needed
       dd = Diffdump()
       dd.set_image(self.get_image_name(start))
       self._fp_header = dd.readheader()
 
+      from dxtbx.imageset import ImageSetFactory
+      imageset = ImageSetFactory.new(self.get_image_name(start))[0]
+
       # print this to the debug channel
       Debug.write('Latest header information for image %d:' % start)
-      keys = self._fp_header.keys()
-      keys.sort()
-      for k in keys:
-        Debug.write('%s = %s' % (k, str(self._fp_header[k])))
+      print >> Debug, imageset.get_detector()
+      print >> Debug, imageset.get_scan()
+      print >> Debug, imageset.get_beam()
+      print >> Debug, imageset.get_goniometer()
 
       # populate wavelength, beam etc from this
 
       if self._fp_wavelength_prov is None or \
                       self._fp_wavelength_prov == 'header':
-        self._fp_wavelength = self._fp_header['wavelength']
+        self._fp_wavelength = imageset.get_beam().get_wavelength()
         self._fp_wavelength_prov = 'header'
 
       if self._fp_distance_prov is None or \
                       self._fp_distance_prov == 'header':
-        self._fp_distance = self._fp_header['distance']
+        self._fp_distance = imageset.get_detector()[0].get_distance()
         self._fp_distance_prov = 'header'
 
       if self._fp_beam_prov is None or \
             self._fp_beam_prov == 'header':
-        self._fp_beam = tuple(map(float, self._fp_header['beam']))
+        self._fp_beam = imageset.get_detector().get_ray_intersection(
+          imageset.get_beam().get_s0())[1]
         self._fp_beam_prov = 'header'
 
     return
@@ -269,24 +274,33 @@ class FrameProcessor(object):
         images.append(j)
       self._fp_matching_images = images
 
-    # read the image header
+    # XXX this should go
     dd = Diffdump()
     dd.set_image(image)
     self._fp_header = dd.readheader()
 
+    from dxtbx.imageset import ImageSetFactory
+    imageset = ImageSetFactory.from_template(
+      os.path.join(directory, template),
+      image_range=(self._fp_matching_images[0], self._fp_matching_images[-1]))[0]
+    beam = imageset.get_beam()
+    detector = imageset.get_detector()
+    self._imageset = imageset
+
     # populate wavelength, beam etc from this
     if self._fp_wavelength_prov is None:
-      self._fp_wavelength = self._fp_header['wavelength']
+      self._fp_wavelength = beam.get_wavelength()
       self._fp_wavelength_prov = 'header'
     if self._fp_distance_prov is None:
-      self._fp_distance = self._fp_header['distance']
+      self._fp_distance = detector[0].get_distance()
       self._fp_distance_prov = 'header'
     if self._fp_beam_prov is None:
-      self._fp_beam = tuple(map(float, self._fp_header['beam']))
+      self._fp_beam = detector.get_ray_intersection(beam.get_s0())[1]
       self._fp_beam_prov = 'header'
-    if self._fp_two_theta_prov is None:
-      self._fp_two_theta = self._fp_header['two_theta']
-      self._fp_two_theta_prov = 'header'
+    # XXX How do I get two_theta from dxtbx? do we even need it?
+    #if self._fp_two_theta_prov is None:
+      #self._fp_two_theta = self._fp_header['two_theta']
+      #self._fp_two_theta_prov = 'header'
 
     self.digest_template()
 
