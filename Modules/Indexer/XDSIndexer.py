@@ -659,52 +659,47 @@ class XDSIndexer(FrameProcessor,
     # since what I want is the resolution of the lowest resolution indexed
     # spot..
 
-    # first parse the numbers from the IDXREF XPARM file
-
     xparm_file = os.path.join(self.get_working_directory(), 'XPARM.XDS')
+    spot_file = os.path.join(self.get_working_directory(), 'SPOT.XDS')
 
-    from iotbx.xds import xparm
-    handle = xparm.reader()
-    handle.read_file(xparm_file)
+    import dxtbx
+    models = dxtbx.load(xparm_file)
+    detector = models.get_detector()
+    beam = models.get_beam()
+    goniometer = models.get_goniometer()
+    scan = models.get_scan()
 
-    distance = handle.detector_distance
-    wavelength = handle.wavelength
-    pixel = handle.pixel_size
-    beam = handle.detector_origin
+    from iotbx.xds import spot_xds
+    spot_xds_handle = spot_xds.reader()
+    spot_xds_handle.read_file(spot_file)
 
-    if distance < 0.0:
-      distance *= -1
+    from cctbx.array_family import flex
+    centroids_px = flex.vec3_double(spot_xds_handle.centroid)
+    miller_indices = flex.miller_index(spot_xds_handle.miller_index)
 
-    # then work through the spot list to find the lowest resolution spot
+    # only those reflections that were actually indexed
+    centroids_px = centroids_px.select(miller_indices != (0,0,0))
+    miller_indices = miller_indices.select(miller_indices != (0,0,0))
 
-    dmax = 0.0
+    # Convert Pixel coordinate into mm/rad
+    x, y, z = centroids_px.parts()
+    x_mm, y_mm = detector[0].pixel_to_millimeter(flex.vec2_double(x, y)).parts()
+    z_rad = scan.get_angle_from_array_index(z, deg=False)
+    centroids_mm = flex.vec3_double(x_mm, y_mm, z_rad)
 
-    for record in self._data_files['SPOT.XDS'].split('\n'):
-      data = map(float, record.split())
+    # then convert detector position to reciprocal space position
 
-      if not data:
-        continue
+    # based on code in dials/algorithms/indexing/indexer2.py
+    s1 = detector[0].get_lab_coord(flex.vec2_double(x_mm, y_mm))
+    s1 = s1/s1.norms() * (1/beam.get_wavelength())
+    S = s1 - beam.get_s0()
+    # XXX what about if goniometer fixed rotation is not identity?
+    reciprocal_space_points = S.rotate_around_origin(
+      goniometer.get_rotation_axis(),
+      -z_rad)
 
-      h, k, l = map(nint, data[4:7])
-
-      if h == 0 and k == 0 and l == 0:
-        # this reflection was not indexed
-        continue
-
-      x = data[0]
-      y = data[1]
-
-      dx = pixel[0] * (x - beam[0])
-      dy = pixel[1] * (y - beam[1])
-
-      d = math.sqrt(dx * dx + dy * dy)
-
-      theta = 0.5 * math.atan(d / distance)
-
-      ds = wavelength / (2.0 * math.sin(theta))
-
-      if ds > dmax:
-        dmax = ds
+    d_spacings = 1/reciprocal_space_points.norms()
+    dmax = flex.max(d_spacings)
 
     Debug.write('Low resolution limit assigned as: %.2f' % dmax)
     self._indxr_low_resolution = dmax
