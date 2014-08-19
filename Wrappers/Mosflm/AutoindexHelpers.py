@@ -77,3 +77,17 @@ def set_distance(detector, distance):
   assert panel.get_fast_axis() == fast
   assert panel.get_slow_axis() == slow
   assert panel.get_distance() == distance
+
+def crystal_model_from_mosflm_mat(mosflm_mat_lines, unit_cell, space_group):
+  from scitbx import matrix
+  from cctbx import uctbx
+  if not isinstance(unit_cell, uctbx.unit_cell):
+    unit_cell = uctbx.unit_cell(unit_cell)
+  from dxtbx.model.crystal import crystal_model_from_mosflm_matrix
+  mosflm_matrix = matrix.sqr([float(i) for line in mosflm_mat_lines[:3]
+                              for i in line.split()][:9])
+  crystal_model = crystal_model_from_mosflm_matrix(
+    mosflm_matrix,
+    unit_cell=unit_cell,
+    space_group=space_group)
+  return crystal_model

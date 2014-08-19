@@ -618,7 +618,7 @@ def Mosflm(DriverType = None):
       import copy
       from Wrappers.Mosflm.AutoindexHelpers import set_mosflm_beam_centre
       from Wrappers.Mosflm.AutoindexHelpers import set_distance
-      from scitbx import matrix
+      from Wrappers.Mosflm.AutoindexHelpers import crystal_model_from_mosflm_mat
       from cctbx import sgtbx, uctbx
       from dxtbx.model.crystal import crystal_model_from_mosflm_matrix
 
@@ -630,13 +630,9 @@ def Mosflm(DriverType = None):
         set_distance(detector, detector_distance)
 
       # make a dxtbx crystal_model object from the mosflm matrix
-      mosflm_matrix = matrix.sqr(
-        [float(i)
-         for line in self._indxr_payload['mosflm_orientation_matrix'][:3]
-         for i in line.split()][:9])
       space_group = sgtbx.space_group_info(number=space_group_number).group()
-      crystal_model = crystal_model_from_mosflm_matrix(
-        mosflm_matrix,
+      crystal_model = crystal_model_from_mosflm_mat(
+        self._indxr_payload['mosflm_orientation_matrix'],
         unit_cell=uctbx.unit_cell(tuple(cell)),
         space_group=space_group)
 
@@ -1657,8 +1653,8 @@ def Mosflm(DriverType = None):
                          100.0 * error[j] / refined_cell[j]))
 
         if 'Refined cell' in o:
-          indxr._indxr_cell = tuple(map(float, o.split()[-6:]))
-          self._intgr_cell = tuple(map(float, o.split()[-6:]))
+          refined_cell = tuple(map(float, o.split()[-6:]))
+          self._intgr_cell = refined_cell
 
         # FIXME with these are they really on one line?
 
@@ -1729,6 +1725,15 @@ def Mosflm(DriverType = None):
       indxr.set_indexer_payload('mosflm_orientation_matrix', open(
           os.path.join(self.get_working_directory(),
                        'xiarefine.mat'), 'r').readlines())
+
+      from Wrappers.Mosflm.AutoindexHelpers import crystal_model_from_mosflm_mat
+      # make a dxtbx crystal_model object from the mosflm matrix
+      experiment = self.get_indexer_experiment_list()[0]
+      crystal_model = crystal_model_from_mosflm_mat(
+        self._indxr_payload['mosflm_orientation_matrix'],
+        unit_cell=refined_cell,
+        space_group=experiment.crystal.get_space_group())
+      experiment.crystal = crystal_model
 
       return rms_values, background_residual
 
