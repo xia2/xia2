@@ -303,8 +303,10 @@ class DialsIndexer(FrameProcessor,
         'metric':self._solutions[solution]['metric'],
         'cell':self._solutions[solution]['cell']}
 
-    self._indxr_lattice = self._solution['lattice']
-    self._indxr_cell = tuple(self._solution['cell'])
+    from dxtbx.serialize import load
+    experiment_list = load.experiment_list(self._solution['experiments_file'])
+    self.set_indexer_experiment_list(experiment_list)
+
     self._indxr_mosaic = self._solution['mosaic']
 
     return

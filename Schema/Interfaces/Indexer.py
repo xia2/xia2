@@ -492,13 +492,16 @@ class Indexer(object):
     '''Get the selected unit cell.'''
 
     self.index()
-    return self._indxr_cell
+    return self._indxr_experiment_list[0].crystal.get_unit_cell().parameters()
 
   def get_indexer_lattice(self):
     '''Get the selected lattice as tP form.'''
 
     self.index()
-    return self._indxr_lattice
+    from cctbx.sgtbx import bravais_types
+    crystal_model = self._indxr_experiment_list[0].crystal
+    return str(
+      bravais_types.bravais_lattice(group=crystal_model.get_space_group()))
 
   def get_indexer_mosaic(self):
     '''Get the estimated mosaic spread in degrees.'''
