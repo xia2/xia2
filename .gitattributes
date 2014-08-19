@@ -80,12 +80,6 @@ Wrappers/XDS/XDSFiles.py -text
 Wrappers/XDS/XDSGenerateIgnoreFiles.py -text
 Wrappers/XDS/XScaleR.py -text
 Wrappers/dTREK/__init__.py -text
-cftbx/__init__.py -text
-cftbx/coordinate_frame_converter.py -text
-cftbx/coordinate_frame_helpers.py -text
-cftbx/readme.txt -text
-cftbx/tests/example-mosflm.mat -text
-cftbx/tests/example-xparm.xds -text
 core/Python/Background/Background.py -text
 core/Python/Background/__init__.py -text
 core/Python/Decorators/CCP4Decorator.py -text
