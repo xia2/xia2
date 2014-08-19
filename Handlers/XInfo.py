@@ -9,6 +9,8 @@
 #
 # xia2 information / input file reader
 
+from libtbx.containers import OrderedDict
+
 class XInfo(object):
   '''A class to represent all of the input to the xia2dpa system, with
   enough information to allow structure solution, as parsed from a
@@ -21,7 +23,7 @@ class XInfo(object):
     # information...
 
     self._project = None
-    self._crystals = { }
+    self._crystals = OrderedDict()
 
     # read the contents of the xinfo file
 
@@ -134,10 +136,10 @@ class XInfo(object):
 
         self._crystals[crystal] = {
             'sequence':'',
-            'wavelengths':{},
-            'sweeps':{},
-            'ha_info':{},
-            'crystal_data':{}
+            'wavelengths':OrderedDict(),
+            'sweeps':OrderedDict(),
+            'ha_info':OrderedDict(),
+            'crystal_data':OrderedDict()
             }
 
       # next look for interesting stuff in the data structure...
