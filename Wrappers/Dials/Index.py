@@ -163,29 +163,34 @@ if __name__ == '__main__':
   from Wrappers.Dials.ExportXDS import ExportXDS
   from Wrappers.Dials.RefineBravaisSettings import RefineBravaisSettings
 
+  print "Begin importing"
   importer = Import()
   importer.setup_from_image(image_file)
+  importer.set_image_range(scan_ranges[0])
   importer.run()
+  print ''.join(importer.get_all_output())
+  print "Done importing"
 
+  print "Begin spotfinding"
   spotfinder = Spotfinder()
   spotfinder.set_sweep_filename(importer.get_sweep_filename())
   spotfinder.set_scan_ranges(scan_ranges)
   spotfinder.run()
+  print ''.join(spotfinder.get_all_output())
+  print "Done spotfinding"
 
+  print "Begin indexing"
   indexer = Index()
   indexer.set_spot_filename(spotfinder.get_spot_filename())
   indexer.set_sweep_filename(importer.get_sweep_filename())
   indexer.run('fft3d')
+  print ''.join(indexer.get_all_output())
+  print "Done indexing"
 
+  print "Begin refining"
   rbs = RefineBravaisSettings()
-  rbs.set_crystal_filename(indexer.get_crystal_filename())
-  rbs.set_sweep_filename(indexer.get_sweep_filename())
+  rbs.set_experiments_filename(indexer.get_experiments_filename())
   rbs.set_indexed_filename(indexer.get_indexed_filename())
   rbs.run()
-
-  print 1/0
-
-  exporter = ExportXDS()
-  exporter.set_crystal_filename(indexer.get_crystal_filename())
-  exporter.set_sweep_filename(indexer.get_sweep_filename())
-  exporter.run()
+  print ''.join(rbs.get_all_output())
+  print "Done refining"

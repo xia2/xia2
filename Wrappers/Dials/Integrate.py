@@ -14,6 +14,7 @@ from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
 
 from Handlers.Flags import Flags
+from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 def Integrate(DriverType = None):
   '''A factory for IntegrateWrapper classes.'''
@@ -21,10 +22,12 @@ def Integrate(DriverType = None):
   from Driver.DriverFactory import DriverFactory
   DriverInstance = DriverFactory.Driver(DriverType)
 
-  class IntegrateWrapper(DriverInstance.__class__):
+  class IntegrateWrapper(DriverInstance.__class__,
+                         FrameProcessor):
 
     def __init__(self):
       DriverInstance.__class__.__init__(self)
+      FrameProcessor.__init__(self)
       self.set_executable('dials.integrate')
 
       self._experiments_filename = None
