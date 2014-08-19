@@ -32,6 +32,7 @@ from Handlers.Files import FileHandler
 from Handlers.Citations import Citations
 from Handlers.Flags import Flags
 from Handlers.Syminfo import Syminfo
+from Handlers.Phil import PhilIndex
 
 # jiffys
 from lib.bits import is_mtz_file
@@ -602,8 +603,14 @@ class CCP4ScalerA(Scaler):
 
     epochs = self._sweep_handler.get_epochs()
 
-    self._determine_best_scale_model_8way()
-
+    if if PhilIndex.params.xia2.settings.optimize_scaling:
+      self._determine_best_scale_model_8way()
+    else:
+      self._scalr_corrections = True
+      self._scalr_correct_absorption = True
+      self._scalr_correct_partiality = False
+      self._scalr_correct_decay = True
+      
     if self._scalr_corrections:
       Journal.block(
           'scaling', self.get_scaler_xcrystal().get_name(), 'CCP4',
