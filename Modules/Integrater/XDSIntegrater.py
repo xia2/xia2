@@ -323,10 +323,10 @@ class XDSIntegrater(FrameProcessor,
         self._intgr_indexer.set_wavelength(
             self.get_wavelength())
 
-      #from cctbx.sgtbx import bravais_types
-      #lattice = str(
-        #bravais_types.bravais_lattice(group=crystal_model.get_space_group()))
-      self._intgr_indexer.set_indexer_input_lattice(lattice)
+      from cctbx.sgtbx import bravais_types
+      lattice = str(
+        bravais_types.bravais_lattice(group=crystal_model.get_space_group()))
+      #self._intgr_indexer.set_indexer_input_lattice(lattice)
 
       if user_assigned:
         Debug.write('Assigning the user given lattice: %s' % \
@@ -343,11 +343,11 @@ class XDSIntegrater(FrameProcessor,
 
       Debug.write('Rerunning indexing with XDS')
 
-      cell = self._intgr_indexer.get_indexer_cell()
-      lattice = self._intgr_indexer.get_indexer_lattice()
+      #cell = self._intgr_indexer.get_indexer_cell()
+      #lattice = self._intgr_indexer.get_indexer_lattice()
 
       experiments = self._intgr_indexer.get_indexer_experiment_list()
-      assert len(experiments) == 1 # currently only handle one lattic/sweep
+      assert len(experiments) == 1 # currently only handle one lattice/sweep
       experiment = experiments[0]
       crystal_model = experiment.crystal
 

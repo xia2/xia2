@@ -437,8 +437,10 @@ def LabelitIndex(DriverType = None, indxr_print = True):
           x = float(l[3].replace('mm,', ''))
           y = float(l[5].replace('mm,', ''))
 
-          self.set_indexer_beam_centre((x, y))
-          self.set_indexer_distance(float(l[7].replace('mm', '')))
+          mosflm_beam_centre = (x, y)
+          mosflm_detector_distance = float(l[7].replace('mm', ''))
+          #self.set_indexer_beam_centre((x, y))
+          #self.set_indexer_distance(float(l[7].replace('mm', '')))
 
           self._mosaic = float(l[10].replace('mosaicity=', ''))
 
@@ -513,9 +515,9 @@ def LabelitIndex(DriverType = None, indxr_print = True):
             'goodness':self._solutions[solution]['metric'],
             'cell':self._solutions[solution]['cell']}
 
-      self._indxr_lattice = self._solution['lattice']
-      self._indxr_cell = tuple(self._solution['cell'])
-      self._indxr_mosaic = self._solution['mosaic']
+      #self._indxr_lattice = self._solution['lattice']
+      #self._indxr_cell = tuple(self._solution['cell'])
+      self._indxr_mosaic = self._solution['mosaic'] # XXX store in crystal model?
 
       lms = LabelitMosflmScript()
       lms.set_working_directory(self.get_working_directory())
@@ -526,24 +528,29 @@ def LabelitIndex(DriverType = None, indxr_print = True):
       # may have inverted the beam centre and labelit will know
       # this!
 
-      mosflm_beam = lms.get_mosflm_beam()
+      mosflm_beam_centre = lms.get_mosflm_beam()
 
-      if mosflm_beam:
-        self._indxr_payload['mosflm_beam_centre'] = tuple(mosflm_beam)
+      if mosflm_beam_centre:
+        self._indxr_payload['mosflm_beam_centre'] = tuple(mosflm_beam_centre)
 
       import copy
       detector = copy.deepcopy(self.get_detector())
       beam = copy.deepcopy(self.get_beam_obj())
       from Wrappers.Mosflm.AutoindexHelpers import set_mosflm_beam_centre
-      set_mosflm_beam_centre(detector, beam, mosflm_beam)
+      set_mosflm_beam_centre(detector, beam, mosflm_beam_centre)
 
+      from Experts.SymmetryExpert import lattice_to_spacegroup_number
       from scitbx import matrix
-      from cctbx import uctbx
+      from cctbx import sgtbx, uctbx
       from dxtbx.model.crystal import crystal_model_from_mosflm_matrix
       mosflm_matrix = matrix.sqr(
         [float(i) for line in lms.calculate() for i in line.split() ][:9])
+
+      space_group = sgtbx.space_group_info(lattice_to_spacegroup_number(
+        self._solution['lattice']))
       crystal_model = crystal_model_from_mosflm_matrix(
-        mosflm_matrix, unit_cell=uctbx.unit_cell(self._indxr_cell))
+        mosflm_matrix, unit_cell=uctbx.unit_cell(
+          tuple(self._solution['cell'])))
 
       from dxtbx.model.experiment.experiment_list import Experiment, ExperimentList
       experiment = Experiment(beam=beam,

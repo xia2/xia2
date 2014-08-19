@@ -395,12 +395,16 @@ class Indexer(object):
       # general one, so may be implemented in the general indexer
       # interface rather than in specific code...
 
+      from cctbx.sgtbx import bravais_types
+      crystal_model = self._indxr_experiment_list[0].crystal
+      lattice = str(
+        bravais_types.bravais_lattice(group=crystal_model.get_space_group()))
       if self._indxr_print:
         Chatter.write('Indexing solution:')
         Chatter.write('%s %s' % (
-            self._indxr_lattice,
+            lattice,
             '%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-            self._indxr_cell))
+            crystal_model.get_unit_cell().parameters()))
 
     return
 
