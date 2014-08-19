@@ -547,10 +547,12 @@ def LabelitIndex(DriverType = None, indxr_print = True):
         [float(i) for line in lms.calculate() for i in line.split() ][:9])
 
       space_group = sgtbx.space_group_info(lattice_to_spacegroup_number(
-        self._solution['lattice']))
+        self._solution['lattice'])).group()
       crystal_model = crystal_model_from_mosflm_matrix(
-        mosflm_matrix, unit_cell=uctbx.unit_cell(
-          tuple(self._solution['cell'])))
+        mosflm_matrix,
+        unit_cell=uctbx.unit_cell(
+          tuple(self._solution['cell'])),
+        space_group=space_group)
 
       from dxtbx.model.experiment.experiment_list import Experiment, ExperimentList
       experiment = Experiment(beam=beam,
