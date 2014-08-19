@@ -160,6 +160,13 @@ class Indexer(object):
     self._indxr_resolution_estimate = 0.0
     self._indxr_low_resolution = 0.0
 
+    # refined dxtbx experimental objects
+    # XXX here we would be better storing a dials experiment object
+    self._indxr_refined_beam = None
+    self._indxr_refined_detector = None
+    self._indxr_refined_goniometer = None
+    self._indxr_refined_scan = None
+
     # spot list in an as yet to be defined standard reference frame
     self._indxr_spot_list = None
 
@@ -598,3 +605,10 @@ class Indexer(object):
 
   def get_indexer_goniometer(self):
     return self._indxr_refined_goniometer
+
+  def set_indexer_scan(self, scan):
+    self._indxr_refined_scan = scan
+
+  def get_indexer_scan(self):
+    return self._indxr_refined_scan
+

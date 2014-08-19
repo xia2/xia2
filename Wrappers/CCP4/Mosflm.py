@@ -575,14 +575,13 @@ def Mosflm(DriverType = None):
 
         # mosflm doesn't refine this in autoindexing...
         if 'Crystal to detector distance of' in o:
-          self._indxr_refined_distance = float(o.split(
-              )[5].replace('mm', ''))
+          self.set_indexer_distance(float(o.split()[5].replace('mm', '')))
 
         # but it does complain if it is different to the header
         # value - so just use the input value in this case...
         if 'Input crystal to detector distance' in o \
            and 'does NOT agree with' in o:
-          self._indxr_refined_distance = self.get_distance()
+          self.set_indexer_distance(self.get_distance())
 
         # record raster parameters and so on, useful for the
         # cell refinement etc - this will be added to a
@@ -1621,7 +1620,7 @@ def Mosflm(DriverType = None):
           for d in distances:
             distance += d
           distance /= len(distances)
-          indxr._indxr_refined_distance = distance
+          indxr.set_indexer_distance(distance)
 
         if 'YSCALE as a function' in o:
           j = i + 1
