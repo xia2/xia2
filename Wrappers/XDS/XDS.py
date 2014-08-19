@@ -164,9 +164,9 @@ def detector_axis_apply_two_theta_rotation(axis_string, header):
 
   return '%.3f %.3f %.3f' % new_axis
 
-def header_to_xds(header, synchrotron = None, reversephi = False,
-                  refined_beam_vector = None, refined_rotation_axis = None,
-                  refined_distance = None):
+def imageset_to_xds(imageset, synchrotron = None, reversephi = False,
+                    refined_beam_vector = None, refined_rotation_axis = None,
+                    refined_distance = None):
   '''A function to take an input header dictionary from Diffdump
   and generate a list of records to start XDS - see Doc/INP.txt.'''
 
@@ -174,75 +174,77 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
   # that is, the wavelength is around either the Copper or Chromium
   # K-alpha edge and this is an image plate.
 
-  if synchrotron == None:
-    if header['detector'] == 'marccd':
-      synchrotron = True
-    elif header['detector'] == 'adsc':
-      synchrotron = True
-    elif header['detector'] == 'dectris':
-      synchrotron = True
-    elif header['detector'] == 'pilatus':
-      synchrotron = True
-    elif math.fabs(header['wavelength'] - 1.5418) < 0.01:
-      Debug.write('Wavelength looks like Cu Ka -> lab source')
-      synchrotron = False
-    elif math.fabs(header['wavelength'] - 2.29) < 0.01:
-      Debug.write('Wavelength looks like Cu Ka -> lab source')
-      synchrotron = False
-    else:
-      synchrotron = True
+  beam = imageset.get_beam()
 
-  # --------- mapping tables -------------
+  from dxtbx.serialize.xds import to_xds, xds_detector_name
+  converter = to_xds(imageset)
 
-  detector_to_detector = {
-      'mar':'MAR345',
-      'marccd':'CCDCHESS',
-      'rayonix':'CCDCHESS',
-      'dectris':'PILATUS',
-      'pilatus':'PILATUS',
-      'raxis':'RAXIS',
-      'saturn':'SATURN',
-      'adsc':'ADSC'}
+  #if synchrotron == None:
 
-  detector_to_minimum_trusted = {
-      'mar':1,
-      'marccd':1,
-      'rayonix':1,
-      'dectris':0,
-      'pilatus':0,
-      'raxis':1,
-      'saturn':1,
-      'adsc':1}
+    #if header['detector'] == 'marccd':
+      #synchrotron = True
+    #elif header['detector'] == 'adsc':
+      #synchrotron = True
+    #elif math.fabs(header['wavelength'] - 1.5418) < 0.01:
+      #Debug.write('Wavelength looks like Cu Ka -> lab source')
+      #synchrotron = False
+    #elif math.fabs(header['wavelength'] - 2.29) < 0.01:
+      #Debug.write('Wavelength looks like Cu Ka -> lab source')
+      #synchrotron = False
+    #else:
+      #synchrotron = True
 
-  detector_to_overload = {
-      'mar':130000,
-      'marccd':65000,
-      'rayonix':65000,
-      'dectris':1048500,
-      'pilatus':1048500,
-      'raxis':1000000,
-      'saturn':1000000,
-      'adsc':65000}
+  ## --------- mapping tables -------------
 
-  detector_to_x_axis = {
-      'mar':'1.0 0.0 0.0',
-      'marccd':'1.0 0.0 0.0',
-      'rayonix':'1.0 0.0 0.0',
-      'dectris':'1.0 0.0 0.0',
-      'pilatus':'1.0 0.0 0.0',
-      'raxis':'1.0 0.0 0.0',
-      'saturn':'-1.0 0.0 0.0',
-      'adsc':'1.0 0.0 0.0'}
+  #detector_to_detector = {
+      #'mar':'MAR345',
+      #'marccd':'CCDCHESS',
+      #'rayonix':'CCDCHESS',
+      #'dectris':'PILATUS',
+      #'pilatus':'PILATUS',
+      #'raxis':'RAXIS',
+      #'saturn':'SATURN',
+      #'adsc':'ADSC'}
 
-  detector_to_y_axis = {
-      'mar':'0.0 1.0 0.0',
-      'marccd':'0.0 1.0 0.0',
-      'rayonix':'0.0 1.0 0.0',
-      'dectris':'0.0 1.0 0.0',
-      'pilatus':'0.0 1.0 0.0',
-      'raxis':'0.0 -1.0 0.0',
-      'saturn':'0.0 1.0 0.0',
-      'adsc':'0.0 1.0 0.0'}
+  #detector_to_minimum_trusted = {
+      #'mar':1,
+      #'marccd':1,
+      #'rayonix':1,
+      #'dectris':0,
+      #'pilatus':0,
+      #'raxis':1,
+      #'saturn':1,
+      #'adsc':1}
+
+  #detector_to_overload = {
+      #'mar':130000,
+      #'marccd':65000,
+      #'rayonix':65000,
+      #'dectris':1048500,
+      #'pilatus':1048500,
+      #'raxis':1000000,
+      #'saturn':1000000,
+      #'adsc':65000}
+
+  #detector_to_x_axis = {
+      #'mar':'1.0 0.0 0.0',
+      #'marccd':'1.0 0.0 0.0',
+      #'rayonix':'1.0 0.0 0.0',
+      #'dectris':'1.0 0.0 0.0',
+      #'pilatus':'1.0 0.0 0.0',
+      #'raxis':'1.0 0.0 0.0',
+      #'saturn':'-1.0 0.0 0.0',
+      #'adsc':'1.0 0.0 0.0'}
+
+  #detector_to_y_axis = {
+      #'mar':'0.0 1.0 0.0',
+      #'marccd':'0.0 1.0 0.0',
+      #'rayonix':'0.0 1.0 0.0',
+      #'dectris':'0.0 1.0 0.0',
+      #'pilatus':'0.0 1.0 0.0',
+      #'raxis':'0.0 -1.0 0.0',
+      #'saturn':'0.0 1.0 0.0',
+      #'adsc':'0.0 1.0 0.0'}
 
   detector_class_is_square = {
       'adsc q4':True,
@@ -281,142 +283,162 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
       'raxis IV':True,
       'NOIR1':True}
 
-  # FIXME not sure if this is correct...
+  ## FIXME not sure if this is correct...
 
-  if reversephi:
+  #if reversephi:
 
-    detector_to_rotation_axis = {
-        'mar':'-1.0 0.0 0.0',
-        'marccd':'-1.0 0.0 0.0',
-        'rayonix':'-1.0 0.0 0.0',
-        'dectris':'-1.0 0.0 0.0',
-        'pilatus':'-1.0 0.0 0.0',
-        'raxis':'0.0 -1.0 0.0',
-        'saturn':'0.0 -1.0 0.0',
-        'adsc':'-1.0 0.0 0.0'}
+    #detector_to_rotation_axis = {
+        #'mar':'-1.0 0.0 0.0',
+        #'marccd':'-1.0 0.0 0.0',
+        #'rayonix':'-1.0 0.0 0.0',
+        #'dectris':'-1.0 0.0 0.0',
+        #'pilatus':'-1.0 0.0 0.0',
+        #'raxis':'0.0 -1.0 0.0',
+        #'saturn':'0.0 -1.0 0.0',
+        #'adsc':'-1.0 0.0 0.0'}
 
-  else:
+  #else:
 
-    detector_to_rotation_axis = {
-        'mar':'1.0 0.0 0.0',
-        'marccd':'1.0 0.0 0.0',
-        'rayonix':'1.0 0.0 0.0',
-        'dectris':'1.0 0.0 0.0',
-        'pilatus':'1.0 0.0 0.0',
-        'raxis':'0.0 1.0 0.0',
-        'saturn':'0.0 1.0 0.0',
-        'adsc':'1.0 0.0 0.0'}
+    #detector_to_rotation_axis = {
+        #'mar':'1.0 0.0 0.0',
+        #'marccd':'1.0 0.0 0.0',
+        #'rayonix':'1.0 0.0 0.0',
+        #'dectris':'1.0 0.0 0.0',
+        #'pilatus':'1.0 0.0 0.0',
+        #'raxis':'0.0 1.0 0.0',
+        #'saturn':'0.0 1.0 0.0',
+        #'adsc':'1.0 0.0 0.0'}
 
-  detector_to_polarization_plane_normal = {
-      'mar':'0.0 1.0 0.0',
-      'marccd':'0.0 1.0 0.0',
-      'rayonix':'0.0 1.0 0.0',
-      'dectris':'0.0 1.0 0.0',
-      'pilatus':'0.0 1.0 0.0',
-      'raxis':'1.0 0.0 0.0',
-      'saturn':'0.0 1.0 0.0',
-      'adsc':'0.0 1.0 0.0'}
+  #detector_to_polarization_plane_normal = {
+      #'mar':'0.0 1.0 0.0',
+      #'marccd':'0.0 1.0 0.0',
+      #'rayonix':'0.0 1.0 0.0',
+      #'dectris':'0.0 1.0 0.0',
+      #'pilatus':'0.0 1.0 0.0',
+      #'raxis':'1.0 0.0 0.0',
+      #'saturn':'0.0 1.0 0.0',
+      #'adsc':'0.0 1.0 0.0'}
 
-  # --------- end mapping tables ---------
+  ## --------- end mapping tables ---------
 
-  width, height = tuple(map(int, header['size']))
-  qx, qy = tuple(header['pixel'])
-  detector = header['detector']
+  #width, height = tuple(map(int, header['size']))
+  #qx, qy = tuple(header['pixel'])
+  #detector = header['detector']
 
-  if detector == 'rigaku':
-    if 'raxis' in header['detector_class']:
-      detector = 'raxis'
-    else:
-      detector = 'saturn'
+  #if detector == 'rigaku':
+    #if 'raxis' in header['detector_class']:
+      #detector = 'raxis'
+    #else:
+      #detector = 'saturn'
 
-  detector_class = header['detector_class']
+  #detector_class = header['detector_class']
+
+  sensor = converter.get_detector()[0].get_type()
+  fast, slow = converter.detector_size
+  f, s = converter.pixel_size
+  df = int(1000 * f)
+  ds = int(1000 * s)
+
+  # FIXME probably need to rotate by pi about the X axis
 
   result = []
+
+  from dxtbx.model.detector_helpers_types import detector_helpers_types
+  detector = xds_detector_name(
+      detector_helpers_types.get(sensor, fast, slow, df, ds))
+  trusted = converter.get_detector()[0].get_trusted_range()
 
   # FIXME what follows below should perhaps be 0 for the really weak
   # pilatus data sets?
 
-  result.append('DETECTOR=%s MINIMUM_VALID_PIXEL_VALUE=%d OVERLOAD=%d' % \
-                (detector_to_detector[detector],
-                 detector_to_minimum_trusted[detector],
-                 header.get('saturation', detector_to_overload[detector])))
+  result.append('DETECTOR=%s MINIMUM_VALID_PIXEL_VALUE=%d OVERLOAD=%d' %
+                (detector, trusted[0] + 1, trusted[1]))
 
-  if not detector in ['raxis', 'saturn', 'dectris', 'pilatus', 'adsc'] and \
-         math.fabs(header['two_theta']) > 1.0:
-    raise RuntimeError, 'two theta offset not supported for %s' % detector
+  #if not detector in ['raxis', 'saturn', 'dectris', 'pilatus', 'adsc'] and \
+         #math.fabs(header['two_theta']) > 1.0:
+    #raise RuntimeError, 'two theta offset not supported for %s' % detector
 
-  if 'fast_direction' in header and 'slow_direction' in header:
-    fast_direction, slow_direction = rotate_cbf_to_xds_convention(
-        header['fast_direction'], header['slow_direction'])
+  #if 'fast_direction' in header and 'slow_direction' in header:
+    #fast_direction, slow_direction = rotate_cbf_to_xds_convention(
+        #header['fast_direction'], header['slow_direction'])
 
-    result.append('DIRECTION_OF_DETECTOR_X-AXIS=%f %f %f' % \
-                  fast_direction)
+    #result.append('DIRECTION_OF_DETECTOR_X-AXIS=%f %f %f' % \
+                  #fast_direction)
 
-    result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%f %f %f' % \
-                  slow_direction)
+    #result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%f %f %f' % \
+                  #slow_direction)
 
-  elif detector in ['raxis', 'saturn']:
+  #elif detector in ['raxis', 'saturn']:
 
-    result.append(
-        'DIRECTION_OF_DETECTOR_X-AXIS=%s' % \
-        detector_axis_apply_two_theta_rotation(
-        detector_to_x_axis[detector], header))
+    #result.append(
+        #'DIRECTION_OF_DETECTOR_X-AXIS=%s' % \
+        #detector_axis_apply_two_theta_rotation(
+        #detector_to_x_axis[detector], header))
 
-    result.append(
-        'DIRECTION_OF_DETECTOR_Y-AXIS=%s' % \
-        detector_axis_apply_two_theta_rotation(
-        detector_to_y_axis[detector], header))
+    #result.append(
+        #'DIRECTION_OF_DETECTOR_Y-AXIS=%s' % \
+        #detector_axis_apply_two_theta_rotation(
+        #detector_to_y_axis[detector], header))
 
-  elif detector in ['dectris']:
+  #elif detector in ['dectris']:
 
-    # a warning to the reader - the following code has been tested
-    # only with full CBF Pilatus 300K images from Diamond Beamline I19.
+    ## a warning to the reader - the following code has been tested
+    ## only with full CBF Pilatus 300K images from Diamond Beamline I19.
 
-    if math.fabs(header['two_theta']) > 1.0:
-      assert('fast_direction' in header)
-      assert('slow_direction' in header)
+    #if math.fabs(header['two_theta']) > 1.0:
+      #assert('fast_direction' in header)
+      #assert('slow_direction' in header)
 
-      fast_direction = tuple([-1 * d for d in header['fast_direction']])
-      slow_direction = tuple([d for d in header['slow_direction']])
+      #fast_direction = tuple([-1 * d for d in header['fast_direction']])
+      #slow_direction = tuple([d for d in header['slow_direction']])
 
-      result.append('DIRECTION_OF_DETECTOR_X-AXIS=%f %f %f' % \
-                    fast_direction)
+      #result.append('DIRECTION_OF_DETECTOR_X-AXIS=%f %f %f' % \
+                    #fast_direction)
 
-      result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%f %f %f' % \
-                    slow_direction)
+      #result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%f %f %f' % \
+                    #slow_direction)
 
-    else:
-      result.append('DIRECTION_OF_DETECTOR_X-AXIS=%s' % \
-                    detector_to_x_axis[detector])
+    #else:
+      #result.append('DIRECTION_OF_DETECTOR_X-AXIS=%s' % \
+                    #detector_to_x_axis[detector])
 
-      result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%s' % \
-                    detector_to_y_axis[detector])
+      #result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%s' % \
+                    #detector_to_y_axis[detector])
 
-  else:
+  #else:
 
-    result.append('DIRECTION_OF_DETECTOR_X-AXIS=%s' % \
-                  detector_to_x_axis[detector])
+    #result.append('DIRECTION_OF_DETECTOR_X-AXIS=%s' % \
+                  #detector_to_x_axis[detector])
 
-    result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%s' % \
-                  detector_to_y_axis[detector])
+    #result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%s' % \
+                  #detector_to_y_axis[detector])
+
+  result.append('DIRECTION_OF_DETECTOR_X-AXIS=%f %f %f' %
+                converter.detector_x_axis)
+
+  result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%f %f %f' %
+                converter.detector_y_axis)
 
   from Handlers.Phil import PhilIndex
   params = PhilIndex.get_python_object()
   if params.deprecated_xds.parameter.trusted_region:
     result.append('TRUSTED_REGION %.2f %.2f' % tuple(
         params.deprecated_xds.parameter.trusted_region))
-  elif detector_class_is_square[detector_class]:
+  elif detector_class_is_square[
+    detector_helpers_types.get(sensor, fast, slow, df, ds).replace('-', ' ')]:
     result.append('TRUSTED_REGION=0.0 1.41')
   else:
     result.append('TRUSTED_REGION=0.0 0.99')
 
-  if detector == 'dectris':
-    # width, height need to be swapped...
-    result.append('NX=%d NY=%d QX=%6.6f QY=%6.6f' % \
-                  (height, width, qx, qy))
-  else:
-    result.append('NX=%d NY=%d QX=%6.6f QY=%6.6f' % \
-                  (width, height, qx, qy))
+  result.append('NX=%d NY=%d QX=%.4f QY=%.4f' % (fast, slow, f, s))
+
+  #if detector == 'dectris':
+    ## width, height need to be swapped...
+    #result.append('NX=%d NY=%d QX=%6.6f QY=%6.6f' % \
+                  #(height, width, qx, qy))
+  #else:
+    #result.append('NX=%d NY=%d QX=%6.6f QY=%6.6f' % \
+                  #(width, height, qx, qy))
 
   # RAXIS detectors have the distance written negative - why????
   # this is ONLY for XDS - SATURN are the same - probably left handed
@@ -424,14 +446,13 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
 
   if refined_distance:
     result.append('DETECTOR_DISTANCE=%7.3f' % refined_distance)
-  elif not detector in ['raxis', 'saturn']:
-    result.append('DETECTOR_DISTANCE=%7.3f' % header['distance'])
+  #elif not detector in ['raxis', 'saturn']:
+    #result.append('DETECTOR_DISTANCE=%7.3f' % header['distance'])
   else:
-    result.append('DETECTOR_DISTANCE=%7.3f' % (-1 * header['distance']))
+    result.append('DETECTOR_DISTANCE=%7.3f' % converter.detector_distance)
 
-  result.append('OSCILLATION_RANGE=%4.2f' % (header['phi_end'] -
-                                             header['phi_start']))
-  result.append('X-RAY_WAVELENGTH=%8.6f' % header['wavelength'])
+  result.append('OSCILLATION_RANGE=%4.2f' % converter.oscillation_range)
+  result.append('X-RAY_WAVELENGTH=%8.6f' % converter.wavelength)
 
   # if user specified reversephi and this was not picked up in the
   # format class reverse phi: n.b. double-negative warning!
@@ -439,53 +460,64 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
   if refined_rotation_axis:
     result.append('ROTATION_AXIS= %f %f %f' % \
                   refined_rotation_axis)
-  elif 'rotation_axis' in header:
-    R = matrix.sqr((1, 0, 0, 0, -1, 0, 0, 0, -1))
-    if reversephi:
-      result.append('ROTATION_AXIS= %.3f %.3f %.3f' % \
-                    (-1 * R * matrix.col(header['rotation_axis'])).elems)
-    else:
-      result.append('ROTATION_AXIS= %.3f %.3f %.3f' % \
-                    (R * matrix.col(header['rotation_axis'])).elems)
+  #elif 'rotation_axis' in header:
+    #R = matrix.sqr((1, 0, 0, 0, -1, 0, 0, 0, -1))
+    #if reversephi:
+      #result.append('ROTATION_AXIS= %.3f %.3f %.3f' % \
+                    #(-1 * R * matrix.col(header['rotation_axis'])).elems)
+    #else:
+      #result.append('ROTATION_AXIS= %.3f %.3f %.3f' % \
+                    #(R * matrix.col(header['rotation_axis'])).elems)
 
   else:
-    result.append('ROTATION_AXIS= %s' % \
-                  detector_to_rotation_axis[detector])
+    result.append('ROTATION_AXIS= %.3f %.3f %.3f' % \
+                  converter.rotation_axis)
 
   if refined_beam_vector:
     result.append('INCIDENT_BEAM_DIRECTION=%f %f %f' % \
                   refined_beam_vector)
   else:
-    result.append('INCIDENT_BEAM_DIRECTION=0.0 0.0 1.0')
+    result.append(
+      'INCIDENT_BEAM_DIRECTION= %.3f %.3f %.3f' % converter.beam_vector)
 
-  if synchrotron:
-    result.append('FRACTION_OF_POLARIZATION=0.99')
-    result.append('POLARIZATION_PLANE_NORMAL=%s' % \
-                  detector_to_polarization_plane_normal[detector])
-  else:
-    result.append('FRACTION_OF_POLARIZATION=0.5')
-    result.append('POLARIZATION_PLANE_NORMAL=%s' % \
-                  detector_to_polarization_plane_normal[detector])
+  #if synchrotron:
+    #result.append('FRACTION_OF_POLARIZATION=0.99')
+    #result.append('POLARIZATION_PLANE_NORMAL=%s' % \
+                  #detector_to_polarization_plane_normal[detector])
+  #else:
+    #result.append('FRACTION_OF_POLARIZATION=0.5')
+    #result.append('POLARIZATION_PLANE_NORMAL=%s' % \
+                  #detector_to_polarization_plane_normal[detector])
+
+  if hasattr(beam, "get_polarization_fraction"):
+    R = converter.imagecif_to_xds_transformation_matrix
+    result.append('FRACTION_OF_POLARIZATION= %.3f' %
+                  beam.get_polarization_fraction())
+    result.append('POLARIZATION_PLANE_NORMAL= %.3f %.3f %.3f' %
+                  (R * matrix.col(beam.get_polarization_normal())).elems)
 
   # FIXME 11/DEC/06 this should depend on the wavelength
   result.append('AIR=0.001')
 
-  # sensor thickness... default to 0.32 mm
-  if 'pilatus' in header['detector_class']:
-    result.append('SENSOR_THICKNESS=%f' % header.get('sensor', 0.32))
+  if detector == 'PILATUS':
+    result.append('SENSOR_THICKNESS= 0.32') # XXX get from model?
 
-  # dead regions of the detector for pilatus 6M, 2M, 300K etc.
-  if header['detector_class'] == 'pilatus 6M':
-    for limits in pilatus_6M_mask():
-      result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(limits))
+  ## dead regions of the detector for pilatus 6M, 2M, 300K etc.
+  #if header['detector_class'] == 'pilatus 6M':
+    #for limits in pilatus_6M_mask():
+      #result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(limits))
 
-  elif header['detector_class'] == 'pilatus 2M':
-    for limits in pilatus_2M_mask():
-      result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(limits))
+  #elif header['detector_class'] == 'pilatus 2M':
+    #for limits in pilatus_2M_mask():
+      #result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(limits))
 
-  elif header['detector_class'] == 'pilatus 300K':
-    for limits in pilatus_300K_mask():
-      result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(limits))
+  #elif header['detector_class'] == 'pilatus 300K':
+    #for limits in pilatus_300K_mask():
+      #result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(limits))
+
+  for f0, s0, f1, s1 in converter.get_detector()[0].get_mask():
+    result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' %
+                  (f0 - 1, f1 + 1, s0 - 1, s1 + 1))
 
   if params.deprecated_xds.parameter.untrusted_ellipse:
     Debug.write('UNTRUSTED_ELLIPSE= %d %d %d %d' % tuple(
@@ -500,6 +532,7 @@ def header_to_xds(header, synchrotron = None, reversephi = False,
         params.deprecated_xds.parameter.untrusted_rectangle))
 
   return result
+
 
 def beam_centre_mosflm_to_xds(x, y, header):
   '''Convert a beam centre for image with header information in

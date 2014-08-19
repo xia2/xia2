@@ -34,7 +34,7 @@ from Driver.DriverFactory import DriverFactory
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
-from XDS import header_to_xds, xds_check_version_supported, xds_check_error, \
+from XDS import imageset_to_xds, xds_check_version_supported, xds_check_error, \
     _running_xds_version
 
 # specific helper stuff
@@ -171,24 +171,24 @@ def XDSIntegrate(DriverType=None, params=None):
     def run(self):
       '''Run integrate.'''
 
-      image_header = self.get_header()
+      #image_header = self.get_header()
 
-      # crank through the header dictionary and replace incorrect
-      # information with updated values through the indexer
-      # interface if available...
+      ## crank through the header dictionary and replace incorrect
+      ## information with updated values through the indexer
+      ## interface if available...
 
-      # need to add distance, wavelength - that should be enough...
+      ## need to add distance, wavelength - that should be enough...
 
-      if self.get_distance():
-        image_header['distance'] = self.get_distance()
+      #if self.get_distance():
+        #image_header['distance'] = self.get_distance()
 
-      if self.get_wavelength():
-        image_header['wavelength'] = self.get_wavelength()
+      #if self.get_wavelength():
+        #image_header['wavelength'] = self.get_wavelength()
 
-      if self.get_two_theta():
-        image_header['two_theta'] = self.get_two_theta()
+      #if self.get_two_theta():
+        #image_header['two_theta'] = self.get_two_theta()
 
-      header = header_to_xds(image_header)
+      header = imageset_to_xds(self.get_imageset())
 
       xds_inp = open(os.path.join(self.get_working_directory(),
                                   'XDS.INP'), 'w')
@@ -216,10 +216,11 @@ def XDSIntegrate(DriverType=None, params=None):
       elif Flags.get_xparallel() == -1:
         chunk_width = 30.0
 
+        scan = self.get_imageset().get_scan()
+        phi_start, phi_end = scan.get_oscillation()
         nchunks = int(
             (self._data_range[1] - self._data_range[0] + 1) * \
-            (image_header['phi_end'] - image_header['phi_start']) /
-            chunk_width)
+            (phi_end - phi_start) / chunk_width)
 
         Debug.write('Xparallel: -1 using %d chunks' % nchunks)
 

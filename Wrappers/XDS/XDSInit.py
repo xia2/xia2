@@ -32,7 +32,7 @@ from Driver.DriverFactory import DriverFactory
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
-from XDS import header_to_xds, xds_check_version_supported, _running_xds_version
+from XDS import imageset_to_xds, xds_check_version_supported, _running_xds_version
 from Handlers.Streams import Debug
 
 from libtbx.phil import parse
@@ -108,24 +108,24 @@ def XDSInit(DriverType = None, params = None):
     def run(self):
       '''Run init.'''
 
-      image_header = self.get_header()
+      #image_header = self.get_header()
 
-      # crank through the header dictionary and replace incorrect
-      # information with updated values through the indexer
-      # interface if available...
+      ## crank through the header dictionary and replace incorrect
+      ## information with updated values through the indexer
+      ## interface if available...
 
-      # need to add distance, wavelength - that should be enough...
+      ## need to add distance, wavelength - that should be enough...
 
-      if self.get_distance():
-        image_header['distance'] = self.get_distance()
+      #if self.get_distance():
+        #image_header['distance'] = self.get_distance()
 
-      if self.get_wavelength():
-        image_header['wavelength'] = self.get_wavelength()
+      #if self.get_wavelength():
+        #image_header['wavelength'] = self.get_wavelength()
 
-      if self.get_two_theta():
-        image_header['two_theta'] = self.get_two_theta()
+      #if self.get_two_theta():
+        #image_header['two_theta'] = self.get_two_theta()
 
-      header = header_to_xds(image_header)
+      header = imageset_to_xds(self.get_imageset())
 
       xds_inp = open(os.path.join(self.get_working_directory(),
                                   'XDS.INP'), 'w')

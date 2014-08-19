@@ -33,7 +33,6 @@ from Driver.DriverFactory import DriverFactory
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
-#from XDS import header_to_xds, xds_check_version_supported
 from Handlers.Streams import Debug
 
 # global flags

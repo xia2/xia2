@@ -35,7 +35,7 @@ from Wrappers.XIA.Diffdump import Diffdump
 
 # helper functions
 
-from Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
+#from Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
 from Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
 from Wrappers.XDS.XDS import XDSException
 from Modules.Indexer.XDSCheckIndexerSolution import xds_check_indexer_solution
@@ -217,8 +217,11 @@ class XDSIndexerII(XDSIndexer):
     # to the XDS frame... done.
 
     mosflm_beam_centre = self.get_beam()
-    xds_beam_centre = beam_centre_mosflm_to_xds(
-        mosflm_beam_centre[0], mosflm_beam_centre[1], self.get_header())
+    #xds_beam_centre = beam_centre_mosflm_to_xds(
+        #mosflm_beam_centre[0], mosflm_beam_centre[1], self.get_header())
+    from dxtbx.serialize.xds import to_xds
+    converter = to_xds(self.get_imageset())
+    xds_beam_centre = converter.detector_origin
 
     idxref.set_beam_centre(xds_beam_centre[0],
                            xds_beam_centre[1])
@@ -287,9 +290,12 @@ class XDSIndexerII(XDSIndexer):
     self._indxr_lattice, self._indxr_cell, self._indxr_mosaic = \
                          idxref.get_indexing_solution()
 
-    self._indxr_refined_beam = beam_centre_xds_to_mosflm(
-        idxref.get_refined_beam()[0], idxref.get_refined_beam()[1],
-        self.get_header())
+    #self._indxr_refined_beam = beam_centre_xds_to_mosflm(
+        #idxref.get_refined_beam()[0], idxref.get_refined_beam()[1],
+        #self.get_header())
+    detector = self.get_imageset().get_detector()
+    self._indxr_refined_beam = tuple(reversed(
+      detector[0].pixel_to_millimeter(idxref.get_refined_beam())))
     self._indxr_refined_distance = idxref.get_refined_distance()
 
     self._indxr_payload['xds_files'] = self._data_files
@@ -357,8 +363,11 @@ class XDSIndexerII(XDSIndexer):
       idxref.add_spot_range(block[0], block[1])
 
     mosflm_beam_centre = self.get_beam()
-    xds_beam_centre = beam_centre_mosflm_to_xds(
-        mosflm_beam_centre[0], mosflm_beam_centre[1], self.get_header())
+    #xds_beam_centre = beam_centre_mosflm_to_xds(
+        #mosflm_beam_centre[0], mosflm_beam_centre[1], self.get_header())
+    from dxtbx.serialize.xds import to_xds
+    converter = to_xds(self.get_imageset())
+    xds_beam_centre = converter.detector_origin
 
     idxref.set_beam_centre(xds_beam_centre[0],
                            xds_beam_centre[1])
@@ -392,8 +401,11 @@ class XDSIndexerII(XDSIndexer):
       idxref.add_spot_range(block[0], block[1])
 
     mosflm_beam_centre = self.get_beam()
-    xds_beam_centre = beam_centre_mosflm_to_xds(
-        mosflm_beam_centre[0], mosflm_beam_centre[1], self.get_header())
+    #xds_beam_centre = beam_centre_mosflm_to_xds(
+        #mosflm_beam_centre[0], mosflm_beam_centre[1], self.get_header())
+    from dxtbx.serialize.xds import to_xds
+    converter = to_xds(self.get_imageset())
+    xds_beam_centre = converter.detector_origin
 
     idxref.set_beam_centre(xds_beam_centre[0],
                            xds_beam_centre[1])

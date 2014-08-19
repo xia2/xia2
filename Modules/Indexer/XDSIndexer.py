@@ -323,8 +323,11 @@ class XDSIndexer(FrameProcessor,
     xycorr.set_background_range(self._indxr_images[0][0],
                                 self._indxr_images[0][1])
     mosflm_beam_centre = self.get_beam()
-    xds_beam_centre = beam_centre_mosflm_to_xds(
-        mosflm_beam_centre[0], mosflm_beam_centre[1], self.get_header())
+    #xds_beam_centre = beam_centre_mosflm_to_xds(
+        #mosflm_beam_centre[0], mosflm_beam_centre[1], self.get_header())
+    from dxtbx.serialize.xds import to_xds
+    converter = to_xds(self.get_imageset())
+    xds_beam_centre = converter.detector_origin
     xycorr.set_beam_centre(xds_beam_centre[0],
                            xds_beam_centre[1])
     for block in self._indxr_images:

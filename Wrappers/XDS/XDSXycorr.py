@@ -32,7 +32,7 @@ from Driver.DriverFactory import DriverFactory
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
-from XDS import header_to_xds, xds_check_version_supported, xds_check_error
+from XDS import imageset_to_xds, xds_check_version_supported, xds_check_error
 
 def XDSXycorr(DriverType = None):
 
@@ -98,7 +98,7 @@ def XDSXycorr(DriverType = None):
     def run(self):
       '''Run xycorr.'''
 
-      image_header = self.get_header()
+      #image_header = self.get_header()
 
       # crank through the header dictionary and replace incorrect
       # information with updated values through the indexer
@@ -106,16 +106,16 @@ def XDSXycorr(DriverType = None):
 
       # need to add distance, wavelength - that should be enough...
 
-      if self.get_distance():
-        image_header['distance'] = self.get_distance()
+      #if self.get_distance():
+        #image_header['distance'] = self.get_distance()
 
-      if self.get_wavelength():
-        image_header['wavelength'] = self.get_wavelength()
+      #if self.get_wavelength():
+        #image_header['wavelength'] = self.get_wavelength()
 
-      if self.get_two_theta():
-        image_header['two_theta'] = self.get_two_theta()
+      #if self.get_two_theta():
+        #image_header['two_theta'] = self.get_two_theta()
 
-      header = header_to_xds(image_header)
+      header = imageset_to_xds(self.get_imageset())
 
       from Handlers.Phil import PhilIndex
       xds_params = PhilIndex.params.xia2.settings.xds

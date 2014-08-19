@@ -33,7 +33,7 @@ from Driver.DriverFactory import DriverFactory
 from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # generic helper stuff
-from XDS import header_to_xds, xds_check_version_supported, xds_check_error
+from XDS import imageset_to_xds, xds_check_version_supported, xds_check_error
 from XDS import XDSException
 from Handlers.Streams import Debug
 
@@ -282,28 +282,29 @@ def XDSIdxref(DriverType=None, params=None):
     def run(self, ignore_errors = False):
       '''Run idxref.'''
 
-      image_header = self.get_header()
+      #image_header = self.get_header()
 
-      # crank through the header dictionary and replace incorrect
-      # information with updated values through the indexer
-      # interface if available...
+      ## crank through the header dictionary and replace incorrect
+      ## information with updated values through the indexer
+      ## interface if available...
 
-      # need to add distance, wavelength - that should be enough...
+      ## need to add distance, wavelength - that should be enough...
 
-      if self.get_distance():
-        image_header['distance'] = self.get_distance()
+      #if self.get_distance():
+        #image_header['distance'] = self.get_distance()
 
-      if self.get_wavelength():
-        image_header['wavelength'] = self.get_wavelength()
+      #if self.get_wavelength():
+        #image_header['wavelength'] = self.get_wavelength()
 
-      if self.get_two_theta():
-        image_header['two_theta'] = self.get_two_theta()
+      #if self.get_two_theta():
+        #image_header['two_theta'] = self.get_two_theta()
 
-      header = header_to_xds(
-          image_header, reversephi = self._reversephi,
-          refined_beam_vector = self._refined_beam_vector,
-          refined_rotation_axis = self._refined_rotation_axis,
-          refined_distance = self._refined_distance)
+      header = imageset_to_xds(
+        self.get_imageset(),
+        reversephi=self._reversephi,
+        refined_beam_vector=self._refined_beam_vector,
+        refined_rotation_axis=self._refined_rotation_axis,
+        refined_distance=self._refined_distance)
 
       xds_inp = open(os.path.join(self.get_working_directory(),
                                   'XDS.INP'), 'w')
@@ -331,8 +332,10 @@ def XDSIdxref(DriverType=None, params=None):
 
       refine_params = [p for p in self._params.refine]
 
+      scan = self.get_imageset().get_scan()
+      phi_start, phi_end = scan.get_oscillation()
       if 'AXIS' in refine_params and (max_frame - min_frame) * \
-          (image_header['phi_end'] - image_header['phi_start']) < 5.0:
+          (phi_end - phi_start) < 5.0:
         refine_params.remove('AXIS')
 
       xds_inp.write('REFINE(IDXREF)=%s\n' %
