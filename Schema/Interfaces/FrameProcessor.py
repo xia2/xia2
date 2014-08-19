@@ -230,8 +230,7 @@ class FrameProcessor(object):
     return self._fp_two_theta_prov
 
   def get_phi_width(self):
-    phi_start, phi_end = self.get_scan().get_oscillation()
-    return phi_end - phi_start
+    return self.get_scan().get_oscillation()[1]
 
   def set_header(self, header):
     self._fp_header = header
