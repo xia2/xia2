@@ -53,7 +53,6 @@ Toolkit/x1335.py -text
 Wrappers/CCP4/Ctruncate.py -text
 Wrappers/Cctbx/BrehmDiederichs.py -text
 Wrappers/Cctbx/__init__.py -text
-Wrappers/Dials/AssignIndices.py -text
 Wrappers/Dials/Attic/Spotfinder.py -text
 Wrappers/Dials/ExportSpotXDS.py -text
 Wrappers/Dials/ExportXDS.py -text
