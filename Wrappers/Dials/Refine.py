@@ -10,6 +10,7 @@
 
 from __future__ import division
 
+import os
 from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
 
@@ -34,91 +35,127 @@ def Refine(DriverType = None):
 
       self.set_executable('dials.refine')
 
-      self._input_data_files = { }
-      self._output_data_files = { }
-
-      self._input_data_files_list = []
-      self._output_data_files_list = []
+      self._experiments_filename = None
+      self._indexed_filename = None
+      self._refined_experiments_filename = None
+      self._scan_varying = False
+      self._use_all_reflections = False
+      self._fix_beam = False
+      self._fix_detector = False
+      self._reflections_per_degree = None
+      self._phil_file = None
 
       return
 
-    def set_sweep(self, sweep):
-      self._sweep = sweep
-
-    def set_crystal_models(self, crystal_models):
-      assert len(crystal_models) == 1 # currently only one crystal at a time
-      self._crystal_models = crystal_models
-
-    def setup_from_image(self, image):
-      FrameProcessor.setup_from_image(self, image)
-      for i in self.get_matching_images():
-        self._images.append(self.get_image_name(i))
-
-    def set_input_data_file(self, name, data):
-      self._input_data_files[name] = data
+    def set_experiments_filename(self, experiments_filename):
+      self._experiments_filename = experiments_filename
       return
 
-    def set_reflection_file(self, name):
-      self._reflection_file = name
+    def get_experiments_filename(self):
+      return self._experiments_filename
 
-    def get_output_data_file(self, name):
-      return self._output_data_files[name]
+    def set_indexed_filename(self, indexed_filename):
+      self._indexed_filename = indexed_filename
+      return
+
+    def get_refined_experiments_filename(self):
+      return self._refined_experiments_filename
+
+    def set_scan_varying(self, scan_varying):
+      self._scan_varying = scan_varying
+
+    def get_scan_varying(self):
+      return self._scan_varying
+
+    def set_use_all_reflections(self, use_all_reflections):
+      self._use_all_reflections = use_all_reflections
+
+    def get_use_all_reflections(self):
+      return self._use_all_reflections
+
+    def set_fix_detector(self, fix):
+      self._fix_detector = fix
+
+    def set_fix_beam(self, fix):
+      self._fix_beam = fix
+
+    def set_reflections_per_degree(self, reflections_per_degree):
+      self._reflections_per_degree = int(reflections_per_degree)
+
+    def set_phil_file(self, phil_file):
+      self._phil_file = phil_file
+      return
 
     def run(self):
       from Handlers.Streams import Debug
       Debug.write('Running dials.refine')
 
       self.clear_command_line()
-      from dxtbx.serialize import dump
-      dump.imageset(self._sweep, 'sweep.json')
-      self.add_command_line('sweep.json')
+      self.add_command_line(self._experiments_filename)
+      self.add_command_line(self._indexed_filename)
+      self.add_command_line('scan_varying=%s' %self._scan_varying)
+      self.add_command_line('use_all_reflections=%s' %self._use_all_reflections)
 
-      from cctbx.crystal.crystal_model.serialize import dump_crystal
-      for i, crystal_model in enumerate(self._crystal_models):
-        dump_crystal(crystal_model, 'crystal%i.json' %(i+1))
-        self.add_command_line('crystal%i.json' %(i+1))
-
-      self.add_command_line(self._reflection_file)
+      if self._reflections_per_degree is not None:
+        self.add_command_line(
+          'reflections_per_degree=%i' %self._reflections_per_degree)
+      if self._fix_detector:
+        self.add_command_line('detector.fix=all')
+      if self._fix_beam:
+        self.add_command_line('beam.fix=all')
+      if self._phil_file is not None:
+        self.add_command_line('%s' %self._phil_file)
 
       self.start()
       self.close_wait()
       self.check_for_errors()
-
-      import os
-      for output_file in ('refined_sweep.json', 'refined_crystal.json'):
-        self._output_data_files.setdefault(
-          output_file, open(os.path.join(
-            self.get_working_directory(), output_file), 'rb').read())
-
-      from dxtbx.serialize import load
-      self.refined_sweep = load.imageset_from_string(
-        self.get_output_data_file('refined_sweep.json'))
-
-      from cctbx.crystal.crystal_model.serialize import crystal_from_string
-      self.refined_crystal = crystal_from_string(
-        self.get_output_data_file('refined_crystal.json'))
+      self._refined_experiments_filename = os.path.join(
+        self.get_working_directory(), 'refined_experiments.json')
+      return
 
   return RefineWrapper()
 
 if __name__ == '__main__':
   import sys
-  args = sys.argv[1:]
-  assert len(args) >= 3
-  reflections_file = args[0]
-  sweep_file = args[1]
-  crystal_files = args[2:]
-  from dxtbx.serialize import load
-  from cctbx.crystal.crystal_model.serialize import load_crystal
-  sweep = load.imageset(sweep_file)
-  crystal_models = [load_crystal(f) for f in crystal_files]
 
+  image_file = sys.argv[1]
+  scan_ranges = [(int(token.split(',')[0]), int(token.split(',')[1]))
+                 for token in sys.argv[2:]]
+
+  from Wrappers.Dials.Import import Import
+  from Wrappers.Dials.Spotfinder import Spotfinder
+  from Wrappers.Dials.Index import Index
+
+  print "Begin importing"
+  importer = Import()
+  importer.setup_from_image(image_file)
+  importer.set_image_range(scan_ranges[0])
+  importer.run()
+  print ''.join(importer.get_all_output())
+  print "Done importing"
+
+  print "Begin spotfinding"
+  spotfinder = Spotfinder()
+  spotfinder.set_sweep_filename(importer.get_sweep_filename())
+  spotfinder.set_scan_ranges(scan_ranges)
+  spotfinder.run()
+  print ''.join(spotfinder.get_all_output())
+  print "Done spotfinding"
+
+  print "Begin indexing"
+  indexer = Index()
+  indexer.set_spot_filename(spotfinder.get_spot_filename())
+  indexer.set_sweep_filename(importer.get_sweep_filename())
+  indexer.run('fft3d')
+  print ''.join(indexer.get_all_output())
+  print "Done indexing"
+
+  print "Begin refining"
   refiner = Refine()
-  refiner.set_sweep(sweep)
-  refiner.set_crystal_models(crystal_models)
-  refiner.set_reflection_file(reflections_file)
+  refiner.set_experiments_filename(indexer.get_experiments_filename())
+  refiner.set_indexed_filename(indexer.get_indexed_filename())
+  refiner.set_scan_varying(True)
+  refiner.set_use_all_reflections(True)
   refiner.run()
-  print "Starting crystal model:"
-  print crystal_models[0]
-  print
-  print "Refined crystal model:"
-  print refiner.refined_crystal
+  print ''.join(refiner.get_all_output())
+  print "Done refining"
