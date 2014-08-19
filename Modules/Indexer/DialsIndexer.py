@@ -81,6 +81,9 @@ class DialsIndexer(FrameProcessor,
   def get_working_directory(self):
     return self._working_directory
 
+  def get_indexed_filename(self):
+    return self._indexed_filename
+
   # factory functions
 
   def Xycorr(self):

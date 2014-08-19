@@ -25,6 +25,7 @@ from Handlers.Flags import Flags
 from Handlers.PipelineSelection import get_preferences, add_preference
 
 from Modules.Integrater.XDSIntegrater import XDSIntegrater
+from Modules.Integrater.DialsIntegrater import DialsIntegrater
 
 from DriverExceptions.NotAvailableError import NotAvailableError
 
@@ -126,6 +127,18 @@ def Integrater():
         raise RuntimeError, \
               'preselected integrater xdsr not available: ' + \
               'xds not installed?'
+      pass
+
+  if not integrater and \
+         (not preselection or preselection == 'dials'):
+    try:
+      integrater = DialsIntegrater()
+      Debug.write('Using Dials Integrater')
+    except NotAvailableError, e:
+      if preselection == 'dials':
+        raise RuntimeError, \
+              'preselected integrater dials not available: ' + \
+              'dials not installed?'
       pass
 
   if not integrater:

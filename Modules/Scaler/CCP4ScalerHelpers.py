@@ -80,6 +80,8 @@ def erzatz_resolution(reflection_file, batch_ranges):
 
   ipr_column = None
   sigipr_column = None
+  i_column = None
+  sigi_column = None
   batch_column = None
 
   uc = None
@@ -100,10 +102,17 @@ def erzatz_resolution(reflection_file, batch_ranges):
           sigipr_column = column
         elif column.label() == 'BATCH':
           batch_column = column
+        elif column.label() == 'I':
+          i_column = column
+        elif column.label() == 'SIGI':
+          sigi_column = column
 
-  assert(ipr_column)
-  assert(sigipr_column)
+  assert(ipr_column or i_column)
+  assert(sigipr_column or sigi_column)
   assert(batch_column)
+
+  if ipr_column is None: ipr_column = i_column
+  if sigipr_column is None: sigipr_column = sigi_column
 
   ipr_values = ipr_column.extract_values()
   sigipr_values = sigipr_column.extract_values()

@@ -69,6 +69,10 @@ dials {
     phil_file = None
       .type = path
   }
+  integrate {
+    phil_file = None
+      .type = path
+  }
   # FIXME to here
 }
 ccp4.reindex {

@@ -20,7 +20,7 @@ def check(key, value):
 
   allowed_indexers = [
       'mosflm', 'labelit', 'labelitii', 'xds', 'xdsii', 'xdssum', 'dials']
-  allowed_integraters = ['mosflmr', 'xdsr', 'mosflm', 'xds']
+  allowed_integraters = ['mosflmr', 'xdsr', 'mosflm', 'xds', 'dials']
   allowed_scalers = ['ccp4a', 'xdsa']
 
   if key == 'indexer':
