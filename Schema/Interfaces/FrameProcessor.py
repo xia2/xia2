@@ -237,12 +237,6 @@ class FrameProcessor(object):
     return tuple(reversed(self.get_detector().get_ray_intersection(
       self.get_beam_obj().get_s0())[1]))
 
-  def set_beam(self, beam):
-    return self.set_beam_centre(beam)
-
-  def get_beam(self):
-    return self.get_beam_centre()
-
   def get_beam_prov(self):
     return self._fp_beam_prov
 

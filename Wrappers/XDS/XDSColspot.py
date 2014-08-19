@@ -147,7 +147,7 @@ def XDSColspot(DriverType=None, params=None):
                     self._parallel)
 
       #if image_header['detector'] in ('pilatus', 'dectris'):
-      if self.get_imageset().get_detector()[0].get_type() == 'PAD':
+      if self.get_imageset().get_detector()[0].get_type() == 'SENSOR_PAD':
         xds_inp.write('MINIMUM_NUMBER_OF_PIXELS_IN_A_SPOT=%d\n' %
                       self._params.minimum_pixels_per_spot)
 

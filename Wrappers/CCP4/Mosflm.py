@@ -237,7 +237,7 @@ def Mosflm(DriverType = None):
 
       cell_ref_images = []
 
-      phi_width = self.get_header_item('phi_width')
+      phi_width = self.get_phi_width()
       min_images = max(3, int(2 * mosaic / phi_width))
 
       if min_images > 9:
@@ -332,9 +332,6 @@ def Mosflm(DriverType = None):
         detector = detector_class_to_mosflm(
             self.get_header_item('detector_class'))
         self.input('detector %s reversephi' % detector)
-
-      if 'pilatus' in self.get_header_item('detector_class') and False:
-        self.input('detector pilatus')
 
       self.input('template "%s"' % self.get_template())
       self.input('directory "%s"' % self.get_directory())
@@ -993,8 +990,9 @@ def Mosflm(DriverType = None):
       distance = indxr.get_indexer_distance()
       matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
 
-      if mosaic < 0.25 * self.get_header_item('phi_width'):
-        mosaic = 0.25 * self.get_header_item('phi_width')
+      phi_width = self.get_phi_width()
+      if mosaic < 0.25 * phi_width:
+        mosaic = 0.25 * phi_width
 
       input_matrix = ''
       for m in matrix:
@@ -1023,9 +1021,6 @@ def Mosflm(DriverType = None):
         detector = detector_class_to_mosflm(
             self.get_header_item('detector_class'))
         self.input('detector %s reversephi' % detector)
-
-      if 'pilatus' in self.get_header_item('detector_class') and False:
-        self.input('detector pilatus')
 
       self.input('template "%s"' % self.get_template())
       self.input('directory "%s"' % self.get_directory())
@@ -1250,8 +1245,9 @@ def Mosflm(DriverType = None):
       # bug # 3174 - if mosaic is very small (here defined to be
       # 0.25 x osc_width) then set to this minimum value.
 
-      if mosaic < 0.25 * self.get_header_item('phi_width'):
-        mosaic = 0.25 * self.get_header_item('phi_width')
+      phi_width = self.get_phi_width()
+      if mosaic < 0.25 * phi_width:
+        mosaic = 0.25 * phi_width
 
       if indxr.get_indexer_payload('mosflm_beam_centre'):
         beam = indxr.get_indexer_payload('mosflm_beam_centre')
@@ -1307,9 +1303,6 @@ def Mosflm(DriverType = None):
         detector = detector_class_to_mosflm(
             self.get_header_item('detector_class'))
         self.input('detector %s reversephi' % detector)
-
-      if 'pilatus' in self.get_header_item('detector_class') and False:
-        self.input('detector pilatus')
 
       self.input('template "%s"' % self.get_template())
       self.input('directory "%s"' % self.get_directory())
@@ -1770,9 +1763,6 @@ def Mosflm(DriverType = None):
         detector = detector_class_to_mosflm(
             self.get_header_item('detector_class'))
         self.input('detector %s reversephi' % detector)
-
-      if 'pilatus' in self.get_header_item('detector_class') and False:
-        self.input('detector pilatus')
 
       self.input('template "%s"' % self.get_template())
       self.input('directory "%s"' % self.get_directory())
@@ -2307,9 +2297,6 @@ def Mosflm(DriverType = None):
           detector = detector_class_to_mosflm(
               self.get_header_item('detector_class'))
           job.input('detector %s reversephi' % detector)
-
-        if 'pilatus' in self.get_header_item('detector_class') and False:
-          job.input('detector pilatus')
 
         job.input('template "%s"' % self.get_template())
         job.input('directory "%s"' % self.get_directory())
