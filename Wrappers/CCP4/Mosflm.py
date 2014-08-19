@@ -341,7 +341,7 @@ def Mosflm(DriverType = None):
       self.input('newmat xiaindex.mat')
 
       if self.get_beam_prov() == 'user':
-        self.input('beam %f %f' % self.get_beam())
+        self.input('beam %f %f' % self.get_beam_centre())
 
       if self.get_wavelength_prov() == 'user':
         self.input('wavelength %f' % self.get_wavelength())

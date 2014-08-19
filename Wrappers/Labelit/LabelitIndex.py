@@ -121,7 +121,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
                   self.get_wavelength())
       if self.get_beam_prov() == 'user':
         out.write('autoindex_override_beam = (%f, %f)\n' % \
-                  self.get_beam())
+                  self.get_beam_centre())
 
       if self._refine_beam is False:
         out.write('beam_search_scope = 0.0\n')

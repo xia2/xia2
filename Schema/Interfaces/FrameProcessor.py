@@ -207,14 +207,14 @@ class FrameProcessor(object):
   def get_distance_prov(self):
     return self._fp_distance_prov
 
-  def set_beam(self, beam):
+  def set_beam_centre(self, beam_centre):
     from scitbx import matrix
     detector = self._imageset.get_detector()
     beam_obj = self._imageset.get_beam()
     panel_id, old_beam_centre = detector.get_ray_intersection(
       beam_obj.get_s0())
     # XXX maybe not the safest way to do this?
-    new_beam_centre = matrix.col(tuple(reversed(beam)))
+    new_beam_centre = matrix.col(tuple(reversed(beam_centre)))
     origin_shift = matrix.col(old_beam_centre) - new_beam_centre
     for panel in detector:
       old_origin = panel.get_origin()
@@ -228,14 +228,20 @@ class FrameProcessor(object):
     panel_id, new_beam_centre = detector.get_ray_intersection(
       beam_obj.get_s0())
     assert (matrix.col(new_beam_centre) -
-            matrix.col(tuple(reversed(beam)))).length() < 1e-6
+            matrix.col(tuple(reversed(beam_centre)))).length() < 1e-6
     #self._fp_beam = tuple(reversed(new_beam_centre))
     self._fp_beam_prov = 'user'
     return
 
-  def get_beam(self):
+  def get_beam_centre(self):
     return tuple(reversed(self.get_detector().get_ray_intersection(
       self.get_beam_obj().get_s0())[1]))
+
+  def set_beam(self, beam):
+    return self.set_beam_centre(beam)
+
+  def get_beam(self):
+    return self.get_beam_centre()
 
   def get_beam_prov(self):
     return self._fp_beam_prov
@@ -393,7 +399,7 @@ if __name__ == '__main__':
 
   fp = FrameProcessor(sys.argv[1])
 
-  print fp.get_beam()
+  print fp.get_beam_centre()
   print fp.get_wavelength()
   print fp.get_header()
   print fp.get_matching_images()

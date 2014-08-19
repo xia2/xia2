@@ -343,7 +343,7 @@ class XSweep(object):
 
     # finally configure the beam if set
 
-    self._beam = beam
+    self._beam_centre = beam
     self._distance = distance
     self._gain = gain
     self._polarization = polarization
@@ -489,8 +489,8 @@ class XSweep(object):
   def get_image(self):
     return self._image
 
-  def get_beam(self):
-    return self._beam
+  def get_beam_centre(self):
+    return self._beam_centre
 
   def get_distance(self):
     return self._distance

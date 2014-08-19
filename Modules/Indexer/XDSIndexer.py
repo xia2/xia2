@@ -322,7 +322,7 @@ class XDSIndexer(FrameProcessor,
     xycorr.set_data_range(first, last)
     xycorr.set_background_range(self._indxr_images[0][0],
                                 self._indxr_images[0][1])
-    mosflm_beam_centre = self.get_beam()
+    #mosflm_beam_centre = self.get_beam_centre()
     #xds_beam_centre = beam_centre_mosflm_to_xds(
         #mosflm_beam_centre[0], mosflm_beam_centre[1], self.get_header())
     from dxtbx.serialize.xds import to_xds
@@ -519,9 +519,12 @@ class XDSIndexer(FrameProcessor,
     # from the input .xinfo object or header, and be converted
     # to the XDS frame... done.
 
-    mosflm_beam_centre = self.get_beam()
-    xds_beam_centre = beam_centre_mosflm_to_xds(
-        mosflm_beam_centre[0], mosflm_beam_centre[1], self.get_header())
+    #mosflm_beam_centre = self.get_beam_centre()
+    #xds_beam_centre = beam_centre_mosflm_to_xds(
+        #mosflm_beam_centre[0], mosflm_beam_centre[1], self.get_header())
+    from dxtbx.serialize.xds import to_xds
+    converter = to_xds(self.get_imageset())
+    xds_beam_centre = converter.detector_origin
 
     idxref.set_beam_centre(xds_beam_centre[0],
                            xds_beam_centre[1])
@@ -716,7 +719,7 @@ if __name__ == '__main_old__':
 
   # directory = '/data/graeme/12287'
   xi.setup_from_image(os.path.join(directory, '12287_1_E1_001.img'))
-  xi.set_beam((108.9, 105.0))
+  xi.set_beam_centre((108.9, 105.0))
 
   xi.index()
 

@@ -103,7 +103,7 @@ class Sweep(object):
 
     # if the beam has been specified, then this will
     # override the headers
-    self._beam = beam
+    self._beam_centre = beam
 
     self.update()
 
@@ -138,8 +138,8 @@ class Sweep(object):
   def get_wavelength(self):
     return self._wavelength
 
-  def get_beam(self):
-    return self._beam
+  def get_beam_centre(self):
+    return self._beam_centre
 
   def imagename(self, number):
     '''Compute an image name from an image number.'''
@@ -228,8 +228,8 @@ class Sweep(object):
 
       # only update this once, and if it isn't known - we want
       # to use the user value if provided
-      if not self._beam:
-        self._beam = map(float, sweep['beam'])
+      if not self._beam_centre:
+        self._beam_centre = map(float, sweep['beam'])
 
     return
 

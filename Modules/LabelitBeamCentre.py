@@ -32,15 +32,15 @@ def compute_beam_centre(sweep, working_directory = os.getcwd()):
   '''Compute the beam centre for the input sweep, working in the provided
   directory, perhaps.'''
 
-  beam = sweep.get_beam()
+  beam_centre = sweep.get_beam_centre()
 
-  # perhaps fiddle with the beam here, and hide the indexing output
+  # perhaps fiddle with the beam_centre here, and hide the indexing output
   # that is a side-effect of this.
 
   try:
     ls = LabelitIndex(indxr_print = False)
     ls.setup_from_image(sweep.imagename(min(sweep.get_images())))
-    beam = ls.get_indexer_beam()
+    beam_centre = ls.get_indexer_beam()
   except exceptions.Exception, e:
     # do not have labelit installed?
     # need to check the exception
@@ -50,7 +50,7 @@ def compute_beam_centre(sweep, working_directory = os.getcwd()):
 
     return None
 
-  return beam
+  return beam_centre
 
 if __name__ == '__main__':
 

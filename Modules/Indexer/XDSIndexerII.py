@@ -216,7 +216,7 @@ class XDSIndexerII(XDSIndexer):
     # from the input .xinfo object or header, and be converted
     # to the XDS frame... done.
 
-    mosflm_beam_centre = self.get_beam()
+    #mosflm_beam_centre = self.get_beam_centre()
     #xds_beam_centre = beam_centre_mosflm_to_xds(
         #mosflm_beam_centre[0], mosflm_beam_centre[1], self.get_header())
     from dxtbx.serialize.xds import to_xds
@@ -362,7 +362,7 @@ class XDSIndexerII(XDSIndexer):
     for block in blocks[1:]:
       idxref.add_spot_range(block[0], block[1])
 
-    mosflm_beam_centre = self.get_beam()
+    #mosflm_beam_centre = self.get_beam_centre()
     #xds_beam_centre = beam_centre_mosflm_to_xds(
         #mosflm_beam_centre[0], mosflm_beam_centre[1], self.get_header())
     from dxtbx.serialize.xds import to_xds
@@ -400,7 +400,7 @@ class XDSIndexerII(XDSIndexer):
 
       idxref.add_spot_range(block[0], block[1])
 
-    mosflm_beam_centre = self.get_beam()
+    #mosflm_beam_centre = self.get_beam_centre()
     #xds_beam_centre = beam_centre_mosflm_to_xds(
         #mosflm_beam_centre[0], mosflm_beam_centre[1], self.get_header())
     from dxtbx.serialize.xds import to_xds

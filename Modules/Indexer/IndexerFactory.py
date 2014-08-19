@@ -104,8 +104,8 @@ def IndexerForXSweep(xsweep):
   # interface will also implement FrameProcessor, which this uses.
   # verify this, or assert it in some way...
 
-  if xsweep.get_beam():
-    indexer.set_beam(xsweep.get_beam())
+  if xsweep.get_beam_centre():
+    indexer.set_beam_centre(xsweep.get_beam_centre())
 
   if xsweep.get_reversephi() or Flags.get_reversephi():
     Debug.write('Setting reverse-phi')

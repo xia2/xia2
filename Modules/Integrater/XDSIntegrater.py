@@ -243,8 +243,8 @@ class XDSIntegrater(FrameProcessor,
       # this needs to be set up from the contents of the
       # Integrater frame processer - wavelength &c.
 
-      if self.get_beam():
-        self._intgr_indexer.set_beam(self.get_beam())
+      if self.get_beam_centre():
+        self._intgr_indexer.set_beam_centre(self.get_beam_centre())
 
       if self.get_distance():
         self._intgr_indexer.set_distance(self.get_distance())
@@ -331,7 +331,7 @@ class XDSIntegrater(FrameProcessor,
         self._intgr_indexer.set_indexer_user_input_lattice(True)
 
       self._intgr_indexer.set_distance(distance)
-      self._intgr_indexer.set_beam(beam)
+      self._intgr_indexer.set_beam_centre(beam)
 
       # re-get the unit cell &c. and check that the indexing
       # worked correctly

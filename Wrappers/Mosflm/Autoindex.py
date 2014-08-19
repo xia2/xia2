@@ -79,7 +79,7 @@ def Autoindex(DriverType = None):
       self.start()
       self.input('template "%s"' % fp.get_template())
       self.input('directory "%s"' % fp.get_directory())
-      self.input('beam %f %f' % fp.get_beam())
+      self.input('beam %f %f' % fp.get_beam_centre())
       self.input('distance %f' % fp.get_distance())
       self.input('wavelength %f' % fp.get_wavelength())
 
