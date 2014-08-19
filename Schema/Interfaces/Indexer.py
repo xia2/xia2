@@ -520,7 +520,8 @@ class Indexer(object):
     '''Get the refined distance.'''
 
     self.index()
-    return self._indxr_refined_distance
+    experiment = self.get_indexer_experiment_list()[0]
+    return experiment.detector[0].get_distance()
 
   def set_indexer_distance(self, distance):
     '''Set the refined distance.'''
@@ -538,7 +539,9 @@ class Indexer(object):
     '''Get the refined beam.'''
 
     self.index()
-    return self._indxr_refined_beam_centre
+    experiment = self.get_indexer_experiment_list()[0]
+    return tuple(reversed(experiment.detector.get_ray_intersection(
+      experiment.beam.get_s0())[1]))
 
   def get_indexer_payload(self, this):
     '''Attempt to get something from the indexer payload.'''

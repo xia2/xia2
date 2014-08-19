@@ -503,11 +503,16 @@ def Mosflm(DriverType = None):
         else:
           raise e
 
+      space_group_number = None
+      beam_centre = None
+      detector_distance = None
+      cell = None
+
       for o in output:
         if 'Final cell (after refinement)' in o:
-          self._indxr_cell = tuple(map(float, o.split()[-6:]))
+          cell = tuple(map(float, o.split()[-6:]))
         if 'Beam coordinates of' in o:
-          self.set_indexer_beam_centre(tuple(map(float, o.split()[-2:])))
+          beam_centre = tuple(map(float, o.split()[-2:]))
 
         # FIXED this may not be there if this is a repeat indexing!
         if 'Symmetry:' in o:
@@ -515,20 +520,19 @@ def Mosflm(DriverType = None):
 
         # so we have to resort to this instead...
         if 'Refining solution #' in o:
-          spagnum = int(o.split(')')[0].split()[-1])
-          lattice_to_spacegroup_dict = {'aP':1, 'mP':3, 'mC':5,
-                                        'oP':16, 'oC':20, 'oF':22,
-                                        'oI':23, 'tP':75, 'tI':79,
-                                        'hP':143, 'hR':146,
-                                        'cP':195, 'cF':196,
-                                        'cI':197}
+          space_group_number = int(o.split(')')[0].split()[-1])
+          #lattice_to_spacegroup_dict = {'aP':1, 'mP':3, 'mC':5,
+                                        #'oP':16, 'oC':20, 'oF':22,
+                                        #'oI':23, 'tP':75, 'tI':79,
+                                        #'hP':143, 'hR':146,
+                                        #'cP':195, 'cF':196,
+                                        #'cI':197}
 
-          spacegroup_to_lattice = { }
-          for k in lattice_to_spacegroup_dict.keys():
-            spacegroup_to_lattice[
-                lattice_to_spacegroup_dict[k]] = k
-          self._indxr_lattice = spacegroup_to_lattice[spagnum]
-
+          #spacegroup_to_lattice = { }
+          #for k in lattice_to_spacegroup_dict.keys():
+            #spacegroup_to_lattice[
+                #lattice_to_spacegroup_dict[k]] = k
+          #self._indxr_lattice = spacegroup_to_lattice[spagnum]
 
         # in here I need to check if the mosaic spread estimation
         # has failed. If it has it is likely that the selected
@@ -561,7 +565,7 @@ def Mosflm(DriverType = None):
           # then consider setting it do a default value...
           # equal to the oscillation width (a good guess)
 
-          phi_width = self.get_header_item('phi_width')
+          phi_width = self.get_phi_width()
 
           Chatter.write(
               'Mosaic estimation failed, so guessing at %4.2f' % \
@@ -575,13 +579,13 @@ def Mosflm(DriverType = None):
 
         # mosflm doesn't refine this in autoindexing...
         if 'Crystal to detector distance of' in o:
-          self.set_indexer_distance(float(o.split()[5].replace('mm', '')))
+          detector_distance = float(o.split()[5].replace('mm', ''))
 
         # but it does complain if it is different to the header
         # value - so just use the input value in this case...
         if 'Input crystal to detector distance' in o \
            and 'does NOT agree with' in o:
-          self.set_indexer_distance(self.get_distance())
+          detector_distance = self.get_distance()
 
         # record raster parameters and so on, useful for the
         # cell refinement etc - this will be added to a
@@ -611,6 +615,42 @@ def Mosflm(DriverType = None):
           os.path.join(self.get_working_directory(),
                        'xiaindex.mat'), 'r').readlines()
 
+      import copy
+      from Wrappers.Mosflm.AutoindexHelpers import set_mosflm_beam_centre
+      from Wrappers.Mosflm.AutoindexHelpers import set_distance
+      from scitbx import matrix
+      from cctbx import sgtbx, uctbx
+      from dxtbx.model.crystal import crystal_model_from_mosflm_matrix
+
+      # update the beam centre (i.e. shift the origin of the detector)
+      detector = copy.deepcopy(self.get_detector())
+      beam = copy.deepcopy(self.get_beam_obj())
+      set_mosflm_beam_centre(detector, beam, beam_centre)
+      if detector_distance is not None:
+        set_distance(detector, detector_distance)
+
+      # make a dxtbx crystal_model object from the mosflm matrix
+      mosflm_matrix = matrix.sqr(
+        [float(i)
+         for line in self._indxr_payload['mosflm_orientation_matrix'][:3]
+         for i in line.split()][:9])
+      space_group = sgtbx.space_group_info(number=space_group_number).group()
+      crystal_model = crystal_model_from_mosflm_matrix(
+        mosflm_matrix,
+        unit_cell=uctbx.unit_cell(tuple(cell)),
+        space_group=space_group)
+
+      # construct an experiment_list
+      from dxtbx.model.experiment.experiment_list import Experiment, ExperimentList
+      experiment = Experiment(beam=beam,
+                              detector=detector,
+                              goniometer=self.get_goniometer(),
+                              scan=self.get_scan(),
+                              crystal=crystal_model,
+                              )
+
+      experiment_list = ExperimentList([experiment])
+      self.set_indexer_experiment_list(experiment_list)
       return
 
     def _index_finish(self):
@@ -1238,7 +1278,7 @@ def Mosflm(DriverType = None):
       lattice = indxr.get_indexer_lattice()
       mosaic = indxr.get_indexer_mosaic()
       cell = indxr.get_indexer_cell()
-      beam = indxr.get_indexer_beam_centre()
+      beam_centre = indxr.get_indexer_beam_centre()
 
       # bug # 3174 - if mosaic is very small (here defined to be
       # 0.25 x osc_width) then set to this minimum value.
@@ -1248,7 +1288,7 @@ def Mosflm(DriverType = None):
         mosaic = 0.25 * phi_width
 
       if indxr.get_indexer_payload('mosflm_beam_centre'):
-        beam = indxr.get_indexer_payload('mosflm_beam_centre')
+        beam_centre = indxr.get_indexer_payload('mosflm_beam_centre')
 
       distance = indxr.get_indexer_distance()
       matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
@@ -1268,15 +1308,26 @@ def Mosflm(DriverType = None):
 
       indxr.set_indexer_payload('mosflm_integration_parameters', None)
 
+      spacegroup_number = lattice_to_spacegroup(lattice)
+
       # copy these into myself for later reference, if indexer
       # is not myself - everything else is copied via the
       # cell refinement process...
 
       if indxr != self:
-        self.set_indexer_input_lattice(lattice)
-        self.set_indexer_beam_centre(beam)
+        self.set_indexer_input_lattice(lattice) # this is needed because of test in self._index_finish()
+        #self.set_indexer_beam_centre(beam_centre)
+        from cctbx import sgtbx
+        from dxtbx.model import crystal
+        from Wrappers.Mosflm.AutoindexHelpers import set_mosflm_beam_centre
+        experiment = self.get_indexer_experiment_list()[0]
+        set_mosflm_beam_centre(
+          experiment.detector, experiment.beam, beam_centre)
+        space_group = sgtbx.space_group_info(number=spacegroup_number).group()
+        a, b, c = experiment.crystal.get_real_space_vectors()
+        experiment.crystal = crystal.crystal_model(
+          a, b, c, space_group=space_group)
 
-      spacegroup_number = lattice_to_spacegroup(lattice)
 
       # FIXME surely these have been assigned further up?!
 
@@ -1308,7 +1359,7 @@ def Mosflm(DriverType = None):
       self.input('matrix xiaindex-%s.mat' % lattice)
       self.input('newmat xiarefine.mat')
 
-      self.input('beam %f %f' % beam)
+      self.input('beam %f %f' % beam_centre)
       self.input('distance %f' % distance)
 
       if set_spacegroup:
@@ -1620,7 +1671,9 @@ def Mosflm(DriverType = None):
           for d in distances:
             distance += d
           distance /= len(distances)
-          indxr.set_indexer_distance(distance)
+          experiment = self.get_indexer_experiment_list()[0]
+          from Wrappers.Mosflm.AutoindexHelpers import set_distance
+          set_distance(experiment.detector, distance)
 
         if 'YSCALE as a function' in o:
           j = i + 1
