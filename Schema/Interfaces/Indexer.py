@@ -580,3 +580,21 @@ class Indexer(object):
       self.set_indexer_done(False)
 
     return self.LATTICE_POSSIBLE
+
+  def set_indexer_detector(self, detector):
+    self._indxr_refined_detector = detector
+
+  def get_indexer_detector(self):
+    return self._indxr_refined_detector
+
+  def set_indexer_beam(self, beam):
+    self._indxr_refined_beam = beam
+
+  def get_indexer_beam(self):
+    return self._indxr_refined_beam
+
+  def set_indexer_goniometer(self, goniometer):
+    self._indxr_refined_goniometer = goniometer
+
+  def get_indexer_goniometer(self):
+    return self._indxr_refined_goniometer
