@@ -48,9 +48,9 @@ class FrameProcessor(object):
 
     self._fp_offset = 0
 
-    self._fp_wavelength = None
-    self._fp_distance = None
-    self._fp_beam = None
+    #self._fp_wavelength = None
+    #self._fp_distance = None
+    #self._fp_beam = None
     self._fp_reversephi = False
     self._fp_two_theta = 0.0
     self._fp_two_theta_prov = None
@@ -122,18 +122,18 @@ class FrameProcessor(object):
 
       if self._fp_wavelength_prov is None or \
                       self._fp_wavelength_prov == 'header':
-        self._fp_wavelength = imageset.get_beam().get_wavelength()
+        #self._fp_wavelength = imageset.get_beam().get_wavelength()
         self._fp_wavelength_prov = 'header'
 
       if self._fp_distance_prov is None or \
                       self._fp_distance_prov == 'header':
-        self._fp_distance = imageset.get_detector()[0].get_distance()
+        #self._fp_distance = imageset.get_detector()[0].get_distance()
         self._fp_distance_prov = 'header'
 
       if self._fp_beam_prov is None or \
             self._fp_beam_prov == 'header':
-        self._fp_beam = imageset.get_detector().get_ray_intersection(
-          imageset.get_beam().get_s0())[1]
+        #self._fp_beam = imageset.get_detector().get_ray_intersection(
+          #imageset.get_beam().get_s0())[1]
         self._fp_beam_prov = 'header'
 
     return
@@ -158,23 +158,37 @@ class FrameProcessor(object):
     return self._fp_matching_images
 
   def set_wavelength(self, wavelength):
-    self._fp_wavelength = wavelength
+    self.get_beam_obj().set_wavelength(wavelength)
     self._fp_wavelength_prov = 'user'
     return
 
   def get_wavelength(self):
-    return self._fp_wavelength
+    return self.get_beam_obj().get_wavelength()
 
   def get_wavelength_prov(self):
     return self._fp_wavelength_prov
 
   def set_distance(self, distance):
-    self._fp_distance = distance
+    from scitbx import matrix
+    panel = self.get_detector()[0]
+    d_normal = matrix.col(panel.get_normal())
+    d_origin = matrix.col(panel.get_origin())
+    assert d_origin.dot(d_normal) == panel.get_distance()
+    translation = d_normal * (distance - panel.get_distance())
+    new_origin = d_origin + translation
+    assert new_origin.dot(d_normal) == distance
+    fast = panel.get_fast_axis()
+    slow = panel.get_slow_axis()
+    panel.set_frame(panel.get_fast_axis(), panel.get_slow_axis(), new_origin.elems)
+    assert panel.get_fast_axis() == fast
+    assert panel.get_slow_axis() == slow
+    assert panel.get_distance() == distance
+    #self._fp_distance = distance
     self._fp_distance_prov = 'user'
     return
 
   def get_distance(self):
-    return self._fp_distance
+    return self.get_detector()[0].get_distance()
 
   def set_gain(self, gain):
     self._fp_gain = gain
@@ -215,12 +229,13 @@ class FrameProcessor(object):
       beam_obj.get_s0())
     assert (matrix.col(new_beam_centre) -
             matrix.col(tuple(reversed(beam)))).length() < 1e-6
-    self._fp_beam = tuple(reversed(new_beam_centre))
+    #self._fp_beam = tuple(reversed(new_beam_centre))
     self._fp_beam_prov = 'user'
     return
 
   def get_beam(self):
-    return tuple(self._fp_beam)
+    return tuple(reversed(self.get_detector().get_ray_intersection(
+      self.get_beam_obj().get_s0())[1]))
 
   def get_beam_prov(self):
     return self._fp_beam_prov
@@ -339,10 +354,10 @@ class FrameProcessor(object):
 
     # populate wavelength, beam etc from this
     if self._fp_wavelength_prov is None:
-      self._fp_wavelength = beam.get_wavelength()
+      #self._fp_wavelength = beam.get_wavelength()
       self._fp_wavelength_prov = 'header'
     if self._fp_distance_prov is None:
-      self._fp_distance = detector[0].get_distance()
+      #self._fp_distance = detector[0].get_distance()
       self._fp_distance_prov = 'header'
     if self._fp_beam_prov is None:
       self._fp_beam = reversed(detector.get_ray_intersection(beam.get_s0())[1])
