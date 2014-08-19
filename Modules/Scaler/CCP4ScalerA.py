@@ -603,7 +603,7 @@ class CCP4ScalerA(Scaler):
 
     epochs = self._sweep_handler.get_epochs()
 
-    if if PhilIndex.params.xia2.settings.optimize_scaling:
+    if PhilIndex.params.xia2.settings.optimize_scaling:
       self._determine_best_scale_model_8way()
     else:
       self._scalr_corrections = True
