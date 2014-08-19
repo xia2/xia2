@@ -30,7 +30,6 @@ from Wrappers.XDS.XDSXycorr import XDSXycorr as _Xycorr
 from Wrappers.XDS.XDSInit import XDSInit as _Init
 from Wrappers.XDS.XDSColspot import XDSColspot as _Colspot
 from Wrappers.XDS.XDSIdxref import XDSIdxref as _Idxref
-from Wrappers.XDS.XDS import xds_read_xparm
 
 from Wrappers.XIA.Diffdump import Diffdump
 
@@ -700,6 +699,7 @@ class XDSIndexer(FrameProcessor,
 
     d_spacings = 1/reciprocal_space_points.norms()
     dmax = flex.max(d_spacings)
+    dmax *= 1.05 # allow some tolerance
 
     Debug.write('Low resolution limit assigned as: %.2f' % dmax)
     self._indxr_low_resolution = dmax
