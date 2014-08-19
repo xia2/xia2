@@ -303,6 +303,7 @@ class DialsIndexer(FrameProcessor,
         }
 
     self._solution = self.get_solution()
+    self._indxr_lattice = self._solution['lattice']
 
     for solution in self._solutions.keys():
       lattice = self._solutions[solution]['lattice']
