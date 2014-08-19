@@ -229,6 +229,9 @@ class DialsIndexer(FrameProcessor,
 
     for solution in self._solutions.keys():
       lattice = self._solutions[solution]['lattice']
+      if (self._indxr_input_lattice is not None and
+          self._indxr_input_lattice != lattice):
+        continue
       if self._indxr_other_lattice_cell.has_key(lattice):
         if self._indxr_other_lattice_cell[lattice]['metric'] < \
           self._solutions[solution]['metric']:
@@ -239,21 +242,26 @@ class DialsIndexer(FrameProcessor,
         'cell':self._solutions[solution]['cell']}
 
     from dxtbx.serialize import load
-    experiment_list = load.experiment_list(self._solution['experiments_file'])
-    self.set_indexer_experiment_list(experiment_list)
-
     self._indxr_mosaic = self._solution['mosaic']
 
-    # reindex the output reflection list to this solution
+    if self._indxr_input_lattice is None:
+      experiment_list = load.experiment_list(self._solution['experiments_file'])
+      self.set_indexer_experiment_list(experiment_list)
 
-    reindex = self.Reindex()
-    reindex.set_experiment_filename(indexer.get_experiments_filename())
-    reindex.set_indexed_spot_filename(self._indexed_filename)
-    reindex.set_cb_op(self._solution['cb_op'])
-    reindex.set_space_group(str(lattice_to_spacegroup_number(
-      self._solution['lattice'])))
-    experiments, indexed_file = reindex.run()
-    self._indexed_filename = indexed_file
+      # reindex the output reflection list to this solution
+      reindex = self.Reindex()
+      reindex.set_experiment_filename(indexer.get_experiments_filename())
+      reindex.set_indexed_spot_filename(self._indexed_filename)
+      reindex.set_cb_op(self._solution['cb_op'])
+      reindex.set_space_group(str(lattice_to_spacegroup_number(
+        self._solution['lattice'])))
+      experiments, indexed_file = reindex.run()
+      self._indexed_filename = indexed_file
+
+    else:
+      experiment_list = load.experiment_list(
+        indexer.get_experiments_filename())
+      self.set_indexer_experiment_list(experiment_list)
 
     return
 
