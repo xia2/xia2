@@ -35,7 +35,6 @@ from Wrappers.XDS.XDSCorrect import XDSCorrect as _Correct
 
 # helper functions
 
-from Wrappers.XDS.XDS import beam_centre_mosflm_to_xds
 from Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
 from Wrappers.XDS.XDS import xds_read_xparm
 from Experts.SymmetryExpert import r_to_rt, rt_to_r

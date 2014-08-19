@@ -159,10 +159,7 @@ class DialsIndexer(FrameProcessor,
 
     self._indxr_images = [(first, last)]
 
-    dd = Diffdump()
-    dd.set_image(self.get_image_name(first))
-    header = dd.readheader()
-    last_background = int(round(5.0 / header['phi_width'])) - 1 + first
+    last_background = int(round(5.0 / self.get_phi_width())) - 1 + first
     last_background = min(last, last_background)
 
     # next start to process these - first xycorr
