@@ -352,9 +352,9 @@ class _CommandLine(object):
       else:
         Flags.set_parallel(mp_params.nproc)
 
-    with open('working.phil', 'wb') as f:
+    with open('xia2-working.phil', 'wb') as f:
       print >> f, PhilIndex.working_phil.as_str()
-    with open('diff.phil', 'wb') as f:
+    with open('xia2-diff.phil', 'wb') as f:
       print >> f, PhilIndex.get_diff().as_str()
 
     nonsense = 'Unknown command-line options:'
@@ -1292,7 +1292,7 @@ class _CommandLine(object):
       self._understood.append(self._argv.index('-dials'))
       Debug.write('DIALS pipeline selected')
     return
-  
+
   def _read_3d(self):
 
     if '-3d' in self._argv:
