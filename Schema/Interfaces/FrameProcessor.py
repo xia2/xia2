@@ -171,21 +171,8 @@ class FrameProcessor(object):
   def set_distance(self, distance):
     if distance is None:
       return
-    from scitbx import matrix
-    panel = self.get_detector()[0]
-    d_normal = matrix.col(panel.get_normal())
-    d_origin = matrix.col(panel.get_origin())
-    assert d_origin.dot(d_normal) == panel.get_distance()
-    translation = d_normal * (distance - panel.get_distance())
-    new_origin = d_origin + translation
-    assert new_origin.dot(d_normal) == distance
-    fast = panel.get_fast_axis()
-    slow = panel.get_slow_axis()
-    panel.set_frame(panel.get_fast_axis(), panel.get_slow_axis(), new_origin.elems)
-    assert panel.get_fast_axis() == fast
-    assert panel.get_slow_axis() == slow
-    assert panel.get_distance() == distance
-    #self._fp_distance = distance
+    from Wrappers.Mosflm.AutoindexHelpers import set_distance
+    set_distance(self.get_detector(), distance)
     self._fp_distance_prov = 'user'
     return
 
@@ -210,28 +197,10 @@ class FrameProcessor(object):
     return self._fp_distance_prov
 
   def set_beam_centre(self, beam_centre):
-    from scitbx import matrix
-    detector = self._imageset.get_detector()
-    beam_obj = self._imageset.get_beam()
-    panel_id, old_beam_centre = detector.get_ray_intersection(
-      beam_obj.get_s0())
-    # XXX maybe not the safest way to do this?
-    new_beam_centre = matrix.col(tuple(reversed(beam_centre)))
-    origin_shift = matrix.col(old_beam_centre) - new_beam_centre
-    for panel in detector:
-      old_origin = panel.get_origin()
-      new_origin = (old_origin[0] + origin_shift[0],
-                    old_origin[1] - origin_shift[1],
-                    old_origin[2])
-      panel.set_local_frame(fast_axis=panel.get_fast_axis(),
-                            slow_axis=panel.get_slow_axis(),
-                            origin=new_origin)
-    # sanity check to make sure we have got the new beam centre correct
-    panel_id, new_beam_centre = detector.get_ray_intersection(
-      beam_obj.get_s0())
-    assert (matrix.col(new_beam_centre) -
-            matrix.col(tuple(reversed(beam_centre)))).length() < 1e-6
-    #self._fp_beam = tuple(reversed(new_beam_centre))
+    from Wrappers.Mosflm.AutoindexHelpers import set_mosflm_beam_centre
+    set_mosflm_beam_centre(self.get_detector(),
+                           self.get_beam_obj(),
+                           beam_centre)
     self._fp_beam_prov = 'user'
     return
 
