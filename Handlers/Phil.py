@@ -99,7 +99,7 @@ xia2.settings {
   unit_cell = None
     .type = unit_cell
     .help = "Provide a target unit cell to the indexing program"
-  optimize_scaling = True
+  optimize_scaling = False
     .type = bool
     .help = "Search for best scaling model"
   space_group = None
