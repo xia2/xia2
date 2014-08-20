@@ -354,7 +354,7 @@ class DialsIntegrater(FrameProcessor,
       else:
         status = 'o'
         
-      spot_statuss += status
+      spot_status += status
 
       
     if len(spot_status) > 60:
