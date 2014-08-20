@@ -82,7 +82,7 @@ dials {
       .type = path
     intensity_algorithm = sum3d sum2d *fitrs mosflm
       .type = choice
-    background_outlier_algorithm = null *nsigma truncated normal
+    background_outlier_algorithm = *null nsigma truncated normal
       .type = choice
   }
   # FIXME to here
