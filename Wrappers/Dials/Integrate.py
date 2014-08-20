@@ -35,6 +35,7 @@ def Integrate(DriverType = None):
       self._integration_algorithm = "fitrs"
       self._outlier_algorithm = None
       self._phil_file = None
+      self._mosaic = None
 
       return
 
@@ -74,6 +75,9 @@ def Integrate(DriverType = None):
       import os
       return os.path.join(self.get_working_directory(), 'integrated.pickle')
 
+    def get_mosaic(self):
+      return self._mosaic
+
     def run(self):
       from Handlers.Streams import Debug
       Debug.write('Running dials.integrate')
@@ -92,6 +96,10 @@ def Integrate(DriverType = None):
       self.start()
       self.close_wait()
       self.check_for_errors()
+
+      for record in self.get_all_output():
+        if 'Sigma M' in record:
+          self._mosaic = float(record.split()[-1])
 
       return
 

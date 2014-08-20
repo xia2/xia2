@@ -26,6 +26,7 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Wrappers.Dials.Refine import Refine as _Refine
 from Wrappers.Dials.Integrate import Integrate as _Integrate
 from Wrappers.Dials.ExportMtz import ExportMtz as _ExportMtz
+from Wrappers.Dials.ShowIsigRmsd import ShowIsigRmsd as _ShowIsigRmsd
 
 # interfaces that this must implement to be an integrater
 
@@ -160,6 +161,12 @@ class DialsIntegrater(FrameProcessor,
     auto_logfiler(export, 'EXPORTMTZ')
 
     return export
+
+  def ShowIsigRmsd(self):
+    show = _ShowIsigRmsd()
+    show.set_working_directory(self.get_working_directory())
+    auto_logfiler(show, 'SHOWISIGRMSD')
+    return show
 
   # now some real functions, which do useful things
 
@@ -327,6 +334,48 @@ class DialsIntegrater(FrameProcessor,
 
     self._intgr_integrated_pickle \
       = os.path.join(self.get_working_directory(), 'integrated.pickle')
+
+    show = self.ShowIsigRmsd()
+    show.set_reflections_filename(self._intgr_integrated_pickle)
+    show.run()
+    data = show.data()
+
+    spot_status = ''
+
+    for frame in range(self._intgr_wedge[0], self._intgr_wedge[1] + 1):
+      n, isig, rmsd = data.get(frame, (0, 0.0, 0.0))
+
+      if isig < 1.0:
+        status = '.'
+      elif rmsd > 2.5:
+        status = '!'
+      elif rmsd > 1.0:
+        status = '%'
+      else:
+        status = 'o'
+        
+      spot_statuss += status
+
+      
+    if len(spot_status) > 60:
+      Chatter.write('Integration status per image (60/record):')
+    else:
+      Chatter.write('Integration status per image:')
+
+    for chunk in [spot_status[i:i + 60] \
+                  for i in range(0, len(spot_status), 60)]:
+      Chatter.write(chunk)
+
+    Chatter.write(
+      '"o" => good        "%" => ok        "!" => bad rmsd')
+    Chatter.write(
+      '"O" => overloaded  "#" => many bad  "." => weak')
+    Chatter.write(
+      '"@" => abandoned')
+
+    mosaic = integrate.get_mosaic()
+    Chatter.write('Mosaic spread: %.3f < %.3f < %.3f' % \
+                  (mosaic, mosaic, mosaic))
 
     return self._intgr_integrated_pickle
 
