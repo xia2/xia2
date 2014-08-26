@@ -334,6 +334,7 @@ class DialsIntegrater(FrameProcessor,
 
     self._intgr_integrated_pickle \
       = os.path.join(self.get_working_directory(), 'integrated.pickle')
+    assert os.path.isfile(self._intgr_integrated_pickle)
 
     show = self.ShowIsigRmsd()
     show.set_reflections_filename(self._intgr_integrated_pickle)
@@ -353,10 +354,10 @@ class DialsIntegrater(FrameProcessor,
         status = '%'
       else:
         status = 'o'
-        
+
       spot_status += status
 
-      
+
     if len(spot_status) > 60:
       Chatter.write('Integration status per image (60/record):')
     else:
@@ -388,6 +389,7 @@ class DialsIntegrater(FrameProcessor,
     exporter.set_mtz_filename(mtz_filename)
     exporter.run()
     self._intgr_integrated_filename = mtz_filename
+    assert os.path.isfile(self._intgr_integrated_filename)
 
     if self._intgr_reindex_operator is None and \
       self._intgr_spacegroup_number == lattice_to_spacegroup(
