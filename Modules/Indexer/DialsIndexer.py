@@ -141,7 +141,7 @@ class DialsIndexer(FrameProcessor,
     # FIXME this should really use the assigned spot finding regions
     spotfinder = self.Spotfinder()
     spotfinder.set_sweep_filename(importer.get_sweep_filename())
-    spotfinder.set_scan_ranges([(first, last)])
+    spotfinder.set_scan_ranges([(first-1, last)])
     if PhilIndex.params.dials.spotfinder.phil_file is not None:
       spotfinder.set_phil_file(PhilIndex.params.dials.spotfinder.phil_file)
     spotfinder.run()
