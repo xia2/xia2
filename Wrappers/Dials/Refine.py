@@ -43,6 +43,7 @@ def Refine(DriverType = None):
       self._fix_beam = False
       self._fix_detector = False
       self._reflections_per_degree = None
+      self._interval_width_degrees = None
       self._phil_file = None
 
       return
@@ -82,6 +83,9 @@ def Refine(DriverType = None):
     def set_reflections_per_degree(self, reflections_per_degree):
       self._reflections_per_degree = int(reflections_per_degree)
 
+    def set_interval_width_degrees(self, interval_width_degrees):
+      self._interval_width_degrees = interval_width_degrees
+
     def set_phil_file(self, phil_file):
       self._phil_file = phil_file
       return
@@ -99,6 +103,9 @@ def Refine(DriverType = None):
       if self._reflections_per_degree is not None:
         self.add_command_line(
           'reflections_per_degree=%i' %self._reflections_per_degree)
+      if self._interval_width_degrees is not None:
+        self.add_command_line(
+          'interval_width_degrees=%i' %self._interval_width_degrees)
       if self._fix_detector:
         self.add_command_line('detector.fix=all')
       if self._fix_beam:

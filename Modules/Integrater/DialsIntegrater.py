@@ -264,6 +264,17 @@ class DialsIntegrater(FrameProcessor,
         self._intgr_indexer.get_indexed_filename()))
 
     refiner = self.Refine()
+
+    # XXX Temporary workaround for dials.refine error for scan_varying
+    # refinement with smaller wedges
+    all_images = self.get_matching_images()
+    phi_width = self.get_phi_width()
+    total_phi_range = len(all_images) * phi_width
+    if total_phi_range < 5: # arbitrary value
+      refiner.set_scan_varying(False)
+    elif total_phi_range < 36:
+      refiner.set_interval_width_degrees(total_phi_range/2)    
+
     refiner.run()
     self._intgr_experiments_filename \
       = refiner.get_refined_experiments_filename()
