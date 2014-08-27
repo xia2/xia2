@@ -183,7 +183,11 @@ class DialsIndexer(FrameProcessor,
     indexer.run(method)
 
     if not os.path.exists(indexer.get_experiments_filename()):
-      raise RuntimeError("Indexing has failed!")
+      raise RuntimeError("Indexing has failed: %s does not exist."
+                         %indexer.get_experiments_filename())
+    elif not os.path.exists(indexer.get_indexed_filename()):
+      raise RuntimeError("Indexing has failed: %s does not exist."
+                         %indexer.get_indexed_filename())
 
     # not strictly the P1 cell, rather the cell that was used in indexing
     self._p1_cell = indexer._p1_cell

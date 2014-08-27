@@ -334,7 +334,9 @@ class DialsIntegrater(FrameProcessor,
 
     self._intgr_integrated_pickle \
       = os.path.join(self.get_working_directory(), 'integrated.pickle')
-    assert os.path.isfile(self._intgr_integrated_pickle)
+    if not os.path.isfile(self._intgr_integrated_pickle):
+      raise RuntimeError("Integration failed: %s does not exist."
+                         %self._intgr_integrated_pickle)
 
     show = self.ShowIsigRmsd()
     show.set_reflections_filename(self._intgr_integrated_pickle)
@@ -389,7 +391,9 @@ class DialsIntegrater(FrameProcessor,
     exporter.set_mtz_filename(mtz_filename)
     exporter.run()
     self._intgr_integrated_filename = mtz_filename
-    assert os.path.isfile(self._intgr_integrated_filename)
+    if not os.path.isfile(self._intgr_integrated_filename):
+      raise RuntimeError("dials.export_mtz failed: %s does not exist."
+                         % self._intgr_integrated_filename)
 
     if self._intgr_reindex_operator is None and \
       self._intgr_spacegroup_number == lattice_to_spacegroup(
