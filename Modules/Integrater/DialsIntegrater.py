@@ -328,6 +328,11 @@ class DialsIntegrater(FrameProcessor,
 
     integrate.run()
 
+    # also record the batch range - needed for the analysis of the
+    # radiation damage in chef...
+
+    self._intgr_batches_out = (self._intgr_wedge[0], self._intgr_wedge[1])
+
     # FIXME (i) record the log file, (ii) get more information out from the
     # integration log on the quality of the data and (iii) the mosaic spread
     # range observed and R.M.S. deviations.
