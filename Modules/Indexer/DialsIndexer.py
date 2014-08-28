@@ -158,6 +158,9 @@ class DialsIndexer(FrameProcessor,
     spotfinder.run()
 
     self._spot_filename = spotfinder.get_spot_filename()
+    if not os.path.exists(self._spot_filename):
+      raise RuntimeError("Spotfinding failed: %s does not exist."
+                         %os.path.basename(self._spot_filename))
     self._sweep_filename = importer.get_sweep_filename()
 
     return

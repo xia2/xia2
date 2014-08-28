@@ -10,6 +10,7 @@
 # renamed to Spotfinder at some point.
 
 from __future__ import division
+import os
 
 from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
@@ -29,7 +30,7 @@ def Spotfinder(DriverType = None):
       self.set_executable('dials.find_spots')
 
       self._sweep_filename = None
-      self._spot_filename = 'strong.pickle'
+      self._input_spot_filename = 'strong.pickle'
       self._scan_ranges = []
       self._nspots = 0
       self._min_spot_size = None
@@ -41,12 +42,13 @@ def Spotfinder(DriverType = None):
       self._sweep_filename = sweep_filename
       return
 
-    def set_spot_filename(self, spot_filename):
-      self._spot_filename = spot_filename
+    def set_input_spot_filename(self, spot_filename):
+      self._input_spot_filename = spot_filename
       return
 
     def get_spot_filename(self):
-      return self._spot_filename
+      return os.path.join(
+        self.get_working_directory(), self._input_spot_filename)
 
     def set_scan_ranges(self, scan_ranges):
       self._scan_ranges = scan_ranges
@@ -73,7 +75,7 @@ def Spotfinder(DriverType = None):
       self.clear_command_line()
       self.add_command_line(self._sweep_filename)
       self.add_command_line('-o')
-      self.add_command_line(self._spot_filename)
+      self.add_command_line(self._input_spot_filename)
       nproc = Flags.get_parallel()
       self.set_cpu_threads(nproc)
       self.add_command_line('--nproc=%i' % nproc)
