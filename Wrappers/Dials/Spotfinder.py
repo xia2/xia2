@@ -32,6 +32,7 @@ def Spotfinder(DriverType = None):
       self._spot_filename = 'strong.pickle'
       self._scan_ranges = []
       self._nspots = 0
+      self._min_spot_size = None
       self._phil_file = None
 
       return
@@ -62,6 +63,9 @@ def Spotfinder(DriverType = None):
       self._phil_file = phil_file
       return
 
+    def set_min_spot_size(self, min_spot_size):
+      self._min_spot_size = int(min_spot_size)
+
     def run(self):
       from Handlers.Streams import Debug
       Debug.write('Running dials.find_spots')
@@ -75,6 +79,8 @@ def Spotfinder(DriverType = None):
       self.add_command_line('--nproc=%i' % nproc)
       for scan_range in self._scan_ranges:
         self.add_command_line('spotfinder.scan_range=%d,%d' % scan_range)
+      if self._min_spot_size is not None:
+        self.add_command_line('min_spot_size=%i' %self._min_spot_size)
       if self._phil_file is not None:
         self.add_command_line("%s" % self._phil_file)
       self.start()

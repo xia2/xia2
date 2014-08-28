@@ -18,6 +18,8 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.environ['XIA2_ROOT'] in sys.path:
   sys.path.append(os.environ['XIA2_ROOT'])
 
+import libtbx
+
 # wrappers for programs that this needs: DIALS
 
 from Wrappers.Dials.Import import Import as _Import
@@ -144,6 +146,14 @@ class DialsIndexer(FrameProcessor,
     spotfinder.set_scan_ranges([(first-1, last)])
     if PhilIndex.params.dials.spotfinder.phil_file is not None:
       spotfinder.set_phil_file(PhilIndex.params.dials.spotfinder.phil_file)
+    min_spot_size = PhilIndex.params.dials.spotfinder.min_spot_size
+    if min_spot_size is libtbx.Auto:
+      if self.get_imageset().get_detector()[0].get_type() == 'SENSOR_PAD':
+        min_spot_size = 2
+      else:
+        min_spot_size = None
+    if min_spot_size is not None:
+      spotfinder.set_min_spot_size(min_spot_size)
     spotfinder.run()
 
     self._spot_filename = spotfinder.get_spot_filename()

@@ -60,6 +60,8 @@ dials {
   # explicitly
   # include scope Wrappers.Dials.Spotfinder.master_phil
   spotfinder {
+    min_spot_size = Auto
+      .type = int
     phil_file = None
       .type = path
   }
