@@ -119,6 +119,7 @@ def Index(DriverType = None):
       self.add_command_line(self._spot_filename)
       self.add_command_line('method=%s' % method)
       self.add_command_line('use_all_reflections=True')
+      self.add_command_line('close_to_spindle_cutoff=0.05')
       if self._max_cell:
         self.add_command_line('max_cell=%d' % self._max_cell)
       if self._indxr_input_lattice is not None:
@@ -194,3 +195,4 @@ if __name__ == '__main__':
   rbs.run()
   print ''.join(rbs.get_all_output())
   print "Done refining"
+

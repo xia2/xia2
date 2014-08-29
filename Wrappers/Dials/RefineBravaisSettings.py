@@ -61,6 +61,7 @@ def RefineBravaisSettings(DriverType = None):
       self.add_command_line('detector.fix=all')
       self.add_command_line('beam.fix=all')
       self.add_command_line('engine=GaussNewton')
+      self.add_command_line('close_to_spindle_cutoff=0.05')
 
       self.start()
       self.close_wait()
