@@ -618,10 +618,6 @@ class Integrater(object):
 
     # see if we really need to do anything
     if reindex_operator == 'h,k,l' and \
-           self._intgr_reindex_operator is None:
-      return
-
-    if reindex_operator == 'h,k,l' and \
            self._intgr_reindex_operator == 'h,k,l':
       return
 
