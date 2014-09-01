@@ -423,6 +423,7 @@ def Aimless(DriverType = None,
 
 
       self.start()
+      self.input('xmlout %d_aimless.xml' % self.get_xpid())
       self.input('bins 20')
       self.input('run 1 batch 1 to 10000')
       # self.input('run 1 all')
@@ -484,6 +485,7 @@ def Aimless(DriverType = None,
                       os.path.split(self.get_hklout())[-1]))
 
       self.start()
+      self.input('xmlout %d_aimless.xml' % self.get_xpid())
       self.input('bins 20')
 
       if self._new_scales_file:
@@ -666,6 +668,7 @@ def Aimless(DriverType = None,
 
       self.start()
 
+      self.input('xmlout %d_aimless.xml' % self.get_xpid())
       self.input('bins 20')
 
       if self._new_scales_file:
@@ -806,6 +809,7 @@ def Aimless(DriverType = None,
 
       self.start()
 
+      self.input('xmlout %d_aimless.xml' % self.get_xpid())
       # assert here that there is only one dataset in the input...
 
       self.input('run 1 batch 1 to 10000')
