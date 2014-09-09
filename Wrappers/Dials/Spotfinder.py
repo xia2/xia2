@@ -74,11 +74,10 @@ def Spotfinder(DriverType = None):
 
       self.clear_command_line()
       self.add_command_line(self._sweep_filename)
-      self.add_command_line('-o')
-      self.add_command_line(self._input_spot_filename)
+      self.add_command_line('output="%s"' %self._input_spot_filename)
       nproc = Flags.get_parallel()
       self.set_cpu_threads(nproc)
-      self.add_command_line('--nproc=%i' % nproc)
+      self.add_command_line('max_procs=%i' % nproc)
       for scan_range in self._scan_ranges:
         self.add_command_line('spotfinder.scan_range=%d,%d' % scan_range)
       if self._min_spot_size is not None:
