@@ -9,6 +9,8 @@
 # Autoindex using the DIALS code: assumes spots found from same.
 
 from __future__ import division
+import os
+import shutil
 
 from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
@@ -38,6 +40,14 @@ def Index(DriverType = None):
       self._p1_cell = None
       self._indxr_input_cell = None
       self._indxr_input_lattice = None
+
+      self._experiment_filename = None
+      self._indexed_filename = None
+
+      self._nref = None
+      self._rmsd_x = None
+      self._rmsd_y = None
+      self._rmsd_z = None
 
       self._max_cell = None
       self._phil_file = None
@@ -92,16 +102,13 @@ def Index(DriverType = None):
       return self._indexing_method
 
     def get_sweep_filename(self):
-      import os
       return os.path.join(self.get_working_directory(), 'datablock.json')
 
     def get_experiments_filename(self):
-      import os
-      return os.path.join(self.get_working_directory(), 'experiments.json')
+      return self._experiment_filename
 
     def get_indexed_filename(self):
-      import os
-      return os.path.join(self.get_working_directory(), 'indexed.pickle')
+      return self._indexed_filename
 
     def get_p1_cell(self):
       return self._p1_cell
@@ -109,6 +116,9 @@ def Index(DriverType = None):
     def set_phil_file(self, phil_file):
       self._phil_file = phil_file
       return
+
+    def get_nref_rmsds(self):
+      return self._nref, (self._rmsd_x, self._rmsd_y, self._rmsd_z)
 
     def run(self, method):
       from Handlers.Streams import Debug
@@ -144,10 +154,34 @@ def Index(DriverType = None):
       self.close_wait()
       self.check_for_errors()
 
-      for record in self.get_all_output():
+      self._experiment_filename = os.path.join(
+        self.get_working_directory(), '%d_experiments.json' %self.get_xpid())
+      shutil.copyfile(
+        os.path.join(self.get_working_directory(), 'experiments.json'),
+        self._experiment_filename)
+
+      self._indexed_filename = os.path.join(
+        self.get_working_directory(), '%d_indexed.pickle' %self.get_xpid())
+      shutil.copyfile(
+        os.path.join(self.get_working_directory(), 'indexed.pickle'),
+        self._indexed_filename)
+
+      records = self.get_all_output()
+
+      for i, record in enumerate(records):
         if 'Unit cell:' in record:
           self._p1_cell = map(float, record.replace('(', '').replace(
             ')', '').replace(',', '').split()[-6:])
+
+        if 'Final RMSDs by experiment' in record:
+          values = records[i+6].strip().strip('|').split('|')
+          if len(values):
+            values = [float(v) for v in values]
+            if values[0] == 0:
+              self._nref = int(values[1])
+              self._rmsd_x = values[2]
+              self._rmsd_y = values[3]
+              self._rmsd_z = values[4]
 
       return
 
