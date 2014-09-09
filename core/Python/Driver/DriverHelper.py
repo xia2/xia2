@@ -263,6 +263,10 @@ def error_abrt(record):
     if name == 'Darwin' and 'Abort trap' in record:
       raise RuntimeError, 'child aborted'
 
+def error_python_traceback(record):
+  if 'Traceback (most recent call last)' in record:
+    raise RuntimeError('Traceback detected')
+
 def check_return_code(code):
   '''Check the return code for indications of errors.'''
 

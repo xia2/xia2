@@ -49,7 +49,7 @@ import sys
 
 from DriverHelper import error_no_program, error_kill, error_abrt
 from DriverHelper import error_segv, check_return_code, error_missing_library
-from DriverHelper import error_fp
+from DriverHelper import error_fp, error_python_traceback
 from DriverHelper import generate_random_name, executable_exists
 
 # out of context stuff
@@ -391,6 +391,7 @@ class DefaultDriver(object):
       error_kill(record)
       error_abrt(record)
       error_fp(record)
+      error_python_traceback(record)
 
     return
 
