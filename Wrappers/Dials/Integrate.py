@@ -84,7 +84,7 @@ def Integrate(DriverType = None):
 
       self.clear_command_line()
       self.add_command_line(self._experiments_filename)
-      self.add_command_line(("-r", self._reflections_filename))
+      self.add_command_line(("reference=%s" %self._reflections_filename))
       self.add_command_line(
         'intensity.algorithm=%s' % self._integration_algorithm)
       if self._outlier_algorithm is not None:
