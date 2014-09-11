@@ -174,7 +174,8 @@ class DialsIndexer(FrameProcessor,
     indexer.set_sweep_filename(self._sweep_filename)
     if PhilIndex.params.dials.index.phil_file is not None:
       indexer.set_phil_file(PhilIndex.params.dials.index.phil_file)
-
+    if PhilIndex.params.dials.index.max_cell:
+      indexer.set_max_cell(PhilIndex.params.dials.index.max_cell)
     if self._indxr_input_lattice:
       indexer.set_indexer_input_lattice(self._indxr_input_lattice)
       Debug.write('Set lattice: %s' % self._indxr_input_lattice)

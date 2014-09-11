@@ -120,6 +120,10 @@ def Index(DriverType = None):
     def get_nref_rmsds(self):
       return self._nref, (self._rmsd_x, self._rmsd_y, self._rmsd_z)
 
+    def set_max_cell(self, max_cell):
+      self._max_cell = max_cell
+      return
+
     def run(self, method):
       from Handlers.Streams import Debug
       Debug.write('Running dials.index')

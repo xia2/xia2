@@ -70,6 +70,8 @@ dials {
       .type = choice
     phil_file = None
       .type = path
+    max_cell = 0.0
+      .type = float
   }
   refine {
     scan_varying = True
