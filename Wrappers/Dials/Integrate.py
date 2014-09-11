@@ -28,7 +28,7 @@ def Integrate(DriverType = None):
     def __init__(self):
       DriverInstance.__class__.__init__(self)
       FrameProcessor.__init__(self)
-      self.set_executable('dials.integrate')
+      self.set_executable('dials.integrate2')
 
       self._experiments_filename = None
       self._reflections_filename = None
@@ -80,11 +80,14 @@ def Integrate(DriverType = None):
 
     def run(self):
       from Handlers.Streams import Debug
-      Debug.write('Running dials.integrate')
+      Debug.write('Running dials.integrate2')
 
       self.clear_command_line()
       self.add_command_line(self._experiments_filename)
-      self.add_command_line(("reference=%s" %self._reflections_filename))
+      nproc = Flags.get_parallel()
+      self.set_cpu_threads(nproc)
+      self.add_command_line('max_procs=%i' % nproc)
+      self.add_command_line(('reference=%s' % self._reflections_filename))
       self.add_command_line(
         'intensity.algorithm=%s' % self._integration_algorithm)
       if self._outlier_algorithm is not None:
@@ -98,8 +101,8 @@ def Integrate(DriverType = None):
       self.check_for_errors()
 
       for record in self.get_all_output():
-        if 'Sigma M' in record:
-          self._mosaic = float(record.split()[-1])
+        if 'Sigma_m' in record:
+          self._mosaic = float(record.split()[-2])
 
       return
 
