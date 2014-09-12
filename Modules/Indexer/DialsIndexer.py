@@ -150,7 +150,7 @@ class DialsIndexer(FrameProcessor,
     min_spot_size = PhilIndex.params.dials.spotfinder.min_spot_size
     if min_spot_size is libtbx.Auto:
       if self.get_imageset().get_detector()[0].get_type() == 'SENSOR_PAD':
-        min_spot_size = 2
+        min_spot_size = 3
       else:
         min_spot_size = None
     if min_spot_size is not None:
