@@ -166,43 +166,26 @@ class DialsIndexer(FrameProcessor,
     return
 
   def _index(self):
-    # FIXME allow humans to set the indexing method from whatever list...
-    # FIXME respect input unit cell / symmetry if set - or if decided from
-    # previous indexing cycle
-    indexer = self.Index()
-    indexer.set_spot_filename(self._spot_filename)
-    indexer.set_sweep_filename(self._sweep_filename)
-    if PhilIndex.params.dials.index.phil_file is not None:
-      indexer.set_phil_file(PhilIndex.params.dials.index.phil_file)
-    if PhilIndex.params.dials.index.max_cell:
-      indexer.set_max_cell(PhilIndex.params.dials.index.max_cell)
-    if self._indxr_input_lattice:
-      indexer.set_indexer_input_lattice(self._indxr_input_lattice)
-      Debug.write('Set lattice: %s' % self._indxr_input_lattice)
-
-    if self._indxr_input_cell:
-      indexer.set_indexer_input_cell(self._indxr_input_cell)
-      Debug.write('Set cell: %f %f %f %f %f %f' % \
-                  self._indxr_input_cell)
-      original_cell = self._indxr_input_cell
-
     if PhilIndex.params.dials.index.method is None:
       if self._indxr_input_cell is not None:
-        method = 'real_space_grid_search'
+        indexer = self._do_indexing("real_space_grid_search")
       else:
-        method = 'fft3d'
-      Debug.write('Choosing indexing method: %s' % method)
+        indexer_fft3d = self._do_indexing(method="fft3d")
+        nref_3d, rmsd_3d = indexer_fft3d.get_nref_rmsds()
+        indexer_fft1d = self._do_indexing(method="fft1d")
+        nref_1d, rmsd_1d = indexer_fft1d.get_nref_rmsds()
+
+        if (nref_1d > nref_3d and
+            rmsd_1d[0] < rmsd_3d[0] and
+            rmsd_1d[1] < rmsd_3d[1] and
+            rmsd_1d[2] < rmsd_3d[2]):
+          indexer = indexer_fft1d
+        else:
+          indexer = indexer_fft3d
+
     else:
-      method = PhilIndex.params.dials.index.method
-
-    indexer.run(method)
-
-    if not os.path.exists(indexer.get_experiments_filename()):
-      raise RuntimeError("Indexing has failed: %s does not exist."
-                         %indexer.get_experiments_filename())
-    elif not os.path.exists(indexer.get_indexed_filename()):
-      raise RuntimeError("Indexing has failed: %s does not exist."
-                         %indexer.get_indexed_filename())
+      indexer = self._do_indexing(
+        method=PhilIndex.params.dials.index.method)
 
     # not strictly the P1 cell, rather the cell that was used in indexing
     self._p1_cell = indexer._p1_cell
@@ -283,6 +266,44 @@ class DialsIndexer(FrameProcessor,
       self.set_indexer_experiment_list(experiment_list)
 
     return
+
+  def _do_indexing(self, method=None):
+    indexer = self.Index()
+    indexer.set_spot_filename(self._spot_filename)
+    indexer.set_sweep_filename(self._sweep_filename)
+    if PhilIndex.params.dials.index.phil_file is not None:
+      indexer.set_phil_file(PhilIndex.params.dials.index.phil_file)
+    if PhilIndex.params.dials.index.max_cell:
+      indexer.set_max_cell(PhilIndex.params.dials.index.max_cell)
+
+    if self._indxr_input_lattice:
+      indexer.set_indexer_input_lattice(self._indxr_input_lattice)
+      Debug.write('Set lattice: %s' % self._indxr_input_lattice)
+
+    if self._indxr_input_cell:
+      indexer.set_indexer_input_cell(self._indxr_input_cell)
+      Debug.write('Set cell: %f %f %f %f %f %f' % \
+                  self._indxr_input_cell)
+      original_cell = self._indxr_input_cell
+
+    if method is None:
+      if PhilIndex.params.dials.index.method is None:
+        method = 'fft3d'
+        Debug.write('Choosing indexing method: %s' % method)
+      else:
+        method = PhilIndex.params.dials.index.method
+
+    indexer.run(method)
+
+    if not os.path.exists(indexer.get_experiments_filename()):
+      raise RuntimeError("Indexing has failed: %s does not exist."
+                         %indexer.get_experiments_filename())
+    elif not os.path.exists(indexer.get_indexed_filename()):
+      raise RuntimeError("Indexing has failed: %s does not exist."
+                         %indexer.get_indexed_filename())
+
+    return indexer
+
 
   def _compare_cell(self, c_ref, c_test):
     '''Compare two sets of unit cell constants: if they differ by
