@@ -83,11 +83,11 @@ def Integrate(DriverType = None):
       Debug.write('Running dials.integrate2')
 
       self.clear_command_line()
-      self.add_command_line(self._experiments_filename)
+      self.add_command_line('input.experiments=%s' % self._experiments_filename)
       nproc = Flags.get_parallel()
       self.set_cpu_threads(nproc)
       self.add_command_line('nproc=%i' % nproc)
-      self.add_command_line(('reference=%s' % self._reflections_filename))
+      self.add_command_line(('input.reflections=%s' % self._reflections_filename))
       self.add_command_line(
         'intensity.algorithm=%s' % self._integration_algorithm)
       if self._outlier_algorithm is not None:
