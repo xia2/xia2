@@ -86,7 +86,7 @@ def Integrate(DriverType = None):
       self.add_command_line(self._experiments_filename)
       nproc = Flags.get_parallel()
       self.set_cpu_threads(nproc)
-      self.add_command_line('max_procs=%i' % nproc)
+      self.add_command_line('nproc=%i' % nproc)
       self.add_command_line(('reference=%s' % self._reflections_filename))
       self.add_command_line(
         'intensity.algorithm=%s' % self._integration_algorithm)
