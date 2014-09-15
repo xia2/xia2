@@ -1310,6 +1310,9 @@ class XDSScalerA(Scaler):
 
     sc.multi_merge()
 
+    FileHandler.record_log_file('%s %s aimless xml' % (self._scalr_pname,
+                                                       self._scalr_xname),
+                                sc.get_xmlout())
     data = sc.get_summary()
 
     loggraph = sc.parse_ccp4_loggraph()

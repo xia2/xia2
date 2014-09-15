@@ -77,6 +77,7 @@ def Aimless(DriverType = None,
       self._scalepack = False
       self._chef_unmerged = False
       self._unmerged_reflections = None
+      self._xmlout = None
 
       # scaling parameters
       self._resolution = None
@@ -179,6 +180,9 @@ def Aimless(DriverType = None,
       self._resolution = resolution
       return
 
+    def get_xmlout(self):
+      return self._xmlout
+    
     def set_resolution_by_run(self, run, resolution):
       '''Set the resolution for a particular run.'''
 
@@ -421,12 +425,13 @@ def Aimless(DriverType = None,
                      (os.path.split(self.get_hklin())[-1],
                       os.path.split(self.get_hklout())[-1]))
 
+      self._xmlout = os.path.join(self.get_working_directory(),
+                                  '%d_aimless.xml' % self.get_xpid())
 
       self.start()
       self.input('xmlout %d_aimless.xml' % self.get_xpid())
       self.input('bins 20')
-      self.input('run 1 batch 1 to 10000')
-      # self.input('run 1 all')
+      self.input('run 1 all')
       self.input('scales constant')
       self.input('initial unity')
       self.input('sdcorrection both noadjust 1.0 0.0 0.0')
@@ -483,6 +488,9 @@ def Aimless(DriverType = None,
         self.set_task('Scaling reflections from %s => scalepack %s' % \
                      (os.path.split(self.get_hklin())[-1],
                       os.path.split(self.get_hklout())[-1]))
+
+      self._xmlout = os.path.join(self.get_working_directory(),
+                                  '%d_aimless.xml' % self.get_xpid())
 
       self.start()
       self.input('xmlout %d_aimless.xml' % self.get_xpid())
@@ -668,6 +676,9 @@ def Aimless(DriverType = None,
 
       self.start()
 
+      self._xmlout = os.path.join(self.get_working_directory(),
+                                  '%d_aimless.xml' % self.get_xpid())
+
       self.input('xmlout %d_aimless.xml' % self.get_xpid())
       self.input('bins 20')
 
@@ -795,82 +806,7 @@ def Aimless(DriverType = None,
 
       self._scalr_scaled_reflection_files = hklout_dict
 
-      return 'okey dokey'
-
-    def quick_scale(self, constant = False):
-      '''Perform a quick scaling - to assess data quality & merging.'''
-
-      self.check_hklin()
-      self.check_hklout()
-
-      self.set_task('Quickly scaling reflections from %s => %s' % \
-                    (os.path.split(self.get_hklin())[-1],
-                     os.path.split(self.get_hklout())[-1]))
-
-      self.start()
-
-      self.input('xmlout %d_aimless.xml' % self.get_xpid())
-      # assert here that there is only one dataset in the input...
-
-      self.input('run 1 batch 1 to 10000')
-      # self.input('run 1 all')
-      if constant:
-        self.input('scales constant')
-        self.input('exclude sdmin 0.5')
-        self.input('cycles 0')
-      else:
-        self.input('scales rotation spacing 10')
-        self.input('cycles 6')
-
-      # next any 'generic' parameters
-
-      if self._resolution:
-        self.input('resolution %f' % self._resolution)
-
-      if self._anomalous:
-        self.input('anomalous on')
-      else:
-        self.input('anomalous off')
-
-      self.close_wait()
-
-      # check for errors
-
-      try:
-        self.check_for_errors()
-        self.check_ccp4_errors()
-        self.check_aimless_errors()
-
-        status ='okey dokey'
-
-        Debug.write('Aimless status: %s' % status)
-
-        if 'Error' in status:
-          raise RuntimeError, '[AIMLESS] %s' % status
-
-      except RuntimeError, e:
-        try:
-          os.remove(self.get_hklout())
-        except:
-          pass
-
-        raise e
-
-      output = self.get_all_output()
-
-      # look at the scaling to see if it was convergent
-
-      mean_shift = []
-      max_shift = []
-
-      for o in output:
-        if 'Mean and maximum shift/sd' in o:
-          mean_shift.append(float(o.split()[5]))
-          max_shift.append(float(o.split()[6]))
-
-      # analyse the shifts
-
-      return 'okey dokey'
+      return 'OK'
 
     def get_scaled_reflection_files(self):
       '''Get the names of the actual scaled reflection files - note
