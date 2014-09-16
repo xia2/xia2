@@ -110,7 +110,7 @@ def erzatz_resolution(reflection_file, batch_ranges):
   assert(ipr_column or i_column)
   assert(sigipr_column or sigi_column)
   assert(batch_column)
-  
+
   if ipr_column is None: ipr_column = i_column
   if sigipr_column is None: sigipr_column = sigi_column
 

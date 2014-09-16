@@ -273,7 +273,7 @@ class DialsIntegrater(FrameProcessor,
     if total_phi_range < 5: # arbitrary value
       refiner.set_scan_varying(False)
     elif total_phi_range < 36:
-      refiner.set_interval_width_degrees(total_phi_range/2)    
+      refiner.set_interval_width_degrees(total_phi_range/2)
 
     refiner.run()
     self._intgr_experiments_filename \

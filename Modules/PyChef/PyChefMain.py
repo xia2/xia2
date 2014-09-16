@@ -108,6 +108,7 @@ def parse_standard_input():
   resolution_high = None
 
   base_column = None
+  base_unique = False
 
   title = None
 
@@ -187,6 +188,12 @@ def parse_standard_input():
     elif key == 'NCPU':
       ncpu = int(record.split()[-1])
 
+    #### KEYWORD UNIQ
+
+    elif key == 'UNIQ':
+      base_unique = True
+
+
   # check that these values are sound - where they are needed...
   # assert(base_column)
 
@@ -197,16 +204,17 @@ def parse_standard_input():
   # now drop this lot to a dictionary
 
   results = {
-      'range_min':range_min,
-      'range_max':range_max,
-      'range_width':range_width,
-      'anomalous':anomalous,
-      'resolution_high':resolution_high,
-      'resolution_low':resolution_low,
-      'base_column':base_column,
-      'title':title,
-      'ncpu':ncpu
-      }
+    'range_min':range_min,
+    'range_max':range_max,
+    'range_width':range_width,
+    'anomalous':anomalous,
+    'resolution_high':resolution_high,
+    'resolution_low':resolution_low,
+    'base_column':base_column,
+    'title':title,
+    'ncpu':ncpu,
+    'base_unique':base_unique
+    }
 
   return results
 
@@ -232,6 +240,9 @@ def main():
 
   if standard_input['base_column']:
     pychef.set_base_column(standard_input['base_column'])
+
+  if standard_input['base_unique']:
+    pychef.set_base_unique(standard_input['base_unique'])
 
   if standard_input['range_max']:
     pychef.set_range(standard_input['range_min'],

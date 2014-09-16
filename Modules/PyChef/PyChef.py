@@ -31,6 +31,7 @@ class PyChef(object):
     # column named DOSE
 
     self._base_column = 'BATCH'
+    self._base_unique = False
 
     self._hklin_list = []
 
@@ -66,6 +67,10 @@ class PyChef(object):
 
     self._base_column = base_column
 
+    return
+
+  def set_base_unique(self, base_unique=True):
+    self._base_unique = base_unique
     return
 
   def add_hklin(self, hklin):
@@ -241,10 +246,30 @@ class PyChef(object):
             tuple(uc.parameters())
       print 'Spacegroup: %s' % sg.type(
           ).universal_hermann_mauguin_symbol()
-      print 'Using: %s/%s/%s' % \
-            (i_column.label(), sigi_column.label(), base_column.label())
+      if self._base_unique:
+        print 'Using: %s/%s/%s (unique)' % \
+              (i_column.label(), sigi_column.label(), base_column.label())
+      else:
+        print 'Using: %s/%s/%s' % \
+              (i_column.label(), sigi_column.label(), base_column.label())
 
-      base_values = base_column.extract_values(
+      if base_column == batch_column and self._base_unique:
+        from scitbx.array_family import flex
+        batch_values = batch_column.extract_values(
+          not_a_number_substitute = 0.0)
+        batches = list(set(batch_values))
+        lookup = { }
+        for j, b in enumerate(sorted(batches)):
+          lookup[b] = j
+        base_values = flex.double(len(batch_values))
+        for j in range(len(batch_values)):
+          base_values[j] = lookup[batch_values[j]]
+
+        if not self._range_width:
+          self._range_width = 1
+
+      else:
+        base_values = base_column.extract_values(
           not_a_number_substitute = 0.0)
 
       min_base = min(base_values)
