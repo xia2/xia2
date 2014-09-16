@@ -130,7 +130,8 @@ class _Syminfo(object):
   def get_pointgroup(self, name):
     '''Get the pointgroup for this spacegroup, e.g. P422 for P43212.'''
     space_group = sgtbx.space_group_info(name).group()
-    point_group = space_group.build_derived_point_group()
+    point_group = space_group.build_derived_patterson_group(
+      ).build_derived_acentric_group()
     return point_group.type().lookup_symbol().replace(' ', '')
 
   def get_lattice(self, name):
