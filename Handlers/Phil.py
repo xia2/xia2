@@ -76,7 +76,7 @@ dials {
   refine {
     scan_varying = True
       .type = bool
-    use_all_reflections = True
+    use_all_reflections = False
       .type = bool
     phil_file = None
       .type = path

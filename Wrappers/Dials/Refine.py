@@ -97,8 +97,8 @@ def Refine(DriverType = None):
       self.clear_command_line()
       self.add_command_line(self._experiments_filename)
       self.add_command_line(self._indexed_filename)
-      self.add_command_line('scan_varying=%s' %self._scan_varying)
-      self.add_command_line('use_all_reflections=%s' %self._use_all_reflections)
+      self.add_command_line('scan_varying=%s' % self._scan_varying)
+      self.add_command_line('use_all_reflections=%s' % self._use_all_reflections)
       self.add_command_line('close_to_spindle_cutoff=0.05')
 
       if self._reflections_per_degree is not None:
