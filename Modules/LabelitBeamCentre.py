@@ -40,6 +40,9 @@ def compute_beam_centre(sweep, working_directory = os.getcwd()):
   try:
     ls = LabelitIndex(indxr_print = False)
     ls.setup_from_image(sweep.imagename(min(sweep.get_images())))
+    # kludge to make sure indexing is not recycled to select a different
+    # lattice 
+    ls.set_indexer_user_input_lattice('aP')
     beam_centre = ls.get_indexer_beam_centre()
   except exceptions.Exception, e:
     # do not have labelit installed?
