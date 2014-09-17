@@ -856,7 +856,7 @@ class CCP4ScalerA(Scaler):
     FileHandler.record_log_file('%s %s aimless' % (self._scalr_pname,
                                                    self._scalr_xname),
                                 sc.get_log_file())
-    
+
     highest_resolution = 100.0
 
     sc.set_hklin(self._prepared_reflections)

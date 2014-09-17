@@ -182,7 +182,7 @@ def Aimless(DriverType = None,
 
     def get_xmlout(self):
       return self._xmlout
-    
+
     def set_resolution_by_run(self, run, resolution):
       '''Set the resolution for a particular run.'''
 

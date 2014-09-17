@@ -91,10 +91,6 @@ dials {
   }
   # FIXME to here
 }
-ccp4.reindex {
-  program = 'pointless'
-    .type = str
-}
 ccp4.truncate {
   program = 'ctruncate'
     .type = str

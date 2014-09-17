@@ -438,10 +438,9 @@ class DialsIntegrater(FrameProcessor,
     reindex.set_hklout(hklout)
     reindex.reindex()
     self._intgr_integrated_filename = hklout
+    self._intgr_cell = reindex.get_cell()
+
     return hklout
-
-
-    return mtz_filename
 
 if __name__ == '__main__':
 
