@@ -78,8 +78,7 @@ def IndexerForXSweep(xsweep):
   imageset = xsweep.get_imageset()
   scan = imageset.get_scan()
   oscillation = scan.get_oscillation()
-  sweep_width = ((oscillation[1] - oscillation[0])
-                 * (sweep_images[1] - sweep_images[0] + 1))
+  sweep_width = (oscillation[1] * (sweep_images[1] - sweep_images[0] + 1))
 
   # hack now - if XDS integration switch to XDS indexer if (i) labelit and
   # (ii) sweep < 10 degrees
