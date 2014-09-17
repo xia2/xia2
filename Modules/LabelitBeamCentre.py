@@ -42,6 +42,7 @@ def compute_beam_centre(sweep, working_directory = os.getcwd()):
     ls.setup_from_image(sweep.imagename(min(sweep.get_images())))
     # kludge to make sure indexing is not recycled to select a different
     # lattice 
+    ls.set_indexer_input_lattice('aP')
     ls.set_indexer_user_input_lattice('aP')
     beam_centre = ls.get_indexer_beam_centre()
   except exceptions.Exception, e:
