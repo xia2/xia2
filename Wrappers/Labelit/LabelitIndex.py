@@ -103,7 +103,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
       self._refine_beam = refine_beam
       return
 
-    def _write_dataset_preferences(self):
+    def _write_dataset_preferences(self, n_images):
       '''Write the dataset_preferences.py file in the working
       directory - this will include the beam centres etc.'''
 
@@ -142,11 +142,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
         out.write('distl_profile_bumpiness = 10\n')
         out.write('distl_binned_image_spot_size = 10\n')
 
-      # presume that we won't be using more than four
-      # images... err why? just use as many as are given in the
-      # list?
-
-      out.write('wedgelimit = 4\n')
+      out.write('wedgelimit = %d\n' % n_images)
 
       # new feature - index on the spot centre of mass, not the
       # highest pixel (should improve the RMS deviation reports.)
@@ -293,7 +289,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
         self.add_command_line('known_cell=%f,%f,%f,%f,%f,%f' % \
                               self._indxr_input_cell)
 
-      self._write_dataset_preferences()
+      self._write_dataset_preferences(len(_images))
 
       shutil.copyfile(os.path.join(self.get_working_directory(),
                                    'dataset_preferences.py'),
@@ -505,9 +501,9 @@ def LabelitIndex(DriverType = None, indxr_print = True):
             'goodness':self._solutions[solution]['metric'],
             'cell':self._solutions[solution]['cell']}
 
-      #self._indxr_lattice = self._solution['lattice']
-      #self._indxr_cell = tuple(self._solution['cell'])
-      self._indxr_mosaic = self._solution['mosaic'] # XXX store in crystal model?
+      self._indxr_lattice = self._solution['lattice']
+      self._indxr_cell = tuple(self._solution['cell'])
+      self._indxr_mosaic = self._solution['mosaic']
 
       lms = LabelitMosflmScript()
       lms.set_working_directory(self.get_working_directory())
