@@ -80,6 +80,8 @@ dials {
       .type = bool
     phil_file = None
       .type = path
+    reflections_per_degree = 100
+      .type = int
   }
   integrate {
     phil_file = None

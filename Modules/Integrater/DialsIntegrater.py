@@ -123,6 +123,8 @@ class DialsIntegrater(FrameProcessor,
       self._intgr_indexer.get_indexed_filename())
     refine.set_scan_varying(params.scan_varying)
     refine.set_use_all_reflections(params.use_all_reflections)
+    if params.reflections_per_degree:
+      refine.set_reflections_per_degree(params.reflections_per_degree)
     auto_logfiler(refine, 'REFINE')
 
     return refine
