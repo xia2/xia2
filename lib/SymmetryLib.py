@@ -43,6 +43,7 @@ def lattice_to_spacegroup(lattice):
   _lattice_to_spacegroup = {'aP':1,
                             'mP':3,
                             'mC':5,
+                            'mI':5,
                             'oP':16,
                             'oC':20,
                             'oF':22,
