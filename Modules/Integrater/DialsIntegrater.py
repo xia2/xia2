@@ -338,6 +338,7 @@ class DialsIntegrater(FrameProcessor,
 
     integrate.set_experiments_filename(self._intgr_experiments_filename)
     integrate.set_reflections_filename(self._intgr_indexed_filename)
+    integrate.set_dmax(self._intgr_reso_low)
 
     integrate.run()
 

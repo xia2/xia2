@@ -36,6 +36,7 @@ def Integrate(DriverType = None):
       self._outlier_algorithm = None
       self._phil_file = None
       self._mosaic = None
+      self._dmax = None
 
       return
 
@@ -71,6 +72,10 @@ def Integrate(DriverType = None):
       self._phil_file = phil_file
       return
 
+    def set_dmax(self, dmax):
+      self._dmax = dmax
+      return
+
     def get_integrated_filename(self):
       import os
       return os.path.join(self.get_working_directory(), 'integrated.pickle')
@@ -94,7 +99,9 @@ def Integrate(DriverType = None):
         self.add_command_line(
           'outlier.algorithm=%s' % self._outlier_algorithm)
       if self._phil_file is not None:
-        self.add_command_line("%s" % self._phil_file)
+        self.add_command_line('%s' % self._phil_file)
+      if self._dmax is not None:
+        self.add_command_line('prediction.dmax=%f' % self._dmax)
 
       self.start()
       self.close_wait()
