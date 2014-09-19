@@ -521,18 +521,18 @@ def Mosflm(DriverType = None):
         # so we have to resort to this instead...
         if 'Refining solution #' in o:
           space_group_number = int(o.split(')')[0].split()[-1])
-          #lattice_to_spacegroup_dict = {'aP':1, 'mP':3, 'mC':5,
-                                        #'oP':16, 'oC':20, 'oF':22,
-                                        #'oI':23, 'tP':75, 'tI':79,
-                                        #'hP':143, 'hR':146,
-                                        #'cP':195, 'cF':196,
-                                        #'cI':197}
+          lattice_to_spacegroup_dict = {'aP':1, 'mP':3, 'mC':5,
+                                        'oP':16, 'oC':20, 'oF':22,
+                                        'oI':23, 'tP':75, 'tI':79,
+                                        'hP':143, 'hR':146,
+                                        'cP':195, 'cF':196,
+                                        'cI':197}
 
-          #spacegroup_to_lattice = { }
-          #for k in lattice_to_spacegroup_dict.keys():
-            #spacegroup_to_lattice[
-                #lattice_to_spacegroup_dict[k]] = k
-          #self._indxr_lattice = spacegroup_to_lattice[spagnum]
+          spacegroup_to_lattice = { }
+          for k in lattice_to_spacegroup_dict.keys():
+            spacegroup_to_lattice[
+                lattice_to_spacegroup_dict[k]] = k
+          self._indxr_lattice = spacegroup_to_lattice[space_group_number]
 
         # in here I need to check if the mosaic spread estimation
         # has failed. If it has it is likely that the selected
@@ -1264,6 +1264,8 @@ def Mosflm(DriverType = None):
       # FIXME this will die after #1285
 
       if not self.get_integrater_indexer():
+        Debug.write('Replacing indexer of %s with self at %d' % \
+                    (str(self.get_integrater_indexer()), __line__))
         self.set_integrater_indexer(self)
 
       indxr = self.get_integrater_indexer()
@@ -1311,19 +1313,16 @@ def Mosflm(DriverType = None):
       # cell refinement process...
 
       if indxr != self:
-        self.set_indexer_input_lattice(lattice) # this is needed because of test in self._index_finish()
-        #self.set_indexer_beam_centre(beam_centre)
         from cctbx import sgtbx
         from dxtbx.model import crystal
         from Wrappers.Mosflm.AutoindexHelpers import set_mosflm_beam_centre
-        experiment = self.get_indexer_experiment_list()[0]
+        experiment = indxr.get_indexer_experiment_list()[0]
         set_mosflm_beam_centre(
           experiment.detector, experiment.beam, beam_centre)
         space_group = sgtbx.space_group_info(number=spacegroup_number).group()
         a, b, c = experiment.crystal.get_real_space_vectors()
         experiment.crystal = crystal.crystal_model(
           a, b, c, space_group=space_group)
-
 
       # FIXME surely these have been assigned further up?!
 
@@ -1667,7 +1666,8 @@ def Mosflm(DriverType = None):
           for d in distances:
             distance += d
           distance /= len(distances)
-          experiment = self.get_indexer_experiment_list()[0]
+          experiment = self.get_integrater_indexer(
+            ).get_indexer_experiment_list()[0]
           from Wrappers.Mosflm.AutoindexHelpers import set_distance
           set_distance(experiment.detector, distance)
 
@@ -1728,7 +1728,8 @@ def Mosflm(DriverType = None):
 
       from Wrappers.Mosflm.AutoindexHelpers import crystal_model_from_mosflm_mat
       # make a dxtbx crystal_model object from the mosflm matrix
-      experiment = self.get_indexer_experiment_list()[0]
+      experiment = self.get_integrater_indexer(
+        ).get_indexer_experiment_list()[0]
       crystal_model = crystal_model_from_mosflm_mat(
         self._indxr_payload['mosflm_orientation_matrix'],
         unit_cell=refined_cell,
@@ -1742,6 +1743,8 @@ def Mosflm(DriverType = None):
       cell refinement or indexing (they have the equivalent form.)'''
 
       if not self.get_integrater_indexer():
+        Debug.write('Replacing indexer of %s with self at %d' % \
+                    (str(self.get_integrater_indexer()), __line__))
         self.set_integrater_indexer(self)
 
       indxr = self.get_integrater_indexer()
@@ -2221,6 +2224,8 @@ def Mosflm(DriverType = None):
 
       if not self.get_integrater_indexer():
         # should I raise a RuntimeError here?!
+        Debug.write('Replacing indexer of %s with self at %d' % \
+                    (str(self.get_integrater_indexer()), __line__))
         self.set_integrater_indexer(self)
 
       indxr = self.get_integrater_indexer()
