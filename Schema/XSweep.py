@@ -600,6 +600,10 @@ class XSweep(object):
 
       self._integrater.set_integrater_indexer(self._get_indexer())
 
+      Debug.write('Integrater / indexer for sweep %s: %s/%s' % \
+                  (self._name, self._integrater.__class__.__name__,
+                   self._get_indexer().__class__.__name__))
+
       # or if we have been told this on the command-line -
       # N.B. should really add a mechanism to specify the ice
       # rings we want removing, #1317.

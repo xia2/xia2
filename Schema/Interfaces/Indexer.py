@@ -45,6 +45,7 @@
 
 import os
 import sys
+import inspect
 
 if not os.environ.has_key('XIA2_ROOT'):
   raise RuntimeError, 'XIA2_ROOT not defined'
@@ -261,8 +262,12 @@ class Indexer(object):
   def get_indexer_finish_done(self):
 
     if not self.get_indexer_done():
+      f = inspect.currentframe().f_back
+      m = f.f_code.co_filename
+      l = f.f_lineno
       Debug.write(
-          'Resetting indexer finish done as index not done')
+        'Resetting indexer finish done as index not done, from %s/%d' % \
+        (m, l))
       self.set_indexer_finish_done(False)
 
     return self._indxr_finish_done
@@ -302,6 +307,14 @@ class Indexer(object):
 
 
   def index(self):
+
+    if not self.get_indexer_finish_done():
+      f = inspect.currentframe().f_back.f_back
+      m = f.f_code.co_filename
+      l = f.f_lineno
+
+      Debug.write('Index in %s called from %s %d' %
+                  (self.__class__.__name__, m, l))
 
     while not self.get_indexer_finish_done():
       while not self.get_indexer_done():
