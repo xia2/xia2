@@ -28,6 +28,7 @@
 #                 be printed when running unit tests...
 
 import sys
+import inspect
 
 class _Stream(object):
   '''A class to represent an output stream. This will be used as a number
@@ -55,6 +56,8 @@ class _Stream(object):
     self._cache = False
     self._cachelines = []
 
+    self._additional = False
+
     return
 
   def cache(self):
@@ -79,6 +82,9 @@ class _Stream(object):
       self._file = open(self._file_name, 'w')
     return self._file
 
+  def set_additional(self):
+    self._additional = True
+
   def write(self, record, forward = True):
     if self._off:
       return None
@@ -86,6 +92,12 @@ class _Stream(object):
     if self._cache:
       self._cachelines.append((record, forward))
       return
+
+    if self._additional:
+      f = inspect.currentframe().f_back
+      m = f.f_code.co_filename
+      l = f.f_lineno
+      record = 'Called from %s / %d\n%s' % (m, l, record)
 
     for r in record.split('\n'):
       if self._prefix:
