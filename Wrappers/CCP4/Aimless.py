@@ -391,7 +391,7 @@ def Aimless(DriverType = None,
         self.check_aimless_error_negative_scale_run()
         self.check_aimless_errors()
 
-        status = 'okey dokey'
+        status = 'OK'
 
         if 'Error' in status:
           raise RuntimeError, '[AIMLESS] %s' % status
@@ -606,7 +606,7 @@ def Aimless(DriverType = None,
         self.check_aimless_error_negative_scale_run()
         self.check_aimless_errors()
 
-        status = 'okey dokey'
+        status = 'OK'
 
         Debug.write('Aimless status: %s' % status)
 
@@ -656,7 +656,7 @@ def Aimless(DriverType = None,
 
       self._scalr_scaled_reflection_files = hklout_dict
 
-      return 'okey dokey'
+      return 'OK'
 
     def multi_merge(self):
       '''Merge data from multiple runs - this is very similar to
@@ -739,7 +739,7 @@ def Aimless(DriverType = None,
         self.check_ccp4_errors()
         self.check_aimless_errors()
 
-        status = 'okey dokey'
+        status = 'OK'
 
         Debug.write('Aimless status: %s' % status)
 
