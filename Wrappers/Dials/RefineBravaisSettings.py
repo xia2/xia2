@@ -13,6 +13,8 @@ from __future__ import division
 from __init__ import _setup_xia2_environ
 _setup_xia2_environ()
 
+from Handlers.Flags import Flags
+
 def RefineBravaisSettings(DriverType = None):
   '''A factory for RefineBravaisSettingsWrapper classes.'''
 
@@ -55,8 +57,9 @@ def RefineBravaisSettings(DriverType = None):
       self.add_command_line(self._experiments_filename)
       self.add_command_line(self._indexed_filename)
 
-      # some spells to make the refinement work faster...
-
+      nproc = Flags.get_parallel()
+      self.set_cpu_threads(nproc)
+      self.add_command_line('nproc=%i' % nproc)
       self.add_command_line('reflections_per_degree=10')
       self.add_command_line('detector.fix=all')
       self.add_command_line('beam.fix=all')
