@@ -266,26 +266,6 @@ class XDSScalerA(Scaler):
       Debug.write('ID = %s/%s/%s' % (pname, xname, dname))
       Debug.write('SWEEP = %s' % intgr.get_integrater_sweep_name())
 
-    try:
-      all_images = self.get_scaler_xcrystal().get_all_image_names()
-      dose_information, dose_factor = accumulate(all_images)
-
-      self._chef_dose_factor = dose_factor
-
-      # next copy this into the sweep information
-
-      for epoch in self._sweep_information.keys():
-        for i in self._sweep_information[epoch][
-            'image_to_epoch'].keys():
-          e = self._sweep_information[epoch][
-              'image_to_epoch'][i]
-          d = dose_information[e]
-          self._sweep_information[epoch][
-              'image_to_dose'][i] = d
-
-    except RuntimeError, e:
-      pass
-
     # next work through all of the reflection files and make sure that
     # they are XDS_ASCII format...
 
@@ -1150,111 +1130,6 @@ class XDSScalerA(Scaler):
       return
 
     self._sort_together_data_xds()
-
-    doses = { }
-
-    for epoch in self._sweep_information.keys():
-      i2d = self._sweep_information[epoch]['image_to_dose']
-      i2e = self._sweep_information[epoch]['image_to_epoch']
-      offset = self._sweep_information[epoch]['batch_offset']
-      images = sorted(i2d.keys())
-      for i in images:
-        batch = i + offset
-        doses[batch] = i2d[i]
-
-    fout = open(os.path.join(self.get_working_directory(),
-                             'doser.in'), 'w')
-
-    for epoch in self._sweep_information.keys():
-      i2d = self._sweep_information[epoch]['image_to_dose']
-      i2e = self._sweep_information[epoch]['image_to_epoch']
-      offset = self._sweep_information[epoch]['batch_offset']
-      images = i2d.keys()
-      images.sort()
-      for i in images:
-        fout.write('batch %d dose %f time %f\n' % \
-                   (i + offset, i2d[i], i2e[i]))
-
-    fout.close()
-
-    all_doses = sorted([doses[b] for b in doses])
-    dose_max = all_doses[-1] + (all_doses[-1] - all_doses[-2])
-
-    for group in sorted(self._chef_analysis_groups):
-
-      resolution = self._chef_analysis_resolutions[group]
-
-      Debug.write('Preparing chef analysis group %d' % group)
-      Debug.write('N.B. to resolution %.2f' % resolution)
-
-      bits = { }
-
-      for wtse in self._chef_analysis_groups[group]:
-        wave, template, start, end = wtse
-        hklout = os.path.join(self.get_working_directory(),
-                              'chef_%d_%s_%d_%d.mtz' % \
-                              (group, wave, start, end))
-        hklout_all = os.path.join(self.get_working_directory(),
-                                  'chef_%d_%s.mtz' % \
-                                  (group, wave))
-
-        hklin = self._prepared_reflections
-        rb = self._factory.Rebatch()
-        rb.set_hklin(hklin)
-        rb.set_hklout(hklout)
-        rb.limit_batches(start, end)
-
-        if not wave in bits:
-          bits[wave] = [hklout_all]
-
-        bits[wave].append(hklout)
-        FileHandler.record_temporary_file(hklout)
-        FileHandler.record_temporary_file(hklout_all)
-
-      for wave in bits:
-        s = self._factory.Sortmtz()
-        s.set_hklout(bits[wave][0])
-        for hklin in bits[wave][1:]:
-          s.add_hklin(hklin)
-        s.sort()
-
-      chef_hklins = []
-
-      for wave in bits:
-        hklin = bits[wave][0]
-        hklout = '%s_dose.mtz' % hklin[:-4]
-
-        add_dose_time_to_mtz(hklin = hklin, hklout = hklout,
-                             doses = doses)
-
-        chef_hklins.append(hklout)
-
-      chef = self._factory.Chef()
-
-      chef.set_title('%s Group %d' % (self._scalr_xname, group + 1))
-
-      dose_step = self._chef_analysis_times[group] / \
-                  self._chef_dose_factor
-      anomalous = self.get_scaler_anomalous()
-
-      for hklin in chef_hklins:
-        chef.add_hklin(hklin)
-
-      chef.set_anomalous(anomalous)
-      chef.set_resolution(resolution)
-
-      if min(all_doses) < max(all_doses):
-        chef.set_width(dose_step)
-        chef.set_max(dose_max)
-        chef.set_labin('DOSE')
-      else:
-        chef.set_labin('BATCH')
-
-      chef.run()
-
-      FileHandler.record_log_file(
-          '%s chef %d' % (self._scalr_xname, group + 1),
-          chef.get_log_file())
 
     highest_resolution = min(
         [self._resolution_limits[k] for k in self._resolution_limits])
