@@ -1006,4 +1006,3 @@ if __name__ == '__main__':
     for token in sorted(header):
       print token, header[token]
 
-  HeaderCache.write()
