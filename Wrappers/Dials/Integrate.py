@@ -28,7 +28,7 @@ def Integrate(DriverType = None):
     def __init__(self):
       DriverInstance.__class__.__init__(self)
       FrameProcessor.__init__(self)
-      self.set_executable('dials.integrate2')
+      self.set_executable('dials.integrate')
 
       self._experiments_filename = None
       self._reflections_filename = None
