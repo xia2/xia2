@@ -868,38 +868,6 @@ def Aimless(DriverType = None,
 
       return total_summary
 
-    def get_rfactor_per_run(self):
-      '''Get the Rfactors as a function of run for wavelengths with
-      multiple runs.'''
-
-      result = { }
-      wavelength = None
-      gathering = False
-
-      for record in self.get_all_output():
-        if '$TABLE: Rmerge for each run, ' in record:
-          wavelength = record.replace(':', '').split()[-1]
-          result[wavelength] = []
-
-        if gathering and wavelength and 'Run' in record:
-          wavelength = None
-          gathering = False
-          continue
-
-        if not wavelength:
-          continue
-
-        if 'Overall' in record:
-          gathering = True
-
-        if gathering:
-          if not wavelength:
-            raise RuntimeError, 'no wavelength set'
-          for token in record.replace('Overall', '').split():
-            result[wavelength].append(float(token))
-
-      return result
-
   return AimlessWrapper()
 
 if __name__ == '__output_main__':
