@@ -856,7 +856,6 @@ def Aimless(DriverType = None,
 
       for xml_name, standard in aimless_xml_names_to_standard.iteritems():
         row = result.getElementsByTagName(xml_name)[0]
-        print xml_name
         if len(row.childNodes) == 3:
           summary[standard] = tuple(float(
             row.getElementsByTagName(item)[0].childNodes[0].data.strip())
