@@ -820,128 +820,52 @@ def Aimless(DriverType = None,
     def get_summary(self):
       '''Get a summary of the data.'''
 
-      # FIXME this will probably have to be improved following
-      # the updates beyond UC1.
+      xml_file = self.get_xmlout()
+      assert os.path.isfile(xml_file)
 
-      output = self.get_all_output()
-      length = len(output)
+      import xml
+      dom = xml.dom.minidom.parse(xml_file)
 
-      total_summary = { }
+      result = dom.getElementsByTagName('Result')[0]
 
-      # a mapper of names to allow standard names to be provided
-      # and a clear order defined...
-
-      aimless_names_to_standard = {
-          'Anomalous completeness':'Anomalous completeness',
-          'Anomalous multiplicity':'Anomalous multiplicity',
+      aimless_xml_names_to_standard = {
+          'AnomalousCompleteness':'Anomalous completeness',
+          'AnomalousMultiplicity':'Anomalous multiplicity',
           'Completeness':'Completeness',
-          'DelAnom correlation between half-sets':\
-          'Anomalous correlation',
-          'Fractional partial bias':'Partial bias',
-          'High resolution limit':'High resolution limit',
-          'Low resolution limit':'Low resolution limit',
-          'Mean((I)/sd(I))':'I/sigma',
-          'Mid-Slope of Anom Normal Probability':'Anomalous slope',
+          'AnomalousCChalf':'Anomalous correlation',
+          #'Fractional partial bias':'Partial bias',
+          'ResolutionHigh':'High resolution limit',
+          'ResolutionLow':'Low resolution limit',
+          'MeanIoverSD':'I/sigma',
+          'AnomalousNPslope':'Anomalous slope',
           'Multiplicity':'Multiplicity',
-          'Rmerge  (within I+/I-)':'Rmerge',
-          'Rmerge in top intensity bin':None,
-          'Rmeas (all I+ & I-)':'Rmeas(I)',
-          'Rmeas (within I+/I-)':'Rmeas(I+/-)',
-          'Rpim (all I+ & I-)':'Rpim(I)',
-          'Rpim (within I+/I-)':'Rpim(I+/-)',
-          'Total number of observations':'Total observations',
-          'Total number unique':'Total unique'
+          'Rmerge':'Rmerge',
+          #'Rmerge in top intensity bin':None,
+          'RmeasOverall':'Rmeas(I)',
+          'Rmeas':'Rmeas(I+/-)',
+          'RpimOverall':'Rpim(I)',
+          'Rpim':'Rpim(I+/-)',
+          'NumberObservations':'Total observations',
+          'NumberReflections':'Total unique'
           }
 
-      for i in range(length):
-        line = output[i]
+      summary = {}
 
-        pxdnames = []
+      dataset = result.getElementsByTagName('Dataset')[0]
+      pname, xname, dname = dataset.getAttribute('name').split('/')
 
-        # summary output data can be written out in two ways, allow
-        # for this (i.e. if onlymerge only one sweep get different
-        # and scala like output)
+      for xml_name, standard in aimless_xml_names_to_standard.iteritems():
+        row = result.getElementsByTagName(xml_name)[0]
+        print xml_name
+        if len(row.childNodes) == 3:
+          summary[standard] = tuple(float(
+            row.getElementsByTagName(item)[0].childNodes[0].data.strip())
+                                    for item in ('Overall', 'Inner', 'Outer'))
+        elif len(row.childNodes) == 1:
+          summary[standard] = (float(row.childNodes[0].data.strip()), 0.0, 0.0)
 
-        if 'Summary data for' in line and not 'datasets' in line:
-          lst = line.split()
-          pname, xname, dname = lst[4], lst[6], lst[8]
-          summary = { }
-          i += 1
-          line = output[i]
-
-          while not 'Estimates of resolution limits' in line:
-            if len(line) > 40:
-              key = line[:40].strip()
-
-              # hack for bug # 2229 - to cope when
-              # all data for a dataset is not included
-
-              if not key:
-                i += 1
-                line = output[i]
-                continue
-
-              # trap things which have appeared in the
-              # latest build of scala for ccp4 6.1
-
-              if not key in aimless_names_to_standard.keys():
-                i += 1
-                line = output[i]
-                continue
-
-              if key and not 'Infinity' in line \
-                     and not 'NaN' in line:
-                summary[aimless_names_to_standard[
-                    key]] = map(float, line[40:].replace(
-                    ' - ', ' 0.0 ').replace(
-                    ' -\n', ' 0.0 ').split())
-            i += 1
-            line = output[i]
-
-          if None in summary:
-            del(summary[None])
-
-          total_summary[(pname, xname, dname)] = summary
-
-        if 'Summary data for datasets' in line:
-          j = i + 1
-          while output[j].strip():
-            lst = output[j].split()
-            pname, xname, dname = lst[1], lst[3], lst[5]
-            pxdnames.append((pname, xname, dname))
-            total_summary[(pname, xname, dname)] = { }
-            j += 1
-
-          i = j + 1
-          line = output[i]
-          while not 'Estimates of resolution limits' in line:
-            if len(line) > 40:
-              key = line[:40].strip()
-
-              if not key:
-                i += 1
-                line = output[i]
-                continue
-
-              if not key in aimless_names_to_standard.keys():
-                i += 1
-                line = output[i]
-                continue
-
-              name = aimless_names_to_standard[key]
-
-              if key and not 'Infinity' in line \
-                     and not 'NaN' in line:
-                values = map(float, line[40:].replace(
-                    ' - ', ' 0.0 ').replace(
-                    ' -\n', ' 0.0 ').replace(
-                    '-', ' -').split())
-                for j, pxdname in enumerate(pxdnames):
-                  total_summary[pxdname][name] = map(
-                      float, values[3 * j:3 * j + 3])
-
-            i += 1
-            line = output[i]
+      total_summary = {}
+      total_summary[(pname, xname, dname)] = summary
 
       return total_summary
 
