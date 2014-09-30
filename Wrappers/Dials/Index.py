@@ -133,7 +133,7 @@ def Index(DriverType = None):
       self.add_command_line(self._spot_filename)
       self.add_command_line('method=%s' % method)
       self.add_command_line('use_all_reflections=False')
-      self.add_command_line('close_to_spindle_cutoff=0.05')
+      self.add_command_line('close_to_spindle_cutoff=0.02')
       if self._max_cell:
         self.add_command_line('max_cell=%d' % self._max_cell)
       if self._indxr_input_lattice is not None:
