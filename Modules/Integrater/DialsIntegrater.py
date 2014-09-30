@@ -283,8 +283,9 @@ class DialsIntegrater(FrameProcessor,
     experiments = load.experiment_list(self._intgr_experiments_filename)
     experiment = experiments[0]
 
-    #shutil.copyfile(self._intgr_indexer.get_experiments_filename(),
-                #self._intgr_experiments_filename)
+    # this is the result of the cell refinement
+    self._intgr_cell = experiment.crystal.get_unit_cell().parameters()
+
     if self._intgr_indexer.get_indexed_filename() != self._intgr_indexed_filename:
       shutil.copyfile(self._intgr_indexer.get_indexed_filename(),
                       self._intgr_indexed_filename)
