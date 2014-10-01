@@ -357,7 +357,7 @@ def print_sweeps(out = sys.stdout):
       user_beam_centre = settings.beam_centre
       if user_beam_centre is not None:
         out.write('BEAM %6.2f %6.2f\n' % tuple(user_beam_centre))
-      else:
+      elif not settings.trust_beam_centre:
         interactive = Flags.get_interactive()
         Flags.set_interactive(False)
         beam_centre = compute_beam_centre(s)
