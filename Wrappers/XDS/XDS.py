@@ -108,8 +108,8 @@ def xds_check_version_supported(xds_output_list):
   return
 
 xds_error_database = {
-    'cannot open or read file lp_01.tmp':'Error running forkintegrate'
-    }
+  'cannot open or read file lp_01.tmp':'Error running forkintegrate'
+  }
 
 def xds_check_error(xds_output_list):
   '''Check for errors in XDS output and raise an exception if one is
@@ -179,73 +179,6 @@ def imageset_to_xds(imageset, synchrotron = None, reversephi = False,
   from dxtbx.serialize.xds import to_xds, xds_detector_name
   converter = to_xds(imageset)
 
-  #if synchrotron == None:
-
-    #if header['detector'] == 'marccd':
-      #synchrotron = True
-    #elif header['detector'] == 'adsc':
-      #synchrotron = True
-    #elif math.fabs(header['wavelength'] - 1.5418) < 0.01:
-      #Debug.write('Wavelength looks like Cu Ka -> lab source')
-      #synchrotron = False
-    #elif math.fabs(header['wavelength'] - 2.29) < 0.01:
-      #Debug.write('Wavelength looks like Cu Ka -> lab source')
-      #synchrotron = False
-    #else:
-      #synchrotron = True
-
-  ## --------- mapping tables -------------
-
-  #detector_to_detector = {
-      #'mar':'MAR345',
-      #'marccd':'CCDCHESS',
-      #'rayonix':'CCDCHESS',
-      #'dectris':'PILATUS',
-      #'pilatus':'PILATUS',
-      #'raxis':'RAXIS',
-      #'saturn':'SATURN',
-      #'adsc':'ADSC'}
-
-  #detector_to_minimum_trusted = {
-      #'mar':1,
-      #'marccd':1,
-      #'rayonix':1,
-      #'dectris':0,
-      #'pilatus':0,
-      #'raxis':1,
-      #'saturn':1,
-      #'adsc':1}
-
-  #detector_to_overload = {
-      #'mar':130000,
-      #'marccd':65000,
-      #'rayonix':65000,
-      #'dectris':1048500,
-      #'pilatus':1048500,
-      #'raxis':1000000,
-      #'saturn':1000000,
-      #'adsc':65000}
-
-  #detector_to_x_axis = {
-      #'mar':'1.0 0.0 0.0',
-      #'marccd':'1.0 0.0 0.0',
-      #'rayonix':'1.0 0.0 0.0',
-      #'dectris':'1.0 0.0 0.0',
-      #'pilatus':'1.0 0.0 0.0',
-      #'raxis':'1.0 0.0 0.0',
-      #'saturn':'-1.0 0.0 0.0',
-      #'adsc':'1.0 0.0 0.0'}
-
-  #detector_to_y_axis = {
-      #'mar':'0.0 1.0 0.0',
-      #'marccd':'0.0 1.0 0.0',
-      #'rayonix':'0.0 1.0 0.0',
-      #'dectris':'0.0 1.0 0.0',
-      #'pilatus':'0.0 1.0 0.0',
-      #'raxis':'0.0 -1.0 0.0',
-      #'saturn':'0.0 1.0 0.0',
-      #'adsc':'0.0 1.0 0.0'}
-
   detector_class_is_square = {
       'adsc q4':True,
       'adsc q4 2x2 binned':True,
@@ -262,6 +195,8 @@ def imageset_to_xds(imageset, synchrotron = None, reversephi = False,
       'mar 325 ccd':True,
       'mar 225 ccd':True,
       'mar ccd 225 hs':True,
+      'rayonix ccd 165':False,
+      'rayonix ccd 135':False,
       'rayonix ccd 300':True,
       'rayonix ccd 325':True,
       'rayonix ccd 225':True,
@@ -282,56 +217,6 @@ def imageset_to_xds(imageset, synchrotron = None, reversephi = False,
       'rigaku saturn a200':True,
       'raxis IV':True,
       'NOIR1':True}
-
-  ## FIXME not sure if this is correct...
-
-  #if reversephi:
-
-    #detector_to_rotation_axis = {
-        #'mar':'-1.0 0.0 0.0',
-        #'marccd':'-1.0 0.0 0.0',
-        #'rayonix':'-1.0 0.0 0.0',
-        #'dectris':'-1.0 0.0 0.0',
-        #'pilatus':'-1.0 0.0 0.0',
-        #'raxis':'0.0 -1.0 0.0',
-        #'saturn':'0.0 -1.0 0.0',
-        #'adsc':'-1.0 0.0 0.0'}
-
-  #else:
-
-    #detector_to_rotation_axis = {
-        #'mar':'1.0 0.0 0.0',
-        #'marccd':'1.0 0.0 0.0',
-        #'rayonix':'1.0 0.0 0.0',
-        #'dectris':'1.0 0.0 0.0',
-        #'pilatus':'1.0 0.0 0.0',
-        #'raxis':'0.0 1.0 0.0',
-        #'saturn':'0.0 1.0 0.0',
-        #'adsc':'1.0 0.0 0.0'}
-
-  #detector_to_polarization_plane_normal = {
-      #'mar':'0.0 1.0 0.0',
-      #'marccd':'0.0 1.0 0.0',
-      #'rayonix':'0.0 1.0 0.0',
-      #'dectris':'0.0 1.0 0.0',
-      #'pilatus':'0.0 1.0 0.0',
-      #'raxis':'1.0 0.0 0.0',
-      #'saturn':'0.0 1.0 0.0',
-      #'adsc':'0.0 1.0 0.0'}
-
-  ## --------- end mapping tables ---------
-
-  #width, height = tuple(map(int, header['size']))
-  #qx, qy = tuple(header['pixel'])
-  #detector = header['detector']
-
-  #if detector == 'rigaku':
-    #if 'raxis' in header['detector_class']:
-      #detector = 'raxis'
-    #else:
-      #detector = 'saturn'
-
-  #detector_class = header['detector_class']
 
   sensor = converter.get_detector()[0].get_type()
   fast, slow = converter.detector_size
@@ -354,65 +239,6 @@ def imageset_to_xds(imageset, synchrotron = None, reversephi = False,
   result.append('DETECTOR=%s MINIMUM_VALID_PIXEL_VALUE=%d OVERLOAD=%d' %
                 (detector, trusted[0] + 1, trusted[1]))
 
-  #if not detector in ['raxis', 'saturn', 'dectris', 'pilatus', 'adsc'] and \
-         #math.fabs(header['two_theta']) > 1.0:
-    #raise RuntimeError, 'two theta offset not supported for %s' % detector
-
-  #if 'fast_direction' in header and 'slow_direction' in header:
-    #fast_direction, slow_direction = rotate_cbf_to_xds_convention(
-        #header['fast_direction'], header['slow_direction'])
-
-    #result.append('DIRECTION_OF_DETECTOR_X-AXIS=%f %f %f' % \
-                  #fast_direction)
-
-    #result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%f %f %f' % \
-                  #slow_direction)
-
-  #elif detector in ['raxis', 'saturn']:
-
-    #result.append(
-        #'DIRECTION_OF_DETECTOR_X-AXIS=%s' % \
-        #detector_axis_apply_two_theta_rotation(
-        #detector_to_x_axis[detector], header))
-
-    #result.append(
-        #'DIRECTION_OF_DETECTOR_Y-AXIS=%s' % \
-        #detector_axis_apply_two_theta_rotation(
-        #detector_to_y_axis[detector], header))
-
-  #elif detector in ['dectris']:
-
-    ## a warning to the reader - the following code has been tested
-    ## only with full CBF Pilatus 300K images from Diamond Beamline I19.
-
-    #if math.fabs(header['two_theta']) > 1.0:
-      #assert('fast_direction' in header)
-      #assert('slow_direction' in header)
-
-      #fast_direction = tuple([-1 * d for d in header['fast_direction']])
-      #slow_direction = tuple([d for d in header['slow_direction']])
-
-      #result.append('DIRECTION_OF_DETECTOR_X-AXIS=%f %f %f' % \
-                    #fast_direction)
-
-      #result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%f %f %f' % \
-                    #slow_direction)
-
-    #else:
-      #result.append('DIRECTION_OF_DETECTOR_X-AXIS=%s' % \
-                    #detector_to_x_axis[detector])
-
-      #result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%s' % \
-                    #detector_to_y_axis[detector])
-
-  #else:
-
-    #result.append('DIRECTION_OF_DETECTOR_X-AXIS=%s' % \
-                  #detector_to_x_axis[detector])
-
-    #result.append('DIRECTION_OF_DETECTOR_Y-AXIS=%s' % \
-                  #detector_to_y_axis[detector])
-
   result.append('DIRECTION_OF_DETECTOR_X-AXIS=%f %f %f' %
                 converter.detector_x_axis)
 
@@ -432,22 +258,12 @@ def imageset_to_xds(imageset, synchrotron = None, reversephi = False,
 
   result.append('NX=%d NY=%d QX=%.4f QY=%.4f' % (fast, slow, f, s))
 
-  #if detector == 'dectris':
-    ## width, height need to be swapped...
-    #result.append('NX=%d NY=%d QX=%6.6f QY=%6.6f' % \
-                  #(height, width, qx, qy))
-  #else:
-    #result.append('NX=%d NY=%d QX=%6.6f QY=%6.6f' % \
-                  #(width, height, qx, qy))
-
   # RAXIS detectors have the distance written negative - why????
   # this is ONLY for XDS - SATURN are the same - probably left handed
   # goniometer rotation on rigaku X-ray sets.
 
   if refined_distance:
     result.append('DETECTOR_DISTANCE=%7.3f' % refined_distance)
-  #elif not detector in ['raxis', 'saturn']:
-    #result.append('DETECTOR_DISTANCE=%7.3f' % header['distance'])
   else:
     result.append('DETECTOR_DISTANCE=%7.3f' % converter.detector_distance)
 
@@ -460,15 +276,6 @@ def imageset_to_xds(imageset, synchrotron = None, reversephi = False,
   if refined_rotation_axis:
     result.append('ROTATION_AXIS= %f %f %f' % \
                   refined_rotation_axis)
-  #elif 'rotation_axis' in header:
-    #R = matrix.sqr((1, 0, 0, 0, -1, 0, 0, 0, -1))
-    #if reversephi:
-      #result.append('ROTATION_AXIS= %.3f %.3f %.3f' % \
-                    #(-1 * R * matrix.col(header['rotation_axis'])).elems)
-    #else:
-      #result.append('ROTATION_AXIS= %.3f %.3f %.3f' % \
-                    #(R * matrix.col(header['rotation_axis'])).elems)
-
   else:
     result.append('ROTATION_AXIS= %.3f %.3f %.3f' % \
                   converter.rotation_axis)
@@ -480,15 +287,6 @@ def imageset_to_xds(imageset, synchrotron = None, reversephi = False,
     result.append(
       'INCIDENT_BEAM_DIRECTION= %.3f %.3f %.3f' % converter.beam_vector)
 
-  #if synchrotron:
-    #result.append('FRACTION_OF_POLARIZATION=0.99')
-    #result.append('POLARIZATION_PLANE_NORMAL=%s' % \
-                  #detector_to_polarization_plane_normal[detector])
-  #else:
-    #result.append('FRACTION_OF_POLARIZATION=0.5')
-    #result.append('POLARIZATION_PLANE_NORMAL=%s' % \
-                  #detector_to_polarization_plane_normal[detector])
-
   if hasattr(beam, "get_polarization_fraction"):
     R = converter.imagecif_to_xds_transformation_matrix
     result.append('FRACTION_OF_POLARIZATION= %.3f' %
@@ -499,21 +297,10 @@ def imageset_to_xds(imageset, synchrotron = None, reversephi = False,
   # FIXME 11/DEC/06 this should depend on the wavelength
   result.append('AIR=0.001')
 
+
+  # FIXME I should really get this from the image headers...
   if detector == 'PILATUS':
-    result.append('SENSOR_THICKNESS= 0.32') # XXX get from model?
-
-  ## dead regions of the detector for pilatus 6M, 2M, 300K etc.
-  #if header['detector_class'] == 'pilatus 6M':
-    #for limits in pilatus_6M_mask():
-      #result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(limits))
-
-  #elif header['detector_class'] == 'pilatus 2M':
-    #for limits in pilatus_2M_mask():
-      #result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(limits))
-
-  #elif header['detector_class'] == 'pilatus 300K':
-    #for limits in pilatus_300K_mask():
-      #result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' % tuple(limits))
+    result.append('SENSOR_THICKNESS= 0.32')
 
   for f0, s0, f1, s1 in converter.get_detector()[0].get_mask():
     result.append('UNTRUSTED_RECTANGLE= %d %d %d %d' %
