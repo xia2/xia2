@@ -106,24 +106,11 @@ class Sweep(object):
   def get_directory(self):
     return os.path.split(self.get_template())[0]
 
-  #def get_detector_class(self):
-    #return self._detector_class
-
   def get_images(self):
     # check if any more images have appeared
     self.update()
     image_range = self._imageset.get_scan().get_image_range()
     return list(range(image_range[0], image_range[1]+1))
-
-  #def get_collect(self):
-    #return self._collect_start, self._collect_end
-
-  #def get_phi(self):
-    #scan = self._imageset.get_scan()
-    #return self._phi
-
-  #def get_exposure_time(self):
-    #return self._exposure_time
 
   def get_distance(self):
     return self._imageset.get_detector()[0].get_distance()
@@ -191,58 +178,6 @@ class Sweep(object):
           best_sweep = imageset
 
       self._imageset = best_sweep
-
-      ## more images have appeared - reset myself
-
-      #self._images = images
-
-      #self._read_headers()
-
-      #sweeps = headers2sweeps(self._headers)
-
-      ## select the correct "sweep" - at the moment
-      ## define this to be the one with the most frames
-      ## in, though some way of manually defining this
-      ## will be useful FIXME.
-
-      #sweep = None
-
-      ## select which sweep to represent - default to the largest
-      ## earliest one
-
-      #if self._id_image == -1:
-
-        #max_images = 0
-
-        #for s in sweeps:
-          #if len(s['images']) > max_images:
-            #sweep = s
-            #max_images = len(s['images'])
-
-      #else:
-        #for s in sweeps:
-          #if self._id_image in s['images']:
-            #sweep = s
-
-        #if sweep is None:
-          #raise RuntimeError, 'no matching sweep found'
-
-      #self._images = sweep['images']
-      #self._collect_start = sweep['collect_start']
-      #self._collect_end = sweep['collect_end']
-
-      #self._phi = (sweep['phi_start'], sweep['phi_end'],
-                   #sweep['phi_width'])
-      #self._exposure_time = sweep['exposure_time']
-      #self._distance = sweep['distance']
-      #self._wavelength = sweep['wavelength']
-
-      #self._detector_class = sweep['detector_class']
-
-      ## only update this once, and if it isn't known - we want
-      ## to use the user value if provided
-      #if not self._beam_centre:
-        #self._beam_centre = map(float, sweep['beam'])
 
     return
 
