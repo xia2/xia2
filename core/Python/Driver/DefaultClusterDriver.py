@@ -71,12 +71,6 @@ class DefaultClusterDriver(DefaultDriver):
     '''NULL overloading of the default check method.'''
     return True
 
-  def _check_executable_old(self, executable):
-    '''Overload the check method to always be True. This handles the
-    strange setups you find on clusters.'''
-
-    return True
-
   def _check_executable(self, executable):
     '''Pass this on to executable_exists.'''
 

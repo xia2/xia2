@@ -76,9 +76,6 @@ class SimpleDriver(DefaultDriver):
                                    shell = True)
     self._popen_status = None
 
-    # somehow here test for failure - oh, you can't because
-    # the shell spawned is probably still ok
-
     return
 
   def _input(self, record):

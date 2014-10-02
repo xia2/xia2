@@ -144,69 +144,8 @@ class DefaultDriver(object):
 
     return executable_exists(executable)
 
-  def _check_executable_old(self, executable):
-    '''Check that this executable exists...'''
-
-    # check for full path
-
-    if len(os.path.split(executable)) > 1:
-      if not os.name == 'nt':
-        if os.path.exists(executable):
-          return True
-
-      else:
-        if os.path.exists('%s.bat' % executable):
-          return True
-        if os.path.exists('%s.exe' % executable):
-          return True
-
-      return False
-
-    # then search the system path
-
-    if not os.name == 'nt':
-      # check for the file as it is
-      for path in os.environ['PATH'].split(os.pathsep):
-        if executable in os.listdir(path):
-          return True
-
-      return False
-
-    else:
-      # check for the file with .bat or .exe
-      for path in os.environ['PATH'].split(os.pathsep):
-        if '%s.bat' % executable in os.listdir(path):
-          return True
-        if '%s.exe' % executable in os.listdir(path):
-          return True
-
-    return False
-
   def set_executable(self, executable):
     '''Set the name of the executable.'''
-
-    # FIXME should I first check that this executable exists, and
-    # if it doesn't, then raise an exception? This could be used
-    # in Factories, because then we could try to create things
-    # until we find one which exists...?
-
-    # add a check_exec method which could be overloaded in circumstances
-    # where this is necessary...
-
-    # Change 1/SEP/06 - this will now search the path for the executable
-    # and when it is found, will set the full path. This also means
-    # that the "type" of executable will be known on windows, for
-    # instance if it ends in ".bat". This is helpful, because it means
-    # that in script mode the system can use "call" instead of direct
-    # execution. This will also now raise an exception if the executable
-    # does not exist (new behaviour, need to make this switchable?)
-
-    # Oh, doing this breaks the check_ccp4_status call, which uses the
-    # executable name. However, could allow for this by checking if
-    # the executable ends in .exe or .bat, and correcting accordingly.
-    # Change implemented in CCP4Decorator.
-
-    # self._check_executable_old(executable)
 
     full_path = self._check_executable(executable)
 
@@ -215,10 +154,6 @@ class DefaultDriver(object):
     else:
       raise NotAvailableError, 'executable %s does not exist in PATH' % \
             executable
-
-    # FIXME record the fact that the program in question has been used -
-    # this will be used to track all of the programs which have been
-    # used ....
 
     return
 

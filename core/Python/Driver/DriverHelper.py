@@ -294,17 +294,14 @@ def check_return_code(code):
     if code == abrt:
       raise RuntimeError, 'child aborted'
 
+executable_exists_cache = { }
+
 def executable_exists(executable):
   '''Search the PATH for this executable, return "" if it is not
   found, full path otherwise. Caveat Emptor.'''
 
-  # first check if this is an absolute path, and if it is,
-  # see if it exists. FIXME in here need to be able to cope
-  # with someone setting the .exe or whatever explicitly...
-  # ok, check for this if the platform is windows.
-
-  # FIXME need to correctly handle "~" on UNIX platforms.
-  # This is Bug # 2221
+  if executable in executable_exists_cache:
+    return executable_exists_cache[executable]
 
   if os.name == 'nt':
     if not executable.split('.')[-1] in ['exe', 'bat']:
@@ -343,9 +340,8 @@ def executable_exists(executable):
   for directory in path:
     for file in executable_files:
       if os.path.exists(os.path.join(directory, file)):
-        # FIXME should probably check that this file
-        # is executable here... and is not a directory!
         if not os.path.isdir(os.path.join(directory, file)):
+          executable_exists_cache[executable] = os.path.join(directory, file)
           return os.path.join(directory, file)
 
   return ''

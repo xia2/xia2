@@ -54,22 +54,6 @@ def SweepFactory(template, directory, beam = None):
               id_image=scan.get_image_range()[0],
               beam=beam))
 
-  #images = find_matching_images(template, directory)
-
-  #headers = { }
-
-  #dd = Diffdump()
-  #for i in images:
-    #image = template_directory_number2image(template, directory, i)
-    #dd.set_image(image)
-    #headers[i] = dd.readheader()
-
-  #sweep_ids = headers2sweep_ids(headers)
-
-  #for s in sweep_ids:
-    #sweeps.append(Sweep(template, directory,
-                        #id_image = s, beam = beam))
-
   return sweeps
 
 class Sweep(object):
