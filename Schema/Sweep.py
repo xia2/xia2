@@ -51,6 +51,7 @@ def SweepFactory(template, directory, beam = None):
     if scan is not None:
       sweeps.append(
         Sweep(template, directory,
+              imageset=imageset,
               id_image=scan.get_image_range()[0],
               beam=beam))
 
@@ -85,6 +86,11 @@ class Sweep(object):
 
     # populate the rest of the structure
     self._images = []
+
+    if imageset is not None:
+      self._imageset = imageset
+      image_range = imageset.get_scan().get_image_range()
+      self._images = list(range(image_range[0], image_range[1]+1))
 
     # if the beam has been specified, then this will
     # override the headers
