@@ -41,10 +41,8 @@ def SweepFactory(template, directory, beam = None):
 
   sweeps = []
 
-  from dxtbx.imageset import ImageSetFactory
-  imagesets = ImageSetFactory.from_template(
-    os.path.join(directory, template),
-    check_headers=False)
+  from Schema import load_imagesets
+  imagesets = load_imagesets(template, directory)
 
   for imageset in imagesets:
     scan = imageset.get_scan()
@@ -164,10 +162,8 @@ class Sweep(object):
 
       self._images = images
 
-      from dxtbx.imageset import ImageSetFactory
-      imagesets = ImageSetFactory.from_template(
-        os.path.join(self._directory, self._template),
-        check_headers=False)
+      from Schema import load_imagesets
+      imagesets = load_imagesets(template, directory, use_cache=False)
 
       max_images = 0
       best_sweep = None

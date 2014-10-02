@@ -215,11 +215,15 @@ class XSweep(object):
                       image2template_directory(os.path.join(directory,
                                                             image))
 
-      from dxtbx.imageset import ImageSetFactory
-      imagesets = ImageSetFactory.from_template(
-        os.path.join(self._directory, self._template),
-        image_range=self._frames_to_process,
-        check_headers=False)
+      from Schema import load_imagesets
+      imagesets = load_imagesets(
+        self._template, self._directory, image_range=self._frames_to_process)
+
+      #from dxtbx.imageset import ImageSetFactory
+      #imagesets = ImageSetFactory.from_template(
+        #os.path.join(self._directory, self._template),
+        #image_range=self._frames_to_process,
+        #check_headers=False)
       assert len(imagesets) == 1
       self._imageset = imagesets[0]
       start, end = self._imageset.get_array_range()

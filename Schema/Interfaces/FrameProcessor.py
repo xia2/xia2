@@ -312,15 +312,12 @@ class FrameProcessor(object):
         images.append(j)
       self._fp_matching_images = images
 
-    ## XXX this should go
-    #dd = Diffdump()
-    #dd.set_image(image)
-    #self._fp_header = dd.readheader()
-
-    from dxtbx.imageset import ImageSetFactory
-    imageset = ImageSetFactory.from_template(
-      os.path.join(directory, template),
-      image_range=(self._fp_matching_images[0], self._fp_matching_images[-1]))[0]
+    from Schema import load_imagesets
+    imagesets = load_imagesets(
+      template, directory,
+      image_range=(self._fp_matching_images[0], self._fp_matching_images[-1]))
+    assert len(imagesets) == 1
+    imageset = imagesets[0]
 
     self._setup_from_imageset(imageset)
     return
