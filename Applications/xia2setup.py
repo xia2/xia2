@@ -373,7 +373,8 @@ def print_sweeps(out = sys.stdout):
 
 def rummage(path):
   '''Walk through the directories looking for sweeps.'''
-  os.path.walk(path, visit, os.getcwd())
+  for root, dirs, files in os.walk(path, followlinks=True):
+    visit(os.getcwd(), root, files)
   return
 
 def write_xinfo(filename, path, template = None):
