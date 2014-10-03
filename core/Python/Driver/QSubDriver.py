@@ -151,7 +151,9 @@ class QSubDriver(DefaultDriver):
 
     # the job id etc go to the standard output
 
-    job_id = stdout.split('\n')[0].split()[2]
+    for record in stdout.split('\n'):
+      if 'Your job' in record:
+        job_id = record.split()[2]
 
     # now have a while loop watching this job id via qstat -j
 
