@@ -194,6 +194,14 @@ class QSubDriver(DefaultDriver):
                               '%s.sh.e%s' % (self._script_name,
                                              job_id))
 
+    sge_pstdout = os.path.join(self._working_directory,
+                               '%s.sh.po%s' % (self._script_name,
+                                               job_id))
+
+    sge_pstderr = os.path.join(self._working_directory,
+                               '%s.sh.pe%s' % (self._script_name,
+                                               job_id))
+
     # check the standard error file for any indications that
     # something went wrong running this job...
 
@@ -214,6 +222,11 @@ class QSubDriver(DefaultDriver):
     try:
       os.remove(sge_stdout)
       os.remove(sge_stderr)
+      if os.path.exists(sge_pstdout):
+        os.remove(sge_pstdout)
+      if os.path.exists(sge_pstderr):
+        os.remove(sge_pstderr)
+
     except:
       # something wrong with this deletion?
       pass
