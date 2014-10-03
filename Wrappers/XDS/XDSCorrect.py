@@ -338,10 +338,12 @@ def XDSCorrect(DriverType = None, params=None):
 
       # write the input data files...
 
-      for file in self._input_data_files_list:
-        open(os.path.join(
-            self.get_working_directory(), file), 'wb').write(
-            self._input_data_files[file])
+      for file_name in self._input_data_files_list:
+        src = self._input_data_files[file_name]
+        dst = os.path.join(
+            self.get_working_directory(), file_name)
+        if src != dst:
+          shutil.copyfile(src, dst)
 
       self.start()
       self.close_wait()
@@ -362,8 +364,8 @@ def XDSCorrect(DriverType = None, params=None):
       # gather the output files
 
       for file in self._output_data_files_list:
-        self._output_data_files[file] = open(os.path.join(
-            self.get_working_directory(), file), 'rb').read()
+        self._output_data_files[file] = os.path.join(
+          self.get_working_directory(), file)
 
       self._xds_ascii_hkl = os.path.join(
           self.get_working_directory(), 'XDS_ASCII.HKL')
