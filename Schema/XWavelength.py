@@ -122,7 +122,7 @@ class XWavelength(object):
       results_list = easy_mp.parallel_map(
         run_one_sweep, args, params=None,
         processes=njob,
-        method="multiprocessing",
+        method="threading",
         asynchronous=True,
         callback=None,
         preserve_order=True,
