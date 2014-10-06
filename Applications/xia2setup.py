@@ -466,6 +466,11 @@ if __name__ == '__main__':
 
   path = argv.pop()
 
+  params = PhilIndex.params.xia2.settings
+  if params.input.json is not None:
+    assert os.path.isfile(params.input.json)
+    load_datablock(params.input.json)
+
   # perhaps move to a new directory...
 
   crystal = CommandLine.get_crystal_name()
@@ -474,6 +479,8 @@ if __name__ == '__main__':
 
   if not crystal:
     crystal = 'DEFAULT'
+
+  start = os.path.abspath(os.getcwd())
 
   directory = os.path.join(os.getcwd(), crystal, 'setup')
 
@@ -493,3 +500,5 @@ if __name__ == '__main__':
 
   rummage(path)
   print_sweeps(fout)
+
+  save_datablock(os.path.join(start, 'xia2-datablock.json'))
