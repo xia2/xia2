@@ -150,6 +150,35 @@ def get_sweep(f):
 
   return
 
+
+def save_datablock(filename):
+  from Schema import imageset_cache
+  from dxtbx.datablock import DataBlock
+  from dxtbx.serialize import dump
+
+  datablock = DataBlock([])
+  for imagesets in imageset_cache.values():
+    for imageset in imagesets.values():
+      datablock.append(imageset)
+
+  dump.datablock(datablock, filename)
+
+
+def load_datablock(filename):
+  from Schema import imageset_cache
+  from dxtbx.serialize import load
+  from libtbx.containers import OrderedDict
+
+  datablocks = load.datablock(filename, check_format=False)
+
+  for datablock in datablocks:
+    for imageset in datablock.extract_imagesets():
+      template = imageset.get_template()
+      if template not in imageset_cache:
+        imageset_cache[template] = OrderedDict()
+      imageset_cache[template][imageset.get_scan().get_image_range()[0]] = imageset
+
+
 def parse_sequence(sequence_file):
   sequence = ''
 
@@ -399,6 +428,11 @@ def write_xinfo(filename, path, template = None):
     if not 'File exists' in str(e):
       raise e
 
+  params = PhilIndex.params.xia2.settings
+  if params.input.json is not None:
+    assert os.path.isfile(params.input.json)
+    load_datablock(params.input.json)
+
   # FIXME should I have some exception handling in here...?
 
   start = os.getcwd()
@@ -412,6 +446,8 @@ def write_xinfo(filename, path, template = None):
           os.listdir(CommandLine.get_directory()))
   else:
     rummage(path)
+
+  save_datablock(os.path.join(start, 'xia2-datablock.json'))
 
   fout = open(filename, 'w')
   print_sweeps(fout)

@@ -98,6 +98,13 @@ ccp4.truncate {
     .type = str
 }
 xia2.settings {
+  input {
+    json = None
+      .type = path
+      .help = "dxtbx-format datablock.json file which can be provided as an "
+              "alternative source of images header information to avoid the "
+              "need to read all the image headers on start-up."
+  }
   unit_cell = None
     .type = unit_cell
     .help = "Provide a target unit cell to the indexing program"
