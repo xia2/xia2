@@ -104,6 +104,9 @@ class Sweep(object):
   def get_directory(self):
     return os.path.split(self.get_template())[0]
 
+  def get_imageset(self):
+    return self._imageset
+
   def get_images(self):
     # check if any more images have appeared
     self.update()

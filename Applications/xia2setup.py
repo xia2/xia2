@@ -436,6 +436,7 @@ def print_sweeps(out = sys.stdout):
   out.write('END CRYSTAL %s\n' % crystal)
   out.write('END PROJECT %s\n' % project)
 
+
 def get_sweep(args):
   assert len(args) == 1
   directory, template = os.path.split(args[0])
@@ -449,6 +450,7 @@ def get_sweep(args):
     return None
 
   return sweeplist
+
 
 def get_sweeps(templates):
   global known_sweeps
@@ -480,9 +482,18 @@ def get_sweeps(templates):
   else:
     results_list = [get_sweep((template,)) for template in templates]
 
+  from Schema import imageset_cache
+  from libtbx.containers import OrderedDict
+
   for template, sweeplist in zip(templates, results_list):
     if sweeplist is not None:
       known_sweeps[template] = sweeplist
+      for sweep in sweeplist:
+        imageset = sweep.get_imageset()
+        if template not in imageset_cache:
+          imageset_cache[template] = OrderedDict()
+        imageset_cache[template][imageset.get_scan().get_image_range()[0]] = imageset
+
 
 def rummage(path):
   '''Walk through the directories looking for sweeps.'''
