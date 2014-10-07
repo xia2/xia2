@@ -445,7 +445,7 @@ def get_sweep(args):
 
   except exceptions.Exception, e:
     from Handlers.Streams import Debug
-    Debug.write('Exception: %s (%s)' % (str(e), f))
+    Debug.write('Exception: %s (%s)' % (str(e), args[0]))
     return None
 
   return sweeplist
