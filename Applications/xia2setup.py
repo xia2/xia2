@@ -477,6 +477,9 @@ def get_sweeps(templates):
       preserve_order=True,
       preserve_exception_message=True)
 
+  else:
+    results_list = [get_sweep((template,)) for template in templates]
+
   for template, sweeplist in zip(templates, results_list):
     if sweeplist is not None:
       known_sweeps[template] = sweeplist
