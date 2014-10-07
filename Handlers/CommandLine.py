@@ -346,11 +346,19 @@ class _CommandLine(object):
     mp_params = params.xia2.settings.multiprocessing
     if mp_params.mode == 'parallel':
       from libtbx import Auto
-      if mp_params.nproc is Auto:
+      if mp_params.njob is Auto:
         from Handlers.Environment import get_number_cpus
-        Flags.set_parallel(get_number_cpus())
+        mp_params.njob = get_number_cpus()
+        if mp_params.nproc is Auto:
+          mp_params.nproc = 1
+      elif mp_params.nproc is Auto:
+        from Handlers.Environment import get_number_cpus
+        mp_params.nproc = get_number_cpus()
+        Flags.set_parallel(mp_params.nproc)
       else:
         Flags.set_parallel(mp_params.nproc)
+    elif mp_params.mode == 'serial':
+      mp_params.njob = 1
 
     with open('xia2-working.phil', 'wb') as f:
       print >> f, PhilIndex.working_phil.as_str()

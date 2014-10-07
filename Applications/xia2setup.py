@@ -113,11 +113,46 @@ def is_xds_file(f):
 
   return (filename.split('.')[0].split('_') in xds_files)
 
-def get_sweep(f):
+#def get_sweep(f):
+
+  #global target_template
+
+  #global known_sweeps
+
+  #if not is_image_name(f):
+    #return
+
+  #if is_xds_file(f):
+    #return
+
+  ## in here, check the permissions on the file...
+
+  #if not os.access(f, os.R_OK):
+    #from Handlers.Streams import Debug
+    #Debug.write('No read permission for %s' % f)
+
+  #try:
+    #template, directory = image2template_directory(f)
+
+    #if target_template:
+      #if template != target_template:
+        #return
+
+    #key = (directory, template)
+    #if not known_sweeps.has_key(key):
+      #sweeplist = SweepFactory(template, directory)
+      #known_sweeps[key] = sweeplist
+
+  #except exceptions.Exception, e:
+    #from Handlers.Streams import Debug
+    #Debug.write('Exception: %s (%s)' % (str(e), f))
+    ## traceback.print_exc(file = sys.stdout)
+
+  #return
+
+def get_template(f):
 
   global target_template
-
-  global known_sweeps
 
   if not is_image_name(f):
     return
@@ -138,17 +173,12 @@ def get_sweep(f):
       if template != target_template:
         return
 
-    key = (directory, template)
-    if not known_sweeps.has_key(key):
-      sweeplist = SweepFactory(template, directory)
-      known_sweeps[key] = sweeplist
-
   except exceptions.Exception, e:
     from Handlers.Streams import Debug
     Debug.write('Exception: %s (%s)' % (str(e), f))
     # traceback.print_exc(file = sys.stdout)
 
-  return
+  return os.path.join(directory, template)
 
 
 def save_datablock(filename):
@@ -193,25 +223,31 @@ def parse_sequence(sequence_file):
 
 def visit(root, directory, files):
   files.sort()
+
+  templates = set()
+
   for f in files:
 
     full_path = os.path.join(directory, f)
     if is_image_name(full_path):
-      get_sweep(full_path)
+      template = get_template(full_path)
+      if template is not None:
+        templates.add(template)
 
-    if is_scan_name(os.path.join(directory, f)):
+    if is_scan_name(full_path):
       global latest_chooch
       try:
         latest_chooch = Chooch()
         if CommandLine.get_atom_name():
           latest_chooch.set_atom(CommandLine.get_atom_name())
-        latest_chooch.set_scan(os.path.join(directory, f))
+        latest_chooch.set_scan(full_path)
         latest_chooch.scan()
       except:
         latest_chooch = None
 
-    if is_sequence_name(os.path.join(directory, f)):
-      parse_sequence(os.path.join(directory, f))
+    if is_sequence_name(full_path):
+      parse_sequence(full_path)
+  return templates
 
 def print_sweeps(out = sys.stdout):
 
@@ -400,10 +436,59 @@ def print_sweeps(out = sys.stdout):
   out.write('END CRYSTAL %s\n' % crystal)
   out.write('END PROJECT %s\n' % project)
 
+def get_sweep(args):
+  assert len(args) == 1
+  directory, template = os.path.split(args[0])
+
+  try:
+    sweeplist = SweepFactory(template, directory)
+
+  except exceptions.Exception, e:
+    from Handlers.Streams import Debug
+    Debug.write('Exception: %s (%s)' % (str(e), f))
+    return None
+
+  return sweeplist
+
+def get_sweeps(templates):
+  global known_sweeps
+
+  from libtbx import easy_mp
+  from Handlers.Phil import PhilIndex
+  params = PhilIndex.get_python_object()
+  mp_params = params.xia2.settings.multiprocessing
+  njob = mp_params.njob
+
+  if njob > 1:
+    from Driver.DriverFactory import DriverFactory
+    drivertype = DriverFactory.get_driver_type()
+    if drivertype == "qsub":
+      method = "qsub"
+    else:
+      method = "multiprocessing"
+
+    args = [(template,) for template in templates]
+    results_list = easy_mp.parallel_map(
+      get_sweep, args, params=None,
+      processes=njob,
+      method=method,
+      asynchronous=True,
+      callback=None,
+      preserve_order=True,
+      preserve_exception_message=True)
+
+  for template, sweeplist in zip(templates, results_list):
+    if sweeplist is not None:
+      known_sweeps[template] = sweeplist
+
 def rummage(path):
   '''Walk through the directories looking for sweeps.'''
+  templates = set()
   for root, dirs, files in os.walk(path, followlinks=True):
-    visit(os.getcwd(), root, files)
+    templates.update(visit(os.getcwd(), root, files))
+
+  get_sweeps(templates)
+
   return
 
 def write_xinfo(filename, path, template = None):

@@ -103,17 +103,10 @@ class XWavelength(object):
         return s
 
     from libtbx import easy_mp
-    from libtbx import Auto
     from Handlers.Phil import PhilIndex
     params = PhilIndex.get_python_object()
     mp_params = params.xia2.settings.multiprocessing
-    if mp_params.mode == 'serial':
-      njob = 1
-    else:
-      njob = mp_params.njob
-      if njob is Auto:
-        from Handlers.Environment import get_number_cpus
-        njob = get_number_cpus()
+    njob = mp_params.njob
 
     if njob > 1:
       drivertype = DriverFactory.get_driver_type()
