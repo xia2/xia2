@@ -527,11 +527,6 @@ def write_xinfo(filename, path, template = None):
     if not 'File exists' in str(e):
       raise e
 
-  params = PhilIndex.params.xia2.settings
-  if params.input.json is not None:
-    assert os.path.isfile(params.input.json)
-    load_datablock(params.input.json)
-
   # FIXME should I have some exception handling in here...?
 
   start = os.getcwd()
@@ -564,11 +559,6 @@ if __name__ == '__main__':
   # spaced command lines
 
   path = argv.pop()
-
-  params = PhilIndex.params.xia2.settings
-  if params.input.json is not None:
-    assert os.path.isfile(params.input.json)
-    load_datablock(params.input.json)
 
   # perhaps move to a new directory...
 

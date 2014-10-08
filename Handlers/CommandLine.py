@@ -360,6 +360,11 @@ class _CommandLine(object):
     elif mp_params.mode == 'serial':
       mp_params.njob = 1
 
+    if params.xia2.settings.input.json is not None:
+      from Applications.xia2setup import load_datablock
+      assert os.path.isfile(params.xia2.settings.input.json)
+      load_datablock(params.xia2.settings.input.json)
+
     with open('xia2-working.phil', 'wb') as f:
       print >> f, PhilIndex.working_phil.as_str()
     with open('xia2-diff.phil', 'wb') as f:
