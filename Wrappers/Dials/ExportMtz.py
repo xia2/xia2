@@ -60,9 +60,9 @@ def ExportMtz(DriverType = None):
       Debug.write('Running dials.export_mtz')
 
       self.clear_command_line()
-      self.add_command_line(self._experiments_filename)
-      self.add_command_line(self._reflections_filename)
-      self.add_command_line(self._mtz_filename)
+      self.add_command_line('experiments=%s' % self._experiments_filename)
+      self.add_command_line('reflections=%s' % self._reflections_filename)
+      self.add_command_line('hklout=%s' % self._mtz_filename)
       self.start()
       self.close_wait()
       self.check_for_errors()
