@@ -113,43 +113,6 @@ def is_xds_file(f):
 
   return (filename.split('.')[0].split('_') in xds_files)
 
-#def get_sweep(f):
-
-  #global target_template
-
-  #global known_sweeps
-
-  #if not is_image_name(f):
-    #return
-
-  #if is_xds_file(f):
-    #return
-
-  ## in here, check the permissions on the file...
-
-  #if not os.access(f, os.R_OK):
-    #from Handlers.Streams import Debug
-    #Debug.write('No read permission for %s' % f)
-
-  #try:
-    #template, directory = image2template_directory(f)
-
-    #if target_template:
-      #if template != target_template:
-        #return
-
-    #key = (directory, template)
-    #if not known_sweeps.has_key(key):
-      #sweeplist = SweepFactory(template, directory)
-      #known_sweeps[key] = sweeplist
-
-  #except exceptions.Exception, e:
-    #from Handlers.Streams import Debug
-    #Debug.write('Exception: %s (%s)' % (str(e), f))
-    ## traceback.print_exc(file = sys.stdout)
-
-  #return
-
 def get_template(f):
 
   global target_template
@@ -247,6 +210,7 @@ def visit(root, directory, files):
 
     if is_sequence_name(full_path):
       parse_sequence(full_path)
+
   return templates
 
 def print_sweeps(out = sys.stdout):
@@ -536,8 +500,8 @@ def write_xinfo(filename, path, template = None):
   # look there (i.e. not in the subdirectories)
 
   if CommandLine.get_template() and CommandLine.get_directory():
-    visit(None, CommandLine.get_directory(),
-          os.listdir(CommandLine.get_directory()))
+    get_sweeps(visit(None, CommandLine.get_directory(),
+                     os.listdir(CommandLine.get_directory())))
   else:
     rummage(path)
 
@@ -548,6 +512,8 @@ def write_xinfo(filename, path, template = None):
 
   # change back directory c/f bug # 2693 - important for error files...
   os.chdir(start)
+
+  return
 
 if __name__ == '__main__':
 
