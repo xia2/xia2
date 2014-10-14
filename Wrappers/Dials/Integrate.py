@@ -92,10 +92,7 @@ def Integrate(DriverType = None):
       nproc = Flags.get_parallel()
       self.set_cpu_threads(nproc)
 
-      # FIXME temporary bodge to reduce load on machines when running DIALS
-      # integration
-
-      self.add_command_line('nproc=%i' % (nproc // 2))
+      self.add_command_line('nproc=%i' % nproc)
       self.add_command_line(('input.reflections=%s' % self._reflections_filename))
       self.add_command_line(
         'intensity.algorithm=%s' % self._integration_algorithm)
