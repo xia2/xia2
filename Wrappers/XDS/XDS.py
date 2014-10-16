@@ -249,7 +249,7 @@ def imageset_to_xds(imageset, synchrotron = None, reversephi = False,
   params = PhilIndex.get_python_object()
   if params.xds.trusted_region:
     result.append(
-      'TRUSTED_REGION %.2f %.2f' % tuple(params.xds.trusted_region))
+      'TRUSTED_REGION= %.2f %.2f' % tuple(params.xds.trusted_region))
   elif detector_class_is_square[
     detector_helpers_types.get(sensor, fast, slow, df, ds).replace('-', ' ')]:
     result.append('TRUSTED_REGION=0.0 1.41')
