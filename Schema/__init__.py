@@ -33,5 +33,6 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
       if (image_range[0] >= scan_image_range[0] and
           image_range[1] <= scan_image_range[1]):
         return [imageset[
-          scan_image_range[0]-image_range[0]:image_range[1]]]
+          scan_image_range[0]-image_range[0]:
+          scan_image_range[1]-image_range[0]]]
   return imageset_cache[full_template_path].values()
