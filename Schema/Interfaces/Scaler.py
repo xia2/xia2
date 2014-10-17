@@ -604,6 +604,7 @@ class Scaler(object):
     '''Return the overall scaling statistics.'''
 
     self.scale()
+
     return self._scalr_statistics
 
   def get_scaler_cell(self):

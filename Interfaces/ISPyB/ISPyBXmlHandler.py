@@ -198,6 +198,8 @@ class _ISPyBXmlHandler(object):
           for s in stats:
             if type(statistics_all[key][s]) == type([]):
               statistics_cache[s] = statistics_all[key][s][j]
+            elif type(statistics_all[key][s]) == type(()):
+              statistics_cache[s] = statistics_all[key][s][j]
 
           # send these to be written out
           self.write_scaling_statistics(fout, name,
