@@ -540,6 +540,9 @@ if __name__ == '__main__':
     if not os.path.exists(path):
       raise RuntimeError, 'provided path %s does not exist' % path
 
+  if not os.path.isabs(path):
+    path = os.path.abspath(path)
+
   # perhaps move to a new directory...
 
   crystal = CommandLine.get_crystal_name()
@@ -560,9 +563,6 @@ if __name__ == '__main__':
       raise e
 
   os.chdir(directory)
-
-  if not os.path.isabs(path):
-    path = os.path.abspath(path)
 
   rummage(path)
   print_sweeps(fout)
