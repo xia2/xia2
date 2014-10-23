@@ -220,6 +220,13 @@ def print_sweeps(out = sys.stdout):
   sweeplists = known_sweeps.keys()
   sweeplists.sort()
 
+  # sort sweeplist based on epoch of first image of each sweep
+  import operator
+  epochs = [known_sweeps[sweep][0].get_imageset().get_scan().get_epochs()[0]
+            for sweep in sweeplists]
+  sweeplists, epochs = zip(*sorted(zip(sweeplists, epochs),
+    key=operator.itemgetter(0)))
+
   # analysis pass
 
   wavelengths = []
