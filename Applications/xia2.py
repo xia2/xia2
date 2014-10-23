@@ -70,7 +70,11 @@ def check_cctbx_version():
 def check_environment():
   '''Check the environment we are running in...'''
 
+  import cctbx
+
   version = sys.version_info
+  executable = sys.executable
+  cctbx_dir = os.sep.join(cctbx.__file__.split(os.sep)[:-3])
 
   if version[0] < 2:
     raise RuntimeError, 'Python 1.x not supported'
@@ -97,6 +101,9 @@ def check_environment():
     if not v == v.strip():
       raise RuntimeError, 'spaces around "%s"' % v
     Chatter.write('%s => %s' % (k, v))
+
+  Chatter.write('Python => %s' % executable)
+  Chatter.write('CCTBX => %s' % cctbx_dir)
 
   for k in ccp4_keys:
     v = Environment.getenv(k)
