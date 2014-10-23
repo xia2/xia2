@@ -519,12 +519,26 @@ if __name__ == '__main__':
 
   streams_off()
 
-  argv = sys.argv
-
   # test to see if sys.argv[-2] + path is a valid path - to work around
   # spaced command lines
 
-  path = argv.pop()
+  argv = CommandLine.get_argv()
+
+  if not CommandLine.get_directory():
+
+    path = argv.pop()
+
+    while not os.path.exists(path):
+      try:
+        path = '%s %s' % (argv.pop(), path)
+      except IndexError, e:
+        raise RuntimeError, \
+              'directory not found in arguments: %s' % path
+
+  else:
+    path = CommandLine.get_directory()
+    if not os.path.exists(path):
+      raise RuntimeError, 'provided path %s does not exist' % path
 
   # perhaps move to a new directory...
 
@@ -546,9 +560,6 @@ if __name__ == '__main__':
       raise e
 
   os.chdir(directory)
-
-  while not os.path.exists(path):
-    path = '%s %s' % (argv.pop(), path)
 
   if not os.path.isabs(path):
     path = os.path.abspath(path)
