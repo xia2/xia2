@@ -332,16 +332,6 @@ class _CommandLine(object):
     # images assigned, there is a lattice assigned if cell constants
     # are given and so on
 
-    try:
-      self._read_xinfo()
-    except exceptions.Exception, e:
-      traceback.print_exc(file = open('xia2-xinfo.error', 'w'))
-      raise RuntimeError, '%s (%s)' % \
-            (self._help_xinfo(), str(e))
-
-    # finally, check that all arguments were read and raise an exception
-    # if any of them were nonsense.
-
     params = PhilIndex.get_python_object()
     mp_params = params.xia2.settings.multiprocessing
     if mp_params.mode == 'parallel':
@@ -364,6 +354,16 @@ class _CommandLine(object):
       from Applications.xia2setup import load_datablock
       assert os.path.isfile(params.xia2.settings.input.json)
       load_datablock(params.xia2.settings.input.json)
+
+    try:
+      self._read_xinfo()
+    except exceptions.Exception, e:
+      traceback.print_exc(file = open('xia2-xinfo.error', 'w'))
+      raise RuntimeError, '%s (%s)' % \
+            (self._help_xinfo(), str(e))
+
+    # finally, check that all arguments were read and raise an exception
+    # if any of them were nonsense.
 
     with open('xia2-working.phil', 'wb') as f:
       print >> f, PhilIndex.working_phil.as_str()
