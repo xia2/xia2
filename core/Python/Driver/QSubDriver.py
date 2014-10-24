@@ -109,8 +109,11 @@ class QSubDriver(DefaultDriver):
 
     script_name = os.path.join('jobs', self._script_name)
 
-    if not os.path.exists(os.path.join(self._working_directory, 'jobs')):
+    try:
       os.mkdir(os.path.join(self._working_directory, 'jobs'))
+    except OSError, e:
+      if not os.path.exists(os.path.join(self._working_directory, 'jobs')):
+        raise
 
     # copy in LD_LIBRARY_PATH - SGE squashes this
     if 'LD_LIBRARY_PATH' in os.environ and \
