@@ -592,9 +592,18 @@ class XDSScalerA(Scaler):
 
     if self._reference:
 
-      for epoch in self._sweep_information.keys():
+      from Driver.DriverFactory import DriverFactory
 
-        intgr = self._sweep_information[epoch]['integrater']
+      def run_one_sweep(args):
+        sweep_information = args[0]
+        pointless_indexer_jiffy = args[1]
+        factory = args[2]
+        job_type = args[3]
+
+        if job_type:
+          DriverFactory.set_driver_type(job_type)
+
+        intgr = sweep_information['integrater']
         hklin = intgr.get_integrater_intensities()
         indxr = intgr.get_integrater_indexer()
 
@@ -676,7 +685,7 @@ class XDSScalerA(Scaler):
 
         # and copy the reflection file to the local directory
 
-        dname = self._sweep_information[epoch]['dname']
+        dname = sweep_information['dname']
         sname = intgr.get_integrater_sweep_name()
         hklin = intgr.get_integrater_intensities()
         hklout = os.path.join(self.get_working_directory(),
@@ -686,8 +695,43 @@ class XDSScalerA(Scaler):
         shutil.copyfile(hklin, hklout)
 
         # record just the local file name...
-        self._sweep_information[epoch][
-            'prepared_reflections'] = os.path.split(hklout)[-1]
+        sweep_information['prepared_reflections'] = os.path.split(hklout)[-1]
+        return sweep_information
+
+      from libtbx import easy_mp
+      params = PhilIndex.get_python_object()
+      mp_params = params.xia2.settings.multiprocessing
+      njob = mp_params.njob
+
+      if njob > 1:
+        # cache drivertype
+        drivertype = DriverFactory.get_driver_type()
+
+        args = [
+          (self._sweep_information[epoch], self._pointless_indexer_jiffy,
+           self._factory, mp_params.type)
+                for epoch in self._sweep_information.keys()]
+        results_list = easy_mp.parallel_map(
+          run_one_sweep, args, params=None,
+          processes=njob,
+          method="threading",
+          asynchronous=True,
+          callback=None,
+          preserve_order=True,
+          preserve_exception_message=True)
+
+        # restore drivertype
+        DriverFactory.set_driver_type(drivertype)
+
+        # results should be given back in the same order
+        for i, epoch in enumerate(self._sweep_information.keys()):
+          self._sweep_information[epoch] = results_list[i]
+
+      else:
+        for epoch in self._sweep_information.keys():
+          self._sweep_information[epoch] = run_one_sweep(
+            (self._sweep_information[epoch], self._pointless_indexer_jiffy,
+             self._factory, None))
 
     else:
       # convert the XDS_ASCII for this sweep to mtz
@@ -1300,3 +1344,4 @@ class XDSScalerA(Scaler):
         FileHandler.record_data_file(hklout)
 
     return
+
