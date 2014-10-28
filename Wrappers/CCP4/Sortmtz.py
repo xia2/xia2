@@ -82,7 +82,14 @@ def Sortmtz(DriverType = None):
       '''Actually sort the reflections.'''
 
       # if we have not specified > 1 hklin file via the add method,
-      # check that the set_hklin method has been used.
+      # check that the set_hklin method has been used. If exactly one
+      # set this as HKLIN on command line as a workaround for a bug
+      # in sortmtz with big reflection files giving SEGV
+
+      if len(self._hklin_files) == 1:
+        self.set_hklin(self._hklin_files[0])
+        self._hklin_files = []
+
       if not self._hklin_files:
         self.check_hklin()
 
