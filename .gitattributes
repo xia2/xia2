@@ -11,6 +11,7 @@ Applications/xia2hdr.py -text
 Applications/xia2merger -text
 Applications/xia2merger.bat -text
 Applications/xia2merger.py -text
+Applications/xia2setup_helpers.py -text
 Data/detectors.lib -text
 Handlers/Executables.py -text
 Handlers/Phil.py -text

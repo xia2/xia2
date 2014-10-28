@@ -15,7 +15,6 @@
 
 import os
 import sys
-import exceptions
 import time
 import traceback
 
@@ -136,7 +135,7 @@ def get_template(f):
       if template != target_template:
         return
 
-  except exceptions.Exception, e:
+  except Exception, e:
     from Handlers.Streams import Debug
     Debug.write('Exception: %s (%s)' % (str(e), f))
     # traceback.print_exc(file = sys.stdout)
@@ -408,21 +407,6 @@ def print_sweeps(out = sys.stdout):
   out.write('END PROJECT %s\n' % project)
 
 
-def get_sweep(args):
-  assert len(args) == 1
-  directory, template = os.path.split(args[0])
-
-  try:
-    sweeplist = SweepFactory(template, directory)
-
-  except exceptions.Exception, e:
-    from Handlers.Streams import Debug
-    Debug.write('Exception: %s (%s)' % (str(e), args[0]))
-    return None
-
-  return sweeplist
-
-
 def get_sweeps(templates):
   global known_sweeps
 
@@ -432,21 +416,25 @@ def get_sweeps(templates):
   mp_params = params.xia2.settings.multiprocessing
   njob = mp_params.njob
 
+  from Applications.xia2setup_helpers import get_sweep
+
   if njob > 1:
-    from Driver.DriverFactory import DriverFactory
-    drivertype = DriverFactory.get_driver_type()
-    if drivertype == "qsub":
-      method = "qsub"
+    if mp_params.type == "qsub":
+      method = "sge"
     else:
       method = "multiprocessing"
 
+    # If xia2 was a proper cctbx module, then we wouldn't have to do this
+    python_path = 'PYTHONPATH="%s"' %":".join(sys.path)
+    qsub_command="qsub -v %s -V" %python_path
+
     args = [(template,) for template in templates]
     results_list = easy_mp.parallel_map(
-      get_sweep, args, params=None,
+      get_sweep, args,
       processes=njob,
       method=method,
+      qsub_command=qsub_command,
       asynchronous=True,
-      callback=None,
       preserve_order=True,
       preserve_exception_message=True)
 
