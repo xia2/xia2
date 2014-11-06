@@ -131,7 +131,7 @@ def Index(DriverType = None):
       self.clear_command_line()
       self.add_command_line(self._sweep_filename)
       self.add_command_line(self._spot_filename)
-      self.add_command_line('method=%s' % method)
+      self.add_command_line('indexing.method=%s' % method)
       self.add_command_line('use_all_reflections=False')
       self.add_command_line('close_to_spindle_cutoff=0.02')
       if self._max_cell:
