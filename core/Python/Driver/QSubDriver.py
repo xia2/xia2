@@ -151,8 +151,10 @@ class QSubDriver(DefaultDriver):
     if not qsub_command:
       qsub_command = 'qsub'
 
+    import shlex
+    qsub_command = shlex.split(qsub_command)
     if self._cpu_threads > 1:
-      pipe = subprocess.Popen(qsub_command.split() +
+      pipe = subprocess.Popen(qsub_command +
                               ['-V', '-cwd',
                                '-pe', 'smp', '%d' % self._cpu_threads,
                                '%s.sh' % script_name],
@@ -160,7 +162,7 @@ class QSubDriver(DefaultDriver):
                                stdout = subprocess.PIPE,
                                stderr = subprocess.PIPE)
     else:
-      pipe = subprocess.Popen(qsub_command.split() +
+      pipe = subprocess.Popen(qsub_command +
                               ['-V', '-cwd',
                                '%s.sh' % script_name],
                                cwd = self._working_directory,
