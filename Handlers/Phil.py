@@ -108,12 +108,18 @@ xia2.settings {
   unit_cell = None
     .type = unit_cell
     .help = "Provide a target unit cell to the indexing program"
-  optimize_scaling = False
-    .type = bool
-    .help = "Search for best scaling model"
   space_group = None
     .type = space_group
     .help = "Provide a target space group to the indexing program"
+  d_min = None
+    .type = float(value_min=0.0)
+    .help = "High resolution cutoff."
+  d_max = None
+    .type = float(value_min=0.0)
+    .help = "Low resolution cutoff."
+  optimize_scaling = False
+    .type = bool
+    .help = "Search for best scaling model"
   beam_centre = None
     .type = floats(size=2)
     .help = "Beam centre (x,y) coordinates (mm) using the  Mosflm convention"

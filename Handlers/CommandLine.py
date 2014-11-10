@@ -357,6 +357,11 @@ class _CommandLine(object):
     if params.xia2.settings.scaler is not None:
       add_preference("scaler", params.xia2.settings.scaler)
 
+    if params.xia2.settings.d_min is not None:
+      Flags.set_resolution_high(params.xia2.settings.d_min)
+    if params.xia2.settings.d_max is not None:
+      Flags.set_resolution_low(params.xia2.settings.d_max)
+
     if params.xia2.settings.input.json is not None:
       from Applications.xia2setup import load_datablock
       assert os.path.isfile(params.xia2.settings.input.json)
@@ -828,8 +833,17 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_resolution_high(dmin)
-    Flags.set_resolution_low(dmax)
+    PhilIndex.update("xia2.settings.d_min=%s" %dmin)
+    if dmax is not None:
+      PhilIndex.update("xia2.settings.d_max=%s" %dmax)
+      # XXX Warning added 2014-11-10
+      print "Warning: -resolution option deprecated: please use d_min=%s and d_max=%s instead" %(
+        dmin, dmax)
+    else:
+      # XXX Warning added 2014-11-10
+      print "Warning: -resolution option deprecated: please use d_min=%s instead" %(
+        dmin)
+    PhilIndex.get_python_object()
 
     if dmax:
       Debug.write('Resolution set to %.3f %.3f' % (dmin, dmax))
