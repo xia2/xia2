@@ -350,6 +350,13 @@ class _CommandLine(object):
     elif mp_params.mode == 'serial':
       mp_params.njob = 1
 
+    if params.xia2.settings.indexer is not None:
+      add_preference("indexer", params.xia2.settings.indexer)
+    if params.xia2.settings.integrater is not None:
+      add_preference("integrater", params.xia2.settings.integrater)
+    if params.xia2.settings.scaler is not None:
+      add_preference("scaler", params.xia2.settings.scaler)
+
     if params.xia2.settings.input.json is not None:
       from Applications.xia2setup import load_datablock
       assert os.path.isfile(params.xia2.settings.input.json)
@@ -1289,8 +1296,9 @@ class _CommandLine(object):
   def _read_2d(self):
 
     if '-2d' in self._argv:
-      add_preference('integrater', 'mosflmr')
-      add_preference('scaler', 'ccp4a')
+      PhilIndex.update("xia2.settings.integrater=mosflmr")
+      PhilIndex.update("xia2.settings.scaler=ccp4a")
+      PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-2d'))
       Debug.write('2DA pipeline selected')
     return
@@ -1298,18 +1306,20 @@ class _CommandLine(object):
   def _read_2di(self):
 
     if '-2di' in self._argv:
-      add_preference('indexer', 'mosflm')
-      add_preference('integrater', 'mosflmr')
-      add_preference('scaler', 'ccp4a')
+      PhilIndex.update("xia2.settings.indexer=mosflm")
+      PhilIndex.update("xia2.settings.integrater=mosflmr")
+      PhilIndex.update("xia2.settings.scaler=ccp4a")
+      PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-2di'))
       Debug.write('2DA pipeline; mosflm indexing selected')
     return
 
   def _read_dials(self):
     if '-dials' in self._argv:
-      add_preference('indexer', 'dials')
-      add_preference('integrater', 'dials')
-      add_preference('scaler', 'ccp4a')
+      PhilIndex.update("xia2.settings.indexer=dials")
+      PhilIndex.update("xia2.settings.integrater=dials")
+      PhilIndex.update("xia2.settings.scaler=ccp4a")
+      PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-dials'))
       Debug.write('DIALS pipeline selected')
     return
@@ -1317,8 +1327,9 @@ class _CommandLine(object):
   def _read_3d(self):
 
     if '-3d' in self._argv:
-      add_preference('integrater', 'xdsr')
-      add_preference('scaler', 'xdsa')
+      PhilIndex.update("xia2.settings.integrater=xdsr")
+      PhilIndex.update("xia2.settings.scaler=xdsa")
+      PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-3d'))
       Debug.write('3DR pipeline selected')
     return
@@ -1326,9 +1337,10 @@ class _CommandLine(object):
   def _read_3di(self):
 
     if '-3di' in self._argv:
-      add_preference('indexer', 'xds')
-      add_preference('integrater', 'xdsr')
-      add_preference('scaler', 'xdsa')
+      PhilIndex.update("xia2.settings.indexer=xds")
+      PhilIndex.update("xia2.settings.integrater=xdsr")
+      PhilIndex.update("xia2.settings.scaler=xdsa")
+      PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-3di'))
       Debug.write('3DR pipeline; XDS indexing selected')
     return
@@ -1336,9 +1348,10 @@ class _CommandLine(object):
   def _read_3dii(self):
 
     if '-3dii' in self._argv:
-      add_preference('indexer', 'xdsii')
-      add_preference('integrater', 'xdsr')
-      add_preference('scaler', 'xdsa')
+      PhilIndex.update("xia2.settings.indexer=xdsii")
+      PhilIndex.update("xia2.settings.integrater=xdsr")
+      PhilIndex.update("xia2.settings.scaler=xdsa")
+      PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-3dii'))
       Debug.write('3D II R pipeline (XDS IDXREF all images) selected')
     return
@@ -1346,9 +1359,10 @@ class _CommandLine(object):
   def _read_3dd(self):
 
     if '-3dd' in self._argv:
-      add_preference('indexer', 'dials')
-      add_preference('integrater', 'xdsr')
-      add_preference('scaler', 'xdsa')
+      PhilIndex.update("xia2.settings.indexer=dials")
+      PhilIndex.update("xia2.settings.integrater=xdsr")
+      PhilIndex.update("xia2.settings.scaler=xdsa")
+      PhilIndex.get_python_object()
       self._understood.append(self._argv.index('-3dd'))
       Debug.write('3DD pipeline (DIALS indexing) selected')
     return
@@ -1540,7 +1554,14 @@ class _CommandLine(object):
       return
 
     indexer = self._argv[index + 1]
-    add_preference('indexer', indexer)
+
+    # XXX Warning added 2014-11-10
+    print "Warning: -indexer option deprecated: please use indexer='%s' instead" %(
+      indexer)
+
+    PhilIndex.update("xia2.settings.indexer=%s" %indexer)
+    PhilIndex.get_python_object()
+
     self._understood.append(index)
     self._understood.append(index + 1)
     return
@@ -1553,7 +1574,14 @@ class _CommandLine(object):
       return
 
     integrater = self._argv[index + 1]
-    add_preference('integrater', integrater)
+
+    # XXX Warning added 2014-11-10
+    print "Warning: -integrater option deprecated: please use integrater='%s' instead" %(
+      integrater)
+
+    PhilIndex.update("xia2.settings.integrater=%s" %integrater)
+    PhilIndex.get_python_object()
+
     self._understood.append(index)
     self._understood.append(index + 1)
     return
@@ -1566,7 +1594,14 @@ class _CommandLine(object):
       return
 
     scaler = self._argv[index + 1]
-    add_preference('scaler', scaler)
+
+    # XXX Warning added 2014-11-10
+    print "Warning: -scaler option deprecated: please use scaler='%s' instead" %(
+      scaler)
+
+    PhilIndex.update("xia2.settings.scaler=%s" %scaler)
+    PhilIndex.get_python_object()
+
     self._understood.append(index)
     self._understood.append(index + 1)
     return
