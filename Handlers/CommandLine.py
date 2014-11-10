@@ -416,6 +416,10 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
+    # XXX Warning added 2014-11-10
+    print "Warning: -beam option deprecated: please use beam_centre='%s' instead" %(
+        self._argv[index + 1])
+
     PhilIndex.update("xia2.settings.beam_centre=%s" %self._argv[index +1 ])
     PhilIndex.get_python_object()
     Debug.write('Beam read from command line as %f %f' % tuple(
@@ -777,6 +781,10 @@ class _CommandLine(object):
 
     self._understood.append(index)
     self._understood.append(index + 1)
+
+    # XXX Warning added 2014-11-10
+    print "Warning: -spacegroup option deprecated: please use space_group='%s' instead" %(
+        self._argv[index + 1])
 
     Flags.set_spacegroup(self._argv[index + 1]) # XXX this line should go
     PhilIndex.update("xia2.settings.space_group=%s" %self._argv[index + 1])
@@ -1421,6 +1429,10 @@ class _CommandLine(object):
             '-cell correct use "-cell a,b,c,alpha,beta,gamma"'
 
     _cell = tuple(map(float, cell))
+
+    # XXX Warning added 2014-11-10
+    print "Warning: -cell option deprecated: please use unit_cell='%s' instead" %(
+        self._argv[index + 1])
 
     PhilIndex.update("xia2.settings.unit_cell=%s,%s,%s,%s,%s,%s" %_cell)
     PhilIndex.get_python_object()
