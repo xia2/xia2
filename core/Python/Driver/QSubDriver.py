@@ -34,12 +34,28 @@
 #
 
 import os
+import sys
 import subprocess
 import time
 import random
 
 from DefaultDriver import DefaultDriver
 from DriverHelper import script_writer
+
+# Now depend on Phil scope from xia2...
+if not os.environ.has_key('XIA2_ROOT'):
+  raise RuntimeError, 'XIA2_ROOT not defined'
+
+if not os.environ['XIA2_ROOT'] in sys.path:
+  sys.path.append(os.environ['XIA2_ROOT'])
+
+def get_qsub_command():
+  from Handlers.Phil import PhilIndex
+  params = PhilIndex.get_python_object()
+  mp_params = params.xia2.settings.multiprocessing
+  if mp_params.qsub_command:
+    return mp_params.qsub_command
+  return None
 
 class QSubDriver(DefaultDriver):
 
@@ -131,15 +147,21 @@ class QSubDriver(DefaultDriver):
     # this will return almost instantly, once the job is in
     # the queue
 
+    qsub_command = get_qsub_command()
+    if not qsub_command:
+      qsub_command = 'qsub'
+
     if self._cpu_threads > 1:
-      pipe = subprocess.Popen(['qsub', '-V', '-cwd',
+      pipe = subprocess.Popen(qsub_command.split() +
+                              ['-V', '-cwd',
                                '-pe', 'smp', '%d' % self._cpu_threads,
                                '%s.sh' % script_name],
                                cwd = self._working_directory,
                                stdout = subprocess.PIPE,
                                stderr = subprocess.PIPE)
     else:
-      pipe = subprocess.Popen(['qsub', '-V', '-cwd',
+      pipe = subprocess.Popen(qsub_command.split() +
+                              ['-V', '-cwd',
                                '%s.sh' % script_name],
                                cwd = self._working_directory,
                                stdout = subprocess.PIPE,

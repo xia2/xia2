@@ -160,6 +160,9 @@ xia2.settings {
     type = *simple qsub
       .type = choice
       .help = "How to run the parallel processing jobs, e.g. over a cluster"
+    qsub_command = ''
+      .type = str
+      .help = "The command to use to submit qsub jobs"
   }
 }
 """, process_includes=True)
