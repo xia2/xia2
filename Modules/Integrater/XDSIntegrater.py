@@ -357,8 +357,8 @@ class XDSIntegrater(FrameProcessor,
       exporter.run()
 
       for file in ['XPARM.XDS']:
-        self._data_files[file] = open(os.path.join(
-          self.get_working_directory(), 'xds', file), 'rb').read()
+        self._data_files[file] = os.path.join(
+          self.get_working_directory(), 'xds', file)
 
       self._intgr_indexer.set_indexer_payload('xds_files', self._data_files)
 
