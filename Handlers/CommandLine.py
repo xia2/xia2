@@ -684,9 +684,13 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_parallel(int(self._argv[index + 1]))
-    Debug.write('Parallel set to %d' % Flags.get_parallel())
+    # XXX Warning added 2014-11-10
+    print "Warning: -parallel option deprecated: please use nproc=%s instead" %(
+        self._argv[index + 1])
 
+    PhilIndex.update("xia2.settings.multiprocessing.nproc=%s" %(
+      self._argv[index + 1]))
+    PhilIndex.get_python_object()
     return
 
   def _help_parallel(self):
