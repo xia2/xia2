@@ -994,8 +994,6 @@ class XDSIntegrater(FrameProcessor,
 
     hklout = os.path.splitext(integrate_hkl)[0] + ".mtz"
     pointless = self._factory.Pointless()
-    pointless.set_working_directory(self.get_working_directory())
-    auto_logfiler(pointless)
     pointless.set_xdsin(integrate_hkl)
     pointless.set_hklout(hklout)
     pointless.xds_to_mtz()
