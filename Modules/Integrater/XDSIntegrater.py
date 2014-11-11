@@ -993,6 +993,7 @@ class XDSIntegrater(FrameProcessor,
       self.get_working_directory(), 'INTEGRATE.HKL')
 
     hklout = os.path.splitext(integrate_hkl)[0] + ".mtz"
+    self._factory.set_working_directory(self.get_working_directory())
     pointless = self._factory.Pointless()
     pointless.set_xdsin(integrate_hkl)
     pointless.set_hklout(hklout)
