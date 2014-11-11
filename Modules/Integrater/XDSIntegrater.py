@@ -620,6 +620,9 @@ class XDSIntegrater(FrameProcessor,
     Chatter.write('Mosaic spread: %.3f < %.3f < %.3f' % \
                   self.get_integrater_mosaic_min_mean_max())
 
+    # FIXME in here convert this to MTZ format & *** reapply any reindexing
+    # operations *** to allow use with CCP4 / Aimless for scaling
+
     return os.path.join(self.get_working_directory(), 'INTEGRATE.HKL')
 
   def _integrate_finish(self):
