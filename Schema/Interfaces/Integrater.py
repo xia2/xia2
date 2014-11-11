@@ -540,10 +540,6 @@ class Integrater(object):
     self.integrate()
     return self._intgr_hklout
 
-  def get_integrater_raw_intensities(self):
-    self.integrate()
-    return self._intgr_hklout_raw
-
   def get_integrater_batches(self):
     self.integrate()
     return self._intgr_batches_out

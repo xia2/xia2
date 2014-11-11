@@ -34,6 +34,8 @@ from Wrappers.XDS.XDSInit import XDSInit as _Init
 from Wrappers.XDS.XDSDefpix import XDSDefpix as _Defpix
 from Wrappers.XDS.XDSIntegrate import XDSIntegrate as _Integrate
 from Wrappers.XDS.XDSCorrect import XDSCorrect as _Correct
+from Wrappers.CCP4.CCP4Factory import CCP4Factory
+from Wrappers.CCP4.Reindex import Reindex
 
 # helper functions
 
@@ -88,6 +90,9 @@ class XDSIntegrater(FrameProcessor,
     # internal parameters to pass around
     self._integrate_parameters = { }
 
+    # factory for pointless -used for converting INTEGRATE.HKL to .mtz
+    self._factory = CCP4Factory()
+
     return
 
   # overload these methods as we don't want the resolution range
@@ -107,6 +112,10 @@ class XDSIntegrater(FrameProcessor,
   def set_integrater_low_resolution(self, dmax, user = False):
     self._intgr_reso_low = dmax
     return
+
+  def get_integrater_corrected_intensities(self):
+    self.integrate()
+    return self._intgr_corrected_hklout
 
   # admin functions
 
@@ -620,9 +629,6 @@ class XDSIntegrater(FrameProcessor,
     Chatter.write('Mosaic spread: %.3f < %.3f < %.3f' % \
                   self.get_integrater_mosaic_min_mean_max())
 
-    # FIXME in here convert this to MTZ format & *** reapply any reindexing
-    # operations *** to allow use with CCP4 / Aimless for scaling
-
     return os.path.join(self.get_working_directory(), 'INTEGRATE.HKL')
 
   def _integrate_finish(self):
@@ -823,7 +829,7 @@ class XDSIntegrater(FrameProcessor,
     # here, for instance the resolution range to use in integration
     # (which should be fed back if not fast) and so on...
 
-    intgr_hklout = os.path.join(self.get_working_directory(),
+    self._intgr_corrected_hklout = os.path.join(self.get_working_directory(),
                                 'XDS_ASCII.HKL')
 
     # also record the batch range - needed for the analysis of the
@@ -980,7 +986,45 @@ class XDSIntegrater(FrameProcessor,
           'Going quickly so not removing %d outlier reflections...' % \
           len(correct.get_remove()))
 
-    return intgr_hklout
+    # Convert INTEGRATE.HKL to MTZ format and reapply any reindexing operations
+    # spacegroup changes to allow use with CCP4 / Aimless for scaling
+
+    integrate_hkl = os.path.join(
+      self.get_working_directory(), 'INTEGRATE.HKL')
+
+    hklout = os.path.splitext(integrate_hkl)[0] + ".mtz"
+    pointless = self._factory.Pointless()
+    pointless.set_working_directory(self.get_working_directory())
+    auto_logfiler(pointless)
+    pointless.set_xdsin(integrate_hkl)
+    pointless.set_hklout(hklout)
+    pointless.xds_to_mtz()
+
+    integrate_mtz = hklout
+
+    if self.get_integrater_reindex_matrix() or \
+       self.get_integrater_spacegroup_number():
+
+      Chatter.write('Reindexing things to MTZ')
+
+      reindex = Reindex()
+      reindex.set_working_directory(self.get_working_directory())
+      auto_logfiler(reindex)
+
+      if self.get_integrater_reindex_matrix():
+        reindex.set_operator(self.get_integrater_reindex_matrix())
+
+      if self.get_integrater_spacegroup_number():
+        reindex.set_spacegroup(self.get_integrater_spacegroup_number())
+
+      hklout = '%s_reindex.mtz' % os.path.splitext(integrate_mtz)[0]
+
+      reindex.set_hklin(integrate_mtz)
+      reindex.set_hklout(hklout)
+      reindex.reindex()
+      integrate_mtz = hklout
+
+    return integrate_mtz
 
 if __name__ == '__main__':
 

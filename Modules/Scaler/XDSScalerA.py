@@ -274,12 +274,6 @@ class XDSScalerA(Scaler):
 
     self._first_epoch = min(epochs)
 
-    for epoch in epochs:
-      # check that this is XDS_ASCII format...
-      # self._sweep_information[epoch][
-      # 'integrater'].get_integrater_intensities()
-      pass
-
     self._scalr_pname = self._sweep_information[epochs[0]]['pname']
     self._scalr_xname = self._sweep_information[epochs[0]]['xname']
 
@@ -311,7 +305,7 @@ class XDSScalerA(Scaler):
       for epoch in self._sweep_information.keys():
 
         intgr = self._sweep_information[epoch]['integrater']
-        hklin = intgr.get_integrater_intensities()
+        hklin = intgr.get_integrater_corrected_intensities()
         indxr = intgr.get_integrater_indexer()
 
         if self._scalr_input_pointgroup:
@@ -437,7 +431,7 @@ class XDSScalerA(Scaler):
       for epoch in self._sweep_information.keys():
 
         intgr = self._sweep_information[epoch]['integrater']
-        hklin = intgr.get_integrater_intensities()
+        hklin = intgr.get_integrater_corrected_intensities()
         indxr = intgr.get_integrater_indexer()
 
         # in here need to consider what to do if the user has
@@ -477,7 +471,7 @@ class XDSScalerA(Scaler):
 
         dname = self._sweep_information[epoch]['dname']
         sname = intgr.get_integrater_sweep_name()
-        hklin = intgr.get_integrater_intensities()
+        hklin = intgr.get_integrater_corrected_intensities()
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s.mtz' % (dname, sname))
 
@@ -510,7 +504,7 @@ class XDSScalerA(Scaler):
 
         dname = self._sweep_information[epoch]['dname']
         sname = intgr.get_integrater_sweep_name()
-        hklin = intgr.get_integrater_intensities()
+        hklin = intgr.get_integrater_corrected_intensities()
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s.mtz' % (dname, sname))
 
@@ -518,7 +512,7 @@ class XDSScalerA(Scaler):
         intgr.set_integrater_reindex_operator(reindex_op)
 
         # and copy the reflection file to the local directory
-        hklin = intgr.get_integrater_intensities()
+        hklin = intgr.get_integrater_corrected_intensities()
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s.HKL' % (dname, sname))
 
@@ -539,7 +533,7 @@ class XDSScalerA(Scaler):
 
       intgr = self._sweep_information[self._first_epoch]['integrater']
 
-      hklin = intgr.get_integrater_intensities()
+      hklin = intgr.get_integrater_corrected_intensities()
       indxr = intgr.get_integrater_indexer()
 
       if self._scalr_input_pointgroup:
@@ -575,7 +569,7 @@ class XDSScalerA(Scaler):
       intgr.set_integrater_spacegroup_number(
           Syminfo.spacegroup_name_to_number(pointgroup))
 
-      hklin = intgr.get_integrater_intensities()
+      hklin = intgr.get_integrater_corrected_intensities()
 
       hklout = os.path.join(self.get_working_directory(),
                             'xds-pointgroup-reference-unsorted.mtz')
@@ -604,7 +598,7 @@ class XDSScalerA(Scaler):
           DriverFactory.set_driver_type(job_type)
 
         intgr = sweep_information['integrater']
-        hklin = intgr.get_integrater_intensities()
+        hklin = intgr.get_integrater_corrected_intensities()
         indxr = intgr.get_integrater_indexer()
 
         # in here need to consider what to do if the user has
@@ -642,7 +636,7 @@ class XDSScalerA(Scaler):
         # convert the XDS_ASCII for this sweep to mtz - on the next
         # get this should be in the correct setting...
 
-        hklin = intgr.get_integrater_intensities()
+        hklin = intgr.get_integrater_corrected_intensities()
         hklout = os.path.join(self.get_working_directory(),
                               'xds-pointgroup-unsorted.mtz')
         FileHandler.record_temporary_file(hklout)
@@ -687,7 +681,7 @@ class XDSScalerA(Scaler):
 
         dname = sweep_information['dname']
         sname = intgr.get_integrater_sweep_name()
-        hklin = intgr.get_integrater_intensities()
+        hklin = intgr.get_integrater_corrected_intensities()
         hklout = os.path.join(self.get_working_directory(),
                               '%s_%s.HKL' % (dname, sname))
 
@@ -746,7 +740,7 @@ class XDSScalerA(Scaler):
       FileHandler.record_temporary_file(hklout)
 
       pointless = self._factory.Pointless()
-      pointless.set_xdsin(intgr.get_integrater_intensities())
+      pointless.set_xdsin(intgr.get_integrater_corrected_intensities())
       pointless.set_hklout(hklout)
       pointless.xds_to_mtz()
 
@@ -788,7 +782,7 @@ class XDSScalerA(Scaler):
       intgr.set_integrater_spacegroup_number(
           Syminfo.spacegroup_name_to_number(pointgroup))
 
-      hklin = intgr.get_integrater_intensities()
+      hklin = intgr.get_integrater_corrected_intensities()
       dname = self._sweep_information[epoch]['dname']
       hklout = os.path.join(self.get_working_directory(),
                             '%s_%s.HKL' % (dname, sname))

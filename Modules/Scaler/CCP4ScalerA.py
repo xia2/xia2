@@ -291,16 +291,7 @@ class CCP4ScalerA(Scaler):
 
     for e in self._sweep_handler.get_epochs():
       si = self._sweep_handler.get_sweep_information(e)
-      hklin = si.get_reflections()
-      if not is_mtz_file(hklin):
-        # Then assume we must have an xds reflection file
-        hklout = os.path.splitext(hklin)[0] + ".mtz"
-        pointless = self._factory.Pointless()
-        pointless.set_xdsin(hklin)
-        pointless.set_hklout(hklout)
-        pointless.xds_to_mtz()
-        si.set_reflections(hklout)
-      #assert is_mtz_file(si.get_reflections())
+      assert is_mtz_file(si.get_reflections())
 
     p, x = self._sweep_handler.get_project_info()
     self._scalr_pname = p
