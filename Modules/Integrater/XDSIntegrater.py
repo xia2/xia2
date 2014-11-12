@@ -1004,7 +1004,7 @@ class XDSIntegrater(FrameProcessor,
     if self.get_integrater_reindex_operator() or \
        self.get_integrater_spacegroup_number():
 
-      Chatter.write('Reindexing things to MTZ')
+      Debug.write('Reindexing things to MTZ')
 
       reindex = Reindex()
       reindex.set_working_directory(self.get_working_directory())
