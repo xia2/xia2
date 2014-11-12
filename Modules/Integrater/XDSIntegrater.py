@@ -1001,7 +1001,7 @@ class XDSIntegrater(FrameProcessor,
 
     integrate_mtz = hklout
 
-    if self.get_integrater_reindex_matrix() or \
+    if self.get_integrater_reindex_operator() or \
        self.get_integrater_spacegroup_number():
 
       Chatter.write('Reindexing things to MTZ')
@@ -1010,8 +1010,8 @@ class XDSIntegrater(FrameProcessor,
       reindex.set_working_directory(self.get_working_directory())
       auto_logfiler(reindex)
 
-      if self.get_integrater_reindex_matrix():
-        reindex.set_operator(self.get_integrater_reindex_matrix())
+      if self.get_integrater_reindex_operator():
+        reindex.set_operator(self.get_integrater_reindex_operator())
 
       if self.get_integrater_spacegroup_number():
         reindex.set_spacegroup(self.get_integrater_spacegroup_number())
