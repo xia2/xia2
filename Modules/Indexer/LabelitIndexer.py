@@ -185,7 +185,7 @@ class LabelitIndexer(FrameProcessor,
 
     #self.reset()
 
-    from Wrappers.Labelit.LabelitIndexWrapper import LabelitIndex
+    from Wrappers.Labelit.LabelitIndex import LabelitIndex
 
     _images = []
     for i in self._indxr_images:
