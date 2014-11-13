@@ -147,15 +147,6 @@ def Mosflm(DriverType = None):
       if self._indxr_images == []:
         self._index_select_images()
 
-      # temporary bodge plumb in spot finding to test...
-
-      if False:
-        from lib.bits import unique_elements
-        from Wrappers.Mosflm.Findspots import Findspots
-        fs = Findspots()
-        fs.set_working_directory(self.get_working_directory())
-        fs(self, unique_elements(self._indxr_images))
-
       if self._mosflm_autoindex_thresh is None and \
              Flags.get_microcrystal():
         self._mosflm_autoindex_thresh = 5
@@ -862,21 +853,6 @@ def Mosflm(DriverType = None):
             ratio += rms_deviations[c][j] / rms_deviations_p1[c][j]
             ratios.append(
                 (rms_deviations[c][j] / rms_deviations_p1[c][j]))
-
-        # fixme in here only run this if lattice != aP
-
-        if False and self.get_integrater_indexer(
-            ).get_indexer_lattice() != 'aP':
-
-          good, bad = remove_outliers(ratios, 6)
-          m, s = meansd(good)
-
-          bs = ''
-          for b in bad:
-            bs += '%.3f ' % b
-
-          Debug.write('%d outlier ratios: %s' % (len(bad), bs))
-          Debug.write('Of the good: %.3f +- %.3f' % (m, s))
 
         Debug.write('Average ratio: %.2f' % \
                     (ratio / len(ratios)))
