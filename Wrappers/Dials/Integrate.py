@@ -85,7 +85,7 @@ def Integrate(DriverType = None):
 
     def run(self):
       from Handlers.Streams import Debug
-      Debug.write('Running dials.integrate2')
+      Debug.write('Running dials.integrate')
 
       self.clear_command_line()
       self.add_command_line('input.experiments=%s' % self._experiments_filename)
