@@ -28,9 +28,12 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Wrappers.Labelit.LabelitIndex import LabelitIndex
 
-def compute_beam_centre(sweep, working_directory = os.getcwd()):
+def compute_beam_centre(sweep, working_directory=None):
   '''Compute the beam centre for the input sweep, working in the provided
   directory, perhaps.'''
+
+  if working_directory is None:
+    working_directory = os.getcwd()
 
   beam_centre = sweep.get_beam_centre()
 
@@ -39,6 +42,7 @@ def compute_beam_centre(sweep, working_directory = os.getcwd()):
 
   try:
     ls = LabelitIndex(indxr_print = False)
+    ls.set_working_directory(working_directory)
     ls.setup_from_image(sweep.imagename(min(sweep.get_images())))
     beam_centre = ls.get_indexer_beam_centre()
   except exceptions.Exception, e:

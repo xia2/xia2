@@ -72,6 +72,7 @@ Wrappers/Dials/__init__.py -text
 Wrappers/Labelit/DistlSignalStrength.py -text
 Wrappers/Labelit/DistlSweepStrength.py -text
 Wrappers/Labelit/LabelitIndexII.py -text
+Wrappers/Labelit/LabelitIndexWrapper.py -text
 Wrappers/Labelit/LabelitMosflmMatrix.py -text
 Wrappers/Mosflm/Autoindex.py -text
 Wrappers/Mosflm/AutoindexHelpers.py -text

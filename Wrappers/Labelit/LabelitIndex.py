@@ -49,6 +49,7 @@ from Modules.Indexer.IndexerSelectImages import index_select_images_lone, \
      index_select_images_user
 
 from lib.bits import auto_logfiler
+from lib.SymmetryLib import lattice_to_spacegroup
 from Handlers.Streams import Chatter, Debug, Journal
 from Handlers.Citations import Citations
 from Handlers.Flags import Flags
@@ -66,8 +67,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
   # would be better to have a higher level module which did that as a
   # bridge...
 
-  class LabelitIndexWrapper(DriverInstance.__class__,
-                            FrameProcessor,
+  class LabelitIndexWrapper(FrameProcessor,
                             Indexer):
     '''A wrapper for the program labelit.index - which will provide
     functionality for deciding the beam centre and indexing the
@@ -75,13 +75,9 @@ def LabelitIndex(DriverType = None, indxr_print = True):
 
     def __init__(self):
 
-      DriverInstance.__class__.__init__(self)
-
       # interface constructor calls
       FrameProcessor.__init__(self)
       Indexer.__init__(self)
-
-      self.set_executable('labelit.index')
 
       # control over the behaviour
 
@@ -91,7 +87,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
 
       self._beam_search_scope = 0.0
 
-      self._solutions = { }
+      #self._solutions = { }
 
       self._solution = None
 
@@ -153,24 +149,6 @@ def LabelitIndex(DriverType = None, indxr_print = True):
 
       return
 
-    def check_labelit_errors(self):
-      '''Check through the standard output for error reports.'''
-
-      output = self.get_all_output()
-
-      for o in output:
-        if 'No_Indexing_Solution' in o:
-          raise RuntimeError, 'indexing failed: %s' % \
-                o.split(':')[-1].strip()
-        if 'InputFileError' in o:
-          raise RuntimeError, 'indexing failed: %s' % \
-                o.split(':')[-1].strip()
-        if 'INDEXING UNRELIABLE' in o:
-          raise RuntimeError, 'indexing failed: %s' % \
-                o.split(':')[-1].strip()
-
-      return
-
     def _index_prepare(self):
       # prepare to do some autoindexing
 
@@ -219,7 +197,9 @@ def LabelitIndex(DriverType = None, indxr_print = True):
       Citations.cite('labelit')
       Citations.cite('distl')
 
-      self.reset()
+      #self.reset()
+
+      from Wrappers.Labelit.LabelitIndexWrapper import LabelitIndex
 
       _images = []
       for i in self._indxr_images:
@@ -259,61 +239,45 @@ def LabelitIndex(DriverType = None, indxr_print = True):
       if len(_images) > 4:
         raise RuntimeError, 'cannot use more than 4 images'
 
-      auto_logfiler(self)
+      index = LabelitIndex()
+      index.set_working_directory(self.get_working_directory())
+      auto_logfiler(index)
 
-      task = 'Autoindex from images:'
+      #task = 'Autoindex from images:'
 
-      for i in _images:
-        task += ' %s' % self.get_image_name(i)
+      #for i in _images:
+        #task += ' %s' % self.get_image_name(i)
 
-      self.set_task(task)
-
-      self.add_command_line('--index_only')
+      #self.set_task(task)
 
       Debug.write('Indexing from images:')
       for i in _images:
-        self.add_command_line(self.get_image_name(i))
+        index.add_image(self.get_image_name(i))
         Debug.write('%s' % self.get_image_name(i))
 
-      if self._indxr_input_lattice and False:
-        lattice_to_spacegroup = {'aP':1,   'mP':3,   'mC':5,   'oP':16,
-                                 'oC':20,  'oF':22,  'oI':23,  'tP':75,
-                                 'tI':79,  'hP':143, 'hR':146, 'cP':195,
-                                 'cF':196, 'cI':197}
+      if self.get_distance_prov() == 'user':
+        index.set_distance(self.get_distance())
+      if self.get_wavelength_prov() == 'user':
+        index.set_wavelength(self.get_wavelength())
+      if self.get_beam_prov() == 'user':
+        index.set_beam_centre(self.get_beam_centre())
 
-        self.add_command_line(
-            'known_symmetry=%d' % \
-            lattice_to_spacegroup[self._indxr_input_lattice])
+      if self._refine_beam is False:
+        index.set_refine_beam(False)
+      else:
+        index.set_refine_beam(True)
+        index.set_beam_search_scope(self._beam_search_scope)
 
-      if self._indxr_input_cell and False:
-        self.add_command_line('known_cell=%f,%f,%f,%f,%f,%f' % \
-                              self._indxr_input_cell)
-
-      self._write_dataset_preferences(len(_images))
-
-      shutil.copyfile(os.path.join(self.get_working_directory(),
-                                   'dataset_preferences.py'),
-                      os.path.join(self.get_working_directory(),
-                                   '%d_dataset_preferences.py' % \
-                                   self.get_xpid()))
-
-      self.start()
-      self.close_wait()
+      if ((math.fabs(self.get_wavelength() - 1.54) < 0.01) or
+          (math.fabs(self.get_wavelength() - 2.29) < 0.01)):
+        index.set_Cu_KA_or_Cr_KA(True)
 
       sweep = self.get_indexer_sweep_name()
-      FileHandler.record_log_file(
-          '%s INDEX' % (sweep), self.get_log_file())
-
-      # check for errors
-      self.check_for_errors()
-
-      # check for labelit errors - if something went wrong, then
-      # try to address it by e.g. extending the beam search area...
+      #FileHandler.record_log_file(
+          #'%s INDEX' % (sweep), self.get_log_file())
 
       try:
-
-        self.check_labelit_errors()
-
+        index.run()
       except RuntimeError, e:
 
         if self._refine_beam is False:
@@ -333,113 +297,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
 
         raise e
 
-
-      # ok now we're done, let's look through for some useful stuff
-      output = self.get_all_output()
-
-      counter = 0
-
-      # FIXME 03/NOV/06 something to do with the new centre search...
-
-      # example output:
-
-      # Beam center is not immediately clear; rigorously retesting \
-      #                                             2 solutions
-      # Beam x 109.0 y 105.1, initial score 538; refined rmsd: 0.1969
-      # Beam x 108.8 y 106.1, initial score 354; refined rmsd: 0.1792
-
-      # in here want to parse the beam centre search if it was done,
-      # and check that the highest scoring solution was declared
-      # the "best" - though should also have a check on the
-      # R.M.S. deviation of that solution...
-
-      # do this first!
-
-      for j in range(len(output)):
-        o = output[j]
-        if 'Beam centre is not immediately clear' in o:
-          # read the solutions that it has found and parse the
-          # information
-
-          centres = []
-          scores = []
-          rmsds = []
-
-          num_solutions = int(o.split()[-2])
-
-          for n in range(num_solutions):
-            record = output[j + n + 1].replace(',', ' ').replace(
-                ';', ' ').split()
-            x, y = float(record[2]), \
-                   float(record[4])
-
-            centres.append((x, y))
-            scores.append(int(record[7]))
-            rmsds.append(float(record[-1]))
-
-          # next perform some analysis and perhaps assert the
-          # correct solution - for the moment just raise a warning
-          # if it looks like wrong solution may have been picked
-
-          best_beam_score = (0.0, 0.0, 0)
-          best_beam_rms = (0.0, 0.0, 1.0e8)
-
-          for n in range(num_solutions):
-            beam = centres[n]
-            score = scores[n]
-            rmsd = rmsds[n]
-
-            if score > best_beam_score[2]:
-              best_beam_score = (beam[0], beam[1], score)
-
-            if rmsd < best_beam_rmsd[2]:
-              best_beam_rmsd = (beam[0], beam[1], rmsd)
-
-          # allow a difference of 0.1mm in either direction...
-          if math.fabs(
-              best_beam_score[0] -
-              best_beam_rmsd[0]) > 0.1 or \
-              math.fabs(best_beam_score[1] -
-                        best_beam_rmsd[1]) > 0.1:
-            Chatter.write(
-                'Labelit may have picked the wrong beam centre')
-
-            # FIXME as soon as I get the indexing loop
-            # structure set up, this should reset the
-            # indexing done flag, set the search range to
-            # 0, correct beam and then return...
-
-            # should also allow for the possibility that
-            # labelit has selected the best solution - so this
-            # will need to remember the stats for this solution,
-            # then compare them against the stats (one day) from
-            # running with the other solution - eventually the
-            # correct solution will result...
-
-      for o in output:
-        l = o.split()
-
-        if l[:3] == ['Beam', 'center', 'x']:
-          x = float(l[3].replace('mm,', ''))
-          y = float(l[5].replace('mm,', ''))
-
-          mosflm_beam_centre = (x, y)
-          mosflm_detector_distance = float(l[7].replace('mm', ''))
-          #self.set_indexer_beam_centre((x, y))
-          #self.set_indexer_distance(float(l[7].replace('mm', '')))
-
-          self._mosaic = float(l[10].replace('mosaicity=', ''))
-
-        if l[:3] == ['Solution', 'Metric', 'fit']:
-          break
-
-        counter += 1
-
-      # if we've just broken out (counter < len(output)) then
-      # we need to gather the output
-
-      if counter >= len(output):
-        raise RuntimeError, 'error in indexing'
+      self._solutions = index.get_solutions()
 
       # FIXME this needs to check the smilie status e.g.
       # ":)" or ";(" or "  ".
@@ -451,32 +309,12 @@ def LabelitIndex(DriverType = None, indxr_print = True):
       # (euugh!) have to "ignore" solutions with higher symmetry
       # otherwise the rest of xia will override us. Bummer.
 
-      lattice_to_spacegroup = {'aP':1, 'mP':3, 'mC':5, 'oP':16,
-                               'oC':20, 'oF':22, 'oI':23, 'tP':75,
-                               'tI':79, 'hP':143, 'hR':146, 'cP':195,
-                               'cF':196, 'cI':197}
-
-      for i in range(counter + 1, len(output)):
-        o = output[i][3:]
-        smiley = output[i][:3]
-        l = o.split()
-        if l:
-
-          if self._indxr_user_input_lattice:
-            if lattice_to_spacegroup[l[6]] > \
-               lattice_to_spacegroup[self._indxr_input_lattice]:
-              Debug.write('Ignoring solution: %s' % l[6])
-              continue
-
-          self._solutions[int(l[0])] = {'number':int(l[0]),
-                                        'mosaic':self._mosaic,
-                                        'metric':float(l[1]),
-                                        'rmsd':float(l[3]),
-                                        'nspots':int(l[4]),
-                                        'lattice':l[6],
-                                        'cell':map(float, l[7:13]),
-                                        'volume':int(l[-1]),
-                                        'smiley':smiley}
+      for i, solution in self._solutions.iteritems():
+        if self._indxr_user_input_lattice:
+          if (lattice_to_spacegroup(solution['lattice']) >
+              lattice_to_spacegroup(self._indxr_user_input_lattice)):
+            Debug.write('Ignoring solution: %s' % solution['lattice'])
+            del self._solutions[i]
 
       # check the RMSD from the triclinic unit cell
       if self._solutions[1]['rmsd'] > 1.0 and False:

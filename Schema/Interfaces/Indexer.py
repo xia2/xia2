@@ -186,6 +186,15 @@ class Indexer(object):
 
     return
 
+  # admin functions
+
+  def set_working_directory(self, working_directory):
+    self._working_directory = working_directory
+    return
+
+  def get_working_directory(self):
+    return self._working_directory
+
   # ----------------------------------------------------------------
   # These are functions which will want to be overloaded for the
   # actual implementation - preparation may do things like gathering
