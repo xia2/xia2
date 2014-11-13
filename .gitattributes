@@ -41,6 +41,7 @@ Modules/Xia2html/icons/info.png -text
 Modules/Xia2html/icons/warning.png -text
 Schema/XLattice.py -text
 Test/Dials/Platform.py -text
+Test/Mosflm/MosflmRefactorTest.py -text
 Test/Mosflm/Platform.py -text
 Test/Mosflm/PlatformHelpers.py -text
 Toolkit/BackstopMask.py -text
