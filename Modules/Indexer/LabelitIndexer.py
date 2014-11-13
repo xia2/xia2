@@ -490,3 +490,4 @@ class LabelitIndexer(FrameProcessor,
 
         raise RuntimeError, 'no solution for lattice %s' % \
               self._indxr_input_lattice
+
