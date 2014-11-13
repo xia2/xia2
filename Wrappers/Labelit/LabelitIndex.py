@@ -61,6 +61,8 @@ def LabelitIndex(DriverType = None, indxr_print = True):
       self._beam_centre = None
       self._wavelength = None
       self._distance = None
+      self._mosflm_beam_centre = None
+      self._mosflm_detector_distance = None
 
       # XXX set special distl parameters, rubbish variable name!
       self._Cu_KA_or_Cr_KA = False
@@ -305,8 +307,8 @@ def LabelitIndex(DriverType = None, indxr_print = True):
           x = float(l[3].replace('mm,', ''))
           y = float(l[5].replace('mm,', ''))
 
-          mosflm_beam_centre = (x, y)
-          mosflm_detector_distance = float(l[7].replace('mm', ''))
+          self._mosflm_beam_centre = (x, y)
+          self._mosflm_detector_distance = float(l[7].replace('mm', ''))
           #self.set_indexer_beam_centre((x, y))
           #self.set_indexer_distance(float(l[7].replace('mm', '')))
 
@@ -357,6 +359,9 @@ def LabelitIndex(DriverType = None, indxr_print = True):
     def get_mosflm_beam_centre(self):
       return self._mosflm_beam_centre
 
+    def get_mosflm_detector_distance(self):
+      return self._mosflm_detector_distance
+
   return LabelitIndexWrapper()
 
 if __name__ == '__main__':
@@ -366,3 +371,4 @@ if __name__ == '__main__':
     indexer.add_image(filename)
   indexer.run()
   print ''.join(indexer.get_all_output())
+
