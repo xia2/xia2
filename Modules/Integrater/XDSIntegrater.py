@@ -263,6 +263,9 @@ class XDSIntegrater(FrameProcessor,
     IDXREF to get the XPARM etc. DEFPIX is considered part of the full
     integration as it is resolution dependent.'''
 
+    from Handlers.Citations import Citations
+    Citations.cite('xds')
+
     # decide what images we are going to process, if not already
     # specified
     if not self._intgr_wedge:
