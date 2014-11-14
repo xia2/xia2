@@ -72,9 +72,9 @@ def exercise_labelit_indexerii():
   tmp_dir = os.path.abspath(open_tmp_directory())
   os.chdir(tmp_dir)
 
-  from Wrappers.Labelit.LabelitIndexII import LabelitIndexII
+  from Modules.Indexer.LabelitIndexerII import LabelitIndexerII
 
-  ls = LabelitIndexII(indxr_print=True)
+  ls = LabelitIndexerII(indxr_print=True)
   ls.set_working_directory(tmp_dir)
   ls.setup_from_image(template %1)
   ls.set_indexer_input_cell((78,78,78,90,90,90))

@@ -37,9 +37,9 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.environ['XIA2_ROOT'] in sys.path:
   sys.path.append(os.environ['XIA2_ROOT'])
 
-from Wrappers.Labelit.LabelitIndexII import LabelitIndexII
 from Wrappers.CCP4.Mosflm import Mosflm
 from Modules.Indexer.LabelitIndexer import LabelitIndexer
+from Modules.Indexer.LabelitIndexerII import LabelitIndexerII
 from Modules.Indexer.XDSIndexer import XDSIndexer
 from Modules.Indexer.XDSIndexerII import XDSIndexerII
 from Modules.Indexer.XDSIndexerInteractive import XDSIndexerInteractive
@@ -202,8 +202,8 @@ def Indexer(preselection = None):
 
   if not indexer and (not preselection or preselection == 'labelitii'):
     try:
-      indexer = LabelitIndexII()
-      Debug.write('Using LabelitIndexII Indexer')
+      indexer = LabelitIndexerII()
+      Debug.write('Using LabelitIndexerII')
     except NotAvailableError, e:
       if preselection:
         raise RuntimeError, \

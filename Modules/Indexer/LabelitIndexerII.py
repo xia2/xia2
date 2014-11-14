@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# LabelitIndexII.py
+# LabelitIndexerII.py
 #   Copyright (C) 2006 CCLRC, Graeme Winter
 #
 #   This code is distributed under the BSD license, a copy of which is
@@ -116,22 +116,22 @@ from Modules.Indexer.MosflmCheckIndexerSolution import \
      mosflm_check_indexer_solution
 from Modules.Indexer.LabelitIndexer import LabelitIndexer
 
-class LabelitIndexII(LabelitIndexer):
+class LabelitIndexerII(LabelitIndexer):
   '''A wrapper for the program labelit.index - which will provide
   functionality for deciding the beam centre and indexing the
   diffraction pattern.'''
 
   def __init__(self, indxr_print=True):
-    super(LabelitIndexII, self).__init__(indxr_print=indxr_print)
+    super(LabelitIndexerII, self).__init__(indxr_print=indxr_print)
     self._primitive_unit_cell = []
     return
 
   def _index_prepare(self):
     # prepare to do some autoindexing
 
-    super(LabelitIndexII, self)._index_prepare()
+    super(LabelitIndexerII, self)._index_prepare()
 
-    assert self._indxr_input_cell is not None, "Unit cell required for LabelitIndexII"
+    assert self._indxr_input_cell is not None, "Unit cell required for LabelitIndexerII"
 
     # calculate the correct primitive unit cell
     if self._indxr_input_cell and self._indxr_input_lattice:

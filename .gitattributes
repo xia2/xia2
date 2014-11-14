@@ -18,6 +18,7 @@ Handlers/Phil.py -text
 Modules/Indexer/DialsIndexer.py -text
 Modules/Indexer/IndexerSelectImages.py -text
 Modules/Indexer/LabelitIndexer.py -text
+Modules/Indexer/LabelitIndexerII.py -text
 Modules/Indexer/MosflmIntegrateAbsences.py -text
 Modules/Indexer/XDSIndexerSum.py -text
 Modules/Indexer/__init__.py -text
@@ -75,7 +76,6 @@ Wrappers/Dials/__init__.py -text
 Wrappers/Labelit/DistlSignalStrength.py -text
 Wrappers/Labelit/DistlSweepStrength.py -text
 Wrappers/Labelit/LabelitIndex.py -text
-Wrappers/Labelit/LabelitIndexII.py -text
 Wrappers/Labelit/LabelitMosflmMatrix.py -text
 Wrappers/Mosflm/Autoindex.py -text
 Wrappers/Mosflm/AutoindexHelpers.py -text
