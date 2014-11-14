@@ -78,6 +78,7 @@ def exercise_labelit_indexerii():
   ls.set_working_directory(tmp_dir)
   ls.setup_from_image(template %1)
   ls.set_indexer_input_cell((78,78,78,90,90,90))
+  ls.set_indexer_user_input_lattice(True)
   ls.set_indexer_input_lattice('cI')
   ls.index()
 

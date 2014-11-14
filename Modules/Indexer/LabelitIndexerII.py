@@ -315,7 +315,7 @@ class LabelitIndexerII(LabelitIndexer):
     for i, solution in self._solutions.iteritems():
       if self._indxr_user_input_lattice:
         if (lattice_to_spacegroup(solution['lattice']) >
-            lattice_to_spacegroup(self._indxr_user_input_lattice)):
+            lattice_to_spacegroup(self._indxr_input_lattice)):
           Debug.write('Ignoring solution: %s' % solution['lattice'])
           del self._solutions[i]
 
