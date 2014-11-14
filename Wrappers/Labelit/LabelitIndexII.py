@@ -271,7 +271,7 @@ def LabelitIndexII(DriverType = None, indxr_print = True):
       general use the 20 frames. N.B. only if they have good
       spots on them!'''
 
-      phi_width = self.get_header_item('phi_width')
+      phi_width = self.get_phi_width()
       images = self.get_matching_images()
 
       # N.B. now bodging this to use up to 20 frames which have decent
@@ -618,10 +618,43 @@ def LabelitIndexII(DriverType = None, indxr_print = True):
       # may have inverted the beam centre and labelit will know
       # this!
 
-      mosflm_beam = lms.get_mosflm_beam()
+      mosflm_beam_centre = lms.get_mosflm_beam()
 
-      if mosflm_beam:
-        self._indxr_payload['mosflm_beam_centre'] = tuple(mosflm_beam)
+      if mosflm_beam_centre:
+        self._indxr_payload['mosflm_beam_centre'] = tuple(mosflm_beam_centre)
+
+      import copy
+      detector = copy.deepcopy(self.get_detector())
+      beam = copy.deepcopy(self.get_beam_obj())
+      from Wrappers.Mosflm.AutoindexHelpers import set_mosflm_beam_centre
+      set_mosflm_beam_centre(detector, beam, mosflm_beam_centre)
+
+      from Experts.SymmetryExpert import lattice_to_spacegroup_number
+      from scitbx import matrix
+      from cctbx import sgtbx, uctbx
+      from dxtbx.model.crystal import crystal_model_from_mosflm_matrix
+      mosflm_matrix = matrix.sqr(
+        [float(i) for line in lms.calculate()
+         for i in line.replace("-", " -").split() ][:9])
+
+      space_group = sgtbx.space_group_info(lattice_to_spacegroup_number(
+        self._solution['lattice'])).group()
+      crystal_model = crystal_model_from_mosflm_matrix(
+        mosflm_matrix,
+        unit_cell=uctbx.unit_cell(
+          tuple(self._solution['cell'])),
+        space_group=space_group)
+
+      from dxtbx.model.experiment.experiment_list import Experiment, ExperimentList
+      experiment = Experiment(beam=beam,
+                              detector=detector,
+                              goniometer=self.get_goniometer(),
+                              scan=self.get_scan(),
+                              crystal=crystal_model,
+                              )
+
+      experiment_list = ExperimentList([experiment])
+      self.set_indexer_experiment_list(experiment_list)
 
       # also get an estimate of the resolution limit from the
       # labelit.stats_distl output... FIXME the name is wrong!
