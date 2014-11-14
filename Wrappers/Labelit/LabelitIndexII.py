@@ -241,6 +241,8 @@ def LabelitIndexII(DriverType = None, indxr_print = True):
     def _index_prepare(self):
       # prepare to do some autoindexing
 
+      assert self._indxr_input_cell is not None, "Unit cell required for LabelitIndexII"
+
       # select images
       if self._indxr_images == []:
         self._index_select_images()
