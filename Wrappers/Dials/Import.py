@@ -38,10 +38,6 @@ def Import(DriverType = None):
 
       return
 
-    def setup_from_image(self, image):
-      FrameProcessor.setup_from_image(self, image)
-      return
-
     def set_image_range(self, image_range):
       self._image_range = image_range
 

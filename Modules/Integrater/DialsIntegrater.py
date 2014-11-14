@@ -117,7 +117,6 @@ class DialsIntegrater(FrameProcessor,
     params = PhilIndex.params.dials.refine
     refine.set_phil_file(params.phil_file)
     refine.set_working_directory(self.get_working_directory())
-    refine.setup_from_image(self.get_image_name(self._intgr_wedge[0]))
     refine.set_experiments_filename(self._intgr_experiments_filename)
     refine.set_indexed_filename(
       self._intgr_indexer.get_indexed_filename())
@@ -138,17 +137,9 @@ class DialsIntegrater(FrameProcessor,
       params.background_outlier_algorithm)
     integrate.set_working_directory(self.get_working_directory())
 
-    integrate.setup_from_image(self.get_image_name(
-        self._intgr_wedge[0]))
     integrate.set_experiments_filename(self._intgr_experiments_filename)
     integrate.set_reflections_filename(
       self._intgr_indexer.get_indexed_filename())
-
-    if self.get_distance():
-      integrate.set_distance(self.get_distance())
-
-    if self.get_wavelength():
-      integrate.set_wavelength(self.get_wavelength())
 
     auto_logfiler(integrate, 'INTEGRATE')
 
