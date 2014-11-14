@@ -43,7 +43,7 @@ from Handlers.Executables import Executables
 from Handlers.Files import FileHandler
 
 # helpers
-from MosflmHelpers import _happy_integrate_lp, \
+from Wrappers.CCP4.MosflmHelpers import _happy_integrate_lp, \
      _parse_mosflm_integration_output, decide_integration_resolution_limit, \
      _parse_mosflm_index_output, standard_mask, \
      _get_indexing_solution_number, detector_class_to_mosflm, \
@@ -162,7 +162,7 @@ def Mosflm(DriverType = None):
       if Flags.get_microcrystal():
         return self._index_select_images_microcrystal()
 
-      phi_width = self.get_header_item('phi_width')
+      phi_width = self.get_phi_width()
       images = self.get_matching_images()
 
       if Flags.get_interactive():
@@ -181,7 +181,7 @@ def Mosflm(DriverType = None):
       '''Select correct images based on image headers. This one is for
       when you have small molecule data so want more images.'''
 
-      phi_width = self.get_header_item('phi_width')
+      phi_width = self.get_phi_width()
       images = self.get_matching_images()
 
       Debug.write('Selected image %s' % images[0])
@@ -208,7 +208,7 @@ def Mosflm(DriverType = None):
       '''Select images for more difficult cases e.g. microcrystal
       work. Will apply (up to) 20 images to the task.'''
 
-      phi_width = self.get_header_item('phi_width')
+      phi_width = self.get_phi_width()
       images = self.get_matching_images()
 
       spacing = max(1, int(len(images) / 20))
@@ -648,8 +648,9 @@ def Mosflm(DriverType = None):
       if self._indxr_input_lattice:
         return
 
-      if self.get_indexer_sweep().get_user_lattice():
-        return
+      if self.get_indexer_sweep():
+        if self.get_indexer_sweep().get_user_lattice():
+          return
 
       try:
         status, lattice, matrix, cell = mosflm_check_indexer_solution(
@@ -2166,6 +2167,8 @@ def Mosflm(DriverType = None):
       # ok, in here try to get the missetting angles at two "widely
       # spaced" points, so that the missetting angle calculating
       # expert can do it's stuff.
+
+      # FIXME remove this section?
 
       figured = False
       if figured:
