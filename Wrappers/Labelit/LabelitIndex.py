@@ -56,8 +56,9 @@ def LabelitIndex(DriverType = None, indxr_print = True):
 
       self.set_executable('labelit.index')
 
-      self._unit_cell = None
-      self._space_group = None
+      self._primitive_unit_cell = None
+      self._max_cell = None
+      self._space_group_number = None
       self._beam_centre = None
       self._wavelength = None
       self._distance = None
@@ -84,11 +85,14 @@ def LabelitIndex(DriverType = None, indxr_print = True):
     def add_image(self, filename):
       self._images.append(filename)
 
-    #def set_unit_cell(self, unit_cell):
-      #self._unit_cell = unit_cell
+    def set_primitive_unit_cell(self, primitive_unit_cell):
+      self._primitive_unit_cell = primitive_unit_cell
 
-    #def set_space_group(self, space_group):
-      #self._space_group = space_group
+    def set_max_cell(self, max_cell):
+      self._max_cell = max_cell
+
+    def set_space_group_number(self, space_group_number):
+      self._space_group_number = space_group_number
 
     def set_beam_search_scope(self, beam_search_scope):
       self._beam_search_scope = beam_search_scope
@@ -119,6 +123,8 @@ def LabelitIndex(DriverType = None, indxr_print = True):
       # only write things out if they have been overridden
       # from what is in the header...
 
+      out.write('distl_minimum_number_spots_for_indexing = 1\n')
+
       if self._distance is not None:
         out.write('autoindex_override_distance = %f\n' %self._distance)
       if self._wavelength is not None:
@@ -148,6 +154,9 @@ def LabelitIndex(DriverType = None, indxr_print = True):
 
       out.write('distl_spotfinder_algorithm = "maximum_pixel"\n')
 
+      if self._primitive_unit_cell is not None:
+        out.write('lepage_max_delta = 5.0')
+
       out.close()
 
       return
@@ -176,11 +185,7 @@ def LabelitIndex(DriverType = None, indxr_print = True):
       assert len(self._images) > 0
       self._images.sort()
 
-      #cell_str = None
-      #if self._unit_cell is not None:
-        #cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % self._unit_cell
-
-      if len(self._images) > 4:
+      if self._max_cell is None and len(self._images) > 4:
         raise RuntimeError, 'cannot use more than 4 images'
 
       #task = 'Autoindex from images:'
@@ -194,6 +199,16 @@ def LabelitIndex(DriverType = None, indxr_print = True):
 
       for image in self._images:
         self.add_command_line(image)
+
+      if self._space_group_number is not None:
+        self.add_command_line('known_symmetry=%d' %self._space_group_number)
+
+      if self._primitive_unit_cell is not None:
+        self.add_command_line(
+          'target_cell=%f,%f,%f,%f,%f,%f' %tuple(self._primitive_unit_cell))
+
+      if self._max_cell is not None:
+        self.add_command_line('codecamp.maxcell=%f' %self._max_cell)
 
       self._write_dataset_preferences(len(self._images))
 

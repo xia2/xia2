@@ -135,8 +135,6 @@ class LabelitIndexer(FrameProcessor,
 
     #self.reset()
 
-    from Wrappers.Labelit.LabelitIndex import LabelitIndex
-
     _images = []
     for i in self._indxr_images:
       for j in i:
@@ -175,6 +173,7 @@ class LabelitIndexer(FrameProcessor,
     if len(_images) > 4:
       raise RuntimeError, 'cannot use more than 4 images'
 
+    from Wrappers.Labelit.LabelitIndex import LabelitIndex
     index = LabelitIndex()
     index.set_working_directory(self.get_working_directory())
     auto_logfiler(index)
@@ -208,7 +207,7 @@ class LabelitIndexer(FrameProcessor,
         (math.fabs(self.get_wavelength() - 2.29) < 0.01)):
       index.set_Cu_KA_or_Cr_KA(True)
 
-    sweep = self.get_indexer_sweep_name()
+    #sweep = self.get_indexer_sweep_name()
     #FileHandler.record_log_file(
         #'%s INDEX' % (sweep), self.get_log_file())
 
