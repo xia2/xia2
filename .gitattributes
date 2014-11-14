@@ -173,3 +173,4 @@ html/phils/pixels_per_spot.phil -text
 html/xia2-new-logo.gif -text
 html/xia2-new-logo.psd -text
 /libtbx_config -text
+/run_tests.py -text
