@@ -85,56 +85,6 @@ class LabelitIndexer(FrameProcessor,
     self._refine_beam = refine_beam
     return
 
-  def _write_dataset_preferences(self, n_images):
-    '''Write the dataset_preferences.py file in the working
-    directory - this will include the beam centres etc.'''
-
-    out = open(os.path.join(self.get_working_directory(),
-                            'dataset_preferences.py'), 'w')
-
-    # only write things out if they have been overridden
-    # from what is in the header...
-
-    if self.get_distance_prov() == 'user':
-      out.write('autoindex_override_distance = %f\n' %
-                self.get_distance())
-    if self.get_wavelength_prov() == 'user':
-      out.write('autoindex_override_wavelength = %f\n' %
-                self.get_wavelength())
-    if self.get_beam_prov() == 'user':
-      out.write('autoindex_override_beam = (%f, %f)\n' % \
-                self.get_beam_centre())
-
-    if self._refine_beam is False:
-      out.write('beam_search_scope = 0.0\n')
-    else:
-      out.write('beam_search_scope = %f\n' % \
-                self._beam_search_scope)
-
-    # check to see if this is an image plate *or* the
-    # wavelength corresponds to Cu KA (1.54A) or Cr KA (2.29 A).
-    # numbers from rigaku americas web page.
-
-    if math.fabs(self.get_wavelength() - 1.54) < 0.01:
-      out.write('distl_force_binning = True\n')
-      out.write('distl_profile_bumpiness = 10\n')
-      out.write('distl_binned_image_spot_size = 10\n')
-    if math.fabs(self.get_wavelength() - 2.29) < 0.01:
-      out.write('distl_force_binning = True\n')
-      out.write('distl_profile_bumpiness = 10\n')
-      out.write('distl_binned_image_spot_size = 10\n')
-
-    out.write('wedgelimit = %d\n' % n_images)
-
-    # new feature - index on the spot centre of mass, not the
-    # highest pixel (should improve the RMS deviation reports.)
-
-    out.write('distl_spotfinder_algorithm = "maximum_pixel"\n')
-
-    out.close()
-
-    return
-
   def _index_prepare(self):
     # prepare to do some autoindexing
 
