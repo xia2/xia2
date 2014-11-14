@@ -334,8 +334,8 @@ class _CommandLine(object):
 
     params = PhilIndex.get_python_object()
     mp_params = params.xia2.settings.multiprocessing
+    from libtbx import Auto
     if mp_params.mode == 'parallel':
-      from libtbx import Auto
       if mp_params.njob is Auto:
         from Handlers.Environment import get_number_cpus
         mp_params.njob = get_number_cpus()
@@ -349,6 +349,10 @@ class _CommandLine(object):
         Flags.set_parallel(mp_params.nproc)
     elif mp_params.mode == 'serial':
       mp_params.njob = 1
+      if mp_params.nproc is Auto:
+        from Handlers.Environment import get_number_cpus
+        mp_params.nproc = get_number_cpus()
+      Flags.set_parallel(mp_params.nproc)
 
     if params.xia2.settings.indexer is not None:
       add_preference("indexer", params.xia2.settings.indexer)
