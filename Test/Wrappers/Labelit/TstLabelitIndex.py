@@ -17,8 +17,8 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 import libtbx.load_env
 from libtbx import easy_run
-from libtbx.test_utils import show_diff
-from libtbx.test_utils import open_tmp_directory
+from libtbx.test_utils import approx_equal, open_tmp_directory, show_diff
+
 try:
   dials_regression = libtbx.env.dist_path('dials_regression')
   have_dials_regression = True
@@ -31,39 +31,40 @@ def exercise_labelit_index():
     print "Skipping exercise_labelit_index(): dials_regression not configured"
     return
 
-  
+
   xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
   template = os.path.join(xia2_demo_data, "insulin_1_%03i.img")
 
   from Wrappers.Labelit.LabelitIndex import LabelitIndex
 
-  # exercise basic indexing from one image
+  # exercise basic indexing from two images
   cwd = os.path.abspath(os.curdir)
   tmp_dir = open_tmp_directory()
   os.chdir(tmp_dir)
 
   indexer = LabelitIndex()
+  indexer.set_beam_search_scope(4.0)
   indexer.add_image(template %1)
+  indexer.add_image(template %45)
   indexer.run()
-  assert indexer.get_mosflm_beam_centre() == (94.24, 94.52)
-  assert indexer.get_mosflm_detector_distance() == 159.8
+  output = ''.join(indexer.get_all_output())
+  print output
+  assert approx_equal(
+    indexer.get_mosflm_beam_centre(), (94.35, 94.52), eps=1e-1)
+  assert approx_equal(indexer.get_mosflm_detector_distance(), 159.8, eps=1e-1)
   solutions = indexer.get_solutions()
   assert len(solutions) == 22
-  assert solutions[22] == {
-    'cell': [78.47, 78.47, 78.47, 90.0, 90.0, 90.0],
-    'lattice': 'cI',
-    'rmsd': 0.154,
-    'volume': 483239,
-    'metric': 0.5812,
-    'smiley': ':) ',
-    'number': 22,
-    'mosaic': 0.075,
-    'nspots': 273
-  }
-  output = ''.join(indexer.get_all_output())
-  #print output
+  assert approx_equal(solutions[22]['cell'], [78.6, 78.6, 78.6, 90, 90, 90], eps=2e-2)
+  assert solutions[22]['lattice'] == 'cI'
+  assert solutions[22]['rmsd'] <= 0.076
+  assert solutions[22]['metric'] <= 0.1243
+  assert solutions[22]['smiley'] == ':) '
+  assert solutions[22]['number'] == 22
+  assert solutions[22]['mosaic'] == 0.05
+  assert abs(solutions[22]['nspots'] - 563) <= 3
 
-  # now exercise indexing off more than one image and test more settings
+
+  # now exercise indexing off multiple images and test more settings
   os.chdir(cwd)
   tmp_dir = open_tmp_directory()
   os.chdir(tmp_dir)
@@ -77,25 +78,22 @@ def exercise_labelit_index():
   indexer.set_wavelength(0.98)
   indexer.set_refine_beam(False)
   indexer.run()
-  assert indexer.get_mosflm_beam_centre() == (94.35, 94.49)
-  assert indexer.get_mosflm_detector_distance() == 159.75
+  output = ''.join(indexer.get_all_output())
+  print output
+  assert approx_equal(indexer.get_mosflm_beam_centre(), (94.35, 94.49), eps=4e-2)
+  assert approx_equal(indexer.get_mosflm_detector_distance(), 159.75, eps=1e-1)
   solutions = indexer.get_solutions()
   assert len(solutions) == 22
-  assert solutions[22] == {
-    'cell': [78.61, 78.61, 78.61, 90.0, 90.0, 90.0],
-    'lattice': 'cI',
-    'rmsd': 0.073,
-    'volume': 485784,
-    'metric': 0.0942,
-    'smiley': ':) ',
-    'number': 22,
-    'mosaic': 0.025,
-    'nspots': 823
-  }
-  output = ''.join(indexer.get_all_output())
-  #print output
- 
-  
+  assert approx_equal(solutions[22]['cell'], [78.61, 78.61, 78.61, 90, 90, 90], eps=5e-2)
+  assert solutions[22]['lattice'] == 'cI'
+  assert solutions[22]['rmsd'] <= 0.084
+  assert solutions[22]['metric'] <= 0.1663
+  assert solutions[22]['smiley'] == ':) '
+  assert solutions[22]['number'] == 22
+  assert solutions[22]['mosaic'] == 0.025
+  assert abs(solutions[22]['nspots'] - 823) <= 41 # XXX quite a big difference!
+
+
 def run():
   exercise_labelit_index()
   print "OK"

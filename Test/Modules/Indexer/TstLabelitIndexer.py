@@ -17,8 +17,8 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 import libtbx.load_env
 from libtbx import easy_run
-from libtbx.test_utils import show_diff
-from libtbx.test_utils import open_tmp_directory
+from libtbx.test_utils import approx_equal, open_tmp_directory, show_diff
+
 try:
   dials_regression = libtbx.env.dist_path('dials_regression')
   have_dials_regression = True
@@ -43,18 +43,18 @@ def exercise_labelit_indexer():
   ls.set_working_directory(tmp_dir)
   ls.setup_from_image(template %1)
   ls.index()
-  assert ls.get_solution() == {
-    'volume': 485230,
-    'rmsd': 0.076,
-    'metric': 0.1566,
-    'smiley': ':) ',
-    'number': 22,
-    'cell': [78.58, 78.58, 78.58, 90.0, 90.0, 90.0],
-    'lattice': 'cI',
-    'mosaic': 0.025,
-    'nspots': 860}
+
+  assert approx_equal(ls.get_indexer_cell(), (78.58, 78.58, 78.58, 90, 90, 90))
+  solution = ls.get_solution()
+  assert approx_equal(solution['rmsd'], 0.076)
+  assert approx_equal(solution['metric'], 0.1566, eps=1e-3)
+  assert solution['number'] == 22
+  assert solution['lattice'] == 'cI'
+  assert solution['mosaic'] == 0.025
+  assert abs(solution['nspots'] - 860) <= 1
+
   beam_centre = ls.get_indexer_beam_centre()
-  assert beam_centre == (94.3416, 94.4994)
+  assert approx_equal(beam_centre, (94.3416, 94.4994), eps=1e-2)
   assert ls.get_indexer_images() == [(1, 1), (22, 22), (45, 45)]
   print ls.get_indexer_experiment_list()[0].crystal
   print ls.get_indexer_experiment_list()[0].detector
