@@ -46,6 +46,7 @@ Test/Dials/Platform.py -text
 Test/Modules/Indexer/TstDialsIndexer.py -text
 Test/Modules/Indexer/TstLabelitIndexer.py -text
 Test/Modules/Indexer/TstLabelitIndexerII.py -text
+Test/Modules/Indexer/TstXDSIndexer.py -text
 Test/Mosflm/MosflmRefactorTest.py -text
 Test/Mosflm/Platform.py -text
 Test/Mosflm/PlatformHelpers.py -text
