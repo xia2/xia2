@@ -3,6 +3,7 @@ from libtbx import test_utils
 import libtbx.load_env
 
 tst_list = (
+    "$D/Test/Modules/Indexer/TstDialsIndexer.py",
     "$D/Test/Modules/Indexer/TstLabelitIndexer.py",
     "$D/Test/Modules/Indexer/TstLabelitIndexerII.py",
     "$D/Test/Wrappers/Labelit/TstLabelitIndex.py",
