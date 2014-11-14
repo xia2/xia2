@@ -95,23 +95,3 @@ def Spotfinder(DriverType = None):
       return
 
   return SpotfinderWrapper()
-
-if __name__ == '__main__':
-  import sys
-
-  image_file = sys.argv[1]
-  scan_ranges = [(int(token.split(',')[0]), int(token.split(',')[1]))
-                 for token in sys.argv[2:]]
-
-  from Wrappers.Dials.Import import Import
-
-  importer = Import()
-  importer.setup_from_image(image_file)
-  importer.run()
-
-  spotfinder = Spotfinder()
-  spotfinder.set_sweep_filename(importer.get_sweep_filename())
-  spotfinder.set_scan_ranges(scan_ranges)
-  spotfinder.run()
-
-  print spotfinder.get_nspots()

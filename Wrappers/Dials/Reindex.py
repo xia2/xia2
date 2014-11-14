@@ -27,19 +27,19 @@ def Reindex(DriverType = None):
       DriverInstance.__class__.__init__(self)
       self.set_executable('dials.reindex')
 
-      self._experiment_filename = None
-      self._indexed_spot_filename = None
+      self._experiments_filename = None
+      self._indexed_filename = None
       self._space_group = None
       self._cb_op = None
 
       return
 
-    def set_experiment_filename(self, experiment_filename):
-      self._experiment_filename = experiment_filename
+    def set_experiments_filename(self, experiments_filename):
+      self._experiments_filename = experiments_filename
       return
 
-    def set_indexed_spot_filename(self, indexed_spot_filename):
-      self._indexed_spot_filename = indexed_spot_filename
+    def set_indexed_filename(self, indexed_filename):
+      self._indexed_filename = indexed_filename
       return
 
     def set_space_group(self, space_group):
@@ -50,13 +50,19 @@ def Reindex(DriverType = None):
       self._cb_op = cb_op
       return
 
+    def get_reindexed_experiments_filename(self):
+      return self._reindexed_experiments_filename
+
+    def get_reindexed_reflections_filename(self):
+      return self._reindexed_reflections_filename
+
     def run(self):
       from Handlers.Streams import Debug
       Debug.write('Running dials.reindex')
 
       self.clear_command_line()
-      self.add_command_line(self._experiment_filename)
-      self.add_command_line(self._indexed_spot_filename)
+      self.add_command_line(self._experiments_filename)
+      self.add_command_line(self._indexed_filename)
       if self._cb_op:
         self.add_command_line("change_of_basis_op=%s" % self._cb_op)
       if self._space_group:
@@ -70,7 +76,12 @@ def Reindex(DriverType = None):
 
       import os
 
-      return os.path.join(wd, "experiments_reindexed.pickle"), \
-        os.path.join(wd, "reflections_reindexed.pickle")
+      self._reindexed_experiments_filename = os.path.join(
+        wd, "experiments_reindexed.json")
+      self._reindexed_reflections_filename = os.path.join(
+        wd, "reflections_reindexed.pickle")
+
+      return (self._reindexed_experiments_filename,
+              self._reindexed_reflections_filename)
 
   return ReindexWrapper()

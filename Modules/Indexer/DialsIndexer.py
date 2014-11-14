@@ -252,8 +252,8 @@ class DialsIndexer(FrameProcessor,
 
       # reindex the output reflection list to this solution
       reindex = self.Reindex()
-      reindex.set_experiment_filename(indexer.get_experiments_filename())
-      reindex.set_indexed_spot_filename(self._indexed_filename)
+      reindex.set_experiments_filename(indexer.get_experiments_filename())
+      reindex.set_indexed_filename(self._indexed_filename)
       reindex.set_cb_op(self._solution['cb_op'])
       reindex.set_space_group(str(lattice_to_spacegroup_number(
         self._solution['lattice'])))

@@ -48,6 +48,7 @@ Test/Modules/Indexer/TstLabelitIndexerII.py -text
 Test/Mosflm/MosflmRefactorTest.py -text
 Test/Mosflm/Platform.py -text
 Test/Mosflm/PlatformHelpers.py -text
+Test/Wrappers/Dials/TstDialsWrappers.py -text
 Test/Wrappers/Labelit/TstLabelitIndex.py -text
 Toolkit/BackstopMask.py -text
 Toolkit/E4.py -text
