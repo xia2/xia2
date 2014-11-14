@@ -123,7 +123,8 @@ def LabelitIndex(DriverType = None, indxr_print = True):
       # only write things out if they have been overridden
       # from what is in the header...
 
-      out.write('distl_minimum_number_spots_for_indexing = 1\n')
+      if self._max_cell:
+        out.write('distl_minimum_number_spots_for_indexing = 1\n')
 
       if self._distance is not None:
         out.write('autoindex_override_distance = %f\n' %self._distance)
