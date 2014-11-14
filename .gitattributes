@@ -90,6 +90,8 @@ Wrappers/XDS/XDSFiles.py -text
 Wrappers/XDS/XDSGenerateIgnoreFiles.py -text
 Wrappers/XDS/XScaleR.py -text
 Wrappers/dTREK/__init__.py -text
+command_line/xia2.new.py -text
+command_line/xia2.setup.py -text
 core/Python/Background/Background.py -text
 core/Python/Background/__init__.py -text
 core/Python/Decorators/CCP4Decorator.py -text
@@ -170,3 +172,4 @@ html/phils/micromanage_integrate.phil -text
 html/phils/pixels_per_spot.phil -text
 html/xia2-new-logo.gif -text
 html/xia2-new-logo.psd -text
+/libtbx_config -text

@@ -315,8 +315,7 @@ def help():
   sys.stdout.write('xia2 (-2d|-3d) -xinfo foo.xinfo\n')
   sys.stdout.write('xia2 -project foo -crystal bar (-2d|-3d) /data/path\n')
 
-if __name__ == '__main__':
-
+def run():
   try:
     check_environment()
     check()
@@ -335,3 +334,7 @@ if __name__ == '__main__':
   except exceptions.Exception, e:
     traceback.print_exc(file = open('xia2.error', 'w'))
     Chatter.write('Status: error "%s"' % str(e))
+
+
+if __name__ == '__main__':
+  run()

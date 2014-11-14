@@ -26,7 +26,6 @@ if not 'XIA2CORE_ROOT' in os.environ:
 if not os.environ['XIA2_ROOT'] in sys.path:
   sys.path.append(os.path.join(os.environ['XIA2_ROOT']))
 
-from Schema.Sweep import SweepFactory
 from Experts.FindImages import image2template_directory
 from Handlers.CommandLine import CommandLine
 from Handlers.Flags import Flags
@@ -412,6 +411,7 @@ def get_sweeps(templates):
 
   from libtbx import easy_mp
   from Handlers.Phil import PhilIndex
+  from xia2setup_helpers import get_sweep
   params = PhilIndex.get_python_object()
   mp_params = params.xia2.settings.multiprocessing
   njob = mp_params.njob
@@ -510,8 +510,7 @@ def write_xinfo(filename, path, template = None):
 
   return
 
-if __name__ == '__main__':
-
+def run():
   streams_off()
 
   # test to see if sys.argv[-2] + path is a valid path - to work around
@@ -563,3 +562,6 @@ if __name__ == '__main__':
   print_sweeps(fout)
 
   save_datablock(os.path.join(start, 'xia2-datablock.json'))
+
+if __name__ == '__main__':
+  run()
