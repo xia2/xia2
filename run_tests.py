@@ -1,3 +1,6 @@
+# xia2 tests - these may require the xia2_regression or dials_regression
+# repositories to be available...
+
 from __future__ import division
 from libtbx import test_utils
 import libtbx.load_env

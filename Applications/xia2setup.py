@@ -425,6 +425,8 @@ def get_sweeps(templates):
       method = "multiprocessing"
 
     # If xia2 was a proper cctbx module, then we wouldn't have to do this
+    # FIXME xia2 is now a proper cctbx module ;o)
+
     python_path = 'PYTHONPATH="%s"' %":".join(sys.path)
     qsub_command="qsub -v %s -V" %python_path
 
