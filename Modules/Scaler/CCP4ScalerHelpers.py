@@ -498,13 +498,9 @@ def anomalous_signals(hklin):
 
   return df_f, di_sigdi
 
-if __name__ == '__main__old__':
+if __name__ == '__main__':
 
   for arg in sys.argv[1:]:
     df_f, di_sigdi = anomalous_signals(arg)
     print '%s: %.3f %.3f' % (os.path.split(arg)[-1], df_f, di_sigdi)
 
-if __name__ == '__main__':
-  reflection_file = sys.argv[1]
-  batch_range = int(sys.argv[2]), int(sys.argv[3])
-  print erzatz_resolution(reflection_file, [batch_range])
