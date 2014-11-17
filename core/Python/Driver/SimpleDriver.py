@@ -76,12 +76,6 @@ class SimpleDriver(DefaultDriver):
                                    shell = True)
     self._popen_status = None
 
-    while False:
-      line = self.output()
-      if not line.strip():
-        break
-      self.check_for_errors()
-
     return
 
   def _input(self, record):
@@ -89,7 +83,15 @@ class SimpleDriver(DefaultDriver):
     if not self.check():
       raise RuntimeError, 'child process has termimated'
 
-    self._popen.stdin.write(record)
+    try:
+      self._popen.stdin.write(record)
+    except IOError, e:
+      while True:
+        line = self.output()
+        if not line.strip():
+          break
+        self.check_for_errors()
+      raise e # unexpected error
 
     return
 
