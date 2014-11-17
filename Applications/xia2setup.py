@@ -222,6 +222,8 @@ def print_sweeps(out = sys.stdout):
   import operator
   epochs = [known_sweeps[sweep][0].get_imageset().get_scan().get_epochs()[0]
             for sweep in sweeplists]
+  if min(epochs) == max(epochs) and len(epochs) > 1:
+    raise RuntimeError, 'duplicate epochs found'
   sweeplists, epochs = zip(*sorted(zip(sweeplists, epochs),
     key=operator.itemgetter(1)))
 
