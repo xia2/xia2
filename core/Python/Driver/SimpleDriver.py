@@ -76,6 +76,12 @@ class SimpleDriver(DefaultDriver):
                                    shell = True)
     self._popen_status = None
 
+    while True:
+      line = self.output()
+      if not line.strip():
+        break
+      self.check_for_errors()
+
     return
 
   def _input(self, record):

@@ -174,6 +174,13 @@ def kill_process(process):
 
     return
 
+def error_library_not_loaded(record):
+  '''Look in a record (output from program) for signs that this died
+  due to a missing library.'''
+
+  if 'dyld: Library not loaded' in record:
+    raise RuntimeError, record
+
 def error_no_program(record):
   '''Look in a record (output from program) for signs that this died
   due to a missing program.'''

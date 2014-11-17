@@ -50,6 +50,7 @@ import sys
 from DriverHelper import error_no_program, error_kill, error_abrt
 from DriverHelper import error_segv, check_return_code, error_missing_library
 from DriverHelper import error_fp, error_python_traceback
+from DriverHelper import error_library_not_loaded
 from DriverHelper import generate_random_name, executable_exists
 
 # out of context stuff
@@ -320,6 +321,7 @@ class DefaultDriver(object):
     '''Check records for error-like information.'''
 
     for record in records:
+      error_library_not_loaded(record)
       error_no_program(record)
       error_missing_library(record)
       error_segv(record)
