@@ -76,7 +76,7 @@ class SimpleDriver(DefaultDriver):
                                    shell = True)
     self._popen_status = None
 
-    while True:
+    while False:
       line = self.output()
       if not line.strip():
         break
