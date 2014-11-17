@@ -63,6 +63,7 @@ def set_mosflm_beam_centre(detector, beam, mosflm_beam_centre):
 
 def set_distance(detector, distance):
   from scitbx import matrix
+  import math
   assert len(detector) == 1
   panel = detector[0]
   d_normal = matrix.col(panel.get_normal())
@@ -70,13 +71,13 @@ def set_distance(detector, distance):
   assert d_origin.dot(d_normal) == panel.get_distance()
   translation = d_normal * (distance - panel.get_distance())
   new_origin = d_origin + translation
-  assert new_origin.dot(d_normal) == distance
+  assert math.fabs(new_origin.dot(d_normal) - distance) < 0.001
   fast = panel.get_fast_axis()
   slow = panel.get_slow_axis()
   panel.set_frame(panel.get_fast_axis(), panel.get_slow_axis(), new_origin.elems)
   assert panel.get_fast_axis() == fast
   assert panel.get_slow_axis() == slow
-  assert panel.get_distance() == distance
+  assert math.fabs(panel.get_distance() - distance) < 0.001
 
 def crystal_model_from_mosflm_mat(mosflm_mat_lines, unit_cell, space_group):
   from scitbx import matrix
