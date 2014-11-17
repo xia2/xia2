@@ -216,6 +216,7 @@ def print_sweeps(out = sys.stdout):
   global known_sweeps, latest_sequence
 
   sweeplists = known_sweeps.keys()
+  assert len(sweeplists) > 0, "no sweeps found"
   sweeplists.sort()
 
   # sort sweeplist based on epoch of first image of each sweep
