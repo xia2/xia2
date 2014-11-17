@@ -823,50 +823,8 @@ def Aimless(DriverType = None,
       xml_file = self.get_xmlout()
       assert os.path.isfile(xml_file)
 
-      import xml
-      dom = xml.dom.minidom.parse(xml_file)
-
-      result = dom.getElementsByTagName('Result')[0]
-
-      aimless_xml_names_to_standard = {
-          'AnomalousCompleteness':'Anomalous completeness',
-          'AnomalousMultiplicity':'Anomalous multiplicity',
-          'Completeness':'Completeness',
-          'AnomalousCChalf':'Anomalous correlation',
-          #'Fractional partial bias':'Partial bias',
-          'ResolutionHigh':'High resolution limit',
-          'ResolutionLow':'Low resolution limit',
-          'MeanIoverSD':'I/sigma',
-          'AnomalousNPslope':'Anomalous slope',
-          'Multiplicity':'Multiplicity',
-          'Rmerge':'Rmerge',
-          #'Rmerge in top intensity bin':None,
-          'RmeasOverall':'Rmeas(I)',
-          'Rmeas':'Rmeas(I+/-)',
-          'RpimOverall':'Rpim(I)',
-          'Rpim':'Rpim(I+/-)',
-          'NumberObservations':'Total observations',
-          'NumberReflections':'Total unique'
-          }
-
-      summary = {}
-
-      dataset = result.getElementsByTagName('Dataset')[0]
-      pname, xname, dname = dataset.getAttribute('name').split('/')
-
-      for xml_name, standard in aimless_xml_names_to_standard.iteritems():
-        row = result.getElementsByTagName(xml_name)[0]
-        if len(row.childNodes) == 3:
-          summary[standard] = tuple(float(
-            row.getElementsByTagName(item)[0].childNodes[0].data.strip())
-                                    for item in ('Overall', 'Inner', 'Outer'))
-        elif len(row.childNodes) == 1:
-          summary[standard] = (float(row.childNodes[0].data.strip()), 0.0, 0.0)
-
-      total_summary = {}
-      total_summary[(pname, xname, dname)] = summary
-
-      return total_summary
+      from AimlessHelpers import parse_aimless_xml
+      return parse_aimless_xml(xml_file)
 
   return AimlessWrapper()
 

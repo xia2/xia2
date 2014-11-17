@@ -62,6 +62,7 @@ Toolkit/PolyFitter.py -text
 Toolkit/__init__.py -text
 Toolkit/guess_the_atom.py -text
 Toolkit/x1335.py -text
+Wrappers/CCP4/AimlessHelpers.py -text
 Wrappers/CCP4/Ctruncate.py -text
 Wrappers/Cctbx/BrehmDiederichs.py -text
 Wrappers/Cctbx/__init__.py -text
