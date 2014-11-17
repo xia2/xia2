@@ -33,21 +33,30 @@ def work():
   template = os.path.join(xia2_demo_data, "insulin_1_%03i.img")
 
   cwd = os.path.abspath(os.curdir)
-  tmp_dir = os.path.abspath(open_tmp_directory())
-  os.chdir(tmp_dir)
+  tmp_dir1 = os.path.abspath(open_tmp_directory())
+  os.chdir(tmp_dir1)
 
-  # from Wrappers.CCP4.Mosflm import Mosflm
+  from Wrappers.CCP4.Mosflm import Mosflm
+  m1 = Mosflm()
+  m1.set_working_directory(tmp_dir1)
+  m1.setup_from_image(template % 1)
+  m1.index()
+
+  os.chdir(cwd)
+  tmp_dir2 = os.path.abspath(open_tmp_directory())
+  os.chdir(tmp_dir2)
+
   from Original import Mosflm
-  m = Mosflm()
-  m.set_working_directory(tmp_dir)
-  m.setup_from_image(template % 1)
-  m.index()
+  m2 = Mosflm()
+  m2.set_working_directory(tmp_dir2)
+  m2.setup_from_image(template % 1)
+  m2.index()
 
-  print 'Refined beam is: %6.2f %6.2f' % m.get_indexer_beam_centre()
-  print 'Distance:        %6.2f' % m.get_indexer_distance()
-  print 'Cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % m.get_indexer_cell()
-  print 'Lattice: %s' % m.get_indexer_lattice()
-  print 'Mosaic: %6.2f' % m.get_indexer_mosaic()
+  assert m1.get_indexer_beam_centre() == m2.get_indexer_beam_centre()
+  assert m1.get_indexer_distance() == m2.get_indexer_distance()
+  assert m1.get_indexer_cell() == m2.get_indexer_cell()
+  assert m1.get_indexer_lattice() == m2.get_indexer_lattice()
+  assert m1.get_indexer_mosaic() == m2.get_indexer_mosaic()
 
   return
 
