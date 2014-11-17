@@ -320,9 +320,7 @@ def Mosflm(DriverType = None):
       self.start()
 
       if self.get_reversephi():
-        detector = detector_class_to_mosflm(
-            self.get_header_item('detector_class'))
-        self.input('detector %s reversephi' % detector)
+        self.input('detector reversephi')
 
       self.input('template "%s"' % self.get_template())
       self.input('directory "%s"' % self.get_directory())
@@ -1029,9 +1027,7 @@ def Mosflm(DriverType = None):
         self.input('gain %5.2f' % self._mosflm_gain)
 
       if self.get_reversephi():
-        detector = detector_class_to_mosflm(
-            self.get_header_item('detector_class'))
-        self.input('detector %s reversephi' % detector)
+        self.input('detector reversephi')
 
       self.input('template "%s"' % self.get_template())
       self.input('directory "%s"' % self.get_directory())
@@ -1319,9 +1315,7 @@ def Mosflm(DriverType = None):
         self.input('gain %5.2f' % self._mosflm_gain)
 
       if self.get_reversephi():
-        detector = detector_class_to_mosflm(
-            self.get_header_item('detector_class'))
-        self.input('detector %s reversephi' % detector)
+        self.input('detector reversephi')
 
       self.input('template "%s"' % self.get_template())
       self.input('directory "%s"' % self.get_directory())
@@ -1792,9 +1786,7 @@ def Mosflm(DriverType = None):
         # self.input('ucwd')
 
       if self.get_reversephi():
-        detector = detector_class_to_mosflm(
-            self.get_header_item('detector_class'))
-        self.input('detector %s reversephi' % detector)
+        self.input('detector reversephi')
 
       self.input('template "%s"' % self.get_template())
       self.input('directory "%s"' % self.get_directory())
@@ -2328,9 +2320,7 @@ def Mosflm(DriverType = None):
           job.input('dname %s' % temp_dname)
 
         if self.get_reversephi():
-          detector = detector_class_to_mosflm(
-              self.get_header_item('detector_class'))
-          job.input('detector %s reversephi' % detector)
+          job.input('detector reversephi')
 
         job.input('template "%s"' % self.get_template())
         job.input('directory "%s"' % self.get_directory())
