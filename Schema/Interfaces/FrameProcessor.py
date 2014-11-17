@@ -101,12 +101,12 @@ class FrameProcessor(object):
         images.append(j)
       self._fp_matching_images = images
 
-      # reload the header information as well - this will be
-      # for the old wedge...# read the image header
-      # XXX this shouldn't be needed
-      dd = Diffdump()
-      dd.set_image(self.get_image_name(start))
-      self._fp_header = dd.readheader()
+      ## reload the header information as well - this will be
+      ## for the old wedge...# read the image header
+      ## XXX this shouldn't be needed
+      #dd = Diffdump()
+      #dd.set_image(self.get_image_name(start))
+      #self._fp_header = dd.readheader()
 
       from dxtbx.imageset import ImageSetFactory
       imageset = ImageSetFactory.new(self.get_image_name(start))[0]

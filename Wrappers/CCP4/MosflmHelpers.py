@@ -504,55 +504,64 @@ def _get_indexing_solution_number(index_output_list,
 
 def standard_mask(detector):
   '''Return a list of standard mask commands for the given detector.'''
+  assert len(detector) == 1
+  size_fast, size_slow = detector[0].get_pixel_size()
 
-  # ADSC Q210 2x2 binned
+  exclude = []
+  for f0, s0, f1, s1 in detector[0].get_mask():
+    exclude.append('LIMITS EXCLUDE %s %s %s %s' %(
+      size_fast*f0, size_fast*f1, size_slow*s0, size_slow*s1))
 
-  if 'adsc q210' in detector:
-    return ['LIMITS EXCLUDE 104.6 0.1 105.1 209.0',
-            'LIMITS EXCLUDE 0.1 104.6 209.0 105.1']
+  return exclude
 
-  if 'adsc q315' in detector:
-    return ['LIMITS EXCLUDE 104.8 0.1 105.3 314.6',
-            'LIMITS EXCLUDE 209.8 0.1 210.4 314.6',
-            'LIMITS EXCLUDE 0.1 104.8 314.6 105.3',
-            'LIMITS EXCLUDE 0.1 209.8 314.6 210.4']
+  ## ADSC Q210 2x2 binned
 
-  if 'pilatus 6M' in detector:
-    if True:
-      return []
+  #if 'adsc q210' in detector:
+    #return ['LIMITS EXCLUDE 104.6 0.1 105.1 209.0',
+            #'LIMITS EXCLUDE 0.1 104.6 209.0 105.1']
 
-    return ['LIMITS EXCLUDE 83.9 85.0 0.2 434.6',
-            'LIMITS EXCLUDE 168.9 169.9 0.2 434.6',
-            'LIMITS EXCLUDE 253.9 254.9 0.2 434.6',
-            'LIMITS EXCLUDE 338.8 339.9 0.2 434.6',
-            'LIMITS EXCLUDE 0.2 423.6 33.7 36.5',
-            'LIMITS EXCLUDE 0.2 423.6 70.2 72.9',
-            'LIMITS EXCLUDE 0.2 423.6 106.6 109.4',
-            'LIMITS EXCLUDE 0.2 423.6 143.1 145.9',
-            'LIMITS EXCLUDE 0.2 423.6 179.6 182.3',
-            'LIMITS EXCLUDE 0.2 423.6 216.0 218.8',
-            'LIMITS EXCLUDE 0.2 423.6 252.5 255.2',
-            'LIMITS EXCLUDE 0.2 423.6 289.0 291.7',
-            'LIMITS EXCLUDE 0.2 423.6 325.4 328.2',
-            'LIMITS EXCLUDE 0.2 423.6 361.9 364.6',
-            'LIMITS EXCLUDE 0.2 423.6 398.4 401.1']
+  #if 'adsc q315' in detector:
+    #return ['LIMITS EXCLUDE 104.8 0.1 105.3 314.6',
+            #'LIMITS EXCLUDE 209.8 0.1 210.4 314.6',
+            #'LIMITS EXCLUDE 0.1 104.8 314.6 105.3',
+            #'LIMITS EXCLUDE 0.1 209.8 314.6 210.4']
 
-  if 'pilatus 2M' in detector:
-    if True:
-      return []
-    return ['LIMITS EXCLUDE 83.9 85.0 0.2 288.8',
-            'LIMITS EXCLUDE 168.9 169.9 0.2 288.8',
-            'LIMITS EXCLUDE 0.2 253.7 33.7 36.5',
-            'LIMITS EXCLUDE 0.2 253.7 70.2 72.9',
-            'LIMITS EXCLUDE 0.2 253.7 106.6 109.4',
-            'LIMITS EXCLUDE 0.2 253.7 143.1 145.9',
-            'LIMITS EXCLUDE 0.2 253.7 179.6 182.3',
-            'LIMITS EXCLUDE 0.2 253.7 216.0 218.8',
-            'LIMITS EXCLUDE 0.2 253.7 252.5 255.2']
+  #if 'pilatus 6M' in detector:
+    #if True:
+      #return []
 
-  # unknown detector
+    #return ['LIMITS EXCLUDE 83.9 85.0 0.2 434.6',
+            #'LIMITS EXCLUDE 168.9 169.9 0.2 434.6',
+            #'LIMITS EXCLUDE 253.9 254.9 0.2 434.6',
+            #'LIMITS EXCLUDE 338.8 339.9 0.2 434.6',
+            #'LIMITS EXCLUDE 0.2 423.6 33.7 36.5',
+            #'LIMITS EXCLUDE 0.2 423.6 70.2 72.9',
+            #'LIMITS EXCLUDE 0.2 423.6 106.6 109.4',
+            #'LIMITS EXCLUDE 0.2 423.6 143.1 145.9',
+            #'LIMITS EXCLUDE 0.2 423.6 179.6 182.3',
+            #'LIMITS EXCLUDE 0.2 423.6 216.0 218.8',
+            #'LIMITS EXCLUDE 0.2 423.6 252.5 255.2',
+            #'LIMITS EXCLUDE 0.2 423.6 289.0 291.7',
+            #'LIMITS EXCLUDE 0.2 423.6 325.4 328.2',
+            #'LIMITS EXCLUDE 0.2 423.6 361.9 364.6',
+            #'LIMITS EXCLUDE 0.2 423.6 398.4 401.1']
 
-  return []
+  #if 'pilatus 2M' in detector:
+    #if True:
+      #return []
+    #return ['LIMITS EXCLUDE 83.9 85.0 0.2 288.8',
+            #'LIMITS EXCLUDE 168.9 169.9 0.2 288.8',
+            #'LIMITS EXCLUDE 0.2 253.7 33.7 36.5',
+            #'LIMITS EXCLUDE 0.2 253.7 70.2 72.9',
+            #'LIMITS EXCLUDE 0.2 253.7 106.6 109.4',
+            #'LIMITS EXCLUDE 0.2 253.7 143.1 145.9',
+            #'LIMITS EXCLUDE 0.2 253.7 179.6 182.3',
+            #'LIMITS EXCLUDE 0.2 253.7 216.0 218.8',
+            #'LIMITS EXCLUDE 0.2 253.7 252.5 255.2']
+
+  ## unknown detector
+
+  #return []
 
 def _parse_summary_file(filename):
   '''Parse the results of postrefinement &c. from a summary file to a

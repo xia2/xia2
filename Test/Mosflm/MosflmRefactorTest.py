@@ -25,7 +25,7 @@ except KeyError, e:
   have_dials_regression = False
 
 
-def work():
+def exercise_mosflm_index():
   if not have_dials_regression:
     raise RuntimeError, 'dials_regression not available'
 
@@ -60,5 +60,78 @@ def work():
 
   return
 
+
+def exercise_mosflm_integrate():
+  if not have_dials_regression:
+    raise RuntimeError, 'dials_regression not available'
+
+  xia2_demo_data = os.path.join(dials_regression, "xia2_demo_data")
+  template = os.path.join(xia2_demo_data, "insulin_1_%03i.img")
+
+  from Schema.XCrystal import XCrystal
+  from Schema.XWavelength import XWavelength
+  from Schema.XSweep import XSweep
+
+  cwd = os.path.abspath(os.curdir)
+  tmp_dir1 = os.path.abspath(open_tmp_directory())
+  os.chdir(tmp_dir1)
+
+  from Wrappers.CCP4.Mosflm import Mosflm
+  m1 = Mosflm()
+  m1.set_working_directory(tmp_dir1)
+  m1.setup_from_image(template % 1)
+  cryst = XCrystal("CRYST1", None)
+  wav = XWavelength("WAVE1", cryst, m1.get_wavelength())
+  directory, image = os.path.split(template %1)
+  sweep = XSweep('SWEEP1', wav, directory=directory, image=image)
+  m1.set_integrater_sweep(sweep)
+  m1.set_integrater_indexer(m1)
+  m1.set_frame_wedge(1, 45)
+  m1.set_integrater_wedge(1, 45)
+  m1.integrate()
+
+  os.chdir(cwd)
+  tmp_dir2 = os.path.abspath(open_tmp_directory())
+  os.chdir(tmp_dir2)
+
+  from Original import Mosflm
+  m2 = Mosflm()
+  m2.set_working_directory(tmp_dir2)
+  m2.setup_from_image(template % 1)
+  m2.set_integrater_indexer(m2)
+  m2.set_integrater_sweep(sweep)
+  m2.set_frame_wedge(1, 45)
+  m2.set_integrater_wedge(1, 45)
+  m2.integrate()
+
+  assert m1.get_integrater_cell() == m2.get_integrater_cell()
+  assert m1.get_indexer_distance() == m2.get_indexer_distance()
+  assert m1.get_indexer_cell() == m2.get_indexer_cell()
+  assert m1.get_indexer_lattice() == m2.get_indexer_lattice()
+  assert m1.get_indexer_mosaic() == m2.get_indexer_mosaic()
+
+  m1_mtz = m1.get_integrater_intensities()
+  m2_mtz = m2.get_integrater_intensities()
+
+  from iotbx.reflection_file_reader import any_reflection_file
+  mas_1 = any_reflection_file(m1_mtz).as_miller_arrays()
+  mas_2 = any_reflection_file(m2_mtz).as_miller_arrays()
+
+  assert len(mas_1) == len(mas_2)
+  for ma1, ma2 in zip(mas_1, mas_2):
+    assert ma1.size() == ma2.size()
+    assert ma1.space_group() == ma2.space_group()
+    assert ma1.unit_cell().parameters() == ma2.unit_cell().parameters()
+    assert ma1.indices() == ma2.indices()
+    assert ma1.data() == ma2.data()
+    assert ma1.sigmas() == ma2.sigmas()
+
+  return
+
+def run():
+  exercise_mosflm_index()
+  exercise_mosflm_integrate()
+  print "OK"
+
 if __name__ == '__main__':
-  work()
+  run()

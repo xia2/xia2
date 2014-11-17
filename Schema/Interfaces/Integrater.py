@@ -307,14 +307,10 @@ class Integrater(object):
     self._intgr_wedge = (start, end)
 
     # get the epoch for the sweep if not already defined
+    epoch = self.get_scan().get_epochs()[0]
 
-    first_image_in_wedge = self.get_image_name(start)
-    dd = Diffdump()
-    dd.set_image(first_image_in_wedge)
-    header = dd.readheader()
-
-    if header['epoch'] > 0 and self._intgr_epoch == 0:
-      self._intgr_epoch = int(header['epoch'])
+    if epoch > 0 and self._intgr_epoch == 0:
+      self._intgr_epoch = epoch
 
     Debug.write('Sweep epoch: %d' % self._intgr_epoch)
 

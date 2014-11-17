@@ -693,7 +693,7 @@ def Mosflm(DriverType = None):
 
       # if pilatus override GAIN to 1.0
 
-      if 'pilatus' in self.get_header_item('detector_class'):
+      if self.get_imageset().get_detector()[0].get_type() == 'SENSOR_PAD':
         self._mosflm_gain = 1.0
 
       indxr = self.get_integrater_indexer()
@@ -1096,10 +1096,8 @@ def Mosflm(DriverType = None):
       for p in parameters.keys():
         self.input('%s %s' % (p, str(parameters[p])))
 
-      detector_width = self._fp_header['size'][0] * \
-                       self._fp_header['pixel'][0]
-      detector_height = self._fp_header['size'][1] * \
-                        self._fp_header['pixel'][1]
+      detector = self.get_detector()
+      detector_width, detector_height = detector[0].get_image_size_mm()
 
       lim_x = 0.5 * detector_width
       lim_y = 0.5 * detector_height
@@ -1390,10 +1388,8 @@ def Mosflm(DriverType = None):
       self.input('refinement residual 15')
       self.input('refinement include partials')
 
-      detector_width = self._fp_header['size'][0] * \
-                       self._fp_header['pixel'][0]
-      detector_height = self._fp_header['size'][1] * \
-                        self._fp_header['pixel'][1]
+      detector = self.get_detector()
+      detector_width, detector_height = detector[0].get_image_size_mm()
 
       lim_x = 0.5 * detector_width
       lim_y = 0.5 * detector_height
@@ -1825,7 +1821,7 @@ def Mosflm(DriverType = None):
         for upper, lower in regions:
           self.input('resolution exclude %.2f %.2f' % (upper, lower))
 
-      mask = standard_mask(self._fp_header['detector_class'])
+      mask = standard_mask(self.get_detector())
       for m in mask:
         self.input(m)
 
@@ -1868,10 +1864,8 @@ def Mosflm(DriverType = None):
       self.input('postref fix all')
       self.input('postref maxresidual 5.0')
 
-      detector_width = self._fp_header['size'][0] * \
-                       self._fp_header['pixel'][0]
-      detector_height = self._fp_header['size'][1] * \
-                        self._fp_header['pixel'][1]
+      detector = self.get_detector()
+      detector_width, detector_height = detector[0].get_image_size_mm()
 
       lim_x = 0.5 * detector_width
       lim_y = 0.5 * detector_height
@@ -1884,10 +1878,10 @@ def Mosflm(DriverType = None):
 
       self.input('separation close')
 
-      # FIXME this is a horrible hack - I at least need to
-      # sand box this ...
-      if self.get_header_item('detector') == 'raxis':
-        self.input('adcoffset 0')
+      ## XXX FIXME this is a horrible hack - I at least need to
+      ## sand box this ...
+      #if self.get_header_item('detector') == 'raxis':
+        #self.input('adcoffset 0')
 
       offset = self.get_frame_offset()
 
@@ -2366,7 +2360,7 @@ def Mosflm(DriverType = None):
 
 
         # generate the mask information from the detector class
-        mask = standard_mask(self._fp_header['detector_class'])
+        mask = standard_mask(self.get_detector())
         for m in mask:
           job.input(m)
 
@@ -2426,10 +2420,8 @@ def Mosflm(DriverType = None):
         # ensure that spots are not predicted off the detector
         # (see bug # 2551)
 
-        detector_width = self._fp_header['size'][0] * \
-                         self._fp_header['pixel'][0]
-        detector_height = self._fp_header['size'][1] * \
-                          self._fp_header['pixel'][1]
+        detector = self.get_detector()
+        detector_width, detector_height = detector[0].get_image_size_mm()
 
         lim_x = 0.5 * detector_width
         lim_y = 0.5 * detector_height
@@ -2456,10 +2448,10 @@ def Mosflm(DriverType = None):
 
         job.input('separation close')
 
-        # FIXME this is a horrible hack - I at least need to
-        # sand box this ...
-        if self.get_header_item('detector') == 'raxis':
-          job.input('adcoffset 0')
+        ## XXX FIXME this is a horrible hack - I at least need to
+        ## sand box this ...
+        #if self.get_header_item('detector') == 'raxis':
+          #job.input('adcoffset 0')
 
         genfile = os.path.join(os.environ['CCP4_SCR'],
                                '%d_%d_mosflm.gen' %

@@ -320,7 +320,7 @@ class CCP4ScalerA(Scaler):
 
         else:
           pointless_hklin = self._prepare_pointless_hklin(
-              hklin, si.get_header()['phi_width'])
+              hklin, si.get_integrater().get_phi_width())
 
           pointgroup, reindex_op, ntr, pt = \
                       self._pointless_indexer_jiffy(
@@ -410,7 +410,7 @@ class CCP4ScalerA(Scaler):
       else:
 
         pointless_hklin = self._prepare_pointless_hklin(
-            hklin, si.get_header()['phi_width'])
+            hklin, si.get_integrater().get_phi_width())
 
         pointgroup, reindex_op, ntr, pt = \
                     self._pointless_indexer_jiffy(
@@ -520,7 +520,7 @@ class CCP4ScalerA(Scaler):
         hklin = si.get_reflections()
 
         pl.set_hklin(self._prepare_pointless_hklin(
-            hklin, si.get_header()['phi_width']))
+            hklin, si.get_integrater().get_phi_width()))
 
         hklout = os.path.join(
             self.get_working_directory(),

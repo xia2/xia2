@@ -109,7 +109,7 @@ def MosflmWrapper(DriverType = None):
       self.input('template "%s"' % self.get_template())
       self.input('directory "%s"' % self.get_directory())
 
-      mask = standard_mask(self._fp_header['detector_class'])
+      mask = standard_mask(self.get_detector())
 
       for m in mask:
         self.input(m)

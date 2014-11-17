@@ -139,7 +139,7 @@ class CommonScaler(Scaler):
         epoch = self._sweep_handler.get_epochs()[0]
         p.set_hklin(self._prepare_pointless_hklin(
             hklin, self._sweep_handler.get_sweep_information(
-            epoch).get_header()['phi_width']))
+            epoch).get_integrater().get_phi_width()))
 
       if self._scalr_input_spacegroup:
         Debug.write('Assigning user input spacegroup: %s' % \
