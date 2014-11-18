@@ -285,24 +285,28 @@ def help():
   '''Print out some help for xia2.'''
 
   sys.stdout.write('\nCommand-line options to xia2:\n')
-  sys.stdout.write('[-parallel 4] (automatic)\n')
+  sys.stdout.write('Processing pipelines:\n')
+  sys.stdout.write('  [-2d]    MOSFLM, LABELIT (if installed), SCALA\n')
+  sys.stdout.write('  [-3d]    XDS, XSCALE, LABELIT\n')
+  sys.stdout.write('  [-3dii]  XDS, XSCALE, using all images for autoindexing\n')
+  sys.stdout.write('  [-dials] DIALS\n')
+  sys.stdout.write('[-xinfo foo.xinfo] or [/path/to/images]\n\n')
+
   sys.stdout.write('[-resolution 2.8] (say, applies to all sweeps)\n')
   sys.stdout.write('[-freer_file free.mtz]\n')
   sys.stdout.write('[-reference_reflection_file free.mtz]\n')
-  sys.stdout.write('[-spacegroup C2] (for example)\n')
+  sys.stdout.write('[nproc=4]        run on 4 processors (automatic)\n')
+  sys.stdout.write('[space_group=C2] (for example)\n')
   sys.stdout.write('[-quick]\n')
   sys.stdout.write('[-reversephi]\n')
   sys.stdout.write('[-migrate_data]\n')
-  sys.stdout.write('[-2d] or [-3d] or [-3dii]\n')
-  sys.stdout.write('[-xinfo foo.xinfo] or [/path/to/images]\n\n')
   sys.stdout.write('[-atom se] (say) - this is for xia2setup\n')
   sys.stdout.write('[-project foo] (say) - this is for xia2setup\n')
   sys.stdout.write('[-crystal bar] (say) - this is for xia2setup\n\n')
 
   sys.stdout.write('Command-lines for testing\n')
   sys.stdout.write('[-smart_scaling] figure out the "best" scaling model\n')
-
-  sys.stdout.write('Develper options - do not use these ...\n')
+  sys.stdout.write('Developer options - do not use these ...\n')
   sys.stdout.write(
       '[-z_min 50] (minimum Z value for rejecting reflections)\n')
   sys.stdout.write('[-trust_timestamps]\n')
@@ -312,8 +316,8 @@ def help():
   sys.stdout.write('[-norefine]\n\n')
 
   sys.stdout.write('Sensible command lines:\n')
-  sys.stdout.write('xia2 (-2d|-3d) -xinfo foo.xinfo\n')
-  sys.stdout.write('xia2 -project foo -crystal bar (-2d|-3d) /data/path\n')
+  sys.stdout.write('xia2 (-2d|-3d|..) -xinfo foo.xinfo\n')
+  sys.stdout.write('xia2 -project foo -crystal bar (-2d|-3d|..) /data/path\n')
 
 def run():
   try:
