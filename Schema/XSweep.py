@@ -219,12 +219,8 @@ class XSweep(object):
       imagesets = load_imagesets(
         self._template, self._directory, image_range=self._frames_to_process)
 
-      #from dxtbx.imageset import ImageSetFactory
-      #imagesets = ImageSetFactory.from_template(
-        #os.path.join(self._directory, self._template),
-        #image_range=self._frames_to_process,
-        #check_headers=False)
-      assert len(imagesets) == 1
+      assert len(imagesets) == 1, "one imageset expected, %d found" % \
+          len(imagesets)
       self._imageset = imagesets[0]
       start, end = self._imageset.get_array_range()
       self._images = list(range(start+1, end+1))
