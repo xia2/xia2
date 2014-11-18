@@ -1349,6 +1349,7 @@ class _CommandLine(object):
   def _read_3d(self):
 
     if '-3d' in self._argv:
+      PhilIndex.update("xia2.settings.indexer=xds")
       PhilIndex.update("xia2.settings.integrater=xdsr")
       PhilIndex.update("xia2.settings.scaler=xdsa")
       PhilIndex.get_python_object()
