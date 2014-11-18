@@ -223,8 +223,25 @@ def print_sweeps(out = sys.stdout):
   import operator
   epochs = [known_sweeps[sweep][0].get_imageset().get_scan().get_epochs()[0]
             for sweep in sweeplists]
-  if min(epochs) == max(epochs) and len(epochs) > 1:
-    raise RuntimeError, 'duplicate epochs found'
+
+  if len(epochs) != len(set(epochs)):
+    from Handlers.Streams import Debug
+    Debug.write('Duplicate epochs found. Trying to correct epoch information.')
+    cumulativedelta = 0.0
+    for sweep in sweeplists:
+      known_sweeps[sweep][0].get_imageset().get_scan().set_epochs(
+        known_sweeps[sweep][0].get_imageset().get_scan().get_epochs()
+        + cumulativedelta)
+      # could change the image epoch information individually, but only
+      # the information from the first image is used at this time.
+      cumulativedelta += sum(known_sweeps[sweep][0].get_imageset().get_scan().get_exposure_times())
+    epochs = [known_sweeps[sweep][0].get_imageset().get_scan().get_epochs()[0]
+            for sweep in sweeplists]
+
+    if len(epochs) != len(set(epochs)):
+      Debug.write('Duplicate epoch information remains.')
+    # This should only happen with incorrect exposure time information.
+
   sweeplists, epochs = zip(*sorted(zip(sweeplists, epochs),
     key=operator.itemgetter(1)))
 
