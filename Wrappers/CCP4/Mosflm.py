@@ -48,6 +48,7 @@ from Wrappers.CCP4.MosflmHelpers import _happy_integrate_lp, \
      _parse_mosflm_index_output, standard_mask, \
      _get_indexing_solution_number, detector_class_to_mosflm, \
      _parse_summary_file
+from Wrappers.Mosflm.MosflmIndex import MosflmIndex
 
 # things we are moving towards...
 from Modules.Indexer.IndexerSelectImages import index_select_images_lone, \
@@ -282,11 +283,12 @@ def Mosflm(DriverType = None):
 
       Citations.cite('mosflm')
 
-      self.reset()
-      auto_logfiler(self)
+      indexer = MosflmIndex()
+      auto_logfiler(indexer)
 
       from lib.bits import unique_elements
       _images = unique_elements(self._indxr_images)
+      indexer.set_images(_images)
       images_str = ', '.join(map(str, _images))
 
       cell_str = None
@@ -316,33 +318,26 @@ def Mosflm(DriverType = None):
 
       self.set_task(task)
 
-      auto_logfiler(self)
-      self.start()
-
-      if self.get_reversephi():
-        self.input('detector reversephi')
-
-      self.input('template "%s"' % self.get_template())
-      self.input('directory "%s"' % self.get_directory())
-      self.input('newmat xiaindex.mat')
+      indexer.set_reverse_phi(self.get_reversephi())
+      indexer.set_template(self.get_template())
+      indexer.set_directory(self.get_directory())
 
       if self.get_beam_prov() == 'user':
-        self.input('beam %f %f' % self.get_beam_centre())
+        indexer.set_beam_centre(self.get_beam_centre())
 
       if self.get_wavelength_prov() == 'user':
-        self.input('wavelength %f' % self.get_wavelength())
+        indexer.set_wavelength(self.get_wavelength())
 
       if self.get_distance_prov() == 'user':
-        self.input('distance %f' % self.get_distance())
+        indexer.set_directory(self.get_distance())
 
       if self._indxr_input_cell:
-        self.input('cell %f %f %f %f %f %f' % \
-                   self._indxr_input_cell)
+        indexer.set_unit_cell(self._indxr_input_cell)
 
       if self._indxr_input_lattice != None:
         spacegroup_number = lattice_to_spacegroup(
             self._indxr_input_lattice)
-        self.input('symmetry %d' % spacegroup_number)
+        indexer.set_space_group_number(spacegroup_number)
 
       if not self._mosflm_autoindex_thresh:
 
@@ -378,55 +373,39 @@ def Mosflm(DriverType = None):
 
       Debug.write('Using autoindex threshold: %d' % thresh)
 
-      for i in _images:
-
-        if self._mosflm_autoindex_sol:
-          self.input(
-              'autoindex dps refine image %d thresh %d solu %d' % \
-              (i, thresh, self._mosflm_autoindex_sol))
-        else:
-          self.input(
-              'autoindex dps refine image %d thresh %d' % \
-              (i, thresh))
+      if self._mosflm_autoindex_sol:
+        indexer.set_solution_number(self._mosflm_autoindex_sol)
+      indexer.set_threshold(thresh)
 
       # now forget this to prevent weird things happening later on
       if self._mosflm_autoindex_sol:
         self._mosflm_autoindex_sol = 0
 
-      # trac 1150 - want to estimate mosaic spread from all images then
-      # calculate the average - though what happens if one of the chosen
-      # images is BLANK?
+      indexer.run()
 
-      for i in _images:
-        self.input('mosaic estimate %d' % i)
-        self.input('go')
+      #sweep = self.get_indexer_sweep_name()
+      #FileHandler.record_log_file(
+          #'%s INDEX' % (sweep), self.get_log_file())
 
-      self.close_wait()
+      indxr_cell = indexer.get_refined_unit_cell()
+      self._indxr_lattice = indexer.get_lattice()
+      space_group_number = indexer.get_indexed_space_group_number()
+      detector_distance = indexer.get_refined_distance()
+      beam_centre = indexer.get_refined_beam_centre()
+      mosaic_spreads = indexer.get_mosaic_spreads()
 
-      sweep = self.get_indexer_sweep_name()
-      FileHandler.record_log_file(
-          '%s INDEX' % (sweep), self.get_log_file())
+      if min(list(indxr_cell)) < 10.0 and \
+         indxr_cell[2] / indxr_cell[0] > 6:
 
-      output = self.get_all_output()
+        Debug.write(
+            'Unrealistic autoindexing solution: ' +
+            '%.2f %.2f %.2f %.2f %.2f %.2f' % indxr_cell)
 
-      mosaic_spreads = []
+        # tweak some parameters and try again...
+        self._mosflm_autoindex_thresh *= 1.5
+        self.set_indexer_done(False)
 
-      for o in output:
-        if 'Final cell (after refinement)' in o:
-          indxr_cell = tuple(map(float, o.split()[-6:]))
-
-          if min(list(indxr_cell)) < 10.0 and \
-             indxr_cell[2] / indxr_cell[0] > 6:
-
-            Debug.write(
-                'Unrealistic autoindexing solution: ' +
-                '%.2f %.2f %.2f %.2f %.2f %.2f' % indxr_cell)
-
-            # tweak some parameters and try again...
-            self._mosflm_autoindex_thresh *= 1.5
-            self.set_indexer_done(False)
-
-            return
+        return
 
       intgr_params = { }
 
@@ -436,8 +415,7 @@ def Mosflm(DriverType = None):
       # solution!
 
       try:
-        self._indxr_other_lattice_cell = _parse_mosflm_index_output(
-            output)
+        self._indxr_other_lattice_cell = indexer.get_solutions()
 
         # Change 27/FEB/08 to support user assigned spacegroups
         if self._indxr_user_input_lattice:
@@ -454,14 +432,8 @@ def Mosflm(DriverType = None):
         # check that the selected unit cell matches - and if
         # not raise a "horrible" exception
 
-        # FIXME why are these and "False" commented out - see also in (e)
-
         if self._indxr_input_cell:
-
-          for o in output:
-            if 'Final cell (after refinement)' in o:
-              indxr_cell = tuple(map(float, o.split()[-6:]))
-
+          assert indxr_cell is not None
           for j in range(6):
             if math.fabs(self._indxr_input_cell[j] -
                          indxr_cell[j]) > 2.0:
@@ -479,6 +451,7 @@ def Mosflm(DriverType = None):
             raise RuntimeError, \
                   'error in solution selection when not preset'
 
+          # XXX FIXME
           self._mosflm_autoindex_sol = _get_indexing_solution_number(
               output,
               self._indxr_input_cell,
@@ -492,107 +465,27 @@ def Mosflm(DriverType = None):
         else:
           raise e
 
-      space_group_number = None
-      beam_centre = None
-      detector_distance = None
-      cell = None
+      if len(mosaic_spreads) == 0:
+        # then consider setting it do a default value...
+        # equal to the oscillation width (a good guess)
+        phi_width = self.get_phi_width()
+        Chatter.write(
+            'Mosaic estimation failed, so guessing at %4.2f' % \
+            phi_width)
+        # only consider this if we have thus far no idea on the
+        # mosaic spread...
+        mosaic_spreads.append(phi_width)
 
-      for o in output:
-        if 'Final cell (after refinement)' in o:
-          cell = tuple(map(float, o.split()[-6:]))
-        if 'Beam coordinates of' in o:
-          beam_centre = tuple(map(float, o.split()[-2:]))
+      #if Flags.get_microcrystal():
+        #self._indxr_mosaic = 0.5
+      #else:
+        #raise IndexingError, 'mosaicity estimation failed'
 
-        # FIXED this may not be there if this is a repeat indexing!
-        if 'Symmetry:' in o:
-          self._indxr_lattice = o.split(':')[1].split()[0]
+      intgr_params['raster'] = indexer.get_raster()
 
-        # so we have to resort to this instead...
-        if 'Refining solution #' in o:
-          space_group_number = int(o.split(')')[0].split()[-1])
-          lattice_to_spacegroup_dict = {'aP':1, 'mP':3, 'mC':5,
-                                        'oP':16, 'oC':20, 'oF':22,
-                                        'oI':23, 'tP':75, 'tI':79,
-                                        'hP':143, 'hR':146,
-                                        'cP':195, 'cF':196,
-                                        'cI':197}
+      intgr_params['separation'] = indexer.get_separation()
 
-          spacegroup_to_lattice = { }
-          for k in lattice_to_spacegroup_dict.keys():
-            spacegroup_to_lattice[
-                lattice_to_spacegroup_dict[k]] = k
-          self._indxr_lattice = spacegroup_to_lattice[space_group_number]
-
-        # in here I need to check if the mosaic spread estimation
-        # has failed. If it has it is likely that the selected
-        # lattice has too high symmetry, and the "next one down"
-        # is needed
-
-        if 'The mosaicity has been estimated' in o:
-          ms = float(o.split('>')[1].split()[0])
-          mosaic_spreads.append(ms)
-
-        # alternatively this could have failed - which happens
-        # sometimes...
-
-        if 'The mosaicity estimation has not worked for some' in o:
-          # this is a problem... in particular with the
-          # mosflm built on linux in CCP4 6.0.1...
-          # FIXME this should be a specific kind of
-          # exception e.g. an IndexError
-          # if microcrystal mode, just assume for the moment mosaic
-          # spread is 0.5 degrees...
-
-          if Flags.get_microcrystal():
-            self._indxr_mosaic = 0.5
-          else:
-            raise IndexingError, 'mosaicity estimation failed'
-
-        # or it may alternatively look like this...
-
-        if 'The mosaicity has NOT been estimated' in o:
-          # then consider setting it do a default value...
-          # equal to the oscillation width (a good guess)
-
-          phi_width = self.get_phi_width()
-
-          Chatter.write(
-              'Mosaic estimation failed, so guessing at %4.2f' % \
-              phi_width)
-
-          # only consider this if we have thus far no idea on the
-          # mosaic spread...
-
-          if not mosaic_spreads:
-            mosaic_spreads.append(phi_width)
-
-        # mosflm doesn't refine this in autoindexing...
-        if 'Crystal to detector distance of' in o:
-          detector_distance = float(o.split()[5].replace('mm', ''))
-
-        # but it does complain if it is different to the header
-        # value - so just use the input value in this case...
-        if 'Input crystal to detector distance' in o \
-           and 'does NOT agree with' in o:
-          detector_distance = self.get_distance()
-
-        # record raster parameters and so on, useful for the
-        # cell refinement etc - this will be added to a
-        # payload dictionary of mosflm integration keywords
-        # look for "measurement box parameters"
-
-        if 'parameters have been set to' in o:
-          intgr_params['raster'] = map(
-              int, o.split()[-5:])
-
-        if '(currently SEPARATION' in o:
-          intgr_params['separation'] = map(
-              float, o.replace(')', '').split()[-2:])
-
-        # get the resolution estimate out...
-        if '99% have resolution' in o:
-          self._indxr_resolution_estimate = float(
-              o.split()[-2])
+      self._indxr_resolution_estimate = indexer.get_resolution_estimate()
 
       # compute mosaic as mean(mosaic_spreads)
 
@@ -622,7 +515,7 @@ def Mosflm(DriverType = None):
       space_group = sgtbx.space_group_info(number=space_group_number).group()
       crystal_model = crystal_model_from_mosflm_mat(
         self._indxr_payload['mosflm_orientation_matrix'],
-        unit_cell=uctbx.unit_cell(tuple(cell)),
+        unit_cell=uctbx.unit_cell(tuple(indxr_cell)),
         space_group=space_group)
 
       # construct an experiment_list

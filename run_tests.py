@@ -13,6 +13,7 @@ tst_list = (
     "$D/Test/Modules/Indexer/TstXDSIndexerII.py",
     "$D/Test/Wrappers/Labelit/TstLabelitIndex.py",
     "$D/Test/Wrappers/Dials/TstDialsWrappers.py",
+    "$D/Test/Wrappers/Mosflm/TstMosflmIndex.py",
     "$D/Test/Mosflm/MosflmRefactorTest.py",
 )
 
