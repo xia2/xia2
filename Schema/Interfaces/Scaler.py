@@ -445,7 +445,7 @@ class Scaler(object):
         continue
 
       elif state == indexer.LATTICE_POSSIBLE:
-        currect_lattice = lattice
+        correct_lattice = lattice
         break
 
     assert(correct_lattice)
