@@ -6,14 +6,15 @@ from libtbx import test_utils
 import libtbx.load_env
 
 tst_list = (
+    "$D/Test/Wrappers/Dials/TstDialsWrappers.py",
     "$D/Test/Modules/Indexer/TstDialsIndexer.py",
     "$D/Test/Modules/Indexer/TstLabelitIndexer.py",
     "$D/Test/Modules/Indexer/TstLabelitIndexerII.py",
     "$D/Test/Modules/Indexer/TstXDSIndexer.py",
     "$D/Test/Modules/Indexer/TstXDSIndexerII.py",
     "$D/Test/Wrappers/Labelit/TstLabelitIndex.py",
-    "$D/Test/Wrappers/Dials/TstDialsWrappers.py",
     "$D/Test/Wrappers/Mosflm/TstMosflmIndex.py",
+    "$D/Test/Wrappers/Mosflm/TstMosflmRefineCell.py",
     "$D/Test/Mosflm/MosflmRefactorTest.py",
 )
 

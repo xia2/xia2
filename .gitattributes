@@ -54,6 +54,7 @@ Test/Mosflm/PlatformHelpers.py -text
 Test/Wrappers/Dials/TstDialsWrappers.py -text
 Test/Wrappers/Labelit/TstLabelitIndex.py -text
 Test/Wrappers/Mosflm/TstMosflmIndex.py -text
+Test/Wrappers/Mosflm/TstMosflmRefineCell.py -text
 Toolkit/BackstopMask.py -text
 Toolkit/E4.py -text
 Toolkit/FrameCC.py -text
@@ -91,6 +92,7 @@ Wrappers/Mosflm/Findspots.py -text
 Wrappers/Mosflm/GenerateRaster.py -text
 Wrappers/Mosflm/Header.py -text
 Wrappers/Mosflm/MosflmIndex.py -text
+Wrappers/Mosflm/MosflmRefineCell.py -text
 Wrappers/Mosflm/__init__.py -text
 Wrappers/System/Say.py -text
 Wrappers/XDS/Merge2cbf.py -text

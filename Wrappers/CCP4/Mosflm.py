@@ -49,6 +49,7 @@ from Wrappers.CCP4.MosflmHelpers import _happy_integrate_lp, \
      _get_indexing_solution_number, detector_class_to_mosflm, \
      _parse_summary_file
 from Wrappers.Mosflm.MosflmIndex import MosflmIndex
+from Wrappers.Mosflm.MosflmRefineCell import MosflmRefineCell
 
 # things we are moving towards...
 from Modules.Indexer.IndexerSelectImages import index_select_images_lone, \
@@ -675,13 +676,9 @@ def Mosflm(DriverType = None):
           rms_deviations_p1 = []
           br_p1 = []
         else:
-          self.reset()
-          auto_logfiler(self)
           rms_deviations_p1, br_p1 = self._mosflm_test_refine_cell(
               'aP')
 
-        self.reset()
-        auto_logfiler(self)
         rms_deviations, br = self._mosflm_refine_cell()
 
       except NegativeMosaicError, nme:
@@ -888,7 +885,7 @@ def Mosflm(DriverType = None):
 
       lattice = indxr.get_indexer_lattice()
       mosaic = indxr.get_indexer_mosaic()
-      beam = indxr.get_indexer_beam_centre()
+      beam_centre = indxr.get_indexer_beam_centre()
       distance = indxr.get_indexer_distance()
       matrix = indxr.get_indexer_payload('mosflm_orientation_matrix')
 
@@ -914,24 +911,22 @@ def Mosflm(DriverType = None):
                         'test-xiaindex-%s.mat' % lattice),
            'w').write(new_matrix)
 
-      self.start()
+
+      refiner = MosflmRefineCell()
+      refiner.set_working_directory(self.get_working_directory())
+      auto_logfiler(refiner)
 
       if self._mosflm_gain:
-        self.input('gain %5.2f' % self._mosflm_gain)
+        refiner.set_gain(self._mosflm_gain)
 
-      if self.get_reversephi():
-        self.input('detector reversephi')
-
-      self.input('template "%s"' % self.get_template())
-      self.input('directory "%s"' % self.get_directory())
-
-      self.input('matrix test-xiaindex-%s.mat' % lattice)
-      self.input('newmat test-xiarefine.mat')
-
-      self.input('beam %f %f' % beam)
-      self.input('distance %f' % distance)
-
-      self.input('symmetry %s' % spacegroup_number)
+      refiner.set_reverse_phi(self.get_reversephi())
+      refiner.set_template(self.get_template())
+      refiner.set_directory(self.get_directory())
+      refiner.set_input_mat_file('test-xiaindex-%s.mat' % lattice)
+      refiner.set_output_mat_file('test-xiarefine.mat')
+      refiner.set_beam_centre(beam_centre)
+      refiner.set_distance(distance)
+      refiner.set_space_group_number(spacegroup_number)
 
       # FIXME 18/JUN/08 - it may help to have an overestimate
       # of the mosaic spread in here as it *may* refine down
@@ -940,29 +935,26 @@ def Mosflm(DriverType = None):
 
       # Bug # 3103
       if self._mosflm_cell_ref_double_mosaic:
-        self.input('mosaic %f' % (2.0 * mosaic))
-      else:
-        self.input('mosaic %f' % mosaic)
+        mosaic *= 2.0
+      refiner.set_mosaic(mosaic)
 
       # if set, use the resolution for cell refinement - see
       # bug # 2078...
 
       if self._mosflm_cell_ref_resolution and not \
              Flags.get_microcrystal():
-        self.input('resolution %f' % \
-                   self._mosflm_cell_ref_resolution)
+        refiner.set_resolution(self._mosflm_cell_ref_resolution)
 
-      if self._mosflm_postref_fix_mosaic:
-        self.input('postref fix mosaic')
+      refiner.set_fix_mosaic(self._mosflm_postref_fix_mosaic)
 
       if Flags.get_microcrystal():
-        self.input('postref sdfac 2.0')
+        refiner.set_sdfac(2.0)
 
       # note well that the beam centre is coming from indexing so
       # should be already properly handled
 
       if self.get_wavelength_prov() == 'user':
-        self.input('wavelength %f' % self.get_wavelength())
+        refiner.set_wavelength(self.get_wavelength())
 
       # belt + braces mode - only to be used when considering failover,
       # will run an additional step of autoindexing prior to cell
@@ -971,19 +963,11 @@ def Mosflm(DriverType = None):
       # wedge... N.B. this is only useful if the indexer is Labelit
       # not Mosflm...
 
-      if self._mosflm_cell_ref_add_autoindex:
-        assert(Flags.get_failover())
-        cri = self._mosflm_cell_ref_images[0]
-        for j in range(cri[0], 1 + cri[1]):
-          self.input('autoindex dps refine image %d' % j)
-        self.input('go')
+      refiner.set_add_autoindex(self._mosflm_cell_ref_add_autoindex)
 
       # get all of the stored parameter values
       parameters = self.get_integrater_parameters('mosflm')
-
-      self.input('!parameters from autoindex run')
-      for p in parameters.keys():
-        self.input('%s %s' % (p, str(parameters[p])))
+      refiner.update_parameters(parameters)
 
       detector = self.get_detector()
       detector_width, detector_height = detector[0].get_image_size_mm()
@@ -992,132 +976,13 @@ def Mosflm(DriverType = None):
       lim_y = 0.5 * detector_height
 
       Debug.write('Scanner limits: %.1f %.1f' % (lim_x, lim_y))
-      self.input('limits xscan %f yscan %f' % (lim_x, lim_y))
+      refiner.set_limits(lim_x, lim_y)
+      refiner.set_images(self._mosflm_cell_ref_images)
 
-      self.input('separation close')
-      self.input('refinement residual 15.0')
-      self.input('refinement include partials')
+      refiner.run()
 
-      self._reorder_cell_refinement_images()
-
-      self.input('postref multi segments %d repeat 10' % \
-                 len(self._mosflm_cell_ref_images))
-
-      self.input('postref maxresidual 5.0')
-
-      genfile = os.path.join(os.environ['CCP4_SCR'],
-                             '%d_mosflm.gen' % self.get_xpid())
-
-      self.input('genfile %s' % genfile)
-
-      for cri in self._mosflm_cell_ref_images:
-        self.input('process %d %d' % cri)
-        self.input('go')
-
-      # that should be everything
-      self.close_wait()
-
-      # get the log file
-      output = self.get_all_output()
-
-      rms_values_last = None
-      rms_values = None
-
-      new_cycle_number = 0
-      new_rms_values = { }
-      new_image_counter = None
-      new_ignore_update = False
-
-      parse_cycle = 1
-      parse_image = 0
-
-      background_residual = { }
-
-      for i in range(len(output)):
-        o = output[i]
-
-        if 'Processing Image' in o:
-          new_image_counter = int(o.split()[2])
-          parse_image = int(o.split()[2])
-
-        if 'Repeating the entire run' in o:
-          parse_cycle += 1
-
-        if 'Background residual' in o:
-          res = float(o.replace('residual=', '').split()[8])
-
-          if not parse_cycle in background_residual:
-            background_residual[parse_cycle] = { }
-          background_residual[parse_cycle][parse_image] = res
-
-        if 'As this is near to the start' in o:
-          new_ignore_update = True
-
-        if 'Post-refinement will use partials' in o:
-          if new_ignore_update:
-            new_ignore_update = False
-          else:
-            new_cycle_number += 1
-            new_rms_values[new_cycle_number] = { }
-
-        if 'Final rms residual' in o:
-          rv = float(o.replace('mm', ' ').split()[3])
-          new_rms_values[new_cycle_number][new_image_counter] = rv
-
-        if 'Rms positional error (mm) as a function of' in o and True:
-          images = []
-          cycles = []
-          rms_values = { }
-
-          j = i + 1
-
-          while output[j].split():
-            if 'Image' in output[j]:
-              for image in map(int, output[j].replace(
-                  'Image', '').split()):
-                images.append(image)
-            else:
-              cycle = int(output[j].replace(
-                  'Cycle', '').split()[0])
-
-              if not cycle in cycles:
-                cycles.append(cycle)
-                rms_values[cycle] = []
-
-              record = [output[j][k:k + 6] \
-                        for k in range(
-                  11, len(output[j]), 6)]
-
-              data = []
-              for r in record:
-                if r.strip():
-                  data.append(r.strip())
-                record = data
-
-              try:
-                values = map(float, record)
-                for v in values:
-                  rms_values[cycle].append(v)
-              except ValueError, e:
-                Debug.write(
-                    'Error parsing %s as floats' % \
-                    output[j][12:])
-
-            j += 1
-
-
-          # now transform back the new rms residual values
-          # into the old structure... messy but effective!
-
-          for cycle in new_rms_values.keys():
-            images = new_rms_values[cycle].keys()
-            images.sort()
-            rms_values[cycle] = []
-            for i in images:
-              rms_values[cycle].append(
-                  new_rms_values[cycle][i])
-
-          rms_values_last = rms_values[max(cycles)]
+      rms_values = refiner.get_rms_values()
+      background_residual = refiner.get_background_residual()
 
       return rms_values, background_residual
 
@@ -1202,27 +1067,25 @@ def Mosflm(DriverType = None):
 
       # then start the cell refinement
 
-      self.start()
+      refiner = MosflmRefineCell()
+      refiner.set_working_directory(self.get_working_directory())
+      auto_logfiler(refiner)
 
       if self._mosflm_gain:
-        self.input('gain %5.2f' % self._mosflm_gain)
+        refiner.set_gain(self._mosflm_gain)
 
-      if self.get_reversephi():
-        self.input('detector reversephi')
-
-      self.input('template "%s"' % self.get_template())
-      self.input('directory "%s"' % self.get_directory())
-
-      self.input('matrix xiaindex-%s.mat' % lattice)
-      self.input('newmat xiarefine.mat')
-
-      self.input('beam %f %f' % beam_centre)
-      self.input('distance %f' % distance)
-
+      refiner.set_reverse_phi(self.get_reversephi())
+      refiner.set_template(self.get_template())
+      refiner.set_directory(self.get_directory())
+      refiner.set_input_mat_file('xiaindex-%s.mat' % lattice)
+      refiner.set_output_mat_file('xiarefine.mat')
+      refiner.set_beam_centre(beam_centre)
+      refiner.set_unit_cell(cell)
+      refiner.set_distance(distance)
       if set_spacegroup:
-        self.input('symmetry %s' % set_spacegroup)
+        refiner.set_space_group_number(set_spacegroup)
       else:
-        self.input('symmetry %s' % spacegroup_number)
+        refiner.set_space_group_number(spacegroup_number)
 
       # FIXME 18/JUN/08 - it may help to have an overestimate
       # of the mosaic spread in here as it *may* refine down
@@ -1231,49 +1094,39 @@ def Mosflm(DriverType = None):
 
       # Bug # 3103
       if self._mosflm_cell_ref_double_mosaic:
-        self.input('mosaic %f' % (2.0 * mosaic))
-      else:
-        self.input('mosaic %f' % mosaic)
-
-      if self._mosflm_postref_fix_mosaic:
-        self.input('postref fix mosaic')
+        mosaic *= 2.0
+      refiner.set_mosaic(mosaic)
 
       # if set, use the resolution for cell refinement - see
       # bug # 2078...
 
       if self._mosflm_cell_ref_resolution and not \
              Flags.get_microcrystal():
-        self.input('resolution %f' % \
-                   self._mosflm_cell_ref_resolution)
+        refiner.set_resolution(self._mosflm_cell_ref_resolution)
+
+      refiner.set_fix_mosaic(self._mosflm_postref_fix_mosaic)
 
       if Flags.get_microcrystal():
-        self.input('postref sdfac 2.0')
+        refiner.set_sdfac(2.0)
+
+      # note well that the beam centre is coming from indexing so
+      # should be already properly handled
 
       if self.get_wavelength_prov() == 'user':
-        self.input('wavelength %f' % self.get_wavelength())
+        refiner.set_wavelength(self.get_wavelength())
 
       # belt + braces mode - only to be used when considering failover,
       # will run an additional step of autoindexing prior to cell
       # refinement, to be used only after proving that not going it
       # will result in cell refinement failure - will use the first
-      # wedge...
+      # wedge... N.B. this is only useful if the indexer is Labelit
+      # not Mosflm...
 
-      if self._mosflm_cell_ref_add_autoindex:
-        assert(Flags.get_failover())
-        cri = self._mosflm_cell_ref_images[0]
-        for j in range(cri[0], 1 + cri[1]):
-          self.input('autoindex dps refine image %d' % j)
-        self.input('go')
+      refiner.set_add_autoindex(self._mosflm_cell_ref_add_autoindex)
 
+      # get all of the stored parameter values
       parameters = self.get_integrater_parameters('mosflm')
-
-      self.input('!parameters from autoindex run')
-      for p in parameters.keys():
-        self.input('%s %s' % (p, str(parameters[p])))
-
-      self.input('separation close')
-      self.input('refinement residual 15')
-      self.input('refinement include partials')
+      refiner.update_parameters(parameters)
 
       detector = self.get_detector()
       detector_width, detector_height = detector[0].get_image_size_mm()
@@ -1282,300 +1135,64 @@ def Mosflm(DriverType = None):
       lim_y = 0.5 * detector_height
 
       Debug.write('Scanner limits: %.1f %.1f' % (lim_x, lim_y))
-      self.input('limits xscan %f yscan %f' % (lim_x, lim_y))
+      refiner.set_limits(lim_x, lim_y)
+      refiner.set_images(self._mosflm_cell_ref_images)
 
-      self._reorder_cell_refinement_images()
+      if Flags.get_failover() and not \
+                     self._mosflm_cell_ref_add_autoindex:
+        refiner.set_ignore_cell_refinement_failure(True)
 
-      self.input('postref multi segments %d repeat 10' % \
-                 len(self._mosflm_cell_ref_images))
-
-      self.input('postref maxresidual 5.0')
-
-      genfile = os.path.join(os.environ['CCP4_SCR'],
-                             '%d_mosflm.gen' % self.get_xpid())
-
-      self.input('genfile %s' % genfile)
-
-      for cri in self._mosflm_cell_ref_images:
-        self.input('process %d %d' % cri)
-        self.input('go')
-
-      # that should be everything
-      self.close_wait()
-
-      # get the log file
-      output = self.get_all_output()
+      refiner.run()
 
       # then look to see if the cell refinement worked ok - if it
       # didn't then this may indicate that the lattice was wrongly
       # selected.
 
-      cell_refinement_ok = False
-
-      for o in output:
-
-        if 'Cell refinement is complete' in o:
-          cell_refinement_ok = True
+      cell_refinement_ok = refiner.cell_refinement_ok()
 
       if not cell_refinement_ok:
-        if Flags.get_failover() and not \
-               self._mosflm_cell_ref_add_autoindex:
-          Debug.write('Repeating cell refinement...')
-          self.set_integrater_prepare_done(False)
-          self._mosflm_cell_ref_add_autoindex = True
-          return [0.0], [0.0]
+        Debug.write('Repeating cell refinement...')
+        self.set_integrater_prepare_done(False)
+        self._mosflm_cell_ref_add_autoindex = True
+        return [0.0], [0.0]
 
-        Chatter.write(
-            'Looks like cell refinement failed - more follows...')
+      rms_values = refiner.get_rms_values()
+      background_residual = refiner.get_background_residual()
+      self._intgr_cell = refiner.get_refined_unit_cell()
+      distance = refiner.get_refined_distance2()
+      experiment = self.get_integrater_indexer(
+        ).get_indexer_experiment_list()[0]
+      from Wrappers.Mosflm.AutoindexHelpers import set_distance
+      set_distance(experiment.detector, distance)
 
-      rms_values_last = None
-      rms_values = None
+      self.set_integrater_parameter('mosflm',
+                                    'distortion yscale',
+                                    refiner.get_refined_distortion_yscale())
 
-      new_cycle_number = 0
-      new_rms_values = { }
-      new_image_counter = None
-      new_ignore_update = False
+      self.set_integrater_parameter('mosflm',
+                                    'raster',
+                                    refiner.get_raster())
 
-      parse_cycle = 1
-      parse_image = 0
+      separation = refiner.get_separation()
+      if separation is not None:
+        self.set_integrater_parameter('mosflm',
+                                      'separation',
+                                      '%s %s' %refiner.get_separation())
 
-      background_residual = { }
+      self.set_integrater_parameter('mosflm',
+                                    'beam',
+                                    '%s %s' %refiner.get_refined_beam_centre())
+      self.set_integrater_parameter('mosflm',
+                                    'distance',
+                                    refiner.get_refined_distance())
+      self.set_integrater_parameter('mosflm',
+                                    'distortion tilt',
+                                    refiner.get_refined_distortion_tilt())
+      self.set_integrater_parameter('mosflm',
+                                    'distortion twist',
+                                    refiner.get_refined_distortion_twist())
 
-      for i in range(len(output)):
-        o = output[i]
-
-        if 'Processing will be aborted' in o:
-          raise BadLatticeError, 'cell refinement failed'
-
-        if 'An unrecoverable error has occurred in MOSFLM' in o:
-          raise BadLatticeError, 'cell refinement failed'
-
-        if 'Processing Image' in o:
-          new_image_counter = int(o.split()[2])
-
-        if 'As this is near to the start' in o:
-          new_ignore_update = True
-
-        if 'Post-refinement will use partials' in o:
-          if new_ignore_update:
-            new_ignore_update = False
-          else:
-            new_cycle_number += 1
-            new_rms_values[new_cycle_number] = { }
-
-        if 'Final rms residual' in o:
-          rv = float(o.replace('mm', ' ').split()[3])
-          new_rms_values[new_cycle_number][new_image_counter] = rv
-
-        if 'Rms positional error (mm) as a function of' in o and True:
-          images = []
-          cycles = []
-          rms_values = { }
-
-          j = i + 1
-
-          while output[j].split():
-            if 'Image' in output[j]:
-              for image in map(int, output[j].replace(
-                  'Image', '').split()):
-                images.append(image)
-            else:
-              cycle = int(output[j].replace(
-                  'Cycle', '').split()[0])
-
-              if not cycle in cycles:
-                cycles.append(cycle)
-                rms_values[cycle] = []
-
-              record = [output[j][k:k + 6] \
-                        for k in range(
-                  11, len(output[j]), 6)]
-
-              data = []
-              for r in record:
-                if r.strip():
-                  data.append(r.strip())
-                record = data
-
-              try:
-                values = map(float, record)
-                for v in values:
-                  rms_values[cycle].append(v)
-              except ValueError, e:
-                Debug.write(
-                    'Error parsing %s as floats' % \
-                    output[j][12:])
-
-            j += 1
-
-          for cycle in new_rms_values.keys():
-            images = new_rms_values[cycle].keys()
-            images.sort()
-            rms_values[cycle] = []
-            for i in images:
-              rms_values[cycle].append(
-                  new_rms_values[cycle][i])
-
-          if cycles:
-            rms_values_last = rms_values[max(cycles)]
-          else:
-            rms_values_last = None
-
-        # look for "error" type problems
-
-        if 'is greater than the maximum allowed' in o and \
-               'FINAL weighted residual' in o:
-
-          Debug.write('Large weighted residual... ignoring')
-
-        if 'INACCURATE CELL PARAMETERS' in o:
-
-          # get the inaccurate cell parameters in question
-          parameters = output[i + 3].lower().split()
-
-          # and the standard deviations - so we can decide
-          # if it really has failed
-
-          sd_record = output[i + 5].replace(
-              'A', ' ').replace(',', ' ').split()
-          sds = map(float, [sd_record[j] for j in range(1, 12, 2)])
-
-          Debug.write('Standard deviations:')
-          Debug.write('A     %4.2f  B     %4.2f  C     %4.2f' % \
-                      (tuple(sds[:3])))
-          Debug.write('Alpha %4.2f  Beta  %4.2f  Gamma %4.2f' % \
-                      (tuple(sds[3:6])))
-
-          Debug.write(
-              'In cell refinement, the following cell parameters')
-          Debug.write(
-              'have refined poorly:')
-          for p in parameters:
-            Debug.write('... %s' % p)
-
-          Debug.write(
-              'However, will continue to integration.')
-
-        if 'One or more cell parameters has changed by more' in o:
-          # this is a more severe example of the above problem...
-          Debug.write(
-              'Cell refinement is unstable...')
-
-          raise BadLatticeError, 'Cell refinement failed'
-
-        # other possible problems in the cell refinement - a
-        # negative mosaic spread, for instance
-
-        if 'Refined mosaic spread (excluding safety factor)' in o:
-          mosaic = float(o.split()[-1])
-
-          if mosaic < 0.05:
-            Debug.write('Negative mosaic spread (%5.2f)' %
-                        mosaic)
-
-            raise NegativeMosaicError, 'refinement failed'
-
-      parse_cycle = 1
-      parse_image = 0
-
-      background_residual = { }
-
-      for i, o in enumerate(output):
-
-        if 'Processing Image' in o:
-          parse_image = int(o.split()[2])
-
-        if 'Repeating the entire run' in o:
-          parse_cycle += 1
-
-        if 'Background residual' in o:
-
-          res = float(o.replace('residual=', '').split()[8])
-
-          if not parse_cycle in background_residual:
-            background_residual[parse_cycle] = { }
-          background_residual[parse_cycle][parse_image] = res
-
-        if 'Cell refinement is complete' in o:
-          j = i + 2
-          refined_cell = map(float, output[j].split()[2:])
-          error = map(float, output[j + 1].split()[1:])
-
-          names = ['A', 'B', 'C', 'Alpha', 'Beta', 'Gamma']
-
-          Debug.write('Errors in cell parameters (relative %)')
-
-          for j in range(6):
-            Debug.write('%s\t%7.3f %5.3f %.3f' % \
-                        (names[j], refined_cell[j],
-                         error[j],
-                         100.0 * error[j] / refined_cell[j]))
-
-        if 'Refined cell' in o:
-          refined_cell = tuple(map(float, o.split()[-6:]))
-          self._intgr_cell = refined_cell
-
-        # FIXME with these are they really on one line?
-
-        if 'Detector distance as a' in o:
-          j = i + 1
-          while output[j].strip() != '':
-            j += 1
-          distances = map(float, output[j - 1].split()[2:])
-          distance = 0.0
-          for d in distances:
-            distance += d
-          distance /= len(distances)
-          experiment = self.get_integrater_indexer(
-            ).get_indexer_experiment_list()[0]
-          from Wrappers.Mosflm.AutoindexHelpers import set_distance
-          set_distance(experiment.detector, distance)
-
-        if 'YSCALE as a function' in o:
-          j = i + 1
-          while output[j].strip() != '':
-            j += 1
-          yscales = map(float, output[j - 1].split()[2:])
-          yscale = 0.0
-          for y in yscales:
-            yscale += y
-          yscale /= len(yscales)
-
-          self.set_integrater_parameter('mosflm',
-                                        'distortion yscale',
-                                        yscale)
-
-        if 'Final optimised raster parameters:' in o:
-          self.set_integrater_parameter('mosflm',
-                                        'raster',
-                                        o.split(':')[1].strip())
-
-        if 'Separation parameters updated to' in o:
-          tokens = o.replace('mm', ' ').split()
-          self.set_integrater_parameter('mosflm',
-                                        'separation',
-                                        '%s %s' % \
-                                        (tokens[4], tokens[8]))
-
-        if 'XCEN    YCEN  XTOFRA' in o:
-          numbers = output[i + 1].split()
-
-          self.set_integrater_parameter('mosflm',
-                                        'beam',
-                                        '%s %s' % \
-                                        (numbers[0], numbers[1]))
-          self.set_integrater_parameter('mosflm',
-                                        'distance',
-                                        numbers[3])
-          self.set_integrater_parameter('mosflm',
-                                        'distortion tilt',
-                                        numbers[5])
-          self.set_integrater_parameter('mosflm',
-                                        'distortion twist',
-                                        numbers[6])
-
-        if 'Refined mosaic spread' in o:
-          indxr._indxr_mosaic = float(o.split()[-1])
+      indxr._indxr_mosaic = refiner.get_refined_mosaic()
 
       self.set_indexer_done(True)
 
@@ -1592,7 +1209,7 @@ def Mosflm(DriverType = None):
         ).get_indexer_experiment_list()[0]
       crystal_model = crystal_model_from_mosflm_mat(
         self._indxr_payload['mosflm_orientation_matrix'],
-        unit_cell=refined_cell,
+        unit_cell=refiner.get_refined_unit_cell(),
         space_group=experiment.crystal.get_space_group())
       experiment.crystal = crystal_model
 
