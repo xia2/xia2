@@ -404,14 +404,28 @@ class Scaler(object):
   def add_scaler_integrater(self, integrater):
     '''Add an integrater to this scaler, to provide the input.'''
 
-    epoch = integrater.get_integrater_epoch()
+    # epoch values are trusted as long as they are unique.
+    # if a collision is detected, all epoch values are replaced by an
+    # integer series, starting with 0
 
-    if epoch == 0 and self._scalr_integraters:
-      raise RuntimeError, 'multi-sweep integrater has epoch 0'
+    if 0 in self._scalr_integraters.keys():
+      epoch = len(self._scalr_integraters)
 
-    if epoch in self._scalr_integraters.keys():
-      raise RuntimeError, 'integrater with epoch %d already exists' % \
-            epoch
+    else:
+      epoch = integrater.get_integrater_epoch()
+
+      # FIXME This is now probably superflous?
+      if epoch == 0 and self._scalr_integraters:
+        raise RuntimeError, 'multi-sweep integrater has epoch 0'
+
+      if epoch in self._scalr_integraters.keys():
+        Debug.write('integrater with epoch %d already exists. will not trust epoch values' % epoch)
+
+        # collision. Throw away all epoch keys, and replace with integer series
+        self._scalr_integraters = dict(zip(
+            range(0,len(self._scalr_integraters)),
+             self._scalr_integraters.values()))
+        epoch = len(self._scalr_integraters)
 
     self._scalr_integraters[epoch] = integrater
 
