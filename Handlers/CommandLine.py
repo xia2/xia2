@@ -717,12 +717,14 @@ class _CommandLine(object):
     self._understood.append(index)
 
     Flags.set_parallel(1)
+    PhilIndex.update("xia2.settings.multiprocessing.nproc=1")
+    PhilIndex.get_python_object()
     Debug.write('Serial set (i.e. 1 CPU)')
 
     return
 
   def _help_serial(self):
-    return '-serial N'
+    return '-serial'
 
   def _read_min_images(self):
     try:
