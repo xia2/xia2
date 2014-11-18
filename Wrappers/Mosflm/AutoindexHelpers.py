@@ -75,8 +75,10 @@ def set_distance(detector, distance):
   fast = panel.get_fast_axis()
   slow = panel.get_slow_axis()
   panel.set_frame(panel.get_fast_axis(), panel.get_slow_axis(), new_origin.elems)
-  assert panel.get_fast_axis() == fast
-  assert panel.get_slow_axis() == slow
+  assert matrix.col(panel.get_fast_axis()).angle(
+    matrix.col(fast), deg=True) < 1e-6
+  assert matrix.col(panel.get_slow_axis()).angle(
+    matrix.col(slow), deg=True) < 1e-6
   assert math.fabs(panel.get_distance() - distance) < 0.001
 
 def crystal_model_from_mosflm_mat(mosflm_mat_lines, unit_cell, space_group):
