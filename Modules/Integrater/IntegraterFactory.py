@@ -48,8 +48,7 @@ def IntegraterForXSweep(xsweep):
     raise RuntimeError, 'XSweep instance needed'
 
   integrater = Integrater()
-  integrater.setup_from_image(os.path.join(xsweep.get_directory(),
-                                           xsweep.get_image()))
+  integrater.setup_from_imageset(xsweep.get_imageset())
   integrater.set_integrater_sweep_name(xsweep.get_name())
 
   # copy across resolution limits

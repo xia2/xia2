@@ -70,6 +70,7 @@ class FrameProcessor(object):
     # also need to keep track of allowed images in here
     self._fp_wedge = None
 
+    self._imageset = None
     # if image has been specified, construct much of this information
     # from the image
 

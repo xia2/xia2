@@ -97,8 +97,7 @@ class XDSIndexer(FrameProcessor,
     xycorr = _Xycorr()
     xycorr.set_working_directory(self.get_working_directory())
 
-    xycorr.setup_from_image(self.get_image_name(
-        self._indxr_images[0][0]))
+    xycorr.setup_from_imageset(self.get_imageset())
 
     if self.get_distance():
       xycorr.set_distance(self.get_distance())
@@ -115,8 +114,7 @@ class XDSIndexer(FrameProcessor,
     init = _Init(params=PhilIndex.params.xds.init)
     init.set_working_directory(self.get_working_directory())
 
-    init.setup_from_image(self.get_image_name(
-        self._indxr_images[0][0]))
+    init.setup_from_imageset(self.get_imageset())
 
     if self.get_distance():
       init.set_distance(self.get_distance())
@@ -133,8 +131,7 @@ class XDSIndexer(FrameProcessor,
     colspot = _Colspot(params=PhilIndex.params.xds.colspot)
     colspot.set_working_directory(self.get_working_directory())
 
-    colspot.setup_from_image(self.get_image_name(
-        self._indxr_images[0][0]))
+    colspot.setup_from_imageset(self.get_imageset())
 
     if self.get_distance():
       colspot.set_distance(self.get_distance())
@@ -150,8 +147,7 @@ class XDSIndexer(FrameProcessor,
     from Wrappers.Dials.Spotfinder import Spotfinder
     spotfinder = Spotfinder(params=PhilIndex.params.dials.spotfinder)
     spotfinder.set_working_directory(self.get_working_directory())
-    spotfinder.setup_from_image(self.get_image_name(
-        self._indxr_images[0][0]))
+    spotfinder.setup_from_imageset(self.get_imageset())
 
     auto_logfiler(spotfinder, 'SPOTFINDER')
 
@@ -168,8 +164,7 @@ class XDSIndexer(FrameProcessor,
     idxref = _Idxref(params=PhilIndex.params.xds.index)
     idxref.set_working_directory(self.get_working_directory())
 
-    idxref.setup_from_image(self.get_image_name(
-        self._indxr_images[0][0]))
+    idxref.setup_from_imageset(self.get_imageset())
 
     if self.get_distance():
       idxref.set_distance(self.get_distance())

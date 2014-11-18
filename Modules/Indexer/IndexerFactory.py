@@ -94,8 +94,7 @@ def IndexerForXSweep(xsweep):
     indexer.set_indexer_input_cell(crystal_lattice[1])
 
   # configure the indexer
-  indexer.setup_from_image(os.path.join(xsweep.get_directory(),
-                                        xsweep.get_image()))
+  indexer.setup_from_imageset(xsweep.get_imageset())
 
   # FIXME - it is assumed that all programs which implement the Indexer
   # interface will also implement FrameProcessor, which this uses.

@@ -151,8 +151,7 @@ class XDSIntegrater(FrameProcessor,
     xycorr = _Xycorr()
     xycorr.set_working_directory(self.get_working_directory())
 
-    xycorr.setup_from_image(self.get_image_name(
-        self._indxr_images[0][0]))
+    xycorr.setup_from_imageset(self.get_imageset())
 
     if self.get_distance():
       xycorr.set_distance(self.get_distance())
@@ -186,8 +185,7 @@ class XDSIntegrater(FrameProcessor,
     defpix = _Defpix()
     defpix.set_working_directory(self.get_working_directory())
 
-    defpix.setup_from_image(self.get_image_name(
-        self._intgr_wedge[0]))
+    defpix.setup_from_imageset(self.get_imageset())
 
     if self.get_distance():
       defpix.set_distance(self.get_distance())
@@ -203,8 +201,7 @@ class XDSIntegrater(FrameProcessor,
     integrate = _Integrate(params=PhilIndex.params.xds.integrate)
     integrate.set_working_directory(self.get_working_directory())
 
-    integrate.setup_from_image(self.get_image_name(
-        self._intgr_wedge[0]))
+    integrate.setup_from_imageset(self.get_imageset())
 
     if self.get_distance():
       integrate.set_distance(self.get_distance())
@@ -220,8 +217,7 @@ class XDSIntegrater(FrameProcessor,
     correct = _Correct(params=PhilIndex.params.xds.correct)
     correct.set_working_directory(self.get_working_directory())
 
-    correct.setup_from_image(self.get_image_name(
-        self._intgr_wedge[0]))
+    correct.setup_from_imageset(self.get_imageset())
 
     if self.get_distance():
       correct.set_distance(self.get_distance())
@@ -285,8 +281,7 @@ class XDSIntegrater(FrameProcessor,
       self._intgr_indexer.set_working_directory(
           self.get_working_directory())
 
-      self._intgr_indexer.setup_from_image(self.get_image_name(
-          self._intgr_wedge[0]))
+      self._intgr_indexer.setup_from_imageset(self.get_imageset())
 
       if self.get_frame_wedge():
         wedge = self.get_frame_wedge()
@@ -397,9 +392,7 @@ class XDSIntegrater(FrameProcessor,
       self.get_integrater_indexer().set_indexer_sweep_name(
           self.get_integrater_sweep_name())
 
-      self.get_integrater_indexer().setup_from_image(
-          self.get_image_name(
-          self._intgr_wedge[0]))
+      self.get_integrater_indexer().setup_from_imageset(self.get_imageset())
       self.get_integrater_indexer().set_working_directory(
           self.get_working_directory())
 
@@ -489,7 +482,11 @@ class XDSIntegrater(FrameProcessor,
     for f in self._data_files.keys():
       Debug.write('%s' % f)
 
+    # copy across the trusted_range - it got lost along the way
+    old_detector = self.get_detector()
     self.set_detector(experiment.detector)
+    for p1, p2 in zip(old_detector, self.get_detector()):
+      p2.set_trusted_range(p1.get_trusted_range())
     self.set_beam_obj(experiment.beam)
     self.set_goniometer(experiment.goniometer)
 

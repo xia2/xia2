@@ -43,7 +43,7 @@ def compute_beam_centre(sweep, working_directory=None):
   try:
     ls = LabelitIndexer(indxr_print=False)
     ls.set_working_directory(working_directory)
-    ls.setup_from_image(sweep.imagename(min(sweep.get_images())))
+    ls.setup_from_imageset(sweep.get_imageset())
     beam_centre = ls.get_indexer_beam_centre()
   except exceptions.Exception, e:
     # do not have labelit installed?
