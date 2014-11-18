@@ -316,7 +316,7 @@ class FrameProcessor(object):
     imagesets = load_imagesets(
       template, directory,
       image_range=(self._fp_matching_images[0], self._fp_matching_images[-1]))
-    assert len(imagesets) == 1
+    assert len(imagesets) == 1, 'multiple imagesets match %s' % template
     imageset = imagesets[0]
 
     self._setup_from_imageset(imageset)
