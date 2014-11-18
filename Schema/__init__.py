@@ -28,8 +28,8 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
 
     for imageset in imagesets:
       scan = imageset.get_scan()
-      id_image = scan.get_image_range()[0]
-      imageset_cache[full_template_path][id_image] = imageset
+      _id_image = scan.get_image_range()[0]
+      imageset_cache[full_template_path][_id_image] = imageset
 
   if id_image is not None:
     return [imageset_cache[full_template_path][id_image]]
