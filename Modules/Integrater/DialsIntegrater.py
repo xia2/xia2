@@ -197,8 +197,7 @@ class DialsIntegrater(FrameProcessor,
       self._intgr_indexer.set_working_directory(
           self.get_working_directory())
 
-      self._intgr_indexer.setup_from_image(self.get_image_name(
-          self._intgr_wedge[0]))
+      self._intgr_indexer.setup_from_imageset(self.get_imageset())
 
       if self.get_frame_wedge():
         wedge = self.get_frame_wedge()

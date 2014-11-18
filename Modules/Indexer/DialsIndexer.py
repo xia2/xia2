@@ -85,8 +85,7 @@ class DialsIndexer(FrameProcessor,
   def Import(self):
     importer = _Import()
     importer.set_working_directory(self.get_working_directory())
-    importer.setup_from_image(self.get_image_name(
-      self._indxr_images[0][0]))
+    importer.setup_from_imageset(self.get_imageset())
     auto_logfiler(importer)
     return importer
 
