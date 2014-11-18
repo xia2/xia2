@@ -327,14 +327,15 @@ def run():
     help()
     sys.exit()
 
+  wd = os.getcwd()
+
   try:
     xia2()
     Chatter.write('Status: normal termination')
 
   except exceptions.Exception, e:
-    traceback.print_exc(file = open('xia2.error', 'w'))
+    traceback.print_exc(file = open(os.path.join(wd, 'xia2.error'), 'w'))
     Chatter.write('Status: error "%s"' % str(e))
-
 
 if __name__ == '__main__':
   run()
