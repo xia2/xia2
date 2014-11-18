@@ -167,7 +167,8 @@ def load_datablock(filename):
       template = imageset.get_template()
       if template not in imageset_cache:
         imageset_cache[template] = OrderedDict()
-      imageset_cache[template][imageset.get_scan().get_image_range()[0]] = imageset
+      imageset_cache[template][
+        imageset.get_scan().get_image_range()[0]] = imageset
 
 
 def parse_sequence(sequence_file):
@@ -234,7 +235,8 @@ def print_sweeps(out = sys.stdout):
         + cumulativedelta)
       # could change the image epoch information individually, but only
       # the information from the first image is used at this time.
-      cumulativedelta += sum(known_sweeps[sweep][0].get_imageset().get_scan().get_exposure_times())
+      cumulativedelta += sum(
+        known_sweeps[sweep][0].get_imageset().get_scan().get_exposure_times())
     epochs = [known_sweeps[sweep][0].get_imageset().get_scan().get_epochs()[0]
             for sweep in sweeplists]
 
@@ -473,7 +475,8 @@ def get_sweeps(templates):
         imageset = sweep.get_imageset()
         if template not in imageset_cache:
           imageset_cache[template] = OrderedDict()
-        imageset_cache[template][imageset.get_scan().get_image_range()[0]] = imageset
+        imageset_cache[template][
+          imageset.get_scan().get_image_range()[0]] = imageset
 
 
 def rummage(path):
