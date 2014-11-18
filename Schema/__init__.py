@@ -13,9 +13,16 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
   full_template_path = os.path.join(directory, template)
   if full_template_path not in imageset_cache or not use_cache:
 
-    from dxtbx.imageset import ImageSetFactory
-    imagesets = ImageSetFactory.from_template(
-      full_template_path, check_headers=False)
+    from dxtbx.datablock import DataBlockFactory
+    from dxtbx.sweep_filenames import locate_files_matching_template_string
+    paths = sorted(locate_files_matching_template_string(full_template_path))
+    unhandled = []
+    datablocks = DataBlockFactory.from_filenames(
+      paths, verbose=False, unhandled=unhandled)
+    assert len(unhandled) == 0, unhandled
+    assert len(datablocks) == 1, len(datablocks)
+    imagesets = datablocks[0].extract_sweeps()
+    assert len(imagesets) > 0
 
     imageset_cache[full_template_path] = OrderedDict()
 

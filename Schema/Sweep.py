@@ -166,7 +166,8 @@ class Sweep(object):
       self._images = images
 
       from Schema import load_imagesets
-      imagesets = load_imagesets(template, directory, use_cache=False)
+      imagesets = load_imagesets(
+        self._template, self._directory, use_cache=False)
 
       max_images = 0
       best_sweep = None
