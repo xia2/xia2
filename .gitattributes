@@ -125,14 +125,6 @@ core/Python/Driver/readme.txt -text
 core/Python/Driver/todo.txt -text
 core/Python/DriverExceptions/NotAvailableError.py -text
 core/Python/DriverExceptions/__init__.py -text
-core/Python/Examples/CCP4/Cad.py -text
-core/Python/Examples/CCP4/F2mtz.py -text
-core/Python/Examples/CCP4/Freerflag.py -text
-core/Python/Examples/CCP4/Scala.py -text
-core/Python/Examples/CCP4/Sortmtz.py -text
-core/Python/Examples/SHELX/Shelxc.py -text
-core/Python/Examples/SHELX/Shelxd.py -text
-core/Python/Examples/SHELX/Shelxe.py -text
 core/Python/TestPython.py -text
 core/Python/UnitTest/TestAll.py -text
 core/Python/UnitTest/TestCCP4.py -text

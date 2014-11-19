@@ -21,7 +21,6 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 # the wrappers that this will use - these are renamed so that the internal
 # factory version can be used...
-from Wrappers.CCP4.Scala import Scala as _Scala
 from Wrappers.CCP4.Aimless import Aimless as _Aimless
 from Wrappers.CCP4.Scaleit import Scaleit as _Scaleit
 from Wrappers.CCP4.Sortmtz import Sortmtz as _Sortmtz
@@ -58,19 +57,6 @@ class CCP4Factory(object):
     return self._working_directory
 
   # factory methods...
-
-  def Scala(self,
-            partiality_correction = None,
-            absorption_correction = None,
-            decay_correction = None):
-    '''Create a Scala wrapper from _Scala - set the working directory
-    and log file stuff as a part of this...'''
-    scala = _Scala(partiality_correction = partiality_correction,
-                   absorption_correction = absorption_correction,
-                   decay_correction = decay_correction)
-    scala.set_working_directory(self.get_working_directory())
-    auto_logfiler(scala)
-    return scala
 
   def Aimless(self,
               partiality_correction = None,
