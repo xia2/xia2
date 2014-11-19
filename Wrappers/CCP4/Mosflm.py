@@ -1453,7 +1453,7 @@ def Mosflm(DriverType = None):
 
           # ignore for photon counting detectors
 
-          if 'pilatus' in self.get_header_item('detector_class'):
+          if self.get_imageset().get_detector()[0].get_type() == 'SENSOR_PAD':
             continue
 
           # look for the correct gain
