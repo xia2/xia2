@@ -104,7 +104,8 @@ def exercise_mosflm_integrate():
   m2.set_integrater_wedge(1, 45)
   m2.integrate()
 
-  assert m1.get_integrater_cell() == m2.get_integrater_cell()
+  assert m1.get_integrater_cell() == m2.get_integrater_cell(), "%s != %s" % \
+      (str(m1.get_integrater_cell()), str(m2.get_integrater_cell()))
   assert m1.get_indexer_distance() == m2.get_indexer_distance()
   assert m1.get_indexer_cell() == m2.get_indexer_cell()
   assert m1.get_indexer_lattice() == m2.get_indexer_lattice()
