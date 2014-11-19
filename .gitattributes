@@ -126,15 +126,8 @@ core/Python/Driver/todo.txt -text
 core/Python/DriverExceptions/NotAvailableError.py -text
 core/Python/DriverExceptions/__init__.py -text
 core/Python/TestPython.py -text
-core/Python/UnitTest/TestAll.py -text
-core/Python/UnitTest/TestCCP4.py -text
-core/Python/UnitTest/TestDriver.py -text
-core/Python/UnitTest/TestDriverHelper.py -text
-core/Python/UnitTest/readme.txt -text
 core/Python/XIA2CoreVersion.py -text
 core/Python/readme.txt -text
-core/Python/run_tests.bat -text
-core/Python/run_tests.sh -text
 core/Test/Compiled/EPAbrt.c -text
 core/Test/Compiled/EPBus.c -text
 core/Test/Compiled/EPKill.c -text
