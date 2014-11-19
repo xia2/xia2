@@ -72,6 +72,9 @@ def exercise_mosflm_integrate():
   from Schema.XWavelength import XWavelength
   from Schema.XSweep import XSweep
 
+  from Handlers.Flags import Flags
+  Flags.set_parallel(1)
+
   cwd = os.path.abspath(os.curdir)
   tmp_dir1 = os.path.abspath(open_tmp_directory())
   os.chdir(tmp_dir1)
