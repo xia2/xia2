@@ -38,6 +38,12 @@ from libtbx.phil import parse
 def nint(a):
   return int(round(a))
 
+start_time = time.time()
+def stamp(message):
+  if False:
+    print "[%7.3f] %s" % (time.time() - start_time, message)
+  return
+
 class mtz_dataset(object):
   '''A class to represent the MTZ dataset in the hierarchy. This will
   be instantiated in the mtz_crystal class below, and contain:
@@ -295,8 +301,11 @@ def fit(x, y, order):
   be iterables containing floats of the same size. The order is the order
   of polynomial to use for this fit. This will be useful for e.g. I/sigma.'''
 
+  stamp("fitter: %s %s %s" % (x, y, order))
   pf = poly_fitter(x, y, order)
+  stamp("fitter: refine")
   pf.refine()
+  stamp("fitter: done")
 
   return [pf.evaluate(_x) for _x in x]
 
@@ -563,7 +572,7 @@ resolutionizer {
     .type = float
   completeness = 0.0
     .type = float
-  cc_half = 0.5
+  cc_half = 0.0
     .type = float
   isigma = 1.0
     .type = float
@@ -817,6 +826,8 @@ class resolutionizer(object):
   def calculate_resolution_ranges(self, nbins = 20):
     '''Calculate semi-useful resolution ranges for analysis.'''
 
+    stamp("crr: start")
+
     miller_indices = list(self._merged_reflections)
     uc = self._mf.get_unit_cell()
 
@@ -849,6 +860,7 @@ class resolutionizer(object):
     self._resolution_ranges = resolution_ranges[:-1]
     self._resolution_ranges[-1] = (self._resolution_ranges[-1][0],
                                    resolution_ranges[-1][1])
+    stamp("crr: done")
 
     return
 
@@ -1086,22 +1098,27 @@ class resolutionizer(object):
     self.calculate_resolution_ranges(nbins = self._params.nbins)
 
     if self._params.rmerge:
+      stamp("ra: rmerge")
       print 'Resolution rmerge:       %.2f' % \
           self.resolution_rmerge()
 
     if self._params.completeness:
+      stamp("ra: comp")
       print 'Resolution completeness: %.2f' % \
           self.resolution_completeness()
 
     if self._params.cc_half:
+      stamp("ra: cc")
       print 'Resolution cc_half     : %.2f' % \
           self.resolution_cc_half()
 
     if self._params.isigma:
+      stamp("ra: isig")
       print 'Resolution I/sig:        %.2f' % \
           self.resolution_unmerged_isigma()
 
     if self._params.misigma:
+      stamp("ra: mnisig")
       print 'Resolution Mn(I/sig):    %.2f' % \
           self.resolution_merged_isigma()
 
@@ -1368,26 +1385,34 @@ class resolutionizer(object):
     return r_comp
 
   def resolution_cc_half(self, limit = None, log = None):
-    '''Compute a resolution limit where ccc_half < 0.5 (limit if
+    '''Compute a resolution limit where cc_half < 0.5 (limit if
     set) or the full extent of the data.'''
 
     if limit is None:
       limit = self._params.cc_half
+    stamp("rch: start (limit = %s)" % limit)
 
     bins, ranges = self.get_resolution_bins()
+    stamp("rch: get %d bins and %d ranges" % (len(bins), len(ranges)))
 
     s_s = [1.0 / (r[0] * r[0]) for r in reversed(ranges)]
+    stamp("rch: s_s = %s" % s_s)
 
     if limit == 0.0:
       return 1.0 / math.sqrt(max(s_s))
 
     cc_s = [self.calculate_cc_half(bin) for bin in reversed(bins)]
 
+    stamp("rch: cc_s = %s" % cc_s)
+    stamp("rch: min cc_s = %s" % min(cc_s))
+    stamp("rch: max ss = %s" % (1.0 / math.sqrt(max(s_s))))
+
     if min(cc_s) > limit:
       return 1.0 / math.sqrt(max(s_s))
 
     cc_f = fit(s_s, cc_s, 6)
 
+    stamp("rch: fits")
     rlimit = limit * max(cc_s)
 
     if log:
@@ -1404,10 +1429,14 @@ class resolutionizer(object):
           interpolate_value(s_s, cc_f, rlimit))
     except:
       r_cc = 1.0 / math.sqrt(max(s_s))
+    stamp("rch: done : %s" % r_cc)
 
     return r_cc
 
 if __name__ == '__main__':
 
+  stamp("Resolutionizer.py starting")
   m = resolutionizer(sys.argv[1:])
+  stamp("instantiated")
   m.resolution_auto()
+  stamp("the end.")
