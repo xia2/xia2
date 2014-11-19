@@ -135,12 +135,6 @@ class Sweep(object):
     '''Get the image headers for all of the images - this is not designed
     to be called exernally.'''
 
-    # FIXME 23/AUG/06 there needs to be a "fast" version of this
-    # which will read the headers more quickly, or not bother
-    # or something, so that the xia2find function will work
-    # reasonably quickly in cases where there are large numbers of
-    # images - caching isn't good enough in those circumstances!
-
     self._headers = { }
 
     t = time.time()
