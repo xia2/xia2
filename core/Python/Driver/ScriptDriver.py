@@ -13,12 +13,6 @@
 #
 # Applicability: Windows/OS X/UNIX
 #
-# FIXME 23/AUG/06 this probably shouldn't have it's own record of input
-#                 and output records beyond what is already stored in the
-#                 DefaultDriver - this is why the hack for reset() below
-#                 is needed. This should be unified!
-#
-#
 
 import os
 import subprocess
@@ -29,14 +23,10 @@ from DriverHelper import script_writer
 # Workings on Windows:
 #
 # Write input to a .input file
-# Write a script to run scala < foo.xin > foo.xout
 #
 # Workings on UNIX:
 #
-# Write a script to run
-# scala << eof > foo.output
-# input
-# eof
+# Write a script to run with here document
 #
 # in both cases these can be initiated by os.system() calls e.g.
 # os.system('bash myscript') on UNIX or os.system('myscript.bat') on Windows

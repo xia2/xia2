@@ -286,10 +286,10 @@ def help():
 
   sys.stdout.write('\nCommand-line options to xia2:\n')
   sys.stdout.write('Processing pipelines:\n')
-  sys.stdout.write('  [-2d]    MOSFLM, LABELIT (if installed), SCALA\n')
-  sys.stdout.write('  [-3d]    XDS, XSCALE, LABELIT\n')
-  sys.stdout.write('  [-3dii]  XDS, XSCALE, using all images for autoindexing\n')
-  sys.stdout.write('  [-dials] DIALS\n')
+  sys.stdout.write(' [-2d]    MOSFLM, LABELIT (if installed), AIMLESS\n')
+  sys.stdout.write(' [-3d]    XDS, XSCALE, LABELIT\n')
+  sys.stdout.write(' [-3dii]  XDS, XSCALE, using all images for autoindexing\n')
+  sys.stdout.write(' [-dials] DIALS, AIMLESS\n')
   sys.stdout.write('[-xinfo foo.xinfo] or [/path/to/images]\n\n')
 
   sys.stdout.write('[-resolution 2.8] (say, applies to all sweeps)\n')

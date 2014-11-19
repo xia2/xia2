@@ -83,8 +83,8 @@ class CCP4ScalerA(Scaler):
     self._helper.set_working_directory(working_directory)
     return
 
-  # this is an overload from the factory - it returns Scala set up with
-  # the desired corrections
+  # this is an overload from the factory - it returns Aimless wrapper set up
+  # with the desired corrections
 
   def _updated_aimless(self):
     '''Generate a correctly configured Aimless...'''
@@ -130,7 +130,7 @@ class CCP4ScalerA(Scaler):
 
     if secondary:
       sc_tst.set_scaling_parameters(
-          'rotation', secondary = Flags.get_scala_secondary())
+          'rotation', secondary = Flags.get_aimless_secondary())
     else:
       sc_tst.set_scaling_parameters('rotation', secondary = 0)
 
@@ -1016,6 +1016,8 @@ class CCP4ScalerA(Scaler):
     if self.get_scaler_anomalous():
       sc.set_anomalous()
     sc.scale()
+
+    # FIXME this could be brought in-house
 
     ami = AnalyseMyIntensities()
     ami.set_working_directory(self.get_working_directory())

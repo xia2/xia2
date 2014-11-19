@@ -61,7 +61,7 @@ from Modules.Scaler.compute_average_unit_cell import compute_average_unit_cell
 class XDSScalerA(Scaler):
   '''An implementation of the xia2 Scaler interface implemented with
   xds and xscale, possibly with some help from a couple of CCP4
-  programs like pointless and combat.'''
+  programs like pointless.'''
 
   def __init__(self):
     Scaler.__init__(self)
@@ -736,7 +736,7 @@ class XDSScalerA(Scaler):
       sname = intgr.get_integrater_sweep_name()
 
       hklout = os.path.join(self.get_working_directory(),
-                            '%s-combat.mtz' % sname)
+                            '%s-pointless.mtz' % sname)
       FileHandler.record_temporary_file(hklout)
 
       pointless = self._factory.Pointless()

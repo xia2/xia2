@@ -85,7 +85,7 @@ class _Flags(object):
     self._relax = True
     self._profile = True
 
-    # and these for the Mosflm / Scala and perhaps XDS implementation
+    # and these for the Mosflm / Aimless and perhaps XDS implementation
 
     self._scale_model = False
     self._scale_model_decay = False
@@ -101,8 +101,8 @@ class _Flags(object):
     self._pointgroup = None
     self._lattice = None
 
-    # scala secondary correction
-    self._scala_secondary = 6
+    # aimless secondary correction
+    self._aimless_secondary = 6
 
     # resolution limit flags
     self._resolution_low = None
@@ -438,12 +438,12 @@ class _Flags(object):
   def get_z_min(self):
     return self._z_min
 
-  def set_scala_secondary(self, scala_secondary):
-    self._scala_secondary = scala_secondary
+  def set_aimless_secondary(self, aimless_secondary):
+    self._aimless_secondary = aimless_secondary
     return
 
-  def get_scala_secondary(self):
-    return self._scala_secondary
+  def get_aimless_secondary(self):
+    return self._aimless_secondary
 
   def set_freer_file(self, freer_file):
 

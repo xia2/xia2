@@ -251,10 +251,10 @@ class _CommandLine(object):
             (self._help_z_min(), str(e))
 
     try:
-      self._read_scala_secondary()
+      self._read_aimless_secondary()
     except exceptions.Exception, e:
       raise RuntimeError, '%s (%s)' % \
-            (self._help_scala_secondary(), str(e))
+            (self._help_aimless_secondary(), str(e))
 
     try:
       self._read_freer_file()
@@ -881,9 +881,9 @@ class _CommandLine(object):
   def _help_z_min(self):
     return '-z_min N'
 
-  def _read_scala_secondary(self):
+  def _read_aimless_secondary(self):
     try:
-      index = self._argv.index('-scala_secondary')
+      index = self._argv.index('-aimless_secondary')
     except ValueError, e:
       return
 
@@ -893,13 +893,13 @@ class _CommandLine(object):
     self._understood.append(index)
     self._understood.append(index + 1)
 
-    Flags.set_scala_secondary(float(self._argv[index + 1]))
-    Debug.write('Scala secondary set to %f' % Flags.get_scala_secondary())
+    Flags.set_aimless_secondary(float(self._argv[index + 1]))
+    Debug.write('Aimless secondary set to %f' % Flags.get_aimless_secondary())
 
     return
 
-  def _help_scala_secondary(self):
-    return '-scala_secondary N'
+  def _help_aimless_secondary(self):
+    return '-aimless_secondary N'
 
   def _read_freer_file(self):
     try:

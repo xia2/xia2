@@ -183,13 +183,6 @@ class PipelineInfo:
         "Scaling together all the data for this crystal",
         "<PROJECT>_<CRYSTAL>_XSCALE.log")
     self.addLogInfo(
-        "_scala",
-        "scala",
-        "Scaling and merging",
-        "Scaling and correction of all measurements on the crystal",
-        "<PROJECT>_<CRYSTAL>_scala.log",
-        baublize=True)
-    self.addLogInfo(
         "_aimless",
         "aimless",
         "Scaling and merging",
@@ -235,9 +228,8 @@ class PipelineInfo:
     Invoke this to make changes to the pipeline information
     to make it consistent with xia2 running in the notional
     'XDS pipeline' mode."""
-    # Reset description for scala
     self.updateLogInfo(
-        "_scala",
+        "_aimless",
         new_description=
         "Merging results for all of the data for the crystal")
 
@@ -447,10 +439,6 @@ class Citations:
         '(1994) Acta Crystallogr. D 50, 760--763',
         'http://journals.iucr.org/d/issues/1994/05/00/ad0004/ad0004.pdf')
     # Scala, pointless (same paper)
-    self.addCitation(
-        'scala',
-        'Evans, Philip (2006) Acta Crystallographica Section D 62, 72--82',
-        'http://journals.iucr.org/d/issues/2006/01/00/ba5084/index.html')
     self.addCitation(
         'pointless',
         'Evans, Philip (2006) Acta Crystallographica Section D 62, 72--82',
@@ -1469,7 +1457,7 @@ class Dataset(Magpie.Tabulator):
     i.e. with the leading project and crystal names (for example,
     'TS01/13140/LREM').
 
-    'statistics_table' is the table of statistics from Scala
+    'statistics_table' is the table of statistics from Aimless
     for the dataset (reproduced in xia2.txt), which typically
     starts:
     High resolution limit                           1.21    5.41    1.21
@@ -2948,7 +2936,7 @@ class Xia2doc:
     # Add information line
     self.addInfo(section,
                  "Detailed statistics for each dataset as "+
-                 "reported by Scala")
+                 "reported by Aimless")
     # For multiple crystals and/or multiple datasets, write a table
     # of contents for the statistics
     if len(self.__xia2run.crystals()) > 1 or \

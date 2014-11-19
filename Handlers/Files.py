@@ -181,7 +181,7 @@ class _FileHandler(object):
       step_number = os.path.split(original)[-1].split('_')[0]
       step_title = f
 
-      # This is correct for the scala, mosflm logfiles etc, but not
+      # This is correct for the e.g. mosflm logfiles etc, but not
       # so for XDS files which end in '.LP'
 
       xds_programs = ['INIT', 'COLSPOT', 'IDXREF', 'DEFPIX',

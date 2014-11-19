@@ -121,9 +121,9 @@ def Aimless(DriverType = None,
       self._spacing = 5
 
       if absorption_correction == None:
-        self._secondary = Flags.get_scala_secondary()
+        self._secondary = Flags.get_aimless_secondary()
       elif absorption_correction == True:
-        self._secondary = Flags.get_scala_secondary()
+        self._secondary = Flags.get_aimless_secondary()
       else:
         self._secondary = 0
 

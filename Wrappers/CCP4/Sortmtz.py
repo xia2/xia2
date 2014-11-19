@@ -8,12 +8,6 @@
 # 5th June 2006
 #
 # A wrapper for the CCP4 program sortmtz.
-#
-#
-# Provides:
-#
-# Reflection sorting functionality for going from Mosflm to Scala.
-#
 
 import os
 import sys

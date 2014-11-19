@@ -22,7 +22,6 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 
 from Handlers.Streams import Debug
 from lib.bits import auto_logfiler
-from Wrappers.CCP4.Combat import Combat as _Combat
 from Wrappers.CCP4.Pointless import Pointless as _Pointless
 
 class XDSScalerHelper(object):
@@ -34,14 +33,6 @@ class XDSScalerHelper(object):
     self._working_directory = os.getcwd()
 
     return
-
-  def Combat(self):
-    '''Create a Combat wrapper from _Combat - set the working directory
-    and log file stuff as a part of this...'''
-    combat = _Combat()
-    combat.set_working_directory(self.get_working_directory())
-    auto_logfiler(combat)
-    return combat
 
   def Pointless(self):
     '''Create a Pointless wrapper from _Pointless - set working directory
@@ -156,7 +147,7 @@ class XDSScalerHelper(object):
   def split_and_convert_xscale_output(self, input_file, prefix,
                                       project_info, scale_factor = 1.0):
     '''Split (as per method above) then convert files to MTZ
-    format via combat. The latter step will add the
+    format via pointless. The latter step will add the
     pname / xname / dname things from the dictionary supplied.'''
 
     data_map = self.split_xscale_ascii_file(input_file, prefix)
@@ -176,28 +167,12 @@ class XDSScalerHelper(object):
 
       pname, xname, dname = project_info[token]
 
-      # in here need to replace combat with pointless - which
-      # will require a little juggling...
-
-      if False:
-
-        c = self.Combat()
-        c.set_hklin(hklin)
-        c.set_hklout(hklout)
-        c.set_project_info(pname, xname, dname)
-        if wavelength > 0.0:
-          c.set_wavelength(wavelength)
-
-        c.run()
-
-      else:
-
-        p = self.Pointless()
-        p.set_xdsin(hklin)
-        p.set_hklout(hklout)
-        p.set_project_info(pname, xname, dname)
-        p.set_scale_factor(scale_factor)
-        p.xds_to_mtz()
+      p = self.Pointless()
+      p.set_xdsin(hklin)
+      p.set_hklout(hklout)
+      p.set_project_info(pname, xname, dname)
+      p.set_scale_factor(scale_factor)
+      p.xds_to_mtz()
 
       data_map[token] = hklout
 

@@ -96,12 +96,10 @@ Wrappers/Mosflm/MosflmIndex.py -text
 Wrappers/Mosflm/MosflmIntegrate.py -text
 Wrappers/Mosflm/MosflmRefineCell.py -text
 Wrappers/Mosflm/__init__.py -text
-Wrappers/System/Say.py -text
 Wrappers/XDS/Merge2cbf.py -text
 Wrappers/XDS/XDSFiles.py -text
 Wrappers/XDS/XDSGenerateIgnoreFiles.py -text
 Wrappers/XDS/XScaleR.py -text
-Wrappers/dTREK/__init__.py -text
 command_line/xia2.new.py -text
 command_line/xia2.setup.py -text
 core/Python/Background/Background.py -text

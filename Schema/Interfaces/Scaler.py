@@ -163,7 +163,6 @@ from Handlers.Streams import Chatter, Debug
 
 # file conversion (and merging) jiffies
 
-from Modules.Scalepack2Mtz import Scalepack2Mtz
 from Modules.Mtz2Scalepack import Mtz2Scalepack
 
 class Scaler(object):
@@ -566,34 +565,7 @@ class Scaler(object):
     if format in self._scalr_scaled_reflection_files.keys():
       return self._scalr_scaled_reflection_files[format]
 
-    # specific code to handle generation cases
-
-    if format == 'sca_unmerged':
-      raise RuntimeError, 'cannot generate unmerged reflections'
-
-    if format == 'mtz':
-      # generate and return an mtz file - ideally this will be from
-      # merged reflections, though unmerged will do - though this
-      # will need the unit cell information etc. Aha! this is
-      # available from this interface...
-
-      cell = self.get_scaler_cell()
-      spacegroup = self.get_scaler_likely_spacegroups()[0]
-
-      wavelengths = self._scalr_scaled_reflection_files['sca'].keys()
-      project, crystal = self.get_scaler_project_info()
-
-      s2m = Scalepack2Mtz()
-
-      for w in wavelengths:
-        s2m.add_hklin(w, self._scalr_scaled_reflection_files[
-            'sca'][w])
-      s2m.set_cell(cell)
-      s2m.set_spacegroup(spacegroup)
-      s2m.set_project_info(project, crystal)
-
-      self._scalr_scaled_reflection_files['mtz'] = s2m.convert()
-      return self._scalr_scaled_reflection_files['mtz']
+    raise RuntimeError, 'uknown format %s' % format
 
     if format == 'sca':
       # generate merged scalepack format reflections from the mtz
@@ -606,7 +578,6 @@ class Scaler(object):
       return self._scalr_scaled_reflection_files['sca']
 
     raise RuntimeError, 'cannot possibly reach this point'
-
 
   def get_scaled_merged_reflections(self):
     '''Return the reflection files and so on.'''
