@@ -36,8 +36,6 @@ from Wrappers.Labelit.DistlSignalStrength import DistlSignalStrength
 
 # things we can work on...
 
-from Wrappers.CCP4.MosflmWrapper import MosflmWrapper
-
 use_distl = False
 
 # cctbx stuff
