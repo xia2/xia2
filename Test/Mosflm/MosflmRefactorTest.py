@@ -61,7 +61,7 @@ def exercise_mosflm_index():
   return
 
 
-def exercise_mosflm_integrate():
+def exercise_mosflm_integrate(nproc):
   if not have_dials_regression:
     raise RuntimeError, 'dials_regression not available'
 
@@ -73,7 +73,7 @@ def exercise_mosflm_integrate():
   from Schema.XSweep import XSweep
 
   from Handlers.Flags import Flags
-  Flags.set_parallel(1)
+  Flags.set_parallel(nproc)
 
   cwd = os.path.abspath(os.curdir)
   tmp_dir1 = os.path.abspath(open_tmp_directory())
@@ -134,7 +134,8 @@ def exercise_mosflm_integrate():
 
 def run():
   exercise_mosflm_index()
-  exercise_mosflm_integrate()
+  exercise_mosflm_integrate(nproc=1)
+  exercise_mosflm_integrate(nproc=2)
   print "OK"
 
 if __name__ == '__main__':

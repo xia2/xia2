@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# MosflmIndex.py
+# MosflmIntegrate.py
 #   Copyright (C) 2014 Diamond Light Source, Graeme Winter & Richard Gildea
 #
 #   This code is distributed under the BSD license, a copy of which is
@@ -100,6 +100,7 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
       self._lim_x = None
       self._lim_y = None
       self._fix_mosaic = False
+      self._pre_refinement = False
 
       self._parameters = { }
 
@@ -190,6 +191,9 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
 
     def set_fix_mosaic(self, fix_mosaic):
       self._fix_mosaic = fix_mosaic
+
+    def set_pre_refinement(self, pre_refinement):
+      self._pre_refinement = pre_refinement
 
     def update_parameters(self, parameters):
       self._parameters.update(parameters)
@@ -283,7 +287,7 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
       if self._fix_mosaic:
         self.input('postref fix mosaic')
 
-      self.input('separation close')
+      #self.input('separation close')
 
       ## XXX FIXME this is a horrible hack - I at least need to
       ## sand box this ...
@@ -311,12 +315,29 @@ def MosflmIntegrate(DriverType = None, indxr_print = True):
         self.input('go')
         self.input('postref nosegment')
 
+        self.input('separation close')
         self.input('process %d %d block %d' % \
                    (self._image_range[0],
-                    self._images[1],
+                    self._image_range[1],
                     1 + self._image_range[1] - self._image_range[0]))
 
       else:
+        if self._pre_refinement:
+          a, b = self._image_range
+
+          if b - a > 3:
+            b = a + 3
+
+          self.input('postref multi segments 1')
+          self.input('process %d %d' % (a, b))
+          self.input('go')
+
+          self.input('postref nosegment')
+
+          if self._fix_mosaic:
+            self.input('postref fix mosaic')
+
+        self.input('separation close')
         self.input(
           'process %d %d' %(self._image_range[0], self._image_range[1]))
 
