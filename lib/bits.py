@@ -207,22 +207,22 @@ def run(command):
 
 def message_Darwin(text):
   def say(this):
-    run('say "%s" % this' % this)
+    run('say "%s"' % this)
 
   def notify(this):
     run('osascript -e \'display notification "%s" with title "xia2"\'' % this)
 
   say(text)
-  notify(this)
+  notify(text)
 
   return
 
-def message_Linux(this):
+def message_Linux(text):
   def notify(this):
     run('notify-send \'xia2\' \'%s\'' % this)
 
   if False:
-    notify(this)
+    notify(text)
 
   return
 

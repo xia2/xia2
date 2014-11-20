@@ -5,14 +5,10 @@
 #   This code is distributed under the BSD license, a copy of which is
 #   included in the root directory of this package.
 #
-# Maintained by Graeme Winter
 # 18th September 2006
 #
 # A handler for matters of the operating environment, which will impact
 # on data harvesting, working directories, a couple of other odds & sods.
-#
-#
-#
 
 import os
 import sys
@@ -166,7 +162,6 @@ def get_number_cpus():
   '''Portably get the number of processor cores available.'''
   from libtbx.introspection import number_of_processors
   return number_of_processors(return_value_if_unknown=-1)
-
 
 if __name__ == '__main__':
 
