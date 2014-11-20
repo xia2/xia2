@@ -200,9 +200,7 @@ def transpose_loggraph(loggraph_dict):
   return results
 
 def run(command):
-  import subprocess
-  import shlex
-  subprocess.call(shlex.split(command))
+  os.system(command)
   return
 
 def message_Darwin(text):
@@ -219,10 +217,9 @@ def message_Darwin(text):
 
 def message_Linux(text):
   def notify(this):
-    run('notify-send \'xia2\' \'%s\'' % this)
+    run('LD_LIBRARY_PATH=\'\' notify-send \'xia2\' \'%s\' &' % this)
 
-  if False:
-    notify(text)
+  notify(text)
 
   return
 
