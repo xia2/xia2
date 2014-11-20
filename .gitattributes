@@ -3,7 +3,6 @@ Applications/__init__.py -text
 Applications/pydiffdump -text
 Applications/pydiffdump.bat -text
 Applications/pydiffdump.py -text
-Applications/x1335 -text
 Applications/xia2ccp4i -text
 Applications/xia2ccp4i.py -text
 Applications/xia2hdr -text

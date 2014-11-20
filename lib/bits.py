@@ -106,7 +106,7 @@ def remove_outliers(values, limit):
   return result, outliers
 
 ##### START MESSY CODE #####
-# Shard counter for multiprocessing
+# Shared counter for multiprocessing
 # http://eli.thegreenplace.net/2012/01/04/shared-counter-with-pythons-multiprocessing/
 
 from multiprocessing import Value, Lock
@@ -199,6 +199,50 @@ def transpose_loggraph(loggraph_dict):
 
   return results
 
+def run(command):
+  import subprocess
+  import shlex
+  subprocess.call(shlex.split(command))
+  return
+
+def message_Darwin(text):
+  def say(this):
+    run('say "%s" % this' % this)
+
+  def notify(this):
+    run('osascript -e \'display notification "%s" with title "xia2"\'' % this)
+
+  say(text)
+  notify(this)
+
+  return
+
+def message_Linux(this):
+  def notify(this):
+    run('notify-send \'xia2\' \'%s\'' % this)
+
+  if False:
+    notify(this)
+
+  return
+
+def message(text):
+  import platform
+
+  if platform.system() == 'Darwin':
+    try:
+      message_Darwin(text)
+    except: # deliberately ignoring errors
+      pass
+
+  elif platform.system() == 'Linux':
+    try:
+      message_Linux(text)
+    except: # deliberately ignoring errors
+      pass
+
+  return
+
 def nint(a):
   '''return the nearest integer to a.'''
 
@@ -214,31 +258,5 @@ def nint(a):
 
   return i
 
-if __name__ == '__main__test__':
-  # test out nint
-  tests = [(2.9, 3), (3.1, 3), (-2.9, -3), (-3.1, -3)]
-  for t in tests:
-    if nint(t[0]) != t[1]:
-      raise RuntimeError, 'nint failed for %f' % t[0]
-
-if __name__ == '__main_old__':
-  # run a test
-
-  class A(object):
-    pass
-
-  class B(A):
-    pass
-
-  class C(object):
-    pass
-
-  if inherits_from(B, 'A'):
-    print 'ok'
-  else:
-    print 'failed'
-
-  if not inherits_from(C, 'A'):
-    print 'ok'
-  else:
-    print 'failed'
+if __name__ == '__main__':
+  message("This is a test")

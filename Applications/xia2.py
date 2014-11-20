@@ -336,10 +336,18 @@ def run():
   try:
     xia2()
     Chatter.write('Status: normal termination')
+    from Handlers.Flags import Flags
+    if Flags.get_egg():
+      from lib.bits import message
+      message('xia2 status normal termination')
 
   except exceptions.Exception, e:
     traceback.print_exc(file = open(os.path.join(wd, 'xia2.error'), 'w'))
     Chatter.write('Status: error "%s"' % str(e))
+    from Handlers.Flags import Flags
+    if Flags.get_egg():
+      from lib.bits import message
+      message('xia2 status error %s' % str(e))
 
 if __name__ == '__main__':
   run()
