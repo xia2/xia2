@@ -19,11 +19,11 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.environ['XIA2_ROOT'] in sys.path:
   sys.path.append(os.environ['XIA2_ROOT'])
 
-from Wrappers.CCP4 import Mosflm
 from Handlers.Streams import Debug
 from Handlers.Flags import Flags
 from Handlers.PipelineSelection import get_preferences, add_preference
 
+from Modules.Integrater.MosflmIntegrater import MosflmIntegrater
 from Modules.Integrater.XDSIntegrater import XDSIntegrater
 from Modules.Integrater.DialsIntegrater import DialsIntegrater
 
@@ -106,7 +106,7 @@ def Integrater():
 
   if not integrater and (not preselection or preselection == 'mosflmr'):
     try:
-      integrater = Mosflm.Mosflm()
+      integrater = MosflmIntegrater()
       Debug.write('Using MosflmR Integrater')
       if not get_preferences().get('scaler'):
         add_preference('scaler', 'ccp4a')

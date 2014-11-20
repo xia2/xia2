@@ -37,7 +37,7 @@ if not os.environ.has_key('XIA2_ROOT'):
 if not os.environ['XIA2_ROOT'] in sys.path:
   sys.path.append(os.environ['XIA2_ROOT'])
 
-from Wrappers.CCP4.Mosflm import Mosflm
+from Modules.Indexer.MosflmIndexer import MosflmIndexer
 from Modules.Indexer.LabelitIndexer import LabelitIndexer
 from Modules.Indexer.LabelitIndexerII import LabelitIndexerII
 from Modules.Indexer.XDSIndexer import XDSIndexer
@@ -161,7 +161,7 @@ def Indexer(preselection = None):
 
   if not indexer and (not preselection or preselection == 'mosflm'):
     try:
-      indexer = Mosflm()
+      indexer = MosflmIndexer()
       Debug.write('Using Mosflm Indexer')
     except NotAvailableError, e:
       if preselection:

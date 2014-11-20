@@ -36,8 +36,8 @@ def exercise_mosflm_index():
   tmp_dir1 = os.path.abspath(open_tmp_directory())
   os.chdir(tmp_dir1)
 
-  from Wrappers.CCP4.Mosflm import Mosflm
-  m1 = Mosflm()
+  from Modules.Indexer.MosflmIndexer import MosflmIndexer
+  m1 = MosflmIndexer()
   m1.set_working_directory(tmp_dir1)
   m1.setup_from_image(template % 1)
   m1.index()
@@ -79,8 +79,12 @@ def exercise_mosflm_integrate(nproc):
   tmp_dir1 = os.path.abspath(open_tmp_directory())
   os.chdir(tmp_dir1)
 
-  from Wrappers.CCP4.Mosflm import Mosflm
-  m1 = Mosflm()
+  from Modules.Integrater.MosflmIntegrater import MosflmIntegrater
+  from Modules.Indexer.MosflmIndexer import MosflmIndexer
+  indexer = MosflmIndexer()
+  indexer.set_working_directory(tmp_dir1)
+  indexer.setup_from_image(template % 1)
+  m1 = MosflmIntegrater()
   m1.set_working_directory(tmp_dir1)
   m1.setup_from_image(template % 1)
   cryst = XCrystal("CRYST1", None)
@@ -88,7 +92,7 @@ def exercise_mosflm_integrate(nproc):
   directory, image = os.path.split(template %1)
   sweep = XSweep('SWEEP1', wav, directory=directory, image=image)
   m1.set_integrater_sweep(sweep)
-  m1.set_integrater_indexer(m1)
+  m1.set_integrater_indexer(indexer)
   m1.set_frame_wedge(1, 45)
   m1.set_integrater_wedge(1, 45)
   m1.integrate()
@@ -109,10 +113,10 @@ def exercise_mosflm_integrate(nproc):
 
   assert m1.get_integrater_cell() == m2.get_integrater_cell(), "%s != %s" % \
       (str(m1.get_integrater_cell()), str(m2.get_integrater_cell()))
-  assert m1.get_indexer_distance() == m2.get_indexer_distance()
-  assert m1.get_indexer_cell() == m2.get_indexer_cell()
-  assert m1.get_indexer_lattice() == m2.get_indexer_lattice()
-  assert m1.get_indexer_mosaic() == m2.get_indexer_mosaic()
+  assert indexer.get_indexer_distance() == m2.get_indexer_distance()
+  assert indexer.get_indexer_cell() == m2.get_indexer_cell()
+  assert indexer.get_indexer_lattice() == m2.get_indexer_lattice()
+  assert indexer.get_indexer_mosaic() == m2.get_indexer_mosaic()
 
   m1_mtz = m1.get_integrater_intensities()
   m2_mtz = m2.get_integrater_intensities()

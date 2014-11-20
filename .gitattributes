@@ -18,6 +18,7 @@ Modules/Indexer/DialsIndexer.py -text
 Modules/Indexer/IndexerSelectImages.py -text
 Modules/Indexer/LabelitIndexer.py -text
 Modules/Indexer/LabelitIndexerII.py -text
+Modules/Indexer/MosflmIndexer.py -text
 Modules/Indexer/MosflmIntegrateAbsences.py -text
 Modules/Indexer/XDSIndexerSum.py -text
 Modules/Indexer/__init__.py -text
