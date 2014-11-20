@@ -60,11 +60,8 @@ Toolkit/BackstopMask.py -text
 Toolkit/E4.py -text
 Toolkit/FrameCC.py -text
 Toolkit/MendBKGINIT.py -text
-Toolkit/MiniKappaCalibrate.py -text
 Toolkit/PolyFitter.py -text
 Toolkit/__init__.py -text
-Toolkit/guess_the_atom.py -text
-Toolkit/x1335.py -text
 Wrappers/CCP4/AimlessHelpers.py -text
 Wrappers/CCP4/Ctruncate.py -text
 Wrappers/Cctbx/BrehmDiederichs.py -text
