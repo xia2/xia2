@@ -267,6 +267,13 @@ class Integrater(object):
 
   # getters and setters of administrative information
 
+  def set_working_directory(self, working_directory):
+    self._working_directory = working_directory
+    return
+
+  def get_working_directory(self):
+    return self._working_directory
+
   def set_integrater_sweep_name(self, sweep_name):
     self._intgr_sweep_name = sweep_name
     return
