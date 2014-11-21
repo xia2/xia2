@@ -199,16 +199,19 @@ def transpose_loggraph(loggraph_dict):
 
   return results
 
-def run(command):
-  os.system(command)
-  return
-
 def message_Darwin(text):
+
+  def run(command):
+    import subprocess
+    import shlex
+    subprocess.call(shlex.split(command))
+    return
+
   def say(this):
-    run('say "%s" &' % this)
+    run('say "%s"' % this)
 
   def notify(this):
-    run('osascript -e \'display notification "%s" with title "xia2"\' &' % this)
+    run('osascript -e \'display notification "%s" with title "xia2"\'' % this)
 
   say(text)
   notify(text)
@@ -216,6 +219,16 @@ def message_Darwin(text):
   return
 
 def message_Linux(text):
+
+  def run(command):
+
+    # FIXME replace this with something using subprocess but which can also
+    # clobber LD_LIBRARY_PATH as cctbx.python has things in PATH which break
+    # notify-send
+
+    os.system(command)
+    return
+
   def notify(this):
     run('LD_LIBRARY_PATH=\'\' notify-send \'xia2\' \'%s\' &' % this)
 
@@ -229,7 +242,7 @@ def message(text):
   if platform.system() == 'Darwin':
     try:
       message_Darwin(text)
-    except: # deliberately ignoring errors
+    except IOError, e: # deliberately ignoring errors
       pass
 
   elif platform.system() == 'Linux':
