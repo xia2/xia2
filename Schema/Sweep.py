@@ -133,7 +133,7 @@ class Sweep(object):
 
   def _read_headers(self):
     '''Get the image headers for all of the images - this is not designed
-    to be called exernally.'''
+    to be called externally.'''
 
     self._headers = { }
 
