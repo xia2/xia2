@@ -19,10 +19,10 @@ def load_imagesets(template, directory, id_image=None, image_range=None,
     unhandled = []
     datablocks = DataBlockFactory.from_filenames(
       paths, verbose=False, unhandled=unhandled)
-    assert len(unhandled) == 0, unhandled
-    assert len(datablocks) == 1, len(datablocks)
+    assert len(unhandled) == 0, "unhandled image files identified: %s" % unhandled
+    assert len(datablocks) == 1, "1 datablock expected, %d found" % len(datablocks)
     imagesets = datablocks[0].extract_sweeps()
-    assert len(imagesets) > 0
+    assert len(imagesets) > 0, "no imageset found"
 
     imageset_cache[full_template_path] = OrderedDict()
 
