@@ -351,6 +351,7 @@ def XDSIntegrate(DriverType=None, params=None):
           mosaic = float(o.split()[-1])
           mosaics.append(mosaic)
 
+      assert len(mosaics) > 0, "XDS refinement failed (no mosaic spread range reported)"
       self._min_mosaic = min(mosaics)
       self._max_mosaic = max(mosaics)
       self._mean_mosaic = sum(mosaics) / len(mosaics)
