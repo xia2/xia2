@@ -240,7 +240,7 @@ class MosflmIndexer(FrameProcessor, Indexer):
         thresh = min(thresholds)
         self._mosflm_autoindex_thresh = thresh
 
-      except exceptions.Exception, e:
+      except Exception as e:
         Debug.write('Error computing threshold: %s' % str(e))
         Debug.write('Using default of 20.0')
         thresh = 20.0
