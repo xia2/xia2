@@ -210,6 +210,8 @@ class Indexer(FrameProcessor):
   def to_dict(self):
     obj = {}
     obj['__id__'] = 'Indexer'
+    obj['__module__'] = self.__class__.__module__
+    obj['__name__'] = self.__class__.__name__
     import inspect
     attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
     for a in attributes:
@@ -235,6 +237,7 @@ class Indexer(FrameProcessor):
   @classmethod
   def from_dict(cls, obj):
     assert obj['__id__'] == 'Indexer'
+    assert obj['__name__'] == cls.__name__
     return_obj = cls()
     for k, v in obj.iteritems():
       if k == '_indxr_helper':

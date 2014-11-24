@@ -282,7 +282,7 @@ class DialsIntegrater(Integrater):
     '''Actually do the integration - in XDS terms this will mean running
     DEFPIX and INTEGRATE to measure all the reflections.'''
 
-    images_str = '%d to %d' % self._intgr_wedge
+    images_str = '%d to %d' % tuple(self._intgr_wedge)
     cell_str = '%.2f %.2f %.2f %.2f %.2f %.2f' % \
                self._intgr_indexer.get_indexer_cell()
 

@@ -76,6 +76,22 @@ def exercise_mosflm_integrater():
   assert approx_equal(integrater.get_integrater_cell(),
                       (78.014, 78.014, 78.014, 90.0, 90.0, 90.0), eps=1e-3)
 
+  # test serialization of integrater
+  json_str = integrater.as_json()
+  #print json_str
+  integrater2 = MosflmIntegrater.from_json(string=json_str)
+  integrater2_intensities = integrater.get_integrater_intensities()
+  assert integrater2_intensities == integrater_intensities
+
+  integrater2.set_integrater_wedge(1, 30)
+  integrater2.set_integrater_sweep(sweep)
+  integrater2_intensities = integrater2.get_integrater_intensities()
+  reader = any_reflection_file(integrater2_intensities)
+  assert reader.file_type() == "ccp4_mtz"
+  mtz_object = reader.file_content()
+  assert mtz_object.n_reflections() == 53698
+
+
 def run():
   exercise_mosflm_integrater()
   print "OK"

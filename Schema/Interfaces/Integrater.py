@@ -145,6 +145,78 @@ class Integrater(FrameProcessor):
 
     return
 
+  # serialization functions
+
+  def to_dict(self):
+    obj = {}
+    obj['__id__'] = 'Integrater'
+    obj['__module__'] = self.__class__.__module__
+    obj['__name__'] = self.__class__.__name__
+    import inspect
+    attributes = inspect.getmembers(self, lambda m:not(inspect.isroutine(m)))
+    for a in attributes:
+      if a[0] == '_intgr_indexer':
+        obj[a[0]] = a[1].to_dict()
+      #elif a[0] == '_indxr_experiment_list':
+        #obj[a[0]] = a[1].to_dict()
+      elif a[0] == '_fp_imageset':
+        from dxtbx.serialize.imageset import imageset_to_dict
+        obj[a[0]] = imageset_to_dict(a[1])
+      elif a[0] == '_intgr_sweep':
+        # XXX I guess we probably want this?
+        continue
+      elif (a[0].startswith('_intgr_') or
+            a[0].startswith('_fp_')):
+        obj[a[0]] = a[1]
+    return obj
+
+  @classmethod
+  def from_dict(cls, obj):
+    assert obj['__id__'] == 'Integrater'
+    return_obj = cls()
+    for k, v in obj.iteritems():
+      if k == '_intgr_indexer':
+        from libtbx.utils import import_python_object
+        indexer_cls = import_python_object(
+          import_path=".".join((v['__module__'], v['__name__'])),
+          error_prefix='', target_must_be='', where_str='').object
+        v = indexer_cls.from_dict(v)
+      if isinstance(v, dict):
+        if v.get('__id__', None) == 'ExperimentList':
+          from dxtbx.model.experiment.experiment_list import ExperimentListFactory
+          v = ExperimentListFactory.from_dict(v)
+        elif v.get('__id__', None) == 'imageset':
+          from dxtbx.serialize.imageset import imageset_from_dict
+          v = imageset_from_dict(v)
+      setattr(return_obj, k, v)
+    return return_obj
+
+  def as_json(self, filename=None, compact=False):
+    import json
+    obj = self.to_dict()
+    if compact:
+      text = json.dumps(obj, skipkeys=True, separators=(',',':'), ensure_ascii=True)
+    else:
+      text = json.dumps(obj, skipkeys=True, indent=2, ensure_ascii=True)
+
+    # If a filename is set then dump to file otherwise return string
+    if filename is not None:
+      with open(filename, 'w') as outfile:
+        outfile.write(text)
+    else:
+      return text
+
+  @classmethod
+  def from_json(cls, filename=None, string=None):
+    import json
+    from dxtbx.serialize.load import _decode_dict
+    assert [filename, string].count(None) == 1
+    if filename is not None:
+      with open(filename, 'wb') as f:
+        string = f.read()
+    obj = json.loads(string, object_hook=_decode_dict)
+    return cls.from_dict(obj)
+
   # ------------------------------------------------------------------
   # These methods need to be overloaded by the actual implementation -
   # they are all called from within the main integrate() method. The
