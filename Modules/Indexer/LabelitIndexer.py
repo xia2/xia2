@@ -34,7 +34,6 @@ if not os.environ['XIA2_ROOT'] in sys.path:
   sys.path.append(os.environ['XIA2_ROOT'])
 
 # interfaces that this inherits from ...
-from Schema.Interfaces.FrameProcessor import FrameProcessor
 from Schema.Interfaces.Indexer import Indexer
 
 # other labelit things that this uses
@@ -53,8 +52,7 @@ from Handlers.Files import FileHandler
 from Modules.Indexer.MosflmCheckIndexerSolution import \
      mosflm_check_indexer_solution
 
-class LabelitIndexer(FrameProcessor,
-                     Indexer):
+class LabelitIndexer(Indexer):
   '''A wrapper for the program labelit.index - which will provide
   functionality for deciding the beam centre and indexing the
   diffraction pattern.'''
@@ -62,7 +60,6 @@ class LabelitIndexer(FrameProcessor,
   def __init__(self, indxr_print=True):
 
     # interface constructor calls
-    FrameProcessor.__init__(self)
     Indexer.__init__(self)
 
     # control over the behaviour

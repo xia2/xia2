@@ -58,6 +58,9 @@ from Handlers.Phil import PhilIndex
 
 from Experts.LatticeExpert import SortLattices
 
+# interfaces that this inherits from ...
+from Schema.Interfaces.FrameProcessor import FrameProcessor
+
 class _IndexerHelper(object):
   '''A class to manage autoindexing results in a useful way, to ensure
   that the indexing solutions are properly managed, c/f TS01:1VR9.'''
@@ -116,7 +119,7 @@ class _IndexerHelper(object):
 
     return
 
-class Indexer(object):
+class Indexer(FrameProcessor):
   '''A class interface to present autoindexing functionality in a standard
   way for all indexing programs. Note that this interface defines the
   contract - what the implementation actually does is a matter for the
@@ -127,6 +130,9 @@ class Indexer(object):
   LATTICE_CORRECT = 'LATTICE_CORRECT'
 
   def __init__(self):
+
+    # interface constructor calls
+    FrameProcessor.__init__(self)
 
     # (optional) input parameters
     self._indxr_images = []

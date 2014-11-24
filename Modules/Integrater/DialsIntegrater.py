@@ -31,7 +31,7 @@ from Wrappers.Dials.ShowIsigRmsd import ShowIsigRmsd as _ShowIsigRmsd
 # interfaces that this must implement to be an integrater
 
 from Schema.Interfaces.Integrater import Integrater
-from Schema.Interfaces.FrameProcessor import FrameProcessor
+
 from Schema.Exceptions.BadLatticeError import BadLatticeError
 
 # indexing functionality if not already provided - even if it is
@@ -51,8 +51,7 @@ from Handlers.Phil import PhilIndex
 
 from Experts.SymmetryExpert import lattice_to_spacegroup_number
 
-class DialsIntegrater(FrameProcessor,
-                      Integrater):
+class DialsIntegrater(Integrater):
   '''A class to implement the Integrater interface using *only* XDS
   programs.'''
 
@@ -60,7 +59,6 @@ class DialsIntegrater(FrameProcessor,
 
     # set up the inherited objects
 
-    FrameProcessor.__init__(self)
     Integrater.__init__(self)
 
     # check that the programs exist - this will raise an exception if

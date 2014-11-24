@@ -27,7 +27,6 @@ if not os.environ['XIA2_ROOT'] in sys.path:
 from Background.Background import Background
 
 # interfaces that this will present
-from Schema.Interfaces.FrameProcessor import FrameProcessor
 from Schema.Interfaces.Integrater import Integrater
 
 # output streams &c.
@@ -62,12 +61,11 @@ from Schema.Exceptions.IntegrationError import IntegrationError
 from Wrappers.CCP4.Reindex import Reindex
 from Wrappers.CCP4.Sortmtz import Sortmtz
 
-class MosflmIntegrater(FrameProcessor, Integrater):
+class MosflmIntegrater(Integrater):
   '''A wrapper for Mosflm integration.'''
 
   def __init__(self):
     # generic things
-    FrameProcessor.__init__(self)
     Integrater.__init__(self)
 
     # local parameters used in cell refinement

@@ -59,11 +59,17 @@ from Wrappers.XIA.Diffdump import Diffdump
 from Experts.SymmetryExpert import compose_matrices_r, compose_symops
 from Experts.SymmetryExpert import symop_to_mat
 
-class Integrater(object):
+# interfaces that this inherits from ...
+from Schema.Interfaces.FrameProcessor import FrameProcessor
+
+class Integrater(FrameProcessor):
   '''An interface to present integration functionality in a similar
   way to the indexer interface.'''
 
   def __init__(self):
+
+    # interface constructor calls
+    FrameProcessor.__init__(self)
 
     # a pointer to an implementation of the indexer class from which
     # to get orientation (maybe) and unit cell, lattice (definately)

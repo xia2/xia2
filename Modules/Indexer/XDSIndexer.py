@@ -45,7 +45,6 @@ from Toolkit.MendBKGINIT import recompute_BKGINIT
 # interfaces that this must implement to be an indexer
 
 from Schema.Interfaces.Indexer import Indexer
-from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # odds and sods that are needed
 
@@ -55,15 +54,13 @@ from Handlers.Flags import Flags
 from Handlers.Phil import PhilIndex
 from Handlers.Files import FileHandler
 
-class XDSIndexer(FrameProcessor,
-                 Indexer):
+class XDSIndexer(Indexer):
   '''An implementation of the Indexer interface using XDS.'''
 
   def __init__(self):
 
     # set up the inherited objects
 
-    FrameProcessor.__init__(self)
     Indexer.__init__(self)
 
     # check that the programs exist - this will raise an exception if

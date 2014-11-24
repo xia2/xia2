@@ -34,7 +34,6 @@ from Wrappers.XIA.Diffdump import Diffdump
 # interfaces that this must implement to be an indexer
 
 from Schema.Interfaces.Indexer import Indexer
-from Schema.Interfaces.FrameProcessor import FrameProcessor
 
 # odds and sods that are needed
 
@@ -45,13 +44,11 @@ from Handlers.Phil import PhilIndex
 from Handlers.Files import FileHandler
 from Experts.SymmetryExpert import lattice_to_spacegroup_number
 
-class DialsIndexer(FrameProcessor,
-                   Indexer):
+class DialsIndexer(Indexer):
   def __init__(self):
 
     # set up the inherited objects
 
-    FrameProcessor.__init__(self)
     Indexer.__init__(self)
 
     self._working_directory = os.getcwd()

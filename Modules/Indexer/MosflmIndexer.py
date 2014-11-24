@@ -25,7 +25,6 @@ if not os.environ['XIA2_ROOT'] in sys.path:
   sys.path.append(os.environ['XIA2_ROOT'])
 
 # interfaces that this will present
-from Schema.Interfaces.FrameProcessor import FrameProcessor
 from Schema.Interfaces.Indexer import Indexer
 
 # output streams &c.
@@ -58,13 +57,12 @@ from Modules.Indexer.MosflmCheckIndexerSolution import \
      mosflm_check_indexer_solution
 
 
-class MosflmIndexer(FrameProcessor, Indexer):
+class MosflmIndexer(Indexer):
   '''A wrapper for Mosflm indexing'''
 
   def __init__(self):
     # generic things
 
-    FrameProcessor.__init__(self)
     Indexer.__init__(self)
 
     # local parameters used in autoindexing

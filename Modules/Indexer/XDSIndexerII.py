@@ -40,12 +40,6 @@ from Wrappers.XDS.XDS import beam_centre_xds_to_mosflm
 from Wrappers.XDS.XDS import XDSException
 from Modules.Indexer.XDSCheckIndexerSolution import xds_check_indexer_solution
 
-# interfaces that this must implement to be an indexer - though these
-# are inherited implicitly
-
-# from Schema.Interfaces.Indexer import Indexer
-# from Schema.Interfaces.FrameProcessor import FrameProcessor
-
 # odds and sods that are needed
 
 from lib.bits import auto_logfiler, nint
