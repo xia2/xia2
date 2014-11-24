@@ -159,6 +159,7 @@ class MosflmIndexer(Indexer):
     Citations.cite('mosflm')
 
     indexer = MosflmIndex()
+    indexer.set_working_directory(self.get_working_directory())
     auto_logfiler(indexer)
 
     from lib.bits import unique_elements
